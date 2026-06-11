@@ -20,6 +20,8 @@ Status: complete for the current workspace.
 
 ## Phase 3: API and docs audit
 
+- Status: in progress. Public headers, `docs/api.md`, and `README.md` have
+  been audited against the current API.
 - Compare public headers with `docs/api.md` and `README.md`.
 - Confirm examples use current allocation sizes and scratch buffers.
 - Add focused tests only where public behavior is not covered.

@@ -12,6 +12,37 @@ BFFT exposes a small C ABI and a lightweight C++ wrapper.
 #include <bfft/bfft.hpp>
 ```
 
+## Version and backend
+
+The C header defines `BFFT_VERSION_MAJOR`, `BFFT_VERSION_MINOR`, and
+`BFFT_VERSION_PATCH`. Runtime helpers return stable diagnostic strings:
+
+```c
+const char* version = bfft_version_string();
+const char* backend = bfft_backend_name();
+```
+
+The C++ wrappers are:
+
+```cpp
+std::string version = bfft::version_string();
+std::string backend = bfft::backend_name();
+```
+
+`bfft_backend_name` reports the SIMD backend compiled into the library, such as
+`avx2-fma-256`, `sse2-128`, `neon-128`, or `scalar`.
+
+## Types
+
+- `bfft_plan` is an opaque reusable transform plan.
+- `bfft_complex` stores one complex value as `double re` and `double im`.
+- `bfft_status` is the C return-code enum.
+- `bfft_layout` names the public representations:
+  `BFFT_LAYOUT_STANDARD`, `BFFT_LAYOUT_NATIVE`, and `BFFT_LAYOUT_RESIDUES`.
+
+The C++ header aliases these as `bfft::complex`, `bfft::status`, and
+`bfft::layout`.
+
 ## Plans
 
 Create one plan per transform size and reuse it for repeated transforms.
@@ -26,7 +57,12 @@ bfft_status status = bfft_plan_create(4096, &plan);
 bfft::plan plan(4096);
 ```
 
-Destroy C plans with `bfft_plan_destroy`. C++ plans are RAII objects.
+`bfft_plan_create` returns `BFFT_ERROR_INVALID_ARGUMENT` for invalid sizes or a
+NULL output pointer, and `BFFT_ERROR_ALLOCATION` if plan allocation fails. On
+failure, the output plan pointer is set to NULL.
+
+Destroy C plans with `bfft_plan_destroy`. Passing NULL is allowed. C++ plans are
+RAII objects and throw `bfft::error` if construction fails.
 
 ## Memory sizes
 
@@ -35,8 +71,13 @@ Destroy C plans with `bfft_plan_destroy`. C++ plans are RAII objects.
 - `bfft_plan_work_size(plan)` / `plan.work_size()` returns the double scratch
   count needed by forward calls.
 - `bfft_plan_native_scratch_size(plan)` / `plan.native_scratch_size()` returns
-  the complex scratch count needed by standard-output forward calls when the
-  fused scatter policy is selected.
+  the complex scratch count to allocate for standard-output forward calls.
+- `bfft_filter_size(plan)` / `plan.filter_size()` returns the double count for
+  residue-domain filters.
+
+The size query functions return zero for a NULL C plan. For simple callers,
+allocate every buffer from these helpers and pass the buffers to the matching
+function.
 
 ## Standard forward transform
 
@@ -48,25 +89,79 @@ This is the easiest API to use and is comparable to `fftw_plan_dft_r2c_1d` or
 bfft_forward(plan, input, output, work, native_scratch);
 ```
 
+Buffer sizes:
+
+- `input`: `N` doubles.
+- `output`: `bfft_plan_bins(plan)` complex values.
+- `work`: `bfft_plan_work_size(plan)` doubles.
+- `native_scratch`: `bfft_plan_native_scratch_size(plan)` complex values.
+
 The library automatically chooses its packing policy. You can inspect it with:
 
 ```c
 const char* policy = bfft_plan_standard_policy(plan);
 ```
 
+The policy string is either `fused-scatter-plus-layout-convert` or
+`two-phase-standard-pack`. `native_scratch` may be NULL only for
+`two-phase-standard-pack`; portable code should allocate and pass the scratch
+buffer unconditionally.
+
+The C++ wrappers are:
+
+```cpp
+plan.forward(input, output, work, native_scratch);
+std::vector<bfft::complex> spectrum = plan.forward(input_vector);
+```
+
+The vector overload validates that `input_vector.size() == plan.size()` and
+allocates the work buffers internally.
+
+## Standard inverse transform
+
+The standard inverse reads ordinary FFT r2c bins and writes `N` time-domain
+samples. A forward followed by an inverse returns the original real signal up to
+floating-point roundoff.
+
+```c
+bfft_inverse(plan, spectrum, output);
+```
+
+Buffer sizes:
+
+- `spectrum`: `bfft_plan_bins(plan)` complex values in standard order.
+- `output`: `N` doubles.
+
+The C++ wrappers are:
+
+```cpp
+plan.inverse(spectrum, output);
+std::vector<double> signal = plan.inverse(spectrum_vector);
+```
+
 ## Native and residue APIs
 
 Advanced users can avoid standard-order conversion:
 
-- `bfft_forward_native` writes the heap-optimized native spectrum order.
-- `bfft_inverse_native` reads that native order.
-- `bfft_forward_residues` writes Bruun residue coordinates as `N` doubles.
-- `bfft_inverse_residues` converts residue coordinates back to time samples.
+- `bfft_forward_native(plan, input, output, work)` writes
+  `bfft_plan_bins(plan)` complex values in native spectrum order.
+- `bfft_inverse_native(plan, input, output)` reads native order and writes `N`
+  doubles.
+- `bfft_forward_residues(plan, input, residues)` writes Bruun residue
+  coordinates as `N` doubles.
+- `bfft_inverse_residues(plan, residues_signal)` converts residue coordinates
+  back to time samples in place.
 
 Use layout conversion helpers when needed:
 
-- `bfft_native_to_standard`
-- `bfft_standard_to_native`
+- `bfft_native_to_standard(plan, native_input, standard_output)`
+- `bfft_standard_to_native(plan, standard_input, native_output)`
+
+Both conversion helpers read and write `bfft_plan_bins(plan)` complex values.
+
+The C++ wrappers keep the same names without the `bfft_` prefix:
+`forward_native`, `inverse_native`, `forward_residues`, `inverse_residues`,
+`native_to_standard`, and `standard_to_native`.
 
 ## Filtering
 
@@ -79,9 +174,29 @@ bfft_residue_filter_from_standard(plan, response, residue_filter);
 bfft_filter_signal(plan, input, residue_filter, output);
 ```
 
-For real zero-phase responses, use `bfft_residue_filter_from_real`.
+Buffer sizes:
+
+- `response`: `bfft_plan_bins(plan)` complex values in standard order.
+- `residue_filter`: `bfft_filter_size(plan)` doubles.
+- `input` and `output`: `N` doubles.
+
+For real zero-phase responses, use `bfft_residue_filter_from_real` with
+`bfft_plan_bins(plan)` doubles. `bfft_apply_residue_filter` applies a residue
+filter in place to an existing `N`-double residue vector.
+
+The C++ wrappers are `filter_size`, `residue_filter_from_standard`,
+`residue_filter_from_real`, `apply_residue_filter`, and `filter_signal`.
 
 ## Error handling
 
-C functions return `bfft_status`. Use `bfft_status_string` for diagnostics.
-C++ methods throw `bfft::error` for invalid arguments or internal failures.
+C functions return `bfft_status`:
+
+- `BFFT_OK`
+- `BFFT_ERROR_INVALID_ARGUMENT`
+- `BFFT_ERROR_ALLOCATION`
+- `BFFT_ERROR_INTERNAL`
+
+Use `bfft_status_string` for diagnostics. C functions return
+`BFFT_ERROR_INVALID_ARGUMENT` when a required plan or buffer pointer is NULL.
+C++ methods throw `bfft::error`; call `error.code()` to retrieve the original
+`bfft_status`.

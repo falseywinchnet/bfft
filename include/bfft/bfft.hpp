@@ -11,18 +11,22 @@
 
 namespace bfft {
 
+/* C++ aliases for the C ABI types. */
 using complex = bfft_complex;
 using layout = bfft_layout;
 using status = bfft_status;
 
+/* Library version string, for example "0.1.0". */
 inline std::string version_string() {
     return bfft_version_string();
 }
 
+/* SIMD backend selected by the build target. */
 inline std::string backend_name() {
     return bfft_backend_name();
 }
 
+/* Exception thrown when a wrapped C API call returns an error status. */
 class error : public std::runtime_error {
 public:
     explicit error(status code)
@@ -36,8 +40,11 @@ private:
     status code_;
 };
 
+/* Reusable real FFT plan. Construction validates the transform size and owns
+   the underlying C plan with RAII. */
 class plan {
 public:
+    /* Create a plan for a power-of-two transform size N >= 4. */
     explicit plan(std::size_t n) {
         bfft_plan* raw = nullptr;
         status result = bfft_plan_create(n, &raw);
@@ -47,26 +54,32 @@ public:
         impl_.reset(raw);
     }
 
+    /* Transform size N. */
     std::size_t size() const noexcept {
         return bfft_plan_size(impl_.get());
     }
 
+    /* Number of complex r2c bins, N / 2 + 1. */
     std::size_t bins() const noexcept {
         return bfft_plan_bins(impl_.get());
     }
 
+    /* Number of doubles needed by forward work buffers. */
     std::size_t work_size() const noexcept {
         return bfft_plan_work_size(impl_.get());
     }
 
+    /* Number of complex values to reserve for standard forward scratch. */
     std::size_t native_scratch_size() const noexcept {
         return bfft_plan_native_scratch_size(impl_.get());
     }
 
+    /* Standard-output packing policy chosen for this plan. */
     std::string standard_policy() const {
         return bfft_plan_standard_policy(impl_.get());
     }
 
+    /* Standard FFT-order forward transform. Buffers follow the C API sizes. */
     void forward(const double* input,
                  complex* output,
                  double* work,
@@ -74,6 +87,7 @@ public:
         check(bfft_forward(impl_.get(), input, output, work, native_scratch));
     }
 
+    /* Convenience standard forward transform that allocates work buffers. */
     std::vector<complex> forward(const std::vector<double>& input) const {
         if (input.size() != size()) {
             throw error(BFFT_ERROR_INVALID_ARGUMENT);
@@ -85,14 +99,17 @@ public:
         return output;
     }
 
+    /* Native-order forward transform. */
     void forward_native(const double* input, complex* output, double* work) const {
         check(bfft_forward_native(impl_.get(), input, output, work));
     }
 
+    /* Standard FFT-order inverse transform. */
     void inverse(const complex* input, double* output) const {
         check(bfft_inverse(impl_.get(), input, output));
     }
 
+    /* Convenience standard inverse transform that allocates the output vector. */
     std::vector<double> inverse(const std::vector<complex>& input) const {
         if (input.size() != bins()) {
             throw error(BFFT_ERROR_INVALID_ARGUMENT);
@@ -102,42 +119,52 @@ public:
         return output;
     }
 
+    /* Native-order inverse transform. */
     void inverse_native(const complex* input, double* output) const {
         check(bfft_inverse_native(impl_.get(), input, output));
     }
 
+    /* Forward transform to N residue-domain doubles. */
     void forward_residues(const double* input, double* residues) const {
         check(bfft_forward_residues(impl_.get(), input, residues));
     }
 
+    /* In-place inverse from residue coordinates to time samples. */
     void inverse_residues(double* residues_signal) const {
         check(bfft_inverse_residues(impl_.get(), residues_signal));
     }
 
+    /* Convert native-order complex bins to standard FFT-order bins. */
     void native_to_standard(const complex* native_input, complex* standard_output) const {
         check(bfft_native_to_standard(impl_.get(), native_input, standard_output));
     }
 
+    /* Convert standard FFT-order bins to native-order complex bins. */
     void standard_to_native(const complex* standard_input, complex* native_output) const {
         check(bfft_standard_to_native(impl_.get(), standard_input, native_output));
     }
 
+    /* Number of doubles in a residue-domain filter. */
     std::size_t filter_size() const noexcept {
         return bfft_filter_size(impl_.get());
     }
 
+    /* Convert a standard complex response to a residue-domain filter. */
     void residue_filter_from_standard(const complex* response, double* residue_filter) const {
         check(bfft_residue_filter_from_standard(impl_.get(), response, residue_filter));
     }
 
+    /* Convert a real zero-phase response to a residue-domain filter. */
     void residue_filter_from_real(const double* response, double* residue_filter) const {
         check(bfft_residue_filter_from_real(impl_.get(), response, residue_filter));
     }
 
+    /* Apply a residue-domain filter in place to residue coordinates. */
     void apply_residue_filter(double* residues, const double* residue_filter) const {
         check(bfft_apply_residue_filter(impl_.get(), residues, residue_filter));
     }
 
+    /* Filter a time-domain signal through a residue-domain filter. */
     void filter_signal(const double* input, const double* residue_filter, double* output) const {
         check(bfft_filter_signal(impl_.get(), input, residue_filter, output));
     }

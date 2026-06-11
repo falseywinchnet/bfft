@@ -52,3 +52,15 @@ Agent loop status: active
   Ran `build/downstream_smoke`.
   Result: all passed. The smoke output reported `backend=neon-128` and standard
   policy `fused-scatter-plus-layout-convert`.
+- API/docs audit: documented every public C declaration in `include/bfft/bfft.h`,
+  added matching C++ wrapper comments in `include/bfft/bfft.hpp`, expanded
+  `docs/api.md` to cover version/backend helpers, types, plan sizes, transform
+  buffers, filtering buffers, and error handling, and clarified backend policy
+  wording in `README.md`.
+  Validation: `make clean` passed. A first plain `make` failed while compiling
+  `examples/benchmark.cpp` because the default macOS compiler temp directory
+  reported `No space left on device`. Removed prior BFFT staged-install temp
+  artifacts under `/private/tmp`, then ran `make clean`,
+  `TMPDIR=/private/tmp make`, and `TMPDIR=/private/tmp make test`.
+  Result: all passed. Test output reported `backend=neon-128` and standard
+  policy `fused-scatter-plus-layout-convert`.

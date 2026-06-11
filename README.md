@@ -19,8 +19,8 @@ Applications no longer choose transform packing with public compile flags. Build
 and runtime policy are automatic:
 
 - The Makefile probes the host compiler and enables AVX2/FMA when available.
-- The kernel otherwise falls back to AVX-512, SSE2, NEON, or scalar according to
-  the compiler target.
+- The kernel selects AVX-512, AVX2/FMA, SSE2, NEON, or scalar from the compiler
+  target macros.
 - Native spectrum output keeps heap-optimized ordering and fused scatter.
 - Standard FFT-order output uses fused scatter plus conversion by default.
 - Standard FFT-order output uses the internal two-phase pack only for large
