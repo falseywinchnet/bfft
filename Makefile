@@ -32,6 +32,7 @@ STATIC_LIB := $(BUILD_DIR)/lib$(LIB_NAME).a
 SHARED_LIB := $(BUILD_DIR)/lib$(LIB_NAME).so
 BENCH := $(BUILD_DIR)/examples/benchmark
 C_DEMO := $(BUILD_DIR)/examples/c_api_demo
+CPP_DEMO := $(BUILD_DIR)/examples/cpp_api_demo
 CORRECTNESS_TEST := $(BUILD_DIR)/tests/correctness
 C_API_TEST := $(BUILD_DIR)/tests/api_c
 
@@ -51,13 +52,16 @@ $(STATIC_LIB): $(OBJ)
 $(SHARED_LIB): $(OBJ)
 	$(CXX) -shared $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-examples: $(BENCH) $(C_DEMO)
+examples: $(BENCH) $(C_DEMO) $(CPP_DEMO)
 
 $(BENCH): examples/benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
 $(C_DEMO): examples/c_api_demo.c include/bfft/bfft.h $(STATIC_LIB) | $(BUILD_DIR)
 	$(CC) $(CPPFLAGS) $(INCLUDES) $(CFLAGS) $< $(STATIC_LIB) $(LDLIBS) -lstdc++ -o $@
+
+$(CPP_DEMO): examples/cpp_api_demo.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
 $(CORRECTNESS_TEST): tests/correctness.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@

@@ -26,7 +26,7 @@ Agent loop status: active
 - [x] Clean `make clean`, `make`, and `make test` result recorded.
 - [x] Staged install validated with `DESTDIR`.
 - [x] Downstream staged-install smoke program validated.
-- [ ] API, examples, and docs audited against current headers.
+- [x] API, examples, and docs audited against current headers.
 - [ ] Release checklist updated with final validation evidence.
 - [ ] Placeholder TODO scan completed.
 
@@ -64,3 +64,12 @@ Agent loop status: active
   `TMPDIR=/private/tmp make`, and `TMPDIR=/private/tmp make test`.
   Result: all passed. Test output reported `backend=neon-128` and standard
   policy `fused-scatter-plus-layout-convert`.
+- Example audit: added `examples/cpp_api_demo.cpp`, wired it into the
+  `examples` and `all` builds, updated README example output lists and snippets
+  to show plan-derived work and native scratch sizes, and clarified the examples
+  role in `docs/architecture.md`.
+  Validation: ran `make clean`, `TMPDIR=/private/tmp make`,
+  `TMPDIR=/private/tmp make test`, `build/examples/c_api_demo`,
+  `build/examples/cpp_api_demo`, and `build/examples/benchmark 64 1`.
+  Result: all passed. Test and demo output reported `backend=neon-128` and
+  standard policy `fused-scatter-plus-layout-convert`.

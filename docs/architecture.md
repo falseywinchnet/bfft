@@ -8,7 +8,8 @@
   plan.
 - `src/detail/bruun_kernel.hpp` contains the implementation kernel extracted
   from the original prototype.
-- `examples/` contains runnable copy/paste style applications.
+- `examples/` contains runnable copy/paste style C and C++ demos plus the
+  benchmark path.
 - `tests/` contains correctness and public API tests used by `make test`.
 
 ## Backend selection

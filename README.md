@@ -40,6 +40,7 @@ Artifacts are written to `build/`:
 - `build/libbfft.so`
 - `build/examples/benchmark`
 - `build/examples/c_api_demo`
+- `build/examples/cpp_api_demo`
 
 ## Install
 
@@ -65,15 +66,24 @@ Installed files:
 ```c
 #include <bfft/bfft.h>
 
-bfft_plan* plan = NULL;
-bfft_plan_create(1024, &plan);
+#include <stdlib.h>
 
-double input[1024];
-double work[1024];
-bfft_complex output[513];
-bfft_complex scratch[513];
+bfft_plan* plan = NULL;
+bfft_status status = bfft_plan_create(1024, &plan);
+if (status != BFFT_OK) {
+    return 1;
+}
+
+double* input = calloc(bfft_plan_size(plan), sizeof(double));
+double* work = calloc(bfft_plan_work_size(plan), sizeof(double));
+bfft_complex* output = calloc(bfft_plan_bins(plan), sizeof(bfft_complex));
+bfft_complex* scratch = calloc(bfft_plan_native_scratch_size(plan), sizeof(bfft_complex));
 
 bfft_forward(plan, input, output, work, scratch);
+free(input);
+free(work);
+free(output);
+free(scratch);
 bfft_plan_destroy(plan);
 ```
 
@@ -81,6 +91,8 @@ bfft_plan_destroy(plan);
 
 ```cpp
 #include <bfft/bfft.hpp>
+
+#include <vector>
 
 bfft::plan plan(1024);
 std::vector<double> input(plan.size());
@@ -95,6 +107,8 @@ Run a complete benchmark/demo:
 
 ```sh
 ./build/examples/benchmark 4096 200
+./build/examples/c_api_demo
+./build/examples/cpp_api_demo
 ```
 
 ## Documentation

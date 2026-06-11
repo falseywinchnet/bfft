@@ -11,8 +11,10 @@ gets stale, replace or refine tasks before doing implementation work.
   document the exact compile/link command.
 - [x] Audit `include/bfft/bfft.h`, `include/bfft/bfft.hpp`, `README.md`, and
   `docs/api.md` for API mismatches.
-- [ ] Audit examples for copy-paste quality and current scratch-size guidance.
+- [x] Audit examples for copy-paste quality and current scratch-size guidance.
 - [ ] Update `docs/release-checklist.md` with final validation evidence for
   the first `0.1.0` release.
 - [ ] Run a placeholder TODO scan across source, public docs, examples, and
   tests; remove stale markers or record any post-release items in the roadmap.
+- [ ] Run a final `IDEA.md` completion pass and mark `PROGRESS.md` complete
+  only if every first-release checklist item is satisfied.
