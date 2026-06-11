@@ -1,0 +1,283 @@
+#include <bfft/bfft.h>
+
+#include "detail/bruun_kernel.hpp"
+
+#include <new>
+
+struct bfft_plan {
+    bruun::RFFT impl;
+
+    explicit bfft_plan(int n)
+        : impl(n) {}
+};
+
+namespace {
+
+bruun::complex_t* as_bruun_complex(bfft_complex* value) {
+    return reinterpret_cast<bruun::complex_t*>(value);
+}
+
+const bruun::complex_t* as_bruun_complex(const bfft_complex* value) {
+    return reinterpret_cast<const bruun::complex_t*>(value);
+}
+
+bool missing_plan(const bfft_plan* plan) {
+    return plan == nullptr;
+}
+
+bool missing_ptr(const void* ptr) {
+    return ptr == nullptr;
+}
+
+bfft_status guard_binary(const bfft_plan* plan, const void* a, const void* b) {
+    if (missing_plan(plan) || missing_ptr(a) || missing_ptr(b)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    return BFFT_OK;
+}
+
+} // namespace
+
+const char* bfft_version_string(void) {
+    return "0.1.0";
+}
+
+const char* bfft_backend_name(void) {
+    return bruun::simd_backend_name();
+}
+
+const char* bfft_status_string(bfft_status status) {
+    if (status == BFFT_OK) {
+        return "ok";
+    }
+    if (status == BFFT_ERROR_INVALID_ARGUMENT) {
+        return "invalid argument";
+    }
+    if (status == BFFT_ERROR_ALLOCATION) {
+        return "allocation failed";
+    }
+    return "internal error";
+}
+
+bfft_status bfft_plan_create(size_t n, bfft_plan** plan) {
+    if (plan == nullptr) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    *plan = nullptr;
+    if (n > static_cast<size_t>(2147483647)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    try {
+        *plan = new bfft_plan(static_cast<int>(n));
+    } catch (const std::bad_alloc&) {
+        return BFFT_ERROR_ALLOCATION;
+    } catch (...) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    return BFFT_OK;
+}
+
+void bfft_plan_destroy(bfft_plan* plan) {
+    delete plan;
+}
+
+size_t bfft_plan_size(const bfft_plan* plan) {
+    if (missing_plan(plan)) {
+        return 0;
+    }
+    return static_cast<size_t>(plan->impl.size());
+}
+
+size_t bfft_plan_bins(const bfft_plan* plan) {
+    if (missing_plan(plan)) {
+        return 0;
+    }
+    return static_cast<size_t>(plan->impl.bins());
+}
+
+size_t bfft_plan_work_size(const bfft_plan* plan) {
+    if (missing_plan(plan)) {
+        return 0;
+    }
+    return static_cast<size_t>(plan->impl.work_size());
+}
+
+size_t bfft_plan_native_scratch_size(const bfft_plan* plan) {
+    if (missing_plan(plan)) {
+        return 0;
+    }
+    return static_cast<size_t>(plan->impl.native_scratch_size());
+}
+
+const char* bfft_plan_standard_policy(const bfft_plan* plan) {
+    if (missing_plan(plan)) {
+        return "invalid-plan";
+    }
+    return plan->impl.standard_output_policy_name();
+}
+
+bfft_status bfft_forward(const bfft_plan* plan,
+                         const double* input,
+                         bfft_complex* output,
+                         double* work,
+                         bfft_complex* native_scratch) {
+    if (missing_plan(plan) || missing_ptr(input) || missing_ptr(output) || missing_ptr(work)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    if (!plan->impl.standard_output_uses_two_phase() && missing_ptr(native_scratch)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    try {
+        plan->impl.forward_standard(input, as_bruun_complex(output), work, as_bruun_complex(native_scratch));
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
+bfft_status bfft_forward_native(const bfft_plan* plan,
+                                const double* input,
+                                bfft_complex* output,
+                                double* work) {
+    bfft_status status = guard_binary(plan, input, output);
+    if (status != BFFT_OK || missing_ptr(work)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    try {
+        plan->impl.forward_native(input, as_bruun_complex(output), work);
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
+bfft_status bfft_inverse(const bfft_plan* plan,
+                         const bfft_complex* input,
+                         double* output) {
+    bfft_status status = guard_binary(plan, input, output);
+    if (status != BFFT_OK) {
+        return status;
+    }
+    try {
+        plan->impl.inverse(as_bruun_complex(input), output);
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
+bfft_status bfft_inverse_native(const bfft_plan* plan,
+                                const bfft_complex* input,
+                                double* output) {
+    bfft_status status = guard_binary(plan, input, output);
+    if (status != BFFT_OK) {
+        return status;
+    }
+    try {
+        plan->impl.inverse_native(as_bruun_complex(input), output);
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
+bfft_status bfft_forward_residues(const bfft_plan* plan,
+                                  const double* input,
+                                  double* residues) {
+    bfft_status status = guard_binary(plan, input, residues);
+    if (status != BFFT_OK) {
+        return status;
+    }
+    try {
+        plan->impl.forward_residues(input, residues);
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
+bfft_status bfft_inverse_residues(const bfft_plan* plan,
+                                  double* residues_signal) {
+    if (missing_plan(plan) || missing_ptr(residues_signal)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    try {
+        plan->impl.inverse_residues(residues_signal);
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
+bfft_status bfft_native_to_standard(const bfft_plan* plan,
+                                    const bfft_complex* native_input,
+                                    bfft_complex* standard_output) {
+    bfft_status status = guard_binary(plan, native_input, standard_output);
+    if (status != BFFT_OK) {
+        return status;
+    }
+    plan->impl.native_to_standard_complex(as_bruun_complex(native_input), as_bruun_complex(standard_output));
+    return BFFT_OK;
+}
+
+bfft_status bfft_standard_to_native(const bfft_plan* plan,
+                                    const bfft_complex* standard_input,
+                                    bfft_complex* native_output) {
+    bfft_status status = guard_binary(plan, standard_input, native_output);
+    if (status != BFFT_OK) {
+        return status;
+    }
+    plan->impl.standard_to_native_complex(as_bruun_complex(standard_input), as_bruun_complex(native_output));
+    return BFFT_OK;
+}
+
+size_t bfft_filter_size(const bfft_plan* plan) {
+    if (missing_plan(plan)) {
+        return 0;
+    }
+    return static_cast<size_t>(plan->impl.filter_size());
+}
+
+bfft_status bfft_residue_filter_from_standard(const bfft_plan* plan,
+                                              const bfft_complex* standard_response,
+                                              double* residue_filter) {
+    bfft_status status = guard_binary(plan, standard_response, residue_filter);
+    if (status != BFFT_OK) {
+        return status;
+    }
+    plan->impl.residue_filter_from_standard(as_bruun_complex(standard_response), residue_filter);
+    return BFFT_OK;
+}
+
+bfft_status bfft_residue_filter_from_real(const bfft_plan* plan,
+                                          const double* real_response,
+                                          double* residue_filter) {
+    bfft_status status = guard_binary(plan, real_response, residue_filter);
+    if (status != BFFT_OK) {
+        return status;
+    }
+    plan->impl.residue_filter_from_real(real_response, residue_filter);
+    return BFFT_OK;
+}
+
+bfft_status bfft_apply_residue_filter(const bfft_plan* plan,
+                                      double* residues,
+                                      const double* residue_filter) {
+    bfft_status status = guard_binary(plan, residues, residue_filter);
+    if (status != BFFT_OK) {
+        return status;
+    }
+    plan->impl.apply_residue_filter(residues, residue_filter);
+    return BFFT_OK;
+}
+
+bfft_status bfft_filter_signal(const bfft_plan* plan,
+                               const double* input,
+                               const double* residue_filter,
+                               double* output) {
+    if (missing_plan(plan) || missing_ptr(input) || missing_ptr(residue_filter) || missing_ptr(output)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    plan->impl.filter_signal(input, residue_filter, output);
+    return BFFT_OK;
+}

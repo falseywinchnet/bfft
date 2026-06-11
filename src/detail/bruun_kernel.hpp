@@ -1,33 +1,15 @@
+#pragma once
+
 // MIT joshuah.rainstar@gmail.com 2026
+// Internal normalized-basis Bruun RFFT kernel.
 //
-// One-file normalized-basis Bruun RFFT library for power-of-two real transforms,
-// plus a simple "are we there yet?" FFTW3 comparison harness.
-//
-// SIMD backend policy (consumer-safe default is 128-bit):
-//   (no macro)            -> BRUUN_SIMD_128 if SSE2 or NEON available, else scalar
-//   -DBRUUN_SIMD_SCALAR   -> force scalar
-//   -DBRUUN_SIMD_128      -> force 128-bit (SSE2 on x86, NEON on aarch64)
-//   -DBRUUN_SIMD_AVX2     -> opt-in 256-bit AVX2+FMA (requires -mavx2 -mfma or -march=native)
-//   -DBRUUN_SIMD_AVX512   -> opt-in 512-bit (requires AVX-512F; HEDT/server only)
-//
-// Output pack policy:
-//   default               -> leaf codelets scatter directly into X (fused, zero extra passes)
-//   -DBRUUN_TWO_PHASE_PACK-> residues written in block order, then one sequential-write
-//                            permutation pass into X (scattered reads, streaming writes)
-//
-// Build Linux (consumer default, 128-bit):
-//   g++ -O3 -march=native -ffast-math -std=c++17 bruun_norm_power2_v2.cpp -ldl -lm -o bruun_norm
-// Opt-in AVX2:
-//   g++ -O3 -march=native -ffast-math -DBRUUN_SIMD_AVX2 -std=c++17 ... 
-// Build macOS:
-//   clang++ -O3 -mcpu=native -ffast-math -std=c++17 bruun_norm_power2_v2.cpp -ldl -lm -o bruun_norm
-//
-// Library use:
-//   Define BRUUN_NO_MAIN before including this file, then use:
-//     bruun::RFFT plan(N);
-//     std::vector<double> work(plan.work_size());
-//     plan.forward(x, X, work.data());
-//     plan.inverse(X, y);
+// BFFT builds this kernel as part of the library. Public users select transform
+// size and output layout through include/bfft/bfft.h or include/bfft/bfft.hpp;
+// the Makefile chooses safe host compiler switches automatically. Heap-optimized
+// native ordering and fused scatter are the default hot path. The library keeps a
+// sequential two-phase standard-output pack available internally and uses it only
+// when the standard FFT-order output is large enough to win on the active SIMD
+// backend.
 
 #include <algorithm>
 #include <chrono>
@@ -39,6 +21,7 @@
 #include <random>
 #include <stdexcept>
 #include <vector>
+#include <utility>
 
 #if !defined(_WIN32)
 #include <dlfcn.h>
@@ -50,26 +33,14 @@
 // Wider levels reuse the narrower loops as tails where needed.
 // ---------------------------------------------------------------------------
 
-#if defined(BRUUN_SIMD_SCALAR)
-#  define BRUUN_LEVEL 0
-#elif defined(BRUUN_SIMD_AVX512)
-#  if !defined(__AVX512F__)
-#    error "BRUUN_SIMD_AVX512 requires AVX-512F (compile with -march=... that has avx512f)"
-#  endif
+#if defined(__AVX512F__)
 #  define BRUUN_LEVEL 3
-#elif defined(BRUUN_SIMD_AVX2)
-#  if !defined(__AVX2__) || !defined(__FMA__)
-#    error "BRUUN_SIMD_AVX2 requires AVX2 and FMA (compile with -mavx2 -mfma or -march=native)"
-#  endif
+#elif defined(__AVX2__) && defined(__FMA__)
 #  define BRUUN_LEVEL 2
-#elif defined(BRUUN_SIMD_128)
+#elif defined(__SSE2__) || defined(_M_X64) || (defined(__aarch64__) && defined(__ARM_NEON))
 #  define BRUUN_LEVEL 1
 #else
-#  if defined(__SSE2__) || defined(_M_X64) || (defined(__aarch64__) && defined(__ARM_NEON))
-#    define BRUUN_LEVEL 1
-#  else
-#    define BRUUN_LEVEL 0
-#  endif
+#  define BRUUN_LEVEL 0
 #endif
 
 #if BRUUN_LEVEL >= 2 || (BRUUN_LEVEL >= 1 && (defined(__SSE2__) || defined(_M_X64)))
@@ -128,6 +99,13 @@ static inline float64x2_t bruun_neghi(float64x2_t a) {
 #define RESTRICT __restrict__
 #else
 #define RESTRICT
+#endif
+
+
+// BFFT keeps heap-optimized native spectrum ordering enabled internally.
+// Applications select public layouts through the API instead of compile flags.
+#ifndef BRUUN_HEAPOPT_SPECTRUM_ORDER
+#define BRUUN_HEAPOPT_SPECTRUM_ORDER 1
 #endif
 
 #ifndef M_PI
@@ -1110,28 +1088,40 @@ public:
             }
         }
 
-#if defined(BRUUN_TWO_PHASE_PACK)
-        // Inverse bin permutation for the sequential-write pack:
+        // Inverse bin permutation for sequential standard-order packing:
         // KINV[k] = m such that IDX[m] = k. IDX is a bijection [1, N/2) -> [1, N/2).
         KINV.assign(N / 2, 0);
         for (int m = 1; m < N / 2; ++m) KINV[IDX[m]] = m;
-#endif
     }
 
     int size() const { return N; }
     int bins() const { return NB; }
     int work_size() const { return N; }
+    int native_scratch_size() const { return NB; }
+
+    bool standard_output_uses_two_phase() const {
+#if BRUUN_LEVEL >= 2
+        return N > 8192;
+#elif BRUUN_LEVEL == 1
+        return N > 1048576;
+#else
+        return false;
+#endif
+    }
+
+    const char* standard_output_policy_name() const {
+        if (standard_output_uses_two_phase()) {
+            return "two-phase-standard-pack";
+        }
+        return "fused-scatter-plus-layout-convert";
+    }
 
     // Fast native-output Bruun transform.
     // With BRUUN_HEAPOPT_SPECTRUM_ORDER, X is in heapopt Bruun-native order.
     // Without BRUUN_HEAPOPT_SPECTRUM_ORDER, native order is ordinary FFTW bin order.
     void forward_native(const double* RESTRICT input, complex_t* RESTRICT X, double* RESTRICT work) const {
         if (fuse_tail && N >= 64) {
-#if defined(BRUUN_TWO_PHASE_PACK)
-            forward_two_phase(input, work, X);
-#else
             forward_recursive(input, work, X);
-#endif
             return;
         }
 
@@ -1151,6 +1141,11 @@ public:
                           complex_t* RESTRICT X,
                           double* RESTRICT work,
                           complex_t* RESTRICT native_tmp) const {
+        if (standard_output_uses_two_phase()) {
+            (void)native_tmp;
+            forward_standard_two_phase(input, work, X);
+            return;
+        }
 #if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
         forward_native(input, native_tmp, work);
         native_to_standard_complex(native_tmp, X);
@@ -1186,6 +1181,10 @@ public:
     void native_to_standard_complex(const complex_t* RESTRICT nativeX,
                                     complex_t* RESTRICT standardX) const {
 #if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
+        if (N < 32) {
+            std::memcpy(standardX, nativeX, sizeof(complex_t) * NB);
+            return;
+        }
         standardX[0] = nativeX[0];
         standardX[N / 2] = nativeX[N / 2];
         for (int m = 1; m < N / 2; ++m) {
@@ -1200,6 +1199,10 @@ public:
     void standard_to_native_complex(const complex_t* RESTRICT standardX,
                                     complex_t* RESTRICT nativeX) const {
 #if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
+        if (N < 32) {
+            std::memcpy(nativeX, standardX, sizeof(complex_t) * NB);
+            return;
+        }
         nativeX[0] = standardX[0];
         nativeX[N / 2] = standardX[N / 2];
         for (int m = 1; m < N / 2; ++m) {
@@ -1266,6 +1269,10 @@ public:
     // heapopt native layout sequentially; otherwise identical to inverse().
     void inverse_native(const complex_t* RESTRICT Xnative, double* RESTRICT out) const {
 #if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
+        if (N < 32) {
+            inverse(Xnative, out);
+            return;
+        }
         out[0] = 0.5 * (Xnative[0].re + Xnative[N / 2].re);
         out[1] = 0.5 * (Xnative[0].re - Xnative[N / 2].re);
         for (int pos = 1; pos < N / 2; ++pos) {
@@ -1409,9 +1416,7 @@ private:
     };
     std::vector<LeafTw> TW;
 
-#if defined(BRUUN_TWO_PHASE_PACK)
     std::vector<int> KINV;
-#endif
 
     static inline void norm_q1_fwd(double* RESTRICT p, double c, double s) {
         const double A0 = p[0];
@@ -2053,12 +2058,10 @@ private:
         binomial_inv(v, N / 2);
     }
 
-#if defined(BRUUN_TWO_PHASE_PACK)
-
-    // Two-phase forward: residues land in block order in v, then one pass writes
-    // X sequentially (streaming stores) while reading v through the inverse
-    // permutation (scattered 16-byte reads).
-    void forward_two_phase(const double* RESTRICT input, double* RESTRICT v, complex_t* RESTRICT X) const {
+    // Two-phase standard-output forward: residues land in block order in v, then
+    // one pass writes ordinary FFT bins sequentially while reading residue pairs
+    // through KINV. Policy uses this only for large standard-layout outputs.
+    void forward_standard_two_phase(const double* RESTRICT input, double* RESTRICT v, complex_t* RESTRICT X) const {
         forward_residues_recursive(input, v);
 
         X[0].re = v[0] + v[1];
@@ -2066,22 +2069,6 @@ private:
         X[N / 2].re = v[0] - v[1];
         X[N / 2].im = 0.0;
 
-#if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
-        int pos = 1;
-#if BRUUN_LEVEL >= 1 && (defined(BRUUN_X86_128) || defined(BRUUN_NEON_128))
-        for (; pos < N / 2; ++pos) {
-            const int m = NATIVE_LEAF[pos];
-            const bruun_v2 r = V2_LD(v + 2*m);
-            V2_ST(&X[pos].re, V2_NEGHI(r));
-        }
-#else
-        for (; pos < N / 2; ++pos) {
-            const int m = NATIVE_LEAF[pos];
-            X[pos].re = v[2*m];
-            X[pos].im = -v[2*m + 1];
-        }
-#endif
-#else
         const int* RESTRICT kin = KINV.data();
         int k = 1;
 #if BRUUN_LEVEL >= 1 && (defined(BRUUN_X86_128) || defined(BRUUN_NEON_128))
@@ -2096,9 +2083,8 @@ private:
             X[k].im = -v[2*m + 1];
         }
 #endif
-#endif
     }
-#endif // BRUUN_TWO_PHASE_PACK
+
 
     // Depth-first traversal of the Bruun factor tree. Identical arithmetic to the
     // breadth-first stages, reordered so every sub-block becomes cache-resident
@@ -2250,288 +2236,3 @@ private:
 };
 
 } // namespace bruun
-
-#ifndef BRUUN_NO_MAIN
-
-using fftw_plan = void*;
-using fftw_complex = double[2];
-
-struct FFTW {
-    void* lib = nullptr;
-    fftw_plan (*plan_dft_r2c_1d)(int, double*, fftw_complex*, unsigned) = nullptr;
-    void (*execute)(const fftw_plan) = nullptr;
-    void (*destroy_plan)(fftw_plan) = nullptr;
-    void* (*malloc_fn)(size_t) = nullptr;
-    void (*free_fn)(void*) = nullptr;
-
-    bool load() {
-        const char* names[] = {
-            "libfftw3.dylib",
-            "libfftw3.3.dylib",
-            "/opt/homebrew/lib/libfftw3.dylib",
-            "/usr/local/lib/libfftw3.dylib",
-            "libfftw3.so.3",
-            "libfftw3.so",
-            nullptr
-        };
-
-        for (int i = 0; names[i]; ++i) {
-            lib = dlopen(names[i], RTLD_NOW);
-            if (lib) break;
-        }
-
-        if (!lib) return false;
-
-        plan_dft_r2c_1d = (fftw_plan (*)(int,double*,fftw_complex*,unsigned))dlsym(lib, "fftw_plan_dft_r2c_1d");
-        execute = (void (*)(const fftw_plan))dlsym(lib, "fftw_execute");
-        destroy_plan = (void (*)(fftw_plan))dlsym(lib, "fftw_destroy_plan");
-        malloc_fn = (void* (*)(size_t))dlsym(lib, "fftw_malloc");
-        free_fn = (void (*)(void*))dlsym(lib, "fftw_free");
-
-        return plan_dft_r2c_1d && execute && destroy_plan && malloc_fn && free_fn;
-    }
-
-    ~FFTW() {
-        if (lib) dlclose(lib);
-    }
-};
-
-static inline double max_abs_complex(const bruun::complex_t* a, const bruun::complex_t* b, int n) {
-    double e = 0.0;
-    for (int i = 0; i < n; ++i) {
-        const double dr = a[i].re - b[i].re;
-        const double di = a[i].im - b[i].im;
-        e = std::max(e, std::sqrt(dr*dr + di*di));
-    }
-    return e;
-}
-
-static inline double max_abs_real(const double* a, const double* b, int n) {
-    double e = 0.0;
-    for (int i = 0; i < n; ++i) e = std::max(e, std::abs(a[i] - b[i]));
-    return e;
-}
-
-static int default_iters(int N) {
-    const long long target = 180000000LL;
-    const int L = bruun::ilog2_pow2(N);
-    int it = int(target / (static_cast<long long>(N) * L));
-    if (it < 16) it = 16;
-    if (it > 200000) it = 200000;
-    return it;
-}
-
-static void bench_one(int N, int forced_iters, FFTW* fftw, std::mt19937_64& rng) {
-    const int NB = N / 2 + 1;
-    const int iters = forced_iters > 0 ? forced_iters : default_iters(N);
-
-#if defined(BRUUN_PRINT_PLAN_TIME)
-    auto plan_t0 = std::chrono::high_resolution_clock::now();
-#endif
-    bruun::RFFT plan(N, true);
-#if defined(BRUUN_PRINT_PLAN_TIME)
-    auto plan_t1 = std::chrono::high_resolution_clock::now();
-    const double plan_ms = std::chrono::duration<double, std::milli>(plan_t1 - plan_t0).count();
-    std::fprintf(stderr, "Bruun plan N=%d: %.3f ms\n", N, plan_ms);
-#endif
-
-    std::vector<double> input(N), original(N), work(N), inv(N);
-    std::vector<bruun::complex_t> X(NB), Xstd(NB), Xref(NB), Xnative_tmp(NB);
-
-    std::uniform_real_distribution<double> dist(-1.0, 1.0);
-
-    double* fftw_in = nullptr;
-    fftw_complex* fftw_out = nullptr;
-    fftw_plan fp = nullptr;
-
-    const bool have_fftw = fftw && fftw->lib;
-
-    if (have_fftw) {
-        fftw_in = (double*)fftw->malloc_fn(sizeof(double) * N);
-        fftw_out = (fftw_complex*)fftw->malloc_fn(sizeof(fftw_complex) * NB);
-        fp = fftw->plan_dft_r2c_1d(N, fftw_in, fftw_out, 64U); // FFTW_MEASURE
-    }
-
-    double fwd_err = 0.0;
-    double rt_err = 0.0;
-    double flt_err = 0.0;
-
-    std::vector<double> RF(plan.filter_size());
-    std::vector<bruun::complex_t> H(NB);
-    std::vector<double> filt_out(N), filt_ref(N);
-
-    {
-        // Random complex frequency response with real DC and Nyquist.
-        std::mt19937_64 hrng(7);
-        std::uniform_real_distribution<double> hdist(-1.0, 1.0);
-        for (int k = 0; k < NB; ++k) {
-            H[k].re = hdist(hrng);
-            H[k].im = (k == 0 || k == N / 2) ? 0.0 : hdist(hrng);
-        }
-        plan.residue_filter_from_standard(H.data(), RF.data());
-    }
-
-    const int trials = (N <= 2048) ? 20 : 5;
-
-    for (int tr = 0; tr < trials; ++tr) {
-        for (int i = 0; i < N; ++i) {
-            input[i] = dist(rng);
-            original[i] = input[i];
-        }
-
-        plan.forward_standard(input.data(), Xstd.data(), work.data(), Xnative_tmp.data());
-        plan.inverse(Xstd.data(), inv.data());
-        rt_err = std::max(rt_err, max_abs_real(inv.data(), original.data(), N));
-
-        // Residue-domain filtering vs the same multiply done in standard bins.
-        plan.filter_signal(input.data(), RF.data(), filt_out.data());
-        for (int k = 0; k < NB; ++k) {
-            const double xr = Xstd[k].re, xi = Xstd[k].im;
-            Xref[k].re = H[k].re * xr - H[k].im * xi;
-            Xref[k].im = H[k].re * xi + H[k].im * xr;
-        }
-        plan.inverse(Xref.data(), filt_ref.data());
-        flt_err = std::max(flt_err, max_abs_real(filt_out.data(), filt_ref.data(), N));
-
-        if (fp) {
-            std::memcpy(fftw_in, input.data(), sizeof(double) * N);
-            fftw->execute(fp);
-            for (int k = 0; k < NB; ++k) {
-                Xref[k].re = fftw_out[k][0];
-                Xref[k].im = fftw_out[k][1];
-            }
-            fwd_err = std::max(fwd_err, max_abs_complex(Xstd.data(), Xref.data(), NB));
-        }
-    }
-
-    volatile double sink = 0.0;
-
-    for (int i = 0; i < N; ++i) input[i] = dist(rng);
-
-    double fftw_ns = 0.0;
-
-    if (fp) {
-        auto t0 = std::chrono::high_resolution_clock::now();
-
-        for (int r = 0; r < iters; ++r) {
-            input[r & (N - 1)] += 1e-12;
-            std::memcpy(fftw_in, input.data(), sizeof(double) * N);
-            fftw->execute(fp);
-            sink += fftw_out[(r * 17) % NB][0];
-        }
-
-        auto t1 = std::chrono::high_resolution_clock::now();
-        fftw_ns = std::chrono::duration<double, std::nano>(t1 - t0).count() / double(iters);
-    }
-
-    for (int i = 0; i < N; ++i) input[i] = dist(rng);
-
-    auto bn0 = std::chrono::high_resolution_clock::now();
-
-    for (int r = 0; r < iters; ++r) {
-        input[r & (N - 1)] += 1e-12;
-        plan.forward_native(input.data(), X.data(), work.data());
-        sink += X[(r * 17) % NB].re;
-    }
-
-    auto bn1 = std::chrono::high_resolution_clock::now();
-
-    const double bruun_native_ns =
-        std::chrono::duration<double, std::nano>(bn1 - bn0).count() / double(iters);
-
-    for (int i = 0; i < N; ++i) input[i] = dist(rng);
-
-    auto bs0 = std::chrono::high_resolution_clock::now();
-
-    for (int r = 0; r < iters; ++r) {
-        input[r & (N - 1)] += 1e-12;
-        plan.forward_standard(input.data(), Xstd.data(), work.data(), Xnative_tmp.data());
-        sink += Xstd[(r * 17) % NB].re;
-    }
-
-    auto bs1 = std::chrono::high_resolution_clock::now();
-
-    const double bruun_standard_ns =
-        std::chrono::duration<double, std::nano>(bs1 - bs0).count() / double(iters);
-
-    for (int i = 0; i < N; ++i) input[i] = dist(rng);
-
-    auto bf0 = std::chrono::high_resolution_clock::now();
-
-    for (int r = 0; r < iters; ++r) {
-        input[r & (N - 1)] += 1e-12;
-        plan.filter_signal(input.data(), RF.data(), filt_out.data());
-        sink += filt_out[(r * 17) % N];
-    }
-
-    auto bf1 = std::chrono::high_resolution_clock::now();
-
-    const double bruun_filter_ns =
-        std::chrono::duration<double, std::nano>(bf1 - bf0).count() / double(iters);
-
-    const double native_ratio = fp ? (bruun_native_ns / fftw_ns) : 0.0;
-    const double standard_ratio = fp ? (bruun_standard_ns / fftw_ns) : 0.0;
-
-    std::printf("%8d %8d ", N, iters);
-    if (fp) std::printf("%11.1f ", fftw_ns);
-    else std::printf("%11s ", "n/a");
-    std::printf("%11.1f %11.1f %11.1f %8.3f %8.3f  err %.1e rt %.1e flt %.1e sink %.8g\n",
-                bruun_native_ns, bruun_standard_ns, bruun_filter_ns,
-                native_ratio, standard_ratio,
-                fwd_err, rt_err, flt_err, sink);
-
-    if (fp) {
-        fftw->destroy_plan(fp);
-        fftw->free_fn(fftw_in);
-        fftw->free_fn(fftw_out);
-    }
-}
-
-int main(int argc, char** argv) {
-    int forced_N = 0;
-    int forced_iters = 0;
-
-    if (argc >= 2) forced_N = std::atoi(argv[1]);
-    if (argc >= 3) forced_iters = std::atoi(argv[2]);
-
-    FFTW fftw;
-    const bool have_fftw = fftw.load();
-
-#if defined(BRUUN_TWO_PHASE_PACK)
-    const char* packmode = "two-phase-pack";
-#else
-    const char* packmode = "fused-scatter";
-#endif
-
-#if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
-    const char* spectrummode = "heap-contiguous-orient-opt-native";
-#else
-    const char* spectrummode = "standard-bin-native";
-#endif
-
-    std::printf("Bruun normalized-basis power-of-two RFFT, depth-first. backend: %s, pack: %s, spectrum: %s\n",
-                bruun::simd_backend_name(), packmode, spectrummode);
-    if (!have_fftw) std::fprintf(stderr, "FFTW not found by dlopen; FFTW column unavailable.\n");
-
-    std::printf("%8s %8s %11s %11s %11s %11s %8s %8s  %s\n",
-                "N", "iters", "FFTW_ns", "Native_ns", "Std_ns", "Filt_ns", "N/F", "S/F", "checks");
-
-    std::mt19937_64 rng(42);
-
-    if (forced_N > 0) {
-        if (!bruun::is_power2(forced_N) || forced_N < 4) {
-            std::fprintf(stderr, "N must be power of two >= 4.\n");
-            return 2;
-        }
-        bench_one(forced_N, forced_iters, have_fftw ? &fftw : nullptr, rng);
-    } else {
-        const int sizes[] = {512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144,524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728  };
-        for (int N : sizes) {
-            bench_one(N, forced_iters, have_fftw ? &fftw : nullptr, rng);
-        }
-    }
-
-    return 0;
-}
-
-#endif // BRUUN_NO_MAIN
