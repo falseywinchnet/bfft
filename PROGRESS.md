@@ -126,3 +126,13 @@ Agent loop status: active
   Validation: `make clean`, `make`, `make test`, and `git diff --check` all
   passed on 2026-06-11. Test output reported `backend=neon-128` and policy
   `fused-scatter-plus-layout-convert`.
+- Float32 BH7 probe mode: extended `tests/bfft_fftw_sfdr_bh7_probe.cpp` with
+  BFFT modes `f64-standard`, `f64-native`, `f32-standard`, and `f32-native`;
+  native modes execute native forward and convert to standard order before SFDR
+  measurement, keeping FFTW as the double-precision reference. Added `make probes` targets
+  for the tracked probe sources under `tests/` and documented the BH7
+  `f32-native` invocation in `README.md`.
+  Validation: `make probes`, `make test`, and `git diff --check` passed on
+  2026-06-11. A smoke run of
+  `build/tests/bfft_fftw_sfdr_bh7_probe 8 2 4 bh7 f32-native` completed and
+  printed `bfft_mode=f32-native`.

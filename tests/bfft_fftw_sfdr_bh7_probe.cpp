@@ -93,10 +93,22 @@ enum class WindowKind {
   bh7
 };
 
+enum class BfftMode {
+  f64_standard,
+  f64_native,
+  f32_standard,
+  f32_native
+};
+
 struct WindowSpec {
   WindowKind kind;
   const char* name;
   int main_radius;
+};
+
+struct BfftModeSpec {
+  BfftMode mode;
+  const char* name;
 };
 
 std::size_t parse_size(const char* text, const char* name) {
@@ -121,6 +133,34 @@ WindowSpec parse_window(const char* text) {
     return {WindowKind::bh7, "blackman-harris-7", 6};
   }
   throw std::runtime_error("bad window, expected rect, hann, or bh7");
+}
+
+BfftModeSpec parse_bfft_mode(const char* text) {
+  if (!text || std::strcmp(text, "f64") == 0 || std::strcmp(text, "f64-standard") == 0 ||
+      std::strcmp(text, "double") == 0 || std::strcmp(text, "standard") == 0) {
+    return {BfftMode::f64_standard, "f64-standard"};
+  }
+  if (std::strcmp(text, "f64-native") == 0 || std::strcmp(text, "double-native") == 0 ||
+      std::strcmp(text, "native") == 0) {
+    return {BfftMode::f64_native, "f64-native"};
+  }
+  if (std::strcmp(text, "f32") == 0 || std::strcmp(text, "f32-standard") == 0 ||
+      std::strcmp(text, "float") == 0 || std::strcmp(text, "float-standard") == 0) {
+    return {BfftMode::f32_standard, "f32-standard"};
+  }
+  if (std::strcmp(text, "f32-native") == 0 || std::strcmp(text, "float-native") == 0 ||
+      std::strcmp(text, "native-f32") == 0) {
+    return {BfftMode::f32_native, "f32-native"};
+  }
+  throw std::runtime_error("bad bfft mode, expected f64-standard, f64-native, f32-standard, or f32-native");
+}
+
+bool is_native_mode(BfftMode mode) {
+  return mode == BfftMode::f64_native || mode == BfftMode::f32_native;
+}
+
+bool is_f32_mode(BfftMode mode) {
+  return mode == BfftMode::f32_standard || mode == BfftMode::f32_native;
 }
 
 double window_value(WindowKind kind, std::size_t i, std::size_t n) {
@@ -215,6 +255,10 @@ double bin_abs(const bfft::complex& z) {
   return std::hypot(z.re, z.im);
 }
 
+double bin_abs(const bfft::complex_f32& z) {
+  return std::hypot(static_cast<double>(z.re), static_cast<double>(z.im));
+}
+
 bool is_main_lobe(std::size_t bin, std::size_t k, int radius) {
   const std::size_t lo = k > static_cast<std::size_t>(radius) ? k - static_cast<std::size_t>(radius) : 0;
   const std::size_t hi = k + static_cast<std::size_t>(radius);
@@ -230,7 +274,8 @@ struct SpectrumMetrics {
   double carrier = 0.0;
 };
 
-SpectrumMetrics measure_bfft(const std::vector<bfft::complex>& y, std::size_t k, int radius) {
+template <typename Complex>
+SpectrumMetrics measure_bfft(const std::vector<Complex>& y, std::size_t k, int radius) {
   SpectrumMetrics m;
   m.carrier = bin_abs(y[k]);
   double max_spur = 0.0;
@@ -290,7 +335,8 @@ SpectrumMetrics measure_fftw(const fftw_complex* y, std::size_t bins, std::size_
   return m;
 }
 
-double max_bfft_vs_fftw_rel(const std::vector<bfft::complex>& bfft_y,
+template <typename Complex>
+double max_bfft_vs_fftw_rel(const std::vector<Complex>& bfft_y,
                             const fftw_complex* fftw_y,
                             std::size_t bins,
                             double denom) {
@@ -300,8 +346,8 @@ double max_bfft_vs_fftw_rel(const std::vector<bfft::complex>& bfft_y,
 
   double worst = 0.0;
   for (std::size_t i = 0; i < bins; ++i) {
-    const double dr = bfft_y[i].re - fftw_y[i][0];
-    const double di = bfft_y[i].im - fftw_y[i][1];
+    const double dr = static_cast<double>(bfft_y[i].re) - fftw_y[i][0];
+    const double di = static_cast<double>(bfft_y[i].im) - fftw_y[i][1];
     worst = std::max(worst, std::hypot(dr, di) / denom);
   }
   return worst;
@@ -324,8 +370,9 @@ const char* verdict(double delta_db, double mismatch_rel) {
 struct WorstRow {
   bool valid = false;
   std::size_t n = 0;
-  const char* policy = "";
-  const char* window = "";
+  std::string policy;
+  std::string window;
+  std::string bfft_mode;
   std::size_t transforms = 0;
   std::size_t k = 0;
   char wave = '?';
@@ -335,25 +382,36 @@ struct WorstRow {
   double mismatch_rel = 0.0;
 };
 
-WorstRow run_one_size(std::size_t n, std::size_t bins_per_size, WindowSpec window, FFTW& fftw) {
+WorstRow run_one_size(std::size_t n, std::size_t bins_per_size, WindowSpec window, BfftModeSpec bfft_mode, FFTW& fftw) {
   const std::size_t bins = n / 2 + 1;
   const std::vector<std::size_t> ks = choose_bins(n, bins_per_size, window.main_radius);
 
   WorstRow worst;
   worst.n = n;
   worst.window = window.name;
+  worst.bfft_mode = bfft_mode.name;
+
+  bfft::plan plan(n);
+  if (is_native_mode(bfft_mode.mode)) {
+    worst.policy = "native";
+  } else {
+    worst.policy = plan.standard_policy();
+  }
 
   if (ks.empty()) {
     return worst;
   }
 
-  bfft::plan plan(n);
-  worst.policy = plan.standard_policy().c_str();
-
   std::vector<double> input(n);
   std::vector<double> work(plan.work_size());
+  std::vector<float> input_f32(n);
+  std::vector<float> work_f32(plan.work_size_f32());
   std::vector<bfft::complex> bfft_out(plan.bins());
+  std::vector<bfft::complex> bfft_native(plan.bins());
+  std::vector<bfft::complex_f32> bfft_out_f32(plan.bins());
+  std::vector<bfft::complex_f32> bfft_native_f32(plan.bins());
   std::vector<bfft::complex> scratch(plan.native_scratch_size());
+  std::vector<bfft::complex_f32> scratch_f32(plan.native_scratch_size());
 
   double* fftw_in = static_cast<double*>(fftw.malloc_fn(sizeof(double) * n));
   fftw_complex* fftw_out = static_cast<fftw_complex*>(fftw.malloc_fn(sizeof(fftw_complex) * bins));
@@ -379,15 +437,39 @@ WorstRow run_one_size(std::size_t n, std::size_t bins_per_size, WindowSpec windo
       const bool sine = wave_i != 0;
       make_tone(input, k, sine, window.kind);
 
-      plan.forward(input.data(), bfft_out.data(), work.data(), scratch.data());
-
       std::copy(input.begin(), input.end(), fftw_in);
       fftw.execute(fp);
 
-      const SpectrumMetrics bm = measure_bfft(bfft_out, k, window.main_radius);
+      SpectrumMetrics bm;
+      double mismatch = 0.0;
+      if (is_f32_mode(bfft_mode.mode)) {
+        for (std::size_t i = 0; i < n; ++i) {
+          input_f32[i] = static_cast<float>(input[i]);
+        }
+        if (bfft_mode.mode == BfftMode::f32_native) {
+          plan.forward_native_f32(input_f32.data(), bfft_native_f32.data(), work_f32.data());
+          plan.native_to_standard_f32(bfft_native_f32.data(), bfft_out_f32.data());
+        } else {
+          plan.forward_f32(input_f32.data(), bfft_out_f32.data(), work_f32.data(), scratch_f32.data());
+        }
+        bm = measure_bfft(bfft_out_f32, k, window.main_radius);
+        const SpectrumMetrics fm_tmp = measure_fftw(fftw_out, bins, k, window.main_radius);
+        const double denom = std::max(bm.carrier, fm_tmp.carrier);
+        mismatch = max_bfft_vs_fftw_rel(bfft_out_f32, fftw_out, bins, denom);
+      } else {
+        if (bfft_mode.mode == BfftMode::f64_native) {
+          plan.forward_native(input.data(), bfft_native.data(), work.data());
+          plan.native_to_standard(bfft_native.data(), bfft_out.data());
+        } else {
+          plan.forward(input.data(), bfft_out.data(), work.data(), scratch.data());
+        }
+        bm = measure_bfft(bfft_out, k, window.main_radius);
+        const SpectrumMetrics fm_tmp = measure_fftw(fftw_out, bins, k, window.main_radius);
+        const double denom = std::max(bm.carrier, fm_tmp.carrier);
+        mismatch = max_bfft_vs_fftw_rel(bfft_out, fftw_out, bins, denom);
+      }
+
       const SpectrumMetrics fm = measure_fftw(fftw_out, bins, k, window.main_radius);
-      const double denom = std::max(bm.carrier, fm.carrier);
-      const double mismatch = max_bfft_vs_fftw_rel(bfft_out, fftw_out, bins, denom);
       const double delta = bm.sfdr_db - fm.sfdr_db;
 
       ++worst.transforms;
@@ -413,16 +495,17 @@ WorstRow run_one_size(std::size_t n, std::size_t bins_per_size, WindowSpec windo
 
 void print_row(const WorstRow& r) {
   if (!r.valid) {
-    std::printf("%zu,skipped,%s,0,0,?,nan,nan,nan,nan,nan,0,0,nan,nan,nan,nan,nan,no-eligible-bins\n",
-                r.n, r.window);
+    std::printf("%zu,%s,%s,%s,0,0,?,nan,nan,nan,nan,nan,0,0,nan,nan,nan,nan,nan,no-eligible-bins\n",
+                r.n, r.policy.c_str(), r.window.c_str(), r.bfft_mode.c_str());
     return;
   }
 
   std::printf(
-    "%zu,%s,%s,%zu,%zu,%c,%.8f,%.8f,%.8f,%.8f,%.8f,%zu,%zu,%.8e,%.8e,%.8e,%.8e,%.8e,%s\n",
+    "%zu,%s,%s,%s,%zu,%zu,%c,%.8f,%.8f,%.8f,%.8f,%.8f,%zu,%zu,%.8e,%.8e,%.8e,%.8e,%.8e,%s\n",
     r.n,
-    r.policy,
-    r.window,
+    r.policy.c_str(),
+    r.window.c_str(),
+    r.bfft_mode.c_str(),
     r.transforms,
     r.k,
     r.wave,
@@ -449,6 +532,7 @@ int main(int argc, char** argv) {
     std::size_t bins_per_size = 32;
     std::size_t min_pow = 2;
     WindowSpec window = parse_window("rect");
+    BfftModeSpec bfft_mode = parse_bfft_mode("f64-standard");
 
     if (argc > 1) {
       max_pow = parse_size(argv[1], "max_pow");
@@ -461,6 +545,9 @@ int main(int argc, char** argv) {
     }
     if (argc > 4) {
       window = parse_window(argv[4]);
+    }
+    if (argc > 5) {
+      bfft_mode = parse_bfft_mode(argv[5]);
     }
 
     if (min_pow < 2 || max_pow < min_pow || max_pow > 30) {
@@ -475,19 +562,19 @@ int main(int argc, char** argv) {
 
     std::printf("# bfft vs fftw SFDR probe\n");
     std::printf("# bfft_version=%s backend=%s\n", bfft::version_string().c_str(), bfft::backend_name().c_str());
-    std::printf("# args: max_pow=%zu bins_per_size=%zu min_pow=%zu window=%s\n",
-                max_pow, bins_per_size, min_pow, window.name);
+    std::printf("# args: max_pow=%zu bins_per_size=%zu min_pow=%zu window=%s bfft_mode=%s\n",
+                max_pow, bins_per_size, min_pow, window.name, bfft_mode.name);
     std::printf("# rect excludes carrier only; hann excludes carrier +/-1; bh7 excludes carrier +/-6\n");
     std::printf("# bh7 is the periodic seven-term cosine-sum Blackman-Harris form\n");
     std::printf("# bins_per_size=0 means exhaustive over eligible k for every N\n");
-    std::printf("N,policy,window,transforms,worst_k,wave,bfft_sfdr_db,fftw_sfdr_db,delta_db,bfft_spur_dbc,fftw_spur_dbc,bfft_spur_bin,fftw_spur_bin,bfft_spur_rel,fftw_spur_rel,bfft_rms_spur_rel,fftw_rms_spur_rel,bfft_vs_fftw_rel,verdict\n");
+    std::printf("N,policy,window,bfft_mode,transforms,worst_k,wave,bfft_sfdr_db,fftw_sfdr_db,delta_db,bfft_spur_dbc,fftw_spur_dbc,bfft_spur_bin,fftw_spur_bin,bfft_spur_rel,fftw_spur_rel,bfft_rms_spur_rel,fftw_rms_spur_rel,bfft_vs_fftw_rel,verdict\n");
 
     for (std::size_t p = min_pow; p <= max_pow; ++p) {
       const std::size_t n = static_cast<std::size_t>(1) << p;
       if (n > static_cast<std::size_t>(std::numeric_limits<int>::max())) {
         break;
       }
-      const WorstRow row = run_one_size(n, bins_per_size, window, fftw);
+      const WorstRow row = run_one_size(n, bins_per_size, window, bfft_mode, fftw);
       print_row(row);
     }
 

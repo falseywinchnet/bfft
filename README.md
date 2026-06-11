@@ -113,6 +113,16 @@ Run a complete benchmark/demo:
 ./build/examples/cpp_api_demo
 ```
 
+Build the optional FFTW comparison probes from the tracked `tests/` sources:
+
+```sh
+make probes
+./build/tests/bfft_fftw_sfdr_bh7_probe 16 8 8 bh7 f32-native
+```
+
+The BH7 probe modes are `f64-standard`, `f64-native`, `f32-standard`, and
+`f32-native`. FFTW remains the double-precision reference.
+
 Stats on a mac M4 circa june 10, 2026:
 NOTE: PFFT is in single precision(FLOAT). BFFT, FFTW both in double precision! Emphasis!
 ```

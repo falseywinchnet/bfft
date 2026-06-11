@@ -18,6 +18,9 @@ gets stale, replace or refine tasks before doing implementation work.
 - [x] Add internal float32 SIMD helper structure: factor float32 work-buffer
   setup, scaling, and real-output copy through backend-aware internal helpers
   without adding public transform-selection flags.
+- [x] Extend tracked FFTW/BH7 probes for float32 native runs: build probes from
+  `tests/` with `make probes` and add `f32-native` support to the BH7 SFDR
+  comparison path.
 - [ ] Update `docs/release-checklist.md` with final validation evidence for
   the first `0.1.0` release.
   The previous disk-space blocker has been cleared locally; `make clean`,

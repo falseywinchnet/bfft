@@ -15,6 +15,12 @@ LDFLAGS ?=
 LDLIBS ?= -lm
 
 UNAME_M := $(shell uname -m 2>/dev/null || echo unknown)
+UNAME_S := $(shell uname -s 2>/dev/null || echo unknown)
+ifeq ($(UNAME_S),Darwin)
+  DL_LIBS ?=
+else
+  DL_LIBS ?= -ldl
+endif
 AVX2_FLAGS := $(shell $(CXX) -x c++ -std=c++17 -mavx2 -mfma -c /dev/null -o /tmp/bfft-avx2-test.o >/dev/null 2>&1 && rm -f /tmp/bfft-avx2-test.o && echo '-mavx2 -mfma')
 ifeq ($(findstring x86_64,$(UNAME_M)),x86_64)
   AUTO_SIMD_FLAGS := $(AVX2_FLAGS)
@@ -35,8 +41,12 @@ C_DEMO := $(BUILD_DIR)/examples/c_api_demo
 CPP_DEMO := $(BUILD_DIR)/examples/cpp_api_demo
 CORRECTNESS_TEST := $(BUILD_DIR)/tests/correctness
 C_API_TEST := $(BUILD_DIR)/tests/api_c
+SUPPORT_PROBE := $(BUILD_DIR)/tests/bfft_fftw_support_probe
+INVARIANT_PROBE := $(BUILD_DIR)/tests/bfft_invariant_support_probe
+SFDR_PROBE := $(BUILD_DIR)/tests/bfft_fftw_sfdr_probe
+BH7_PROBE := $(BUILD_DIR)/tests/bfft_fftw_sfdr_bh7_probe
 
-.PHONY: all clean test install uninstall examples docs
+.PHONY: all clean test install uninstall examples probes docs
 
 all: $(STATIC_LIB) $(SHARED_LIB) examples
 
@@ -68,6 +78,20 @@ $(CORRECTNESS_TEST): tests/correctness.cpp include/bfft/bfft.hpp $(STATIC_LIB) |
 
 $(C_API_TEST): tests/api_c.c include/bfft/bfft.h $(STATIC_LIB) | $(BUILD_DIR)
 	$(CC) $(CPPFLAGS) $(INCLUDES) $(CFLAGS) $< $(STATIC_LIB) $(LDLIBS) -lstdc++ -o $@
+
+$(SUPPORT_PROBE): tests/bfft_fftw_support_probe.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
+
+$(INVARIANT_PROBE): tests/bfft_invariant_support_probe.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
+
+$(SFDR_PROBE): tests/bfft_fftw_sfdr_probe.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
+
+$(BH7_PROBE): tests/bfft_fftw_sfdr_bh7_probe.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
+
+probes: $(SUPPORT_PROBE) $(INVARIANT_PROBE) $(SFDR_PROBE) $(BH7_PROBE)
 
 test: $(CORRECTNESS_TEST) $(C_API_TEST)
 	$(CORRECTNESS_TEST)
