@@ -119,6 +119,11 @@ struct complex_t {
     double im;
 };
 
+struct complex_f32_t {
+    float re;
+    float im;
+};
+
 static inline const char* simd_backend_name() {
 #if BRUUN_LEVEL == 3
     return "avx512-512";
@@ -1097,6 +1102,7 @@ public:
     int size() const { return N; }
     int bins() const { return NB; }
     int work_size() const { return N; }
+    int work_size_f32() const { return 2 * N; }
     int native_scratch_size() const { return NB; }
 
     bool standard_output_uses_two_phase() const {
@@ -1133,6 +1139,28 @@ public:
             forward_residues_inplace(work);
             residues_to_complex(work, X);
         }
+    }
+
+    void forward_standard_f32(const float* RESTRICT input,
+                              complex_f32_t* RESTRICT X,
+                              float* RESTRICT work,
+                              complex_f32_t* RESTRICT native_tmp) const {
+        (void)native_tmp;
+        forward_standard_fft_f32(input, X, work);
+    }
+
+    void forward_native_f32(const float* RESTRICT input,
+                            complex_f32_t* RESTRICT X,
+                            float* RESTRICT work) const {
+#if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
+        if (N >= 32) {
+            std::vector<complex_f32_t> standard(NB);
+            forward_standard_fft_f32(input, standard.data(), work);
+            standard_to_native_complex_f32(standard.data(), X);
+            return;
+        }
+#endif
+        forward_standard_fft_f32(input, X, work);
     }
 
     // Standard FFTW-like real -> complex interface, using caller-provided native scratch.
@@ -1174,6 +1202,22 @@ public:
         inverse_residues_inplace(out);
     }
 
+    void inverse_f32(const complex_f32_t* RESTRICT X, float* RESTRICT out) const {
+        inverse_standard_fft_f32(X, out);
+    }
+
+    void inverse_native_f32(const complex_f32_t* RESTRICT Xnative, float* RESTRICT out) const {
+#if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
+        if (N >= 32) {
+            std::vector<complex_f32_t> standard(NB);
+            native_to_standard_complex_f32(Xnative, standard.data());
+            inverse_standard_fft_f32(standard.data(), out);
+            return;
+        }
+#endif
+        inverse_standard_fft_f32(Xnative, out);
+    }
+
     // Convert the transform's native complex spectrum layout to standard FFTW order.
     // With BRUUN_HEAPOPT_SPECTRUM_ORDER, native nontrivial bins are in a
     // block-contiguous, sibling-orientation-optimized Bruun covering order.
@@ -1210,6 +1254,40 @@ public:
         }
 #else
         std::memcpy(nativeX, standardX, sizeof(complex_t) * NB);
+#endif
+    }
+
+    void native_to_standard_complex_f32(const complex_f32_t* RESTRICT nativeX,
+                                        complex_f32_t* RESTRICT standardX) const {
+#if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
+        if (N < 32) {
+            std::memcpy(standardX, nativeX, sizeof(complex_f32_t) * NB);
+            return;
+        }
+        standardX[0] = nativeX[0];
+        standardX[N / 2] = nativeX[N / 2];
+        for (int m = 1; m < N / 2; ++m) {
+            standardX[IDX[m]] = nativeX[NATIVE_POS[m]];
+        }
+#else
+        std::memcpy(standardX, nativeX, sizeof(complex_f32_t) * NB);
+#endif
+    }
+
+    void standard_to_native_complex_f32(const complex_f32_t* RESTRICT standardX,
+                                        complex_f32_t* RESTRICT nativeX) const {
+#if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
+        if (N < 32) {
+            std::memcpy(nativeX, standardX, sizeof(complex_f32_t) * NB);
+            return;
+        }
+        nativeX[0] = standardX[0];
+        nativeX[N / 2] = standardX[N / 2];
+        for (int m = 1; m < N / 2; ++m) {
+            nativeX[NATIVE_POS[m]] = standardX[IDX[m]];
+        }
+#else
+        std::memcpy(nativeX, standardX, sizeof(complex_f32_t) * NB);
 #endif
     }
 
@@ -1417,6 +1495,104 @@ private:
     std::vector<LeafTw> TW;
 
     std::vector<int> KINV;
+
+    static void complex_fft_f32(float* RESTRICT re, float* RESTRICT im, int n, bool inverse) {
+        int j = 0;
+        for (int i = 1; i < n; ++i) {
+            int bit = n >> 1;
+            while (j & bit) {
+                j ^= bit;
+                bit >>= 1;
+            }
+            j ^= bit;
+            if (i < j) {
+                std::swap(re[i], re[j]);
+                std::swap(im[i], im[j]);
+            }
+        }
+
+        for (int len = 2; len <= n; len <<= 1) {
+            float angle = static_cast<float>(-2.0 * M_PI / static_cast<double>(len));
+            if (inverse) {
+                angle = -angle;
+            }
+            const float wlen_re = std::cos(angle);
+            const float wlen_im = std::sin(angle);
+            const int half = len >> 1;
+
+            for (int i = 0; i < n; i += len) {
+                float w_re = 1.0f;
+                float w_im = 0.0f;
+                for (int k = 0; k < half; ++k) {
+                    const int even = i + k;
+                    const int odd = even + half;
+                    const float u_re = re[even];
+                    const float u_im = im[even];
+                    const float v_re = re[odd] * w_re - im[odd] * w_im;
+                    const float v_im = re[odd] * w_im + im[odd] * w_re;
+
+                    re[even] = u_re + v_re;
+                    im[even] = u_im + v_im;
+                    re[odd] = u_re - v_re;
+                    im[odd] = u_im - v_im;
+
+                    const float next_re = w_re * wlen_re - w_im * wlen_im;
+                    const float next_im = w_re * wlen_im + w_im * wlen_re;
+                    w_re = next_re;
+                    w_im = next_im;
+                }
+            }
+        }
+
+        if (inverse) {
+            const float scale = 1.0f / static_cast<float>(n);
+            for (int i = 0; i < n; ++i) {
+                re[i] *= scale;
+                im[i] *= scale;
+            }
+        }
+    }
+
+    void forward_standard_fft_f32(const float* RESTRICT input,
+                                  complex_f32_t* RESTRICT X,
+                                  float* RESTRICT work) const {
+        float* RESTRICT re = work;
+        float* RESTRICT im = work + N;
+        for (int i = 0; i < N; ++i) {
+            re[i] = input[i];
+            im[i] = 0.0f;
+        }
+
+        complex_fft_f32(re, im, N, false);
+
+        for (int k = 0; k <= N / 2; ++k) {
+            X[k].re = re[k];
+            X[k].im = im[k];
+        }
+    }
+
+    void inverse_standard_fft_f32(const complex_f32_t* RESTRICT X, float* RESTRICT out) const {
+        std::vector<float> work(static_cast<size_t>(2 * N));
+        float* RESTRICT re = work.data();
+        float* RESTRICT im = work.data() + N;
+
+        re[0] = X[0].re;
+        im[0] = 0.0f;
+        re[N / 2] = X[N / 2].re;
+        im[N / 2] = 0.0f;
+        for (int k = 1; k < N / 2; ++k) {
+            re[k] = X[k].re;
+            im[k] = X[k].im;
+            re[N - k] = X[k].re;
+            im[N - k] = -X[k].im;
+        }
+
+        complex_fft_f32(re, im, N, true);
+
+        for (int i = 0; i < N; ++i) {
+            out[i] = re[i];
+        }
+    }
 
     static inline void norm_q1_fwd(double* RESTRICT p, double c, double s) {
         const double A0 = p[0];

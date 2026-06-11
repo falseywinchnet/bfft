@@ -94,3 +94,26 @@ Agent loop status: active
   remember to check your git caches periodically- idk what the frick its doing.
   after that, i manually merged everything so some notes need checking and editing before proceeding.
   i then manually wrote a new benchmark.cpp and ran it. looking good so far! lets keep going.
+- Repository refresh and workflow check: fast-forwarded `main` from
+  `5b80049` to `424a615` and fetched tag `a-0.1`. The default local workflow
+  passed after the cache cleanup: `make clean`, `make`, and `make test`.
+  Test output reported `backend=neon-128` and policy
+  `fused-scatter-plus-layout-convert`.
+  Workflow notes: `.github/FUNDING.yml` exists, but there is no
+  `.github/workflows/` CI configuration yet. New FFTW/SFDR probe sources now
+  live under `tests/`, but `make test` still builds only `tests/correctness.cpp`
+  and `tests/api_c.c`. Added a next implementation task for dedicated float32
+  internals and float32 testing.
+- Dedicated float32 internals and tests: added a single-precision complex type,
+  float32 work-size query, standard/native float32 forward and inverse calls,
+  float32 native/standard conversion helpers, and matching C++ wrappers. The
+  float32 path uses float work buffers and float complex storage internally,
+  with plan layout maps shared from the existing plan.
+  Tests: extended `tests/correctness.cpp` to compare float32 standard spectra
+  against a naive reference, check standard and native roundtrips, check native
+  conversion, and exercise the C++ vector wrapper. Extended `tests/api_c.c` to
+  cover float32 C forward/inverse, native conversion, and invalid-argument
+  handling. Updated `README.md`, `docs/api.md`, and `docs/architecture.md`.
+  Validation: `make clean`, `make`, and `make test` all passed on 2026-06-11.
+  Test output reported `backend=neon-128` and policy
+  `fused-scatter-plus-layout-convert`.

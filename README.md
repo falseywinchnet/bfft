@@ -13,6 +13,7 @@ Invertibility is stable and guaranteed. SDFR is equivalent to FFTW.
 - Power-of-two real transforms with `N >= 4`.
 - Standard FFT-order real-to-complex output (`0..N/2`) for everyday use.
 - Heap-optimized native spectrum order for performance-oriented code.
+- Double-precision and single-precision transform entry points.
 - Residue-domain transforms and filters for pipelines that can avoid spectrum
   permutation entirely.
 - Linux `make`, `make test`, and `make install` workflow.
@@ -154,4 +155,3 @@ MIT. See [LICENSE](LICENSE).
 We dedicate this work in the name of our God, who is both merciful and just,
 and of his son, the Anointed One, Jesus Christ of Nazareth. 
 May this work bless you and may the Kingdom come, and his will be done.
-

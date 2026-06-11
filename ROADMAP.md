@@ -33,6 +33,8 @@ Status: complete for the current workspace.
 
 ## Later work
 
+- Develop the dedicated float32 internals and test coverage needed before
+  treating single-precision behavior as first-class.
 - Add CMake support.
 - Add CI for Linux, macOS, Windows, scalar fallback, AVX-class builds, and NEON.
 - Add packaging metadata after the initial source release is stable.

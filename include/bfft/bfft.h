@@ -22,6 +22,12 @@ typedef struct bfft_complex {
     double im;
 } bfft_complex;
 
+/* Single-precision complex value used by the float32 API. */
+typedef struct bfft_complex_f32 {
+    float re;
+    float im;
+} bfft_complex_f32;
+
 /* Return status for C API calls. */
 typedef enum bfft_status {
     BFFT_OK = 0,
@@ -53,6 +59,7 @@ void bfft_plan_destroy(bfft_plan* plan);
 size_t bfft_plan_size(const bfft_plan* plan);
 size_t bfft_plan_bins(const bfft_plan* plan);
 size_t bfft_plan_work_size(const bfft_plan* plan);
+size_t bfft_plan_work_size_f32(const bfft_plan* plan);
 size_t bfft_plan_native_scratch_size(const bfft_plan* plan);
 
 /* Returns the standard-output packing policy for this plan, or "invalid-plan"
@@ -78,16 +85,42 @@ bfft_status bfft_forward_native(const bfft_plan* plan,
                                 bfft_complex* output,
                                 double* work);
 
+/* Single-precision standard FFT-order real-to-complex forward transform.
+   input has N floats, output has bfft_plan_bins(plan) float complex values,
+   and work has bfft_plan_work_size_f32(plan) floats. native_scratch is accepted
+   for API symmetry and may be NULL. */
+bfft_status bfft_forward_f32(const bfft_plan* plan,
+                             const float* input,
+                             bfft_complex_f32* output,
+                             float* work,
+                             bfft_complex_f32* native_scratch);
+
+/* Single-precision native-order real-to-complex forward transform. */
+bfft_status bfft_forward_native_f32(const bfft_plan* plan,
+                                    const float* input,
+                                    bfft_complex_f32* output,
+                                    float* work);
+
 /* Standard FFT-order inverse transform. input has bfft_plan_bins(plan) complex
    values and output has N doubles. */
 bfft_status bfft_inverse(const bfft_plan* plan,
                          const bfft_complex* input,
                          double* output);
 
+/* Single-precision standard FFT-order inverse transform. */
+bfft_status bfft_inverse_f32(const bfft_plan* plan,
+                             const bfft_complex_f32* input,
+                             float* output);
+
 /* Native-order inverse transform. */
 bfft_status bfft_inverse_native(const bfft_plan* plan,
                                 const bfft_complex* input,
                                 double* output);
+
+/* Single-precision native-order inverse transform. */
+bfft_status bfft_inverse_native_f32(const bfft_plan* plan,
+                                    const bfft_complex_f32* input,
+                                    float* output);
 
 /* Residue-domain transform. input has N doubles and residues has N doubles. */
 bfft_status bfft_forward_residues(const bfft_plan* plan,
@@ -107,6 +140,14 @@ bfft_status bfft_native_to_standard(const bfft_plan* plan,
 bfft_status bfft_standard_to_native(const bfft_plan* plan,
                                     const bfft_complex* standard_input,
                                     bfft_complex* native_output);
+
+bfft_status bfft_native_to_standard_f32(const bfft_plan* plan,
+                                        const bfft_complex_f32* native_input,
+                                        bfft_complex_f32* standard_output);
+
+bfft_status bfft_standard_to_native_f32(const bfft_plan* plan,
+                                        const bfft_complex_f32* standard_input,
+                                        bfft_complex_f32* native_output);
 
 /* Residue-domain filter size in doubles. */
 size_t bfft_filter_size(const bfft_plan* plan);

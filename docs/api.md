@@ -36,12 +36,14 @@ std::string backend = bfft::backend_name();
 
 - `bfft_plan` is an opaque reusable transform plan.
 - `bfft_complex` stores one complex value as `double re` and `double im`.
+- `bfft_complex_f32` stores one single-precision complex value as `float re`
+  and `float im`.
 - `bfft_status` is the C return-code enum.
 - `bfft_layout` names the public representations:
   `BFFT_LAYOUT_STANDARD`, `BFFT_LAYOUT_NATIVE`, and `BFFT_LAYOUT_RESIDUES`.
 
 The C++ header aliases these as `bfft::complex`, `bfft::status`, and
-`bfft::layout`.
+`bfft::complex_f32`, `bfft::status`, and `bfft::layout`.
 
 ## Plans
 
@@ -70,6 +72,8 @@ RAII objects and throw `bfft::error` if construction fails.
 - `bfft_plan_bins(plan)` / `plan.bins()` returns `N / 2 + 1` complex bins.
 - `bfft_plan_work_size(plan)` / `plan.work_size()` returns the double scratch
   count needed by forward calls.
+- `bfft_plan_work_size_f32(plan)` / `plan.work_size_f32()` returns the float
+  scratch count needed by single-precision forward calls.
 - `bfft_plan_native_scratch_size(plan)` / `plan.native_scratch_size()` returns
   the complex scratch count to allocate for standard-output forward calls.
 - `bfft_filter_size(plan)` / `plan.filter_size()` returns the double count for
@@ -116,6 +120,39 @@ std::vector<bfft::complex> spectrum = plan.forward(input_vector);
 
 The vector overload validates that `input_vector.size() == plan.size()` and
 allocates the work buffers internally.
+
+## Single-precision transforms
+
+The float32 API uses the same plan size and layout policy as the double API, but
+all signal, work, and complex spectrum buffers are single precision.
+
+```c
+bfft_forward_f32(plan, input, output, work, native_scratch);
+bfft_inverse_f32(plan, output, roundtrip);
+```
+
+Buffer sizes:
+
+- `input`: `N` floats.
+- `output`: `bfft_plan_bins(plan)` `bfft_complex_f32` values.
+- `work`: `bfft_plan_work_size_f32(plan)` floats.
+- `native_scratch`: accepted for API symmetry and may be NULL.
+
+The C++ wrappers are:
+
+```cpp
+plan.forward_f32(input, output, work);
+std::vector<bfft::complex_f32> spectrum = plan.forward_f32(input_vector);
+plan.inverse_f32(spectrum, output);
+std::vector<float> signal = plan.inverse_f32(spectrum_vector);
+```
+
+Native-order float32 calls and converters mirror the double API:
+
+- `bfft_forward_native_f32(plan, input, output, work)`
+- `bfft_inverse_native_f32(plan, input, output)`
+- `bfft_native_to_standard_f32(plan, native_input, standard_output)`
+- `bfft_standard_to_native_f32(plan, standard_input, native_output)`
 
 ## Standard inverse transform
 

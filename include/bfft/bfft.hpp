@@ -13,6 +13,7 @@ namespace bfft {
 
 /* C++ aliases for the C ABI types. */
 using complex = bfft_complex;
+using complex_f32 = bfft_complex_f32;
 using layout = bfft_layout;
 using status = bfft_status;
 
@@ -69,6 +70,11 @@ public:
         return bfft_plan_work_size(impl_.get());
     }
 
+    /* Number of floats needed by single-precision forward work buffers. */
+    std::size_t work_size_f32() const noexcept {
+        return bfft_plan_work_size_f32(impl_.get());
+    }
+
     /* Number of complex values to reserve for standard forward scratch. */
     std::size_t native_scratch_size() const noexcept {
         return bfft_plan_native_scratch_size(impl_.get());
@@ -104,9 +110,48 @@ public:
         check(bfft_forward_native(impl_.get(), input, output, work));
     }
 
+    /* Single-precision standard FFT-order forward transform. */
+    void forward_f32(const float* input,
+                     complex_f32* output,
+                     float* work,
+                     complex_f32* native_scratch = nullptr) const {
+        check(bfft_forward_f32(impl_.get(), input, output, work, native_scratch));
+    }
+
+    /* Convenience single-precision standard forward transform. */
+    std::vector<complex_f32> forward_f32(const std::vector<float>& input) const {
+        if (input.size() != size()) {
+            throw error(BFFT_ERROR_INVALID_ARGUMENT);
+        }
+        std::vector<complex_f32> output(bins());
+        std::vector<float> work(work_size_f32());
+        forward_f32(input.data(), output.data(), work.data());
+        return output;
+    }
+
+    /* Single-precision native-order forward transform. */
+    void forward_native_f32(const float* input, complex_f32* output, float* work) const {
+        check(bfft_forward_native_f32(impl_.get(), input, output, work));
+    }
+
     /* Standard FFT-order inverse transform. */
     void inverse(const complex* input, double* output) const {
         check(bfft_inverse(impl_.get(), input, output));
+    }
+
+    /* Single-precision standard FFT-order inverse transform. */
+    void inverse_f32(const complex_f32* input, float* output) const {
+        check(bfft_inverse_f32(impl_.get(), input, output));
+    }
+
+    /* Convenience single-precision inverse transform. */
+    std::vector<float> inverse_f32(const std::vector<complex_f32>& input) const {
+        if (input.size() != bins()) {
+            throw error(BFFT_ERROR_INVALID_ARGUMENT);
+        }
+        std::vector<float> output(size());
+        inverse_f32(input.data(), output.data());
+        return output;
     }
 
     /* Convenience standard inverse transform that allocates the output vector. */
@@ -122,6 +167,11 @@ public:
     /* Native-order inverse transform. */
     void inverse_native(const complex* input, double* output) const {
         check(bfft_inverse_native(impl_.get(), input, output));
+    }
+
+    /* Single-precision native-order inverse transform. */
+    void inverse_native_f32(const complex_f32* input, float* output) const {
+        check(bfft_inverse_native_f32(impl_.get(), input, output));
     }
 
     /* Forward transform to N residue-domain doubles. */
@@ -142,6 +192,16 @@ public:
     /* Convert standard FFT-order bins to native-order complex bins. */
     void standard_to_native(const complex* standard_input, complex* native_output) const {
         check(bfft_standard_to_native(impl_.get(), standard_input, native_output));
+    }
+
+    /* Convert native-order float32 bins to standard FFT-order bins. */
+    void native_to_standard_f32(const complex_f32* native_input, complex_f32* standard_output) const {
+        check(bfft_native_to_standard_f32(impl_.get(), native_input, standard_output));
+    }
+
+    /* Convert standard FFT-order float32 bins to native-order bins. */
+    void standard_to_native_f32(const complex_f32* standard_input, complex_f32* native_output) const {
+        check(bfft_standard_to_native_f32(impl_.get(), standard_input, native_output));
     }
 
     /* Number of doubles in a residue-domain filter. */

@@ -42,6 +42,13 @@ The prototype's Bruun index mapping is already standard ordered for tiny plans
 below `N = 32`. The public conversion helpers preserve that behavior with a
 straight copy for those tiny plans and use heap mappings for larger plans.
 
+## Single precision
+
+The float32 API shares the public plan and layout maps with the double Bruun
+path, but it uses dedicated single-precision work buffers and complex storage.
+The first float32 implementation keeps standard and native layout behavior
+policy-neutral while avoiding double-buffer promotion inside the public calls.
+
 ## Future portability work
 
 The initial release validates Linux make/install. The directory layout avoids
