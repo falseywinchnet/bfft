@@ -54,7 +54,8 @@ At the end of each round:
 3. Update `PROGRESS.md` with what changed, what validation ran, and what
    remains.
 4. Update `ROADMAP.md` only when the actual plan changes.
-5. Commit all round changes with a concise message after validation passes.
+5. Do not run `git add` or `git commit`. The supervisor script owns staging and
+   committing after the round stops.
 6. Stop after that single task. Do not begin another task.
 
 ## Completion signal

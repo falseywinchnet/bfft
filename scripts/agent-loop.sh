@@ -55,12 +55,13 @@ Round procedure:
 4. Complete that task.
 5. Run relevant validation, following AGENTS.md and CODEX.md.
 6. Update TASKS.md, PROGRESS.md, and ROADMAP.md as needed.
-7. Commit the result with a concise message if validation passes.
+7. Leave the worktree changes unstaged. The supervisor script will commit them.
 8. Stop.
 
 Do not wait for user input.
 Do not ask questions.
 Do not perform a second task in this round.
+Do not run git add or git commit.
 If blocked, document the blocker in PROGRESS.md and stop.'
 
 CODEX_ARGS=(--ask-for-approval never --sandbox workspace-write --cd "$REPO_ROOT")
@@ -85,6 +86,12 @@ for round in $(seq 1 "$MAX_ROUNDS"); do
     before="$(git rev-parse HEAD)"
 
     "$CODEX_BIN" "${CODEX_ARGS[@]}" exec "$PROMPT"
+
+    if [ -n "$(git status --porcelain)" ]; then
+        git diff --check
+        git add -A
+        git commit -m "Advance BFFT release readiness"
+    fi
 
     after="$(git rev-parse HEAD)"
 
