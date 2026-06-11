@@ -73,3 +73,18 @@ Agent loop status: active
   `build/examples/cpp_api_demo`, and `build/examples/benchmark 64 1`.
   Result: all passed. Test and demo output reported `backend=neon-128` and
   standard policy `fused-scatter-plus-layout-convert`.
+- Release checklist evidence attempt: read the release checklist, public
+  headers, Makefile, tests, examples, and release docs, then attempted to gather
+  fresh final validation evidence for `docs/release-checklist.md`.
+  Validation: `make clean` passed. The first `TMPDIR=/private/tmp make` failed
+  before compilation because `mkdir` reported `No space left on device` while
+  creating `build/`. The repository measured 584K and the filesystem reported
+  124Mi available at 100% capacity. No unrelated temp files were removed. A
+  retry of `TMPDIR=/private/tmp make` passed. `TMPDIR=/private/tmp make test`
+  then failed compiling `tests/correctness.cpp` with
+  `clang++: error: unable to make temporary file: No space left on device`.
+  The generated build tree measured 300K and the filesystem reported 117Mi
+  available at 100% capacity. `git diff --check` passed after documenting the
+  blocker.
+  Result: blocked by host filesystem space. The release checklist evidence task
+  remains unchecked, and `docs/release-checklist.md` was not changed.
