@@ -137,15 +137,16 @@ Agent loop status: active
   `build/tests/bfft_fftw_sfdr_bh7_probe 8 2 4 bh7 f32-native` completed and
   printed `bfft_mode=f32-native`.
 
-- Float32 BH7 folded-spur fix: the f32 complex FFT now keeps stage twiddles,
-  twiddle recurrence, and butterfly products in double precision while storing
-  public/work buffers as float32. This removes the deterministic folded-bin
-  leakage seen at bins such as `N/2 - 7` in native f32 BH7 runs. The BH7 SFDR
-  probe now loads FFTWf dynamically for f32 modes when available, adds an
-  `fftw_precision` CSV column, and falls back to double FFTW explicitly when
-  FFTWf is absent. Added a `make test` regression at `N=32768`, `k=7`, native
-  f32 BH7, with a 144 dB SFDR floor after native-to-standard conversion.
-  Validation: `make probes`; `build/tests/bfft_fftw_sfdr_bh7_probe 15 2 8 bh7
-  f32-native`; `build/tests/bfft_fftw_sfdr_bh7_probe 22 8 22 bh7 f32-native`
-  produced `fftw_precision=f32` and `bfft_sfdr_db=149.99262537` at 4M. Full
-  `make test` validation is pending this change set.
+- Float32 BH7 folded-spur investigation: the failing path was narrowed to
+  multiplicative float twiddle recurrence in the f32 complex FFT. The production
+  path now builds plan-owned float32 root twiddle tables once with explicit
+  `float(...)` rounding from double libm values, and the hot f32 butterfly stays
+  in float. This removes the deterministic folded-bin leakage seen at bins such
+  as `N/2 - 7` without reverting the f32 transform to mixed-precision butterfly
+  arithmetic. The BH7 SFDR probe loads FFTWf dynamically for f32 modes when
+  available, adds an `fftw_precision` CSV column, and falls back to double FFTW
+  explicitly when FFTWf is absent. Added a `make test` regression at `N=32768`,
+  `k=7`, native f32 BH7, with a 144 dB SFDR floor after native-to-standard
+  conversion. Validation pending full rerun after the table refinement; probe
+  evidence so far: `build/tests/bfft_fftw_sfdr_bh7_probe 22 8 22 bh7 f32-native`
+  produced `fftw_precision=f32` and `bfft_sfdr_db=144.95579274` at 4M.

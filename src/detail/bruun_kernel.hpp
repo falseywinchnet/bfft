@@ -1017,7 +1017,7 @@ class RFFT {
 public:
     explicit RFFT(int n, bool fuse_tail = true)
         : N(n), L(ilog2_pow2(n)), NB(n / 2 + 1), fuse_tail(fuse_tail && n >= 32),
-          IDX(n / 2), OUTIDX(n / 2), C(n / 2), S(n / 2)
+          IDX(n / 2), OUTIDX(n / 2), C(n / 2), S(n / 2), F32_TW_RE(n / 2), F32_TW_IM(n / 2)
     {
         if (!is_power2(N) || N < 4) throw std::invalid_argument("Bruun RFFT requires power-of-two N >= 4");
 
@@ -1062,6 +1062,14 @@ public:
                 C[2*m + 1] = se;
                 S[2*m + 1] = ce;
             }
+        }
+
+        F32_TW_RE[0] = 1.0f;
+        F32_TW_IM[0] = 0.0f;
+        for (int k = 1; k < N / 2; ++k) {
+            const double theta = double(-2.0 * M_PI) * double(k) / double(N);
+            F32_TW_RE[k] = float(std::cos(theta));
+            F32_TW_IM[k] = float(std::sin(theta));
         }
 
         // OUTIDX is the native complex-output slot for each Bruun leaf.
@@ -1616,6 +1624,8 @@ private:
 #endif
     std::vector<double> C;
     std::vector<double> S;
+    std::vector<float> F32_TW_RE;
+    std::vector<float> F32_TW_IM;
 
     struct LeafTw {
         double c4[4];
@@ -1630,7 +1640,12 @@ private:
 
     std::vector<int> KINV;
 
-    static void complex_fft_f32(float* RESTRICT re, float* RESTRICT im, int n, bool inverse) {
+    static void complex_fft_f32(float* RESTRICT re,
+                                float* RESTRICT im,
+                                int n,
+                                bool inverse,
+                                const float* RESTRICT tw_re_table,
+                                const float* RESTRICT tw_im_table) {
         int j = 0;
         for (int i = 1; i < n; ++i) {
             int bit = n >> 1;
@@ -1646,42 +1661,31 @@ private:
         }
 
         for (int len = 2; len <= n; len <<= 1) {
-            double angle = -2.0 * M_PI / static_cast<double>(len);
-            if (inverse) {
-                angle = -angle;
-            }
-            const double wlen_re = std::cos(angle);
-            const double wlen_im = std::sin(angle);
             const int half = len >> 1;
+            const int stride = n / len;
 
             for (int i = 0; i < n; i += len) {
-                double w_re = 1.0;
-                double w_im = 0.0;
                 for (int k = 0; k < half; ++k) {
                     const int even = i + k;
                     const int odd = even + half;
-                    const double u_re = static_cast<double>(re[even]);
-                    const double u_im = static_cast<double>(im[even]);
-                    const double odd_re = static_cast<double>(re[odd]);
-                    const double odd_im = static_cast<double>(im[odd]);
-                    const double v_re = odd_re * w_re - odd_im * w_im;
-                    const double v_im = odd_re * w_im + odd_im * w_re;
+                    const int tw = k * stride;
+                    const float tw_re = tw_re_table[tw];
+                    const float tw_im = inverse ? -tw_im_table[tw] : tw_im_table[tw];
+                    const float u_re = re[even];
+                    const float u_im = im[even];
+                    const float v_re = re[odd] * tw_re - im[odd] * tw_im;
+                    const float v_im = re[odd] * tw_im + im[odd] * tw_re;
 
-                    re[even] = static_cast<float>(u_re + v_re);
-                    im[even] = static_cast<float>(u_im + v_im);
-                    re[odd] = static_cast<float>(u_re - v_re);
-                    im[odd] = static_cast<float>(u_im - v_im);
-
-                    const double next_re = w_re * wlen_re - w_im * wlen_im;
-                    const double next_im = w_re * wlen_im + w_im * wlen_re;
-                    w_re = next_re;
-                    w_im = next_im;
+                    re[even] = u_re + v_re;
+                    im[even] = u_im + v_im;
+                    re[odd] = u_re - v_re;
+                    im[odd] = u_im - v_im;
                 }
             }
         }
 
         if (inverse) {
-            const float scale = 1.0f / static_cast<float>(n);
+            const float scale = 1.0f / float(n);
             scale_complex_work_f32(re, im, n, scale);
         }
     }
@@ -1693,7 +1697,7 @@ private:
         float* RESTRICT im = work + N;
         copy_real_to_complex_work_f32(input, re, im, N);
 
-        complex_fft_f32(re, im, N, false);
+        complex_fft_f32(re, im, N, false, F32_TW_RE.data(), F32_TW_IM.data());
         pack_standard_spectrum_f32(re, im, X, NB);
     }
 
@@ -1704,7 +1708,7 @@ private:
 
         unpack_standard_spectrum_f32(X, re, im, N);
 
-        complex_fft_f32(re, im, N, true);
+        complex_fft_f32(re, im, N, true, F32_TW_RE.data(), F32_TW_IM.data());
         copy_real_output_f32(re, out, N);
     }
 
