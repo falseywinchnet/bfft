@@ -1,5 +1,8 @@
 # BFFT
 
+<img width="1089" height="590" alt="image" src="https://github.com/user-attachments/assets/9f33fd82-2624-4c01-9af8-6a840abd9db8" />
+
+
 BFFT is a small C/C++ real FFT library based on a normalized-basis Bruun transform.
 This trivialization conceals that this approach, among all FFT, might be optimal.
 It also conceals that it is 33% lighter on memory and up to 3x faster than other libraries.
