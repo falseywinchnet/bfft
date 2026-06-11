@@ -155,3 +155,8 @@ Agent loop status: active
   `docs/api.md` with the rounded float32 twiddle-table behavior, and added
   local SVG release-asset candidates under `docs/assets/`. Validation: SVG XML
   parse, `git diff --check`, and `make test` passed on 2026-06-11.
+- Benchmark float32 comparison: extended `examples/benchmark.cpp` with dynamic
+  FFTWf loading plus BFFT f32 native/standard timing columns and f32 spectrum
+  error checks. Representative Apple M4 NEON runs show the current f32 complex
+  FFT path is correctness-oriented but slower than FFTWf, which sets the next
+  optimization target for adapting the double Bruun/SIMD flow to float32.
