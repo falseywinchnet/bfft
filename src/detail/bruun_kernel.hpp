@@ -147,164 +147,6 @@ struct complex_f32_t {
     float im;
 };
 
-static inline void copy_real_to_complex_work_f32(const float* RESTRICT input,
-                                                 float* RESTRICT re,
-                                                 float* RESTRICT im,
-                                                 int n) {
-    int i = 0;
-
-#if BRUUN_LEVEL >= 3
-    const __m512 z16 = _mm512_setzero_ps();
-    for (; i + 15 < n; i += 16) {
-        _mm512_storeu_ps(re + i, _mm512_loadu_ps(input + i));
-        _mm512_storeu_ps(im + i, z16);
-    }
-#endif
-#if BRUUN_LEVEL >= 2
-    const __m256 z8 = _mm256_setzero_ps();
-    for (; i + 7 < n; i += 8) {
-        _mm256_storeu_ps(re + i, _mm256_loadu_ps(input + i));
-        _mm256_storeu_ps(im + i, z8);
-    }
-#elif BRUUN_LEVEL == 1
-    const bruun_v4f z4 = V4F_ZERO();
-    for (; i + 3 < n; i += 4) {
-        V4F_ST(re + i, V4F_LD(input + i));
-        V4F_ST(im + i, z4);
-    }
-#endif
-
-    for (; i < n; ++i) {
-        re[i] = input[i];
-        im[i] = 0.0f;
-    }
-}
-
-static inline void pack_standard_spectrum_f32(const float* RESTRICT re,
-                                              const float* RESTRICT im,
-                                              complex_f32_t* RESTRICT X,
-                                              int bins) {
-    for (int k = 0; k < bins; ++k) {
-        X[k].re = re[k];
-        X[k].im = im[k];
-    }
-}
-
-static inline void unpack_standard_spectrum_f32(const complex_f32_t* RESTRICT X,
-                                                float* RESTRICT re,
-                                                float* RESTRICT im,
-                                                int n) {
-    re[0] = X[0].re;
-    im[0] = 0.0f;
-    re[n / 2] = X[n / 2].re;
-    im[n / 2] = 0.0f;
-    for (int k = 1; k < n / 2; ++k) {
-        re[k] = X[k].re;
-        im[k] = X[k].im;
-        re[n - k] = X[k].re;
-        im[n - k] = -X[k].im;
-    }
-}
-
-static inline void scale_complex_work_f32(float* RESTRICT re,
-                                          float* RESTRICT im,
-                                          int n,
-                                          float scale) {
-    int i = 0;
-
-#if BRUUN_LEVEL >= 3
-    const __m512 s16 = _mm512_set1_ps(scale);
-    for (; i + 15 < n; i += 16) {
-        _mm512_storeu_ps(re + i, _mm512_mul_ps(_mm512_loadu_ps(re + i), s16));
-        _mm512_storeu_ps(im + i, _mm512_mul_ps(_mm512_loadu_ps(im + i), s16));
-    }
-#endif
-#if BRUUN_LEVEL >= 2
-    const __m256 s8 = _mm256_set1_ps(scale);
-    for (; i + 7 < n; i += 8) {
-        _mm256_storeu_ps(re + i, _mm256_mul_ps(_mm256_loadu_ps(re + i), s8));
-        _mm256_storeu_ps(im + i, _mm256_mul_ps(_mm256_loadu_ps(im + i), s8));
-    }
-#elif BRUUN_LEVEL == 1
-    const bruun_v4f s4 = V4F_SET1(scale);
-    for (; i + 3 < n; i += 4) {
-        V4F_ST(re + i, V4F_MUL(V4F_LD(re + i), s4));
-        V4F_ST(im + i, V4F_MUL(V4F_LD(im + i), s4));
-    }
-#endif
-
-    for (; i < n; ++i) {
-        re[i] *= scale;
-        im[i] *= scale;
-    }
-}
-
-#if BRUUN_LEVEL >= 1
-static inline bruun_v4f load_twiddle4_f32(const float* RESTRICT table, int tw, int stride) {
-    if (stride == 1) {
-        return V4F_LD(table + tw);
-    }
-
-    return V4F_SET4(table[tw],
-                    table[tw + stride],
-                    table[tw + 2 * stride],
-                    table[tw + 3 * stride]);
-}
-
-static inline void fft_butterfly4_f32(float* RESTRICT re,
-                                      float* RESTRICT im,
-                                      int even,
-                                      int odd,
-                                      int tw,
-                                      int stride,
-                                      bool inverse,
-                                      const float* RESTRICT tw_re_table,
-                                      const float* RESTRICT tw_im_table) {
-    const bruun_v4f tw_re = load_twiddle4_f32(tw_re_table, tw, stride);
-    bruun_v4f tw_im = load_twiddle4_f32(tw_im_table, tw, stride);
-    if (inverse) {
-        tw_im = V4F_SUB(V4F_ZERO(), tw_im);
-    }
-
-    const bruun_v4f u_re = V4F_LD(re + even);
-    const bruun_v4f u_im = V4F_LD(im + even);
-    const bruun_v4f odd_re = V4F_LD(re + odd);
-    const bruun_v4f odd_im = V4F_LD(im + odd);
-    const bruun_v4f v_re = V4F_SUB(V4F_MUL(odd_re, tw_re), V4F_MUL(odd_im, tw_im));
-    const bruun_v4f v_im = V4F_ADD(V4F_MUL(odd_re, tw_im), V4F_MUL(odd_im, tw_re));
-
-    V4F_ST(re + even, V4F_ADD(u_re, v_re));
-    V4F_ST(im + even, V4F_ADD(u_im, v_im));
-    V4F_ST(re + odd, V4F_SUB(u_re, v_re));
-    V4F_ST(im + odd, V4F_SUB(u_im, v_im));
-}
-#endif
-
-static inline void copy_real_output_f32(const float* RESTRICT re,
-                                        float* RESTRICT out,
-                                        int n) {
-    int i = 0;
-
-#if BRUUN_LEVEL >= 3
-    for (; i + 15 < n; i += 16) {
-        _mm512_storeu_ps(out + i, _mm512_loadu_ps(re + i));
-    }
-#endif
-#if BRUUN_LEVEL >= 2
-    for (; i + 7 < n; i += 8) {
-        _mm256_storeu_ps(out + i, _mm256_loadu_ps(re + i));
-    }
-#elif BRUUN_LEVEL == 1
-    for (; i + 3 < n; i += 4) {
-        V4F_ST(out + i, V4F_LD(re + i));
-    }
-#endif
-
-    for (; i < n; ++i) {
-        out[i] = re[i];
-    }
-}
-
 static inline const char* simd_backend_name() {
 #if BRUUN_LEVEL == 3
     return "avx512-512";
@@ -1060,11 +902,736 @@ static inline void norm2_inv_fused(double* RESTRICT p, int q,
     }
 }
 
+// ---------------------------------------------------------------------------
+// Float32 streaming kernels. Same arithmetic as the double kernels above with
+// twice the lane count at every SIMD level: 16-wide AVX-512, 8-wide AVX2,
+// 4-wide SSE2/NEON, exact scalar tail.
+// ---------------------------------------------------------------------------
+
+#if BRUUN_LEVEL >= 1
+#  if defined(BRUUN_X86_128)
+#    define V4F_CATLO(a, b)  _mm_movelh_ps((a), (b))
+#    define V4F_CATHI(a, b)  _mm_movehl_ps((b), (a))
+#    define V4F_ZIPLO(a, b)  _mm_unpacklo_ps((a), (b))
+#    define V4F_ZIPHI(a, b)  _mm_unpackhi_ps((a), (b))
+#  elif defined(BRUUN_NEON_128)
+#    define V4F_CATLO(a, b)  vcombine_f32(vget_low_f32(a), vget_low_f32(b))
+#    define V4F_CATHI(a, b)  vcombine_f32(vget_high_f32(a), vget_high_f32(b))
+#    define V4F_ZIPLO(a, b)  vzip1q_f32((a), (b))
+#    define V4F_ZIPHI(a, b)  vzip2q_f32((a), (b))
+#  endif
+#endif
+
+static inline void binomial_fwd_f32(float* RESTRICT v, int h) {
+    int i = 0;
+
+#if BRUUN_LEVEL >= 3
+    for (; i + 15 < h; i += 16) {
+        const __m512 a = _mm512_loadu_ps(v + i);
+        const __m512 b = _mm512_loadu_ps(v + h + i);
+        _mm512_storeu_ps(v + i, _mm512_add_ps(a, b));
+        _mm512_storeu_ps(v + h + i, _mm512_sub_ps(a, b));
+    }
+#endif
+#if BRUUN_LEVEL >= 2
+    for (; i + 7 < h; i += 8) {
+        const __m256 a = _mm256_loadu_ps(v + i);
+        const __m256 b = _mm256_loadu_ps(v + h + i);
+        _mm256_storeu_ps(v + i, _mm256_add_ps(a, b));
+        _mm256_storeu_ps(v + h + i, _mm256_sub_ps(a, b));
+    }
+#endif
+#if BRUUN_LEVEL >= 1
+    for (; i + 3 < h; i += 4) {
+        const bruun_v4f a = V4F_LD(v + i);
+        const bruun_v4f b = V4F_LD(v + h + i);
+        V4F_ST(v + i, V4F_ADD(a, b));
+        V4F_ST(v + h + i, V4F_SUB(a, b));
+    }
+#endif
+
+    for (; i < h; ++i) {
+        const float a = v[i];
+        const float b = v[h + i];
+        v[i] = a + b;
+        v[h + i] = a - b;
+    }
+}
+
+static inline void binomial_oop_f32(const float* RESTRICT in, float* RESTRICT v, int h) {
+    int i = 0;
+
+#if BRUUN_LEVEL >= 3
+    for (; i + 15 < h; i += 16) {
+        const __m512 a = _mm512_loadu_ps(in + i);
+        const __m512 b = _mm512_loadu_ps(in + h + i);
+        _mm512_storeu_ps(v + i, _mm512_add_ps(a, b));
+        _mm512_storeu_ps(v + h + i, _mm512_sub_ps(a, b));
+    }
+#endif
+#if BRUUN_LEVEL >= 2
+    for (; i + 7 < h; i += 8) {
+        const __m256 a = _mm256_loadu_ps(in + i);
+        const __m256 b = _mm256_loadu_ps(in + h + i);
+        _mm256_storeu_ps(v + i, _mm256_add_ps(a, b));
+        _mm256_storeu_ps(v + h + i, _mm256_sub_ps(a, b));
+    }
+#endif
+#if BRUUN_LEVEL >= 1
+    for (; i + 3 < h; i += 4) {
+        const bruun_v4f a = V4F_LD(in + i);
+        const bruun_v4f b = V4F_LD(in + h + i);
+        V4F_ST(v + i, V4F_ADD(a, b));
+        V4F_ST(v + h + i, V4F_SUB(a, b));
+    }
+#endif
+
+    for (; i < h; ++i) {
+        const float a = in[i];
+        const float b = in[h + i];
+        v[i] = a + b;
+        v[h + i] = a - b;
+    }
+}
+
+static inline void binomial_inv_f32(float* RESTRICT v, int h) {
+    int i = 0;
+
+#if BRUUN_LEVEL >= 3
+    {
+        const __m512 half16 = _mm512_set1_ps(0.5f);
+        for (; i + 15 < h; i += 16) {
+            const __m512 a = _mm512_loadu_ps(v + i);
+            const __m512 b = _mm512_loadu_ps(v + h + i);
+            _mm512_storeu_ps(v + i, _mm512_mul_ps(half16, _mm512_add_ps(a, b)));
+            _mm512_storeu_ps(v + h + i, _mm512_mul_ps(half16, _mm512_sub_ps(a, b)));
+        }
+    }
+#endif
+#if BRUUN_LEVEL >= 2
+    {
+        const __m256 half8 = _mm256_set1_ps(0.5f);
+        for (; i + 7 < h; i += 8) {
+            const __m256 a = _mm256_loadu_ps(v + i);
+            const __m256 b = _mm256_loadu_ps(v + h + i);
+            _mm256_storeu_ps(v + i, _mm256_mul_ps(half8, _mm256_add_ps(a, b)));
+            _mm256_storeu_ps(v + h + i, _mm256_mul_ps(half8, _mm256_sub_ps(a, b)));
+        }
+    }
+#endif
+#if BRUUN_LEVEL >= 1
+    {
+        const bruun_v4f half4 = V4F_SET1(0.5f);
+        for (; i + 3 < h; i += 4) {
+            const bruun_v4f a = V4F_LD(v + i);
+            const bruun_v4f b = V4F_LD(v + h + i);
+            V4F_ST(v + i, V4F_MUL(half4, V4F_ADD(a, b)));
+            V4F_ST(v + h + i, V4F_MUL(half4, V4F_SUB(a, b)));
+        }
+    }
+#endif
+
+    for (; i < h; ++i) {
+        const float a = v[i];
+        const float b = v[h + i];
+        v[i] = 0.5f * (a + b);
+        v[h + i] = 0.5f * (a - b);
+    }
+}
+
+static inline void norm_q_fwd_f32(float* RESTRICT p, int q, float c_scalar, float s_scalar) {
+    float* RESTRICT A0p = p;
+    float* RESTRICT B0p = p + q;
+    float* RESTRICT A1p = p + 2*q;
+    float* RESTRICT B1p = p + 3*q;
+
+    int n = 0;
+
+#if BRUUN_LEVEL >= 3
+    {
+        const __m512 wc = _mm512_set1_ps(c_scalar);
+        const __m512 ws = _mm512_set1_ps(s_scalar);
+
+        for (; n + 15 < q; n += 16) {
+            const __m512 A0 = _mm512_loadu_ps(A0p + n);
+            const __m512 B0 = _mm512_loadu_ps(B0p + n);
+            const __m512 A1 = _mm512_loadu_ps(A1p + n);
+            const __m512 B1 = _mm512_loadu_ps(B1p + n);
+
+            const __m512 R = _mm512_fmsub_ps(wc, B0, _mm512_mul_ps(ws, B1));
+            const __m512 I = _mm512_fmadd_ps(ws, B0, _mm512_mul_ps(wc, B1));
+
+            _mm512_storeu_ps(A0p + n, _mm512_add_ps(A0, R));
+            _mm512_storeu_ps(B0p + n, _mm512_add_ps(A1, I));
+            _mm512_storeu_ps(A1p + n, _mm512_sub_ps(A0, R));
+            _mm512_storeu_ps(B1p + n, _mm512_sub_ps(I, A1));
+        }
+    }
+#endif
+#if BRUUN_LEVEL >= 2
+    {
+        const __m256 vc = _mm256_set1_ps(c_scalar);
+        const __m256 vs = _mm256_set1_ps(s_scalar);
+
+        for (; n + 7 < q; n += 8) {
+            const __m256 A0 = _mm256_loadu_ps(A0p + n);
+            const __m256 B0 = _mm256_loadu_ps(B0p + n);
+            const __m256 A1 = _mm256_loadu_ps(A1p + n);
+            const __m256 B1 = _mm256_loadu_ps(B1p + n);
+
+            const __m256 R = _mm256_fmsub_ps(vc, B0, _mm256_mul_ps(vs, B1));
+            const __m256 I = _mm256_fmadd_ps(vs, B0, _mm256_mul_ps(vc, B1));
+
+            _mm256_storeu_ps(A0p + n, _mm256_add_ps(A0, R));
+            _mm256_storeu_ps(B0p + n, _mm256_add_ps(A1, I));
+            _mm256_storeu_ps(A1p + n, _mm256_sub_ps(A0, R));
+            _mm256_storeu_ps(B1p + n, _mm256_sub_ps(I, A1));
+        }
+    }
+#endif
+#if BRUUN_LEVEL >= 1
+    {
+        const bruun_v4f vc = V4F_SET1(c_scalar);
+        const bruun_v4f vs = V4F_SET1(s_scalar);
+
+        for (; n + 3 < q; n += 4) {
+            const bruun_v4f A0 = V4F_LD(A0p + n);
+            const bruun_v4f B0 = V4F_LD(B0p + n);
+            const bruun_v4f A1 = V4F_LD(A1p + n);
+            const bruun_v4f B1 = V4F_LD(B1p + n);
+
+            const bruun_v4f R = V4F_SUB(V4F_MUL(vc, B0), V4F_MUL(vs, B1));
+            const bruun_v4f I = V4F_ADD(V4F_MUL(vs, B0), V4F_MUL(vc, B1));
+
+            V4F_ST(A0p + n, V4F_ADD(A0, R));
+            V4F_ST(B0p + n, V4F_ADD(A1, I));
+            V4F_ST(A1p + n, V4F_SUB(A0, R));
+            V4F_ST(B1p + n, V4F_SUB(I, A1));
+        }
+    }
+#endif
+
+    for (; n < q; ++n) {
+        const float A0 = A0p[n];
+        const float B0 = B0p[n];
+        const float A1 = A1p[n];
+        const float B1 = B1p[n];
+
+        const float R = c_scalar * B0 - s_scalar * B1;
+        const float I = s_scalar * B0 + c_scalar * B1;
+
+        A0p[n] = A0 + R;
+        B0p[n] = A1 + I;
+        A1p[n] = A0 - R;
+        B1p[n] = -A1 + I;
+    }
+}
+
+// Two fused tree levels, float lane-doubled twin of norm2_fused.
+// Caller guarantees q >= 16 so qh >= 8.
+static inline void norm2_fused_f32(float* RESTRICT p, int q,
+                                   float c, float s,
+                                   float c0, float s0,
+                                   float c1, float s1) {
+    const int qh = q >> 1;
+    float* RESTRICT A0 = p;
+    float* RESTRICT B0 = p + q;
+    float* RESTRICT A1 = p + 2*q;
+    float* RESTRICT B1 = p + 3*q;
+
+    int n = 0;
+
+#if BRUUN_LEVEL >= 3
+    {
+        const __m512 vc  = _mm512_set1_ps(c),  vs  = _mm512_set1_ps(s);
+        const __m512 vc0 = _mm512_set1_ps(c0), vs0 = _mm512_set1_ps(s0);
+        const __m512 vc1 = _mm512_set1_ps(c1), vs1 = _mm512_set1_ps(s1);
+
+        for (; n + 15 < qh; n += 16) {
+            const __m512 a0n = _mm512_loadu_ps(A0 + n);
+            const __m512 a0h = _mm512_loadu_ps(A0 + qh + n);
+            const __m512 b0n = _mm512_loadu_ps(B0 + n);
+            const __m512 b0h = _mm512_loadu_ps(B0 + qh + n);
+            const __m512 a1n = _mm512_loadu_ps(A1 + n);
+            const __m512 a1h = _mm512_loadu_ps(A1 + qh + n);
+            const __m512 b1n = _mm512_loadu_ps(B1 + n);
+            const __m512 b1h = _mm512_loadu_ps(B1 + qh + n);
+
+            const __m512 Rn = _mm512_fmsub_ps(vc, b0n, _mm512_mul_ps(vs, b1n));
+            const __m512 In = _mm512_fmadd_ps(vs, b0n, _mm512_mul_ps(vc, b1n));
+            const __m512 Rh = _mm512_fmsub_ps(vc, b0h, _mm512_mul_ps(vs, b1h));
+            const __m512 Ih = _mm512_fmadd_ps(vs, b0h, _mm512_mul_ps(vc, b1h));
+
+            const __m512 u0 = _mm512_add_ps(a0n, Rn);
+            const __m512 uh = _mm512_add_ps(a0h, Rh);
+            const __m512 w0 = _mm512_add_ps(a1n, In);
+            const __m512 wh = _mm512_add_ps(a1h, Ih);
+            const __m512 v0 = _mm512_sub_ps(a0n, Rn);
+            const __m512 vh = _mm512_sub_ps(a0h, Rh);
+            const __m512 x0 = _mm512_sub_ps(In, a1n);
+            const __m512 xh = _mm512_sub_ps(Ih, a1h);
+
+            const __m512 R0 = _mm512_fmsub_ps(vc0, uh, _mm512_mul_ps(vs0, wh));
+            const __m512 I0 = _mm512_fmadd_ps(vs0, uh, _mm512_mul_ps(vc0, wh));
+            const __m512 R1 = _mm512_fmsub_ps(vc1, vh, _mm512_mul_ps(vs1, xh));
+            const __m512 I1 = _mm512_fmadd_ps(vs1, vh, _mm512_mul_ps(vc1, xh));
+
+            _mm512_storeu_ps(A0 + n,      _mm512_add_ps(u0, R0));
+            _mm512_storeu_ps(A0 + qh + n, _mm512_add_ps(w0, I0));
+            _mm512_storeu_ps(B0 + n,      _mm512_sub_ps(u0, R0));
+            _mm512_storeu_ps(B0 + qh + n, _mm512_sub_ps(I0, w0));
+            _mm512_storeu_ps(A1 + n,      _mm512_add_ps(v0, R1));
+            _mm512_storeu_ps(A1 + qh + n, _mm512_add_ps(x0, I1));
+            _mm512_storeu_ps(B1 + n,      _mm512_sub_ps(v0, R1));
+            _mm512_storeu_ps(B1 + qh + n, _mm512_sub_ps(I1, x0));
+        }
+    }
+#endif
+#if BRUUN_LEVEL >= 2
+    {
+        const __m256 vc  = _mm256_set1_ps(c),  vs  = _mm256_set1_ps(s);
+        const __m256 vc0 = _mm256_set1_ps(c0), vs0 = _mm256_set1_ps(s0);
+        const __m256 vc1 = _mm256_set1_ps(c1), vs1 = _mm256_set1_ps(s1);
+
+        for (; n + 7 < qh; n += 8) {
+            const __m256 a0n = _mm256_loadu_ps(A0 + n);
+            const __m256 a0h = _mm256_loadu_ps(A0 + qh + n);
+            const __m256 b0n = _mm256_loadu_ps(B0 + n);
+            const __m256 b0h = _mm256_loadu_ps(B0 + qh + n);
+            const __m256 a1n = _mm256_loadu_ps(A1 + n);
+            const __m256 a1h = _mm256_loadu_ps(A1 + qh + n);
+            const __m256 b1n = _mm256_loadu_ps(B1 + n);
+            const __m256 b1h = _mm256_loadu_ps(B1 + qh + n);
+
+            const __m256 Rn = _mm256_fmsub_ps(vc, b0n, _mm256_mul_ps(vs, b1n));
+            const __m256 In = _mm256_fmadd_ps(vs, b0n, _mm256_mul_ps(vc, b1n));
+            const __m256 Rh = _mm256_fmsub_ps(vc, b0h, _mm256_mul_ps(vs, b1h));
+            const __m256 Ih = _mm256_fmadd_ps(vs, b0h, _mm256_mul_ps(vc, b1h));
+
+            const __m256 u0 = _mm256_add_ps(a0n, Rn);
+            const __m256 uh = _mm256_add_ps(a0h, Rh);
+            const __m256 w0 = _mm256_add_ps(a1n, In);
+            const __m256 wh = _mm256_add_ps(a1h, Ih);
+            const __m256 v0 = _mm256_sub_ps(a0n, Rn);
+            const __m256 vh = _mm256_sub_ps(a0h, Rh);
+            const __m256 x0 = _mm256_sub_ps(In, a1n);
+            const __m256 xh = _mm256_sub_ps(Ih, a1h);
+
+            const __m256 R0 = _mm256_fmsub_ps(vc0, uh, _mm256_mul_ps(vs0, wh));
+            const __m256 I0 = _mm256_fmadd_ps(vs0, uh, _mm256_mul_ps(vc0, wh));
+            const __m256 R1 = _mm256_fmsub_ps(vc1, vh, _mm256_mul_ps(vs1, xh));
+            const __m256 I1 = _mm256_fmadd_ps(vs1, vh, _mm256_mul_ps(vc1, xh));
+
+            _mm256_storeu_ps(A0 + n,      _mm256_add_ps(u0, R0));
+            _mm256_storeu_ps(A0 + qh + n, _mm256_add_ps(w0, I0));
+            _mm256_storeu_ps(B0 + n,      _mm256_sub_ps(u0, R0));
+            _mm256_storeu_ps(B0 + qh + n, _mm256_sub_ps(I0, w0));
+            _mm256_storeu_ps(A1 + n,      _mm256_add_ps(v0, R1));
+            _mm256_storeu_ps(A1 + qh + n, _mm256_add_ps(x0, I1));
+            _mm256_storeu_ps(B1 + n,      _mm256_sub_ps(v0, R1));
+            _mm256_storeu_ps(B1 + qh + n, _mm256_sub_ps(I1, x0));
+        }
+    }
+#endif
+#if BRUUN_LEVEL >= 1
+    {
+        const bruun_v4f vc  = V4F_SET1(c),  vs  = V4F_SET1(s);
+        const bruun_v4f vc0 = V4F_SET1(c0), vs0 = V4F_SET1(s0);
+        const bruun_v4f vc1 = V4F_SET1(c1), vs1 = V4F_SET1(s1);
+
+        for (; n + 3 < qh; n += 4) {
+            const bruun_v4f a0n = V4F_LD(A0 + n);
+            const bruun_v4f a0h = V4F_LD(A0 + qh + n);
+            const bruun_v4f b0n = V4F_LD(B0 + n);
+            const bruun_v4f b0h = V4F_LD(B0 + qh + n);
+            const bruun_v4f a1n = V4F_LD(A1 + n);
+            const bruun_v4f a1h = V4F_LD(A1 + qh + n);
+            const bruun_v4f b1n = V4F_LD(B1 + n);
+            const bruun_v4f b1h = V4F_LD(B1 + qh + n);
+
+            const bruun_v4f Rn = V4F_SUB(V4F_MUL(vc, b0n), V4F_MUL(vs, b1n));
+            const bruun_v4f In = V4F_ADD(V4F_MUL(vs, b0n), V4F_MUL(vc, b1n));
+            const bruun_v4f Rh = V4F_SUB(V4F_MUL(vc, b0h), V4F_MUL(vs, b1h));
+            const bruun_v4f Ih = V4F_ADD(V4F_MUL(vs, b0h), V4F_MUL(vc, b1h));
+
+            const bruun_v4f u0 = V4F_ADD(a0n, Rn);
+            const bruun_v4f uh = V4F_ADD(a0h, Rh);
+            const bruun_v4f w0 = V4F_ADD(a1n, In);
+            const bruun_v4f wh = V4F_ADD(a1h, Ih);
+            const bruun_v4f v0 = V4F_SUB(a0n, Rn);
+            const bruun_v4f vh = V4F_SUB(a0h, Rh);
+            const bruun_v4f x0 = V4F_SUB(In, a1n);
+            const bruun_v4f xh = V4F_SUB(Ih, a1h);
+
+            const bruun_v4f R0 = V4F_SUB(V4F_MUL(vc0, uh), V4F_MUL(vs0, wh));
+            const bruun_v4f I0 = V4F_ADD(V4F_MUL(vs0, uh), V4F_MUL(vc0, wh));
+            const bruun_v4f R1 = V4F_SUB(V4F_MUL(vc1, vh), V4F_MUL(vs1, xh));
+            const bruun_v4f I1 = V4F_ADD(V4F_MUL(vs1, vh), V4F_MUL(vc1, xh));
+
+            V4F_ST(A0 + n,      V4F_ADD(u0, R0));
+            V4F_ST(A0 + qh + n, V4F_ADD(w0, I0));
+            V4F_ST(B0 + n,      V4F_SUB(u0, R0));
+            V4F_ST(B0 + qh + n, V4F_SUB(I0, w0));
+            V4F_ST(A1 + n,      V4F_ADD(v0, R1));
+            V4F_ST(A1 + qh + n, V4F_ADD(x0, I1));
+            V4F_ST(B1 + n,      V4F_SUB(v0, R1));
+            V4F_ST(B1 + qh + n, V4F_SUB(I1, x0));
+        }
+    }
+#endif
+
+    for (; n < qh; ++n) {
+        const float a0n = A0[n],      a0h = A0[qh + n];
+        const float b0n = B0[n],      b0h = B0[qh + n];
+        const float a1n = A1[n],      a1h = A1[qh + n];
+        const float b1n = B1[n],      b1h = B1[qh + n];
+
+        const float Rn = c * b0n - s * b1n;
+        const float In = s * b0n + c * b1n;
+        const float Rh = c * b0h - s * b1h;
+        const float Ih = s * b0h + c * b1h;
+
+        const float u0 = a0n + Rn, uh = a0h + Rh;
+        const float w0 = a1n + In, wh = a1h + Ih;
+        const float v0 = a0n - Rn, vh = a0h - Rh;
+        const float x0 = In - a1n, xh = Ih - a1h;
+
+        const float R0 = c0 * uh - s0 * wh;
+        const float I0 = s0 * uh + c0 * wh;
+        const float R1 = c1 * vh - s1 * xh;
+        const float I1 = s1 * vh + c1 * xh;
+
+        A0[n] = u0 + R0;
+        A0[qh + n] = w0 + I0;
+        B0[n] = u0 - R0;
+        B0[qh + n] = I0 - w0;
+        A1[n] = v0 + R1;
+        A1[qh + n] = x0 + I1;
+        B1[n] = v0 - R1;
+        B1[qh + n] = I1 - x0;
+    }
+}
+
+static inline void norm_q_inv_f32(float* RESTRICT p, int q, float c_scalar, float s_scalar) {
+    float* RESTRICT C0p = p;
+    float* RESTRICT C1p = p + q;
+    float* RESTRICT D0p = p + 2*q;
+    float* RESTRICT D1p = p + 3*q;
+
+    int n = 0;
+
+#if BRUUN_LEVEL >= 3
+    {
+        const __m512 half = _mm512_set1_ps(0.5f);
+        const __m512 vc = _mm512_set1_ps(c_scalar);
+        const __m512 vs = _mm512_set1_ps(s_scalar);
+
+        for (; n + 15 < q; n += 16) {
+            const __m512 C0v = _mm512_loadu_ps(C0p + n);
+            const __m512 C1v = _mm512_loadu_ps(C1p + n);
+            const __m512 D0v = _mm512_loadu_ps(D0p + n);
+            const __m512 D1v = _mm512_loadu_ps(D1p + n);
+
+            const __m512 A0 = _mm512_mul_ps(half, _mm512_add_ps(C0v, D0v));
+            const __m512 R  = _mm512_mul_ps(half, _mm512_sub_ps(C0v, D0v));
+            const __m512 I  = _mm512_mul_ps(half, _mm512_add_ps(C1v, D1v));
+            const __m512 A1 = _mm512_mul_ps(half, _mm512_sub_ps(C1v, D1v));
+
+            const __m512 B0 = _mm512_fmadd_ps(vc, R, _mm512_mul_ps(vs, I));
+            const __m512 B1 = _mm512_fmsub_ps(vc, I, _mm512_mul_ps(vs, R));
+
+            _mm512_storeu_ps(C0p + n, A0);
+            _mm512_storeu_ps(C1p + n, B0);
+            _mm512_storeu_ps(D0p + n, A1);
+            _mm512_storeu_ps(D1p + n, B1);
+        }
+    }
+#endif
+#if BRUUN_LEVEL >= 2
+    {
+        const __m256 half = _mm256_set1_ps(0.5f);
+        const __m256 vc = _mm256_set1_ps(c_scalar);
+        const __m256 vs = _mm256_set1_ps(s_scalar);
+
+        for (; n + 7 < q; n += 8) {
+            const __m256 C0v = _mm256_loadu_ps(C0p + n);
+            const __m256 C1v = _mm256_loadu_ps(C1p + n);
+            const __m256 D0v = _mm256_loadu_ps(D0p + n);
+            const __m256 D1v = _mm256_loadu_ps(D1p + n);
+
+            const __m256 A0 = _mm256_mul_ps(half, _mm256_add_ps(C0v, D0v));
+            const __m256 R  = _mm256_mul_ps(half, _mm256_sub_ps(C0v, D0v));
+            const __m256 I  = _mm256_mul_ps(half, _mm256_add_ps(C1v, D1v));
+            const __m256 A1 = _mm256_mul_ps(half, _mm256_sub_ps(C1v, D1v));
+
+            const __m256 B0 = _mm256_fmadd_ps(vc, R, _mm256_mul_ps(vs, I));
+            const __m256 B1 = _mm256_fmsub_ps(vc, I, _mm256_mul_ps(vs, R));
+
+            _mm256_storeu_ps(C0p + n, A0);
+            _mm256_storeu_ps(C1p + n, B0);
+            _mm256_storeu_ps(D0p + n, A1);
+            _mm256_storeu_ps(D1p + n, B1);
+        }
+    }
+#endif
+#if BRUUN_LEVEL >= 1
+    {
+        const bruun_v4f half = V4F_SET1(0.5f);
+        const bruun_v4f vc = V4F_SET1(c_scalar);
+        const bruun_v4f vs = V4F_SET1(s_scalar);
+
+        for (; n + 3 < q; n += 4) {
+            const bruun_v4f C0v = V4F_LD(C0p + n);
+            const bruun_v4f C1v = V4F_LD(C1p + n);
+            const bruun_v4f D0v = V4F_LD(D0p + n);
+            const bruun_v4f D1v = V4F_LD(D1p + n);
+
+            const bruun_v4f A0 = V4F_MUL(half, V4F_ADD(C0v, D0v));
+            const bruun_v4f R  = V4F_MUL(half, V4F_SUB(C0v, D0v));
+            const bruun_v4f I  = V4F_MUL(half, V4F_ADD(C1v, D1v));
+            const bruun_v4f A1 = V4F_MUL(half, V4F_SUB(C1v, D1v));
+
+            const bruun_v4f B0 = V4F_ADD(V4F_MUL(vc, R), V4F_MUL(vs, I));
+            const bruun_v4f B1 = V4F_SUB(V4F_MUL(vc, I), V4F_MUL(vs, R));
+
+            V4F_ST(C0p + n, A0);
+            V4F_ST(C1p + n, B0);
+            V4F_ST(D0p + n, A1);
+            V4F_ST(D1p + n, B1);
+        }
+    }
+#endif
+
+    for (; n < q; ++n) {
+        const float C0v = C0p[n];
+        const float C1v = C1p[n];
+        const float D0v = D0p[n];
+        const float D1v = D1p[n];
+
+        const float A0 = 0.5f * (C0v + D0v);
+        const float R  = 0.5f * (C0v - D0v);
+        const float I  = 0.5f * (C1v + D1v);
+        const float A1 = 0.5f * (C1v - D1v);
+
+        C0p[n] = A0;
+        C1p[n] = c_scalar * R + s_scalar * I;
+        D0p[n] = A1;
+        D1p[n] = c_scalar * I - s_scalar * R;
+    }
+}
+
+// Exact inverse of norm2_fused_f32. Caller guarantees q >= 16 so qh >= 8.
+static inline void norm2_inv_fused_f32(float* RESTRICT p, int q,
+                                       float c, float s,
+                                       float c0, float s0,
+                                       float c1, float s1) {
+    const int qh = q >> 1;
+    float* RESTRICT A0 = p;
+    float* RESTRICT B0 = p + q;
+    float* RESTRICT A1 = p + 2*q;
+    float* RESTRICT B1 = p + 3*q;
+
+    int n = 0;
+
+#if BRUUN_LEVEL >= 3
+    {
+        const __m512 hf  = _mm512_set1_ps(0.5f);
+        const __m512 vc  = _mm512_set1_ps(c),  vs  = _mm512_set1_ps(s);
+        const __m512 vc0 = _mm512_set1_ps(c0), vs0 = _mm512_set1_ps(s0);
+        const __m512 vc1 = _mm512_set1_ps(c1), vs1 = _mm512_set1_ps(s1);
+
+        for (; n + 15 < qh; n += 16) {
+            const __m512 A0n = _mm512_loadu_ps(A0 + n);
+            const __m512 A0h = _mm512_loadu_ps(A0 + qh + n);
+            const __m512 B0n = _mm512_loadu_ps(B0 + n);
+            const __m512 B0h = _mm512_loadu_ps(B0 + qh + n);
+            const __m512 A1n = _mm512_loadu_ps(A1 + n);
+            const __m512 A1h = _mm512_loadu_ps(A1 + qh + n);
+            const __m512 B1n = _mm512_loadu_ps(B1 + n);
+            const __m512 B1h = _mm512_loadu_ps(B1 + qh + n);
+
+            const __m512 u0 = _mm512_mul_ps(hf, _mm512_add_ps(A0n, B0n));
+            const __m512 R0 = _mm512_mul_ps(hf, _mm512_sub_ps(A0n, B0n));
+            const __m512 I0 = _mm512_mul_ps(hf, _mm512_add_ps(A0h, B0h));
+            const __m512 w0 = _mm512_mul_ps(hf, _mm512_sub_ps(A0h, B0h));
+            const __m512 uh = _mm512_fmadd_ps(vc0, R0, _mm512_mul_ps(vs0, I0));
+            const __m512 wh = _mm512_fmsub_ps(vc0, I0, _mm512_mul_ps(vs0, R0));
+
+            const __m512 v0 = _mm512_mul_ps(hf, _mm512_add_ps(A1n, B1n));
+            const __m512 R1 = _mm512_mul_ps(hf, _mm512_sub_ps(A1n, B1n));
+            const __m512 I1 = _mm512_mul_ps(hf, _mm512_add_ps(A1h, B1h));
+            const __m512 x0 = _mm512_mul_ps(hf, _mm512_sub_ps(A1h, B1h));
+            const __m512 vh = _mm512_fmadd_ps(vc1, R1, _mm512_mul_ps(vs1, I1));
+            const __m512 xh = _mm512_fmsub_ps(vc1, I1, _mm512_mul_ps(vs1, R1));
+
+            const __m512 a0n = _mm512_mul_ps(hf, _mm512_add_ps(u0, v0));
+            const __m512 Rn  = _mm512_mul_ps(hf, _mm512_sub_ps(u0, v0));
+            const __m512 In  = _mm512_mul_ps(hf, _mm512_add_ps(w0, x0));
+            const __m512 a1n = _mm512_mul_ps(hf, _mm512_sub_ps(w0, x0));
+            const __m512 a0h = _mm512_mul_ps(hf, _mm512_add_ps(uh, vh));
+            const __m512 Rh  = _mm512_mul_ps(hf, _mm512_sub_ps(uh, vh));
+            const __m512 Ih  = _mm512_mul_ps(hf, _mm512_add_ps(wh, xh));
+            const __m512 a1h = _mm512_mul_ps(hf, _mm512_sub_ps(wh, xh));
+
+            _mm512_storeu_ps(A0 + n,      a0n);
+            _mm512_storeu_ps(A0 + qh + n, a0h);
+            _mm512_storeu_ps(B0 + n,      _mm512_fmadd_ps(vc, Rn, _mm512_mul_ps(vs, In)));
+            _mm512_storeu_ps(B0 + qh + n, _mm512_fmadd_ps(vc, Rh, _mm512_mul_ps(vs, Ih)));
+            _mm512_storeu_ps(A1 + n,      a1n);
+            _mm512_storeu_ps(A1 + qh + n, a1h);
+            _mm512_storeu_ps(B1 + n,      _mm512_fmsub_ps(vc, In, _mm512_mul_ps(vs, Rn)));
+            _mm512_storeu_ps(B1 + qh + n, _mm512_fmsub_ps(vc, Ih, _mm512_mul_ps(vs, Rh)));
+        }
+    }
+#endif
+#if BRUUN_LEVEL >= 2
+    {
+        const __m256 hf  = _mm256_set1_ps(0.5f);
+        const __m256 vc  = _mm256_set1_ps(c),  vs  = _mm256_set1_ps(s);
+        const __m256 vc0 = _mm256_set1_ps(c0), vs0 = _mm256_set1_ps(s0);
+        const __m256 vc1 = _mm256_set1_ps(c1), vs1 = _mm256_set1_ps(s1);
+
+        for (; n + 7 < qh; n += 8) {
+            const __m256 A0n = _mm256_loadu_ps(A0 + n);
+            const __m256 A0h = _mm256_loadu_ps(A0 + qh + n);
+            const __m256 B0n = _mm256_loadu_ps(B0 + n);
+            const __m256 B0h = _mm256_loadu_ps(B0 + qh + n);
+            const __m256 A1n = _mm256_loadu_ps(A1 + n);
+            const __m256 A1h = _mm256_loadu_ps(A1 + qh + n);
+            const __m256 B1n = _mm256_loadu_ps(B1 + n);
+            const __m256 B1h = _mm256_loadu_ps(B1 + qh + n);
+
+            const __m256 u0 = _mm256_mul_ps(hf, _mm256_add_ps(A0n, B0n));
+            const __m256 R0 = _mm256_mul_ps(hf, _mm256_sub_ps(A0n, B0n));
+            const __m256 I0 = _mm256_mul_ps(hf, _mm256_add_ps(A0h, B0h));
+            const __m256 w0 = _mm256_mul_ps(hf, _mm256_sub_ps(A0h, B0h));
+            const __m256 uh = _mm256_fmadd_ps(vc0, R0, _mm256_mul_ps(vs0, I0));
+            const __m256 wh = _mm256_fmsub_ps(vc0, I0, _mm256_mul_ps(vs0, R0));
+
+            const __m256 v0 = _mm256_mul_ps(hf, _mm256_add_ps(A1n, B1n));
+            const __m256 R1 = _mm256_mul_ps(hf, _mm256_sub_ps(A1n, B1n));
+            const __m256 I1 = _mm256_mul_ps(hf, _mm256_add_ps(A1h, B1h));
+            const __m256 x0 = _mm256_mul_ps(hf, _mm256_sub_ps(A1h, B1h));
+            const __m256 vh = _mm256_fmadd_ps(vc1, R1, _mm256_mul_ps(vs1, I1));
+            const __m256 xh = _mm256_fmsub_ps(vc1, I1, _mm256_mul_ps(vs1, R1));
+
+            const __m256 a0n = _mm256_mul_ps(hf, _mm256_add_ps(u0, v0));
+            const __m256 Rn  = _mm256_mul_ps(hf, _mm256_sub_ps(u0, v0));
+            const __m256 In  = _mm256_mul_ps(hf, _mm256_add_ps(w0, x0));
+            const __m256 a1n = _mm256_mul_ps(hf, _mm256_sub_ps(w0, x0));
+            const __m256 a0h = _mm256_mul_ps(hf, _mm256_add_ps(uh, vh));
+            const __m256 Rh  = _mm256_mul_ps(hf, _mm256_sub_ps(uh, vh));
+            const __m256 Ih  = _mm256_mul_ps(hf, _mm256_add_ps(wh, xh));
+            const __m256 a1h = _mm256_mul_ps(hf, _mm256_sub_ps(wh, xh));
+
+            _mm256_storeu_ps(A0 + n,      a0n);
+            _mm256_storeu_ps(A0 + qh + n, a0h);
+            _mm256_storeu_ps(B0 + n,      _mm256_fmadd_ps(vc, Rn, _mm256_mul_ps(vs, In)));
+            _mm256_storeu_ps(B0 + qh + n, _mm256_fmadd_ps(vc, Rh, _mm256_mul_ps(vs, Ih)));
+            _mm256_storeu_ps(A1 + n,      a1n);
+            _mm256_storeu_ps(A1 + qh + n, a1h);
+            _mm256_storeu_ps(B1 + n,      _mm256_fmsub_ps(vc, In, _mm256_mul_ps(vs, Rn)));
+            _mm256_storeu_ps(B1 + qh + n, _mm256_fmsub_ps(vc, Ih, _mm256_mul_ps(vs, Rh)));
+        }
+    }
+#endif
+#if BRUUN_LEVEL >= 1
+    {
+        const bruun_v4f hf  = V4F_SET1(0.5f);
+        const bruun_v4f vc  = V4F_SET1(c),  vs  = V4F_SET1(s);
+        const bruun_v4f vc0 = V4F_SET1(c0), vs0 = V4F_SET1(s0);
+        const bruun_v4f vc1 = V4F_SET1(c1), vs1 = V4F_SET1(s1);
+
+        for (; n + 3 < qh; n += 4) {
+            const bruun_v4f A0n = V4F_LD(A0 + n);
+            const bruun_v4f A0h = V4F_LD(A0 + qh + n);
+            const bruun_v4f B0n = V4F_LD(B0 + n);
+            const bruun_v4f B0h = V4F_LD(B0 + qh + n);
+            const bruun_v4f A1n = V4F_LD(A1 + n);
+            const bruun_v4f A1h = V4F_LD(A1 + qh + n);
+            const bruun_v4f B1n = V4F_LD(B1 + n);
+            const bruun_v4f B1h = V4F_LD(B1 + qh + n);
+
+            const bruun_v4f u0 = V4F_MUL(hf, V4F_ADD(A0n, B0n));
+            const bruun_v4f R0 = V4F_MUL(hf, V4F_SUB(A0n, B0n));
+            const bruun_v4f I0 = V4F_MUL(hf, V4F_ADD(A0h, B0h));
+            const bruun_v4f w0 = V4F_MUL(hf, V4F_SUB(A0h, B0h));
+            const bruun_v4f uh = V4F_ADD(V4F_MUL(vc0, R0), V4F_MUL(vs0, I0));
+            const bruun_v4f wh = V4F_SUB(V4F_MUL(vc0, I0), V4F_MUL(vs0, R0));
+
+            const bruun_v4f v0 = V4F_MUL(hf, V4F_ADD(A1n, B1n));
+            const bruun_v4f R1 = V4F_MUL(hf, V4F_SUB(A1n, B1n));
+            const bruun_v4f I1 = V4F_MUL(hf, V4F_ADD(A1h, B1h));
+            const bruun_v4f x0 = V4F_MUL(hf, V4F_SUB(A1h, B1h));
+            const bruun_v4f vh = V4F_ADD(V4F_MUL(vc1, R1), V4F_MUL(vs1, I1));
+            const bruun_v4f xh = V4F_SUB(V4F_MUL(vc1, I1), V4F_MUL(vs1, R1));
+
+            const bruun_v4f a0n = V4F_MUL(hf, V4F_ADD(u0, v0));
+            const bruun_v4f Rn  = V4F_MUL(hf, V4F_SUB(u0, v0));
+            const bruun_v4f In  = V4F_MUL(hf, V4F_ADD(w0, x0));
+            const bruun_v4f a1n = V4F_MUL(hf, V4F_SUB(w0, x0));
+            const bruun_v4f a0h = V4F_MUL(hf, V4F_ADD(uh, vh));
+            const bruun_v4f Rh  = V4F_MUL(hf, V4F_SUB(uh, vh));
+            const bruun_v4f Ih  = V4F_MUL(hf, V4F_ADD(wh, xh));
+            const bruun_v4f a1h = V4F_MUL(hf, V4F_SUB(wh, xh));
+
+            V4F_ST(A0 + n,      a0n);
+            V4F_ST(A0 + qh + n, a0h);
+            V4F_ST(B0 + n,      V4F_ADD(V4F_MUL(vc, Rn), V4F_MUL(vs, In)));
+            V4F_ST(B0 + qh + n, V4F_ADD(V4F_MUL(vc, Rh), V4F_MUL(vs, Ih)));
+            V4F_ST(A1 + n,      a1n);
+            V4F_ST(A1 + qh + n, a1h);
+            V4F_ST(B1 + n,      V4F_SUB(V4F_MUL(vc, In), V4F_MUL(vs, Rn)));
+            V4F_ST(B1 + qh + n, V4F_SUB(V4F_MUL(vc, Ih), V4F_MUL(vs, Rh)));
+        }
+    }
+#endif
+
+    for (; n < qh; ++n) {
+        const float A0n = A0[n], A0h = A0[qh + n];
+        const float B0n = B0[n], B0h = B0[qh + n];
+        const float A1n = A1[n], A1h = A1[qh + n];
+        const float B1n = B1[n], B1h = B1[qh + n];
+
+        const float u0 = 0.5f * (A0n + B0n);
+        const float R0 = 0.5f * (A0n - B0n);
+        const float I0 = 0.5f * (A0h + B0h);
+        const float w0 = 0.5f * (A0h - B0h);
+        const float uh = c0 * R0 + s0 * I0;
+        const float wh = c0 * I0 - s0 * R0;
+
+        const float v0 = 0.5f * (A1n + B1n);
+        const float R1 = 0.5f * (A1n - B1n);
+        const float I1 = 0.5f * (A1h + B1h);
+        const float x0 = 0.5f * (A1h - B1h);
+        const float vh = c1 * R1 + s1 * I1;
+        const float xh = c1 * I1 - s1 * R1;
+
+        const float a0n = 0.5f * (u0 + v0);
+        const float Rn  = 0.5f * (u0 - v0);
+        const float In  = 0.5f * (w0 + x0);
+        const float a1n = 0.5f * (w0 - x0);
+        const float a0h = 0.5f * (uh + vh);
+        const float Rh  = 0.5f * (uh - vh);
+        const float Ih  = 0.5f * (wh + xh);
+        const float a1h = 0.5f * (wh - xh);
+
+        A0[n] = a0n;
+        A0[qh + n] = a0h;
+        B0[n] = c * Rn + s * In;
+        B0[qh + n] = c * Rh + s * Ih;
+        A1[n] = a1n;
+        A1[qh + n] = a1h;
+        B1[n] = c * In - s * Rn;
+        B1[qh + n] = c * Ih - s * Rh;
+    }
+}
+
 class RFFT {
 public:
     explicit RFFT(int n, bool fuse_tail = true)
         : N(n), L(ilog2_pow2(n)), NB(n / 2 + 1), fuse_tail(fuse_tail && n >= 32),
-          IDX(n / 2), OUTIDX(n / 2), C(n / 2), S(n / 2), F32_TW_RE(n / 2), F32_TW_IM(n / 2)
+          IDX(n / 2), OUTIDX(n / 2), C(n / 2), S(n / 2)
     {
         if (!is_power2(N) || N < 4) throw std::invalid_argument("Bruun RFFT requires power-of-two N >= 4");
 
@@ -1109,14 +1676,6 @@ public:
                 C[2*m + 1] = se;
                 S[2*m + 1] = ce;
             }
-        }
-
-        F32_TW_RE[0] = 1.0f;
-        F32_TW_IM[0] = 0.0f;
-        for (int k = 1; k < N / 2; ++k) {
-            const double theta = double(-2.0 * M_PI) * double(k) / double(N);
-            F32_TW_RE[k] = float(std::cos(theta));
-            F32_TW_IM[k] = float(std::sin(theta));
         }
 
         // OUTIDX is the native complex-output slot for each Bruun leaf.
@@ -1286,12 +1845,39 @@ public:
         // KINV[k] = m such that IDX[m] = k. IDX is a bijection [1, N/2) -> [1, N/2).
         KINV.assign(N / 2, 0);
         for (int m = 1; m < N / 2; ++m) KINV[IDX[m]] = m;
+
+        // Float copies of the Bruun angle tables plus packed per-leaf float
+        // twiddles for the float32 engine. Cast from the double tables, so plan
+        // setup stays free of extra libm calls.
+        CF.resize(N / 2);
+        SF.resize(N / 2);
+        for (int m = 0; m < N / 2; ++m) {
+            CF[m] = static_cast<float>(C[m]);
+            SF[m] = static_cast<float>(S[m]);
+        }
+        if (N >= 32) {
+            TWF.resize(N / 16);
+            for (int m = 1; m < N / 16; ++m) {
+                const LeafTw& e = TW[m];
+                LeafTwF& f = TWF[m];
+                for (int g = 0; g < 4; ++g) {
+                    f.c4[g] = static_cast<float>(e.c4[g]);
+                    f.s4[g] = static_cast<float>(e.s4[g]);
+                }
+                f.c2d[0] = f.c2d[1] = static_cast<float>(e.c2[0]);
+                f.c2d[2] = f.c2d[3] = static_cast<float>(e.c2[1]);
+                f.s2d[0] = f.s2d[1] = static_cast<float>(e.s2[0]);
+                f.s2d[2] = f.s2d[3] = static_cast<float>(e.s2[1]);
+                f.c1 = static_cast<float>(e.c1);
+                f.s1 = static_cast<float>(e.s1);
+            }
+        }
     }
 
     int size() const { return N; }
     int bins() const { return NB; }
     int work_size() const { return N; }
-    int work_size_f32() const { return 2 * N; }
+    int work_size_f32() const { return N; }
     int native_scratch_size() const { return NB; }
 
     bool standard_output_uses_two_phase() const {
@@ -1330,26 +1916,47 @@ public:
         }
     }
 
+    // Standard FFTW-order float forward: depth-first float residue transform,
+    // then one sequential pack pass through KINV. Always two-phase; the float
+    // residue pass is wide enough that a fused scatter has no window to win.
     void forward_standard_f32(const float* RESTRICT input,
                               complex_f32_t* RESTRICT X,
                               float* RESTRICT work,
                               complex_f32_t* RESTRICT native_tmp) const {
         (void)native_tmp;
-        forward_standard_fft_f32(input, X, work);
+        forward_residues_f32(input, work);
+
+        X[0].re = work[0] + work[1];
+        X[0].im = 0.0f;
+        X[N / 2].re = work[0] - work[1];
+        X[N / 2].im = 0.0f;
+
+        const int* RESTRICT kin = KINV.data();
+        for (int k = 1; k < N / 2; ++k) {
+            const int m = kin[k];
+            X[k].re = work[2*m];
+            X[k].im = -work[2*m + 1];
+        }
     }
 
     void forward_native_f32(const float* RESTRICT input,
                             complex_f32_t* RESTRICT X,
                             float* RESTRICT work) const {
-#if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
-        if (N >= 32) {
-            std::vector<complex_f32_t> standard(NB);
-            forward_standard_fft_f32(input, standard.data(), work);
-            standard_to_native_complex_f32(standard.data(), X);
-            return;
+        forward_residues_f32(input, work);
+
+        X[0].re = work[0] + work[1];
+        X[0].im = 0.0f;
+        X[N / 2].re = work[0] - work[1];
+        X[N / 2].im = 0.0f;
+
+        // Native order is heapopt OUTIDX order for N >= 32 and plain FFTW bin
+        // order below that, matching the double engine and the f32 converters.
+        const int* RESTRICT out_idx = (N >= 32) ? OUTIDX.data() : IDX.data();
+        for (int m = 1; m < N / 2; ++m) {
+            const int k = out_idx[m];
+            X[k].re = work[2*m];
+            X[k].im = -work[2*m + 1];
         }
-#endif
-        forward_standard_fft_f32(input, X, work);
     }
 
     // Standard FFTW-like real -> complex interface, using caller-provided native scratch.
@@ -1392,19 +1999,33 @@ public:
     }
 
     void inverse_f32(const complex_f32_t* RESTRICT X, float* RESTRICT out) const {
-        inverse_standard_fft_f32(X, out);
+        out[0] = 0.5f * (X[0].re + X[N / 2].re);
+        out[1] = 0.5f * (X[0].re - X[N / 2].re);
+        for (int m = 1; m < N / 2; ++m) {
+            const int k = IDX[m];
+            out[2 * m] = X[k].re;
+            out[2 * m + 1] = -X[k].im;
+        }
+        inverse_residues_inplace_f32(out);
     }
 
     void inverse_native_f32(const complex_f32_t* RESTRICT Xnative, float* RESTRICT out) const {
 #if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
-        if (N >= 32) {
-            std::vector<complex_f32_t> standard(NB);
-            native_to_standard_complex_f32(Xnative, standard.data());
-            inverse_standard_fft_f32(standard.data(), out);
+        if (N < 32) {
+            inverse_f32(Xnative, out);
             return;
         }
+        out[0] = 0.5f * (Xnative[0].re + Xnative[N / 2].re);
+        out[1] = 0.5f * (Xnative[0].re - Xnative[N / 2].re);
+        for (int pos = 1; pos < N / 2; ++pos) {
+            const int m = NATIVE_LEAF[pos];
+            out[2 * m] = Xnative[pos].re;
+            out[2 * m + 1] = -Xnative[pos].im;
+        }
+        inverse_residues_inplace_f32(out);
+#else
+        inverse_f32(Xnative, out);
 #endif
-        inverse_standard_fft_f32(Xnative, out);
     }
 
     // Convert the transform's native complex spectrum layout to standard FFTW order.
@@ -1671,8 +2292,6 @@ private:
 #endif
     std::vector<double> C;
     std::vector<double> S;
-    std::vector<float> F32_TW_RE;
-    std::vector<float> F32_TW_IM;
 
     struct LeafTw {
         double c4[4];
@@ -1687,92 +2306,348 @@ private:
 
     std::vector<int> KINV;
 
-    static void complex_fft_f32(float* RESTRICT re,
-                                float* RESTRICT im,
-                                int n,
-                                bool inverse,
-                                const float* RESTRICT tw_re_table,
-                                const float* RESTRICT tw_im_table) {
-        int j = 0;
-        for (int i = 1; i < n; ++i) {
-            int bit = n >> 1;
-            while (j & bit) {
-                j ^= bit;
-                bit >>= 1;
-            }
-            j ^= bit;
-            if (i < j) {
-                std::swap(re[i], re[j]);
-                std::swap(im[i], im[j]);
-            }
+    struct LeafTwF {
+        float c4[4];
+        float s4[4];
+        float c2d[4]; // [c2[0], c2[0], c2[1], c2[1]]
+        float s2d[4];
+        float c1;
+        float s1;
+    };
+    std::vector<LeafTwF> TWF;
+
+    std::vector<float> CF;
+    std::vector<float> SF;
+
+    static inline void norm_q1_fwd_f32(float* RESTRICT p, float c, float s) {
+        const float A0 = p[0];
+        const float B0 = p[1];
+        const float A1 = p[2];
+        const float B1 = p[3];
+
+        const float R = c * B0 - s * B1;
+        const float I = s * B0 + c * B1;
+
+        p[0] = A0 + R;
+        p[1] = A1 + I;
+        p[2] = A0 - R;
+        p[3] = -A1 + I;
+    }
+
+    static inline void norm_q2_fwd_f32(float* RESTRICT p, float c, float s) {
+        for (int n = 0; n < 2; ++n) {
+            const float A0 = p[n];
+            const float B0 = p[2 + n];
+            const float A1 = p[4 + n];
+            const float B1 = p[6 + n];
+
+            const float R = c * B0 - s * B1;
+            const float I = s * B0 + c * B1;
+
+            p[n] = A0 + R;
+            p[2 + n] = A1 + I;
+            p[4 + n] = A0 - R;
+            p[6 + n] = -A1 + I;
         }
+    }
 
-        for (int len = 2; len <= n; len <<= 1) {
-            const int half = len >> 1;
-            const int stride = n / len;
-
-            for (int i = 0; i < n; i += len) {
-                int k = 0;
+    // Residue-writing float leaf codelet: three tree levels on one 16-float
+    // block, fused in 128-bit registers. Lane-for-lane twin of the AVX2 double
+    // codelet (4 doubles per __m256d there, 4 floats per 128-bit vector here).
+    inline void codelet_d3_tw_res_f32(float* RESTRICT p, const LeafTwF& t) const {
 #if BRUUN_LEVEL >= 1
-                for (; k + 3 < half; k += 4) {
-                    const int even = i + k;
-                    const int odd = even + half;
-                    fft_butterfly4_f32(re,
-                                       im,
-                                       even,
-                                       odd,
-                                       k * stride,
-                                       stride,
-                                       inverse,
-                                       tw_re_table,
-                                       tw_im_table);
-                }
+        const bruun_v4f A0 = V4F_LD(p);
+        const bruun_v4f B0 = V4F_LD(p + 4);
+        const bruun_v4f A1 = V4F_LD(p + 8);
+        const bruun_v4f B1 = V4F_LD(p + 12);
+
+        const bruun_v4f c1 = V4F_SET1(t.c1);
+        const bruun_v4f s1 = V4F_SET1(t.s1);
+        const bruun_v4f R1 = V4F_SUB(V4F_MUL(c1, B0), V4F_MUL(s1, B1));
+        const bruun_v4f I1 = V4F_ADD(V4F_MUL(s1, B0), V4F_MUL(c1, B1));
+
+        const bruun_v4f c0a = V4F_ADD(A0, R1);
+        const bruun_v4f c0b = V4F_ADD(A1, I1);
+        const bruun_v4f c1a = V4F_SUB(A0, R1);
+        const bruun_v4f c1b = V4F_SUB(I1, A1);
+
+        const bruun_v4f A0v = V4F_CATLO(c0a, c1a);
+        const bruun_v4f B0v = V4F_CATHI(c0a, c1a);
+        const bruun_v4f A1v = V4F_CATLO(c0b, c1b);
+        const bruun_v4f B1v = V4F_CATHI(c0b, c1b);
+
+        const bruun_v4f c2 = V4F_LD(t.c2d);
+        const bruun_v4f s2 = V4F_LD(t.s2d);
+        const bruun_v4f R2 = V4F_SUB(V4F_MUL(c2, B0v), V4F_MUL(s2, B1v));
+        const bruun_v4f I2 = V4F_ADD(V4F_MUL(s2, B0v), V4F_MUL(c2, B1v));
+
+        const bruun_v4f P = V4F_ADD(A0v, R2);
+        const bruun_v4f Q = V4F_ADD(A1v, I2);
+        const bruun_v4f M = V4F_SUB(A0v, R2);
+        const bruun_v4f W = V4F_SUB(I2, A1v);
+
+        const bruun_v4f pmL = V4F_ZIPLO(P, M);
+        const bruun_v4f pmH = V4F_ZIPHI(P, M);
+        const bruun_v4f qwL = V4F_ZIPLO(Q, W);
+        const bruun_v4f qwH = V4F_ZIPHI(Q, W);
+        const bruun_v4f A0w = V4F_CATLO(pmL, pmH); // [P0,M0,P2,M2]
+        const bruun_v4f B0w = V4F_CATHI(pmL, pmH); // [P1,M1,P3,M3]
+        const bruun_v4f A1w = V4F_CATLO(qwL, qwH);
+        const bruun_v4f B1w = V4F_CATHI(qwL, qwH);
+
+        const bruun_v4f c4 = V4F_LD(t.c4);
+        const bruun_v4f s4 = V4F_LD(t.s4);
+        const bruun_v4f R3 = V4F_SUB(V4F_MUL(c4, B0w), V4F_MUL(s4, B1w));
+        const bruun_v4f I3 = V4F_ADD(V4F_MUL(s4, B0w), V4F_MUL(c4, B1w));
+
+        const bruun_v4f E0 = V4F_ADD(A0w, R3); // leaf even residue r0
+        const bruun_v4f E1 = V4F_ADD(A1w, I3); // leaf even residue r1
+        const bruun_v4f O0 = V4F_SUB(A0w, R3); // leaf odd residue r0
+        const bruun_v4f O1 = V4F_SUB(I3, A1w); // leaf odd residue r1
+
+        // 4x4 transpose to leaf-residue order: p[4g..4g+3] = [E0[g], E1[g], O0[g], O1[g]].
+        const bruun_v4f eL = V4F_ZIPLO(E0, E1);
+        const bruun_v4f eH = V4F_ZIPHI(E0, E1);
+        const bruun_v4f oL = V4F_ZIPLO(O0, O1);
+        const bruun_v4f oH = V4F_ZIPHI(O0, O1);
+        const bruun_v4f t0 = V4F_CATLO(eL, eH); // [E0_0,E1_0,E0_2,E1_2]
+        const bruun_v4f t1 = V4F_CATHI(eL, eH); // [E0_1,E1_1,E0_3,E1_3]
+        const bruun_v4f t2 = V4F_CATLO(oL, oH);
+        const bruun_v4f t3 = V4F_CATHI(oL, oH);
+
+        V4F_ST(p,      V4F_CATLO(t0, t2));
+        V4F_ST(p + 4,  V4F_CATLO(t1, t3));
+        V4F_ST(p + 8,  V4F_CATHI(t0, t2));
+        V4F_ST(p + 12, V4F_CATHI(t1, t3));
+#else
+        norm_q_fwd_f32(p, 4, t.c1, t.s1);
+        norm_q2_fwd_f32(p, t.c2d[0], t.s2d[0]);
+        norm_q2_fwd_f32(p + 8, t.c2d[2], t.s2d[2]);
+        norm_q1_fwd_f32(p, t.c4[0], t.s4[0]);
+        norm_q1_fwd_f32(p + 4, t.c4[1], t.s4[1]);
+        norm_q1_fwd_f32(p + 8, t.c4[2], t.s4[2]);
+        norm_q1_fwd_f32(p + 12, t.c4[3], t.s4[3]);
 #endif
-                for (; k < half; ++k) {
-                    const int even = i + k;
-                    const int odd = even + half;
-                    const int tw = k * stride;
-                    const float tw_re = tw_re_table[tw];
-                    const float tw_im = inverse ? -tw_im_table[tw] : tw_im_table[tw];
-                    const float u_re = re[even];
-                    const float u_im = im[even];
-                    const float v_re = re[odd] * tw_re - im[odd] * tw_im;
-                    const float v_im = re[odd] * tw_im + im[odd] * tw_re;
+    }
 
-                    re[even] = u_re + v_re;
-                    im[even] = u_im + v_im;
-                    re[odd] = u_re - v_re;
-                    im[odd] = u_im - v_im;
-                }
+    // Exact inverse of codelet_d3_tw_res_f32.
+    inline void codelet_d3_tw_res_inv_f32(float* RESTRICT p, const LeafTwF& t) const {
+#if BRUUN_LEVEL >= 1
+        const bruun_v4f out0 = V4F_LD(p);
+        const bruun_v4f out1 = V4F_LD(p + 4);
+        const bruun_v4f out2 = V4F_LD(p + 8);
+        const bruun_v4f out3 = V4F_LD(p + 12);
+
+        // Inverse of the forward 4x4 transpose.
+        const bruun_v4f aL = V4F_ZIPLO(out0, out1);
+        const bruun_v4f aH = V4F_ZIPHI(out0, out1);
+        const bruun_v4f bL = V4F_ZIPLO(out2, out3);
+        const bruun_v4f bH = V4F_ZIPHI(out2, out3);
+        const bruun_v4f t0 = V4F_CATLO(aL, aH);
+        const bruun_v4f t1 = V4F_CATHI(aL, aH);
+        const bruun_v4f t2 = V4F_CATLO(bL, bH);
+        const bruun_v4f t3 = V4F_CATHI(bL, bH);
+        const bruun_v4f E0 = V4F_CATLO(t0, t2);
+        const bruun_v4f O0 = V4F_CATHI(t0, t2);
+        const bruun_v4f E1 = V4F_CATLO(t1, t3);
+        const bruun_v4f O1 = V4F_CATHI(t1, t3);
+
+        const bruun_v4f hf = V4F_SET1(0.5f);
+
+        // Level 3 inverse.
+        const bruun_v4f A0w = V4F_MUL(hf, V4F_ADD(E0, O0));
+        const bruun_v4f R3  = V4F_MUL(hf, V4F_SUB(E0, O0));
+        const bruun_v4f I3  = V4F_MUL(hf, V4F_ADD(E1, O1));
+        const bruun_v4f A1w = V4F_MUL(hf, V4F_SUB(E1, O1));
+        const bruun_v4f c4 = V4F_LD(t.c4);
+        const bruun_v4f s4 = V4F_LD(t.s4);
+        const bruun_v4f B0w = V4F_ADD(V4F_MUL(c4, R3), V4F_MUL(s4, I3));
+        const bruun_v4f B1w = V4F_SUB(V4F_MUL(c4, I3), V4F_MUL(s4, R3));
+
+        // Level 2 inverse.
+        const bruun_v4f abL = V4F_ZIPLO(A0w, B0w);
+        const bruun_v4f abH = V4F_ZIPHI(A0w, B0w);
+        const bruun_v4f cdL = V4F_ZIPLO(A1w, B1w);
+        const bruun_v4f cdH = V4F_ZIPHI(A1w, B1w);
+        const bruun_v4f P = V4F_CATLO(abL, abH);
+        const bruun_v4f M = V4F_CATHI(abL, abH);
+        const bruun_v4f Q = V4F_CATLO(cdL, cdH);
+        const bruun_v4f W = V4F_CATHI(cdL, cdH);
+
+        const bruun_v4f A0v = V4F_MUL(hf, V4F_ADD(P, M));
+        const bruun_v4f R2  = V4F_MUL(hf, V4F_SUB(P, M));
+        const bruun_v4f I2  = V4F_MUL(hf, V4F_ADD(Q, W));
+        const bruun_v4f A1v = V4F_MUL(hf, V4F_SUB(Q, W));
+        const bruun_v4f c2 = V4F_LD(t.c2d);
+        const bruun_v4f s2 = V4F_LD(t.s2d);
+        const bruun_v4f B0v = V4F_ADD(V4F_MUL(c2, R2), V4F_MUL(s2, I2));
+        const bruun_v4f B1v = V4F_SUB(V4F_MUL(c2, I2), V4F_MUL(s2, R2));
+
+        // Level 1 inverse.
+        const bruun_v4f c0a = V4F_CATLO(A0v, B0v);
+        const bruun_v4f c1a = V4F_CATHI(A0v, B0v);
+        const bruun_v4f c0b = V4F_CATLO(A1v, B1v);
+        const bruun_v4f c1b = V4F_CATHI(A1v, B1v);
+
+        const bruun_v4f A0 = V4F_MUL(hf, V4F_ADD(c0a, c1a));
+        const bruun_v4f R1 = V4F_MUL(hf, V4F_SUB(c0a, c1a));
+        const bruun_v4f I1 = V4F_MUL(hf, V4F_ADD(c0b, c1b));
+        const bruun_v4f A1 = V4F_MUL(hf, V4F_SUB(c0b, c1b));
+        const bruun_v4f c1v = V4F_SET1(t.c1);
+        const bruun_v4f s1v = V4F_SET1(t.s1);
+        const bruun_v4f B0 = V4F_ADD(V4F_MUL(c1v, R1), V4F_MUL(s1v, I1));
+        const bruun_v4f B1 = V4F_SUB(V4F_MUL(c1v, I1), V4F_MUL(s1v, R1));
+
+        V4F_ST(p,      A0);
+        V4F_ST(p + 4,  B0);
+        V4F_ST(p + 8,  A1);
+        V4F_ST(p + 12, B1);
+#else
+        norm_q_inv_f32(p,      1, t.c4[0], t.s4[0]);
+        norm_q_inv_f32(p + 4,  1, t.c4[1], t.s4[1]);
+        norm_q_inv_f32(p + 8,  1, t.c4[2], t.s4[2]);
+        norm_q_inv_f32(p + 12, 1, t.c4[3], t.s4[3]);
+        norm_q_inv_f32(p,      2, t.c2d[0], t.s2d[0]);
+        norm_q_inv_f32(p + 8,  2, t.c2d[2], t.s2d[2]);
+        norm_q_inv_f32(p,      4, t.c1,    t.s1);
+#endif
+    }
+
+    void rec_fwd_res_f32(float* RESTRICT v, int q, int m) const {
+        if (q >= 16) {
+            norm2_fused_f32(v, q, CF[m], SF[m], CF[2*m], SF[2*m], CF[2*m+1], SF[2*m+1]);
+            const int qq = q >> 2;
+            rec_fwd_res_f32(v,       qq, 4*m);
+            rec_fwd_res_f32(v + q,   qq, 4*m + 1);
+            rec_fwd_res_f32(v + 2*q, qq, 4*m + 2);
+            rec_fwd_res_f32(v + 3*q, qq, 4*m + 3);
+            return;
+        }
+        if (q == 8) {
+            norm_q_fwd_f32(v, 8, CF[m], SF[m]);
+            codelet_d3_tw_res_f32(v, TWF[2*m]);
+            codelet_d3_tw_res_f32(v + 16, TWF[2*m + 1]);
+            return;
+        }
+        codelet_d3_tw_res_f32(v, TWF[m]);
+    }
+
+    void residue_spine_tail_fwd_f32(float* RESTRICT v) const {
+        codelet_d3_tw_res_f32(v + 16, TWF[1]);
+        binomial_fwd_f32(v, 8);
+        norm_q_fwd_f32(v + 8, 2, CF[1], SF[1]);
+        norm_q1_fwd_f32(v + 8, CF[2], SF[2]);
+        norm_q1_fwd_f32(v + 12, CF[3], SF[3]);
+        binomial_fwd_f32(v, 4);
+        norm_q1_fwd_f32(v + 4, CF[1], SF[1]);
+        binomial_fwd_f32(v, 2);
+    }
+
+    // Fast depth-first float residue forward with fused input copy. Requires N >= 64.
+    void forward_residues_recursive_f32(const float* RESTRICT input, float* RESTRICT v) const {
+        binomial_oop_f32(input, v, N / 2);
+
+        for (int h = N / 2; h >= 32; h >>= 1) {
+            rec_fwd_res_f32(v + h, h >> 2, 1);
+            binomial_fwd_f32(v, h >> 1);
+        }
+
+        residue_spine_tail_fwd_f32(v);
+    }
+
+    void forward_stage_f32(float* RESTRICT v, int jj) const {
+        const int s = N >> jj;
+        const int h = s >> 1;
+        const int q = s >> 2;
+        const int m_end = 1 << jj;
+
+        binomial_fwd_f32(v, h);
+
+        if (q == 1) {
+            for (int m = 1; m < m_end; ++m) norm_q1_fwd_f32(v + m*s, CF[m], SF[m]);
+        } else if (q == 2) {
+            for (int m = 1; m < m_end; ++m) norm_q2_fwd_f32(v + m*s, CF[m], SF[m]);
+        } else {
+            for (int m = 1; m < m_end; ++m) norm_q_fwd_f32(v + m*s, q, CF[m], SF[m]);
+        }
+    }
+
+    void forward_residues_inplace_f32(float* RESTRICT v) const {
+        for (int jj = 0; jj < L - 1; ++jj) {
+            forward_stage_f32(v, jj);
+        }
+    }
+
+    // Time -> residues, float. Leaf m lands in (v[2m], v[2m+1]); v[0], v[1]
+    // carry DC and Nyquist content exactly as in the double residue domain.
+    void forward_residues_f32(const float* RESTRICT input, float* RESTRICT v) const {
+        if (fuse_tail && N >= 64) {
+            forward_residues_recursive_f32(input, v);
+            return;
+        }
+        std::memcpy(v, input, sizeof(float) * N);
+        forward_residues_inplace_f32(v);
+    }
+
+    void rec_inv_res_f32(float* RESTRICT v, int q, int m) const {
+        if (q >= 16) {
+            const int qq = q >> 2;
+            rec_inv_res_f32(v,       qq, 4*m);
+            rec_inv_res_f32(v + q,   qq, 4*m + 1);
+            rec_inv_res_f32(v + 2*q, qq, 4*m + 2);
+            rec_inv_res_f32(v + 3*q, qq, 4*m + 3);
+            norm2_inv_fused_f32(v, q, CF[m], SF[m], CF[2*m], SF[2*m], CF[2*m+1], SF[2*m+1]);
+            return;
+        }
+        if (q == 8) {
+            codelet_d3_tw_res_inv_f32(v, TWF[2*m]);
+            codelet_d3_tw_res_inv_f32(v + 16, TWF[2*m + 1]);
+            norm_q_inv_f32(v, 8, CF[m], SF[m]);
+            return;
+        }
+        codelet_d3_tw_res_inv_f32(v, TWF[m]);
+    }
+
+    void residue_spine_tail_inv_f32(float* RESTRICT v) const {
+        binomial_inv_f32(v, 2);
+        norm_q_inv_f32(v + 4, 1, CF[1], SF[1]);
+        binomial_inv_f32(v, 4);
+        norm_q_inv_f32(v + 8, 1, CF[2], SF[2]);
+        norm_q_inv_f32(v + 12, 1, CF[3], SF[3]);
+        norm_q_inv_f32(v + 8, 2, CF[1], SF[1]);
+        binomial_inv_f32(v, 8);
+        codelet_d3_tw_res_inv_f32(v + 16, TWF[1]);
+    }
+
+    // Exact reverse of forward_residues_recursive_f32. Requires N >= 64.
+    void inverse_residues_recursive_f32(float* RESTRICT v) const {
+        residue_spine_tail_inv_f32(v);
+
+        for (int h = 32; h <= N / 2; h <<= 1) {
+            binomial_inv_f32(v, h >> 1);
+            rec_inv_res_f32(v + h, h >> 2, 1);
+        }
+
+        binomial_inv_f32(v, N / 2);
+    }
+
+    void inverse_residues_inplace_f32(float* RESTRICT v) const {
+        if (fuse_tail && N >= 64) {
+            inverse_residues_recursive_f32(v);
+            return;
+        }
+
+        for (int jj = L - 2; jj >= 0; --jj) {
+            const int s = N >> jj;
+            const int q = s >> 2;
+            const int m_end = 1 << jj;
+
+            for (int m = m_end - 1; m > 0; --m) {
+                norm_q_inv_f32(v + m*s, q, CF[m], SF[m]);
             }
+
+            binomial_inv_f32(v, s >> 1);
         }
-
-        if (inverse) {
-            const float scale = 1.0f / float(n);
-            scale_complex_work_f32(re, im, n, scale);
-        }
-    }
-
-    void forward_standard_fft_f32(const float* RESTRICT input,
-                                  complex_f32_t* RESTRICT X,
-                                  float* RESTRICT work) const {
-        float* RESTRICT re = work;
-        float* RESTRICT im = work + N;
-        copy_real_to_complex_work_f32(input, re, im, N);
-
-        complex_fft_f32(re, im, N, false, F32_TW_RE.data(), F32_TW_IM.data());
-        pack_standard_spectrum_f32(re, im, X, NB);
-    }
-
-    void inverse_standard_fft_f32(const complex_f32_t* RESTRICT X, float* RESTRICT out) const {
-        std::vector<float> work(static_cast<size_t>(2 * N));
-        float* RESTRICT re = work.data();
-        float* RESTRICT im = work.data() + N;
-
-        unpack_standard_spectrum_f32(X, re, im, N);
-
-        complex_fft_f32(re, im, N, true, F32_TW_RE.data(), F32_TW_IM.data());
-        copy_real_output_f32(re, out, N);
     }
 
     static inline void norm_q1_fwd(double* RESTRICT p, double c, double s) {
