@@ -10,14 +10,18 @@ Invertibility is stable and guaranteed. SFDR tracks FFTW in double precision and
 
 The key point is that the algorithmic coordinate system is faster before optimization enters the conversation. Bruun’s route produces a native spectral representation with less necessary layout work than a conventional standard-order FFT. The optimized implementation then amplifies that advantage with SIMD, fused tails, heap-optimized native order, and cache-conscious scheduling, but the root advantage is not merely AVX or NEON.
 
-BFFT’s native layout is the natural fast coordinate system. Standard FFT order is provided by a final N/2-bin conversion. That conversion is comparable to the layout work other FFTs perform internally, while native output exposes the lower-cost path directly. Experimenting discovered:
+Bruun supplied the theoretical doorway: real-coefficient factor trees, paired conjugate roots, and the forward transform idea. But the thing we are calling BFFT is not simply “Bruun, implemented.” It is the result of a reconstruction and a sequence of additional discoveries, some actually similar to work in the literature already: Chinese remainder theorem framing, exact inverse, coefficient ladder, normalized local-complex basis, cache/depth-first scheduling, fused scatter versus two-phase output policy, and residue-domain usage where the complex FFT chart disappears. 
+
+Our normalized-basis move is especially not “just Bruun.” It changes the leaf representation from r0 + r1 z to r0 + r1 e, with e = (z - cos(alpha)) / sin(alpha) and e² = -1, which makes every nontrivial leaf into a local complex plane and makes standard bin conversion free at the leaf-coordinate level: X[k].re = r0, X[k].im = -r1.
+
+BFFT’s native layout is the natural fast coordinate system. Standard FFT order is provided by a final N/2-bin conversion. That conversion is comparable to the layout work other FFTs perform internally, while native output exposes the lower-cost path directly. Experimenting further yields that the rearrangement follows rules:
 
 ```
-Experimenting discovered that the rearrangement is not arbitrary. It has a shell-structured bit law. For a transform of size N = 2^L, let M = N/2 and let W = log2(M) = L - 1. The nontrivial complex bins are indexed by native positions pos = 1..M-1. Each native position belongs to a dyadic shell
+ For a transform of size N = 2^L, let M = N/2 and let W = log2(M) = L - 1. The nontrivial complex bins are indexed by native positions pos = 1..M-1. Each native position belongs to a dyadic shell
 
 s = floor(log2(pos)).
 
-The same shell is also the shell of the Bruun leaf index m, so floor(log2(m)) = s. Within a shell, the mapping from native position to Bruun leaf is fixed by simple bit rules. Write bit(x,b) for bit b of x, and write
+The same shell is also the shell of the BFFT leaf index m, so floor(log2(m)) = s. Within a shell, the mapping from native position to Bruun leaf is fixed by simple bit rules. Write bit(x,b) for bit b of x, and write
 
 gray(pos) = pos ^ (pos >> 1).
 
@@ -74,8 +78,6 @@ k_{W-1} = 1 ^ bit(pos - 1, 1) for s >= 2.
 All bits below the anchor are zero. Together, these equations give the full native-position-to-standard-bin route:
 
 pos -> m -> k.
-
-The rules were verified for every nontrivial bin for power-of-two sizes from N = 32 through N = 4,194,304. So the native-to-standard rearrangement is not a random permutation table. It is a deterministic dyadic-shell coordinate transform: the native layout is arranged by Bruun leaf shells and Gray/XOR orientation choices, while the standard layout is obtained by a predictable bit transposition and shell-dependent high-bit placement.
 
 ```
 
