@@ -7,7 +7,7 @@ gets stale, replace or refine tasks before doing implementation work.
   fix only small failures if found, then record the result in `PROGRESS.md`.
 - [x] Validate staged installation with `DESTDIR` and `PREFIX`, then record the
   installed file list and any fixes in `PROGRESS.md`.
-- [ ] Build a tiny downstream smoke program against the staged install and
+- [x] Build a tiny downstream smoke program against the staged install and
   document the exact compile/link command.
 - [ ] Audit `include/bfft/bfft.h`, `include/bfft/bfft.hpp`, `README.md`, and
   `docs/api.md` for API mismatches.

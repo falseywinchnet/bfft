@@ -25,7 +25,7 @@ Agent loop status: active
 - [x] Public docs exist.
 - [x] Clean `make clean`, `make`, and `make test` result recorded.
 - [x] Staged install validated with `DESTDIR`.
-- [ ] Downstream staged-install smoke program validated.
+- [x] Downstream staged-install smoke program validated.
 - [ ] API, examples, and docs audited against current headers.
 - [ ] Release checklist updated with final validation evidence.
 - [ ] Placeholder TODO scan completed.
@@ -45,3 +45,10 @@ Agent loop status: active
   `/usr/lib/libbfft.a`, and `/usr/lib/libbfft.so`. Modes were `0644` for
   headers/static library and `0755` for the shared library. No install fixes
   were needed.
+- Downstream staged-install smoke: ran `make clean`, `make`, `make test`, then
+  `make install DESTDIR=/tmp/bfft-stage.downstream.6Dg0BM PREFIX=/usr`.
+  Built an ignored C++ smoke program against the staged install with
+  `c++ -std=c++17 -I/tmp/bfft-stage.downstream.6Dg0BM/usr/include build/downstream_smoke.cpp /tmp/bfft-stage.downstream.6Dg0BM/usr/lib/libbfft.a -lm -o build/downstream_smoke`.
+  Ran `build/downstream_smoke`.
+  Result: all passed. The smoke output reported `backend=neon-128` and standard
+  policy `fused-scatter-plus-layout-convert`.

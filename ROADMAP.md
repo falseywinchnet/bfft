@@ -12,7 +12,7 @@ Status: complete for the current workspace.
 
 ## Phase 2: install and downstream smoke
 
-Status: in progress.
+Status: complete for the current workspace.
 
 - Staged installation with `DESTDIR` and `PREFIX` is validated.
 - Build a tiny downstream C or C++ program against the staged install.
