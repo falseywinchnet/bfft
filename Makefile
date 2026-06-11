@@ -15,7 +15,7 @@ LDFLAGS ?=
 LDLIBS ?= -lm
 
 UNAME_M := $(shell uname -m 2>/dev/null || echo unknown)
-AVX2_FLAGS := $(shell printf '#include <immintrin.h>\nint main(){__m256d x=_mm256_set1_pd(1.0); return (int)_mm256_cvtsd_f64(x);}\n' | $(CXX) -x c++ -std=c++17 -mavx2 -mfma - -o /tmp/bfft-avx2-test >/dev/null 2>&1 && echo '-mavx2 -mfma')
+AVX2_FLAGS := $(shell $(CXX) -x c++ -std=c++17 -mavx2 -mfma -c /dev/null -o /tmp/bfft-avx2-test.o >/dev/null 2>&1 && rm -f /tmp/bfft-avx2-test.o && echo '-mavx2 -mfma')
 ifeq ($(findstring x86_64,$(UNAME_M)),x86_64)
   AUTO_SIMD_FLAGS := $(AVX2_FLAGS)
 else

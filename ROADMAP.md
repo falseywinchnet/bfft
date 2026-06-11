@@ -4,11 +4,15 @@ Current target: prepare BFFT for a first `0.1.0` public release.
 
 ## Phase 1: baseline validation
 
+Status: complete for the current workspace.
+
 - Run the clean build and test workflow.
 - Fix small build or test failures if found.
 - Record the exact validation result in `PROGRESS.md`.
 
 ## Phase 2: install and downstream smoke
+
+Status: next.
 
 - Validate staged installation with `DESTDIR` and `PREFIX`.
 - Build a tiny downstream C or C++ program against the staged install.

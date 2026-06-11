@@ -23,7 +23,7 @@ Agent loop status: active
 - [x] Examples exist.
 - [x] Tests are wired into `make test`.
 - [x] Public docs exist.
-- [ ] Clean `make clean`, `make`, and `make test` result recorded.
+- [x] Clean `make clean`, `make`, and `make test` result recorded.
 - [ ] Staged install validated with `DESTDIR`.
 - [ ] Downstream staged-install smoke program validated.
 - [ ] API, examples, and docs audited against current headers.
@@ -34,3 +34,7 @@ Agent loop status: active
 
 - Initial scaffold: added durable state files for unattended Codex rounds.
   Validation for the library itself has not been run by this scaffold task.
+- Baseline validation: fixed the Makefile AVX2/FMA compiler probe so GNU make
+  can parse it, then ran `make clean`, `make`, and `make test`.
+  Result: all passed. Test output reported `backend=neon-128` and standard
+  policy `fused-scatter-plus-layout-convert`.
