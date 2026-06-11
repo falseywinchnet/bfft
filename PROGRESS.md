@@ -88,3 +88,9 @@ Agent loop status: active
   blocker.
   Result: blocked by host filesystem space. The release checklist evidence task
   remains unchecked, and `docs/release-checklist.md` was not changed.
+
+  human note: i manually cleared git caches. this turns out to have eaten 16GB.
+  i think theres a bug somewhere in the codex client side runtime.
+  remember to check your git caches periodically- idk what the frick its doing.
+  after that, i manually merged everything so some notes need checking and editing before proceeding.
+  i then manually wrote a new benchmark.cpp and ran it. looking good so far! lets keep going.
