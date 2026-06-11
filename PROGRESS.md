@@ -24,7 +24,7 @@ Agent loop status: active
 - [x] Tests are wired into `make test`.
 - [x] Public docs exist.
 - [x] Clean `make clean`, `make`, and `make test` result recorded.
-- [ ] Staged install validated with `DESTDIR`.
+- [x] Staged install validated with `DESTDIR`.
 - [ ] Downstream staged-install smoke program validated.
 - [ ] API, examples, and docs audited against current headers.
 - [ ] Release checklist updated with final validation evidence.
@@ -38,3 +38,10 @@ Agent loop status: active
   can parse it, then ran `make clean`, `make`, and `make test`.
   Result: all passed. Test output reported `backend=neon-128` and standard
   policy `fused-scatter-plus-layout-convert`.
+- Staged install validation: ran `make clean`, `make`, `make test`, then
+  `make install DESTDIR=/tmp/bfft-stage.IkgTTn PREFIX=/usr`.
+  Result: all passed. The staged files were:
+  `/usr/include/bfft/bfft.h`, `/usr/include/bfft/bfft.hpp`,
+  `/usr/lib/libbfft.a`, and `/usr/lib/libbfft.so`. Modes were `0644` for
+  headers/static library and `0755` for the shared library. No install fixes
+  were needed.
