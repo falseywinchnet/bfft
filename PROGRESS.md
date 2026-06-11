@@ -150,3 +150,8 @@ Agent loop status: active
   conversion. Validation pending full rerun after the table refinement; probe
   evidence so far: `build/tests/bfft_fftw_sfdr_bh7_probe 22 8 22 bh7 f32-native`
   produced `fftw_precision=f32` and `bfft_sfdr_db=144.95579274` at 4M.
+- Documentation polish: added a README precision behavior snapshot for the
+  current BH7 f64/f32 native criteria, expanded `docs/architecture.md` and
+  `docs/api.md` with the rounded float32 twiddle-table behavior, and added
+  local SVG release-asset candidates under `docs/assets/`. Validation: SVG XML
+  parse, `git diff --check`, and `make test` passed on 2026-06-11.

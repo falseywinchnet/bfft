@@ -6,7 +6,7 @@
 BFFT is a small C/C++ real FFT library based on a normalized-basis Bruun transform.
 This trivialization conceals that this approach, among all FFT, might be optimal.
 It also conceals that it is 33% lighter on memory and up to 3x faster than other libraries.
-Invertibility is stable and guaranteed. SDFR is equivalent to FFTW.
+Invertibility is stable and guaranteed. SFDR tracks FFTW in double precision and meets the current native float32 BH7 target.
 
 ## Current scope
 
@@ -125,6 +125,32 @@ The BH7 probe modes are `f64-standard`, `f64-native`, `f32-standard`, and
 available, and falls back to the double-precision FFTW reference otherwise.
 The CSV includes an `fftw_precision` column so mixed-precision and same-precision
 runs are explicit.
+
+## Precision behavior snapshot
+
+![BH7 SFDR summary](docs/assets/bh7-sfdr-card.svg)
+
+These numbers were measured on an Apple M4 NEON build on 2026-06-11 with:
+
+```sh
+make probes
+build/tests/bfft_fftw_sfdr_bh7_probe 22 8 22 bh7 f64-native
+build/tests/bfft_fftw_sfdr_bh7_probe 22 8 22 bh7 f32-native
+```
+
+The probe uses periodic seven-term Blackman-Harris tones, samples eight eligible
+bins at `N = 4194304`, measures both sine and cosine waves, excludes the BH7
+main lobe, and reports the worst row.
+
+| Mode | Reference | Target | BFFT SFDR | Reference SFDR | BFFT/reference rel |
+| --- | --- | ---: | ---: | ---: | ---: |
+| `f64-native` | FFTW f64 | FFTW parity | 197.84799575 dB | 197.84799573 dB | 1.79549659e-16 |
+| `f32-native` | FFTWf f32 | 144 dB | 144.95579274 dB | 139.16529588 dB | 1.13742277e-07 |
+
+The float32 path keeps float buffers, float spectra, and float butterfly math.
+It avoids the folded-bin BH7 spur by using plan-owned float32 twiddle tables
+generated once with explicit `float(...)` rounding, rather than multiplicative
+float twiddle recurrence inside the transform loop.
 
 Stats on a mac M4 circa june 10, 2026:
 NOTE: PFFT is in single precision(FLOAT). BFFT, FFTW both in double precision! Emphasis!

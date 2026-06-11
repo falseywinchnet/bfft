@@ -154,6 +154,12 @@ Native-order float32 calls and converters mirror the double API:
 - `bfft_native_to_standard_f32(plan, native_input, standard_output)`
 - `bfft_standard_to_native_f32(plan, standard_input, native_output)`
 
+The implementation keeps float32 storage and float32 butterfly arithmetic. Plans
+own rounded float32 twiddle tables so repeated transforms avoid float recurrence
+drift. The current native float32 BH7 regression target is 144 dB SFDR after
+native-to-standard conversion; the tracked probe measured 144.95579274 dB at
+`N = 4194304` on the Apple M4 NEON build used for the first release notes.
+
 ## Standard inverse transform
 
 The standard inverse reads ordinary FFT r2c bins and writes `N` time-domain

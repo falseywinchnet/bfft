@@ -51,6 +51,19 @@ double path for work-buffer setup, inverse scaling, and real-output copy. The
 public API still exposes only layout-named calls, not transform-selection
 compile flags.
 
+The current float32 transform keeps its hot butterfly arithmetic in float. Its
+stage twiddles come from plan-owned float32 root tables generated once with
+explicit `float(...)` rounding from double libm values. This avoids the
+multiplicative float twiddle recurrence drift that produced deterministic BH7
+folded-bin spurs near bins such as `N/2 - k`, while keeping the runtime path
+single precision.
+
+The tracked BH7 probe documents the current acceptance behavior. On an Apple M4
+NEON build at `N = 4194304`, sampled with eight eligible bins and sine/cosine
+waves, native float32 BFFT measured 144.95579274 dB SFDR against an FFTWf row of
+139.16529588 dB. Native double measured 197.84799575 dB against FFTW double at
+197.84799573 dB.
+
 ## Future portability work
 
 The initial release validates Linux make/install. The directory layout avoids

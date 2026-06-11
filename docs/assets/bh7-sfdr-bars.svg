@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">BFFT and FFTW BH7 SFDR bar comparison</title>
+  <desc id="desc">Bar chart comparing BFFT f64 native, FFTW f64, BFFT f32 native, FFTWf f32, and the 144 dB f32 target.</desc>
+  <rect width="1200" height="620" fill="#101418"/>
+  <text x="70" y="88" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="44" font-weight="700" fill="#f5f1e8">BH7 SFDR at N = 4194304</text>
+  <text x="70" y="126" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" fill="#b8c2bd">Sampled probe, native output converted to standard order for measurement</text>
+  <line x1="130" y1="500" x2="1090" y2="500" stroke="#66716c"/>
+  <line x1="130" y1="180" x2="130" y2="500" stroke="#66716c"/>
+  <line x1="130" y1="270" x2="1090" y2="270" stroke="#604e2e" stroke-dasharray="8 7"/>
+  <text x="70" y="276" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="18" fill="#d1aa5b">144 dB target</text>
+  <rect x="210" y="104" width="112" height="396" fill="#55b6a7"/>
+  <rect x="360" y="104" width="112" height="396" fill="#78d1c3"/>
+  <rect x="620" y="268" width="112" height="232" fill="#7da2df"/>
+  <rect x="770" y="277" width="112" height="223" fill="#b3c5eb"/>
+  <text x="194" y="535" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" fill="#f5f1e8">BFFT f64</text>
+  <text x="354" y="535" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" fill="#f5f1e8">FFTW f64</text>
+  <text x="604" y="535" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" fill="#f5f1e8">BFFT f32</text>
+  <text x="766" y="535" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" fill="#f5f1e8">FFTWf</text>
+  <text x="188" y="92" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" fill="#f5f1e8">197.848</text>
+  <text x="338" y="92" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" fill="#f5f1e8">197.848</text>
+  <text x="600" y="256" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" fill="#f5f1e8">144.956</text>
+  <text x="754" y="265" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" fill="#f5f1e8">139.165</text>
+  <text x="930" y="438" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22" fill="#f5f1e8">f32 clears target</text>
+  <text x="930" y="470" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="18" fill="#b8c2bd">float twiddles, float butterflies</text>
+</svg>
