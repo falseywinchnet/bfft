@@ -8,6 +8,8 @@ This trivialization conceals that this approach, among all FFT, might be optimal
 It also conceals that it is 33% lighter on memory and up to 3x faster than other libraries.
 Invertibility is stable and guaranteed. SFDR tracks FFTW in double precision and meets the current native float32 BH7 target.
 
+The key point is that the algorithmic coordinate system is faster before optimization enters the conversation. Bruun’s route produces a native spectral representation with less necessary layout work than a conventional standard-order FFT. The optimized implementation then amplifies that advantage with SIMD, fused tails, heap-optimized native order, and cache-conscious scheduling, but the root advantage is not merely AVX or NEON.
+
 BFFT’s native layout is the natural fast coordinate system. Standard FFT order is provided by a final N/2-bin conversion. That conversion is comparable to the layout work other FFTs perform internally, while native output exposes the lower-cost path directly. Experimenting discovered:
 
 ```
