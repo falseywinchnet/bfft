@@ -160,3 +160,10 @@ Agent loop status: active
   error checks. Representative Apple M4 NEON runs show the current f32 complex
   FFT path is correctness-oriented but slower than FFTWf, which sets the next
   optimization target for adapting the double Bruun/SIMD flow to float32.
+- Float32 SIMD adaptation step 1: added a four-lane backend-aware SIMD butterfly
+  for the current float complex FFT path, using the rounded float32 twiddle
+  tables and separate float multiply/add/sub operations. Validation: `make`,
+  `make test`, `git diff --check`, and the 4M BH7 f32-native probe passed on
+  2026-06-11. Benchmark at `N=4194304`, 10 iterations on Apple M4 NEON measured
+  `F32Nat_ns=113912229.2` and `F32Std_ns=103201287.5`, improved from the prior
+  representative `127449254.1` native and `129182533.3` standard rows.

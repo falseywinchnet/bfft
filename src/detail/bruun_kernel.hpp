@@ -98,15 +98,21 @@ static inline float64x2_t bruun_neghi(float64x2_t a) {
 typedef __m128 bruun_v4f;
 #  define V4F_LD(p)       _mm_loadu_ps(p)
 #  define V4F_ST(p, a)    _mm_storeu_ps((p), (a))
+#  define V4F_ADD(a, b)   _mm_add_ps((a), (b))
+#  define V4F_SUB(a, b)   _mm_sub_ps((a), (b))
 #  define V4F_MUL(a, b)   _mm_mul_ps((a), (b))
 #  define V4F_SET1(x)     _mm_set1_ps(x)
+#  define V4F_SET4(a,b,c,d) _mm_setr_ps((a), (b), (c), (d))
 #  define V4F_ZERO()      _mm_setzero_ps()
 #elif defined(BRUUN_NEON_128)
 typedef float32x4_t bruun_v4f;
 #  define V4F_LD(p)       vld1q_f32(p)
 #  define V4F_ST(p, a)    vst1q_f32((p), (a))
+#  define V4F_ADD(a, b)   vaddq_f32((a), (b))
+#  define V4F_SUB(a, b)   vsubq_f32((a), (b))
 #  define V4F_MUL(a, b)   vmulq_f32((a), (b))
 #  define V4F_SET1(x)     vdupq_n_f32(x)
+#  define V4F_SET4(a,b,c,d) vsetq_lane_f32((d), vsetq_lane_f32((c), vsetq_lane_f32((b), vsetq_lane_f32((a), vdupq_n_f32(0.0f), 0), 1), 2), 3)
 #  define V4F_ZERO()      vdupq_n_f32(0.0f)
 #endif
 
@@ -232,6 +238,47 @@ static inline void scale_complex_work_f32(float* RESTRICT re,
         im[i] *= scale;
     }
 }
+
+#if BRUUN_LEVEL >= 1
+static inline bruun_v4f load_twiddle4_f32(const float* RESTRICT table, int tw, int stride) {
+    if (stride == 1) {
+        return V4F_LD(table + tw);
+    }
+
+    return V4F_SET4(table[tw],
+                    table[tw + stride],
+                    table[tw + 2 * stride],
+                    table[tw + 3 * stride]);
+}
+
+static inline void fft_butterfly4_f32(float* RESTRICT re,
+                                      float* RESTRICT im,
+                                      int even,
+                                      int odd,
+                                      int tw,
+                                      int stride,
+                                      bool inverse,
+                                      const float* RESTRICT tw_re_table,
+                                      const float* RESTRICT tw_im_table) {
+    const bruun_v4f tw_re = load_twiddle4_f32(tw_re_table, tw, stride);
+    bruun_v4f tw_im = load_twiddle4_f32(tw_im_table, tw, stride);
+    if (inverse) {
+        tw_im = V4F_SUB(V4F_ZERO(), tw_im);
+    }
+
+    const bruun_v4f u_re = V4F_LD(re + even);
+    const bruun_v4f u_im = V4F_LD(im + even);
+    const bruun_v4f odd_re = V4F_LD(re + odd);
+    const bruun_v4f odd_im = V4F_LD(im + odd);
+    const bruun_v4f v_re = V4F_SUB(V4F_MUL(odd_re, tw_re), V4F_MUL(odd_im, tw_im));
+    const bruun_v4f v_im = V4F_ADD(V4F_MUL(odd_re, tw_im), V4F_MUL(odd_im, tw_re));
+
+    V4F_ST(re + even, V4F_ADD(u_re, v_re));
+    V4F_ST(im + even, V4F_ADD(u_im, v_im));
+    V4F_ST(re + odd, V4F_SUB(u_re, v_re));
+    V4F_ST(im + odd, V4F_SUB(u_im, v_im));
+}
+#endif
 
 static inline void copy_real_output_f32(const float* RESTRICT re,
                                         float* RESTRICT out,
@@ -1665,7 +1712,23 @@ private:
             const int stride = n / len;
 
             for (int i = 0; i < n; i += len) {
-                for (int k = 0; k < half; ++k) {
+                int k = 0;
+#if BRUUN_LEVEL >= 1
+                for (; k + 3 < half; k += 4) {
+                    const int even = i + k;
+                    const int odd = even + half;
+                    fft_butterfly4_f32(re,
+                                       im,
+                                       even,
+                                       odd,
+                                       k * stride,
+                                       stride,
+                                       inverse,
+                                       tw_re_table,
+                                       tw_im_table);
+                }
+#endif
+                for (; k < half; ++k) {
                     const int even = i + k;
                     const int odd = even + half;
                     const int tw = k * stride;
