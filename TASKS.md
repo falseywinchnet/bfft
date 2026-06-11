@@ -21,6 +21,12 @@ gets stale, replace or refine tasks before doing implementation work.
 - [x] Extend tracked FFTW/BH7 probes for float32 native runs: build probes from
   `tests/` with `make probes` and add `f32-native` support to the BH7 SFDR
   comparison path.
+- [x] Fix float32 native BH7 folded-spur regression: compare f32 modes against
+  FFTWf when available, keep double FFTW fallback explicit, and add a
+  `make test` regression for the native f32 BH7 SFDR floor.
+- [ ] Generalize float32 internals toward the double-precision Bruun flow and
+  SIMD plan: adapt the double path structure where it improves shared policy,
+  layout, and backend coverage without exposing user-facing selection flags.
 - [ ] Update `docs/release-checklist.md` with final validation evidence for
   the first `0.1.0` release.
   The previous disk-space blocker has been cleared locally; `make clean`,

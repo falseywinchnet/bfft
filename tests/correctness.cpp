@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <cstdio>
+#include <limits>
 #include <random>
 #include <vector>
 
@@ -60,6 +61,33 @@ double max_spectrum_error_f32(const std::vector<bfft::complex_f32>& a,
         error = std::max(error, static_cast<double>(std::fabs(a[i].im - b[i].im)));
     }
     return error;
+}
+
+
+double bh7_window(std::size_t i, std::size_t n) {
+    const double theta = 2.0 * pi * static_cast<double>(i) / static_cast<double>(n);
+    constexpr double a0 = 0.27105140069342;
+    constexpr double a1 = 0.43329793923448;
+    constexpr double a2 = 0.21812299954311;
+    constexpr double a3 = 0.06592544638803;
+    constexpr double a4 = 0.01081174209837;
+    constexpr double a5 = 0.00077658482522;
+    constexpr double a6 = 0.00001388721735;
+
+    return a0
+         - a1 * std::cos(theta)
+         + a2 * std::cos(2.0 * theta)
+         - a3 * std::cos(3.0 * theta)
+         + a4 * std::cos(4.0 * theta)
+         - a5 * std::cos(5.0 * theta)
+         + a6 * std::cos(6.0 * theta);
+}
+
+bool is_bh7_main_lobe(std::size_t bin, std::size_t k) {
+    constexpr std::size_t radius = 6;
+    const std::size_t lo = k > radius ? k - radius : 0;
+    const std::size_t hi = k + radius;
+    return bin >= lo && bin <= hi;
 }
 
 bool check_size(std::size_t n) {
@@ -177,6 +205,53 @@ bool check_size_f32(std::size_t n) {
     return true;
 }
 
+
+bool check_bh7_f32_native_sfdr(void) {
+    constexpr std::size_t n = 32768;
+    constexpr std::size_t k = 7;
+    constexpr double target_db = 144.0;
+
+    bfft::plan plan(n);
+    std::vector<float> input(n);
+    const double omega = 2.0 * pi * static_cast<double>(k) / static_cast<double>(n);
+    for (std::size_t i = 0; i < n; ++i) {
+        input[i] = static_cast<float>(std::sin(omega * static_cast<double>(i)) * bh7_window(i, n));
+    }
+
+    std::vector<float> work(plan.work_size_f32());
+    std::vector<bfft::complex_f32> native(plan.bins());
+    std::vector<bfft::complex_f32> standard(plan.bins());
+    plan.forward_native_f32(input.data(), native.data(), work.data());
+    plan.native_to_standard_f32(native.data(), standard.data());
+
+    const double carrier = std::hypot(static_cast<double>(standard[k].re), static_cast<double>(standard[k].im));
+    double max_spur = 0.0;
+    std::size_t spur_bin = 0;
+    for (std::size_t i = 0; i < standard.size(); ++i) {
+        if (is_bh7_main_lobe(i, k)) {
+            continue;
+        }
+        const double spur = std::hypot(static_cast<double>(standard[i].re), static_cast<double>(standard[i].im));
+        if (spur > max_spur) {
+            max_spur = spur;
+            spur_bin = i;
+        }
+    }
+
+    const double sfdr_db = max_spur > 0.0 ? 20.0 * std::log10(carrier / max_spur)
+                                          : std::numeric_limits<double>::infinity();
+    if (sfdr_db < target_db) {
+        std::fprintf(stderr,
+                     "f32 native BH7 SFDR %.8f dB below %.8f dB, spur bin %zu\n",
+                     sfdr_db,
+                     target_db,
+                     spur_bin);
+        return false;
+    }
+
+    return true;
+}
+
 } // namespace
 
 int main(void) {
@@ -188,6 +263,9 @@ int main(void) {
         if (!check_size_f32(n)) {
             return 1;
         }
+    }
+    if (!check_bh7_f32_native_sfdr()) {
+        return 1;
     }
     std::printf("correctness ok backend=%s\n", bfft::backend_name().c_str());
     return 0;

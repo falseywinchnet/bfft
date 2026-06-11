@@ -1646,32 +1646,34 @@ private:
         }
 
         for (int len = 2; len <= n; len <<= 1) {
-            float angle = static_cast<float>(-2.0 * M_PI / static_cast<double>(len));
+            double angle = -2.0 * M_PI / static_cast<double>(len);
             if (inverse) {
                 angle = -angle;
             }
-            const float wlen_re = std::cos(angle);
-            const float wlen_im = std::sin(angle);
+            const double wlen_re = std::cos(angle);
+            const double wlen_im = std::sin(angle);
             const int half = len >> 1;
 
             for (int i = 0; i < n; i += len) {
-                float w_re = 1.0f;
-                float w_im = 0.0f;
+                double w_re = 1.0;
+                double w_im = 0.0;
                 for (int k = 0; k < half; ++k) {
                     const int even = i + k;
                     const int odd = even + half;
-                    const float u_re = re[even];
-                    const float u_im = im[even];
-                    const float v_re = re[odd] * w_re - im[odd] * w_im;
-                    const float v_im = re[odd] * w_im + im[odd] * w_re;
+                    const double u_re = static_cast<double>(re[even]);
+                    const double u_im = static_cast<double>(im[even]);
+                    const double odd_re = static_cast<double>(re[odd]);
+                    const double odd_im = static_cast<double>(im[odd]);
+                    const double v_re = odd_re * w_re - odd_im * w_im;
+                    const double v_im = odd_re * w_im + odd_im * w_re;
 
-                    re[even] = u_re + v_re;
-                    im[even] = u_im + v_im;
-                    re[odd] = u_re - v_re;
-                    im[odd] = u_im - v_im;
+                    re[even] = static_cast<float>(u_re + v_re);
+                    im[even] = static_cast<float>(u_im + v_im);
+                    re[odd] = static_cast<float>(u_re - v_re);
+                    im[odd] = static_cast<float>(u_im - v_im);
 
-                    const float next_re = w_re * wlen_re - w_im * wlen_im;
-                    const float next_im = w_re * wlen_im + w_im * wlen_re;
+                    const double next_re = w_re * wlen_re - w_im * wlen_im;
+                    const double next_im = w_re * wlen_im + w_im * wlen_re;
                     w_re = next_re;
                     w_im = next_im;
                 }

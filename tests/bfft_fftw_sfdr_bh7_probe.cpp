@@ -21,6 +21,7 @@ namespace {
 
 using fftw_plan = void*;
 using fftw_complex = double[2];
+using fftwf_complex = float[2];
 
 constexpr unsigned FFTW_ESTIMATE_FLAG = 64U;
 constexpr double pi = 3.141592653589793238462643383279502884;
@@ -79,6 +80,69 @@ struct FFTW {
   }
 
   ~FFTW() {
+#if !defined(_WIN32)
+    if (lib) {
+      dlclose(lib);
+    }
+#endif
+  }
+};
+
+
+struct FFTWf {
+  void* lib = nullptr;
+  fftw_plan (*plan_dft_r2c_1d)(int, float*, fftwf_complex*, unsigned) = nullptr;
+  void (*execute)(const fftw_plan) = nullptr;
+  void (*destroy_plan)(fftw_plan) = nullptr;
+  void* (*malloc_fn)(std::size_t) = nullptr;
+  void (*free_fn)(void*) = nullptr;
+
+  bool load() {
+#if defined(_WIN32)
+    return false;
+#else
+    const char* names[] = {
+      "libfftw3f.dylib",
+      "libfftw3f.3.dylib",
+      "/opt/homebrew/lib/libfftw3f.dylib",
+      "/usr/local/lib/libfftw3f.dylib",
+      "libfftw3f.so.3",
+      "libfftw3f.so",
+      nullptr
+    };
+
+    for (int i = 0; names[i]; ++i) {
+      lib = dlopen(names[i], RTLD_NOW);
+      if (lib) {
+        break;
+      }
+    }
+
+    if (!lib) {
+      return false;
+    }
+
+    plan_dft_r2c_1d =
+      reinterpret_cast<fftw_plan (*)(int, float*, fftwf_complex*, unsigned)>(
+        dlsym(lib, "fftwf_plan_dft_r2c_1d"));
+    execute =
+      reinterpret_cast<void (*)(const fftw_plan)>(
+        dlsym(lib, "fftwf_execute"));
+    destroy_plan =
+      reinterpret_cast<void (*)(fftw_plan)>(
+        dlsym(lib, "fftwf_destroy_plan"));
+    malloc_fn =
+      reinterpret_cast<void* (*)(std::size_t)>(
+        dlsym(lib, "fftwf_malloc"));
+    free_fn =
+      reinterpret_cast<void (*)(void*)>(
+        dlsym(lib, "fftwf_free"));
+
+    return plan_dft_r2c_1d && execute && destroy_plan && malloc_fn && free_fn;
+#endif
+  }
+
+  ~FFTWf() {
 #if !defined(_WIN32)
     if (lib) {
       dlclose(lib);
@@ -335,9 +399,40 @@ SpectrumMetrics measure_fftw(const fftw_complex* y, std::size_t bins, std::size_
   return m;
 }
 
-template <typename Complex>
+
+SpectrumMetrics measure_fftw(const fftwf_complex* y, std::size_t bins, std::size_t k, int radius) {
+  SpectrumMetrics m;
+  m.carrier = hypot_complex(y[k][0], y[k][1]);
+  double max_spur = 0.0;
+  long double spur_power = 0.0L;
+  std::size_t spur_count = 0;
+
+  for (std::size_t i = 0; i < bins; ++i) {
+    if (is_main_lobe(i, k, radius)) {
+      continue;
+    }
+    const double a = hypot_complex(y[i][0], y[i][1]);
+    if (a > max_spur) {
+      max_spur = a;
+      m.spur_bin = i;
+    }
+    spur_power += static_cast<long double>(a) * static_cast<long double>(a);
+    ++spur_count;
+  }
+
+  if (m.carrier > 0.0) {
+    m.spur_rel = max_spur / m.carrier;
+    m.rms_spur_rel = spur_count ? std::sqrt(static_cast<double>(spur_power / static_cast<long double>(spur_count))) / m.carrier : 0.0;
+    m.sfdr_db = max_spur > 0.0 ? 20.0 * std::log10(m.carrier / max_spur) : std::numeric_limits<double>::infinity();
+    m.spur_dbc = max_spur > 0.0 ? 20.0 * std::log10(max_spur / m.carrier) : -std::numeric_limits<double>::infinity();
+  }
+
+  return m;
+}
+
+template <typename Complex, typename RefComplex>
 double max_bfft_vs_fftw_rel(const std::vector<Complex>& bfft_y,
-                            const fftw_complex* fftw_y,
+                            const RefComplex* fftw_y,
                             std::size_t bins,
                             double denom) {
   if (denom <= 0.0) {
@@ -373,6 +468,7 @@ struct WorstRow {
   std::string policy;
   std::string window;
   std::string bfft_mode;
+  std::string fftw_precision;
   std::size_t transforms = 0;
   std::size_t k = 0;
   char wave = '?';
@@ -382,7 +478,7 @@ struct WorstRow {
   double mismatch_rel = 0.0;
 };
 
-WorstRow run_one_size(std::size_t n, std::size_t bins_per_size, WindowSpec window, BfftModeSpec bfft_mode, FFTW& fftw) {
+WorstRow run_one_size(std::size_t n, std::size_t bins_per_size, WindowSpec window, BfftModeSpec bfft_mode, FFTW& fftw, FFTWf* fftwf) {
   const std::size_t bins = n / 2 + 1;
   const std::vector<std::size_t> ks = choose_bins(n, bins_per_size, window.main_radius);
 
@@ -390,6 +486,8 @@ WorstRow run_one_size(std::size_t n, std::size_t bins_per_size, WindowSpec windo
   worst.n = n;
   worst.window = window.name;
   worst.bfft_mode = bfft_mode.name;
+  const bool use_fftwf = is_f32_mode(bfft_mode.mode) && fftwf;
+  worst.fftw_precision = use_fftwf ? "f32" : "f64";
 
   bfft::plan plan(n);
   if (is_native_mode(bfft_mode.mode)) {
@@ -413,23 +511,48 @@ WorstRow run_one_size(std::size_t n, std::size_t bins_per_size, WindowSpec windo
   std::vector<bfft::complex> scratch(plan.native_scratch_size());
   std::vector<bfft::complex_f32> scratch_f32(plan.native_scratch_size());
 
-  double* fftw_in = static_cast<double*>(fftw.malloc_fn(sizeof(double) * n));
-  fftw_complex* fftw_out = static_cast<fftw_complex*>(fftw.malloc_fn(sizeof(fftw_complex) * bins));
-  if (!fftw_in || !fftw_out) {
-    if (fftw_in) {
-      fftw.free_fn(fftw_in);
-    }
-    if (fftw_out) {
-      fftw.free_fn(fftw_out);
-    }
-    throw std::runtime_error("fftw allocation failed");
-  }
+  double* fftw_in = nullptr;
+  fftw_complex* fftw_out = nullptr;
+  float* fftwf_in = nullptr;
+  fftwf_complex* fftwf_out = nullptr;
+  fftw_plan fp = nullptr;
 
-  fftw_plan fp = fftw.plan_dft_r2c_1d(static_cast<int>(n), fftw_in, fftw_out, FFTW_ESTIMATE_FLAG);
-  if (!fp) {
-    fftw.free_fn(fftw_in);
-    fftw.free_fn(fftw_out);
-    throw std::runtime_error("fftw plan creation failed");
+  if (use_fftwf) {
+    fftwf_in = static_cast<float*>(fftwf->malloc_fn(sizeof(float) * n));
+    fftwf_out = static_cast<fftwf_complex*>(fftwf->malloc_fn(sizeof(fftwf_complex) * bins));
+    if (!fftwf_in || !fftwf_out) {
+      if (fftwf_in) {
+        fftwf->free_fn(fftwf_in);
+      }
+      if (fftwf_out) {
+        fftwf->free_fn(fftwf_out);
+      }
+      throw std::runtime_error("fftwf allocation failed");
+    }
+    fp = fftwf->plan_dft_r2c_1d(static_cast<int>(n), fftwf_in, fftwf_out, FFTW_ESTIMATE_FLAG);
+    if (!fp) {
+      fftwf->free_fn(fftwf_in);
+      fftwf->free_fn(fftwf_out);
+      throw std::runtime_error("fftwf plan creation failed");
+    }
+  } else {
+    fftw_in = static_cast<double*>(fftw.malloc_fn(sizeof(double) * n));
+    fftw_out = static_cast<fftw_complex*>(fftw.malloc_fn(sizeof(fftw_complex) * bins));
+    if (!fftw_in || !fftw_out) {
+      if (fftw_in) {
+        fftw.free_fn(fftw_in);
+      }
+      if (fftw_out) {
+        fftw.free_fn(fftw_out);
+      }
+      throw std::runtime_error("fftw allocation failed");
+    }
+    fp = fftw.plan_dft_r2c_1d(static_cast<int>(n), fftw_in, fftw_out, FFTW_ESTIMATE_FLAG);
+    if (!fp) {
+      fftw.free_fn(fftw_in);
+      fftw.free_fn(fftw_out);
+      throw std::runtime_error("fftw plan creation failed");
+    }
   }
 
   for (std::size_t k : ks) {
@@ -437,8 +560,15 @@ WorstRow run_one_size(std::size_t n, std::size_t bins_per_size, WindowSpec windo
       const bool sine = wave_i != 0;
       make_tone(input, k, sine, window.kind);
 
-      std::copy(input.begin(), input.end(), fftw_in);
-      fftw.execute(fp);
+      if (use_fftwf) {
+        for (std::size_t i = 0; i < n; ++i) {
+          fftwf_in[i] = static_cast<float>(input[i]);
+        }
+        fftwf->execute(fp);
+      } else {
+        std::copy(input.begin(), input.end(), fftw_in);
+        fftw.execute(fp);
+      }
 
       SpectrumMetrics bm;
       double mismatch = 0.0;
@@ -453,9 +583,13 @@ WorstRow run_one_size(std::size_t n, std::size_t bins_per_size, WindowSpec windo
           plan.forward_f32(input_f32.data(), bfft_out_f32.data(), work_f32.data(), scratch_f32.data());
         }
         bm = measure_bfft(bfft_out_f32, k, window.main_radius);
-        const SpectrumMetrics fm_tmp = measure_fftw(fftw_out, bins, k, window.main_radius);
+        const SpectrumMetrics fm_tmp = use_fftwf
+          ? measure_fftw(fftwf_out, bins, k, window.main_radius)
+          : measure_fftw(fftw_out, bins, k, window.main_radius);
         const double denom = std::max(bm.carrier, fm_tmp.carrier);
-        mismatch = max_bfft_vs_fftw_rel(bfft_out_f32, fftw_out, bins, denom);
+        mismatch = use_fftwf
+          ? max_bfft_vs_fftw_rel(bfft_out_f32, fftwf_out, bins, denom)
+          : max_bfft_vs_fftw_rel(bfft_out_f32, fftw_out, bins, denom);
       } else {
         if (bfft_mode.mode == BfftMode::f64_native) {
           plan.forward_native(input.data(), bfft_native.data(), work.data());
@@ -469,7 +603,9 @@ WorstRow run_one_size(std::size_t n, std::size_t bins_per_size, WindowSpec windo
         mismatch = max_bfft_vs_fftw_rel(bfft_out, fftw_out, bins, denom);
       }
 
-      const SpectrumMetrics fm = measure_fftw(fftw_out, bins, k, window.main_radius);
+      const SpectrumMetrics fm = use_fftwf
+        ? measure_fftw(fftwf_out, bins, k, window.main_radius)
+        : measure_fftw(fftw_out, bins, k, window.main_radius);
       const double delta = bm.sfdr_db - fm.sfdr_db;
 
       ++worst.transforms;
@@ -486,26 +622,33 @@ WorstRow run_one_size(std::size_t n, std::size_t bins_per_size, WindowSpec windo
     }
   }
 
-  fftw.destroy_plan(fp);
-  fftw.free_fn(fftw_in);
-  fftw.free_fn(fftw_out);
+  if (use_fftwf) {
+    fftwf->destroy_plan(fp);
+    fftwf->free_fn(fftwf_in);
+    fftwf->free_fn(fftwf_out);
+  } else {
+    fftw.destroy_plan(fp);
+    fftw.free_fn(fftw_in);
+    fftw.free_fn(fftw_out);
+  }
 
   return worst;
 }
 
 void print_row(const WorstRow& r) {
   if (!r.valid) {
-    std::printf("%zu,%s,%s,%s,0,0,?,nan,nan,nan,nan,nan,0,0,nan,nan,nan,nan,nan,no-eligible-bins\n",
-                r.n, r.policy.c_str(), r.window.c_str(), r.bfft_mode.c_str());
+    std::printf("%zu,%s,%s,%s,%s,0,0,?,nan,nan,nan,nan,nan,0,0,nan,nan,nan,nan,nan,no-eligible-bins\n",
+                r.n, r.policy.c_str(), r.window.c_str(), r.bfft_mode.c_str(), r.fftw_precision.c_str());
     return;
   }
 
   std::printf(
-    "%zu,%s,%s,%s,%zu,%zu,%c,%.8f,%.8f,%.8f,%.8f,%.8f,%zu,%zu,%.8e,%.8e,%.8e,%.8e,%.8e,%s\n",
+    "%zu,%s,%s,%s,%s,%zu,%zu,%c,%.8f,%.8f,%.8f,%.8f,%.8f,%zu,%zu,%.8e,%.8e,%.8e,%.8e,%.8e,%s\n",
     r.n,
     r.policy.c_str(),
     r.window.c_str(),
     r.bfft_mode.c_str(),
+    r.fftw_precision.c_str(),
     r.transforms,
     r.k,
     r.wave,
@@ -559,6 +702,11 @@ int main(int argc, char** argv) {
       std::fprintf(stderr, "could not load FFTW dynamically\n");
       return 2;
     }
+    FFTWf fftwf;
+    const bool have_fftwf = fftwf.load();
+    if (is_f32_mode(bfft_mode.mode) && !have_fftwf) {
+      std::fprintf(stderr, "could not load FFTWf dynamically; using double FFTW reference\n");
+    }
 
     std::printf("# bfft vs fftw SFDR probe\n");
     std::printf("# bfft_version=%s backend=%s\n", bfft::version_string().c_str(), bfft::backend_name().c_str());
@@ -567,14 +715,15 @@ int main(int argc, char** argv) {
     std::printf("# rect excludes carrier only; hann excludes carrier +/-1; bh7 excludes carrier +/-6\n");
     std::printf("# bh7 is the periodic seven-term cosine-sum Blackman-Harris form\n");
     std::printf("# bins_per_size=0 means exhaustive over eligible k for every N\n");
-    std::printf("N,policy,window,bfft_mode,transforms,worst_k,wave,bfft_sfdr_db,fftw_sfdr_db,delta_db,bfft_spur_dbc,fftw_spur_dbc,bfft_spur_bin,fftw_spur_bin,bfft_spur_rel,fftw_spur_rel,bfft_rms_spur_rel,fftw_rms_spur_rel,bfft_vs_fftw_rel,verdict\n");
+    std::printf("# fftw_precision=%s\n", (is_f32_mode(bfft_mode.mode) && have_fftwf) ? "f32" : "f64");
+    std::printf("N,policy,window,bfft_mode,fftw_precision,transforms,worst_k,wave,bfft_sfdr_db,fftw_sfdr_db,delta_db,bfft_spur_dbc,fftw_spur_dbc,bfft_spur_bin,fftw_spur_bin,bfft_spur_rel,fftw_spur_rel,bfft_rms_spur_rel,fftw_rms_spur_rel,bfft_vs_fftw_rel,verdict\n");
 
     for (std::size_t p = min_pow; p <= max_pow; ++p) {
       const std::size_t n = static_cast<std::size_t>(1) << p;
       if (n > static_cast<std::size_t>(std::numeric_limits<int>::max())) {
         break;
       }
-      const WorstRow row = run_one_size(n, bins_per_size, window, bfft_mode, fftw);
+      const WorstRow row = run_one_size(n, bins_per_size, window, bfft_mode, fftw, have_fftwf ? &fftwf : nullptr);
       print_row(row);
     }
 
