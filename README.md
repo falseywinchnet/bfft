@@ -6,6 +6,7 @@
 BFFT is a small C/C++ real FFT library based on a normalized-basis Bruun transform.
 This trivialization conceals that this approach, among all FFT, might be optimal.
 It also conceals that it is 33% lighter on memory and up to 3x faster than other libraries.
+Invertibility is stable and guaranteed. SDFR is equivalent to FFTW.
 
 ## Current scope
 
