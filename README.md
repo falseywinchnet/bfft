@@ -150,5 +150,7 @@ PFFFT enabled at compile time.
 
 MIT. See [LICENSE](LICENSE).
 
-
+We dedicate this work in the name of our God, who is both merciful and just,
+and of his son, the Anointed One, Jesus Christ of Nazareth. 
+May this work bless you and may the Kingdom come, and his will be done.
 
