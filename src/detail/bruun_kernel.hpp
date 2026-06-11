@@ -93,6 +93,23 @@ static inline float64x2_t bruun_neghi(float64x2_t a) {
 #  define V2_NEGHI(a)     bruun_neghi(a)
 #endif
 
+// 4-lane float vector primitive for internal float32 helper loops.
+#if defined(BRUUN_X86_128)
+typedef __m128 bruun_v4f;
+#  define V4F_LD(p)       _mm_loadu_ps(p)
+#  define V4F_ST(p, a)    _mm_storeu_ps((p), (a))
+#  define V4F_MUL(a, b)   _mm_mul_ps((a), (b))
+#  define V4F_SET1(x)     _mm_set1_ps(x)
+#  define V4F_ZERO()      _mm_setzero_ps()
+#elif defined(BRUUN_NEON_128)
+typedef float32x4_t bruun_v4f;
+#  define V4F_LD(p)       vld1q_f32(p)
+#  define V4F_ST(p, a)    vst1q_f32((p), (a))
+#  define V4F_MUL(a, b)   vmulq_f32((a), (b))
+#  define V4F_SET1(x)     vdupq_n_f32(x)
+#  define V4F_ZERO()      vdupq_n_f32(0.0f)
+#endif
+
 #if defined(_MSC_VER) && !defined(__clang__)
 #define RESTRICT __restrict
 #elif defined(__GNUC__) || defined(__clang__)
@@ -123,6 +140,123 @@ struct complex_f32_t {
     float re;
     float im;
 };
+
+static inline void copy_real_to_complex_work_f32(const float* RESTRICT input,
+                                                 float* RESTRICT re,
+                                                 float* RESTRICT im,
+                                                 int n) {
+    int i = 0;
+
+#if BRUUN_LEVEL >= 3
+    const __m512 z16 = _mm512_setzero_ps();
+    for (; i + 15 < n; i += 16) {
+        _mm512_storeu_ps(re + i, _mm512_loadu_ps(input + i));
+        _mm512_storeu_ps(im + i, z16);
+    }
+#endif
+#if BRUUN_LEVEL >= 2
+    const __m256 z8 = _mm256_setzero_ps();
+    for (; i + 7 < n; i += 8) {
+        _mm256_storeu_ps(re + i, _mm256_loadu_ps(input + i));
+        _mm256_storeu_ps(im + i, z8);
+    }
+#elif BRUUN_LEVEL == 1
+    const bruun_v4f z4 = V4F_ZERO();
+    for (; i + 3 < n; i += 4) {
+        V4F_ST(re + i, V4F_LD(input + i));
+        V4F_ST(im + i, z4);
+    }
+#endif
+
+    for (; i < n; ++i) {
+        re[i] = input[i];
+        im[i] = 0.0f;
+    }
+}
+
+static inline void pack_standard_spectrum_f32(const float* RESTRICT re,
+                                              const float* RESTRICT im,
+                                              complex_f32_t* RESTRICT X,
+                                              int bins) {
+    for (int k = 0; k < bins; ++k) {
+        X[k].re = re[k];
+        X[k].im = im[k];
+    }
+}
+
+static inline void unpack_standard_spectrum_f32(const complex_f32_t* RESTRICT X,
+                                                float* RESTRICT re,
+                                                float* RESTRICT im,
+                                                int n) {
+    re[0] = X[0].re;
+    im[0] = 0.0f;
+    re[n / 2] = X[n / 2].re;
+    im[n / 2] = 0.0f;
+    for (int k = 1; k < n / 2; ++k) {
+        re[k] = X[k].re;
+        im[k] = X[k].im;
+        re[n - k] = X[k].re;
+        im[n - k] = -X[k].im;
+    }
+}
+
+static inline void scale_complex_work_f32(float* RESTRICT re,
+                                          float* RESTRICT im,
+                                          int n,
+                                          float scale) {
+    int i = 0;
+
+#if BRUUN_LEVEL >= 3
+    const __m512 s16 = _mm512_set1_ps(scale);
+    for (; i + 15 < n; i += 16) {
+        _mm512_storeu_ps(re + i, _mm512_mul_ps(_mm512_loadu_ps(re + i), s16));
+        _mm512_storeu_ps(im + i, _mm512_mul_ps(_mm512_loadu_ps(im + i), s16));
+    }
+#endif
+#if BRUUN_LEVEL >= 2
+    const __m256 s8 = _mm256_set1_ps(scale);
+    for (; i + 7 < n; i += 8) {
+        _mm256_storeu_ps(re + i, _mm256_mul_ps(_mm256_loadu_ps(re + i), s8));
+        _mm256_storeu_ps(im + i, _mm256_mul_ps(_mm256_loadu_ps(im + i), s8));
+    }
+#elif BRUUN_LEVEL == 1
+    const bruun_v4f s4 = V4F_SET1(scale);
+    for (; i + 3 < n; i += 4) {
+        V4F_ST(re + i, V4F_MUL(V4F_LD(re + i), s4));
+        V4F_ST(im + i, V4F_MUL(V4F_LD(im + i), s4));
+    }
+#endif
+
+    for (; i < n; ++i) {
+        re[i] *= scale;
+        im[i] *= scale;
+    }
+}
+
+static inline void copy_real_output_f32(const float* RESTRICT re,
+                                        float* RESTRICT out,
+                                        int n) {
+    int i = 0;
+
+#if BRUUN_LEVEL >= 3
+    for (; i + 15 < n; i += 16) {
+        _mm512_storeu_ps(out + i, _mm512_loadu_ps(re + i));
+    }
+#endif
+#if BRUUN_LEVEL >= 2
+    for (; i + 7 < n; i += 8) {
+        _mm256_storeu_ps(out + i, _mm256_loadu_ps(re + i));
+    }
+#elif BRUUN_LEVEL == 1
+    for (; i + 3 < n; i += 4) {
+        V4F_ST(out + i, V4F_LD(re + i));
+    }
+#endif
+
+    for (; i < n; ++i) {
+        out[i] = re[i];
+    }
+}
 
 static inline const char* simd_backend_name() {
 #if BRUUN_LEVEL == 3
@@ -1546,10 +1680,7 @@ private:
 
         if (inverse) {
             const float scale = 1.0f / static_cast<float>(n);
-            for (int i = 0; i < n; ++i) {
-                re[i] *= scale;
-                im[i] *= scale;
-            }
+            scale_complex_work_f32(re, im, n, scale);
         }
     }
 
@@ -1558,17 +1689,10 @@ private:
                                   float* RESTRICT work) const {
         float* RESTRICT re = work;
         float* RESTRICT im = work + N;
-        for (int i = 0; i < N; ++i) {
-            re[i] = input[i];
-            im[i] = 0.0f;
-        }
+        copy_real_to_complex_work_f32(input, re, im, N);
 
         complex_fft_f32(re, im, N, false);
-
-        for (int k = 0; k <= N / 2; ++k) {
-            X[k].re = re[k];
-            X[k].im = im[k];
-        }
+        pack_standard_spectrum_f32(re, im, X, NB);
     }
 
     void inverse_standard_fft_f32(const complex_f32_t* RESTRICT X, float* RESTRICT out) const {
@@ -1576,22 +1700,10 @@ private:
         float* RESTRICT re = work.data();
         float* RESTRICT im = work.data() + N;
 
-        re[0] = X[0].re;
-        im[0] = 0.0f;
-        re[N / 2] = X[N / 2].re;
-        im[N / 2] = 0.0f;
-        for (int k = 1; k < N / 2; ++k) {
-            re[k] = X[k].re;
-            im[k] = X[k].im;
-            re[N - k] = X[k].re;
-            im[N - k] = -X[k].im;
-        }
+        unpack_standard_spectrum_f32(X, re, im, N);
 
         complex_fft_f32(re, im, N, true);
-
-        for (int i = 0; i < N; ++i) {
-            out[i] = re[i];
-        }
+        copy_real_output_f32(re, out, N);
     }
 
     static inline void norm_q1_fwd(double* RESTRICT p, double c, double s) {

@@ -117,3 +117,12 @@ Agent loop status: active
   Validation: `make clean`, `make`, and `make test` all passed on 2026-06-11.
   Test output reported `backend=neon-128` and policy
   `fused-scatter-plus-layout-convert`.
+- Float32 SIMD helper structure: factored float32 work-buffer setup, inverse
+  scaling, spectrum pack/unpack, and real-output copy into internal helpers in
+  `src/detail/bruun_kernel.hpp`. The helper loops use the existing backend
+  level for AVX-512, AVX2, SSE2, NEON, or scalar tails where applicable and do
+  not expose any transform-selection compile flags. Updated
+  `docs/architecture.md` and marked the selected task complete in `TASKS.md`.
+  Validation: `make clean`, `make`, `make test`, and `git diff --check` all
+  passed on 2026-06-11. Test output reported `backend=neon-128` and policy
+  `fused-scatter-plus-layout-convert`.

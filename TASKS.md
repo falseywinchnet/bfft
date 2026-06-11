@@ -15,6 +15,9 @@ gets stale, replace or refine tasks before doing implementation work.
 - [x] Develop dedicated float32 internals and tests: add a real single-precision
   internal transform path, expose only policy-neutral public API changes if
   needed, and add focused float32 correctness/API coverage through `make test`.
+- [x] Add internal float32 SIMD helper structure: factor float32 work-buffer
+  setup, scaling, and real-output copy through backend-aware internal helpers
+  without adding public transform-selection flags.
 - [ ] Update `docs/release-checklist.md` with final validation evidence for
   the first `0.1.0` release.
   The previous disk-space blocker has been cleared locally; `make clean`,

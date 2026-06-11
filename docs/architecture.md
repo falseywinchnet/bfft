@@ -46,8 +46,10 @@ straight copy for those tiny plans and use heap mappings for larger plans.
 
 The float32 API shares the public plan and layout maps with the double Bruun
 path, but it uses dedicated single-precision work buffers and complex storage.
-The first float32 implementation keeps standard and native layout behavior
-policy-neutral while avoiding double-buffer promotion inside the public calls.
+Internal float32 helper loops use the same backend level selected for the
+double path for work-buffer setup, inverse scaling, and real-output copy. The
+public API still exposes only layout-named calls, not transform-selection
+compile flags.
 
 ## Future portability work
 
