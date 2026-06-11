@@ -8,6 +8,77 @@ This trivialization conceals that this approach, among all FFT, might be optimal
 It also conceals that it is 33% lighter on memory and up to 3x faster than other libraries.
 Invertibility is stable and guaranteed. SFDR tracks FFTW in double precision and meets the current native float32 BH7 target.
 
+BFFT’s native layout is the natural fast coordinate system. Standard FFT order is provided by a final N/2-bin conversion. That conversion is comparable to the layout work other FFTs perform internally, while native output exposes the lower-cost path directly. Experimenting discovered:
+
+```
+Experimenting discovered that the rearrangement is not arbitrary. It has a shell-structured bit law. For a transform of size N = 2^L, let M = N/2 and let W = log2(M) = L - 1. The nontrivial complex bins are indexed by native positions pos = 1..M-1. Each native position belongs to a dyadic shell
+
+s = floor(log2(pos)).
+
+The same shell is also the shell of the Bruun leaf index m, so floor(log2(m)) = s. Within a shell, the mapping from native position to Bruun leaf is fixed by simple bit rules. Write bit(x,b) for bit b of x, and write
+
+gray(pos) = pos ^ (pos >> 1).
+
+Then the leaf index m = NATIVE_LEAF[pos] is given by these rules. The shell bit is always set:
+
+m_s = 1.
+
+For shell s = 0, this is the whole value, so m = 1. For shell s = 1, the low bit is
+
+m_0 = 1 ^ bit(pos,0),
+
+and m_1 = 1. For all shells s >= 2, the low bit is
+
+m_0 = 1 ^ bit(pos - 1, 1),
+
+the interior bits are the Gray-code bits of the native position,
+
+m_b = bit(gray(pos), b) for 1 <= b <= s - 2,
+
+and the bit immediately below the shell anchor is
+
+m_{s-1} = 1 ^ bit(pos, s - 1).
+
+All bits above s are zero. This gives the complete native-position-to-Bruun-leaf map without consulting NATIVE_LEAF.
+
+The second half of the rearrangement maps that Bruun leaf to the ordinary FFT bin k. Let
+
+a = W - 1 - s
+
+be the destination anchor bit, and let
+
+p0 = bit(pos,0).
+
+Then the standard FFT bin k = IDX[m] is also determined by fixed shell rules. The anchor bit is always set:
+
+k_a = 1.
+
+If s >= 1, the next bit is
+
+k_{a+1} = 1 ^ p0.
+
+For the middle triangular field,
+
+k_j = p0 ^ bit(pos, W - j) for a + 2 <= j <= W - 3.
+
+For the two high bits, when they exist,
+
+k_{W-2} = 1 ^ bit(m - 1, 1) for s >= 3,
+
+and
+
+k_{W-1} = 1 ^ bit(pos - 1, 1) for s >= 2.
+
+All bits below the anchor are zero. Together, these equations give the full native-position-to-standard-bin route:
+
+pos -> m -> k.
+
+The rules were verified for every nontrivial bin for power-of-two sizes from N = 32 through N = 4,194,304. So the native-to-standard rearrangement is not a random permutation table. It is a deterministic dyadic-shell coordinate transform: the native layout is arranged by Bruun leaf shells and Gray/XOR orientation choices, while the standard layout is obtained by a predictable bit transposition and shell-dependent high-bit placement.
+
+```
+
+The native layout remains the “true” fast path; standard FFT order remains an interoperability layer. The important discovery is that BFFT is not hiding chaos behind native order. It has a mathematically regular native-to-standard map, and the current implementation chooses the fastest known way to realize that map in memory.
+
 ## Current scope
 
 - Power-of-two real transforms with `N >= 4`.
@@ -177,7 +248,8 @@ PFFFT enabled at compile time.
  8388608       16  63470611.9  33416458.4  23672627.6  36526708.3  82451247.4    0.575    1.093 err 4.5e-10 rt 1.8e-15 
 16777216       16 141920934.9  68376585.9  49968817.7  76313549.5 180578921.9    0.538    1.116 err 4.6e-10 rt 1.9e-15 
 33554432       16 293059072.9 144221557.3 101204882.8 159033716.1 344409419.2    0.543    1.103 err 2.3e-09 rt 2.1e-15 
-67108864       16 649294807.3 293690114.6 208606065.1 378288268.2 747649476.6    0.583    1.288 err 2.4e-09 rt 2.0e-15 
+67108864       16 649294807.3 293690114.6 208606065.1 378288268.2 747649476.6    0.583    1.288 err 2.4e-09 rt 2.0e-15
+
 ```
 
 ## Documentation
