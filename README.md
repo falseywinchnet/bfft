@@ -112,6 +112,7 @@ Run a complete benchmark/demo:
 ```
 
 Stats on a mac M4 circa june 10, 2026:
+NOTE: PFFT is in single precision(FLOAT). BFFT, FFTW both in double precision! Emphasis!
 ```
  ./benchmark 
 BFFT power-of-two RFFT benchmark. backend: neon-128, version: 0.1.0
