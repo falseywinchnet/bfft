@@ -1,0 +1,46 @@
+in bfft folder:
+
+first install fftw systemwide.
+thenK
+git clone https://github.com/marton78/pffft.git pffft
+
+mkdir -p build/pffft build/examples
+
+cc -O3 -DNDEBUG \
+  -Ipffft/include/pffft \
+  -Ipffft/src \
+  -c pffft/src/pffft.c \
+  -o build/pffft/pffft.o
+
+cc -O3 -DNDEBUG \
+  -Ipffft/include/pffft \
+  -Ipffft/src \
+  -c pffft/src/pffft_common.c \
+  -o build/pffft/pffft_common.o
+
+cc -O3 -DNDEBUG \
+  -Ipffft/include/pffft \
+  -Ipffft/src \
+  -c pffft/src/fftpack.c \
+  -o build/pffft/fftpack.o
+
+Then link benchmark:
+
+c++ -O3 -std=c++17 -DNDEBUG -DBFFT_WITH_PFFFT \
+  -Iinclude \
+  -Ipffft/include/pffft \
+  -Ipffft/src \
+  -I/opt/homebrew/include \
+  examples/benchmark.cpp \
+  build/libbfft.a \
+  build/pffft/pffft.o \
+  build/pffft/pffft_common.o \
+  build/pffft/fftpack.o \
+  -L/opt/homebrew/lib \
+  -lfftw3 \
+  -lm \
+  -o build/examples/benchmark
+
+Then:
+
+build/examples/benchmark
