@@ -41,10 +41,13 @@ jobs:
         run: cmake -S . -B build-cmake -DBFFT_BUILD_PROBES=OFF -DBFFT_BUILD_SHARED=OFF
 
       - name: Build CMake targets
-        run: cmake --build build-cmake --parallel
+        run: cmake --build build-cmake --config Release --target correctness api_c --parallel
 
       - name: Run CMake tests
         run: ctest --test-dir build-cmake -C Release --output-on-failure
+
+      - name: Build installable CMake target
+        run: cmake --build build-cmake --config Release --target bfft_static --parallel
 
       - name: Stage CMake install
         run: cmake --install build-cmake --config Release --prefix "$env:RUNNER_TEMP/bfft-cmake-stage/usr"
