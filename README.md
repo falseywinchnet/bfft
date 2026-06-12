@@ -123,6 +123,8 @@ ctest --test-dir build-cmake --output-on-failure
 
 CMake enables the same host SIMD probe as the Makefile on x86_64 when the compiler accepts `-mavx2 -mfma`. Optional comparison probes are built by default. The library comparison probe dynamically uses FFTW when `libfftw3` is available, and its CMake target also enables an Intel IPP complex-DFT reference when `ipps.h`, `ipps`, `ippvm`, and `ippcore` are found. CMake also enables the benchmark's PFFFT comparison path when `pffft.h` and `libpffft` are found.
 
+A first GitHub Actions workflow is tracked in `.github/workflows/ci.yml`. It runs the Makefile and CMake build/test/install paths on Ubuntu. See `TODO_HUMAN.md` for the repository-operator checklist for enabling the workflow, reading failures, and requiring CI before merges.
+
 Artifacts are written to `build/`:
 
 - `build/libbfft.a`
@@ -149,6 +151,29 @@ Installed files:
 - `${PREFIX}/include/bfft/bfft.hpp`
 - `${PREFIX}/lib/libbfft.a`
 - `${PREFIX}/lib/libbfft.so`
+- `${PREFIX}/lib/pkgconfig/bfft.pc` when installing with the Makefile or CMake
+- `${PREFIX}/lib/cmake/bfft/BFFTConfig.cmake` when installing with CMake
+- `${PREFIX}/lib/cmake/bfft/BFFTConfigVersion.cmake` when installing with CMake
+- `${PREFIX}/lib/cmake/bfft/BFFTTargets.cmake` when installing with CMake
+
+
+## Package discovery
+
+After installation, `pkg-config` consumers can compile with:
+
+```sh
+cc app.c $(pkg-config --cflags --libs bfft)
+```
+
+CMake consumers can use the installed package config:
+
+```cmake
+find_package(BFFT CONFIG REQUIRED)
+add_executable(app app.cpp)
+target_link_libraries(app PRIVATE bfft::static)
+```
+
+If the shared library was built and installed by CMake, `bfft::shared` is also available.
 
 ## Minimal C example
 

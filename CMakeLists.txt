@@ -4,6 +4,7 @@ project(bfft VERSION 0.1.0 LANGUAGES C CXX)
 
 include(GNUInstallDirs)
 include(CheckCXXCompilerFlag)
+include(CMakePackageConfigHelpers)
 
 option(BFFT_BUILD_SHARED "Build the BFFT shared library" ON)
 option(BFFT_BUILD_EXAMPLES "Build BFFT example programs" ON)
@@ -27,7 +28,9 @@ target_include_directories(bfft_static PUBLIC
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_compile_features(bfft_static PUBLIC cxx_std_17)
 target_link_libraries(bfft_static PUBLIC m)
-set_target_properties(bfft_static PROPERTIES OUTPUT_NAME bfft)
+set_target_properties(bfft_static PROPERTIES
+    EXPORT_NAME static
+    OUTPUT_NAME bfft)
 
 if(BFFT_BUILD_SHARED)
     add_library(bfft_shared SHARED ${BFFT_SOURCES} ${BFFT_PUBLIC_HEADERS})
@@ -37,7 +40,9 @@ if(BFFT_BUILD_SHARED)
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
     target_compile_features(bfft_shared PUBLIC cxx_std_17)
     target_link_libraries(bfft_shared PUBLIC m)
-    set_target_properties(bfft_shared PROPERTIES OUTPUT_NAME bfft)
+    set_target_properties(bfft_shared PROPERTIES
+        EXPORT_NAME shared
+        OUTPUT_NAME bfft)
 endif()
 
 if(BFFT_ENABLE_AUTO_SIMD AND CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64|AMD64|amd64)")
@@ -136,11 +141,35 @@ if(BFFT_BUILD_PROBES)
     endif()
 endif()
 
-install(TARGETS bfft_static
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+set(BFFT_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/bfft)
+set(BFFT_PC_FILE ${CMAKE_CURRENT_BINARY_DIR}/bfft.pc)
+configure_file(pkgconfig/bfft.pc.in ${BFFT_PC_FILE} @ONLY)
+
+configure_package_config_file(
+    cmake/BFFTConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/BFFTConfig.cmake
+    INSTALL_DESTINATION ${BFFT_INSTALL_CMAKEDIR})
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/BFFTConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion)
+
+set(BFFT_INSTALL_TARGETS bfft_static)
 if(TARGET bfft_shared)
-    install(TARGETS bfft_shared
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    list(APPEND BFFT_INSTALL_TARGETS bfft_shared)
 endif()
+
+install(TARGETS ${BFFT_INSTALL_TARGETS}
+    EXPORT BFFTTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES ${BFFT_PUBLIC_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/bfft)
+install(FILES ${BFFT_PC_FILE} DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/BFFTConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/BFFTConfigVersion.cmake
+    DESTINATION ${BFFT_INSTALL_CMAKEDIR})
+install(EXPORT BFFTTargets
+    NAMESPACE bfft::
+    DESTINATION ${BFFT_INSTALL_CMAKEDIR})

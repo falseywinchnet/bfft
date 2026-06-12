@@ -42,8 +42,8 @@ std::string backend = bfft::backend_name();
 - `bfft_layout` names the public representations:
   `BFFT_LAYOUT_STANDARD`, `BFFT_LAYOUT_NATIVE`, and `BFFT_LAYOUT_RESIDUES`.
 
-The C++ header aliases these as `bfft::complex`, `bfft::status`, and
-`bfft::complex_f32`, `bfft::status`, and `bfft::layout`.
+The C++ header aliases these as `bfft::complex`, `bfft::complex_f32`,
+`bfft::status`, and `bfft::layout`.
 
 ## Plans
 
@@ -281,3 +281,11 @@ Use `bfft_status_string` for diagnostics. C functions return
 `BFFT_ERROR_INVALID_ARGUMENT` when a required plan or buffer pointer is NULL.
 C++ methods throw `bfft::error`; call `error.code()` to retrieve the original
 `bfft_status`.
+
+## Package discovery
+
+Makefile and CMake installs provide a `pkg-config` file named `bfft.pc` so C
+and C++ consumers can query the include and link flags after installation.
+CMake installs also provide package config files under `lib/cmake/bfft` with the
+imported targets `bfft::static` and, when the shared library is built,
+`bfft::shared`.

@@ -29,16 +29,19 @@ wrapper, tests, examples, docs, and a validated Makefile workflow.
 - Release notes or a release checklist identifies validated platforms and known
   limits.
 - GitHub-only repository settings are recorded in `docs/maintainer-notes.md`.
+- First-pass CI exists and the maintainer has instructions for enabling required
+  checks on GitHub.
+- Installed package metadata is available for CMake and `pkg-config` consumers.
 - No placeholder TODO markers remain in source, public docs, examples, or tests
   unless they describe post-release work in the roadmap.
 
 ## Out of scope for 0.1.0
 
-- CMake packaging.
 - Windows DLL export work.
 - macOS install-name tuning.
 - Prebuilt release artifacts.
-- Multi-platform CI beyond notes or a lightweight first workflow.
+- Multi-platform CI beyond the first Linux workflow.
+- Package manager recipes beyond installed CMake and `pkg-config` metadata.
 
 - direct ABS grab:
   

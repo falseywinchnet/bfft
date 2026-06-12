@@ -64,9 +64,17 @@ waves, native float32 BFFT measured 144.95579274 dB SFDR against an FFTWf row of
 139.16529588 dB. Native double measured 197.84799575 dB against FFTW double at
 197.84799573 dB.
 
+## Build and package metadata
+
+The Makefile remains the simplest local workflow and installs headers, static
+and shared libraries, and `lib/pkgconfig/bfft.pc`. CMake supports the same core
+build and test path, optional probes, staged installation, `pkg-config` metadata,
+and package config files under `lib/cmake/bfft`. Installed CMake consumers can
+link `bfft::static` and, when enabled, `bfft::shared`.
+
 ## Future portability work
 
-The initial release validates Linux make/install. The directory layout avoids
-Linux-specific API assumptions so future work can add CMake, Windows DLL export
-annotations, macOS install names, package metadata, and CI matrices without
-changing the public API shape.
+The beta workflow validates Linux make/install and Linux CMake install first.
+The directory layout avoids Linux-specific API assumptions so future work can add
+Windows DLL export annotations, macOS install-name tuning, broader package
+recipes, and larger CI matrices without changing the public API shape.

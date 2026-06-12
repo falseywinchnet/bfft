@@ -5,15 +5,16 @@ Agent loop status: active
 ## Current snapshot
 
 - Public C and C++ headers exist under `include/bfft/`.
-- The implementation is split between `src/bfft.cpp` and
+- Implementation details live in `src/bfft.cpp` and
   `src/detail/bruun_kernel.hpp`.
-- The Makefile defines build, test, install, uninstall, examples, and clean
-  targets.
-- C and C++ examples exist under `examples/`.
-- Correctness and C API tests exist under `tests/` and are wired into
-  `make test`.
-- Public API, architecture, maintainer, and release docs exist under `docs/`.
-- The unattended agent loop state files and runner have been seeded.
+- Makefile and CMake both build the library, examples, and core tests.
+- `make test` and CTest cover correctness and the C API.
+- Optional FFTW/SFDR/library comparison probes live under `tests/` and are built
+  by `make probes` or the CMake probe option.
+- Package metadata now exists for `pkg-config` and CMake package consumers.
+- A first GitHub Actions workflow exists for Ubuntu Makefile and CMake builds.
+- `TODO_HUMAN.md` explains the GitHub-side CI and branch-protection steps for a
+  repository operator who has not used GitHub Actions before.
 
 ## Completion checklist
 
@@ -22,148 +23,54 @@ Agent loop status: active
 - [x] Source implementation exists.
 - [x] Examples exist.
 - [x] Tests are wired into `make test`.
+- [x] Tests are wired into CTest for the CMake build.
 - [x] Public docs exist.
-- [x] Clean `make clean`, `make`, and `make test` result recorded.
-- [x] Staged install validated with `DESTDIR`.
-- [x] Downstream staged-install smoke program validated.
-- [x] API, examples, and docs audited against current headers.
-- [ ] Release checklist updated with final validation evidence.
+- [x] CMake build support exists.
+- [x] First-pass package metadata exists.
+- [x] First-pass CI workflow exists.
+- [x] Human CI setup manual exists.
+- [ ] First hosted GitHub Actions run verified green.
+- [x] Package-discovery downstream smoke tests passed for staged installs.
+- [ ] Release checklist updated with final beta validation evidence.
 - [ ] Placeholder TODO scan completed.
+
+## Recent commit audit
+
+Recent commits show that the repository has moved beyond the old first-release
+plan:
+
+- CMake build and external FFT comparison probe support were added.
+- Forward segment locality was improved.
+- Magnitude-only forward APIs were added.
+- Float32 SIMD and rounded-twiddle work landed before the current cleanup.
+- Deleted probe files were later restored as tracked probe sources under
+  `tests/`.
+
+The roadmap and task queue have been updated to treat CI, package discovery,
+and beta validation as the next work instead of listing CMake and package
+metadata as future-only items.
 
 ## Round log
 
-- Initial scaffold: added durable state files for unattended Codex rounds.
-  Validation for the library itself has not been run by this scaffold task.
-- Baseline validation: fixed the Makefile AVX2/FMA compiler probe so GNU make
-  can parse it, then ran `make clean`, `make`, and `make test`.
-  Result: all passed. Test output reported `backend=neon-128` and standard
-  policy `fused-scatter-plus-layout-convert`.
-- Staged install validation: ran `make clean`, `make`, `make test`, then
-  `make install DESTDIR=/tmp/bfft-stage.IkgTTn PREFIX=/usr`.
-  Result: all passed. The staged files were:
-  `/usr/include/bfft/bfft.h`, `/usr/include/bfft/bfft.hpp`,
-  `/usr/lib/libbfft.a`, and `/usr/lib/libbfft.so`. Modes were `0644` for
-  headers/static library and `0755` for the shared library. No install fixes
-  were needed.
-- Downstream staged-install smoke: ran `make clean`, `make`, `make test`, then
-  `make install DESTDIR=/tmp/bfft-stage.downstream.6Dg0BM PREFIX=/usr`.
-  Built an ignored C++ smoke program against the staged install with
-  `c++ -std=c++17 -I/tmp/bfft-stage.downstream.6Dg0BM/usr/include build/downstream_smoke.cpp /tmp/bfft-stage.downstream.6Dg0BM/usr/lib/libbfft.a -lm -o build/downstream_smoke`.
-  Ran `build/downstream_smoke`.
-  Result: all passed. The smoke output reported `backend=neon-128` and standard
-  policy `fused-scatter-plus-layout-convert`.
-- API/docs audit: documented every public C declaration in `include/bfft/bfft.h`,
-  added matching C++ wrapper comments in `include/bfft/bfft.hpp`, expanded
-  `docs/api.md` to cover version/backend helpers, types, plan sizes, transform
-  buffers, filtering buffers, and error handling, and clarified backend policy
-  wording in `README.md`.
-  Validation: `make clean` passed. A first plain `make` failed while compiling
-  `examples/benchmark.cpp` because the default macOS compiler temp directory
-  reported `No space left on device`. Removed prior BFFT staged-install temp
-  artifacts under `/private/tmp`, then ran `make clean`,
-  `TMPDIR=/private/tmp make`, and `TMPDIR=/private/tmp make test`.
-  Result: all passed. Test output reported `backend=neon-128` and standard
-  policy `fused-scatter-plus-layout-convert`.
-- Example audit: added `examples/cpp_api_demo.cpp`, wired it into the
-  `examples` and `all` builds, updated README example output lists and snippets
-  to show plan-derived work and native scratch sizes, and clarified the examples
-  role in `docs/architecture.md`.
-  Validation: ran `make clean`, `TMPDIR=/private/tmp make`,
-  `TMPDIR=/private/tmp make test`, `build/examples/c_api_demo`,
-  `build/examples/cpp_api_demo`, and `build/examples/benchmark 64 1`.
-  Result: all passed. Test and demo output reported `backend=neon-128` and
-  standard policy `fused-scatter-plus-layout-convert`.
-- Release checklist evidence attempt: read the release checklist, public
-  headers, Makefile, tests, examples, and release docs, then attempted to gather
-  fresh final validation evidence for `docs/release-checklist.md`.
-  Validation: `make clean` passed. The first `TMPDIR=/private/tmp make` failed
-  before compilation because `mkdir` reported `No space left on device` while
-  creating `build/`. The repository measured 584K and the filesystem reported
-  124Mi available at 100% capacity. No unrelated temp files were removed. A
-  retry of `TMPDIR=/private/tmp make` passed. `TMPDIR=/private/tmp make test`
-  then failed compiling `tests/correctness.cpp` with
-  `clang++: error: unable to make temporary file: No space left on device`.
-  The generated build tree measured 300K and the filesystem reported 117Mi
-  available at 100% capacity. `git diff --check` passed after documenting the
-  blocker.
-  Result: blocked by host filesystem space. The release checklist evidence task
-  remains unchecked, and `docs/release-checklist.md` was not changed.
+- Baseline release preparation established the public headers, implementation,
+  examples, Makefile, tests, public docs, release notes, and maintainer notes.
+- Staged install and downstream smoke validation previously passed after local
+  disk-cache cleanup. The disk-space blocker was environmental, not a repository
+  build issue.
+- Float32 development added dedicated public float32 entry points, internal
+  float32 work-buffer helpers, SIMD-aware helper structure, FFTW/BH7 probes, and
+  rounded plan-owned float32 twiddle tables for the native BH7 target.
+- CMake support was added with library, examples, CTest, optional probes,
+  optional PFFFT benchmark comparison, optional IPP comparison, and install
+  rules.
+- This cleanup round added Ubuntu GitHub Actions CI, package metadata install
+  rules, a human CI manual, refreshed progress/roadmap/task/Codex files, removed
+  stale `.DS_Store` files, documented the current beta direction, and validated staged package discovery with both `pkg-config` and CMake `find_package`.
 
-  human note: i manually cleared git caches. this turns out to have eaten 16GB.
-  i think theres a bug somewhere in the codex client side runtime.
-  remember to check your git caches periodically- idk what the frick its doing.
-  after that, i manually merged everything so some notes need checking and editing before proceeding.
-  i then manually wrote a new benchmark.cpp and ran it. looking good so far! lets keep going.
-- Repository refresh and workflow check: fast-forwarded `main` from
-  `5b80049` to `424a615` and fetched tag `a-0.1`. The default local workflow
-  passed after the cache cleanup: `make clean`, `make`, and `make test`.
-  Test output reported `backend=neon-128` and policy
-  `fused-scatter-plus-layout-convert`.
-  Workflow notes: `.github/FUNDING.yml` exists, but there is no
-  `.github/workflows/` CI configuration yet. New FFTW/SFDR probe sources now
-  live under `tests/`, but `make test` still builds only `tests/correctness.cpp`
-  and `tests/api_c.c`. Added a next implementation task for dedicated float32
-  internals and float32 testing.
-- Dedicated float32 internals and tests: added a single-precision complex type,
-  float32 work-size query, standard/native float32 forward and inverse calls,
-  float32 native/standard conversion helpers, and matching C++ wrappers. The
-  float32 path uses float work buffers and float complex storage internally,
-  with plan layout maps shared from the existing plan.
-  Tests: extended `tests/correctness.cpp` to compare float32 standard spectra
-  against a naive reference, check standard and native roundtrips, check native
-  conversion, and exercise the C++ vector wrapper. Extended `tests/api_c.c` to
-  cover float32 C forward/inverse, native conversion, and invalid-argument
-  handling. Updated `README.md`, `docs/api.md`, and `docs/architecture.md`.
-  Validation: `make clean`, `make`, and `make test` all passed on 2026-06-11.
-  Test output reported `backend=neon-128` and policy
-  `fused-scatter-plus-layout-convert`.
-- Float32 SIMD helper structure: factored float32 work-buffer setup, inverse
-  scaling, spectrum pack/unpack, and real-output copy into internal helpers in
-  `src/detail/bruun_kernel.hpp`. The helper loops use the existing backend
-  level for AVX-512, AVX2, SSE2, NEON, or scalar tails where applicable and do
-  not expose any transform-selection compile flags. Updated
-  `docs/architecture.md` and marked the selected task complete in `TASKS.md`.
-  Validation: `make clean`, `make`, `make test`, and `git diff --check` all
-  passed on 2026-06-11. Test output reported `backend=neon-128` and policy
-  `fused-scatter-plus-layout-convert`.
-- Float32 BH7 probe mode: extended `tests/bfft_fftw_sfdr_bh7_probe.cpp` with
-  BFFT modes `f64-standard`, `f64-native`, `f32-standard`, and `f32-native`;
-  native modes execute native forward and convert to standard order before SFDR
-  measurement, keeping FFTW as the double-precision reference. Added `make probes` targets
-  for the tracked probe sources under `tests/` and documented the BH7
-  `f32-native` invocation in `README.md`.
-  Validation: `make probes`, `make test`, and `git diff --check` passed on
-  2026-06-11. A smoke run of
-  `build/tests/bfft_fftw_sfdr_bh7_probe 8 2 4 bh7 f32-native` completed and
-  printed `bfft_mode=f32-native`.
+## Remaining beta work
 
-- Float32 BH7 folded-spur investigation: the failing path was narrowed to
-  multiplicative float twiddle recurrence in the f32 complex FFT. The production
-  path now builds plan-owned float32 root twiddle tables once with explicit
-  `float(...)` rounding from double libm values, and the hot f32 butterfly stays
-  in float. This removes the deterministic folded-bin leakage seen at bins such
-  as `N/2 - 7` without reverting the f32 transform to mixed-precision butterfly
-  arithmetic. The BH7 SFDR probe loads FFTWf dynamically for f32 modes when
-  available, adds an `fftw_precision` CSV column, and falls back to double FFTW
-  explicitly when FFTWf is absent. Added a `make test` regression at `N=32768`,
-  `k=7`, native f32 BH7, with a 144 dB SFDR floor after native-to-standard
-  conversion. Validation pending full rerun after the table refinement; probe
-  evidence so far: `build/tests/bfft_fftw_sfdr_bh7_probe 22 8 22 bh7 f32-native`
-  produced `fftw_precision=f32` and `bfft_sfdr_db=144.95579274` at 4M.
-- Documentation polish: added a README precision behavior snapshot for the
-  current BH7 f64/f32 native criteria, expanded `docs/architecture.md` and
-  `docs/api.md` with the rounded float32 twiddle-table behavior, and added
-  local SVG release-asset candidates under `docs/assets/`. Validation: SVG XML
-  parse, `git diff --check`, and `make test` passed on 2026-06-11.
-- Benchmark float32 comparison: extended `examples/benchmark.cpp` with dynamic
-  FFTWf loading plus BFFT f32 native/standard timing columns and f32 spectrum
-  error checks. Representative Apple M4 NEON runs show the current f32 complex
-  FFT path is correctness-oriented but slower than FFTWf, which sets the next
-  optimization target for adapting the double Bruun/SIMD flow to float32.
-- Float32 SIMD adaptation step 1: added a four-lane backend-aware SIMD butterfly
-  for the current float complex FFT path, using the rounded float32 twiddle
-  tables and separate float multiply/add/sub operations. Validation: `make`,
-  `make test`, `git diff --check`, and the 4M BH7 f32-native probe passed on
-  2026-06-11. Benchmark at `N=4194304`, 10 iterations on Apple M4 NEON measured
-  `F32Nat_ns=113912229.2` and `F32Std_ns=103201287.5`, improved from the prior
-  representative `127449254.1` native and `129182533.3` standard rows.
+1. Push the branch and verify the hosted GitHub Actions run.
+2. Refresh `docs/release-checklist.md` with the hosted CI URL and any final
+   release-machine validation evidence.
+3. Complete a placeholder TODO scan and move any real post-beta work into
+   `ROADMAP.md`.

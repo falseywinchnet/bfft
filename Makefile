@@ -2,11 +2,13 @@ PREFIX ?= /usr/local
 DESTDIR ?=
 BUILD_DIR ?= build
 LIB_NAME := bfft
+VERSION := 0.1.0
 
 CXX ?= c++
 CC ?= cc
 AR ?= ar
 INSTALL ?= install
+SED ?= sed
 
 CPPFLAGS ?=
 CXXFLAGS ?= -O3 -std=c++17 -fPIC -Wall -Wextra -Wpedantic
@@ -36,6 +38,7 @@ SRC := src/bfft.cpp
 OBJ := $(BUILD_DIR)/src/bfft.o
 STATIC_LIB := $(BUILD_DIR)/lib$(LIB_NAME).a
 SHARED_LIB := $(BUILD_DIR)/lib$(LIB_NAME).so
+PC_FILE := $(BUILD_DIR)/$(LIB_NAME).pc
 BENCH := $(BUILD_DIR)/examples/benchmark
 C_DEMO := $(BUILD_DIR)/examples/c_api_demo
 CPP_DEMO := $(BUILD_DIR)/examples/cpp_api_demo
@@ -62,6 +65,13 @@ $(STATIC_LIB): $(OBJ)
 
 $(SHARED_LIB): $(OBJ)
 	$(CXX) -shared $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
+$(PC_FILE): pkgconfig/bfft.pc.in | $(BUILD_DIR)
+	$(SED) \
+		-e 's|@CMAKE_INSTALL_LIBDIR@|lib|g' \
+		-e 's|@CMAKE_INSTALL_INCLUDEDIR@|include|g' \
+		-e 's|@PROJECT_VERSION@|$(VERSION)|g' \
+		$< > $@
 
 examples: $(BENCH) $(C_DEMO) $(CPP_DEMO)
 
@@ -101,19 +111,22 @@ test: $(CORRECTNESS_TEST) $(C_API_TEST)
 	$(CORRECTNESS_TEST)
 	$(C_API_TEST)
 
-install: all
+install: all $(PC_FILE)
 	$(INSTALL) -d $(DESTDIR)$(PREFIX)/include/bfft
 	$(INSTALL) -d $(DESTDIR)$(PREFIX)/lib
+	$(INSTALL) -d $(DESTDIR)$(PREFIX)/lib/pkgconfig
 	$(INSTALL) -m 0644 include/bfft/bfft.h $(DESTDIR)$(PREFIX)/include/bfft/bfft.h
 	$(INSTALL) -m 0644 include/bfft/bfft.hpp $(DESTDIR)$(PREFIX)/include/bfft/bfft.hpp
 	$(INSTALL) -m 0644 $(STATIC_LIB) $(DESTDIR)$(PREFIX)/lib/lib$(LIB_NAME).a
 	$(INSTALL) -m 0755 $(SHARED_LIB) $(DESTDIR)$(PREFIX)/lib/lib$(LIB_NAME).so
+	$(INSTALL) -m 0644 $(PC_FILE) $(DESTDIR)$(PREFIX)/lib/pkgconfig/$(LIB_NAME).pc
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/include/bfft/bfft.h
 	rm -f $(DESTDIR)$(PREFIX)/include/bfft/bfft.hpp
 	rm -f $(DESTDIR)$(PREFIX)/lib/lib$(LIB_NAME).a
 	rm -f $(DESTDIR)$(PREFIX)/lib/lib$(LIB_NAME).so
+	rm -f $(DESTDIR)$(PREFIX)/lib/pkgconfig/$(LIB_NAME).pc
 
 clean:
 	rm -rf $(BUILD_DIR)
