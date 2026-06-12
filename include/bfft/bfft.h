@@ -101,6 +101,21 @@ bfft_status bfft_forward_native_f32(const bfft_plan* plan,
                                     bfft_complex_f32* output,
                                     float* work);
 
+/* Standard FFT-order magnitude-only forward transform. input has N doubles,
+   magnitudes has bfft_plan_bins(plan) doubles, and work has
+   bfft_plan_work_size(plan) doubles. This avoids complex output and native
+   scratch when phase is not needed. */
+bfft_status bfft_forward_magnitude(const bfft_plan* plan,
+                                   const double* input,
+                                   double* magnitudes,
+                                   double* work);
+
+/* Single-precision standard FFT-order magnitude-only forward transform. */
+bfft_status bfft_forward_magnitude_f32(const bfft_plan* plan,
+                                       const float* input,
+                                       float* magnitudes,
+                                       float* work);
+
 /* Standard FFT-order inverse transform. input has bfft_plan_bins(plan) complex
    values and output has N doubles. */
 bfft_status bfft_inverse(const bfft_plan* plan,

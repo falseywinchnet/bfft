@@ -201,6 +201,38 @@ bfft_status bfft_forward_native_f32(const bfft_plan* plan,
     return BFFT_OK;
 }
 
+bfft_status bfft_forward_magnitude(const bfft_plan* plan,
+                                   const double* input,
+                                   double* magnitudes,
+                                   double* work) {
+    bfft_status status = guard_binary(plan, input, magnitudes);
+    if (status != BFFT_OK || missing_ptr(work)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    try {
+        plan->impl.forward_magnitude(input, magnitudes, work);
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
+bfft_status bfft_forward_magnitude_f32(const bfft_plan* plan,
+                                       const float* input,
+                                       float* magnitudes,
+                                       float* work) {
+    bfft_status status = guard_binary(plan, input, magnitudes);
+    if (status != BFFT_OK || missing_ptr(work)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    try {
+        plan->impl.forward_magnitude_f32(input, magnitudes, work);
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
 bfft_status bfft_inverse(const bfft_plan* plan,
                          const bfft_complex* input,
                          double* output) {

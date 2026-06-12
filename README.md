@@ -87,6 +87,8 @@ The native layout remains the “true” fast path; standard FFT order remains a
 
 - Power-of-two real transforms with `N >= 4`.
 - Standard FFT-order real-to-complex output (`0..N/2`) for everyday use.
+- Standard FFT-order magnitude-only output for amplitude pipelines that do not
+  need phase or complex scratch buffers.
 - Heap-optimized native spectrum order for performance-oriented code.
 - Double-precision and single-precision transform entry points.
 - Residue-domain transforms and filters for pipelines that can avoid spectrum
@@ -179,6 +181,11 @@ std::vector<bfft::complex> scratch(plan.native_scratch_size());
 
 plan.forward(input.data(), output.data(), work.data(), scratch.data());
 ```
+
+For amplitude-only analysis, use `bfft_forward_magnitude` or
+`plan.forward_magnitude(...)` with a real output buffer sized to `plan.bins()`.
+Those calls produce standard FFT-order `abs(X[k])` values without allocating a
+complex spectrum or native complex scratch.
 
 Run a complete benchmark/demo:
 

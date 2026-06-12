@@ -63,6 +63,26 @@ double max_spectrum_error_f32(const std::vector<bfft::complex_f32>& a,
     return error;
 }
 
+double max_magnitude_error(const std::vector<double>& magnitudes,
+                           const std::vector<bfft::complex>& spectrum) {
+    double error = 0.0;
+    for (std::size_t i = 0; i < magnitudes.size(); ++i) {
+        const double expected = std::hypot(spectrum[i].re, spectrum[i].im);
+        error = std::max(error, std::fabs(magnitudes[i] - expected));
+    }
+    return error;
+}
+
+double max_magnitude_error_f32(const std::vector<float>& magnitudes,
+                               const std::vector<bfft::complex_f32>& spectrum) {
+    double error = 0.0;
+    for (std::size_t i = 0; i < magnitudes.size(); ++i) {
+        const double expected = std::hypot(static_cast<double>(spectrum[i].re),
+                                          static_cast<double>(spectrum[i].im));
+        error = std::max(error, std::fabs(static_cast<double>(magnitudes[i]) - expected));
+    }
+    return error;
+}
 
 double bh7_window(std::size_t i, std::size_t n) {
     const double theta = 2.0 * pi * static_cast<double>(i) / static_cast<double>(n);
@@ -133,6 +153,25 @@ bool check_size(std::size_t n) {
         return false;
     }
 
+    std::vector<double> magnitudes(plan.bins());
+    plan.forward_magnitude(input.data(), magnitudes.data(), work.data());
+    const double magnitude_error = max_magnitude_error(magnitudes, output);
+    if (magnitude_error > tolerance) {
+        std::fprintf(stderr, "n=%zu magnitude error %.17g exceeds %.17g\n", n, magnitude_error, tolerance);
+        return false;
+    }
+
+    const std::vector<double> vector_magnitudes = plan.forward_magnitude(input);
+    const double vector_magnitude_error = max_magnitude_error(vector_magnitudes, output);
+    if (vector_magnitude_error > tolerance) {
+        std::fprintf(stderr,
+                     "n=%zu vector magnitude error %.17g exceeds %.17g\n",
+                     n,
+                     vector_magnitude_error,
+                     tolerance);
+        return false;
+    }
+
     return true;
 }
 
@@ -199,6 +238,25 @@ bool check_size_f32(std::size_t n) {
     const double vector_error = max_spectrum_error_f32(vector_output, output);
     if (vector_error > tolerance) {
         std::fprintf(stderr, "n=%zu f32 vector API error %.17g exceeds %.17g\n", n, vector_error, tolerance);
+        return false;
+    }
+
+    std::vector<float> magnitudes(plan.bins());
+    plan.forward_magnitude_f32(input.data(), magnitudes.data(), work.data());
+    const double magnitude_error = max_magnitude_error_f32(magnitudes, output);
+    if (magnitude_error > tolerance) {
+        std::fprintf(stderr, "n=%zu f32 magnitude error %.17g exceeds %.17g\n", n, magnitude_error, tolerance);
+        return false;
+    }
+
+    const std::vector<float> vector_magnitudes = plan.forward_magnitude_f32(input);
+    const double vector_magnitude_error = max_magnitude_error_f32(vector_magnitudes, output);
+    if (vector_magnitude_error > tolerance) {
+        std::fprintf(stderr,
+                     "n=%zu f32 vector magnitude error %.17g exceeds %.17g\n",
+                     n,
+                     vector_magnitude_error,
+                     tolerance);
         return false;
     }
 
