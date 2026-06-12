@@ -5,3 +5,5 @@
 *.dylib
 *.dll
 *.exe
+.DS_Store
+/build-cmake/

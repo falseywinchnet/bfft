@@ -1,40 +1,47 @@
 # BFFT roadmap
 
-Current target: prepare BFFT for a first `0.1.0` public release.
+Current target: prepare BFFT for a beta-quality `0.1.x` release.
 
-## Phase 1: baseline validation
+## Completed foundation
 
-Status: complete for the current workspace.
+- Public C and C++ APIs live in `include/bfft/`.
+- The implementation is split between `src/bfft.cpp` and
+  `src/detail/bruun_kernel.hpp`.
+- Makefile build, test, install, uninstall, examples, and optional probe targets
+  exist.
+- CMake build, test, install, optional probe, optional PFFFT benchmark, and
+  optional IPP comparison paths exist.
+- C and C++ examples are tracked under `examples/`.
+- Correctness and C API tests are wired into both `make test` and CTest.
+- Double and float32 standard, native, inverse, magnitude, residue, and filter
+  API paths are documented.
+- FFTW/SFDR support probes are tracked under `tests/` and can be built with
+  `make probes`.
 
-- Run the clean build and test workflow.
-- Fix small build or test failures if found.
-- Record the exact validation result in `PROGRESS.md`.
+## Beta preparation
 
-## Phase 2: install and downstream smoke
+1. Land the first CI workflow and get a green GitHub Actions run on `main`.
+2. Teach the human repository operator how to inspect CI failures and require
+   checks before merging.
+3. Polish package metadata so installed builds are discoverable through
+   `pkg-config` and CMake package config files.
+4. Keep downstream package-discovery smoke tests repeatable for staged installs.
+5. Refresh `docs/release-checklist.md` with hosted CI evidence before tagging.
 
-Status: complete for the current workspace.
+## Next development round
 
-- Staged installation with `DESTDIR` and `PREFIX` is validated.
-- Build a tiny downstream C or C++ program against the staged install.
-- Fix mismatches between installed paths and documentation.
-
-## Phase 3: API and docs audit
-
-- Status: complete for the current workspace.
-- Compare public headers with `docs/api.md` and `README.md`.
-- Confirm examples use current allocation sizes and scratch buffers.
-- Add focused tests only where public behavior is not covered.
-
-## Phase 4: release readiness
-
-- Update `docs/release-checklist.md` with final validation evidence.
-- Confirm `docs/maintainer-notes.md` covers GitHub-only setup.
-- Mark `PROGRESS.md` complete only after the checklist in `IDEA.md` is true.
+- Verify the new GitHub Actions workflow on the hosted repository.
+- Promote the local `pkg-config` and `find_package(BFFT CONFIG REQUIRED)`
+  smoke checks into scripted or CI-visible checks.
+- Decide whether the beta should be numbered `0.1.0-beta.1`, `0.1.1-beta.1`,
+  or kept as an untagged beta branch until CI history is stable.
 
 ## Later work
 
-- Develop the dedicated float32 internals and test coverage needed before
-  treating single-precision behavior as first-class.
-- Add CMake support.
-- Add CI for Linux, macOS, Windows, scalar fallback, AVX-class builds, and NEON.
-- Add packaging metadata after the initial source release is stable.
+- Expand CI to macOS and Windows after the Makefile/CMake platform details are
+  validated there.
+- Add scalar-forced and AVX-class CI variants without exposing user-facing
+  transform-selection flags.
+- Add aarch64 NEON CI when hosted runners or cross-runner support are practical.
+- Add release archive checks and optional package manager recipes after the beta
+  workflow is repeatable.
