@@ -2,6 +2,7 @@
 
 <img width="1089" height="590" alt="image" src="https://github.com/user-attachments/assets/9f33fd82-2624-4c01-9af8-6a840abd9db8" />
 
+<img width="1280" height="1046" alt="image" src="https://github.com/user-attachments/assets/765dec7f-603f-40cb-94ed-2a4f527786e3" />
 
 BFFT is a small C/C++ real FFT library based on a normalized-basis Bruun transform.
 This trivialization conceals that this approach, among all FFT, might be optimal.
