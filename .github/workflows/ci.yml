@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cxx-standard:  c++23
+        cxx-standard:  [c++23]
 
     steps:
       - name: Check out repository
@@ -37,7 +37,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        cxx-standard: 23
+        cxx-standard: [23]
 
     steps:
       - name: Check out repository
