@@ -1961,7 +1961,12 @@ public:
         X[N / 2].im = 0.0f;
 
         const int* RESTRICT kin = KINV.data();
-        for (int k = 1; k < N / 2; ++k) {
+        int k = 1;
+        for (; k + 3 < N / 2; k += 4) {
+            pack4_residues_to_complex_f32(X + k, work,
+                                          kin[k], kin[k + 1], kin[k + 2], kin[k + 3]);
+        }
+        for (; k < N / 2; ++k) {
             const int m = kin[k];
             X[k].re = work[2*m];
             X[k].im = -work[2*m + 1];
@@ -1983,7 +1988,15 @@ public:
             // Native heapopt order is a layout permutation; keep the output
             // stream linear and pay the permutation on residue reads.
             const int* RESTRICT native_leaf = NATIVE_LEAF.data();
-            for (int pos = 1; pos < N / 2; ++pos) {
+            int pos = 1;
+            for (; pos + 3 < N / 2; pos += 4) {
+                pack4_residues_to_complex_f32(X + pos, work,
+                                              native_leaf[pos],
+                                              native_leaf[pos + 1],
+                                              native_leaf[pos + 2],
+                                              native_leaf[pos + 3]);
+            }
+            for (; pos < N / 2; ++pos) {
                 const int m = native_leaf[pos];
                 X[pos].re = work[2*m];
                 X[pos].im = -work[2*m + 1];
@@ -2079,7 +2092,12 @@ public:
     void inverse_f32(const complex_f32_t* RESTRICT X, float* RESTRICT out) const {
         out[0] = 0.5f * (X[0].re + X[N / 2].re);
         out[1] = 0.5f * (X[0].re - X[N / 2].re);
-        for (int m = 1; m < N / 2; ++m) {
+        int m = 1;
+        for (; m + 3 < N / 2; m += 4) {
+            unpack4_complex_to_residues_f32(out + 2*m, X,
+                                            IDX[m], IDX[m + 1], IDX[m + 2], IDX[m + 3]);
+        }
+        for (; m < N / 2; ++m) {
             const int k = IDX[m];
             out[2 * m] = X[k].re;
             out[2 * m + 1] = -X[k].im;
@@ -2095,8 +2113,17 @@ public:
         }
         out[0] = 0.5f * (Xnative[0].re + Xnative[N / 2].re);
         out[1] = 0.5f * (Xnative[0].re - Xnative[N / 2].re);
-        for (int pos = 1; pos < N / 2; ++pos) {
-            const int m = NATIVE_LEAF[pos];
+        const int* RESTRICT native_pos = NATIVE_POS.data();
+        int m = 1;
+        for (; m + 3 < N / 2; m += 4) {
+            unpack4_complex_to_residues_f32(out + 2*m, Xnative,
+                                            native_pos[m],
+                                            native_pos[m + 1],
+                                            native_pos[m + 2],
+                                            native_pos[m + 3]);
+        }
+        for (; m < N / 2; ++m) {
+            const int pos = native_pos[m];
             out[2 * m] = Xnative[pos].re;
             out[2 * m + 1] = -Xnative[pos].im;
         }
@@ -2171,7 +2198,12 @@ public:
         standardX[0] = nativeX[0];
         standardX[N / 2] = nativeX[N / 2];
         const int* RESTRICT map = STANDARD_NATIVE_POS.data();
-        for (int k = 1; k < N / 2; ++k) {
+        int k = 1;
+        for (; k + 3 < N / 2; k += 4) {
+            copy4_complex_f32(standardX + k, nativeX,
+                              map[k], map[k + 1], map[k + 2], map[k + 3]);
+        }
+        for (; k < N / 2; ++k) {
             standardX[k] = nativeX[map[k]];
         }
 #else
@@ -2189,7 +2221,12 @@ public:
         nativeX[0] = standardX[0];
         nativeX[N / 2] = standardX[N / 2];
         const int* RESTRICT map = NATIVE_STANDARD_BIN.data();
-        for (int pos = 1; pos < N / 2; ++pos) {
+        int pos = 1;
+        for (; pos + 3 < N / 2; pos += 4) {
+            copy4_complex_f32(nativeX + pos, standardX,
+                              map[pos], map[pos + 1], map[pos + 2], map[pos + 3]);
+        }
+        for (; pos < N / 2; ++pos) {
             nativeX[pos] = standardX[map[pos]];
         }
 #else
@@ -2431,6 +2468,67 @@ private:
         int q;
         int m;
     };
+
+    static inline void store4_interleaved_f32(float* RESTRICT dst,
+                                             float re0, float im0,
+                                             float re1, float im1,
+                                             float re2, float im2,
+                                             float re3, float im3) {
+#if BRUUN_LEVEL >= 1
+        const bruun_v4f re = V4F_SET4(re0, re1, re2, re3);
+        const bruun_v4f im = V4F_SET4(im0, im1, im2, im3);
+        V4F_ST(dst, V4F_ZIPLO(re, im));
+        V4F_ST(dst + 4, V4F_ZIPHI(re, im));
+#else
+        dst[0] = re0;
+        dst[1] = im0;
+        dst[2] = re1;
+        dst[3] = im1;
+        dst[4] = re2;
+        dst[5] = im2;
+        dst[6] = re3;
+        dst[7] = im3;
+#endif
+    }
+
+    static inline void store4_complex_f32(complex_f32_t* RESTRICT dst,
+                                         float re0, float im0,
+                                         float re1, float im1,
+                                         float re2, float im2,
+                                         float re3, float im3) {
+        store4_interleaved_f32(reinterpret_cast<float*>(dst),
+                               re0, im0, re1, im1, re2, im2, re3, im3);
+    }
+
+    static inline void pack4_residues_to_complex_f32(complex_f32_t* RESTRICT dst,
+                                                     const float* RESTRICT residues,
+                                                     int m0, int m1, int m2, int m3) {
+        store4_complex_f32(dst,
+                           residues[2*m0], -residues[2*m0 + 1],
+                           residues[2*m1], -residues[2*m1 + 1],
+                           residues[2*m2], -residues[2*m2 + 1],
+                           residues[2*m3], -residues[2*m3 + 1]);
+    }
+
+    static inline void copy4_complex_f32(complex_f32_t* RESTRICT dst,
+                                        const complex_f32_t* RESTRICT src,
+                                        int i0, int i1, int i2, int i3) {
+        store4_complex_f32(dst,
+                           src[i0].re, src[i0].im,
+                           src[i1].re, src[i1].im,
+                           src[i2].re, src[i2].im,
+                           src[i3].re, src[i3].im);
+    }
+
+    static inline void unpack4_complex_to_residues_f32(float* RESTRICT dst,
+                                                       const complex_f32_t* RESTRICT src,
+                                                       int i0, int i1, int i2, int i3) {
+        store4_interleaved_f32(dst,
+                               src[i0].re, -src[i0].im,
+                               src[i1].re, -src[i1].im,
+                               src[i2].re, -src[i2].im,
+                               src[i3].re, -src[i3].im);
+    }
 
     static inline void norm_q1_fwd_f32(float* RESTRICT p, float c, float s) {
         const float A0 = p[0];

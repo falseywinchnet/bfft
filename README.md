@@ -144,6 +144,10 @@ program loads `libmkl_rt` dynamically and adds `MKL64_ns`, `MKL32_ns`,
 `S/MKL`, `F32/M`, `mkl64`, and `mkl32` printouts. If `libmkl_rt` cannot be
 loaded, those columns remain `n/a`.
 
+On macOS, `make` also builds `build/examples/apple_benchmark`. It is a copy of
+the general benchmark with extra Accelerate/vDSP columns using
+`vDSP_fft_zripD` and `vDSP_fft_zrip` for split real-to-complex FFT timing.
+
 Artifacts are written to `build/`:
 
 - `build/libbfft.a`
