@@ -1,4 +1,5 @@
-# BFFT
+# BFFT [![ci](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+
 
 <img width="1089" height="590" alt="image" src="https://github.com/user-attachments/assets/9f33fd82-2624-4c01-9af8-6a840abd9db8" />
 
