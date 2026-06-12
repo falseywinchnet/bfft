@@ -8,37 +8,43 @@ on:
 
 jobs:
   make:
-    name: make (ubuntu-latest)
+    name: make ${{ matrix.cxx-standard }} (ubuntu-latest)
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        cxx-standard:  [c++23]
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
       - name: Build with Makefile
-        run: make clean && make
+        run: make clean && make CXX_STD=${{ matrix.cxx-standard }}
 
       - name: Run Makefile tests
-        run: make test
+        run: make test CXX_STD=${{ matrix.cxx-standard }}
 
       - name: Stage Makefile install
-        run: make install DESTDIR="$RUNNER_TEMP/bfft-stage" PREFIX=/usr
+        run: make install CXX_STD=${{ matrix.cxx-standard }} DESTDIR="$RUNNER_TEMP/bfft-stage" PREFIX=/usr
 
   cmake:
-    name: cmake (${{ matrix.os }})
+    name: cmake C++${{ matrix.cxx-standard }} (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        cxx-standard: [23]
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
       - name: Configure CMake
-        run: cmake -S . -B build-cmake -DBFFT_BUILD_PROBES=OFF -DBFFT_BUILD_SHARED=OFF
+        run: cmake -S . -B build-cmake -DBFFT_BUILD_PROBES=OFF -DBFFT_BUILD_SHARED=OFF -DCMAKE_CXX_STANDARD=${{ matrix.cxx-standard }} -DCMAKE_CXX_EXTENSIONS=OFF
 
       - name: Build CMake targets
         run: cmake --build build-cmake --config Release --target correctness api_c --parallel

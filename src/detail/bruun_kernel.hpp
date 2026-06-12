@@ -1855,6 +1855,9 @@ public:
         for (int m = 1; m < N / 2; ++m) KINV[IDX[m]] = m;
 
 #if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
+        // Compose the public-standard and native heap permutations once. This
+        // trades two plan-owned int maps for removing dependent map lookups from
+        // the native/standard conversion hot loops.
         STANDARD_NATIVE_POS.assign(N / 2, 0);
         NATIVE_STANDARD_BIN.assign(N / 2, 0);
         if (N < 32) {

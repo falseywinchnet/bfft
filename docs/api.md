@@ -161,8 +161,8 @@ overload `plan.forward_magnitude_f32(input_vector)`.
 
 ## Single-precision transforms
 
-The float32 API uses the same plan size and layout policy as the double API, but
-all signal, work, and complex spectrum buffers are single precision.
+The float32 API uses the same plan size and public layouts as the double API,
+but all signal, work, and complex spectrum buffers are single precision.
 
 ```c
 bfft_forward_f32(plan, input, output, work, native_scratch);
