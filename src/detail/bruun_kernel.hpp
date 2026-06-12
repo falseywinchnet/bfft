@@ -1854,6 +1854,24 @@ public:
         KINV.assign(N / 2, 0);
         for (int m = 1; m < N / 2; ++m) KINV[IDX[m]] = m;
 
+#if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
+        STANDARD_NATIVE_POS.assign(N / 2, 0);
+        NATIVE_STANDARD_BIN.assign(N / 2, 0);
+        if (N < 32) {
+            for (int k = 1; k < N / 2; ++k) {
+                STANDARD_NATIVE_POS[k] = k;
+                NATIVE_STANDARD_BIN[k] = k;
+            }
+        } else {
+            for (int k = 1; k < N / 2; ++k) {
+                STANDARD_NATIVE_POS[k] = NATIVE_POS[KINV[k]];
+            }
+            for (int pos = 1; pos < N / 2; ++pos) {
+                NATIVE_STANDARD_BIN[pos] = IDX[NATIVE_LEAF[pos]];
+            }
+        }
+#endif
+
         // Float copies of the Bruun angle tables plus packed per-leaf float
         // twiddles for the float32 engine. Cast from the double tables, so plan
         // setup stays free of extra libm calls.
@@ -2098,10 +2116,16 @@ public:
         }
         standardX[0] = nativeX[0];
         standardX[N / 2] = nativeX[N / 2];
-        const int* RESTRICT kin = KINV.data();
-        for (int k = 1; k < N / 2; ++k) {
-            const int m = kin[k];
-            standardX[k] = nativeX[NATIVE_POS[m]];
+        const int* RESTRICT map = STANDARD_NATIVE_POS.data();
+        int k = 1;
+        for (; k + 3 < N / 2; k += 4) {
+            standardX[k] = nativeX[map[k]];
+            standardX[k + 1] = nativeX[map[k + 1]];
+            standardX[k + 2] = nativeX[map[k + 2]];
+            standardX[k + 3] = nativeX[map[k + 3]];
+        }
+        for (; k < N / 2; ++k) {
+            standardX[k] = nativeX[map[k]];
         }
 #else
         std::memcpy(standardX, nativeX, sizeof(complex_t) * NB);
@@ -2118,10 +2142,16 @@ public:
         }
         nativeX[0] = standardX[0];
         nativeX[N / 2] = standardX[N / 2];
-        const int* RESTRICT native_leaf = NATIVE_LEAF.data();
-        for (int pos = 1; pos < N / 2; ++pos) {
-            const int m = native_leaf[pos];
-            nativeX[pos] = standardX[IDX[m]];
+        const int* RESTRICT map = NATIVE_STANDARD_BIN.data();
+        int pos = 1;
+        for (; pos + 3 < N / 2; pos += 4) {
+            nativeX[pos] = standardX[map[pos]];
+            nativeX[pos + 1] = standardX[map[pos + 1]];
+            nativeX[pos + 2] = standardX[map[pos + 2]];
+            nativeX[pos + 3] = standardX[map[pos + 3]];
+        }
+        for (; pos < N / 2; ++pos) {
+            nativeX[pos] = standardX[map[pos]];
         }
 #else
         std::memcpy(nativeX, standardX, sizeof(complex_t) * NB);
@@ -2137,10 +2167,9 @@ public:
         }
         standardX[0] = nativeX[0];
         standardX[N / 2] = nativeX[N / 2];
-        const int* RESTRICT kin = KINV.data();
+        const int* RESTRICT map = STANDARD_NATIVE_POS.data();
         for (int k = 1; k < N / 2; ++k) {
-            const int m = kin[k];
-            standardX[k] = nativeX[NATIVE_POS[m]];
+            standardX[k] = nativeX[map[k]];
         }
 #else
         std::memcpy(standardX, nativeX, sizeof(complex_f32_t) * NB);
@@ -2156,10 +2185,9 @@ public:
         }
         nativeX[0] = standardX[0];
         nativeX[N / 2] = standardX[N / 2];
-        const int* RESTRICT native_leaf = NATIVE_LEAF.data();
+        const int* RESTRICT map = NATIVE_STANDARD_BIN.data();
         for (int pos = 1; pos < N / 2; ++pos) {
-            const int m = native_leaf[pos];
-            nativeX[pos] = standardX[IDX[m]];
+            nativeX[pos] = standardX[map[pos]];
         }
 #else
         std::memcpy(nativeX, standardX, sizeof(complex_f32_t) * NB);
@@ -2354,6 +2382,8 @@ private:
 #if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
     std::vector<int> NATIVE_POS;
     std::vector<int> NATIVE_LEAF;
+    std::vector<int> STANDARD_NATIVE_POS;
+    std::vector<int> NATIVE_STANDARD_BIN;
 #endif
     std::vector<double> C;
     std::vector<double> S;
