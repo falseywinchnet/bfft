@@ -45,6 +45,7 @@ SUPPORT_PROBE := $(BUILD_DIR)/tests/bfft_fftw_support_probe
 INVARIANT_PROBE := $(BUILD_DIR)/tests/bfft_invariant_support_probe
 SFDR_PROBE := $(BUILD_DIR)/tests/bfft_fftw_sfdr_probe
 BH7_PROBE := $(BUILD_DIR)/tests/bfft_fftw_sfdr_bh7_probe
+LIBRARY_COMPARE_PROBE := $(BUILD_DIR)/tests/bfft_library_compare_probe
 
 .PHONY: all clean test install uninstall examples probes docs
 
@@ -91,7 +92,10 @@ $(SFDR_PROBE): tests/bfft_fftw_sfdr_probe.cpp include/bfft/bfft.hpp $(STATIC_LIB
 $(BH7_PROBE): tests/bfft_fftw_sfdr_bh7_probe.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
 
-probes: $(SUPPORT_PROBE) $(INVARIANT_PROBE) $(SFDR_PROBE) $(BH7_PROBE)
+$(LIBRARY_COMPARE_PROBE): tests/bfft_library_compare_probe.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
+
+probes: $(SUPPORT_PROBE) $(INVARIANT_PROBE) $(SFDR_PROBE) $(BH7_PROBE) $(LIBRARY_COMPARE_PROBE)
 
 test: $(CORRECTNESS_TEST) $(C_API_TEST)
 	$(CORRECTNESS_TEST)
