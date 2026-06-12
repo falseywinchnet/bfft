@@ -1957,11 +1957,21 @@ public:
         X[N / 2].re = work[0] - work[1];
         X[N / 2].im = 0.0f;
 
-        // Native order is heapopt OUTIDX order for N >= 32 and plain FFTW bin
-        // order below that, matching the double engine and the f32 converters.
-        const int* RESTRICT out_idx = (N >= 32) ? OUTIDX.data() : IDX.data();
+#if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
+        if (N >= 32) {
+            // Native heapopt order is a layout permutation; keep the output
+            // stream linear and pay the permutation on residue reads.
+            const int* RESTRICT native_leaf = NATIVE_LEAF.data();
+            for (int pos = 1; pos < N / 2; ++pos) {
+                const int m = native_leaf[pos];
+                X[pos].re = work[2*m];
+                X[pos].im = -work[2*m + 1];
+            }
+            return;
+        }
+#endif
         for (int m = 1; m < N / 2; ++m) {
-            const int k = out_idx[m];
+            const int k = IDX[m];
             X[k].re = work[2*m];
             X[k].im = -work[2*m + 1];
         }
