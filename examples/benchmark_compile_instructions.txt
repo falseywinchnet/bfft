@@ -55,3 +55,11 @@ Then:
 
 build/examples/benchmark --intel-mkl
 build/examples/benchmark --intel-mkl 1024 1000
+
+Locality probe:
+
+The ordinary make examples target also builds build/examples/locality_probe.
+It compares hot-cache timing with a rotating working set sized by ring_mib.
+
+build/examples/locality_probe
+build/examples/locality_probe 65536 240 64

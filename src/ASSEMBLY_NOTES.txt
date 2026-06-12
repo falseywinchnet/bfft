@@ -48,3 +48,54 @@ Benchmark notes
   - N=1024, 1000 iterations: baseline Std_ns 1174.4, patched Std_ns 1047.0.
   - N=131072, 300 iterations: baseline Std_ns 439074.0, patched Std_ns 428148.1.
 - No kept change showed a consistent >5 percent regression across 25 percent of tested sizes, and the focused repeats did not confirm any >20 percent single-size regression.
+
+Sydney follow-up, 2026-06-12
+
+Sync note
+- The requested upstream sync landed on origin/main, not origin/master; this repository's remote HEAD is origin/main and no origin/master branch is advertised.
+- Fast-forwarded local main from 5bbefc6 to 11af86b before this pass.
+
+Architectural read
+- The main locality win is still the fused depth-first residue architecture. The hot forward path keeps Bruun factor subtrees contiguous, uses the packed LeafTw/LeafTwF streams for sequential metadata reads, and avoids extra residue-domain store/reload passes by applying two tree levels at once before descending.
+- The SSE/NEON abstraction was uneven: double 128-bit rotations already exposed multiply-add/subtract intent through V2_MADD and V2_MSUB, while the float 128-bit forward path used explicit multiply plus add/subtract expressions.
+- Added V4F_MADD and V4F_MSUB. On SSE they expand to the old mulps plus addps/subps shape. On NEON they map to vfmaq_f32 and vfmsq_f32.
+- Rewrote the forward float 128-bit rotation sites, including norm_q_fwd_f32, norm2_fused_f32, and codelet_d3_tw_res_f32, to use those agnostic primitives. Inverse f32 was left alone because this pass focused on the forward path and prior inverse experiments were timing-sensitive.
+
+Assembly checks
+- arm64 annotated assembly now shows fmla.4s/fmls.4s in the forward float segment and codelet regions.
+- An x86_64 assembly-only compile with Apple clang succeeded. The generated SSE side stayed in mulps/addps/subps forms and did not require FMA instructions.
+- The change does not alter memory traffic; it clarifies arithmetic intent and lets each backend choose the right primitive. Locality and cache behavior remain governed by the existing fused residue traversal and packed twiddle streams.
+
+Validation
+- make
+- make test
+- c++ -arch x86_64 -Iinclude -O3 -std=c++17 -fPIC -Wall -Wextra -Wpedantic -S -fverbose-asm src/bfft.cpp -o build/src/bfft_x86_64.s
+
+Benchmark notes
+- Benchmarks were noisy on the shared Mac, especially when run in parallel. Focused sequential checks did not show a stable regression.
+- N=4096, 3000 iterations: patched F32Nat_ns 3083.0 and F32Std_ns 3355.3; origin/main F32Nat_ns 3114.4 and F32Std_ns 3220.0.
+- N=65536, 500 iterations repeat: patched F32Nat_ns 59939.3 and F32Std_ns 71504.8; origin/main F32Nat_ns 68625.2 and F32Std_ns 79695.9.
+- N=262144, 200 iterations: patched F32Nat_ns 295511.2 and F32Std_ns 385009.2; origin/main F32Nat_ns 315608.8 and F32Std_ns 412690.8.
+
+Locality follow-up, 2026-06-12
+
+Measurement tool
+- Added examples/locality_probe.cpp and wired it into Makefile and CMake example builds.
+- The probe reports hot-cache timing against a rotating working-set timing. The ring uses independent input/work/output buffers sized by ring_mib, avoiding the subtraction artifacts from a separate eviction loop.
+
+Converter locality
+- native_to_standard_complex and native_to_standard_complex_f32 now iterate in standard bin order. This makes destination writes sequential and leaves the unavoidable permutation on the native read side.
+- standard_to_native_complex and standard_to_native_complex_f32 now iterate in native position order. This makes native destination writes sequential.
+- This follows the same architectural principle as the rest of the forward path: prefer linear writes and tolerate irregular reads when one side of a permutation must be nonlocal.
+
+Locality measurements after the converter change
+- build/examples/locality_probe 65536 240 64:
+  - convert64 hot_ns 33792.5, ring_ns 52461.3, ring/hot 1.552.
+  - convert32 hot_ns 31950.3, ring_ns 38943.9, ring/hot 1.219.
+  - standard64 hot_ns 160471.7, ring_ns 167566.7, ring/hot 1.044.
+- Before the converter store-order change, the same probe shape showed convert64 around 107258.7 ns hot at N=65536, so the destination-linear converter is a material improvement.
+- build/examples/locality_probe 2097152 32 128:
+  - standard64 uses two-phase-standard-pack, so native-to-standard conversion is not on that public standard-output hot path.
+  - convert32 hot_ns 1796649.7, ring_ns 2212638.0, ring/hot 1.232 after the store-order change.
+- build/examples/benchmark 4096 3000 after the converter change: Native_ns 3962.2, Std_ns 5200.2, F32Nat_ns 2961.7, F32Std_ns 3019.6.
+- build/examples/benchmark 65536 500 after the converter change: Native_ns 124034.0, Std_ns 152776.9, F32Nat_ns 69347.7, F32Std_ns 79781.1.
