@@ -105,6 +105,8 @@ typedef __m128 bruun_v4f;
 #  define V4F_ADD(a, b)   _mm_add_ps((a), (b))
 #  define V4F_SUB(a, b)   _mm_sub_ps((a), (b))
 #  define V4F_MUL(a, b)   _mm_mul_ps((a), (b))
+#  define V4F_MADD(a, b, c) V4F_ADD((a), V4F_MUL((b), (c)))
+#  define V4F_MSUB(a, b, c) V4F_SUB((a), V4F_MUL((b), (c)))
 #  define V4F_SET1(x)     _mm_set1_ps(x)
 #  define V4F_SET4(a,b,c,d) _mm_setr_ps((a), (b), (c), (d))
 #  define V4F_ZERO()      _mm_setzero_ps()
@@ -115,6 +117,8 @@ typedef float32x4_t bruun_v4f;
 #  define V4F_ADD(a, b)   vaddq_f32((a), (b))
 #  define V4F_SUB(a, b)   vsubq_f32((a), (b))
 #  define V4F_MUL(a, b)   vmulq_f32((a), (b))
+#  define V4F_MADD(a, b, c) vfmaq_f32((a), (b), (c))
+#  define V4F_MSUB(a, b, c) vfmsq_f32((a), (b), (c))
 #  define V4F_SET1(x)     vdupq_n_f32(x)
 #  define V4F_SET4(a,b,c,d) vsetq_lane_f32((d), vsetq_lane_f32((c), vsetq_lane_f32((b), vsetq_lane_f32((a), vdupq_n_f32(0.0f), 0), 1), 2), 3)
 #  define V4F_ZERO()      vdupq_n_f32(0.0f)
@@ -1104,8 +1108,8 @@ static inline void norm_q_fwd_f32(float* RESTRICT p, int q, float c_scalar, floa
             const bruun_v4f A1 = V4F_LD(A1p + n);
             const bruun_v4f B1 = V4F_LD(B1p + n);
 
-            const bruun_v4f R = V4F_SUB(V4F_MUL(vc, B0), V4F_MUL(vs, B1));
-            const bruun_v4f I = V4F_ADD(V4F_MUL(vs, B0), V4F_MUL(vc, B1));
+            const bruun_v4f R = V4F_MSUB(V4F_MUL(vc, B0), vs, B1);
+            const bruun_v4f I = V4F_MADD(V4F_MUL(vs, B0), vc, B1);
 
             V4F_ST(A0p + n, V4F_ADD(A0, R));
             V4F_ST(B0p + n, V4F_ADD(A1, I));
@@ -1253,10 +1257,10 @@ static inline void norm2_fused_f32(float* RESTRICT p, int q,
             const bruun_v4f b1n = V4F_LD(B1 + n);
             const bruun_v4f b1h = V4F_LD(B1 + qh + n);
 
-            const bruun_v4f Rn = V4F_SUB(V4F_MUL(vc, b0n), V4F_MUL(vs, b1n));
-            const bruun_v4f In = V4F_ADD(V4F_MUL(vs, b0n), V4F_MUL(vc, b1n));
-            const bruun_v4f Rh = V4F_SUB(V4F_MUL(vc, b0h), V4F_MUL(vs, b1h));
-            const bruun_v4f Ih = V4F_ADD(V4F_MUL(vs, b0h), V4F_MUL(vc, b1h));
+            const bruun_v4f Rn = V4F_MSUB(V4F_MUL(vc, b0n), vs, b1n);
+            const bruun_v4f In = V4F_MADD(V4F_MUL(vs, b0n), vc, b1n);
+            const bruun_v4f Rh = V4F_MSUB(V4F_MUL(vc, b0h), vs, b1h);
+            const bruun_v4f Ih = V4F_MADD(V4F_MUL(vs, b0h), vc, b1h);
 
             const bruun_v4f u0 = V4F_ADD(a0n, Rn);
             const bruun_v4f uh = V4F_ADD(a0h, Rh);
@@ -1267,10 +1271,10 @@ static inline void norm2_fused_f32(float* RESTRICT p, int q,
             const bruun_v4f x0 = V4F_SUB(In, a1n);
             const bruun_v4f xh = V4F_SUB(Ih, a1h);
 
-            const bruun_v4f R0 = V4F_SUB(V4F_MUL(vc0, uh), V4F_MUL(vs0, wh));
-            const bruun_v4f I0 = V4F_ADD(V4F_MUL(vs0, uh), V4F_MUL(vc0, wh));
-            const bruun_v4f R1 = V4F_SUB(V4F_MUL(vc1, vh), V4F_MUL(vs1, xh));
-            const bruun_v4f I1 = V4F_ADD(V4F_MUL(vs1, vh), V4F_MUL(vc1, xh));
+            const bruun_v4f R0 = V4F_MSUB(V4F_MUL(vc0, uh), vs0, wh);
+            const bruun_v4f I0 = V4F_MADD(V4F_MUL(vs0, uh), vc0, wh);
+            const bruun_v4f R1 = V4F_MSUB(V4F_MUL(vc1, vh), vs1, xh);
+            const bruun_v4f I1 = V4F_MADD(V4F_MUL(vs1, vh), vc1, xh);
 
             V4F_ST(A0 + n,      V4F_ADD(u0, R0));
             V4F_ST(A0 + qh + n, V4F_ADD(w0, I0));
@@ -2084,8 +2088,10 @@ public:
         }
         standardX[0] = nativeX[0];
         standardX[N / 2] = nativeX[N / 2];
-        for (int m = 1; m < N / 2; ++m) {
-            standardX[IDX[m]] = nativeX[NATIVE_POS[m]];
+        const int* RESTRICT kin = KINV.data();
+        for (int k = 1; k < N / 2; ++k) {
+            const int m = kin[k];
+            standardX[k] = nativeX[NATIVE_POS[m]];
         }
 #else
         std::memcpy(standardX, nativeX, sizeof(complex_t) * NB);
@@ -2102,8 +2108,10 @@ public:
         }
         nativeX[0] = standardX[0];
         nativeX[N / 2] = standardX[N / 2];
-        for (int m = 1; m < N / 2; ++m) {
-            nativeX[NATIVE_POS[m]] = standardX[IDX[m]];
+        const int* RESTRICT native_leaf = NATIVE_LEAF.data();
+        for (int pos = 1; pos < N / 2; ++pos) {
+            const int m = native_leaf[pos];
+            nativeX[pos] = standardX[IDX[m]];
         }
 #else
         std::memcpy(nativeX, standardX, sizeof(complex_t) * NB);
@@ -2119,8 +2127,10 @@ public:
         }
         standardX[0] = nativeX[0];
         standardX[N / 2] = nativeX[N / 2];
-        for (int m = 1; m < N / 2; ++m) {
-            standardX[IDX[m]] = nativeX[NATIVE_POS[m]];
+        const int* RESTRICT kin = KINV.data();
+        for (int k = 1; k < N / 2; ++k) {
+            const int m = kin[k];
+            standardX[k] = nativeX[NATIVE_POS[m]];
         }
 #else
         std::memcpy(standardX, nativeX, sizeof(complex_f32_t) * NB);
@@ -2136,8 +2146,10 @@ public:
         }
         nativeX[0] = standardX[0];
         nativeX[N / 2] = standardX[N / 2];
-        for (int m = 1; m < N / 2; ++m) {
-            nativeX[NATIVE_POS[m]] = standardX[IDX[m]];
+        const int* RESTRICT native_leaf = NATIVE_LEAF.data();
+        for (int pos = 1; pos < N / 2; ++pos) {
+            const int m = native_leaf[pos];
+            nativeX[pos] = standardX[IDX[m]];
         }
 #else
         std::memcpy(nativeX, standardX, sizeof(complex_f32_t) * NB);
@@ -2421,8 +2433,8 @@ private:
 
         const bruun_v4f c1 = V4F_SET1(t.c1);
         const bruun_v4f s1 = V4F_SET1(t.s1);
-        const bruun_v4f R1 = V4F_SUB(V4F_MUL(c1, B0), V4F_MUL(s1, B1));
-        const bruun_v4f I1 = V4F_ADD(V4F_MUL(s1, B0), V4F_MUL(c1, B1));
+        const bruun_v4f R1 = V4F_MSUB(V4F_MUL(c1, B0), s1, B1);
+        const bruun_v4f I1 = V4F_MADD(V4F_MUL(s1, B0), c1, B1);
 
         const bruun_v4f c0a = V4F_ADD(A0, R1);
         const bruun_v4f c0b = V4F_ADD(A1, I1);
@@ -2436,8 +2448,8 @@ private:
 
         const bruun_v4f c2 = V4F_LD(t.c2d);
         const bruun_v4f s2 = V4F_LD(t.s2d);
-        const bruun_v4f R2 = V4F_SUB(V4F_MUL(c2, B0v), V4F_MUL(s2, B1v));
-        const bruun_v4f I2 = V4F_ADD(V4F_MUL(s2, B0v), V4F_MUL(c2, B1v));
+        const bruun_v4f R2 = V4F_MSUB(V4F_MUL(c2, B0v), s2, B1v);
+        const bruun_v4f I2 = V4F_MADD(V4F_MUL(s2, B0v), c2, B1v);
 
         const bruun_v4f P = V4F_ADD(A0v, R2);
         const bruun_v4f Q = V4F_ADD(A1v, I2);
@@ -2455,8 +2467,8 @@ private:
 
         const bruun_v4f c4 = V4F_LD(t.c4);
         const bruun_v4f s4 = V4F_LD(t.s4);
-        const bruun_v4f R3 = V4F_SUB(V4F_MUL(c4, B0w), V4F_MUL(s4, B1w));
-        const bruun_v4f I3 = V4F_ADD(V4F_MUL(s4, B0w), V4F_MUL(c4, B1w));
+        const bruun_v4f R3 = V4F_MSUB(V4F_MUL(c4, B0w), s4, B1w);
+        const bruun_v4f I3 = V4F_MADD(V4F_MUL(s4, B0w), c4, B1w);
 
         const bruun_v4f E0 = V4F_ADD(A0w, R3); // leaf even residue r0
         const bruun_v4f E1 = V4F_ADD(A1w, I3); // leaf even residue r1
