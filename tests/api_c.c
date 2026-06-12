@@ -17,18 +17,20 @@ int main(void) {
     double* input = (double*)calloc(n, sizeof(double));
     double* work = (double*)calloc(bfft_plan_work_size(plan), sizeof(double));
     double* inverse = (double*)calloc(n, sizeof(double));
+    double* magnitudes = (double*)calloc(bins, sizeof(double));
     bfft_complex* output = (bfft_complex*)calloc(bins, sizeof(bfft_complex));
     bfft_complex* scratch = (bfft_complex*)calloc(bfft_plan_native_scratch_size(plan), sizeof(bfft_complex));
     float* input_f32 = (float*)calloc(n, sizeof(float));
     float* work_f32 = (float*)calloc(bfft_plan_work_size_f32(plan), sizeof(float));
     float* inverse_f32 = (float*)calloc(n, sizeof(float));
+    float* magnitudes_f32 = (float*)calloc(bins, sizeof(float));
     bfft_complex_f32* output_f32 = (bfft_complex_f32*)calloc(bins, sizeof(bfft_complex_f32));
     bfft_complex_f32* native_f32 = (bfft_complex_f32*)calloc(bins, sizeof(bfft_complex_f32));
     bfft_complex_f32* standard_f32 = (bfft_complex_f32*)calloc(bins, sizeof(bfft_complex_f32));
 
-    if (input == NULL || work == NULL || inverse == NULL || output == NULL || scratch == NULL ||
-        input_f32 == NULL || work_f32 == NULL || inverse_f32 == NULL || output_f32 == NULL ||
-        native_f32 == NULL || standard_f32 == NULL) {
+    if (input == NULL || work == NULL || inverse == NULL || magnitudes == NULL || output == NULL ||
+        scratch == NULL || input_f32 == NULL || work_f32 == NULL || inverse_f32 == NULL ||
+        magnitudes_f32 == NULL || output_f32 == NULL || native_f32 == NULL || standard_f32 == NULL) {
         return 1;
     }
 
@@ -62,6 +64,26 @@ int main(void) {
         return 1;
     }
 
+    status = bfft_forward_magnitude(plan, input, magnitudes, work);
+    if (status != BFFT_OK) {
+        fprintf(stderr, "magnitude failed: %s\n", bfft_status_string(status));
+        return 1;
+    }
+
+    double max_magnitude_error = 0.0;
+    for (size_t i = 0; i < bins; ++i) {
+        const double expected = hypot(output[i].re, output[i].im);
+        const double error = fabs(magnitudes[i] - expected);
+        if (error > max_magnitude_error) {
+            max_magnitude_error = error;
+        }
+    }
+
+    if (max_magnitude_error > 1e-9) {
+        fprintf(stderr, "magnitude error %g\n", max_magnitude_error);
+        return 1;
+    }
+
     status = bfft_forward_f32(plan, input_f32, output_f32, work_f32, NULL);
     if (status != BFFT_OK) {
         fprintf(stderr, "f32 forward failed: %s\n", bfft_status_string(status));
@@ -84,6 +106,26 @@ int main(void) {
 
     if (max_error_f32 > 1e-5) {
         fprintf(stderr, "f32 roundtrip error %g\n", max_error_f32);
+        return 1;
+    }
+
+    status = bfft_forward_magnitude_f32(plan, input_f32, magnitudes_f32, work_f32);
+    if (status != BFFT_OK) {
+        fprintf(stderr, "f32 magnitude failed: %s\n", bfft_status_string(status));
+        return 1;
+    }
+
+    double max_magnitude_error_f32 = 0.0;
+    for (size_t i = 0; i < bins; ++i) {
+        const double expected = hypot((double)output_f32[i].re, (double)output_f32[i].im);
+        const double error = fabs((double)magnitudes_f32[i] - expected);
+        if (error > max_magnitude_error_f32) {
+            max_magnitude_error_f32 = error;
+        }
+    }
+
+    if (max_magnitude_error_f32 > 1e-5) {
+        fprintf(stderr, "f32 magnitude error %g\n", max_magnitude_error_f32);
         return 1;
     }
 
@@ -127,11 +169,13 @@ int main(void) {
     free(input);
     free(work);
     free(inverse);
+    free(magnitudes);
     free(output);
     free(scratch);
     free(input_f32);
     free(work_f32);
     free(inverse_f32);
+    free(magnitudes_f32);
     free(output_f32);
     free(native_f32);
     free(standard_f32);

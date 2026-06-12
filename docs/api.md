@@ -121,6 +121,44 @@ std::vector<bfft::complex> spectrum = plan.forward(input_vector);
 The vector overload validates that `input_vector.size() == plan.size()` and
 allocates the work buffers internally.
 
+## Magnitude-only forward transform
+
+If an application only needs amplitudes and not phases, use the magnitude-only
+forward transform. It writes standard FFT-order magnitudes from bin `0` to
+`N/2` directly into a real output buffer. This path still uses the same Bruun
+forward transform, but it avoids complex output storage and the native complex
+scratch buffer required by the ordinary standard-output double transform.
+
+```c
+bfft_forward_magnitude(plan, input, magnitudes, work);
+```
+
+Buffer sizes:
+
+- `input`: `N` doubles.
+- `magnitudes`: `bfft_plan_bins(plan)` doubles.
+- `work`: `bfft_plan_work_size(plan)` doubles.
+
+The output values are `abs(X[k])` for the ordinary real-to-complex FFT bins. DC
+and Nyquist bins are real, so their magnitudes are absolute values. Interior
+bins use `sqrt(re * re + im * im)`. The C++ wrappers are:
+
+```cpp
+plan.forward_magnitude(input, magnitudes, work);
+std::vector<double> magnitudes = plan.forward_magnitude(input_vector);
+```
+
+The single-precision equivalent is:
+
+```c
+bfft_forward_magnitude_f32(plan, input, magnitudes, work);
+```
+
+with `N` floats for `input`, `bfft_plan_bins(plan)` floats for `magnitudes`, and
+`bfft_plan_work_size_f32(plan)` floats for `work`. The C++ wrappers are
+`plan.forward_magnitude_f32(input, magnitudes, work)` and the allocating vector
+overload `plan.forward_magnitude_f32(input_vector)`.
+
 ## Single-precision transforms
 
 The float32 API uses the same plan size and layout policy as the double API, but

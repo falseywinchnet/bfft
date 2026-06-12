@@ -1959,6 +1959,45 @@ public:
         }
     }
 
+    // Standard FFT-order magnitude-only forward transform. This keeps the
+    // residue-domain output in the caller's real work buffer and writes one
+    // scalar magnitude per r2c bin, avoiding complex spectrum storage and native
+    // scratch when phases are not needed.
+    void forward_magnitude(const double* RESTRICT input,
+                           double* RESTRICT magnitudes,
+                           double* RESTRICT work) const {
+        forward_residues(input, work);
+
+        magnitudes[0] = std::fabs(work[0] + work[1]);
+        magnitudes[N / 2] = std::fabs(work[0] - work[1]);
+
+        const int* RESTRICT kin = KINV.data();
+        for (int k = 1; k < N / 2; ++k) {
+            const int m = kin[k];
+            const double re = work[2*m];
+            const double im = work[2*m + 1];
+            magnitudes[k] = std::sqrt(re * re + im * im);
+        }
+    }
+
+    // Single-precision standard FFT-order magnitude-only forward transform.
+    void forward_magnitude_f32(const float* RESTRICT input,
+                               float* RESTRICT magnitudes,
+                               float* RESTRICT work) const {
+        forward_residues_f32(input, work);
+
+        magnitudes[0] = std::fabs(work[0] + work[1]);
+        magnitudes[N / 2] = std::fabs(work[0] - work[1]);
+
+        const int* RESTRICT kin = KINV.data();
+        for (int k = 1; k < N / 2; ++k) {
+            const int m = kin[k];
+            const float re = work[2*m];
+            const float im = work[2*m + 1];
+            magnitudes[k] = std::sqrt(re * re + im * im);
+        }
+    }
+
     // Standard FFTW-like real -> complex interface, using caller-provided native scratch.
     // X[k] is the ordinary k-th FFT bin on return.
     void forward_standard(const double* RESTRICT input,

@@ -134,6 +134,38 @@ public:
         check(bfft_forward_native_f32(impl_.get(), input, output, work));
     }
 
+    /* Standard FFT-order magnitude-only forward transform. */
+    void forward_magnitude(const double* input, double* magnitudes, double* work) const {
+        check(bfft_forward_magnitude(impl_.get(), input, magnitudes, work));
+    }
+
+    /* Convenience magnitude-only forward transform that allocates work. */
+    std::vector<double> forward_magnitude(const std::vector<double>& input) const {
+        if (input.size() != size()) {
+            throw error(BFFT_ERROR_INVALID_ARGUMENT);
+        }
+        std::vector<double> magnitudes(bins());
+        std::vector<double> work(work_size());
+        forward_magnitude(input.data(), magnitudes.data(), work.data());
+        return magnitudes;
+    }
+
+    /* Single-precision standard FFT-order magnitude-only forward transform. */
+    void forward_magnitude_f32(const float* input, float* magnitudes, float* work) const {
+        check(bfft_forward_magnitude_f32(impl_.get(), input, magnitudes, work));
+    }
+
+    /* Convenience single-precision magnitude-only forward transform. */
+    std::vector<float> forward_magnitude_f32(const std::vector<float>& input) const {
+        if (input.size() != size()) {
+            throw error(BFFT_ERROR_INVALID_ARGUMENT);
+        }
+        std::vector<float> magnitudes(bins());
+        std::vector<float> work(work_size_f32());
+        forward_magnitude_f32(input.data(), magnitudes.data(), work.data());
+        return magnitudes;
+    }
+
     /* Standard FFT-order inverse transform. */
     void inverse(const complex* input, double* output) const {
         check(bfft_inverse(impl_.get(), input, output));
