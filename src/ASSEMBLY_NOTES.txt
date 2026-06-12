@@ -99,3 +99,30 @@ Locality measurements after the converter change
   - convert32 hot_ns 1796649.7, ring_ns 2212638.0, ring/hot 1.232 after the store-order change.
 - build/examples/benchmark 4096 3000 after the converter change: Native_ns 3962.2, Std_ns 5200.2, F32Nat_ns 2961.7, F32Std_ns 3019.6.
 - build/examples/benchmark 65536 500 after the converter change: Native_ns 124034.0, Std_ns 152776.9, F32Nat_ns 69347.7, F32Std_ns 79781.1.
+
+Native f32 locality follow-up, 2026-06-12
+
+Change
+- forward_native_f32 now emits heapopt native order by iterating native output positions and reading NATIVE_LEAF[pos] from the residue work buffer.
+- This makes the public native spectrum write stream linear. The unavoidable permutation moves to reads from the already-hot residue buffer, which is generally cheaper than scattered complex output stores.
+- Small N without heapopt still uses the old IDX loop.
+
+Assembly check
+- On arm64 Apple clang, build/src/bfft.s shows the native f32 output loop loading two NATIVE_LEAF indices with ldpsw, gathering two residue pairs from work, and writing two adjacent complex_f32_t results with stp while advancing the output pointer.
+- This is the locality shape we want from a generic design perspective: sequential destination pressure, compact index stream, no architecture-specific scatter primitive.
+
+Locality measurements after native f32 store-order change
+- build/examples/locality_probe 4096 3000 64:
+  - native32 hot_ns 3837.4, ring_ns 3330.0, ring/hot 0.868.
+  - standard32 hot_ns 3004.2, ring_ns 3936.0, ring/hot 1.310.
+- build/examples/locality_probe 65536 600 64:
+  - native32 hot_ns 63839.8, ring_ns 67469.0, ring/hot 1.057.
+  - standard32 hot_ns 95573.3, ring_ns 87344.9, ring/hot 0.914.
+- build/examples/locality_probe 1048576 80 128:
+  - native32 hot_ns 1269024.5, ring_ns 1319281.2, ring/hot 1.040.
+  - standard32 hot_ns 1734335.4, ring_ns 1712309.4, ring/hot 0.987.
+
+Benchmark checks after native f32 store-order change
+- build/examples/benchmark 4096 3000: F32Nat_ns 3527.7, F32Std_ns 3482.8.
+- build/examples/benchmark 65536 500: F32Nat_ns 63909.5, F32Std_ns 77834.9.
+- build/examples/benchmark 1048576 80: F32Nat_ns 1242196.4, F32Std_ns 1571345.8.
