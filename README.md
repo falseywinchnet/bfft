@@ -113,6 +113,16 @@ make
 make test
 ```
 
+CMake builds are also supported:
+
+```sh
+cmake -S . -B build-cmake
+cmake --build build-cmake
+ctest --test-dir build-cmake --output-on-failure
+```
+
+CMake enables the same host SIMD probe as the Makefile on x86_64 when the compiler accepts `-mavx2 -mfma`. Optional comparison probes are built by default. The library comparison probe dynamically uses FFTW when `libfftw3` is available, and its CMake target also enables an Intel IPP complex-DFT reference when `ipps.h`, `ipps`, `ippvm`, and `ippcore` are found. CMake also enables the benchmark's PFFFT comparison path when `pffft.h` and `libpffft` are found.
+
 Artifacts are written to `build/`:
 
 - `build/libbfft.a`
@@ -195,12 +205,15 @@ Run a complete benchmark/demo:
 ./build/examples/cpp_api_demo
 ```
 
-Build the optional FFTW comparison probes from the tracked `tests/` sources:
+Build the optional comparison probes from the tracked `tests/` sources:
 
 ```sh
 make probes
 ./build/tests/bfft_fftw_sfdr_bh7_probe 16 8 8 bh7 f32-native
+./build/tests/bfft_library_compare_probe 12
 ```
+
+`bfft_library_compare_probe` reports which external FFT references are available in the current environment. The Makefile build always compiles the probe without hard dependencies and uses FFTW dynamically when present. The CMake build additionally links Intel IPP into that probe when the IPP headers and libraries are discoverable, usually through normal search paths or `IPPROOT`.
 
 The BH7 probe modes are `f64-standard`, `f64-native`, `f32-standard`, and
 `f32-native`. For float32 BFFT modes the probe uses FFTWf when `libfftw3f` is
