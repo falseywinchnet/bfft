@@ -47,9 +47,9 @@ jobs:
         run: ctest --test-dir build-cmake --output-on-failure
 
       - name: Stage CMake install
-        run: cmake --install build-cmake --prefix "$env:RUNNER_TEMP/bfft-cmake-stage/usr"
+        run: cmake --install build-cmake --config Release --prefix "$env:RUNNER_TEMP/bfft-cmake-stage/usr"
         if: runner.os == 'Windows'
 
       - name: Stage CMake install
-        run: cmake --install build-cmake --prefix "$RUNNER_TEMP/bfft-cmake-stage/usr"
+        run: cmake --install build-cmake --config Release --prefix "$RUNNER_TEMP/bfft-cmake-stage/usr"
         if: runner.os != 'Windows'
