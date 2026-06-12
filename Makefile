@@ -25,8 +25,12 @@ UNAME_M := $(shell uname -m 2>/dev/null || echo unknown)
 UNAME_S := $(shell uname -s 2>/dev/null || echo unknown)
 ifeq ($(UNAME_S),Darwin)
   DL_LIBS ?=
+  ACCELERATE_LIBS ?= -framework Accelerate
+  APPLE_EXAMPLES = $(APPLE_BENCH)
 else
   DL_LIBS ?= -ldl
+  ACCELERATE_LIBS ?=
+  APPLE_EXAMPLES :=
 endif
 AVX2_FLAGS := $(shell $(CXX) -x c++ -std=$(CXX_STD) -mavx2 -mfma -c /dev/null -o /tmp/bfft-avx2-test.o >/dev/null 2>&1 && rm -f /tmp/bfft-avx2-test.o && echo '-mavx2 -mfma')
 SSE2_FLAGS := $(shell $(CXX) -x c++ -std=$(CXX_STD) -msse2 -mno-avx -c /dev/null -o /tmp/bfft-sse2-test.o >/dev/null 2>&1 && rm -f /tmp/bfft-sse2-test.o && echo '-msse2 -mno-avx')
@@ -46,6 +50,7 @@ STATIC_LIB := $(BUILD_DIR)/lib$(LIB_NAME).a
 SHARED_LIB := $(BUILD_DIR)/lib$(LIB_NAME).so
 PC_FILE := $(BUILD_DIR)/$(LIB_NAME).pc
 BENCH := $(BUILD_DIR)/examples/benchmark
+APPLE_BENCH := $(BUILD_DIR)/examples/apple_benchmark
 LOCALITY_PROBE := $(BUILD_DIR)/examples/locality_probe
 C_DEMO := $(BUILD_DIR)/examples/c_api_demo
 CPP_DEMO := $(BUILD_DIR)/examples/cpp_api_demo
@@ -89,7 +94,7 @@ $(PC_FILE): pkgconfig/bfft.pc.in | $(BUILD_DIR)
 		-e 's|@PROJECT_VERSION@|$(VERSION)|g' \
 		$< > $@
 
-examples: $(BENCH) $(LOCALITY_PROBE) $(C_DEMO) $(CPP_DEMO)
+examples: $(BENCH) $(APPLE_EXAMPLES) $(LOCALITY_PROBE) $(C_DEMO) $(CPP_DEMO)
 
 asm-check: $(ASM_OUTPUTS)
 	@if [ -z "$(ASM_OUTPUTS)" ]; then echo "No x86 assembly variants supported by $(CXX)."; fi
@@ -102,6 +107,9 @@ $(SSE2_ASM): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp | $(BUILD_DI
 
 $(BENCH): examples/benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
+
+$(APPLE_BENCH): examples/apple_benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) $(ACCELERATE_LIBS) -o $@
 
 $(LOCALITY_PROBE): examples/locality_probe.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
