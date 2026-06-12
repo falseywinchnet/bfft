@@ -44,7 +44,7 @@ jobs:
         run: cmake --build build-cmake --parallel
 
       - name: Run CMake tests
-        run: ctest --test-dir build-cmake --output-on-failure
+        run: ctest --test-dir build-cmake -C Release --output-on-failure
 
       - name: Stage CMake install
         run: cmake --install build-cmake --config Release --prefix "$env:RUNNER_TEMP/bfft-cmake-stage/usr"
