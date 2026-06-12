@@ -2358,6 +2358,21 @@ private:
     std::vector<float> CF;
     std::vector<float> SF;
 
+    // Small explicit traversal records keep depth-first segment ownership visible
+    // to the program instead of relying on recursive calls through inline member
+    // symbols. The stack bound covers every supported int-sized power-of-two plan.
+    struct DoubleSegment {
+        double* data;
+        int q;
+        int m;
+    };
+
+    struct FloatSegment {
+        float* data;
+        int q;
+        int m;
+    };
+
     static inline void norm_q1_fwd_f32(float* RESTRICT p, float c, float s) {
         const float A0 = p[0];
         const float B0 = p[1];
@@ -2552,23 +2567,39 @@ private:
 #endif
     }
 
-    void rec_fwd_res_f32(float* RESTRICT v, int q, int m) const {
-        if (q >= 16) {
-            norm2_fused_f32(v, q, CF[m], SF[m], CF[2*m], SF[2*m], CF[2*m+1], SF[2*m+1]);
-            const int qq = q >> 2;
-            rec_fwd_res_f32(v,       qq, 4*m);
-            rec_fwd_res_f32(v + q,   qq, 4*m + 1);
-            rec_fwd_res_f32(v + 2*q, qq, 4*m + 2);
-            rec_fwd_res_f32(v + 3*q, qq, 4*m + 3);
-            return;
+    void run_fwd_res_segments_f32(float* RESTRICT root, int root_q, int root_m) const {
+        FloatSegment stack[96];
+        int stack_size = 0;
+        stack[stack_size++] = FloatSegment{root, root_q, root_m};
+
+        while (stack_size > 0) {
+            --stack_size;
+            const FloatSegment segment = stack[stack_size];
+            float* RESTRICT v = segment.data;
+            const int q = segment.q;
+            const int m = segment.m;
+
+            if (q >= 16) {
+                norm2_fused_f32(v, q, CF[m], SF[m], CF[2*m], SF[2*m], CF[2*m+1], SF[2*m+1]);
+                const int qq = q >> 2;
+                const int child_m = 4 * m;
+
+                stack[stack_size++] = FloatSegment{v + 3*q, qq, child_m + 3};
+                stack[stack_size++] = FloatSegment{v + 2*q, qq, child_m + 2};
+                stack[stack_size++] = FloatSegment{v + q,   qq, child_m + 1};
+                stack[stack_size++] = FloatSegment{v,       qq, child_m};
+                continue;
+            }
+
+            if (q == 8) {
+                norm_q_fwd_f32(v, 8, CF[m], SF[m]);
+                codelet_d3_tw_res_f32(v, TWF[2*m]);
+                codelet_d3_tw_res_f32(v + 16, TWF[2*m + 1]);
+                continue;
+            }
+
+            codelet_d3_tw_res_f32(v, TWF[m]);
         }
-        if (q == 8) {
-            norm_q_fwd_f32(v, 8, CF[m], SF[m]);
-            codelet_d3_tw_res_f32(v, TWF[2*m]);
-            codelet_d3_tw_res_f32(v + 16, TWF[2*m + 1]);
-            return;
-        }
-        codelet_d3_tw_res_f32(v, TWF[m]);
     }
 
     void residue_spine_tail_fwd_f32(float* RESTRICT v) const {
@@ -2587,7 +2618,7 @@ private:
         binomial_oop_f32(input, v, N / 2);
 
         for (int h = N / 2; h >= 32; h >>= 1) {
-            rec_fwd_res_f32(v + h, h >> 2, 1);
+            run_fwd_res_segments_f32(v + h, h >> 2, 1);
             binomial_fwd_f32(v, h >> 1);
         }
 
@@ -3164,23 +3195,39 @@ private:
 #endif
     }
 
-    void rec_fwd_res(double* RESTRICT v, int q, int m) const {
-        if (q >= 16) {
-            norm2_fused(v, q, C[m], S[m], C[2*m], S[2*m], C[2*m+1], S[2*m+1]);
-            const int qq = q >> 2;
-            rec_fwd_res(v,       qq, 4*m);
-            rec_fwd_res(v + q,   qq, 4*m + 1);
-            rec_fwd_res(v + 2*q, qq, 4*m + 2);
-            rec_fwd_res(v + 3*q, qq, 4*m + 3);
-            return;
+    void run_fwd_res_segments(double* RESTRICT root, int root_q, int root_m) const {
+        DoubleSegment stack[96];
+        int stack_size = 0;
+        stack[stack_size++] = DoubleSegment{root, root_q, root_m};
+
+        while (stack_size > 0) {
+            --stack_size;
+            const DoubleSegment segment = stack[stack_size];
+            double* RESTRICT v = segment.data;
+            const int q = segment.q;
+            const int m = segment.m;
+
+            if (q >= 16) {
+                norm2_fused(v, q, C[m], S[m], C[2*m], S[2*m], C[2*m+1], S[2*m+1]);
+                const int qq = q >> 2;
+                const int child_m = 4 * m;
+
+                stack[stack_size++] = DoubleSegment{v + 3*q, qq, child_m + 3};
+                stack[stack_size++] = DoubleSegment{v + 2*q, qq, child_m + 2};
+                stack[stack_size++] = DoubleSegment{v + q,   qq, child_m + 1};
+                stack[stack_size++] = DoubleSegment{v,       qq, child_m};
+                continue;
+            }
+
+            if (q == 8) {
+                norm_q_fwd(v, 8, C[m], S[m]);
+                codelet_d3_tw_res(v, TW[2*m]);
+                codelet_d3_tw_res(v + 16, TW[2*m + 1]);
+                continue;
+            }
+
+            codelet_d3_tw_res(v, TW[m]);
         }
-        if (q == 8) {
-            norm_q_fwd(v, 8, C[m], S[m]);
-            codelet_d3_tw_res(v, TW[2*m]);
-            codelet_d3_tw_res(v + 16, TW[2*m + 1]);
-            return;
-        }
-        codelet_d3_tw_res(v, TW[m]);
     }
 
     // Spine tail for residue-order transforms: the last spine blocks (16, 8, 4, 2)
@@ -3202,7 +3249,7 @@ private:
         binomial_oop(input, v, N / 2);
 
         for (int h = N / 2; h >= 32; h >>= 1) {
-            rec_fwd_res(v + h, h >> 2, 1);
+            run_fwd_res_segments(v + h, h >> 2, 1);
             binomial_fwd(v, h >> 1);
         }
 
@@ -3361,29 +3408,45 @@ private:
     // breadth-first stages, reordered so every sub-block becomes cache-resident
     // before the remaining log(s) passes touch it. Descends two levels per fused
     // pass; bottoms out in the fused depth-3 leaf codelets.
-    void rec_fwd(double* RESTRICT v, int q, int m, complex_t* RESTRICT X) const {
-        if (q >= 16) {
-            norm2_fused(v, q, C[m], S[m], C[2*m], S[2*m], C[2*m+1], S[2*m+1]);
-            const int qq = q >> 2;
-            rec_fwd(v,       qq, 4*m,     X);
-            rec_fwd(v + q,   qq, 4*m + 1, X);
-            rec_fwd(v + 2*q, qq, 4*m + 2, X);
-            rec_fwd(v + 3*q, qq, 4*m + 3, X);
-            return;
-        }
-        if (q == 8) {
+    void run_fwd_segments(double* RESTRICT root, int root_q, int root_m, complex_t* RESTRICT X) const {
+        DoubleSegment stack[96];
+        int stack_size = 0;
+        stack[stack_size++] = DoubleSegment{root, root_q, root_m};
+
+        while (stack_size > 0) {
+            --stack_size;
+            const DoubleSegment segment = stack[stack_size];
+            double* RESTRICT v = segment.data;
+            const int q = segment.q;
+            const int m = segment.m;
+
+            if (q >= 16) {
+                norm2_fused(v, q, C[m], S[m], C[2*m], S[2*m], C[2*m+1], S[2*m+1]);
+                const int qq = q >> 2;
+                const int child_m = 4 * m;
+
+                stack[stack_size++] = DoubleSegment{v + 3*q, qq, child_m + 3};
+                stack[stack_size++] = DoubleSegment{v + 2*q, qq, child_m + 2};
+                stack[stack_size++] = DoubleSegment{v + q,   qq, child_m + 1};
+                stack[stack_size++] = DoubleSegment{v,       qq, child_m};
+                continue;
+            }
+
+            if (q == 8) {
 #if BRUUN_LEVEL >= 3
-            codelet_d4x2_avx512(v, m, X);
+                codelet_d4x2_avx512(v, m, X);
 #elif BRUUN_LEVEL >= 2
-            codelet_d4_avx2(v, m, X);
+                codelet_d4_avx2(v, m, X);
 #else
-            norm_q_fwd(v, 8, C[m], S[m]);
-            d3_one(v, 2*m, X);
-            d3_one(v + 16, 2*m + 1, X);
+                norm_q_fwd(v, 8, C[m], S[m]);
+                d3_one(v, 2*m, X);
+                d3_one(v + 16, 2*m + 1, X);
 #endif
-            return;
+                continue;
+            }
+
+            d3_one(v, m, X);
         }
-        d3_one(v, m, X);
     }
 
     // Fused copy + depth-first forward. Requires N >= 64.
@@ -3391,7 +3454,7 @@ private:
         binomial_oop(input, v, N / 2);
 
         for (int h = N / 2; h >= 32; h >>= 1) {
-            rec_fwd(v + h, h >> 2, 1, X);
+            run_fwd_segments(v + h, h >> 2, 1, X);
             binomial_fwd(v, h >> 1);
         }
 
