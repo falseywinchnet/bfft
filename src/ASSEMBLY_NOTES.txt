@@ -126,3 +126,20 @@ Benchmark checks after native f32 store-order change
 - build/examples/benchmark 4096 3000: F32Nat_ns 3527.7, F32Std_ns 3482.8.
 - build/examples/benchmark 65536 500: F32Nat_ns 63909.5, F32Std_ns 77834.9.
 - build/examples/benchmark 1048576 80: F32Nat_ns 1242196.4, F32Std_ns 1571345.8.
+
+X86 assembly follow-up, 2026-06-12
+
+Reproducibility
+- Added a make asm-check target that emits the library translation unit as annotated AVX2/FMA and SSE2/no-AVX assembly when the host compiler accepts those x86 switches.
+- The target is intentionally separate from make and make test so normal builds keep using the automatic backend policy, while assembly audits can be repeated without hand-copying compiler invocations.
+
+Findings
+- AVX2 forward residue codelets still show vfmadd/vfmsub double and float arithmetic in the fused depth-3/depth-4 regions, with no vgather on the hot double path. The standard-output double pack remains scalar-indexed by KINV but stores bins sequentially, which is the intended cache-locality tradeoff for the unavoidable permutation.
+- SSE2/no-AVX assembly stays in SSE registers and does not mix legacy SSE with AVX encodings inside the same object. The 128-bit double path uses packed add/sub/mul/unpack operations where the generic V2 layer is active, and the scalar-looking pieces are the expected small q=1/q=2 leaves and tail code.
+- A local experiment to fuse the SSE2 residue-writing depth-3 double leaf avoided intermediate stores, but it increased register pressure and lost on the available x86 benchmark runs. It was not kept.
+
+Benchmark spot checks on this x86_64 host
+- AVX2/FMA, build/examples/benchmark 4096 1000: Native_ns 9429.5, Std_ns 12266.7, F32Nat_ns 9184.5, F32Std_ns 12199.8 in a noisy shared environment.
+- AVX2/FMA, build/examples/benchmark 65536 200: Native_ns 229439.6, Std_ns 270077.0, F32Nat_ns 183525.0, F32Std_ns 216272.4 in the same noisy environment.
+- SSE2/no-AVX, build/sse2/benchmark 4096 1000: Native_ns 16666.5, Std_ns 18597.3, F32Nat_ns 10749.4, F32Std_ns 10693.3.
+- SSE2/no-AVX, build/sse2/benchmark 65536 200: Native_ns 349931.1, Std_ns 469587.3, F32Nat_ns 230881.9, F32Std_ns 235586.5.

@@ -24,6 +24,7 @@ else
   DL_LIBS ?= -ldl
 endif
 AVX2_FLAGS := $(shell $(CXX) -x c++ -std=c++17 -mavx2 -mfma -c /dev/null -o /tmp/bfft-avx2-test.o >/dev/null 2>&1 && rm -f /tmp/bfft-avx2-test.o && echo '-mavx2 -mfma')
+SSE2_FLAGS := $(shell $(CXX) -x c++ -std=c++17 -msse2 -mno-avx -c /dev/null -o /tmp/bfft-sse2-test.o >/dev/null 2>&1 && rm -f /tmp/bfft-sse2-test.o && echo '-msse2 -mno-avx')
 ifeq ($(findstring x86_64,$(UNAME_M)),x86_64)
   AUTO_SIMD_FLAGS := $(AVX2_FLAGS)
 else
@@ -50,8 +51,17 @@ INVARIANT_PROBE := $(BUILD_DIR)/tests/bfft_invariant_support_probe
 SFDR_PROBE := $(BUILD_DIR)/tests/bfft_fftw_sfdr_probe
 BH7_PROBE := $(BUILD_DIR)/tests/bfft_fftw_sfdr_bh7_probe
 LIBRARY_COMPARE_PROBE := $(BUILD_DIR)/tests/bfft_library_compare_probe
+AVX2_ASM := $(BUILD_DIR)/src/bfft_avx2.s
+SSE2_ASM := $(BUILD_DIR)/src/bfft_sse2.s
+ASM_OUTPUTS :=
+ifneq ($(AVX2_FLAGS),)
+  ASM_OUTPUTS += $(AVX2_ASM)
+endif
+ifneq ($(SSE2_FLAGS),)
+  ASM_OUTPUTS += $(SSE2_ASM)
+endif
 
-.PHONY: all clean test install uninstall examples probes docs
+.PHONY: all clean test install uninstall examples probes docs asm-check
 
 all: $(STATIC_LIB) $(SHARED_LIB) examples
 
@@ -75,6 +85,15 @@ $(PC_FILE): pkgconfig/bfft.pc.in | $(BUILD_DIR)
 		$< > $@
 
 examples: $(BENCH) $(LOCALITY_PROBE) $(C_DEMO) $(CPP_DEMO)
+
+asm-check: $(ASM_OUTPUTS)
+	@if [ -z "$(ASM_OUTPUTS)" ]; then echo "No x86 assembly variants supported by $(CXX)."; fi
+
+$(AVX2_ASM): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp | $(BUILD_DIR)
+	$(CXX) $(LIB_CPPFLAGS) $(CXXFLAGS) $(AVX2_FLAGS) -S -fverbose-asm $< -o $@
+
+$(SSE2_ASM): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp | $(BUILD_DIR)
+	$(CXX) $(LIB_CPPFLAGS) $(CXXFLAGS) $(SSE2_FLAGS) -S -fverbose-asm $< -o $@
 
 $(BENCH): examples/benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
