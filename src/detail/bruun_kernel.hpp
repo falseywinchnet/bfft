@@ -66,6 +66,8 @@ typedef __m128d bruun_v2;
 #  define V2_ADD(a, b)    _mm_add_pd((a), (b))
 #  define V2_SUB(a, b)    _mm_sub_pd((a), (b))
 #  define V2_MUL(a, b)    _mm_mul_pd((a), (b))
+#  define V2_MADD(a, b, c) V2_ADD((a), V2_MUL((b), (c)))
+#  define V2_MSUB(a, b, c) V2_SUB((a), V2_MUL((b), (c)))
 #  define V2_SET1(x)      _mm_set1_pd(x)
 #  define V2_SETLH(l, h)  _mm_set_pd((h), (l))
 #  define V2_UNPLO(a, b)  _mm_unpacklo_pd((a), (b))
@@ -80,6 +82,8 @@ typedef float64x2_t bruun_v2;
 #  define V2_ADD(a, b)    vaddq_f64((a), (b))
 #  define V2_SUB(a, b)    vsubq_f64((a), (b))
 #  define V2_MUL(a, b)    vmulq_f64((a), (b))
+#  define V2_MADD(a, b, c) vfmaq_f64((a), (b), (c))
+#  define V2_MSUB(a, b, c) vfmsq_f64((a), (b), (c))
 #  define V2_SET1(x)      vdupq_n_f64(x)
 #  define V2_SETLH(l, h)  vcombine_f64(vdup_n_f64(l), vdup_n_f64(h))
 #  define V2_UNPLO(a, b)  vtrn1q_f64((a), (b))
@@ -376,8 +380,8 @@ static inline void norm_q_fwd(double* RESTRICT p, int q, double c_scalar, double
             const bruun_v2 A1 = V2_LD(A1p + n);
             const bruun_v2 B1 = V2_LD(B1p + n);
 
-            const bruun_v2 R = V2_SUB(V2_MUL(vc, B0), V2_MUL(vs, B1));
-            const bruun_v2 I = V2_ADD(V2_MUL(vs, B0), V2_MUL(vc, B1));
+            const bruun_v2 R = V2_MSUB(V2_MUL(vc, B0), vs, B1);
+            const bruun_v2 I = V2_MADD(V2_MUL(vs, B0), vc, B1);
 
             V2_ST(A0p + n, V2_ADD(A0, R));
             V2_ST(B0p + n, V2_ADD(A1, I));
@@ -525,10 +529,10 @@ static inline void norm2_fused(double* RESTRICT p, int q,
             const bruun_v2 b1n = V2_LD(B1 + n);
             const bruun_v2 b1h = V2_LD(B1 + qh + n);
 
-            const bruun_v2 Rn = V2_SUB(V2_MUL(vc, b0n), V2_MUL(vs, b1n));
-            const bruun_v2 In = V2_ADD(V2_MUL(vs, b0n), V2_MUL(vc, b1n));
-            const bruun_v2 Rh = V2_SUB(V2_MUL(vc, b0h), V2_MUL(vs, b1h));
-            const bruun_v2 Ih = V2_ADD(V2_MUL(vs, b0h), V2_MUL(vc, b1h));
+            const bruun_v2 Rn = V2_MSUB(V2_MUL(vc, b0n), vs, b1n);
+            const bruun_v2 In = V2_MADD(V2_MUL(vs, b0n), vc, b1n);
+            const bruun_v2 Rh = V2_MSUB(V2_MUL(vc, b0h), vs, b1h);
+            const bruun_v2 Ih = V2_MADD(V2_MUL(vs, b0h), vc, b1h);
 
             const bruun_v2 u0 = V2_ADD(a0n, Rn);
             const bruun_v2 uh = V2_ADD(a0h, Rh);
@@ -539,10 +543,10 @@ static inline void norm2_fused(double* RESTRICT p, int q,
             const bruun_v2 x0 = V2_SUB(In, a1n);
             const bruun_v2 xh = V2_SUB(Ih, a1h);
 
-            const bruun_v2 R0 = V2_SUB(V2_MUL(vc0, uh), V2_MUL(vs0, wh));
-            const bruun_v2 I0 = V2_ADD(V2_MUL(vs0, uh), V2_MUL(vc0, wh));
-            const bruun_v2 R1 = V2_SUB(V2_MUL(vc1, vh), V2_MUL(vs1, xh));
-            const bruun_v2 I1 = V2_ADD(V2_MUL(vs1, vh), V2_MUL(vc1, xh));
+            const bruun_v2 R0 = V2_MSUB(V2_MUL(vc0, uh), vs0, wh);
+            const bruun_v2 I0 = V2_MADD(V2_MUL(vs0, uh), vc0, wh);
+            const bruun_v2 R1 = V2_MSUB(V2_MUL(vc1, vh), vs1, xh);
+            const bruun_v2 I1 = V2_MADD(V2_MUL(vs1, vh), vc1, xh);
 
             V2_ST(A0 + n,      V2_ADD(u0, R0));
             V2_ST(A0 + qh + n, V2_ADD(w0, I0));
@@ -2296,7 +2300,7 @@ public:
             const bruun_v2 r = V2_LD(v + j);
             const bruun_v2 h = V2_LD(RF + j);
             const bruun_v2 rs = V2_NEGHI(V2_UNPLO(V2_DUP1(r), r)); // [r1, -r0]
-            V2_ST(v + j, V2_ADD(V2_MUL(V2_DUP0(h), r), V2_MUL(V2_DUP1(h), rs)));
+            V2_ST(v + j, V2_MADD(V2_MUL(V2_DUP0(h), r), V2_DUP1(h), rs));
         }
 #endif
 
@@ -2857,8 +2861,8 @@ private:
         for (int j = 0; j < 2; ++j) {
             const bruun_v2 b0 = V2_LD(p + 4 + 2*j);
             const bruun_v2 b1 = V2_LD(p + 12 + 2*j);
-            const bruun_v2 R = V2_SUB(V2_MUL(c1, b0), V2_MUL(s1, b1));
-            const bruun_v2 I = V2_ADD(V2_MUL(s1, b0), V2_MUL(c1, b1));
+            const bruun_v2 R = V2_MSUB(V2_MUL(c1, b0), s1, b1);
+            const bruun_v2 I = V2_MADD(V2_MUL(s1, b0), c1, b1);
             const bruun_v2 a0 = V2_LD(p + 2*j);
             const bruun_v2 a1 = V2_LD(p + 8 + 2*j);
             u[j] = V2_ADD(a0, R);
@@ -2869,8 +2873,8 @@ private:
 
         const bruun_v2 c20 = V2_SET1(t.c2[0]);
         const bruun_v2 s20 = V2_SET1(t.s2[0]);
-        const bruun_v2 R0 = V2_SUB(V2_MUL(c20, u[1]), V2_MUL(s20, w[1]));
-        const bruun_v2 I0 = V2_ADD(V2_MUL(s20, u[1]), V2_MUL(c20, w[1]));
+        const bruun_v2 R0 = V2_MSUB(V2_MUL(c20, u[1]), s20, w[1]);
+        const bruun_v2 I0 = V2_MADD(V2_MUL(s20, u[1]), c20, w[1]);
         const bruun_v2 g0a = V2_ADD(u[0], R0);
         const bruun_v2 g0b = V2_ADD(w[0], I0);
         const bruun_v2 g1a = V2_SUB(u[0], R0);
@@ -2878,8 +2882,8 @@ private:
 
         const bruun_v2 c21 = V2_SET1(t.c2[1]);
         const bruun_v2 s21 = V2_SET1(t.s2[1]);
-        const bruun_v2 R1 = V2_SUB(V2_MUL(c21, v[1]), V2_MUL(s21, x[1]));
-        const bruun_v2 I1 = V2_ADD(V2_MUL(s21, v[1]), V2_MUL(c21, x[1]));
+        const bruun_v2 R1 = V2_MSUB(V2_MUL(c21, v[1]), s21, x[1]);
+        const bruun_v2 I1 = V2_MADD(V2_MUL(s21, v[1]), c21, x[1]);
         const bruun_v2 g2a = V2_ADD(v[0], R1);
         const bruun_v2 g2b = V2_ADD(x[0], I1);
         const bruun_v2 g3a = V2_SUB(v[0], R1);
@@ -2893,7 +2897,7 @@ private:
             const bruun_v2 b13 = V2_UNPHI(ga[gi], gb[gi]); // [x1, x3]
             const bruun_v2 csv = V2_SETLH(t.c4[gi], t.s4[gi]);   // [ c, s]
             const bruun_v2 cs2 = V2_SETLH(-t.s4[gi], t.c4[gi]);  // [-s, c]
-            const bruun_v2 tv = V2_ADD(V2_MUL(csv, V2_DUP0(b13)), V2_MUL(cs2, V2_DUP1(b13))); // [R, I]
+            const bruun_v2 tv = V2_MADD(V2_MUL(csv, V2_DUP0(b13)), cs2, V2_DUP1(b13)); // [R, I]
             const bruun_v2 ev = V2_NEGHI(V2_ADD(a02, tv)); // [x0+R, -(x2+I)]
             const bruun_v2 od = V2_SUB(a02, tv);           // [x0-R,   x2-I ]
             V2_ST(&X[t.idx[2*gi]].re, ev);

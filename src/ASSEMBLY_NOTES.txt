@@ -18,3 +18,33 @@ Things that looked wrong or weird
 
 Small tweak made
 - Changed the AVX2+ standard-output policy threshold from N > 8192 to N >= 8192. This keeps the existing automatic policy, does not add a user-facing compile flag, and only changes one boundary size.
+
+Sydney notes, 2026-06-12
+
+Build inspected
+- Started by resetting the local main worktree to origin/main at 3f1ebef and removing untracked local files.
+- Host is arm64 Apple clang, so the active Mac SIMD backend is neon-128. The Makefile did not add AVX flags, and the object is Mach-O arm64.
+- Commands used:
+  - make clean
+  - make
+  - c++ -Iinclude -O3 -std=c++17 -fPIC -Wall -Wextra -Wpedantic -S -fverbose-asm src/bfft.cpp -o build/src/bfft.s
+  - make test
+
+Assembly observations
+- The main double and float kernels are vectorized on this machine. The generated assembly uses NEON vector loads/stores and arithmetic in the forward residue and stage bodies.
+- The 128-bit double path expressed complex rotations as separate vmul plus vadd/vsub through V2_ADD(V2_MUL(...), V2_MUL(...)) and V2_SUB(V2_MUL(...), V2_MUL(...)). Apple clang did not reliably fuse those source forms in the forward hot path.
+- The float32 path also has multiply/add rotation shapes, but quick benchmark passes showed enough f32 noise that changing it tripped the safety rule. I left f32 source arithmetic alone.
+- The inverse path was also tried with fused helpers, but roundtrip timing became noisier at small sizes. I left inverse source arithmetic alone.
+
+Small tweak kept
+- Added V2_MADD and V2_MSUB to the 2-lane double abstraction. On SSE2 they expand to the old multiply plus add/subtract. On NEON they use vfmaq_f64 and vfmsq_f64.
+- Replaced only the double 128-bit forward rotation sites, plus the residue-filter complex multiply, with V2_MADD/V2_MSUB. This keeps the x86 SSE behavior source-equivalent while letting the Mac NEON build emit fmla/fmls.
+
+Benchmark notes
+- Baseline and patched builds were compared against the same 11 default sizes from 512 through 524288.
+- Two quick 20-iteration passes were noisy, so origin/main was also built in /private/tmp/bfft-baseline and compared with 100 iterations across those sizes.
+- Focused high-iteration checks cleared the suspicious sizes:
+  - N=512, 1000 iterations: baseline Std_ns 625.0, patched Std_ns 525.4.
+  - N=1024, 1000 iterations: baseline Std_ns 1174.4, patched Std_ns 1047.0.
+  - N=131072, 300 iterations: baseline Std_ns 439074.0, patched Std_ns 428148.1.
+- No kept change showed a consistent >5 percent regression across 25 percent of tested sizes, and the focused repeats did not confirm any >20 percent single-size regression.
