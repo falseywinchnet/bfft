@@ -1,7 +1,9 @@
 in bfft folder:
 
-first install fftw systemwide.
-thenK
+First install FFTW systemwide if you want the dynamic FFTW comparison columns.
+
+Optional PFFFT build for the benchmark:
+
 git clone https://github.com/marton78/pffft.git pffft
 
 mkdir -p build/pffft build/examples
@@ -39,8 +41,17 @@ c++ -O3 -std=c++17 -DNDEBUG -DBFFT_WITH_PFFFT \
   -L/opt/homebrew/lib \
   -lfftw3 \
   -lm \
+  -ldl \
   -o build/examples/benchmark
+
+Optional Intel oneMKL comparison:
+
+Install a package that provides libmkl_rt.so, such as Intel oneAPI MKL or a
+system Intel MKL package. The benchmark does not link MKL at build time. It
+loads libmkl_rt dynamically only when you pass --intel-mkl, so the same binary
+still runs on machines without MKL.
 
 Then:
 
-build/examples/benchmark
+build/examples/benchmark --intel-mkl
+build/examples/benchmark --intel-mkl 1024 1000

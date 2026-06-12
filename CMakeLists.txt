@@ -69,6 +69,9 @@ endfunction()
 
 if(BFFT_BUILD_EXAMPLES)
     bfft_add_cpp_executable(benchmark examples/benchmark.cpp)
+    if(CMAKE_DL_LIBS)
+        target_link_libraries(benchmark PRIVATE ${CMAKE_DL_LIBS})
+    endif()
     bfft_add_cpp_executable(cpp_api_demo examples/cpp_api_demo.cpp)
     bfft_add_c_executable(c_api_demo examples/c_api_demo.c)
 
