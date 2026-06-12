@@ -32,7 +32,7 @@ paths internally and selects between them based on the requested public output:
 
 Current thresholds:
 
-- AVX2/AVX-512: two-phase standard pack for `N > 8192`.
+- AVX2/AVX-512: two-phase standard pack for `N >= 8192`.
 - SSE2/NEON: two-phase standard pack for `N > 1048576`.
 - Scalar: fused scatter.
 
@@ -41,6 +41,12 @@ Current thresholds:
 The prototype's Bruun index mapping is already standard ordered for tiny plans
 below `N = 32`. The public conversion helpers preserve that behavior with a
 straight copy for those tiny plans and use heap mappings for larger plans.
+
+Heap-optimized plans also precompose the standard-to-native and
+native-to-standard conversion maps. This costs two extra `N/2` integer tables,
+but keeps the hot conversion loops to one map load plus one spectrum access
+instead of a dependent pair of permutation lookups. For `N < 32`, those maps are
+identity tables to keep the conversion helpers branch-light.
 
 ## Single precision
 
@@ -66,11 +72,16 @@ waves, native float32 BFFT measured 144.95579274 dB SFDR against an FFTWf row of
 
 ## Build and package metadata
 
-The Makefile remains the simplest local workflow and installs headers, static
-and shared libraries, and `lib/pkgconfig/bfft.pc`. CMake supports the same core
-build and test path, optional probes, staged installation, `pkg-config` metadata,
-and package config files under `lib/cmake/bfft`. Installed CMake consumers can
-link `bfft::static` and, when enabled, `bfft::shared`.
+The library implementation requires a C++17-capable compiler and builds without
+compiler extension modes in CMake. The public C ABI can still be consumed from C
+projects because `include/bfft/bfft.h` does not require C++ in user code. The
+Makefile remains the simplest local workflow and installs headers, static and
+shared libraries, and `lib/pkgconfig/bfft.pc`. `make check-standards` verifies
+the C++17, C++20, and C++23 build modes with warnings treated as errors. CMake
+supports the same core build and test path, optional probes, staged
+installation, `pkg-config` metadata, and package config files under
+`lib/cmake/bfft`. Installed CMake consumers can link `bfft::static` and, when
+enabled, `bfft::shared`.
 
 ## Future portability work
 

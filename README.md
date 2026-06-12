@@ -104,7 +104,7 @@ The native layout remains the “true” fast path; standard FFT order remains a
 - Native spectrum output keeps heap-optimized ordering and fused scatter.
 - Standard FFT-order output uses fused scatter plus conversion by default.
 - Standard FFT-order output uses the internal two-phase pack only for large
-  transforms: `N > 8192` on AVX-class builds and `N > 1048576` on SSE2/NEON
+  transforms: `N >= 8192` on AVX-class builds and `N > 1048576` on SSE2/NEON
   builds. Scalar builds keep the fused path.
 
 ## Build
@@ -113,6 +113,15 @@ The native layout remains the “true” fast path; standard FFT order remains a
 make
 make test
 ```
+
+For standards-compliance checks, run:
+
+```sh
+make check-standards
+```
+
+That target builds and tests with `-std=c++17`, `-std=c++20`, and
+`-std=c++23`, treating warnings as errors. The default build remains C++17.
 
 CMake builds are also supported:
 
@@ -124,7 +133,9 @@ ctest --test-dir build-cmake --output-on-failure
 
 CMake enables the same host SIMD probe as the Makefile on x86_64 when the compiler accepts `-mavx2 -mfma`. Optional comparison probes are built by default. The library comparison probe dynamically uses FFTW when `libfftw3` is available, and its CMake target also enables an Intel IPP complex-DFT reference when `ipps.h`, `ipps`, `ippvm`, and `ippcore` are found. CMake also enables the benchmark's PFFFT comparison path when `pffft.h` and `libpffft` are found.
 
-A first GitHub Actions workflow is tracked in `.github/workflows/ci.yml`. It runs the Makefile and CMake build/test/install paths on Ubuntu. See `TODO_HUMAN.md` for the repository-operator checklist for enabling the workflow, reading failures, and requiring CI before merges.
+BFFT is implemented against a C++17 baseline and exposes both a stable C ABI and a C++ convenience wrapper. C consumers can compile their applications as C, while the library itself must be built with a C++17-capable compiler. CI also checks clean builds under C++20 and C++23.
+
+A first GitHub Actions workflow is tracked in `.github/workflows/ci.yml`. It runs the Makefile build/test/install path on Ubuntu and the CMake build/test/install path on Linux, macOS, and Windows across C++17, C++20, and C++23. See `docs/maintainer-notes.md` for the repository-operator checklist for enabling the workflow, reading failures, and requiring CI before merges.
 
 The benchmark can optionally compare against Intel oneMKL DFTI without adding
 a build-time dependency. Install an Intel MKL package that provides
@@ -280,8 +291,8 @@ It avoids the folded-bin BH7 spur by using plan-owned float32 twiddle tables
 generated once with explicit `float(...)` rounding, rather than multiplicative
 float twiddle recurrence inside the transform loop.
 
-Stats on a mac M4 circa june 10, 2026:
-NOTE: PFFT is in single precision(FLOAT). BFFT, FFTW both in double precision! Emphasis!
+Stats on a Mac M4 circa June 10, 2026:
+NOTE: PFFFT is single precision. BFFT and FFTW are both double precision in this table.
 ```
  ./benchmark 
 BFFT power-of-two RFFT benchmark. backend: neon-128, version: 0.1.0

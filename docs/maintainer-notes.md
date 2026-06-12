@@ -19,12 +19,22 @@ hosted run:
 - Protect the default branch.
 - Require pull requests before merging.
 - Require these status checks before merging:
-  - `make (ubuntu-latest)`
-  - `cmake (ubuntu-latest)`
+  - `make c++17 (ubuntu-latest)`
+  - `make c++20 (ubuntu-latest)`
+  - `make c++23 (ubuntu-latest)`
+  - `cmake C++17 (ubuntu-latest)`
+  - `cmake C++20 (ubuntu-latest)`
+  - `cmake C++23 (ubuntu-latest)`
+  - `cmake C++17 (macos-latest)`
+  - `cmake C++20 (macos-latest)`
+  - `cmake C++23 (macos-latest)`
+  - `cmake C++17 (windows-latest)`
+  - `cmake C++20 (windows-latest)`
+  - `cmake C++23 (windows-latest)`
 - Require branches to be up to date before merging once contributor volume makes
   that useful.
-- See `TODO_HUMAN.md` for a step-by-step GitHub Actions and branch-protection
-  manual.
+- Use this section as the step-by-step GitHub Actions and branch-protection
+  manual until repository-hosted settings are fully configured.
 
 ## Release assets
 

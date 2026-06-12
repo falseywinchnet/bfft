@@ -31,6 +31,8 @@ function(bfft_configure_library target)
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
   target_compile_features(${target} PUBLIC cxx_std_17)
+  set_target_properties(${target} PROPERTIES
+    CXX_EXTENSIONS OFF)
   if(BFFT_PLATFORM_LIBS)
     target_link_libraries(${target} PUBLIC ${BFFT_PLATFORM_LIBS})
   endif()
@@ -73,6 +75,8 @@ function(bfft_add_cpp_executable target source)
   add_executable(${target} ${source})
   target_link_libraries(${target} PRIVATE bfft_static)
   target_compile_features(${target} PRIVATE cxx_std_17)
+  set_target_properties(${target} PROPERTIES
+    CXX_EXTENSIONS OFF)
 endfunction()
 
 function(bfft_add_c_executable target source)

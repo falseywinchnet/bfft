@@ -10,9 +10,14 @@ AR ?= ar
 INSTALL ?= install
 SED ?= sed
 
+CXX_STD ?= c++17
+CXXOPTFLAGS ?= -O3
+CXXWARNFLAGS ?= -Wall -Wextra -Wpedantic
+COPTFLAGS ?= -O2
+CWARNFLAGS ?= -Wall -Wextra -Wpedantic
 CPPFLAGS ?=
-CXXFLAGS ?= -O3 -std=c++17 -fPIC -Wall -Wextra -Wpedantic
-CFLAGS ?= -O2 -std=c11 -Wall -Wextra -Wpedantic
+CXXFLAGS ?= $(CXXOPTFLAGS) -std=$(CXX_STD) -fPIC $(CXXWARNFLAGS)
+CFLAGS ?= $(COPTFLAGS) -std=c11 $(CWARNFLAGS)
 LDFLAGS ?=
 LDLIBS ?= -lm
 
@@ -23,8 +28,8 @@ ifeq ($(UNAME_S),Darwin)
 else
   DL_LIBS ?= -ldl
 endif
-AVX2_FLAGS := $(shell $(CXX) -x c++ -std=c++17 -mavx2 -mfma -c /dev/null -o /tmp/bfft-avx2-test.o >/dev/null 2>&1 && rm -f /tmp/bfft-avx2-test.o && echo '-mavx2 -mfma')
-SSE2_FLAGS := $(shell $(CXX) -x c++ -std=c++17 -msse2 -mno-avx -c /dev/null -o /tmp/bfft-sse2-test.o >/dev/null 2>&1 && rm -f /tmp/bfft-sse2-test.o && echo '-msse2 -mno-avx')
+AVX2_FLAGS := $(shell $(CXX) -x c++ -std=$(CXX_STD) -mavx2 -mfma -c /dev/null -o /tmp/bfft-avx2-test.o >/dev/null 2>&1 && rm -f /tmp/bfft-avx2-test.o && echo '-mavx2 -mfma')
+SSE2_FLAGS := $(shell $(CXX) -x c++ -std=$(CXX_STD) -msse2 -mno-avx -c /dev/null -o /tmp/bfft-sse2-test.o >/dev/null 2>&1 && rm -f /tmp/bfft-sse2-test.o && echo '-msse2 -mno-avx')
 ifeq ($(findstring x86_64,$(UNAME_M)),x86_64)
   AUTO_SIMD_FLAGS := $(AVX2_FLAGS)
 else
@@ -61,7 +66,7 @@ ifneq ($(SSE2_FLAGS),)
   ASM_OUTPUTS += $(SSE2_ASM)
 endif
 
-.PHONY: all clean test install uninstall examples probes docs asm-check
+.PHONY: all clean test install uninstall examples probes docs asm-check check-standards check-cxx17 check-cxx20 check-cxx23
 
 all: $(STATIC_LIB) $(SHARED_LIB) examples
 
@@ -133,6 +138,20 @@ probes: $(SUPPORT_PROBE) $(INVARIANT_PROBE) $(SFDR_PROBE) $(BH7_PROBE) $(LIBRARY
 test: $(CORRECTNESS_TEST) $(C_API_TEST)
 	$(CORRECTNESS_TEST)
 	$(C_API_TEST)
+
+check-cxx17:
+	$(MAKE) clean BUILD_DIR=build-cxx17
+	$(MAKE) test BUILD_DIR=build-cxx17 CXX_STD=c++17 CXXWARNFLAGS="$(CXXWARNFLAGS) -Werror" CWARNFLAGS="$(CWARNFLAGS) -Werror"
+
+check-cxx20:
+	$(MAKE) clean BUILD_DIR=build-cxx20
+	$(MAKE) test BUILD_DIR=build-cxx20 CXX_STD=c++20 CXXWARNFLAGS="$(CXXWARNFLAGS) -Werror" CWARNFLAGS="$(CWARNFLAGS) -Werror"
+
+check-cxx23:
+	$(MAKE) clean BUILD_DIR=build-cxx23
+	$(MAKE) test BUILD_DIR=build-cxx23 CXX_STD=c++23 CXXWARNFLAGS="$(CXXWARNFLAGS) -Werror" CWARNFLAGS="$(CWARNFLAGS) -Werror"
+
+check-standards: check-cxx17 check-cxx20 check-cxx23
 
 install: all $(PC_FILE)
 	$(INSTALL) -d $(DESTDIR)$(PREFIX)/include/bfft
