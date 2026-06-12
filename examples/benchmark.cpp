@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <climits>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
@@ -154,6 +155,126 @@ struct FFTWf {
   }
 };
 
+struct IntelMKL {
+  void* lib = nullptr;
+  int (*create_d_1d)(void**, int, long) = nullptr;
+  int (*create_s_1d)(void**, int, long) = nullptr;
+  int (*set_value_int)(void*, int, int) = nullptr;
+  int (*commit_descriptor)(void*) = nullptr;
+  int (*compute_forward)(void*, void*, void*) = nullptr;
+  int (*free_descriptor)(void**) = nullptr;
+  char* (*error_message)(int) = nullptr;
+
+  static constexpr int DFTI_REAL = 33;
+  static constexpr int DFTI_CONJUGATE_EVEN_STORAGE = 10;
+  static constexpr int DFTI_PLACEMENT = 11;
+  static constexpr int DFTI_COMPLEX_COMPLEX = 39;
+  static constexpr int DFTI_NOT_INPLACE = 44;
+
+  bool load() {
+#if defined(_WIN32)
+    return false;
+#else
+    const char* names[] = {
+      "libmkl_rt.so",
+      "libmkl_rt.so.2",
+      "/opt/intel/oneapi/mkl/latest/lib/intel64/libmkl_rt.so",
+      "/opt/intel/oneapi/mkl/latest/lib/libmkl_rt.so",
+      nullptr
+    };
+
+    for (int i = 0; names[i]; ++i) {
+      lib = dlopen(names[i], RTLD_NOW);
+      if (lib) {
+        break;
+      }
+    }
+
+    if (!lib) {
+      return false;
+    }
+
+    create_d_1d =
+      reinterpret_cast<int (*)(void**, int, long)>(
+        dlsym(lib, "DftiCreateDescriptor_d_1d"));
+    create_s_1d =
+      reinterpret_cast<int (*)(void**, int, long)>(
+        dlsym(lib, "DftiCreateDescriptor_s_1d"));
+    set_value_int =
+      reinterpret_cast<int (*)(void*, int, int)>(
+        dlsym(lib, "DftiSetValue"));
+    commit_descriptor =
+      reinterpret_cast<int (*)(void*)>(
+        dlsym(lib, "DftiCommitDescriptor"));
+    compute_forward =
+      reinterpret_cast<int (*)(void*, void*, void*)>(
+        dlsym(lib, "DftiComputeForward"));
+    free_descriptor =
+      reinterpret_cast<int (*)(void**)>(
+        dlsym(lib, "DftiFreeDescriptor"));
+    error_message =
+      reinterpret_cast<char* (*)(int)>(
+        dlsym(lib, "DftiErrorMessage"));
+
+    return create_d_1d && create_s_1d && set_value_int && commit_descriptor
+        && compute_forward && free_descriptor && error_message;
+#endif
+  }
+
+  const char* message(int status) const {
+    if (error_message && status != 0) {
+      return error_message(status);
+    }
+    return "unknown Intel MKL DFTI error";
+  }
+
+  bool create_r2c_1d(long n, bool single_precision, void** descriptor) const {
+    *descriptor = nullptr;
+
+    int status = 0;
+    if (single_precision) {
+      status = create_s_1d(descriptor, DFTI_REAL, n);
+    } else {
+      status = create_d_1d(descriptor, DFTI_REAL, n);
+    }
+    if (status != 0) {
+      std::fprintf(stderr, "Intel MKL DftiCreateDescriptor failed: %s\n", message(status));
+      return false;
+    }
+
+    status = set_value_int(*descriptor, DFTI_CONJUGATE_EVEN_STORAGE, DFTI_COMPLEX_COMPLEX);
+    if (status != 0) {
+      std::fprintf(stderr, "Intel MKL DFTI_CONJUGATE_EVEN_STORAGE failed: %s\n", message(status));
+      free_descriptor(descriptor);
+      return false;
+    }
+
+    status = set_value_int(*descriptor, DFTI_PLACEMENT, DFTI_NOT_INPLACE);
+    if (status != 0) {
+      std::fprintf(stderr, "Intel MKL DFTI_PLACEMENT failed: %s\n", message(status));
+      free_descriptor(descriptor);
+      return false;
+    }
+
+    status = commit_descriptor(*descriptor);
+    if (status != 0) {
+      std::fprintf(stderr, "Intel MKL DftiCommitDescriptor failed: %s\n", message(status));
+      free_descriptor(descriptor);
+      return false;
+    }
+
+    return true;
+  }
+
+  ~IntelMKL() {
+#if !defined(_WIN32)
+    if (lib) {
+      dlclose(lib);
+    }
+#endif
+  }
+};
+
 bool is_power2(std::size_t n) {
   return n > 0 && ((n & (n - 1)) == 0);
 }
@@ -283,6 +404,8 @@ struct Result {
   double fftw_ns = NAN;
   double fftwf_ns = NAN;
   double pffft_ns = NAN;
+  double mkl_ns = NAN;
+  double mklf_ns = NAN;
   double native_ns = NAN;
   double standard_ns = NAN;
   double native_f32_ns = NAN;
@@ -292,13 +415,17 @@ struct Result {
   double standard_f32_over_fftwf = NAN;
   double standard_over_pffft = NAN;
   double standard_f32_over_pffft = NAN;
+  double standard_over_mkl = NAN;
+  double standard_f32_over_mklf = NAN;
   double fftw_err = NAN;
   double fftwf_err = NAN;
+  double mkl_err = NAN;
+  double mklf_err = NAN;
   double roundtrip_err = NAN;
   double sink = 0.0;
 };
 
-Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, std::mt19937_64& rng) {
+Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, IntelMKL* mkl, std::mt19937_64& rng) {
   const std::size_t nb = n / 2 + 1;
   const int iters = forced_iters > 0 ? forced_iters : default_iters(n);
 
@@ -331,6 +458,12 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, std:
   fftw_plan fpf = nullptr;
   float* fftwf_in = nullptr;
   fftwf_complex* fftwf_out = nullptr;
+  void* mkl_plan = nullptr;
+  void* mklf_plan = nullptr;
+  std::vector<double> mkl_in(n);
+  std::vector<bfft::complex> mkl_out(nb);
+  std::vector<float> mklf_in(n);
+  std::vector<bfft::complex_f32> mklf_out(nb);
 
   if (fftw && fftw->lib && n <= static_cast<std::size_t>(INT32_MAX)) {
     fftw_in = static_cast<double*>(fftw->malloc_fn(sizeof(double) * n));
@@ -385,6 +518,46 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, std:
     for (std::size_t i = 0; i < nb; ++i) {
       reference_f32[i].re = fftwf_out[i][0];
       reference_f32[i].im = fftwf_out[i][1];
+    }
+  }
+
+  if (mkl && mkl->lib && n <= static_cast<std::size_t>(LONG_MAX)) {
+    if (mkl->create_r2c_1d(static_cast<long>(n), false, &mkl_plan)) {
+      input = original;
+      result.mkl_ns = bench_ns(iters, [&] {
+        input[static_cast<std::size_t>(result.sink) & (n - 1)] += 1e-12;
+        std::copy(input.begin(), input.end(), mkl_in.begin());
+        const int status = mkl->compute_forward(mkl_plan, mkl_in.data(), mkl_out.data());
+        if (status != 0) {
+          throw std::runtime_error(mkl->message(status));
+        }
+        result.sink += mkl_out[(static_cast<std::size_t>(result.sink) * 17) % nb].re;
+      });
+
+      std::copy(original.begin(), original.end(), mkl_in.begin());
+      const int status = mkl->compute_forward(mkl_plan, mkl_in.data(), mkl_out.data());
+      if (status != 0) {
+        throw std::runtime_error(mkl->message(status));
+      }
+    }
+
+    if (mkl->create_r2c_1d(static_cast<long>(n), true, &mklf_plan)) {
+      input_f32 = original_f32;
+      result.mklf_ns = bench_ns(iters, [&] {
+        input_f32[static_cast<std::size_t>(result.sink) & (n - 1)] += 1e-7f;
+        std::copy(input_f32.begin(), input_f32.end(), mklf_in.begin());
+        const int status = mkl->compute_forward(mklf_plan, mklf_in.data(), mklf_out.data());
+        if (status != 0) {
+          throw std::runtime_error(mkl->message(status));
+        }
+        result.sink += mklf_out[(static_cast<std::size_t>(result.sink) * 17) % nb].re;
+      });
+
+      std::copy(original_f32.begin(), original_f32.end(), mklf_in.begin());
+      const int status = mkl->compute_forward(mklf_plan, mklf_in.data(), mklf_out.data());
+      if (status != 0) {
+        throw std::runtime_error(mkl->message(status));
+      }
     }
   }
 
@@ -459,6 +632,12 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, std:
   if (fpf) {
     result.fftwf_err = max_abs_complex_f32(standard_f32, reference_f32);
   }
+  if (mkl_plan) {
+    result.mkl_err = max_abs_complex(standard, mkl_out);
+  }
+  if (mklf_plan) {
+    result.mklf_err = max_abs_complex_f32(standard_f32, mklf_out);
+  }
 
   result.roundtrip_err = max_abs_real(original, inverse_out);
 
@@ -473,6 +652,14 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, std:
   if (!std::isnan(result.pffft_ns) && result.pffft_ns > 0.0) {
     result.standard_over_pffft = result.standard_ns / result.pffft_ns;
     result.standard_f32_over_pffft = result.standard_f32_ns / result.pffft_ns;
+  }
+
+  if (mkl_plan && result.mkl_ns > 0.0) {
+    result.standard_over_mkl = result.standard_ns / result.mkl_ns;
+  }
+
+  if (mklf_plan && result.mklf_ns > 0.0) {
+    result.standard_f32_over_mklf = result.standard_f32_ns / result.mklf_ns;
   }
 
   if (fp) {
@@ -493,11 +680,19 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, std:
   if (fftwf && fftwf_out) {
     fftwf->free_fn(fftwf_out);
   }
+  if (mkl && mkl_plan) {
+    mkl->free_descriptor(&mkl_plan);
+  }
+  if (mkl && mklf_plan) {
+    mkl->free_descriptor(&mklf_plan);
+  }
 
   std::printf("%8zu %8d ", n, iters);
   print_ns(result.fftw_ns);
   print_ns(result.fftwf_ns);
   print_ns(result.pffft_ns);
+  print_ns(result.mkl_ns);
+  print_ns(result.mklf_ns);
   print_ns(result.native_ns);
   print_ns(result.standard_ns);
   print_ns(result.native_f32_ns);
@@ -528,6 +723,18 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, std:
     std::printf("%8.3f ", result.standard_f32_over_pffft);
   }
 
+  if (std::isnan(result.standard_over_mkl)) {
+    std::printf("%8s ", "n/a");
+  } else {
+    std::printf("%8.3f ", result.standard_over_mkl);
+  }
+
+  if (std::isnan(result.standard_f32_over_mklf)) {
+    std::printf("%8s ", "n/a");
+  } else {
+    std::printf("%8.3f ", result.standard_f32_over_mklf);
+  }
+
   if (std::isnan(result.fftw_err)) {
     std::printf("err64 %9s ", "n/a");
   } else {
@@ -538,6 +745,18 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, std:
     std::printf("err32 %9s ", "n/a");
   } else {
     std::printf("err32 %.1e ", result.fftwf_err);
+  }
+
+  if (std::isnan(result.mkl_err)) {
+    std::printf("mkl64 %9s ", "n/a");
+  } else {
+    std::printf("mkl64 %.1e ", result.mkl_err);
+  }
+
+  if (std::isnan(result.mklf_err)) {
+    std::printf("mkl32 %9s ", "n/a");
+  } else {
+    std::printf("mkl32 %.1e ", result.mklf_err);
   }
 
   std::printf("rt %.1e sink %.8g\n", result.roundtrip_err, result.sink);
@@ -551,22 +770,37 @@ int main(int argc, char** argv) {
   try {
     std::size_t forced_n = 0;
     int forced_iters = 0;
+    bool use_intel_mkl = false;
 
-    if (argc >= 2) {
-      forced_n = parse_size(argv[1]);
-    }
-    if (argc >= 3) {
-      forced_iters = parse_iters(argv[2]);
-    }
-    if (argc > 3) {
-      std::fprintf(stderr, "usage: %s [N [iters]]\n", argv[0]);
-      return 2;
+    int positional_count = 0;
+    for (int i = 1; i < argc; ++i) {
+      if (std::strcmp(argv[i], "--intel-mkl") == 0 || std::strcmp(argv[i], "--mkl") == 0) {
+        use_intel_mkl = true;
+      } else if (std::strcmp(argv[i], "--help") == 0 || std::strcmp(argv[i], "-h") == 0) {
+        std::printf("usage: %s [--intel-mkl] [N [iters]]\n", argv[0]);
+        std::printf("  --intel-mkl  add Intel oneMKL DFTI real-to-complex benchmark columns via dlopen(libmkl_rt).\n");
+        return 0;
+      } else if (positional_count == 0) {
+        forced_n = parse_size(argv[i]);
+        ++positional_count;
+      } else if (positional_count == 1) {
+        forced_iters = parse_iters(argv[i]);
+        ++positional_count;
+      } else {
+        std::fprintf(stderr, "usage: %s [--intel-mkl] [N [iters]]\n", argv[0]);
+        return 2;
+      }
     }
 
     FFTW fftw;
     const bool have_fftw = fftw.load();
     FFTWf fftwf;
     const bool have_fftwf = fftwf.load();
+    IntelMKL mkl;
+    bool have_mkl = false;
+    if (use_intel_mkl) {
+      have_mkl = mkl.load();
+    }
 
     std::printf("BFFT power-of-two RFFT benchmark. backend: %s, version: %s\n",
                 bfft::backend_name().c_str(),
@@ -579,6 +813,14 @@ int main(int argc, char** argv) {
     if (!have_fftwf) {
       std::fprintf(stderr, "FFTWf not found by dlopen; FFTWf/f32 ratio columns unavailable.\n");
     }
+    if (use_intel_mkl && !have_mkl) {
+      std::fprintf(stderr, "Intel oneMKL libmkl_rt not found by dlopen; MKL columns unavailable.\n");
+    }
+    if (!use_intel_mkl) {
+      std::printf("Intel oneMKL disabled; pass --intel-mkl to add dynamic libmkl_rt DFTI comparison columns.\n");
+    } else if (have_mkl) {
+      std::printf("Intel oneMKL enabled through dynamic libmkl_rt DFTI loading.\n");
+    }
 
 #if defined(BFFT_WITH_PFFFT)
     std::printf("PFFFT enabled at compile time.\n");
@@ -586,12 +828,14 @@ int main(int argc, char** argv) {
     std::printf("PFFFT disabled; compile with -DBFFT_WITH_PFFFT and link pffft to enable.\n");
 #endif
 
-    std::printf("%8s %8s %11s %11s %11s %11s %11s %11s %11s %11s %8s %8s %8s %8s  %s\n",
+    std::printf("%8s %8s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %8s %8s %8s %8s %8s %8s  %s\n",
                 "N",
                 "iters",
                 "FFTW_ns",
                 "FFTWf_ns",
                 "PFFFT_ns",
+                "MKL64_ns",
+                "MKL32_ns",
                 "Native_ns",
                 "Std_ns",
                 "F32Nat_ns",
@@ -601,7 +845,24 @@ int main(int argc, char** argv) {
                 "F32/Ff",
                 "S/P",
                 "F32/P",
+                "S/MKL",
+                "F32/M",
                 "checks");
+
+    FFTW* fftw_for_benchmark = nullptr;
+    if (have_fftw) {
+      fftw_for_benchmark = &fftw;
+    }
+
+    FFTWf* fftwf_for_benchmark = nullptr;
+    if (have_fftwf) {
+      fftwf_for_benchmark = &fftwf;
+    }
+
+    IntelMKL* mkl_for_benchmark = nullptr;
+    if (have_mkl) {
+      mkl_for_benchmark = &mkl;
+    }
 
     std::mt19937_64 rng(42);
 
@@ -610,7 +871,7 @@ int main(int argc, char** argv) {
         std::fprintf(stderr, "N must be a power of two >= 4.\n");
         return 2;
       }
-      bench_one(forced_n, forced_iters, have_fftw ? &fftw : nullptr, have_fftwf ? &fftwf : nullptr, rng);
+      bench_one(forced_n, forced_iters, fftw_for_benchmark, fftwf_for_benchmark, mkl_for_benchmark, rng);
       return 0;
     }
 
@@ -637,7 +898,7 @@ int main(int argc, char** argv) {
     };
 
     for (std::size_t n : sizes) {
-      bench_one(n, forced_iters, have_fftw ? &fftw : nullptr, have_fftwf ? &fftwf : nullptr, rng);
+      bench_one(n, forced_iters, fftw_for_benchmark, fftwf_for_benchmark, mkl_for_benchmark, rng);
     }
 
     return 0;

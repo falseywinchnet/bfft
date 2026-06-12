@@ -126,6 +126,13 @@ CMake enables the same host SIMD probe as the Makefile on x86_64 when the compil
 
 A first GitHub Actions workflow is tracked in `.github/workflows/ci.yml`. It runs the Makefile and CMake build/test/install paths on Ubuntu. See `TODO_HUMAN.md` for the repository-operator checklist for enabling the workflow, reading failures, and requiring CI before merges.
 
+The benchmark can optionally compare against Intel oneMKL DFTI without adding
+a build-time dependency. Install an Intel MKL package that provides
+`libmkl_rt.so`, then pass `--intel-mkl` to `build/examples/benchmark`; the
+program loads `libmkl_rt` dynamically and adds `MKL64_ns`, `MKL32_ns`,
+`S/MKL`, `F32/M`, `mkl64`, and `mkl32` printouts. If `libmkl_rt` cannot be
+loaded, those columns remain `n/a`.
+
 Artifacts are written to `build/`:
 
 - `build/libbfft.a`
