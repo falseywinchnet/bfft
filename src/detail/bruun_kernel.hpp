@@ -1882,7 +1882,7 @@ public:
 
     bool standard_output_uses_two_phase() const {
 #if BRUUN_LEVEL >= 2
-        return N > 8192;
+        return N >= 8192;
 #elif BRUUN_LEVEL == 1
         return N > 1048576;
 #else

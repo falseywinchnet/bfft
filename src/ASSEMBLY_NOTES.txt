@@ -1,0 +1,20 @@
+Assembly inspection notes, 2026-06-12
+
+Build inspected
+- Command used for the optimized object: make clean && make
+- Command used for annotated assembly: g++ -Iinclude -O3 -std=c++17 -fPIC -Wall -Wextra -Wpedantic -mavx2 -mfma -S -fverbose-asm src/bfft.cpp -o build/src/bfft.s
+- Command used for disassembly: objdump -drwC -Mintel build/src/bfft.o > build/src/bfft.objdump
+- Host build selected the AVX2/FMA backend through the Makefile's automatic SIMD probe.
+
+Things that looked healthy
+- The core double and float normalization loops compile to VEX/AVX instructions and use FMA for the rotation expressions. I did not see legacy SSE instructions mixed into AVX hot loops; the 128-bit float tails are VEX-encoded XMM instructions, so they should not create an AVX/SSE transition penalty.
+- The compiler emits vzeroupper on exits from AVX code paths. That is expected for ABI hygiene when returning to code that might use SSE.
+- The f32 residue forward path is large, but the emitted loops still keep the wide arithmetic in registers and use unaligned vector loads/stores that match the library's public no-alignment contract.
+
+Things that looked wrong or weird
+- The generated norm2_inv_fused_f32 helper has very high register pressure. GCC spills several scalar twiddle arguments and a broadcast vector to the stack around its AVX2 and XMM-tail blocks. That is not ideal, but this helper is on the f32 inverse path; it is not part of the forward benchmark hot path, and changing it would be a larger scheduling/register-pressure rewrite rather than a safe small rescue.
+- There are many vzeroupper instructions in the object because the header-only kernel inlines or emits several AVX-using API and helper bodies. That is not suspicious by itself, but it makes the disassembly noisy.
+- The standard double-output policy previously switched to the sequential two-phase standard pack only for N > 8192. Benchmarks and the assembly shape suggest N == 8192 is already at the point where avoiding the fused native scatter plus later layout conversion can help. The policy boundary was the smallest safe tweak available from this inspection.
+
+Small tweak made
+- Changed the AVX2+ standard-output policy threshold from N > 8192 to N >= 8192. This keeps the existing automatic policy, does not add a user-facing compile flag, and only changes one boundary size.
