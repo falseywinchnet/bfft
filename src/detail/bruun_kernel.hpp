@@ -1639,13 +1639,12 @@ class RFFT {
 public:
     explicit RFFT(int n, bool fuse_tail = true)
         : N(n), L(ilog2_pow2(n)), NB(n / 2 + 1), fuse_tail(fuse_tail && n >= 32),
-          IDX(n / 2), OUTIDX(n / 2), C(n / 2), S(n / 2)
+          IDX(n / 2), OUTIDX(n / 2), C(n / 2)
     {
         if (!is_power2(N) || N < 4) throw std::invalid_argument("Bruun RFFT requires power-of-two N >= 4");
 
         IDX[0] = 0;
         C[0] = 0.0;
-        S[0] = 0.0;
 
         // Build the Bruun angle table directly from the covering-map half-angle
         // recurrence. The old constructor built a full T[N] cosine table and then
@@ -1664,12 +1663,11 @@ public:
         if (N >= 4) {
             const double r = std::sqrt(0.5);
             C[1] = r;
-            S[1] = r;
         }
 
         for (int m = 1; 2*m < N / 2; ++m) {
             const double c = C[m];
-            const double s = S[m];
+            const double s = s_twiddle(m);
             // ce = cos(alpha/2) is stable for alpha in (0, pi/2): 1 + c never cancels.
             // se = sin(alpha/2) via sqrt((1 - c)/2) cancels catastrophically as
             // c -> 1 (deep small-angle lineages), costing ~log(N) digits at large N.
@@ -1678,11 +1676,9 @@ public:
             const double se = s / (2.0 * ce);
 
             C[2*m] = ce;
-            S[2*m] = se;
 
             if (2*m + 1 < N / 2) {
                 C[2*m + 1] = se;
-                S[2*m + 1] = ce;
             }
         }
 
@@ -1837,14 +1833,11 @@ public:
                 LeafTw& e = TW[m];
                 for (int g = 0; g < 4; ++g) {
                     e.c4[g] = C[4*m + g];
-                    e.s4[g] = S[4*m + g];
                 }
                 e.c2[0] = C[2*m];
                 e.c2[1] = C[2*m + 1];
-                e.s2[0] = S[2*m];
-                e.s2[1] = S[2*m + 1];
                 e.c1 = C[m];
-                e.s1 = S[m];
+                e.s1 = s_twiddle(m);
                 for (int j = 0; j < 8; ++j) e.idx[j] = OUTIDX[8*m + j];
             }
         }
@@ -1879,10 +1872,8 @@ public:
         // twiddles for the float32 engine. Cast from the double tables, so plan
         // setup stays free of extra libm calls.
         CF.resize(N / 2);
-        SF.resize(N / 2);
         for (int m = 0; m < N / 2; ++m) {
             CF[m] = static_cast<float>(C[m]);
-            SF[m] = static_cast<float>(S[m]);
         }
         if (N >= 32) {
             TWF.resize(N / 16);
@@ -1891,12 +1882,9 @@ public:
                 LeafTwF& f = TWF[m];
                 for (int g = 0; g < 4; ++g) {
                     f.c4[g] = static_cast<float>(e.c4[g]);
-                    f.s4[g] = static_cast<float>(e.s4[g]);
                 }
                 f.c2d[0] = f.c2d[1] = static_cast<float>(e.c2[0]);
                 f.c2d[2] = f.c2d[3] = static_cast<float>(e.c2[1]);
-                f.s2d[0] = f.s2d[1] = static_cast<float>(e.s2[0]);
-                f.s2d[2] = f.s2d[3] = static_cast<float>(e.s2[1]);
                 f.c1 = static_cast<float>(e.c1);
                 f.s1 = static_cast<float>(e.s1);
             }
@@ -2426,13 +2414,14 @@ private:
     std::vector<int> NATIVE_STANDARD_BIN;
 #endif
     std::vector<double> C;
-    std::vector<double> S;
+
+    inline double s_twiddle(int m) const {
+        return (m <= 1) ? (m == 1 ? C[1] : 0.0) : C[m ^ 1];
+    }
 
     struct LeafTw {
         double c4[4];
-        double s4[4];
         double c2[2];
-        double s2[2];
         double c1;
         double s1;
         int32_t idx[8];
@@ -2443,16 +2432,17 @@ private:
 
     struct LeafTwF {
         float c4[4];
-        float s4[4];
         float c2d[4]; // [c2[0], c2[0], c2[1], c2[1]]
-        float s2d[4];
         float c1;
         float s1;
     };
     std::vector<LeafTwF> TWF;
 
     std::vector<float> CF;
-    std::vector<float> SF;
+
+    inline float sf_twiddle(int m) const {
+        return (m <= 1) ? (m == 1 ? CF[1] : 0.0f) : CF[m ^ 1];
+    }
 
     // Small explicit traversal records keep depth-first segment ownership visible
     // to the program instead of relying on recursive calls through inline member
@@ -2588,7 +2578,7 @@ private:
         const bruun_v4f B1v = V4F_CATHI(c0b, c1b);
 
         const bruun_v4f c2 = V4F_LD(t.c2d);
-        const bruun_v4f s2 = V4F_LD(t.s2d);
+        const bruun_v4f s2 = V4F_SET4(t.c2d[2], t.c2d[2], t.c2d[0], t.c2d[0]);
         const bruun_v4f R2 = V4F_MSUB(V4F_MUL(c2, B0v), s2, B1v);
         const bruun_v4f I2 = V4F_MADD(V4F_MUL(s2, B0v), c2, B1v);
 
@@ -2607,7 +2597,7 @@ private:
         const bruun_v4f B1w = V4F_CATHI(qwL, qwH);
 
         const bruun_v4f c4 = V4F_LD(t.c4);
-        const bruun_v4f s4 = V4F_LD(t.s4);
+        const bruun_v4f s4 = V4F_SET4(t.c4[1], t.c4[0], t.c4[3], t.c4[2]);
         const bruun_v4f R3 = V4F_MSUB(V4F_MUL(c4, B0w), s4, B1w);
         const bruun_v4f I3 = V4F_MADD(V4F_MUL(s4, B0w), c4, B1w);
 
@@ -2632,12 +2622,12 @@ private:
         V4F_ST(p + 12, V4F_CATHI(t1, t3));
 #else
         norm_q_fwd_f32(p, 4, t.c1, t.s1);
-        norm_q2_fwd_f32(p, t.c2d[0], t.s2d[0]);
-        norm_q2_fwd_f32(p + 8, t.c2d[2], t.s2d[2]);
-        norm_q1_fwd_f32(p, t.c4[0], t.s4[0]);
-        norm_q1_fwd_f32(p + 4, t.c4[1], t.s4[1]);
-        norm_q1_fwd_f32(p + 8, t.c4[2], t.s4[2]);
-        norm_q1_fwd_f32(p + 12, t.c4[3], t.s4[3]);
+        norm_q2_fwd_f32(p, t.c2d[0], t.c2d[2]);
+        norm_q2_fwd_f32(p + 8, t.c2d[2], t.c2d[0]);
+        norm_q1_fwd_f32(p, t.c4[0], t.c4[1]);
+        norm_q1_fwd_f32(p + 4, t.c4[1], t.c4[0]);
+        norm_q1_fwd_f32(p + 8, t.c4[2], t.c4[3]);
+        norm_q1_fwd_f32(p + 12, t.c4[3], t.c4[2]);
 #endif
     }
 
@@ -2671,7 +2661,7 @@ private:
         const bruun_v4f I3  = V4F_MUL(hf, V4F_ADD(E1, O1));
         const bruun_v4f A1w = V4F_MUL(hf, V4F_SUB(E1, O1));
         const bruun_v4f c4 = V4F_LD(t.c4);
-        const bruun_v4f s4 = V4F_LD(t.s4);
+        const bruun_v4f s4 = V4F_SET4(t.c4[1], t.c4[0], t.c4[3], t.c4[2]);
         const bruun_v4f B0w = V4F_ADD(V4F_MUL(c4, R3), V4F_MUL(s4, I3));
         const bruun_v4f B1w = V4F_SUB(V4F_MUL(c4, I3), V4F_MUL(s4, R3));
 
@@ -2690,7 +2680,7 @@ private:
         const bruun_v4f I2  = V4F_MUL(hf, V4F_ADD(Q, W));
         const bruun_v4f A1v = V4F_MUL(hf, V4F_SUB(Q, W));
         const bruun_v4f c2 = V4F_LD(t.c2d);
-        const bruun_v4f s2 = V4F_LD(t.s2d);
+        const bruun_v4f s2 = V4F_SET4(t.c2d[2], t.c2d[2], t.c2d[0], t.c2d[0]);
         const bruun_v4f B0v = V4F_ADD(V4F_MUL(c2, R2), V4F_MUL(s2, I2));
         const bruun_v4f B1v = V4F_SUB(V4F_MUL(c2, I2), V4F_MUL(s2, R2));
 
@@ -2714,12 +2704,12 @@ private:
         V4F_ST(p + 8,  A1);
         V4F_ST(p + 12, B1);
 #else
-        norm_q_inv_f32(p,      1, t.c4[0], t.s4[0]);
-        norm_q_inv_f32(p + 4,  1, t.c4[1], t.s4[1]);
-        norm_q_inv_f32(p + 8,  1, t.c4[2], t.s4[2]);
-        norm_q_inv_f32(p + 12, 1, t.c4[3], t.s4[3]);
-        norm_q_inv_f32(p,      2, t.c2d[0], t.s2d[0]);
-        norm_q_inv_f32(p + 8,  2, t.c2d[2], t.s2d[2]);
+        norm_q_inv_f32(p,      1, t.c4[0], t.c4[1]);
+        norm_q_inv_f32(p + 4,  1, t.c4[1], t.c4[0]);
+        norm_q_inv_f32(p + 8,  1, t.c4[2], t.c4[3]);
+        norm_q_inv_f32(p + 12, 1, t.c4[3], t.c4[2]);
+        norm_q_inv_f32(p,      2, t.c2d[0], t.c2d[2]);
+        norm_q_inv_f32(p + 8,  2, t.c2d[2], t.c2d[0]);
         norm_q_inv_f32(p,      4, t.c1,    t.s1);
 #endif
     }
@@ -2737,7 +2727,7 @@ private:
             const int m = segment.m;
 
             if (q >= 16) {
-                norm2_fused_f32(v, q, CF[m], SF[m], CF[2*m], SF[2*m], CF[2*m+1], SF[2*m+1]);
+                norm2_fused_f32(v, q, CF[m], sf_twiddle(m), CF[2*m], sf_twiddle(2*m), CF[2*m+1], sf_twiddle(2*m+1));
                 const int qq = q >> 2;
                 const int child_m = 4 * m;
 
@@ -2749,7 +2739,7 @@ private:
             }
 
             if (q == 8) {
-                norm_q_fwd_f32(v, 8, CF[m], SF[m]);
+                norm_q_fwd_f32(v, 8, CF[m], sf_twiddle(m));
                 codelet_d3_tw_res_f32(v, TWF[2*m]);
                 codelet_d3_tw_res_f32(v + 16, TWF[2*m + 1]);
                 continue;
@@ -2762,11 +2752,11 @@ private:
     void residue_spine_tail_fwd_f32(float* RESTRICT v) const {
         codelet_d3_tw_res_f32(v + 16, TWF[1]);
         binomial_fwd_f32(v, 8);
-        norm_q_fwd_f32(v + 8, 2, CF[1], SF[1]);
-        norm_q1_fwd_f32(v + 8, CF[2], SF[2]);
-        norm_q1_fwd_f32(v + 12, CF[3], SF[3]);
+        norm_q_fwd_f32(v + 8, 2, CF[1], sf_twiddle(1));
+        norm_q1_fwd_f32(v + 8, CF[2], sf_twiddle(2));
+        norm_q1_fwd_f32(v + 12, CF[3], sf_twiddle(3));
         binomial_fwd_f32(v, 4);
-        norm_q1_fwd_f32(v + 4, CF[1], SF[1]);
+        norm_q1_fwd_f32(v + 4, CF[1], sf_twiddle(1));
         binomial_fwd_f32(v, 2);
     }
 
@@ -2791,11 +2781,11 @@ private:
         binomial_fwd_f32(v, h);
 
         if (q == 1) {
-            for (int m = 1; m < m_end; ++m) norm_q1_fwd_f32(v + m*s, CF[m], SF[m]);
+            for (int m = 1; m < m_end; ++m) norm_q1_fwd_f32(v + m*s, CF[m], sf_twiddle(m));
         } else if (q == 2) {
-            for (int m = 1; m < m_end; ++m) norm_q2_fwd_f32(v + m*s, CF[m], SF[m]);
+            for (int m = 1; m < m_end; ++m) norm_q2_fwd_f32(v + m*s, CF[m], sf_twiddle(m));
         } else {
-            for (int m = 1; m < m_end; ++m) norm_q_fwd_f32(v + m*s, q, CF[m], SF[m]);
+            for (int m = 1; m < m_end; ++m) norm_q_fwd_f32(v + m*s, q, CF[m], sf_twiddle(m));
         }
     }
 
@@ -2823,13 +2813,13 @@ private:
             rec_inv_res_f32(v + q,   qq, 4*m + 1);
             rec_inv_res_f32(v + 2*q, qq, 4*m + 2);
             rec_inv_res_f32(v + 3*q, qq, 4*m + 3);
-            norm2_inv_fused_f32(v, q, CF[m], SF[m], CF[2*m], SF[2*m], CF[2*m+1], SF[2*m+1]);
+            norm2_inv_fused_f32(v, q, CF[m], sf_twiddle(m), CF[2*m], sf_twiddle(2*m), CF[2*m+1], sf_twiddle(2*m+1));
             return;
         }
         if (q == 8) {
             codelet_d3_tw_res_inv_f32(v, TWF[2*m]);
             codelet_d3_tw_res_inv_f32(v + 16, TWF[2*m + 1]);
-            norm_q_inv_f32(v, 8, CF[m], SF[m]);
+            norm_q_inv_f32(v, 8, CF[m], sf_twiddle(m));
             return;
         }
         codelet_d3_tw_res_inv_f32(v, TWF[m]);
@@ -2837,11 +2827,11 @@ private:
 
     void residue_spine_tail_inv_f32(float* RESTRICT v) const {
         binomial_inv_f32(v, 2);
-        norm_q_inv_f32(v + 4, 1, CF[1], SF[1]);
+        norm_q_inv_f32(v + 4, 1, CF[1], sf_twiddle(1));
         binomial_inv_f32(v, 4);
-        norm_q_inv_f32(v + 8, 1, CF[2], SF[2]);
-        norm_q_inv_f32(v + 12, 1, CF[3], SF[3]);
-        norm_q_inv_f32(v + 8, 2, CF[1], SF[1]);
+        norm_q_inv_f32(v + 8, 1, CF[2], sf_twiddle(2));
+        norm_q_inv_f32(v + 12, 1, CF[3], sf_twiddle(3));
+        norm_q_inv_f32(v + 8, 2, CF[1], sf_twiddle(1));
         binomial_inv_f32(v, 8);
         codelet_d3_tw_res_inv_f32(v + 16, TWF[1]);
     }
@@ -2870,7 +2860,7 @@ private:
             const int m_end = 1 << jj;
 
             for (int m = m_end - 1; m > 0; --m) {
-                norm_q_inv_f32(v + m*s, q, CF[m], SF[m]);
+                norm_q_inv_f32(v + m*s, q, CF[m], sf_twiddle(m));
             }
 
             binomial_inv_f32(v, s >> 1);
@@ -2911,7 +2901,7 @@ private:
 
     inline void codelet_d1_pack(const double* RESTRICT p, int m, complex_t* RESTRICT X) const {
         const double t0 = C[m];
-        const double t1 = S[m];
+        const double t1 = s_twiddle(m);
         const double t2 = t0 * p[1] - t1 * p[3];
         const double t3 = t1 * p[1] + t0 * p[3];
         const int k0 = OUTIDX[2*m];
@@ -2924,13 +2914,13 @@ private:
 
     inline void codelet_d2_pack(const double* RESTRICT p, int m, complex_t* RESTRICT X) const {
         const double t0 = C[m];
-        const double t1 = S[m];
+        const double t1 = s_twiddle(m);
         const double t2 = t0 * p[2] - t1 * p[6];
         const double t3 = t1 * p[2] + t0 * p[6];
         const double t4 = t0 * p[3] - t1 * p[7];
         const double t5 = t1 * p[3] + t0 * p[7];
         const double t6 = C[2*m];
-        const double t7 = S[2*m];
+        const double t7 = s_twiddle(2*m);
         const double t8 = t6 * (p[1] + t4) - t7 * (p[5] + t5);
         const double t9 = t7 * (p[1] + t4) + t6 * (p[5] + t5);
         const int k0 = OUTIDX[4*m];
@@ -2940,7 +2930,7 @@ private:
         X[k1].re = (p[0] + t2) - t8;
         X[k1].im = (p[4] + t3) - t9;
         const double t12 = C[2*m + 1];
-        const double t13 = S[2*m + 1];
+        const double t13 = s_twiddle(2*m + 1);
         const double t14 = t12 * (p[1] - t4) - t13 * (t5 - p[5]);
         const double t15 = t13 * (p[1] - t4) + t12 * (t5 - p[5]);
         const int k2 = OUTIDX[4*m + 2];
@@ -2967,31 +2957,31 @@ private:
 
         double g[4][4]; // four leaf blocks [A0, B0, A1, B1]
         for (int j = 0; j < 2; ++j) {
-            const double R0 = t.c2[0] * u[2 + j] - t.s2[0] * w[2 + j];
-            const double I0 = t.s2[0] * u[2 + j] + t.c2[0] * w[2 + j];
+            const double R0 = t.c2[0] * u[2 + j] - t.c2[1] * w[2 + j];
+            const double I0 = t.c2[1] * u[2 + j] + t.c2[0] * w[2 + j];
             g[0][2*0 + ((j == 0) ? 0 : 1)] = 0; // placeholder, overwritten below
             (void)R0; (void)I0;
         }
         // child 0 = [u | w], child 1 = [v | x]; each splits into two leaf blocks.
         {
-            const double R0a = t.c2[0] * u[2] - t.s2[0] * w[2];
-            const double I0a = t.s2[0] * u[2] + t.c2[0] * w[2];
-            const double R0b = t.c2[0] * u[3] - t.s2[0] * w[3];
-            const double I0b = t.s2[0] * u[3] + t.c2[0] * w[3];
+            const double R0a = t.c2[0] * u[2] - t.c2[1] * w[2];
+            const double I0a = t.c2[1] * u[2] + t.c2[0] * w[2];
+            const double R0b = t.c2[0] * u[3] - t.c2[1] * w[3];
+            const double I0b = t.c2[1] * u[3] + t.c2[0] * w[3];
             g[0][0] = u[0] + R0a; g[0][1] = u[1] + R0b; g[0][2] = w[0] + I0a; g[0][3] = w[1] + I0b;
             g[1][0] = u[0] - R0a; g[1][1] = u[1] - R0b; g[1][2] = I0a - w[0]; g[1][3] = I0b - w[1];
 
-            const double R1a = t.c2[1] * v[2] - t.s2[1] * x[2];
-            const double I1a = t.s2[1] * v[2] + t.c2[1] * x[2];
-            const double R1b = t.c2[1] * v[3] - t.s2[1] * x[3];
-            const double I1b = t.s2[1] * v[3] + t.c2[1] * x[3];
+            const double R1a = t.c2[1] * v[2] - t.c2[0] * x[2];
+            const double I1a = t.c2[0] * v[2] + t.c2[1] * x[2];
+            const double R1b = t.c2[1] * v[3] - t.c2[0] * x[3];
+            const double I1b = t.c2[0] * v[3] + t.c2[1] * x[3];
             g[2][0] = v[0] + R1a; g[2][1] = v[1] + R1b; g[2][2] = x[0] + I1a; g[2][3] = x[1] + I1b;
             g[3][0] = v[0] - R1a; g[3][1] = v[1] - R1b; g[3][2] = I1a - x[0]; g[3][3] = I1b - x[1];
         }
 
         for (int gi = 0; gi < 4; ++gi) {
             const double c = t.c4[gi];
-            const double s = t.s4[gi];
+            const double s = t.c4[gi ^ 1];
             const double R = c * g[gi][1] - s * g[gi][3];
             const double I = s * g[gi][1] + c * g[gi][3];
             const int ke = t.idx[2*gi];
@@ -3025,7 +3015,7 @@ private:
         }
 
         const bruun_v2 c20 = V2_SET1(t.c2[0]);
-        const bruun_v2 s20 = V2_SET1(t.s2[0]);
+        const bruun_v2 s20 = V2_SET1(t.c2[1]);
         const bruun_v2 R0 = V2_MSUB(V2_MUL(c20, u[1]), s20, w[1]);
         const bruun_v2 I0 = V2_MADD(V2_MUL(s20, u[1]), c20, w[1]);
         const bruun_v2 g0a = V2_ADD(u[0], R0);
@@ -3034,7 +3024,7 @@ private:
         const bruun_v2 g1b = V2_SUB(I0, w[0]);
 
         const bruun_v2 c21 = V2_SET1(t.c2[1]);
-        const bruun_v2 s21 = V2_SET1(t.s2[1]);
+        const bruun_v2 s21 = V2_SET1(t.c2[0]);
         const bruun_v2 R1 = V2_MSUB(V2_MUL(c21, v[1]), s21, x[1]);
         const bruun_v2 I1 = V2_MADD(V2_MUL(s21, v[1]), c21, x[1]);
         const bruun_v2 g2a = V2_ADD(v[0], R1);
@@ -3048,8 +3038,8 @@ private:
         for (int gi = 0; gi < 4; ++gi) {
             const bruun_v2 a02 = V2_UNPLO(ga[gi], gb[gi]); // [x0, x2]
             const bruun_v2 b13 = V2_UNPHI(ga[gi], gb[gi]); // [x1, x3]
-            const bruun_v2 csv = V2_SETLH(t.c4[gi], t.s4[gi]);   // [ c, s]
-            const bruun_v2 cs2 = V2_SETLH(-t.s4[gi], t.c4[gi]);  // [-s, c]
+            const bruun_v2 csv = V2_SETLH(t.c4[gi], t.c4[gi ^ 1]);   // [ c, s]
+            const bruun_v2 cs2 = V2_SETLH(-t.c4[gi ^ 1], t.c4[gi]);  // [-s, c]
             const bruun_v2 tv = V2_MADD(V2_MUL(csv, V2_DUP0(b13)), cs2, V2_DUP1(b13)); // [R, I]
             const bruun_v2 ev = V2_NEGHI(V2_ADD(a02, tv)); // [x0+R, -(x2+I)]
             const bruun_v2 od = V2_SUB(a02, tv);           // [x0-R,   x2-I ]
@@ -3081,7 +3071,7 @@ private:
         const __m256d B1v = _mm256_permute2f128_pd(c0b, c1b, 0x31);
 
         const __m256d c2 = _mm256_permute4x64_pd(_mm256_castpd128_pd256(_mm_loadu_pd(t.c2)), 0x50);
-        const __m256d s2 = _mm256_permute4x64_pd(_mm256_castpd128_pd256(_mm_loadu_pd(t.s2)), 0x50);
+        const __m256d s2 = _mm256_permute4x64_pd(c2, 0x4E);
         const __m256d R2 = _mm256_fmsub_pd(c2, B0v, _mm256_mul_pd(s2, B1v));
         const __m256d I2 = _mm256_fmadd_pd(s2, B0v, _mm256_mul_pd(c2, B1v));
 
@@ -3096,7 +3086,7 @@ private:
         const __m256d B1w = _mm256_unpackhi_pd(Q, W);
 
         const __m256d c4 = _mm256_loadu_pd(t.c4);
-        const __m256d s4 = _mm256_loadu_pd(t.s4);
+        const __m256d s4 = _mm256_set_pd(t.c4[2], t.c4[3], t.c4[0], t.c4[1]);
         const __m256d R3 = _mm256_fmsub_pd(c4, B0w, _mm256_mul_pd(s4, B1w));
         const __m256d I3 = _mm256_fmadd_pd(s4, B0w, _mm256_mul_pd(c4, B1w));
 
@@ -3141,7 +3131,7 @@ private:
         const __m256d b1h = _mm256_loadu_pd(p + 28);
 
         const __m256d vc = _mm256_set1_pd(C[m]);
-        const __m256d vs = _mm256_set1_pd(S[m]);
+        const __m256d vs = _mm256_set1_pd(s_twiddle(m));
 
         const __m256d Rl = _mm256_fmsub_pd(vc, b0l, _mm256_mul_pd(vs, b1l));
         const __m256d Il = _mm256_fmadd_pd(vs, b0l, _mm256_mul_pd(vc, b1l));
@@ -3182,9 +3172,9 @@ private:
 
         const __m512i dup2 = _mm512_set_epi64(3, 3, 2, 2, 1, 1, 0, 0);
         const __m256d c2p = _mm256_insertf128_pd(_mm256_castpd128_pd256(_mm_loadu_pd(t0.c2)), _mm_loadu_pd(t1.c2), 1);
-        const __m256d s2p = _mm256_insertf128_pd(_mm256_castpd128_pd256(_mm_loadu_pd(t0.s2)), _mm_loadu_pd(t1.s2), 1);
         const __m512d c2 = _mm512_permutexvar_pd(dup2, _mm512_castpd256_pd512(c2p));
-        const __m512d s2 = _mm512_permutexvar_pd(dup2, _mm512_castpd256_pd512(s2p));
+        const __m512i swap2 = _mm512_set_epi64(5, 4, 7, 6, 1, 0, 3, 2);
+        const __m512d s2 = _mm512_permutexvar_pd(swap2, c2);
 
         const __m512d R2 = _mm512_fmsub_pd(c2, B0v, _mm512_mul_pd(s2, B1v));
         const __m512d I2 = _mm512_fmadd_pd(s2, B0v, _mm512_mul_pd(c2, B1v));
@@ -3200,7 +3190,8 @@ private:
         const __m512d B1w = _mm512_unpackhi_pd(Q, W);
 
         const __m512d c4 = _mm512_insertf64x4(_mm512_castpd256_pd512(_mm256_loadu_pd(t0.c4)), _mm256_loadu_pd(t1.c4), 1);
-        const __m512d s4 = _mm512_insertf64x4(_mm512_castpd256_pd512(_mm256_loadu_pd(t0.s4)), _mm256_loadu_pd(t1.s4), 1);
+        const __m512d s4 = _mm512_set_pd(t1.c4[2], t1.c4[3], t1.c4[0], t1.c4[1],
+                                         t0.c4[2], t0.c4[3], t0.c4[0], t0.c4[1]);
         const __m512d R3 = _mm512_fmsub_pd(c4, B0w, _mm512_mul_pd(s4, B1w));
         const __m512d I3 = _mm512_fmadd_pd(s4, B0w, _mm512_mul_pd(c4, B1w));
 
@@ -3250,7 +3241,7 @@ private:
         const __m512d zb1 = _mm512_loadu_pd(p + 24);
 
         const __m512d vc = _mm512_set1_pd(C[m]);
-        const __m512d vs = _mm512_set1_pd(S[m]);
+        const __m512d vs = _mm512_set1_pd(s_twiddle(m));
 
         const __m512d R = _mm512_fmsub_pd(vc, zb0, _mm512_mul_pd(vs, zb1));
         const __m512d I = _mm512_fmadd_pd(vs, zb0, _mm512_mul_pd(vc, zb1));
@@ -3307,7 +3298,7 @@ private:
         const __m256d B1v = _mm256_permute2f128_pd(c0b, c1b, 0x31);
 
         const __m256d c2 = _mm256_permute4x64_pd(_mm256_castpd128_pd256(_mm_loadu_pd(t.c2)), 0x50);
-        const __m256d s2 = _mm256_permute4x64_pd(_mm256_castpd128_pd256(_mm_loadu_pd(t.s2)), 0x50);
+        const __m256d s2 = _mm256_permute4x64_pd(c2, 0x4E);
         const __m256d R2 = _mm256_fmsub_pd(c2, B0v, _mm256_mul_pd(s2, B1v));
         const __m256d I2 = _mm256_fmadd_pd(s2, B0v, _mm256_mul_pd(c2, B1v));
 
@@ -3322,7 +3313,7 @@ private:
         const __m256d B1w = _mm256_unpackhi_pd(Q, W);
 
         const __m256d c4 = _mm256_loadu_pd(t.c4);
-        const __m256d s4 = _mm256_loadu_pd(t.s4);
+        const __m256d s4 = _mm256_set_pd(t.c4[2], t.c4[3], t.c4[0], t.c4[1]);
         const __m256d R3 = _mm256_fmsub_pd(c4, B0w, _mm256_mul_pd(s4, B1w));
         const __m256d I3 = _mm256_fmadd_pd(s4, B0w, _mm256_mul_pd(c4, B1w));
 
@@ -3343,12 +3334,12 @@ private:
         _mm256_storeu_pd(p + 12, _mm256_permute2f128_pd(t1, t3, 0x31));
 #else
         norm_q_fwd(p, 4, t.c1, t.s1);
-        norm_q2_fwd(p, t.c2[0], t.s2[0]);
-        norm_q2_fwd(p + 8, t.c2[1], t.s2[1]);
-        norm_q1_fwd(p, t.c4[0], t.s4[0]);
-        norm_q1_fwd(p + 4, t.c4[1], t.s4[1]);
-        norm_q1_fwd(p + 8, t.c4[2], t.s4[2]);
-        norm_q1_fwd(p + 12, t.c4[3], t.s4[3]);
+        norm_q2_fwd(p, t.c2[0], t.c2[1]);
+        norm_q2_fwd(p + 8, t.c2[1], t.c2[0]);
+        norm_q1_fwd(p, t.c4[0], t.c4[1]);
+        norm_q1_fwd(p + 4, t.c4[1], t.c4[0]);
+        norm_q1_fwd(p + 8, t.c4[2], t.c4[3]);
+        norm_q1_fwd(p + 12, t.c4[3], t.c4[2]);
 #endif
     }
 
@@ -3365,7 +3356,7 @@ private:
             const int m = segment.m;
 
             if (q >= 16) {
-                norm2_fused(v, q, C[m], S[m], C[2*m], S[2*m], C[2*m+1], S[2*m+1]);
+                norm2_fused(v, q, C[m], s_twiddle(m), C[2*m], s_twiddle(2*m), C[2*m+1], s_twiddle(2*m+1));
                 const int qq = q >> 2;
                 const int child_m = 4 * m;
 
@@ -3377,7 +3368,7 @@ private:
             }
 
             if (q == 8) {
-                norm_q_fwd(v, 8, C[m], S[m]);
+                norm_q_fwd(v, 8, C[m], s_twiddle(m));
                 codelet_d3_tw_res(v, TW[2*m]);
                 codelet_d3_tw_res(v + 16, TW[2*m + 1]);
                 continue;
@@ -3393,11 +3384,11 @@ private:
     void residue_spine_tail_fwd(double* RESTRICT v) const {
         codelet_d3_tw_res(v + 16, TW[1]);
         binomial_fwd(v, 8);
-        norm_q_fwd(v + 8, 2, C[1], S[1]);
-        norm_q1_fwd(v + 8, C[2], S[2]);
-        norm_q1_fwd(v + 12, C[3], S[3]);
+        norm_q_fwd(v + 8, 2, C[1], s_twiddle(1));
+        norm_q1_fwd(v + 8, C[2], s_twiddle(2));
+        norm_q1_fwd(v + 12, C[3], s_twiddle(3));
         binomial_fwd(v, 4);
-        norm_q1_fwd(v + 4, C[1], S[1]);
+        norm_q1_fwd(v + 4, C[1], s_twiddle(1));
         binomial_fwd(v, 2);
     }
 
@@ -3440,7 +3431,7 @@ private:
         const __m256d I3  = _mm256_mul_pd(hf, _mm256_add_pd(E1, O1));
         const __m256d A1w = _mm256_mul_pd(hf, _mm256_sub_pd(E1, O1));
         const __m256d c4 = _mm256_loadu_pd(t.c4);
-        const __m256d s4 = _mm256_loadu_pd(t.s4);
+        const __m256d s4 = _mm256_set_pd(t.c4[2], t.c4[3], t.c4[0], t.c4[1]);
         const __m256d B0w = _mm256_fmadd_pd(c4, R3, _mm256_mul_pd(s4, I3));
         const __m256d B1w = _mm256_fmsub_pd(c4, I3, _mm256_mul_pd(s4, R3));
 
@@ -3455,7 +3446,7 @@ private:
         const __m256d I2  = _mm256_mul_pd(hf, _mm256_add_pd(Q, W));
         const __m256d A1v = _mm256_mul_pd(hf, _mm256_sub_pd(Q, W));
         const __m256d c2 = _mm256_permute4x64_pd(_mm256_castpd128_pd256(_mm_loadu_pd(t.c2)), 0x50);
-        const __m256d s2 = _mm256_permute4x64_pd(_mm256_castpd128_pd256(_mm_loadu_pd(t.s2)), 0x50);
+        const __m256d s2 = _mm256_permute4x64_pd(c2, 0x4E);
         const __m256d B0v = _mm256_fmadd_pd(c2, R2, _mm256_mul_pd(s2, I2));
         const __m256d B1v = _mm256_fmsub_pd(c2, I2, _mm256_mul_pd(s2, R2));
 
@@ -3479,12 +3470,12 @@ private:
         _mm256_storeu_pd(p + 8,  A1);
         _mm256_storeu_pd(p + 12, B1);
 #else
-        norm_q_inv(p,      1, t.c4[0], t.s4[0]);
-        norm_q_inv(p + 4,  1, t.c4[1], t.s4[1]);
-        norm_q_inv(p + 8,  1, t.c4[2], t.s4[2]);
-        norm_q_inv(p + 12, 1, t.c4[3], t.s4[3]);
-        norm_q_inv(p,      2, t.c2[0], t.s2[0]);
-        norm_q_inv(p + 8,  2, t.c2[1], t.s2[1]);
+        norm_q_inv(p,      1, t.c4[0], t.c4[1]);
+        norm_q_inv(p + 4,  1, t.c4[1], t.c4[0]);
+        norm_q_inv(p + 8,  1, t.c4[2], t.c4[3]);
+        norm_q_inv(p + 12, 1, t.c4[3], t.c4[2]);
+        norm_q_inv(p,      2, t.c2[0], t.c2[1]);
+        norm_q_inv(p + 8,  2, t.c2[1], t.c2[0]);
         norm_q_inv(p,      4, t.c1,    t.s1);
 #endif
     }
@@ -3496,13 +3487,13 @@ private:
             rec_inv_res(v + q,   qq, 4*m + 1);
             rec_inv_res(v + 2*q, qq, 4*m + 2);
             rec_inv_res(v + 3*q, qq, 4*m + 3);
-            norm2_inv_fused(v, q, C[m], S[m], C[2*m], S[2*m], C[2*m+1], S[2*m+1]);
+            norm2_inv_fused(v, q, C[m], s_twiddle(m), C[2*m], s_twiddle(2*m), C[2*m+1], s_twiddle(2*m+1));
             return;
         }
         if (q == 8) {
             codelet_d3_tw_res_inv(v, TW[2*m]);
             codelet_d3_tw_res_inv(v + 16, TW[2*m + 1]);
-            norm_q_inv(v, 8, C[m], S[m]);
+            norm_q_inv(v, 8, C[m], s_twiddle(m));
             return;
         }
         codelet_d3_tw_res_inv(v, TW[m]);
@@ -3511,11 +3502,11 @@ private:
     // Exact reverse of residue_spine_tail_fwd.
     void residue_spine_tail_inv(double* RESTRICT v) const {
         binomial_inv(v, 2);
-        norm_q_inv(v + 4, 1, C[1], S[1]);
+        norm_q_inv(v + 4, 1, C[1], s_twiddle(1));
         binomial_inv(v, 4);
-        norm_q_inv(v + 8, 1, C[2], S[2]);
-        norm_q_inv(v + 12, 1, C[3], S[3]);
-        norm_q_inv(v + 8, 2, C[1], S[1]);
+        norm_q_inv(v + 8, 1, C[2], s_twiddle(2));
+        norm_q_inv(v + 12, 1, C[3], s_twiddle(3));
+        norm_q_inv(v + 8, 2, C[1], s_twiddle(1));
         binomial_inv(v, 8);
         codelet_d3_tw_res_inv(v + 16, TW[1]);
     }
@@ -3578,7 +3569,7 @@ private:
             const int m = segment.m;
 
             if (q >= 16) {
-                norm2_fused(v, q, C[m], S[m], C[2*m], S[2*m], C[2*m+1], S[2*m+1]);
+                norm2_fused(v, q, C[m], s_twiddle(m), C[2*m], s_twiddle(2*m), C[2*m+1], s_twiddle(2*m+1));
                 const int qq = q >> 2;
                 const int child_m = 4 * m;
 
@@ -3595,7 +3586,7 @@ private:
 #elif BRUUN_LEVEL >= 2
                 codelet_d4_avx2(v, m, X);
 #else
-                norm_q_fwd(v, 8, C[m], S[m]);
+                norm_q_fwd(v, 8, C[m], s_twiddle(m));
                 d3_one(v, 2*m, X);
                 d3_one(v + 16, 2*m + 1, X);
 #endif
@@ -3644,11 +3635,11 @@ private:
         binomial_fwd(v, h);
 
         if (q == 1) {
-            for (int m = 1; m < m_end; ++m) norm_q1_fwd(v + m*s, C[m], S[m]);
+            for (int m = 1; m < m_end; ++m) norm_q1_fwd(v + m*s, C[m], s_twiddle(m));
         } else if (q == 2) {
-            for (int m = 1; m < m_end; ++m) norm_q2_fwd(v + m*s, C[m], S[m]);
+            for (int m = 1; m < m_end; ++m) norm_q2_fwd(v + m*s, C[m], s_twiddle(m));
         } else {
-            for (int m = 1; m < m_end; ++m) norm_q_fwd(v + m*s, q, C[m], S[m]);
+            for (int m = 1; m < m_end; ++m) norm_q_fwd(v + m*s, q, C[m], s_twiddle(m));
         }
     }
 
@@ -3718,7 +3709,7 @@ private:
             const int m_end = 1 << jj;
 
             for (int m = m_end - 1; m > 0; --m) {
-                norm_q_inv(v + m*s, q, C[m], S[m]);
+                norm_q_inv(v + m*s, q, C[m], s_twiddle(m));
             }
 
             binomial_inv(v, h);
