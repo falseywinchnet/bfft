@@ -143,3 +143,22 @@ Benchmark spot checks on this x86_64 host
 - AVX2/FMA, build/examples/benchmark 65536 200: Native_ns 229439.6, Std_ns 270077.0, F32Nat_ns 183525.0, F32Std_ns 216272.4 in the same noisy environment.
 - SSE2/no-AVX, build/sse2/benchmark 4096 1000: Native_ns 16666.5, Std_ns 18597.3, F32Nat_ns 10749.4, F32Std_ns 10693.3.
 - SSE2/no-AVX, build/sse2/benchmark 65536 200: Native_ns 349931.1, Std_ns 469587.3, F32Nat_ns 230881.9, F32Std_ns 235586.5.
+
+DIT x86 follow-up, 2026-06-13
+
+Assembly finding
+- The DIT benchmark and DIT verification target include bruun_DIT_kernel.hpp directly, so they were not receiving the Makefile's automatic x86 SIMD flags. On this host that left DIT compiled as the baseline sse2-128 path while the shipped DIF library object was avx2-fma-256. That made the DIT-vs-DIF benchmark partly an apples-to-oranges codegen comparison.
+- The DIT f32 merge had a second x86-specific hole: the only hand-vectorized f32 merge was the NEON path. AVX2 builds therefore fell through to scalar/SSE-shaped f32 merge code in the DIT port, visible in assembly as xmm vmulps sequences rather than the intended wide ymm vfmaddsubps complex multiply loop.
+
+Changes kept
+- The Makefile now compiles the DIT benchmark and test_dit target with the same automatic SIMD flags as the library when the host supports them.
+- asm-check now also emits annotated AVX2/FMA and SSE2/no-AVX assembly for test_dit.cpp, so future DIT audits can inspect the header-only port without relying on the library translation unit.
+- Added an AVX2/FMA f32 DIT merge path that processes four complex slots per vector with vfmaddsubps and uses vpermps only to reverse partner slot order. This mirrors the double DIT quartet structure and keeps the unavoidable partner reversal in registers rather than scalarizing the loop.
+
+Assembly check
+- build/src/test_dit_avx2.s now shows the f32 DIT merge using vfmaddsub132ps in the wide loop, with vpermps for the partner-side slot reversal. The scalar/xmm vmulps chunks remain as tails and small-row/tiled helper code, which is expected.
+
+Benchmark notes on this x86_64 host
+- build/examples/benchmark 4096 500 after compiling DIT with AVX2: F32Dit_ns 18916.8, F32DTil_ns 15013.9, F32DPre_ns 20347.7. In the previous no-AUTO-SIMD benchmark shape, the same columns were around 36706.6, 29985.3, and 31159.3 ns.
+- build/examples/benchmark 65536 100 after compiling DIT with AVX2: DitHC_ns 450399.3, DTilHC_ns 381698.4, DBrHC_ns 373426.1, DPreHC_ns 376384.7, F32Dit_ns 395428.7, F32DTil_ns 314544.4, F32DPre_ns 326526.7.
+- DIT is still slower than the DIF library path for full normal-order transforms. The assembly-level reason is no longer accidental scalar f32 code or mismatched target flags: DIT still streams per-bin twiddle vectors and performs partner reversals during every merge stage, whereas DIF's hot forward traversal amortizes a broadcast coefficient over each modulus block and preserves better subtree locality.
