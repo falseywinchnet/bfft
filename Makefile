@@ -56,6 +56,7 @@ C_DEMO := $(BUILD_DIR)/examples/c_api_demo
 CPP_DEMO := $(BUILD_DIR)/examples/cpp_api_demo
 CORRECTNESS_TEST := $(BUILD_DIR)/tests/correctness
 C_API_TEST := $(BUILD_DIR)/tests/api_c
+DIT_TEST := $(BUILD_DIR)/tests/test_dit
 SUPPORT_PROBE := $(BUILD_DIR)/tests/bfft_fftw_support_probe
 INVARIANT_PROBE := $(BUILD_DIR)/tests/bfft_invariant_support_probe
 SFDR_PROBE := $(BUILD_DIR)/tests/bfft_fftw_sfdr_probe
@@ -105,7 +106,7 @@ $(AVX2_ASM): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp | $(BUILD_DI
 $(SSE2_ASM): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(CXXFLAGS) $(SSE2_FLAGS) -S -fverbose-asm $< -o $@
 
-$(BENCH): examples/benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+$(BENCH): examples/benchmark.cpp include/bfft/bfft.hpp src/detail/bruun_DIT_kernel.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
 
 $(APPLE_BENCH): examples/apple_benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
@@ -126,6 +127,9 @@ $(CORRECTNESS_TEST): tests/correctness.cpp include/bfft/bfft.hpp $(STATIC_LIB) |
 $(C_API_TEST): tests/api_c.c include/bfft/bfft.h $(STATIC_LIB) | $(BUILD_DIR)
 	$(CC) $(CPPFLAGS) $(INCLUDES) $(CFLAGS) $< $(STATIC_LIB) $(LDLIBS) -lstdc++ -o $@
 
+$(DIT_TEST): tests/test_dit.cpp src/detail/bruun_DIT_kernel.hpp | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(LDLIBS) -o $@
+
 $(SUPPORT_PROBE): tests/bfft_fftw_support_probe.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
 
@@ -143,9 +147,10 @@ $(LIBRARY_COMPARE_PROBE): tests/bfft_library_compare_probe.cpp include/bfft/bfft
 
 probes: $(SUPPORT_PROBE) $(INVARIANT_PROBE) $(SFDR_PROBE) $(BH7_PROBE) $(LIBRARY_COMPARE_PROBE)
 
-test: $(CORRECTNESS_TEST) $(C_API_TEST)
+test: $(CORRECTNESS_TEST) $(C_API_TEST) $(DIT_TEST)
 	$(CORRECTNESS_TEST)
 	$(C_API_TEST)
+	$(DIT_TEST)
 
 check-cxx17:
 	$(MAKE) clean BUILD_DIR=build-cxx17
