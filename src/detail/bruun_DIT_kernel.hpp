@@ -222,6 +222,27 @@ static inline __m256d bdit_swap4(__m256d a) {                   // per-slot (re,
 static inline __m256d bdit_rev_slots4(__m256d a) {              // (c0,c1)->(c1,c0)
     return _mm256_permute2f128_pd(a, a, 0x01);
 }
+
+static inline __m256 bdit_cmul8f(__m256 o, __m256 t) {
+    const __m256 tr = _mm256_moveldup_ps(t);                    // (tr,tr,...)
+    const __m256 ti = _mm256_movehdup_ps(t);                    // (ti,ti,...)
+    const __m256 os = _mm256_permute_ps(o, 0xB1);               // (oi,or,...)
+    return _mm256_fmaddsub_ps(o, tr, _mm256_mul_ps(os, ti));    // (or tr - oi ti, oi tr + or ti)
+}
+static inline __m256 bdit_neghi8f(__m256 a) {
+    return _mm256_xor_ps(a, _mm256_set_ps(-0.0f, 0.0f, -0.0f, 0.0f,
+                                          -0.0f, 0.0f, -0.0f, 0.0f));
+}
+static inline __m256 bdit_neg8f(__m256 a) {
+    return _mm256_xor_ps(a, _mm256_set1_ps(-0.0f));
+}
+static inline __m256 bdit_swap8f(__m256 a) {
+    return _mm256_permute_ps(a, 0xB1);
+}
+static inline __m256 bdit_rev_slots8f(__m256 a) {               // (c0,c1,c2,c3)->(c3,c2,c1,c0)
+    const __m256i idx = _mm256_setr_epi32(6, 7, 4, 5, 2, 3, 0, 1);
+    return _mm256_permutevar8x32_ps(a, idx);
+}
 #endif
 
 #if BRUUN_DIT_LEVEL >= 3
@@ -493,9 +514,9 @@ static inline void dit_merge_inv(double* BDIT_RESTRICT p, int nb,
     }
 }
 
-// Single-precision forward merge. On NEON this processes two complex slots per
-// vector; other backends currently use the scalar reference path so the f32
-// experiment stays portable while we focus on Apple/AArch64 measurements.
+// Single-precision forward merge. AVX2 processes four complex slots per vector;
+// NEON processes two complex slots per vector. Other backends use the scalar
+// reference path so the f32 experiment stays portable.
 #if defined(BRUUN_DIT_NEON_128)
 static inline float32x4_t bdit_f32_neg_mask(float32x4_t a,
                                             uint32_t a0, uint32_t a1,
@@ -552,7 +573,27 @@ static inline void dit_merge_fwd_f32(float* BDIT_RESTRICT p, int nb,
     int k = 1;
     const int half = nb / 2;
 
-#if defined(BRUUN_DIT_NEON_128)
+#if BRUUN_DIT_LEVEL >= 2
+    for (; k + 3 < half; k += 4) {
+        const int kp = nb - k - 3;
+        const __m256 Ek = _mm256_loadu_ps(E + 2 * k);
+        const __m256 Ok = _mm256_loadu_ps(O + 2 * k);
+        const __m256 Ep = bdit_rev_slots8f(_mm256_loadu_ps(E + 2 * kp));
+        const __m256 Op = bdit_rev_slots8f(_mm256_loadu_ps(O + 2 * kp));
+        const __m256 Tk = _mm256_loadu_ps(tw + 2 * (k - 1));
+        const __m256 Tp = bdit_neg8f(bdit_swap8f(Tk));
+        const __m256 Wk = bdit_cmul8f(Ok, Tk);
+        const __m256 Wp = bdit_cmul8f(Op, Tp);
+        const __m256 lo_k = _mm256_add_ps(Ek, Wk);
+        const __m256 hi_k = bdit_neghi8f(_mm256_sub_ps(Ek, Wk));
+        const __m256 lo_p = _mm256_add_ps(Ep, Wp);
+        const __m256 hi_p = bdit_neghi8f(_mm256_sub_ps(Ep, Wp));
+        _mm256_storeu_ps(E + 2 * k, lo_k);
+        _mm256_storeu_ps(E + 2 * kp, bdit_rev_slots8f(lo_p));
+        _mm256_storeu_ps(O + 2 * kp, bdit_rev_slots8f(hi_k));
+        _mm256_storeu_ps(O + 2 * k, hi_p);
+    }
+#elif defined(BRUUN_DIT_NEON_128)
     for (; k + 1 < half; k += 2) {
         const int kp = nb - k - 1;
         const float32x4_t Ek = vld1q_f32(E + 2 * k);
