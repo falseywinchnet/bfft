@@ -47,7 +47,7 @@ jobs:
         run: cmake -S . -B build-cmake -DBFFT_BUILD_PROBES=OFF -DBFFT_BUILD_SHARED=OFF -DCMAKE_CXX_STANDARD=${{ matrix.cxx-standard }} -DCMAKE_CXX_EXTENSIONS=OFF
 
       - name: Build CMake targets
-        run: cmake --build build-cmake --config Release --target correctness api_c --parallel
+        run: cmake --build build-cmake --config Release --parallel
 
       - name: Run CMake tests
         run: ctest --test-dir build-cmake -C Release --output-on-failure
