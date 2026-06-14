@@ -45,6 +45,7 @@ wrapper, tests, examples, docs, and a validated Makefile workflow.
 - direct ABS grab
   
   ```
+  
   With a real-only Bruun interior, fused depth-first traversal, and leaf codelets that currently materialize re/im complex bins at the bottom. The leaf packers are where X[k].re and X[k].im are finally produced, and the recursive transform bottoms out in fused depth-3 codelets.
 
 The magnitude-only version should not do this:
@@ -136,10 +137,13 @@ standard power: much cheaper than standard complex
 FFTW+power:     slower than FFTW alone
 
 the route is real. The magnitude-only case strengthens Bruun’s advantage because you can throw phase away before it ever hits memory.
+
 ```
 
 - High-Speed DCT
+
 ```
+
 It is a Chebyshev-Bruun kernel.
 
 DCTs are already the reciprocal-even half of a Fourier transform. Ordinary FFT-based DCT code pays for a cyclic complex object, then projects down to cosines. BFFT is already closer to the projection because its real quadratic leaves are conjugate-pair planes. A DCT kernel can go one step further: never build the conjugate-pair plane as a complex output. Work directly in the fixed reciprocal basis where a leaf is just evaluation at x = cos theta.
