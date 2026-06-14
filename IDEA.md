@@ -1,6 +1,4 @@
-# BFFT completion idea
-
-BFFT is complete for the first public library release when it is a small,
+BFFT is complete for the first public library release. it is a small,
 installable Bruun real FFT library with a coherent C ABI, a lightweight C++
 wrapper, tests, examples, docs, and a validated Makefile workflow.
 
