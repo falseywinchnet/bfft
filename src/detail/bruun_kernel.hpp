@@ -1917,15 +1917,15 @@ public:
 
         heap_array<int> prev;
         if (!prev.reserve(N / 2)) return false;
-        prev.push_back(M / 2);
-        k_order.push_back(M / 2);
+        if (!prev.push_back(M / 2)) return false;
+        if (!k_order.push_back(M / 2)) return false;
 
         while (true) {
             heap_array<int_pair> pairs;
             if (!pairs.reserve(prev.size())) return false;
             for (int k : prev) {
                 if ((k & 1) == 0) {
-                    pairs.push_back(int_pair{k / 2, M - k / 2});
+                    if (!pairs.push_back(int_pair{k / 2, M - k / 2})) return false;
                 }
             }
             if (pairs.empty()) break;
@@ -2004,15 +2004,17 @@ public:
                 const int a = pairs[pi].first;
                 const int b = pairs[pi].second;
                 if (orient[pi] == 0) {
-                    prev.push_back(a);
-                    prev.push_back(b);
+                    if (!prev.push_back(a)) return false;
+                    if (!prev.push_back(b)) return false;
                 } else {
-                    prev.push_back(b);
-                    prev.push_back(a);
+                    if (!prev.push_back(b)) return false;
+                    if (!prev.push_back(a)) return false;
                 }
             }
 
-            for (int k : prev) k_order.push_back(k);
+            for (int k : prev) {
+                if (!k_order.push_back(k)) return false;
+            }
         }
 
         int pos = 1;
@@ -2676,7 +2678,7 @@ private:
         return (m <= 1) ? (m == 1 ? CF[1] : 0.0f) : CF[m ^ 1];
     }
 
-    void append_op(heap_array<FwdOp>& ops,
+    bool append_op(heap_array<FwdOp>& ops,
                    uint16_t kind,
                    uint32_t base,
                    uint32_t q,
@@ -2706,7 +2708,7 @@ private:
         op.mem.align = static_cast<uint16_t>(bruun_cache_alignment);
         op.mem.stream = stream;
         op.mem.next_base = base + op.mem.span;
-        ops.push_back(op);
+        return ops.push_back(op);
     }
 
     struct ScheduleSegment {
@@ -2715,14 +2717,14 @@ private:
         int m;
     };
 
-    void append_segment_schedule(heap_array<FwdOp>& ops,
+    bool append_segment_schedule(heap_array<FwdOp>& ops,
                                  uint32_t root_base,
                                  int root_q,
                                  int root_m,
                                  bool pack_to_complex) const {
         heap_array<ScheduleSegment> stack;
-        stack.reserve(96);
-        stack.push_back(ScheduleSegment{root_base, root_q, root_m});
+        if (!stack.reserve(96)) return false;
+        if (!stack.push_back(ScheduleSegment{root_base, root_q, root_m})) return false;
         while (!stack.empty()) {
             const ScheduleSegment segment = stack.back();
             stack.pop_back();
@@ -2730,21 +2732,21 @@ private:
             const int q = segment.q;
             const int m = segment.m;
             if (q >= 16) {
-                append_op(ops, FWD_OP_NORM2, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), 1);
+                if (!append_op(ops, FWD_OP_NORM2, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), 1)) return false;
                 const int qq = q >> 2;
                 const int child_m = 4 * m;
-                stack.push_back(ScheduleSegment{base + static_cast<uint32_t>(3 * q), qq, child_m + 3});
-                stack.push_back(ScheduleSegment{base + static_cast<uint32_t>(2 * q), qq, child_m + 2});
-                stack.push_back(ScheduleSegment{base + static_cast<uint32_t>(q), qq, child_m + 1});
-                stack.push_back(ScheduleSegment{base, qq, child_m});
+                if (!stack.push_back(ScheduleSegment{base + static_cast<uint32_t>(3 * q), qq, child_m + 3})) return false;
+                if (!stack.push_back(ScheduleSegment{base + static_cast<uint32_t>(2 * q), qq, child_m + 2})) return false;
+                if (!stack.push_back(ScheduleSegment{base + static_cast<uint32_t>(q), qq, child_m + 1})) return false;
+                if (!stack.push_back(ScheduleSegment{base, qq, child_m})) return false;
             } else if (q == 8) {
-                append_op(ops, FWD_OP_CODELET_Q8, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), 1);
+                if (!append_op(ops, FWD_OP_CODELET_Q8, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), 1)) return false;
             } else {
-                uint16_t kind = FWD_OP_CODELET_D3;
-                append_op(ops, kind, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), 1);
+                if (!append_op(ops, FWD_OP_CODELET_D3, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), 1)) return false;
             }
             (void)pack_to_complex;
         }
+        return true;
     }
 
     bool copy_schedule(const heap_array<FwdOp>& source, heap_array<FwdOp>& target) {
@@ -2765,26 +2767,26 @@ private:
         if (!residue_ops.reserve(N / 4 + 16)) return false;
         if (N >= 64) {
             for (int h = N / 2; h >= 32; h >>= 1) {
-                append_segment_schedule(fused_ops, static_cast<uint32_t>(h), h >> 2, 1, true);
-                append_segment_schedule(residue_ops, static_cast<uint32_t>(h), h >> 2, 1, false);
-                append_op(fused_ops, FWD_OP_BINOMIAL, 0, static_cast<uint32_t>(h >> 1), 0, 0);
-                append_op(residue_ops, FWD_OP_BINOMIAL, 0, static_cast<uint32_t>(h >> 1), 0, 0);
+                if (!append_segment_schedule(fused_ops, static_cast<uint32_t>(h), h >> 2, 1, true)) return false;
+                if (!append_segment_schedule(residue_ops, static_cast<uint32_t>(h), h >> 2, 1, false)) return false;
+                if (!append_op(fused_ops, FWD_OP_BINOMIAL, 0, static_cast<uint32_t>(h >> 1), 0, 0)) return false;
+                if (!append_op(residue_ops, FWD_OP_BINOMIAL, 0, static_cast<uint32_t>(h >> 1), 0, 0)) return false;
             }
-            append_op(fused_ops, FWD_OP_SPINE_D3, 16, 0, 1, 0);
-            append_op(fused_ops, FWD_OP_BINOMIAL, 0, 8, 0, 0);
-            append_op(fused_ops, FWD_OP_SPINE_D2, 8, 0, 1, 0);
-            append_op(fused_ops, FWD_OP_BINOMIAL, 0, 4, 0, 0);
-            append_op(fused_ops, FWD_OP_SPINE_D1, 4, 0, 1, 0);
-            append_op(fused_ops, FWD_OP_BINOMIAL, 0, 2, 0, 0);
-            append_op(fused_ops, FWD_OP_SPINE_LEAF, 2, 0, 1, 0);
-            append_op(fused_ops, FWD_OP_DC_NYQUIST, 0, 0, 0, 0);
+            if (!append_op(fused_ops, FWD_OP_SPINE_D3, 16, 0, 1, 0)) return false;
+            if (!append_op(fused_ops, FWD_OP_BINOMIAL, 0, 8, 0, 0)) return false;
+            if (!append_op(fused_ops, FWD_OP_SPINE_D2, 8, 0, 1, 0)) return false;
+            if (!append_op(fused_ops, FWD_OP_BINOMIAL, 0, 4, 0, 0)) return false;
+            if (!append_op(fused_ops, FWD_OP_SPINE_D1, 4, 0, 1, 0)) return false;
+            if (!append_op(fused_ops, FWD_OP_BINOMIAL, 0, 2, 0, 0)) return false;
+            if (!append_op(fused_ops, FWD_OP_SPINE_LEAF, 2, 0, 1, 0)) return false;
+            if (!append_op(fused_ops, FWD_OP_DC_NYQUIST, 0, 0, 0, 0)) return false;
 
-            append_op(residue_ops, FWD_OP_SPINE_D3, 16, 0, 1, 0);
-            append_op(residue_ops, FWD_OP_BINOMIAL, 0, 8, 0, 0);
-            append_op(residue_ops, FWD_OP_SPINE_NORM2, 8, 2, 1, 0);
-            append_op(residue_ops, FWD_OP_BINOMIAL, 0, 4, 0, 0);
-            append_op(residue_ops, FWD_OP_SPINE_D1, 4, 0, 1, 0);
-            append_op(residue_ops, FWD_OP_BINOMIAL, 0, 2, 0, 0);
+            if (!append_op(residue_ops, FWD_OP_SPINE_D3, 16, 0, 1, 0)) return false;
+            if (!append_op(residue_ops, FWD_OP_BINOMIAL, 0, 8, 0, 0)) return false;
+            if (!append_op(residue_ops, FWD_OP_SPINE_NORM2, 8, 2, 1, 0)) return false;
+            if (!append_op(residue_ops, FWD_OP_BINOMIAL, 0, 4, 0, 0)) return false;
+            if (!append_op(residue_ops, FWD_OP_SPINE_D1, 4, 0, 1, 0)) return false;
+            if (!append_op(residue_ops, FWD_OP_BINOMIAL, 0, 2, 0, 0)) return false;
         }
         if (!copy_schedule(fused_ops, FWD_SCHEDULE)) return false;
         if (!copy_schedule(residue_ops, FWD_RES_SCHEDULE)) return false;
