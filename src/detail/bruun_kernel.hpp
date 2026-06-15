@@ -2082,11 +2082,11 @@ public:
                                        double* RESTRICT work,
                                        bool workspace_is_aligned) const {
         if (fuse_tail && N >= 64) {
-            if (N < 32768) {
-                forward_recursive_legacy(input, work, X);
-            } else {
+            //if (N < 32768) {
+            //    forward_recursive_legacy(input, work, X);
+           // } else { use for all sizes, not just large ones
                 forward_recursive(input, work, X, workspace_is_aligned);
-            }
+            //}
             return;
         }
 
