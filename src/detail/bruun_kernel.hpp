@@ -12,21 +12,12 @@
 // backend.
 
 #include <algorithm>
-#include <chrono>
+#include <cassert>
 #include <cmath>
 #include <cstdint>
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <random>
-#include <stdexcept>
-#include <utility>
-#include <vector>
 #include <new>
-
-#if !defined(_WIN32)
-#include <dlfcn.h>
-#endif
 
 // ---------------------------------------------------------------------------
 // SIMD backend resolution.
@@ -134,6 +125,12 @@ typedef float32x4_t bruun_v4f;
 #endif
 
 
+#ifdef NDEBUG
+#define BRUUN_ASSERT(cond) ((void)0)
+#else
+#define BRUUN_ASSERT(cond) assert(cond)
+#endif
+
 // BFFT keeps heap-optimized native spectrum ordering enabled internally.
 // Applications select public layouts through the API instead of compile flags.
 #ifndef BRUUN_HEAPOPT_SPECTRUM_ORDER
@@ -157,102 +154,149 @@ static constexpr std::size_t bruun_cache_alignment = 64;
 template <typename T>
 class heap_array {
 public:
-    heap_array() noexcept : ptr_(nullptr), size_(0) {}
-
-    explicit heap_array(std::size_t size) : ptr_(nullptr), size_(0) {
-        resize(size);
-    }
+    heap_array() noexcept : ptr_(nullptr), cap_(0), len_(0) {}
 
     heap_array(const heap_array&) = delete;
     heap_array& operator=(const heap_array&) = delete;
 
-    heap_array(heap_array&& other) noexcept : ptr_(other.ptr_), size_(other.size_) {
+    heap_array(heap_array&& other) noexcept
+        : ptr_(other.ptr_), cap_(other.cap_), len_(other.len_) {
         other.ptr_ = nullptr;
-        other.size_ = 0;
+        other.cap_ = 0;
+        other.len_ = 0;
     }
 
     heap_array& operator=(heap_array&& other) noexcept {
         if (this != &other) {
             release();
             ptr_ = other.ptr_;
-            size_ = other.size_;
+            cap_ = other.cap_;
+            len_ = other.len_;
             other.ptr_ = nullptr;
-            other.size_ = 0;
+            other.cap_ = 0;
+            other.len_ = 0;
         }
         return *this;
     }
 
-    ~heap_array() {
-        release();
-    }
+    ~heap_array() { release(); }
 
-    void resize(std::size_t size) {
+    bool resize(std::size_t size) {
         release();
-        if (size == 0) {
-            return;
-        }
-        const std::size_t bytes = sizeof(T) * size;
-        std::size_t padded = bytes;
-        const std::size_t remainder = padded % bruun_cache_alignment;
-        if (remainder != 0) {
-            padded += bruun_cache_alignment - remainder;
-        }
-        void* raw = nullptr;
-#if defined(_MSC_VER)
-        raw = _aligned_malloc(padded, bruun_cache_alignment);
-        if (raw == nullptr) {
-            throw std::bad_alloc();
-        }
-#else
-        if (posix_memalign(&raw, bruun_cache_alignment, padded) != 0) {
-            throw std::bad_alloc();
-        }
-#endif
-        ptr_ = static_cast<T*>(raw);
-        size_ = size;
-        for (std::size_t i = 0; i < size_; ++i) {
+        if (size == 0) return true;
+        if (!alloc_raw(size)) return false;
+        for (std::size_t i = 0; i < size; ++i) {
             new (ptr_ + i) T();
         }
+        len_ = size;
+        return true;
     }
 
-    void assign(std::size_t size, const T& value) {
-        resize(size);
-        for (std::size_t i = 0; i < size_; ++i) {
+    bool assign(std::size_t size, const T& value) {
+        if (!resize(size)) return false;
+        for (std::size_t i = 0; i < len_; ++i) {
             ptr_[i] = value;
         }
+        return true;
+    }
+
+    bool reserve(std::size_t cap) {
+        if (cap <= cap_) return true;
+        void* raw = aligned_alloc_raw(cap);
+        if (!raw) return false;
+        T* new_ptr = static_cast<T*>(raw);
+        for (std::size_t i = 0; i < len_; ++i) {
+            new (new_ptr + i) T(static_cast<T&&>(ptr_[i]));
+            ptr_[i].~T();
+        }
+        free_raw(ptr_);
+        ptr_ = new_ptr;
+        cap_ = cap;
+        return true;
+    }
+
+    bool push_back(const T& val) {
+        if (len_ >= cap_) {
+            if (!reserve(cap_ == 0 ? 16 : cap_ * 2)) return false;
+        }
+        new (ptr_ + len_) T(val);
+        ++len_;
+        return true;
+    }
+
+    void pop_back() noexcept {
+        BRUUN_ASSERT(len_ > 0);
+        --len_;
+        ptr_[len_].~T();
+    }
+
+    T& back() noexcept { return ptr_[len_ - 1]; }
+    const T& back() const noexcept { return ptr_[len_ - 1]; }
+
+    void clear() noexcept {
+        for (std::size_t i = len_; i > 0; --i) {
+            ptr_[i - 1].~T();
+        }
+        len_ = 0;
     }
 
     T* begin() noexcept { return ptr_; }
-    T* end() noexcept { return ptr_ + size_; }
+    T* end() noexcept { return ptr_ + len_; }
     const T* begin() const noexcept { return ptr_; }
-    const T* end() const noexcept { return ptr_ + size_; }
-    std::size_t size() const noexcept { return size_; }
-    bool empty() const noexcept { return size_ == 0; }
+    const T* end() const noexcept { return ptr_ + len_; }
+    std::size_t size() const noexcept { return len_; }
+    bool empty() const noexcept { return len_ == 0; }
     T* data() noexcept { return ptr_; }
     const T* data() const noexcept { return ptr_; }
     T& operator[](std::size_t index) noexcept { return ptr_[index]; }
     const T& operator[](std::size_t index) const noexcept { return ptr_[index]; }
 
 private:
+    static void* aligned_alloc_raw(std::size_t count) {
+        const std::size_t bytes = sizeof(T) * count;
+        std::size_t padded = bytes;
+        const std::size_t remainder = padded % bruun_cache_alignment;
+        if (remainder != 0) padded += bruun_cache_alignment - remainder;
+        void* raw = nullptr;
+#if defined(_MSC_VER)
+        raw = _aligned_malloc(padded, bruun_cache_alignment);
+#else
+        if (posix_memalign(&raw, bruun_cache_alignment, padded) != 0) raw = nullptr;
+#endif
+        return raw;
+    }
+
+    static void free_raw(void* p) noexcept {
+        if (!p) return;
+#if defined(_MSC_VER)
+        _aligned_free(p);
+#else
+        std::free(p);
+#endif
+    }
+
+    bool alloc_raw(std::size_t count) {
+        void* raw = aligned_alloc_raw(count);
+        if (!raw) return false;
+        ptr_ = static_cast<T*>(raw);
+        cap_ = count;
+        return true;
+    }
+
     void release() noexcept {
-        if (ptr_ == nullptr) {
-            size_ = 0;
-            return;
-        }
-        for (std::size_t i = size_; i > 0; --i) {
+        if (!ptr_) { cap_ = 0; len_ = 0; return; }
+        for (std::size_t i = len_; i > 0; --i) {
             ptr_[i - 1].~T();
         }
-#if defined(_MSC_VER)
-        _aligned_free(ptr_);
-#else
-        std::free(ptr_);
-#endif
+        free_raw(ptr_);
         ptr_ = nullptr;
-        size_ = 0;
+        cap_ = 0;
+        len_ = 0;
     }
 
     T* ptr_;
-    std::size_t size_;
+    std::size_t cap_;
+    std::size_t len_;
 };
 
 
@@ -294,6 +338,11 @@ private:
         int m;
     };
 
+
+struct int_pair {
+    int first;
+    int second;
+};
 
 struct complex_t {
     double re;
@@ -1787,11 +1836,18 @@ static inline void norm2_inv_fused_f32(float* RESTRICT p, int q,
 
 class RFFT {
 public:
-    explicit RFFT(int n, bool fuse_tail = true)
-        : N(n), L(ilog2_pow2(n)), NB(n / 2 + 1), fuse_tail(fuse_tail && n >= 32),
-          IDX(n / 2), OUTIDX(n / 2), C(n / 2)
-    {
-        if (!is_power2(N) || N < 4) throw std::invalid_argument("Bruun RFFT requires power-of-two N >= 4");
+    RFFT() noexcept : N(0), L(0), NB(0), fuse_tail(false) {}
+
+    bool init(int n, bool fuse_tail_arg = true) {
+        BRUUN_ASSERT(is_power2(n) && n >= 4);
+        N = n;
+        L = ilog2_pow2(n);
+        NB = n / 2 + 1;
+        fuse_tail = fuse_tail_arg && n >= 32;
+
+        if (!IDX.resize(n / 2)) return false;
+        if (!OUTIDX.resize(n / 2)) return false;
+        if (!C.resize(n / 2)) return false;
 
         IDX[0] = 0;
         C[0] = 0.0;
@@ -1843,14 +1899,15 @@ public:
         // DFS preorder fragments factor subtrees. This order keeps all heap/factor
         // intervals contiguous but chooses sibling orientations inside each level
         // to reduce adjacent frequency travel.
-        NATIVE_POS.assign(N / 2, 0);
-        NATIVE_LEAF.assign(N / 2, 0);
+        if (!NATIVE_POS.assign(N / 2, 0)) return false;
+        if (!NATIVE_LEAF.assign(N / 2, 0)) return false;
 
-        std::vector<int> inv_k(N / 2, 0);
+        heap_array<int> inv_k;
+        if (!inv_k.assign(N / 2, 0)) return false;
         for (int m = 1; m < N / 2; ++m) inv_k[IDX[m]] = m;
 
-        std::vector<int> k_order;
-        k_order.reserve(N / 2);
+        heap_array<int> k_order;
+        if (!k_order.reserve(N / 2)) return false;
         const int M = N / 2;
 
         auto cyclic_dist = [M](int a, int b) {
@@ -1858,16 +1915,17 @@ public:
             return std::min(d, M - d);
         };
 
-        std::vector<int> prev;
+        heap_array<int> prev;
+        if (!prev.reserve(N / 2)) return false;
         prev.push_back(M / 2);
         k_order.push_back(M / 2);
 
         while (true) {
-            std::vector<std::pair<int,int>> pairs;
-            pairs.reserve(prev.size());
+            heap_array<int_pair> pairs;
+            if (!pairs.reserve(prev.size())) return false;
             for (int k : prev) {
                 if ((k & 1) == 0) {
-                    pairs.push_back(std::make_pair(k / 2, M - k / 2));
+                    pairs.push_back(int_pair{k / 2, M - k / 2});
                 }
             }
             if (pairs.empty()) break;
@@ -1878,9 +1936,12 @@ public:
             // This keeps only costs plus backpointers, then reconstructs one level.
             const size_t P = pairs.size();
 
-            std::vector<int> max0(P, 0), max1(P, 0);
-            std::vector<long long> sum0(P, 0), sum1(P, 0);
-            std::vector<unsigned char> back0(P, 0), back1(P, 0);
+            heap_array<int> max0, max1;
+            heap_array<long long> sum0, sum1;
+            heap_array<unsigned char> back0, back1;
+            if (!max0.assign(P, 0) || !max1.assign(P, 0)) return false;
+            if (!sum0.assign(P, 0) || !sum1.assign(P, 0)) return false;
+            if (!back0.assign(P, 0) || !back1.assign(P, 0)) return false;
 
             auto start_of = [&pairs](size_t i, int o) {
                 return o == 0 ? pairs[i].first : pairs[i].second;
@@ -1931,14 +1992,14 @@ public:
             int choose =
                 better(max0[P - 1], sum0[P - 1], max1[P - 1], sum1[P - 1]) ? 0 : 1;
 
-            std::vector<unsigned char> orient(P);
+            heap_array<unsigned char> orient;
+            if (!orient.resize(P)) return false;
             for (size_t rr = P; rr-- > 0;) {
                 orient[rr] = static_cast<unsigned char>(choose);
                 choose = (choose == 0) ? back0[rr] : back1[rr];
             }
 
             prev.clear();
-            prev.reserve(2 * P);
             for (size_t pi = 0; pi < P; ++pi) {
                 const int a = pairs[pi].first;
                 const int b = pairs[pi].second;
@@ -1978,7 +2039,7 @@ public:
         // block, read as a sequential stream during the transform instead of
         // heap-strided picks from C, S, and IDX.
         if (N >= 32) {
-            TW.resize(N / 16);
+            if (!TW.resize(N / 16)) return false;
             for (int m = 1; m < N / 16; ++m) {
                 LeafTw& e = TW[m];
                 for (int g = 0; g < 4; ++g) {
@@ -1994,15 +2055,15 @@ public:
 
         // Inverse bin permutation for sequential standard-order packing:
         // KINV[k] = m such that IDX[m] = k. IDX is a bijection [1, N/2) -> [1, N/2).
-        KINV.assign(N / 2, 0);
+        if (!KINV.assign(N / 2, 0)) return false;
         for (int m = 1; m < N / 2; ++m) KINV[IDX[m]] = m;
 
 #if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
         // Compose the public-standard and native heap permutations once. This
         // trades two plan-owned int maps for removing dependent map lookups from
         // the native/standard conversion hot loops.
-        STANDARD_NATIVE_POS.assign(N / 2, 0);
-        NATIVE_STANDARD_BIN.assign(N / 2, 0);
+        if (!STANDARD_NATIVE_POS.assign(N / 2, 0)) return false;
+        if (!NATIVE_STANDARD_BIN.assign(N / 2, 0)) return false;
         if (N < 32) {
             for (int k = 1; k < N / 2; ++k) {
                 STANDARD_NATIVE_POS[k] = k;
@@ -2021,12 +2082,12 @@ public:
         // Float copies of the Bruun angle tables plus packed per-leaf float
         // twiddles for the float32 engine. Cast from the double tables, so plan
         // setup stays free of extra libm calls.
-        CF.resize(N / 2);
+        if (!CF.resize(N / 2)) return false;
         for (int m = 0; m < N / 2; ++m) {
             CF[m] = static_cast<float>(C[m]);
         }
         if (N >= 32) {
-            TWF.resize(N / 16);
+            if (!TWF.resize(N / 16)) return false;
             for (int m = 1; m < N / 16; ++m) {
                 const LeafTw& e = TW[m];
                 LeafTwF& f = TWF[m];
@@ -2040,7 +2101,8 @@ public:
             }
         }
 
-        build_forward_schedules();
+        if (!build_forward_schedules()) return false;
+        return true;
     }
 
     int size() const { return N; }
@@ -2230,7 +2292,8 @@ public:
     // forward_standard(..., native_tmp) to reuse that scratch.
     void forward(const double* RESTRICT input, complex_t* RESTRICT X, double* RESTRICT work) const {
 #if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER) && !defined(BRUUN_NATIVE_OUTPUT)
-        std::vector<complex_t> native_tmp(NB);
+        heap_array<complex_t> native_tmp;
+        if (!native_tmp.resize(NB)) return;
         forward_standard(input, X, work, native_tmp.data());
 #else
         forward_native(input, X, work);
@@ -2613,7 +2676,7 @@ private:
         return (m <= 1) ? (m == 1 ? CF[1] : 0.0f) : CF[m ^ 1];
     }
 
-    void append_op(std::vector<FwdOp>& ops,
+    void append_op(heap_array<FwdOp>& ops,
                    uint16_t kind,
                    uint32_t base,
                    uint32_t q,
@@ -2652,12 +2715,12 @@ private:
         int m;
     };
 
-    void append_segment_schedule(std::vector<FwdOp>& ops,
+    void append_segment_schedule(heap_array<FwdOp>& ops,
                                  uint32_t root_base,
                                  int root_q,
                                  int root_m,
                                  bool pack_to_complex) const {
-        std::vector<ScheduleSegment> stack;
+        heap_array<ScheduleSegment> stack;
         stack.reserve(96);
         stack.push_back(ScheduleSegment{root_base, root_q, root_m});
         while (!stack.empty()) {
@@ -2684,19 +2747,22 @@ private:
         }
     }
 
-    void copy_schedule(const std::vector<FwdOp>& source, heap_array<FwdOp>& target) {
-        target.resize(source.size());
+    bool copy_schedule(const heap_array<FwdOp>& source, heap_array<FwdOp>& target) {
+        if (!target.resize(source.size())) return false;
         for (std::size_t i = 0; i < source.size(); ++i) {
             target[i] = source[i];
         }
         for (std::size_t i = 0; i + 1 < target.size(); ++i) {
             target[i].mem.next_base = target[i + 1].mem.base;
         }
+        return true;
     }
 
-    void build_forward_schedules() {
-        std::vector<FwdOp> fused_ops;
-        std::vector<FwdOp> residue_ops;
+    bool build_forward_schedules() {
+        heap_array<FwdOp> fused_ops;
+        heap_array<FwdOp> residue_ops;
+        if (!fused_ops.reserve(N / 4 + 16)) return false;
+        if (!residue_ops.reserve(N / 4 + 16)) return false;
         if (N >= 64) {
             for (int h = N / 2; h >= 32; h >>= 1) {
                 append_segment_schedule(fused_ops, static_cast<uint32_t>(h), h >> 2, 1, true);
@@ -2720,8 +2786,9 @@ private:
             append_op(residue_ops, FWD_OP_SPINE_D1, 4, 0, 1, 0);
             append_op(residue_ops, FWD_OP_BINOMIAL, 0, 2, 0, 0);
         }
-        copy_schedule(fused_ops, FWD_SCHEDULE);
-        copy_schedule(residue_ops, FWD_RES_SCHEDULE);
+        if (!copy_schedule(fused_ops, FWD_SCHEDULE)) return false;
+        if (!copy_schedule(residue_ops, FWD_RES_SCHEDULE)) return false;
+        return true;
     }
 
     struct FloatSegment {
@@ -3673,9 +3740,7 @@ private:
             case FWD_OP_NORM2: {
                 const int m = static_cast<int>(op.m);
                 const int q = static_cast<int>(op.q);
-                if (q < 16) {
-                    throw std::logic_error("FWD_OP_NORM2 requires q >= 16");
-                }
+                BRUUN_ASSERT(q >= 16);
                 norm2_fused(base, q, C[m], s_twiddle(m), C[2*m], s_twiddle(2*m), C[2*m+1], s_twiddle(2*m+1));
                 break;
             }
@@ -3947,9 +4012,7 @@ private:
             case FWD_OP_NORM2: {
                 const int m = static_cast<int>(op.m);
                 const int q = static_cast<int>(op.q);
-                if (q < 16) {
-                    throw std::logic_error("FWD_OP_NORM2 requires q >= 16");
-                }
+                BRUUN_ASSERT(q >= 16);
                 norm2_fused(base, q, C[m], s_twiddle(m), C[2*m], s_twiddle(2*m), C[2*m+1], s_twiddle(2*m+1));
                 break;
             }
