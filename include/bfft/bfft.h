@@ -15,6 +15,11 @@ extern "C" {
    bfft_plan_destroy. */
 typedef struct bfft_plan bfft_plan;
 
+/* Opaque reusable workspace. A workspace owns aligned scratch for one plan,
+   keeping transform calls reentrant by letting callers provide separate
+   workspace objects for concurrent use. */
+typedef struct bfft_workspace bfft_workspace;
+
 /* Complex value used by the C ABI. Real-to-complex output uses N / 2 + 1
    values in standard or native spectrum order. */
 typedef struct bfft_complex {
@@ -62,6 +67,11 @@ size_t bfft_plan_work_size(const bfft_plan* plan);
 size_t bfft_plan_work_size_f32(const bfft_plan* plan);
 size_t bfft_plan_native_scratch_size(const bfft_plan* plan);
 
+/* Create and destroy aligned scratch storage for a plan. Passing NULL to
+   bfft_workspace_destroy is allowed. */
+bfft_status bfft_workspace_create(const bfft_plan* plan, bfft_workspace** workspace);
+void bfft_workspace_destroy(bfft_workspace* workspace);
+
 /* Returns the standard-output packing policy for this plan, or "invalid-plan"
    for a NULL plan. */
 const char* bfft_plan_standard_policy(const bfft_plan* plan);
@@ -84,6 +94,12 @@ bfft_status bfft_forward_native(const bfft_plan* plan,
                                 const double* input,
                                 bfft_complex* output,
                                 double* work);
+
+/* Native-order forward transform using plan-matched aligned workspace storage. */
+bfft_status bfft_forward_native_workspace(const bfft_plan* plan,
+                                          bfft_workspace* workspace,
+                                          const double* input,
+                                          bfft_complex* output);
 
 /* Single-precision standard FFT-order real-to-complex forward transform.
    input has N floats, output has bfft_plan_bins(plan) float complex values,

@@ -11,6 +11,15 @@ struct bfft_plan {
         : impl(n) {}
 };
 
+struct bfft_workspace {
+    size_t n;
+    bruun::heap_array<double> work;
+
+    explicit bfft_workspace(const bfft_plan* plan)
+        : n(static_cast<size_t>(plan->impl.size())),
+          work(static_cast<size_t>(plan->impl.work_size())) {}
+};
+
 namespace {
 
 bruun::complex_t* as_bruun_complex(bfft_complex* value) {
@@ -124,6 +133,25 @@ size_t bfft_plan_native_scratch_size(const bfft_plan* plan) {
     return static_cast<size_t>(plan->impl.native_scratch_size());
 }
 
+bfft_status bfft_workspace_create(const bfft_plan* plan, bfft_workspace** workspace) {
+    if (missing_plan(plan) || workspace == nullptr) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    *workspace = nullptr;
+    try {
+        *workspace = new bfft_workspace(plan);
+    } catch (const std::bad_alloc&) {
+        return BFFT_ERROR_ALLOCATION;
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
+void bfft_workspace_destroy(bfft_workspace* workspace) {
+    delete workspace;
+}
+
 const char* bfft_plan_standard_policy(const bfft_plan* plan) {
     if (missing_plan(plan)) {
         return "invalid-plan";
@@ -160,6 +188,25 @@ bfft_status bfft_forward_native(const bfft_plan* plan,
     }
     try {
         plan->impl.forward_native(input, as_bruun_complex(output), work);
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
+bfft_status bfft_forward_native_workspace(const bfft_plan* plan,
+                                          bfft_workspace* workspace,
+                                          const double* input,
+                                          bfft_complex* output) {
+    bfft_status status = guard_binary(plan, input, output);
+    if (status != BFFT_OK || workspace == nullptr) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    if (workspace->n != static_cast<size_t>(plan->impl.size())) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    try {
+        plan->impl.forward_native_aligned_workspace(input, as_bruun_complex(output), workspace->work.data());
     } catch (...) {
         return BFFT_ERROR_INTERNAL;
     }

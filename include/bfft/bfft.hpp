@@ -41,6 +41,35 @@ private:
     status code_;
 };
 
+class workspace {
+public:
+    workspace() noexcept = default;
+
+    explicit workspace(const bfft_plan* plan_ptr) {
+        bfft_workspace* raw = nullptr;
+        status result = bfft_workspace_create(plan_ptr, &raw);
+        if (result != BFFT_OK) {
+            throw error(result);
+        }
+        impl_.reset(raw);
+    }
+
+private:
+    friend class plan;
+
+    struct deleter {
+        void operator()(bfft_workspace* workspace_ptr) const noexcept {
+            bfft_workspace_destroy(workspace_ptr);
+        }
+    };
+
+    bfft_workspace* get() const noexcept {
+        return impl_.get();
+    }
+
+    std::unique_ptr<bfft_workspace, deleter> impl_;
+};
+
 /* Reusable real FFT plan. Construction validates the transform size and owns
    the underlying C plan with RAII. */
 class plan {
@@ -80,6 +109,11 @@ public:
         return bfft_plan_native_scratch_size(impl_.get());
     }
 
+    /* Create aligned scratch storage matched to this plan. */
+    workspace create_workspace() const {
+        return workspace(impl_.get());
+    }
+
     /* Standard-output packing policy chosen for this plan. */
     std::string standard_policy() const {
         return bfft_plan_standard_policy(impl_.get());
@@ -108,6 +142,11 @@ public:
     /* Native-order forward transform. */
     void forward_native(const double* input, complex* output, double* work) const {
         check(bfft_forward_native(impl_.get(), input, output, work));
+    }
+
+    /* Native-order forward transform using aligned workspace scratch. */
+    void forward_native(const double* input, complex* output, workspace& scratch) const {
+        check(bfft_forward_native_workspace(impl_.get(), scratch.get(), input, output));
     }
 
     /* Single-precision standard FFT-order forward transform. */

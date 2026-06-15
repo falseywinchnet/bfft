@@ -35,6 +35,8 @@ std::string backend = bfft::backend_name();
 ## Types
 
 - `bfft_plan` is an opaque reusable transform plan.
+- `bfft_workspace` is an opaque aligned scratch object matched to one plan size.
+  Separate workspace objects keep concurrent transforms reentrant.
 - `bfft_complex` stores one complex value as `double re` and `double im`.
 - `bfft_complex_f32` stores one single-precision complex value as `float re`
   and `float im`.
@@ -82,6 +84,19 @@ RAII objects and throw `bfft::error` if construction fails.
 The size query functions return zero for a NULL C plan. For simple callers,
 allocate every buffer from these helpers and pass the buffers to the matching
 function.
+
+Callers that want library-owned aligned scratch without hiding mutable storage
+inside the plan can create an explicit workspace:
+
+```c
+bfft_workspace* workspace = NULL;
+bfft_workspace_create(plan, &workspace);
+/* use workspace with matching workspace APIs */
+bfft_workspace_destroy(workspace);
+```
+
+A workspace is mutable scratch, so each simultaneous transform should use a
+separate workspace object.
 
 ## Standard forward transform
 
@@ -226,6 +241,8 @@ Advanced users can avoid standard-order conversion:
 
 - `bfft_forward_native(plan, input, output, work)` writes
   `bfft_plan_bins(plan)` complex values in native spectrum order.
+- `bfft_forward_native_workspace(plan, workspace, input, output)` writes the
+  same native spectrum while using plan-matched aligned workspace scratch.
 - `bfft_inverse_native(plan, input, output)` reads native order and writes `N`
   doubles.
 - `bfft_forward_residues(plan, input, residues)` writes Bruun residue
