@@ -25,10 +25,15 @@
 // 1. Chebyshev basis, y = T_m(x).
 //    T_4(y) - a = 8 y^4 - 8 y^2 + 1 - a is an even quartic, so its four roots
 //    are paired as +/-sqrt((1 +/- sqrt((1 + a) / 2)) / 2). This preserves real
-//    coefficients and gives a clean four-child CRT description. In the local
-//    normalized coordinates, however, evaluating the four children still needs
-//    the same two independent plane mixes unless a later level can absorb a
-//    child-dependent scale. No sub-16q local map has fallen out of this chart.
+//    coefficients and gives a clean four-child CRT description. The useful
+//    local basis is not the ordinary monomial order. Split a cubic residue into
+//    even and odd parts, f(y) = E(y^2) + y O(y^2). Then the four residues at
+//    +u, -u, +v, -v are E(u^2) +/- u O(u^2) and E(v^2) +/- v O(v^2). That
+//    produces a legal four-child Chebyshev CRT map at 6q mul + 8q add = 14q
+//    flops for q independent coefficient lanes. This is below the 16q target,
+//    but it is not yet a drop-in replacement for norm2_fused because it changes
+//    the interior state to quartic Chebyshev residues rather than the shipped
+//    normalized quadratic residue planes.
 //
 // 2. Scaled local-complex basis, J = (z - c) / s.
 //    This is the shipped normalized basis at quadratic leaves. It makes each
@@ -48,10 +53,13 @@
 //
 // Discovery test
 // --------------
-// A candidate only changes the asymptotic story if it produces the same four
-// residues as bruun_radix4_reference_split while using <= 16q flops locally, or
-// if it carries explicit scale debt and proves that the debt cancels across
-// neighboring levels without increasing the total above that bound.
+// A candidate that stays in the shipped normalized quadratic state only changes
+// the asymptotic story if it produces the same four residues as
+// bruun_radix4_reference_split while using <= 16q flops locally. A candidate
+// that changes basis must instead state its residue contract, keep the map real
+// and local, and prove that conversion into or out of the new state does not
+// erase the local saving. The Chebyshev even/odd kernel below is the first
+// legal local basis found under that looser, but still concrete, contract.
 
 #include <cstddef>
 
@@ -69,6 +77,56 @@ inline BruunRadix4Cost bruun_radix4_reference_cost(std::size_t q) {
     cost.additions = 12 * q;
     cost.flops = cost.multiplications + cost.additions;
     return cost;
+}
+
+inline BruunRadix4Cost chebyshev_radix4_even_odd_cost(std::size_t q) {
+    BruunRadix4Cost cost{};
+    cost.multiplications = 6 * q;
+    cost.additions = 8 * q;
+    cost.flops = cost.multiplications + cost.additions;
+    return cost;
+}
+
+// Legal local Chebyshev radix-4 split for q independent coefficient lanes.
+//
+// Input represents f(y) = a0 + a1 y + a2 y^2 + a3 y^3, where y = T_m(x).
+// Output is the four real CRT residues f(+u), f(-u), f(+v), f(-v), where
+// +u, -u, +v, -v are the four real roots of T_4(y) - a for the current node.
+// The caller supplies u, u^2, v, and v^2 so this kernel does not hide setup
+// cost in the local arithmetic count.
+//
+// Per lane arithmetic:
+//     E(u^2) = a0 + a2 u^2
+//     O(u^2) = a1 + a3 u^2
+//     f(+u), f(-u) = E(u^2) +/- u O(u^2)
+// and the same for v. That is 6 multiplications and 8 additions per lane.
+inline void chebyshev_radix4_even_odd_split(const double* a0,
+                                            const double* a1,
+                                            const double* a2,
+                                            const double* a3,
+                                            double* plus_u,
+                                            double* minus_u,
+                                            double* plus_v,
+                                            double* minus_v,
+                                            std::size_t q,
+                                            double u,
+                                            double u2,
+                                            double v,
+                                            double v2) {
+    for (std::size_t n = 0; n < q; ++n) {
+        const double even_u = a0[n] + a2[n] * u2;
+        const double odd_u = a1[n] + a3[n] * u2;
+        const double scaled_odd_u = u * odd_u;
+
+        const double even_v = a0[n] + a2[n] * v2;
+        const double odd_v = a1[n] + a3[n] * v2;
+        const double scaled_odd_v = v * odd_v;
+
+        plus_u[n] = even_u + scaled_odd_u;
+        minus_u[n] = even_u - scaled_odd_u;
+        plus_v[n] = even_v + scaled_odd_v;
+        minus_v[n] = even_v - scaled_odd_v;
+    }
 }
 
 // Scalar reference for the legal four-child CRT map. Layout matches
