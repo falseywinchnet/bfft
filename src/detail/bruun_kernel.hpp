@@ -269,7 +269,6 @@ private:
         uint32_t q;
         uint32_t m;
         uint16_t kind;
-        uint16_t tw;
         MemHint mem;
     };
 
@@ -563,7 +562,7 @@ static inline void norm_q_fwd(double* RESTRICT p, int q, double c_scalar, double
 
 // Two tree levels in one pass: parent rotation (c,s) plus both child rotations
 // (c0,s0), (c1,s1) applied while the data is in registers. Halves the load/store
-// traffic of the norm cascade. Caller guarantees q >= 16 so qh >= 8.
+// traffic of the norm cascade. valid for q2 spine fusion
 static inline void norm2_fused(double* RESTRICT p, int q,
                                double c, double s,
                                double c0, double s0,
@@ -2618,14 +2617,12 @@ private:
                    uint32_t base,
                    uint32_t q,
                    uint32_t m,
-                   uint16_t tw,
                    uint16_t stream) const {
         FwdOp op{};
         op.base = base;
         op.q = q;
         op.m = m;
         op.kind = kind;
-        op.tw = tw;
         op.mem.base = base;
         if (kind == FWD_OP_BINOMIAL) {
             op.mem.span = 2 * q;
@@ -2667,7 +2664,7 @@ private:
             const int q = segment.q;
             const int m = segment.m;
             if (q >= 16) {
-                append_op(ops, FWD_OP_NORM2, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), 0, 1);
+                append_op(ops, FWD_OP_NORM2, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), 1);
                 const int qq = q >> 2;
                 const int child_m = 4 * m;
                 stack.push_back(ScheduleSegment{base + static_cast<uint32_t>(3 * q), qq, child_m + 3});
@@ -2675,10 +2672,10 @@ private:
                 stack.push_back(ScheduleSegment{base + static_cast<uint32_t>(q), qq, child_m + 1});
                 stack.push_back(ScheduleSegment{base, qq, child_m});
             } else if (q == 8) {
-                append_op(ops, FWD_OP_CODELET_Q8, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), static_cast<uint16_t>(2 * m), 1);
+                append_op(ops, FWD_OP_CODELET_Q8, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), 1);
             } else {
                 uint16_t kind = FWD_OP_CODELET_D3;
-                append_op(ops, kind, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), static_cast<uint16_t>(m), 1);
+                append_op(ops, kind, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), 1);
             }
             (void)pack_to_complex;
         }
@@ -2701,24 +2698,24 @@ private:
             for (int h = N / 2; h >= 32; h >>= 1) {
                 append_segment_schedule(fused_ops, static_cast<uint32_t>(h), h >> 2, 1, true);
                 append_segment_schedule(residue_ops, static_cast<uint32_t>(h), h >> 2, 1, false);
-                append_op(fused_ops, FWD_OP_BINOMIAL, 0, static_cast<uint32_t>(h >> 1), 0, 0, 0);
-                append_op(residue_ops, FWD_OP_BINOMIAL, 0, static_cast<uint32_t>(h >> 1), 0, 0, 0);
+                append_op(fused_ops, FWD_OP_BINOMIAL, 0, static_cast<uint32_t>(h >> 1), 0, 0);
+                append_op(residue_ops, FWD_OP_BINOMIAL, 0, static_cast<uint32_t>(h >> 1), 0, 0);
             }
-            append_op(fused_ops, FWD_OP_SPINE_D3, 16, 0, 1, 1, 0);
-            append_op(fused_ops, FWD_OP_BINOMIAL, 0, 8, 0, 0, 0);
-            append_op(fused_ops, FWD_OP_SPINE_D2, 8, 0, 1, 1, 0);
-            append_op(fused_ops, FWD_OP_BINOMIAL, 0, 4, 0, 0, 0);
-            append_op(fused_ops, FWD_OP_SPINE_D1, 4, 0, 1, 1, 0);
-            append_op(fused_ops, FWD_OP_BINOMIAL, 0, 2, 0, 0, 0);
-            append_op(fused_ops, FWD_OP_SPINE_LEAF, 2, 0, 1, 1, 0);
-            append_op(fused_ops, FWD_OP_DC_NYQUIST, 0, 0, 0, 0, 0);
+            append_op(fused_ops, FWD_OP_SPINE_D3, 16, 0, 1, 0);
+            append_op(fused_ops, FWD_OP_BINOMIAL, 0, 8, 0, 0);
+            append_op(fused_ops, FWD_OP_SPINE_D2, 8, 0, 1, 0);
+            append_op(fused_ops, FWD_OP_BINOMIAL, 0, 4, 0, 0);
+            append_op(fused_ops, FWD_OP_SPINE_D1, 4, 0, 1, 0);
+            append_op(fused_ops, FWD_OP_BINOMIAL, 0, 2, 0, 0);
+            append_op(fused_ops, FWD_OP_SPINE_LEAF, 2, 0, 1, 0);
+            append_op(fused_ops, FWD_OP_DC_NYQUIST, 0, 0, 0, 0);
 
-            append_op(residue_ops, FWD_OP_SPINE_D3, 16, 0, 1, 1, 0);
-            append_op(residue_ops, FWD_OP_BINOMIAL, 0, 8, 0, 0, 0);
-            append_op(residue_ops, FWD_OP_NORM2, 8, 2, 1, 0, 0);
-            append_op(residue_ops, FWD_OP_BINOMIAL, 0, 4, 0, 0, 0);
-            append_op(residue_ops, FWD_OP_SPINE_D1, 4, 0, 1, 1, 0);
-            append_op(residue_ops, FWD_OP_BINOMIAL, 0, 2, 0, 0, 0);
+            append_op(residue_ops, FWD_OP_SPINE_D3, 16, 0, 1, 0);
+            append_op(residue_ops, FWD_OP_BINOMIAL, 0, 8, 0, 0);
+            append_op(residue_ops, FWD_OP_NORM2, 8, 2, 1, 0);
+            append_op(residue_ops, FWD_OP_BINOMIAL, 0, 4, 0, 0);
+            append_op(residue_ops, FWD_OP_SPINE_D1, 4, 0, 1, 0);
+            append_op(residue_ops, FWD_OP_BINOMIAL, 0, 2, 0, 0);
         }
         copy_schedule(fused_ops, FWD_SCHEDULE);
         copy_schedule(residue_ops, FWD_RES_SCHEDULE);
