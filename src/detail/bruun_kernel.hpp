@@ -2082,7 +2082,11 @@ public:
                                        double* RESTRICT work,
                                        bool workspace_is_aligned) const {
         if (fuse_tail && N >= 64) {
-            forward_recursive(input, work, X, workspace_is_aligned);
+            if (N < 32768) {
+                forward_recursive_legacy(input, work, X);
+            } else {
+                forward_recursive(input, work, X, workspace_is_aligned);
+            }
             return;
         }
 
@@ -3864,6 +3868,28 @@ private:
         }
     }
 
+    void forward_recursive_legacy(const double* RESTRICT input, double* RESTRICT v, complex_t* RESTRICT X) const {
+        binomial_oop(input, v, N / 2);
+
+        for (int h = N / 2; h >= 32; h >>= 1) {
+            run_fwd_segments(v + h, h >> 2, 1, X);
+            binomial_fwd(v, h >> 1);
+        }
+
+        d3_one(v + 16, 1, X);
+        binomial_fwd(v, 8);
+        codelet_d2_pack(v + 8, 1, X);
+        binomial_fwd(v, 4);
+        codelet_d1_pack(v + 4, 1, X);
+        binomial_fwd(v, 2);
+        pack_leaf_node(1, v[2], v[3], X);
+
+        X[0].re = v[0] + v[1];
+        X[0].im = 0.0;
+        X[N / 2].re = v[0] - v[1];
+        X[N / 2].im = 0.0;
+    }
+
     // Fused copy + scheduled depth-first forward. Requires N >= 64.
     void forward_recursive(const double* RESTRICT input, double* RESTRICT work, complex_t* RESTRICT X, bool workspace_is_aligned) const {
         double* RESTRICT v = work;
@@ -3872,13 +3898,19 @@ private:
         }
         binomial_oop(input, v, N / 2);
 
-        for (const FwdOp& op : FWD_SCHEDULE) {
+        const FwdOp* RESTRICT ops = FWD_SCHEDULE.data();
+        const std::size_t op_count = FWD_SCHEDULE.size();
+        for (std::size_t op_index = 0; op_index < op_count; ++op_index) {
+            const FwdOp& op = ops[op_index];
             double* RESTRICT base = v + op.base;
-            if (op.kind == FWD_OP_NORM2) {
+            switch (op.kind) {
+            case FWD_OP_NORM2: {
                 const int m = static_cast<int>(op.m);
                 const int q = static_cast<int>(op.q);
                 norm2_fused(base, q, C[m], s_twiddle(m), C[2*m], s_twiddle(2*m), C[2*m+1], s_twiddle(2*m+1));
-            } else if (op.kind == FWD_OP_CODELET_Q8) {
+                break;
+            }
+            case FWD_OP_CODELET_Q8: {
                 const int m = static_cast<int>(op.m);
 #if BRUUN_LEVEL >= 3
                 codelet_d4x2_avx512(base, m, X);
@@ -3889,23 +3921,34 @@ private:
                 d3_one(base, 2*m, X);
                 d3_one(base + 16, 2*m + 1, X);
 #endif
-            } else if (op.kind == FWD_OP_CODELET_D3) {
+                break;
+            }
+            case FWD_OP_CODELET_D3:
                 d3_one(base, static_cast<int>(op.m), X);
-            } else if (op.kind == FWD_OP_BINOMIAL) {
+                break;
+            case FWD_OP_BINOMIAL:
                 binomial_fwd(base, static_cast<int>(op.q));
-            } else if (op.kind == FWD_OP_SPINE_D3) {
+                break;
+            case FWD_OP_SPINE_D3:
                 d3_one(base, 1, X);
-            } else if (op.kind == FWD_OP_SPINE_D2) {
+                break;
+            case FWD_OP_SPINE_D2:
                 codelet_d2_pack(base, 1, X);
-            } else if (op.kind == FWD_OP_SPINE_D1) {
+                break;
+            case FWD_OP_SPINE_D1:
                 codelet_d1_pack(base, 1, X);
-            } else if (op.kind == FWD_OP_SPINE_LEAF) {
+                break;
+            case FWD_OP_SPINE_LEAF:
                 pack_leaf_node(1, v[2], v[3], X);
-            } else if (op.kind == FWD_OP_DC_NYQUIST) {
+                break;
+            case FWD_OP_DC_NYQUIST:
                 X[0].re = v[0] + v[1];
                 X[0].im = 0.0;
                 X[N / 2].re = v[0] - v[1];
                 X[N / 2].im = 0.0;
+                break;
+            default:
+                break;
             }
         }
     }
