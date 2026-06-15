@@ -57,6 +57,8 @@ CPP_DEMO := $(BUILD_DIR)/examples/cpp_api_demo
 CORRECTNESS_TEST := $(BUILD_DIR)/tests/correctness
 C_API_TEST := $(BUILD_DIR)/tests/api_c
 DIT_TEST := $(BUILD_DIR)/tests/test_dit
+RADIX4_TEST := $(BUILD_DIR)/experiments/test_bruun_radix4
+RADIX4_BENCH := $(BUILD_DIR)/experiments/benchmark_radix2_vs_radix4
 SUPPORT_PROBE := $(BUILD_DIR)/tests/bfft_fftw_support_probe
 INVARIANT_PROBE := $(BUILD_DIR)/tests/bfft_invariant_support_probe
 SFDR_PROBE := $(BUILD_DIR)/tests/bfft_fftw_sfdr_probe
@@ -76,12 +78,12 @@ ifneq ($(SSE2_FLAGS),)
   ASM_OUTPUTS += $(DIT_SSE2_ASM)
 endif
 
-.PHONY: all clean test install uninstall examples probes docs asm-check check-standards check-cxx17 check-cxx20 check-cxx23
+.PHONY: all clean test install uninstall examples experiments radix4-test probes docs asm-check check-standards check-cxx17 check-cxx20 check-cxx23
 
 all: $(STATIC_LIB) $(SHARED_LIB) examples
 
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)/src $(BUILD_DIR)/examples $(BUILD_DIR)/tests
+	mkdir -p $(BUILD_DIR)/src $(BUILD_DIR)/examples $(BUILD_DIR)/tests $(BUILD_DIR)/experiments
 
 $(OBJ): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
@@ -139,6 +141,17 @@ $(C_API_TEST): tests/api_c.c include/bfft/bfft.h $(STATIC_LIB) | $(BUILD_DIR)
 
 $(DIT_TEST): tests/test_dit.cpp src/detail/bruun_DIT_kernel.hpp | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(LDLIBS) -o $@
+
+$(RADIX4_TEST): experiments/test_bruun_radix4.cpp include/bfft/bfft.hpp src/detail/bruun_radix4_kernel.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
+
+$(RADIX4_BENCH): experiments/benchmark_radix2_vs_radix4.cpp include/bfft/bfft.hpp src/detail/bruun_radix4_kernel.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
+
+experiments: $(RADIX4_TEST) $(RADIX4_BENCH)
+
+radix4-test: $(RADIX4_TEST)
+	$(RADIX4_TEST)
 
 $(SUPPORT_PROBE): tests/bfft_fftw_support_probe.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@

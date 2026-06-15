@@ -177,10 +177,11 @@ static bool test_roundtrip(int N) {
     r4.forward_residues(input, r4_res);
     oracle.inverse_residues(r4_res);
 
-    double scale = 1.0 / N;
+    // bfft_inverse_residues is the exact (unit-scaled) inverse of
+    // forward_residues, so no 1/N normalization is applied here.
     double err = 0.0;
     for (int i = 0; i < N; ++i) {
-        double e = std::abs(input[i] - r4_res[i] * scale);
+        double e = std::abs(input[i] - r4_res[i]);
         if (e > err) err = e;
     }
 
