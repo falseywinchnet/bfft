@@ -2,16 +2,25 @@
 
 #include "detail/bruun_kernel.hpp"
 
+#include <cstddef>
 #include <new>
 
 static_assert(sizeof(bfft_complex) == sizeof(bruun::complex_t),
               "bfft_complex / bruun::complex_t size mismatch");
 static_assert(alignof(bfft_complex) == alignof(bruun::complex_t),
               "bfft_complex / bruun::complex_t alignment mismatch");
+static_assert(offsetof(bfft_complex, re) == offsetof(bruun::complex_t, re),
+              "bfft_complex / bruun::complex_t re offset mismatch");
+static_assert(offsetof(bfft_complex, im) == offsetof(bruun::complex_t, im),
+              "bfft_complex / bruun::complex_t im offset mismatch");
 static_assert(sizeof(bfft_complex_f32) == sizeof(bruun::complex_f32_t),
               "bfft_complex_f32 / bruun::complex_f32_t size mismatch");
 static_assert(alignof(bfft_complex_f32) == alignof(bruun::complex_f32_t),
               "bfft_complex_f32 / bruun::complex_f32_t alignment mismatch");
+static_assert(offsetof(bfft_complex_f32, re) == offsetof(bruun::complex_f32_t, re),
+              "bfft_complex_f32 / bruun::complex_f32_t re offset mismatch");
+static_assert(offsetof(bfft_complex_f32, im) == offsetof(bruun::complex_f32_t, im),
+              "bfft_complex_f32 / bruun::complex_f32_t im offset mismatch");
 
 struct bfft_plan {
     bruun::RFFT impl;
