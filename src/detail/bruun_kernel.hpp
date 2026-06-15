@@ -281,7 +281,8 @@ private:
         FWD_OP_SPINE_D2 = 6,
         FWD_OP_SPINE_D1 = 7,
         FWD_OP_SPINE_LEAF = 8,
-        FWD_OP_DC_NYQUIST = 9
+        FWD_OP_DC_NYQUIST = 9,
+        FWD_OP_SPINE_NORM2 = 10
     };
 
     // Small explicit traversal records keep depth-first segment ownership visible
@@ -2632,6 +2633,8 @@ private:
             op.mem.span = 8;
         } else if (kind == FWD_OP_SPINE_D1) {
             op.mem.span = 4;
+        } else if (kind == FWD_OP_SPINE_NORM2) {
+            op.mem.span = 8;
         } else if (kind == FWD_OP_SPINE_LEAF) {
             op.mem.span = 2;
         } else {
@@ -2712,7 +2715,7 @@ private:
 
             append_op(residue_ops, FWD_OP_SPINE_D3, 16, 0, 1, 0);
             append_op(residue_ops, FWD_OP_BINOMIAL, 0, 8, 0, 0);
-            append_op(residue_ops, FWD_OP_NORM2, 8, 2, 1, 0);
+            append_op(residue_ops, FWD_OP_SPINE_NORM2, 8, 2, 1, 0);
             append_op(residue_ops, FWD_OP_BINOMIAL, 0, 4, 0, 0);
             append_op(residue_ops, FWD_OP_SPINE_D1, 4, 0, 1, 0);
             append_op(residue_ops, FWD_OP_BINOMIAL, 0, 2, 0, 0);
@@ -3660,16 +3663,56 @@ private:
         binomial_fwd(v, 2);
     }
 
+    void run_fwd_residue_schedule(double* RESTRICT v) const {
+        const FwdOp* RESTRICT ops = FWD_RES_SCHEDULE.data();
+        const std::size_t op_count = FWD_RES_SCHEDULE.size();
+        for (std::size_t op_index = 0; op_index < op_count; ++op_index) {
+            const FwdOp& op = ops[op_index];
+            double* RESTRICT base = v + op.base;
+            switch (op.kind) {
+            case FWD_OP_NORM2: {
+                const int m = static_cast<int>(op.m);
+                const int q = static_cast<int>(op.q);
+                if (q < 16) {
+                    throw std::logic_error("FWD_OP_NORM2 requires q >= 16");
+                }
+                norm2_fused(base, q, C[m], s_twiddle(m), C[2*m], s_twiddle(2*m), C[2*m+1], s_twiddle(2*m+1));
+                break;
+            }
+            case FWD_OP_CODELET_Q8: {
+                const int m = static_cast<int>(op.m);
+                norm_q_fwd(base, 8, C[m], s_twiddle(m));
+                codelet_d3_tw_res(base, TW[2*m]);
+                codelet_d3_tw_res(base + 16, TW[2*m + 1]);
+                break;
+            }
+            case FWD_OP_CODELET_D3:
+                codelet_d3_tw_res(base, TW[op.m]);
+                break;
+            case FWD_OP_BINOMIAL:
+                binomial_fwd(base, static_cast<int>(op.q));
+                break;
+            case FWD_OP_SPINE_D3:
+                codelet_d3_tw_res(base, TW[1]);
+                break;
+            case FWD_OP_SPINE_D1:
+                norm_q1_fwd(base, C[1], s_twiddle(1));
+                break;
+            case FWD_OP_SPINE_NORM2:
+                norm_q_fwd(base, 2, C[1], s_twiddle(1));
+                norm_q1_fwd(base, C[2], s_twiddle(2));
+                norm_q1_fwd(base + 4, C[3], s_twiddle(3));
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
     // Fast depth-first residue forward with fused input copy. Requires N >= 64.
     void forward_residues_recursive(const double* RESTRICT input, double* RESTRICT v) const {
         binomial_oop(input, v, N / 2);
-
-        for (int h = N / 2; h >= 32; h >>= 1) {
-            run_fwd_res_segments(v + h, h >> 2, 1);
-            binomial_fwd(v, h >> 1);
-        }
-
-        residue_spine_tail_fwd(v);
+        run_fwd_residue_schedule(v);
     }
 
     // Exact inverse of codelet_d3_tw_res: three inverse levels on one 16-double
@@ -3904,6 +3947,9 @@ private:
             case FWD_OP_NORM2: {
                 const int m = static_cast<int>(op.m);
                 const int q = static_cast<int>(op.q);
+                if (q < 16) {
+                    throw std::logic_error("FWD_OP_NORM2 requires q >= 16");
+                }
                 norm2_fused(base, q, C[m], s_twiddle(m), C[2*m], s_twiddle(2*m), C[2*m+1], s_twiddle(2*m+1));
                 break;
             }
