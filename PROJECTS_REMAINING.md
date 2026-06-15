@@ -67,5 +67,15 @@ A Chebyshev basis, because Bruun is naturally real-polynomial/Chebyshev-adjacent
 A scaled local-complex basis J = (z-c)/s, because multiplication by roots becomes complex-like and may expose split-radix-style rescalings.
 A true radix-4 residue tree where the local node maps directly to four quadratic leaves, then postpones/rescales constants so some multiplications cancel across levels.
 
+merely fusing two binary Bruun levels into a radix-4-shaped node does not help arithmetic. current norm2_fused already is that kind of two-level fusion: it halves memory traffic by keeping the parent and children in registers, but algebraically it still costs 20q flops for the two-level node. The source confirms that structure: parent rotation, child rotations, then stores.
 
+The asymptotic break-even is C4 = 16q. So a real radix-4 discovery would need to cut the current two-level node from 20q flops to about 16q flops just to tie standard split radix. To beat it, it needs to be below 16q.
+
+That means the target is very concrete now:
+
+current radix-4-shaped node: 8q mul + 12q add = 20q flops
+
+needed radix-4 node: <= 16q flops
+
+So the discovery is not “can we fuse two levels?” we already did. The discovery would be “can we find a different 4-child CRT basis or rescaling where the legal four-way map costs at least 20% less arithmetic than the composed binary Bruun split?”
 
