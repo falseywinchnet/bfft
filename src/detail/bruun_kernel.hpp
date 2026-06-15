@@ -20,8 +20,9 @@
 #include <cstring>
 #include <random>
 #include <stdexcept>
-#include <vector>
 #include <utility>
+#include <vector>
+#include <new>
 
 #if !defined(_WIN32)
 #include <dlfcn.h>
@@ -144,6 +145,155 @@ typedef float32x4_t bruun_v4f;
 #endif
 
 namespace bruun {
+
+#if defined(__GNUC__) || defined(__clang__)
+#define BRUUN_ASSUME_ALIGNED(ptr, bytes) __builtin_assume_aligned((ptr), (bytes))
+#else
+#define BRUUN_ASSUME_ALIGNED(ptr, bytes) (ptr)
+#endif
+
+static constexpr std::size_t bruun_cache_alignment = 64;
+
+template <typename T>
+class heap_array {
+public:
+    heap_array() noexcept : ptr_(nullptr), size_(0) {}
+
+    explicit heap_array(std::size_t size) : ptr_(nullptr), size_(0) {
+        resize(size);
+    }
+
+    heap_array(const heap_array&) = delete;
+    heap_array& operator=(const heap_array&) = delete;
+
+    heap_array(heap_array&& other) noexcept : ptr_(other.ptr_), size_(other.size_) {
+        other.ptr_ = nullptr;
+        other.size_ = 0;
+    }
+
+    heap_array& operator=(heap_array&& other) noexcept {
+        if (this != &other) {
+            release();
+            ptr_ = other.ptr_;
+            size_ = other.size_;
+            other.ptr_ = nullptr;
+            other.size_ = 0;
+        }
+        return *this;
+    }
+
+    ~heap_array() {
+        release();
+    }
+
+    void resize(std::size_t size) {
+        release();
+        if (size == 0) {
+            return;
+        }
+        const std::size_t bytes = sizeof(T) * size;
+        std::size_t padded = bytes;
+        const std::size_t remainder = padded % bruun_cache_alignment;
+        if (remainder != 0) {
+            padded += bruun_cache_alignment - remainder;
+        }
+        void* raw = nullptr;
+#if defined(_MSC_VER)
+        raw = _aligned_malloc(padded, bruun_cache_alignment);
+        if (raw == nullptr) {
+            throw std::bad_alloc();
+        }
+#else
+        if (posix_memalign(&raw, bruun_cache_alignment, padded) != 0) {
+            throw std::bad_alloc();
+        }
+#endif
+        ptr_ = static_cast<T*>(raw);
+        size_ = size;
+        for (std::size_t i = 0; i < size_; ++i) {
+            new (ptr_ + i) T();
+        }
+    }
+
+    void assign(std::size_t size, const T& value) {
+        resize(size);
+        for (std::size_t i = 0; i < size_; ++i) {
+            ptr_[i] = value;
+        }
+    }
+
+    T* begin() noexcept { return ptr_; }
+    T* end() noexcept { return ptr_ + size_; }
+    const T* begin() const noexcept { return ptr_; }
+    const T* end() const noexcept { return ptr_ + size_; }
+    std::size_t size() const noexcept { return size_; }
+    bool empty() const noexcept { return size_ == 0; }
+    T* data() noexcept { return ptr_; }
+    const T* data() const noexcept { return ptr_; }
+    T& operator[](std::size_t index) noexcept { return ptr_[index]; }
+    const T& operator[](std::size_t index) const noexcept { return ptr_[index]; }
+
+private:
+    void release() noexcept {
+        if (ptr_ == nullptr) {
+            size_ = 0;
+            return;
+        }
+        for (std::size_t i = size_; i > 0; --i) {
+            ptr_[i - 1].~T();
+        }
+#if defined(_MSC_VER)
+        _aligned_free(ptr_);
+#else
+        std::free(ptr_);
+#endif
+        ptr_ = nullptr;
+        size_ = 0;
+    }
+
+    T* ptr_;
+    std::size_t size_;
+};
+
+
+    struct MemHint {
+        uint32_t base;
+        uint32_t span;
+        uint16_t align;
+        uint16_t stream;
+        uint32_t next_base;
+    };
+
+    struct FwdOp {
+        uint32_t base;
+        uint32_t q;
+        uint32_t m;
+        uint16_t kind;
+        uint16_t tw;
+        MemHint mem;
+    };
+
+    enum FwdOpKind : uint16_t {
+        FWD_OP_NORM2 = 1,
+        FWD_OP_CODELET_Q8 = 2,
+        FWD_OP_CODELET_D3 = 3,
+        FWD_OP_BINOMIAL = 4,
+        FWD_OP_SPINE_D3 = 5,
+        FWD_OP_SPINE_D2 = 6,
+        FWD_OP_SPINE_D1 = 7,
+        FWD_OP_SPINE_LEAF = 8,
+        FWD_OP_DC_NYQUIST = 9
+    };
+
+    // Small explicit traversal records keep depth-first segment ownership visible
+    // to the program instead of relying on recursive calls through inline member
+    // symbols. The stack bound covers every supported int-sized power-of-two plan.
+    struct DoubleSegment {
+        double* data;
+        int q;
+        int m;
+    };
+
 
 struct complex_t {
     double re;
@@ -1889,6 +2039,8 @@ public:
                 f.s1 = static_cast<float>(e.s1);
             }
         }
+
+        build_forward_schedules();
     }
 
     int size() const { return N; }
@@ -1918,8 +2070,23 @@ public:
     // With BRUUN_HEAPOPT_SPECTRUM_ORDER, X is in heapopt Bruun-native order.
     // Without BRUUN_HEAPOPT_SPECTRUM_ORDER, native order is ordinary FFTW bin order.
     void forward_native(const double* RESTRICT input, complex_t* RESTRICT X, double* RESTRICT work) const {
+        forward_native_with_alignment(input, X, work, false);
+    }
+
+    void forward_native_aligned_workspace(const double* RESTRICT input, complex_t* RESTRICT X, double* RESTRICT work) const {
+        forward_native_with_alignment(input, X, work, true);
+    }
+
+    void forward_native_with_alignment(const double* RESTRICT input,
+                                       complex_t* RESTRICT X,
+                                       double* RESTRICT work,
+                                       bool workspace_is_aligned) const {
         if (fuse_tail && N >= 64) {
-            forward_recursive(input, work, X);
+            if (N < 32768) {
+                forward_recursive_legacy(input, work, X);
+            } else {
+                forward_recursive(input, work, X, workspace_is_aligned);
+            }
             return;
         }
 
@@ -2405,15 +2572,15 @@ private:
     int L;
     int NB;
     bool fuse_tail;
-    std::vector<int> IDX;
-    std::vector<int> OUTIDX;
+    heap_array<int> IDX;
+    heap_array<int> OUTIDX;
 #if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
-    std::vector<int> NATIVE_POS;
-    std::vector<int> NATIVE_LEAF;
-    std::vector<int> STANDARD_NATIVE_POS;
-    std::vector<int> NATIVE_STANDARD_BIN;
+    heap_array<int> NATIVE_POS;
+    heap_array<int> NATIVE_LEAF;
+    heap_array<int> STANDARD_NATIVE_POS;
+    heap_array<int> NATIVE_STANDARD_BIN;
 #endif
-    std::vector<double> C;
+    heap_array<double> C;
 
     inline double s_twiddle(int m) const {
         return (m <= 1) ? (m == 1 ? C[1] : 0.0) : C[m ^ 1];
@@ -2426,9 +2593,9 @@ private:
         double s1;
         int32_t idx[8];
     };
-    std::vector<LeafTw> TW;
+    heap_array<LeafTw> TW;
 
-    std::vector<int> KINV;
+    heap_array<int> KINV;
 
     struct LeafTwF {
         float c4[4];
@@ -2436,22 +2603,126 @@ private:
         float c1;
         float s1;
     };
-    std::vector<LeafTwF> TWF;
+    heap_array<LeafTwF> TWF;
 
-    std::vector<float> CF;
+    heap_array<float> CF;
+    heap_array<FwdOp> FWD_SCHEDULE;
+    heap_array<FwdOp> FWD_RES_SCHEDULE;
 
     inline float sf_twiddle(int m) const {
         return (m <= 1) ? (m == 1 ? CF[1] : 0.0f) : CF[m ^ 1];
     }
 
-    // Small explicit traversal records keep depth-first segment ownership visible
-    // to the program instead of relying on recursive calls through inline member
-    // symbols. The stack bound covers every supported int-sized power-of-two plan.
-    struct DoubleSegment {
-        double* data;
+    void append_op(std::vector<FwdOp>& ops,
+                   uint16_t kind,
+                   uint32_t base,
+                   uint32_t q,
+                   uint32_t m,
+                   uint16_t tw,
+                   uint16_t stream) const {
+        FwdOp op{};
+        op.base = base;
+        op.q = q;
+        op.m = m;
+        op.kind = kind;
+        op.tw = tw;
+        op.mem.base = base;
+        if (kind == FWD_OP_BINOMIAL) {
+            op.mem.span = 2 * q;
+        } else if (kind == FWD_OP_CODELET_D3 || kind == FWD_OP_SPINE_D3) {
+            op.mem.span = 16;
+        } else if (kind == FWD_OP_SPINE_D2) {
+            op.mem.span = 8;
+        } else if (kind == FWD_OP_SPINE_D1) {
+            op.mem.span = 4;
+        } else if (kind == FWD_OP_SPINE_LEAF) {
+            op.mem.span = 2;
+        } else {
+            op.mem.span = 4 * q;
+        }
+        op.mem.align = static_cast<uint16_t>(bruun_cache_alignment);
+        op.mem.stream = stream;
+        op.mem.next_base = base + op.mem.span;
+        ops.push_back(op);
+    }
+
+    struct ScheduleSegment {
+        uint32_t base;
         int q;
         int m;
     };
+
+    void append_segment_schedule(std::vector<FwdOp>& ops,
+                                 uint32_t root_base,
+                                 int root_q,
+                                 int root_m,
+                                 bool pack_to_complex) const {
+        std::vector<ScheduleSegment> stack;
+        stack.reserve(96);
+        stack.push_back(ScheduleSegment{root_base, root_q, root_m});
+        while (!stack.empty()) {
+            const ScheduleSegment segment = stack.back();
+            stack.pop_back();
+            const uint32_t base = segment.base;
+            const int q = segment.q;
+            const int m = segment.m;
+            if (q >= 16) {
+                append_op(ops, FWD_OP_NORM2, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), 0, 1);
+                const int qq = q >> 2;
+                const int child_m = 4 * m;
+                stack.push_back(ScheduleSegment{base + static_cast<uint32_t>(3 * q), qq, child_m + 3});
+                stack.push_back(ScheduleSegment{base + static_cast<uint32_t>(2 * q), qq, child_m + 2});
+                stack.push_back(ScheduleSegment{base + static_cast<uint32_t>(q), qq, child_m + 1});
+                stack.push_back(ScheduleSegment{base, qq, child_m});
+            } else if (q == 8) {
+                append_op(ops, FWD_OP_CODELET_Q8, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), static_cast<uint16_t>(2 * m), 1);
+            } else {
+                uint16_t kind = FWD_OP_CODELET_D3;
+                append_op(ops, kind, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), static_cast<uint16_t>(m), 1);
+            }
+            (void)pack_to_complex;
+        }
+    }
+
+    void copy_schedule(const std::vector<FwdOp>& source, heap_array<FwdOp>& target) {
+        target.resize(source.size());
+        for (std::size_t i = 0; i < source.size(); ++i) {
+            target[i] = source[i];
+        }
+        for (std::size_t i = 0; i + 1 < target.size(); ++i) {
+            target[i].mem.next_base = target[i + 1].mem.base;
+        }
+    }
+
+    void build_forward_schedules() {
+        std::vector<FwdOp> fused_ops;
+        std::vector<FwdOp> residue_ops;
+        if (N >= 64) {
+            for (int h = N / 2; h >= 32; h >>= 1) {
+                append_segment_schedule(fused_ops, static_cast<uint32_t>(h), h >> 2, 1, true);
+                append_segment_schedule(residue_ops, static_cast<uint32_t>(h), h >> 2, 1, false);
+                append_op(fused_ops, FWD_OP_BINOMIAL, 0, static_cast<uint32_t>(h >> 1), 0, 0, 0);
+                append_op(residue_ops, FWD_OP_BINOMIAL, 0, static_cast<uint32_t>(h >> 1), 0, 0, 0);
+            }
+            append_op(fused_ops, FWD_OP_SPINE_D3, 16, 0, 1, 1, 0);
+            append_op(fused_ops, FWD_OP_BINOMIAL, 0, 8, 0, 0, 0);
+            append_op(fused_ops, FWD_OP_SPINE_D2, 8, 0, 1, 1, 0);
+            append_op(fused_ops, FWD_OP_BINOMIAL, 0, 4, 0, 0, 0);
+            append_op(fused_ops, FWD_OP_SPINE_D1, 4, 0, 1, 1, 0);
+            append_op(fused_ops, FWD_OP_BINOMIAL, 0, 2, 0, 0, 0);
+            append_op(fused_ops, FWD_OP_SPINE_LEAF, 2, 0, 1, 1, 0);
+            append_op(fused_ops, FWD_OP_DC_NYQUIST, 0, 0, 0, 0, 0);
+
+            append_op(residue_ops, FWD_OP_SPINE_D3, 16, 0, 1, 1, 0);
+            append_op(residue_ops, FWD_OP_BINOMIAL, 0, 8, 0, 0, 0);
+            append_op(residue_ops, FWD_OP_NORM2, 8, 2, 1, 0, 0);
+            append_op(residue_ops, FWD_OP_BINOMIAL, 0, 4, 0, 0, 0);
+            append_op(residue_ops, FWD_OP_SPINE_D1, 4, 0, 1, 1, 0);
+            append_op(residue_ops, FWD_OP_BINOMIAL, 0, 2, 0, 0, 0);
+        }
+        copy_schedule(fused_ops, FWD_SCHEDULE);
+        copy_schedule(residue_ops, FWD_RES_SCHEDULE);
+    }
 
     struct FloatSegment {
         float* data;
@@ -3597,8 +3868,7 @@ private:
         }
     }
 
-    // Fused copy + depth-first forward. Requires N >= 64.
-    void forward_recursive(const double* RESTRICT input, double* RESTRICT v, complex_t* RESTRICT X) const {
+    void forward_recursive_legacy(const double* RESTRICT input, double* RESTRICT v, complex_t* RESTRICT X) const {
         binomial_oop(input, v, N / 2);
 
         for (int h = N / 2; h >= 32; h >>= 1) {
@@ -3618,6 +3888,69 @@ private:
         X[0].im = 0.0;
         X[N / 2].re = v[0] - v[1];
         X[N / 2].im = 0.0;
+    }
+
+    // Fused copy + scheduled depth-first forward. Requires N >= 64.
+    void forward_recursive(const double* RESTRICT input, double* RESTRICT work, complex_t* RESTRICT X, bool workspace_is_aligned) const {
+        double* RESTRICT v = work;
+        if (workspace_is_aligned) {
+            v = static_cast<double*>(BRUUN_ASSUME_ALIGNED(work, bruun_cache_alignment));
+        }
+        binomial_oop(input, v, N / 2);
+
+        const FwdOp* RESTRICT ops = FWD_SCHEDULE.data();
+        const std::size_t op_count = FWD_SCHEDULE.size();
+        for (std::size_t op_index = 0; op_index < op_count; ++op_index) {
+            const FwdOp& op = ops[op_index];
+            double* RESTRICT base = v + op.base;
+            switch (op.kind) {
+            case FWD_OP_NORM2: {
+                const int m = static_cast<int>(op.m);
+                const int q = static_cast<int>(op.q);
+                norm2_fused(base, q, C[m], s_twiddle(m), C[2*m], s_twiddle(2*m), C[2*m+1], s_twiddle(2*m+1));
+                break;
+            }
+            case FWD_OP_CODELET_Q8: {
+                const int m = static_cast<int>(op.m);
+#if BRUUN_LEVEL >= 3
+                codelet_d4x2_avx512(base, m, X);
+#elif BRUUN_LEVEL >= 2
+                codelet_d4_avx2(base, m, X);
+#else
+                norm_q_fwd(base, 8, C[m], s_twiddle(m));
+                d3_one(base, 2*m, X);
+                d3_one(base + 16, 2*m + 1, X);
+#endif
+                break;
+            }
+            case FWD_OP_CODELET_D3:
+                d3_one(base, static_cast<int>(op.m), X);
+                break;
+            case FWD_OP_BINOMIAL:
+                binomial_fwd(base, static_cast<int>(op.q));
+                break;
+            case FWD_OP_SPINE_D3:
+                d3_one(base, 1, X);
+                break;
+            case FWD_OP_SPINE_D2:
+                codelet_d2_pack(base, 1, X);
+                break;
+            case FWD_OP_SPINE_D1:
+                codelet_d1_pack(base, 1, X);
+                break;
+            case FWD_OP_SPINE_LEAF:
+                pack_leaf_node(1, v[2], v[3], X);
+                break;
+            case FWD_OP_DC_NYQUIST:
+                X[0].re = v[0] + v[1];
+                X[0].im = 0.0;
+                X[N / 2].re = v[0] - v[1];
+                X[N / 2].im = 0.0;
+                break;
+            default:
+                break;
+            }
+        }
     }
 
     inline void pack_leaf_node(int leaf, double r0, double r1, complex_t* RESTRICT X) const {

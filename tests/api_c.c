@@ -27,10 +27,14 @@ int main(void) {
     bfft_complex_f32* output_f32 = (bfft_complex_f32*)calloc(bins, sizeof(bfft_complex_f32));
     bfft_complex_f32* native_f32 = (bfft_complex_f32*)calloc(bins, sizeof(bfft_complex_f32));
     bfft_complex_f32* standard_f32 = (bfft_complex_f32*)calloc(bins, sizeof(bfft_complex_f32));
+    bfft_complex* native_output = (bfft_complex*)calloc(bins, sizeof(bfft_complex));
+    bfft_complex* workspace_output = (bfft_complex*)calloc(bins, sizeof(bfft_complex));
+    bfft_workspace* workspace = NULL;
 
     if (input == NULL || work == NULL || inverse == NULL || magnitudes == NULL || output == NULL ||
         scratch == NULL || input_f32 == NULL || work_f32 == NULL || inverse_f32 == NULL ||
-        magnitudes_f32 == NULL || output_f32 == NULL || native_f32 == NULL || standard_f32 == NULL) {
+        magnitudes_f32 == NULL || output_f32 == NULL || native_f32 == NULL || standard_f32 == NULL ||
+        native_output == NULL || workspace_output == NULL) {
         return 1;
     }
 
@@ -61,6 +65,41 @@ int main(void) {
 
     if (max_error > 1e-9) {
         fprintf(stderr, "roundtrip error %g\n", max_error);
+        return 1;
+    }
+
+    status = bfft_workspace_create(plan, &workspace);
+    if (status != BFFT_OK || workspace == NULL) {
+        fprintf(stderr, "workspace create failed: %s\n", bfft_status_string(status));
+        return 1;
+    }
+
+    status = bfft_forward_native(plan, input, native_output, work);
+    if (status != BFFT_OK) {
+        fprintf(stderr, "native forward failed: %s\n", bfft_status_string(status));
+        return 1;
+    }
+
+    status = bfft_forward_native_workspace(plan, workspace, input, workspace_output);
+    if (status != BFFT_OK) {
+        fprintf(stderr, "workspace native forward failed: %s\n", bfft_status_string(status));
+        return 1;
+    }
+
+    double max_workspace_error = 0.0;
+    for (size_t i = 0; i < bins; ++i) {
+        double error = fabs(native_output[i].re - workspace_output[i].re);
+        if (error > max_workspace_error) {
+            max_workspace_error = error;
+        }
+        error = fabs(native_output[i].im - workspace_output[i].im);
+        if (error > max_workspace_error) {
+            max_workspace_error = error;
+        }
+    }
+
+    if (max_workspace_error > 1e-9) {
+        fprintf(stderr, "workspace forward error %g\n", max_workspace_error);
         return 1;
     }
 
@@ -179,6 +218,9 @@ int main(void) {
     free(output_f32);
     free(native_f32);
     free(standard_f32);
+    free(native_output);
+    free(workspace_output);
+    bfft_workspace_destroy(workspace);
     bfft_plan_destroy(plan);
     return 0;
 }
