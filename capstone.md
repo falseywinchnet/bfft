@@ -1,111 +1,248 @@
-# Capstone: the BFFT radix-4 design point and why every direction off it is worse
+# N log N in omega 2: a journey on all possible floors
 
-This records the directions explored to make the BFFT real-FFT kernel cheaper,
-and the tradeoff that makes each one less optimal than the current design. It is
-a map of bifurcations, not a procedure. The conclusion is that the current point
-is a local optimum: every single-axis change pays more than it saves.
+## Abstract
 
-## Current design point
+The FFT  is a system of coupled costs: multiplications, additions, FMA contraction, memory locality, representation, output order, and endpoint compatibility. Moving in any one direction reduces one cost while increasing another. The engineering question tempts with whether a lower-looking formula exists, but winds up becoming where the displaced work reappears.
 
-- Transform: Bruun real-FFT via a power-of-two residue tree.
-- Body: depth-first **fused radix-4** node (`norm2_fused`): parent rotation +
-  two child rotations in registers.
-- Node arithmetic: already **FMA-optimal** — rotations are 2 mul + 2 FMA
-  (the minimal 4-real-mul complex multiply), butterflies are pure add/sub with
-  no adjacent multiply to fuse. There is no contraction-blocking shared product
-  to remove.
-- Output: native residue order is the hot path; standard FFT bins follow by a
-  **pure O(N) permutation + conjugation** (`residues_to_complex`: zero
-  multiplies).
+For the FFT-compatible endpoint, the practical floor is the `2 N log N` real-arithmetic regime. Multiplications alone can be driven toward linear count, but additions rise. Local Chebyshev structure can reduce symbolic multiply count, but materializing FFT-compatible child streams restores work through additions, FMA shape, or boundary conversion. Higher radix can exist, but beyond the useful fusion point it becomes overhead. Alternate endpoints can be cheaper, but only by computing a different object.
 
-## Invariants established (the floors)
+The apparent optimum FFT design point is a fused radix-4 transform with a cheap pack to standard FFT bins. 
 
-- **Throughput floor:** the radix-4 evaluation node is 8 FMAs (4 even/odd + 4
-  output), critical path 2, 4-wide ILP. Sharing the scale product blocks
-  contraction and is strictly worse; 8 is minimal for the even/odd factorization.
-- **Multiply-complexity floor:** using the Chebyshev identity `u^2 + v^2 = 1`,
-  the node drops to 4 real multiplies, giving `0.5 * N * log2(N)` multiplies
-  total. 4 is minimal for the nested even/odd structure.
-- **Repack floor:** native residues -> FFT bins is O(N), a permutation +
-  conjugation, no arithmetic. There is no final-reversal cost left to remove.
+## 1. The object
 
-## Directions off the design point, and their tradeoffs
+A real FFT has two different identities.
 
-Each row is a way to change the kernel. None dominates the current point.
+As a mathematical transform, it is a linear map from real samples to conjugate-symmetric complex frequency bins.
 
-### Radix
-- **Radix-2 (breadth-first).** More passes, more load/store traffic, worse
-  locality. Produces identical residues (verified bit-exact); the native/standard
-  packing and inverse are wired only for the fused radix-4 layout at N >= 32.
-  Tradeoff: strictly worse locality, no arithmetic gain. Kept only as a small-N
-  fallback / compile option.
-- **Radix-8 / radix-16 (more fused levels).** Does **not** lower multiplies per
-  node — the `u^2+v^2=1` saving is per-node and the data multiplied differs at
-  every level, so there is no cross-level product reuse. Only register/memory
-  traffic changes. Tradeoff: register pressure for at-best memory locality;
-  no arithmetic win.
+As an engineered object, it is a path through representations:
 
-### Node arithmetic basis (same transform, same radix)
-- **Composed Chebyshev, fully shared (12 "flops").** Fewest scalar operations,
-  but precomputing the shared product emits **zero FMAs** and the most
-  instructions (12). Tradeoff: lowest flop count, slowest wall-clock on FMA
-  hardware.
-- **Composed, duplicate-Q (13) / fully duplicated (14).** Recover FMAs by
-  duplicating products; converge toward the monomial node. Tradeoff: interior
-  points on the same curve, none beats all-FMA.
-- **All-FMA even/odd (8 FMA).** The throughput optimum and the current target.
-- **Low-multiply (4 mul + 10 add via `u^2+v^2=1`).** Halves multiplies, but adds
-  subtractions, forfeits FMA fusion (14 ops), and is ~0.82x the all-FMA node on
-  FMA hardware. Mildly less accurate (worst-case ~2-3x relative error, same
-  cancellation condition, not catastrophic). Tradeoff: minimal multiplies, but
-  add-port-bound and slower except on multiply-bound / no-FMA / fixed-point
-  hardware, or when minimizing the theoretical multiply constant.
+```
+input samples
+    -> internal basis
+    -> internal ordering
+    -> local arithmetic schedule
+    -> endpoint representation
+    -> standard bins, if required
+```
 
-### Representation (carry something other than four child streams)
-- **Deferred / cross-coupled (carry `eu,ou,ev,ov` or sums/diffs, materialize
-  `+/-` later).** Blocked by sibling divergence: the four children sit in
-  different residue subtrees with different constants (`w0 != w1`), so a deferred
-  intermediate cannot propagate without replicating subtrees. Only the **bottom
-  level** can be deferred, saving exactly N FMA, and only when the consumer
-  accepts the even/odd pair form (a non-bin endpoint). Tradeoff: an O(1/log N)
-  fraction, valid only for non-FFT output.
+The cost of the FFT is therefore not only the arithmetic inside the recursive body. It also includes the cost of making the endpoint useful. A representation that is cheap internally but expensive to convert to bins is not automatically a cheaper FFT. It may be a cheaper native transform.
 
-### Tree architecture (reorder the whole computation)
-- **Hourglass / composition swap `T_A(T_B) <-> T_B(T_A)`.** The middle conversion
-  between the two composition orders is a **dense transform** whose row density
-  grows like (factor)/2 with N — a hidden second `N log N` — for any genuine
-  split `A != B`. It is a cheap permutation **only** when `A = B`, which is
-  exactly the degenerate case where the two compositions coincide and there is
-  nothing to switch. Tradeoff: cheap only when vacuous; otherwise it adds a
-  transform. (See `experiments/hourglass_middle_probe.py`.)
-- **Four-step / Stockham / DIF-DIT permutations.** Genuinely O(N) middles
-  (twiddle + transpose; digit-reversal), but they are locality/order tools that
-  reduce no arithmetic. The DIF-then-DIT bit-reversal elimination saves an O(N)
-  permutation that BFFT already pays as a cheap permutation. Tradeoff: locality
-  only, no cost reduction.
+The central trade is:
 
-### Output endpoint (change what is produced)
-- **Bruun residue / FFT-bin endpoint (current).** FFT compatible; pays the O(N)
-  pack tax (or skips it via a native-order API).
-- **DCT / Chebyshev / native-polynomial endpoint.** Genuinely cheaper *only by
-  doing less*: it never builds the imaginary (sine / Chebyshev-U) half. It is not
-  a cheaper route to standard complex FFT bins — assembling bins from a cosine
-  tree requires the sine companion, which is the same `N log N` work. Tradeoff:
-  ~2x cheaper for consumers who do not need complex bins; no help for those who
-  do. Worth building as a separate DCT/DST kernel, not as an FFT path.
+```
+FFT-compatible residues:
+    more constrained internally
+    cheap standard-bin endpoint
 
-## Resolution
+Chebyshev/DCT-like residues:
+    more freedom internally
+    farther from FFT-bin shape
+    endpoint conversion may reintroduce the work
+```
 
-- **Composition-swap hourglass:** resolved, no win. Cheap only in the degenerate
-  `A = B` case; otherwise the conversion is dense / transform-like.
-- **Production direction:** radix-4 fused Bruun residue path; FMA-optimized node;
-  cheap linear (permutation) pack; optional native-output API to avoid the pack
-  entirely. The remaining genuinely useful new work is a dedicated DCT/DST
-  Chebyshev kernel for non-bin consumers, not a cheaper FFT.
+## 2. The multiplication floor is not the total floor
 
-The repeated structural reason every architectural change fails is the same: the
-real Bruun/Chebyshev factorization makes sibling subtrees diverge (distinct real
-constants), so there is no cross-subtree sharing to harvest, and any attempt to
-create it (deferral, composition swap) reintroduces an equal amount of work
-elsewhere. The only free axes left are endpoint (produce less) and locality
-(move the same work), both already at their cheap settings.
+The multiplication count of an FFT can be made surprisingly small. In multiplication-minimal formulations, the number of nontrivial real multiplications for a power-of-two complex DFT is linear in `N`, asymptotically around `4N`.
+
+Normalized by `N log2 N`, this tends to zero:
+
+```
+4N / (N log2 N) = 4 / log2 N -> 0
+```
+
+This does not mean the FFT has become sub-`N log N`. The missing work moves into additions. Multiplication-minimal algorithms pay with large addition networks, more constants, more irregular structure, and poor locality.
+
+The total real-arithmetic floor is therefore addition-dominated. In the engineering regime, pushing below a leading multiplier of `2` for total real work is not the same as reducing multiplications. The additions become the floor.
+
+The lesson is:
+
+```
+multiplications can be made cheap;
+total work cannot be made cheap by that fact alone.
+```
+
+## 3. Radix as a direction
+
+Increasing radix fuses more levels into one local map. This exposes more algebraic structure and can reduce the number of multiplications. It also increases additions, temporary values, constant pressure, code size, and register pressure.
+
+For radix 4, the useful structure is already exposed. A radix-4 Chebyshev node naturally sees the sibling relation
+
+```
+u^2 + v^2 = 1
+```
+
+and can trade multiplication count against additions.
+
+A higher radix continues the same trend. Radix 8, 16, or 32 can be written. A full radix-`N` codelet can be imagined. But the higher the radix, the less it behaves like a reusable FFT kernel and the more it behaves like a giant synthesized linear circuit.
+
+Mechanically:
+
+```
+higher radix:
+    fewer stage boundaries
+    fewer nontrivial multiplications possible
+    more additions
+    more temporaries
+    more pressure
+    worse code generation risk
+```
+
+The question is not whether radix N can be done. It can. The question is whether it removes total work. For the FFT-compatible path, it does not appear to. It mainly changes the distribution of work.
+
+The radix-4 point is the useful fusion point: enough structure to reduce passes and improve locality, not enough size to drown in pressure.
+
+## 4. Basis as a direction
+
+Changing basis changes which work is local and which work is deferred.
+
+In a Bruun residue basis, the transform follows real polynomial factors that remain close to the FFT endpoint. The final pack to frequency bins is linear and cheap.
+
+In a Chebyshev coefficient or DCT-like basis, the local node can look even cleaner. The even/odd form
+
+```
+f(y) = E(y^2) + y O(y^2)
+```
+
+or the composed form
+
+```
+f(y) = P(T2(y)) + y Q(T2(y))
+```
+
+exposes useful identities. These identities reduce one type of local cost.
+
+The costs separate into several currencies.
+
+A scalar symbolic node may reduce apparent flop count. A low-multiply node may reduce real multiplications. An all-FMA node may run faster on modern hardware even when it uses more scalar operations. 
+
+The basis changes the shape of the local map. If the endpoint is still standard FFT bins, any non-bin basis must eventually pay for compatibility.
+
+## 5. FMA as a direction
+
+FMA changes the machine floor.
+
+A shared-product formula can have fewer scalar operations on paper, but it may block contraction. For example, computing a product once and using it in both `+` and `-` outputs can turn two independent FMAs into one multiply and two loose additions. That is fewer symbolic multiplications but often worse on hardware.
+
+The all-FMA form duplicates products so each output can be a direct fused operation. This increases scalar multiplication count but improves throughput, dependency depth, and instruction scheduling.
+
+Mechanically:
+
+```
+sharing products:
+    lower symbolic multiply count
+    fewer FMAs
+    longer dependency path
+    more loose adds
+
+duplicating products:
+    more scalar multiplications
+    more FMAs
+    shorter path
+    better throughput
+```
+
+Thus the FMA-optimal point and the multiplication-minimal point are different. Production code on FMA hardware should usually prefer the FMA-optimal point.
+
+## 6. Representation deferral as a direction
+
+One can try to avoid materializing four child streams at every node. Instead of outputting
+
+```
+f(+u), f(-u), f(+v), f(-v)
+```
+
+one can carry an intermediate representation such as
+
+```
+eu, ou, ev, ov
+```
+
+or sums and differences:
+
+```
+eu + ev, eu - ev, ou + ov, ou - ov
+```
+
+This appears promising because it delays work. The obstruction is subtree divergence.
+
+After a radix-4 split, the four children do not share the same future constants. They enter different residue subtrees. A representation that mixes `u` and `v` siblings cannot be consumed by both subtrees without first unpacking back into child streams.
+
+Mechanically:
+
+```
+deferral within one terminal node:
+    possible
+    saves boundary materialization
+
+deferral across internal levels:
+    blocked by divergent child constants
+    unpacking becomes necessary
+
+result:
+    only bottom-level deferral is cheap
+    internal deferral does not change the leading cost
+```
+
+So representation deferral can save an `O(N)` boundary term for native consumers, but it does not change the `N log N` body for FFT-bin output.
+
+## 7. Tree order as a direction
+
+A more ambitious idea is to compute part of the transform in one basis, change coordinates in the middle, and finish in another basis. This is the hourglass architecture:
+
+```
+top half: basis A
+middle: cheap repack
+bottom half: basis B
+```
+
+The Chebyshev identity
+
+```
+T_A(T_B(x)) = T_B(T_A(x))
+```
+
+makes this tempting. But the middle conversion is cheap only in the degenerate case where the two sides are the same composition. When the two decompositions are genuinely different, the conversion is dense. The hidden cost is another transform.
+
+Mechanically:
+
+```
+A = B:
+    middle is cheap
+    but the swap is vacuous
+
+A != B:
+    swap is meaningful
+    but the middle conversion grows dense
+    work reappears as another transform
+```
+
+It remains useful as a way of thinking about locality, but not as a way to remove arithmetic.
+
+Four-step, Stockham, and DIF/DIT hybrids are real locality tools. They move permutations and transposes to more favorable places. They do not erase the arithmetic floor.
+
+## 8. Endpoint as a direction
+
+Changing the endpoint can produce a cheaper transform, but then the transform is no longer the same FFT object.
+
+A DCT endpoint can be cheaper if the consumer needs only the cosine side.
+## 9. Output order and the BFFT trade
+
+BFFT moves disorder to the boundary.
+
+During the transform, native residue order gives a locality advantage. The recursive body stays in an order that is natural for the Bruun factorization. Standard FFT bins are produced afterward by a linear pack: permutation, sign/conjugation, and store.
+
+This is the core trade:
+
+```
+classic FFT:
+    often pays ordering and stride costs inside the transform
+    may land directly in standard bin order
+
+BFFT:
+    keeps the transform body locality-friendly
+    pays an O(N) pack to standard bins
+```
+
+The pack is not free, but it is lower order. It is not another transform. Native consumers can skip it entirely.
+
+Thus BFFT does not claim that standard order is free. It claims that moving standard-order compatibility to the boundary is cheaper than forcing the entire `N log N` body to live in standard order.
