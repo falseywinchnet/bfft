@@ -63,6 +63,9 @@ COMPOSED_R4_TEST := $(BUILD_DIR)/experiments/test_chebyshev_composed_radix4
 DEFERRED_PROBE := $(BUILD_DIR)/experiments/cheb_deferred_probe
 MULTIPLY_PROBE := $(BUILD_DIR)/experiments/cheb_multiply_probe
 STABILITY_PROBE := $(BUILD_DIR)/experiments/cheb_stability_probe
+DCT_TEST := $(BUILD_DIR)/experiments/test_chebyshev_dct
+DCT_BENCH := $(BUILD_DIR)/experiments/cheb_dct_bench
+DCT_RADIX_PROBE := $(BUILD_DIR)/experiments/cheb_dct_radix_probe
 SUPPORT_PROBE := $(BUILD_DIR)/tests/bfft_fftw_support_probe
 INVARIANT_PROBE := $(BUILD_DIR)/tests/bfft_invariant_support_probe
 SFDR_PROBE := $(BUILD_DIR)/tests/bfft_fftw_sfdr_probe
@@ -82,7 +85,7 @@ ifneq ($(SSE2_FLAGS),)
   ASM_OUTPUTS += $(DIT_SSE2_ASM)
 endif
 
-.PHONY: all clean test install uninstall examples experiments radix4-test probes docs asm-check check-standards check-cxx17 check-cxx20 check-cxx23
+.PHONY: all clean test install uninstall examples experiments radix4-test dct-bench dct-radix-probe probes docs asm-check check-standards check-cxx17 check-cxx20 check-cxx23
 
 all: $(STATIC_LIB) $(SHARED_LIB) examples
 
@@ -164,14 +167,30 @@ $(MULTIPLY_PROBE): experiments/cheb_multiply_probe.cpp experiments/chebyshev_com
 $(STABILITY_PROBE): experiments/cheb_stability_probe.cpp experiments/chebyshev_composed_radix4_kernel.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
-experiments: $(RADIX4_TEST) $(RADIX4_BENCH) $(COMPOSED_R4_TEST) $(DEFERRED_PROBE) $(MULTIPLY_PROBE) $(STABILITY_PROBE)
+$(DCT_TEST): experiments/test_chebyshev_dct.cpp experiments/chebyshev_dct_kernel.hpp experiments/chebyshev_dct_radix4.hpp experiments/dct1_dst1_via_fft.hpp experiments/cheb_dct_assemble.hpp experiments/bruun_dct.hpp experiments/chebyshev_composed_radix4_kernel.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
-radix4-test: $(RADIX4_TEST) $(COMPOSED_R4_TEST) $(DEFERRED_PROBE) $(MULTIPLY_PROBE) $(STABILITY_PROBE)
+$(DCT_BENCH): experiments/cheb_dct_bench.cpp experiments/chebyshev_dct_radix4.hpp experiments/cheb_dct_assemble.hpp experiments/dct1_dst1_via_fft.hpp experiments/bruun_dct.hpp experiments/chebyshev_composed_radix4_kernel.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
+
+$(DCT_RADIX_PROBE): experiments/cheb_dct_radix_probe.cpp | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(LDLIBS) -o $@
+
+dct-bench: $(DCT_BENCH)
+	$(DCT_BENCH)
+
+dct-radix-probe: $(DCT_RADIX_PROBE)
+	$(DCT_RADIX_PROBE)
+
+experiments: $(RADIX4_TEST) $(RADIX4_BENCH) $(COMPOSED_R4_TEST) $(DEFERRED_PROBE) $(MULTIPLY_PROBE) $(STABILITY_PROBE) $(DCT_TEST) $(DCT_BENCH) $(DCT_RADIX_PROBE)
+
+radix4-test: $(RADIX4_TEST) $(COMPOSED_R4_TEST) $(DEFERRED_PROBE) $(MULTIPLY_PROBE) $(STABILITY_PROBE) $(DCT_TEST)
 	$(RADIX4_TEST)
 	$(COMPOSED_R4_TEST)
 	$(DEFERRED_PROBE)
 	$(MULTIPLY_PROBE)
 	$(STABILITY_PROBE)
+	$(DCT_TEST)
 
 $(SUPPORT_PROBE): tests/bfft_fftw_support_probe.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
