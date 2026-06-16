@@ -20,7 +20,7 @@
 #include <algorithm>
 
 #include "bfft/bfft.hpp"
-#include "../src/detail/bruun_radix4_kernel.hpp"
+#include "bruun_radix4_kernel.hpp"
 
 static double max_abs_diff(const double* a, const double* b, int n) {
     double mx = 0.0;

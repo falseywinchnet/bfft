@@ -5,7 +5,7 @@
 //
 // Goal
 // ----
-// The shipped fused radix-4 node (norm2_fused, src/detail/bruun_radix4_kernel.hpp)
+// The shipped fused radix-4 node (norm2_fused, experiments/bruun_radix4_kernel.hpp)
 // costs 20q flops for q lanes. The monomial Chebyshev even/odd split
 // (chebyshev_radix4_split) drops that to 14q. This header pushes to a 12q node
 // by representing the local cubic in a *composed* Chebyshev basis so the inner
