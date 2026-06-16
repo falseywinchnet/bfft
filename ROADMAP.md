@@ -7,7 +7,7 @@ and the real FFT. The release/maintenance track is preserved at the end.
 
 ## Why this is the right next target
 
-The basis already pays for it. Established results (see `capstone.md`):
+The basis already pays for it. 
 
 - The radix-4 Chebyshev evaluation node is a real cubic evaluation at the four
   real nodes `+/-u, +/-v` — 8 FMA, pure real arithmetic, no complex rotation.
