@@ -31,7 +31,7 @@
 #include <vector>
 
 #include "bfft/bfft.hpp"
-#include "../src/detail/bruun_radix4_kernel.hpp"
+#include "bruun_radix4_kernel.hpp"
 
 namespace {
 

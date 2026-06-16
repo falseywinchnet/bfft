@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "chebyshev_composed_radix4_kernel.hpp"
-#include "../src/detail/bruun_radix4_kernel.hpp"  // norm2_fused_standalone (20q baseline)
+#include "bruun_radix4_kernel.hpp"  // norm2_fused_standalone (20q baseline)
 
 namespace cc = cheb_composed_r4;
 

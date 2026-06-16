@@ -146,13 +146,13 @@ $(C_API_TEST): tests/api_c.c include/bfft/bfft.h $(STATIC_LIB) | $(BUILD_DIR)
 $(DIT_TEST): tests/test_dit.cpp src/detail/bruun_DIT_kernel.hpp | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(LDLIBS) -o $@
 
-$(RADIX4_TEST): experiments/test_bruun_radix4.cpp include/bfft/bfft.hpp src/detail/bruun_radix4_kernel.hpp $(STATIC_LIB) | $(BUILD_DIR)
+$(RADIX4_TEST): experiments/test_bruun_radix4.cpp include/bfft/bfft.hpp experiments/bruun_radix4_kernel.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
-$(RADIX4_BENCH): experiments/benchmark_radix2_vs_radix4.cpp include/bfft/bfft.hpp src/detail/bruun_radix4_kernel.hpp $(STATIC_LIB) | $(BUILD_DIR)
+$(RADIX4_BENCH): experiments/benchmark_radix2_vs_radix4.cpp include/bfft/bfft.hpp experiments/bruun_radix4_kernel.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
-$(COMPOSED_R4_TEST): experiments/test_chebyshev_composed_radix4.cpp experiments/chebyshev_composed_radix4_kernel.hpp src/detail/bruun_radix4_kernel.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+$(COMPOSED_R4_TEST): experiments/test_chebyshev_composed_radix4.cpp experiments/chebyshev_composed_radix4_kernel.hpp experiments/bruun_radix4_kernel.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
 $(DEFERRED_PROBE): experiments/cheb_deferred_probe.cpp experiments/chebyshev_composed_radix4_kernel.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
