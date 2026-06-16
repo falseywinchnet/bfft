@@ -59,6 +59,10 @@ C_API_TEST := $(BUILD_DIR)/tests/api_c
 DIT_TEST := $(BUILD_DIR)/tests/test_dit
 RADIX4_TEST := $(BUILD_DIR)/experiments/test_bruun_radix4
 RADIX4_BENCH := $(BUILD_DIR)/experiments/benchmark_radix2_vs_radix4
+COMPOSED_R4_TEST := $(BUILD_DIR)/experiments/test_chebyshev_composed_radix4
+DEFERRED_PROBE := $(BUILD_DIR)/experiments/cheb_deferred_probe
+MULTIPLY_PROBE := $(BUILD_DIR)/experiments/cheb_multiply_probe
+STABILITY_PROBE := $(BUILD_DIR)/experiments/cheb_stability_probe
 SUPPORT_PROBE := $(BUILD_DIR)/tests/bfft_fftw_support_probe
 INVARIANT_PROBE := $(BUILD_DIR)/tests/bfft_invariant_support_probe
 SFDR_PROBE := $(BUILD_DIR)/tests/bfft_fftw_sfdr_probe
@@ -148,10 +152,26 @@ $(RADIX4_TEST): experiments/test_bruun_radix4.cpp include/bfft/bfft.hpp src/deta
 $(RADIX4_BENCH): experiments/benchmark_radix2_vs_radix4.cpp include/bfft/bfft.hpp src/detail/bruun_radix4_kernel.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
-experiments: $(RADIX4_TEST) $(RADIX4_BENCH)
+$(COMPOSED_R4_TEST): experiments/test_chebyshev_composed_radix4.cpp experiments/chebyshev_composed_radix4_kernel.hpp src/detail/bruun_radix4_kernel.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
-radix4-test: $(RADIX4_TEST)
+$(DEFERRED_PROBE): experiments/cheb_deferred_probe.cpp experiments/chebyshev_composed_radix4_kernel.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
+
+$(MULTIPLY_PROBE): experiments/cheb_multiply_probe.cpp experiments/chebyshev_composed_radix4_kernel.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
+
+$(STABILITY_PROBE): experiments/cheb_stability_probe.cpp experiments/chebyshev_composed_radix4_kernel.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
+
+experiments: $(RADIX4_TEST) $(RADIX4_BENCH) $(COMPOSED_R4_TEST) $(DEFERRED_PROBE) $(MULTIPLY_PROBE) $(STABILITY_PROBE)
+
+radix4-test: $(RADIX4_TEST) $(COMPOSED_R4_TEST) $(DEFERRED_PROBE) $(MULTIPLY_PROBE) $(STABILITY_PROBE)
 	$(RADIX4_TEST)
+	$(COMPOSED_R4_TEST)
+	$(DEFERRED_PROBE)
+	$(MULTIPLY_PROBE)
+	$(STABILITY_PROBE)
 
 $(SUPPORT_PROBE): tests/bfft_fftw_support_probe.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
