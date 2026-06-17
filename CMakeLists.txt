@@ -89,7 +89,6 @@ endfunction()
 
 if(BFFT_BUILD_EXAMPLES)
   bfft_add_cpp_executable(benchmark examples/benchmark.cpp)
-  target_sources(benchmark PRIVATE src/detail/bruun_DIT_kernel.hpp)
   if(BFFT_AUTO_SIMD_COMPILE_OPTIONS)
     target_compile_options(benchmark PRIVATE ${BFFT_AUTO_SIMD_COMPILE_OPTIONS})
   endif()
@@ -130,15 +129,9 @@ if(BFFT_BUILD_TESTS)
 
   bfft_add_cpp_executable(correctness tests/correctness.cpp)
   bfft_add_c_executable(api_c tests/api_c.c)
-  bfft_add_cpp_executable(test_dit tests/test_dit.cpp)
-  target_sources(test_dit PRIVATE src/detail/bruun_DIT_kernel.hpp)
-  if(BFFT_AUTO_SIMD_COMPILE_OPTIONS)
-    target_compile_options(test_dit PRIVATE ${BFFT_AUTO_SIMD_COMPILE_OPTIONS})
-  endif()
 
   add_test(NAME correctness COMMAND correctness)
   add_test(NAME api_c COMMAND api_c)
-  add_test(NAME test_dit COMMAND test_dit)
 endif()
 
 if(BFFT_BUILD_PROBES)
