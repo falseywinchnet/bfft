@@ -1,7 +1,5 @@
 #include <bfft/bfft.hpp>
 
-#include "../src/detail/bruun_DIT_kernel.hpp"
-
 #include <algorithm>
 #include <chrono>
 #include <climits>
@@ -365,34 +363,6 @@ double max_abs_complex_f32(const std::vector<bfft::complex_f32>& a,
   return e;
 }
 
-double max_abs_complex_dit(const std::vector<bruun_dit::complex_t>& a,
-                           const std::vector<bfft::complex>& b) {
-  double e = 0.0;
-  const std::size_t n = std::min(a.size(), b.size());
-
-  for (std::size_t i = 0; i < n; ++i) {
-    const double dr = a[i].re - b[i].re;
-    const double di = a[i].im - b[i].im;
-    e = std::max(e, std::sqrt(dr * dr + di * di));
-  }
-
-  return e;
-}
-
-double max_abs_complex_dit_f32(const std::vector<bruun_dit::complex_f32_t>& a,
-                               const std::vector<bfft::complex_f32>& b) {
-  double e = 0.0;
-  const std::size_t n = std::min(a.size(), b.size());
-
-  for (std::size_t i = 0; i < n; ++i) {
-    const double dr = static_cast<double>(a[i].re) - static_cast<double>(b[i].re);
-    const double di = static_cast<double>(a[i].im) - static_cast<double>(b[i].im);
-    e = std::max(e, std::sqrt(dr * dr + di * di));
-  }
-
-  return e;
-}
-
 double max_abs_real(const std::vector<double>& a,
                     const std::vector<double>& b) {
   double e = 0.0;
@@ -438,41 +408,17 @@ struct Result {
   double mklf_ns = NAN;
   double native_ns = NAN;
   double standard_ns = NAN;
-  double dit_halfcomplex_ns = NAN;
-  double dit_standard_ns = NAN;
-  double dit_tiled_halfcomplex_ns = NAN;
-  double dit_tiled_standard_ns = NAN;
-  double dit_bitreversed_halfcomplex_ns = NAN;
-  double dit_bitreversed_standard_ns = NAN;
-  double dit_pregathered_halfcomplex_ns = NAN;
-  double dit_pregathered_standard_ns = NAN;
   double native_f32_ns = NAN;
   double standard_f32_ns = NAN;
-  double dit_f32_ns = NAN;
-  double dit_tiled_f32_ns = NAN;
-  double dit_pregathered_f32_ns = NAN;
   double roundtrip_ns = NAN;
-  double dit_halfcomplex_over_native = NAN;
-  double dit_standard_over_standard = NAN;
-  double dit_tiled_halfcomplex_over_native = NAN;
-  double dit_tiled_standard_over_standard = NAN;
-  double dit_bitreversed_halfcomplex_over_native = NAN;
-  double dit_bitreversed_standard_over_standard = NAN;
-  double dit_pregathered_halfcomplex_over_native = NAN;
-  double dit_pregathered_standard_over_standard = NAN;
   double standard_over_fftw = NAN;
   double standard_f32_over_fftwf = NAN;
-  double dit_f32_over_standard_f32 = NAN;
-  double dit_tiled_f32_over_standard_f32 = NAN;
-  double dit_pregathered_f32_over_standard_f32 = NAN;
   double standard_over_pffft = NAN;
   double standard_f32_over_pffft = NAN;
   double standard_over_mkl = NAN;
   double standard_f32_over_mklf = NAN;
   double fftw_err = NAN;
   double fftwf_err = NAN;
-  double dit_err = NAN;
-  double dit_f32_err = NAN;
   double mkl_err = NAN;
   double mklf_err = NAN;
   double roundtrip_err = NAN;
@@ -486,8 +432,6 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, Inte
   Result result;
 
   bfft::plan plan(n);
-  bruun_dit::RFFT_DIT dit_plan(static_cast<int>(n));
-  bruun_dit::RFFT_DIT_F32 dit_plan_f32(static_cast<int>(n));
 
   std::vector<double> input = make_input(n, rng);
   std::vector<double> original = input;
@@ -501,38 +445,12 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, Inte
   std::vector<double> inverse_out(n);
   std::vector<bfft::complex> native(plan.bins());
   std::vector<bfft::complex> standard(plan.bins());
-  std::vector<double> dit_halfcomplex(n);
-  std::vector<double> dit_work(dit_plan.work_size());
-  std::vector<double> dit_bitreversed_input(n);
-  std::vector<double> dit_bitreversed_original(n);
-  std::vector<double> dit_pregathered_input(n);
-  std::vector<double> dit_pregathered_original(n);
-  std::vector<bruun_dit::complex_t> dit_standard(dit_plan.bins());
-  std::vector<float> dit_halfcomplex_f32(n);
-  std::vector<float> dit_work_f32(dit_plan_f32.work_size());
-  std::vector<float> dit_pregathered_input_f32(n);
-  std::vector<float> dit_pregathered_original_f32(n);
-  std::vector<bruun_dit::complex_f32_t> dit_standard_f32(dit_plan_f32.bins());
   std::vector<bfft::complex> scratch(plan.native_scratch_size());
   std::vector<bfft::complex> reference(plan.bins());
   std::vector<bfft::complex_f32> native_f32(plan.bins());
   std::vector<bfft::complex_f32> standard_f32(plan.bins());
   std::vector<bfft::complex_f32> scratch_f32(plan.native_scratch_size());
   std::vector<bfft::complex_f32> reference_f32(plan.bins());
-
-  {
-    const std::size_t half = n / 2;
-    const int bits = ilog2_pow2(half);
-    for (std::size_t b = 0; b < half; ++b) {
-      const std::size_t j = static_cast<std::size_t>(bruun_dit::bitrev_int(static_cast<int>(b), bits));
-      dit_bitreversed_original[b] = original[j];
-      dit_bitreversed_original[half + b] = original[half + j];
-      dit_pregathered_original[2 * b] = original[j] + original[half + j];
-      dit_pregathered_original[2 * b + 1] = original[j] - original[half + j];
-      dit_pregathered_original_f32[2 * b] = original_f32[j] + original_f32[half + j];
-      dit_pregathered_original_f32[2 * b + 1] = original_f32[j] - original_f32[half + j];
-    }
-  }
 
   fftw_plan fp = nullptr;
   double* fftw_in = nullptr;
@@ -680,63 +598,6 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, Inte
     result.sink += standard[(static_cast<std::size_t>(result.sink) * 17) % nb].re;
   });
 
-  input = original;
-  result.dit_halfcomplex_ns = bench_ns(iters, [&] {
-    input[static_cast<std::size_t>(result.sink) & (n - 1)] += 1e-12;
-    dit_plan.forward_halfcomplex(input.data(), dit_halfcomplex.data());
-    result.sink += dit_halfcomplex[(static_cast<std::size_t>(result.sink) * 17) & (n - 1)];
-  });
-
-  input = original;
-  result.dit_standard_ns = bench_ns(iters, [&] {
-    input[static_cast<std::size_t>(result.sink) & (n - 1)] += 1e-12;
-    dit_plan.forward(input.data(), dit_standard.data(), dit_work.data());
-    result.sink += dit_standard[(static_cast<std::size_t>(result.sink) * 17) % nb].re;
-  });
-
-  input = original;
-  result.dit_tiled_halfcomplex_ns = bench_ns(iters, [&] {
-    input[static_cast<std::size_t>(result.sink) & (n - 1)] += 1e-12;
-    dit_plan.forward_halfcomplex_tiled(input.data(), dit_halfcomplex.data());
-    result.sink += dit_halfcomplex[(static_cast<std::size_t>(result.sink) * 17) & (n - 1)];
-  });
-
-  input = original;
-  result.dit_tiled_standard_ns = bench_ns(iters, [&] {
-    input[static_cast<std::size_t>(result.sink) & (n - 1)] += 1e-12;
-    dit_plan.forward_tiled(input.data(), dit_standard.data(), dit_work.data());
-    result.sink += dit_standard[(static_cast<std::size_t>(result.sink) * 17) % nb].re;
-  });
-
-  dit_bitreversed_input = dit_bitreversed_original;
-  result.dit_bitreversed_halfcomplex_ns = bench_ns(iters, [&] {
-    dit_bitreversed_input[static_cast<std::size_t>(result.sink) & (n - 1)] += 1e-12;
-    dit_plan.forward_halfcomplex_bitreversed(dit_bitreversed_input.data(), dit_halfcomplex.data());
-    result.sink += dit_halfcomplex[(static_cast<std::size_t>(result.sink) * 17) & (n - 1)];
-  });
-
-  dit_bitreversed_input = dit_bitreversed_original;
-  result.dit_bitreversed_standard_ns = bench_ns(iters, [&] {
-    dit_bitreversed_input[static_cast<std::size_t>(result.sink) & (n - 1)] += 1e-12;
-    dit_plan.forward_bitreversed(dit_bitreversed_input.data(), dit_standard.data(), dit_work.data());
-    result.sink += dit_standard[(static_cast<std::size_t>(result.sink) * 17) % nb].re;
-  });
-
-  dit_pregathered_input = dit_pregathered_original;
-  result.dit_pregathered_halfcomplex_ns = bench_ns(iters, [&] {
-    dit_pregathered_input[static_cast<std::size_t>(result.sink) & (n - 1)] += 1e-12;
-    dit_plan.forward_halfcomplex_pregathered(dit_pregathered_input.data(), dit_halfcomplex.data());
-    result.sink += dit_halfcomplex[(static_cast<std::size_t>(result.sink) * 17) & (n - 1)];
-  });
-
-  dit_pregathered_input = dit_pregathered_original;
-  result.dit_pregathered_standard_ns = bench_ns(iters, [&] {
-    dit_pregathered_input[static_cast<std::size_t>(result.sink) & (n - 1)] += 1e-12;
-    dit_plan.forward_pregathered(dit_pregathered_input.data(), dit_standard.data(), dit_work.data());
-    result.sink += dit_standard[(static_cast<std::size_t>(result.sink) * 17) % nb].re;
-  });
-
-
   input_f32 = original_f32;
   result.native_f32_ns = bench_ns(iters, [&] {
     input_f32[static_cast<std::size_t>(result.sink) & (n - 1)] += 1e-7f;
@@ -751,29 +612,6 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, Inte
     result.sink += standard_f32[(static_cast<std::size_t>(result.sink) * 17) % nb].re;
   });
 
-  input_f32 = original_f32;
-  result.dit_f32_ns = bench_ns(iters, [&] {
-    input_f32[static_cast<std::size_t>(result.sink) & (n - 1)] += 1e-7f;
-    dit_plan_f32.forward(input_f32.data(), dit_standard_f32.data(), dit_work_f32.data());
-    result.sink += dit_standard_f32[(static_cast<std::size_t>(result.sink) * 17) % nb].re;
-  });
-
-  input_f32 = original_f32;
-  result.dit_tiled_f32_ns = bench_ns(iters, [&] {
-    input_f32[static_cast<std::size_t>(result.sink) & (n - 1)] += 1e-7f;
-    dit_plan_f32.forward_tiled(input_f32.data(), dit_standard_f32.data(), dit_work_f32.data());
-    result.sink += dit_standard_f32[(static_cast<std::size_t>(result.sink) * 17) % nb].re;
-  });
-
-  dit_pregathered_input_f32 = dit_pregathered_original_f32;
-  result.dit_pregathered_f32_ns = bench_ns(iters, [&] {
-    dit_pregathered_input_f32[static_cast<std::size_t>(result.sink) & (n - 1)] += 1e-7f;
-    dit_plan_f32.forward_pregathered(dit_pregathered_input_f32.data(),
-                                     dit_standard_f32.data(),
-                                     dit_work_f32.data());
-    result.sink += dit_standard_f32[(static_cast<std::size_t>(result.sink) * 17) % nb].re;
-  });
-
   input = original;
   result.roundtrip_ns = bench_ns(iters, [&] {
     input[static_cast<std::size_t>(result.sink) & (n - 1)] += 1e-12;
@@ -784,16 +622,12 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, Inte
 
   plan.forward(original.data(), standard.data(), work.data(), scratch.data());
   plan.inverse(standard.data(), inverse_out.data());
-  dit_plan.forward(original.data(), dit_standard.data(), dit_work.data());
-  result.dit_err = max_abs_complex_dit(dit_standard, standard);
 
   if (fp) {
     result.fftw_err = max_abs_complex(standard, reference);
   }
 
   plan.forward_f32(original_f32.data(), standard_f32.data(), work_f32.data(), scratch_f32.data());
-  dit_plan_f32.forward(original_f32.data(), dit_standard_f32.data(), dit_work_f32.data());
-  result.dit_f32_err = max_abs_complex_dit_f32(dit_standard_f32, standard_f32);
   if (fpf) {
     result.fftwf_err = max_abs_complex_f32(standard_f32, reference_f32);
   }
@@ -810,46 +644,8 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, Inte
     result.standard_over_fftw = result.standard_ns / result.fftw_ns;
   }
 
-  if (result.native_ns > 0.0) {
-    result.dit_halfcomplex_over_native = result.dit_halfcomplex_ns / result.native_ns;
-  }
-
-  if (result.standard_ns > 0.0) {
-    result.dit_standard_over_standard = result.dit_standard_ns / result.standard_ns;
-  }
-
-  if (result.native_ns > 0.0) {
-    result.dit_tiled_halfcomplex_over_native = result.dit_tiled_halfcomplex_ns / result.native_ns;
-  }
-
-  if (result.standard_ns > 0.0) {
-    result.dit_tiled_standard_over_standard = result.dit_tiled_standard_ns / result.standard_ns;
-  }
-
-  if (result.native_ns > 0.0) {
-    result.dit_bitreversed_halfcomplex_over_native = result.dit_bitreversed_halfcomplex_ns / result.native_ns;
-  }
-
-  if (result.standard_ns > 0.0) {
-    result.dit_bitreversed_standard_over_standard = result.dit_bitreversed_standard_ns / result.standard_ns;
-  }
-
-  if (result.native_ns > 0.0) {
-    result.dit_pregathered_halfcomplex_over_native = result.dit_pregathered_halfcomplex_ns / result.native_ns;
-  }
-
-  if (result.standard_ns > 0.0) {
-    result.dit_pregathered_standard_over_standard = result.dit_pregathered_standard_ns / result.standard_ns;
-  }
-
   if (fpf && result.fftwf_ns > 0.0) {
     result.standard_f32_over_fftwf = result.standard_f32_ns / result.fftwf_ns;
-  }
-
-  if (result.standard_f32_ns > 0.0) {
-    result.dit_f32_over_standard_f32 = result.dit_f32_ns / result.standard_f32_ns;
-    result.dit_tiled_f32_over_standard_f32 = result.dit_tiled_f32_ns / result.standard_f32_ns;
-    result.dit_pregathered_f32_over_standard_f32 = result.dit_pregathered_f32_ns / result.standard_f32_ns;
   }
 
   if (!std::isnan(result.pffft_ns) && result.pffft_ns > 0.0) {
@@ -898,19 +694,8 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, Inte
   print_ns(result.mklf_ns);
   print_ns(result.native_ns);
   print_ns(result.standard_ns);
-  print_ns(result.dit_halfcomplex_ns);
-  print_ns(result.dit_standard_ns);
-  print_ns(result.dit_tiled_halfcomplex_ns);
-  print_ns(result.dit_tiled_standard_ns);
-  print_ns(result.dit_bitreversed_halfcomplex_ns);
-  print_ns(result.dit_bitreversed_standard_ns);
-  print_ns(result.dit_pregathered_halfcomplex_ns);
-  print_ns(result.dit_pregathered_standard_ns);
   print_ns(result.native_f32_ns);
   print_ns(result.standard_f32_ns);
-  print_ns(result.dit_f32_ns);
-  print_ns(result.dit_tiled_f32_ns);
-  print_ns(result.dit_pregathered_f32_ns);
   print_ns(result.roundtrip_ns);
 
   if (std::isnan(result.standard_over_fftw)) {
@@ -919,76 +704,10 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, Inte
     std::printf("%8.3f ", result.standard_over_fftw);
   }
 
-  if (std::isnan(result.dit_halfcomplex_over_native)) {
-    std::printf("%8s ", "n/a");
-  } else {
-    std::printf("%8.3f ", result.dit_halfcomplex_over_native);
-  }
-
-  if (std::isnan(result.dit_standard_over_standard)) {
-    std::printf("%8s ", "n/a");
-  } else {
-    std::printf("%8.3f ", result.dit_standard_over_standard);
-  }
-
-  if (std::isnan(result.dit_tiled_halfcomplex_over_native)) {
-    std::printf("%8s ", "n/a");
-  } else {
-    std::printf("%8.3f ", result.dit_tiled_halfcomplex_over_native);
-  }
-
-  if (std::isnan(result.dit_tiled_standard_over_standard)) {
-    std::printf("%8s ", "n/a");
-  } else {
-    std::printf("%8.3f ", result.dit_tiled_standard_over_standard);
-  }
-
-  if (std::isnan(result.dit_bitreversed_halfcomplex_over_native)) {
-    std::printf("%8s ", "n/a");
-  } else {
-    std::printf("%8.3f ", result.dit_bitreversed_halfcomplex_over_native);
-  }
-
-  if (std::isnan(result.dit_bitreversed_standard_over_standard)) {
-    std::printf("%8s ", "n/a");
-  } else {
-    std::printf("%8.3f ", result.dit_bitreversed_standard_over_standard);
-  }
-
-  if (std::isnan(result.dit_pregathered_halfcomplex_over_native)) {
-    std::printf("%8s ", "n/a");
-  } else {
-    std::printf("%8.3f ", result.dit_pregathered_halfcomplex_over_native);
-  }
-
-  if (std::isnan(result.dit_pregathered_standard_over_standard)) {
-    std::printf("%8s ", "n/a");
-  } else {
-    std::printf("%8.3f ", result.dit_pregathered_standard_over_standard);
-  }
-
   if (std::isnan(result.standard_f32_over_fftwf)) {
     std::printf("%8s ", "n/a");
   } else {
     std::printf("%8.3f ", result.standard_f32_over_fftwf);
-  }
-
-  if (std::isnan(result.dit_f32_over_standard_f32)) {
-    std::printf("%8s ", "n/a");
-  } else {
-    std::printf("%8.3f ", result.dit_f32_over_standard_f32);
-  }
-
-  if (std::isnan(result.dit_tiled_f32_over_standard_f32)) {
-    std::printf("%8s ", "n/a");
-  } else {
-    std::printf("%8.3f ", result.dit_tiled_f32_over_standard_f32);
-  }
-
-  if (std::isnan(result.dit_pregathered_f32_over_standard_f32)) {
-    std::printf("%8s ", "n/a");
-  } else {
-    std::printf("%8.3f ", result.dit_pregathered_f32_over_standard_f32);
   }
 
   if (std::isnan(result.standard_over_pffft)) {
@@ -1021,22 +740,10 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, Inte
     std::printf("err64 %.1e ", result.fftw_err);
   }
 
-  if (std::isnan(result.dit_err)) {
-    std::printf("dit64 %9s ", "n/a");
-  } else {
-    std::printf("dit64 %.1e ", result.dit_err);
-  }
-
   if (std::isnan(result.fftwf_err)) {
     std::printf("err32 %9s ", "n/a");
   } else {
     std::printf("err32 %.1e ", result.fftwf_err);
-  }
-
-  if (std::isnan(result.dit_f32_err)) {
-    std::printf("dit32 %9s ", "n/a");
-  } else {
-    std::printf("dit32 %.1e ", result.dit_f32_err);
   }
 
   if (std::isnan(result.mkl_err)) {
@@ -1120,7 +827,7 @@ int main(int argc, char** argv) {
     std::printf("PFFFT disabled; compile with -DBFFT_WITH_PFFFT and link pffft to enable.\n");
 #endif
 
-    std::printf("%8s %8s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s  %s\n",
+    std::printf("%8s %8s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %8s %8s %8s %8s %8s %8s  %s\n",
                 "N",
                 "iters",
                 "FFTW_ns",
@@ -1130,33 +837,11 @@ int main(int argc, char** argv) {
                 "MKL32_ns",
                 "Native_ns",
                 "Std_ns",
-                "DitHC_ns",
-                "DitStd_ns",
-                "DTilHC_ns",
-                "DTilStd_ns",
-                "DBrHC_ns",
-                "DBrStd_ns",
-                "DPreHC_ns",
-                "DPreStd_ns",
                 "F32Nat_ns",
                 "F32Std_ns",
-                "F32Dit_ns",
-                "F32DTil_ns",
-                "F32DPre_ns",
                 "RT_ns",
                 "S/F64",
-                "DHC/Nat",
-                "DIT/Std",
-                "DTH/Nat",
-                "DTS/Std",
-                "DBH/Nat",
-                "DBS/Std",
-                "DPH/Nat",
-                "DPS/Std",
                 "F32/Ff",
-                "F32D/S",
-                "F32DT/S",
-                "F32DP/S",
                 "S/P",
                 "F32/P",
                 "S/MKL",

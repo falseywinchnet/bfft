@@ -56,16 +56,6 @@ C_DEMO := $(BUILD_DIR)/examples/c_api_demo
 CPP_DEMO := $(BUILD_DIR)/examples/cpp_api_demo
 CORRECTNESS_TEST := $(BUILD_DIR)/tests/correctness
 C_API_TEST := $(BUILD_DIR)/tests/api_c
-DIT_TEST := $(BUILD_DIR)/tests/test_dit
-RADIX4_TEST := $(BUILD_DIR)/experiments/test_bruun_radix4
-RADIX4_BENCH := $(BUILD_DIR)/experiments/benchmark_radix2_vs_radix4
-COMPOSED_R4_TEST := $(BUILD_DIR)/experiments/test_chebyshev_composed_radix4
-DEFERRED_PROBE := $(BUILD_DIR)/experiments/cheb_deferred_probe
-MULTIPLY_PROBE := $(BUILD_DIR)/experiments/cheb_multiply_probe
-STABILITY_PROBE := $(BUILD_DIR)/experiments/cheb_stability_probe
-DCT_TEST := $(BUILD_DIR)/experiments/test_chebyshev_dct
-DCT_BENCH := $(BUILD_DIR)/experiments/cheb_dct_bench
-DCT_RADIX_PROBE := $(BUILD_DIR)/experiments/cheb_dct_radix_probe
 SUPPORT_PROBE := $(BUILD_DIR)/tests/bfft_fftw_support_probe
 INVARIANT_PROBE := $(BUILD_DIR)/tests/bfft_invariant_support_probe
 SFDR_PROBE := $(BUILD_DIR)/tests/bfft_fftw_sfdr_probe
@@ -73,24 +63,20 @@ BH7_PROBE := $(BUILD_DIR)/tests/bfft_fftw_sfdr_bh7_probe
 LIBRARY_COMPARE_PROBE := $(BUILD_DIR)/tests/bfft_library_compare_probe
 AVX2_ASM := $(BUILD_DIR)/src/bfft_avx2.s
 SSE2_ASM := $(BUILD_DIR)/src/bfft_sse2.s
-DIT_AVX2_ASM := $(BUILD_DIR)/src/test_dit_avx2.s
-DIT_SSE2_ASM := $(BUILD_DIR)/src/test_dit_sse2.s
 ASM_OUTPUTS :=
 ifneq ($(AVX2_FLAGS),)
   ASM_OUTPUTS += $(AVX2_ASM)
-  ASM_OUTPUTS += $(DIT_AVX2_ASM)
 endif
 ifneq ($(SSE2_FLAGS),)
   ASM_OUTPUTS += $(SSE2_ASM)
-  ASM_OUTPUTS += $(DIT_SSE2_ASM)
 endif
 
-.PHONY: all clean test install uninstall examples experiments radix4-test dct-bench dct-radix-probe probes docs asm-check check-standards check-cxx17 check-cxx20 check-cxx23
+.PHONY: all clean test install uninstall examples probes docs asm-check check-standards check-cxx17 check-cxx20 check-cxx23
 
 all: $(STATIC_LIB) $(SHARED_LIB) examples
 
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)/src $(BUILD_DIR)/examples $(BUILD_DIR)/tests $(BUILD_DIR)/experiments
+	mkdir -p $(BUILD_DIR)/src $(BUILD_DIR)/examples $(BUILD_DIR)/tests
 
 $(OBJ): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
@@ -119,13 +105,7 @@ $(AVX2_ASM): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp | $(BUILD_DI
 $(SSE2_ASM): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(CXXFLAGS) $(SSE2_FLAGS) -S -fverbose-asm $< -o $@
 
-$(DIT_AVX2_ASM): tests/test_dit.cpp src/detail/bruun_DIT_kernel.hpp | $(BUILD_DIR)
-	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AVX2_FLAGS) -S -fverbose-asm $< -o $@
-
-$(DIT_SSE2_ASM): tests/test_dit.cpp src/detail/bruun_DIT_kernel.hpp | $(BUILD_DIR)
-	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(SSE2_FLAGS) -S -fverbose-asm $< -o $@
-
-$(BENCH): examples/benchmark.cpp include/bfft/bfft.hpp src/detail/bruun_DIT_kernel.hpp $(STATIC_LIB) | $(BUILD_DIR)
+$(BENCH): examples/benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
 
 $(APPLE_BENCH): examples/apple_benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
@@ -146,52 +126,6 @@ $(CORRECTNESS_TEST): tests/correctness.cpp include/bfft/bfft.hpp $(STATIC_LIB) |
 $(C_API_TEST): tests/api_c.c include/bfft/bfft.h $(STATIC_LIB) | $(BUILD_DIR)
 	$(CC) $(CPPFLAGS) $(INCLUDES) $(CFLAGS) $< $(STATIC_LIB) $(LDLIBS) -lstdc++ -o $@
 
-$(DIT_TEST): tests/test_dit.cpp src/detail/bruun_DIT_kernel.hpp | $(BUILD_DIR)
-	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(LDLIBS) -o $@
-
-$(RADIX4_TEST): experiments/test_bruun_radix4.cpp include/bfft/bfft.hpp experiments/bruun_radix4_kernel.hpp $(STATIC_LIB) | $(BUILD_DIR)
-	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
-
-$(RADIX4_BENCH): experiments/benchmark_radix2_vs_radix4.cpp include/bfft/bfft.hpp experiments/bruun_radix4_kernel.hpp $(STATIC_LIB) | $(BUILD_DIR)
-	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
-
-$(COMPOSED_R4_TEST): experiments/test_chebyshev_composed_radix4.cpp experiments/chebyshev_composed_radix4_kernel.hpp experiments/bruun_radix4_kernel.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
-	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
-
-$(DEFERRED_PROBE): experiments/cheb_deferred_probe.cpp experiments/chebyshev_composed_radix4_kernel.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
-	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
-
-$(MULTIPLY_PROBE): experiments/cheb_multiply_probe.cpp experiments/chebyshev_composed_radix4_kernel.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
-	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
-
-$(STABILITY_PROBE): experiments/cheb_stability_probe.cpp experiments/chebyshev_composed_radix4_kernel.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
-	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
-
-$(DCT_TEST): experiments/test_chebyshev_dct.cpp experiments/chebyshev_dct_kernel.hpp experiments/chebyshev_dct_radix4.hpp experiments/dct1_dst1_via_fft.hpp experiments/cheb_dct_assemble.hpp experiments/bruun_dct.hpp experiments/chebyshev_composed_radix4_kernel.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
-	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
-
-$(DCT_BENCH): experiments/cheb_dct_bench.cpp experiments/chebyshev_dct_radix4.hpp experiments/cheb_dct_assemble.hpp experiments/dct1_dst1_via_fft.hpp experiments/bruun_dct.hpp experiments/chebyshev_composed_radix4_kernel.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
-	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
-
-$(DCT_RADIX_PROBE): experiments/cheb_dct_radix_probe.cpp | $(BUILD_DIR)
-	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(LDLIBS) -o $@
-
-dct-bench: $(DCT_BENCH)
-	$(DCT_BENCH)
-
-dct-radix-probe: $(DCT_RADIX_PROBE)
-	$(DCT_RADIX_PROBE)
-
-experiments: $(RADIX4_TEST) $(RADIX4_BENCH) $(COMPOSED_R4_TEST) $(DEFERRED_PROBE) $(MULTIPLY_PROBE) $(STABILITY_PROBE) $(DCT_TEST) $(DCT_BENCH) $(DCT_RADIX_PROBE)
-
-radix4-test: $(RADIX4_TEST) $(COMPOSED_R4_TEST) $(DEFERRED_PROBE) $(MULTIPLY_PROBE) $(STABILITY_PROBE) $(DCT_TEST)
-	$(RADIX4_TEST)
-	$(COMPOSED_R4_TEST)
-	$(DEFERRED_PROBE)
-	$(MULTIPLY_PROBE)
-	$(STABILITY_PROBE)
-	$(DCT_TEST)
-
 $(SUPPORT_PROBE): tests/bfft_fftw_support_probe.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
 
@@ -209,10 +143,9 @@ $(LIBRARY_COMPARE_PROBE): tests/bfft_library_compare_probe.cpp include/bfft/bfft
 
 probes: $(SUPPORT_PROBE) $(INVARIANT_PROBE) $(SFDR_PROBE) $(BH7_PROBE) $(LIBRARY_COMPARE_PROBE)
 
-test: $(CORRECTNESS_TEST) $(C_API_TEST) $(DIT_TEST)
+test: $(CORRECTNESS_TEST) $(C_API_TEST)
 	$(CORRECTNESS_TEST)
 	$(C_API_TEST)
-	$(DIT_TEST)
 
 check-cxx17:
 	$(MAKE) clean BUILD_DIR=build-cxx17
