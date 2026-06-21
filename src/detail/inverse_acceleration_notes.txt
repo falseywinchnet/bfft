@@ -13,27 +13,31 @@ Primary decision:
 - Build `INV_RES_SCHEDULE` from `FWD_RES_SCHEDULE` by reversing the forward residue schedule and appending the final inverse binomial that undoes the initial forward `binomial_oop`.
 - Keep the record type shared with the forward scheduler for now. The operation kind identifies the forward primitive; inverse dispatch swaps each kind to its inverse kernel.
 
-Why this is first:
+Current leaf policy:
+- q==8 leaves deliberately use the shared `d3 + d3 + norm` shape in both forward and inverse paths.
+- There are no fused q==8 leaf codelets in the kernel. This keeps compiler inlining, branch lowering, and register pressure predictable on potato ARM, SSE2, AVX2, and AVX-512.
+- The project accepts the small large-FFT traffic hit to avoid per-ISA battles over fused q==8 code size and spills.
+
+Why scheduling is still first:
 - It removes the recursive inverse traversal and replaces it with the same linear switch shape already used by the forward path.
 - It keeps all q==8, q==4, q==2, and spine operations in one baked stream, exposing predictable control flow and sequential op metadata to SSE/NEON, AVX2, and AVX-512 builds.
-- It does not change transform math, layout, or public APIs, so correctness risk is lower than starting with new fused inverse scatter or d4 inverse codelets.
+- It does not change transform math, layout, or public APIs, so correctness risk is lower than starting with new fused inverse scatter or leaf codelets.
 
 ISA notes:
 - SSE/NEON benefit immediately from removing recursive calls and from the existing 128-bit `norm_q_inv` loop.
-- AVX2 and AVX-512 now use the scheduled inverse as well.  After the double-precision d4 inverse fusion, q==8 leaves stay register-resident in both recursive and scheduled runners, and direct inverse benchmarking on wide x86 hosts showed the schedule paying for its flat dispatch.
+- AVX2 and AVX-512 use the scheduled inverse as well, but q==8 remains on the same d3-only leaf sequence as the narrow backends.
 
 Completed:
-1. [done] Fused inverse d4 codelet for f32 q==8 (`codelet_d4_inv_f32`): two inverse d3 leaves + inverse q=8 norm in one function, values stay in registers.  Eliminates 8 loads + 8 stores per q==8 block.  Wired into both the schedule runner and the recursive path.
-4. [done] Assembly inspection of the SSE2/NEON schedule loop identified that all inverse twiddle recombinations used `V4F_ADD(V4F_MUL, V4F_MUL)` instead of `V4F_MADD`/`V4F_MSUB`.  Fixed in `norm_q_inv_f32`, `norm2_inv_fused_f32`, `codelet_d3_tw_res_inv_f32`, and the double V2 equivalents.  NEON FMA count in the inverse schedule runner went from 8 to 38 (matching the forward), total instructions from 1162 to 961.
-
-5. [done] Fused d4 inverse codelet for double-precision AVX2 (`codelet_d4_inv`): uses `__m256d` intrinsics for the BRUUN_LEVEL>=2 path, falls back to three separate calls otherwise.  Wired into both `rec_inv_res` q==8 and `run_inv_residue_schedule` FWD_OP_CODELET_Q8.  AVX2 assembly: 2212 instructions, 55 FMAs, 169 spills + 161 reloads (expected — 16 YMM registers vs 8 live output vectors plus twiddles).  Spills hit L1 stack; still a net win over unfused path's 32-double store/reload through the data array on large transforms.
+1. [done] Assembly inspection of the SSE2/NEON schedule loop identified that all inverse twiddle recombinations used `V4F_ADD(V4F_MUL, V4F_MUL)` instead of `V4F_MADD`/`V4F_MSUB`. Fixed in `norm_q_inv_f32`, `norm2_inv_fused_f32`, `codelet_d3_tw_res_inv_f32`, and the double V2 equivalents. NEON FMA count in the inverse schedule runner went from 8 to 38 (matching the forward), total instructions from 1162 to 961.
+2. [done] Removed fused q==8 leaf codelets and returned q==8 to the explicit d3-only sequence everywhere.
+3. [done] Rewrote scalar and float twiddle helpers with explicit branches instead of nested conditionals.
 
 Follow-up candidates:
-2. Fuse native/standard gather with the inverse binomial tail to remove one complete pass over N for inverse-from-complex APIs.
-3. Add f32/scalar lane-doubling equivalents where the inverse leaf still falls back to generic inverse-norm ladders.
+1. Fuse native/standard gather with the inverse binomial tail to remove one complete pass over N for inverse-from-complex APIs.
+2. Add f32/scalar lane-doubling equivalents where the inverse leaf still falls back to generic inverse-norm ladders.
+3. If `sf_twiddle` still compiles into undesirable hot-path branches on a target compiler, move resolved sine/cosine values into schedule records so execution never recomputes the twiddle selector.
 
 Wide-x86 schedule gate:
 - Rechecked the scheduled inverse on Intel Xeon Platinum 8370C with `-O3 -mavx2 -mfma -mno-avx512*`.
 - Rechecked the AVX-512 scheduled inverse on the same host with `-O3 -march=native`.
-- The benchmark now prints a direct `Inv_ns` column so inverse-only changes are visible instead of inferred from round-trip timing.
-- The d4 fusion was correctness-checked on AVX2 and AVX-512 and is fast enough to enable the flat inverse schedule for BRUUN_LEVEL 2 and 3.
+- The benchmark prints a direct `Inv_ns` column so inverse-only changes are visible instead of inferred from round-trip timing.
