@@ -410,6 +410,7 @@ struct Result {
   double standard_ns = NAN;
   double native_f32_ns = NAN;
   double standard_f32_ns = NAN;
+  double inverse_ns = NAN;
   double roundtrip_ns = NAN;
   double standard_over_fftw = NAN;
   double standard_f32_over_fftwf = NAN;
@@ -612,6 +613,13 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, Inte
     result.sink += standard_f32[(static_cast<std::size_t>(result.sink) * 17) % nb].re;
   });
 
+  plan.forward(original.data(), standard.data(), work.data(), scratch.data());
+  result.inverse_ns = bench_ns(iters, [&] {
+    standard[(static_cast<std::size_t>(result.sink) * 17) % nb].re += 1e-12;
+    plan.inverse(standard.data(), inverse_out.data());
+    result.sink += inverse_out[(static_cast<std::size_t>(result.sink) * 17) % n];
+  });
+
   input = original;
   result.roundtrip_ns = bench_ns(iters, [&] {
     input[static_cast<std::size_t>(result.sink) & (n - 1)] += 1e-12;
@@ -696,6 +704,7 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, Inte
   print_ns(result.standard_ns);
   print_ns(result.native_f32_ns);
   print_ns(result.standard_f32_ns);
+  print_ns(result.inverse_ns);
   print_ns(result.roundtrip_ns);
 
   if (std::isnan(result.standard_over_fftw)) {
@@ -827,7 +836,7 @@ int main(int argc, char** argv) {
     std::printf("PFFFT disabled; compile with -DBFFT_WITH_PFFFT and link pffft to enable.\n");
 #endif
 
-    std::printf("%8s %8s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %8s %8s %8s %8s %8s %8s  %s\n",
+    std::printf("%8s %8s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %11s %8s %8s %8s %8s %8s %8s  %s\n",
                 "N",
                 "iters",
                 "FFTW_ns",
@@ -839,6 +848,7 @@ int main(int argc, char** argv) {
                 "Std_ns",
                 "F32Nat_ns",
                 "F32Std_ns",
+                "Inv_ns",
                 "RT_ns",
                 "S/F64",
                 "F32/Ff",
