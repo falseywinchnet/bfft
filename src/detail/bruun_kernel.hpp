@@ -2649,13 +2649,9 @@ private:
     heap_array<double> C;
 
     inline double s_twiddle(int m) const {
-        if (m == 0) {
-            return 0.0;
-        }
-        if (m == 1) {
-            return C[1];
-        }
-        return C[m ^ 1];
+        const unsigned u = static_cast<unsigned>(m);
+        const unsigned flip = static_cast<unsigned>(-(m > 1)) & 1u;
+        return C[u ^ flip];
     }
 
     struct LeafTw {
@@ -2683,13 +2679,9 @@ private:
     heap_array<FwdOp> INV_RES_SCHEDULE;
 
     inline float sf_twiddle(int m) const {
-        if (m == 0) {
-            return 0.0f;
-        }
-        if (m == 1) {
-            return CF[1];
-        }
-        return CF[m ^ 1];
+        const unsigned u = static_cast<unsigned>(m);
+        const unsigned flip = static_cast<unsigned>(-(m > 1)) & 1u;
+        return CF[u ^ flip];
     }
 
     bool append_op(heap_array<FwdOp>& ops,
