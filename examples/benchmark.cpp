@@ -339,13 +339,15 @@ double max_abs_complex(const std::vector<bfft::complex>& a,
   double e = 0.0;
   const std::size_t n = std::min(a.size(), b.size());
 
+  if (n == 0) return 0.0;
+
   for (std::size_t i = 0; i < n; ++i) {
     const double dr = a[i].re - b[i].re;
     const double di = a[i].im - b[i].im;
-    e = std::max(e, std::sqrt(dr * dr + di * di));
+    e += std::abs(dr) + std::abs(di);
   }
 
-  return e;
+  return e / static_cast<double>(n);
 }
 
 
@@ -357,10 +359,10 @@ double max_abs_complex_f32(const std::vector<bfft::complex_f32>& a,
   for (std::size_t i = 0; i < n; ++i) {
     const double dr = static_cast<double>(a[i].re) - static_cast<double>(b[i].re);
     const double di = static_cast<double>(a[i].im) - static_cast<double>(b[i].im);
-    e = std::max(e, std::sqrt(dr * dr + di * di));
+    e += std::abs(dr) + std::abs(di);
   }
 
-  return e;
+  return e / static_cast<double>(n);
 }
 
 double max_abs_real(const std::vector<double>& a,
