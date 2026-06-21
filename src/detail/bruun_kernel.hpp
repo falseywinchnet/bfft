@@ -873,8 +873,8 @@ static inline void norm_q_inv(double* RESTRICT p, int q, double c_scalar, double
             const bruun_v2 I  = V2_MUL(half, V2_ADD(C1v, D1v));
             const bruun_v2 A1 = V2_MUL(half, V2_SUB(C1v, D1v));
 
-            const bruun_v2 B0 = V2_ADD(V2_MUL(vc, R), V2_MUL(vs, I));
-            const bruun_v2 B1 = V2_SUB(V2_MUL(vc, I), V2_MUL(vs, R));
+            const bruun_v2 B0 = V2_MADD(V2_MUL(vc, R), vs, I);
+            const bruun_v2 B1 = V2_MSUB(V2_MUL(vc, I), vs, R);
 
             V2_ST(C0p + n, A0);
             V2_ST(C1p + n, B0);
@@ -1038,15 +1038,15 @@ static inline void norm2_inv_fused(double* RESTRICT p, int q,
             const bruun_v2 R0 = V2_MUL(hf, V2_SUB(A0n, B0n));
             const bruun_v2 I0 = V2_MUL(hf, V2_ADD(A0h, B0h));
             const bruun_v2 w0 = V2_MUL(hf, V2_SUB(A0h, B0h));
-            const bruun_v2 uh = V2_ADD(V2_MUL(vc0, R0), V2_MUL(vs0, I0));
-            const bruun_v2 wh = V2_SUB(V2_MUL(vc0, I0), V2_MUL(vs0, R0));
+            const bruun_v2 uh = V2_MADD(V2_MUL(vc0, R0), vs0, I0);
+            const bruun_v2 wh = V2_MSUB(V2_MUL(vc0, I0), vs0, R0);
 
             const bruun_v2 v0 = V2_MUL(hf, V2_ADD(A1n, B1n));
             const bruun_v2 R1 = V2_MUL(hf, V2_SUB(A1n, B1n));
             const bruun_v2 I1 = V2_MUL(hf, V2_ADD(A1h, B1h));
             const bruun_v2 x0 = V2_MUL(hf, V2_SUB(A1h, B1h));
-            const bruun_v2 vh = V2_ADD(V2_MUL(vc1, R1), V2_MUL(vs1, I1));
-            const bruun_v2 xh = V2_SUB(V2_MUL(vc1, I1), V2_MUL(vs1, R1));
+            const bruun_v2 vh = V2_MADD(V2_MUL(vc1, R1), vs1, I1);
+            const bruun_v2 xh = V2_MSUB(V2_MUL(vc1, I1), vs1, R1);
 
             const bruun_v2 a0n = V2_MUL(hf, V2_ADD(u0, v0));
             const bruun_v2 Rn  = V2_MUL(hf, V2_SUB(u0, v0));
@@ -1059,12 +1059,12 @@ static inline void norm2_inv_fused(double* RESTRICT p, int q,
 
             V2_ST(A0 + n,      a0n);
             V2_ST(A0 + qh + n, a0h);
-            V2_ST(B0 + n,      V2_ADD(V2_MUL(vc, Rn), V2_MUL(vs, In)));
-            V2_ST(B0 + qh + n, V2_ADD(V2_MUL(vc, Rh), V2_MUL(vs, Ih)));
+            V2_ST(B0 + n,      V2_MADD(V2_MUL(vc, Rn), vs, In));
+            V2_ST(B0 + qh + n, V2_MADD(V2_MUL(vc, Rh), vs, Ih));
             V2_ST(A1 + n,      a1n);
             V2_ST(A1 + qh + n, a1h);
-            V2_ST(B1 + n,      V2_SUB(V2_MUL(vc, In), V2_MUL(vs, Rn)));
-            V2_ST(B1 + qh + n, V2_SUB(V2_MUL(vc, Ih), V2_MUL(vs, Rh)));
+            V2_ST(B1 + n,      V2_MSUB(V2_MUL(vc, In), vs, Rn));
+            V2_ST(B1 + qh + n, V2_MSUB(V2_MUL(vc, Ih), vs, Rh));
         }
     }
 #endif
@@ -1598,8 +1598,8 @@ static inline void norm_q_inv_f32(float* RESTRICT p, int q, float c_scalar, floa
             const bruun_v4f I  = V4F_MUL(half, V4F_ADD(C1v, D1v));
             const bruun_v4f A1 = V4F_MUL(half, V4F_SUB(C1v, D1v));
 
-            const bruun_v4f B0 = V4F_ADD(V4F_MUL(vc, R), V4F_MUL(vs, I));
-            const bruun_v4f B1 = V4F_SUB(V4F_MUL(vc, I), V4F_MUL(vs, R));
+            const bruun_v4f B0 = V4F_MADD(V4F_MUL(vc, R), vs, I);
+            const bruun_v4f B1 = V4F_MSUB(V4F_MUL(vc, I), vs, R);
 
             V4F_ST(C0p + n, A0);
             V4F_ST(C1p + n, B0);
@@ -1763,15 +1763,15 @@ static inline void norm2_inv_fused_f32(float* RESTRICT p, int q,
             const bruun_v4f R0 = V4F_MUL(hf, V4F_SUB(A0n, B0n));
             const bruun_v4f I0 = V4F_MUL(hf, V4F_ADD(A0h, B0h));
             const bruun_v4f w0 = V4F_MUL(hf, V4F_SUB(A0h, B0h));
-            const bruun_v4f uh = V4F_ADD(V4F_MUL(vc0, R0), V4F_MUL(vs0, I0));
-            const bruun_v4f wh = V4F_SUB(V4F_MUL(vc0, I0), V4F_MUL(vs0, R0));
+            const bruun_v4f uh = V4F_MADD(V4F_MUL(vc0, R0), vs0, I0);
+            const bruun_v4f wh = V4F_MSUB(V4F_MUL(vc0, I0), vs0, R0);
 
             const bruun_v4f v0 = V4F_MUL(hf, V4F_ADD(A1n, B1n));
             const bruun_v4f R1 = V4F_MUL(hf, V4F_SUB(A1n, B1n));
             const bruun_v4f I1 = V4F_MUL(hf, V4F_ADD(A1h, B1h));
             const bruun_v4f x0 = V4F_MUL(hf, V4F_SUB(A1h, B1h));
-            const bruun_v4f vh = V4F_ADD(V4F_MUL(vc1, R1), V4F_MUL(vs1, I1));
-            const bruun_v4f xh = V4F_SUB(V4F_MUL(vc1, I1), V4F_MUL(vs1, R1));
+            const bruun_v4f vh = V4F_MADD(V4F_MUL(vc1, R1), vs1, I1);
+            const bruun_v4f xh = V4F_MSUB(V4F_MUL(vc1, I1), vs1, R1);
 
             const bruun_v4f a0n = V4F_MUL(hf, V4F_ADD(u0, v0));
             const bruun_v4f Rn  = V4F_MUL(hf, V4F_SUB(u0, v0));
@@ -1784,12 +1784,12 @@ static inline void norm2_inv_fused_f32(float* RESTRICT p, int q,
 
             V4F_ST(A0 + n,      a0n);
             V4F_ST(A0 + qh + n, a0h);
-            V4F_ST(B0 + n,      V4F_ADD(V4F_MUL(vc, Rn), V4F_MUL(vs, In)));
-            V4F_ST(B0 + qh + n, V4F_ADD(V4F_MUL(vc, Rh), V4F_MUL(vs, Ih)));
+            V4F_ST(B0 + n,      V4F_MADD(V4F_MUL(vc, Rn), vs, In));
+            V4F_ST(B0 + qh + n, V4F_MADD(V4F_MUL(vc, Rh), vs, Ih));
             V4F_ST(A1 + n,      a1n);
             V4F_ST(A1 + qh + n, a1h);
-            V4F_ST(B1 + n,      V4F_SUB(V4F_MUL(vc, In), V4F_MUL(vs, Rn)));
-            V4F_ST(B1 + qh + n, V4F_SUB(V4F_MUL(vc, Ih), V4F_MUL(vs, Rh)));
+            V4F_ST(B1 + n,      V4F_MSUB(V4F_MUL(vc, In), vs, Rn));
+            V4F_ST(B1 + qh + n, V4F_MSUB(V4F_MUL(vc, Ih), vs, Rh));
         }
     }
 #endif
@@ -3028,8 +3028,8 @@ private:
         const bruun_v4f A1w = V4F_MUL(hf, V4F_SUB(E1, O1));
         const bruun_v4f c4 = V4F_LD(t.c4);
         const bruun_v4f s4 = V4F_SET4(t.c4[1], t.c4[0], t.c4[3], t.c4[2]);
-        const bruun_v4f B0w = V4F_ADD(V4F_MUL(c4, R3), V4F_MUL(s4, I3));
-        const bruun_v4f B1w = V4F_SUB(V4F_MUL(c4, I3), V4F_MUL(s4, R3));
+        const bruun_v4f B0w = V4F_MADD(V4F_MUL(c4, R3), s4, I3);
+        const bruun_v4f B1w = V4F_MSUB(V4F_MUL(c4, I3), s4, R3);
 
         // Level 2 inverse.
         const bruun_v4f abL = V4F_ZIPLO(A0w, B0w);
@@ -3047,8 +3047,8 @@ private:
         const bruun_v4f A1v = V4F_MUL(hf, V4F_SUB(Q, W));
         const bruun_v4f c2 = V4F_LD(t.c2d);
         const bruun_v4f s2 = V4F_SET4(t.c2d[2], t.c2d[2], t.c2d[0], t.c2d[0]);
-        const bruun_v4f B0v = V4F_ADD(V4F_MUL(c2, R2), V4F_MUL(s2, I2));
-        const bruun_v4f B1v = V4F_SUB(V4F_MUL(c2, I2), V4F_MUL(s2, R2));
+        const bruun_v4f B0v = V4F_MADD(V4F_MUL(c2, R2), s2, I2);
+        const bruun_v4f B1v = V4F_MSUB(V4F_MUL(c2, I2), s2, R2);
 
         // Level 1 inverse.
         const bruun_v4f c0a = V4F_CATLO(A0v, B0v);
@@ -3062,8 +3062,8 @@ private:
         const bruun_v4f A1 = V4F_MUL(hf, V4F_SUB(c0b, c1b));
         const bruun_v4f c1v = V4F_SET1(t.c1);
         const bruun_v4f s1v = V4F_SET1(t.s1);
-        const bruun_v4f B0 = V4F_ADD(V4F_MUL(c1v, R1), V4F_MUL(s1v, I1));
-        const bruun_v4f B1 = V4F_SUB(V4F_MUL(c1v, I1), V4F_MUL(s1v, R1));
+        const bruun_v4f B0 = V4F_MADD(V4F_MUL(c1v, R1), s1v, I1);
+        const bruun_v4f B1 = V4F_MSUB(V4F_MUL(c1v, I1), s1v, R1);
 
         V4F_ST(p,      A0);
         V4F_ST(p + 4,  B0);
@@ -3077,6 +3077,170 @@ private:
         norm_q_inv_f32(p,      2, t.c2d[0], t.c2d[2]);
         norm_q_inv_f32(p + 8,  2, t.c2d[2], t.c2d[0]);
         norm_q_inv_f32(p,      4, t.c1,    t.s1);
+#endif
+    }
+
+    inline void codelet_d4_inv_f32(float* RESTRICT p, int m) const {
+#if BRUUN_LEVEL >= 1
+        const LeafTwF& tL = TWF[2*m];
+        const LeafTwF& tR = TWF[2*m + 1];
+        const bruun_v4f hf = V4F_SET1(0.5f);
+
+        // --- Left d3 inverse (p[0..15]) ---
+        const bruun_v4f Lout0 = V4F_LD(p);
+        const bruun_v4f Lout1 = V4F_LD(p + 4);
+        const bruun_v4f Lout2 = V4F_LD(p + 8);
+        const bruun_v4f Lout3 = V4F_LD(p + 12);
+
+        const bruun_v4f LaL = V4F_ZIPLO(Lout0, Lout1);
+        const bruun_v4f LaH = V4F_ZIPHI(Lout0, Lout1);
+        const bruun_v4f LbL = V4F_ZIPLO(Lout2, Lout3);
+        const bruun_v4f LbH = V4F_ZIPHI(Lout2, Lout3);
+        const bruun_v4f Lt0 = V4F_CATLO(LaL, LaH);
+        const bruun_v4f Lt1 = V4F_CATHI(LaL, LaH);
+        const bruun_v4f Lt2 = V4F_CATLO(LbL, LbH);
+        const bruun_v4f Lt3 = V4F_CATHI(LbL, LbH);
+        const bruun_v4f LE0 = V4F_CATLO(Lt0, Lt2);
+        const bruun_v4f LO0 = V4F_CATHI(Lt0, Lt2);
+        const bruun_v4f LE1 = V4F_CATLO(Lt1, Lt3);
+        const bruun_v4f LO1 = V4F_CATHI(Lt1, Lt3);
+
+        const bruun_v4f LA0w = V4F_MUL(hf, V4F_ADD(LE0, LO0));
+        const bruun_v4f LR3  = V4F_MUL(hf, V4F_SUB(LE0, LO0));
+        const bruun_v4f LI3  = V4F_MUL(hf, V4F_ADD(LE1, LO1));
+        const bruun_v4f LA1w = V4F_MUL(hf, V4F_SUB(LE1, LO1));
+        const bruun_v4f Lc4 = V4F_LD(tL.c4);
+        const bruun_v4f Ls4 = V4F_SET4(tL.c4[1], tL.c4[0], tL.c4[3], tL.c4[2]);
+        const bruun_v4f LB0w = V4F_MADD(V4F_MUL(Lc4, LR3), Ls4, LI3);
+        const bruun_v4f LB1w = V4F_MSUB(V4F_MUL(Lc4, LI3), Ls4, LR3);
+
+        const bruun_v4f LabL = V4F_ZIPLO(LA0w, LB0w);
+        const bruun_v4f LabH = V4F_ZIPHI(LA0w, LB0w);
+        const bruun_v4f LcdL = V4F_ZIPLO(LA1w, LB1w);
+        const bruun_v4f LcdH = V4F_ZIPHI(LA1w, LB1w);
+        const bruun_v4f LP = V4F_CATLO(LabL, LabH);
+        const bruun_v4f LM = V4F_CATHI(LabL, LabH);
+        const bruun_v4f LQ = V4F_CATLO(LcdL, LcdH);
+        const bruun_v4f LW = V4F_CATHI(LcdL, LcdH);
+
+        const bruun_v4f LA0v = V4F_MUL(hf, V4F_ADD(LP, LM));
+        const bruun_v4f LR2  = V4F_MUL(hf, V4F_SUB(LP, LM));
+        const bruun_v4f LI2  = V4F_MUL(hf, V4F_ADD(LQ, LW));
+        const bruun_v4f LA1v = V4F_MUL(hf, V4F_SUB(LQ, LW));
+        const bruun_v4f Lc2 = V4F_LD(tL.c2d);
+        const bruun_v4f Ls2 = V4F_SET4(tL.c2d[2], tL.c2d[2], tL.c2d[0], tL.c2d[0]);
+        const bruun_v4f LB0v = V4F_MADD(V4F_MUL(Lc2, LR2), Ls2, LI2);
+        const bruun_v4f LB1v = V4F_MSUB(V4F_MUL(Lc2, LI2), Ls2, LR2);
+
+        const bruun_v4f Lc0a = V4F_CATLO(LA0v, LB0v);
+        const bruun_v4f Lc1a = V4F_CATHI(LA0v, LB0v);
+        const bruun_v4f Lc0b = V4F_CATLO(LA1v, LB1v);
+        const bruun_v4f Lc1b = V4F_CATHI(LA1v, LB1v);
+
+        const bruun_v4f LA0f = V4F_MUL(hf, V4F_ADD(Lc0a, Lc1a));
+        const bruun_v4f LR1  = V4F_MUL(hf, V4F_SUB(Lc0a, Lc1a));
+        const bruun_v4f LI1  = V4F_MUL(hf, V4F_ADD(Lc0b, Lc1b));
+        const bruun_v4f LA1f = V4F_MUL(hf, V4F_SUB(Lc0b, Lc1b));
+        const bruun_v4f Lc1v = V4F_SET1(tL.c1);
+        const bruun_v4f Ls1v = V4F_SET1(tL.s1);
+        const bruun_v4f LB0f = V4F_MADD(V4F_MUL(Lc1v, LR1), Ls1v, LI1);
+        const bruun_v4f LB1f = V4F_MSUB(V4F_MUL(Lc1v, LI1), Ls1v, LR1);
+
+        // --- Right d3 inverse (p[16..31]) ---
+        const bruun_v4f Rout0 = V4F_LD(p + 16);
+        const bruun_v4f Rout1 = V4F_LD(p + 20);
+        const bruun_v4f Rout2 = V4F_LD(p + 24);
+        const bruun_v4f Rout3 = V4F_LD(p + 28);
+
+        const bruun_v4f RaL = V4F_ZIPLO(Rout0, Rout1);
+        const bruun_v4f RaH = V4F_ZIPHI(Rout0, Rout1);
+        const bruun_v4f RbL = V4F_ZIPLO(Rout2, Rout3);
+        const bruun_v4f RbH = V4F_ZIPHI(Rout2, Rout3);
+        const bruun_v4f Rt0 = V4F_CATLO(RaL, RaH);
+        const bruun_v4f Rt1 = V4F_CATHI(RaL, RaH);
+        const bruun_v4f Rt2 = V4F_CATLO(RbL, RbH);
+        const bruun_v4f Rt3 = V4F_CATHI(RbL, RbH);
+        const bruun_v4f RE0 = V4F_CATLO(Rt0, Rt2);
+        const bruun_v4f RO0 = V4F_CATHI(Rt0, Rt2);
+        const bruun_v4f RE1 = V4F_CATLO(Rt1, Rt3);
+        const bruun_v4f RO1 = V4F_CATHI(Rt1, Rt3);
+
+        const bruun_v4f RA0w = V4F_MUL(hf, V4F_ADD(RE0, RO0));
+        const bruun_v4f RR3  = V4F_MUL(hf, V4F_SUB(RE0, RO0));
+        const bruun_v4f RI3  = V4F_MUL(hf, V4F_ADD(RE1, RO1));
+        const bruun_v4f RA1w = V4F_MUL(hf, V4F_SUB(RE1, RO1));
+        const bruun_v4f Rc4 = V4F_LD(tR.c4);
+        const bruun_v4f Rs4 = V4F_SET4(tR.c4[1], tR.c4[0], tR.c4[3], tR.c4[2]);
+        const bruun_v4f RB0w = V4F_MADD(V4F_MUL(Rc4, RR3), Rs4, RI3);
+        const bruun_v4f RB1w = V4F_MSUB(V4F_MUL(Rc4, RI3), Rs4, RR3);
+
+        const bruun_v4f RabL = V4F_ZIPLO(RA0w, RB0w);
+        const bruun_v4f RabH = V4F_ZIPHI(RA0w, RB0w);
+        const bruun_v4f RcdL = V4F_ZIPLO(RA1w, RB1w);
+        const bruun_v4f RcdH = V4F_ZIPHI(RA1w, RB1w);
+        const bruun_v4f RP = V4F_CATLO(RabL, RabH);
+        const bruun_v4f RM = V4F_CATHI(RabL, RabH);
+        const bruun_v4f RQ = V4F_CATLO(RcdL, RcdH);
+        const bruun_v4f RW = V4F_CATHI(RcdL, RcdH);
+
+        const bruun_v4f RA0v = V4F_MUL(hf, V4F_ADD(RP, RM));
+        const bruun_v4f RR2  = V4F_MUL(hf, V4F_SUB(RP, RM));
+        const bruun_v4f RI2  = V4F_MUL(hf, V4F_ADD(RQ, RW));
+        const bruun_v4f RA1v = V4F_MUL(hf, V4F_SUB(RQ, RW));
+        const bruun_v4f Rc2 = V4F_LD(tR.c2d);
+        const bruun_v4f Rs2 = V4F_SET4(tR.c2d[2], tR.c2d[2], tR.c2d[0], tR.c2d[0]);
+        const bruun_v4f RB0v = V4F_MADD(V4F_MUL(Rc2, RR2), Rs2, RI2);
+        const bruun_v4f RB1v = V4F_MSUB(V4F_MUL(Rc2, RI2), Rs2, RR2);
+
+        const bruun_v4f Rc0a = V4F_CATLO(RA0v, RB0v);
+        const bruun_v4f Rc1a = V4F_CATHI(RA0v, RB0v);
+        const bruun_v4f Rc0b = V4F_CATLO(RA1v, RB1v);
+        const bruun_v4f Rc1b = V4F_CATHI(RA1v, RB1v);
+
+        const bruun_v4f RA0f = V4F_MUL(hf, V4F_ADD(Rc0a, Rc1a));
+        const bruun_v4f RR1  = V4F_MUL(hf, V4F_SUB(Rc0a, Rc1a));
+        const bruun_v4f RI1  = V4F_MUL(hf, V4F_ADD(Rc0b, Rc1b));
+        const bruun_v4f RA1f = V4F_MUL(hf, V4F_SUB(Rc0b, Rc1b));
+        const bruun_v4f Rc1v = V4F_SET1(tR.c1);
+        const bruun_v4f Rs1v = V4F_SET1(tR.s1);
+        const bruun_v4f RB0f = V4F_MADD(V4F_MUL(Rc1v, RR1), Rs1v, RI1);
+        const bruun_v4f RB1f = V4F_MSUB(V4F_MUL(Rc1v, RI1), Rs1v, RR1);
+
+        // --- Fused norm_q_inv with q=8 ---
+        // C0[0..3]=LA0f, C0[4..7]=LB0f, C1[0..3]=LA1f, C1[4..7]=LB1f
+        // D0[0..3]=RA0f, D0[4..7]=RB0f, D1[0..3]=RA1f, D1[4..7]=RB1f
+        const bruun_v4f vc = V4F_SET1(CF[m]);
+        const bruun_v4f vs = V4F_SET1(sf_twiddle(m));
+
+        // Iteration 0: A-vectors
+        const bruun_v4f nA0  = V4F_MUL(hf, V4F_ADD(LA0f, RA0f));
+        const bruun_v4f nR0  = V4F_MUL(hf, V4F_SUB(LA0f, RA0f));
+        const bruun_v4f nI0  = V4F_MUL(hf, V4F_ADD(LA1f, RA1f));
+        const bruun_v4f nA10 = V4F_MUL(hf, V4F_SUB(LA1f, RA1f));
+        const bruun_v4f nB00 = V4F_MADD(V4F_MUL(vc, nR0), vs, nI0);
+        const bruun_v4f nB10 = V4F_MSUB(V4F_MUL(vc, nI0), vs, nR0);
+
+        // Iteration 1: B-vectors
+        const bruun_v4f nA01 = V4F_MUL(hf, V4F_ADD(LB0f, RB0f));
+        const bruun_v4f nR1  = V4F_MUL(hf, V4F_SUB(LB0f, RB0f));
+        const bruun_v4f nI1  = V4F_MUL(hf, V4F_ADD(LB1f, RB1f));
+        const bruun_v4f nA11 = V4F_MUL(hf, V4F_SUB(LB1f, RB1f));
+        const bruun_v4f nB01 = V4F_MADD(V4F_MUL(vc, nR1), vs, nI1);
+        const bruun_v4f nB11 = V4F_MSUB(V4F_MUL(vc, nI1), vs, nR1);
+
+        // Store: C0[0..7], C1[0..7], D0[0..7], D1[0..7]
+        V4F_ST(p,      nA0);
+        V4F_ST(p + 4,  nA01);
+        V4F_ST(p + 8,  nB00);
+        V4F_ST(p + 12, nB01);
+        V4F_ST(p + 16, nA10);
+        V4F_ST(p + 20, nA11);
+        V4F_ST(p + 24, nB10);
+        V4F_ST(p + 28, nB11);
+#else
+        codelet_d3_tw_res_inv_f32(p, TWF[2*m]);
+        codelet_d3_tw_res_inv_f32(p + 16, TWF[2*m + 1]);
+        norm_q_inv_f32(p, 8, CF[m], sf_twiddle(m));
 #endif
     }
 
@@ -3183,9 +3347,7 @@ private:
             return;
         }
         if (q == 8) {
-            codelet_d3_tw_res_inv_f32(v, TWF[2*m]);
-            codelet_d3_tw_res_inv_f32(v + 16, TWF[2*m + 1]);
-            norm_q_inv_f32(v, 8, CF[m], sf_twiddle(m));
+            codelet_d4_inv_f32(v, m);
             return;
         }
         codelet_d3_tw_res_inv_f32(v, TWF[m]);
@@ -3220,9 +3382,7 @@ private:
             }
             case FWD_OP_CODELET_Q8: {
                 const int m = static_cast<int>(op.m);
-                codelet_d3_tw_res_inv_f32(base, TWF[2*m]);
-                codelet_d3_tw_res_inv_f32(base + 16, TWF[2*m + 1]);
-                norm_q_inv_f32(base, 8, CF[m], sf_twiddle(m));
+                codelet_d4_inv_f32(base, m);
                 break;
             }
             case FWD_OP_CODELET_D3:
@@ -3932,6 +4092,158 @@ private:
 #endif
     }
 
+    inline void codelet_d4_inv(double* RESTRICT p, int m) const {
+#if BRUUN_LEVEL >= 2
+        const LeafTw& tL = TW[2*m];
+        const LeafTw& tR = TW[2*m + 1];
+        const __m256d hf = _mm256_set1_pd(0.5);
+
+        __m256d LA0, LB0, LA1, LB1;
+        __m256d RA0, RB0, RA1, RB1;
+
+        // --- Left d3 inverse (p[0..15]) ---
+        {
+        const __m256d out0 = _mm256_loadu_pd(p);
+        const __m256d out1 = _mm256_loadu_pd(p + 4);
+        const __m256d out2 = _mm256_loadu_pd(p + 8);
+        const __m256d out3 = _mm256_loadu_pd(p + 12);
+
+        const __m256d t0 = _mm256_unpacklo_pd(out0, out1);
+        const __m256d t1 = _mm256_unpackhi_pd(out0, out1);
+        const __m256d t2 = _mm256_unpacklo_pd(out2, out3);
+        const __m256d t3 = _mm256_unpackhi_pd(out2, out3);
+        const __m256d E0 = _mm256_permute2f128_pd(t0, t2, 0x20);
+        const __m256d O0 = _mm256_permute2f128_pd(t0, t2, 0x31);
+        const __m256d E1 = _mm256_permute2f128_pd(t1, t3, 0x20);
+        const __m256d O1 = _mm256_permute2f128_pd(t1, t3, 0x31);
+
+        const __m256d A0w = _mm256_mul_pd(hf, _mm256_add_pd(E0, O0));
+        const __m256d R3  = _mm256_mul_pd(hf, _mm256_sub_pd(E0, O0));
+        const __m256d I3  = _mm256_mul_pd(hf, _mm256_add_pd(E1, O1));
+        const __m256d A1w = _mm256_mul_pd(hf, _mm256_sub_pd(E1, O1));
+        const __m256d c4 = _mm256_loadu_pd(tL.c4);
+        const __m256d s4 = _mm256_set_pd(tL.c4[2], tL.c4[3], tL.c4[0], tL.c4[1]);
+        const __m256d B0w = _mm256_fmadd_pd(c4, R3, _mm256_mul_pd(s4, I3));
+        const __m256d B1w = _mm256_fmsub_pd(c4, I3, _mm256_mul_pd(s4, R3));
+
+        const __m256d LP = _mm256_unpacklo_pd(A0w, B0w);
+        const __m256d LM = _mm256_unpackhi_pd(A0w, B0w);
+        const __m256d LQ = _mm256_unpacklo_pd(A1w, B1w);
+        const __m256d LW = _mm256_unpackhi_pd(A1w, B1w);
+
+        const __m256d A0v = _mm256_mul_pd(hf, _mm256_add_pd(LP, LM));
+        const __m256d R2  = _mm256_mul_pd(hf, _mm256_sub_pd(LP, LM));
+        const __m256d I2  = _mm256_mul_pd(hf, _mm256_add_pd(LQ, LW));
+        const __m256d A1v = _mm256_mul_pd(hf, _mm256_sub_pd(LQ, LW));
+        const __m256d c2 = _mm256_permute4x64_pd(_mm256_castpd128_pd256(_mm_loadu_pd(tL.c2)), 0x50);
+        const __m256d s2 = _mm256_permute4x64_pd(c2, 0x4E);
+        const __m256d B0v = _mm256_fmadd_pd(c2, R2, _mm256_mul_pd(s2, I2));
+        const __m256d B1v = _mm256_fmsub_pd(c2, I2, _mm256_mul_pd(s2, R2));
+
+        const __m256d Lc0a = _mm256_permute2f128_pd(A0v, B0v, 0x20);
+        const __m256d Lc1a = _mm256_permute2f128_pd(A0v, B0v, 0x31);
+        const __m256d Lc0b = _mm256_permute2f128_pd(A1v, B1v, 0x20);
+        const __m256d Lc1b = _mm256_permute2f128_pd(A1v, B1v, 0x31);
+
+        const __m256d c1v = _mm256_set1_pd(tL.c1);
+        const __m256d s1v = _mm256_set1_pd(tL.s1);
+
+        LA0 = _mm256_mul_pd(hf, _mm256_add_pd(Lc0a, Lc1a));
+        const __m256d LR1 = _mm256_mul_pd(hf, _mm256_sub_pd(Lc0a, Lc1a));
+        const __m256d LI1 = _mm256_mul_pd(hf, _mm256_add_pd(Lc0b, Lc1b));
+        LA1 = _mm256_mul_pd(hf, _mm256_sub_pd(Lc0b, Lc1b));
+        LB0 = _mm256_fmadd_pd(c1v, LR1, _mm256_mul_pd(s1v, LI1));
+        LB1 = _mm256_fmsub_pd(c1v, LI1, _mm256_mul_pd(s1v, LR1));
+        }
+
+        // --- Right d3 inverse (p[16..31]) ---
+        {
+        const __m256d out0 = _mm256_loadu_pd(p + 16);
+        const __m256d out1 = _mm256_loadu_pd(p + 20);
+        const __m256d out2 = _mm256_loadu_pd(p + 24);
+        const __m256d out3 = _mm256_loadu_pd(p + 28);
+
+        const __m256d t0 = _mm256_unpacklo_pd(out0, out1);
+        const __m256d t1 = _mm256_unpackhi_pd(out0, out1);
+        const __m256d t2 = _mm256_unpacklo_pd(out2, out3);
+        const __m256d t3 = _mm256_unpackhi_pd(out2, out3);
+        const __m256d E0 = _mm256_permute2f128_pd(t0, t2, 0x20);
+        const __m256d O0 = _mm256_permute2f128_pd(t0, t2, 0x31);
+        const __m256d E1 = _mm256_permute2f128_pd(t1, t3, 0x20);
+        const __m256d O1 = _mm256_permute2f128_pd(t1, t3, 0x31);
+
+        const __m256d A0w = _mm256_mul_pd(hf, _mm256_add_pd(E0, O0));
+        const __m256d R3  = _mm256_mul_pd(hf, _mm256_sub_pd(E0, O0));
+        const __m256d I3  = _mm256_mul_pd(hf, _mm256_add_pd(E1, O1));
+        const __m256d A1w = _mm256_mul_pd(hf, _mm256_sub_pd(E1, O1));
+        const __m256d c4 = _mm256_loadu_pd(tR.c4);
+        const __m256d s4 = _mm256_set_pd(tR.c4[2], tR.c4[3], tR.c4[0], tR.c4[1]);
+        const __m256d B0w = _mm256_fmadd_pd(c4, R3, _mm256_mul_pd(s4, I3));
+        const __m256d B1w = _mm256_fmsub_pd(c4, I3, _mm256_mul_pd(s4, R3));
+
+        const __m256d RP = _mm256_unpacklo_pd(A0w, B0w);
+        const __m256d RM = _mm256_unpackhi_pd(A0w, B0w);
+        const __m256d RQ = _mm256_unpacklo_pd(A1w, B1w);
+        const __m256d RW = _mm256_unpackhi_pd(A1w, B1w);
+
+        const __m256d A0v = _mm256_mul_pd(hf, _mm256_add_pd(RP, RM));
+        const __m256d R2  = _mm256_mul_pd(hf, _mm256_sub_pd(RP, RM));
+        const __m256d I2  = _mm256_mul_pd(hf, _mm256_add_pd(RQ, RW));
+        const __m256d A1v = _mm256_mul_pd(hf, _mm256_sub_pd(RQ, RW));
+        const __m256d c2 = _mm256_permute4x64_pd(_mm256_castpd128_pd256(_mm_loadu_pd(tR.c2)), 0x50);
+        const __m256d s2 = _mm256_permute4x64_pd(c2, 0x4E);
+        const __m256d B0v = _mm256_fmadd_pd(c2, R2, _mm256_mul_pd(s2, I2));
+        const __m256d B1v = _mm256_fmsub_pd(c2, I2, _mm256_mul_pd(s2, R2));
+
+        const __m256d Rc0a = _mm256_permute2f128_pd(A0v, B0v, 0x20);
+        const __m256d Rc1a = _mm256_permute2f128_pd(A0v, B0v, 0x31);
+        const __m256d Rc0b = _mm256_permute2f128_pd(A1v, B1v, 0x20);
+        const __m256d Rc1b = _mm256_permute2f128_pd(A1v, B1v, 0x31);
+
+        const __m256d c1v = _mm256_set1_pd(tR.c1);
+        const __m256d s1v = _mm256_set1_pd(tR.s1);
+
+        RA0 = _mm256_mul_pd(hf, _mm256_add_pd(Rc0a, Rc1a));
+        const __m256d RR1 = _mm256_mul_pd(hf, _mm256_sub_pd(Rc0a, Rc1a));
+        const __m256d RI1 = _mm256_mul_pd(hf, _mm256_add_pd(Rc0b, Rc1b));
+        RA1 = _mm256_mul_pd(hf, _mm256_sub_pd(Rc0b, Rc1b));
+        RB0 = _mm256_fmadd_pd(c1v, RR1, _mm256_mul_pd(s1v, RI1));
+        RB1 = _mm256_fmsub_pd(c1v, RI1, _mm256_mul_pd(s1v, RR1));
+        }
+
+        // --- Fused norm_q_inv with q=8 ---
+        const __m256d vc = _mm256_set1_pd(C[m]);
+        const __m256d vs = _mm256_set1_pd(s_twiddle(m));
+
+        const __m256d nA00 = _mm256_mul_pd(hf, _mm256_add_pd(LA0, RA0));
+        const __m256d nR0  = _mm256_mul_pd(hf, _mm256_sub_pd(LA0, RA0));
+        const __m256d nI0  = _mm256_mul_pd(hf, _mm256_add_pd(LA1, RA1));
+        const __m256d nA10 = _mm256_mul_pd(hf, _mm256_sub_pd(LA1, RA1));
+        const __m256d nB00 = _mm256_fmadd_pd(vc, nR0, _mm256_mul_pd(vs, nI0));
+        const __m256d nB10 = _mm256_fmsub_pd(vc, nI0, _mm256_mul_pd(vs, nR0));
+
+        const __m256d nA01 = _mm256_mul_pd(hf, _mm256_add_pd(LB0, RB0));
+        const __m256d nR1  = _mm256_mul_pd(hf, _mm256_sub_pd(LB0, RB0));
+        const __m256d nI1  = _mm256_mul_pd(hf, _mm256_add_pd(LB1, RB1));
+        const __m256d nA11 = _mm256_mul_pd(hf, _mm256_sub_pd(LB1, RB1));
+        const __m256d nB01 = _mm256_fmadd_pd(vc, nR1, _mm256_mul_pd(vs, nI1));
+        const __m256d nB11 = _mm256_fmsub_pd(vc, nI1, _mm256_mul_pd(vs, nR1));
+
+        _mm256_storeu_pd(p,      nA00);
+        _mm256_storeu_pd(p + 4,  nA01);
+        _mm256_storeu_pd(p + 8,  nB00);
+        _mm256_storeu_pd(p + 12, nB01);
+        _mm256_storeu_pd(p + 16, nA10);
+        _mm256_storeu_pd(p + 20, nA11);
+        _mm256_storeu_pd(p + 24, nB10);
+        _mm256_storeu_pd(p + 28, nB11);
+#else
+        codelet_d3_tw_res_inv(p, TW[2*m]);
+        codelet_d3_tw_res_inv(p + 16, TW[2*m + 1]);
+        norm_q_inv(p, 8, C[m], s_twiddle(m));
+#endif
+    }
+
     void rec_inv_res(double* RESTRICT v, int q, int m) const {
         if (q >= 16) {
             const int qq = q >> 2;
@@ -3943,9 +4255,7 @@ private:
             return;
         }
         if (q == 8) {
-            codelet_d3_tw_res_inv(v, TW[2*m]);
-            codelet_d3_tw_res_inv(v + 16, TW[2*m + 1]);
-            norm_q_inv(v, 8, C[m], s_twiddle(m));
+            codelet_d4_inv(v, m);
             return;
         }
         codelet_d3_tw_res_inv(v, TW[m]);
@@ -3981,9 +4291,7 @@ private:
             }
             case FWD_OP_CODELET_Q8: {
                 const int m = static_cast<int>(op.m);
-                codelet_d3_tw_res_inv(base, TW[2*m]);
-                codelet_d3_tw_res_inv(base + 16, TW[2*m + 1]);
-                norm_q_inv(base, 8, C[m], s_twiddle(m));
+                codelet_d4_inv(base, m);
                 break;
             }
             case FWD_OP_CODELET_D3:

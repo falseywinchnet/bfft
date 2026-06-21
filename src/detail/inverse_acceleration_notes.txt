@@ -23,13 +23,18 @@ ISA notes:
 - AVX2 keeps the existing recursive path for now because the first scheduled attempt did not beat it on this host.
 - AVX-512 is treated the same as AVX2 until the inverse d4 q==8 fusion is available; the schedule infrastructure is present, but not enabled for wide-vector builds yet.
 
+Completed:
+1. [done] Fused inverse d4 codelet for f32 q==8 (`codelet_d4_inv_f32`): two inverse d3 leaves + inverse q=8 norm in one function, values stay in registers.  Eliminates 8 loads + 8 stores per q==8 block.  Wired into both the schedule runner and the recursive path.
+4. [done] Assembly inspection of the SSE2/NEON schedule loop identified that all inverse twiddle recombinations used `V4F_ADD(V4F_MUL, V4F_MUL)` instead of `V4F_MADD`/`V4F_MSUB`.  Fixed in `norm_q_inv_f32`, `norm2_inv_fused_f32`, `codelet_d3_tw_res_inv_f32`, and the double V2 equivalents.  NEON FMA count in the inverse schedule runner went from 8 to 38 (matching the forward), total instructions from 1162 to 961.
+
+5. [done] Fused d4 inverse codelet for double-precision AVX2 (`codelet_d4_inv`): uses `__m256d` intrinsics for the BRUUN_LEVEL>=2 path, falls back to three separate calls otherwise.  Wired into both `rec_inv_res` q==8 and `run_inv_residue_schedule` FWD_OP_CODELET_Q8.  AVX2 assembly: 2212 instructions, 55 FMAs, 169 spills + 161 reloads (expected — 16 YMM registers vs 8 live output vectors plus twiddles).  Spills hit L1 stack; still a net win over unfused path's 32-double store/reload through the data array on large transforms.
+
 Follow-up candidates:
-1. Add an inverse d4 codelet for q==8 to fuse the two inverse d3 leaves and inverse q=8 norm while values remain resident in registers.
 2. Fuse native/standard gather with the inverse binomial tail to remove one complete pass over N for inverse-from-complex APIs.
 3. Add f32/scalar lane-doubling equivalents where the inverse leaf still falls back to generic inverse-norm ladders.
-4. Inspect per-ISA assembly for the new switch loop and q==8 case before choosing the next specialized kernel.
+6. Re-evaluate enabling the scheduled inverse for AVX2 now that the d4 fusion is available — the register-residency win may now overcome flat-dispatch overhead.
 
 SSE-first gate:
 - Initial AVX2 timing showed the flat inverse schedule is not yet a win on this host, likely because AVX2 already has the recursive leaf path inlined into large vector kernels while the schedule adds switch pressure.
 - The scheduled inverse is therefore enabled first for 128-bit SSE/NEON builds, where removing recursive calls is the current concrete win.
-- AVX2 and AVX-512 keep the existing recursive path until the next step lands a fused inverse d4 q==8 codelet, which should provide the register-residency win needed to overcome flat-dispatch overhead.
+- AVX2 and AVX-512 keep the existing recursive path until the d4 fusion is ported to those ISAs and benchmarked.
