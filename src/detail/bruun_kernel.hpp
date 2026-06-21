@@ -2673,6 +2673,7 @@ private:
     heap_array<float> CF;
     heap_array<FwdOp> FWD_SCHEDULE;
     heap_array<FwdOp> FWD_RES_SCHEDULE;
+    heap_array<FwdOp> INV_RES_SCHEDULE;
 
     inline float sf_twiddle(int m) const {
         return (m <= 1) ? (m == 1 ? CF[1] : 0.0f) : CF[m ^ 1];
@@ -2760,6 +2761,30 @@ private:
         return true;
     }
 
+    bool build_inverse_residue_schedule() {
+        const std::size_t source_count = FWD_RES_SCHEDULE.size();
+        if (!INV_RES_SCHEDULE.resize(source_count + 1)) return false;
+        for (std::size_t i = 0; i < source_count; ++i) {
+            INV_RES_SCHEDULE[i] = FWD_RES_SCHEDULE[source_count - 1 - i];
+            INV_RES_SCHEDULE[i].mem.stream = 2;
+        }
+        FwdOp final_op{};
+        final_op.base = 0;
+        final_op.q = static_cast<uint32_t>(N / 2);
+        final_op.m = 0;
+        final_op.kind = FWD_OP_BINOMIAL;
+        final_op.mem.base = 0;
+        final_op.mem.span = static_cast<uint32_t>(N);
+        final_op.mem.align = static_cast<uint16_t>(bruun_cache_alignment);
+        final_op.mem.stream = 2;
+        final_op.mem.next_base = 0;
+        INV_RES_SCHEDULE[source_count] = final_op;
+        for (std::size_t i = 0; i + 1 < INV_RES_SCHEDULE.size(); ++i) {
+            INV_RES_SCHEDULE[i].mem.next_base = INV_RES_SCHEDULE[i + 1].mem.base;
+        }
+        return true;
+    }
+
     bool build_forward_schedules() {
         heap_array<FwdOp> fused_ops;
         heap_array<FwdOp> residue_ops;
@@ -2790,6 +2815,7 @@ private:
         }
         if (!copy_schedule(fused_ops, FWD_SCHEDULE)) return false;
         if (!copy_schedule(residue_ops, FWD_RES_SCHEDULE)) return false;
+        if (!build_inverse_residue_schedule()) return false;
         return true;
     }
 
@@ -3176,8 +3202,55 @@ private:
         codelet_d3_tw_res_inv_f32(v + 16, TWF[1]);
     }
 
+    void run_inv_residue_schedule_f32(float* RESTRICT v) const {
+        const FwdOp* RESTRICT ops = INV_RES_SCHEDULE.data();
+        const std::size_t op_count = INV_RES_SCHEDULE.size();
+        for (std::size_t op_index = 0; op_index < op_count; ++op_index) {
+            const FwdOp& op = ops[op_index];
+            float* RESTRICT base = v + op.base;
+#if defined(__GNUC__) || defined(__clang__)
+            __builtin_prefetch(v + op.mem.next_base, 1, 1);
+#endif
+            switch (op.kind) {
+            case FWD_OP_NORM2: {
+                const int m = static_cast<int>(op.m);
+                const int q = static_cast<int>(op.q);
+                norm2_inv_fused_f32(base, q, CF[m], sf_twiddle(m), CF[2*m], sf_twiddle(2*m), CF[2*m+1], sf_twiddle(2*m+1));
+                break;
+            }
+            case FWD_OP_CODELET_Q8: {
+                const int m = static_cast<int>(op.m);
+                codelet_d3_tw_res_inv_f32(base, TWF[2*m]);
+                codelet_d3_tw_res_inv_f32(base + 16, TWF[2*m + 1]);
+                norm_q_inv_f32(base, 8, CF[m], sf_twiddle(m));
+                break;
+            }
+            case FWD_OP_CODELET_D3:
+            case FWD_OP_SPINE_D3:
+                codelet_d3_tw_res_inv_f32(base, TWF[op.m]);
+                break;
+            case FWD_OP_BINOMIAL:
+                binomial_inv_f32(base, static_cast<int>(op.q));
+                break;
+            case FWD_OP_SPINE_D1:
+                norm_q_inv_f32(base, 1, CF[1], sf_twiddle(1));
+                break;
+            case FWD_OP_SPINE_NORM2:
+                norm_q_inv_f32(base, 1, CF[2], sf_twiddle(2));
+                norm_q_inv_f32(base + 4, 1, CF[3], sf_twiddle(3));
+                norm_q_inv_f32(base, 2, CF[1], sf_twiddle(1));
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
     // Exact reverse of forward_residues_recursive_f32. Requires N >= 64.
     void inverse_residues_recursive_f32(float* RESTRICT v) const {
+#if BRUUN_LEVEL == 1
+        run_inv_residue_schedule_f32(v);
+#else
         residue_spine_tail_inv_f32(v);
 
         for (int h = 32; h <= N / 2; h <<= 1) {
@@ -3186,6 +3259,7 @@ private:
         }
 
         binomial_inv_f32(v, N / 2);
+#endif
     }
 
     void inverse_residues_inplace_f32(float* RESTRICT v) const {
@@ -3784,12 +3858,16 @@ private:
 
     // Exact inverse of codelet_d3_tw_res: three inverse levels on one 16-double
     // leaf block, fused in registers on AVX2, generic norm_q_inv ladder otherwise.
-    inline void codelet_d3_tw_res_inv(double* RESTRICT p, const LeafTw& t) const {
 #if BRUUN_LEVEL >= 2
-        const __m256d out0 = _mm256_loadu_pd(p);
-        const __m256d out1 = _mm256_loadu_pd(p + 4);
-        const __m256d out2 = _mm256_loadu_pd(p + 8);
-        const __m256d out3 = _mm256_loadu_pd(p + 12);
+    inline void codelet_d3_tw_res_inv_avx2_core(__m256d out0,
+                                                __m256d out1,
+                                                __m256d out2,
+                                                __m256d out3,
+                                                const LeafTw& t,
+                                                __m256d& A0,
+                                                __m256d& B0,
+                                                __m256d& A1,
+                                                __m256d& B1) const {
 
         // Inverse of the forward 4x4 transpose.
         const __m256d t0 = _mm256_unpacklo_pd(out0, out1);
@@ -3834,15 +3912,68 @@ private:
         const __m256d c0b = _mm256_permute2f128_pd(A1v, B1v, 0x20);
         const __m256d c1b = _mm256_permute2f128_pd(A1v, B1v, 0x31);
 
-        const __m256d A0 = _mm256_mul_pd(hf, _mm256_add_pd(c0a, c1a));
+        A0 = _mm256_mul_pd(hf, _mm256_add_pd(c0a, c1a));
         const __m256d R1 = _mm256_mul_pd(hf, _mm256_sub_pd(c0a, c1a));
         const __m256d I1 = _mm256_mul_pd(hf, _mm256_add_pd(c0b, c1b));
-        const __m256d A1 = _mm256_mul_pd(hf, _mm256_sub_pd(c0b, c1b));
+        A1 = _mm256_mul_pd(hf, _mm256_sub_pd(c0b, c1b));
         const __m256d c1v = _mm256_set1_pd(t.c1);
         const __m256d s1v = _mm256_set1_pd(t.s1);
-        const __m256d B0 = _mm256_fmadd_pd(c1v, R1, _mm256_mul_pd(s1v, I1));
-        const __m256d B1 = _mm256_fmsub_pd(c1v, I1, _mm256_mul_pd(s1v, R1));
+        B0 = _mm256_fmadd_pd(c1v, R1, _mm256_mul_pd(s1v, I1));
+        B1 = _mm256_fmsub_pd(c1v, I1, _mm256_mul_pd(s1v, R1));
 
+    }
+
+    inline void codelet_d4_inv_avx2(double* RESTRICT p, int m) const {
+        __m256d c0l, c0h, c1l, c1h;
+        __m256d d0l, d0h, d1l, d1h;
+        codelet_d3_tw_res_inv_avx2_core(_mm256_loadu_pd(p),
+                                         _mm256_loadu_pd(p + 4),
+                                         _mm256_loadu_pd(p + 8),
+                                         _mm256_loadu_pd(p + 12),
+                                         TW[2*m], c0l, c0h, c1l, c1h);
+        codelet_d3_tw_res_inv_avx2_core(_mm256_loadu_pd(p + 16),
+                                         _mm256_loadu_pd(p + 20),
+                                         _mm256_loadu_pd(p + 24),
+                                         _mm256_loadu_pd(p + 28),
+                                         TW[2*m + 1], d0l, d0h, d1l, d1h);
+
+        const __m256d half = _mm256_set1_pd(0.5);
+        const __m256d vc = _mm256_set1_pd(C[m]);
+        const __m256d vs = _mm256_set1_pd(s_twiddle(m));
+
+        const __m256d a0l = _mm256_mul_pd(half, _mm256_add_pd(c0l, d0l));
+        const __m256d r0l = _mm256_mul_pd(half, _mm256_sub_pd(c0l, d0l));
+        const __m256d i0l = _mm256_mul_pd(half, _mm256_add_pd(c1l, d1l));
+        const __m256d a1l = _mm256_mul_pd(half, _mm256_sub_pd(c1l, d1l));
+        const __m256d b0l = _mm256_fmadd_pd(vc, r0l, _mm256_mul_pd(vs, i0l));
+        const __m256d b1l = _mm256_fmsub_pd(vc, i0l, _mm256_mul_pd(vs, r0l));
+
+        const __m256d a0h = _mm256_mul_pd(half, _mm256_add_pd(c0h, d0h));
+        const __m256d r0h = _mm256_mul_pd(half, _mm256_sub_pd(c0h, d0h));
+        const __m256d i0h = _mm256_mul_pd(half, _mm256_add_pd(c1h, d1h));
+        const __m256d a1h = _mm256_mul_pd(half, _mm256_sub_pd(c1h, d1h));
+        const __m256d b0h = _mm256_fmadd_pd(vc, r0h, _mm256_mul_pd(vs, i0h));
+        const __m256d b1h = _mm256_fmsub_pd(vc, i0h, _mm256_mul_pd(vs, r0h));
+
+        _mm256_storeu_pd(p,      a0l);
+        _mm256_storeu_pd(p + 4,  a0h);
+        _mm256_storeu_pd(p + 8,  b0l);
+        _mm256_storeu_pd(p + 12, b0h);
+        _mm256_storeu_pd(p + 16, a1l);
+        _mm256_storeu_pd(p + 20, a1h);
+        _mm256_storeu_pd(p + 24, b1l);
+        _mm256_storeu_pd(p + 28, b1h);
+    }
+#endif
+
+    inline void codelet_d3_tw_res_inv(double* RESTRICT p, const LeafTw& t) const {
+#if BRUUN_LEVEL >= 2
+        __m256d A0, B0, A1, B1;
+        codelet_d3_tw_res_inv_avx2_core(_mm256_loadu_pd(p),
+                                         _mm256_loadu_pd(p + 4),
+                                         _mm256_loadu_pd(p + 8),
+                                         _mm256_loadu_pd(p + 12),
+                                         t, A0, B0, A1, B1);
         _mm256_storeu_pd(p,      A0);
         _mm256_storeu_pd(p + 4,  B0);
         _mm256_storeu_pd(p + 8,  A1);
@@ -3869,9 +4000,13 @@ private:
             return;
         }
         if (q == 8) {
+#if BRUUN_LEVEL >= 2
+            codelet_d4_inv_avx2(v, m);
+#else
             codelet_d3_tw_res_inv(v, TW[2*m]);
             codelet_d3_tw_res_inv(v + 16, TW[2*m + 1]);
             norm_q_inv(v, 8, C[m], s_twiddle(m));
+#endif
             return;
         }
         codelet_d3_tw_res_inv(v, TW[m]);
@@ -3889,9 +4024,56 @@ private:
         codelet_d3_tw_res_inv(v + 16, TW[1]);
     }
 
-    // Fast depth-first residue inverse: exact reverse of forward_residues_recursive.
+    void run_inv_residue_schedule(double* RESTRICT v) const {
+        const FwdOp* RESTRICT ops = INV_RES_SCHEDULE.data();
+        const std::size_t op_count = INV_RES_SCHEDULE.size();
+        for (std::size_t op_index = 0; op_index < op_count; ++op_index) {
+            const FwdOp& op = ops[op_index];
+            double* RESTRICT base = v + op.base;
+#if defined(__GNUC__) || defined(__clang__)
+            __builtin_prefetch(v + op.mem.next_base, 1, 1);
+#endif
+            switch (op.kind) {
+            case FWD_OP_NORM2: {
+                const int m = static_cast<int>(op.m);
+                const int q = static_cast<int>(op.q);
+                norm2_inv_fused(base, q, C[m], s_twiddle(m), C[2*m], s_twiddle(2*m), C[2*m+1], s_twiddle(2*m+1));
+                break;
+            }
+            case FWD_OP_CODELET_Q8: {
+                const int m = static_cast<int>(op.m);
+                codelet_d3_tw_res_inv(base, TW[2*m]);
+                codelet_d3_tw_res_inv(base + 16, TW[2*m + 1]);
+                norm_q_inv(base, 8, C[m], s_twiddle(m));
+                break;
+            }
+            case FWD_OP_CODELET_D3:
+            case FWD_OP_SPINE_D3:
+                codelet_d3_tw_res_inv(base, TW[op.m]);
+                break;
+            case FWD_OP_BINOMIAL:
+                binomial_inv(base, static_cast<int>(op.q));
+                break;
+            case FWD_OP_SPINE_D1:
+                norm_q_inv(base, 1, C[1], s_twiddle(1));
+                break;
+            case FWD_OP_SPINE_NORM2:
+                norm_q_inv(base, 1, C[2], s_twiddle(2));
+                norm_q_inv(base + 4, 1, C[3], s_twiddle(3));
+                norm_q_inv(base, 2, C[1], s_twiddle(1));
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    // Fast scheduled residue inverse: exact reverse of forward_residues_recursive.
     // Requires N >= 64.
     void inverse_residues_recursive(double* RESTRICT v) const {
+#if BRUUN_LEVEL == 1
+        run_inv_residue_schedule(v);
+#else
         residue_spine_tail_inv(v);
 
         for (int h = 32; h <= N / 2; h <<= 1) {
@@ -3900,6 +4082,7 @@ private:
         }
 
         binomial_inv(v, N / 2);
+#endif
     }
 
     // Two-phase standard-output forward: residues land in block order in v, then

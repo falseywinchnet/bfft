@@ -1,0 +1,41 @@
+Inverse acceleration decisions
+==============================
+
+2026-06-21
+
+Local sync:
+- The current branch is `work` and has no configured upstream remote/tracking branch.
+- `git fetch --all --prune` had nothing to fetch.
+- `git pull --ff-only` could not update because there is no tracking information for `work`.
+
+Primary decision:
+- Start with the near-free scheduling win before deeper per-ISA kernel rewrites.
+- Build `INV_RES_SCHEDULE` from `FWD_RES_SCHEDULE` by reversing the forward residue schedule and appending the final inverse binomial that undoes the initial forward `binomial_oop`.
+- Keep the record type shared with the forward scheduler for now. The operation kind identifies the forward primitive; inverse dispatch swaps each kind to its inverse kernel.
+
+Why this is first:
+- It removes the recursive inverse traversal and replaces it with the same linear switch shape already used by the forward path.
+- It keeps all q==8, q==4, q==2, and spine operations in one baked stream, exposing predictable control flow and sequential op metadata to SSE/NEON, AVX2, and AVX-512 builds.
+- It does not change transform math, layout, or public APIs, so correctness risk is lower than starting with new fused inverse scatter or d4 inverse codelets.
+
+ISA notes:
+- SSE/NEON benefit immediately from removing recursive calls and from the existing 128-bit `norm_q_inv` loop.
+- AVX2 keeps the recursive traversal rather than flat scheduled dispatch, but now uses a fused inverse d4 q==8 codelet inside that traversal.
+- AVX-512 is still treated like the pre-d4 AVX2 path until a 512-bit inverse d4x2 equivalent is available; the schedule infrastructure is present, but not enabled for wide-vector builds yet.
+
+Follow-up candidates:
+1. Add a 512-bit inverse d4x2 codelet mirroring `codelet_d4x2_avx512`.
+2. Fuse native/standard gather with the inverse binomial tail to remove one complete pass over N for inverse-from-complex APIs.
+3. Add f32/scalar lane-doubling equivalents where the inverse leaf still falls back to generic inverse-norm ladders.
+4. Re-check flat scheduled dispatch after the wide-vector q==8 fusion exists on both AVX2 and AVX-512.
+
+SSE-first gate:
+- Initial AVX2 timing showed the flat inverse schedule is not yet a win on this host, likely because AVX2 already has the recursive leaf path inlined into large vector kernels while the schedule adds switch pressure.
+- The scheduled inverse is therefore enabled first for 128-bit SSE/NEON builds, where removing recursive calls is the current concrete win.
+- AVX2 keeps recursive traversal with the fused d4 inverse codelet; AVX-512 still needs its d4x2 inverse counterpart.
+
+AVX2 inverse d4 follow-up:
+- Continued with the first wide-vector follow-up: factor the AVX2 inverse depth-3 leaf into a register-returning core.
+- Added `codelet_d4_inv_avx2`, which runs both inverse depth-3 child leaves from registers and immediately applies the inverse q=8 norm before storing the parent block.
+- This targets the same store/reload boundary that the forward `codelet_d4_avx2` removes in the forward direction.
+- The flat inverse schedule remains gated to 128-bit builds; AVX2 now improves through fused q=8 recursion without paying scheduled-dispatch overhead.
