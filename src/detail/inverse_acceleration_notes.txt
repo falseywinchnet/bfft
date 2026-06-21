@@ -20,8 +20,7 @@ Why this is first:
 
 ISA notes:
 - SSE/NEON benefit immediately from removing recursive calls and from the existing 128-bit `norm_q_inv` loop.
-- AVX2 now uses the scheduled inverse as well.  After the double-precision d4 inverse fusion, q==8 leaves stay register-resident in both recursive and scheduled runners, and direct inverse benchmarking on an AVX2 host showed the schedule paying for its flat dispatch.
-- AVX-512 keeps the existing recursive path until the d4 fusion and schedule tradeoff are benchmarked on a native AVX-512 target.
+- AVX2 and AVX-512 now use the scheduled inverse as well.  After the double-precision d4 inverse fusion, q==8 leaves stay register-resident in both recursive and scheduled runners, and direct inverse benchmarking on wide x86 hosts showed the schedule paying for its flat dispatch.
 
 Completed:
 1. [done] Fused inverse d4 codelet for f32 q==8 (`codelet_d4_inv_f32`): two inverse d3 leaves + inverse q=8 norm in one function, values stay in registers.  Eliminates 8 loads + 8 stores per q==8 block.  Wired into both the schedule runner and the recursive path.
@@ -33,7 +32,8 @@ Follow-up candidates:
 2. Fuse native/standard gather with the inverse binomial tail to remove one complete pass over N for inverse-from-complex APIs.
 3. Add f32/scalar lane-doubling equivalents where the inverse leaf still falls back to generic inverse-norm ladders.
 
-AVX2 schedule gate:
+Wide-x86 schedule gate:
 - Rechecked the scheduled inverse on Intel Xeon Platinum 8370C with `-O3 -mavx2 -mfma -mno-avx512*`.
+- Rechecked the AVX-512 scheduled inverse on the same host with `-O3 -march=native`.
 - The benchmark now prints a direct `Inv_ns` column so inverse-only changes are visible instead of inferred from round-trip timing.
-- The d4 fusion was correctness-checked on AVX2 and is fast enough to enable the flat inverse schedule for BRUUN_LEVEL 2.
+- The d4 fusion was correctness-checked on AVX2 and AVX-512 and is fast enough to enable the flat inverse schedule for BRUUN_LEVEL 2 and 3.
