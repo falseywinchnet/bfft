@@ -4318,7 +4318,10 @@ private:
     // Fast scheduled residue inverse: exact reverse of forward_residues_recursive.
     // Requires N >= 64.
     void inverse_residues_recursive(double* RESTRICT v) const {
-#if BRUUN_LEVEL == 1
+#if BRUUN_LEVEL <= 2
+        // AVX2 now uses the same flat inverse schedule as 128-bit SIMD.  The
+        // fused d4 inverse codelet keeps the q==8 leaves register-resident, so
+        // the schedule no longer pays an extra store/reload penalty at the leaf.
         run_inv_residue_schedule(v);
 #else
         residue_spine_tail_inv(v);
