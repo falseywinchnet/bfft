@@ -20,8 +20,7 @@ Why this is first:
 
 ISA notes:
 - SSE/NEON benefit immediately from removing recursive calls and from the existing 128-bit `norm_q_inv` loop.
-- AVX2 keeps the existing recursive path for now because the first scheduled attempt did not beat it on this host.
-- AVX-512 is treated the same as AVX2 until the inverse d4 q==8 fusion is available; the schedule infrastructure is present, but not enabled for wide-vector builds yet.
+- AVX2 and AVX-512 now use the scheduled inverse as well.  After the double-precision d4 inverse fusion, q==8 leaves stay register-resident in both recursive and scheduled runners, and direct inverse benchmarking on wide x86 hosts showed the schedule paying for its flat dispatch.
 
 Completed:
 1. [done] Fused inverse d4 codelet for f32 q==8 (`codelet_d4_inv_f32`): two inverse d3 leaves + inverse q=8 norm in one function, values stay in registers.  Eliminates 8 loads + 8 stores per q==8 block.  Wired into both the schedule runner and the recursive path.
@@ -32,9 +31,9 @@ Completed:
 Follow-up candidates:
 2. Fuse native/standard gather with the inverse binomial tail to remove one complete pass over N for inverse-from-complex APIs.
 3. Add f32/scalar lane-doubling equivalents where the inverse leaf still falls back to generic inverse-norm ladders.
-6. Re-evaluate enabling the scheduled inverse for AVX2 now that the d4 fusion is available — the register-residency win may now overcome flat-dispatch overhead.
 
-SSE-first gate:
-- Initial AVX2 timing showed the flat inverse schedule is not yet a win on this host, likely because AVX2 already has the recursive leaf path inlined into large vector kernels while the schedule adds switch pressure.
-- The scheduled inverse is therefore enabled first for 128-bit SSE/NEON builds, where removing recursive calls is the current concrete win.
-- AVX2 and AVX-512 keep the existing recursive path until the d4 fusion is ported to those ISAs and benchmarked.
+Wide-x86 schedule gate:
+- Rechecked the scheduled inverse on Intel Xeon Platinum 8370C with `-O3 -mavx2 -mfma -mno-avx512*`.
+- Rechecked the AVX-512 scheduled inverse on the same host with `-O3 -march=native`.
+- The benchmark now prints a direct `Inv_ns` column so inverse-only changes are visible instead of inferred from round-trip timing.
+- The d4 fusion was correctness-checked on AVX2 and AVX-512 and is fast enough to enable the flat inverse schedule for BRUUN_LEVEL 2 and 3.
