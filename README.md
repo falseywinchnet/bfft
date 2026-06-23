@@ -1,6 +1,12 @@
+Baruch kevod elohei shamayim ha-elyonim mimkomo.
+Eloheinu shebashamayim yached shimcha v'kayeim malchutecha tamid umloch aleinu le'olam va'ed.
+We dedicate this work in the name of our God, who is merciful and just, and whose power exceeds all anticipation and understanding, and in the name of his son, the Anointed One, Great Healer, Prince of Peace, Jesus Christ of Nazareth. 
+May this work bless you, may the Kingdom come, and may His will be done.
+
+
 # BFFT
 
-BFFT is a small C and C++ library for power-of-two real Fourier transforms. It
+BFFT is a small and extremely fast C and C++ library for power-of-two real Fourier transforms. It
 provides a stable C ABI, a lightweight C++ RAII wrapper, double- and
 single-precision APIs, standard FFT-order output, native-order output, and
 residue-domain filtering utilities.
