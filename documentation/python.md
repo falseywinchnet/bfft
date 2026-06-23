@@ -127,8 +127,8 @@ be a C-contiguous array of the right dtype and length, and is returned as-is.
 
 `numpy.fft` cannot be called from `@njit(nopython=True)` code -- it is a Python
 C-extension that only exists in object mode. BFFT *can*, because it is a plain C
-ABI taking raw pointers, which Numba lowers through its cffi support. Install the
-extra dependencies with `pip install bfft[numba]`, then:
+ABI taking raw pointers, which Numba lowers through its cffi support. `cffi` is a
+dependency of BFFT, so only `numba` itself needs to be installed alongside it:
 
 ```python
 import numpy as np
