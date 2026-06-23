@@ -12,7 +12,8 @@ May this work bless you, may the Kingdom come, and may His will be done.
 [![Sponsor](https://img.shields.io/github/sponsors/falseywinchnet?logo=githubsponsors)](https://github.com/sponsors/falseywinchnet)
 ![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS%20%7C%20windows-lightgrey)
 ![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue?logo=python)
-
+[![Claude](https://img.shields.io/badge/Built%20with-Claude-D97757?logo=anthropic&logoColor=white)](https://claude.com/claude-code)
+[![ChatGPT](https://img.shields.io/badge/Built%20with-ChatGPT-412991?logo=openai&logoColor=white)](https://openai.com/chatgpt)
 
 BFFT is a small and extremely fast C and C++ library for power-of-two real Fourier transforms. It
 provides a stable C ABI, a lightweight C++ RAII wrapper, double- and
