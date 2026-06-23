@@ -84,6 +84,32 @@ H = bfft.odft(x)                   # half-bin-shifted transform  -> N/2 bins
 x_back2 = bfft.iodft(H)            # inverse of odft             -> N samples
 ```
 
+The module-level functions cache the plan, the transform sizes, and reusable
+scratch buffers per length internally, so repeated calls at the same size avoid
+re-creating that state. They stay safe to call from multiple threads: a
+concurrent call at the same size that cannot reuse the shared scratch falls back
+to a private buffer.
+
+### Planned objects (hot loops)
+
+For the lowest per-call overhead -- transforming the same size repeatedly in a
+tight loop -- use a planned object. It caches everything except the unavoidable
+output allocation and input-pointer fetch:
+
+```python
+plan = bfft.Plan(N)                # standard real FFT at fixed size N
+X = plan.rfft(x)                   # == numpy.fft.rfft(x)
+x_back = plan.irfft(X)             # == numpy.fft.irfft(X)
+
+oplan = bfft.OdftPlan(N)           # half-bin transform at fixed size N
+H = oplan.odft(x)
+x_back2 = oplan.iodft(H)
+```
+
+A planned object owns shared scratch and is **not thread-safe**: create one plan
+per thread (or use the module-level functions, which guard against concurrent
+use).
+
 ## API
 
 | Function | Equivalent | Notes |

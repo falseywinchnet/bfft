@@ -255,6 +255,18 @@ x_back2 = bfft.iodft(H)            # inverse of odft             -> N samples
 | `bfft.odft(x)` | half-bin phase shift + `rfft` | `H[k] = sum_n x[n] exp(-2j*pi*(k+1/2)*n/N)`, `N >= 2`. |
 | `bfft.iodft(H, n=None)` | inverse of `bfft.odft` | `n` defaults to `2 * len(H)`. |
 
+These functions cache the plan and reusable scratch per size and guard against
+concurrent use. For the lowest per-call overhead in a tight loop, use a planned
+object (not thread-safe -- one per thread):
+
+```python
+plan = bfft.Plan(N)        # standard real FFT at a fixed size
+X = plan.rfft(x); x_back = plan.irfft(X)
+
+oplan = bfft.OdftPlan(N)   # half-bin transform at a fixed size
+H = oplan.odft(x); x_back2 = oplan.iodft(H)
+```
+
 All Python transforms operate on power-of-two lengths and double precision.
 
 ## Main API concepts
