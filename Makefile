@@ -66,10 +66,11 @@ SFDR_PROBE := $(BUILD_DIR)/tests/bfft_fftw_sfdr_probe
 BH7_PROBE := $(BUILD_DIR)/tests/bfft_fftw_sfdr_bh7_probe
 LIBRARY_COMPARE_PROBE := $(BUILD_DIR)/tests/bfft_library_compare_probe
 AVX2_ASM := $(BUILD_DIR)/src/bfft_avx2.s
+BODFT_AVX2_ASM := $(BUILD_DIR)/src/bodft_avx2.s
 SSE2_ASM := $(BUILD_DIR)/src/bfft_sse2.s
 ASM_OUTPUTS :=
 ifneq ($(AVX2_FLAGS),)
-  ASM_OUTPUTS += $(AVX2_ASM)
+  ASM_OUTPUTS += $(AVX2_ASM) $(BODFT_AVX2_ASM)
 endif
 ifneq ($(SSE2_FLAGS),)
   ASM_OUTPUTS += $(SSE2_ASM)
@@ -107,6 +108,9 @@ asm-check: $(ASM_OUTPUTS)
 	@if [ -z "$(ASM_OUTPUTS)" ]; then echo "No x86 assembly variants supported by $(CXX)."; fi
 
 $(AVX2_ASM): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp | $(BUILD_DIR)
+	$(CXX) $(LIB_CPPFLAGS) $(CXXFLAGS) $(AVX2_FLAGS) -S -fverbose-asm $< -o $@
+
+$(BODFT_AVX2_ASM): $(BODFT_SRC) include/bfft/bodft.h include/bfft/bfft.h src/detail/bodft_kernel.hpp src/detail/bruun_kernel.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(CXXFLAGS) $(AVX2_FLAGS) -S -fverbose-asm $< -o $@
 
 $(SSE2_ASM): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp | $(BUILD_DIR)
