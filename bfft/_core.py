@@ -72,6 +72,7 @@ def _decl(name, restype, argtypes):
 
 _dbl_p = ctypes.POINTER(ctypes.c_double)
 _cplx_p = ctypes.POINTER(_Complex)
+_void_p = ctypes.c_void_p
 _plan_p = ctypes.c_void_p
 
 # --- standard real FFT (bfft.h) ---
@@ -83,16 +84,16 @@ _bfft_plan_work_size = _decl("bfft_plan_work_size", ctypes.c_size_t, [_plan_p])
 _bfft_plan_native_scratch_size = _decl(
     "bfft_plan_native_scratch_size", ctypes.c_size_t, [_plan_p])
 _bfft_forward = _decl("bfft_forward", ctypes.c_int,
-                      [_plan_p, _dbl_p, _cplx_p, _dbl_p, _cplx_p])
-_bfft_inverse = _decl("bfft_inverse", ctypes.c_int, [_plan_p, _cplx_p, _dbl_p])
+                      [_plan_p, _void_p, _void_p, _void_p, _void_p])
+_bfft_inverse = _decl("bfft_inverse", ctypes.c_int, [_plan_p, _void_p, _void_p])
 
 # --- half-bin ODFT (bodft.h) ---
 _bodft_plan_create = _decl("bodft_plan_create", ctypes.c_int,
                            [ctypes.c_size_t, ctypes.POINTER(_plan_p)])
 _bodft_plan_destroy = _decl("bodft_plan_destroy", None, [_plan_p])
 _bodft_plan_bins = _decl("bodft_plan_bins", ctypes.c_size_t, [_plan_p])
-_bodft_forward = _decl("bodft_forward", ctypes.c_int, [_plan_p, _dbl_p, _cplx_p])
-_bodft_inverse = _decl("bodft_inverse", ctypes.c_int, [_plan_p, _cplx_p, _dbl_p])
+_bodft_forward = _decl("bodft_forward", ctypes.c_int, [_plan_p, _void_p, _void_p])
+_bodft_inverse = _decl("bodft_inverse", ctypes.c_int, [_plan_p, _void_p, _void_p])
 
 _OK = 0
 
@@ -156,10 +157,10 @@ def rfft(x):
     scratch = np.empty(_bfft_plan_native_scratch_size(plan), dtype=np.complex128)
     _check(_bfft_forward(
         plan,
-        a.ctypes.data_as(_dbl_p),
-        out.ctypes.data_as(_cplx_p),
-        work.ctypes.data_as(_dbl_p),
-        scratch.ctypes.data_as(_cplx_p),
+        a.ctypes.data,
+        out.ctypes.data,
+        work.ctypes.data,
+        scratch.ctypes.data,
     ), "bfft_forward")
     return out
 
@@ -182,8 +183,8 @@ def irfft(x, n=None):
     out = np.empty(n, dtype=np.float64)
     _check(_bfft_inverse(
         plan,
-        a.ctypes.data_as(_cplx_p),
-        out.ctypes.data_as(_dbl_p),
+        a.ctypes.data,
+        out.ctypes.data,
     ), "bfft_inverse")
     return out
 
@@ -200,8 +201,8 @@ def odft(x):
     out = np.empty(bins, dtype=np.complex128)
     _check(_bodft_forward(
         plan,
-        a.ctypes.data_as(_dbl_p),
-        out.ctypes.data_as(_cplx_p),
+        a.ctypes.data,
+        out.ctypes.data,
     ), "bodft_forward")
     return out
 
@@ -222,7 +223,7 @@ def iodft(x, n=None):
     out = np.empty(n, dtype=np.float64)
     _check(_bodft_inverse(
         plan,
-        a.ctypes.data_as(_cplx_p),
-        out.ctypes.data_as(_dbl_p),
+        a.ctypes.data,
+        out.ctypes.data,
     ), "bodft_inverse")
     return out
