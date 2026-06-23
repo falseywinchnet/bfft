@@ -182,6 +182,60 @@ int main() {
 }
 ```
 
+## Python bindings
+
+BFFT ships a small ctypes-based Python package exposing numpy-friendly drop-in
+transforms. No prebuilt binaries are distributed: `pip install` compiles the
+native library from source on your machine.
+
+### Install
+
+From a clone of the repository:
+
+```sh
+pip install .
+```
+
+This compiles `src/bfft.cpp` and `src/bodft.cpp` with your C++ compiler (override
+with the `CXX` environment variable) and bundles the resulting shared library
+inside the installed package. A C++17 compiler and NumPy are the only
+requirements.
+
+Alternatively, build and install the native library system-wide first, then the
+Python loader will find it automatically:
+
+```sh
+make && sudo make install PREFIX=/usr/local
+pip install .
+```
+
+You can also point the loader at an explicit shared library with the
+`BFFT_LIBRARY` environment variable.
+
+### Usage
+
+```python
+import numpy as np
+import bfft
+
+x = np.random.randn(1024)          # power-of-two length
+
+X = bfft.rfft(x)                   # == numpy.fft.rfft(x)        -> N/2 + 1 bins
+x_back = bfft.irfft(X)             # == numpy.fft.irfft(X)       -> N samples
+
+H = bfft.odft(x)                   # half-bin-shifted transform  -> N/2 bins
+x_back2 = bfft.iodft(H)            # inverse of odft             -> N samples
+```
+
+| Function | Equivalent | Notes |
+| --- | --- | --- |
+| `bfft.rfft(x)` | `numpy.fft.rfft(x)` | Power-of-two `N >= 4`. |
+| `bfft.irfft(X, n=None)` | `numpy.fft.irfft(X, n)` | `n` defaults to `2 * (len(X) - 1)`. |
+| `bfft.odft(x)` | half-bin phase shift + `rfft` | `H[k] = sum_n x[n] exp(-2j*pi*(k+1/2)*n/N)`, `N >= 2`. |
+| `bfft.iodft(H, n=None)` | inverse of `bfft.odft` | `n` defaults to `2 * len(H)`. |
+
+All Python transforms operate on power-of-two lengths and double precision.
+
 ## Main API concepts
 
 ### Plans

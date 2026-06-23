@@ -10,6 +10,7 @@ residue-domain filtering, and a half-bin BODFT transform.
 
 installation
 quick-start
+python
 concepts
 examples
 ```
