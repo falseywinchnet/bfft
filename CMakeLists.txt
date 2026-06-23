@@ -16,10 +16,13 @@ option(BFFT_ENABLE_PFFFT_BENCHMARK "Enable PFFFT in the benchmark example when f
 
 set(BFFT_PUBLIC_HEADERS
   include/bfft/bfft.h
-  include/bfft/bfft.hpp)
+  include/bfft/bfft.hpp
+  include/bfft/bdct.h
+  include/bfft/bdct.hpp)
 
 set(BFFT_SOURCES
-  src/bfft.cpp)
+  src/bfft.cpp
+  src/bdct.cpp)
 
 set(BFFT_PLATFORM_LIBS)
 if(NOT WIN32)
