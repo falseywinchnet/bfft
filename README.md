@@ -277,6 +277,32 @@ alongside; see
 
 All Python transforms operate on power-of-two lengths and double precision.
 
+### Numba Support
+
+```python
+
+import numpy as np
+from numba import njit
+import bfft.numba_support as bn
+from bfft.numba_support import bfft_forward, ffi
+
+N = 4096
+plan, bins, work_n, scratch_n = bn.make_plan(N)   # plan is an int address
+
+@njit(cache=True)
+def rfft_into(plan, x, out_f64, work, scratch_f64):
+    bfft_forward(plan,
+                 ffi.from_buffer(x),    ffi.from_buffer(out_f64),
+                 ffi.from_buffer(work), ffi.from_buffer(scratch_f64))
+
+x       = np.random.randn(N)
+out     = np.empty(bins, np.complex128)
+work    = np.empty(work_n, np.float64)
+scratch = np.empty(scratch_n, np.complex128)
+rfft_into(plan, x, out.view(np.float64), work, scratch.view(np.float64))
+# out == numpy.fft.rfft(x)
+```
+
 ## Main API concepts
 
 ### Plans
