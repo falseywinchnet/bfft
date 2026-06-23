@@ -46,14 +46,14 @@ LIB_CXXFLAGS := $(CXXFLAGS) $(AUTO_SIMD_FLAGS)
 
 SRC := src/bfft.cpp
 OBJ := $(BUILD_DIR)/src/bfft.o
-BDCT_SRC := src/bdct.cpp
-BDCT_OBJ := $(BUILD_DIR)/src/bdct.o
-LIB_OBJS := $(OBJ) $(BDCT_OBJ)
+BODFT_SRC := src/bodft.cpp
+BODFT_OBJ := $(BUILD_DIR)/src/bodft.o
+LIB_OBJS := $(OBJ) $(BODFT_OBJ)
 STATIC_LIB := $(BUILD_DIR)/lib$(LIB_NAME).a
 SHARED_LIB := $(BUILD_DIR)/lib$(LIB_NAME).so
 PC_FILE := $(BUILD_DIR)/$(LIB_NAME).pc
 BENCH := $(BUILD_DIR)/examples/benchmark
-DCTIV_BENCH := $(BUILD_DIR)/examples/dctiv_benchmark
+BODFT_BENCH := $(BUILD_DIR)/examples/bodft_benchmark
 APPLE_BENCH := $(BUILD_DIR)/examples/apple_benchmark
 LOCALITY_PROBE := $(BUILD_DIR)/examples/locality_probe
 C_DEMO := $(BUILD_DIR)/examples/c_api_demo
@@ -85,7 +85,7 @@ $(BUILD_DIR):
 $(OBJ): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
 
-$(BDCT_OBJ): $(BDCT_SRC) include/bfft/bdct.h include/bfft/bfft.h src/detail/bdct_kernel.hpp src/detail/bruun_kernel.hpp | $(BUILD_DIR)
+$(BODFT_OBJ): $(BODFT_SRC) include/bfft/bodft.h include/bfft/bfft.h src/detail/bodft_kernel.hpp src/detail/bruun_kernel.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
 
 $(STATIC_LIB): $(LIB_OBJS)
@@ -101,7 +101,7 @@ $(PC_FILE): pkgconfig/bfft.pc.in | $(BUILD_DIR)
 		-e 's|@PROJECT_VERSION@|$(VERSION)|g' \
 		$< > $@
 
-examples: $(BENCH) $(DCTIV_BENCH) $(APPLE_EXAMPLES) $(LOCALITY_PROBE) $(C_DEMO) $(CPP_DEMO)
+examples: $(BENCH) $(BODFT_BENCH) $(APPLE_EXAMPLES) $(LOCALITY_PROBE) $(C_DEMO) $(CPP_DEMO)
 
 asm-check: $(ASM_OUTPUTS)
 	@if [ -z "$(ASM_OUTPUTS)" ]; then echo "No x86 assembly variants supported by $(CXX)."; fi
@@ -115,7 +115,7 @@ $(SSE2_ASM): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp | $(BUILD_DI
 $(BENCH): examples/benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
 
-$(DCTIV_BENCH): examples/dctiv_benchmark.cpp src/detail/bdct_kernel.hpp src/detail/bruun_kernel.hpp | $(BUILD_DIR)
+$(BODFT_BENCH): examples/bodft_benchmark.cpp src/detail/bodft_kernel.hpp src/detail/bruun_kernel.hpp | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(LDLIBS) -o $@
 
 $(APPLE_BENCH): examples/apple_benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
@@ -177,8 +177,8 @@ install: all $(PC_FILE)
 	$(INSTALL) -d $(DESTDIR)$(PREFIX)/lib/pkgconfig
 	$(INSTALL) -m 0644 include/bfft/bfft.h $(DESTDIR)$(PREFIX)/include/bfft/bfft.h
 	$(INSTALL) -m 0644 include/bfft/bfft.hpp $(DESTDIR)$(PREFIX)/include/bfft/bfft.hpp
-	$(INSTALL) -m 0644 include/bfft/bdct.h $(DESTDIR)$(PREFIX)/include/bfft/bdct.h
-	$(INSTALL) -m 0644 include/bfft/bdct.hpp $(DESTDIR)$(PREFIX)/include/bfft/bdct.hpp
+	$(INSTALL) -m 0644 include/bfft/bodft.h $(DESTDIR)$(PREFIX)/include/bfft/bodft.h
+	$(INSTALL) -m 0644 include/bfft/bodft.hpp $(DESTDIR)$(PREFIX)/include/bfft/bodft.hpp
 	$(INSTALL) -m 0644 $(STATIC_LIB) $(DESTDIR)$(PREFIX)/lib/lib$(LIB_NAME).a
 	$(INSTALL) -m 0755 $(SHARED_LIB) $(DESTDIR)$(PREFIX)/lib/lib$(LIB_NAME).so
 	$(INSTALL) -m 0644 $(PC_FILE) $(DESTDIR)$(PREFIX)/lib/pkgconfig/$(LIB_NAME).pc
@@ -186,8 +186,8 @@ install: all $(PC_FILE)
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/include/bfft/bfft.h
 	rm -f $(DESTDIR)$(PREFIX)/include/bfft/bfft.hpp
-	rm -f $(DESTDIR)$(PREFIX)/include/bfft/bdct.h
-	rm -f $(DESTDIR)$(PREFIX)/include/bfft/bdct.hpp
+	rm -f $(DESTDIR)$(PREFIX)/include/bfft/bodft.h
+	rm -f $(DESTDIR)$(PREFIX)/include/bfft/bodft.hpp
 	rm -f $(DESTDIR)$(PREFIX)/lib/lib$(LIB_NAME).a
 	rm -f $(DESTDIR)$(PREFIX)/lib/lib$(LIB_NAME).so
 	rm -f $(DESTDIR)$(PREFIX)/lib/pkgconfig/$(LIB_NAME).pc
