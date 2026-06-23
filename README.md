@@ -1,37 +1,59 @@
-# BFFT 
+# BFFT
 
-<img width="1089" height="590" alt="image" src="https://github.com/user-attachments/assets/9f33fd82-2624-4c01-9af8-6a840abd9db8" />
+BFFT is a small C and C++ library for power-of-two real Fourier transforms. It
+provides a stable C ABI, a lightweight C++ RAII wrapper, double- and
+single-precision APIs, standard FFT-order output, native-order output, and
+residue-domain filtering utilities.
 
-BFFT is a small C/C++ real FFT library based on a normalized-basis Bruun transform.
-Invertibility is stable and guaranteed. SFDR tracks FFTW in double precision and meets or exceeds SFDR and accuracy precision needs.
+The core transform is based on a normalized-basis Bruun transform. The public
+API is designed to be predictable for application code: create a reusable plan,
+allocate buffers from the plan metadata, run transforms, and destroy the plan
+when finished.
 
-- Power-of-two real transforms with `N >= 4`.
-- Standard FFT-order real-to-complex output (`0..N/2`) for everyday use.
-- Standard FFT-order magnitude-only output for amplitude pipelines that do not
-  need phase or complex scratch buffers.
-- Heap-optimized native spectrum order for performance-oriented code.
-- Double-precision and single-precision transform entry points.
-- Residue-domain transforms and filters for pipelines that can avoid spectrum
-  permutation entirely.
-- Linux `make`, `make test`, and `make install` workflow.
+## Features
+
+- Real-valued power-of-two transforms.
+- Standard real-to-complex FFT-order output with `N / 2 + 1` bins.
+- Native spectrum order for callers that want to avoid permutation overhead.
+- Magnitude-only forward transforms for amplitude pipelines.
+- Double-precision and single-precision entry points.
+- Standard-order and native-order inverse transforms.
+- Residue-domain transforms and filters.
+- C ABI in `<bfft/bfft.h>` and C++ wrapper in `<bfft/bfft.hpp>`.
+- BODFT half-bin transform API in `<bfft/bodft.h>` and `<bfft/bodft.hpp>`.
+- Makefile, CMake, `pkg-config`, and CMake package installation support.
+
+## Requirements
+
+- A C++17-capable compiler to build the library.
+- A C compiler for C examples and C API consumers.
+- `make` or CMake 3.16 or newer.
+- A standard math library. On non-Windows platforms the build links `libm`.
+
+C applications may be compiled as C. The BFFT library itself is implemented in
+C++ and must be built with a C++17-capable compiler. The project also checks
+clean builds under C++20 and C++23.
 
 ## Build
+
+Build the static library, shared library, examples, and default tests with the
+Makefile:
 
 ```sh
 make
 make test
 ```
 
-For standards-compliance checks, run:
+Run standards-compliance checks:
 
 ```sh
 make check-standards
 ```
 
-That target builds and tests with `-std=c++17`, `-std=c++20`, and
-`-std=c++23`, treating warnings as errors. The default build remains C++17.
+That target builds and tests with `-std=c++17`, `-std=c++20`, and `-std=c++23`,
+with warnings treated as errors.
 
-CMake builds are also supported:
+### CMake build
 
 ```sh
 cmake -S . -B build-cmake
@@ -39,60 +61,66 @@ cmake --build build-cmake
 ctest --test-dir build-cmake --output-on-failure
 ```
 
-BFFT is implemented against a C++17 baseline and exposes both a stable C ABI and a C++ convenience wrapper. C consumers can compile their applications as C, while the library itself must be built with a C++17-capable compiler. CI also checks clean builds under C++20 and C++23.
+Useful CMake options include:
 
-The benchmark can optionally compare against Intel oneMKL DFTI without adding
-a build-time dependency. Install an Intel MKL package that provides
-`libmkl_rt.so`, then pass `--intel-mkl` to `build/examples/benchmark`; the
-program loads `libmkl_rt` dynamically and adds `MKL64_ns`, `MKL32_ns`,
-`S/MKL`, `F32/M`, `mkl64`, and `mkl32` printouts. If `libmkl_rt` cannot be
-loaded, those columns remain `n/a`.
+| Option | Default | Description |
+| --- | --- | --- |
+| `BFFT_BUILD_SHARED` | `ON` | Build the shared library target. |
+| `BFFT_BUILD_EXAMPLES` | `ON` | Build examples and benchmark programs. |
+| `BFFT_BUILD_TESTS` | `ON` | Build the test executables and CTest entries. |
+| `BFFT_BUILD_PROBES` | `ON` | Build optional comparison and diagnostic probes. |
+| `BFFT_ENABLE_AUTO_SIMD` | `ON` | Enable host SIMD flags detected by CMake. |
+| `BFFT_COMPARE_WITH_IPP` | `ON` | Use Intel IPP in the comparison probe when available. |
+| `BFFT_ENABLE_PFFFT_BENCHMARK` | `ON` | Use PFFFT in the benchmark when available. |
 
-On macOS, `make` also builds `build/examples/apple_benchmark`. It is a copy of
-the general benchmark with extra Accelerate/vDSP columns using
-`vDSP_fft_zripD` and `vDSP_fft_zrip` for split real-to-complex FFT timing.
+## Build artifacts
 
-Artifacts are written to `build/`:
+The default Makefile build writes artifacts to `build/`:
 
 - `build/libbfft.a`
 - `build/libbfft.so`
 - `build/examples/benchmark`
+- `build/examples/bodft_benchmark`
 - `build/examples/c_api_demo`
 - `build/examples/cpp_api_demo`
+- `build/examples/locality_probe`
 
 ## Install
+
+Install to `/usr/local`:
 
 ```sh
 sudo make install PREFIX=/usr/local
 ```
 
-For packaging, stage an install with `DESTDIR`:
+Stage an install for packaging:
 
 ```sh
 make install DESTDIR=/tmp/bfft-package PREFIX=/usr
 ```
 
-Installed files:
+Installed files include:
 
 - `${PREFIX}/include/bfft/bfft.h`
 - `${PREFIX}/include/bfft/bfft.hpp`
+- `${PREFIX}/include/bfft/bodft.h`
+- `${PREFIX}/include/bfft/bodft.hpp`
 - `${PREFIX}/lib/libbfft.a`
 - `${PREFIX}/lib/libbfft.so`
-- `${PREFIX}/lib/pkgconfig/bfft.pc` when installing with the Makefile or CMake
-- `${PREFIX}/lib/cmake/bfft/BFFTConfig.cmake` when installing with CMake
-- `${PREFIX}/lib/cmake/bfft/BFFTConfigVersion.cmake` when installing with CMake
-- `${PREFIX}/lib/cmake/bfft/BFFTTargets.cmake` when installing with CMake
-
+- `${PREFIX}/lib/pkgconfig/bfft.pc`
+- `${PREFIX}/lib/cmake/bfft/BFFTConfig.cmake` when installed with CMake
+- `${PREFIX}/lib/cmake/bfft/BFFTConfigVersion.cmake` when installed with CMake
+- `${PREFIX}/lib/cmake/bfft/BFFTTargets.cmake` when installed with CMake
 
 ## Package discovery
 
-After installation, `pkg-config` consumers can compile with:
+Use `pkg-config` from C or C++ build scripts:
 
 ```sh
 cc app.c $(pkg-config --cflags --libs bfft)
 ```
 
-CMake consumers can use the installed package config:
+Use the installed CMake package config:
 
 ```cmake
 find_package(BFFT CONFIG REQUIRED)
@@ -100,64 +128,126 @@ add_executable(app app.cpp)
 target_link_libraries(app PRIVATE bfft::static)
 ```
 
-If the shared library was built and installed by CMake, `bfft::shared` is also available.
+If the shared library was built and installed by CMake, `bfft::shared` is also
+available.
 
-## Minimal C example
+## Quick start: C
 
 ```c
 #include <bfft/bfft.h>
 
 #include <stdlib.h>
 
-bfft_plan* plan = NULL;
-bfft_status status = bfft_plan_create(1024, &plan);
-if (status != BFFT_OK) {
-    return 1;
+int main(void) {
+    bfft_plan* plan = NULL;
+    bfft_status status = bfft_plan_create(1024, &plan);
+    if (status != BFFT_OK) {
+        return 1;
+    }
+
+    double* input = calloc(bfft_plan_size(plan), sizeof(double));
+    double* work = calloc(bfft_plan_work_size(plan), sizeof(double));
+    bfft_complex* output = calloc(bfft_plan_bins(plan), sizeof(bfft_complex));
+    bfft_complex* scratch = calloc(
+        bfft_plan_native_scratch_size(plan),
+        sizeof(bfft_complex));
+
+    status = bfft_forward(plan, input, output, work, scratch);
+
+    free(input);
+    free(work);
+    free(output);
+    free(scratch);
+    bfft_plan_destroy(plan);
+
+    if (status != BFFT_OK) {
+        return 1;
+    }
+    return 0;
 }
-
-double* input = calloc(bfft_plan_size(plan), sizeof(double));
-double* work = calloc(bfft_plan_work_size(plan), sizeof(double));
-bfft_complex* output = calloc(bfft_plan_bins(plan), sizeof(bfft_complex));
-bfft_complex* scratch = calloc(bfft_plan_native_scratch_size(plan), sizeof(bfft_complex));
-
-bfft_forward(plan, input, output, work, scratch);
-free(input);
-free(work);
-free(output);
-free(scratch);
-bfft_plan_destroy(plan);
 ```
 
-## Minimal C++ example
+## Quick start: C++
 
 ```cpp
 #include <bfft/bfft.hpp>
 
 #include <vector>
 
-bfft::plan plan(1024);
-std::vector<double> input(plan.size());
-std::vector<double> work(plan.work_size());
-std::vector<bfft::complex> output(plan.bins());
-std::vector<bfft::complex> scratch(plan.native_scratch_size());
-
-plan.forward(input.data(), output.data(), work.data(), scratch.data());
+int main() {
+    bfft::plan plan(1024);
+    std::vector<double> input(plan.size());
+    std::vector<bfft::complex> output = plan.forward(input);
+    return output.empty();
+}
 ```
 
-For amplitude-only analysis, use `bfft_forward_magnitude` or
-`plan.forward_magnitude(...)` with a real output buffer sized to `plan.bins()`.
-Those calls produce standard FFT-order `abs(X[k])` values without allocating a
-complex spectrum or native complex scratch.
+## Main API concepts
 
-Run a complete benchmark/demo:
+### Plans
+
+A plan validates a transform size and stores reusable metadata. BFFT real FFT
+plans require a power-of-two size `N >= 4`. BODFT plans require a power-of-two
+size `N >= 2`.
+
+### Buffer sizes
+
+Allocate buffers from plan query functions instead of duplicating size formulas
+in application code:
+
+- `bfft_plan_size(plan)` returns `N`.
+- `bfft_plan_bins(plan)` returns `N / 2 + 1` standard real-to-complex bins.
+- `bfft_plan_work_size(plan)` returns the double-precision work buffer length.
+- `bfft_plan_work_size_f32(plan)` returns the single-precision work buffer length.
+- `bfft_plan_native_scratch_size(plan)` returns the standard-output scratch length.
+- `bfft_filter_size(plan)` returns the residue-domain filter length.
+
+### Spectrum layouts
+
+BFFT exposes three layout families:
+
+- **Standard layout**: ordinary FFT-order real-to-complex bins `0..N/2`.
+- **Native layout**: BFFT's internal spectrum order for performance-sensitive code.
+- **Residue layout**: residue coordinates for filtering pipelines that can avoid
+  standard spectrum conversion.
+
+Use `bfft_native_to_standard`, `bfft_standard_to_native`, and their float32
+variants to convert between native and standard layouts.
+
+### Magnitude-only transforms
+
+Use `bfft_forward_magnitude` or `bfft::plan::forward_magnitude` when a pipeline
+needs only `abs(X[k])`. These calls write one real magnitude per standard bin and
+avoid a complex output buffer.
+
+### Workspaces
+
+The low-level C API accepts caller-owned work buffers so transform calls can be
+used without hidden allocations. `bfft_workspace` and `bfft::workspace` provide
+aligned reusable storage for native transforms.
+
+## BODFT API
+
+BODFT is a half-bin-shifted real transform. It maps `N` real samples to `N / 2`
+packed complex bins at frequencies `k + 1/2`. Use it through:
+
+- `bodft_plan_create` and `bodft_plan_destroy`.
+- `bodft_forward` and `bodft_inverse` for double precision.
+- `bodft_forward_f32` and `bodft_inverse_f32` for single precision.
+- `bfft::bodft` from the C++ wrapper.
+
+## Examples and probes
+
+Run the installed examples from the build tree:
 
 ```sh
 ./build/examples/benchmark 4096 200
+./build/examples/bodft_benchmark 4096 200
 ./build/examples/c_api_demo
 ./build/examples/cpp_api_demo
 ```
 
-Build the optional comparison probes from the tracked `tests/` sources:
+Build optional comparison probes:
 
 ```sh
 make probes
@@ -165,21 +255,26 @@ make probes
 ./build/tests/bfft_library_compare_probe 12
 ```
 
-`bfft_library_compare_probe` reports which external FFT references are available in the current environment. The Makefile build always compiles the probe without hard dependencies and uses FFTW dynamically when present. The CMake build additionally links Intel IPP into that probe when the IPP headers and libraries are discoverable, usually through normal search paths or `IPPROOT`.
+The comparison probe reports which external FFT references are available in the
+current environment. FFTW is loaded dynamically when present. CMake can also link
+Intel IPP into the comparison probe when headers and libraries are discoverable.
 
-The BH7 probe modes are `f64-standard`, `f64-native`, `f32-standard`, and
-`f32-native`. For float32 BFFT modes the probe uses FFTWf when `libfftw3f` is
-available, and falls back to the double-precision FFTW reference otherwise.
-The CSV includes an `fftw_precision` column so mixed-precision and same-precision
-runs are explicit.
+The benchmark can optionally compare against Intel oneMKL DFTI. Install a
+package that provides `libmkl_rt.so`, then run:
+
+```sh
+./build/examples/benchmark 4096 200 --intel-mkl
+```
+
+On macOS, the Makefile also builds `build/examples/apple_benchmark` with
+Accelerate/vDSP timing columns.
+
+## Documentation
+
+ReadTheDocs-ready Sphinx documentation lives in [`documentation/`](documentation/).
+Start with [`documentation/README.md`](documentation/README.md) for local builds
+and ReadTheDocs setup guidance.
 
 ## License
 
 MIT. See [LICENSE](LICENSE).
-
-We dedicate this work in the name of our God, who is merciful and just, and whose power exceeds all anticipation and understanding,
-and of his son, the Anointed One, Jesus Christ of Nazareth. 
-May this work bless you and may the Kingdom come, and his will be done.
-
-Baruch kevod elohei shamayim ha-elyonim mimkomo
-Eloheinu shebashamayim yached shimcha v'kayeim malchutecha tamid umloch aleinu le'olam va'ed
