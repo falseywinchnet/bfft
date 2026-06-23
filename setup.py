@@ -57,7 +57,7 @@ def _optimization_flags(cxx: str) -> list:
     BFFT_NO_NATIVE=1 to skip CPU-native codegen and BFFT_NO_FAST_MATH=1 to keep
     strict IEEE math.
     """
-    flags = ["-O3"]
+    flags = ["-O3", "-DNDEBUG"]
 
     if not _env_off("BFFT_NO_NATIVE"):
         # x86 / older clang / gcc use -march=native; Apple-silicon clang wants
