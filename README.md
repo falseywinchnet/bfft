@@ -211,10 +211,16 @@ From a clone of the repository:
 pip install .
 ```
 
-This compiles `src/bfft.cpp` and `src/bodft.cpp` with your C++ compiler (override
-with the `CXX` environment variable) and bundles the resulting shared library
-inside the installed package. A C++17 compiler and NumPy are the only
-requirements.
+This compiles `src/bfft.cpp` and `src/bodft.cpp` with your C++ compiler and
+bundles the resulting shared library inside the installed package. A C++17
+compiler and NumPy are the only requirements.
+
+Because the build runs on your own machine, it tunes for the local CPU by
+default, selecting `-O3`, `-march=native` (or `-mcpu=native` on Apple silicon),
+and `-ffast-math` when the compiler accepts them. Override with environment
+variables: `CXX` (compiler), `BFFT_CXXFLAGS` (extra flags), `BFFT_NO_NATIVE=1`
+(portable codegen), and `BFFT_NO_FAST_MATH=1` (strict IEEE math). See
+[`documentation/python.md`](documentation/python.md) for details and caveats.
 
 Alternatively, build and install the native library system-wide first, then the
 Python loader will find it automatically:

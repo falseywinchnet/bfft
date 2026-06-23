@@ -9,7 +9,7 @@ compiler invocation mirrors the project Makefile recipe.
 import os
 import subprocess
 import sys
-import sysconfig
+import tempfile
 from pathlib import Path
 
 from setuptools import setup
@@ -28,10 +28,55 @@ def _shared_lib_suffix() -> str:
     return ".so"
 
 
+def _env_off(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _compiler_accepts(cxx: str, flags: list) -> bool:
+    """Return True if the compiler accepts ``flags`` on a trivial source file."""
+    with tempfile.TemporaryDirectory() as d:
+        src = Path(d) / "probe.cpp"
+        src.write_text("int main() { return 0; }\n")
+        try:
+            subprocess.run(
+                [cxx, *flags, "-c", str(src), "-o", str(Path(d) / "probe.o")],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=True,
+            )
+            return True
+        except (subprocess.CalledProcessError, OSError):
+            return False
+
+
+def _optimization_flags(cxx: str) -> list:
+    """Pick the strongest optimization flags the host compiler accepts.
+
+    Because the library is compiled on the install machine (no prebuilt binaries
+    are distributed), tuning for the local CPU is safe and is the default. Set
+    BFFT_NO_NATIVE=1 to skip CPU-native codegen and BFFT_NO_FAST_MATH=1 to keep
+    strict IEEE math.
+    """
+    flags = ["-O3"]
+
+    if not _env_off("BFFT_NO_NATIVE"):
+        # x86 / older clang / gcc use -march=native; Apple-silicon clang wants
+        # -mcpu=native instead. Probe and take whichever the compiler accepts.
+        if _compiler_accepts(cxx, ["-march=native"]):
+            flags.append("-march=native")
+        elif _compiler_accepts(cxx, ["-mcpu=native"]):
+            flags.append("-mcpu=native")
+
+    if not _env_off("BFFT_NO_FAST_MATH") and _compiler_accepts(cxx, ["-ffast-math"]):
+        flags.append("-ffast-math")
+
+    return flags
+
+
 def _compile_shared_library(out_path: Path) -> None:
     cxx = os.environ.get("CXX", "c++")
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    cmd = [cxx, "-O3", "-std=c++17", "-fPIC", "-shared"]
+    cmd = [cxx, *_optimization_flags(cxx), "-std=c++17", "-fPIC", "-shared"]
     cmd += ["-I", str(ROOT / INCLUDE)]
     cmd += [str(ROOT / s) for s in SOURCES]
     cmd += ["-o", str(out_path)]
