@@ -21,3 +21,11 @@
 - Float forward timings remained on the existing 128-bit path and were approximately 0.71 us at N=256, 3.13 us at N=1024, 14.7 us at N=4096, 313 us at N=65536, and 11.9 ms at N=1048576.
 - The next performance task is an eight-position AVX2 float combine and, after that, an AVX2 inverse combine if inverse parity becomes a requirement.
 - For a same-container point comparison, `build-avx2/examples/benchmark 65536 200` measured the regular BFFT native double path at about 217 us for N=65536; the BODFT double forward path measured about 458 us for N=65536 in the broader BODFT benchmark. The gap is now concentrated in BODFT's transform-specific data movement/scratch schedule and unvectorized inverse rather than missing AVX2 forward-combine code.
+
+## 2026-06-23 follow-up
+
+- Added a 256-bit AVX2/FMA double-precision inverse combine path that mirrors the forward paired radix-4 lane layout.
+- The inverse path loads paired partner spectra in reverse lane order, reconstructs the child spectra in SoA registers, applies conjugate twiddle multiplies with FMA instructions, and writes all four child blocks through the shared AVX2 packing helper.
+- Tightened the forward scratch schedule so the final forward combine writes directly into the caller output buffer instead of ping-ponging once more and copying `N/2` complex values at the end.
+- BODFT double inverse timing improved in this container from about 748 us to about 611 us at N=65536, and from about 22.7 ms to about 20.6 ms at N=1048576. Smaller sizes saw larger relative gains where the final-copy removal and inverse AVX2 combine reduce overhead together.
+- The remaining gap to the regular BFFT native path is now mostly scratch/data-order locality and float-specific AVX2 work rather than the absence of a double inverse vector combine.

@@ -163,6 +163,68 @@ static inline int bodft_combine_fwd_avx2_f64(const complex_t* RESTRICT tab,
     }
     return k;
 }
+
+static inline int bodft_combine_inv_avx2_f64(const complex_t* RESTRICT tab,
+                                             const complex_t* RESTRICT tab2,
+                                             const complex_t* RESTRICT tab3,
+                                             const complex_t* RESTRICT in,
+                                             complex_t* RESTRICT c0,
+                                             complex_t* RESTRICT c1,
+                                             complex_t* RESTRICT c2,
+                                             complex_t* RESTRICT c3,
+                                             int M, int half) {
+    const __m256d halfv = _mm256_set1_pd(0.5);
+    int k = 0;
+    for (; k + 4 <= half; k += 4) {
+        __m256d tre, tim, t2re, t2im, t3re, t3im;
+        __m256d ykre, ykim, ykMre, ykMim;
+        __m256d ykpre, ykpim, ykpMre, ykpMim;
+        bodft_uzp4_pd(tab, k, tre, tim);
+        bodft_uzp4_pd(tab2, k, t2re, t2im);
+        bodft_uzp4_pd(tab3, k, t3re, t3im);
+        bodft_uzp4_pd(in, k, ykre, ykim);
+        bodft_uzp4_pd(in, k + M, ykMre, ykMim);
+        bodft_uzp4_pd(in, M - 4 - k, ykpre, ykpim);
+        bodft_uzp4_pd(in, M - 4 - k + M, ykpMre, ykpMim);
+        ykpre = bodft_rev4_pd(ykpre);
+        ykpim = bodft_rev4_pd(ykpim);
+        ykpMre = bodft_rev4_pd(ykpMre);
+        ykpMim = bodft_rev4_pd(ykpMim);
+
+        const __m256d e0re = _mm256_mul_pd(halfv, _mm256_add_pd(ykre, ykpMre));
+        const __m256d e0im = _mm256_mul_pd(halfv, _mm256_sub_pd(ykim, ykpMim));
+        const __m256d o0re = _mm256_mul_pd(halfv, _mm256_sub_pd(ykre, ykpMre));
+        const __m256d o0im = _mm256_mul_pd(halfv, _mm256_add_pd(ykim, ykpMim));
+        const __m256d e1re = _mm256_mul_pd(halfv, _mm256_add_pd(ykMre, ykpre));
+        const __m256d e1im = _mm256_mul_pd(halfv, _mm256_sub_pd(ykMim, ykpim));
+        const __m256d diff_re = _mm256_sub_pd(ykMre, ykpre);
+        const __m256d diff_im = _mm256_add_pd(ykMim, ykpim);
+        const __m256d o1re = _mm256_mul_pd(halfv, _mm256_sub_pd(_mm256_setzero_pd(), diff_im));
+        const __m256d o1im = _mm256_mul_pd(halfv, diff_re);
+
+        const __m256d b0re = _mm256_mul_pd(halfv, _mm256_add_pd(e0re, e1re));
+        const __m256d b0im = _mm256_mul_pd(halfv, _mm256_add_pd(e0im, e1im));
+        const __m256d b2re = _mm256_mul_pd(halfv, _mm256_sub_pd(e0re, e1re));
+        const __m256d b2im = _mm256_mul_pd(halfv, _mm256_sub_pd(e0im, e1im));
+        const __m256d b1re = _mm256_mul_pd(halfv, _mm256_add_pd(o0re, o1re));
+        const __m256d b1im = _mm256_mul_pd(halfv, _mm256_add_pd(o0im, o1im));
+        const __m256d b3re = _mm256_mul_pd(halfv, _mm256_sub_pd(o0re, o1re));
+        const __m256d b3im = _mm256_mul_pd(halfv, _mm256_sub_pd(o0im, o1im));
+
+        const __m256d c1re = _mm256_fmadd_pd(tim, b1im, _mm256_mul_pd(tre, b1re));
+        const __m256d c1im = _mm256_fmsub_pd(tre, b1im, _mm256_mul_pd(tim, b1re));
+        const __m256d c2re = _mm256_fmadd_pd(t2im, b2im, _mm256_mul_pd(t2re, b2re));
+        const __m256d c2im = _mm256_fmsub_pd(t2re, b2im, _mm256_mul_pd(t2im, b2re));
+        const __m256d c3re = _mm256_fmadd_pd(t3im, b3im, _mm256_mul_pd(t3re, b3re));
+        const __m256d c3im = _mm256_fmsub_pd(t3re, b3im, _mm256_mul_pd(t3im, b3re));
+
+        bodft_store4_pd(c0, k, b0re, b0im);
+        bodft_store4_pd(c1, k, c1re, c1im);
+        bodft_store4_pd(c2, k, c2re, c2im);
+        bodft_store4_pd(c3, k, c3re, c3im);
+    }
+    return k;
+}
 #endif
 
 // ---------------------------------------------------------------------------
@@ -372,8 +434,22 @@ static inline void combine_inv(const CT* RESTRICT tab, const CT* RESTRICT tab2,
                                const CT* RESTRICT tab3, const CT* RESTRICT in,
                                CT* RESTRICT c0, CT* RESTRICT c1, CT* RESTRICT c2,
                                CT* RESTRICT c3, int M, int half) {
+    int k = 0;
+#if BRUUN_LEVEL >= 2
+    if constexpr (sizeof(RT) == 8) {
+        k = bodft_combine_inv_avx2_f64(
+            reinterpret_cast<const complex_t*>(tab),
+            reinterpret_cast<const complex_t*>(tab2),
+            reinterpret_cast<const complex_t*>(tab3),
+            reinterpret_cast<const complex_t*>(in),
+            reinterpret_cast<complex_t*>(c0),
+            reinterpret_cast<complex_t*>(c1),
+            reinterpret_cast<complex_t*>(c2),
+            reinterpret_cast<complex_t*>(c3), M, half);
+    }
+#endif
     const RT h = static_cast<RT>(0.5);
-    for (int k = 0; k < half; ++k) {
+    for (; k < half; ++k) {
         const int kp = M - 1 - k;
         const CT Yk   = in[k];
         const CT YkM  = in[k + M];
@@ -467,12 +543,21 @@ public:
         const CT* cur_in = bufA;
         CT* cur_out = bufB;
         for (int s = leafsize_ * 4; s <= n_; s <<= 2) {
+            int next_s = s << 2;
+            if (next_s > n_) {
+                cur_out = output;
+            }
             combine_pass_fwd(cur_in, cur_out, s);
-            const CT* ni = cur_out;
-            cur_out = (cur_out == bufA) ? bufB : bufA;
-            cur_in = ni;
+            cur_in = cur_out;
+            if (cur_out == output) {
+                break;
+            }
+            if (cur_out == bufA) {
+                cur_out = bufB;
+            } else {
+                cur_out = bufA;
+            }
         }
-        for (int i = 0; i < bins; ++i) output[i] = cur_in[i];
     }
 
     // Inverse: packed complex (length N/2) -> real output (length N).
@@ -490,7 +575,11 @@ public:
         for (int s = n_; s >= leafsize_ * 4; s >>= 2) {
             combine_pass_inv(cur_in, cur_out, s);
             cur_in = cur_out;
-            cur_out = (cur_out == bufA) ? bufB : bufA;
+            if (cur_out == bufA) {
+                cur_out = bufB;
+            } else {
+                cur_out = bufA;
+            }
         }
         leaf_inverse(cur_in, output);
     }
