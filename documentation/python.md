@@ -110,6 +110,57 @@ A planned object owns shared scratch and is **not thread-safe**: create one plan
 per thread (or use the module-level functions, which guard against concurrent
 use).
 
+Pass a caller-owned output buffer with ``out=`` to avoid the per-call output
+allocation entirely (the pyfftw-style zero-allocation loop):
+
+```python
+plan = bfft.Plan(N)
+out = np.empty(plan.bins, np.complex128)   # allocate once
+for chunk in stream:                        # chunk has length N
+    plan.rfft(chunk, out=out)               # writes into out, no allocation
+```
+
+`out=` is accepted by `Plan.rfft`/`irfft` and `OdftPlan.odft`/`iodft`; it must
+be a C-contiguous array of the right dtype and length, and is returned as-is.
+
+### Calling BFFT from Numba (`@njit`)
+
+`numpy.fft` cannot be called from `@njit(nopython=True)` code -- it is a Python
+C-extension that only exists in object mode. BFFT *can*, because it is a plain C
+ABI taking raw pointers, which Numba lowers through its cffi support. Install the
+extra dependencies with `pip install bfft[numba]`, then:
+
+```python
+import numpy as np
+from numba import njit
+import bfft.numba_support as bn
+from bfft.numba_support import bfft_forward, ffi
+
+N = 4096
+plan, bins, work_n, scratch_n = bn.make_plan(N)   # plan is an int address
+
+@njit(cache=True)
+def rfft_into(plan, x, out_f64, work, scratch_f64):
+    bfft_forward(plan,
+                 ffi.from_buffer(x), ffi.from_buffer(out_f64),
+                 ffi.from_buffer(work), ffi.from_buffer(scratch_f64))
+
+x = np.random.randn(N)
+out = np.empty(bins, np.complex128)
+work = np.empty(work_n, np.float64)
+scratch = np.empty(scratch_n, np.complex128)
+rfft_into(plan, x, out.view(np.float64), work, scratch.view(np.float64))
+# out == numpy.fft.rfft(x)
+```
+
+Two rules make it work with Numba: pass the **plan as the integer address** from
+`make_plan` (Numba can type an int but not a raw cffi pointer), and pass complex
+buffers as their **float64 view** (`buf.view(np.float64)`) so `ffi.from_buffer`
+yields the `double*` the C function expects. A JIT-compiled loop then performs
+each transform with no Python-object interaction -- in practice at the bare C
+transform speed. See `bfft.numba_support` for `bfft_inverse`, `bodft_forward`,
+`bodft_inverse`, and `make_odft_plan`.
+
 ## API
 
 | Function | Equivalent | Notes |

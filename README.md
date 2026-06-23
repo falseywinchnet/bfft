@@ -267,6 +267,13 @@ oplan = bfft.OdftPlan(N)   # half-bin transform at a fixed size
 H = oplan.odft(x); x_back2 = oplan.iodft(H)
 ```
 
+Planned methods accept `out=` for a caller-owned, zero-allocation output buffer.
+
+Unlike `numpy.fft`, BFFT can also be called from inside Numba `@njit(nopython)`
+code (it is a C ABI, not an object-mode extension). Install with
+`pip install bfft[numba]` and see
+[`documentation/python.md`](documentation/python.md#calling-bfft-from-numba-njit).
+
 All Python transforms operate on power-of-two lengths and double precision.
 
 ## Main API concepts

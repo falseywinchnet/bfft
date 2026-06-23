@@ -122,6 +122,19 @@ def _is_pow2(n):
     return n >= 1 and (n & (n - 1)) == 0
 
 
+def _out_buffer(out, length, dtype, what):
+    """Return a length-``length`` ``dtype`` output buffer: validate a caller-
+    supplied ``out`` (reused, zero-allocation path) or allocate a fresh one."""
+    if out is None:
+        return np.empty(length, dtype=dtype)
+    if out.dtype != dtype or out.shape != (length,):
+        raise ValueError(
+            f"{what} out must be a C-contiguous {dtype} array of shape ({length},)")
+    if not out.flags["C_CONTIGUOUS"]:
+        raise ValueError(f"{what} out must be C-contiguous")
+    return out
+
+
 def _check_rfft_n(n):
     if not _is_pow2(n) or n < 4:
         raise ValueError("bfft real FFT requires a power-of-two length N >= 4")
@@ -162,21 +175,21 @@ class Plan:
         self._wp = self._work.ctypes.data
         self._sp = self._scratch.ctypes.data
 
-    def rfft(self, x):
+    def rfft(self, x, out=None):
         a = _as_f64_1d(x)
         if a.shape[0] != self.n:
             raise ValueError(f"Plan(N={self.n}).rfft expects length {self.n}")
-        out = np.empty(self.bins, dtype=np.complex128)
+        out = _out_buffer(out, self.bins, np.complex128, "Plan.rfft")
         _check(_bfft_forward(self._plan, a.ctypes.data, out.ctypes.data,
                              self._wp, self._sp), "bfft_forward")
         return out
 
-    def irfft(self, x):
+    def irfft(self, x, out=None):
         a = _as_c128_1d(x)
         if a.shape[0] != self.bins:
             raise ValueError(
                 f"Plan(N={self.n}).irfft expects {self.bins} bins")
-        out = np.empty(self.n, dtype=np.float64)
+        out = _out_buffer(out, self.n, np.float64, "Plan.irfft")
         _check(_bfft_inverse(self._plan, a.ctypes.data, out.ctypes.data),
                "bfft_inverse")
         return out
@@ -197,21 +210,21 @@ class OdftPlan:
         self._plan = _bodft_plan(n)
         self.bins = _bodft_plan_bins(self._plan)
 
-    def odft(self, x):
+    def odft(self, x, out=None):
         a = _as_f64_1d(x)
         if a.shape[0] != self.n:
             raise ValueError(f"OdftPlan(N={self.n}).odft expects length {self.n}")
-        out = np.empty(self.bins, dtype=np.complex128)
+        out = _out_buffer(out, self.bins, np.complex128, "OdftPlan.odft")
         _check(_bodft_forward(self._plan, a.ctypes.data, out.ctypes.data),
                "bodft_forward")
         return out
 
-    def iodft(self, x):
+    def iodft(self, x, out=None):
         a = _as_c128_1d(x)
         if a.shape[0] != self.bins:
             raise ValueError(
                 f"OdftPlan(N={self.n}).iodft expects {self.bins} bins")
-        out = np.empty(self.n, dtype=np.float64)
+        out = _out_buffer(out, self.n, np.float64, "OdftPlan.iodft")
         _check(_bodft_inverse(self._plan, a.ctypes.data, out.ctypes.data),
                "bodft_inverse")
         return out
