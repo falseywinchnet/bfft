@@ -155,11 +155,25 @@ rfft_into(plan, x, out.view(np.float64), work, scratch.view(np.float64))
 
 Two rules make it work with Numba: pass the **plan as the integer address** from
 `make_plan` (Numba can type an int but not a raw cffi pointer), and pass complex
-buffers as their **float64 view** (`buf.view(np.float64)`) so `ffi.from_buffer`
-yields the `double*` the C function expects. A JIT-compiled loop then performs
-each transform with no Python-object interaction -- in practice at the bare C
-transform speed. See `bfft.numba_support` for `bfft_inverse`, `bodft_forward`,
-`bodft_inverse`, and `make_odft_plan`.
+buffers as their **real view** (`buf.view(np.float64)`, or `buf.view(np.float32)`
+for single precision) so `ffi.from_buffer` yields the pointer type the C function
+expects. A JIT-compiled loop then performs each transform with no Python-object
+interaction -- in practice at the bare C transform speed.
+
+All four transforms are available from `@njit` in both precisions:
+
+| double (`float64` / `complex128`) | single (`float32` / `complex64`) | transform |
+| --- | --- | --- |
+| `bfft_forward` | `bfft_forward_f32` | real FFT (rfft) |
+| `bfft_inverse` | `bfft_inverse_f32` | inverse real FFT (irfft) |
+| `bodft_forward` | `bodft_forward_f32` | half-bin ODFT (odft) |
+| `bodft_inverse` | `bodft_inverse_f32` | inverse ODFT (iodft) |
+
+Create plans with `make_plan(N)` for the standard real FFT (pass
+`dtype=np.float32` to size the single-precision work buffer) and
+`make_odft_plan(N)` for the ODFT. `bfft_forward`/`_f32` need `work` and
+`native_scratch` buffers (sized `work_n` / `scratch_n`); the inverse and both
+ODFT directions need none.
 
 ## API
 

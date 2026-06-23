@@ -51,6 +51,7 @@ performs each FFT with no Python-object interaction at all -- something
 from __future__ import annotations
 
 import cffi
+import numpy as np
 
 from ._core import _candidate_paths
 
@@ -69,15 +70,21 @@ ffi.cdef(
     size_t bfft_plan_bins(void* plan);
     size_t bfft_plan_work_size(void* plan);
     size_t bfft_plan_native_scratch_size(void* plan);
+    size_t bfft_plan_work_size_f32(void* plan);
     int    bfft_forward(size_t plan, double* input, double* output,
                         double* work, double* native_scratch);
     int    bfft_inverse(size_t plan, double* input, double* output);
+    int    bfft_forward_f32(size_t plan, float* input, float* output,
+                            float* work, float* native_scratch);
+    int    bfft_inverse_f32(size_t plan, float* input, float* output);
 
     int    bodft_plan_create(size_t n, void** plan);
     void   bodft_plan_destroy(void* plan);
     size_t bodft_plan_bins(void* plan);
     int    bodft_forward(size_t plan, double* input, double* output);
     int    bodft_inverse(size_t plan, double* input, double* output);
+    int    bodft_forward_f32(size_t plan, float* input, float* output);
+    int    bodft_inverse_f32(size_t plan, float* input, float* output);
     """
 )
 
@@ -105,12 +112,19 @@ bfft_forward = lib.bfft_forward
 bfft_inverse = lib.bfft_inverse
 bodft_forward = lib.bodft_forward
 bodft_inverse = lib.bodft_inverse
+# Single-precision counterparts. Pass complex64 buffers as their float32 view.
+bfft_forward_f32 = lib.bfft_forward_f32
+bfft_inverse_f32 = lib.bfft_inverse_f32
+bodft_forward_f32 = lib.bodft_forward_f32
+bodft_inverse_f32 = lib.bodft_inverse_f32
 
 # Register the functions with Numba so they are callable from nopython code.
 try:  # pragma: no cover - exercised only where numba is present
     from numba.core.typing import cffi_utils as _cffi_utils
 
-    for _fn in (bfft_forward, bfft_inverse, bodft_forward, bodft_inverse):
+    for _fn in (bfft_forward, bfft_inverse, bodft_forward, bodft_inverse,
+                bfft_forward_f32, bfft_inverse_f32,
+                bodft_forward_f32, bodft_inverse_f32):
         _cffi_utils.register_function(_fn)
 except Exception:  # numba missing or API drift: cffi still works in object mode
     pass
@@ -130,16 +144,26 @@ def _plan(create, n):
     return plan
 
 
-def make_plan(n):
+def make_plan(n, dtype=np.float64):
     """Create a standard real-FFT plan. Returns ``(plan_addr, bins, work_n,
     scratch_n)`` where ``plan_addr`` is the plan's address as an int (pass it as
     the first argument to ``bfft_forward`` / ``bfft_inverse`` inside ``@njit``
-    code) and the integers are the required buffer lengths."""
+    code) and the integers are the required buffer lengths.
+
+    ``dtype`` selects the work-buffer sizing for the precision you will use:
+    ``np.float64`` for ``bfft_forward`` or ``np.float32`` for
+    ``bfft_forward_f32``. ``bins`` and ``scratch_n`` count complex elements (of
+    the matching precision); allocate ``scratch_n`` complex values and pass its
+    real view. ``work_n`` counts real elements of the chosen precision."""
     plan = _plan(lib.bfft_plan_create, n)
+    if np.dtype(dtype) == np.float32:
+        work_n = int(lib.bfft_plan_work_size_f32(plan))
+    else:
+        work_n = int(lib.bfft_plan_work_size(plan))
     return (
         int(ffi.cast("uintptr_t", plan)),
         int(lib.bfft_plan_bins(plan)),
-        int(lib.bfft_plan_work_size(plan)),
+        work_n,
         int(lib.bfft_plan_native_scratch_size(plan)),
     )
 
