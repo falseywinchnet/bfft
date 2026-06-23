@@ -67,9 +67,6 @@ def _optimization_flags(cxx: str) -> list:
         elif _compiler_accepts(cxx, ["-mcpu=native"]):
             flags.append("-mcpu=native")
 
-    if not _env_off("BFFT_NO_FAST_MATH") and _compiler_accepts(cxx, ["-ffast-math"]):
-        flags.append("-ffast-math")
-
     return flags
 
 
