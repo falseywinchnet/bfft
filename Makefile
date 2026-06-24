@@ -59,6 +59,7 @@ LOCALITY_PROBE := $(BUILD_DIR)/examples/locality_probe
 C_DEMO := $(BUILD_DIR)/examples/c_api_demo
 CPP_DEMO := $(BUILD_DIR)/examples/cpp_api_demo
 CORRECTNESS_TEST := $(BUILD_DIR)/tests/correctness
+GENBRUUN_TEST := $(BUILD_DIR)/tests/genbruun_correctness
 C_API_TEST := $(BUILD_DIR)/tests/api_c
 SUPPORT_PROBE := $(BUILD_DIR)/tests/bfft_fftw_support_probe
 INVARIANT_PROBE := $(BUILD_DIR)/tests/bfft_invariant_support_probe
@@ -137,6 +138,9 @@ $(CPP_DEMO): examples/cpp_api_demo.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(B
 $(CORRECTNESS_TEST): tests/correctness.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
+$(GENBRUUN_TEST): tests/genbruun_correctness.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
+
 $(C_API_TEST): tests/api_c.c include/bfft/bfft.h $(STATIC_LIB) | $(BUILD_DIR)
 	$(CC) $(CPPFLAGS) $(INCLUDES) $(CFLAGS) $< $(STATIC_LIB) $(LDLIBS) -lstdc++ -o $@
 
@@ -157,8 +161,9 @@ $(LIBRARY_COMPARE_PROBE): tests/bfft_library_compare_probe.cpp include/bfft/bfft
 
 probes: $(SUPPORT_PROBE) $(INVARIANT_PROBE) $(SFDR_PROBE) $(BH7_PROBE) $(LIBRARY_COMPARE_PROBE)
 
-test: $(CORRECTNESS_TEST) $(C_API_TEST)
+test: $(CORRECTNESS_TEST) $(GENBRUUN_TEST) $(C_API_TEST)
 	$(CORRECTNESS_TEST)
+	$(GENBRUUN_TEST)
 	$(C_API_TEST)
 
 check-cxx17:

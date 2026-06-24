@@ -25,9 +25,14 @@ API is designed to be predictable for application code: create a reusable plan,
 allocate buffers from the plan metadata, run transforms, and destroy the plan
 when finished.
 
+Power-of-two lengths use the native Bruun kernel. **Arbitrary lengths** are
+supported through the generalized Bruun plan (see
+[Arbitrary-N support](#arbitrary-n-support)).
+
 ## Features
 
-- Real-valued power-of-two transforms.
+- Real-valued transforms at **any length `N >= 2`** (power-of-two fast path plus
+  a generalized Bruun plan for all other sizes).
 - Standard real-to-complex FFT-order output with `N / 2 + 1` bins.
 - Native spectrum order for callers that want to avoid permutation overhead.
 - Magnitude-only forward transforms for amplitude pipelines.
@@ -346,6 +351,45 @@ avoid a complex output buffer.
 The low-level C API accepts caller-owned work buffers so transform calls can be
 used without hidden allocations. `bfft_workspace` and `bfft::workspace` provide
 aligned reusable storage for native transforms.
+
+## Arbitrary-N support
+
+`bfft_plan_create(n, ...)` accepts **any length `n >= 2`**. Power-of-two lengths
+(`n >= 4`) use the native Bruun kernel; every other length uses the *generalized
+Bruun* plan, which factors `z^N - 1` over the reals into Bruun pieces:
+
+- the 2-adic part of `N` is the existing power-of-two Bruun cascade (the same
+  SIMD butterflies), and
+- each odd prime factor `p` peels off through a condition-1 real radix-`p`
+  codelet (`z^(pM) - 1 = (z^M - 1) * prod_{j=1..(p-1)/2}(z^(2M) - 2cos(2*pi*j/p) z^M + 1)`).
+
+This is **not Bluestein, Rader, or mixed-radix Cooley-Tukey** — it is a single
+real cyclotomic-style factorization that keeps the power-of-two Bruun core as its
+engine. Accuracy is FFT-grade for all `N`, including primes (validated at or below
+NumPy/FFTW error on odd and prime-power sizes; see
+`documentation/reports/odd_prime_accuracy.md`).
+
+```python
+import numpy as np, bfft
+x = np.random.standard_normal(1920)      # 2^7 * 3 * 5
+X = bfft.rfft(x)                          # any N, drop-in for numpy.fft.rfft
+y = bfft.irfft(X, 1920)
+```
+
+`bfft_forward` / `bfft_inverse` (and `bfft.rfft` / `bfft.irfft`) dispatch on the
+size automatically. The arbitrary-N plan owns its scratch, so for non-pow-of-two
+sizes `bfft_plan_work_size` and `bfft_plan_native_scratch_size` return `0` and the
+`work` / `native_scratch` arguments to `bfft_forward` are ignored.
+
+**Pow-of-two-only entry points.** The native-order, magnitude-only, residue-domain
+(filter), and single-precision (`*_f32`) APIs are defined only for power-of-two
+plans; they return `BFFT_ERROR_INVALID_ARGUMENT` for arbitrary-N plans. The
+residue domain has no single canonical layout for non-pow-of-two `N`.
+
+**Performance.** Arbitrary-N forward/inverse are correct and FFT-grade today, but
+the odd-radix projections are not yet SIMD-optimized, so non-pow-of-two sizes are
+currently slower than the power-of-two path (and than FFTW). The power-of-two fast
+path is unaffected.
 
 ## BODFT API
 

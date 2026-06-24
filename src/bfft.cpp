@@ -1,6 +1,7 @@
 #include <bfft/bfft.h>
 
 #include "detail/bruun_kernel.hpp"
+#include "detail/genbruun_kernel.hpp"
 
 #include <cstddef>
 #include <new>
@@ -23,7 +24,10 @@ static_assert(offsetof(bfft_complex_f32, im) == offsetof(bruun::complex_f32_t, i
               "bfft_complex_f32 / bruun::complex_f32_t im offset mismatch");
 
 struct bfft_plan {
-    bruun::RFFT impl;
+    bool pow2 = true;            // true: use impl (RFFT); false: use gen (GenBruun)
+    bruun::RFFT impl;            // valid when pow2
+    bruun::GenBruun* gen = nullptr;  // valid when !pow2 (arbitrary N)
+    ~bfft_plan() { delete gen; }
 };
 
 struct bfft_workspace {
@@ -51,6 +55,12 @@ const bruun::complex_f32_t* as_bruun_complex_f32(const bfft_complex_f32* value) 
 
 bool missing_plan(const bfft_plan* plan) {
     return plan == nullptr;
+}
+
+// pow2-only entry points (native order, residues, magnitude, filters, f32) are
+// not defined for arbitrary-N plans.
+bool not_pow2_plan(const bfft_plan* plan) {
+    return plan == nullptr || !plan->pow2;
 }
 
 bool missing_ptr(const void* ptr) {
@@ -95,19 +105,23 @@ bfft_status bfft_plan_create(size_t n, bfft_plan** plan) {
     if (n > static_cast<size_t>(2147483647)) {
         return BFFT_ERROR_INVALID_ARGUMENT;
     }
-    {
-        const auto ni = static_cast<int>(n);
-        if (ni < 4 || (ni & (ni - 1)) != 0) {
-            return BFFT_ERROR_INVALID_ARGUMENT;
-        }
+    const auto ni = static_cast<int>(n);
+    if (ni < 1) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
     }
+    const bool pow2 = (ni & (ni - 1)) == 0;
     bfft_plan* p = new (std::nothrow) bfft_plan;
     if (!p) {
         return BFFT_ERROR_ALLOCATION;
     }
-    if (!p->impl.init(static_cast<int>(n))) {
-        delete p;
-        return BFFT_ERROR_ALLOCATION;
+    if (pow2 && ni >= 4) {
+        p->pow2 = true;
+        if (!p->impl.init(ni)) { delete p; return BFFT_ERROR_ALLOCATION; }
+    } else {
+        // arbitrary N (incl. non-pow2 and the tiny pow2 sizes 1,2 the kernel rejects)
+        p->pow2 = false;
+        p->gen = new (std::nothrow) bruun::GenBruun(ni);
+        if (!p->gen) { delete p; return BFFT_ERROR_ALLOCATION; }
     }
     *plan = p;
     return BFFT_OK;
@@ -121,25 +135,26 @@ size_t bfft_plan_size(const bfft_plan* plan) {
     if (missing_plan(plan)) {
         return 0;
     }
-    return static_cast<size_t>(plan->impl.size());
+    return static_cast<size_t>(plan->pow2 ? plan->impl.size() : plan->gen->size());
 }
 
 size_t bfft_plan_bins(const bfft_plan* plan) {
     if (missing_plan(plan)) {
         return 0;
     }
-    return static_cast<size_t>(plan->impl.bins());
+    return static_cast<size_t>(plan->pow2 ? plan->impl.bins() : plan->gen->bins());
 }
 
 size_t bfft_plan_work_size(const bfft_plan* plan) {
     if (missing_plan(plan)) {
         return 0;
     }
-    return static_cast<size_t>(plan->impl.work_size());
+    // arbitrary-N plans own their scratch; callers pass no work buffer.
+    return static_cast<size_t>(plan->pow2 ? plan->impl.work_size() : 0);
 }
 
 size_t bfft_plan_work_size_f32(const bfft_plan* plan) {
-    if (missing_plan(plan)) {
+    if (missing_plan(plan) || !plan->pow2) {
         return 0;
     }
     return static_cast<size_t>(plan->impl.work_size_f32());
@@ -149,7 +164,7 @@ size_t bfft_plan_native_scratch_size(const bfft_plan* plan) {
     if (missing_plan(plan)) {
         return 0;
     }
-    return static_cast<size_t>(plan->impl.native_scratch_size());
+    return static_cast<size_t>(plan->pow2 ? plan->impl.native_scratch_size() : 0);
 }
 
 bfft_status bfft_workspace_create(const bfft_plan* plan, bfft_workspace** workspace) {
@@ -186,7 +201,14 @@ bfft_status bfft_forward(const bfft_plan* plan,
                          bfft_complex* output,
                          double* work,
                          bfft_complex* native_scratch) {
-    if (missing_plan(plan) || missing_ptr(input) || missing_ptr(output) || missing_ptr(work)) {
+    if (missing_plan(plan) || missing_ptr(input) || missing_ptr(output)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    if (!plan->pow2) {
+        plan->gen->forward(input, as_bruun_complex(output));   // owns scratch; work unused
+        return BFFT_OK;
+    }
+    if (missing_ptr(work)) {
         return BFFT_ERROR_INVALID_ARGUMENT;
     }
     if (!plan->impl.standard_output_uses_two_phase() && missing_ptr(native_scratch)) {
@@ -200,6 +222,9 @@ bfft_status bfft_forward_native(const bfft_plan* plan,
                                 const double* input,
                                 bfft_complex* output,
                                 double* work) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     bfft_status status = guard_binary(plan, input, output);
     if (status != BFFT_OK || missing_ptr(work)) {
         return BFFT_ERROR_INVALID_ARGUMENT;
@@ -212,6 +237,9 @@ bfft_status bfft_forward_native_workspace(const bfft_plan* plan,
                                           bfft_workspace* workspace,
                                           const double* input,
                                           bfft_complex* output) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     bfft_status status = guard_binary(plan, input, output);
     if (status != BFFT_OK || workspace == nullptr) {
         return BFFT_ERROR_INVALID_ARGUMENT;
@@ -228,6 +256,9 @@ bfft_status bfft_forward_f32(const bfft_plan* plan,
                              bfft_complex_f32* output,
                              float* work,
                              bfft_complex_f32* native_scratch) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     if (missing_plan(plan) || missing_ptr(input) || missing_ptr(output) || missing_ptr(work)) {
         return BFFT_ERROR_INVALID_ARGUMENT;
     }
@@ -242,6 +273,9 @@ bfft_status bfft_forward_native_f32(const bfft_plan* plan,
                                     const float* input,
                                     bfft_complex_f32* output,
                                     float* work) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     bfft_status status = guard_binary(plan, input, output);
     if (status != BFFT_OK || missing_ptr(work)) {
         return BFFT_ERROR_INVALID_ARGUMENT;
@@ -254,6 +288,9 @@ bfft_status bfft_forward_magnitude(const bfft_plan* plan,
                                    const double* input,
                                    double* magnitudes,
                                    double* work) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     bfft_status status = guard_binary(plan, input, magnitudes);
     if (status != BFFT_OK || missing_ptr(work)) {
         return BFFT_ERROR_INVALID_ARGUMENT;
@@ -266,6 +303,9 @@ bfft_status bfft_forward_magnitude_f32(const bfft_plan* plan,
                                        const float* input,
                                        float* magnitudes,
                                        float* work) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     bfft_status status = guard_binary(plan, input, magnitudes);
     if (status != BFFT_OK || missing_ptr(work)) {
         return BFFT_ERROR_INVALID_ARGUMENT;
@@ -281,6 +321,10 @@ bfft_status bfft_inverse(const bfft_plan* plan,
     if (status != BFFT_OK) {
         return status;
     }
+    if (!plan->pow2) {
+        plan->gen->inverse(as_bruun_complex(input), output);
+        return BFFT_OK;
+    }
     plan->impl.inverse(as_bruun_complex(input), output);
     return BFFT_OK;
 }
@@ -288,6 +332,9 @@ bfft_status bfft_inverse(const bfft_plan* plan,
 bfft_status bfft_inverse_f32(const bfft_plan* plan,
                              const bfft_complex_f32* input,
                              float* output) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     bfft_status status = guard_binary(plan, input, output);
     if (status != BFFT_OK) {
         return status;
@@ -299,6 +346,9 @@ bfft_status bfft_inverse_f32(const bfft_plan* plan,
 bfft_status bfft_inverse_native(const bfft_plan* plan,
                                 const bfft_complex* input,
                                 double* output) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     bfft_status status = guard_binary(plan, input, output);
     if (status != BFFT_OK) {
         return status;
@@ -310,6 +360,9 @@ bfft_status bfft_inverse_native(const bfft_plan* plan,
 bfft_status bfft_inverse_native_f32(const bfft_plan* plan,
                                     const bfft_complex_f32* input,
                                     float* output) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     bfft_status status = guard_binary(plan, input, output);
     if (status != BFFT_OK) {
         return status;
@@ -321,6 +374,9 @@ bfft_status bfft_inverse_native_f32(const bfft_plan* plan,
 bfft_status bfft_forward_residues(const bfft_plan* plan,
                                   const double* input,
                                   double* residues) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     bfft_status status = guard_binary(plan, input, residues);
     if (status != BFFT_OK) {
         return status;
@@ -331,6 +387,9 @@ bfft_status bfft_forward_residues(const bfft_plan* plan,
 
 bfft_status bfft_inverse_residues(const bfft_plan* plan,
                                   double* residues_signal) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     if (missing_plan(plan) || missing_ptr(residues_signal)) {
         return BFFT_ERROR_INVALID_ARGUMENT;
     }
@@ -341,6 +400,9 @@ bfft_status bfft_inverse_residues(const bfft_plan* plan,
 bfft_status bfft_native_to_standard(const bfft_plan* plan,
                                     const bfft_complex* native_input,
                                     bfft_complex* standard_output) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     bfft_status status = guard_binary(plan, native_input, standard_output);
     if (status != BFFT_OK) {
         return status;
@@ -352,6 +414,9 @@ bfft_status bfft_native_to_standard(const bfft_plan* plan,
 bfft_status bfft_standard_to_native(const bfft_plan* plan,
                                     const bfft_complex* standard_input,
                                     bfft_complex* native_output) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     bfft_status status = guard_binary(plan, standard_input, native_output);
     if (status != BFFT_OK) {
         return status;
@@ -363,6 +428,9 @@ bfft_status bfft_standard_to_native(const bfft_plan* plan,
 bfft_status bfft_native_to_standard_f32(const bfft_plan* plan,
                                         const bfft_complex_f32* native_input,
                                         bfft_complex_f32* standard_output) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     bfft_status status = guard_binary(plan, native_input, standard_output);
     if (status != BFFT_OK) {
         return status;
@@ -375,6 +443,9 @@ bfft_status bfft_native_to_standard_f32(const bfft_plan* plan,
 bfft_status bfft_standard_to_native_f32(const bfft_plan* plan,
                                         const bfft_complex_f32* standard_input,
                                         bfft_complex_f32* native_output) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     bfft_status status = guard_binary(plan, standard_input, native_output);
     if (status != BFFT_OK) {
         return status;
@@ -385,7 +456,7 @@ bfft_status bfft_standard_to_native_f32(const bfft_plan* plan,
 }
 
 size_t bfft_filter_size(const bfft_plan* plan) {
-    if (missing_plan(plan)) {
+    if (missing_plan(plan) || !plan->pow2) {
         return 0;
     }
     return static_cast<size_t>(plan->impl.filter_size());
@@ -394,6 +465,9 @@ size_t bfft_filter_size(const bfft_plan* plan) {
 bfft_status bfft_residue_filter_from_standard(const bfft_plan* plan,
                                               const bfft_complex* standard_response,
                                               double* residue_filter) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     bfft_status status = guard_binary(plan, standard_response, residue_filter);
     if (status != BFFT_OK) {
         return status;
@@ -405,6 +479,9 @@ bfft_status bfft_residue_filter_from_standard(const bfft_plan* plan,
 bfft_status bfft_residue_filter_from_real(const bfft_plan* plan,
                                           const double* real_response,
                                           double* residue_filter) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     bfft_status status = guard_binary(plan, real_response, residue_filter);
     if (status != BFFT_OK) {
         return status;
@@ -416,6 +493,9 @@ bfft_status bfft_residue_filter_from_real(const bfft_plan* plan,
 bfft_status bfft_apply_residue_filter(const bfft_plan* plan,
                                       double* residues,
                                       const double* residue_filter) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     bfft_status status = guard_binary(plan, residues, residue_filter);
     if (status != BFFT_OK) {
         return status;
@@ -428,6 +508,9 @@ bfft_status bfft_filter_signal(const bfft_plan* plan,
                                const double* input,
                                const double* residue_filter,
                                double* output) {
+    if (not_pow2_plan(plan)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
     if (missing_plan(plan) || missing_ptr(input) || missing_ptr(residue_filter) || missing_ptr(output)) {
         return BFFT_ERROR_INVALID_ARGUMENT;
     }
