@@ -1,0 +1,207 @@
+"""QHSO Layer-3RF: exact factorization of the forward real separator.
+
+This file factors the dense Dirichlet separator used in qhso_forward_real_separator.py.
+It does not form the old adjoint correction state and it does not use complex branch FFTs.
+
+The central identity is finite-sum splitting:
+
+    D_{A+B}(delta) = D_A(delta) + exp(-2*pi*i*A*delta) D_B(delta)
+
+For the QHSO top level T = P + s, M = 2P, this becomes
+
+    Sep_T(Y) = Sep_P(Y) + diag(tau^(P*k)) Sep_s(sign_parity(q) * Y[q])
+
+where sign_parity(q) = +1 for even carrier q and -1 for odd carrier q.
+That sign flip is the exact z^P = +1 / z^P = -1 separator.
+
+The implementation here keeps Sep_L as a Dirichlet-window operator so the
+factorization can be tested in isolation. The next implementation step is to
+replace Sep_P and Sep_s by the same factor recursively/fused over the Bruun tree.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+import csv
+import math
+import numpy as np
+
+
+def prev_pow2(n: int) -> int:
+    return 1 << (n.bit_length() - 1)
+
+
+def _rfft_full(y: np.ndarray) -> np.ndarray:
+    y = np.asarray(y, dtype=np.float64)
+    C = y.size
+    half = np.fft.rfft(y)
+    out = np.empty(C, dtype=np.complex128)
+    out[: C // 2 + 1] = half
+    if C > 1:
+        out[C // 2 + 1 :] = np.conj(half[1 : C // 2][::-1])
+    return out
+
+
+def _real_plane_fold(x: np.ndarray, M: int, base: int, C: int) -> tuple[np.ndarray, np.ndarray]:
+    x = np.asarray(x, dtype=np.float64)
+    u = np.zeros(C, dtype=np.float64)
+    v = np.zeros(C, dtype=np.float64)
+    theta = -2.0 * np.pi * base / M
+    for m, xm in enumerate(x):
+        r = m % C
+        ang = theta * m
+        u[r] += xm * math.cos(ang)
+        v[r] += xm * math.sin(ang)
+    return u, v
+
+
+@dataclass(frozen=True)
+class Branches:
+    T: int
+    P: int
+    M: int
+    even: np.ndarray      # q = 2j, j=0..P-1
+    odd_half: np.ndarray  # q = 1+4j, j=0..P/2-1; conjugate half implicit
+
+
+def compute_branches(x: np.ndarray) -> Branches:
+    x = np.asarray(x, dtype=np.float64)
+    T = x.size
+    if T & (T - 1) == 0:
+        return Branches(T=T, P=T, M=T, even=np.fft.fft(x), odd_half=np.empty(0, dtype=np.complex128))
+    P = prev_pow2(T)
+    M = 2 * P
+    h = P // 2
+    folded_even = np.zeros(P, dtype=np.float64)
+    for m, xm in enumerate(x):
+        folded_even[m % P] += xm
+    even = _rfft_full(folded_even)
+    u, v = _real_plane_fold(x, M=M, base=1, C=h)
+    odd_half = _rfft_full(u) + 1j * _rfft_full(v)
+    return Branches(T=T, P=P, M=M, even=even, odd_half=odd_half)
+
+
+def carrier_from_branches(br: Branches) -> np.ndarray:
+    T, P, M = br.T, br.P, br.M
+    if M == T:
+        return br.even.copy()
+    Y = np.zeros(M, dtype=np.complex128)
+    Y[0::2] = br.even
+    h = P // 2
+    qA = 1 + 4 * np.arange(h)
+    qB = (-qA) % M
+    Y[qA] = br.odd_half
+    Y[qB] = np.conj(br.odd_half)
+    return Y
+
+
+def dirichlet(L: int, delta: np.ndarray) -> np.ndarray:
+    """D_L(delta)=sum_{m=0}^{L-1} exp(-2*pi*i*delta*m), stable near zero."""
+    d = np.asarray(delta, dtype=np.float64)
+    d = d - np.round(d)
+    out = np.empty_like(d, dtype=np.complex128)
+    small = np.abs(d) < 1e-14
+    out[small] = L
+    if np.any(~small):
+        dd = d[~small]
+        out[~small] = np.exp(-1j * np.pi * (L - 1) * dd) * (np.sin(np.pi * L * dd) / np.sin(np.pi * dd))
+    return out
+
+
+def sep_window(Y: np.ndarray, T: int, L: int) -> np.ndarray:
+    """Sep_L(Y)[k] = 1/M sum_q Y[q] D_L(k/T - q/M)."""
+    Y = np.asarray(Y, dtype=np.complex128)
+    M = Y.size
+    k = np.arange(T, dtype=np.float64)[:, None]
+    q = np.arange(M, dtype=np.float64)[None, :]
+    K = dirichlet(L, k / T - q / M) / M
+    return K @ Y
+
+
+def sep_factor_once(Y: np.ndarray, T: int, A: int) -> np.ndarray:
+    """One exact split: Sep_{A+B}(Y) = Sep_A(Y) + tau_A * Sep_B(phi_A * Y)."""
+    M = Y.size
+    B = T - A
+    q = np.arange(M)
+    phi = np.exp(2j * np.pi * A * q / M)  # exp(+2*pi*i*A*q/M)
+    k = np.arange(T)
+    tauA = np.exp(-2j * np.pi * A * k / T)
+    return sep_window(Y, T, A) + tauA * sep_window(phi * Y, T, B)
+
+
+def sep_top_qhso_factor(br: Branches) -> np.ndarray:
+    """Top QHSO factor for T=P+s and M=2P.
+
+    Since exp(+2*pi*i*P*q/M)=(-1)^q, the residual separator is just the
+    even branch minus the odd branch, with no complex branch state.
+    """
+    T, P, M = br.T, br.P, br.M
+    if M == T:
+        return br.even.copy()
+    Y = carrier_from_branches(br)
+    q = np.arange(M)
+    signed = ((-1.0) ** q) * Y
+    k = np.arange(T)
+    tauP = np.exp(-2j * np.pi * P * k / T)
+    return sep_window(Y, T, P) + tauP * sep_window(signed, T, T - P)
+
+
+def sep_binary_factor(Y: np.ndarray, T: int) -> np.ndarray:
+    """Fully split Sep_T by the binary expansion of T.
+
+    This is an exact algebraic factorization of the Dirichlet window. It is
+    included to show the recurrence. It is not a fast implementation because
+    each dyadic window is still evaluated by sep_window.
+    """
+    M = len(Y)
+    out = np.zeros(T, dtype=np.complex128)
+    offset = 0
+    rem = T
+    while rem:
+        A = prev_pow2(rem)
+        q = np.arange(M)
+        phase_q = np.exp(2j * np.pi * offset * q / M)
+        k = np.arange(T)
+        phase_k = np.exp(-2j * np.pi * offset * k / T)
+        out += phase_k * sep_window(phase_q * Y, T, A)
+        offset += A
+        rem -= A
+    return out
+
+
+def check(T: int, seed: int = 0) -> dict[str, float | int]:
+    rng = np.random.default_rng(seed + 1009*T)
+    x = rng.standard_normal(T)
+    br = compute_branches(x)
+    Y = carrier_from_branches(br)
+    dense = sep_window(Y, T, T)
+    top = sep_top_qhso_factor(br)
+    one = sep_factor_once(Y, T, br.P if br.M != br.T else T)
+    binary = sep_binary_factor(Y, T)
+    ref = np.fft.fft(x)
+    scale = max(np.linalg.norm(ref), 1.0)
+    return {
+        "T": T,
+        "P": br.P,
+        "M": br.M,
+        "dense_vs_numpy": float(np.linalg.norm(dense-ref)/scale),
+        "top_factor_vs_dense": float(np.linalg.norm(top-dense)/max(np.linalg.norm(dense),1.0)),
+        "one_split_vs_dense": float(np.linalg.norm(one-dense)/max(np.linalg.norm(dense),1.0)),
+        "binary_factor_vs_dense": float(np.linalg.norm(binary-dense)/max(np.linalg.norm(dense),1.0)),
+    }
+
+
+def sweep() -> list[dict[str, float | int]]:
+    tests = list(range(3, 80)) + [127, 255, 509, 511, 1021]
+    rows = [check(T, seed=5) for T in tests]
+    with open('/tmp/qhso_forward_separator_factorized_sweep.csv','w',newline='') as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        w.writeheader(); w.writerows(rows)
+    worst = max(rows, key=lambda r: r['top_factor_vs_dense'])
+    print('worst top factor', worst)
+    for T in [17,24,31,33,48,63,127,255,509,511,1021]:
+        print(next(r for r in rows if r['T']==T))
+    return rows
+
+
+if __name__ == '__main__':
+    sweep()
