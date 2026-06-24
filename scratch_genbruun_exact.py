@@ -65,26 +65,37 @@ def rfft_gen_exact(x):
         k %= N; X[k] = val
         if k != 0 and (N-k) != k: X[N-k] = np.conj(val)
 
-    def reduce_bruun(r, twoM, f):       # factor angle = 2*pi*f
-        M = twoM // 2
+    def reduce_bruun_cascade(lo, hi, M, f):
+        """Reduce a Bruun node already in the condition-1 cascade frame.
+
+        The pair ``lo - 1j*hi`` is the node value in the normalized cascade
+        frame.  Odd child splits can stay in that frame by evaluating the
+        complex block coefficients with unit-modulus twiddles.  This avoids the
+        Chebyshev inverse (1/sin(phi)) coefficients that made composite odd
+        Bruun nodes lose FFT-grade accuracy for sizes like 2187 and 6075.
+        """
         if M == 1:
             k = int(round(N*float(f % 1))) % N
-            place(k, r[0] + r[1]*np.exp(-1j*TWO_PI*float(f % 1))); return
+            place(k, lo[0] - 1j*hi[0]); return
         if _is_pow2(M):
-            lo = r[:M]; hi = r[M:]
-            cf = _cos(f); sf = _sin(f)
-            seed = np.concatenate([lo + cf*hi, sf*hi])
+            seed = np.concatenate([lo, hi])
             out = {}; _nb_subtree(seed, f, N, out)
             for k, val in out.items(): place(k, val)
             return
         p = _odd_prime(M); Mp = M // p
-        R = [r[i*Mp:(i+1)*Mp] for i in range(2*p)]
+        A = [lo[i*Mp:(i+1)*Mp] for i in range(p)]
+        B = [hi[i*Mp:(i+1)*Mp] for i in range(p)]
         for t in range(p):
             phi = (f + t) / p             # (theta + 2pi t)/p in turns
-            a, b = _cheb_exact(phi, 2*p)
-            lo = sum(R[i]*a[i] for i in range(2*p))
-            hi = sum(R[i]*b[i] for i in range(2*p))
-            reduce_bruun(np.concatenate([lo, hi]), 2*Mp, phi)
+            child_lo = sum(A[i]*_cos(i*phi) - B[i]*_sin(i*phi) for i in range(p))
+            child_hi = sum(B[i]*_cos(i*phi) + A[i]*_sin(i*phi) for i in range(p))
+            reduce_bruun_cascade(child_lo, child_hi, Mp, phi)
+
+    def reduce_bruun(r, twoM, f):       # factor angle = 2*pi*f
+        M = twoM // 2
+        lo = r[:M]; hi = r[M:]
+        cf = _cos(f); sf = _sin(f)
+        reduce_bruun_cascade(lo + cf*hi, sf*hi, M, f)
 
     def reduce_minus(r, D, sigma):
         if _is_pow2(D):
@@ -102,14 +113,8 @@ def rfft_gen_exact(x):
             seed_hi = sum(R[i]*_sin(Fr(i*j, p)) for i in range(p))
             if M == 1:                                   # prime leaf: X = seed_lo - i seed_hi
                 place(int(round(N*float(g % 1))) % N, seed_lo[0] - 1j*seed_hi[0])
-            elif _is_pow2(M):                            # cascade seed feeds _nb_subtree directly
-                out = {}; _nb_subtree(np.concatenate([seed_lo, seed_hi]), g, N, out)
-                for k, val in out.items(): place(k, val)
-            else:                                        # composite M: natural path (rare)
-                a, b = _cheb_exact(g, p)
-                lo = sum(R[i]*a[i] for i in range(p))
-                hi = sum(R[i]*b[i] for i in range(p))
-                reduce_bruun(np.concatenate([lo, hi]), 2*M, g)
+            else:                                        # composite/pow2 M: stay in cascade frame
+                reduce_bruun_cascade(seed_lo, seed_hi, M, g)
 
     reduce_minus(x, N, 1)
     return X[:N//2+1]
