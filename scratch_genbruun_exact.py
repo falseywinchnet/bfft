@@ -5,6 +5,7 @@ Every cos/sin is computed fresh from the integer-reduced phase (no recurrence
 accumulation); leaf bins are exact integers round(N*f).
 """
 import numpy as np
+import mpmath as mp
 from fractions import Fraction as Fr
 from scratch_normbruun import rfft_normbruun
 
@@ -18,11 +19,57 @@ def _odd_prime(n):
         d += 2
     return n
 
-TWO_PI = 2*np.pi
+TWIDDLE_DPS = 160
+_TWIDDLE_CACHE = {}
+
+def _twiddle_key(kind, f):
+    phase = f % 1
+    return kind, phase.numerator, phase.denominator
+
+def _phase_to_mpf(f):
+    phase = f % 1
+    return mp.mpf(phase.numerator) / mp.mpf(phase.denominator)
+
+def _rounded_trig(kind, f):
+    """Return a high-precision-generated binary64 twiddle component.
+
+    This models the C++ design target: twiddle tables are generated offline or at
+    plan construction with enough precision that each stored double is the
+    correctly rounded value of the exact rational turn.
+    """
+    key = _twiddle_key(kind, f)
+    if key in _TWIDDLE_CACHE:
+        return _TWIDDLE_CACHE[key]
+
+    with mp.workdps(TWIDDLE_DPS):
+        angle = 2 * mp.pi * _phase_to_mpf(f)
+        if kind == "cos":
+            value = float(mp.cos(angle))
+        else:
+            value = float(mp.sin(angle))
+
+    _TWIDDLE_CACHE[key] = value
+    return value
+
 def _cos(f):  # f: Fraction turns
-    return np.cos(TWO_PI*float(f % 1))
+    return _rounded_trig("cos", f)
 def _sin(f):
-    return np.sin(TWO_PI*float(f % 1))
+    return _rounded_trig("sin", f)
+
+def _pairwise_sum(terms):
+    """Pairwise sum array terms to reduce source-order accumulation."""
+    items = list(terms)
+    if not items:
+        return 0.0
+    while len(items) > 1:
+        next_items = []
+        limit = len(items) - 1
+        for i in range(0, limit, 2):
+            next_items.append(items[i] + items[i + 1])
+        if len(items) % 2 == 1:
+            next_items.append(items[-1])
+        items = next_items
+    return items[0]
 
 def _cheb_exact(g, n):
     """Chebyshev reduction coeffs a_i=-U_{i-2}(c), b_i=U_{i-1}(c), c=cos(2pi g).
@@ -87,8 +134,8 @@ def rfft_gen_exact(x):
         B = [hi[i*Mp:(i+1)*Mp] for i in range(p)]
         for t in range(p):
             phi = (f + t) / p             # (theta + 2pi t)/p in turns
-            child_lo = sum(A[i]*_cos(i*phi) - B[i]*_sin(i*phi) for i in range(p))
-            child_hi = sum(B[i]*_cos(i*phi) + A[i]*_sin(i*phi) for i in range(p))
+            child_lo = _pairwise_sum(A[i]*_cos(i*phi) - B[i]*_sin(i*phi) for i in range(p))
+            child_hi = _pairwise_sum(B[i]*_cos(i*phi) + A[i]*_sin(i*phi) for i in range(p))
             reduce_bruun_cascade(child_lo, child_hi, Mp, phi)
 
     def reduce_bruun(r, twoM, f):       # factor angle = 2*pi*f
@@ -104,13 +151,13 @@ def rfft_gen_exact(x):
             return
         p = _odd_prime(D); M = D // p
         R = [r[i*M:(i+1)*M] for i in range(p)]
-        reduce_minus(sum(R), M, sigma*p)
+        reduce_minus(_pairwise_sum(R), M, sigma*p)
         for j in range(1, (p-1)//2 + 1):
             g = Fr(j, p)
             # CONDITION-1 cascade seed: B*(natural) = (sum_i R_i cos(i*phi),
             # sum_i R_i sin(i*phi)), bounded coeffs (no 1/sin(phi) growth). Exact phase.
-            seed_lo = sum(R[i]*_cos(Fr(i*j, p)) for i in range(p))
-            seed_hi = sum(R[i]*_sin(Fr(i*j, p)) for i in range(p))
+            seed_lo = _pairwise_sum(R[i]*_cos(Fr(i*j, p)) for i in range(p))
+            seed_hi = _pairwise_sum(R[i]*_sin(Fr(i*j, p)) for i in range(p))
             if M == 1:                                   # prime leaf: X = seed_lo - i seed_hi
                 place(int(round(N*float(g % 1))) % N, seed_lo[0] - 1j*seed_hi[0])
             else:                                        # composite/pow2 M: stay in cascade frame
