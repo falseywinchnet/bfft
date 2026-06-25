@@ -171,9 +171,13 @@ All four transforms are available from `@njit` in both precisions:
 
 Create plans with `make_plan(N)` for the standard real FFT (pass
 `dtype=np.float32` to size the single-precision work buffer) and
-`make_odft_plan(N)` for the ODFT. `bfft_forward`/`_f32` need `work` and
-`native_scratch` buffers (sized `work_n` / `scratch_n`); the inverse and both
-ODFT directions need none.
+`make_odft_plan(N)` for the ODFT. Both plan helpers return the same
+`(plan, bins, work_n, scratch_n)` tuple shape. The ODFT helpers return zero
+for `work_n` and `scratch_n`, and the exported `bodft_forward` /
+`bodft_forward_f32` callables accept the same `work` and `native_scratch`
+arguments as `bfft_forward` / `bfft_forward_f32` while ignoring them. This lets
+the same jitted call site switch between rfft and odft by changing only the plan
+factory and transform function.
 
 ## API
 
