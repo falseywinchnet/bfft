@@ -29,7 +29,15 @@ import numpy as np
 from numba import njit
 
 # BFFT's nopython-callable FFT entry points and the cffi handle.
-from bfft.numba_support import bfft_forward, bfft_inverse, ffi, make_plan
+from bfft.numba_support import (
+    bfft_forward,
+    bfft_inverse,
+    bodft_forward,
+    bodft_inverse,
+    ffi,
+    make_odft_plan,
+    make_plan,
+)
 
 
 # --------------------------------------------------------------------------
@@ -63,8 +71,10 @@ def ifftshift(a):
 # cache=False: these call BFFT through cffi function pointers, which Numba
 # treats as dynamic globals and refuses to cache.
 @njit(cache=False)
-def stft_kernel(x, ana, plan, n_fft, hop, n_bins, n_segs, work, scratch):
-    """Reflect-pad, fftshift-frame, window, and rfft each segment via BFFT.
+def stft_kernel(
+    x, ana, plan, n_fft, hop, n_bins, n_segs, work, scratch, transform_kind,
+):
+    """Reflect-pad, fftshift-frame, window, and transform each segment via BFFT.
     Returns a (n_bins, n_segs) complex128 spectrogram."""
     n = x.shape[0]
     half = n_fft // 2
@@ -92,17 +102,24 @@ def stft_kernel(x, ana, plan, n_fft, hop, n_bins, n_segs, work, scratch):
             if idx >= n_fft:
                 idx -= n_fft
             seg[a] = xp[base + idx] * ana[a]
-        bfft_forward(plan,
-                     ffi.from_buffer(seg), ffi.from_buffer(out_f),
-                     ffi.from_buffer(work), ffi.from_buffer(scratch))
+        if transform_kind == 0:
+            bfft_forward(plan,
+                         ffi.from_buffer(seg), ffi.from_buffer(out_f),
+                         ffi.from_buffer(work), ffi.from_buffer(scratch))
+        else:
+            bodft_forward(plan,
+                          ffi.from_buffer(seg), ffi.from_buffer(out_f),
+                          ffi.from_buffer(work), ffi.from_buffer(scratch))
         for b in range(n_bins):
             Zx[b, jx] = out_f[2 * b] + 1j * out_f[2 * b + 1]
     return Zx
 
 
 @njit(cache=False)
-def istft_kernel(Zx, syn, plan, n_fft, hop, n_bins, n_segs, buffer):
-    """Inverse: irfft each column via BFFT, undo the frame fftshift, apply the
+def istft_kernel(
+    Zx, syn, plan, n_fft, hop, n_bins, n_segs, buffer, transform_kind,
+):
+    """Inverse: invert each column via BFFT, undo the frame fftshift, apply the
     synthesis window, then stream out ``hop`` samples per frame using a
     persistent overlap buffer (length ``n_fft - hop``). Returns the
     ``(n_segs * hop,)`` signal and the updated buffer, so successive blocks can
@@ -122,7 +139,10 @@ def istft_kernel(Zx, syn, plan, n_fft, hop, n_bins, n_segs, buffer):
             z = Zx[b, jx]
             inb_f[2 * b] = z.real
             inb_f[2 * b + 1] = z.imag
-        bfft_inverse(plan, ffi.from_buffer(inb_f), ffi.from_buffer(frame))
+        if transform_kind == 0:
+            bfft_inverse(plan, ffi.from_buffer(inb_f), ffi.from_buffer(frame))
+        else:
+            bodft_inverse(plan, ffi.from_buffer(inb_f), ffi.from_buffer(frame))
         for a in range(n_fft):
             idx = a + half          # undo the frame fftshift, then window
             if idx >= n_fft:
@@ -161,6 +181,10 @@ class STFT:
     window : array_like or None
         Analysis window of length ``n_fft``. Defaults to a Hann window. The
         MSE-optimal synthesis window is derived from it.
+    transform : {"rfft", "odft"}
+        Transform used for each frame. ``"odft"`` uses the half-bin ODFT path
+        with ``n_fft // 2`` bins; ``"rfft"`` uses the standard real FFT path
+        with ``n_fft // 2 + 1`` bins.
 
     Notes
     -----
@@ -173,7 +197,9 @@ class STFT:
     (``hop_length == n_fft // 4``); other overlaps redistribute the transient.
     """
 
-    def __init__(self, n=24576, n_fft=512, hop_length=128, window=None):
+    def __init__(
+        self, n=24576, n_fft=512, hop_length=128, window=None, transform="rfft",
+    ):
         n = int(n)
         n_fft = int(n_fft)
         hop_length = int(hop_length)
@@ -186,6 +212,16 @@ class STFT:
             "n_fft must be an integer multiple of hop_length (COLA)"
         assert n > 0, "n must be positive"
 
+        if transform == "rfft":
+            transform_kind = 0
+            plan_factory = make_plan
+        else:
+            if transform == "odft":
+                transform_kind = 1
+                plan_factory = make_odft_plan
+            else:
+                raise ValueError("transform must be either 'rfft' or 'odft'")
+
         if window is None:
             window = np.hanning(n_fft)
         window = np.ascontiguousarray(window, dtype=np.float64)
@@ -195,8 +231,10 @@ class STFT:
         self.n = n
         self.n_fft = n_fft
         self.hop_length = hop_length
-        self.n_bins = n_fft // 2 + 1
+        self.n_bins = 0
         self.n_segs = (n - 1) // hop_length + 1
+        self.transform = transform
+        self._transform_kind = transform_kind
 
         # COLA denominator: sum of squared analysis window over all hop shifts
         # that cover each sample, then the MSE-optimal synthesis window.
@@ -222,8 +260,8 @@ class STFT:
         self.buffer_length = n_fft - hop_length
 
         # One reusable BFFT plan and scratch (float64-staged, complex as pairs).
-        plan, bins, work_n, scratch_n = make_plan(n_fft)
-        assert bins == self.n_bins
+        plan, bins, work_n, scratch_n = plan_factory(n_fft)
+        self.n_bins = bins
         self._plan = plan
         self._work = np.empty(work_n, dtype=np.float64)
         self._scratch = np.empty(2 * scratch_n, dtype=np.float64)
@@ -235,7 +273,7 @@ class STFT:
         assert x.shape == (self.n,), f"x must have shape ({self.n},)"
         return stft_kernel(x, self._ana, self._plan, self.n_fft,
                            self.hop_length, self.n_bins, self.n_segs,
-                           self._work, self._scratch)
+                           self._work, self._scratch, self._transform_kind)
 
     def new_buffer(self):
         """Allocate a zeroed persistent overlap buffer for streaming inversion."""
@@ -257,4 +295,5 @@ class STFT:
             assert buffer.shape == (self.buffer_length,), \
                 f"buffer must have shape ({self.buffer_length},)"
         return istft_kernel(Zx, self._syn, self._plan, self.n_fft,
-                            self.hop_length, self.n_bins, self.n_segs, buffer)
+                            self.hop_length, self.n_bins, self.n_segs, buffer,
+                            self._transform_kind)
