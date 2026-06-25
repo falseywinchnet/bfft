@@ -98,10 +98,16 @@ def stft_kernel(
     for jx in range(n_segs):
         base = jx * hop
         for a in range(n_fft):
-            idx = a + half          # fftshift the frame as we gather it
-            if idx >= n_fft:
-                idx -= n_fft
-            seg[a] = xp[base + idx] * ana[a]
+          idx = a + half
+          if idx >= n_fft:
+              idx -= n_fft
+
+          v = xp[base + idx] * ana[a]
+
+          if transform_kind == 1 and a >= half:
+              v = -v
+
+          seg[a] = v
         if transform_kind == 0:
             bfft_forward(plan,
                          ffi.from_buffer(seg), ffi.from_buffer(out_f),
@@ -144,10 +150,16 @@ def istft_kernel(
         else:
             bodft_inverse(plan, ffi.from_buffer(inb_f), ffi.from_buffer(frame))
         for a in range(n_fft):
-            idx = a + half          # undo the frame fftshift, then window
-            if idx >= n_fft:
-                idx -= n_fft
-            proc[a] = frame[idx] * syn[a]
+          idx = a + half
+          if idx >= n_fft:
+              idx -= n_fft
+
+          v = frame[idx]
+
+          if transform_kind == 1 and idx >= half:
+              v = -v
+
+          proc[a] = v * syn[a]
 
         # Emit the first hop samples (overlapped with the carried buffer),
         # shift the buffer down by hop, and fold in this frame's tail.
