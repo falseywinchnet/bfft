@@ -46,6 +46,12 @@ called from inside an ``@njit`` function. Two rules make it work with Numba:
 The buffers are caller-owned, so a JIT-compiled loop that transforms many frames
 performs each FFT with no Python-object interaction at all -- something
 ``numpy.fft`` cannot do from nopython mode.
+
+For the half-bin ODFT path, ``make_odft_plan`` intentionally returns the same
+four-tuple shape as ``make_plan``. The exported ``bodft_forward`` and
+``bodft_forward_f32`` callables also use the same forward-call signature as
+``bfft_forward`` / ``bfft_forward_f32``; they accept work and scratch arguments
+for drop-in compatibility and ignore them while running the ODFT transform.
 """
 
 from __future__ import annotations
@@ -81,9 +87,11 @@ ffi.cdef(
     int    bodft_plan_create(size_t n, void** plan);
     void   bodft_plan_destroy(void* plan);
     size_t bodft_plan_bins(void* plan);
-    int    bodft_forward(size_t plan, double* input, double* output);
+    int    bodft_forward_numba(size_t plan, double* input, double* output,
+                               double* work, double* native_scratch);
     int    bodft_inverse(size_t plan, double* input, double* output);
-    int    bodft_forward_f32(size_t plan, float* input, float* output);
+    int    bodft_forward_numba_f32(size_t plan, float* input, float* output,
+                                   float* work, float* native_scratch);
     int    bodft_inverse_f32(size_t plan, float* input, float* output);
     """
 )
@@ -110,12 +118,12 @@ lib = _open()
 #     from bfft.numba_support import bfft_forward, ffi
 bfft_forward = lib.bfft_forward
 bfft_inverse = lib.bfft_inverse
-bodft_forward = lib.bodft_forward
+bodft_forward = lib.bodft_forward_numba
 bodft_inverse = lib.bodft_inverse
 # Single-precision counterparts. Pass complex64 buffers as their float32 view.
 bfft_forward_f32 = lib.bfft_forward_f32
 bfft_inverse_f32 = lib.bfft_inverse_f32
-bodft_forward_f32 = lib.bodft_forward_f32
+bodft_forward_f32 = lib.bodft_forward_numba_f32
 bodft_inverse_f32 = lib.bodft_inverse_f32
 
 # Register the functions with Numba so they are callable from nopython code.
@@ -168,7 +176,20 @@ def make_plan(n, dtype=np.float64):
     )
 
 
-def make_odft_plan(n):
-    """Create a half-bin ODFT plan. Returns ``(plan_addr, bins)``."""
+def make_odft_plan(n, dtype=np.float64):
+    """Create a half-bin ODFT plan. Returns ``(plan_addr, bins, work_n,
+    scratch_n)`` just like :func:`make_plan`.
+
+    The ODFT forward entry points exposed by this module accept the same
+    arguments as ``bfft_forward`` / ``bfft_forward_f32`` for drop-in call-site
+    compatibility, but they do not need workspace. ``work_n`` and
+    ``scratch_n`` are therefore always zero. ``dtype`` is accepted for exact
+    API symmetry with :func:`make_plan`."""
+    np.dtype(dtype)
     plan = _plan(lib.bodft_plan_create, n)
-    return int(ffi.cast("uintptr_t", plan)), int(lib.bodft_plan_bins(plan))
+    return (
+        int(ffi.cast("uintptr_t", plan)),
+        int(lib.bodft_plan_bins(plan)),
+        0,
+        0,
+    )

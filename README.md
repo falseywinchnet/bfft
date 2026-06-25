@@ -310,6 +310,12 @@ rfft_into(plan, x, out.view(np.float64), work, scratch.view(np.float64))
 # out == numpy.fft.rfft(x)
 ```
 
+For ODFT, use `make_odft_plan(N, dtype=...)` and `bodft_forward` /
+`bodft_forward_f32` with the same tuple shape and forward-call signature as the
+standard rfft helpers. ODFT does not require workspace, so `work_n` and
+`scratch_n` are zero, and the forward call accepts those buffers only for
+drop-in compatibility.
+
 ## Main API concepts
 
 ### Plans
