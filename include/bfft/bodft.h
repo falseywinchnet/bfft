@@ -43,6 +43,16 @@ size_t bodft_plan_bins(const bodft_plan* plan);
 bfft_status bodft_forward(const bodft_plan* plan,
                           const double* input,
                           bfft_complex* output);
+
+/* Numba-compatible forward entry point with the same call shape as
+   bfft_forward. work and native_scratch are accepted for drop-in call-site
+   compatibility and are ignored. */
+bfft_status bodft_forward_numba(const bodft_plan* plan,
+                                const double* input,
+                                bfft_complex* output,
+                                double* work,
+                                bfft_complex* native_scratch);
+
 bfft_status bodft_inverse(const bodft_plan* plan,
                           const bfft_complex* input,
                           double* output);
@@ -51,6 +61,14 @@ bfft_status bodft_inverse(const bodft_plan* plan,
 bfft_status bodft_forward_f32(const bodft_plan* plan,
                               const float* input,
                               bfft_complex_f32* output);
+
+/* Single-precision Numba-compatible forward entry point. */
+bfft_status bodft_forward_numba_f32(const bodft_plan* plan,
+                                    const float* input,
+                                    bfft_complex_f32* output,
+                                    float* work,
+                                    bfft_complex_f32* native_scratch);
+
 bfft_status bodft_inverse_f32(const bodft_plan* plan,
                               const bfft_complex_f32* input,
                               float* output);
