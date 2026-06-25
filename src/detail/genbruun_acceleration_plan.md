@@ -11,9 +11,19 @@ radix codelet kind, and fixed fwd/inv codelets cover radices 3, 5, 7, 11, 13,
 17, and 19 for both `MINUS_SPLIT` and `BRUUN_ODD`. The arbitrary-N public f32 and
 native-order API routes are wired through GenBruun, and the f32 GenBruun engine
 now has matching fixed-radix odd codelets instead of routing through double.
-Larger odd primes use the generic fallback. The remaining work is primarily
-performance polish: assembly review, latency hiding, rooted-cascade `norm2`
-fusion, and larger-prime policy.
+Larger odd primes use the generic fallback.
+
+>>> PRIORITY FINDING (2026-06-25): the existing fixed-radix codelets are DENSE
+>>> p-point DFTs, not factored butterflies. `minus_split3_forward` does
+>>> `lo = v0*C0 + v1*C1 + v2*C2` (6 real mults/lane) where the Winograd radix-3
+>>> needs 2 (`t1=v1+v2; t2=v1-v2; lo=v0+C1*t1; hi=S1*t2`), exploiting C0=1,S0=0,
+>>> C1=C2, S2=-S1. `bruun_odd3_forward_child` does 36 REAL mults/lane where the
+>>> factored real form does 12 (8 modulate + 4 butterfly; validated to 1.78e-15
+>>> in /tmp). This DENSE-vs-FACTORED constant (~3x mults) is
+>>> WHY non-prime odd (e.g. 729 = 3^6) measures ~3x FFTW even though both are
+>>> O(N log N). It is an OP-COUNT problem (backend-independent: helps scalar /
+>>> NEON / AVX2 equally), not a SIMD problem. See §8. Closing it should bring
+>>> non-prime-odd from ~3x toward ~1.3-1.7x FFTW; the rest is §3-5 polish.
 
 This document is the work breakdown. **Division of labor:** GPT takes the **AVX2**
 codelets (it has the natural x86 hardware to profile on); we pick up **NEON**
@@ -236,3 +246,73 @@ A 10-minute asm read on the radix-3 codelet usually finds the difference between
 Next push-quality gate: assembly/profiling review, accepted large-prime fallback
 policy, and a decision on whether the `N=2401` inverse timing needs a fix before
 publishing.
+
+---
+
+## 8. FACTORED (Winograd) small-DFT codelets — THE path to FFTW parity for non-prime odd
+
+This is the priority work (see the PRIORITY FINDING at the top). The current
+fixed-radix codelets vectorize a *dense* p-point DFT; replace each with the
+minimal-multiply factored form. Backend-independent op-count reduction.
+
+### 8a. minus-split codelet (real p-point DFT) — the clean ~3x win
+Inputs: `p` real blocks `R_0..R_{p-1}` (length M). Outputs: `sum = sum_i R_i`
+(DC) and, for `j=1..(p-1)/2`, `lo_j = sum_i R_i cos(2*pi*i*j/p)`,
+`hi_j = sum_i R_i sin(2*pi*i*j/p)`. This is exactly the real-input p-point DFT.
+Use the symmetric butterfly:
+- form `pe_i = R_i + R_{p-i}`, `po_i = R_i - R_{p-i}` for `i=1..(p-1)/2` (free adds);
+- then `lo_j = R_0 + sum_i cos(2*pi*i*j/p)*pe_i`, `hi_j = sum_i sin(2*pi*i*j/p)*po_i`.
+- radix-3: `t1=R1+R2; t2=R1-R2; sum=R0+t1; lo=R0+C*t1; hi=S*t2` (2 mults).
+- radix-5/7: the standard Winograd N=5 (5 mults) / N=7 (8 mults) modules.
+Drop `i=0` (cos=1,sin=0) and use exact algebraic constants (cos(2*pi/3)=-1/2 is
+EXACT; generate the others to full precision so C[i]=C[p-i] is bit-symmetric and
+the inverse stays an exact transpose).
+
+### 8b. bruun-odd codelet — REAL two-plane factorization (NO complex math)
+HARD CONSTRAINT (per direction 2026-06-25): stay decidedly Bruun. Everything is
+REAL two-plane (lo/hi or P/Q) arithmetic — no `complex<double>`, no complex
+multiply abstraction. The op-count win and "stay Bruun" are the SAME move: the
+dense `O(p^2)` projection is the un-Bruun brute-force matrix; replace it with two
+real Bruun primitives.
+
+Today `bruun_odd<p>_forward_child` is called per child `t` and does a dense p-tap
+real matrix product (`clo_t = sum_i a_i cos(i*phi_t) - b_i sin(i*phi_t)`, etc.),
+`phi_t=(theta+2pi t)/p` -> `O(p^2)` real mults. Factor it (real, validated for
+p=3 to 1.78e-15, 36->12 mults):
+1. **modulate** each tap by `psi=theta/p` using the REAL Bruun rotation (the same
+   `(c,s)` rotation `norm_q_fwd` uses): `P_i = a_i cos(i*psi) - b_i sin(i*psi)`,
+   `Q_i = a_i sin(i*psi) + b_i cos(i*psi)` (i=0 trivial).
+2. **real radix-p butterfly** on `(P_i, Q_i)` with the standard roots
+   `cos(2pi*i*t/p), sin(2pi*i*t/p)` -- exact constants (`cos(2pi/3)=-1/2`), pair
+   conjugate-angle taps (`sum`/`diff`), emit all p children from one pass that
+   loads each input lane group once.
+This is real-plane Winograd = native Bruun (real rotation + real butterfly).
+radix-3: 2 butterfly mults; radix-5: real-5 module; radix-7: real-7 module.
+
+### 8c. Sub-tasks
+- 8c-1..3 DONE (f64): factored REAL two-plane bruun-odd codelets for radix 3, 5, 7
+  (forward + inverse adjoint), all-children-at-once via the modulation table
+  o.tw[0] + the symmetric real radix-p butterfly. Validated FFT-grade + roundtrip;
+  measured forward ~1.8-2.1x faster (729: 4990->2785; 625: 4531->2595;
+  343: 2366->1292; 2401: 21276->10333), moving non-prime-odd from ~3.5x to ~2x
+  FFTW. Mults: r3 36->12, r5 100->32, r7 196->60. Inverse on NEON is ~neutral
+  (memory-bound; the mult win should show on AVX2). minus-split radix-p NOT yet
+  factored (called once/transform, minor). LESSON: a hardcoded constant typo
+  (R7_S2=sin(4pi/7)) slipped past the runtime-trig standalone but was caught by
+  tests/correctness.cpp's tight tolerance -- always validate hardcoded codelet
+  constants against high precision and run make test.
+- 8c-3b TODO (f32 mirrors): the f32 GenBruun path still uses the dense
+  fixed_bruun_odd_*_f32<P> codelets; mirror the factored real form there next.
+### 8c. (original) Sub-tasks
+- 8c-1. radix-3 minus-split + bruun-odd factored fwd/inv (f64), validate
+  (`make test`, accuracy probe), benchmark 729/2187. This is the proof.
+- 8c-2. radix-5, radix-7 the same (Winograd 5/7 modules).
+- 8c-3. f32 mirrors.
+- 8c-4. exact algebraic twiddle constants for the factored codelets so the
+  inverse stays a bit-exact transpose (no symmetry drift over deep 3^k chains).
+- 8c-5. larger primes (11,13,17,19): factored real/complex DFT modules if worth
+  it, else keep the dense vectorized fallback (they are rare).
+
+Note: the minus-split codelet runs once per transform; the bruun-odd codelet runs
+O(N/p) times in the cascade and DOMINATES prime-power timing. Do 8b first/with 8a
+to actually move the benchmark.

@@ -367,6 +367,48 @@ private:
         }
     }
 
+    // FACTORED radix-3 forward, all 3 children at once, REAL two-plane (no complex).
+    // = real (c,s) modulation by psi=theta/3 (table mod = cos/sin(i*psi)) followed by
+    // the real radix-3 butterfly. 12 real mults/lane vs the dense 36. Matches the
+    // per-child dense output (sum_i a_i cos(i*phi_t) - b_i sin(i*phi_t)) to rounding.
+    static void bruun_odd3_forward_all(double* RESTRICT c0, double* RESTRICT c1, double* RESTRICT c2,
+                                       const double* RESTRICT lo, const double* RESTRICT hi,
+                                       const double* RESTRICT mod, int Mp) {
+        const double* RESTRICT a0 = lo; const double* RESTRICT a1 = lo + Mp; const double* RESTRICT a2 = lo + 2 * Mp;
+        const double* RESTRICT b0 = hi; const double* RESTRICT b1 = hi + Mp; const double* RESTRICT b2 = hi + 2 * Mp;
+        double* RESTRICT c0l = c0; double* RESTRICT c0h = c0 + Mp;
+        double* RESTRICT c1l = c1; double* RESTRICT c1h = c1 + Mp;
+        double* RESTRICT c2l = c2; double* RESTRICT c2h = c2 + Mp;
+        const double mc1 = mod[1], ms1 = mod[3 + 1], mc2 = mod[2], ms2 = mod[3 + 2];
+        const double cr = -0.5, sr = 0.86602540378443864676;   // cos/sin(2*pi/3)
+        int m = 0;
+#if BRUUN_LEVEL >= 1
+        const bruun_v2 vmc1 = V2_SET1(mc1), vms1 = V2_SET1(ms1), vmc2 = V2_SET1(mc2), vms2 = V2_SET1(ms2);
+        const bruun_v2 vcr = V2_SET1(cr), vsr = V2_SET1(sr);
+        for (; m + 1 < Mp; m += 2) {
+            const bruun_v2 A0 = V2_LD(a0 + m), A1 = V2_LD(a1 + m), A2 = V2_LD(a2 + m);
+            const bruun_v2 B0 = V2_LD(b0 + m), B1 = V2_LD(b1 + m), B2 = V2_LD(b2 + m);
+            const bruun_v2 P1 = V2_MSUB(V2_MUL(A1, vmc1), B1, vms1), Q1 = V2_MADD(V2_MUL(A1, vms1), B1, vmc1);
+            const bruun_v2 P2 = V2_MSUB(V2_MUL(A2, vmc2), B2, vms2), Q2 = V2_MADD(V2_MUL(A2, vms2), B2, vmc2);
+            const bruun_v2 sp = V2_ADD(P1, P2), dp = V2_SUB(P1, P2), sq = V2_ADD(Q1, Q2), dq = V2_SUB(Q1, Q2);
+            V2_ST(c0l + m, V2_ADD(A0, sp)); V2_ST(c0h + m, V2_ADD(B0, sq));
+            const bruun_v2 m1 = V2_MADD(A0, vcr, sp), m2 = V2_MUL(vsr, dq);
+            const bruun_v2 n1 = V2_MADD(B0, vcr, sq), n2 = V2_MUL(vsr, dp);
+            V2_ST(c1l + m, V2_SUB(m1, m2)); V2_ST(c2l + m, V2_ADD(m1, m2));
+            V2_ST(c1h + m, V2_ADD(n1, n2)); V2_ST(c2h + m, V2_SUB(n1, n2));
+        }
+#endif
+        for (; m < Mp; ++m) {
+            const double A0 = a0[m], A1 = a1[m], A2 = a2[m], B0 = b0[m], B1 = b1[m], B2 = b2[m];
+            const double P1 = A1 * mc1 - B1 * ms1, Q1 = A1 * ms1 + B1 * mc1;
+            const double P2 = A2 * mc2 - B2 * ms2, Q2 = A2 * ms2 + B2 * mc2;
+            const double sp = P1 + P2, dp = P1 - P2, sq = Q1 + Q2, dq = Q1 - Q2;
+            c0l[m] = A0 + sp; c0h[m] = B0 + sq;
+            const double m1 = A0 + cr * sp, m2 = sr * dq, n1 = B0 + cr * sq, n2 = sr * dp;
+            c1l[m] = m1 - m2; c2l[m] = m1 + m2; c1h[m] = n1 + n2; c2h[m] = n1 - n2;
+        }
+    }
+
     static void bruun_odd3_adjoint_child(double* RESTRICT lo, double* RESTRICT hi,
                                          const double* RESTRICT clo, const double* RESTRICT chi,
                                          const double* RESTRICT C, const double* RESTRICT S, int Mp) {
@@ -410,6 +452,163 @@ private:
             b1[m] += ch * C[1] - cl * S[1];
             a2[m] += cl * C[2] + ch * S[2];
             b2[m] += ch * C[2] - cl * S[2];
+        }
+    }
+
+    // FACTORED radix-3 inverse adjoint, all children at once, REAL two-plane.
+    // = (1/3) * M^T * B^T : inverse radix-3 butterfly (scaled 1/3) then inverse
+    // (c,s) rotation by psi. Exact transpose of bruun_odd3_forward_all -> roundtrip
+    // is identity. Writes the full parent (no accumulate).
+    static void bruun_odd3_adjoint_all(double* RESTRICT lo, double* RESTRICT hi,
+                                       const double* RESTRICT c0, const double* RESTRICT c1, const double* RESTRICT c2,
+                                       const double* RESTRICT mod, int Mp) {
+        double* RESTRICT a0 = lo; double* RESTRICT a1 = lo + Mp; double* RESTRICT a2 = lo + 2 * Mp;
+        double* RESTRICT b0 = hi; double* RESTRICT b1 = hi + Mp; double* RESTRICT b2 = hi + 2 * Mp;
+        const double* RESTRICT c0l = c0; const double* RESTRICT c0h = c0 + Mp;
+        const double* RESTRICT c1l = c1; const double* RESTRICT c1h = c1 + Mp;
+        const double* RESTRICT c2l = c2; const double* RESTRICT c2h = c2 + Mp;
+        const double mc1 = mod[1], ms1 = mod[3 + 1], mc2 = mod[2], ms2 = mod[3 + 2];
+        const double cr = -0.5, sr = 0.86602540378443864676, third = 1.0 / 3.0;
+        int m = 0;
+#if BRUUN_LEVEL >= 1
+        const bruun_v2 vmc1 = V2_SET1(mc1), vms1 = V2_SET1(ms1), vmc2 = V2_SET1(mc2), vms2 = V2_SET1(ms2);
+        const bruun_v2 vcr = V2_SET1(cr), vsr = V2_SET1(sr), v3 = V2_SET1(third);
+        for (; m + 1 < Mp; m += 2) {
+            const bruun_v2 g0 = V2_MUL(V2_LD(c0l + m), v3), g1 = V2_MUL(V2_LD(c1l + m), v3), g2 = V2_MUL(V2_LD(c2l + m), v3);
+            const bruun_v2 h0 = V2_MUL(V2_LD(c0h + m), v3), h1 = V2_MUL(V2_LD(c1h + m), v3), h2 = V2_MUL(V2_LD(c2h + m), v3);
+            const bruun_v2 sg = V2_ADD(g1, g2), dg = V2_SUB(g1, g2), sh = V2_ADD(h1, h2), dh = V2_SUB(h1, h2);
+            const bruun_v2 P0 = V2_ADD(g0, sg), Q0 = V2_ADD(h0, sh);
+            const bruun_v2 u = V2_MADD(g0, vcr, sg), w = V2_MUL(vsr, dh);
+            const bruun_v2 x = V2_MADD(h0, vcr, sh), y = V2_MUL(vsr, dg);
+            const bruun_v2 P1 = V2_ADD(u, w), P2 = V2_SUB(u, w), Q1 = V2_SUB(x, y), Q2 = V2_ADD(x, y);
+            V2_ST(a0 + m, P0); V2_ST(b0 + m, Q0);
+            V2_ST(a1 + m, V2_MADD(V2_MUL(P1, vmc1), Q1, vms1)); V2_ST(b1 + m, V2_MSUB(V2_MUL(Q1, vmc1), P1, vms1));
+            V2_ST(a2 + m, V2_MADD(V2_MUL(P2, vmc2), Q2, vms2)); V2_ST(b2 + m, V2_MSUB(V2_MUL(Q2, vmc2), P2, vms2));
+        }
+#endif
+        for (; m < Mp; ++m) {
+            const double g0 = c0l[m] * third, g1 = c1l[m] * third, g2 = c2l[m] * third;
+            const double h0 = c0h[m] * third, h1 = c1h[m] * third, h2 = c2h[m] * third;
+            const double sg = g1 + g2, dg = g1 - g2, sh = h1 + h2, dh = h1 - h2;
+            const double P0 = g0 + sg, Q0 = h0 + sh;
+            const double u = g0 + cr * sg, w = sr * dh, x = h0 + cr * sh, y = sr * dg;
+            const double P1 = u + w, P2 = u - w, Q1 = x - y, Q2 = x + y;
+            a0[m] = P0; b0[m] = Q0;
+            a1[m] = P1 * mc1 + Q1 * ms1; b1[m] = Q1 * mc1 - P1 * ms1;
+            a2[m] = P2 * mc2 + Q2 * ms2; b2[m] = Q2 * mc2 - P2 * ms2;
+        }
+    }
+
+    // FACTORED radix-5: real two-plane, modulate by psi=theta/5 then symmetric
+    // real radix-5 butterfly. 32 mults/lane vs the dense 100. Constants = cos/sin
+    // of 2pi/5 and 4pi/5.
+    static constexpr double R5_C1 = 0.30901699437494742410, R5_C2 = -0.80901699437494742410;
+    static constexpr double R5_S1 = 0.95105651629515357212, R5_S2 = 0.58778525229247312917;
+    static void bruun_odd5_forward_all(double* RESTRICT c0, double* RESTRICT c1, double* RESTRICT c2,
+                                       double* RESTRICT c3, double* RESTRICT c4,
+                                       const double* RESTRICT lo, const double* RESTRICT hi,
+                                       const double* RESTRICT mod, int Mp) {
+        const double* RESTRICT a[5] = {lo, lo + Mp, lo + 2 * Mp, lo + 3 * Mp, lo + 4 * Mp};
+        const double* RESTRICT b[5] = {hi, hi + Mp, hi + 2 * Mp, hi + 3 * Mp, hi + 4 * Mp};
+        double* RESTRICT cl[5] = {c0, c1, c2, c3, c4};
+        for (int m = 0; m < Mp; ++m) {
+            double P[5], Q[5];
+            P[0] = a[0][m]; Q[0] = b[0][m];
+            for (int i = 1; i < 5; ++i) { double ai = a[i][m], bi = b[i][m], mc = mod[i], ms = mod[5 + i];
+                P[i] = ai * mc - bi * ms; Q[i] = ai * ms + bi * mc; }
+            const double pe1 = P[1] + P[4], pe2 = P[2] + P[3], po1 = P[1] - P[4], po2 = P[2] - P[3];
+            const double qe1 = Q[1] + Q[4], qe2 = Q[2] + Q[3], qo1 = Q[1] - Q[4], qo2 = Q[2] - Q[3];
+            cl[0][m] = P[0] + pe1 + pe2; cl[0][Mp + m] = Q[0] + qe1 + qe2;
+            const double Ec1 = pe1 * R5_C1 + pe2 * R5_C2, Ec2 = pe1 * R5_C2 + pe2 * R5_C1;
+            const double Os1 = qo1 * R5_S1 + qo2 * R5_S2, Os2 = qo1 * R5_S2 - qo2 * R5_S1;
+            const double Fc1 = qe1 * R5_C1 + qe2 * R5_C2, Fc2 = qe1 * R5_C2 + qe2 * R5_C1;
+            const double Ps1 = po1 * R5_S1 + po2 * R5_S2, Ps2 = po1 * R5_S2 - po2 * R5_S1;
+            cl[1][m] = P[0] + Ec1 - Os1; cl[4][m] = P[0] + Ec1 + Os1;
+            cl[2][m] = P[0] + Ec2 - Os2; cl[3][m] = P[0] + Ec2 + Os2;
+            cl[1][Mp + m] = Q[0] + Fc1 + Ps1; cl[4][Mp + m] = Q[0] + Fc1 - Ps1;
+            cl[2][Mp + m] = Q[0] + Fc2 + Ps2; cl[3][Mp + m] = Q[0] + Fc2 - Ps2;
+        }
+    }
+
+    static void bruun_odd5_adjoint_all(double* RESTRICT lo, double* RESTRICT hi,
+                                       const double* RESTRICT c0, const double* RESTRICT c1, const double* RESTRICT c2,
+                                       const double* RESTRICT c3, const double* RESTRICT c4,
+                                       const double* RESTRICT mod, int Mp) {
+        double* RESTRICT a[5] = {lo, lo + Mp, lo + 2 * Mp, lo + 3 * Mp, lo + 4 * Mp};
+        double* RESTRICT b[5] = {hi, hi + Mp, hi + 2 * Mp, hi + 3 * Mp, hi + 4 * Mp};
+        const double* RESTRICT cl[5] = {c0, c1, c2, c3, c4};
+        const double fifth = 0.2;
+        for (int m = 0; m < Mp; ++m) {
+            const double L0 = cl[0][m], L1 = cl[1][m], L2 = cl[2][m], L3 = cl[3][m], L4 = cl[4][m];
+            const double H0 = cl[0][Mp + m], H1 = cl[1][Mp + m], H2 = cl[2][Mp + m], H3 = cl[3][Mp + m], H4 = cl[4][Mp + m];
+            const double ce1 = L1 + L4, ce2 = L2 + L3, co1 = L1 - L4, co2 = L2 - L3;
+            const double he1 = H1 + H4, he2 = H2 + H3, ho1 = H1 - H4, ho2 = H2 - H3;
+            double P[5], Q[5];
+            P[0] = (L0 + ce1 + ce2) * fifth; Q[0] = (H0 + he1 + he2) * fifth;
+            const double EcA = ce1 * R5_C1 + ce2 * R5_C2, EcB = ce1 * R5_C2 + ce2 * R5_C1;
+            const double OsA = ho1 * R5_S1 + ho2 * R5_S2, OsB = ho1 * R5_S2 - ho2 * R5_S1;
+            const double FcA = he1 * R5_C1 + he2 * R5_C2, FcB = he1 * R5_C2 + he2 * R5_C1;
+            const double PsA = co1 * R5_S1 + co2 * R5_S2, PsB = co1 * R5_S2 - co2 * R5_S1;
+            P[1] = (L0 + EcA + OsA) * fifth; P[4] = (L0 + EcA - OsA) * fifth;
+            P[2] = (L0 + EcB + OsB) * fifth; P[3] = (L0 + EcB - OsB) * fifth;
+            Q[1] = (H0 + FcA - PsA) * fifth; Q[4] = (H0 + FcA + PsA) * fifth;
+            Q[2] = (H0 + FcB - PsB) * fifth; Q[3] = (H0 + FcB + PsB) * fifth;
+            a[0][m] = P[0]; b[0][m] = Q[0];
+            for (int i = 1; i < 5; ++i) { double mc = mod[i], ms = mod[5 + i];
+                a[i][m] = P[i] * mc + Q[i] * ms; b[i][m] = Q[i] * mc - P[i] * ms; }
+        }
+    }
+
+    // FACTORED radix-7: real two-plane, modulate by psi=theta/7 then symmetric real
+    // radix-7 butterfly. 60 mults/lane vs the dense 196. cos/sin of 2pi/7,4pi/7,6pi/7.
+    static constexpr double R7_C1 = 0.62348980185873359, R7_C2 = -0.22252093395631440, R7_C3 = -0.90096886790241915;
+    static constexpr double R7_S1 = 0.78183148246802980, R7_S2 = 0.97492791218182362, R7_S3 = 0.43388373911755812;
+    static void bruun_odd7_forward_all(double* RESTRICT c0, double* RESTRICT c1, double* RESTRICT c2, double* RESTRICT c3,
+                                       double* RESTRICT c4, double* RESTRICT c5, double* RESTRICT c6,
+                                       const double* RESTRICT lo, const double* RESTRICT hi,
+                                       const double* RESTRICT mod, int Mp) {
+        const double* RESTRICT a[7] = {lo, lo+Mp, lo+2*Mp, lo+3*Mp, lo+4*Mp, lo+5*Mp, lo+6*Mp};
+        const double* RESTRICT b[7] = {hi, hi+Mp, hi+2*Mp, hi+3*Mp, hi+4*Mp, hi+5*Mp, hi+6*Mp};
+        double* RESTRICT cl[7] = {c0, c1, c2, c3, c4, c5, c6};
+        for (int m = 0; m < Mp; ++m) {
+            double P[7], Q[7]; P[0] = a[0][m]; Q[0] = b[0][m];
+            for (int i = 1; i < 7; ++i) { double ai = a[i][m], bi = b[i][m], mc = mod[i], ms = mod[7 + i];
+                P[i] = ai * mc - bi * ms; Q[i] = ai * ms + bi * mc; }
+            const double pe1=P[1]+P[6],pe2=P[2]+P[5],pe3=P[3]+P[4],po1=P[1]-P[6],po2=P[2]-P[5],po3=P[3]-P[4];
+            const double qe1=Q[1]+Q[6],qe2=Q[2]+Q[5],qe3=Q[3]+Q[4],qo1=Q[1]-Q[6],qo2=Q[2]-Q[5],qo3=Q[3]-Q[4];
+            cl[0][m]=P[0]+pe1+pe2+pe3; cl[0][Mp+m]=Q[0]+qe1+qe2+qe3;
+            const double Ec1=pe1*R7_C1+pe2*R7_C2+pe3*R7_C3,Ec2=pe1*R7_C2+pe2*R7_C3+pe3*R7_C1,Ec3=pe1*R7_C3+pe2*R7_C1+pe3*R7_C2;
+            const double Os1=qo1*R7_S1+qo2*R7_S2+qo3*R7_S3,Os2=qo1*R7_S2-qo2*R7_S3-qo3*R7_S1,Os3=qo1*R7_S3-qo2*R7_S1+qo3*R7_S2;
+            const double Fc1=qe1*R7_C1+qe2*R7_C2+qe3*R7_C3,Fc2=qe1*R7_C2+qe2*R7_C3+qe3*R7_C1,Fc3=qe1*R7_C3+qe2*R7_C1+qe3*R7_C2;
+            const double Ps1=po1*R7_S1+po2*R7_S2+po3*R7_S3,Ps2=po1*R7_S2-po2*R7_S3-po3*R7_S1,Ps3=po1*R7_S3-po2*R7_S1+po3*R7_S2;
+            cl[1][m]=P[0]+Ec1-Os1; cl[6][m]=P[0]+Ec1+Os1; cl[2][m]=P[0]+Ec2-Os2; cl[5][m]=P[0]+Ec2+Os2; cl[3][m]=P[0]+Ec3-Os3; cl[4][m]=P[0]+Ec3+Os3;
+            cl[1][Mp+m]=Q[0]+Fc1+Ps1; cl[6][Mp+m]=Q[0]+Fc1-Ps1; cl[2][Mp+m]=Q[0]+Fc2+Ps2; cl[5][Mp+m]=Q[0]+Fc2-Ps2; cl[3][Mp+m]=Q[0]+Fc3+Ps3; cl[4][Mp+m]=Q[0]+Fc3-Ps3;
+        }
+    }
+
+    static void bruun_odd7_adjoint_all(double* RESTRICT lo, double* RESTRICT hi,
+                                       const double* RESTRICT c0, const double* RESTRICT c1, const double* RESTRICT c2, const double* RESTRICT c3,
+                                       const double* RESTRICT c4, const double* RESTRICT c5, const double* RESTRICT c6,
+                                       const double* RESTRICT mod, int Mp) {
+        double* RESTRICT a[7] = {lo, lo+Mp, lo+2*Mp, lo+3*Mp, lo+4*Mp, lo+5*Mp, lo+6*Mp};
+        double* RESTRICT b[7] = {hi, hi+Mp, hi+2*Mp, hi+3*Mp, hi+4*Mp, hi+5*Mp, hi+6*Mp};
+        const double* RESTRICT cl[7] = {c0, c1, c2, c3, c4, c5, c6};
+        const double sev = 1.0 / 7.0;
+        for (int m = 0; m < Mp; ++m) {
+            double L[7], H[7]; for (int t = 0; t < 7; ++t) { L[t] = cl[t][m]; H[t] = cl[t][Mp + m]; }
+            const double ce1=L[1]+L[6],ce2=L[2]+L[5],ce3=L[3]+L[4],co1=L[1]-L[6],co2=L[2]-L[5],co3=L[3]-L[4];
+            const double he1=H[1]+H[6],he2=H[2]+H[5],he3=H[3]+H[4],ho1=H[1]-H[6],ho2=H[2]-H[5],ho3=H[3]-H[4];
+            double P[7], Q[7];
+            P[0]=(L[0]+ce1+ce2+ce3)*sev; Q[0]=(H[0]+he1+he2+he3)*sev;
+            const double EcA=ce1*R7_C1+ce2*R7_C2+ce3*R7_C3,EcB=ce1*R7_C2+ce2*R7_C3+ce3*R7_C1,EcC=ce1*R7_C3+ce2*R7_C1+ce3*R7_C2;
+            const double OsA=ho1*R7_S1+ho2*R7_S2+ho3*R7_S3,OsB=ho1*R7_S2-ho2*R7_S3-ho3*R7_S1,OsC=ho1*R7_S3-ho2*R7_S1+ho3*R7_S2;
+            const double FcA=he1*R7_C1+he2*R7_C2+he3*R7_C3,FcB=he1*R7_C2+he2*R7_C3+he3*R7_C1,FcC=he1*R7_C3+he2*R7_C1+he3*R7_C2;
+            const double PsA=co1*R7_S1+co2*R7_S2+co3*R7_S3,PsB=co1*R7_S2-co2*R7_S3-co3*R7_S1,PsC=co1*R7_S3-co2*R7_S1+co3*R7_S2;
+            P[1]=(L[0]+EcA+OsA)*sev;P[6]=(L[0]+EcA-OsA)*sev;P[2]=(L[0]+EcB+OsB)*sev;P[5]=(L[0]+EcB-OsB)*sev;P[3]=(L[0]+EcC+OsC)*sev;P[4]=(L[0]+EcC-OsC)*sev;
+            Q[1]=(H[0]+FcA-PsA)*sev;Q[6]=(H[0]+FcA+PsA)*sev;Q[2]=(H[0]+FcB-PsB)*sev;Q[5]=(H[0]+FcB+PsB)*sev;Q[3]=(H[0]+FcC-PsC)*sev;Q[4]=(H[0]+FcC+PsC)*sev;
+            a[0][m]=P[0]; b[0][m]=Q[0];
+            for (int i = 1; i < 7; ++i) { double mc = mod[i], ms = mod[7 + i];
+                a[i][m] = P[i] * mc + Q[i] * ms; b[i][m] = Q[i] * mc - P[i] * ms; }
         }
     }
 
@@ -1488,6 +1687,15 @@ private:
                 if (M == 1) place(X, fbin(mk(j, p)), lo[0], -hi[0]); }
         } else if (o.type == BRUUN_ODD) {
             int p = o.p, Mp = o.M / p; double* v = A + o.in; const double* lo = v; const double* hi = v + o.M;
+            if (o.codelet == CODELET_3) {                 // factored real all-children
+                bruun_odd3_forward_all(A + o.child[0], A + o.child[1], A + o.child[2], lo, hi, &twp_[o.tw[0]], Mp);
+            } else if (o.codelet == CODELET_5) {
+                bruun_odd5_forward_all(A + o.child[0], A + o.child[1], A + o.child[2], A + o.child[3], A + o.child[4],
+                                       lo, hi, &twp_[o.tw[0]], Mp);
+            } else if (o.codelet == CODELET_7) {
+                bruun_odd7_forward_all(A+o.child[0],A+o.child[1],A+o.child[2],A+o.child[3],A+o.child[4],A+o.child[5],A+o.child[6],
+                                       lo, hi, &twp_[o.tw[0]], Mp);
+            } else
             for (int t = 0; t < p; ++t) { const double* C = &twp_[o.tw[t]]; const double* S = C + p;
                 double* clo = A + o.child[t]; double* chi = clo + Mp;
                 if (!dispatch_bruun_odd_forward(o, clo, chi, lo, hi, C, S, Mp)) {
@@ -1516,6 +1724,20 @@ private:
                 for (int m = 0; m < nb; ++m) { int node = nb + m; norm_q_inv(v + m * s, q, C[node], s_tw(node)); } }
         } else if (o.type == BRUUN_ODD) {
             int p = o.p, Mp = o.M / p; double* lo = A + o.in; double* hi = lo + o.M;
+            if (o.codelet == CODELET_3) {                 // factored real all-children adjoint
+                bruun_odd3_adjoint_all(lo, hi, A + o.child[0], A + o.child[1], A + o.child[2], &twp_[o.tw[0]], Mp);
+                return;
+            }
+            if (o.codelet == CODELET_5) {
+                bruun_odd5_adjoint_all(lo, hi, A + o.child[0], A + o.child[1], A + o.child[2], A + o.child[3], A + o.child[4],
+                                       &twp_[o.tw[0]], Mp);
+                return;
+            }
+            if (o.codelet == CODELET_7) {
+                bruun_odd7_adjoint_all(lo, hi, A+o.child[0],A+o.child[1],A+o.child[2],A+o.child[3],A+o.child[4],A+o.child[5],A+o.child[6],
+                                       &twp_[o.tw[0]], Mp);
+                return;
+            }
             zero_block(lo, o.M); zero_block(hi, o.M);
             for (int t = 0; t < p; ++t) { const double* C = &twp_[o.tw[t]]; const double* S = C + p;
                 const double* clo = A + o.child[t]; const double* chi = clo + Mp;
