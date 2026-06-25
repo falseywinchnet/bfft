@@ -7,7 +7,10 @@ accumulation); leaf bins are exact integers round(N*f).
 import numpy as np
 import mpmath as mp
 from fractions import Fraction as Fr
-from scratch_normbruun import rfft_normbruun
+try:
+    from .scratch_normbruun import rfft_normbruun
+except ImportError:  # pragma: no cover - supports direct script execution.
+    from scratch_normbruun import rfft_normbruun
 
 def _is_pow2(n): return n >= 1 and (n & (n-1)) == 0
 def _odd_prime(n):
@@ -167,7 +170,11 @@ def rfft_gen_exact(x):
     return X[:N//2+1]
 
 if __name__ == "__main__":
-    import sympy, scratch_genbruun_rec as OLD
+    import sympy
+    try:
+        from . import scratch_genbruun_rec as OLD
+    except ImportError:  # pragma: no cover - supports direct script execution.
+        import scratch_genbruun_rec as OLD
     sizes=[9,15,27,45,75,225,405,1024,1920,3000, 127,257,509,521,1021,511,2187,6075,10125]
     print(f"{'N':>6} {'factors':>16} {'old':>10} {'exact':>10}")
     for N in sorted(set(sizes)):

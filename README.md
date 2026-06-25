@@ -15,10 +15,11 @@ May this work bless you, may the Kingdom come, and may His will be done.
 [![Claude](https://img.shields.io/badge/Built%20with-Claude-D97757?logo=anthropic&logoColor=white)](https://claude.com/claude-code)
 [![ChatGPT](https://img.shields.io/badge/Built%20with-ChatGPT-412991?logo=openai&logoColor=white)](https://openai.com/chatgpt)
 
-BFFT is a small and extremely fast C and C++ library for power-of-two real Fourier transforms. It
+BFFT is a small C and C++ library for real Fourier transforms. Power-of-two
+sizes use a fast native Bruun kernel, and arbitrary sizes use GenBruun. It
 provides a stable C ABI, a lightweight C++ RAII wrapper, double- and
 single-precision APIs, standard FFT-order output, native-order output, and
-residue-domain filtering utilities.
+power-of-two residue-domain filtering utilities.
 
 The core transform is based on a normalized-basis Bruun transform. The public
 API is designed to be predictable for application code: create a reusable plan,
@@ -280,7 +281,8 @@ precision. `cffi` ships as a dependency, so you only need `numba` installed
 alongside; see
 [`documentation/python.md`](documentation/python.md#calling-bfft-from-numba-njit).
 
-All Python transforms operate on power-of-two lengths and double precision.
+Python `rfft` / `irfft` transforms operate on any length `N >= 2` in double
+precision. ODFT remains power-of-two-only.
 
 ### Numba Support
 
@@ -313,8 +315,9 @@ rfft_into(plan, x, out.view(np.float64), work, scratch.view(np.float64))
 ### Plans
 
 A plan validates a transform size and stores reusable metadata. BFFT real FFT
-plans require a power-of-two size `N >= 4`. BODFT plans require a power-of-two
-size `N >= 2`.
+plans accept any size `N >= 2`; power-of-two sizes use the native Bruun fast
+path, while other sizes use GenBruun. BODFT plans require a power-of-two size
+`N >= 2`.
 
 ### Buffer sizes
 
@@ -381,15 +384,19 @@ size automatically. The arbitrary-N plan owns its scratch, so for non-pow-of-two
 sizes `bfft_plan_work_size` and `bfft_plan_native_scratch_size` return `0` and the
 `work` / `native_scratch` arguments to `bfft_forward` are ignored.
 
-**Pow-of-two-only entry points.** The native-order, magnitude-only, residue-domain
-(filter), and single-precision (`*_f32`) APIs are defined only for power-of-two
-plans; they return `BFFT_ERROR_INVALID_ARGUMENT` for arbitrary-N plans. The
-residue domain has no single canonical layout for non-pow-of-two `N`.
+**Pow-of-two-only entry points.** Residue-domain transforms and residue filters
+are defined only for power-of-two plans; they return
+`BFFT_ERROR_INVALID_ARGUMENT` for arbitrary-N plans. Standard-order,
+native-order, magnitude-only, and single-precision (`*_f32`) APIs route for
+arbitrary-N plans; the current arbitrary-N native layout is the standard layout.
+The residue domain has no single canonical layout for non-pow-of-two `N`.
 
-**Performance.** Arbitrary-N forward/inverse are correct and FFT-grade today, but
-the odd-radix projections are not yet SIMD-optimized, so non-pow-of-two sizes are
-currently slower than the power-of-two path (and than FFTW). The power-of-two fast
-path is unaffected.
+**Performance.** Arbitrary-N forward/inverse are correct and FFT-grade today.
+Small odd radices now use the same 128-bit SIMD abstraction as the power-of-two
+kernel, with fixed codelets for radices 3, 5, 7, 11, 13, 17, and 19 plus generic
+vectorized fallbacks for larger odd primes. Non-pow-of-two sizes are still slower
+than the power-of-two path and FFTW on many cases, but the main odd-radix path is
+no longer scalar-only. The power-of-two fast path is unaffected.
 
 ## BODFT API
 

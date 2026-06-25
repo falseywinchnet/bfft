@@ -313,7 +313,7 @@ bool check_bh7_f32_native_sfdr(void) {
 } // namespace
 
 int main(void) {
-    const std::size_t sizes[] = {4, 8, 16, 32, 64, 256, 1024};
+    const std::size_t sizes[] = {4, 8, 15, 16, 21, 32, 45, 64, 125, 169, 256, 1024};
     for (std::size_t n : sizes) {
         if (!check_size(n)) {
             return 1;

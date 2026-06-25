@@ -25,7 +25,7 @@ Include the main C API with:
 
 ## Plan lifecycle
 
-- `bfft_plan_create(n, &plan)` creates a plan for power-of-two `n >= 4`.
+- `bfft_plan_create(n, &plan)` creates a real FFT plan for any `n >= 2`.
 - `bfft_plan_destroy(plan)` destroys a plan. Passing `NULL` is allowed.
 
 ## Plan queries
@@ -36,6 +36,9 @@ Include the main C API with:
 - `bfft_plan_work_size_f32(plan)` returns float work buffer length.
 - `bfft_plan_native_scratch_size(plan)` returns standard transform scratch size.
 - `bfft_plan_standard_policy(plan)` returns the standard-output packing policy.
+
+For arbitrary-N plans, work and native scratch sizes can be zero because the
+GenBruun plan owns its internal scratch.
 
 ## Forward transforms
 
@@ -73,3 +76,6 @@ Include the main C API with:
 - `bfft_residue_filter_from_real` converts a real zero-phase response to a residue filter.
 - `bfft_apply_residue_filter` applies a residue filter in place.
 - `bfft_filter_signal` transforms, filters, and inverts a signal.
+
+Residue transforms and residue filters are power-of-two-only. The standard,
+native-order, magnitude, and single-precision APIs route for arbitrary-N plans.

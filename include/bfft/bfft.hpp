@@ -74,7 +74,7 @@ private:
    the underlying C plan with RAII. */
 class plan {
 public:
-    /* Create a plan for a power-of-two transform size N >= 4. */
+    /* Create a plan for any real FFT transform size N >= 2. */
     explicit plan(std::size_t n) {
         bfft_plan* raw = nullptr;
         status result = bfft_plan_create(n, &raw);

@@ -1,8 +1,8 @@
 # BFFT documentation
 
-BFFT is a C and C++ library for power-of-two real Fourier transforms. It offers
+BFFT is a C and C++ library for real Fourier transforms. It offers any-length
 standard FFT-order output, native-order output, magnitude-only transforms,
-residue-domain filtering, and a half-bin BODFT transform.
+power-of-two residue-domain filtering, and a half-bin BODFT transform.
 
 ```{toctree}
 :maxdepth: 2

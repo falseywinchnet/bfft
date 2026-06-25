@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Odd/composite generalized-Bruun accuracy probe.
 
-This is an intentionally slow metrology script for scratch_genbruun_exact.py.  It
+This is an intentionally slow metrology script for experiments/scratch_genbruun_exact.py.  It
 compares the generalized Bruun prototype and NumPy rfft against an mpmath DFT
 reference evaluated at high precision.  The final reductions use math.fsum so
 that the reported RMS values are not dominated by Python summation order.
@@ -21,7 +21,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scratch_genbruun_exact import rfft_gen_exact  # noqa: E402
+from experiments.scratch_genbruun_exact import rfft_gen_exact  # noqa: E402
 
 
 def factor_string(n: int) -> str:

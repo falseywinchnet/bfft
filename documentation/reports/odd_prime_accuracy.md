@@ -2,7 +2,7 @@
 
 ## Scope and verdict
 
-This report audits the odd-prime and prime-power path in `scratch_genbruun_exact.py`, especially the condition-1 cascade frame introduced for composite odd Bruun nodes.  The result is mathematically correct as a DFT factorization, and the new cascade is the right structural fix for the previous Chebyshev inverse-coefficient blow-up.  It is not a cheat: it is the direct complex block DFT written as two real planes.
+This report audits the odd-prime and prime-power path in `experiments/scratch_genbruun_exact.py`, especially the condition-1 cascade frame introduced for composite odd Bruun nodes.  The result is mathematically correct as a DFT factorization, and the new cascade is the right structural fix for the previous Chebyshev inverse-coefficient blow-up.  It is not a cheat: it is the direct complex block DFT written as two real planes.
 
 The metrology result is now much closer to the target after pairwise reductions and high-precision-generated twiddles.  The current Python prototype is usually equal to or better than NumPy's mixed-radix/T-C style `rfft` on the sampled odd and prime-powered sizes, with normalized maximum-error ratios from **0.33x to 2.00x** NumPy's and most composite prime-power cases below NumPy.  It is not a formal correctly rounded FFT, and it is not an unconditional win for every prime leaf, but the correct-twiddle path extracts the main available accuracy benefit from the odd/prime design.
 

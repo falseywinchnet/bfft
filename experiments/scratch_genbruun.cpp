@@ -1,8 +1,8 @@
 // Scalar C++ reference for the generalized (arbitrary-N) Bruun real FFT.
-// Mirrors scratch_genbruun_exact.py. Not SIMD/fused yet -- correctness first.
+// Mirrors experiments/scratch_genbruun_exact.py. Not SIMD/fused yet -- correctness first.
 //
 // Build:
-//   g++ -O2 -std=c++17 -Isrc scratch_genbruun.cpp -lm -o /tmp/genbruun && /tmp/genbruun
+//   g++ -O2 -std=c++17 -Isrc experiments/scratch_genbruun.cpp -lm -o /tmp/genbruun && /tmp/genbruun
 //
 // Reuses bruun::RFFT (the existing normalized pow2 kernel) for pow2 minus-nodes;
 // implements the rooted normalized cascade and the condition-1 odd splits anew.

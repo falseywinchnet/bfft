@@ -1,34 +1,33 @@
-// bruun_nonpower2_simd.cpp
-//
-// SIMD building blocks for future non-power-of-two Bruun/CRT structures.
-// This file is intentionally separate from the power-of-two Bruun kernels and
-// does not include or modify fastplan or the power-of-two implementation.
+#pragma once
+
+// SIMD building blocks for generalized Bruun non-power-of-two pathways.
+// These primitives live beside GenBruun and stay separate from the power-of-two
+// Bruun kernel while following the same backend capability staging.
 //
 // Layout goal: keep non-power-of-two residue work in a structure-of-arrays form
 // that mirrors the normalized Bruun kernel: contiguous [A0 | B0 | A1 | B1]
 // lanes, coefficient streams beside the data, and multiply-add pairs expressed
 // as FMA-friendly real rotations.
 //
-// Build check:
-//   g++ -O3 -std=c++17 -DBRUUN_NONPOWER2_SIMD_TEST bruun_nonpower2_simd.cpp -lm -o bruun_nonpower2_simd_test
-// Optional AVX2/FMA:
-//   g++ -O3 -std=c++17 -mavx2 -mfma -DBRUUN_NP2_SIMD_AVX2 -DBRUUN_NONPOWER2_SIMD_TEST bruun_nonpower2_simd.cpp -lm -o bruun_nonpower2_simd_test
-
 #include <algorithm>
-#include <cassert>
-#include <chrono>
 #include <cmath>
 #include <cstddef>
-#include <cstdio>
 #include <stdexcept>
 #include <vector>
 
-#if defined(BRUUN_NP2_SIMD_AVX2)
-#  if !defined(__AVX2__) || !defined(__FMA__)
-#    error "BRUUN_NP2_SIMD_AVX2 requires AVX2 and FMA"
-#  endif
+// BRUUN_NP2_LEVEL follows the main Bruun kernel staging:
+//   0 = scalar, 1 = 128-bit SSE2/NEON, 2 = AVX2+FMA.
+#if defined(__AVX2__) && defined(__FMA__)
 #  include <immintrin.h>
 #  define BRUUN_NP2_LEVEL 2
+#elif defined(__SSE2__) || defined(_M_X64)
+#  include <immintrin.h>
+#  define BRUUN_NP2_LEVEL 1
+#  define BRUUN_NP2_X86_128 1
+#elif defined(__aarch64__) && defined(__ARM_NEON)
+#  include <arm_neon.h>
+#  define BRUUN_NP2_LEVEL 1
+#  define BRUUN_NP2_NEON_128 1
 #else
 #  define BRUUN_NP2_LEVEL 0
 #endif
@@ -42,6 +41,28 @@
 #endif
 
 namespace bruun_nonpower2 {
+
+#if defined(BRUUN_NP2_X86_128)
+typedef __m128d np2_v2;
+static inline np2_v2 v2_load(const double* p) { return _mm_loadu_pd(p); }
+static inline void v2_store(double* p, np2_v2 a) { _mm_storeu_pd(p, a); }
+static inline np2_v2 v2_add(np2_v2 a, np2_v2 b) { return _mm_add_pd(a, b); }
+static inline np2_v2 v2_sub(np2_v2 a, np2_v2 b) { return _mm_sub_pd(a, b); }
+static inline np2_v2 v2_mul(np2_v2 a, np2_v2 b) { return _mm_mul_pd(a, b); }
+static inline np2_v2 v2_madd(np2_v2 a, np2_v2 b, np2_v2 c) { return v2_add(a, v2_mul(b, c)); }
+static inline np2_v2 v2_msub(np2_v2 a, np2_v2 b, np2_v2 c) { return v2_sub(a, v2_mul(b, c)); }
+static inline np2_v2 v2_set1(double x) { return _mm_set1_pd(x); }
+#elif defined(BRUUN_NP2_NEON_128)
+typedef float64x2_t np2_v2;
+static inline np2_v2 v2_load(const double* p) { return vld1q_f64(p); }
+static inline void v2_store(double* p, np2_v2 a) { vst1q_f64(p, a); }
+static inline np2_v2 v2_add(np2_v2 a, np2_v2 b) { return vaddq_f64(a, b); }
+static inline np2_v2 v2_sub(np2_v2 a, np2_v2 b) { return vsubq_f64(a, b); }
+static inline np2_v2 v2_mul(np2_v2 a, np2_v2 b) { return vmulq_f64(a, b); }
+static inline np2_v2 v2_madd(np2_v2 a, np2_v2 b, np2_v2 c) { return vfmaq_f64(a, b, c); }
+static inline np2_v2 v2_msub(np2_v2 a, np2_v2 b, np2_v2 c) { return vfmsq_f64(a, b, c); }
+static inline np2_v2 v2_set1(double x) { return vdupq_n_f64(x); }
+#endif
 
 struct QuadraticBlock {
     double* a0;
@@ -178,6 +199,10 @@ private:
 static inline const char* simd_backend_name() {
 #if BRUUN_NP2_LEVEL >= 2
     return "avx2-fma-256";
+#elif defined(BRUUN_NP2_NEON_128)
+    return "neon-fma-128";
+#elif defined(BRUUN_NP2_X86_128)
+    return "sse2-128";
 #else
     return "scalar";
 #endif
@@ -221,6 +246,23 @@ static inline void quadratic_fwd_variable(const QuadraticBlock& block) {
         _mm256_storeu_pd(b0p + n, _mm256_add_pd(A1, I));
         _mm256_storeu_pd(a1p + n, _mm256_sub_pd(A0, R));
         _mm256_storeu_pd(b1p + n, _mm256_sub_pd(I, A1));
+    }
+#elif BRUUN_NP2_LEVEL >= 1
+    for (; n + 1 < block.length; n += 2) {
+        const np2_v2 A0 = v2_load(a0p + n);
+        const np2_v2 B0 = v2_load(b0p + n);
+        const np2_v2 A1 = v2_load(a1p + n);
+        const np2_v2 B1 = v2_load(b1p + n);
+        const np2_v2 C = v2_load(cp + n);
+        const np2_v2 S = v2_load(sp + n);
+
+        const np2_v2 R = v2_msub(v2_mul(C, B0), S, B1);
+        const np2_v2 I = v2_madd(v2_mul(S, B0), C, B1);
+
+        v2_store(a0p + n, v2_add(A0, R));
+        v2_store(b0p + n, v2_add(A1, I));
+        v2_store(a1p + n, v2_sub(A0, R));
+        v2_store(b1p + n, v2_sub(I, A1));
     }
 #endif
     for (; n < block.length; ++n) {
@@ -279,6 +321,29 @@ static inline void quadratic_inv_variable(const QuadraticBlock& block) {
         _mm256_storeu_pd(b0p + n, B0);
         _mm256_storeu_pd(a1p + n, A1);
         _mm256_storeu_pd(b1p + n, B1);
+    }
+#elif BRUUN_NP2_LEVEL >= 1
+    const np2_v2 half = v2_set1(0.5);
+    for (; n + 1 < block.length; n += 2) {
+        const np2_v2 U0 = v2_load(a0p + n);
+        const np2_v2 W0 = v2_load(b0p + n);
+        const np2_v2 V0 = v2_load(a1p + n);
+        const np2_v2 X0 = v2_load(b1p + n);
+        const np2_v2 C = v2_load(cp + n);
+        const np2_v2 S = v2_load(sp + n);
+
+        const np2_v2 A0 = v2_mul(half, v2_add(U0, V0));
+        const np2_v2 R = v2_mul(half, v2_sub(U0, V0));
+        const np2_v2 I = v2_mul(half, v2_add(W0, X0));
+        const np2_v2 A1 = v2_mul(half, v2_sub(W0, X0));
+
+        const np2_v2 B0 = v2_madd(v2_mul(C, R), S, I);
+        const np2_v2 B1 = v2_msub(v2_mul(C, I), S, R);
+
+        v2_store(a0p + n, A0);
+        v2_store(b0p + n, B0);
+        v2_store(a1p + n, A1);
+        v2_store(b1p + n, B1);
     }
 #endif
     for (; n < block.length; ++n) {
@@ -376,6 +441,55 @@ static inline void quadratic_two_level_fused_variable(const TwoLevelBlock& block
         _mm256_storeu_pd(B1 + n, _mm256_sub_pd(v0, R1));
         _mm256_storeu_pd(B1 + h + n, _mm256_sub_pd(I1, x0));
     }
+#elif BRUUN_NP2_LEVEL >= 1
+    for (; n + 1 < h; n += 2) {
+        const np2_v2 a0n = v2_load(A0 + n);
+        const np2_v2 a0h = v2_load(A0 + h + n);
+        const np2_v2 b0n = v2_load(B0 + n);
+        const np2_v2 b0h = v2_load(B0 + h + n);
+        const np2_v2 a1n = v2_load(A1 + n);
+        const np2_v2 a1h = v2_load(A1 + h + n);
+        const np2_v2 b1n = v2_load(B1 + n);
+        const np2_v2 b1h = v2_load(B1 + h + n);
+
+        const np2_v2 pc0 = v2_load(block.parent_c + n);
+        const np2_v2 ps0 = v2_load(block.parent_s + n);
+        const np2_v2 pc1 = v2_load(block.parent_c + h + n);
+        const np2_v2 ps1 = v2_load(block.parent_s + h + n);
+
+        const np2_v2 Rn = v2_msub(v2_mul(pc0, b0n), ps0, b1n);
+        const np2_v2 In = v2_madd(v2_mul(ps0, b0n), pc0, b1n);
+        const np2_v2 Rh = v2_msub(v2_mul(pc1, b0h), ps1, b1h);
+        const np2_v2 Ih = v2_madd(v2_mul(ps1, b0h), pc1, b1h);
+
+        const np2_v2 u0 = v2_add(a0n, Rn);
+        const np2_v2 uh = v2_add(a0h, Rh);
+        const np2_v2 w0 = v2_add(a1n, In);
+        const np2_v2 wh = v2_add(a1h, Ih);
+        const np2_v2 v0 = v2_sub(a0n, Rn);
+        const np2_v2 vh = v2_sub(a0h, Rh);
+        const np2_v2 x0 = v2_sub(In, a1n);
+        const np2_v2 xh = v2_sub(Ih, a1h);
+
+        const np2_v2 lc = v2_load(block.left_c + n);
+        const np2_v2 ls = v2_load(block.left_s + n);
+        const np2_v2 rc = v2_load(block.right_c + n);
+        const np2_v2 rs = v2_load(block.right_s + n);
+
+        const np2_v2 R0 = v2_msub(v2_mul(lc, uh), ls, wh);
+        const np2_v2 I0 = v2_madd(v2_mul(ls, uh), lc, wh);
+        const np2_v2 R1 = v2_msub(v2_mul(rc, vh), rs, xh);
+        const np2_v2 I1 = v2_madd(v2_mul(rs, vh), rc, xh);
+
+        v2_store(A0 + n, v2_add(u0, R0));
+        v2_store(A0 + h + n, v2_add(w0, I0));
+        v2_store(B0 + n, v2_sub(u0, R0));
+        v2_store(B0 + h + n, v2_sub(I0, w0));
+        v2_store(A1 + n, v2_add(v0, R1));
+        v2_store(A1 + h + n, v2_add(x0, I1));
+        v2_store(B1 + n, v2_sub(v0, R1));
+        v2_store(B1 + h + n, v2_sub(I1, x0));
+    }
 #endif
     for (; n < h; ++n) {
         const double a0n = A0[n];
@@ -418,125 +532,3 @@ static inline void quadratic_two_level_fused_variable(const TwoLevelBlock& block
 }
 
 }  // namespace bruun_nonpower2
-
-#ifdef BRUUN_NONPOWER2_SIMD_TEST
-static double max_abs_diff(const std::vector<double>& a, const std::vector<double>& b) {
-    double out = 0.0;
-    for (std::size_t i = 0; i < a.size(); ++i) {
-        out = std::max(out, std::abs(a[i] - b[i]));
-    }
-    return out;
-}
-
-int main() {
-    const int n = 19;
-    std::vector<double> a0(n), b0(n), a1(n), b1(n), c(n), s(n);
-    std::vector<double> ref_a0(n), ref_b0(n), ref_a1(n), ref_b1(n);
-    std::vector<double> orig_a0(n), orig_b0(n), orig_a1(n), orig_b1(n);
-    for (int i = 0; i < n; ++i) {
-        a0[i] = 0.25 + 0.07 * i;
-        b0[i] = -0.5 + 0.03 * i;
-        a1[i] = 0.75 - 0.02 * i;
-        b1[i] = -0.125 + 0.05 * i;
-        const double angle = 0.11 * (i + 1);
-        c[i] = std::cos(angle);
-        s[i] = std::sin(angle);
-    }
-    ref_a0 = a0;
-    ref_b0 = b0;
-    ref_a1 = a1;
-    ref_b1 = b1;
-    orig_a0 = a0;
-    orig_b0 = b0;
-    orig_a1 = a1;
-    orig_b1 = b1;
-
-    bruun_nonpower2::QuadraticBlock block{a0.data(), b0.data(), a1.data(), b1.data(), c.data(), s.data(), n};
-    bruun_nonpower2::quadratic_fwd_variable(block);
-
-    for (int i = 0; i < n; ++i) {
-        const double old_a0 = 0.25 + 0.07 * i;
-        const double old_a1 = 0.75 - 0.02 * i;
-        const double old_b0 = -0.5 + 0.03 * i;
-        const double old_b1 = -0.125 + 0.05 * i;
-        const double R = c[i] * old_b0 - s[i] * old_b1;
-        const double I = s[i] * old_b0 + c[i] * old_b1;
-        ref_a0[i] = old_a0 + R;
-        ref_b0[i] = old_a1 + I;
-        ref_a1[i] = old_a0 - R;
-        ref_b1[i] = I - old_a1;
-    }
-
-    assert(max_abs_diff(a0, ref_a0) < 1e-12);
-    assert(max_abs_diff(b0, ref_b0) < 1e-12);
-    assert(max_abs_diff(a1, ref_a1) < 1e-12);
-    assert(max_abs_diff(b1, ref_b1) < 1e-12);
-
-    bruun_nonpower2::quadratic_inv_variable(block);
-    assert(max_abs_diff(a0, orig_a0) < 1e-12);
-    assert(max_abs_diff(b0, orig_b0) < 1e-12);
-    assert(max_abs_diff(a1, orig_a1) < 1e-12);
-    assert(max_abs_diff(b1, orig_b1) < 1e-12);
-
-    const int block_count = 384;
-    std::vector<int> lengths(block_count);
-    int total_lanes = 0;
-    for (int block_index = 0; block_index < block_count; ++block_index) {
-        const int lane_mod = (block_index * 17 + 5) % 29;
-        lengths[block_index] = 5 + lane_mod;
-        total_lanes += lengths[block_index];
-    }
-
-    std::vector<double> bench_a0(total_lanes), bench_b0(total_lanes);
-    std::vector<double> bench_a1(total_lanes), bench_b1(total_lanes);
-    std::vector<double> bench_c(total_lanes), bench_s(total_lanes);
-    for (int i = 0; i < total_lanes; ++i) {
-        bench_a0[i] = 0.001 * (i % 97);
-        bench_b0[i] = -0.002 * (i % 89);
-        bench_a1[i] = 0.003 * (i % 83);
-        bench_b1[i] = -0.004 * (i % 79);
-        const double theta = 0.0007 * (i + 3);
-        bench_c[i] = std::cos(theta);
-        bench_s[i] = std::sin(theta);
-    }
-
-    bruun_nonpower2::QuadraticScheduler scheduler;
-    int offset = 0;
-    for (int length : lengths) {
-        scheduler.add_block(offset, offset, length);
-        offset += length;
-    }
-    scheduler.sort_for_simd();
-    assert(scheduler.block_count() == static_cast<std::size_t>(block_count));
-    assert(scheduler.lane_count() == static_cast<std::size_t>(total_lanes));
-
-    std::vector<double> sched_orig_a0 = bench_a0;
-    std::vector<double> sched_orig_b0 = bench_b0;
-    std::vector<double> sched_orig_a1 = bench_a1;
-    std::vector<double> sched_orig_b1 = bench_b1;
-    scheduler.execute(bench_a0.data(), bench_b0.data(), bench_a1.data(), bench_b1.data(),
-                      bench_c.data(), bench_s.data());
-    scheduler.execute_inverse(bench_a0.data(), bench_b0.data(), bench_a1.data(), bench_b1.data(),
-                              bench_c.data(), bench_s.data());
-    assert(max_abs_diff(bench_a0, sched_orig_a0) < 1e-12);
-    assert(max_abs_diff(bench_b0, sched_orig_b0) < 1e-12);
-    assert(max_abs_diff(bench_a1, sched_orig_a1) < 1e-12);
-    assert(max_abs_diff(bench_b1, sched_orig_b1) < 1e-12);
-
-    const int repeats = 1200;
-    const auto start = std::chrono::steady_clock::now();
-    for (int repeat = 0; repeat < repeats; ++repeat) {
-        scheduler.execute(bench_a0.data(), bench_b0.data(), bench_a1.data(), bench_b1.data(),
-                          bench_c.data(), bench_s.data());
-    }
-    const auto stop = std::chrono::steady_clock::now();
-    const std::chrono::duration<double> elapsed = stop - start;
-    const double lane_visits = static_cast<double>(total_lanes) * static_cast<double>(repeats);
-    const double ns_per_lane = elapsed.count() * 1000000000.0 / lane_visits;
-
-    std::printf("bruun_nonpower2_simd backend=%s ok blocks=%zu lanes=%zu ns_per_lane=%.3f\n",
-                bruun_nonpower2::simd_backend_name(), scheduler.block_count(),
-                scheduler.lane_count(), ns_per_lane);
-    return 0;
-}
-#endif

@@ -5,6 +5,16 @@ odd / prime / prime-power sizes. Today it is **FFT-grade accurate but ~3.5-5x
 slower** than FFTW on prime powers (see `benchmarks/odd_prime_power_fftw_benchmark.cpp`).
 The power-of-two path (`bruun::RFFT`) is already SIMD-tuned and is out of scope.
 
+Status 2026-06-24: the first NEON-side integration pass is in place. The hot odd
+projection loops now vector over contiguous `m` lanes, plan ops store a small
+radix codelet kind, and fixed fwd/inv codelets cover radices 3, 5, 7, 11, 13,
+17, and 19 for both `MINUS_SPLIT` and `BRUUN_ODD`. The arbitrary-N public f32 and
+native-order API routes are wired through GenBruun, and the f32 GenBruun engine
+now has matching fixed-radix odd codelets instead of routing through double.
+Larger odd primes use the generic fallback. The remaining work is primarily
+performance polish: assembly review, latency hiding, rooted-cascade `norm2`
+fusion, and larger-prime policy.
+
 This document is the work breakdown. **Division of labor:** GPT takes the **AVX2**
 codelets (it has the natural x86 hardware to profile on); we pick up **NEON**
 here later. Keep a scalar reference path and gate SIMD behind the existing
@@ -65,12 +75,13 @@ This is the form a vectorizer (and later hand-NEON/AVX) can turn into broadcast 
 FMA over `m`. Do the same for `BRUUN_ODD` (complex: two input planes `A,B`, two
 output planes per child, four real FMAs per i). Sub-tasks:
 
-- 1a. Reorder `MINUS_SPLIT` (fwd + inverse adjoint) to `i`-outer / `m`-inner.
-- 1b. Reorder `BRUUN_ODD` (fwd + inverse) the same way.
-- 1c. Mark block pointers `__restrict` (kernel uses the `RESTRICT` macro) and
+- 1a. Done. Reorder `MINUS_SPLIT` (fwd + inverse adjoint) to contiguous `m`
+      lanes.
+- 1b. Done. Reorder `BRUUN_ODD` (fwd + inverse) the same way.
+- 1c. In progress. Mark block pointers `__restrict` (kernel uses the `RESTRICT` macro) and
       hoist `twp_`/`ctp_` base pointers out of the loop (kill the pool indirection
       on the hot path).
-- 1d. Use multiple accumulators (split the `m` loop into 2-4 independent FMA
+- 1d. Remaining. Use multiple accumulators (split the `m` loop into 2-4 independent FMA
       chains) to hide FMA latency — even scalar this helps; see §3.
 
 Expect a solid win from this alone, before any intrinsics, because the current
@@ -96,12 +107,44 @@ Follow the kernel's existing backend pattern exactly:
 - Keep a scalar tail and a scalar reference codelet for `BRUUN_LEVEL==0`.
 
 Sub-tasks:
-- 2a. radix-3 fwd/inv codelets (covers 3^k and the `*3` factor).
-- 2b. radix-5 fwd/inv.
-- 2c. radix-7 fwd/inv.
-- 2d. generic `p` fallback = the §1 vectorized loop (for large odd primes).
-- 2e. dispatch in the plan: store the codelet kind per `MINUS_SPLIT`/`BRUUN_ODD`
+- 2a. Done. radix-3 fwd/inv codelets (covers 3^k and the `*3` factor).
+- 2b. Done. radix-5 fwd/inv.
+- 2c. Done. radix-7 fwd/inv.
+- 2d. Done. generic `p` fallback = the §1 vectorized loop (for large odd primes).
+- 2e. Done. dispatch in the plan: store the codelet kind per `MINUS_SPLIT`/`BRUUN_ODD`
       op at plan time so `exec_*` just calls a function pointer / switch.
+- 2f. Done as a code-size/perf experiment. Added the same fwd/inv fixed codelet
+      structure for radices 11, 13, 17, and 19.
+- 2g. Done. Added f32 fixed-radix odd codelets for 3, 5, 7, 11, 13, 17, and 19
+      on the arbitrary-N GenBruun path.
+- 2h. In progress. `MINUS_SPLIT` inverse has a real load-once/store-once fused
+      kernel for radix 5 in f64 and f32. A generic fused inverse attempt that
+      iterated output block first was measured and removed because it reread the
+      branch planes P times and regressed radix-5/radix-7 chains. Radix 7+ should
+      get dedicated fused kernels that load each branch lane once and emit all P
+      outputs from that lane group.
+- 2i. Done. The codelet dispatch ladders are centralized in small dispatcher
+      helpers. `exec_fwd`, `exec_inv`, and the f32 mirrors now call dispatchers
+      and keep only generic fallback logic inline, so new radix kernels land in
+      one place.
+- 2j. Measured and backed out. A dedicated radix-7 `MINUS_SPLIT` inverse fused
+      kernel for f64 and f32 was numerically clean, but the all-seven-outputs
+      shape regressed the NEON build. The first version measured `N=2401` at
+      `Std_ns 27941.4`, `F32Std_ns 63144.5`, `Inv_ns 44464.8`; hoisting the
+      coefficient broadcasts still measured `Std_ns 44976.6`, `F32Std_ns 44531.2`,
+      `Inv_ns 45549.5` and also disturbed `N=625`. The next radix-7 attempt should
+      be assembly-guided and probably split the outputs into smaller groups
+      rather than keeping seven result vectors live. A smaller forward-only fusion
+      of the radix-7 sum with the first projection was also measured and backed
+      out: it removed one input sweep but worsened the f32 path and did not give
+      a reliable f64 win.
+- 2k. Done. Assembly-guided radix-7 inverse cleanup. The template inverse bodies
+      for radix 7 were correct but forced clang to save/restore `d8-d15` around
+      the vector loop. The accepted f64/f32 radix-7 inverse helpers use NEON
+      scalar-lane FMA (`vfmaq_n_f64` / `vfmaq_n_f32`) through local coefficient
+      helpers, which emits leaf functions without the old FP callee-save frame.
+      On `N=2401`, repeated benchmark samples moved inverse time into the
+      `~25-26 us` band while preserving the existing accuracy checks.
 
 These three radices cover the overwhelming majority of smooth odd sizes.
 
@@ -121,6 +164,9 @@ The projection is FMA-bound. To approach peak FMA throughput:
   outputs (fuse the s-branch sum with the branch projections — one read of `in`).
 - Avoid store/reload of `lo/hi` between `i` iterations — keep accumulators in
   registers across the whole `i` loop (the §1 rewrite already does this per m-tile).
+- For inverse fusion, avoid the tempting `for i output -> for m -> for branch`
+  shape. It stores once but destroys input reuse. The accepted shape is
+  `for m-vector -> load all branch lanes once -> emit P outputs`.
 
 ---
 
@@ -153,7 +199,7 @@ A 10-minute asm read on the radix-3 codelet usually finds the difference between
       `bruun_kernel.hpp`) for the `BRUUN_POW2` rooted cascade instead of
       one-level `norm_q_fwd`, when `q` is large enough (the kernel's own driver
       shows the size gate). Halves load/store traffic on the pow2 tails.
-- 5b. Hoist the rooted-cascade `S1 = tsin(fhalf(o.f))` and the `s_tw` lambda out
+- 5b. Done for `S1`. Hoist the rooted-cascade `S1 = tsin(fhalf(o.f))` and the `s_tw` lambda out
       of `exec_*` into plan-time storage on the op (one transcendental per call
       removed).
 - 5c. Pairwise / 2-accumulator summation in the projections (pairs with §3's
@@ -180,13 +226,13 @@ A 10-minute asm read on the radix-3 codelet usually finds the difference between
 
 ## 7. Sequence & ownership
 
-1. §0 profile + §1 loop reorder (portable) — **do first, here**; should already
-   close part of the gap and makes the SIMD step clean.
-2. §2 codelets: **GPT -> AVX2**, **us -> NEON later**. Shared scalar reference +
-   `BRUUN_LEVEL` gating so both land independently.
-3. §3/§4 schedule + asm read per codelet (whoever owns that backend).
-4. §5 cascade/plan polish.
+1. §0 profile + §1 loop reorder: done for the current GenBruun projection paths.
+2. §2 NEON-side fixed codelets: done for f64 and f32 radices 3, 5, 7, 11, 13,
+   17, and 19; keep AVX2 parity work separate.
+3. §3/§4 schedule + asm read per codelet is the next speed pass.
+4. §5 cascade/plan polish remains, especially rooted `norm2_inv_fused`.
 5. Re-benchmark vs FFTW at each step; §6 accuracy probe each step.
 
-When NEON codelets land and the benchmark shows parity-ish on smooth sizes
-(and we accept the large-prime O(p^2) tail), **we are ready to push.**
+Next push-quality gate: assembly/profiling review, accepted large-prime fallback
+policy, and a decision on whether the `N=2401` inverse timing needs a fix before
+publishing.

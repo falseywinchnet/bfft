@@ -179,11 +179,11 @@ ODFT directions need none.
 
 | Function | Equivalent | Notes |
 | --- | --- | --- |
-| `bfft.rfft(x)` | `numpy.fft.rfft(x)` | Power-of-two `N >= 4`. Returns `N/2 + 1` complex bins. |
+| `bfft.rfft(x)` | `numpy.fft.rfft(x)` | Any `N >= 2`. Returns `N/2 + 1` complex bins. |
 | `bfft.irfft(X, n=None)` | `numpy.fft.irfft(X, n)` | `n` defaults to `2 * (len(X) - 1)`. Returns `N` real samples. |
 | `bfft.odft(x)` | half-bin phase shift + `rfft` | `H[k] = sum_n x[n] exp(-2j*pi*(k+1/2)*n/N)`, `N >= 2`. Returns `N/2` complex bins. |
 | `bfft.iodft(H, n=None)` | inverse of `bfft.odft` | `n` defaults to `2 * len(H)`. Returns `N` real samples. |
 
-All Python transforms operate on power-of-two lengths in double precision. The
+Python real FFT transforms operate on any `N >= 2` in double precision. The
 forward and inverse pairs round-trip to floating-point precision, and `rfft` and
 `irfft` match `numpy.fft` to within floating-point error.

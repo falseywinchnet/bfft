@@ -54,7 +54,7 @@ const char* bfft_version_string(void);
 const char* bfft_backend_name(void);
 const char* bfft_status_string(bfft_status status);
 
-/* Create a reusable plan for a power-of-two transform size N >= 4. */
+/* Create a reusable plan for any real FFT transform size N >= 2. */
 bfft_status bfft_plan_create(size_t n, bfft_plan** plan);
 
 /* Destroy a plan. Passing NULL is allowed. */

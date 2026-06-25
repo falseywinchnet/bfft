@@ -5,7 +5,10 @@ Chebyshev reductions); drop into the normalized cascade (stage-0 B-map +
 _nb_subtree, or rfft_normbruun for minus-nodes) the moment a node is pure pow2.
 """
 import numpy as np
-from scratch_normbruun import rfft_normbruun
+try:
+    from .scratch_normbruun import rfft_normbruun
+except ImportError:  # pragma: no cover - supports direct script execution.
+    from scratch_normbruun import rfft_normbruun
 
 def _is_pow2(n): return n >= 1 and (n & (n-1)) == 0
 def _odd_prime(n):

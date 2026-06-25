@@ -9,7 +9,10 @@ when M=N/p is itself non-pow2 (multiple/repeated odd primes). The single-odd-pri
 case here is the validated template.
 """
 import numpy as np
-from scratch_normbruun import rfft_normbruun  # pow2 normalized engine
+try:
+    from .scratch_normbruun import rfft_normbruun  # pow2 normalized engine
+except ImportError:  # pragma: no cover - supports direct script execution.
+    from scratch_normbruun import rfft_normbruun  # pow2 normalized engine
 
 def _nb_subtree(r, theta, N, out):
     d = len(r)

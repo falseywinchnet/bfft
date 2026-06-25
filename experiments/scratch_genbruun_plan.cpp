@@ -3,7 +3,7 @@
 // permutations ONCE at plan time into pooled arrays; execution walks a flat op
 // list over a pre-sized scratch arena -- no allocation, no transcendentals.
 //
-// Build: g++ -O3 -march=native -std=c++17 -Isrc scratch_genbruun_plan.cpp -lm -o /tmp/gp && /tmp/gp
+// Build: g++ -O3 -march=native -std=c++17 -Isrc experiments/scratch_genbruun_plan.cpp -lm -o /tmp/gp && /tmp/gp
 
 #include <cstdio>
 #include <cstdint>

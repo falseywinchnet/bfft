@@ -23,11 +23,14 @@ The C++ API wraps the C ABI with RAII and exceptions.
 
 ## `bfft::plan`
 
-Create a plan with a power-of-two size `N >= 4`:
+Create a real FFT plan with any size `N >= 2`:
 
 ```cpp
 bfft::plan plan(1024);
 ```
+
+Power-of-two plans use the native Bruun kernel. Other sizes use the generalized
+Bruun plan behind the same methods.
 
 Important methods:
 
@@ -69,3 +72,6 @@ and return output vectors. Pointer overloads use caller-owned buffers.
 - `residue_filter_from_real(...)` converts a real zero-phase response.
 - `apply_residue_filter(...)` applies a filter in place.
 - `filter_signal(...)` filters an input signal into an output buffer.
+
+Residue filtering is power-of-two-only. Standard, native-order, magnitude, and
+single-precision transform methods route for arbitrary-N plans.

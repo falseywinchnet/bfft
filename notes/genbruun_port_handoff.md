@@ -11,14 +11,13 @@ Artifacts added: `src/detail/genbruun_kernel.hpp` (bruun::GenBruun),
 
 Open follow-ups = ACCELERATION (perf/polish, none blocking correctness). The work
 breakdown lives in **`src/detail/genbruun_acceleration_plan.md`** — read it before
-optimizing. Summary: hot path is the odd-radix projections in
-`GenBruun::exec_fwd/exec_inv` (`MINUS_SPLIT`, `BRUUN_ODD`); reorder loops to
-`i`-outer/`m`-inner, then radix-3/5/7 SIMD codelets gated on `BRUUN_LEVEL`
-(**GPT -> AVX2**, **us -> NEON later**), schedule + read the asm, then
-`norm2_fused` cascade + pairwise sums. bfft is ~3.5-5x slower than FFTW on prime
-powers today, N=3000 ~8e-14 vs ~1e-15 elsewhere. Also: float32 arbitrary-N path;
-fully guard bfft_workspace_create / bfft_plan_standard_policy for non-pow2
-(currently benign). **When NEON codelets land -> ready to push.**
+optimizing. Current acceleration state: the odd-radix projections in
+`GenBruun::exec_fwd/exec_inv` (`MINUS_SPLIT`, `BRUUN_ODD`) now vector over
+contiguous `m` lanes, and NEON-side fixed-radix fwd/inv codelets are wired for
+3, 5, 7, 11, 13, 17, and 19 through `BRUUN_LEVEL`. Remaining acceleration work:
+schedule + read the asm, add latency hiding, port rooted `norm2_fused` /
+`norm2_inv_fused` cascade staging, decide larger-prime policy, revisit N=3000
+accuracy/perf, and choose the float32/native arbitrary-N API shape.
 
 Library wiring (DONE, #14): `src/detail/genbruun_kernel.hpp` = `bruun::GenBruun`
 (owns scratch). `src/bfft.cpp` `bfft_plan` is tagged `{bool pow2; RFFT impl;
@@ -99,10 +98,10 @@ adaptations:
 
 | file | what |
 | --- | --- |
-| `scratch_genbruun_exact.py` | **reference** — Python, exact-phase, condition-1, FFT-grade all N. The spec. (GPT + this session) |
-| `scratch_normbruun.py` | normalized pow2 Bruun in Python, mirrors the C kernel |
-| `scratch_genbruun.cpp` | scalar C++ port; rooted cascade uses `norm_q_fwd` |
-| `scratch_genbruun_plan.cpp` | **flattened plan** — `GenBruunPlan` (init/forward), pooled tables, bump arena, allocation-free. Start #14 from here. |
+| `experiments/scratch_genbruun_exact.py` | **reference** — Python, exact-phase, condition-1, FFT-grade all N. The spec. (GPT + this session) |
+| `experiments/scratch_normbruun.py` | normalized pow2 Bruun in Python, mirrors the C kernel |
+| `experiments/scratch_genbruun.cpp` | scalar C++ port; rooted cascade uses `norm_q_fwd` |
+| `experiments/scratch_genbruun_plan.cpp` | **flattened plan** — `GenBruunPlan` (init/forward), pooled tables, bump arena, allocation-free. Start #14 from here. |
 | `scripts/odd_prime_accuracy_probe.py` | mpmath-90-digit accuracy probe |
 | `documentation/reports/odd_prime_accuracy.md` | accuracy audit + bounds |
 | `src/detail/bruun_kernel.hpp` | existing pow2 kernel — `bruun::RFFT`, `norm_q_fwd`, `norm_q_inv`, `norm2_fused`, `norm2_inv_fused` |
@@ -113,19 +112,19 @@ adaptations:
 
 Reference DFT gotcha: **arm64 `long double == double`**, so a naive
 `cosl(large arg)` DFT reference lies (~7e-13). Use integer-reduced phase
-`((k*n)%N)` + Kahan summation (done in `scratch_genbruun.cpp` / `_plan.cpp` mains).
+`((k*n)%N)` + Kahan summation (done in `experiments/scratch_genbruun.cpp` / `_plan.cpp` mains).
 
 ## 5. Build & validate
 
 ```sh
 # Python reference
-python3 scratch_genbruun_exact.py                 # vs numpy
+python3 experiments/scratch_genbruun_exact.py     # vs numpy
 PYTHONPATH=. python3 scripts/odd_prime_accuracy_probe.py   # vs mpmath
 
 # C++ scalar + flattened plan (need the pow2 lib built once for nothing here;
 # these include the kernel header directly)
-g++ -O3 -march=native -std=c++17 -Isrc scratch_genbruun.cpp      -lm -o /tmp/g  && /tmp/g
-g++ -O3 -march=native -std=c++17 -Isrc scratch_genbruun_plan.cpp -lm -o /tmp/gp && /tmp/gp
+g++ -O3 -march=native -std=c++17 -Isrc experiments/scratch_genbruun.cpp      -lm -o /tmp/g  && /tmp/g
+g++ -O3 -march=native -std=c++17 -Isrc experiments/scratch_genbruun_plan.cpp -lm -o /tmp/gp && /tmp/gp
 # pow2 native lib (for bfft.rfft ctypes path):  make   ->  build/libbfft.so
 BFFT_LIBRARY=$PWD/build/libbfft.so python3 -c "import bfft, numpy as np; ..."
 ```
@@ -138,7 +137,7 @@ N=3000 at ~7e-14 (ordered-sum on the 5^3 chain; pairwise summation would tighten
 ## 6. TASK #14 — GenBruunPlan + C ABI dispatch + inverse (START HERE)
 
 ### 6a. Plan object + buffer contract
-- Promote `GenBruunPlan` (from `scratch_genbruun_plan.cpp`) into the library
+- Promote `GenBruunPlan` (from `experiments/scratch_genbruun_plan.cpp`) into the library
   (new header e.g. `src/detail/genbruun_kernel.hpp`, or a section of bfft.cpp).
 - **Buffer contract:** `init(N)` computes `arena_doubles` (the `hi` high-water
   mark) and a `work_doubles` for the pow2 subplans (currently a `thread_local`
@@ -159,8 +158,8 @@ N=3000 at ~7e-14 (ordered-sum on the 5^3 chain; pairwise summation would tighten
 - **Residue-domain filter API stays pow2-only** — a non-pow2 transform has no
   single residue layout. Document and reject non-pow2 in those calls.
 
-### 6c. Inverse — DONE & validated (Python `scratch_genbruun_inverse.py` +
-###      C++ `scratch_genbruun_plan.cpp::inverse`). Roundtrip & vs numpy.irfft
+### 6c. Inverse — DONE & validated (Python `experiments/scratch_genbruun_inverse.py` +
+###      C++ `experiments/scratch_genbruun_plan.cpp::inverse`). Roundtrip & vs numpy.irfft
 ###      FFT-grade all N (<=1.7e-15). Reverse op-walk; each op fills its INPUT
 ###      region from its outputs. Exact adjoints (validated):
 - MINUS_POW2: `bruun::RFFT::inverse` (gather `Xf[sigma*k]`). D=1 -> r[0]=Re X[0];
@@ -196,7 +195,7 @@ so the inverse is the schedule run **in reverse** with each op's adjoint/inverse
   vs `numpy.fft.rfft`; inverse `irfft` vs `numpy.fft.irfft` (Hermitian input).
 
 Suggested order: get the **inverse working in Python first** (add `irfft_gen` to
-`scratch_genbruun_exact.py`, reversing each step) — same de-risk pattern that
+`experiments/scratch_genbruun_exact.py`, reversing each step) — same de-risk pattern that
 worked all along — then port to C++.
 
 ### 6d. Don't forget
@@ -223,7 +222,7 @@ worked all along — then port to C++.
   reduces to the Dirichlet separator (O(T*eps) sidelobe cancellation) and its
   stable `apply_window` collapses to Bluestein. Net loss vs plain Bluestein.
 - **Bluestein/Rader** — work and are FFT-grade (modular-chirp Bluestein in
-  `scratch_modchirp.py` is validated), but rejected on philosophy: don't recreate
+  `experiments/scratch_modchirp.py` is validated), but rejected on philosophy: don't recreate
   FFTW/pocketfft. Kept only as a possible quarantined leaf for huge prime factors.
 - **Phase-shifted-FFT block** (compute a 256-block of a 511-DFT with twiddles):
   provably impossible — the block kernel `exp(-2pi i j r/T)` is not `D1 F D2`

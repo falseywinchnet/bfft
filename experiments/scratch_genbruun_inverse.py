@@ -1,6 +1,6 @@
 """Inverse of the generalized Bruun (arbitrary-N) real FFT -- Python reference.
 
-Reverses the forward schedule of scratch_genbruun_exact.py op by op (postorder:
+Reverses the forward schedule of experiments/scratch_genbruun_exact.py op by op (postorder:
 gather children/leaves from the spectrum, combine up to the parent residue).
 Each step is the inverse of a condition-1 forward step:
 
@@ -12,7 +12,10 @@ Each step is the inverse of a condition-1 forward step:
 """
 import numpy as np
 from fractions import Fraction as Fr
-from scratch_genbruun_exact import _cos, _sin, _is_pow2, _odd_prime
+try:
+    from .scratch_genbruun_exact import _cos, _sin, _is_pow2, _odd_prime
+except ImportError:  # pragma: no cover - supports direct script execution.
+    from scratch_genbruun_exact import _cos, _sin, _is_pow2, _odd_prime
 
 
 def irfft_gen(Xhalf, N):
@@ -92,7 +95,10 @@ def irfft_gen(Xhalf, N):
 
 if __name__ == "__main__":
     import sympy
-    from scratch_genbruun_exact import rfft_gen_exact
+    try:
+        from .scratch_genbruun_exact import rfft_gen_exact
+    except ImportError:  # pragma: no cover - supports direct script execution.
+        from scratch_genbruun_exact import rfft_gen_exact
     print(f"{'N':>6} {'factors':>16} {'roundtrip':>11} {'vs np.irfft':>12}")
     worst_rt = worst_np = 0.0
     for N in [3,5,7,9,15,27,45,75,127,225,257,509,521,1021,1024,1920,2187,3000,6075,10125]:
