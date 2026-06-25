@@ -301,7 +301,8 @@ radix-3: 2 butterfly mults; radix-5: real-5 module; radix-7: real-7 module.
   (R7_S2=sin(4pi/7)) slipped past the runtime-trig standalone but was caught by
   tests/correctness.cpp's tight tolerance -- always validate hardcoded codelet
   constants against high precision and run make test.
-- 8c-3b TODO (f32 mirrors): the f32 GenBruun path still uses the dense
+- 8c-3b DONE (f32 mirrors): factored real f32 codelets for radix 3,5,7 (fwd+adj) wired into exec_fwd_f32/exec_inv_f32; ~1.7-2.2x FFTW, tests green.
+- 8c-4 DONE: all radix butterfly constants now DERIVED from pi=acos(-1) via gb_cos/gb_sin (inline static const), never hardcoded -- eliminates the typo class that bit R7_S2.
   fixed_bruun_odd_*_f32<P> codelets; mirror the factored real form there next.
 ### 8c. (original) Sub-tasks
 - 8c-1. radix-3 minus-split + bruun-odd factored fwd/inv (f64), validate

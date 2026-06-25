@@ -380,7 +380,7 @@ private:
         double* RESTRICT c1l = c1; double* RESTRICT c1h = c1 + Mp;
         double* RESTRICT c2l = c2; double* RESTRICT c2h = c2 + Mp;
         const double mc1 = mod[1], ms1 = mod[3 + 1], mc2 = mod[2], ms2 = mod[3 + 2];
-        const double cr = -0.5, sr = 0.86602540378443864676;   // cos/sin(2*pi/3)
+        const double cr = R3_C, sr = R3_S;   // cos/sin(2*pi/3), derived from pi
         int m = 0;
 #if BRUUN_LEVEL >= 1
         const bruun_v2 vmc1 = V2_SET1(mc1), vms1 = V2_SET1(ms1), vmc2 = V2_SET1(mc2), vms2 = V2_SET1(ms2);
@@ -468,7 +468,7 @@ private:
         const double* RESTRICT c1l = c1; const double* RESTRICT c1h = c1 + Mp;
         const double* RESTRICT c2l = c2; const double* RESTRICT c2h = c2 + Mp;
         const double mc1 = mod[1], ms1 = mod[3 + 1], mc2 = mod[2], ms2 = mod[3 + 2];
-        const double cr = -0.5, sr = 0.86602540378443864676, third = 1.0 / 3.0;
+        const double cr = R3_C, sr = R3_S, third = 1.0 / 3.0;
         int m = 0;
 #if BRUUN_LEVEL >= 1
         const bruun_v2 vmc1 = V2_SET1(mc1), vms1 = V2_SET1(ms1), vmc2 = V2_SET1(mc2), vms2 = V2_SET1(ms2);
@@ -502,8 +502,14 @@ private:
     // FACTORED radix-5: real two-plane, modulate by psi=theta/5 then symmetric
     // real radix-5 butterfly. 32 mults/lane vs the dense 100. Constants = cos/sin
     // of 2pi/5 and 4pi/5.
-    static constexpr double R5_C1 = 0.30901699437494742410, R5_C2 = -0.80901699437494742410;
-    static constexpr double R5_S1 = 0.95105651629515357212, R5_S2 = 0.58778525229247312917;
+    // All radix-p butterfly constants derived from pi = acos(-1); NEVER hardcode
+    // irrational trig values (a sin(4pi/7) typo once slipped past a runtime-trig
+    // standalone but corrupted the compiled kernel). Each is cos/sin(2*pi*k/p).
+    static double gb_cos(int k, int p) { return std::cos(2.0 * std::acos(-1.0) * k / p); }
+    static double gb_sin(int k, int p) { return std::sin(2.0 * std::acos(-1.0) * k / p); }
+    inline static const double R3_C = gb_cos(1, 3), R3_S = gb_sin(1, 3);
+    inline static const double R5_C1 = gb_cos(1, 5), R5_C2 = gb_cos(2, 5);
+    inline static const double R5_S1 = gb_sin(1, 5), R5_S2 = gb_sin(2, 5);
     static void bruun_odd5_forward_all(double* RESTRICT c0, double* RESTRICT c1, double* RESTRICT c2,
                                        double* RESTRICT c3, double* RESTRICT c4,
                                        const double* RESTRICT lo, const double* RESTRICT hi,
@@ -561,8 +567,8 @@ private:
 
     // FACTORED radix-7: real two-plane, modulate by psi=theta/7 then symmetric real
     // radix-7 butterfly. 60 mults/lane vs the dense 196. cos/sin of 2pi/7,4pi/7,6pi/7.
-    static constexpr double R7_C1 = 0.62348980185873359, R7_C2 = -0.22252093395631440, R7_C3 = -0.90096886790241915;
-    static constexpr double R7_S1 = 0.78183148246802980, R7_S2 = 0.97492791218182362, R7_S3 = 0.43388373911755812;
+    inline static const double R7_C1 = gb_cos(1, 7), R7_C2 = gb_cos(2, 7), R7_C3 = gb_cos(3, 7);
+    inline static const double R7_S1 = gb_sin(1, 7), R7_S2 = gb_sin(2, 7), R7_S3 = gb_sin(3, 7);
     static void bruun_odd7_forward_all(double* RESTRICT c0, double* RESTRICT c1, double* RESTRICT c2, double* RESTRICT c3,
                                        double* RESTRICT c4, double* RESTRICT c5, double* RESTRICT c6,
                                        const double* RESTRICT lo, const double* RESTRICT hi,
@@ -610,6 +616,80 @@ private:
             for (int i = 1; i < 7; ++i) { double mc = mod[i], ms = mod[7 + i];
                 a[i][m] = P[i] * mc + Q[i] * ms; b[i][m] = Q[i] * mc - P[i] * ms; }
         }
+    }
+
+    // ---- f32 mirrors of the factored real odd codelets (same math, float planes,
+    // same pi-derived constants). mod is the double twiddle table, cast per use. ----
+    static void bruun_odd3_forward_all_f32(float* RESTRICT c0, float* RESTRICT c1, float* RESTRICT c2,
+                                           const float* RESTRICT lo, const float* RESTRICT hi, const double* RESTRICT mod, int Mp) {
+        const float* a0=lo,*a1=lo+Mp,*a2=lo+2*Mp,*b0=hi,*b1=hi+Mp,*b2=hi+2*Mp;
+        float* c0l=c0;float* c0h=c0+Mp;float* c1l=c1;float* c1h=c1+Mp;float* c2l=c2;float* c2h=c2+Mp;
+        const float mc1=(float)mod[1],ms1=(float)mod[4],mc2=(float)mod[2],ms2=(float)mod[5],cr=(float)R3_C,sr=(float)R3_S;
+        for(int m=0;m<Mp;++m){float A0=a0[m],A1=a1[m],A2=a2[m],B0=b0[m],B1=b1[m],B2=b2[m];
+            float P1=A1*mc1-B1*ms1,Q1=A1*ms1+B1*mc1,P2=A2*mc2-B2*ms2,Q2=A2*ms2+B2*mc2;
+            float sp=P1+P2,dp=P1-P2,sq=Q1+Q2,dq=Q1-Q2;
+            c0l[m]=A0+sp;c0h[m]=B0+sq;float m1=A0+cr*sp,m2=sr*dq,n1=B0+cr*sq,n2=sr*dp;
+            c1l[m]=m1-m2;c2l[m]=m1+m2;c1h[m]=n1+n2;c2h[m]=n1-n2;}
+    }
+    static void bruun_odd3_adjoint_all_f32(float* RESTRICT lo, float* RESTRICT hi,
+                                           const float* RESTRICT c0, const float* RESTRICT c1, const float* RESTRICT c2, const double* RESTRICT mod, int Mp) {
+        float* a0=lo;float* a1=lo+Mp;float* a2=lo+2*Mp;float* b0=hi;float* b1=hi+Mp;float* b2=hi+2*Mp;
+        const float* c0l=c0;const float* c0h=c0+Mp;const float* c1l=c1;const float* c1h=c1+Mp;const float* c2l=c2;const float* c2h=c2+Mp;
+        const float mc1=(float)mod[1],ms1=(float)mod[4],mc2=(float)mod[2],ms2=(float)mod[5],cr=(float)R3_C,sr=(float)R3_S,third=1.0f/3.0f;
+        for(int m=0;m<Mp;++m){float g0=c0l[m]*third,g1=c1l[m]*third,g2=c2l[m]*third,h0=c0h[m]*third,h1=c1h[m]*third,h2=c2h[m]*third;
+            float sg=g1+g2,dg=g1-g2,sh=h1+h2,dh=h1-h2,P0=g0+sg,Q0=h0+sh;
+            float u=g0+cr*sg,w=sr*dh,x=h0+cr*sh,y=sr*dg,P1=u+w,P2=u-w,Q1=x-y,Q2=x+y;
+            a0[m]=P0;b0[m]=Q0;a1[m]=P1*mc1+Q1*ms1;b1[m]=Q1*mc1-P1*ms1;a2[m]=P2*mc2+Q2*ms2;b2[m]=Q2*mc2-P2*ms2;}
+    }
+    static void bruun_odd5_forward_all_f32(float* RESTRICT c0,float* RESTRICT c1,float* RESTRICT c2,float* RESTRICT c3,float* RESTRICT c4,
+                                           const float* RESTRICT lo,const float* RESTRICT hi,const double* RESTRICT mod,int Mp){
+        const float* a[5]={lo,lo+Mp,lo+2*Mp,lo+3*Mp,lo+4*Mp};const float* b[5]={hi,hi+Mp,hi+2*Mp,hi+3*Mp,hi+4*Mp};float* cl[5]={c0,c1,c2,c3,c4};
+        const float C1=(float)R5_C1,C2=(float)R5_C2,S1=(float)R5_S1,S2=(float)R5_S2;
+        for(int m=0;m<Mp;++m){float P[5],Q[5];P[0]=a[0][m];Q[0]=b[0][m];
+            for(int i=1;i<5;++i){float ai=a[i][m],bi=b[i][m],mc=(float)mod[i],ms=(float)mod[5+i];P[i]=ai*mc-bi*ms;Q[i]=ai*ms+bi*mc;}
+            float pe1=P[1]+P[4],pe2=P[2]+P[3],po1=P[1]-P[4],po2=P[2]-P[3],qe1=Q[1]+Q[4],qe2=Q[2]+Q[3],qo1=Q[1]-Q[4],qo2=Q[2]-Q[3];
+            cl[0][m]=P[0]+pe1+pe2;cl[0][Mp+m]=Q[0]+qe1+qe2;
+            float Ec1=pe1*C1+pe2*C2,Ec2=pe1*C2+pe2*C1,Os1=qo1*S1+qo2*S2,Os2=qo1*S2-qo2*S1,Fc1=qe1*C1+qe2*C2,Fc2=qe1*C2+qe2*C1,Ps1=po1*S1+po2*S2,Ps2=po1*S2-po2*S1;
+            cl[1][m]=P[0]+Ec1-Os1;cl[4][m]=P[0]+Ec1+Os1;cl[2][m]=P[0]+Ec2-Os2;cl[3][m]=P[0]+Ec2+Os2;
+            cl[1][Mp+m]=Q[0]+Fc1+Ps1;cl[4][Mp+m]=Q[0]+Fc1-Ps1;cl[2][Mp+m]=Q[0]+Fc2+Ps2;cl[3][Mp+m]=Q[0]+Fc2-Ps2;}
+    }
+    static void bruun_odd5_adjoint_all_f32(float* RESTRICT lo,float* RESTRICT hi,
+                                           const float* RESTRICT c0,const float* RESTRICT c1,const float* RESTRICT c2,const float* RESTRICT c3,const float* RESTRICT c4,const double* RESTRICT mod,int Mp){
+        float* a[5]={lo,lo+Mp,lo+2*Mp,lo+3*Mp,lo+4*Mp};float* b[5]={hi,hi+Mp,hi+2*Mp,hi+3*Mp,hi+4*Mp};const float* cl[5]={c0,c1,c2,c3,c4};
+        const float C1=(float)R5_C1,C2=(float)R5_C2,S1=(float)R5_S1,S2=(float)R5_S2,fifth=0.2f;
+        for(int m=0;m<Mp;++m){float L0=cl[0][m],L1=cl[1][m],L2=cl[2][m],L3=cl[3][m],L4=cl[4][m],H0=cl[0][Mp+m],H1=cl[1][Mp+m],H2=cl[2][Mp+m],H3=cl[3][Mp+m],H4=cl[4][Mp+m];
+            float ce1=L1+L4,ce2=L2+L3,co1=L1-L4,co2=L2-L3,he1=H1+H4,he2=H2+H3,ho1=H1-H4,ho2=H2-H3;float P[5],Q[5];
+            P[0]=(L0+ce1+ce2)*fifth;Q[0]=(H0+he1+he2)*fifth;
+            float EcA=ce1*C1+ce2*C2,EcB=ce1*C2+ce2*C1,OsA=ho1*S1+ho2*S2,OsB=ho1*S2-ho2*S1,FcA=he1*C1+he2*C2,FcB=he1*C2+he2*C1,PsA=co1*S1+co2*S2,PsB=co1*S2-co2*S1;
+            P[1]=(L0+EcA+OsA)*fifth;P[4]=(L0+EcA-OsA)*fifth;P[2]=(L0+EcB+OsB)*fifth;P[3]=(L0+EcB-OsB)*fifth;
+            Q[1]=(H0+FcA-PsA)*fifth;Q[4]=(H0+FcA+PsA)*fifth;Q[2]=(H0+FcB-PsB)*fifth;Q[3]=(H0+FcB+PsB)*fifth;
+            a[0][m]=P[0];b[0][m]=Q[0];for(int i=1;i<5;++i){float mc=(float)mod[i],ms=(float)mod[5+i];a[i][m]=P[i]*mc+Q[i]*ms;b[i][m]=Q[i]*mc-P[i]*ms;}}
+    }
+    static void bruun_odd7_forward_all_f32(float* RESTRICT c0,float* RESTRICT c1,float* RESTRICT c2,float* RESTRICT c3,float* RESTRICT c4,float* RESTRICT c5,float* RESTRICT c6,
+                                           const float* RESTRICT lo,const float* RESTRICT hi,const double* RESTRICT mod,int Mp){
+        const float* a[7]={lo,lo+Mp,lo+2*Mp,lo+3*Mp,lo+4*Mp,lo+5*Mp,lo+6*Mp};const float* b[7]={hi,hi+Mp,hi+2*Mp,hi+3*Mp,hi+4*Mp,hi+5*Mp,hi+6*Mp};float* cl[7]={c0,c1,c2,c3,c4,c5,c6};
+        const float C1=(float)R7_C1,C2=(float)R7_C2,C3=(float)R7_C3,S1=(float)R7_S1,S2=(float)R7_S2,S3=(float)R7_S3;
+        for(int m=0;m<Mp;++m){float P[7],Q[7];P[0]=a[0][m];Q[0]=b[0][m];
+            for(int i=1;i<7;++i){float ai=a[i][m],bi=b[i][m],mc=(float)mod[i],ms=(float)mod[7+i];P[i]=ai*mc-bi*ms;Q[i]=ai*ms+bi*mc;}
+            float pe1=P[1]+P[6],pe2=P[2]+P[5],pe3=P[3]+P[4],po1=P[1]-P[6],po2=P[2]-P[5],po3=P[3]-P[4],qe1=Q[1]+Q[6],qe2=Q[2]+Q[5],qe3=Q[3]+Q[4],qo1=Q[1]-Q[6],qo2=Q[2]-Q[5],qo3=Q[3]-Q[4];
+            cl[0][m]=P[0]+pe1+pe2+pe3;cl[0][Mp+m]=Q[0]+qe1+qe2+qe3;
+            float Ec1=pe1*C1+pe2*C2+pe3*C3,Ec2=pe1*C2+pe2*C3+pe3*C1,Ec3=pe1*C3+pe2*C1+pe3*C2,Os1=qo1*S1+qo2*S2+qo3*S3,Os2=qo1*S2-qo2*S3-qo3*S1,Os3=qo1*S3-qo2*S1+qo3*S2;
+            float Fc1=qe1*C1+qe2*C2+qe3*C3,Fc2=qe1*C2+qe2*C3+qe3*C1,Fc3=qe1*C3+qe2*C1+qe3*C2,Ps1=po1*S1+po2*S2+po3*S3,Ps2=po1*S2-po2*S3-po3*S1,Ps3=po1*S3-po2*S1+po3*S2;
+            cl[1][m]=P[0]+Ec1-Os1;cl[6][m]=P[0]+Ec1+Os1;cl[2][m]=P[0]+Ec2-Os2;cl[5][m]=P[0]+Ec2+Os2;cl[3][m]=P[0]+Ec3-Os3;cl[4][m]=P[0]+Ec3+Os3;
+            cl[1][Mp+m]=Q[0]+Fc1+Ps1;cl[6][Mp+m]=Q[0]+Fc1-Ps1;cl[2][Mp+m]=Q[0]+Fc2+Ps2;cl[5][Mp+m]=Q[0]+Fc2-Ps2;cl[3][Mp+m]=Q[0]+Fc3+Ps3;cl[4][Mp+m]=Q[0]+Fc3-Ps3;}
+    }
+    static void bruun_odd7_adjoint_all_f32(float* RESTRICT lo,float* RESTRICT hi,
+                                           const float* RESTRICT c0,const float* RESTRICT c1,const float* RESTRICT c2,const float* RESTRICT c3,const float* RESTRICT c4,const float* RESTRICT c5,const float* RESTRICT c6,const double* RESTRICT mod,int Mp){
+        float* a[7]={lo,lo+Mp,lo+2*Mp,lo+3*Mp,lo+4*Mp,lo+5*Mp,lo+6*Mp};float* b[7]={hi,hi+Mp,hi+2*Mp,hi+3*Mp,hi+4*Mp,hi+5*Mp,hi+6*Mp};const float* cl[7]={c0,c1,c2,c3,c4,c5,c6};
+        const float C1=(float)R7_C1,C2=(float)R7_C2,C3=(float)R7_C3,S1=(float)R7_S1,S2=(float)R7_S2,S3=(float)R7_S3,sev=1.0f/7.0f;
+        for(int m=0;m<Mp;++m){float L[7],H[7];for(int t=0;t<7;++t){L[t]=cl[t][m];H[t]=cl[t][Mp+m];}
+            float ce1=L[1]+L[6],ce2=L[2]+L[5],ce3=L[3]+L[4],co1=L[1]-L[6],co2=L[2]-L[5],co3=L[3]-L[4],he1=H[1]+H[6],he2=H[2]+H[5],he3=H[3]+H[4],ho1=H[1]-H[6],ho2=H[2]-H[5],ho3=H[3]-H[4];float P[7],Q[7];
+            P[0]=(L[0]+ce1+ce2+ce3)*sev;Q[0]=(H[0]+he1+he2+he3)*sev;
+            float EcA=ce1*C1+ce2*C2+ce3*C3,EcB=ce1*C2+ce2*C3+ce3*C1,EcC=ce1*C3+ce2*C1+ce3*C2,OsA=ho1*S1+ho2*S2+ho3*S3,OsB=ho1*S2-ho2*S3-ho3*S1,OsC=ho1*S3-ho2*S1+ho3*S2;
+            float FcA=he1*C1+he2*C2+he3*C3,FcB=he1*C2+he2*C3+he3*C1,FcC=he1*C3+he2*C1+he3*C2,PsA=co1*S1+co2*S2+co3*S3,PsB=co1*S2-co2*S3-co3*S1,PsC=co1*S3-co2*S1+co3*S2;
+            P[1]=(L[0]+EcA+OsA)*sev;P[6]=(L[0]+EcA-OsA)*sev;P[2]=(L[0]+EcB+OsB)*sev;P[5]=(L[0]+EcB-OsB)*sev;P[3]=(L[0]+EcC+OsC)*sev;P[4]=(L[0]+EcC-OsC)*sev;
+            Q[1]=(H[0]+FcA-PsA)*sev;Q[6]=(H[0]+FcA+PsA)*sev;Q[2]=(H[0]+FcB-PsB)*sev;Q[5]=(H[0]+FcB+PsB)*sev;Q[3]=(H[0]+FcC-PsC)*sev;Q[4]=(H[0]+FcC+PsC)*sev;
+            a[0][m]=P[0];b[0][m]=Q[0];for(int i=1;i<7;++i){float mc=(float)mod[i],ms=(float)mod[7+i];a[i][m]=P[i]*mc+Q[i]*ms;b[i][m]=Q[i]*mc-P[i]*ms;}}
     }
 
     template <int P>
@@ -1791,6 +1871,9 @@ private:
                 if (M == 1) place_f32(X, fbin(mk(j, p)), lo[0], -hi[0]); }
         } else if (o.type == BRUUN_ODD) {
             int p = o.p, Mp = o.M / p; float* v = A + o.in; const float* lo = v; const float* hi = v + o.M;
+            if (o.codelet == CODELET_3) { bruun_odd3_forward_all_f32(A+o.child[0],A+o.child[1],A+o.child[2], lo, hi, &twp_[o.tw[0]], Mp); return; }
+            if (o.codelet == CODELET_5) { bruun_odd5_forward_all_f32(A+o.child[0],A+o.child[1],A+o.child[2],A+o.child[3],A+o.child[4], lo, hi, &twp_[o.tw[0]], Mp); return; }
+            if (o.codelet == CODELET_7) { bruun_odd7_forward_all_f32(A+o.child[0],A+o.child[1],A+o.child[2],A+o.child[3],A+o.child[4],A+o.child[5],A+o.child[6], lo, hi, &twp_[o.tw[0]], Mp); return; }
             for (int t = 0; t < p; ++t) { const double* Cd = &twp_[o.tw[t]]; const double* Sd = Cd + p;
                 float* clo = A + o.child[t]; float* chi = clo + Mp;
                 if (!dispatch_bruun_odd_forward_f32(o, clo, chi, lo, hi, Cd, Sd, Mp)) {
@@ -1822,6 +1905,9 @@ private:
                 for (int m = 0; m < nb; ++m) { int node = nb + m; norm_q_inv_f32(v + m * s, q, static_cast<float>(C[node]), s_tw(node)); } }
         } else if (o.type == BRUUN_ODD) {
             int p = o.p, Mp = o.M / p; float* lo = A + o.in; float* hi = lo + o.M;
+            if (o.codelet == CODELET_3) { bruun_odd3_adjoint_all_f32(lo, hi, A+o.child[0],A+o.child[1],A+o.child[2], &twp_[o.tw[0]], Mp); return; }
+            if (o.codelet == CODELET_5) { bruun_odd5_adjoint_all_f32(lo, hi, A+o.child[0],A+o.child[1],A+o.child[2],A+o.child[3],A+o.child[4], &twp_[o.tw[0]], Mp); return; }
+            if (o.codelet == CODELET_7) { bruun_odd7_adjoint_all_f32(lo, hi, A+o.child[0],A+o.child[1],A+o.child[2],A+o.child[3],A+o.child[4],A+o.child[5],A+o.child[6], &twp_[o.tw[0]], Mp); return; }
             zero_block_f32(lo, o.M); zero_block_f32(hi, o.M);
             const float scale = 1.0f / static_cast<float>(p);
             for (int t = 0; t < p; ++t) { const double* Cd = &twp_[o.tw[t]]; const double* Sd = Cd + p;
