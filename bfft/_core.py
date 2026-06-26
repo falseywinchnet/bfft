@@ -47,16 +47,33 @@ def _candidate_paths():
         yield "libbfft.dylib"
 
 
+def _has_required_symbols(lib: ctypes.CDLL) -> bool:
+    for name in ("bfft_plan_create", "bodft_plan_create", "bfft_stft_plan_create"):
+        try:
+            getattr(lib, name)
+        except AttributeError:
+            return False
+    return True
+
+
 def _load_library() -> ctypes.CDLL:
     last_err = None
     for path in _candidate_paths():
         try:
-            return ctypes.CDLL(path)
+            lib = ctypes.CDLL(path)
         except OSError as exc:  # pragma: no cover - depends on platform
             last_err = exc
+            continue
+        if _has_required_symbols(lib):
+            return lib
+        last_err = OSError(
+            f"{path} is an older BFFT library without the STFT symbols; "
+            "rebuild/install the native library or set BFFT_LIBRARY to the new one"
+        )
     raise OSError(
-        "Could not locate the BFFT native library. Build it with `pip install .` "
-        "or `make && make install`, or set BFFT_LIBRARY to the shared object. "
+        "Could not locate a compatible BFFT native library. Build it with "
+        "`pip install .` or `make && make install`, or set BFFT_LIBRARY to the "
+        "shared object. "
         f"Last error: {last_err}"
     )
 
