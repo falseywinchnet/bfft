@@ -12,6 +12,7 @@
 // backend.
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <cstdint>
@@ -541,6 +542,69 @@ static inline double bruun_phase_atan2(double y, double x) {
 static inline float bruun_phase_atan2_f32(float y, float x) {
     const float mag = std::sqrt(x * x + y * y);
     return bruun_phase_atan2_mag_f32(y, x, mag);
+}
+
+struct bruun_sincos_sample {
+    double s;
+    double c;
+};
+
+template<int K>
+struct bruun_sincos_table {
+    static_assert((K & (K - 1)) == 0, "K must be a power of two");
+
+    std::array<bruun_sincos_sample, K> value{};
+
+    bruun_sincos_table() {
+        for (int i = 0; i < K; ++i) {
+            const double phase = bruun_tau * static_cast<double>(i) / static_cast<double>(K);
+            value[static_cast<std::size_t>(i)].s = std::sin(phase);
+            value[static_cast<std::size_t>(i)].c = std::cos(phase);
+        }
+    }
+
+    static const bruun_sincos_table& get() {
+        static const bruun_sincos_table table;
+        return table;
+    }
+};
+
+// Fast phase -> sin/cos for the mag-phase inverse hot loop. The inverse of
+// BFFT's own forward_mag_phase stores phases in [0, 2*pi), so the common round
+// trip avoids libm sin/cos calls. Out-of-range public inputs keep the historical
+// libm behavior instead of silently applying a range-reduction approximation.
+static inline void bruun_table256_poly3_sincos(double phase, double* s_out, double* c_out) {
+    constexpr int table_size = 256;
+    constexpr double inv_step = static_cast<double>(table_size) / bruun_tau;
+    constexpr double step = bruun_tau / static_cast<double>(table_size);
+
+    if (phase < 0.0 || phase >= bruun_tau) {
+        *s_out = std::sin(phase);
+        *c_out = std::cos(phase);
+        return;
+    }
+
+    const double qd = phase * inv_step + 0.5;
+    const auto qi = static_cast<std::int64_t>(qd);
+    const auto idx = static_cast<std::size_t>(qi) & static_cast<std::size_t>(table_size - 1);
+
+    const double r = phase - static_cast<double>(qi) * step;
+    const double r2 = r * r;
+
+    const double sr = r * (1.0 - r2 * (1.0 / 6.0));
+    const double cr = 1.0 - r2 * 0.5;
+
+    const bruun_sincos_sample sample = bruun_sincos_table<table_size>::get().value[idx];
+    *c_out = sample.c * cr - sample.s * sr;
+    *s_out = sample.s * cr + sample.c * sr;
+}
+
+static inline void bruun_table256_poly3_sincos_f32(float phase, float* s_out, float* c_out) {
+    double s;
+    double c;
+    bruun_table256_poly3_sincos(static_cast<double>(phase), &s, &c);
+    *s_out = static_cast<float>(s);
+    *c_out = static_cast<float>(c);
 }
 
 static inline const char* simd_backend_name() {
@@ -2466,16 +2530,16 @@ public:
             output[N / 2].im = 0.0;
         }
 
-        const int* RESTRICT kin = KINV.data();
-        for (int k = 1; k < N / 2; ++k) {
-            const int m = kin[k];
+        // Walk Bruun residues in their native linear order. This keeps the hot
+        // work-buffer reads streaming and mirrors inverse_mag_phase's read
+        // order through the standard mag-phase buffer during round trips.
+        const int* RESTRICT standard_bin = IDX.data();
+        for (int m = 1; m < N / 2; ++m) {
+            const int k = standard_bin[m];
             const double re = work[2*m];
             const double im = -work[2*m + 1];
             const double mag = std::sqrt(re * re + im * im);
-            double phase = bruun_phase_atan2_mag(im, re, mag);
-            if (phase < 0.0) {
-                phase += 2.0 * M_PI;
-            }
+            const double phase = bruun_phase_atan2_mag(im, re, mag);
             output[k].re = mag;
             output[k].im = phase;
         }
@@ -2522,16 +2586,14 @@ public:
             output[N / 2].im = 0.0f;
         }
 
-        const int* RESTRICT kin = KINV.data();
-        for (int k = 1; k < N / 2; ++k) {
-            const int m = kin[k];
+        // Match the double path's residue-linear traversal for cache locality.
+        const int* RESTRICT standard_bin = IDX.data();
+        for (int m = 1; m < N / 2; ++m) {
+            const int k = standard_bin[m];
             const float re = work[2*m];
             const float im = -work[2*m + 1];
             const float mag = std::sqrt(re * re + im * im);
-            float phase = bruun_phase_atan2_mag_f32(im, re, mag);
-            if (phase < 0.0f) {
-                phase += 2.0f * static_cast<float>(M_PI);
-            }
+            const float phase = bruun_phase_atan2_mag_f32(im, re, mag);
             output[k].re = mag;
             output[k].im = phase;
         }
@@ -2594,17 +2656,49 @@ public:
     }
 
     void inverse_mag_phase(const complex_t* RESTRICT X, double* RESTRICT out) const {
-        const double dc = X[0].re * std::cos(X[0].im);
-        const double ny = X[N / 2].re * std::cos(X[N / 2].im);
+        double s;
+        double c;
+        bruun_table256_poly3_sincos(X[0].im, &s, &c);
+        const double dc = X[0].re * c;
+        bruun_table256_poly3_sincos(X[N / 2].im, &s, &c);
+        const double ny = X[N / 2].re * c;
         out[0] = 0.5 * (dc + ny);
         out[1] = 0.5 * (dc - ny);
 
-        for (int m = 1; m < N / 2; ++m) {
+        int m = 1;
+        for (; m + 3 < N / 2; m += 4) {
+            const int k0 = IDX[m];
+            const int k1 = IDX[m + 1];
+            const int k2 = IDX[m + 2];
+            const int k3 = IDX[m + 3];
+            double s0;
+            double c0;
+            double s1;
+            double c1;
+            double s2;
+            double c2;
+            double s3;
+            double c3;
+            bruun_table256_poly3_sincos(X[k0].im, &s0, &c0);
+            bruun_table256_poly3_sincos(X[k1].im, &s1, &c1);
+            bruun_table256_poly3_sincos(X[k2].im, &s2, &c2);
+            bruun_table256_poly3_sincos(X[k3].im, &s3, &c3);
+            out[2*m] = X[k0].re * c0;
+            out[2*m + 1] = -X[k0].re * s0;
+            out[2*m + 2] = X[k1].re * c1;
+            out[2*m + 3] = -X[k1].re * s1;
+            out[2*m + 4] = X[k2].re * c2;
+            out[2*m + 5] = -X[k2].re * s2;
+            out[2*m + 6] = X[k3].re * c3;
+            out[2*m + 7] = -X[k3].re * s3;
+        }
+        for (; m < N / 2; ++m) {
             const int k = IDX[m];
             const double mag = X[k].re;
             const double phase = X[k].im;
-            const double re = mag * std::cos(phase);
-            const double im = mag * std::sin(phase);
+            bruun_table256_poly3_sincos(phase, &s, &c);
+            const double re = mag * c;
+            const double im = mag * s;
             out[2*m] = re;
             out[2*m + 1] = -im;
         }
@@ -2612,8 +2706,12 @@ public:
     }
 
     void inverse_mag_phase_f32(const complex_f32_t* RESTRICT X, float* RESTRICT out) const {
-        const float dc = X[0].re * std::cos(X[0].im);
-        const float ny = X[N / 2].re * std::cos(X[N / 2].im);
+        float s;
+        float c;
+        bruun_table256_poly3_sincos_f32(X[0].im, &s, &c);
+        const float dc = X[0].re * c;
+        bruun_table256_poly3_sincos_f32(X[N / 2].im, &s, &c);
+        const float ny = X[N / 2].re * c;
         out[0] = 0.5f * (dc + ny);
         out[1] = 0.5f * (dc - ny);
 
@@ -2623,21 +2721,26 @@ public:
             const int k1 = IDX[m + 1];
             const int k2 = IDX[m + 2];
             const int k3 = IDX[m + 3];
-            out[2*m] = X[k0].re * std::cos(X[k0].im);
-            out[2*m + 1] = -X[k0].re * std::sin(X[k0].im);
-            out[2*m + 2] = X[k1].re * std::cos(X[k1].im);
-            out[2*m + 3] = -X[k1].re * std::sin(X[k1].im);
-            out[2*m + 4] = X[k2].re * std::cos(X[k2].im);
-            out[2*m + 5] = -X[k2].re * std::sin(X[k2].im);
-            out[2*m + 6] = X[k3].re * std::cos(X[k3].im);
-            out[2*m + 7] = -X[k3].re * std::sin(X[k3].im);
+            bruun_table256_poly3_sincos_f32(X[k0].im, &s, &c);
+            out[2*m] = X[k0].re * c;
+            out[2*m + 1] = -X[k0].re * s;
+            bruun_table256_poly3_sincos_f32(X[k1].im, &s, &c);
+            out[2*m + 2] = X[k1].re * c;
+            out[2*m + 3] = -X[k1].re * s;
+            bruun_table256_poly3_sincos_f32(X[k2].im, &s, &c);
+            out[2*m + 4] = X[k2].re * c;
+            out[2*m + 5] = -X[k2].re * s;
+            bruun_table256_poly3_sincos_f32(X[k3].im, &s, &c);
+            out[2*m + 6] = X[k3].re * c;
+            out[2*m + 7] = -X[k3].re * s;
         }
         for (; m < N / 2; ++m) {
             const int k = IDX[m];
             const float mag = X[k].re;
             const float phase = X[k].im;
-            const float re = mag * std::cos(phase);
-            const float im = mag * std::sin(phase);
+            bruun_table256_poly3_sincos_f32(phase, &s, &c);
+            const float re = mag * c;
+            const float im = mag * s;
             out[2*m] = re;
             out[2*m + 1] = -im;
         }
