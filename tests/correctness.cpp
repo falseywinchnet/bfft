@@ -195,6 +195,21 @@ bool check_size(std::size_t n) {
         return false;
     }
 
+    std::vector<double> mag_phase_roundtrip(n);
+    plan.inverse_mag_phase(polar.data(), mag_phase_roundtrip.data());
+    double mag_phase_inverse_error = 0.0;
+    for (std::size_t i = 0; i < n; ++i) {
+        mag_phase_inverse_error = std::max(mag_phase_inverse_error, std::fabs(mag_phase_roundtrip[i] - input[i]));
+    }
+    if (mag_phase_inverse_error > tolerance) {
+        std::fprintf(stderr,
+                     "n=%zu mag-phase inverse error %.17g exceeds %.17g\n",
+                     n,
+                     mag_phase_inverse_error,
+                     tolerance);
+        return false;
+    }
+
     const std::vector<bfft::complex> vector_polar = plan.forward_mag_phase(input);
     if (vector_polar.size() != plan.bins()) {
         std::fprintf(stderr, "n=%zu vector mag-phase bin count mismatch\n", n);
@@ -219,6 +234,21 @@ bool check_size(std::size_t n) {
     }
     if (!threw_wrong_size) {
         std::fprintf(stderr, "n=%zu vector mag-phase wrong size did not throw\n", n);
+        return false;
+    }
+
+    const std::vector<double> vector_mag_phase_roundtrip = plan.inverse_mag_phase(vector_polar);
+    double vector_mag_phase_inverse_error = 0.0;
+    for (std::size_t i = 0; i < n; ++i) {
+        vector_mag_phase_inverse_error = std::max(vector_mag_phase_inverse_error,
+                                                 std::fabs(vector_mag_phase_roundtrip[i] - input[i]));
+    }
+    if (vector_mag_phase_inverse_error > tolerance) {
+        std::fprintf(stderr,
+                     "n=%zu vector mag-phase inverse error %.17g exceeds %.17g\n",
+                     n,
+                     vector_mag_phase_inverse_error,
+                     tolerance);
         return false;
     }
 
@@ -318,6 +348,22 @@ bool check_size_f32(std::size_t n) {
         return false;
     }
 
+    std::vector<float> mag_phase_roundtrip(n);
+    plan.inverse_mag_phase_f32(polar.data(), mag_phase_roundtrip.data());
+    double mag_phase_inverse_error = 0.0;
+    for (std::size_t i = 0; i < n; ++i) {
+        mag_phase_inverse_error = std::max(mag_phase_inverse_error,
+                                           static_cast<double>(std::fabs(mag_phase_roundtrip[i] - input[i])));
+    }
+    if (mag_phase_inverse_error > tolerance) {
+        std::fprintf(stderr,
+                     "n=%zu f32 mag-phase inverse error %.17g exceeds %.17g\n",
+                     n,
+                     mag_phase_inverse_error,
+                     tolerance);
+        return false;
+    }
+
     const std::vector<bfft::complex_f32> vector_polar = plan.forward_mag_phase_f32(input);
     if (vector_polar.size() != plan.bins()) {
         std::fprintf(stderr, "n=%zu f32 vector mag-phase bin count mismatch\n", n);
@@ -342,6 +388,21 @@ bool check_size_f32(std::size_t n) {
     }
     if (!threw_wrong_size) {
         std::fprintf(stderr, "n=%zu f32 vector mag-phase wrong size did not throw\n", n);
+        return false;
+    }
+
+    const std::vector<float> vector_mag_phase_roundtrip = plan.inverse_mag_phase_f32(vector_polar);
+    double vector_mag_phase_inverse_error = 0.0;
+    for (std::size_t i = 0; i < n; ++i) {
+        vector_mag_phase_inverse_error = std::max(vector_mag_phase_inverse_error,
+                                                 static_cast<double>(std::fabs(vector_mag_phase_roundtrip[i] - input[i])));
+    }
+    if (vector_mag_phase_inverse_error > tolerance) {
+        std::fprintf(stderr,
+                     "n=%zu f32 vector mag-phase inverse error %.17g exceeds %.17g\n",
+                     n,
+                     vector_mag_phase_inverse_error,
+                     tolerance);
         return false;
     }
 

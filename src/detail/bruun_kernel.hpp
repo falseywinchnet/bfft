@@ -355,12 +355,164 @@ struct complex_f32_t {
     float im;
 };
 
+struct bruun_phase_node {
+    double c;
+    double s;
+};
+
+struct bruun_phase_leaf {
+    double center;
+    double c;
+    double s;
+};
+
+static constexpr double bruun_tau = 2.0 * M_PI;
+static constexpr double bruun_pio2 = 0.5 * M_PI;
+
+static constexpr bruun_phase_node bruun_phase_nodes[31] = {
+    { 0.92387953251128674, 0.38268343236508978 },
+    { 0.98078528040323043, 0.19509032201612825 },
+    { 0.83146961230254524, 0.55557023301960218 },
+    { 0.99518472667219693, 0.098017140329560604 },
+    { 0.95694033573220882, 0.29028467725446233 },
+    { 0.88192126434835505, 0.47139673682599764 },
+    { 0.77301045336273699, 0.63439328416364549 },
+    { 0.99879545620517241, 0.049067674327418015 },
+    { 0.98917650996478101, 0.14673047445536175 },
+    { 0.97003125319454397, 0.24298017990326387 },
+    { 0.94154406518302081, 0.33688985339222005 },
+    { 0.90398929312344334, 0.42755509343028208 },
+    { 0.85772861000027212, 0.51410274419322166 },
+    { 0.80320753148064494, 0.59569930449243336 },
+    { 0.74095112535495911, 0.67155895484701833 },
+    { 0.99969881869620425, 0.024541228522912288 },
+    { 0.99729045667869021, 0.073564563599667426 },
+    { 0.99247953459870997, 0.1224106751992162 },
+    { 0.98527764238894122, 0.17096188876030122 },
+    { 0.97570213003852857, 0.2191012401568698 },
+    { 0.96377606579543984, 0.26671275747489837 },
+    { 0.94952818059303667, 0.31368174039889152 },
+    { 0.93299279883473896, 0.35989503653498811 },
+    { 0.91420975570353069, 0.40524131400498986 },
+    { 0.89322430119551532, 0.44961132965460654 },
+    { 0.87008699110871146, 0.49289819222978404 },
+    { 0.84485356524970712, 0.53499761988709715 },
+    { 0.81758481315158371, 0.57580819141784534 },
+    { 0.78834642762660634, 0.61523159058062682 },
+    { 0.75720884650648457, 0.65317284295377676 },
+    { 0.724247082951467, 0.68954054473706683 },
+};
+
+static constexpr bruun_phase_leaf bruun_phase_leaves[32] = {
+    { 0.012271846303085129, 0.9999247018391445, 0.012271538285719925 },
+    { 0.036815538909255388, 0.99932238458834954, 0.036807222941358832 },
+    { 0.061359231515425647, 0.99811811290014918, 0.061320736302208578 },
+    { 0.085902924121595906, 0.996312612182778, 0.085797312344439894 },
+    { 0.11044661672776616, 0.99390697000235606, 0.11022220729388306 },
+    { 0.13499030933393641, 0.99090263542778001, 0.13458070850712617 },
+    { 0.1595340019401067, 0.98730141815785843, 0.15885814333386145 },
+    { 0.18407769454627693, 0.98310548743121629, 0.18303988795514095 },
+    { 0.20862138715244721, 0.97831737071962765, 0.20711137619221856 },
+    { 0.23316507975861744, 0.97293995220556018, 0.23105810828067111 },
+    { 0.25770877236478773, 0.96697647104485207, 0.25486565960451457 },
+    { 0.28225246497095796, 0.96043051941556579, 0.27851968938505306 },
+    { 0.30679615757712825, 0.95330604035419386, 0.30200594931922808 },
+    { 0.33133985018329848, 0.94560732538052128, 0.32531029216226293 },
+    { 0.35588354278946877, 0.93733901191257496, 0.34841868024943456 },
+    { 0.380427235395639, 0.92850608047321559, 0.37131719395183754 },
+    { 0.40497092800180928, 0.91911385169005777, 0.3939920400610481 },
+    { 0.42951462060797951, 0.90916798309052238, 0.41642956009763715 },
+    { 0.4540583132141498, 0.89867446569395382, 0.43861623853852766 },
+    { 0.47860200582032003, 0.88763962040285393, 0.46053871095824001 },
+    { 0.50314569842649026, 0.8760700941954066, 0.48218377207912272 },
+    { 0.52768939103266055, 0.86397285612158681, 0.50353838372571758 },
+    { 0.55223308363883084, 0.8513551931052652, 0.52458968267846895 },
+    { 0.57677677624500112, 0.83822470555483808, 0.54532498842204646 },
+    { 0.6013204688511713, 0.82458930278502529, 0.56573181078361312 },
+    { 0.62586416145734158, 0.81045719825259477, 0.58579785745643886 },
+    { 0.65040785406351187, 0.79583690460888357, 0.60551104140432555 },
+    { 0.67495154666968216, 0.78073722857209449, 0.62485948814238634 },
+    { 0.69949523927585233, 0.76516726562245896, 0.64383154288979139 },
+    { 0.72403893188202262, 0.74913639452345937, 0.66241577759017178 },
+    { 0.7485826244881929, 0.73265427167241282, 0.68060099779545302 },
+    { 0.77312631709436319, 0.71573082528381859, 0.69837624940897292 },
+};
+
+static inline double bruun_atan_leaf_odd(double h) {
+    const double s = h * h;
+    double p = -1.0 / 7.0;
+    p = p * s + 1.0 / 5.0;
+    p = p * s - 1.0 / 3.0;
+    p = p * s + 1.0;
+    return h * p;
+}
+
+static inline double bruun_phase_first_octant(double major, double minor, double mag) {
+    if (minor == 0.0) {
+        return 0.0;
+    }
+
+    int idx = 0;
+    int base = 0;
+    for (int level = 0; level < 5; ++level) {
+        const bruun_phase_node node = bruun_phase_nodes[base + idx];
+        const double side = minor * node.c - major * node.s;
+        idx <<= 1;
+        if (side > 0.0) {
+            idx |= 1;
+        }
+        base = (base << 1) + 1;
+    }
+
+    const bruun_phase_leaf leaf = bruun_phase_leaves[idx];
+    const double dot = major * leaf.c + minor * leaf.s;
+    const double cross = minor * leaf.c - major * leaf.s;
+    const double h = cross / (mag + dot);
+    const double delta = 2.0 * bruun_atan_leaf_odd(h);
+    return leaf.center + delta;
+}
+
+static inline double bruun_phase_atan2_mag(double y, double x, double mag) {
+    const double ax = std::fabs(x);
+    const double ay = std::fabs(y);
+    if (ax == 0.0 && ay == 0.0) {
+        return 0.0;
+    }
+
+    double alpha = 0.0;
+    if (ax >= ay) {
+        alpha = bruun_phase_first_octant(ax, ay, mag);
+    } else {
+        alpha = bruun_pio2 - bruun_phase_first_octant(ay, ax, mag);
+    }
+
+    if (x < 0.0) {
+        alpha = M_PI - alpha;
+    }
+    if (y < 0.0) {
+        alpha = -alpha;
+    }
+    if (alpha < 0.0) {
+        alpha += bruun_tau;
+    }
+    return alpha;
+}
+
+static inline float bruun_phase_atan2_mag_f32(float y, float x, float mag) {
+    const double phase = bruun_phase_atan2_mag(static_cast<double>(y),
+                                              static_cast<double>(x),
+                                              static_cast<double>(mag));
+    return static_cast<float>(phase);
+}
+
 static inline double bruun_phase_atan2(double y, double x) {
-    return std::atan2(y, x);
+    const double mag = std::sqrt(x * x + y * y);
+    return bruun_phase_atan2_mag(y, x, mag);
 }
 
 static inline float bruun_phase_atan2_f32(float y, float x) {
-    return std::atan2(y, x);
+    const float mag = std::sqrt(x * x + y * y);
+    return bruun_phase_atan2_mag_f32(y, x, mag);
 }
 
 static inline const char* simd_backend_name() {
@@ -2292,7 +2444,7 @@ public:
             const double re = work[2*m];
             const double im = -work[2*m + 1];
             const double mag = std::sqrt(re * re + im * im);
-            double phase = bruun_phase_atan2(im, re);
+            double phase = bruun_phase_atan2_mag(im, re, mag);
             if (phase < 0.0) {
                 phase += 2.0 * M_PI;
             }
@@ -2348,7 +2500,7 @@ public:
             const float re = work[2*m];
             const float im = -work[2*m + 1];
             const float mag = std::sqrt(re * re + im * im);
-            float phase = bruun_phase_atan2_f32(im, re);
+            float phase = bruun_phase_atan2_mag_f32(im, re, mag);
             if (phase < 0.0f) {
                 phase += 2.0f * static_cast<float>(M_PI);
             }
@@ -2409,6 +2561,57 @@ public:
             const int k = IDX[m];
             out[2 * m] = X[k].re;
             out[2 * m + 1] = -X[k].im;
+        }
+        inverse_residues_inplace_f32(out);
+    }
+
+    void inverse_mag_phase(const complex_t* RESTRICT X, double* RESTRICT out) const {
+        const double dc = X[0].re * std::cos(X[0].im);
+        const double ny = X[N / 2].re * std::cos(X[N / 2].im);
+        out[0] = 0.5 * (dc + ny);
+        out[1] = 0.5 * (dc - ny);
+
+        for (int m = 1; m < N / 2; ++m) {
+            const int k = IDX[m];
+            const double mag = X[k].re;
+            const double phase = X[k].im;
+            const double re = mag * std::cos(phase);
+            const double im = mag * std::sin(phase);
+            out[2*m] = re;
+            out[2*m + 1] = -im;
+        }
+        inverse_residues_inplace(out);
+    }
+
+    void inverse_mag_phase_f32(const complex_f32_t* RESTRICT X, float* RESTRICT out) const {
+        const float dc = X[0].re * std::cos(X[0].im);
+        const float ny = X[N / 2].re * std::cos(X[N / 2].im);
+        out[0] = 0.5f * (dc + ny);
+        out[1] = 0.5f * (dc - ny);
+
+        int m = 1;
+        for (; m + 3 < N / 2; m += 4) {
+            const int k0 = IDX[m];
+            const int k1 = IDX[m + 1];
+            const int k2 = IDX[m + 2];
+            const int k3 = IDX[m + 3];
+            out[2*m] = X[k0].re * std::cos(X[k0].im);
+            out[2*m + 1] = -X[k0].re * std::sin(X[k0].im);
+            out[2*m + 2] = X[k1].re * std::cos(X[k1].im);
+            out[2*m + 3] = -X[k1].re * std::sin(X[k1].im);
+            out[2*m + 4] = X[k2].re * std::cos(X[k2].im);
+            out[2*m + 5] = -X[k2].re * std::sin(X[k2].im);
+            out[2*m + 6] = X[k3].re * std::cos(X[k3].im);
+            out[2*m + 7] = -X[k3].re * std::sin(X[k3].im);
+        }
+        for (; m < N / 2; ++m) {
+            const int k = IDX[m];
+            const float mag = X[k].re;
+            const float phase = X[k].im;
+            const float re = mag * std::cos(phase);
+            const float im = mag * std::sin(phase);
+            out[2*m] = re;
+            out[2*m + 1] = -im;
         }
         inverse_residues_inplace_f32(out);
     }

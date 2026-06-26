@@ -113,6 +113,7 @@ if(BFFT_BUILD_EXAMPLES)
 
   bfft_add_cpp_executable(locality_probe examples/locality_probe.cpp)
   bfft_add_cpp_executable(cpp_api_demo examples/cpp_api_demo.cpp)
+  bfft_add_cpp_executable(atan2_benchmark examples/atan2_benchmark.cpp)
   bfft_add_c_executable(c_api_demo examples/c_api_demo.c)
 
   if(BFFT_ENABLE_PFFFT_BENCHMARK)

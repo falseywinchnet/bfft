@@ -247,6 +247,36 @@ public:
         check(bfft_inverse_f32(impl_.get(), input, output));
     }
 
+    /* Standard FFT-order polar-to-real inverse transform. */
+    void inverse_mag_phase(const complex* input, double* output) const {
+        check(bfft_inverse_mag_phase(impl_.get(), input, output));
+    }
+
+    /* Single-precision standard FFT-order polar-to-real inverse transform. */
+    void inverse_mag_phase_f32(const complex_f32* input, float* output) const {
+        check(bfft_inverse_mag_phase_f32(impl_.get(), input, output));
+    }
+
+    /* Convenience polar-to-real inverse transform. */
+    std::vector<double> inverse_mag_phase(const std::vector<complex>& input) const {
+        if (input.size() != bins()) {
+            throw error(BFFT_ERROR_INVALID_ARGUMENT);
+        }
+        std::vector<double> output(size());
+        inverse_mag_phase(input.data(), output.data());
+        return output;
+    }
+
+    /* Convenience single-precision polar-to-real inverse transform. */
+    std::vector<float> inverse_mag_phase_f32(const std::vector<complex_f32>& input) const {
+        if (input.size() != bins()) {
+            throw error(BFFT_ERROR_INVALID_ARGUMENT);
+        }
+        std::vector<float> output(size());
+        inverse_mag_phase_f32(input.data(), output.data());
+        return output;
+    }
+
     /* Convenience single-precision inverse transform. */
     std::vector<float> inverse_f32(const std::vector<complex_f32>& input) const {
         if (input.size() != bins()) {

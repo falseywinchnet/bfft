@@ -151,6 +151,30 @@ int main(void) {
         return 1;
     }
 
+    status = bfft_inverse_mag_phase(plan, mag_phase, inverse);
+    if (status != BFFT_OK) {
+        fprintf(stderr, "mag-phase inverse failed: %s\n", bfft_status_string(status));
+        return 1;
+    }
+
+    double max_mag_phase_inverse_error = 0.0;
+    for (size_t i = 0; i < n; ++i) {
+        const double error = fabs(input[i] - inverse[i]);
+        if (error > max_mag_phase_inverse_error) {
+            max_mag_phase_inverse_error = error;
+        }
+    }
+    if (max_mag_phase_inverse_error > 1e-9) {
+        fprintf(stderr, "mag-phase inverse error %g\n", max_mag_phase_inverse_error);
+        return 1;
+    }
+
+    status = bfft_inverse_mag_phase(plan, NULL, inverse);
+    if (status != BFFT_ERROR_INVALID_ARGUMENT) {
+        fprintf(stderr, "mag-phase inverse null input guard failed\n");
+        return 1;
+    }
+
     status = bfft_forward_mag_phase(NULL, input, mag_phase, work);
     if (status != BFFT_ERROR_INVALID_ARGUMENT) {
         fprintf(stderr, "mag-phase null plan guard failed\n");
@@ -241,6 +265,30 @@ int main(void) {
 
     if (max_mag_phase_error_f32 > 1e-5) {
         fprintf(stderr, "f32 mag-phase error %g\n", max_mag_phase_error_f32);
+        return 1;
+    }
+
+    status = bfft_inverse_mag_phase_f32(plan, mag_phase_f32, inverse_f32);
+    if (status != BFFT_OK) {
+        fprintf(stderr, "f32 mag-phase inverse failed: %s\n", bfft_status_string(status));
+        return 1;
+    }
+
+    double max_mag_phase_inverse_error_f32 = 0.0;
+    for (size_t i = 0; i < n; ++i) {
+        const double error = fabs((double)input_f32[i] - (double)inverse_f32[i]);
+        if (error > max_mag_phase_inverse_error_f32) {
+            max_mag_phase_inverse_error_f32 = error;
+        }
+    }
+    if (max_mag_phase_inverse_error_f32 > 1e-5) {
+        fprintf(stderr, "f32 mag-phase inverse error %g\n", max_mag_phase_inverse_error_f32);
+        return 1;
+    }
+
+    status = bfft_inverse_mag_phase_f32(plan, NULL, inverse_f32);
+    if (status != BFFT_ERROR_INVALID_ARGUMENT) {
+        fprintf(stderr, "f32 mag-phase inverse null input guard failed\n");
         return 1;
     }
 

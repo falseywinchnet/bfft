@@ -350,6 +350,28 @@ bfft_status bfft_inverse_f32(const bfft_plan* plan,
     return BFFT_OK;
 }
 
+bfft_status bfft_inverse_mag_phase(const bfft_plan* plan,
+                                   const bfft_complex* input,
+                                   double* output) {
+    bfft_status status = guard_binary(plan, input, output);
+    if (status != BFFT_OK) {
+        return status;
+    }
+    plan->impl.inverse_mag_phase(as_bruun_complex(input), output);
+    return BFFT_OK;
+}
+
+bfft_status bfft_inverse_mag_phase_f32(const bfft_plan* plan,
+                                       const bfft_complex_f32* input,
+                                       float* output) {
+    bfft_status status = guard_binary(plan, input, output);
+    if (status != BFFT_OK) {
+        return status;
+    }
+    plan->impl.inverse_mag_phase_f32(as_bruun_complex_f32(input), output);
+    return BFFT_OK;
+}
+
 bfft_status bfft_inverse_native(const bfft_plan* plan,
                                 const bfft_complex* input,
                                 double* output) {
