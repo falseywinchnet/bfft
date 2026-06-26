@@ -2665,7 +2665,34 @@ public:
         out[0] = 0.5 * (dc + ny);
         out[1] = 0.5 * (dc - ny);
 
-        for (int m = 1; m < N / 2; ++m) {
+        int m = 1;
+        for (; m + 3 < N / 2; m += 4) {
+            const int k0 = IDX[m];
+            const int k1 = IDX[m + 1];
+            const int k2 = IDX[m + 2];
+            const int k3 = IDX[m + 3];
+            double s0;
+            double c0;
+            double s1;
+            double c1;
+            double s2;
+            double c2;
+            double s3;
+            double c3;
+            bruun_table256_poly3_sincos(X[k0].im, &s0, &c0);
+            bruun_table256_poly3_sincos(X[k1].im, &s1, &c1);
+            bruun_table256_poly3_sincos(X[k2].im, &s2, &c2);
+            bruun_table256_poly3_sincos(X[k3].im, &s3, &c3);
+            out[2*m] = X[k0].re * c0;
+            out[2*m + 1] = -X[k0].re * s0;
+            out[2*m + 2] = X[k1].re * c1;
+            out[2*m + 3] = -X[k1].re * s1;
+            out[2*m + 4] = X[k2].re * c2;
+            out[2*m + 5] = -X[k2].re * s2;
+            out[2*m + 6] = X[k3].re * c3;
+            out[2*m + 7] = -X[k3].re * s3;
+        }
+        for (; m < N / 2; ++m) {
             const int k = IDX[m];
             const double mag = X[k].re;
             const double phase = X[k].im;
