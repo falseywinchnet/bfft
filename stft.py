@@ -222,6 +222,8 @@ class STFT:
         assert 1 <= hop_length <= n_fft, "hop_length must be in [1, n_fft]"
         assert n_fft % hop_length == 0, \
             "n_fft must be an integer multiple of hop_length (COLA)"
+        assert n % hop_length == 0, f"Input n={n} must divide evenly by hop_length. Try {n // hop_length * hop_length} or {(n // hop_length + 1) * hop_length}."
+
         assert n > 0, "n must be positive"
 
         if transform == "rfft":
