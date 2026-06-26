@@ -14,7 +14,7 @@ Planned objects (lowest per-call overhead for hot loops; one per thread):
     bfft.OdftPlan(N)  -- .odft(x) / .iodft(H) at a fixed size N.
 """
 
-from ._core import OdftPlan, Plan, iodft, irfft, odft, rfft
+from ._core import OdftPlan, Plan, STFTPlan, hann_window, iodft, irfft, odft, rfft
 
-__all__ = ["rfft", "irfft", "odft", "iodft", "Plan", "OdftPlan"]
+__all__ = ["rfft", "irfft", "odft", "iodft", "Plan", "OdftPlan", "STFTPlan", "hann_window"]
 __version__ = "0.1.0"

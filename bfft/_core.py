@@ -47,16 +47,33 @@ def _candidate_paths():
         yield "libbfft.dylib"
 
 
+def _has_required_symbols(lib: ctypes.CDLL) -> bool:
+    for name in ("bfft_plan_create", "bodft_plan_create", "bfft_stft_plan_create"):
+        try:
+            getattr(lib, name)
+        except AttributeError:
+            return False
+    return True
+
+
 def _load_library() -> ctypes.CDLL:
     last_err = None
     for path in _candidate_paths():
         try:
-            return ctypes.CDLL(path)
+            lib = ctypes.CDLL(path)
         except OSError as exc:  # pragma: no cover - depends on platform
             last_err = exc
+            continue
+        if _has_required_symbols(lib):
+            return lib
+        last_err = OSError(
+            f"{path} is an older BFFT library without the STFT symbols; "
+            "rebuild/install the native library or set BFFT_LIBRARY to the new one"
+        )
     raise OSError(
-        "Could not locate the BFFT native library. Build it with `pip install .` "
-        "or `make && make install`, or set BFFT_LIBRARY to the shared object. "
+        "Could not locate a compatible BFFT native library. Build it with "
+        "`pip install .` or `make && make install`, or set BFFT_LIBRARY to the "
+        "shared object. "
         f"Last error: {last_err}"
     )
 
@@ -231,6 +248,133 @@ class OdftPlan:
         out = _out_buffer(out, self.n, np.float64, "OdftPlan.iodft")
         _check(_bodft_inverse(self._plan, a.ctypes.data, out.ctypes.data),
                "bodft_inverse")
+        return out
+
+
+
+# --- short-time Fourier transform (stft.h) ---
+_bfft_stft_plan_p = ctypes.c_void_p
+_bfft_stft_plan_create = _decl("bfft_stft_plan_create", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t, _dbl_p, ctypes.c_int,
+     ctypes.POINTER(_bfft_stft_plan_p)])
+_bfft_stft_plan_destroy = _decl("bfft_stft_plan_destroy", None, [_bfft_stft_plan_p])
+_bfft_stft_plan_bins = _decl("bfft_stft_plan_bins", ctypes.c_size_t, [_bfft_stft_plan_p])
+_bfft_stft_plan_segments = _decl("bfft_stft_plan_segments", ctypes.c_size_t, [_bfft_stft_plan_p])
+_bfft_stft_plan_buffer_length = _decl("bfft_stft_plan_buffer_length", ctypes.c_size_t, [_bfft_stft_plan_p])
+_bfft_stft_hann_window = _decl("bfft_stft_hann_window", ctypes.c_int, [ctypes.c_size_t, _dbl_p])
+_bfft_stft_reset_buffer = _decl("bfft_stft_reset_buffer", ctypes.c_int, [_bfft_stft_plan_p])
+_bfft_stft_forward = _decl("bfft_stft_forward", ctypes.c_int,
+    [_bfft_stft_plan_p, _void_p, _void_p])
+_bfft_stft_inverse = _decl("bfft_stft_inverse", ctypes.c_int,
+    [_bfft_stft_plan_p, _void_p, _void_p])
+
+
+def hann_window(n_fft):
+    """Return BFFT's default STFT Hann window as a float64 NumPy array."""
+    n_fft = int(n_fft)
+    out = np.empty(n_fft, dtype=np.float64)
+    _check(_bfft_stft_hann_window(n_fft, out.ctypes.data_as(_dbl_p)),
+           "bfft_stft_hann_window")
+    return out
+
+
+class STFTPlan:
+    """Reusable BFFT-backed STFT/ISTFT plan.
+
+    Parameters
+    ----------
+    n : int
+        Real input block length. It must be positive and divisible by
+        ``hop_length``.
+    n_fft : int
+        Frame and FFT length. It must be an even power of two at least 4.
+    hop_length : int
+        Samples between adjacent frames. It must divide ``n_fft``.
+    window : array_like or None
+        Optional analysis window of length ``n_fft``. If omitted, BFFT generates
+        a Hann window. The matching MSE-optimal synthesis window is derived in
+        the native plan.
+    transform : {"rfft", "odft"}
+        Per-frame transform. ``"rfft"`` returns ``n_fft // 2 + 1`` bins;
+        ``"odft"`` returns ``n_fft // 2`` half-bin shifted bins.
+
+    Notes
+    -----
+    The inverse owns a persistent overlap-add buffer inside the plan. Repeated
+    ``istft`` calls continue the stream; call :meth:`reset_buffer` before
+    starting a fresh stream. One plan is not thread-safe because it owns scratch
+    and streaming state.
+    """
+
+    __slots__ = ("n", "n_fft", "hop_length", "n_bins", "n_segs", "buffer_length",
+                 "transform", "_plan", "_window")
+
+    def __init__(self, n=24576, n_fft=512, hop_length=128, window=None,
+                 transform="rfft"):
+        n = int(n)
+        n_fft = int(n_fft)
+        hop_length = int(hop_length)
+        t = str(transform).lower()
+        if t == "rfft":
+            kind = 0
+        elif t == "odft":
+            kind = 1
+        else:
+            raise ValueError("transform must be either 'rfft' or 'odft'")
+        if window is None:
+            w_ptr = None
+            self._window = None
+        else:
+            w = np.ascontiguousarray(window, dtype=np.float64)
+            if w.shape != (n_fft,):
+                raise ValueError(f"window must be a 1-D array of length {n_fft}")
+            self._window = w
+            w_ptr = w.ctypes.data_as(_dbl_p)
+        plan = _bfft_stft_plan_p()
+        _check(_bfft_stft_plan_create(n, n_fft, hop_length, w_ptr, kind,
+                                      ctypes.byref(plan)),
+               "bfft_stft_plan_create")
+        self._plan = plan
+        self.n = n
+        self.n_fft = n_fft
+        self.hop_length = hop_length
+        self.n_bins = int(_bfft_stft_plan_bins(plan))
+        self.n_segs = int(_bfft_stft_plan_segments(plan))
+        self.buffer_length = int(_bfft_stft_plan_buffer_length(plan))
+        self.transform = t
+
+    def __del__(self):
+        plan = getattr(self, "_plan", None)
+        if plan:
+            _bfft_stft_plan_destroy(plan)
+            self._plan = None
+
+    def reset_buffer(self):
+        """Zero the native persistent ISTFT overlap buffer."""
+        _check(_bfft_stft_reset_buffer(self._plan), "bfft_stft_reset_buffer")
+        return self
+
+    def stft(self, x):
+        """Return a ``(n_bins, n_segs)`` complex128 spectrogram."""
+        a = np.ascontiguousarray(x, dtype=np.float64)
+        if a.shape != (self.n,):
+            raise ValueError(f"x must have shape ({self.n},)")
+        out = np.empty((self.n_bins, self.n_segs), dtype=np.complex128)
+        _check(_bfft_stft_forward(self._plan, a.ctypes.data, out.ctypes.data),
+               "bfft_stft_forward")
+        return out
+
+    def istft(self, Zx):
+        """Invert a spectrogram block and return a float64 signal block.
+
+        The plan's internal overlap buffer is updated as part of this call.
+        """
+        a = np.ascontiguousarray(Zx, dtype=np.complex128)
+        if a.shape != (self.n_bins, self.n_segs):
+            raise ValueError(f"Zx must have shape ({self.n_bins}, {self.n_segs})")
+        out = np.empty(self.n_segs * self.hop_length, dtype=np.float64)
+        _check(_bfft_stft_inverse(self._plan, a.ctypes.data, out.ctypes.data),
+               "bfft_stft_inverse")
         return out
 
 

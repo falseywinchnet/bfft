@@ -191,3 +191,28 @@ factory and transform function.
 Python real FFT transforms operate on any `N >= 2` in double precision. The
 forward and inverse pairs round-trip to floating-point precision, and `rfft` and
 `irfft` match `numpy.fft` to within floating-point error.
+
+
+## Short-time transforms
+
+`bfft.STFTPlan` is a reusable native plan for streaming short-time Fourier
+transforms. It uses the same BFFT real FFT or BODFT half-bin transform for every
+frame, returns a two-dimensional NumPy `complex128` spectrogram with shape
+`(n_bins, n_segs)`, and stores the inverse overlap-add buffer inside the plan.
+Call `reset_buffer()` before starting a fresh inverse stream.
+
+```python
+import numpy as np
+import bfft
+
+tf = bfft.STFTPlan(n=24576, n_fft=512, hop_length=128)
+x = np.random.randn(tf.n)
+Zx = tf.stft(x)       # complex128, shape (tf.n_bins, tf.n_segs)
+y = tf.istft(Zx)     # float64, length tf.n_segs * tf.hop_length
+tf.reset_buffer()    # clear streaming overlap state
+```
+
+Pass `transform="odft"` to use the half-bin ODFT path. Pass a 1-D float64
+window of length `n_fft` to override the default Hann window; the native plan
+derives the matching MSE-optimal synthesis window. `bfft.hann_window(n_fft)`
+returns the exact default window used by native STFT plans.

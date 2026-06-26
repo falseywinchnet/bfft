@@ -48,7 +48,9 @@ SRC := src/bfft.cpp
 OBJ := $(BUILD_DIR)/src/bfft.o
 BODFT_SRC := src/bodft.cpp
 BODFT_OBJ := $(BUILD_DIR)/src/bodft.o
-LIB_OBJS := $(OBJ) $(BODFT_OBJ)
+STFT_SRC := src/stft.cpp
+STFT_OBJ := $(BUILD_DIR)/src/stft.o
+LIB_OBJS := $(OBJ) $(BODFT_OBJ) $(STFT_OBJ)
 STATIC_LIB := $(BUILD_DIR)/lib$(LIB_NAME).a
 SHARED_LIB := $(BUILD_DIR)/lib$(LIB_NAME).so
 PC_FILE := $(BUILD_DIR)/$(LIB_NAME).pc
@@ -90,6 +92,9 @@ $(OBJ): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp src/detail/genbru
 	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
 
 $(BODFT_OBJ): $(BODFT_SRC) include/bfft/bodft.h include/bfft/bfft.h src/detail/bodft_kernel.hpp src/detail/bruun_kernel.hpp | $(BUILD_DIR)
+	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
+
+$(STFT_OBJ): $(STFT_SRC) include/bfft/stft.h include/bfft/bfft.h include/bfft/bodft.h | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
 
 $(STATIC_LIB): $(LIB_OBJS)
@@ -200,6 +205,8 @@ install: all $(PC_FILE)
 	$(INSTALL) -m 0644 include/bfft/bfft.hpp $(DESTDIR)$(PREFIX)/include/bfft/bfft.hpp
 	$(INSTALL) -m 0644 include/bfft/bodft.h $(DESTDIR)$(PREFIX)/include/bfft/bodft.h
 	$(INSTALL) -m 0644 include/bfft/bodft.hpp $(DESTDIR)$(PREFIX)/include/bfft/bodft.hpp
+	$(INSTALL) -m 0644 include/bfft/stft.h $(DESTDIR)$(PREFIX)/include/bfft/stft.h
+	$(INSTALL) -m 0644 include/bfft/stft.hpp $(DESTDIR)$(PREFIX)/include/bfft/stft.hpp
 	$(INSTALL) -m 0644 $(STATIC_LIB) $(DESTDIR)$(PREFIX)/lib/lib$(LIB_NAME).a
 	$(INSTALL) -m 0755 $(SHARED_LIB) $(DESTDIR)$(PREFIX)/lib/lib$(LIB_NAME).so
 	$(INSTALL) -m 0644 $(PC_FILE) $(DESTDIR)$(PREFIX)/lib/pkgconfig/$(LIB_NAME).pc
@@ -209,6 +216,8 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/include/bfft/bfft.hpp
 	rm -f $(DESTDIR)$(PREFIX)/include/bfft/bodft.h
 	rm -f $(DESTDIR)$(PREFIX)/include/bfft/bodft.hpp
+	rm -f $(DESTDIR)$(PREFIX)/include/bfft/stft.h
+	rm -f $(DESTDIR)$(PREFIX)/include/bfft/stft.hpp
 	rm -f $(DESTDIR)$(PREFIX)/lib/lib$(LIB_NAME).a
 	rm -f $(DESTDIR)$(PREFIX)/lib/lib$(LIB_NAME).so
 	rm -f $(DESTDIR)$(PREFIX)/lib/pkgconfig/$(LIB_NAME).pc

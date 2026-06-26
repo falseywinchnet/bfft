@@ -93,6 +93,17 @@ ffi.cdef(
     int    bodft_forward_numba_f32(size_t plan, float* input, float* output,
                                    float* work, float* native_scratch);
     int    bodft_inverse_f32(size_t plan, float* input, float* output);
+
+    int    bfft_stft_plan_create(size_t n, size_t n_fft, size_t hop_length,
+                                  double* window, int transform, void** plan);
+    void   bfft_stft_plan_destroy(void* plan);
+    size_t bfft_stft_plan_bins(void* plan);
+    size_t bfft_stft_plan_segments(void* plan);
+    size_t bfft_stft_plan_buffer_length(void* plan);
+    int    bfft_stft_hann_window(size_t n_fft, double* output);
+    int    bfft_stft_reset_buffer(size_t plan);
+    int    bfft_stft_forward(size_t plan, double* input, double* output);
+    int    bfft_stft_inverse(size_t plan, double* input, double* output);
     """
 )
 
@@ -125,6 +136,9 @@ bfft_forward_f32 = lib.bfft_forward_f32
 bfft_inverse_f32 = lib.bfft_inverse_f32
 bodft_forward_f32 = lib.bodft_forward_numba_f32
 bodft_inverse_f32 = lib.bodft_inverse_f32
+bfft_stft_reset_buffer = lib.bfft_stft_reset_buffer
+bfft_stft_forward = lib.bfft_stft_forward
+bfft_stft_inverse = lib.bfft_stft_inverse
 
 # Register the functions with Numba so they are callable from nopython code.
 try:  # pragma: no cover - exercised only where numba is present
@@ -132,7 +146,8 @@ try:  # pragma: no cover - exercised only where numba is present
 
     for _fn in (bfft_forward, bfft_inverse, bodft_forward, bodft_inverse,
                 bfft_forward_f32, bfft_inverse_f32,
-                bodft_forward_f32, bodft_inverse_f32):
+                bodft_forward_f32, bodft_inverse_f32,
+                bfft_stft_reset_buffer, bfft_stft_forward, bfft_stft_inverse):
         _cffi_utils.register_function(_fn)
 except Exception:  # numba missing or API drift: cffi still works in object mode
     pass
@@ -193,3 +208,45 @@ def make_odft_plan(n, dtype=np.float64):
         0,
         0,
     )
+
+
+def make_stft_plan(n, n_fft=512, hop_length=128, window=None, transform="rfft"):
+    """Create a native STFT plan for use from Numba.
+
+    Returns ``(plan_addr, n_bins, n_segs, buffer_length)``. Inside ``@njit``
+    code, call ``bfft_stft_forward(plan_addr, x, Zx.view(np.float64))`` and
+    ``bfft_stft_inverse(plan_addr, Zx.view(np.float64), y)``. The inverse uses
+    the plan's internal streaming overlap buffer; call ``bfft_stft_reset_buffer``
+    to start a new stream.
+    """
+    if str(transform).lower() == "rfft":
+        kind = 0
+    elif str(transform).lower() == "odft":
+        kind = 1
+    else:
+        raise ValueError("transform must be either 'rfft' or 'odft'")
+    pp = ffi.new("void**")
+    if window is None:
+        wptr = ffi.NULL
+    else:
+        w = np.ascontiguousarray(window, dtype=np.float64)
+        if w.shape != (int(n_fft),):
+            raise ValueError(f"window must have shape ({int(n_fft)},)")
+        wptr = ffi.from_buffer(w)
+    if lib.bfft_stft_plan_create(int(n), int(n_fft), int(hop_length), wptr, kind, pp) != 0:
+        raise RuntimeError("STFT plan creation failed")
+    plan = pp[0]
+    _live_plans.append(plan)
+    return (
+        int(ffi.cast("uintptr_t", plan)),
+        int(lib.bfft_stft_plan_bins(plan)),
+        int(lib.bfft_stft_plan_segments(plan)),
+        int(lib.bfft_stft_plan_buffer_length(plan)),
+    )
+
+def stft_hann_window(n_fft):
+    """Return the native default Hann window used by STFT plans."""
+    out = np.empty(int(n_fft), dtype=np.float64)
+    if lib.bfft_stft_hann_window(int(n_fft), ffi.from_buffer(out)) != 0:
+        raise RuntimeError("bfft_stft_hann_window failed")
+    return out
