@@ -5,8 +5,8 @@
 A plan owns reusable transform metadata. Create one plan for a given transform
 size and reuse it for repeated transforms.
 
-BFFT real FFT plans accept any size `N >= 2`; power-of-two sizes use the native
-Bruun fast path, while other sizes use the generalized Bruun path. BODFT plans
+BFFT real FFT plans accept power-of-two sizes `N >= 4` and use the native
+Bruun fast path. BODFT plans
 require a power-of-two size `N >= 2`.
 
 ## Buffer ownership

@@ -153,11 +153,8 @@ def _out_buffer(out, length, dtype, what):
 
 
 def _check_rfft_n(n):
-    # Power-of-two N >= 4 uses the native Bruun kernel; any other N >= 2 uses the
-    # arbitrary-N generalized-Bruun plan (z^N-1 factorization). Both go through the
-    # same C ABI plan; the arbitrary-N plan owns its scratch (work_size == 0).
-    if n < 2:
-        raise ValueError("bfft real FFT requires a length N >= 2")
+    if not _is_pow2(n) or n < 4:
+        raise ValueError("bfft real FFT requires a power-of-two length N >= 4")
 
 
 def _check_odft_n(n):
@@ -175,8 +172,7 @@ def _check_odft_n(n):
 # --------------------------------------------------------------------------
 
 class Plan:
-    """Reusable plan for the standard real FFT at a fixed size N (any N >= 2;
-    power-of-two N uses the native kernel, other N the generalized Bruun plan).
+    """Reusable plan for the standard real FFT at a fixed power-of-two size N >= 4.
 
     ``Plan(N).rfft(x)`` and ``Plan(N).irfft(X)`` are the low-overhead, hot-loop
     counterparts of :func:`rfft` / :func:`irfft`. Not thread-safe; create one
@@ -438,7 +434,7 @@ def _cached_odft_plan(n):
 
 
 def rfft(x):
-    """Real-to-complex FFT. Drop-in for :func:`numpy.fft.rfft` (any N >= 2)."""
+    """Real-to-complex FFT for power-of-two lengths N >= 4."""
     a = _as_f64_1d(x)
     _check_rfft_n(a.shape[0])
     plan, lock = _cached_rfft_plan(a.shape[0])
@@ -451,7 +447,7 @@ def rfft(x):
 
 
 def irfft(x, n=None):
-    """Inverse real FFT. Drop-in for :func:`numpy.fft.irfft` (any N >= 2).
+    """Inverse real FFT for power-of-two lengths N >= 4.
 
     ``x`` holds ``N/2 + 1`` complex bins. ``n`` is the length of the real output;
     when omitted it defaults to ``2 * (len(x) - 1)``, matching numpy."""
