@@ -79,3 +79,13 @@ GenBruun plan owns its internal scratch.
 
 Residue transforms and residue filters are power-of-two-only. The standard,
 native-order, magnitude, and single-precision APIs route for arbitrary-N plans.
+
+
+## STFT C ABI
+
+`<bfft/stft.h>` exposes `bfft_stft_plan`, a reusable short-time transform plan.
+Create it with `bfft_stft_plan_create`, run `bfft_stft_forward`, and run
+`bfft_stft_inverse` for streaming overlap-add inversion. The inverse overlap
+buffer is owned by the plan; call `bfft_stft_reset_buffer` before a fresh stream.
+Spectrograms are row-major as `output[bin * segments + segment]`. Pass `NULL` as
+the window pointer to use the default Hann window, or pass `n_fft` finite doubles.
