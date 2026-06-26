@@ -189,6 +189,22 @@ public:
         return magnitudes;
     }
 
+    /* Standard FFT-order real-to-polar forward transform, with bins k = 0..N/2. */
+    void forward_mag_phase(const double* input, complex* output, double* work) const {
+        check(bfft_forward_mag_phase(impl_.get(), input, output, work));
+    }
+
+    /* Convenience FFT-order real-to-polar forward transform that allocates work. */
+    std::vector<complex> forward_mag_phase(const std::vector<double>& input) const {
+        if (input.size() != size()) {
+            throw error(BFFT_ERROR_INVALID_ARGUMENT);
+        }
+        std::vector<complex> output(bins());
+        std::vector<double> work(work_size());
+        forward_mag_phase(input.data(), output.data(), work.data());
+        return output;
+    }
+
     /* Single-precision standard FFT-order magnitude-only forward transform. */
     void forward_magnitude_f32(const float* input, float* magnitudes, float* work) const {
         check(bfft_forward_magnitude_f32(impl_.get(), input, magnitudes, work));
@@ -203,6 +219,22 @@ public:
         std::vector<float> work(work_size_f32());
         forward_magnitude_f32(input.data(), magnitudes.data(), work.data());
         return magnitudes;
+    }
+
+    /* Single-precision standard FFT-order real-to-polar forward transform, with bins k = 0..N/2. */
+    void forward_mag_phase_f32(const float* input, complex_f32* output, float* work) const {
+        check(bfft_forward_mag_phase_f32(impl_.get(), input, output, work));
+    }
+
+    /* Convenience single-precision FFT-order real-to-polar forward transform. */
+    std::vector<complex_f32> forward_mag_phase_f32(const std::vector<float>& input) const {
+        if (input.size() != size()) {
+            throw error(BFFT_ERROR_INVALID_ARGUMENT);
+        }
+        std::vector<complex_f32> output(bins());
+        std::vector<float> work(work_size_f32());
+        forward_mag_phase_f32(input.data(), output.data(), work.data());
+        return output;
     }
 
     /* Standard FFT-order inverse transform. */

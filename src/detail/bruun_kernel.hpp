@@ -355,6 +355,14 @@ struct complex_f32_t {
     float im;
 };
 
+static inline double bruun_phase_atan2(double y, double x) {
+    return std::atan2(y, x);
+}
+
+static inline float bruun_phase_atan2_f32(float y, float x) {
+    return std::atan2(y, x);
+}
+
 static inline const char* simd_backend_name() {
 #if BRUUN_LEVEL == 3
     return "avx512-512";
@@ -2252,6 +2260,47 @@ public:
         }
     }
 
+    // Standard FFT-order real-to-polar forward transform. The output has
+    // N / 2 + 1 bins in ordinary FFT order k = 0..N/2, not native or
+    // residue order. output[k].re is magnitude and output[k].im is phase in
+    // radians in [0, 2*pi). Interior phases use the ordinary forward DFT bin
+    // convention, so the imaginary component is -work[2*m + 1].
+    void forward_mag_phase(const double* RESTRICT input,
+                           complex_t* RESTRICT output,
+                           double* RESTRICT work) const {
+        forward_residues(input, work);
+
+        const double dc = work[0] + work[1];
+        output[0].re = std::fabs(dc);
+        if (dc < 0.0) {
+            output[0].im = M_PI;
+        } else {
+            output[0].im = 0.0;
+        }
+
+        const double ny = work[0] - work[1];
+        output[N / 2].re = std::fabs(ny);
+        if (ny < 0.0) {
+            output[N / 2].im = M_PI;
+        } else {
+            output[N / 2].im = 0.0;
+        }
+
+        const int* RESTRICT kin = KINV.data();
+        for (int k = 1; k < N / 2; ++k) {
+            const int m = kin[k];
+            const double re = work[2*m];
+            const double im = -work[2*m + 1];
+            const double mag = std::sqrt(re * re + im * im);
+            double phase = bruun_phase_atan2(im, re);
+            if (phase < 0.0) {
+                phase += 2.0 * M_PI;
+            }
+            output[k].re = mag;
+            output[k].im = phase;
+        }
+    }
+
     // Single-precision standard FFT-order magnitude-only forward transform.
     void forward_magnitude_f32(const float* RESTRICT input,
                                float* RESTRICT magnitudes,
@@ -2267,6 +2316,44 @@ public:
             const float re = work[2*m];
             const float im = work[2*m + 1];
             magnitudes[k] = std::sqrt(re * re + im * im);
+        }
+    }
+
+    // Single-precision standard FFT-order real-to-polar forward transform.
+    // Output bins are ordinary FFT order k = 0..N/2, not native or residue order.
+    void forward_mag_phase_f32(const float* RESTRICT input,
+                               complex_f32_t* RESTRICT output,
+                               float* RESTRICT work) const {
+        forward_residues_f32(input, work);
+
+        const float dc = work[0] + work[1];
+        output[0].re = std::fabs(dc);
+        if (dc < 0.0f) {
+            output[0].im = static_cast<float>(M_PI);
+        } else {
+            output[0].im = 0.0f;
+        }
+
+        const float ny = work[0] - work[1];
+        output[N / 2].re = std::fabs(ny);
+        if (ny < 0.0f) {
+            output[N / 2].im = static_cast<float>(M_PI);
+        } else {
+            output[N / 2].im = 0.0f;
+        }
+
+        const int* RESTRICT kin = KINV.data();
+        for (int k = 1; k < N / 2; ++k) {
+            const int m = kin[k];
+            const float re = work[2*m];
+            const float im = -work[2*m + 1];
+            const float mag = std::sqrt(re * re + im * im);
+            float phase = bruun_phase_atan2_f32(im, re);
+            if (phase < 0.0f) {
+                phase += 2.0f * static_cast<float>(M_PI);
+            }
+            output[k].re = mag;
+            output[k].im = phase;
         }
     }
 

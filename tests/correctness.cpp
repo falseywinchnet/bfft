@@ -84,6 +84,32 @@ double max_magnitude_error_f32(const std::vector<float>& magnitudes,
     return error;
 }
 
+double max_mag_phase_error(const std::vector<bfft::complex>& polar,
+                           const std::vector<bfft::complex>& spectrum) {
+    double error = 0.0;
+    for (std::size_t i = 0; i < polar.size(); ++i) {
+        const double re = polar[i].re * std::cos(polar[i].im);
+        const double im = polar[i].re * std::sin(polar[i].im);
+        error = std::max(error, std::fabs(re - spectrum[i].re));
+        error = std::max(error, std::fabs(im - spectrum[i].im));
+    }
+    return error;
+}
+
+double max_mag_phase_error_f32(const std::vector<bfft::complex_f32>& polar,
+                               const std::vector<bfft::complex_f32>& spectrum) {
+    double error = 0.0;
+    for (std::size_t i = 0; i < polar.size(); ++i) {
+        const double mag = static_cast<double>(polar[i].re);
+        const double phase = static_cast<double>(polar[i].im);
+        const double re = mag * std::cos(phase);
+        const double im = mag * std::sin(phase);
+        error = std::max(error, std::fabs(re - static_cast<double>(spectrum[i].re)));
+        error = std::max(error, std::fabs(im - static_cast<double>(spectrum[i].im)));
+    }
+    return error;
+}
+
 double bh7_window(std::size_t i, std::size_t n) {
     const double theta = 2.0 * pi * static_cast<double>(i) / static_cast<double>(n);
     constexpr double a0 = 0.27105140069342;
@@ -158,6 +184,41 @@ bool check_size(std::size_t n) {
     const double magnitude_error = max_magnitude_error(magnitudes, output);
     if (magnitude_error > tolerance) {
         std::fprintf(stderr, "n=%zu magnitude error %.17g exceeds %.17g\n", n, magnitude_error, tolerance);
+        return false;
+    }
+
+    std::vector<bfft::complex> polar(plan.bins());
+    plan.forward_mag_phase(input.data(), polar.data(), work.data());
+    const double mag_phase_error = max_mag_phase_error(polar, output);
+    if (mag_phase_error > tolerance) {
+        std::fprintf(stderr, "n=%zu mag-phase error %.17g exceeds %.17g\n", n, mag_phase_error, tolerance);
+        return false;
+    }
+
+    const std::vector<bfft::complex> vector_polar = plan.forward_mag_phase(input);
+    if (vector_polar.size() != plan.bins()) {
+        std::fprintf(stderr, "n=%zu vector mag-phase bin count mismatch\n", n);
+        return false;
+    }
+    const double vector_mag_phase_error = max_mag_phase_error(vector_polar, output);
+    if (vector_mag_phase_error > tolerance) {
+        std::fprintf(stderr,
+                     "n=%zu vector mag-phase error %.17g exceeds %.17g\n",
+                     n,
+                     vector_mag_phase_error,
+                     tolerance);
+        return false;
+    }
+
+    bool threw_wrong_size = false;
+    try {
+        std::vector<double> wrong_input(n + 1);
+        (void)plan.forward_mag_phase(wrong_input);
+    } catch (const bfft::error&) {
+        threw_wrong_size = true;
+    }
+    if (!threw_wrong_size) {
+        std::fprintf(stderr, "n=%zu vector mag-phase wrong size did not throw\n", n);
         return false;
     }
 
@@ -249,6 +310,41 @@ bool check_size_f32(std::size_t n) {
         return false;
     }
 
+    std::vector<bfft::complex_f32> polar(plan.bins());
+    plan.forward_mag_phase_f32(input.data(), polar.data(), work.data());
+    const double mag_phase_error = max_mag_phase_error_f32(polar, output);
+    if (mag_phase_error > tolerance) {
+        std::fprintf(stderr, "n=%zu f32 mag-phase error %.17g exceeds %.17g\n", n, mag_phase_error, tolerance);
+        return false;
+    }
+
+    const std::vector<bfft::complex_f32> vector_polar = plan.forward_mag_phase_f32(input);
+    if (vector_polar.size() != plan.bins()) {
+        std::fprintf(stderr, "n=%zu f32 vector mag-phase bin count mismatch\n", n);
+        return false;
+    }
+    const double vector_mag_phase_error = max_mag_phase_error_f32(vector_polar, output);
+    if (vector_mag_phase_error > tolerance) {
+        std::fprintf(stderr,
+                     "n=%zu f32 vector mag-phase error %.17g exceeds %.17g\n",
+                     n,
+                     vector_mag_phase_error,
+                     tolerance);
+        return false;
+    }
+
+    bool threw_wrong_size = false;
+    try {
+        std::vector<float> wrong_input(n + 1);
+        (void)plan.forward_mag_phase_f32(wrong_input);
+    } catch (const bfft::error&) {
+        threw_wrong_size = true;
+    }
+    if (!threw_wrong_size) {
+        std::fprintf(stderr, "n=%zu f32 vector mag-phase wrong size did not throw\n", n);
+        return false;
+    }
+
     const std::vector<float> vector_magnitudes = plan.forward_magnitude_f32(input);
     const double vector_magnitude_error = max_magnitude_error_f32(vector_magnitudes, output);
     if (vector_magnitude_error > tolerance) {
@@ -310,6 +406,42 @@ bool check_bh7_f32_native_sfdr(void) {
     return true;
 }
 
+bool check_dc_nyquist_phase(void) {
+    bfft::plan plan(4);
+    std::vector<double> work(plan.work_size());
+    std::vector<bfft::complex> polar(plan.bins());
+
+    std::vector<double> input = {1.0, 1.0, 1.0, 1.0};
+    plan.forward_mag_phase(input.data(), polar.data(), work.data());
+    if (polar[0].im != 0.0 || polar[2].im != 0.0) {
+        std::fprintf(stderr, "positive DC/Nyquist phase was not zero\n");
+        return false;
+    }
+
+    input = {-1.0, -1.0, -1.0, -1.0};
+    plan.forward_mag_phase(input.data(), polar.data(), work.data());
+    if (std::fabs(polar[0].im - pi) > 1e-12 || polar[2].im != 0.0) {
+        std::fprintf(stderr, "negative DC phase was not pi or zero Nyquist was not zero\n");
+        return false;
+    }
+
+    input = {-1.0, 1.0, -1.0, 1.0};
+    plan.forward_mag_phase(input.data(), polar.data(), work.data());
+    if (polar[0].im != 0.0 || std::fabs(polar[2].im - pi) > 1e-12) {
+        std::fprintf(stderr, "zero DC or negative Nyquist phase was wrong\n");
+        return false;
+    }
+
+    input = {0.0, 0.0, 0.0, 0.0};
+    plan.forward_mag_phase(input.data(), polar.data(), work.data());
+    if (polar[0].im != 0.0 || polar[2].im != 0.0) {
+        std::fprintf(stderr, "zero DC/Nyquist phase was not zero\n");
+        return false;
+    }
+
+    return true;
+}
+
 bool check_rejects_non_power_of_two(void) {
     bfft_plan* raw = nullptr;
     const bfft_status status = bfft_plan_create(15, &raw);
@@ -325,6 +457,9 @@ bool check_rejects_non_power_of_two(void) {
 
 int main(void) {
     if (!check_rejects_non_power_of_two()) {
+        return 1;
+    }
+    if (!check_dc_nyquist_phase()) {
         return 1;
     }
     const std::size_t sizes[] = {4, 8, 16, 32, 64, 128, 256, 1024};
