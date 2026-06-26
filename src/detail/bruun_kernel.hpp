@@ -2530,16 +2530,16 @@ public:
             output[N / 2].im = 0.0;
         }
 
-        // Walk Bruun residues in their native linear order. This keeps the hot
-        // work-buffer reads streaming and mirrors inverse_mag_phase's read
-        // order through the standard mag-phase buffer during round trips.
-        const int* RESTRICT standard_bin = IDX.data();
-        for (int m = 1; m < N / 2; ++m) {
-            const int k = standard_bin[m];
+        const int* RESTRICT kin = KINV.data();
+        for (int k = 1; k < N / 2; ++k) {
+            const int m = kin[k];
             const double re = work[2*m];
             const double im = -work[2*m + 1];
             const double mag = std::sqrt(re * re + im * im);
-            const double phase = bruun_phase_atan2_mag(im, re, mag);
+            double phase = bruun_phase_atan2_mag(im, re, mag);
+            if (phase < 0.0) {
+                phase += 2.0 * M_PI;
+            }
             output[k].re = mag;
             output[k].im = phase;
         }
@@ -2586,14 +2586,16 @@ public:
             output[N / 2].im = 0.0f;
         }
 
-        // Match the double path's residue-linear traversal for cache locality.
-        const int* RESTRICT standard_bin = IDX.data();
-        for (int m = 1; m < N / 2; ++m) {
-            const int k = standard_bin[m];
+        const int* RESTRICT kin = KINV.data();
+        for (int k = 1; k < N / 2; ++k) {
+            const int m = kin[k];
             const float re = work[2*m];
             const float im = -work[2*m + 1];
             const float mag = std::sqrt(re * re + im * im);
-            const float phase = bruun_phase_atan2_mag_f32(im, re, mag);
+            float phase = bruun_phase_atan2_mag_f32(im, re, mag);
+            if (phase < 0.0f) {
+                phase += 2.0f * static_cast<float>(M_PI);
+            }
             output[k].re = mag;
             output[k].im = phase;
         }
