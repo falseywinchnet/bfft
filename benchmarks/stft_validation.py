@@ -4,16 +4,15 @@ Run from a checkout after building/installing the package::
 
     python benchmarks/stft_validation.py
 
-The comparison uses the repository's reference ``stft.py`` implementation, which
-keeps the original fully-nopython algorithm. BFFT's public ``STFTPlan`` stores
-its inverse overlap buffer internally, so validation resets it before fresh
-inverse streams.
+The comparison imports the repository-root ``stft.py`` reference
+implementation. BFFT's public ``STFTPlan`` stores its inverse overlap buffer
+internally, so validation resets it before each timed fresh inverse stream.
 """
 
 from __future__ import annotations
 
-import time
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -35,19 +34,41 @@ def _bench(label, fn, repeats=5):
     return result
 
 
+def _signal_from_istft_result(result, label):
+    if result is None:
+        raise RuntimeError(f"{label} returned None; expected an array or (array, buffer)")
+    if isinstance(result, tuple):
+        if len(result) == 0:
+            raise RuntimeError(f"{label} returned an empty tuple")
+        return result[0]
+    if isinstance(result, list):
+        if len(result) == 0:
+            raise RuntimeError(f"{label} returned an empty list")
+        return result[0]
+    return result
+
+
+def _fresh_native_istft(plan, Zx):
+    plan.reset_buffer()
+    return plan.istft(Zx)
+
+
 def validate(transform="rfft", n=24576, n_fft=512, hop=128):
     rng = np.random.default_rng(1234)
     x = rng.standard_normal(n)
 
-    ref = ReferenceSTFT(n=n, n_fft=n_fft, hop_length=hop, transform=transform).compile()
+    ref = ReferenceSTFT(n=n, n_fft=n_fft, hop_length=hop, transform=transform)
     native = bfft.STFTPlan(n=n, n_fft=n_fft, hop_length=hop, transform=transform)
 
     Z_ref = _bench(f"reference {transform} stft", lambda: ref.stft(x))
     Z_native = _bench(f"native {transform} stft", lambda: native.stft(x))
 
-    native.reset_buffer()
-    xr_native = _bench(f"native {transform} istft", lambda: native.istft(Z_native))
-    xr_ref, _ = _bench(f"reference {transform} istft", lambda: ref.istft(Z_ref))
+    xr_native = _bench(
+        f"native {transform} istft",
+        lambda: _fresh_native_istft(native, Z_native),
+    )
+    xr_ref_result = _bench(f"reference {transform} istft", lambda: ref.istft(Z_ref))
+    xr_ref = _signal_from_istft_result(xr_ref_result, "reference istft")
 
     z_err = np.max(np.abs(Z_native - Z_ref))
     x_err = np.max(np.abs(xr_native - xr_ref))
