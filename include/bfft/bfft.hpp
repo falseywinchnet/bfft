@@ -189,6 +189,22 @@ public:
         return magnitudes;
     }
 
+    /* Standard FFT-order real-to-polar forward transform, with bins k = 0..N/2. */
+    void forward_mag_phase(const double* input, complex* output, double* work) const {
+        check(bfft_forward_mag_phase(impl_.get(), input, output, work));
+    }
+
+    /* Convenience FFT-order real-to-polar forward transform that allocates work. */
+    std::vector<complex> forward_mag_phase(const std::vector<double>& input) const {
+        if (input.size() != size()) {
+            throw error(BFFT_ERROR_INVALID_ARGUMENT);
+        }
+        std::vector<complex> output(bins());
+        std::vector<double> work(work_size());
+        forward_mag_phase(input.data(), output.data(), work.data());
+        return output;
+    }
+
     /* Single-precision standard FFT-order magnitude-only forward transform. */
     void forward_magnitude_f32(const float* input, float* magnitudes, float* work) const {
         check(bfft_forward_magnitude_f32(impl_.get(), input, magnitudes, work));
@@ -205,6 +221,22 @@ public:
         return magnitudes;
     }
 
+    /* Single-precision standard FFT-order real-to-polar forward transform, with bins k = 0..N/2. */
+    void forward_mag_phase_f32(const float* input, complex_f32* output, float* work) const {
+        check(bfft_forward_mag_phase_f32(impl_.get(), input, output, work));
+    }
+
+    /* Convenience single-precision FFT-order real-to-polar forward transform. */
+    std::vector<complex_f32> forward_mag_phase_f32(const std::vector<float>& input) const {
+        if (input.size() != size()) {
+            throw error(BFFT_ERROR_INVALID_ARGUMENT);
+        }
+        std::vector<complex_f32> output(bins());
+        std::vector<float> work(work_size_f32());
+        forward_mag_phase_f32(input.data(), output.data(), work.data());
+        return output;
+    }
+
     /* Standard FFT-order inverse transform. */
     void inverse(const complex* input, double* output) const {
         check(bfft_inverse(impl_.get(), input, output));
@@ -213,6 +245,36 @@ public:
     /* Single-precision standard FFT-order inverse transform. */
     void inverse_f32(const complex_f32* input, float* output) const {
         check(bfft_inverse_f32(impl_.get(), input, output));
+    }
+
+    /* Standard FFT-order polar-to-real inverse transform. */
+    void inverse_mag_phase(const complex* input, double* output) const {
+        check(bfft_inverse_mag_phase(impl_.get(), input, output));
+    }
+
+    /* Single-precision standard FFT-order polar-to-real inverse transform. */
+    void inverse_mag_phase_f32(const complex_f32* input, float* output) const {
+        check(bfft_inverse_mag_phase_f32(impl_.get(), input, output));
+    }
+
+    /* Convenience polar-to-real inverse transform. */
+    std::vector<double> inverse_mag_phase(const std::vector<complex>& input) const {
+        if (input.size() != bins()) {
+            throw error(BFFT_ERROR_INVALID_ARGUMENT);
+        }
+        std::vector<double> output(size());
+        inverse_mag_phase(input.data(), output.data());
+        return output;
+    }
+
+    /* Convenience single-precision polar-to-real inverse transform. */
+    std::vector<float> inverse_mag_phase_f32(const std::vector<complex_f32>& input) const {
+        if (input.size() != bins()) {
+            throw error(BFFT_ERROR_INVALID_ARGUMENT);
+        }
+        std::vector<float> output(size());
+        inverse_mag_phase_f32(input.data(), output.data());
+        return output;
     }
 
     /* Convenience single-precision inverse transform. */

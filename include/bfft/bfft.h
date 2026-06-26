@@ -132,6 +132,28 @@ bfft_status bfft_forward_magnitude_f32(const bfft_plan* plan,
                                        float* magnitudes,
                                        float* work);
 
+/* Standard FFT-order real-to-polar forward transform. input has N doubles,
+   output has bfft_plan_bins(plan) complex-pair values, and work has
+   bfft_plan_work_size(plan) doubles. Output is in ordinary FFT bin order
+   k = 0..N/2, not native or residue order. output[k].re is magnitude and
+   output[k].im is phase in radians in [0, 2*pi). Phase is computed from the
+   ordinary forward DFT bin convention, so the imaginary part used internally
+   for interior bins is -work[2*m + 1]. */
+bfft_status bfft_forward_mag_phase(const bfft_plan* plan,
+                                   const double* input,
+                                   bfft_complex* output,
+                                   double* work);
+
+/* Single-precision standard FFT-order real-to-polar forward transform. input
+   has N floats, output has bfft_plan_bins(plan) complex-pair values, and work
+   has bfft_plan_work_size_f32(plan) floats. Output is in ordinary FFT bin
+   order k = 0..N/2, not native or residue order. output[k].re is magnitude
+   and output[k].im is phase in radians in [0, 2*pi). */
+bfft_status bfft_forward_mag_phase_f32(const bfft_plan* plan,
+                                       const float* input,
+                                       bfft_complex_f32* output,
+                                       float* work);
+
 /* Standard FFT-order inverse transform. input has bfft_plan_bins(plan) complex
    values and output has N doubles. */
 bfft_status bfft_inverse(const bfft_plan* plan,
@@ -142,6 +164,18 @@ bfft_status bfft_inverse(const bfft_plan* plan,
 bfft_status bfft_inverse_f32(const bfft_plan* plan,
                              const bfft_complex_f32* input,
                              float* output);
+
+/* Standard FFT-order polar-to-real inverse transform. input has
+   bfft_plan_bins(plan) complex-pair values where input[k].re is magnitude and
+   input[k].im is phase in radians. output has N doubles. */
+bfft_status bfft_inverse_mag_phase(const bfft_plan* plan,
+                                   const bfft_complex* input,
+                                   double* output);
+
+/* Single-precision standard FFT-order polar-to-real inverse transform. */
+bfft_status bfft_inverse_mag_phase_f32(const bfft_plan* plan,
+                                       const bfft_complex_f32* input,
+                                       float* output);
 
 /* Native-order inverse transform. */
 bfft_status bfft_inverse_native(const bfft_plan* plan,

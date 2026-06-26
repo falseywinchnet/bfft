@@ -19,12 +19,14 @@ int main(void) {
     double* inverse = (double*)calloc(n, sizeof(double));
     double* magnitudes = (double*)calloc(bins, sizeof(double));
     bfft_complex* output = (bfft_complex*)calloc(bins, sizeof(bfft_complex));
+    bfft_complex* mag_phase = (bfft_complex*)calloc(bins, sizeof(bfft_complex));
     bfft_complex* scratch = (bfft_complex*)calloc(bfft_plan_native_scratch_size(plan), sizeof(bfft_complex));
     float* input_f32 = (float*)calloc(n, sizeof(float));
     float* work_f32 = (float*)calloc(bfft_plan_work_size_f32(plan), sizeof(float));
     float* inverse_f32 = (float*)calloc(n, sizeof(float));
     float* magnitudes_f32 = (float*)calloc(bins, sizeof(float));
     bfft_complex_f32* output_f32 = (bfft_complex_f32*)calloc(bins, sizeof(bfft_complex_f32));
+    bfft_complex_f32* mag_phase_f32 = (bfft_complex_f32*)calloc(bins, sizeof(bfft_complex_f32));
     bfft_complex_f32* native_f32 = (bfft_complex_f32*)calloc(bins, sizeof(bfft_complex_f32));
     bfft_complex_f32* standard_f32 = (bfft_complex_f32*)calloc(bins, sizeof(bfft_complex_f32));
     bfft_complex* native_output = (bfft_complex*)calloc(bins, sizeof(bfft_complex));
@@ -32,8 +34,9 @@ int main(void) {
     bfft_workspace* workspace = NULL;
 
     if (input == NULL || work == NULL || inverse == NULL || magnitudes == NULL || output == NULL ||
-        scratch == NULL || input_f32 == NULL || work_f32 == NULL || inverse_f32 == NULL ||
-        magnitudes_f32 == NULL || output_f32 == NULL || native_f32 == NULL || standard_f32 == NULL ||
+        scratch == NULL || mag_phase == NULL || input_f32 == NULL || work_f32 == NULL || inverse_f32 == NULL ||
+        magnitudes_f32 == NULL || output_f32 == NULL || mag_phase_f32 == NULL || native_f32 == NULL ||
+        standard_f32 == NULL ||
         native_output == NULL || workspace_output == NULL) {
         return 1;
     }
@@ -123,6 +126,76 @@ int main(void) {
         return 1;
     }
 
+    status = bfft_forward_mag_phase(plan, input, mag_phase, work);
+    if (status != BFFT_OK) {
+        fprintf(stderr, "mag-phase failed: %s\n", bfft_status_string(status));
+        return 1;
+    }
+
+    double max_mag_phase_error = 0.0;
+    for (size_t i = 0; i < bins; ++i) {
+        const double re = mag_phase[i].re * cos(mag_phase[i].im);
+        const double im = mag_phase[i].re * sin(mag_phase[i].im);
+        double error = fabs(re - output[i].re);
+        if (error > max_mag_phase_error) {
+            max_mag_phase_error = error;
+        }
+        error = fabs(im - output[i].im);
+        if (error > max_mag_phase_error) {
+            max_mag_phase_error = error;
+        }
+    }
+
+    if (max_mag_phase_error > 1e-9) {
+        fprintf(stderr, "mag-phase error %g\n", max_mag_phase_error);
+        return 1;
+    }
+
+    status = bfft_inverse_mag_phase(plan, mag_phase, inverse);
+    if (status != BFFT_OK) {
+        fprintf(stderr, "mag-phase inverse failed: %s\n", bfft_status_string(status));
+        return 1;
+    }
+
+    double max_mag_phase_inverse_error = 0.0;
+    for (size_t i = 0; i < n; ++i) {
+        const double error = fabs(input[i] - inverse[i]);
+        if (error > max_mag_phase_inverse_error) {
+            max_mag_phase_inverse_error = error;
+        }
+    }
+    if (max_mag_phase_inverse_error > 1e-9) {
+        fprintf(stderr, "mag-phase inverse error %g\n", max_mag_phase_inverse_error);
+        return 1;
+    }
+
+    status = bfft_inverse_mag_phase(plan, NULL, inverse);
+    if (status != BFFT_ERROR_INVALID_ARGUMENT) {
+        fprintf(stderr, "mag-phase inverse null input guard failed\n");
+        return 1;
+    }
+
+    status = bfft_forward_mag_phase(NULL, input, mag_phase, work);
+    if (status != BFFT_ERROR_INVALID_ARGUMENT) {
+        fprintf(stderr, "mag-phase null plan guard failed\n");
+        return 1;
+    }
+    status = bfft_forward_mag_phase(plan, NULL, mag_phase, work);
+    if (status != BFFT_ERROR_INVALID_ARGUMENT) {
+        fprintf(stderr, "mag-phase null input guard failed\n");
+        return 1;
+    }
+    status = bfft_forward_mag_phase(plan, input, NULL, work);
+    if (status != BFFT_ERROR_INVALID_ARGUMENT) {
+        fprintf(stderr, "mag-phase null output guard failed\n");
+        return 1;
+    }
+    status = bfft_forward_mag_phase(plan, input, mag_phase, NULL);
+    if (status != BFFT_ERROR_INVALID_ARGUMENT) {
+        fprintf(stderr, "mag-phase null work guard failed\n");
+        return 1;
+    }
+
     status = bfft_forward_f32(plan, input_f32, output_f32, work_f32, NULL);
     if (status != BFFT_OK) {
         fprintf(stderr, "f32 forward failed: %s\n", bfft_status_string(status));
@@ -165,6 +238,78 @@ int main(void) {
 
     if (max_magnitude_error_f32 > 1e-5) {
         fprintf(stderr, "f32 magnitude error %g\n", max_magnitude_error_f32);
+        return 1;
+    }
+
+    status = bfft_forward_mag_phase_f32(plan, input_f32, mag_phase_f32, work_f32);
+    if (status != BFFT_OK) {
+        fprintf(stderr, "f32 mag-phase failed: %s\n", bfft_status_string(status));
+        return 1;
+    }
+
+    double max_mag_phase_error_f32 = 0.0;
+    for (size_t i = 0; i < bins; ++i) {
+        const double mag = (double)mag_phase_f32[i].re;
+        const double phase = (double)mag_phase_f32[i].im;
+        const double re = mag * cos(phase);
+        const double im = mag * sin(phase);
+        double error = fabs(re - (double)output_f32[i].re);
+        if (error > max_mag_phase_error_f32) {
+            max_mag_phase_error_f32 = error;
+        }
+        error = fabs(im - (double)output_f32[i].im);
+        if (error > max_mag_phase_error_f32) {
+            max_mag_phase_error_f32 = error;
+        }
+    }
+
+    if (max_mag_phase_error_f32 > 1e-5) {
+        fprintf(stderr, "f32 mag-phase error %g\n", max_mag_phase_error_f32);
+        return 1;
+    }
+
+    status = bfft_inverse_mag_phase_f32(plan, mag_phase_f32, inverse_f32);
+    if (status != BFFT_OK) {
+        fprintf(stderr, "f32 mag-phase inverse failed: %s\n", bfft_status_string(status));
+        return 1;
+    }
+
+    double max_mag_phase_inverse_error_f32 = 0.0;
+    for (size_t i = 0; i < n; ++i) {
+        const double error = fabs((double)input_f32[i] - (double)inverse_f32[i]);
+        if (error > max_mag_phase_inverse_error_f32) {
+            max_mag_phase_inverse_error_f32 = error;
+        }
+    }
+    if (max_mag_phase_inverse_error_f32 > 1e-5) {
+        fprintf(stderr, "f32 mag-phase inverse error %g\n", max_mag_phase_inverse_error_f32);
+        return 1;
+    }
+
+    status = bfft_inverse_mag_phase_f32(plan, NULL, inverse_f32);
+    if (status != BFFT_ERROR_INVALID_ARGUMENT) {
+        fprintf(stderr, "f32 mag-phase inverse null input guard failed\n");
+        return 1;
+    }
+
+    status = bfft_forward_mag_phase_f32(NULL, input_f32, mag_phase_f32, work_f32);
+    if (status != BFFT_ERROR_INVALID_ARGUMENT) {
+        fprintf(stderr, "f32 mag-phase null plan guard failed\n");
+        return 1;
+    }
+    status = bfft_forward_mag_phase_f32(plan, NULL, mag_phase_f32, work_f32);
+    if (status != BFFT_ERROR_INVALID_ARGUMENT) {
+        fprintf(stderr, "f32 mag-phase null input guard failed\n");
+        return 1;
+    }
+    status = bfft_forward_mag_phase_f32(plan, input_f32, NULL, work_f32);
+    if (status != BFFT_ERROR_INVALID_ARGUMENT) {
+        fprintf(stderr, "f32 mag-phase null output guard failed\n");
+        return 1;
+    }
+    status = bfft_forward_mag_phase_f32(plan, input_f32, mag_phase_f32, NULL);
+    if (status != BFFT_ERROR_INVALID_ARGUMENT) {
+        fprintf(stderr, "f32 mag-phase null work guard failed\n");
         return 1;
     }
 
@@ -211,11 +356,13 @@ int main(void) {
     free(magnitudes);
     free(output);
     free(scratch);
+    free(mag_phase);
     free(input_f32);
     free(work_f32);
     free(inverse_f32);
     free(magnitudes_f32);
     free(output_f32);
+    free(mag_phase_f32);
     free(native_f32);
     free(standard_f32);
     free(native_output);
