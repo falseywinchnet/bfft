@@ -310,10 +310,24 @@ bool check_bh7_f32_native_sfdr(void) {
     return true;
 }
 
+bool check_rejects_non_power_of_two(void) {
+    bfft_plan* raw = nullptr;
+    const bfft_status status = bfft_plan_create(15, &raw);
+    if (status != BFFT_ERROR_INVALID_ARGUMENT || raw != nullptr) {
+        std::fprintf(stderr, "non-power-of-two plan creation was not rejected\n");
+        bfft_plan_destroy(raw);
+        return false;
+    }
+    return true;
+}
+
 } // namespace
 
 int main(void) {
-    const std::size_t sizes[] = {4, 8, 15, 16, 21, 32, 45, 64, 125, 169, 256, 1024};
+    if (!check_rejects_non_power_of_two()) {
+        return 1;
+    }
+    const std::size_t sizes[] = {4, 8, 16, 32, 64, 128, 256, 1024};
     for (std::size_t n : sizes) {
         if (!check_size(n)) {
             return 1;

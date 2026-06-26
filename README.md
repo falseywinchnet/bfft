@@ -15,9 +15,8 @@ May this work bless you, may the Kingdom come, and may His will be done.
 [![Claude](https://img.shields.io/badge/Built%20with-Claude-D97757?logo=anthropic&logoColor=white)](https://claude.com/claude-code)
 [![ChatGPT](https://img.shields.io/badge/Built%20with-ChatGPT-412991?logo=openai&logoColor=white)](https://openai.com/chatgpt)
 
-BFFT is a small C and C++ library for real Fourier transforms. Power-of-two
-sizes use a fast native Bruun kernel, and arbitrary sizes use GenBruun. It
-provides a stable C ABI, a lightweight C++ RAII wrapper, double- and
+BFFT is a small C and C++ library for power-of-two real Fourier transforms.
+It uses a fast native Bruun kernel and provides a stable C ABI, a lightweight C++ RAII wrapper, double- and
 single-precision APIs, standard FFT-order output, native-order output, and
 power-of-two residue-domain filtering utilities.
 
@@ -26,14 +25,12 @@ API is designed to be predictable for application code: create a reusable plan,
 allocate buffers from the plan metadata, run transforms, and destroy the plan
 when finished.
 
-Power-of-two lengths use the native Bruun kernel. **Arbitrary lengths** are
-supported through the generalized Bruun plan (see
-[Arbitrary-N support](#arbitrary-n-support)).
+BFFT intentionally supports power-of-two lengths only. Non-power-of-two plan
+creation returns `BFFT_ERROR_INVALID_ARGUMENT`.
 
 ## Features
 
-- Real-valued transforms at **any length `N >= 2`** (power-of-two fast path plus
-  a generalized Bruun plan for all other sizes).
+- Real-valued transforms at power-of-two lengths `N >= 4`.
 - Standard real-to-complex FFT-order output with `N / 2 + 1` bins.
 - Native spectrum order for callers that want to avoid permutation overhead.
 - Magnitude-only forward transforms for amplitude pipelines.
@@ -281,8 +278,8 @@ precision. `cffi` ships as a dependency, so you only need `numba` installed
 alongside; see
 [`documentation/python.md`](documentation/python.md#calling-bfft-from-numba-njit).
 
-Python `rfft` / `irfft` transforms operate on any length `N >= 2` in double
-precision. ODFT remains power-of-two-only.
+Python `rfft` / `irfft` transforms operate on power-of-two lengths `N >= 4` in
+double precision. ODFT remains power-of-two-only.
 
 ### Numba Support
 
@@ -321,9 +318,8 @@ drop-in compatibility.
 ### Plans
 
 A plan validates a transform size and stores reusable metadata. BFFT real FFT
-plans accept any size `N >= 2`; power-of-two sizes use the native Bruun fast
-path, while other sizes use GenBruun. BODFT plans require a power-of-two size
-`N >= 2`.
+plans accept power-of-two sizes `N >= 4` and use the native Bruun fast
+path. BODFT plans require a power-of-two size `N >= 2`.
 
 ### Buffer sizes
 
@@ -361,48 +357,14 @@ The low-level C API accepts caller-owned work buffers so transform calls can be
 used without hidden allocations. `bfft_workspace` and `bfft::workspace` provide
 aligned reusable storage for native transforms.
 
-## Arbitrary-N support
+## Power-of-two support
 
-`bfft_plan_create(n, ...)` accepts **any length `n >= 2`**. Power-of-two lengths
-(`n >= 4`) use the native Bruun kernel; every other length uses the *generalized
-Bruun* plan, which factors `z^N - 1` over the reals into Bruun pieces:
+`bfft_plan_create(n, ...)` accepts power-of-two lengths `n >= 4`. Non-power-of-two
+lengths are intentionally unsupported and return `BFFT_ERROR_INVALID_ARGUMENT`.
 
-- the 2-adic part of `N` is the existing power-of-two Bruun cascade (the same
-  SIMD butterflies), and
-- each odd prime factor `p` peels off through a condition-1 real radix-`p`
-  codelet (`z^(pM) - 1 = (z^M - 1) * prod_{j=1..(p-1)/2}(z^(2M) - 2cos(2*pi*j/p) z^M + 1)`).
+All real FFT entry points use the native Bruun kernel. Residue-domain transforms
+and residue filters are therefore available for every valid BFFT real FFT plan.
 
-This is **not Bluestein, Rader, or mixed-radix Cooley-Tukey** — it is a single
-real cyclotomic-style factorization that keeps the power-of-two Bruun core as its
-engine. Accuracy is FFT-grade for all `N`, including primes (validated at or below
-NumPy/FFTW error on odd and prime-power sizes; see
-`documentation/reports/odd_prime_accuracy.md`).
-
-```python
-import numpy as np, bfft
-x = np.random.standard_normal(1920)      # 2^7 * 3 * 5
-X = bfft.rfft(x)                          # any N, drop-in for numpy.fft.rfft
-y = bfft.irfft(X, 1920)
-```
-
-`bfft_forward` / `bfft_inverse` (and `bfft.rfft` / `bfft.irfft`) dispatch on the
-size automatically. The arbitrary-N plan owns its scratch, so for non-pow-of-two
-sizes `bfft_plan_work_size` and `bfft_plan_native_scratch_size` return `0` and the
-`work` / `native_scratch` arguments to `bfft_forward` are ignored.
-
-**Pow-of-two-only entry points.** Residue-domain transforms and residue filters
-are defined only for power-of-two plans; they return
-`BFFT_ERROR_INVALID_ARGUMENT` for arbitrary-N plans. Standard-order,
-native-order, magnitude-only, and single-precision (`*_f32`) APIs route for
-arbitrary-N plans; the current arbitrary-N native layout is the standard layout.
-The residue domain has no single canonical layout for non-pow-of-two `N`.
-
-**Performance.** Arbitrary-N forward/inverse are correct and FFT-grade today.
-Small odd radices now use the same 128-bit SIMD abstraction as the power-of-two
-kernel, with fixed codelets for radices 3, 5, 7, 11, 13, 17, and 19 plus generic
-vectorized fallbacks for larger odd primes. Non-pow-of-two sizes are still slower
-than the power-of-two path and FFTW on many cases, but the main odd-radix path is
-no longer scalar-only. The power-of-two fast path is unaffected.
 
 ## BODFT API
 

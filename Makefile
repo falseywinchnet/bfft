@@ -56,14 +56,11 @@ SHARED_LIB := $(BUILD_DIR)/lib$(LIB_NAME).so
 PC_FILE := $(BUILD_DIR)/$(LIB_NAME).pc
 BENCH := $(BUILD_DIR)/examples/benchmark
 BODFT_BENCH := $(BUILD_DIR)/examples/bodft_benchmark
-GENBRUUN_NP2_SIMD_BENCH := $(BUILD_DIR)/benchmarks/genbruun_nonpower2_simd_benchmark
-ODD_PRIME_POWER_BENCH := $(BUILD_DIR)/benchmarks/odd_prime_power_fftw_benchmark
 APPLE_BENCH := $(BUILD_DIR)/examples/apple_benchmark
 LOCALITY_PROBE := $(BUILD_DIR)/examples/locality_probe
 C_DEMO := $(BUILD_DIR)/examples/c_api_demo
 CPP_DEMO := $(BUILD_DIR)/examples/cpp_api_demo
 CORRECTNESS_TEST := $(BUILD_DIR)/tests/correctness
-GENBRUUN_TEST := $(BUILD_DIR)/tests/genbruun_correctness
 C_API_TEST := $(BUILD_DIR)/tests/api_c
 SUPPORT_PROBE := $(BUILD_DIR)/tests/bfft_fftw_support_probe
 INVARIANT_PROBE := $(BUILD_DIR)/tests/bfft_invariant_support_probe
@@ -88,7 +85,7 @@ all: $(STATIC_LIB) $(SHARED_LIB) examples
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)/src $(BUILD_DIR)/examples $(BUILD_DIR)/tests $(BUILD_DIR)/benchmarks
 
-$(OBJ): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp src/detail/genbruun_kernel.hpp | $(BUILD_DIR)
+$(OBJ): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
 
 $(BODFT_OBJ): $(BODFT_SRC) include/bfft/bodft.h include/bfft/bfft.h src/detail/bodft_kernel.hpp src/detail/bruun_kernel.hpp | $(BUILD_DIR)
@@ -112,7 +109,7 @@ $(PC_FILE): pkgconfig/bfft.pc.in | $(BUILD_DIR)
 
 examples: $(BENCH) $(BODFT_BENCH) $(APPLE_EXAMPLES) $(LOCALITY_PROBE) $(C_DEMO) $(CPP_DEMO)
 
-benchmarks: $(GENBRUUN_NP2_SIMD_BENCH) $(ODD_PRIME_POWER_BENCH)
+benchmarks: $(BENCH) $(BODFT_BENCH)
 
 asm-check: $(ASM_OUTPUTS)
 	@if [ -z "$(ASM_OUTPUTS)" ]; then echo "No x86 assembly variants supported by $(CXX)."; fi
@@ -132,13 +129,7 @@ $(BENCH): examples/benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_D
 $(BODFT_BENCH): examples/bodft_benchmark.cpp src/detail/bodft_kernel.hpp src/detail/bruun_kernel.hpp | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(LDLIBS) -o $@
 
-$(GENBRUUN_NP2_SIMD_BENCH): benchmarks/genbruun_nonpower2_simd_benchmark.cpp src/detail/genbruun_nonpower2_simd.hpp | $(BUILD_DIR)
-	mkdir -p $(dir $@)
-	$(CXX) $(CPPFLAGS) -Isrc $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(LDLIBS) -o $@
 
-$(ODD_PRIME_POWER_BENCH): benchmarks/odd_prime_power_fftw_benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
-	mkdir -p $(dir $@)
-	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
 
 $(APPLE_BENCH): examples/apple_benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) $(ACCELERATE_LIBS) -o $@
@@ -155,8 +146,6 @@ $(CPP_DEMO): examples/cpp_api_demo.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(B
 $(CORRECTNESS_TEST): tests/correctness.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
-$(GENBRUUN_TEST): tests/genbruun_correctness.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
-	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
 $(C_API_TEST): tests/api_c.c include/bfft/bfft.h $(STATIC_LIB) | $(BUILD_DIR)
 	$(CC) $(CPPFLAGS) $(INCLUDES) $(CFLAGS) $< $(STATIC_LIB) $(LDLIBS) -lstdc++ -o $@
@@ -178,9 +167,8 @@ $(LIBRARY_COMPARE_PROBE): tests/bfft_library_compare_probe.cpp include/bfft/bfft
 
 probes: $(SUPPORT_PROBE) $(INVARIANT_PROBE) $(SFDR_PROBE) $(BH7_PROBE) $(LIBRARY_COMPARE_PROBE)
 
-test: $(CORRECTNESS_TEST) $(GENBRUUN_TEST) $(C_API_TEST)
+test: $(CORRECTNESS_TEST) $(C_API_TEST)
 	$(CORRECTNESS_TEST)
-	$(GENBRUUN_TEST)
 	$(C_API_TEST)
 
 check-cxx17:
