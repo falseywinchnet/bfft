@@ -75,3 +75,24 @@ and return output vectors. Pointer overloads use caller-owned buffers.
 
 Residue filtering is power-of-two-only. Standard, native-order, magnitude, and
 single-precision transform methods route for arbitrary-N plans.
+
+
+## STFT plan
+
+Include `<bfft/stft.hpp>` to use `bfft::stft_plan`, a fixed-configuration
+short-time transform with an internal streaming inverse buffer.
+
+```cpp
+#include <bfft/stft.hpp>
+#include <vector>
+
+bfft::stft_plan tf(24576, 512, 128);
+std::vector<double> x(tf.n());
+std::vector<bfft::complex> Zx = tf.forward(x); // row-major bins x segments
+std::vector<double> y = tf.inverse(Zx);
+tf.reset_buffer();
+```
+
+Construct with `bfft::stft_odft` to use the half-bin ODFT frame transform, or
+pass a window pointer/vector of length `n_fft`. `bfft::hann_window(n_fft)`
+returns the default Hann analysis window.
