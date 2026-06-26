@@ -578,7 +578,7 @@ static inline void bruun_table256_poly3_sincos(double phase, double* s_out, doub
     constexpr double inv_step = static_cast<double>(table_size) / bruun_tau;
     constexpr double step = bruun_tau / static_cast<double>(table_size);
 
-    if (phase < 0.0 || phase >= bruun_tau) {
+    if (!(phase >= 0.0 && phase < bruun_tau)) {
         *s_out = std::sin(phase);
         *c_out = std::cos(phase);
         return;
