@@ -438,35 +438,51 @@ static constexpr bruun_phase_leaf bruun_phase_leaves[32] = {
     { 0.77312631709436319, 0.71573082528381859, 0.69837624940897292 },
 };
 
+static inline double bruun_fused_madd(double a, double b, double c) {
+#if defined(__FMA__)
+    return __builtin_fma(a, b, c);
+#else
+    return a * b + c;
+#endif
+}
+
+static inline double bruun_fused_msub(double a, double b, double c, double d) {
+#if defined(__FMA__)
+    return __builtin_fma(a, b, -(c * d));
+#else
+    return a * b - c * d;
+#endif
+}
+
 static inline double bruun_atan_leaf_odd(double h) {
     const double s = h * h;
-    double p = -1.0 / 7.0;
-    p = p * s + 1.0 / 5.0;
-    p = p * s - 1.0 / 3.0;
-    p = p * s + 1.0;
+    double p = bruun_fused_madd(-1.0 / 7.0, s, 1.0 / 5.0);
+    p = bruun_fused_madd(p, s, -1.0 / 3.0);
+    p = bruun_fused_madd(p, s, 1.0);
     return h * p;
 }
 
-static inline double bruun_phase_first_octant(double major, double minor, double mag) {
-    if (minor == 0.0) {
-        return 0.0;
+static inline int bruun_phase_child_index(int idx, int base, double major, double minor) {
+    const bruun_phase_node node = bruun_phase_nodes[base + idx];
+    const double side = bruun_fused_msub(minor, node.c, major, node.s);
+    idx <<= 1;
+    if (side > 0.0) {
+        idx |= 1;
     }
+    return idx;
+}
 
+static inline double bruun_phase_first_octant(double major, double minor, double mag) {
     int idx = 0;
-    int base = 0;
-    for (int level = 0; level < 5; ++level) {
-        const bruun_phase_node node = bruun_phase_nodes[base + idx];
-        const double side = minor * node.c - major * node.s;
-        idx <<= 1;
-        if (side > 0.0) {
-            idx |= 1;
-        }
-        base = (base << 1) + 1;
-    }
+    idx = bruun_phase_child_index(idx, 0, major, minor);
+    idx = bruun_phase_child_index(idx, 1, major, minor);
+    idx = bruun_phase_child_index(idx, 3, major, minor);
+    idx = bruun_phase_child_index(idx, 7, major, minor);
+    idx = bruun_phase_child_index(idx, 15, major, minor);
 
     const bruun_phase_leaf leaf = bruun_phase_leaves[idx];
-    const double dot = major * leaf.c + minor * leaf.s;
-    const double cross = minor * leaf.c - major * leaf.s;
+    const double dot = bruun_fused_madd(major, leaf.c, minor * leaf.s);
+    const double cross = bruun_fused_msub(minor, leaf.c, major, leaf.s);
     const double h = cross / (mag + dot);
     const double delta = 2.0 * bruun_atan_leaf_odd(h);
     return leaf.center + delta;
@@ -475,8 +491,20 @@ static inline double bruun_phase_first_octant(double major, double minor, double
 static inline double bruun_phase_atan2_mag(double y, double x, double mag) {
     const double ax = std::fabs(x);
     const double ay = std::fabs(y);
-    if (ax == 0.0 && ay == 0.0) {
+    if (ay == 0.0) {
+        if (ax == 0.0) {
+            return 0.0;
+        }
+        if (x < 0.0) {
+            return M_PI;
+        }
         return 0.0;
+    }
+    if (ax == 0.0) {
+        if (y < 0.0) {
+            return bruun_tau - bruun_pio2;
+        }
+        return bruun_pio2;
     }
 
     double alpha = 0.0;
