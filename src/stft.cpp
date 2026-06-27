@@ -44,6 +44,17 @@ bool is_power_of_two(size_t n) {
     return n > 0 && (n & (n - 1)) == 0;
 }
 
+bool add_overflows_size(size_t a, size_t b) {
+    return a > std::numeric_limits<size_t>::max() - b;
+}
+
+bool mul_overflows_size(size_t a, size_t b) {
+    if (a == 0 || b == 0) {
+        return false;
+    }
+    return a > std::numeric_limits<size_t>::max() / b;
+}
+
 int reflect_index(long long i, size_t n) {
     if (n <= 1) return 0;
     const long long period = static_cast<long long>(2 * n - 2);
@@ -134,46 +145,57 @@ bfft_status bfft_stft_plan_create(size_t n, size_t n_fft, size_t hop_length, con
     if (hop_length == 0 || hop_length > n_fft || (n_fft % hop_length) != 0) return BFFT_ERROR_INVALID_ARGUMENT;
     if ((n % hop_length) != 0) return BFFT_ERROR_INVALID_ARGUMENT;
     if (transform != BFFT_STFT_RFFT && transform != BFFT_STFT_ODFT) return BFFT_ERROR_INVALID_ARGUMENT;
+    if (n > static_cast<size_t>(std::numeric_limits<long long>::max())) return BFFT_ERROR_INVALID_ARGUMENT;
+    if (n_fft > (static_cast<size_t>(std::numeric_limits<long long>::max()) + 2) / 2) return BFFT_ERROR_INVALID_ARGUMENT;
+    if (n_fft > std::numeric_limits<int>::max()) return BFFT_ERROR_INVALID_ARGUMENT;
+    if (add_overflows_size(n, n_fft - 1)) return BFFT_ERROR_INVALID_ARGUMENT;
+    if (mul_overflows_size(n / hop_length, n_fft / 2 + 1)) return BFFT_ERROR_INVALID_ARGUMENT;
 
-    std::unique_ptr<bfft_stft_plan> p(new (std::nothrow) bfft_stft_plan());
-    if (!p) return BFFT_ERROR_ALLOCATION;
-    p->n = n;
-    p->n_fft = n_fft;
-    p->hop = hop_length;
-    p->segments = n / hop_length;
-    p->transform = transform;
-    p->window.resize(n_fft);
-    if (window) {
-        for (size_t i = 0; i < n_fft; ++i) {
-            if (!std::isfinite(window[i])) return BFFT_ERROR_INVALID_ARGUMENT;
-            p->window[i] = window[i];
+    try {
+        std::unique_ptr<bfft_stft_plan> p(new (std::nothrow) bfft_stft_plan());
+        if (!p) return BFFT_ERROR_ALLOCATION;
+        p->n = n;
+        p->n_fft = n_fft;
+        p->hop = hop_length;
+        p->segments = n / hop_length;
+        p->transform = transform;
+        p->window.resize(n_fft);
+        if (window) {
+            for (size_t i = 0; i < n_fft; ++i) {
+                if (!std::isfinite(window[i])) return BFFT_ERROR_INVALID_ARGUMENT;
+                p->window[i] = window[i];
+            }
+        } else {
+            bfft_status st = bfft_stft_hann_window(n_fft, p->window.data());
+            if (st != BFFT_OK) return st;
         }
-    } else {
-        bfft_status st = bfft_stft_hann_window(n_fft, p->window.data());
-        if (st != BFFT_OK) return st;
-    }
-    p->analysis.resize(n_fft);
-    ifftshift_copy(p->window, p->analysis);
-    if (!synthesis_window(p->window, hop_length, p->synthesis)) return BFFT_ERROR_INVALID_ARGUMENT;
+        p->analysis.resize(n_fft);
+        ifftshift_copy(p->window, p->analysis);
+        if (!synthesis_window(p->window, hop_length, p->synthesis)) return BFFT_ERROR_INVALID_ARGUMENT;
 
-    if (transform == BFFT_STFT_RFFT) {
-        bfft_status st = bfft_plan_create(n_fft, &p->rfft);
-        if (st != BFFT_OK) return st;
-        p->bins = bfft_plan_bins(p->rfft);
-        p->work.resize(bfft_plan_work_size(p->rfft));
-        p->scratch.resize(bfft_plan_native_scratch_size(p->rfft));
-    } else {
-        bfft_status st = bodft_plan_create(n_fft, &p->odft);
-        if (st != BFFT_OK) return st;
-        p->bins = bodft_plan_bins(p->odft);
+        if (transform == BFFT_STFT_RFFT) {
+            bfft_status st = bfft_plan_create(n_fft, &p->rfft);
+            if (st != BFFT_OK) return st;
+            p->bins = bfft_plan_bins(p->rfft);
+            p->work.resize(bfft_plan_work_size(p->rfft));
+            p->scratch.resize(bfft_plan_native_scratch_size(p->rfft));
+        } else {
+            bfft_status st = bodft_plan_create(n_fft, &p->odft);
+            if (st != BFFT_OK) return st;
+            p->bins = bodft_plan_bins(p->odft);
+        }
+        p->buffer.assign(n_fft - hop_length, 0.0);
+        p->xp.resize(n + n_fft - 1);
+        p->segment.resize(n_fft);
+        p->frame.resize(n_fft);
+        p->processed.resize(n_fft);
+        p->tmp_bins.resize(p->bins);
+        *out_plan = p.release();
+    } catch (const std::bad_alloc&) {
+        return BFFT_ERROR_ALLOCATION;
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
     }
-    p->buffer.assign(n_fft - hop_length, 0.0);
-    p->xp.resize(n + n_fft - 1);
-    p->segment.resize(n_fft);
-    p->frame.resize(n_fft);
-    p->processed.resize(n_fft);
-    p->tmp_bins.resize(p->bins);
-    *out_plan = p.release();
     return BFFT_OK;
 }
 
