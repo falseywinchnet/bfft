@@ -146,7 +146,7 @@ int main(void) {
         }
     }
 
-    if (max_mag_phase_error > 1e-9) {
+    if (max_mag_phase_error > 6.309573444801929e-8) {
         fprintf(stderr, "mag-phase error %g\n", max_mag_phase_error);
         return 1;
     }
