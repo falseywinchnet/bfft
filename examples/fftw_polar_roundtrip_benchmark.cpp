@@ -73,9 +73,9 @@ struct FftwDouble {
     void (*destroy)(fftw_plan) = nullptr;
     void* (*malloc_fn)(std::size_t) = nullptr;
     void (*free_fn)(void*) = nullptr;
-    const char** version = nullptr;
-    const char** cc = nullptr;
-    const char** optim = nullptr;
+    const char* version = nullptr;
+    const char* cc = nullptr;
+    const char* optim = nullptr;
     bool load() {
 #if defined(_WIN32)
         return false;
@@ -89,9 +89,9 @@ struct FftwDouble {
         destroy = reinterpret_cast<decltype(destroy)>(dlsym(lib, "fftw_destroy_plan"));
         malloc_fn = reinterpret_cast<decltype(malloc_fn)>(dlsym(lib, "fftw_malloc"));
         free_fn = reinterpret_cast<decltype(free_fn)>(dlsym(lib, "fftw_free"));
-        version = reinterpret_cast<const char**>(dlsym(lib, "fftw_version"));
-        cc = reinterpret_cast<const char**>(dlsym(lib, "fftw_cc"));
-        optim = reinterpret_cast<const char**>(dlsym(lib, "fftw_codelet_optim"));
+        version = reinterpret_cast<const char*>(dlsym(lib, "fftw_version"));
+        cc = reinterpret_cast<const char*>(dlsym(lib, "fftw_cc"));
+        optim = reinterpret_cast<const char*>(dlsym(lib, "fftw_codelet_optim"));
         return r2c && c2r && execute && destroy && malloc_fn && free_fn;
 #endif
     }
@@ -108,7 +108,7 @@ struct FftwFloat {
     fftw_plan (*c2r)(int, fftwf_complex*, float*, unsigned) = nullptr;
     void (*execute)(const fftw_plan) = nullptr; void (*destroy)(fftw_plan) = nullptr;
     void* (*malloc_fn)(std::size_t) = nullptr; void (*free_fn)(void*) = nullptr;
-    const char** version = nullptr; const char** cc = nullptr; const char** optim = nullptr;
+    const char* version = nullptr; const char* cc = nullptr; const char* optim = nullptr;
     bool load() {
 #if defined(_WIN32)
         return false;
@@ -122,9 +122,9 @@ struct FftwFloat {
         destroy = reinterpret_cast<decltype(destroy)>(dlsym(lib, "fftwf_destroy_plan"));
         malloc_fn = reinterpret_cast<decltype(malloc_fn)>(dlsym(lib, "fftwf_malloc"));
         free_fn = reinterpret_cast<decltype(free_fn)>(dlsym(lib, "fftwf_free"));
-        version = reinterpret_cast<const char**>(dlsym(lib, "fftwf_version"));
-        cc = reinterpret_cast<const char**>(dlsym(lib, "fftwf_cc"));
-        optim = reinterpret_cast<const char**>(dlsym(lib, "fftwf_codelet_optim"));
+        version = reinterpret_cast<const char*>(dlsym(lib, "fftwf_version"));
+        cc = reinterpret_cast<const char*>(dlsym(lib, "fftwf_cc"));
+        optim = reinterpret_cast<const char*>(dlsym(lib, "fftwf_codelet_optim"));
         return r2c && c2r && execute && destroy && malloc_fn && free_fn;
 #endif
     }
@@ -202,8 +202,8 @@ int main(int argc, char** argv) {
     for (std::size_t f = 0; f < frames; ++f) for (std::size_t i = 0; i < n; ++i) { double t = static_cast<double>(i) / static_cast<double>(n); double x = 0.7*std::sin(2*pi*17*t)+0.2*std::sin(2*pi*113*t+0.3)+0.05*std::cos(2*pi*331*t)+noise(rng); input[f*n+i]=x; input_f[f*n+i]=static_cast<float>(x); }
     FftwDouble fftw; bool have_fftw = fftw.load(); FftwFloat fftwf; bool have_fftwf = fftwf.load();
     std::printf("BFFT/FFTW rectangular and polar roundtrip benchmark\nbackend: %s\nBFFT version: %s\nN=%zu frames=%zu total_samples=%zu\nFFTW plan mode: %s\n", bfft::backend_name().c_str(), bfft::version_string().c_str(), n, frames, n*frames, mode);
-    std::printf("FFTW double: %s%s%s\nFFTW double version: %s\nFFTW double compiler: %s\nFFTW double codelet optim: %s\nFFTW double NEON: %s\n", have_fftw ? "found" : "not found", have_fftw ? " " : "", have_fftw ? fftw.path : "", fftw.version ? *fftw.version : "n/a", fftw.cc ? *fftw.cc : "n/a", fftw.optim ? *fftw.optim : "n/a", neon_status(fftw.optim ? *fftw.optim : nullptr));
-    std::printf("FFTW float: %s%s%s\nFFTWf version: %s\nFFTWf compiler: %s\nFFTWf codelet optim: %s\nFFTWf NEON: %s\n", have_fftwf ? "found" : "not found", have_fftwf ? " " : "", have_fftwf ? fftwf.path : "", fftwf.version ? *fftwf.version : "n/a", fftwf.cc ? *fftwf.cc : "n/a", fftwf.optim ? *fftwf.optim : "n/a", neon_status(fftwf.optim ? *fftwf.optim : nullptr));
+    std::printf("FFTW double: %s%s%s\nFFTW double version: %s\nFFTW double compiler: %s\nFFTW double codelet optim: %s\nFFTW double NEON: %s\n", have_fftw ? "found" : "not found", have_fftw ? " " : "", have_fftw ? fftw.path : "", fftw.version ? fftw.version : "n/a", fftw.cc ? fftw.cc : "n/a", fftw.optim ? fftw.optim : "n/a", neon_status(fftw.optim ? fftw.optim : nullptr));
+    std::printf("FFTW float: %s%s%s\nFFTWf version: %s\nFFTWf compiler: %s\nFFTWf codelet optim: %s\nFFTWf NEON: %s\n", have_fftwf ? "found" : "not found", have_fftwf ? " " : "", have_fftwf ? fftwf.path : "", fftwf.version ? fftwf.version : "n/a", fftwf.cc ? fftwf.cc : "n/a", fftwf.optim ? fftwf.optim : "n/a", neon_status(fftwf.optim ? fftwf.optim : nullptr));
     if (!have_fftw) std::printf("FFTW not found by dlopen; FFTW rows skipped.\n");
 
     std::vector<Row> rows; std::vector<Quality> qualities;
