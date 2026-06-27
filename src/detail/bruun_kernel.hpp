@@ -374,90 +374,20 @@ struct complex_f32_t {
     float im;
 };
 
-struct bruun_phase_node {
-    double c;
-    double s;
+template<typename T>
+struct bruun_phase_slope_leaf {
+    T center;
+    T c;
+    T s;
 };
 
-struct bruun_phase_leaf {
-    double center;
-    double c;
-    double s;
-};
+template<typename T, int Leaves, int Q>
+struct bruun_phase_slope_tables;
 
 static constexpr double bruun_tau = 2.0 * M_PI;
 static constexpr double bruun_pio2 = 0.5 * M_PI;
 
-static constexpr bruun_phase_node bruun_phase_nodes[31] = {
-    { 0.92387953251128674, 0.38268343236508978 },
-    { 0.98078528040323043, 0.19509032201612825 },
-    { 0.83146961230254524, 0.55557023301960218 },
-    { 0.99518472667219693, 0.098017140329560604 },
-    { 0.95694033573220882, 0.29028467725446233 },
-    { 0.88192126434835505, 0.47139673682599764 },
-    { 0.77301045336273699, 0.63439328416364549 },
-    { 0.99879545620517241, 0.049067674327418015 },
-    { 0.98917650996478101, 0.14673047445536175 },
-    { 0.97003125319454397, 0.24298017990326387 },
-    { 0.94154406518302081, 0.33688985339222005 },
-    { 0.90398929312344334, 0.42755509343028208 },
-    { 0.85772861000027212, 0.51410274419322166 },
-    { 0.80320753148064494, 0.59569930449243336 },
-    { 0.74095112535495911, 0.67155895484701833 },
-    { 0.99969881869620425, 0.024541228522912288 },
-    { 0.99729045667869021, 0.073564563599667426 },
-    { 0.99247953459870997, 0.1224106751992162 },
-    { 0.98527764238894122, 0.17096188876030122 },
-    { 0.97570213003852857, 0.2191012401568698 },
-    { 0.96377606579543984, 0.26671275747489837 },
-    { 0.94952818059303667, 0.31368174039889152 },
-    { 0.93299279883473896, 0.35989503653498811 },
-    { 0.91420975570353069, 0.40524131400498986 },
-    { 0.89322430119551532, 0.44961132965460654 },
-    { 0.87008699110871146, 0.49289819222978404 },
-    { 0.84485356524970712, 0.53499761988709715 },
-    { 0.81758481315158371, 0.57580819141784534 },
-    { 0.78834642762660634, 0.61523159058062682 },
-    { 0.75720884650648457, 0.65317284295377676 },
-    { 0.724247082951467, 0.68954054473706683 },
-};
-
-static constexpr bruun_phase_leaf bruun_phase_leaves[32] = {
-    { 0.012271846303085129, 0.9999247018391445, 0.012271538285719925 },
-    { 0.036815538909255388, 0.99932238458834954, 0.036807222941358832 },
-    { 0.061359231515425647, 0.99811811290014918, 0.061320736302208578 },
-    { 0.085902924121595906, 0.996312612182778, 0.085797312344439894 },
-    { 0.11044661672776616, 0.99390697000235606, 0.11022220729388306 },
-    { 0.13499030933393641, 0.99090263542778001, 0.13458070850712617 },
-    { 0.1595340019401067, 0.98730141815785843, 0.15885814333386145 },
-    { 0.18407769454627693, 0.98310548743121629, 0.18303988795514095 },
-    { 0.20862138715244721, 0.97831737071962765, 0.20711137619221856 },
-    { 0.23316507975861744, 0.97293995220556018, 0.23105810828067111 },
-    { 0.25770877236478773, 0.96697647104485207, 0.25486565960451457 },
-    { 0.28225246497095796, 0.96043051941556579, 0.27851968938505306 },
-    { 0.30679615757712825, 0.95330604035419386, 0.30200594931922808 },
-    { 0.33133985018329848, 0.94560732538052128, 0.32531029216226293 },
-    { 0.35588354278946877, 0.93733901191257496, 0.34841868024943456 },
-    { 0.380427235395639, 0.92850608047321559, 0.37131719395183754 },
-    { 0.40497092800180928, 0.91911385169005777, 0.3939920400610481 },
-    { 0.42951462060797951, 0.90916798309052238, 0.41642956009763715 },
-    { 0.4540583132141498, 0.89867446569395382, 0.43861623853852766 },
-    { 0.47860200582032003, 0.88763962040285393, 0.46053871095824001 },
-    { 0.50314569842649026, 0.8760700941954066, 0.48218377207912272 },
-    { 0.52768939103266055, 0.86397285612158681, 0.50353838372571758 },
-    { 0.55223308363883084, 0.8513551931052652, 0.52458968267846895 },
-    { 0.57677677624500112, 0.83822470555483808, 0.54532498842204646 },
-    { 0.6013204688511713, 0.82458930278502529, 0.56573181078361312 },
-    { 0.62586416145734158, 0.81045719825259477, 0.58579785745643886 },
-    { 0.65040785406351187, 0.79583690460888357, 0.60551104140432555 },
-    { 0.67495154666968216, 0.78073722857209449, 0.62485948814238634 },
-    { 0.69949523927585233, 0.76516726562245896, 0.64383154288979139 },
-    { 0.72403893188202262, 0.74913639452345937, 0.66241577759017178 },
-    { 0.7485826244881929, 0.73265427167241282, 0.68060099779545302 },
-    { 0.77312631709436319, 0.71573082528381859, 0.69837624940897292 },
-};
-
-static inline double bruun_fused_madd(double a, double b, double c) {
+static BRUUN_ALWAYS_INLINE double bruun_fused_madd(double a, double b, double c) {
 #if defined(__FMA__)
     return __builtin_fma(a, b, c);
 #else
@@ -465,7 +395,7 @@ static inline double bruun_fused_madd(double a, double b, double c) {
 #endif
 }
 
-static inline double bruun_fused_msub(double a, double b, double c, double d) {
+static BRUUN_ALWAYS_INLINE double bruun_fused_msub(double a, double b, double c, double d) {
 #if defined(__FMA__)
     return __builtin_fma(a, b, -(c * d));
 #else
@@ -473,115 +403,56 @@ static inline double bruun_fused_msub(double a, double b, double c, double d) {
 #endif
 }
 
-static inline double bruun_atan_leaf_odd(double h) {
-    const double s = h * h;
-    double p = bruun_fused_madd(-1.0 / 7.0, s, 1.0 / 5.0);
-    p = bruun_fused_madd(p, s, -1.0 / 3.0);
-    p = bruun_fused_madd(p, s, 1.0);
-    return h * p;
+static BRUUN_ALWAYS_INLINE float bruun_fused_madd(float a, float b, float c) {
+#if defined(__FMA__)
+    return __builtin_fmaf(a, b, c);
+#else
+    return a * b + c;
+#endif
 }
 
-static BRUUN_ALWAYS_INLINE double bruun_atan_leaf_cubic(double h) {
-    const double s = h * h;
-    return h * (1.0 - s * (1.0 / 3.0));
+static BRUUN_ALWAYS_INLINE float bruun_fused_msub(float a, float b, float c, float d) {
+#if defined(__FMA__)
+    return __builtin_fmaf(a, b, -(c * d));
+#else
+    return a * b - c * d;
+#endif
 }
 
-static inline int bruun_phase_child_index(int idx, int base, double major, double minor) {
-    const bruun_phase_node node = bruun_phase_nodes[base + idx];
-    const double side = bruun_fused_msub(minor, node.c, major, node.s);
-    idx <<= 1;
-    if (side > 0.0) {
-        idx |= 1;
+#include "generated/bruun_phase_slope_tables.hpp"
+
+template<typename T, int Leaves, int Q>
+static BRUUN_ALWAYS_INLINE T bruun_phase_first_octant_slope_linear(T major, T minor, T mag) {
+    using tables = bruun_phase_slope_tables<T, Leaves, Q>;
+
+    const T t = minor / major;
+    int q = static_cast<int>(t * static_cast<T>(Q));
+    if (q < 0) {
+        q = 0;
+    } else if (q > Q) {
+        q = Q;
     }
-    return idx;
-}
 
-static inline double bruun_phase_first_octant_tree32_degree7(double major, double minor, double mag) {
-    int idx = 0;
-    idx = bruun_phase_child_index(idx, 0, major, minor);
-    idx = bruun_phase_child_index(idx, 1, major, minor);
-    idx = bruun_phase_child_index(idx, 3, major, minor);
-    idx = bruun_phase_child_index(idx, 7, major, minor);
-    idx = bruun_phase_child_index(idx, 15, major, minor);
-
-    const bruun_phase_leaf leaf = bruun_phase_leaves[idx];
-    const double dot = bruun_fused_madd(major, leaf.c, minor * leaf.s);
-    const double cross = bruun_fused_msub(minor, leaf.c, major, leaf.s);
-    const double h = cross / (mag + dot);
-    const double delta = 2.0 * bruun_atan_leaf_odd(h);
-    return leaf.center + delta;
-}
-
-static BRUUN_ALWAYS_INLINE double bruun_phase_first_octant_vec5_cubic(double major, double minor, double mag) {
-    double theta = M_PI / 8.0;
-    double c = 0.92387953251128674;
-    double s = 0.38268343236508978;
-
-    const double side0 = bruun_fused_msub(minor, c, major, s);
-    const double negative0 = static_cast<double>(side0 <= 0.0);
-    const double sign0 = 1.0 - 2.0 * negative0;
-    theta = bruun_fused_madd(sign0, 0.19634954084936207, theta);
-    const double signed_sstep0 = sign0 * 0.19509032201612825;
-    const double nc0 = bruun_fused_madd(-signed_sstep0, s, c * 0.98078528040323043);
-    const double ns0 = bruun_fused_madd(signed_sstep0, c, s * 0.98078528040323043);
-    c = nc0;
-    s = ns0;
-
-    const double side1 = bruun_fused_msub(minor, c, major, s);
-    const double negative1 = static_cast<double>(side1 <= 0.0);
-    const double sign1 = 1.0 - 2.0 * negative1;
-    theta = bruun_fused_madd(sign1, 0.09817477042468103, theta);
-    const double signed_sstep1 = sign1 * 0.098017140329560604;
-    const double nc1 = bruun_fused_madd(-signed_sstep1, s, c * 0.99518472667219693);
-    const double ns1 = bruun_fused_madd(signed_sstep1, c, s * 0.99518472667219693);
-    c = nc1;
-    s = ns1;
-
-    const double side2 = bruun_fused_msub(minor, c, major, s);
-    const double negative2 = static_cast<double>(side2 <= 0.0);
-    const double sign2 = 1.0 - 2.0 * negative2;
-    theta = bruun_fused_madd(sign2, 0.04908738521234052, theta);
-    const double signed_sstep2 = sign2 * 0.049067674327418015;
-    const double nc2 = bruun_fused_madd(-signed_sstep2, s, c * 0.99879545620517241);
-    const double ns2 = bruun_fused_madd(signed_sstep2, c, s * 0.99879545620517241);
-    c = nc2;
-    s = ns2;
-
-    const double side3 = bruun_fused_msub(minor, c, major, s);
-    const double negative3 = static_cast<double>(side3 <= 0.0);
-    const double sign3 = 1.0 - 2.0 * negative3;
-    theta = bruun_fused_madd(sign3, 0.02454369260617026, theta);
-    const double signed_sstep3 = sign3 * 0.024541228522912288;
-    const double nc3 = bruun_fused_madd(-signed_sstep3, s, c * 0.99969881869620425);
-    const double ns3 = bruun_fused_madd(signed_sstep3, c, s * 0.99969881869620425);
-    c = nc3;
-    s = ns3;
-
-    const double side4 = bruun_fused_msub(minor, c, major, s);
-    const double negative4 = static_cast<double>(side4 <= 0.0);
-    const double sign4 = 1.0 - 2.0 * negative4;
-    theta = bruun_fused_madd(sign4, 0.01227184630308513, theta);
-    const double signed_sstep4 = sign4 * 0.012271538285719925;
-    const double nc4 = bruun_fused_madd(-signed_sstep4, s, c * 0.9999247018391445);
-    const double ns4 = bruun_fused_madd(signed_sstep4, c, s * 0.9999247018391445);
-    c = nc4;
-    s = ns4;
-
-    const double dot = bruun_fused_madd(major, c, minor * s);
-    const double cross = bruun_fused_msub(minor, c, major, s);
-    const double h = cross / (mag + dot);
-    const double delta = 2.0 * bruun_atan_leaf_cubic(h);
-    return theta + delta;
+    const int idx = static_cast<int>(tables::slope_to_leaf[q]);
+    const bruun_phase_slope_leaf<T> leaf = tables::leaves[idx];
+    const T dot = bruun_fused_madd(major, leaf.c, minor * leaf.s);
+    const T cross = bruun_fused_msub(minor, leaf.c, major, leaf.s);
+    const T h = cross / (mag + dot);
+    return leaf.center + static_cast<T>(2) * h;
 }
 
 static BRUUN_ALWAYS_INLINE double bruun_phase_first_octant(double major, double minor, double mag) {
-    return bruun_phase_first_octant_tree32_degree7(major, minor, mag);
+    return bruun_phase_first_octant_slope_linear<double, 256, 512>(major, minor, mag);
 }
 
-template <class FirstOctant>
-static inline double bruun_phase_atan2_core(double y, double x, double mag, FirstOctant first_octant) {
+static BRUUN_ALWAYS_INLINE float bruun_phase_first_octant_f32(float major, float minor, float mag) {
+    return bruun_phase_first_octant_slope_linear<float, 128, 512>(major, minor, mag);
+}
+
+static BRUUN_ALWAYS_INLINE double bruun_phase_atan2_mag(double y, double x, double mag) {
     const double ax = std::fabs(x);
     const double ay = std::fabs(y);
+
     if (ay == 0.0) {
         if (ax == 0.0) {
             return 0.0;
@@ -591,6 +462,7 @@ static inline double bruun_phase_atan2_core(double y, double x, double mag, Firs
         }
         return 0.0;
     }
+
     if (ax == 0.0) {
         if (y < 0.0) {
             return bruun_tau - bruun_pio2;
@@ -600,9 +472,9 @@ static inline double bruun_phase_atan2_core(double y, double x, double mag, Firs
 
     double alpha = 0.0;
     if (ax >= ay) {
-        alpha = first_octant(ax, ay, mag);
+        alpha = bruun_phase_first_octant(ax, ay, mag);
     } else {
-        alpha = bruun_pio2 - first_octant(ay, ax, mag);
+        alpha = bruun_pio2 - bruun_phase_first_octant(ay, ax, mag);
     }
 
     if (x < 0.0) {
@@ -614,129 +486,53 @@ static inline double bruun_phase_atan2_core(double y, double x, double mag, Firs
     if (alpha < 0.0) {
         alpha += bruun_tau;
     }
+
     return alpha;
 }
 
+static BRUUN_ALWAYS_INLINE float bruun_phase_atan2_mag_f32(float y, float x, float mag) {
+    const float ax = std::fabs(x);
+    const float ay = std::fabs(y);
 
-#if BRUUN_LEVEL >= 1
-static BRUUN_ALWAYS_INLINE bruun_v2 bruun_phase_first_octant_vec5_cubic_v2(bruun_v2 major,
-                                                                           bruun_v2 minor,
-                                                                           bruun_v2 mag) {
-    bruun_v2 theta = V2_SET1(M_PI / 8.0);
-    bruun_v2 c = V2_SET1(0.92387953251128674);
-    bruun_v2 s = V2_SET1(0.38268343236508978);
-    const bruun_v2 one = V2_SET1(1.0);
-    const bruun_v2 neg_one = V2_SET1(-1.0);
+    constexpr float tau = 6.2831853071795864769f;
+    constexpr float pi = 3.14159265358979323846f;
+    constexpr float pio2 = 1.57079632679489661923f;
 
-#define BRUUN_VEC5_V2_STEP(STEP, CSTEP, SSTEP) \
-    do { \
-        const bruun_v2 side = V2_MSUB(V2_MUL(minor, c), major, s); \
-        const bruun_v2 sign = V2_SELECT(V2_CMPGT(side, V2_SET1(0.0)), one, neg_one); \
-        theta = V2_ADD(theta, V2_MUL(sign, V2_SET1(STEP))); \
-        const bruun_v2 signed_sstep = V2_MUL(sign, V2_SET1(SSTEP)); \
-        const bruun_v2 nc = V2_SUB(V2_MUL(c, V2_SET1(CSTEP)), V2_MUL(s, signed_sstep)); \
-        const bruun_v2 ns = V2_ADD(V2_MUL(c, signed_sstep), V2_MUL(s, V2_SET1(CSTEP))); \
-        c = nc; \
-        s = ns; \
-    } while (false)
-
-    BRUUN_VEC5_V2_STEP(0.19634954084936207, 0.98078528040323043, 0.19509032201612825);
-    BRUUN_VEC5_V2_STEP(0.09817477042468103, 0.99518472667219693, 0.098017140329560604);
-    BRUUN_VEC5_V2_STEP(0.04908738521234052, 0.99879545620517241, 0.049067674327418015);
-    BRUUN_VEC5_V2_STEP(0.02454369260617026, 0.99969881869620425, 0.024541228522912288);
-    BRUUN_VEC5_V2_STEP(0.01227184630308513, 0.9999247018391445, 0.012271538285719925);
-#undef BRUUN_VEC5_V2_STEP
-
-    const bruun_v2 dot = V2_ADD(V2_MUL(major, c), V2_MUL(minor, s));
-    const bruun_v2 cross = V2_SUB(V2_MUL(minor, c), V2_MUL(major, s));
-    const bruun_v2 h = V2_DIV(cross, V2_ADD(mag, dot));
-    const bruun_v2 h2 = V2_MUL(h, h);
-    const bruun_v2 cubic = V2_MUL(h, V2_SUB(one, V2_MUL(h2, V2_SET1(1.0 / 3.0))));
-    return V2_ADD(theta, V2_MUL(V2_SET1(2.0), cubic));
-}
-#endif
-
-
-#if BRUUN_LEVEL >= 1
-static BRUUN_ALWAYS_INLINE void bruun_phase_atan2_mag_pair(double y0, double x0, double mag0,
-                                                           double y1, double x1, double mag1,
-                                                           double* out0, double* out1) {
-    const double ax0 = std::fabs(x0);
-    const double ay0 = std::fabs(y0);
-    const double ax1 = std::fabs(x1);
-    const double ay1 = std::fabs(y1);
-    if (ax0 == 0.0 || ay0 == 0.0 || ax1 == 0.0 || ay1 == 0.0) {
-        *out0 = bruun_phase_atan2_core(y0, x0, mag0, bruun_phase_first_octant);
-        *out1 = bruun_phase_atan2_core(y1, x1, mag1, bruun_phase_first_octant);
-        return;
+    if (ay == 0.0f) {
+        if (ax == 0.0f) {
+            return 0.0f;
+        }
+        if (x < 0.0f) {
+            return pi;
+        }
+        return 0.0f;
     }
 
-    double major0 = ax0;
-    double minor0 = ay0;
-    bool swap0 = false;
-    if (ay0 > ax0) {
-        major0 = ay0;
-        minor0 = ax0;
-        swap0 = true;
+    if (ax == 0.0f) {
+        if (y < 0.0f) {
+            return tau - pio2;
+        }
+        return pio2;
     }
 
-    double major1 = ax1;
-    double minor1 = ay1;
-    bool swap1 = false;
-    if (ay1 > ax1) {
-        major1 = ay1;
-        minor1 = ax1;
-        swap1 = true;
+    float alpha = 0.0f;
+    if (ax >= ay) {
+        alpha = bruun_phase_first_octant_f32(ax, ay, mag);
+    } else {
+        alpha = pio2 - bruun_phase_first_octant_f32(ay, ax, mag);
     }
 
-    const bruun_v2 major = V2_SETLH(major0, major1);
-    const bruun_v2 minor = V2_SETLH(minor0, minor1);
-    const bruun_v2 mag = V2_SETLH(mag0, mag1);
-    double phase_pair[2];
-    V2_ST(phase_pair, bruun_phase_first_octant_vec5_cubic_v2(major, minor, mag));
-
-    double alpha0 = phase_pair[0];
-    if (swap0) {
-        alpha0 = bruun_pio2 - alpha0;
+    if (x < 0.0f) {
+        alpha = pi - alpha;
     }
-    if (x0 < 0.0) {
-        alpha0 = M_PI - alpha0;
+    if (y < 0.0f) {
+        alpha = -alpha;
     }
-    if (y0 < 0.0) {
-        alpha0 = -alpha0;
-    }
-    if (alpha0 < 0.0) {
-        alpha0 += bruun_tau;
+    if (alpha < 0.0f) {
+        alpha += tau;
     }
 
-    double alpha1 = phase_pair[1];
-    if (swap1) {
-        alpha1 = bruun_pio2 - alpha1;
-    }
-    if (x1 < 0.0) {
-        alpha1 = M_PI - alpha1;
-    }
-    if (y1 < 0.0) {
-        alpha1 = -alpha1;
-    }
-    if (alpha1 < 0.0) {
-        alpha1 += bruun_tau;
-    }
-
-    *out0 = alpha0;
-    *out1 = alpha1;
-}
-#endif
-
-static BRUUN_ALWAYS_INLINE double bruun_phase_atan2_mag(double y, double x, double mag) {
-    return bruun_phase_atan2_core(y, x, mag, bruun_phase_first_octant);
-}
-
-static inline float bruun_phase_atan2_mag_f32(float y, float x, float mag) {
-    const double phase = bruun_phase_atan2_mag(static_cast<double>(y),
-                                              static_cast<double>(x),
-                                              static_cast<double>(mag));
-    return static_cast<float>(phase);
+    return alpha;
 }
 
 static inline double bruun_phase_atan2(double y, double x) {
@@ -2746,16 +2542,15 @@ public:
     }
 
     void convert_standard_complex_to_mag_phase(complex_t* RESTRICT output) const {
-    int k = 1;
-    for (; k < N / 2; ++k) {
-        const double re = output[k].re;
-        const double im = output[k].im;
-        const double mag = std::sqrt(re * re + im * im);
-        const double phase = bruun_phase_atan2_mag(im, re, mag);
-        output[k].re = mag;
-        output[k].im = phase;
+        for (int k = 1; k < N / 2; ++k) {
+            const double re = output[k].re;
+            const double im = output[k].im;
+            const double mag = std::sqrt(re * re + im * im);
+            const double phase = bruun_phase_atan2_mag(im, re, mag);
+            output[k].re = mag;
+            output[k].im = phase;
+        }
     }
-}
 
     void convert_standard_complex_to_mag_phase_f32(complex_f32_t* RESTRICT output) const {
         int k = 1;

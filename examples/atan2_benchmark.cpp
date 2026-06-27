@@ -1,6 +1,5 @@
 #include "../src/detail/bruun_kernel.hpp"
 
-#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstdio>
@@ -18,6 +17,7 @@ struct sample {
     double x;
     double y;
     double mag;
+    double phase;
 };
 
 double normalize_phase(double phase) {
@@ -38,7 +38,7 @@ std::vector<sample> make_samples(std::size_t count) {
     std::vector<sample> samples(count);
     std::mt19937_64 rng(20260626);
     std::uniform_real_distribution<double> radius_dist(-12.0, 12.0);
-    std::uniform_real_distribution<double> angle_dist(-pi, pi);
+    std::uniform_real_distribution<double> angle_dist(0.0, tau);
 
     for (sample& value : samples) {
         const double radius = std::exp(radius_dist(rng));
@@ -46,6 +46,7 @@ std::vector<sample> make_samples(std::size_t count) {
         value.x = radius * std::cos(angle);
         value.y = radius * std::sin(angle);
         value.mag = radius;
+        value.phase = angle;
     }
     return samples;
 }
@@ -56,26 +57,6 @@ double time_loop(const std::vector<sample>& samples, Func func, double& sink) {
     double total = 0.0;
     for (const sample& value : samples) {
         total += static_cast<double>(func(value));
-    }
-    const auto stop = std::chrono::steady_clock::now();
-    sink += total;
-    return std::chrono::duration<double>(stop - start).count();
-}
-
-double time_vec5_pair_loop(const std::vector<sample>& samples, double& sink) {
-    const auto start = std::chrono::steady_clock::now();
-    double total = 0.0;
-    std::size_t i = 0;
-    for (; i + 1 < samples.size(); i += 2) {
-        double phase0;
-        double phase1;
-        bruun::bruun_phase_atan2_mag_pair(samples[i].y, samples[i].x, samples[i].mag,
-                                          samples[i + 1].y, samples[i + 1].x, samples[i + 1].mag,
-                                          &phase0, &phase1);
-        total += phase0 + phase1;
-    }
-    for (; i < samples.size(); ++i) {
-        total += bruun::bruun_phase_atan2_mag(samples[i].y, samples[i].x, samples[i].mag);
     }
     const auto stop = std::chrono::steady_clock::now();
     sink += total;
@@ -97,12 +78,9 @@ int main(int argc, char** argv) {
         return normalize_phase(std::atan2(value.y, value.x));
     }, sink);
 
-    const double bfft_tree_double_seconds = time_loop(samples, [](const sample& value) {
-        return bruun::bruun_phase_atan2_core(value.y, value.x, value.mag,
-                                             bruun::bruun_phase_first_octant_tree32_degree7);
+    const double bfft_double_seconds = time_loop(samples, [](const sample& value) {
+        return bruun::bruun_phase_atan2_mag(value.y, value.x, value.mag);
     }, sink);
-
-    const double bfft_vec_double_seconds = time_vec5_pair_loop(samples, sink);
 
     const double std_float_seconds = time_loop(samples, [](const sample& value) {
         const float y = static_cast<float>(value.y);
@@ -110,13 +88,7 @@ int main(int argc, char** argv) {
         return normalize_phase_f32(std::atan2(y, x));
     }, sink);
 
-    const double bfft_tree_float_seconds = time_loop(samples, [](const sample& value) {
-        const double phase = bruun::bruun_phase_atan2_core(value.y, value.x, value.mag,
-                                                          bruun::bruun_phase_first_octant_tree32_degree7);
-        return static_cast<float>(phase);
-    }, sink);
-
-    const double bfft_vec_float_seconds = time_loop(samples, [](const sample& value) {
+    const double bfft_float_seconds = time_loop(samples, [](const sample& value) {
         const float y = static_cast<float>(value.y);
         const float x = static_cast<float>(value.x);
         const float mag = static_cast<float>(value.mag);
@@ -124,26 +96,23 @@ int main(int argc, char** argv) {
     }, sink);
 
     const double std_sincos_seconds = time_loop(samples, [](const sample& value) {
-        return std::sin(value.x) + std::cos(value.x);
+        return std::sin(value.phase) + std::cos(value.phase);
     }, sink);
 
     const double bfft_sincos_seconds = time_loop(samples, [](const sample& value) {
         double s_value;
         double c_value;
-        double phase = std::fmod(std::fabs(value.x), tau);
-        bruun::bruun_table256_poly3_sincos(phase, &s_value, &c_value);
+        bruun::bruun_table256_poly3_sincos(value.phase, &s_value, &c_value);
         return s_value + c_value;
     }, sink);
 
     const double scale = static_cast<double>(count) / 1000000.0;
     std::printf("samples=%zu sink=%.17g\n", count, sink);
-    std::printf("std::atan2 double: %.6f s, %.3f Mphase/s\n", std_double_seconds, scale / std_double_seconds);
-    std::printf("bfft tree32 double: %.6f s, %.3f Mphase/s\n", bfft_tree_double_seconds, scale / bfft_tree_double_seconds);
-    std::printf("bfft vec5 pair    : %.6f s, %.3f Mphase/s\n", bfft_vec_double_seconds, scale / bfft_vec_double_seconds);
-    std::printf("std::atan2 float : %.6f s, %.3f Mphase/s\n", std_float_seconds, scale / std_float_seconds);
-    std::printf("bfft tree32 float : %.6f s, %.3f Mphase/s\n", bfft_tree_float_seconds, scale / bfft_tree_float_seconds);
-    std::printf("bfft vec5 float   : %.6f s, %.3f Mphase/s\n", bfft_vec_float_seconds, scale / bfft_vec_float_seconds);
-    std::printf("std sin+cos       : %.6f s, %.3f Mpair/s\n", std_sincos_seconds, scale / std_sincos_seconds);
-    std::printf("bfft table sincos : %.6f s, %.3f Mpair/s\n", bfft_sincos_seconds, scale / bfft_sincos_seconds);
+    std::printf("std::atan2 double          : %.6f s, %.3f Mphase/s\n", std_double_seconds, scale / std_double_seconds);
+    std::printf("bfft slope256 linear double: %.6f s, %.3f Mphase/s\n", bfft_double_seconds, scale / bfft_double_seconds);
+    std::printf("std::atan2 float           : %.6f s, %.3f Mphase/s\n", std_float_seconds, scale / std_float_seconds);
+    std::printf("bfft slope128 linear float : %.6f s, %.3f Mphase/s\n", bfft_float_seconds, scale / bfft_float_seconds);
+    std::printf("std sin+cos                : %.6f s, %.3f Mpair/s\n", std_sincos_seconds, scale / std_sincos_seconds);
+    std::printf("bfft table sincos          : %.6f s, %.3f Mpair/s\n", bfft_sincos_seconds, scale / bfft_sincos_seconds);
     return 0;
 }

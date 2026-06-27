@@ -1,4 +1,5 @@
 #include <bfft/bfft.hpp>
+#include "../src/detail/bruun_kernel.hpp"
 
 #include <cmath>
 #include <cstdio>
@@ -503,6 +504,80 @@ bool check_dc_nyquist_phase(void) {
     return true;
 }
 
+
+bool check_slope_phase_accuracy(void) {
+    constexpr double target_rad = 6.309573444801929e-8;
+    double max_double_error = 0.0;
+    double max_float_error = 0.0;
+    double float_error_sum_sq = 0.0;
+    std::size_t float_count = 0;
+
+    for (int i = 0; i <= 100000; ++i) {
+        const double theta = (0.5 * pi) * static_cast<double>(i) / 100000.0;
+        const double x = std::cos(theta);
+        const double y = std::sin(theta);
+        const double phase = bruun::bruun_phase_atan2_mag(y, x, 1.0);
+        max_double_error = std::max(max_double_error, std::fabs(phase - theta));
+
+        const float xf = static_cast<float>(x);
+        const float yf = static_cast<float>(y);
+        const float magf = std::sqrt(xf * xf + yf * yf);
+        const float phasef = bruun::bruun_phase_atan2_mag_f32(yf, xf, magf);
+        const float reff = std::atan2(yf, xf);
+        const double ferr = std::fabs(static_cast<double>(phasef - reff));
+        max_float_error = std::max(max_float_error, ferr);
+        float_error_sum_sq += ferr * ferr;
+        ++float_count;
+    }
+
+    std::mt19937_64 rng(20260627);
+    std::uniform_real_distribution<double> angle_dist(-pi, pi);
+    std::uniform_real_distribution<double> radius_dist(-12.0, 12.0);
+    for (int i = 0; i < 100000; ++i) {
+        const double theta = angle_dist(rng);
+        const double radius = std::exp(radius_dist(rng));
+        const double x = radius * std::cos(theta);
+        const double y = radius * std::sin(theta);
+        double ref = std::atan2(y, x);
+        if (ref < 0.0) {
+            ref += 2.0 * pi;
+        }
+        const double phase = bruun::bruun_phase_atan2_mag(y, x, radius);
+        double err = std::fabs(phase - ref);
+        err = std::min(err, std::fabs(err - 2.0 * pi));
+        max_double_error = std::max(max_double_error, err);
+
+        const float xf = static_cast<float>(x);
+        const float yf = static_cast<float>(y);
+        const float magf = std::sqrt(xf * xf + yf * yf);
+        float reff = std::atan2(yf, xf);
+        if (reff < 0.0f) {
+            reff += static_cast<float>(2.0 * pi);
+        }
+        const float phasef = bruun::bruun_phase_atan2_mag_f32(yf, xf, magf);
+        double ferr = std::fabs(static_cast<double>(phasef - reff));
+        ferr = std::min(ferr, std::fabs(ferr - 2.0 * pi));
+        max_float_error = std::max(max_float_error, ferr);
+        float_error_sum_sq += ferr * ferr;
+        ++float_count;
+    }
+
+    const double float_rms = std::sqrt(float_error_sum_sq / static_cast<double>(float_count));
+    std::printf("phase slope accuracy: double max %.17g, f32 max %.17g, f32 rms %.17g\n",
+                max_double_error,
+                max_float_error,
+                float_rms);
+
+    if (max_double_error > target_rad) {
+        std::fprintf(stderr,
+                     "double slope256 linear Q512 phase error %.17g exceeds %.17g\n",
+                     max_double_error,
+                     target_rad);
+        return false;
+    }
+    return true;
+}
+
 bool check_rejects_non_power_of_two(void) {
     bfft_plan* raw = nullptr;
     const bfft_status status = bfft_plan_create(15, &raw);
@@ -521,6 +596,9 @@ int main(void) {
         return 1;
     }
     if (!check_dc_nyquist_phase()) {
+        return 1;
+    }
+    if (!check_slope_phase_accuracy()) {
         return 1;
     }
     const std::size_t sizes[] = {4, 8, 16, 32, 64, 128, 256, 1024};
