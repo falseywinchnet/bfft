@@ -12,7 +12,6 @@
 // backend.
 
 #include <algorithm>
-#include <array>
 #include <cassert>
 #include <cmath>
 #include <cstdint>
@@ -550,25 +549,7 @@ struct bruun_sincos_sample {
     double c;
 };
 
-template<int K>
-struct bruun_sincos_table {
-    static_assert((K & (K - 1)) == 0, "K must be a power of two");
-
-    std::array<bruun_sincos_sample, K> value{};
-
-    bruun_sincos_table() {
-        for (int i = 0; i < K; ++i) {
-            const double phase = bruun_tau * static_cast<double>(i) / static_cast<double>(K);
-            value[static_cast<std::size_t>(i)].s = std::sin(phase);
-            value[static_cast<std::size_t>(i)].c = std::cos(phase);
-        }
-    }
-
-    static const bruun_sincos_table& get() {
-        static const bruun_sincos_table table;
-        return table;
-    }
-};
+#include "generated/bruun_sincos_table256.hpp"
 
 // Fast phase -> sin/cos for the mag-phase inverse hot loop. The inverse of
 // BFFT's own forward_mag_phase stores phases in [0, 2*pi), so the common round
@@ -595,7 +576,7 @@ static inline void bruun_table256_poly3_sincos(double phase, double* s_out, doub
     const double sr = r * (1.0 - r2 * (1.0 / 6.0));
     const double cr = 1.0 - r2 * 0.5;
 
-    const bruun_sincos_sample sample = bruun_sincos_table<table_size>::get().value[idx];
+    const bruun_sincos_sample sample = bruun_sincos_table256[idx];
     *c_out = sample.c * cr - sample.s * sr;
     *s_out = sample.s * cr + sample.c * sr;
 }
