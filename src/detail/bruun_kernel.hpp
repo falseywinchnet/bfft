@@ -59,6 +59,7 @@ typedef __m128d bruun_v2;
 #  define V2_ADD(a, b)    _mm_add_pd((a), (b))
 #  define V2_SUB(a, b)    _mm_sub_pd((a), (b))
 #  define V2_MUL(a, b)    _mm_mul_pd((a), (b))
+#  define V2_DIV(a, b)    _mm_div_pd((a), (b))
 #  define V2_MADD(a, b, c) V2_ADD((a), V2_MUL((b), (c)))
 #  define V2_MSUB(a, b, c) V2_SUB((a), V2_MUL((b), (c)))
 #  define V2_SET1(x)      _mm_set1_pd(x)
@@ -68,6 +69,8 @@ typedef __m128d bruun_v2;
 #  define V2_DUP0(a)      _mm_unpacklo_pd((a), (a))
 #  define V2_DUP1(a)      _mm_unpackhi_pd((a), (a))
 #  define V2_NEGHI(a)     _mm_xor_pd((a), _mm_set_pd(-0.0, 0.0))
+#  define V2_CMPGT(a, b)   _mm_cmpgt_pd((a), (b))
+#  define V2_SELECT(m, t, f) _mm_or_pd(_mm_and_pd((m), (t)), _mm_andnot_pd((m), (f)))
 #elif defined(BRUUN_NEON_128)
 typedef float64x2_t bruun_v2;
 #  define V2_LD(p)        vld1q_f64(p)
@@ -75,6 +78,7 @@ typedef float64x2_t bruun_v2;
 #  define V2_ADD(a, b)    vaddq_f64((a), (b))
 #  define V2_SUB(a, b)    vsubq_f64((a), (b))
 #  define V2_MUL(a, b)    vmulq_f64((a), (b))
+#  define V2_DIV(a, b)    vdivq_f64((a), (b))
 #  define V2_MADD(a, b, c) vfmaq_f64((a), (b), (c))
 #  define V2_MSUB(a, b, c) vfmsq_f64((a), (b), (c))
 #  define V2_SET1(x)      vdupq_n_f64(x)
@@ -88,6 +92,14 @@ static inline float64x2_t bruun_neghi(float64x2_t a) {
     return vreinterpretq_f64_u64(veorq_u64(vreinterpretq_u64_f64(a), m));
 }
 #  define V2_NEGHI(a)     bruun_neghi(a)
+static inline float64x2_t bruun_v2_cmpgt(float64x2_t a, float64x2_t b) {
+    return vreinterpretq_f64_u64(vcgtq_f64(a, b));
+}
+static inline float64x2_t bruun_v2_select(float64x2_t m, float64x2_t t, float64x2_t f) {
+    return vbslq_f64(vreinterpretq_u64_f64(m), t, f);
+}
+#  define V2_CMPGT(a, b)   bruun_v2_cmpgt((a), (b))
+#  define V2_SELECT(m, t, f) bruun_v2_select((m), (t), (f))
 #endif
 
 // 4-lane float vector primitive for internal float32 helper loops.
@@ -149,6 +161,12 @@ namespace bruun {
 #define BRUUN_ASSUME_ALIGNED(ptr, bytes) __builtin_assume_aligned((ptr), (bytes))
 #else
 #define BRUUN_ASSUME_ALIGNED(ptr, bytes) (ptr)
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+#define BRUUN_ALWAYS_INLINE inline __attribute__((always_inline))
+#else
+#define BRUUN_ALWAYS_INLINE inline
 #endif
 
 static constexpr std::size_t bruun_cache_alignment = 64;
@@ -463,6 +481,11 @@ static inline double bruun_atan_leaf_odd(double h) {
     return h * p;
 }
 
+static BRUUN_ALWAYS_INLINE double bruun_atan_leaf_cubic(double h) {
+    const double s = h * h;
+    return h * (1.0 - s * (1.0 / 3.0));
+}
+
 static inline int bruun_phase_child_index(int idx, int base, double major, double minor) {
     const bruun_phase_node node = bruun_phase_nodes[base + idx];
     const double side = bruun_fused_msub(minor, node.c, major, node.s);
@@ -473,7 +496,7 @@ static inline int bruun_phase_child_index(int idx, int base, double major, doubl
     return idx;
 }
 
-static inline double bruun_phase_first_octant(double major, double minor, double mag) {
+static inline double bruun_phase_first_octant_tree32_degree7(double major, double minor, double mag) {
     int idx = 0;
     idx = bruun_phase_child_index(idx, 0, major, minor);
     idx = bruun_phase_child_index(idx, 1, major, minor);
@@ -489,7 +512,74 @@ static inline double bruun_phase_first_octant(double major, double minor, double
     return leaf.center + delta;
 }
 
-static inline double bruun_phase_atan2_mag(double y, double x, double mag) {
+static BRUUN_ALWAYS_INLINE double bruun_phase_first_octant_vec5_cubic(double major, double minor, double mag) {
+    double theta = M_PI / 8.0;
+    double c = 0.92387953251128674;
+    double s = 0.38268343236508978;
+
+    const double side0 = bruun_fused_msub(minor, c, major, s);
+    const double negative0 = static_cast<double>(side0 <= 0.0);
+    const double sign0 = 1.0 - 2.0 * negative0;
+    theta = bruun_fused_madd(sign0, 0.19634954084936207, theta);
+    const double signed_sstep0 = sign0 * 0.19509032201612825;
+    const double nc0 = bruun_fused_madd(-signed_sstep0, s, c * 0.98078528040323043);
+    const double ns0 = bruun_fused_madd(signed_sstep0, c, s * 0.98078528040323043);
+    c = nc0;
+    s = ns0;
+
+    const double side1 = bruun_fused_msub(minor, c, major, s);
+    const double negative1 = static_cast<double>(side1 <= 0.0);
+    const double sign1 = 1.0 - 2.0 * negative1;
+    theta = bruun_fused_madd(sign1, 0.09817477042468103, theta);
+    const double signed_sstep1 = sign1 * 0.098017140329560604;
+    const double nc1 = bruun_fused_madd(-signed_sstep1, s, c * 0.99518472667219693);
+    const double ns1 = bruun_fused_madd(signed_sstep1, c, s * 0.99518472667219693);
+    c = nc1;
+    s = ns1;
+
+    const double side2 = bruun_fused_msub(minor, c, major, s);
+    const double negative2 = static_cast<double>(side2 <= 0.0);
+    const double sign2 = 1.0 - 2.0 * negative2;
+    theta = bruun_fused_madd(sign2, 0.04908738521234052, theta);
+    const double signed_sstep2 = sign2 * 0.049067674327418015;
+    const double nc2 = bruun_fused_madd(-signed_sstep2, s, c * 0.99879545620517241);
+    const double ns2 = bruun_fused_madd(signed_sstep2, c, s * 0.99879545620517241);
+    c = nc2;
+    s = ns2;
+
+    const double side3 = bruun_fused_msub(minor, c, major, s);
+    const double negative3 = static_cast<double>(side3 <= 0.0);
+    const double sign3 = 1.0 - 2.0 * negative3;
+    theta = bruun_fused_madd(sign3, 0.02454369260617026, theta);
+    const double signed_sstep3 = sign3 * 0.024541228522912288;
+    const double nc3 = bruun_fused_madd(-signed_sstep3, s, c * 0.99969881869620425);
+    const double ns3 = bruun_fused_madd(signed_sstep3, c, s * 0.99969881869620425);
+    c = nc3;
+    s = ns3;
+
+    const double side4 = bruun_fused_msub(minor, c, major, s);
+    const double negative4 = static_cast<double>(side4 <= 0.0);
+    const double sign4 = 1.0 - 2.0 * negative4;
+    theta = bruun_fused_madd(sign4, 0.01227184630308513, theta);
+    const double signed_sstep4 = sign4 * 0.012271538285719925;
+    const double nc4 = bruun_fused_madd(-signed_sstep4, s, c * 0.9999247018391445);
+    const double ns4 = bruun_fused_madd(signed_sstep4, c, s * 0.9999247018391445);
+    c = nc4;
+    s = ns4;
+
+    const double dot = bruun_fused_madd(major, c, minor * s);
+    const double cross = bruun_fused_msub(minor, c, major, s);
+    const double h = cross / (mag + dot);
+    const double delta = 2.0 * bruun_atan_leaf_cubic(h);
+    return theta + delta;
+}
+
+static BRUUN_ALWAYS_INLINE double bruun_phase_first_octant(double major, double minor, double mag) {
+    return bruun_phase_first_octant_vec5_cubic(major, minor, mag);
+}
+
+template <class FirstOctant>
+static inline double bruun_phase_atan2_core(double y, double x, double mag, FirstOctant first_octant) {
     const double ax = std::fabs(x);
     const double ay = std::fabs(y);
     if (ay == 0.0) {
@@ -510,9 +600,9 @@ static inline double bruun_phase_atan2_mag(double y, double x, double mag) {
 
     double alpha = 0.0;
     if (ax >= ay) {
-        alpha = bruun_phase_first_octant(ax, ay, mag);
+        alpha = first_octant(ax, ay, mag);
     } else {
-        alpha = bruun_pio2 - bruun_phase_first_octant(ay, ax, mag);
+        alpha = bruun_pio2 - first_octant(ay, ax, mag);
     }
 
     if (x < 0.0) {
@@ -525,6 +615,121 @@ static inline double bruun_phase_atan2_mag(double y, double x, double mag) {
         alpha += bruun_tau;
     }
     return alpha;
+}
+
+
+#if BRUUN_LEVEL >= 1
+static BRUUN_ALWAYS_INLINE bruun_v2 bruun_phase_first_octant_vec5_cubic_v2(bruun_v2 major,
+                                                                           bruun_v2 minor,
+                                                                           bruun_v2 mag) {
+    bruun_v2 theta = V2_SET1(M_PI / 8.0);
+    bruun_v2 c = V2_SET1(0.92387953251128674);
+    bruun_v2 s = V2_SET1(0.38268343236508978);
+    const bruun_v2 one = V2_SET1(1.0);
+    const bruun_v2 neg_one = V2_SET1(-1.0);
+
+#define BRUUN_VEC5_V2_STEP(STEP, CSTEP, SSTEP) \
+    do { \
+        const bruun_v2 side = V2_MSUB(V2_MUL(minor, c), major, s); \
+        const bruun_v2 sign = V2_SELECT(V2_CMPGT(side, V2_SET1(0.0)), one, neg_one); \
+        theta = V2_ADD(theta, V2_MUL(sign, V2_SET1(STEP))); \
+        const bruun_v2 signed_sstep = V2_MUL(sign, V2_SET1(SSTEP)); \
+        const bruun_v2 nc = V2_SUB(V2_MUL(c, V2_SET1(CSTEP)), V2_MUL(s, signed_sstep)); \
+        const bruun_v2 ns = V2_ADD(V2_MUL(c, signed_sstep), V2_MUL(s, V2_SET1(CSTEP))); \
+        c = nc; \
+        s = ns; \
+    } while (false)
+
+    BRUUN_VEC5_V2_STEP(0.19634954084936207, 0.98078528040323043, 0.19509032201612825);
+    BRUUN_VEC5_V2_STEP(0.09817477042468103, 0.99518472667219693, 0.098017140329560604);
+    BRUUN_VEC5_V2_STEP(0.04908738521234052, 0.99879545620517241, 0.049067674327418015);
+    BRUUN_VEC5_V2_STEP(0.02454369260617026, 0.99969881869620425, 0.024541228522912288);
+    BRUUN_VEC5_V2_STEP(0.01227184630308513, 0.9999247018391445, 0.012271538285719925);
+#undef BRUUN_VEC5_V2_STEP
+
+    const bruun_v2 dot = V2_ADD(V2_MUL(major, c), V2_MUL(minor, s));
+    const bruun_v2 cross = V2_SUB(V2_MUL(minor, c), V2_MUL(major, s));
+    const bruun_v2 h = V2_DIV(cross, V2_ADD(mag, dot));
+    const bruun_v2 h2 = V2_MUL(h, h);
+    const bruun_v2 cubic = V2_MUL(h, V2_SUB(one, V2_MUL(h2, V2_SET1(1.0 / 3.0))));
+    return V2_ADD(theta, V2_MUL(V2_SET1(2.0), cubic));
+}
+#endif
+
+
+#if BRUUN_LEVEL >= 1
+static BRUUN_ALWAYS_INLINE void bruun_phase_atan2_mag_pair(double y0, double x0, double mag0,
+                                                           double y1, double x1, double mag1,
+                                                           double* out0, double* out1) {
+    const double ax0 = std::fabs(x0);
+    const double ay0 = std::fabs(y0);
+    const double ax1 = std::fabs(x1);
+    const double ay1 = std::fabs(y1);
+    if (ax0 == 0.0 || ay0 == 0.0 || ax1 == 0.0 || ay1 == 0.0) {
+        *out0 = bruun_phase_atan2_core(y0, x0, mag0, bruun_phase_first_octant);
+        *out1 = bruun_phase_atan2_core(y1, x1, mag1, bruun_phase_first_octant);
+        return;
+    }
+
+    double major0 = ax0;
+    double minor0 = ay0;
+    bool swap0 = false;
+    if (ay0 > ax0) {
+        major0 = ay0;
+        minor0 = ax0;
+        swap0 = true;
+    }
+
+    double major1 = ax1;
+    double minor1 = ay1;
+    bool swap1 = false;
+    if (ay1 > ax1) {
+        major1 = ay1;
+        minor1 = ax1;
+        swap1 = true;
+    }
+
+    const bruun_v2 major = V2_SETLH(major0, major1);
+    const bruun_v2 minor = V2_SETLH(minor0, minor1);
+    const bruun_v2 mag = V2_SETLH(mag0, mag1);
+    double phase_pair[2];
+    V2_ST(phase_pair, bruun_phase_first_octant_vec5_cubic_v2(major, minor, mag));
+
+    double alpha0 = phase_pair[0];
+    if (swap0) {
+        alpha0 = bruun_pio2 - alpha0;
+    }
+    if (x0 < 0.0) {
+        alpha0 = M_PI - alpha0;
+    }
+    if (y0 < 0.0) {
+        alpha0 = -alpha0;
+    }
+    if (alpha0 < 0.0) {
+        alpha0 += bruun_tau;
+    }
+
+    double alpha1 = phase_pair[1];
+    if (swap1) {
+        alpha1 = bruun_pio2 - alpha1;
+    }
+    if (x1 < 0.0) {
+        alpha1 = M_PI - alpha1;
+    }
+    if (y1 < 0.0) {
+        alpha1 = -alpha1;
+    }
+    if (alpha1 < 0.0) {
+        alpha1 += bruun_tau;
+    }
+
+    *out0 = alpha0;
+    *out1 = alpha1;
+}
+#endif
+
+static BRUUN_ALWAYS_INLINE double bruun_phase_atan2_mag(double y, double x, double mag) {
+    return bruun_phase_atan2_core(y, x, mag, bruun_phase_first_octant);
 }
 
 static inline float bruun_phase_atan2_mag_f32(float y, float x, float mag) {
@@ -2531,7 +2736,27 @@ public:
         }
 
         const int* RESTRICT kin = KINV.data();
-        for (int k = 1; k < N / 2; ++k) {
+        int k = 1;
+#if BRUUN_LEVEL >= 1
+        for (; k + 1 < N / 2; k += 2) {
+            const int m0 = kin[k];
+            const int m1 = kin[k + 1];
+            const double re0 = work[2*m0];
+            const double im0 = -work[2*m0 + 1];
+            const double re1 = work[2*m1];
+            const double im1 = -work[2*m1 + 1];
+            const double mag0 = std::sqrt(re0 * re0 + im0 * im0);
+            const double mag1 = std::sqrt(re1 * re1 + im1 * im1);
+            double phase0;
+            double phase1;
+            bruun_phase_atan2_mag_pair(im0, re0, mag0, im1, re1, mag1, &phase0, &phase1);
+            output[k].re = mag0;
+            output[k].im = phase0;
+            output[k + 1].re = mag1;
+            output[k + 1].im = phase1;
+        }
+#endif
+        for (; k < N / 2; ++k) {
             const int m = kin[k];
             const double re = work[2*m];
             const double im = -work[2*m + 1];
