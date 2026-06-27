@@ -164,6 +164,145 @@ static inline int bodft_combine_fwd_avx2_f64(const complex_t* RESTRICT tab,
     return k;
 }
 
+
+static inline void bodft_uzp8_ps(const complex_f32_t* RESTRICT src, int k,
+                                 __m256& re, __m256& im) {
+    const __m256 a = _mm256_loadu_ps(&src[k].re);
+    const __m256 b = _mm256_loadu_ps(&src[k + 4].re);
+    const __m256 lo = _mm256_unpacklo_ps(a, b);
+    const __m256 hi = _mm256_unpackhi_ps(a, b);
+    const __m256 re_pairs = _mm256_shuffle_ps(lo, hi, _MM_SHUFFLE(1, 0, 1, 0));
+    const __m256 im_pairs = _mm256_shuffle_ps(lo, hi, _MM_SHUFFLE(3, 2, 3, 2));
+    re = _mm256_permutevar8x32_ps(re_pairs, _mm256_setr_epi32(0, 2, 4, 6, 1, 3, 5, 7));
+    im = _mm256_permutevar8x32_ps(im_pairs, _mm256_setr_epi32(0, 2, 4, 6, 1, 3, 5, 7));
+}
+
+static inline void bodft_store8_ps(complex_f32_t* RESTRICT dst, int k,
+                                   __m256 re, __m256 im) {
+    const __m256 lo = _mm256_unpacklo_ps(re, im);
+    const __m256 hi = _mm256_unpackhi_ps(re, im);
+    _mm256_storeu_ps(&dst[k].re,     _mm256_permute2f128_ps(lo, hi, 0x20));
+    _mm256_storeu_ps(&dst[k + 4].re, _mm256_permute2f128_ps(lo, hi, 0x31));
+}
+
+static inline __m256 bodft_rev8_ps(__m256 v) {
+    return _mm256_permutevar8x32_ps(v, _mm256_setr_epi32(7, 6, 5, 4, 3, 2, 1, 0));
+}
+
+static inline int bodft_combine_fwd_avx2_f32(const complex_f32_t* RESTRICT tab,
+                                             const complex_f32_t* RESTRICT tab2,
+                                             const complex_f32_t* RESTRICT tab3,
+                                             const complex_f32_t* RESTRICT c0,
+                                             const complex_f32_t* RESTRICT c1,
+                                             const complex_f32_t* RESTRICT c2,
+                                             const complex_f32_t* RESTRICT c3,
+                                             complex_f32_t* RESTRICT out,
+                                             int M, int half) {
+    const __m256 zero = _mm256_setzero_ps();
+    int k = 0;
+    for (; k + 8 <= half; k += 8) {
+        __m256 tre, tim, t2re, t2im, t3re, t3im;
+        __m256 c0re, c0im, c1re, c1im, c2re, c2im, c3re, c3im;
+        bodft_uzp8_ps(tab,  k, tre, tim);
+        bodft_uzp8_ps(tab2, k, t2re, t2im);
+        bodft_uzp8_ps(tab3, k, t3re, t3im);
+        bodft_uzp8_ps(c0, k, c0re, c0im);
+        bodft_uzp8_ps(c1, k, c1re, c1im);
+        bodft_uzp8_ps(c2, k, c2re, c2im);
+        bodft_uzp8_ps(c3, k, c3re, c3im);
+
+        const __m256 b0re = c0re, b0im = c0im;
+        const __m256 b1re = _mm256_fmsub_ps(c1re, tre, _mm256_mul_ps(c1im, tim));
+        const __m256 b1im = _mm256_fmadd_ps(c1re, tim, _mm256_mul_ps(c1im, tre));
+        const __m256 b2re = _mm256_fmsub_ps(c2re, t2re, _mm256_mul_ps(c2im, t2im));
+        const __m256 b2im = _mm256_fmadd_ps(c2re, t2im, _mm256_mul_ps(c2im, t2re));
+        const __m256 b3re = _mm256_fmsub_ps(c3re, t3re, _mm256_mul_ps(c3im, t3im));
+        const __m256 b3im = _mm256_fmadd_ps(c3re, t3im, _mm256_mul_ps(c3im, t3re));
+
+        const __m256 e0re = _mm256_add_ps(b0re, b2re), e0im = _mm256_add_ps(b0im, b2im);
+        const __m256 e1re = _mm256_sub_ps(b0re, b2re), e1im = _mm256_sub_ps(b0im, b2im);
+        const __m256 o0re = _mm256_add_ps(b1re, b3re), o0im = _mm256_add_ps(b1im, b3im);
+        const __m256 o1re = _mm256_sub_ps(b1re, b3re), o1im = _mm256_sub_ps(b1im, b3im);
+
+        const __m256 yk_re = _mm256_add_ps(e0re, o0re), yk_im = _mm256_add_ps(e0im, o0im);
+        const __m256 ykM_re = _mm256_add_ps(e1re, o1im), ykM_im = _mm256_sub_ps(e1im, o1re);
+        const __m256 ykp_re = _mm256_sub_ps(e1re, o1im);
+        const __m256 ykp_im = _mm256_sub_ps(zero, _mm256_add_ps(e1im, o1re));
+        const __m256 ykpM_re = _mm256_sub_ps(e0re, o0re);
+        const __m256 ykpM_im = _mm256_sub_ps(o0im, e0im);
+
+        bodft_store8_ps(out, k, yk_re, yk_im);
+        bodft_store8_ps(out, k + M, ykM_re, ykM_im);
+        bodft_store8_ps(out, M - 8 - k, bodft_rev8_ps(ykp_re), bodft_rev8_ps(ykp_im));
+        bodft_store8_ps(out, M - 8 - k + M, bodft_rev8_ps(ykpM_re), bodft_rev8_ps(ykpM_im));
+    }
+    return k;
+}
+
+
+static inline int bodft_combine_inv_avx2_f32(const complex_f32_t* RESTRICT tab,
+                                             const complex_f32_t* RESTRICT tab2,
+                                             const complex_f32_t* RESTRICT tab3,
+                                             const complex_f32_t* RESTRICT in,
+                                             complex_f32_t* RESTRICT c0,
+                                             complex_f32_t* RESTRICT c1,
+                                             complex_f32_t* RESTRICT c2,
+                                             complex_f32_t* RESTRICT c3,
+                                             int M, int half) {
+    const __m256 halfv = _mm256_set1_ps(0.5f);
+    const __m256 zero = _mm256_setzero_ps();
+    int k = 0;
+    for (; k + 8 <= half; k += 8) {
+        __m256 tre, tim, t2re, t2im, t3re, t3im;
+        __m256 ykre, ykim, ykMre, ykMim;
+        __m256 ykpre, ykpim, ykpMre, ykpMim;
+        bodft_uzp8_ps(tab, k, tre, tim);
+        bodft_uzp8_ps(tab2, k, t2re, t2im);
+        bodft_uzp8_ps(tab3, k, t3re, t3im);
+        bodft_uzp8_ps(in, k, ykre, ykim);
+        bodft_uzp8_ps(in, k + M, ykMre, ykMim);
+        bodft_uzp8_ps(in, M - 8 - k, ykpre, ykpim);
+        bodft_uzp8_ps(in, M - 8 - k + M, ykpMre, ykpMim);
+        ykpre = bodft_rev8_ps(ykpre);
+        ykpim = bodft_rev8_ps(ykpim);
+        ykpMre = bodft_rev8_ps(ykpMre);
+        ykpMim = bodft_rev8_ps(ykpMim);
+
+        const __m256 e0re = _mm256_mul_ps(halfv, _mm256_add_ps(ykre, ykpMre));
+        const __m256 e0im = _mm256_mul_ps(halfv, _mm256_sub_ps(ykim, ykpMim));
+        const __m256 o0re = _mm256_mul_ps(halfv, _mm256_sub_ps(ykre, ykpMre));
+        const __m256 o0im = _mm256_mul_ps(halfv, _mm256_add_ps(ykim, ykpMim));
+        const __m256 e1re = _mm256_mul_ps(halfv, _mm256_add_ps(ykMre, ykpre));
+        const __m256 e1im = _mm256_mul_ps(halfv, _mm256_sub_ps(ykMim, ykpim));
+        const __m256 diff_re = _mm256_sub_ps(ykMre, ykpre);
+        const __m256 diff_im = _mm256_add_ps(ykMim, ykpim);
+        const __m256 o1re = _mm256_mul_ps(halfv, _mm256_sub_ps(zero, diff_im));
+        const __m256 o1im = _mm256_mul_ps(halfv, diff_re);
+
+        const __m256 b0re = _mm256_mul_ps(halfv, _mm256_add_ps(e0re, e1re));
+        const __m256 b0im = _mm256_mul_ps(halfv, _mm256_add_ps(e0im, e1im));
+        const __m256 b2re = _mm256_mul_ps(halfv, _mm256_sub_ps(e0re, e1re));
+        const __m256 b2im = _mm256_mul_ps(halfv, _mm256_sub_ps(e0im, e1im));
+        const __m256 b1re = _mm256_mul_ps(halfv, _mm256_add_ps(o0re, o1re));
+        const __m256 b1im = _mm256_mul_ps(halfv, _mm256_add_ps(o0im, o1im));
+        const __m256 b3re = _mm256_mul_ps(halfv, _mm256_sub_ps(o0re, o1re));
+        const __m256 b3im = _mm256_mul_ps(halfv, _mm256_sub_ps(o0im, o1im));
+
+        const __m256 c1re = _mm256_fmadd_ps(tim, b1im, _mm256_mul_ps(tre, b1re));
+        const __m256 c1im = _mm256_fmsub_ps(tre, b1im, _mm256_mul_ps(tim, b1re));
+        const __m256 c2re = _mm256_fmadd_ps(t2im, b2im, _mm256_mul_ps(t2re, b2re));
+        const __m256 c2im = _mm256_fmsub_ps(t2re, b2im, _mm256_mul_ps(t2im, b2re));
+        const __m256 c3re = _mm256_fmadd_ps(t3im, b3im, _mm256_mul_ps(t3re, b3re));
+        const __m256 c3im = _mm256_fmsub_ps(t3re, b3im, _mm256_mul_ps(t3im, b3re));
+
+        bodft_store8_ps(c0, k, b0re, b0im);
+        bodft_store8_ps(c1, k, c1re, c1im);
+        bodft_store8_ps(c2, k, c2re, c2im);
+        bodft_store8_ps(c3, k, c3re, c3im);
+    }
+    return k;
+}
+
 static inline int bodft_combine_inv_avx2_f64(const complex_t* RESTRICT tab,
                                              const complex_t* RESTRICT tab2,
                                              const complex_t* RESTRICT tab3,
@@ -384,6 +523,19 @@ static inline void combine_fwd(const CT* RESTRICT tab, const CT* RESTRICT tab2,
             reinterpret_cast<complex_t*>(out), M, half);
     }
 #endif
+#if BRUUN_LEVEL >= 2
+    if constexpr (sizeof(RT) == 4) {
+        k = bodft_combine_fwd_avx2_f32(
+            reinterpret_cast<const complex_f32_t*>(tab),
+            reinterpret_cast<const complex_f32_t*>(tab2),
+            reinterpret_cast<const complex_f32_t*>(tab3),
+            reinterpret_cast<const complex_f32_t*>(c0),
+            reinterpret_cast<const complex_f32_t*>(c1),
+            reinterpret_cast<const complex_f32_t*>(c2),
+            reinterpret_cast<const complex_f32_t*>(c3),
+            reinterpret_cast<complex_f32_t*>(out), M, half);
+    }
+#endif
 #if BRUUN_LEVEL >= 1
     if constexpr (sizeof(RT) == 8) {
         if (k == 0) k = bodft_combine_fwd_simd_f64(
@@ -396,15 +548,17 @@ static inline void combine_fwd(const CT* RESTRICT tab, const CT* RESTRICT tab2,
             reinterpret_cast<const complex_t*>(c3),
             reinterpret_cast<complex_t*>(out), M, half);
     } else {
-        k = bodft_combine_fwd_simd_f32(
-            reinterpret_cast<const complex_f32_t*>(tab),
-            reinterpret_cast<const complex_f32_t*>(tab2),
-            reinterpret_cast<const complex_f32_t*>(tab3),
-            reinterpret_cast<const complex_f32_t*>(c0),
-            reinterpret_cast<const complex_f32_t*>(c1),
-            reinterpret_cast<const complex_f32_t*>(c2),
-            reinterpret_cast<const complex_f32_t*>(c3),
-            reinterpret_cast<complex_f32_t*>(out), M, half);
+        if (k == 0) {
+            k = bodft_combine_fwd_simd_f32(
+                reinterpret_cast<const complex_f32_t*>(tab),
+                reinterpret_cast<const complex_f32_t*>(tab2),
+                reinterpret_cast<const complex_f32_t*>(tab3),
+                reinterpret_cast<const complex_f32_t*>(c0),
+                reinterpret_cast<const complex_f32_t*>(c1),
+                reinterpret_cast<const complex_f32_t*>(c2),
+                reinterpret_cast<const complex_f32_t*>(c3),
+                reinterpret_cast<complex_f32_t*>(out), M, half);
+        }
     }
 #endif
     for (; k < half; ++k) {
@@ -446,6 +600,17 @@ static inline void combine_inv(const CT* RESTRICT tab, const CT* RESTRICT tab2,
             reinterpret_cast<complex_t*>(c1),
             reinterpret_cast<complex_t*>(c2),
             reinterpret_cast<complex_t*>(c3), M, half);
+    }
+    if constexpr (sizeof(RT) == 4) {
+        k = bodft_combine_inv_avx2_f32(
+            reinterpret_cast<const complex_f32_t*>(tab),
+            reinterpret_cast<const complex_f32_t*>(tab2),
+            reinterpret_cast<const complex_f32_t*>(tab3),
+            reinterpret_cast<const complex_f32_t*>(in),
+            reinterpret_cast<complex_f32_t*>(c0),
+            reinterpret_cast<complex_f32_t*>(c1),
+            reinterpret_cast<complex_f32_t*>(c2),
+            reinterpret_cast<complex_f32_t*>(c3), M, half);
     }
 #endif
     const RT h = static_cast<RT>(0.5);
