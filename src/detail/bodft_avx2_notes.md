@@ -37,3 +37,9 @@
 - Partner bins are lane-reversed in registers with an AVX2 permute before storing, preserving the scalar/128-bit conjugate-pair layout while doubling the 128-bit float combine width on AVX2 hosts.
 - The existing 128-bit SSE2/NEON float combine remains the fallback for non-AVX2 builds and for tiny levels that cannot fill an eight-position vector.
 - Correctness was checked with the regular CTest suite and the standalone BODFT benchmark on an AVX2/FMA build; a separate SSE2/no-AVX build was also checked to keep the fallback path intact.
+
+## Float inverse combine pass
+
+- Added an eight-position AVX2/FMA single-precision inverse combine path that mirrors the existing double inverse algebra and reuses the float AVX2 deinterleave/interleave helpers.
+- The path loads k/k+M and conjugate-partner blocks, reverses partner lanes in registers, reconstructs the four child spectra, applies conjugate twiddle rotations with `vfmaddps`/`vfmsubps`, and stores c0..c3 as packed complex children.
+- In this container, a same-command BODFT benchmark comparison against the previous commit at N=65536 improved float inverse from about 1.13 ms to about 0.78 ms; N=1048576 improved from about 25.6 ms to about 18.4 ms. Forward timings remained noisy and mostly unchanged because this patch targets inverse combine work.

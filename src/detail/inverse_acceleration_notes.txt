@@ -41,3 +41,12 @@ Wide-x86 schedule gate:
 - Rechecked the scheduled inverse on Intel Xeon Platinum 8370C with `-O3 -mavx2 -mfma -mno-avx512*`.
 - Rechecked the AVX-512 scheduled inverse on the same host with `-O3 -march=native`.
 - The benchmark prints a direct `Inv_ns` column so inverse-only changes are visible instead of inferred from round-trip timing.
+
+2026-06-27 x86 SIMD tail and f32 scheduling pass:
+- x86 128-bit V2/V4F multiply-add macros now use accumulator-first FMA intrinsics when `__FMA__` is available (`_mm_fmadd_*` and `_mm_fnmadd_*`) instead of lowering to separate multiply plus add/subtract. The fallback SSE2 definitions are unchanged for non-FMA builds.
+- Double streaming kernels now run their 128-bit V2 loops after the AVX2/AVX-512 loops, so one-to-three-element wide tails no longer drop straight to scalar when a two-lane chunk remains.
+- The float forward kernels start the B0/B1 twiddle rotation before loading A0/A1 in the AVX2 and V4F loops, shortening live ranges around the first dependency frontier.
+- `norm_q_inv_f32` folds the 0.5 scale into the twiddle constants for rotated B outputs in the AVX2 and V4F loops, keeping explicit half multiplies only for the A outputs that are stored directly.
+
+2026-06-27 continuation:
+- Added `kernel_sequentiality_flow.md` to describe forward/inverse dependency frontiers, SIMD tail flow, and where arithmetic can safely move across frontiers without increasing live pressure.
