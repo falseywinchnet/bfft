@@ -116,6 +116,12 @@ if(BFFT_BUILD_EXAMPLES)
   bfft_add_cpp_executable(atan2_benchmark examples/atan2_benchmark.cpp)
   bfft_add_cpp_executable(atan_vectoring_network_experiment examples/atan2_benchmark.cpp)
   bfft_add_cpp_executable(audio_magphase_roundtrip_benchmark examples/audio_magphase_roundtrip_benchmark.cpp)
+  bfft_add_cpp_executable(fftw_polar_roundtrip_benchmark examples/fftw_polar_roundtrip_benchmark.cpp)
+  set_target_properties(fftw_polar_roundtrip_benchmark PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/examples)
+  if(CMAKE_DL_LIBS)
+    target_link_libraries(fftw_polar_roundtrip_benchmark PRIVATE ${CMAKE_DL_LIBS})
+  endif()
   bfft_add_c_executable(c_api_demo examples/c_api_demo.c)
 
   if(BFFT_ENABLE_PFFFT_BENCHMARK)
