@@ -2736,15 +2736,23 @@ public:
         }
 
         const int* RESTRICT kin = KINV.data();
+        for (int k = 1; k < N / 2; ++k) {
+            const int m = kin[k];
+            output[k].re = work[2*m];
+            output[k].im = -work[2*m + 1];
+        }
+
+        convert_standard_complex_to_mag_phase(output);
+    }
+
+    void convert_standard_complex_to_mag_phase(complex_t* RESTRICT output) const {
         int k = 1;
 #if BRUUN_LEVEL >= 1
         for (; k + 1 < N / 2; k += 2) {
-            const int m0 = kin[k];
-            const int m1 = kin[k + 1];
-            const double re0 = work[2*m0];
-            const double im0 = -work[2*m0 + 1];
-            const double re1 = work[2*m1];
-            const double im1 = -work[2*m1 + 1];
+            const double re0 = output[k].re;
+            const double im0 = output[k].im;
+            const double re1 = output[k + 1].re;
+            const double im1 = output[k + 1].im;
             const double mag0 = std::sqrt(re0 * re0 + im0 * im0);
             const double mag1 = std::sqrt(re1 * re1 + im1 * im1);
             double phase0;
@@ -2757,14 +2765,41 @@ public:
         }
 #endif
         for (; k < N / 2; ++k) {
-            const int m = kin[k];
-            const double re = work[2*m];
-            const double im = -work[2*m + 1];
+            const double re = output[k].re;
+            const double im = output[k].im;
             const double mag = std::sqrt(re * re + im * im);
-            double phase = bruun_phase_atan2_mag(im, re, mag);
-            if (phase < 0.0) {
-                phase += 2.0 * M_PI;
-            }
+            const double phase = bruun_phase_atan2_mag(im, re, mag);
+            output[k].re = mag;
+            output[k].im = phase;
+        }
+    }
+
+    void convert_standard_complex_to_mag_phase_f32(complex_f32_t* RESTRICT output) const {
+        int k = 1;
+#if BRUUN_LEVEL >= 1
+        for (; k + 1 < N / 2; k += 2) {
+            const float re0 = output[k].re;
+            const float im0 = output[k].im;
+            const float re1 = output[k + 1].re;
+            const float im1 = output[k + 1].im;
+            const float mag0 = std::sqrt(re0 * re0 + im0 * im0);
+            const float mag1 = std::sqrt(re1 * re1 + im1 * im1);
+            double phase0;
+            double phase1;
+            bruun_phase_atan2_mag_pair(static_cast<double>(im0), static_cast<double>(re0), static_cast<double>(mag0),
+                                       static_cast<double>(im1), static_cast<double>(re1), static_cast<double>(mag1),
+                                       &phase0, &phase1);
+            output[k].re = mag0;
+            output[k].im = static_cast<float>(phase0);
+            output[k + 1].re = mag1;
+            output[k + 1].im = static_cast<float>(phase1);
+        }
+#endif
+        for (; k < N / 2; ++k) {
+            const float re = output[k].re;
+            const float im = output[k].im;
+            const float mag = std::sqrt(re * re + im * im);
+            const float phase = bruun_phase_atan2_mag_f32(im, re, mag);
             output[k].re = mag;
             output[k].im = phase;
         }
@@ -2812,18 +2847,18 @@ public:
         }
 
         const int* RESTRICT kin = KINV.data();
-        for (int k = 1; k < N / 2; ++k) {
-            const int m = kin[k];
-            const float re = work[2*m];
-            const float im = -work[2*m + 1];
-            const float mag = std::sqrt(re * re + im * im);
-            float phase = bruun_phase_atan2_mag_f32(im, re, mag);
-            if (phase < 0.0f) {
-                phase += 2.0f * static_cast<float>(M_PI);
-            }
-            output[k].re = mag;
-            output[k].im = phase;
+        int k = 1;
+        for (; k + 3 < N / 2; k += 4) {
+            pack4_residues_to_complex_f32(output + k, work,
+                                          kin[k], kin[k + 1], kin[k + 2], kin[k + 3]);
         }
+        for (; k < N / 2; ++k) {
+            const int m = kin[k];
+            output[k].re = work[2*m];
+            output[k].im = -work[2*m + 1];
+        }
+
+        convert_standard_complex_to_mag_phase_f32(output);
     }
 
     // Standard FFTW-like real -> complex interface, using caller-provided native scratch.
