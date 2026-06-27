@@ -16,8 +16,18 @@ CXXWARNFLAGS ?= -Wall -Wextra -Wpedantic
 COPTFLAGS ?= -O2
 CWARNFLAGS ?= -Wall -Wextra -Wpedantic
 CPPFLAGS ?=
-CXXFLAGS ?= $(CXXOPTFLAGS) -DNDEBUG -std=$(CXX_STD) -fPIC $(CXXWARNFLAGS)
-CFLAGS ?= $(COPTFLAGS) -std=c11 $(CWARNFLAGS)
+# BFFT_MAKE_DOCTOR_CXXFLAGS_GUARD_BEGIN
+ifeq ($(filter undefined default,$(origin CXXFLAGS)),)
+else
+  CXXFLAGS := $(CXXOPTFLAGS) -DNDEBUG -std=$(CXX_STD) -fPIC $(CXXWARNFLAGS)
+endif
+# BFFT_MAKE_DOCTOR_CXXFLAGS_GUARD_END
+# BFFT_MAKE_DOCTOR_CFLAGS_GUARD_BEGIN
+ifeq ($(filter undefined default,$(origin CFLAGS)),)
+else
+  CFLAGS := $(COPTFLAGS) -std=c11 $(CWARNFLAGS)
+endif
+# BFFT_MAKE_DOCTOR_CFLAGS_GUARD_END
 LDFLAGS ?=
 LDLIBS ?= -lm
 
@@ -214,3 +224,14 @@ uninstall:
 
 clean:
 	$(RM) -r $(BUILD_DIR)
+
+.PHONY: print-flags
+print-flags:
+	@echo "origin CXXFLAGS=$(origin CXXFLAGS)"
+	@echo "CXXFLAGS=$(CXXFLAGS)"
+	@echo "origin CFLAGS=$(origin CFLAGS)"
+	@echo "CFLAGS=$(CFLAGS)"
+	@echo "AUTO_SIMD_FLAGS=$(AUTO_SIMD_FLAGS)"
+	@echo "LIB_CXXFLAGS=$(LIB_CXXFLAGS)"
+	@echo "LIB_CXXFLAGS origin is makefile-expanded"
+
