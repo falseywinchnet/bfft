@@ -236,7 +236,14 @@ public:
 
     bool push_back(const T& val) {
         if (len_ >= cap_) {
-            if (!reserve(cap_ == 0 ? 16 : cap_ * 2)) return false;
+            std::size_t new_cap = 16;
+            if (cap_ != 0) {
+                if (cap_ > static_cast<std::size_t>(-1) / 2) {
+                    return false;
+                }
+                new_cap = cap_ * 2;
+            }
+            if (!reserve(new_cap)) return false;
         }
         new (ptr_ + len_) T(val);
         ++len_;
@@ -272,10 +279,19 @@ public:
 
 private:
     static void* aligned_alloc_raw(std::size_t count) {
+        if (count > static_cast<std::size_t>(-1) / sizeof(T)) {
+            return nullptr;
+        }
         const std::size_t bytes = sizeof(T) * count;
         std::size_t padded = bytes;
         const std::size_t remainder = padded % bruun_cache_alignment;
-        if (remainder != 0) padded += bruun_cache_alignment - remainder;
+        if (remainder != 0) {
+            const std::size_t pad = bruun_cache_alignment - remainder;
+            if (padded > static_cast<std::size_t>(-1) - pad) {
+                return nullptr;
+            }
+            padded += pad;
+        }
         void* raw = nullptr;
 #if defined(_MSC_VER)
         raw = _aligned_malloc(padded, bruun_cache_alignment);
