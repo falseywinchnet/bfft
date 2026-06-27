@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-#define BFFT_VERSION_MAJOR 0
-#define BFFT_VERSION_MINOR 1
+#define BFFT_VERSION_MAJOR 1
+#define BFFT_VERSION_MINOR 0
 #define BFFT_VERSION_PATCH 0
 
 /* Opaque transform plan. Create with bfft_plan_create and destroy with
