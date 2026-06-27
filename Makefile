@@ -2,7 +2,7 @@ PREFIX ?= /usr/local
 DESTDIR ?=
 BUILD_DIR ?= build
 LIB_NAME := bfft
-VERSION := 0.1.0
+VERSION := 1.0
 
 CXX ?= c++
 CC ?= cc
@@ -213,4 +213,4 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/lib/pkgconfig/$(LIB_NAME).pc
 
 clean:
-	rm -rf $(BUILD_DIR)
+	$(RM) -r $(BUILD_DIR)
