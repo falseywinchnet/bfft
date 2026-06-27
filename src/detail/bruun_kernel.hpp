@@ -575,7 +575,7 @@ static BRUUN_ALWAYS_INLINE double bruun_phase_first_octant_vec5_cubic(double maj
 }
 
 static BRUUN_ALWAYS_INLINE double bruun_phase_first_octant(double major, double minor, double mag) {
-    return bruun_phase_first_octant_vec5_cubic(major, minor, mag);
+    return bruun_phase_first_octant_tree32_degree7(major, minor, mag);
 }
 
 template <class FirstOctant>
@@ -2746,55 +2746,19 @@ public:
     }
 
     void convert_standard_complex_to_mag_phase(complex_t* RESTRICT output) const {
-        int k = 1;
-#if BRUUN_LEVEL >= 1
-        for (; k + 1 < N / 2; k += 2) {
-            const double re0 = output[k].re;
-            const double im0 = output[k].im;
-            const double re1 = output[k + 1].re;
-            const double im1 = output[k + 1].im;
-            const double mag0 = std::sqrt(re0 * re0 + im0 * im0);
-            const double mag1 = std::sqrt(re1 * re1 + im1 * im1);
-            double phase0;
-            double phase1;
-            bruun_phase_atan2_mag_pair(im0, re0, mag0, im1, re1, mag1, &phase0, &phase1);
-            output[k].re = mag0;
-            output[k].im = phase0;
-            output[k + 1].re = mag1;
-            output[k + 1].im = phase1;
-        }
-#endif
-        for (; k < N / 2; ++k) {
-            const double re = output[k].re;
-            const double im = output[k].im;
-            const double mag = std::sqrt(re * re + im * im);
-            const double phase = bruun_phase_atan2_mag(im, re, mag);
-            output[k].re = mag;
-            output[k].im = phase;
-        }
+    int k = 1;
+    for (; k < N / 2; ++k) {
+        const double re = output[k].re;
+        const double im = output[k].im;
+        const double mag = std::sqrt(re * re + im * im);
+        const double phase = bruun_phase_atan2_mag(im, re, mag);
+        output[k].re = mag;
+        output[k].im = phase;
     }
+}
 
     void convert_standard_complex_to_mag_phase_f32(complex_f32_t* RESTRICT output) const {
         int k = 1;
-#if BRUUN_LEVEL >= 1
-        for (; k + 1 < N / 2; k += 2) {
-            const float re0 = output[k].re;
-            const float im0 = output[k].im;
-            const float re1 = output[k + 1].re;
-            const float im1 = output[k + 1].im;
-            const float mag0 = std::sqrt(re0 * re0 + im0 * im0);
-            const float mag1 = std::sqrt(re1 * re1 + im1 * im1);
-            double phase0;
-            double phase1;
-            bruun_phase_atan2_mag_pair(static_cast<double>(im0), static_cast<double>(re0), static_cast<double>(mag0),
-                                       static_cast<double>(im1), static_cast<double>(re1), static_cast<double>(mag1),
-                                       &phase0, &phase1);
-            output[k].re = mag0;
-            output[k].im = static_cast<float>(phase0);
-            output[k + 1].re = mag1;
-            output[k + 1].im = static_cast<float>(phase1);
-        }
-#endif
         for (; k < N / 2; ++k) {
             const float re = output[k].re;
             const float im = output[k].im;
