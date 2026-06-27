@@ -57,6 +57,7 @@ PC_FILE := $(BUILD_DIR)/$(LIB_NAME).pc
 BENCH := $(BUILD_DIR)/examples/benchmark
 BODFT_BENCH := $(BUILD_DIR)/examples/bodft_benchmark
 APPLE_BENCH := $(BUILD_DIR)/examples/apple_benchmark
+ATAN2_BENCH := $(BUILD_DIR)/examples/atan2_benchmark
 LOCALITY_PROBE := $(BUILD_DIR)/examples/locality_probe
 C_DEMO := $(BUILD_DIR)/examples/c_api_demo
 CPP_DEMO := $(BUILD_DIR)/examples/cpp_api_demo
@@ -109,7 +110,7 @@ $(PC_FILE): pkgconfig/bfft.pc.in | $(BUILD_DIR)
 
 examples: $(BENCH) $(BODFT_BENCH) $(APPLE_EXAMPLES) $(LOCALITY_PROBE) $(C_DEMO) $(CPP_DEMO)
 
-benchmarks: $(BENCH) $(BODFT_BENCH)
+benchmarks: $(BENCH) $(BODFT_BENCH) $(ATAN2_BENCH)
 
 asm-check: $(ASM_OUTPUTS)
 	@if [ -z "$(ASM_OUTPUTS)" ]; then echo "No x86 assembly variants supported by $(CXX)."; fi
@@ -129,7 +130,8 @@ $(BENCH): examples/benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_D
 $(BODFT_BENCH): examples/bodft_benchmark.cpp src/detail/bodft_kernel.hpp src/detail/bruun_kernel.hpp | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(LDLIBS) -o $@
 
-
+$(ATAN2_BENCH): examples/atan2_benchmark.cpp src/detail/bruun_kernel.hpp | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(LDLIBS) -o $@
 
 $(APPLE_BENCH): examples/apple_benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) $(ACCELERATE_LIBS) -o $@
