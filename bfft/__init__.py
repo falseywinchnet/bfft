@@ -17,4 +17,4 @@ Planned objects (lowest per-call overhead for hot loops; one per thread):
 from ._core import OdftPlan, Plan, STFTPlan, hann_window, iodft, irfft, odft, rfft
 
 __all__ = ["rfft", "irfft", "odft", "iodft", "Plan", "OdftPlan", "STFTPlan", "hann_window"]
-__version__ = "0.1.0"
+__version__ = "1.0"
