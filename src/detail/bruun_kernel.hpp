@@ -575,7 +575,7 @@ static BRUUN_ALWAYS_INLINE double bruun_phase_first_octant_vec5_cubic(double maj
 }
 
 static BRUUN_ALWAYS_INLINE double bruun_phase_first_octant(double major, double minor, double mag) {
-    return bruun_phase_first_octant_tree32_degree7(major, minor, mag);
+    return bruun_phase_first_octant_vec5_cubic(major, minor, mag);
 }
 
 template <class FirstOctant>
@@ -2736,7 +2736,27 @@ public:
         }
 
         const int* RESTRICT kin = KINV.data();
-        for (int k = 1; k < N / 2; ++k) {
+        int k = 1;
+#if BRUUN_LEVEL >= 1
+        for (; k + 1 < N / 2; k += 2) {
+            const int m0 = kin[k];
+            const int m1 = kin[k + 1];
+            const double re0 = work[2*m0];
+            const double im0 = -work[2*m0 + 1];
+            const double re1 = work[2*m1];
+            const double im1 = -work[2*m1 + 1];
+            const double mag0 = std::sqrt(re0 * re0 + im0 * im0);
+            const double mag1 = std::sqrt(re1 * re1 + im1 * im1);
+            double phase0;
+            double phase1;
+            bruun_phase_atan2_mag_pair(im0, re0, mag0, im1, re1, mag1, &phase0, &phase1);
+            output[k].re = mag0;
+            output[k].im = phase0;
+            output[k + 1].re = mag1;
+            output[k + 1].im = phase1;
+        }
+#endif
+        for (; k < N / 2; ++k) {
             const int m = kin[k];
             output[k].re = work[2*m];
             output[k].im = -work[2*m + 1];

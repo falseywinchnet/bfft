@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
                                              bruun::bruun_phase_first_octant_tree32_degree7);
     }, sink);
 
-    const double bfft_default_double_seconds = time_loop(samples, [](const sample& value) {
+    const double bfft_vec_double_seconds = time_loop(samples, [](const sample& value) {
         return bruun::bruun_phase_atan2_mag(value.y, value.x, value.mag);
     }, sink);
 
@@ -152,15 +152,23 @@ int main(int argc, char** argv) {
         return s_value + c_value;
     }, sink);
 
+    const double std_sincos_seconds = time_loop(samples, [](const sample& value) {
+        return std::sin(value.x) + std::cos(value.x);
+    }, sink);
+
+    const double bfft_sincos_seconds = time_loop(samples, [](const sample& value) {
+        double s_value;
+        double c_value;
+        double phase = std::fmod(std::fabs(value.x), tau);
+        bruun::bruun_table256_poly3_sincos(phase, &s_value, &c_value);
+        return s_value + c_value;
+    }, sink);
+
     const double scale = static_cast<double>(count) / 1000000.0;
     std::printf("samples=%zu sink=%.17g\n", count, sink);
     std::printf("std::atan2 double: %.6f s, %.3f Mphase/s\n", std_double_seconds, scale / std_double_seconds);
     std::printf("bfft tree32 double: %.6f s, %.3f Mphase/s\n", bfft_tree_double_seconds, scale / bfft_tree_double_seconds);
-    std::printf("bfft default dbl : %.6f s, %.3f Mphase/s\n", bfft_default_double_seconds, scale / bfft_default_double_seconds);
-    std::printf("bfft vec5 scalar : %.6f s, %.3f Mphase/s\n", bfft_vec_double_seconds, scale / bfft_vec_double_seconds);
-#if BRUUN_LEVEL >= 1
-    std::printf("bfft vec5 pair   : %.6f s, %.3f Mphase/s\n", bfft_vec_pair_double_seconds, scale / bfft_vec_pair_double_seconds);
-#endif
+    std::printf("bfft vec5 double  : %.6f s, %.3f Mphase/s\n", bfft_vec_double_seconds, scale / bfft_vec_double_seconds);
     std::printf("std::atan2 float : %.6f s, %.3f Mphase/s\n", std_float_seconds, scale / std_float_seconds);
     std::printf("bfft tree32 float : %.6f s, %.3f Mphase/s\n", bfft_tree_float_seconds, scale / bfft_tree_float_seconds);
     std::printf("bfft vec5 float   : %.6f s, %.3f Mphase/s\n", bfft_vec_float_seconds, scale / bfft_vec_float_seconds);
