@@ -18,6 +18,7 @@ struct sample {
     double x;
     double y;
     double mag;
+    double phase;
 };
 
 double normalize_phase(double phase) {
@@ -46,6 +47,7 @@ std::vector<sample> make_samples(std::size_t count) {
         value.x = radius * std::cos(angle);
         value.y = radius * std::sin(angle);
         value.mag = radius;
+        value.phase = normalize_phase(angle);
     }
     return samples;
 }
@@ -61,6 +63,29 @@ double time_loop(const std::vector<sample>& samples, Func func, double& sink) {
     sink += total;
     return std::chrono::duration<double>(stop - start).count();
 }
+
+#if BRUUN_LEVEL >= 1
+double time_vec5_pair_loop(const std::vector<sample>& samples, double& sink) {
+    const auto start = std::chrono::steady_clock::now();
+    double total = 0.0;
+    std::size_t i = 0;
+    for (; i + 1 < samples.size(); i += 2) {
+        double phase0;
+        double phase1;
+        bruun::bruun_phase_atan2_mag_pair(samples[i].y, samples[i].x, samples[i].mag,
+                                          samples[i + 1].y, samples[i + 1].x, samples[i + 1].mag,
+                                          &phase0, &phase1);
+        total += phase0 + phase1;
+    }
+    for (; i < samples.size(); ++i) {
+        total += bruun::bruun_phase_atan2_core(samples[i].y, samples[i].x, samples[i].mag,
+                                               bruun::bruun_phase_first_octant_vec5_cubic);
+    }
+    const auto stop = std::chrono::steady_clock::now();
+    sink += total;
+    return std::chrono::duration<double>(stop - start).count();
+}
+#endif
 
 } // namespace
 
@@ -86,6 +111,15 @@ int main(int argc, char** argv) {
         return bruun::bruun_phase_atan2_mag(value.y, value.x, value.mag);
     }, sink);
 
+    const double bfft_vec_double_seconds = time_loop(samples, [](const sample& value) {
+        return bruun::bruun_phase_atan2_core(value.y, value.x, value.mag,
+                                             bruun::bruun_phase_first_octant_vec5_cubic);
+    }, sink);
+
+#if BRUUN_LEVEL >= 1
+    const double bfft_vec_pair_double_seconds = time_vec5_pair_loop(samples, sink);
+#endif
+
     const double std_float_seconds = time_loop(samples, [](const sample& value) {
         const float y = static_cast<float>(value.y);
         const float x = static_cast<float>(value.x);
@@ -102,7 +136,20 @@ int main(int argc, char** argv) {
         const float y = static_cast<float>(value.y);
         const float x = static_cast<float>(value.x);
         const float mag = static_cast<float>(value.mag);
-        return bruun::bruun_phase_atan2_mag_f32(y, x, mag);
+        const double phase = bruun::bruun_phase_atan2_core(y, x, mag,
+                                                          bruun::bruun_phase_first_octant_vec5_cubic);
+        return static_cast<float>(phase);
+    }, sink);
+
+    const double std_sincos_seconds = time_loop(samples, [](const sample& value) {
+        return std::sin(value.phase) + std::cos(value.phase);
+    }, sink);
+
+    const double bfft_sincos_seconds = time_loop(samples, [](const sample& value) {
+        double s_value;
+        double c_value;
+        bruun::bruun_table256_poly3_sincos(value.phase, &s_value, &c_value);
+        return s_value + c_value;
     }, sink);
 
     const double std_sincos_seconds = time_loop(samples, [](const sample& value) {

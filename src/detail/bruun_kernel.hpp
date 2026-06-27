@@ -2758,10 +2758,33 @@ public:
 #endif
         for (; k < N / 2; ++k) {
             const int m = kin[k];
-            const double re = work[2*m];
-            const double im = -work[2*m + 1];
+            output[k].re = work[2*m];
+            output[k].im = -work[2*m + 1];
+        }
+
+        int k = 1;
+#if BRUUN_LEVEL >= 1
+        for (; k + 1 < N / 2; k += 2) {
+            const double re0 = output[k].re;
+            const double im0 = output[k].im;
+            const double re1 = output[k + 1].re;
+            const double im1 = output[k + 1].im;
+            const double mag0 = std::sqrt(re0 * re0 + im0 * im0);
+            const double mag1 = std::sqrt(re1 * re1 + im1 * im1);
+            double phase0;
+            double phase1;
+            bruun_phase_atan2_mag_pair(im0, re0, mag0, im1, re1, mag1, &phase0, &phase1);
+            output[k].re = mag0;
+            output[k].im = phase0;
+            output[k + 1].re = mag1;
+            output[k + 1].im = phase1;
+        }
+#endif
+        for (; k < N / 2; ++k) {
+            const double re = output[k].re;
+            const double im = output[k].im;
             const double mag = std::sqrt(re * re + im * im);
-            double phase = bruun_phase_atan2_mag(im, re, mag);
+            double phase = bruun_phase_atan2_core(im, re, mag, bruun_phase_first_octant_vec5_cubic);
             if (phase < 0.0) {
                 phase += 2.0 * M_PI;
             }
