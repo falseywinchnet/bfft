@@ -29,3 +29,11 @@
 - Tightened the forward scratch schedule so the final forward combine writes directly into the caller output buffer instead of ping-ponging once more and copying `N/2` complex values at the end.
 - BODFT double inverse timing improved in this container from about 748 us to about 611 us at N=65536, and from about 22.7 ms to about 20.6 ms at N=1048576. Smaller sizes saw larger relative gains where the final-copy removal and inverse AVX2 combine reduce overhead together.
 - The remaining gap to the regular BFFT native path is now mostly scratch/data-order locality and float-specific AVX2 work rather than the absence of a double inverse vector combine.
+
+## Float forward combine pass
+
+- Added an eight-position AVX2/FMA single-precision forward combine path for the odd-frequency transform.
+- The float path now deinterleaves eight packed complex twiddles/children into 256-bit SoA real/imaginary lanes, does all three child twiddle products with `vfmaddps`/`vfmsubps`, and writes the four paired output blocks through an AVX2 interleave helper.
+- Partner bins are lane-reversed in registers with an AVX2 permute before storing, preserving the scalar/128-bit conjugate-pair layout while doubling the 128-bit float combine width on AVX2 hosts.
+- The existing 128-bit SSE2/NEON float combine remains the fallback for non-AVX2 builds and for tiny levels that cannot fill an eight-position vector.
+- Correctness was checked with the regular CTest suite and the standalone BODFT benchmark on an AVX2/FMA build; a separate SSE2/no-AVX build was also checked to keep the fallback path intact.
