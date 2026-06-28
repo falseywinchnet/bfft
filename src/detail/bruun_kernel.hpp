@@ -21,26 +21,28 @@
 
 // ---------------------------------------------------------------------------
 // SIMD backend resolution.
-//   BRUUN_LEVEL 0 = scalar, 1 = 128-bit (SSE2/NEON), 2 = AVX2+FMA, 3 = AVX-512
+//   BRUUN_LEVEL 0 = scalar, 1 = 128-bit (SSE2/NEON), 2 = AVX2+FMA
 // Wider levels reuse the narrower loops as tails where needed.
 // ---------------------------------------------------------------------------
 
-#if defined(__AVX512F__)
-#  define BRUUN_LEVEL 3
-#elif defined(__AVX2__) && defined(__FMA__)
+#if defined(__FMA__) || defined(_M_FMA)
+#  define BRUUN_HAS_FMA 1
+#endif
+
+#if defined(__AVX2__) && defined(BRUUN_HAS_FMA)
 #  define BRUUN_LEVEL 2
-#elif defined(__SSE2__) || defined(_M_X64) || (defined(__aarch64__) && defined(__ARM_NEON))
+#elif defined(__SSE2__) || defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || ((defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)) && (defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(_M_ARM64) || defined(_M_ARM64EC)))
 #  define BRUUN_LEVEL 1
 #else
 #  define BRUUN_LEVEL 0
 #endif
 
-#if BRUUN_LEVEL >= 2 || (BRUUN_LEVEL >= 1 && (defined(__SSE2__) || defined(_M_X64)))
+#if BRUUN_LEVEL >= 2 || (BRUUN_LEVEL >= 1 && (defined(__SSE2__) || defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
 #  include <immintrin.h>
 #  define BRUUN_X86_128 1
 #endif
 
-#if BRUUN_LEVEL >= 1 && defined(__aarch64__) && defined(__ARM_NEON)
+#if BRUUN_LEVEL >= 1 && (defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)) && (defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(_M_ARM64) || defined(_M_ARM64EC))
 #  include <arm_neon.h>
 #  define BRUUN_NEON_128 1
 #endif
@@ -59,7 +61,7 @@ typedef __m128d bruun_v2;
 #  define V2_SUB(a, b)    _mm_sub_pd((a), (b))
 #  define V2_MUL(a, b)    _mm_mul_pd((a), (b))
 #  define V2_DIV(a, b)    _mm_div_pd((a), (b))
-#  if defined(__FMA__)
+#  if defined(BRUUN_HAS_FMA)
 #    define V2_MADD(a, b, c) _mm_fmadd_pd((b), (c), (a))
 #    define V2_MSUB(a, b, c) _mm_fnmadd_pd((b), (c), (a))
 #  else
@@ -114,7 +116,7 @@ typedef __m128 bruun_v4f;
 #  define V4F_ADD(a, b)   _mm_add_ps((a), (b))
 #  define V4F_SUB(a, b)   _mm_sub_ps((a), (b))
 #  define V4F_MUL(a, b)   _mm_mul_ps((a), (b))
-#  if defined(__FMA__)
+#  if defined(BRUUN_HAS_FMA)
 #    define V4F_MADD(a, b, c) _mm_fmadd_ps((b), (c), (a))
 #    define V4F_MSUB(a, b, c) _mm_fnmadd_ps((b), (c), (a))
 #  else
@@ -616,9 +618,7 @@ static inline void bruun_table256_poly3_sincos_f32(float phase, float* s_out, fl
 }
 
 static inline const char* simd_backend_name() {
-#if BRUUN_LEVEL == 3
-    return "avx512-512";
-#elif BRUUN_LEVEL == 2
+#if BRUUN_LEVEL == 2
     return "avx2-fma-256";
 #elif defined(BRUUN_X86_128)
     return "sse2-128";
@@ -668,21 +668,13 @@ static inline int bruun_idx_int(int m, int L) {
 }
 
 // ---------------------------------------------------------------------------
-// Streaming kernels. Each has an optional 512 block, an optional 256 block,
+// Streaming kernels. Each has an optional 256 block,
 // a 2-lane block for the 128-bit backend, and an exact scalar tail.
 // ---------------------------------------------------------------------------
 
 static inline void binomial_fwd(double* RESTRICT v, int h) {
     int i = 0;
 
-#if BRUUN_LEVEL >= 3
-    for (; i + 7 < h; i += 8) {
-        const __m512d a = _mm512_loadu_pd(v + i);
-        const __m512d b = _mm512_loadu_pd(v + h + i);
-        _mm512_storeu_pd(v + i, _mm512_add_pd(a, b));
-        _mm512_storeu_pd(v + h + i, _mm512_sub_pd(a, b));
-    }
-#endif
 #if BRUUN_LEVEL >= 2
     for (; i + 3 < h; i += 4) {
         const __m256d a = _mm256_loadu_pd(v + i);
@@ -712,14 +704,6 @@ static inline void binomial_fwd(double* RESTRICT v, int h) {
 static inline void binomial_oop(const double* RESTRICT in, double* RESTRICT v, int h) {
     int i = 0;
 
-#if BRUUN_LEVEL >= 3
-    for (; i + 7 < h; i += 8) {
-        const __m512d a = _mm512_loadu_pd(in + i);
-        const __m512d b = _mm512_loadu_pd(in + h + i);
-        _mm512_storeu_pd(v + i, _mm512_add_pd(a, b));
-        _mm512_storeu_pd(v + h + i, _mm512_sub_pd(a, b));
-    }
-#endif
 #if BRUUN_LEVEL >= 2
     for (; i + 3 < h; i += 4) {
         const __m256d a = _mm256_loadu_pd(in + i);
@@ -748,17 +732,6 @@ static inline void binomial_oop(const double* RESTRICT in, double* RESTRICT v, i
 static inline void binomial_inv(double* RESTRICT v, int h) {
     int i = 0;
 
-#if BRUUN_LEVEL >= 3
-    {
-        const __m512d half8 = _mm512_set1_pd(0.5);
-        for (; i + 7 < h; i += 8) {
-            const __m512d a = _mm512_loadu_pd(v + i);
-            const __m512d b = _mm512_loadu_pd(v + h + i);
-            _mm512_storeu_pd(v + i, _mm512_mul_pd(half8, _mm512_add_pd(a, b)));
-            _mm512_storeu_pd(v + h + i, _mm512_mul_pd(half8, _mm512_sub_pd(a, b)));
-        }
-    }
-#endif
 #if BRUUN_LEVEL >= 2
     const __m256d half4 = _mm256_set1_pd(0.5);
     for (; i + 3 < h; i += 4) {
@@ -795,27 +768,6 @@ static inline void norm_q_fwd(double* RESTRICT p, int q, double c_scalar, double
 
     int n = 0;
 
-#if BRUUN_LEVEL >= 3
-    {
-        const __m512d wc = _mm512_set1_pd(c_scalar);
-        const __m512d ws = _mm512_set1_pd(s_scalar);
-
-        for (; n + 7 < q; n += 8) {
-            const __m512d A0 = _mm512_loadu_pd(A0p + n);
-            const __m512d B0 = _mm512_loadu_pd(B0p + n);
-            const __m512d A1 = _mm512_loadu_pd(A1p + n);
-            const __m512d B1 = _mm512_loadu_pd(B1p + n);
-
-            const __m512d R = _mm512_fmsub_pd(wc, B0, _mm512_mul_pd(ws, B1));
-            const __m512d I = _mm512_fmadd_pd(ws, B0, _mm512_mul_pd(wc, B1));
-
-            _mm512_storeu_pd(A0p + n, _mm512_add_pd(A0, R));
-            _mm512_storeu_pd(B0p + n, _mm512_add_pd(A1, I));
-            _mm512_storeu_pd(A1p + n, _mm512_sub_pd(A0, R));
-            _mm512_storeu_pd(B1p + n, _mm512_sub_pd(I, A1));
-        }
-    }
-#endif
 #if BRUUN_LEVEL >= 2
     {
         const __m256d vc = _mm256_set1_pd(c_scalar);
@@ -890,52 +842,6 @@ static inline void norm2_fused(double* RESTRICT p, int q,
 
     int n = 0;
 
-#if BRUUN_LEVEL >= 3
-    {
-        const __m512d vc  = _mm512_set1_pd(c),  vs  = _mm512_set1_pd(s);
-        const __m512d vc0 = _mm512_set1_pd(c0), vs0 = _mm512_set1_pd(s0);
-        const __m512d vc1 = _mm512_set1_pd(c1), vs1 = _mm512_set1_pd(s1);
-
-        for (; n + 7 < qh; n += 8) {
-            const __m512d a0n = _mm512_loadu_pd(A0 + n);
-            const __m512d a0h = _mm512_loadu_pd(A0 + qh + n);
-            const __m512d b0n = _mm512_loadu_pd(B0 + n);
-            const __m512d b0h = _mm512_loadu_pd(B0 + qh + n);
-            const __m512d a1n = _mm512_loadu_pd(A1 + n);
-            const __m512d a1h = _mm512_loadu_pd(A1 + qh + n);
-            const __m512d b1n = _mm512_loadu_pd(B1 + n);
-            const __m512d b1h = _mm512_loadu_pd(B1 + qh + n);
-
-            const __m512d Rn = _mm512_fmsub_pd(vc, b0n, _mm512_mul_pd(vs, b1n));
-            const __m512d In = _mm512_fmadd_pd(vs, b0n, _mm512_mul_pd(vc, b1n));
-            const __m512d Rh = _mm512_fmsub_pd(vc, b0h, _mm512_mul_pd(vs, b1h));
-            const __m512d Ih = _mm512_fmadd_pd(vs, b0h, _mm512_mul_pd(vc, b1h));
-
-            const __m512d u0 = _mm512_add_pd(a0n, Rn);
-            const __m512d uh = _mm512_add_pd(a0h, Rh);
-            const __m512d w0 = _mm512_add_pd(a1n, In);
-            const __m512d wh = _mm512_add_pd(a1h, Ih);
-            const __m512d v0 = _mm512_sub_pd(a0n, Rn);
-            const __m512d vh = _mm512_sub_pd(a0h, Rh);
-            const __m512d x0 = _mm512_sub_pd(In, a1n);
-            const __m512d xh = _mm512_sub_pd(Ih, a1h);
-
-            const __m512d R0 = _mm512_fmsub_pd(vc0, uh, _mm512_mul_pd(vs0, wh));
-            const __m512d I0 = _mm512_fmadd_pd(vs0, uh, _mm512_mul_pd(vc0, wh));
-            const __m512d R1 = _mm512_fmsub_pd(vc1, vh, _mm512_mul_pd(vs1, xh));
-            const __m512d I1 = _mm512_fmadd_pd(vs1, vh, _mm512_mul_pd(vc1, xh));
-
-            _mm512_storeu_pd(A0 + n,      _mm512_add_pd(u0, R0));
-            _mm512_storeu_pd(A0 + qh + n, _mm512_add_pd(w0, I0));
-            _mm512_storeu_pd(B0 + n,      _mm512_sub_pd(u0, R0));
-            _mm512_storeu_pd(B0 + qh + n, _mm512_sub_pd(I0, w0));
-            _mm512_storeu_pd(A1 + n,      _mm512_add_pd(v0, R1));
-            _mm512_storeu_pd(A1 + qh + n, _mm512_add_pd(x0, I1));
-            _mm512_storeu_pd(B1 + n,      _mm512_sub_pd(v0, R1));
-            _mm512_storeu_pd(B1 + qh + n, _mm512_sub_pd(I1, x0));
-        }
-    }
-#endif
 #if BRUUN_LEVEL >= 2
     {
         const __m256d vc  = _mm256_set1_pd(c),  vs  = _mm256_set1_pd(s);
@@ -1069,33 +975,6 @@ static inline void norm_q_inv(double* RESTRICT p, int q, double c_scalar, double
 
     int n = 0;
 
-#if BRUUN_LEVEL >= 3
-    {
-        const __m512d half = _mm512_set1_pd(0.5);
-        const __m512d vc = _mm512_set1_pd(c_scalar);
-        const __m512d vs = _mm512_set1_pd(s_scalar);
-
-        for (; n + 7 < q; n += 8) {
-            const __m512d C0v = _mm512_loadu_pd(C0p + n);
-            const __m512d C1v = _mm512_loadu_pd(C1p + n);
-            const __m512d D0v = _mm512_loadu_pd(D0p + n);
-            const __m512d D1v = _mm512_loadu_pd(D1p + n);
-
-            const __m512d A0 = _mm512_mul_pd(half, _mm512_add_pd(C0v, D0v));
-            const __m512d R  = _mm512_mul_pd(half, _mm512_sub_pd(C0v, D0v));
-            const __m512d I  = _mm512_mul_pd(half, _mm512_add_pd(C1v, D1v));
-            const __m512d A1 = _mm512_mul_pd(half, _mm512_sub_pd(C1v, D1v));
-
-            const __m512d B0 = _mm512_fmadd_pd(vc, R, _mm512_mul_pd(vs, I));
-            const __m512d B1 = _mm512_fmsub_pd(vc, I, _mm512_mul_pd(vs, R));
-
-            _mm512_storeu_pd(C0p + n, A0);
-            _mm512_storeu_pd(C1p + n, B0);
-            _mm512_storeu_pd(D0p + n, A1);
-            _mm512_storeu_pd(D1p + n, B1);
-        }
-    }
-#endif
 #if BRUUN_LEVEL >= 2
     {
         const __m256d half = _mm256_set1_pd(0.5);
@@ -1183,57 +1062,6 @@ static inline void norm2_inv_fused(double* RESTRICT p, int q,
 
     int n = 0;
 
-#if BRUUN_LEVEL >= 3
-    {
-        const __m512d hf  = _mm512_set1_pd(0.5);
-        const __m512d vc  = _mm512_set1_pd(c),  vs  = _mm512_set1_pd(s);
-        const __m512d vc0 = _mm512_set1_pd(c0), vs0 = _mm512_set1_pd(s0);
-        const __m512d vc1 = _mm512_set1_pd(c1), vs1 = _mm512_set1_pd(s1);
-
-        for (; n + 7 < qh; n += 8) {
-            const __m512d A0n = _mm512_loadu_pd(A0 + n);
-            const __m512d A0h = _mm512_loadu_pd(A0 + qh + n);
-            const __m512d B0n = _mm512_loadu_pd(B0 + n);
-            const __m512d B0h = _mm512_loadu_pd(B0 + qh + n);
-            const __m512d A1n = _mm512_loadu_pd(A1 + n);
-            const __m512d A1h = _mm512_loadu_pd(A1 + qh + n);
-            const __m512d B1n = _mm512_loadu_pd(B1 + n);
-            const __m512d B1h = _mm512_loadu_pd(B1 + qh + n);
-
-            const __m512d u0 = _mm512_mul_pd(hf, _mm512_add_pd(A0n, B0n));
-            const __m512d R0 = _mm512_mul_pd(hf, _mm512_sub_pd(A0n, B0n));
-            const __m512d I0 = _mm512_mul_pd(hf, _mm512_add_pd(A0h, B0h));
-            const __m512d w0 = _mm512_mul_pd(hf, _mm512_sub_pd(A0h, B0h));
-            const __m512d uh = _mm512_fmadd_pd(vc0, R0, _mm512_mul_pd(vs0, I0));
-            const __m512d wh = _mm512_fmsub_pd(vc0, I0, _mm512_mul_pd(vs0, R0));
-
-            const __m512d v0 = _mm512_mul_pd(hf, _mm512_add_pd(A1n, B1n));
-            const __m512d R1 = _mm512_mul_pd(hf, _mm512_sub_pd(A1n, B1n));
-            const __m512d I1 = _mm512_mul_pd(hf, _mm512_add_pd(A1h, B1h));
-            const __m512d x0 = _mm512_mul_pd(hf, _mm512_sub_pd(A1h, B1h));
-            const __m512d vh = _mm512_fmadd_pd(vc1, R1, _mm512_mul_pd(vs1, I1));
-            const __m512d xh = _mm512_fmsub_pd(vc1, I1, _mm512_mul_pd(vs1, R1));
-
-            const __m512d a0n = _mm512_mul_pd(hf, _mm512_add_pd(u0, v0));
-            const __m512d Rn  = _mm512_mul_pd(hf, _mm512_sub_pd(u0, v0));
-            const __m512d In  = _mm512_mul_pd(hf, _mm512_add_pd(w0, x0));
-            const __m512d a1n = _mm512_mul_pd(hf, _mm512_sub_pd(w0, x0));
-            const __m512d a0h = _mm512_mul_pd(hf, _mm512_add_pd(uh, vh));
-            const __m512d Rh  = _mm512_mul_pd(hf, _mm512_sub_pd(uh, vh));
-            const __m512d Ih  = _mm512_mul_pd(hf, _mm512_add_pd(wh, xh));
-            const __m512d a1h = _mm512_mul_pd(hf, _mm512_sub_pd(wh, xh));
-
-            _mm512_storeu_pd(A0 + n,      a0n);
-            _mm512_storeu_pd(A0 + qh + n, a0h);
-            _mm512_storeu_pd(B0 + n,      _mm512_fmadd_pd(vc, Rn, _mm512_mul_pd(vs, In)));
-            _mm512_storeu_pd(B0 + qh + n, _mm512_fmadd_pd(vc, Rh, _mm512_mul_pd(vs, Ih)));
-            _mm512_storeu_pd(A1 + n,      a1n);
-            _mm512_storeu_pd(A1 + qh + n, a1h);
-            _mm512_storeu_pd(B1 + n,      _mm512_fmsub_pd(vc, In, _mm512_mul_pd(vs, Rn)));
-            _mm512_storeu_pd(B1 + qh + n, _mm512_fmsub_pd(vc, Ih, _mm512_mul_pd(vs, Rh)));
-        }
-    }
-#endif
 #if BRUUN_LEVEL >= 2
     {
         const __m256d hf  = _mm256_set1_pd(0.5);
@@ -1379,7 +1207,7 @@ static inline void norm2_inv_fused(double* RESTRICT p, int q,
 
 // ---------------------------------------------------------------------------
 // Float32 streaming kernels. Same arithmetic as the double kernels above with
-// twice the lane count at every SIMD level: 16-wide AVX-512, 8-wide AVX2,
+// twice the scalar lane count on supported SIMD paths: 8-wide AVX2,
 // 4-wide SSE2/NEON, exact scalar tail.
 // ---------------------------------------------------------------------------
 
@@ -1400,14 +1228,6 @@ static inline void norm2_inv_fused(double* RESTRICT p, int q,
 static inline void binomial_fwd_f32(float* RESTRICT v, int h) {
     int i = 0;
 
-#if BRUUN_LEVEL >= 3
-    for (; i + 15 < h; i += 16) {
-        const __m512 a = _mm512_loadu_ps(v + i);
-        const __m512 b = _mm512_loadu_ps(v + h + i);
-        _mm512_storeu_ps(v + i, _mm512_add_ps(a, b));
-        _mm512_storeu_ps(v + h + i, _mm512_sub_ps(a, b));
-    }
-#endif
 #if BRUUN_LEVEL >= 2
     for (; i + 7 < h; i += 8) {
         const __m256 a = _mm256_loadu_ps(v + i);
@@ -1436,14 +1256,6 @@ static inline void binomial_fwd_f32(float* RESTRICT v, int h) {
 static inline void binomial_oop_f32(const float* RESTRICT in, float* RESTRICT v, int h) {
     int i = 0;
 
-#if BRUUN_LEVEL >= 3
-    for (; i + 15 < h; i += 16) {
-        const __m512 a = _mm512_loadu_ps(in + i);
-        const __m512 b = _mm512_loadu_ps(in + h + i);
-        _mm512_storeu_ps(v + i, _mm512_add_ps(a, b));
-        _mm512_storeu_ps(v + h + i, _mm512_sub_ps(a, b));
-    }
-#endif
 #if BRUUN_LEVEL >= 2
     for (; i + 7 < h; i += 8) {
         const __m256 a = _mm256_loadu_ps(in + i);
@@ -1472,17 +1284,6 @@ static inline void binomial_oop_f32(const float* RESTRICT in, float* RESTRICT v,
 static inline void binomial_inv_f32(float* RESTRICT v, int h) {
     int i = 0;
 
-#if BRUUN_LEVEL >= 3
-    {
-        const __m512 half16 = _mm512_set1_ps(0.5f);
-        for (; i + 15 < h; i += 16) {
-            const __m512 a = _mm512_loadu_ps(v + i);
-            const __m512 b = _mm512_loadu_ps(v + h + i);
-            _mm512_storeu_ps(v + i, _mm512_mul_ps(half16, _mm512_add_ps(a, b)));
-            _mm512_storeu_ps(v + h + i, _mm512_mul_ps(half16, _mm512_sub_ps(a, b)));
-        }
-    }
-#endif
 #if BRUUN_LEVEL >= 2
     {
         const __m256 half8 = _mm256_set1_ps(0.5f);
@@ -1522,27 +1323,6 @@ static inline void norm_q_fwd_f32(float* RESTRICT p, int q, float c_scalar, floa
 
     int n = 0;
 
-#if BRUUN_LEVEL >= 3
-    {
-        const __m512 wc = _mm512_set1_ps(c_scalar);
-        const __m512 ws = _mm512_set1_ps(s_scalar);
-
-        for (; n + 15 < q; n += 16) {
-            const __m512 A0 = _mm512_loadu_ps(A0p + n);
-            const __m512 B0 = _mm512_loadu_ps(B0p + n);
-            const __m512 A1 = _mm512_loadu_ps(A1p + n);
-            const __m512 B1 = _mm512_loadu_ps(B1p + n);
-
-            const __m512 R = _mm512_fmsub_ps(wc, B0, _mm512_mul_ps(ws, B1));
-            const __m512 I = _mm512_fmadd_ps(ws, B0, _mm512_mul_ps(wc, B1));
-
-            _mm512_storeu_ps(A0p + n, _mm512_add_ps(A0, R));
-            _mm512_storeu_ps(B0p + n, _mm512_add_ps(A1, I));
-            _mm512_storeu_ps(A1p + n, _mm512_sub_ps(A0, R));
-            _mm512_storeu_ps(B1p + n, _mm512_sub_ps(I, A1));
-        }
-    }
-#endif
 #if BRUUN_LEVEL >= 2
     {
         const __m256 vc = _mm256_set1_ps(c_scalar);
@@ -1616,52 +1396,6 @@ static inline void norm2_fused_f32(float* RESTRICT p, int q,
 
     int n = 0;
 
-#if BRUUN_LEVEL >= 3
-    {
-        const __m512 vc  = _mm512_set1_ps(c),  vs  = _mm512_set1_ps(s);
-        const __m512 vc0 = _mm512_set1_ps(c0), vs0 = _mm512_set1_ps(s0);
-        const __m512 vc1 = _mm512_set1_ps(c1), vs1 = _mm512_set1_ps(s1);
-
-        for (; n + 15 < qh; n += 16) {
-            const __m512 a0n = _mm512_loadu_ps(A0 + n);
-            const __m512 a0h = _mm512_loadu_ps(A0 + qh + n);
-            const __m512 b0n = _mm512_loadu_ps(B0 + n);
-            const __m512 b0h = _mm512_loadu_ps(B0 + qh + n);
-            const __m512 a1n = _mm512_loadu_ps(A1 + n);
-            const __m512 a1h = _mm512_loadu_ps(A1 + qh + n);
-            const __m512 b1n = _mm512_loadu_ps(B1 + n);
-            const __m512 b1h = _mm512_loadu_ps(B1 + qh + n);
-
-            const __m512 Rn = _mm512_fmsub_ps(vc, b0n, _mm512_mul_ps(vs, b1n));
-            const __m512 In = _mm512_fmadd_ps(vs, b0n, _mm512_mul_ps(vc, b1n));
-            const __m512 Rh = _mm512_fmsub_ps(vc, b0h, _mm512_mul_ps(vs, b1h));
-            const __m512 Ih = _mm512_fmadd_ps(vs, b0h, _mm512_mul_ps(vc, b1h));
-
-            const __m512 u0 = _mm512_add_ps(a0n, Rn);
-            const __m512 uh = _mm512_add_ps(a0h, Rh);
-            const __m512 w0 = _mm512_add_ps(a1n, In);
-            const __m512 wh = _mm512_add_ps(a1h, Ih);
-            const __m512 v0 = _mm512_sub_ps(a0n, Rn);
-            const __m512 vh = _mm512_sub_ps(a0h, Rh);
-            const __m512 x0 = _mm512_sub_ps(In, a1n);
-            const __m512 xh = _mm512_sub_ps(Ih, a1h);
-
-            const __m512 R0 = _mm512_fmsub_ps(vc0, uh, _mm512_mul_ps(vs0, wh));
-            const __m512 I0 = _mm512_fmadd_ps(vs0, uh, _mm512_mul_ps(vc0, wh));
-            const __m512 R1 = _mm512_fmsub_ps(vc1, vh, _mm512_mul_ps(vs1, xh));
-            const __m512 I1 = _mm512_fmadd_ps(vs1, vh, _mm512_mul_ps(vc1, xh));
-
-            _mm512_storeu_ps(A0 + n,      _mm512_add_ps(u0, R0));
-            _mm512_storeu_ps(A0 + qh + n, _mm512_add_ps(w0, I0));
-            _mm512_storeu_ps(B0 + n,      _mm512_sub_ps(u0, R0));
-            _mm512_storeu_ps(B0 + qh + n, _mm512_sub_ps(I0, w0));
-            _mm512_storeu_ps(A1 + n,      _mm512_add_ps(v0, R1));
-            _mm512_storeu_ps(A1 + qh + n, _mm512_add_ps(x0, I1));
-            _mm512_storeu_ps(B1 + n,      _mm512_sub_ps(v0, R1));
-            _mm512_storeu_ps(B1 + qh + n, _mm512_sub_ps(I1, x0));
-        }
-    }
-#endif
 #if BRUUN_LEVEL >= 2
     {
         const __m256 vc  = _mm256_set1_ps(c),  vs  = _mm256_set1_ps(s);
@@ -1797,33 +1531,6 @@ static inline void norm_q_inv_f32(float* RESTRICT p, int q, float c_scalar, floa
 
     int n = 0;
 
-#if BRUUN_LEVEL >= 3
-    {
-        const __m512 half = _mm512_set1_ps(0.5f);
-        const __m512 vc = _mm512_set1_ps(c_scalar);
-        const __m512 vs = _mm512_set1_ps(s_scalar);
-
-        for (; n + 15 < q; n += 16) {
-            const __m512 C0v = _mm512_loadu_ps(C0p + n);
-            const __m512 C1v = _mm512_loadu_ps(C1p + n);
-            const __m512 D0v = _mm512_loadu_ps(D0p + n);
-            const __m512 D1v = _mm512_loadu_ps(D1p + n);
-
-            const __m512 A0 = _mm512_mul_ps(half, _mm512_add_ps(C0v, D0v));
-            const __m512 R  = _mm512_mul_ps(half, _mm512_sub_ps(C0v, D0v));
-            const __m512 I  = _mm512_mul_ps(half, _mm512_add_ps(C1v, D1v));
-            const __m512 A1 = _mm512_mul_ps(half, _mm512_sub_ps(C1v, D1v));
-
-            const __m512 B0 = _mm512_fmadd_ps(vc, R, _mm512_mul_ps(vs, I));
-            const __m512 B1 = _mm512_fmsub_ps(vc, I, _mm512_mul_ps(vs, R));
-
-            _mm512_storeu_ps(C0p + n, A0);
-            _mm512_storeu_ps(C1p + n, B0);
-            _mm512_storeu_ps(D0p + n, A1);
-            _mm512_storeu_ps(D1p + n, B1);
-        }
-    }
-#endif
 #if BRUUN_LEVEL >= 2
     {
         const __m256 half = _mm256_set1_ps(0.5f);
@@ -1914,57 +1621,6 @@ static inline void norm2_inv_fused_f32(float* RESTRICT p, int q,
 
     int n = 0;
 
-#if BRUUN_LEVEL >= 3
-    {
-        const __m512 hf  = _mm512_set1_ps(0.5f);
-        const __m512 vc  = _mm512_set1_ps(c),  vs  = _mm512_set1_ps(s);
-        const __m512 vc0 = _mm512_set1_ps(c0), vs0 = _mm512_set1_ps(s0);
-        const __m512 vc1 = _mm512_set1_ps(c1), vs1 = _mm512_set1_ps(s1);
-
-        for (; n + 15 < qh; n += 16) {
-            const __m512 A0n = _mm512_loadu_ps(A0 + n);
-            const __m512 A0h = _mm512_loadu_ps(A0 + qh + n);
-            const __m512 B0n = _mm512_loadu_ps(B0 + n);
-            const __m512 B0h = _mm512_loadu_ps(B0 + qh + n);
-            const __m512 A1n = _mm512_loadu_ps(A1 + n);
-            const __m512 A1h = _mm512_loadu_ps(A1 + qh + n);
-            const __m512 B1n = _mm512_loadu_ps(B1 + n);
-            const __m512 B1h = _mm512_loadu_ps(B1 + qh + n);
-
-            const __m512 u0 = _mm512_mul_ps(hf, _mm512_add_ps(A0n, B0n));
-            const __m512 R0 = _mm512_mul_ps(hf, _mm512_sub_ps(A0n, B0n));
-            const __m512 I0 = _mm512_mul_ps(hf, _mm512_add_ps(A0h, B0h));
-            const __m512 w0 = _mm512_mul_ps(hf, _mm512_sub_ps(A0h, B0h));
-            const __m512 uh = _mm512_fmadd_ps(vc0, R0, _mm512_mul_ps(vs0, I0));
-            const __m512 wh = _mm512_fmsub_ps(vc0, I0, _mm512_mul_ps(vs0, R0));
-
-            const __m512 v0 = _mm512_mul_ps(hf, _mm512_add_ps(A1n, B1n));
-            const __m512 R1 = _mm512_mul_ps(hf, _mm512_sub_ps(A1n, B1n));
-            const __m512 I1 = _mm512_mul_ps(hf, _mm512_add_ps(A1h, B1h));
-            const __m512 x0 = _mm512_mul_ps(hf, _mm512_sub_ps(A1h, B1h));
-            const __m512 vh = _mm512_fmadd_ps(vc1, R1, _mm512_mul_ps(vs1, I1));
-            const __m512 xh = _mm512_fmsub_ps(vc1, I1, _mm512_mul_ps(vs1, R1));
-
-            const __m512 a0n = _mm512_mul_ps(hf, _mm512_add_ps(u0, v0));
-            const __m512 Rn  = _mm512_mul_ps(hf, _mm512_sub_ps(u0, v0));
-            const __m512 In  = _mm512_mul_ps(hf, _mm512_add_ps(w0, x0));
-            const __m512 a1n = _mm512_mul_ps(hf, _mm512_sub_ps(w0, x0));
-            const __m512 a0h = _mm512_mul_ps(hf, _mm512_add_ps(uh, vh));
-            const __m512 Rh  = _mm512_mul_ps(hf, _mm512_sub_ps(uh, vh));
-            const __m512 Ih  = _mm512_mul_ps(hf, _mm512_add_ps(wh, xh));
-            const __m512 a1h = _mm512_mul_ps(hf, _mm512_sub_ps(wh, xh));
-
-            _mm512_storeu_ps(A0 + n,      a0n);
-            _mm512_storeu_ps(A0 + qh + n, a0h);
-            _mm512_storeu_ps(B0 + n,      _mm512_fmadd_ps(vc, Rn, _mm512_mul_ps(vs, In)));
-            _mm512_storeu_ps(B0 + qh + n, _mm512_fmadd_ps(vc, Rh, _mm512_mul_ps(vs, Ih)));
-            _mm512_storeu_ps(A1 + n,      a1n);
-            _mm512_storeu_ps(A1 + qh + n, a1h);
-            _mm512_storeu_ps(B1 + n,      _mm512_fmsub_ps(vc, In, _mm512_mul_ps(vs, Rn)));
-            _mm512_storeu_ps(B1 + qh + n, _mm512_fmsub_ps(vc, Ih, _mm512_mul_ps(vs, Rh)));
-        }
-    }
-#endif
 #if BRUUN_LEVEL >= 2
     {
         const __m256 hf  = _mm256_set1_ps(0.5f);
@@ -3042,21 +2698,6 @@ public:
         int j = 2;
         const int end = N;
 
-#if BRUUN_LEVEL >= 3
-        {
-            const __m512d negodd = _mm512_set_pd(-0.0, 0.0, -0.0, 0.0, -0.0, 0.0, -0.0, 0.0);
-            for (; j + 7 < end; j += 8) {
-                const __m512d r = _mm512_loadu_pd(v + j);
-                const __m512d h = _mm512_loadu_pd(RF + j);
-                const __m512d hd = _mm512_movedup_pd(h);
-                const __m512d ho = _mm512_permute_pd(h, 0xFF);
-                const __m512d rs = _mm512_castsi512_pd(_mm512_xor_si512(
-                    _mm512_castpd_si512(_mm512_permute_pd(r, 0x55)),
-                    _mm512_castpd_si512(negodd)));
-                _mm512_storeu_pd(v + j, _mm512_fmadd_pd(hd, r, _mm512_mul_pd(ho, rs)));
-            }
-        }
-#endif
 #if BRUUN_LEVEL >= 2
         {
             const __m256d negodd = _mm256_set_pd(-0.0, 0.0, -0.0, 0.0);
@@ -4001,92 +3642,6 @@ private:
 
 #endif
 
-#if BRUUN_LEVEL >= 3
-    // 512-bit paired depth-3 core: lanes are [block(m2) | block(m2+1)] quarters.
-    inline void d3x2_avx512_core(__m512d A0, __m512d B0, __m512d A1, __m512d B1,
-                                 const LeafTw& t0, const LeafTw& t1,
-                                 complex_t* RESTRICT X) const {
-        const __m512d c1 = _mm512_insertf64x4(_mm512_castpd256_pd512(_mm256_set1_pd(t0.c1)), _mm256_set1_pd(t1.c1), 1);
-        const __m512d s1 = _mm512_insertf64x4(_mm512_castpd256_pd512(_mm256_set1_pd(t0.s1)), _mm256_set1_pd(t1.s1), 1);
-
-        const __m512d R1 = _mm512_fmsub_pd(c1, B0, _mm512_mul_pd(s1, B1));
-        const __m512d I1 = _mm512_fmadd_pd(s1, B0, _mm512_mul_pd(c1, B1));
-
-        const __m512d c0a = _mm512_add_pd(A0, R1);
-        const __m512d c0b = _mm512_add_pd(A1, I1);
-        const __m512d c1a = _mm512_sub_pd(A0, R1);
-        const __m512d c1b = _mm512_sub_pd(I1, A1);
-
-        const __m512i ixA = _mm512_set_epi64(13, 12, 5, 4, 9, 8, 1, 0);
-        const __m512i ixB = _mm512_set_epi64(15, 14, 7, 6, 11, 10, 3, 2);
-        const __m512d A0v = _mm512_permutex2var_pd(c0a, ixA, c1a);
-        const __m512d B0v = _mm512_permutex2var_pd(c0a, ixB, c1a);
-        const __m512d A1v = _mm512_permutex2var_pd(c0b, ixA, c1b);
-        const __m512d B1v = _mm512_permutex2var_pd(c0b, ixB, c1b);
-
-        const __m512i dup2 = _mm512_set_epi64(3, 3, 2, 2, 1, 1, 0, 0);
-        const __m256d c2p = _mm256_insertf128_pd(_mm256_castpd128_pd256(_mm_loadu_pd(t0.c2)), _mm_loadu_pd(t1.c2), 1);
-        const __m512d c2 = _mm512_permutexvar_pd(dup2, _mm512_castpd256_pd512(c2p));
-        const __m512i swap2 = _mm512_set_epi64(5, 4, 7, 6, 1, 0, 3, 2);
-        const __m512d s2 = _mm512_permutexvar_pd(swap2, c2);
-
-        const __m512d R2 = _mm512_fmsub_pd(c2, B0v, _mm512_mul_pd(s2, B1v));
-        const __m512d I2 = _mm512_fmadd_pd(s2, B0v, _mm512_mul_pd(c2, B1v));
-
-        const __m512d P = _mm512_add_pd(A0v, R2);
-        const __m512d Q = _mm512_add_pd(A1v, I2);
-        const __m512d M = _mm512_sub_pd(A0v, R2);
-        const __m512d W = _mm512_sub_pd(I2, A1v);
-
-        const __m512d A0w = _mm512_unpacklo_pd(P, M);
-        const __m512d B0w = _mm512_unpackhi_pd(P, M);
-        const __m512d A1w = _mm512_unpacklo_pd(Q, W);
-        const __m512d B1w = _mm512_unpackhi_pd(Q, W);
-
-        const __m512d c4 = _mm512_insertf64x4(_mm512_castpd256_pd512(_mm256_loadu_pd(t0.c4)), _mm256_loadu_pd(t1.c4), 1);
-        const __m512d s4 = _mm512_set_pd(t1.c4[2], t1.c4[3], t1.c4[0], t1.c4[1],
-                                         t0.c4[2], t0.c4[3], t0.c4[0], t0.c4[1]);
-        const __m512d R3 = _mm512_fmsub_pd(c4, B0w, _mm512_mul_pd(s4, B1w));
-        const __m512d I3 = _mm512_fmadd_pd(s4, B0w, _mm512_mul_pd(c4, B1w));
-
-        const __m512d sgn = _mm512_set1_pd(-0.0);
-        const __m512d re_e = _mm512_add_pd(A0w, R3);
-        const __m512d re_o = _mm512_sub_pd(A0w, R3);
-        const __m512d im_e = _mm512_castsi512_pd(_mm512_xor_si512(_mm512_castpd_si512(_mm512_add_pd(A1w, I3)), _mm512_castpd_si512(sgn)));
-        const __m512d im_o = _mm512_sub_pd(A1w, I3);
-
-        const __m512d pe = _mm512_unpacklo_pd(re_e, im_e);
-        const __m512d ph = _mm512_unpackhi_pd(re_e, im_e);
-        const __m512d qe = _mm512_unpacklo_pd(re_o, im_o);
-        const __m512d qh = _mm512_unpackhi_pd(re_o, im_o);
-
-        _mm_storeu_pd(&X[t0.idx[0]].re, _mm512_castpd512_pd128(pe));
-        _mm_storeu_pd(&X[t0.idx[4]].re, _mm512_extractf64x2_pd(pe, 1));
-        _mm_storeu_pd(&X[t1.idx[0]].re, _mm512_extractf64x2_pd(pe, 2));
-        _mm_storeu_pd(&X[t1.idx[4]].re, _mm512_extractf64x2_pd(pe, 3));
-        _mm_storeu_pd(&X[t0.idx[2]].re, _mm512_castpd512_pd128(ph));
-        _mm_storeu_pd(&X[t0.idx[6]].re, _mm512_extractf64x2_pd(ph, 1));
-        _mm_storeu_pd(&X[t1.idx[2]].re, _mm512_extractf64x2_pd(ph, 2));
-        _mm_storeu_pd(&X[t1.idx[6]].re, _mm512_extractf64x2_pd(ph, 3));
-        _mm_storeu_pd(&X[t0.idx[1]].re, _mm512_castpd512_pd128(qe));
-        _mm_storeu_pd(&X[t0.idx[5]].re, _mm512_extractf64x2_pd(qe, 1));
-        _mm_storeu_pd(&X[t1.idx[1]].re, _mm512_extractf64x2_pd(qe, 2));
-        _mm_storeu_pd(&X[t1.idx[5]].re, _mm512_extractf64x2_pd(qe, 3));
-        _mm_storeu_pd(&X[t0.idx[3]].re, _mm512_castpd512_pd128(qh));
-        _mm_storeu_pd(&X[t0.idx[7]].re, _mm512_extractf64x2_pd(qh, 1));
-        _mm_storeu_pd(&X[t1.idx[3]].re, _mm512_extractf64x2_pd(qh, 2));
-        _mm_storeu_pd(&X[t1.idx[7]].re, _mm512_extractf64x2_pd(qh, 3));
-    }
-
-    inline void codelet_d3x2_avx512(const double* RESTRICT p, int m2, complex_t* RESTRICT X) const {
-        const __m512d A0 = _mm512_insertf64x4(_mm512_castpd256_pd512(_mm256_loadu_pd(p)),      _mm256_loadu_pd(p + 16), 1);
-        const __m512d B0 = _mm512_insertf64x4(_mm512_castpd256_pd512(_mm256_loadu_pd(p + 4)),  _mm256_loadu_pd(p + 20), 1);
-        const __m512d A1 = _mm512_insertf64x4(_mm512_castpd256_pd512(_mm256_loadu_pd(p + 8)),  _mm256_loadu_pd(p + 24), 1);
-        const __m512d B1 = _mm512_insertf64x4(_mm512_castpd256_pd512(_mm256_loadu_pd(p + 12)), _mm256_loadu_pd(p + 28), 1);
-        d3x2_avx512_core(A0, B0, A1, B1, TW[m2], TW[m2 + 1], X);
-    }
-
-#endif
 
     inline void d3_one(const double* RESTRICT p, int m, complex_t* RESTRICT X) const {
         const LeafTw& t = TW[m];

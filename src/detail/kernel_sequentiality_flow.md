@@ -38,7 +38,7 @@ Sequentiality observations:
 2. Loading `A0/A1` after launching the rotation shortens live ranges and lets the
    FMA/multiply chain start earlier.
 3. The add/sub store frontier has two independent pairs: `(A0, R)` and `(A1, I)`.
-4. Wide x86 should run AVX-512/AVX2 first, then the 128-bit V2 tail, then scalar.
+4. Wide x86 should run AVX2 first, then the 128-bit V2 tail, then scalar.
    Dropping from AVX2 directly to scalar wastes the natural two-double tail.
 
 ## Forward two-level fused node: `norm2_fused`
@@ -168,7 +168,7 @@ Sequentiality observations:
 3. Let wide SIMD fall through to narrower SIMD tails before scalar cleanup.
 4. Absorb invariant scales into twiddle constants when the scaled temporary is
    only consumed by a rotation.
-5. Treat AVX-512 as a separate experiment. Wider registers do not automatically
+5. Wider registers do not automatically
    win for these kernels because the DAG is short, store-heavy, and sensitive to
    frequency and register pressure.
 

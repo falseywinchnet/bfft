@@ -23,8 +23,8 @@ distributed), the build tunes for the local CPU by default. It selects, when the
 compiler accepts them:
 
 - `-O3`
-- `-march=native` (or `-mcpu=native` on Apple-silicon clang) — emit AVX2/AVX-512
-  and other host-specific instructions.
+- `-march=native` (or `-mcpu=native` on Apple-silicon clang) — emit AVX2
+  and other supported host-specific instructions.
 - `-ffast-math` — relaxed floating-point for faster math.
 
 Each flag is probed against your compiler first, so the build degrades
