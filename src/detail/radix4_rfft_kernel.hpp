@@ -103,6 +103,16 @@ public:
         forward_impl<true>(input, output_re, output_im, work);
     }
 
+    template <typename Complex>
+    void forward_complex_scalar(const double* input, Complex* output, double* work) const {
+        forward_complex_impl<false>(input, output, work);
+    }
+
+    template <typename Complex>
+    void forward_complex_simd(const double* input, Complex* output, double* work) const {
+        forward_complex_impl<true>(input, output, work);
+    }
+
 private:
     static bool valid_size(int n) {
         if (!is_power2(n)) {
@@ -325,7 +335,7 @@ private:
     }
 
     template <bool use_simd>
-    void forward_impl(const double* input, double* output_re, double* output_im, double* work) const {
+    void compute_work(const double* input, double* work) const {
         BRUUN_ASSERT(n_ >= 4);
         for (int b = 0; b < half_; ++b) {
             const int j = rev_[static_cast<std::size_t>(b)];
@@ -342,6 +352,11 @@ private:
                 merge4_inplace<use_simd>(work + off, s);
             }
         }
+    }
+
+    template <bool use_simd>
+    void forward_impl(const double* input, double* output_re, double* output_im, double* work) const {
+        compute_work<use_simd>(input, work);
         output_re[0] = work[0];
         output_im[0] = 0.0;
         output_re[half_] = work[1];
@@ -351,6 +366,21 @@ private:
             const double b = work[2 * k + 1];
             output_re[k] = a + b * cos_[static_cast<std::size_t>(k)];
             output_im[k] = -b * sin_[static_cast<std::size_t>(k)];
+        }
+    }
+
+    template <bool use_simd, typename Complex>
+    void forward_complex_impl(const double* input, Complex* output, double* work) const {
+        compute_work<use_simd>(input, work);
+        output[0].re = work[0];
+        output[0].im = 0.0;
+        output[half_].re = work[1];
+        output[half_].im = 0.0;
+        for (int k = 1; k < half_; ++k) {
+            const double a = work[2 * k];
+            const double b = work[2 * k + 1];
+            output[k].re = a + b * cos_[static_cast<std::size_t>(k)];
+            output[k].im = -b * sin_[static_cast<std::size_t>(k)];
         }
     }
 
