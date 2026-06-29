@@ -1,12 +1,28 @@
 #pragma once
 
 // MIT joshuah.rainstar@gmail.com 2026
-// Internal radix-4 real FFT experiment kernel.
+// Internal radix-4 real DIT FFT experiment kernel.
 //
 // This header keeps the standalone NEON prototype as a reusable kernel object:
 // construction owns all planning tables, callers provide input/output/work
 // buffers, and the SIMD path is selected through the shared BFFT two-lane
 // backend abstraction instead of including one architecture directly.
+//
+//
+//size,bfft_standard_ns,bfft_native_ns,radix4_scalar_ns,radix4_simd_ns,repeats,radix4_scalar_maxerr,radix4_simd_maxerr
+//16,48.28,43.03,33.34,34.33,4096,1.776e-15,1.776e-15
+//64,110.90,92.46,115.99,110.94,4096,7.799e-15,7.799e-15
+//256,351.78,270.00,430.66,304.04,4096,2.842e-14,2.842e-14
+//1024,1048.44,828.56,1603.36,1088.52,4096,1.009e-12,1.009e-12
+//4096,4702.14,3890.81,7702.89,5319.23,4096,9.265e-12,9.265e-12
+//16384,24458.78,21025.23,41467.98,31556.60,1024,9.888e-11,9.888e-11
+//65536,135820.48,100234.21,198296.55,157924.64,256,4.420e-09,4.420e-09
+//262144,602272.12,476856.78,886466.80,705519.53,64,2.103e-08,2.103e-08
+//1048576,2760007.81,2299875.00,4200447.94,3279627.62,16,6.565e-07,6.565e-07
+//We are faster than DIF if you can amortize the cost of the initial rearrangement in the streaming- it's 20% of the cost here
+//You can do real_shuffled_bruun_order_samples->DIT->frequency(inherently in FFT order)->(not yet developed inverse, can maybe use turkey-cooley)
+//
+
 
 #include "bruun_kernel.hpp"
 
