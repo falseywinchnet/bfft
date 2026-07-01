@@ -7,6 +7,49 @@
 // construction owns all planning tables, callers provide input/output/work
 // buffers, and the SIMD path is selected through the shared BFFT two-lane
 // backend abstraction instead of including one architecture directly.
+//
+// ---------------------------------------------------------------------------
+// The mirrored-lane walk (the SIMD path below)
+// ---------------------------------------------------------------------------
+// The transform is the usual real-Bruun DIT tree: seed nodes are gathered from
+// the input in bit-reversed order, radix-4 merges reduce children modulo the
+// real quadratic factors of z^N - 1, and each spectral bin k finally leaves the
+// tree as a residue pair (a, b) with X_k = a + b * e^{-i 2 pi k / N}.
+//
+// The walk through that tree is chosen differently from the obvious one.
+// Observe two facts about the node-index space [0, N/2):
+//
+//   1. Node b and node b + N/4 (top index bit) run *identical* butterfly
+//      sequences with *identical* twiddles through every stage below the
+//      final merge; they only meet at the top, where they sit in the
+//      (q0,q2) / (q1,q3) child quarters of the last radix-4 reduction.
+//   2. Their seed reads are input-adjacent: rev(b + N/4) == rev(b) + 1.
+//
+// So instead of packing SIMD lanes across neighbouring spectral nodes inside
+// one block - which forces a deinterleave/interleave permute pair around every
+// butterfly plus scalar DC/Nyquist/midpoint special cases - the two lanes of
+// every vector are the two mirror trees. Work layout ("slot" = node pair):
+//
+//   slot s in [0, N/4):  vwork[4s+0..1] = { a(node s), a(node s + N/4) }
+//                        vwork[4s+2..3] = { b(node s), b(node s + N/4) }
+//
+// Consequences:
+//   - Seed loads are contiguous V2 loads at rev(b): the intake shuffle stays
+//     frontloaded (ordered -> out-of-order reads) but is now vector-width and
+//     table-halved. Seed blocks are visited in bit-reversed block order so the
+//     gather decays into ~2*SB sequential comb streams instead of full-array
+//     sweeps that refetch every input line; large N stops thrashing.
+//   - Every merge stage below the top is pure vertical SIMD: no permutes at
+//     all, twiddles broadcast with V2_SET1, and the DC/Nyquist/sqrt2 chains
+//     vectorize across the mirror lanes instead of running scalar.
+//   - The single unavoidable lane crossing happens exactly once, in the
+//     terminal merge, where it fuses with the (a,b) -> complex projection.
+//     The projection therefore costs no separate pass at any size, and its
+//     four output bins per step share one {cos,sin} table vector through the
+//     quarter-turn symmetries cos(pi/2 - t) = sin(t), cos(pi - t) = -cos(t).
+//
+// The scalar path below keeps the plain single-lane walk for reference and
+// for BRUUN_LEVEL == 0 builds.
 
 #include "bruun_kernel.hpp"
 
@@ -67,10 +110,6 @@ public:
             clear();
             return false;
         }
-        if (!pair_twiddle_offset_.resize(static_cast<std::size_t>(twiddle_stage_count_))) {
-            clear();
-            return false;
-        }
         int alloc_count = twiddle_count;
         if (alloc_count == 0) {
             alloc_count = 1;
@@ -93,48 +132,26 @@ public:
             ++stage;
         }
 
-        int pair_twiddle_count = 0;
-        for (int s = 4; s <= n_; s <<= 1) {
-            const int q4 = s >> 2;
-            const int h = q4 >> 1;
-            const int pair_count = h > 1 ? ((h - 1) >> 1) : 0;
-            if (pair_count > 0) {
-                pair_twiddle_count += 6 * pair_count;
-            }
-        }
-        int pair_alloc_count = pair_twiddle_count;
-        if (pair_alloc_count == 0) {
-            pair_alloc_count = 1;
-        }
-        if (!pair_twiddle_.resize(static_cast<std::size_t>(pair_alloc_count))) {
+        // Terminal-stage table: for each i in [1, n/8) one 6-double record
+        //   { t1[i], t1[n/4 - i], cos(th_i), sin(th_i), -sin(th_i), -cos(th_i) }
+        // covering both level-B twiddles of the lane-crossing merge and the
+        // projection coefficients of all four bins {i, n/4-i, n/2-i, n/4+i}.
+        const int tm = n_ >> 3;
+        int term_count = tm > 1 ? 6 * (tm - 1) : 1;
+        if (!term_tw_.resize(static_cast<std::size_t>(term_count))) {
             clear();
             return false;
         }
-
-        int pair_offset = 0;
-        stage = 0;
-        for (int s = 4; s <= n_; s <<= 1) {
-            pair_twiddle_offset_[static_cast<std::size_t>(stage)] = pair_offset;
-            const int q4 = s >> 2;
-            const int h = q4 >> 1;
-            const int pair_count = h > 1 ? ((h - 1) >> 1) : 0;
-            if (pair_count > 0) {
-                const double* t2 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(stage - 1)];
-                const double* t1 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(stage)];
-                for (int p = 0; p < pair_count; ++p) {
-                    const int i = p + 1;
-                    const int m = h - i;
-                    double* dst = pair_twiddle_.data() + pair_offset + 6 * p;
-                    dst[0] = t2[i - 1];
-                    dst[1] = t2[m - 1];
-                    dst[2] = t1[i - 1];
-                    dst[3] = t1[m - 1];
-                    dst[4] = t1[q4 - i - 1];
-                    dst[5] = t1[q4 - m - 1];
-                }
-                pair_offset += 6 * pair_count;
-            }
-            ++stage;
+        for (int i = 1; i < tm; ++i) {
+            double* dst = term_tw_.data() + 6 * (i - 1);
+            const double theta = bruun_tau * static_cast<double>(i) / static_cast<double>(n_);
+            const double theta_hi = bruun_tau * static_cast<double>(2 * tm - i) / static_cast<double>(n_);
+            dst[0] = 2.0 * std::cos(theta);
+            dst[1] = 2.0 * std::cos(theta_hi);
+            dst[2] = std::cos(theta);
+            dst[3] = std::sin(theta);
+            dst[4] = -dst[3];
+            dst[5] = -dst[2];
         }
         return true;
     }
@@ -144,21 +161,37 @@ public:
     int work_size() const noexcept { return n_; }
 
     void forward_scalar(const double* input, double* output_re, double* output_im, double* work) const {
-        forward_impl<false>(input, output_re, output_im, work);
+        forward_split_scalar(input, output_re, output_im, work);
     }
 
     void forward_simd(const double* input, double* output_re, double* output_im, double* work) const {
-        forward_impl<true>(input, output_re, output_im, work);
+#if BRUUN_LEVEL >= 1
+        if (n_ >= 16) {
+            compute_vwork(input, work);
+            terminal_split_writer w{output_re, output_im};
+            terminal_v(work, w);
+            return;
+        }
+#endif
+        forward_split_scalar(input, output_re, output_im, work);
     }
 
     template <typename Complex>
     void forward_complex_scalar(const double* input, Complex* output, double* work) const {
-        forward_complex_impl<false>(input, output, work);
+        forward_complex_scalar_impl(input, output, work);
     }
 
     template <typename Complex>
     void forward_complex_simd(const double* input, Complex* output, double* work) const {
-        forward_complex_impl<true>(input, output, work);
+#if BRUUN_LEVEL >= 1
+        if (n_ >= 16) {
+            compute_vwork(input, work);
+            terminal_complex_writer<Complex> w{output};
+            terminal_v(work, w);
+            return;
+        }
+#endif
+        forward_complex_scalar_impl(input, output, work);
     }
 
 private:
@@ -182,30 +215,11 @@ private:
         neg_sin_.clear();
         twiddle_.clear();
         twiddle_offset_.clear();
-        pair_twiddle_.clear();
-        pair_twiddle_offset_.clear();
+        term_tw_.clear();
     }
 
-    int stage_offset(int s) const {
-        int stage = 0;
-        int value = s;
-        while (value > 4) {
-            value >>= 1;
-            ++stage;
-        }
-        return twiddle_offset_[static_cast<std::size_t>(stage)];
-    }
-
-    int stage_index(int s) const {
-        int stage = 0;
-        int value = s;
-        while (value > 4) {
-            value >>= 1;
-            ++stage;
-        }
-        return stage;
-    }
-
+    // Bruun radix-2 residue reduction: child pair at angle 2*theta splits into
+    // parent pairs at theta and pi - theta, c2 = 2*cos(theta).
     static BRUUN_ALWAYS_INLINE void pair_reduce(double ea, double eb, double oa, double ob, double c2,
                                                 double& la, double& lb, double& ha, double& hb) {
         const double a = ea - eb;
@@ -217,7 +231,144 @@ private:
         hb = b - c2 * eb;   // fma
     }
 
+    // ------------------------------------------------------------------
+    // Scalar reference walk (also serves BRUUN_LEVEL == 0 and n == 4).
+    // ------------------------------------------------------------------
+
+    void butterfly4_scalar(const double* q0, const double* q1, const double* q2, const double* q3,
+                           int i, double t2, double t1, double t1q, double* out) const {
+        double h0a, h0b, h0pa, h0pb, h1a, h1b, h1pa, h1pb;
+        pair_reduce(q0[2 * i], q0[2 * i + 1], q1[2 * i], q1[2 * i + 1], t2, h0a, h0b, h0pa, h0pb);
+        pair_reduce(q2[2 * i], q2[2 * i + 1], q3[2 * i], q3[2 * i + 1], t2, h1a, h1b, h1pa, h1pb);
+        pair_reduce(h0a, h0b, h1a, h1b, t1, out[0], out[1], out[2], out[3]);
+        pair_reduce(h0pa, h0pb, h1pa, h1pb, t1q, out[4], out[5], out[6], out[7]);
+    }
+
+    void write_butterfly4(double* block, int hs, int q4, int i, const double* out) const {
+        block[2 * i] = out[0];
+        block[2 * i + 1] = out[1];
+        block[2 * (hs - i)] = out[2];
+        block[2 * (hs - i) + 1] = out[3];
+        block[2 * (q4 - i)] = out[4];
+        block[2 * (q4 - i) + 1] = out[5];
+        block[2 * (q4 + i)] = out[6];
+        block[2 * (q4 + i) + 1] = out[7];
+    }
+
+    void merge4_scalar(double* block, int s, const double* t2, const double* t1) const {
+        const int q4 = s >> 2;
+        const int hs = s >> 1;
+        double* q0 = block;
+        double* q1 = block + q4;
+        double* q2 = block + 2 * q4;
+        double* q3 = block + 3 * q4;
+
+        const double q0dc = q0[0];
+        const double q0ny = q0[1];
+        const double q1dc = q1[0];
+        const double q1ny = q1[1];
+        const double q2dc = q2[0];
+        const double q2ny = q2[1];
+        const double q3dc = q3[0];
+        const double q3ny = q3[1];
+        const double h0dc = q0dc + q1dc;
+        const double h0ny = q0dc - q1dc;
+        const double h1dc = q2dc + q3dc;
+        const double h1ny = q2dc - q3dc;
+        double b2a0, b2b0, b2a1, b2b1;
+        pair_reduce(q0ny, q1ny, q2ny, q3ny, t1[q4 / 2 - 1], b2a0, b2b0, b2a1, b2b1);
+        block[0] = h0dc + h1dc;
+        block[1] = h0dc - h1dc;
+        block[2 * q4] = h0ny;
+        block[2 * q4 + 1] = h1ny;
+        block[2 * (q4 / 2)] = b2a0;
+        block[2 * (q4 / 2) + 1] = b2b0;
+        block[2 * (hs - q4 / 2)] = b2a1;
+        block[2 * (hs - q4 / 2) + 1] = b2b1;
+
+        for (int i = 1; i < q4 / 2 - i; ++i) {
+            const int m = q4 / 2 - i;
+            double oi[8];
+            double om[8];
+            butterfly4_scalar(q0, q1, q2, q3, i, t2[i - 1], t1[i - 1], t1[q4 - i - 1], oi);
+            butterfly4_scalar(q0, q1, q2, q3, m, t2[m - 1], t1[m - 1], t1[q4 - m - 1], om);
+            write_butterfly4(block, hs, q4, i, oi);
+            write_butterfly4(block, hs, q4, m, om);
+        }
+
+        if (((q4 / 2) & 1) == 0 && q4 / 2 >= 2) {
+            const int i = q4 >> 2;
+            double oi[8];
+            butterfly4_scalar(q0, q1, q2, q3, i, t2[i - 1], t1[i - 1], t1[q4 - i - 1], oi);
+            write_butterfly4(block, hs, q4, i, oi);
+        }
+    }
+
+    BRUUN_ALWAYS_INLINE void seed_merge2_pair(const double* input, double* work, int b) const {
+        const int j0 = rev_[static_cast<std::size_t>(b)];
+        const int j1 = rev_[static_cast<std::size_t>(b + 1)];
+        const double a0 = input[j0];
+        const double c0 = input[half_ + j0];
+        const double a1 = input[j1];
+        const double c1 = input[half_ + j1];
+        const double e0 = a0 + c0;
+        const double e1 = a1 + c1;
+        work[2 * b] = e0 + e1;
+        work[2 * b + 1] = e0 - e1;
+        work[2 * b + 2] = a0 - c0;
+        work[2 * b + 3] = a1 - c1;
+    }
+
+    void compute_work_scalar(const double* input, double* work) const {
+        BRUUN_ASSERT(n_ >= 4);
+        for (int b = 0; b < half_; b += 2) {
+            seed_merge2_pair(input, work, b);
+        }
+        int stage = 2;
+        for (int s = 16; s <= n_; s <<= 2, stage += 2) {
+            const double* t2 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(stage - 1)];
+            const double* t1 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(stage)];
+            for (int off = 0; off < n_; off += s) {
+                merge4_scalar(work + off, s, t2, t1);
+            }
+        }
+    }
+
+    void forward_split_scalar(const double* input, double* output_re, double* output_im, double* work) const {
+        compute_work_scalar(input, work);
+        output_re[0] = work[0];
+        output_im[0] = 0.0;
+        output_re[half_] = work[1];
+        output_im[half_] = 0.0;
+        for (int k = 1; k < half_; ++k) {
+            const double a = work[2 * k];
+            const double b = work[2 * k + 1];
+            output_re[k] = a + b * cos_[static_cast<std::size_t>(k)];
+            output_im[k] = b * neg_sin_[static_cast<std::size_t>(k)];
+        }
+    }
+
+    template <typename Complex>
+    void forward_complex_scalar_impl(const double* input, Complex* output, double* work) const {
+        compute_work_scalar(input, work);
+        output[0].re = work[0];
+        output[0].im = 0.0;
+        output[half_].re = work[1];
+        output[half_].im = 0.0;
+        for (int k = 1; k < half_; ++k) {
+            const double a = work[2 * k];
+            const double b = work[2 * k + 1];
+            output[k].re = a + b * cos_[static_cast<std::size_t>(k)];
+            output[k].im = b * neg_sin_[static_cast<std::size_t>(k)];
+        }
+    }
+
 #if BRUUN_LEVEL >= 1
+    // ------------------------------------------------------------------
+    // Mirrored-lane SIMD walk. Lanes of every vector hold node s (lane 0)
+    // and node s + N/4 (lane 1); see the header commentary.
+    // ------------------------------------------------------------------
+
     static BRUUN_ALWAYS_INLINE void pair_reduce_v2(bruun_v2 ea, bruun_v2 eb, bruun_v2 oa, bruun_v2 ob, bruun_v2 c2,
                                                    bruun_v2& la, bruun_v2& lb, bruun_v2& ha, bruun_v2& hb) {
         const bruun_v2 a = V2_SUB(ea, eb);
@@ -253,834 +404,268 @@ private:
 #endif
     }
 
-    static BRUUN_ALWAYS_INLINE bruun_v2 v2_swap(bruun_v2 v) {
-#if defined(BRUUN_NEON_128)
-        return vextq_f64(v, v, 1);
-#elif defined(BRUUN_X86_128)
-        return _mm_shuffle_pd(v, v, 1);
-#else
-        return V2_SETLH(v2_lane1(v), v2_lane0(v));
-#endif
-    }
-#endif
-
-    void merge2(double* block, int s) const {
-        const int hs = s >> 1;
-        const int q = s >> 2;
-        const double* tw = twiddle_.data() + stage_offset(s);
-        const double e_dc = block[0];
-        const double e_ny = block[1];
-        const double o_dc = block[hs];
-        const double o_ny = block[hs + 1];
-        block[0] = e_dc + o_dc;
-        block[1] = e_dc - o_dc;
-        block[2 * q] = e_ny;
-        block[2 * q + 1] = o_ny;
-
-        for (int k = 1; k < q - k; ++k) {
-            const int m = q - k;
-            double a0, b0, a1, b1, a2, b2, a3, b3;
-            pair_reduce(block[2 * k], block[2 * k + 1], block[hs + 2 * k], block[hs + 2 * k + 1], tw[k - 1], a0, b0, a1, b1);
-            pair_reduce(block[2 * m], block[2 * m + 1], block[hs + 2 * m], block[hs + 2 * m + 1], tw[m - 1], a2, b2, a3, b3);
-            block[2 * k] = a0;
-            block[2 * k + 1] = b0;
-            block[2 * (hs - k)] = a1;
-            block[2 * (hs - k) + 1] = b1;
-            block[2 * m] = a2;
-            block[2 * m + 1] = b2;
-            block[2 * (hs - m)] = a3;
-            block[2 * (hs - m) + 1] = b3;
-        }
-
-        if ((q & 1) == 0 && q >= 2) {
-            const int k = q >> 1;
-            double a0, b0, a1, b1;
-            pair_reduce(block[2 * k], block[2 * k + 1], block[hs + 2 * k], block[hs + 2 * k + 1], tw[k - 1], a0, b0, a1, b1);
-            block[2 * k] = a0;
-            block[2 * k + 1] = b0;
-            block[2 * (hs - k)] = a1;
-            block[2 * (hs - k) + 1] = b1;
+    // Seed: fused half-split + radix-2 merge into standard s=4 blocks, both
+    // mirror lanes at once. rev(b + N/4) == rev(b) + 1 makes both input reads
+    // contiguous V2 loads; rev(b + 1) == rev(b) + N/8 removes the second
+    // table lookup.
+    void seed_block_v(const double* input, double* vw, int base, int count) const {
+        const int hq = half_ >> 1;
+        for (int b = base; b < base + count; b += 2) {
+            const int j0 = rev_[static_cast<std::size_t>(b)];
+            const int j1 = j0 + hq;
+            const bruun_v2 a0 = V2_LD(input + j0);
+            const bruun_v2 c0 = V2_LD(input + j0 + half_);
+            const bruun_v2 a1 = V2_LD(input + j1);
+            const bruun_v2 c1 = V2_LD(input + j1 + half_);
+            const bruun_v2 e0 = V2_ADD(a0, c0);
+            const bruun_v2 e1 = V2_ADD(a1, c1);
+            double* dst = vw + 4 * b;
+            V2_ST(dst, V2_ADD(e0, e1));
+            V2_ST(dst + 2, V2_SUB(e0, e1));
+            V2_ST(dst + 4, V2_SUB(a0, c0));
+            V2_ST(dst + 6, V2_SUB(a1, c1));
         }
     }
 
-    void butterfly4_scalar(const double* q0, const double* q1, const double* q2, const double* q3,
-                           int i, double t2, double t1, double t1q, double* out) const {
-        double h0a, h0b, h0pa, h0pb, h1a, h1b, h1pa, h1pb;
-        pair_reduce(q0[2 * i], q0[2 * i + 1], q1[2 * i], q1[2 * i + 1], t2, h0a, h0b, h0pa, h0pb);
-        pair_reduce(q2[2 * i], q2[2 * i + 1], q3[2 * i], q3[2 * i + 1], t2, h1a, h1b, h1pa, h1pb);
-        pair_reduce(h0a, h0b, h1a, h1b, t1, out[0], out[1], out[2], out[3]);
-        pair_reduce(h0pa, h0pb, h1pa, h1pb, t1q, out[4], out[5], out[6], out[7]);
-    }
-
-    void write_butterfly4(double* block, int hs, int q4, int i, const double* out) const {
-        block[2 * i] = out[0];
-        block[2 * i + 1] = out[1];
-        block[2 * (hs - i)] = out[2];
-        block[2 * (hs - i) + 1] = out[3];
-        block[2 * (q4 - i)] = out[4];
-        block[2 * (q4 - i) + 1] = out[5];
-        block[2 * (q4 + i)] = out[6];
-        block[2 * (q4 + i) + 1] = out[7];
-    }
-
-    template <typename Complex>
-    BRUUN_ALWAYS_INLINE void write_projected_bin(Complex* output, int k, double a, double b) const {
-        output[k].re = a + b * cos_[static_cast<std::size_t>(k)];
-        output[k].im = b * neg_sin_[static_cast<std::size_t>(k)];
-    }
-
-#if BRUUN_LEVEL >= 1
-    template <typename Complex>
-    BRUUN_ALWAYS_INLINE void write_projected_pair(Complex* output, int k0, int k1, bruun_v2 a, bruun_v2 b) const {
-        const bruun_v2 cv = V2_SETLH(cos_[static_cast<std::size_t>(k0)], cos_[static_cast<std::size_t>(k1)]);
-        const bruun_v2 sv = V2_SETLH(neg_sin_[static_cast<std::size_t>(k0)], neg_sin_[static_cast<std::size_t>(k1)]);
-        const bruun_v2 re = V2_MADD(a, b, cv);
-        const bruun_v2 im = V2_MUL(b, sv);
-        output[k0].re = v2_lane0(re);
-        output[k0].im = v2_lane0(im);
-        output[k1].re = v2_lane1(re);
-        output[k1].im = v2_lane1(im);
-    }
-
-    template <typename Complex>
-    BRUUN_ALWAYS_INLINE void write_projected_contiguous_pair(Complex* output, int k, bruun_v2 a, bruun_v2 b) const {
-        const bruun_v2 cv = V2_LD(cos_.data() + k);
-        const bruun_v2 sv = V2_LD(neg_sin_.data() + k);
-        const bruun_v2 re = V2_MADD(a, b, cv);
-        const bruun_v2 im = V2_MUL(b, sv);
-        V2_ST(&output[k].re, V2_UNPLO(re, im));
-        V2_ST(&output[k + 1].re, V2_UNPHI(re, im));
-    }
-
-    BRUUN_ALWAYS_INLINE void project_work_pair_split(const double* work, double* output_re, double* output_im,
-                                                     int k) const {
-        const bruun_v2 p0 = V2_LD(work + 2 * k);
-        const bruun_v2 p1 = V2_LD(work + 2 * (k + 1));
-        const bruun_v2 a = V2_UNPLO(p0, p1);
-        const bruun_v2 b = V2_UNPHI(p0, p1);
-        const bruun_v2 cv = V2_LD(cos_.data() + k);
-        const bruun_v2 sv = V2_LD(neg_sin_.data() + k);
-        V2_ST(output_re + k, V2_MADD(a, b, cv));
-        V2_ST(output_im + k, V2_MUL(b, sv));
-    }
-
-    template <typename Complex>
-    BRUUN_ALWAYS_INLINE void project_work_pair_complex(const double* work, Complex* output, int k) const {
-        const bruun_v2 p0 = V2_LD(work + 2 * k);
-        const bruun_v2 p1 = V2_LD(work + 2 * (k + 1));
-        const bruun_v2 a = V2_UNPLO(p0, p1);
-        const bruun_v2 b = V2_UNPHI(p0, p1);
-        const bruun_v2 cv = V2_LD(cos_.data() + k);
-        const bruun_v2 sv = V2_LD(neg_sin_.data() + k);
-        const bruun_v2 re = V2_MADD(a, b, cv);
-        const bruun_v2 im = V2_MUL(b, sv);
-        V2_ST(&output[k].re, V2_UNPLO(re, im));
-        V2_ST(&output[k + 1].re, V2_UNPHI(re, im));
-    }
-
-    void butterfly4_pair(const double* q0, const double* q1, const double* q2, const double* q3,
-                         int i, int m, const double* twp, int q4, double* block, int hs) const {
-        const bruun_v2 q0i = V2_LD(q0 + 2 * i);
-        const bruun_v2 q0m = V2_LD(q0 + 2 * m);
-        const bruun_v2 q1i = V2_LD(q1 + 2 * i);
-        const bruun_v2 q1m = V2_LD(q1 + 2 * m);
-        const bruun_v2 q2i = V2_LD(q2 + 2 * i);
-        const bruun_v2 q2m = V2_LD(q2 + 2 * m);
-        const bruun_v2 q3i = V2_LD(q3 + 2 * i);
-        const bruun_v2 q3m = V2_LD(q3 + 2 * m);
-
-        const bruun_v2 q0a = V2_UNPLO(q0i, q0m);
-        const bruun_v2 q0b = V2_UNPHI(q0i, q0m);
-        const bruun_v2 q1a = V2_UNPLO(q1i, q1m);
-        const bruun_v2 q1b = V2_UNPHI(q1i, q1m);
-        const bruun_v2 q2a = V2_UNPLO(q2i, q2m);
-        const bruun_v2 q2b = V2_UNPHI(q2i, q2m);
-        const bruun_v2 q3a = V2_UNPLO(q3i, q3m);
-        const bruun_v2 q3b = V2_UNPHI(q3i, q3m);
-
-        const bruun_v2 t2v = V2_LD(twp);
-        const bruun_v2 t1v = V2_LD(twp + 2);
-        const bruun_v2 t1q = V2_LD(twp + 4);
-
+    // One radix-4 butterfly on mirrored lanes: child node i of all four
+    // children -> parent nodes {i, 4M-i, 2M-i, 2M+i}. Pure vertical SIMD.
+    BRUUN_ALWAYS_INLINE void butterfly4_v(bruun_v2 a0, bruun_v2 b0, bruun_v2 a1, bruun_v2 b1,
+                                          bruun_v2 a2, bruun_v2 b2, bruun_v2 a3, bruun_v2 b3,
+                                          double t2, double t1, double t1q, bruun_v2* o) const {
+        const bruun_v2 t2v = V2_SET1(t2);
         bruun_v2 h0la, h0lb, h0ha, h0hb, h1la, h1lb, h1ha, h1hb;
-        pair_reduce_v2(q0a, q0b, q1a, q1b, t2v, h0la, h0lb, h0ha, h0hb);
-        pair_reduce_v2(q2a, q2b, q3a, q3b, t2v, h1la, h1lb, h1ha, h1hb);
-
-        bruun_v2 fa, fb, fpa, fpb, ga, gb, gpa, gpb;
-        pair_reduce_v2(h0la, h0lb, h1la, h1lb, t1v, fa, fb, fpa, fpb);
-        pair_reduce_v2(h0ha, h0hb, h1ha, h1hb, t1q, ga, gb, gpa, gpb);
-
-        V2_ST(block + 2 * i, V2_UNPLO(fa, fb));
-        V2_ST(block + 2 * m, V2_UNPHI(fa, fb));
-        V2_ST(block + 2 * (hs - i), V2_UNPLO(fpa, fpb));
-        V2_ST(block + 2 * (hs - m), V2_UNPHI(fpa, fpb));
-        V2_ST(block + 2 * (q4 - i), V2_UNPLO(ga, gb));
-        V2_ST(block + 2 * (q4 - m), V2_UNPHI(ga, gb));
-        V2_ST(block + 2 * (q4 + i), V2_UNPLO(gpa, gpb));
-        V2_ST(block + 2 * (q4 + m), V2_UNPHI(gpa, gpb));
+        pair_reduce_v2(a0, b0, a1, b1, t2v, h0la, h0lb, h0ha, h0hb);
+        pair_reduce_v2(a2, b2, a3, b3, t2v, h1la, h1lb, h1ha, h1hb);
+        pair_reduce_v2(h0la, h0lb, h1la, h1lb, V2_SET1(t1), o[0], o[1], o[2], o[3]);
+        pair_reduce_v2(h0ha, h0hb, h1ha, h1hb, V2_SET1(t1q), o[4], o[5], o[6], o[7]);
     }
 
-    template <typename Complex>
-    void butterfly4_terminal_pair(const double* q0, const double* q1, const double* q2, const double* q3,
-                                  int i, int m, const double* twp, int q4, Complex* output, int hs) const {
-        const bruun_v2 q0i = V2_LD(q0 + 2 * i);
-        const bruun_v2 q0m = V2_LD(q0 + 2 * m);
-        const bruun_v2 q1i = V2_LD(q1 + 2 * i);
-        const bruun_v2 q1m = V2_LD(q1 + 2 * m);
-        const bruun_v2 q2i = V2_LD(q2 + 2 * i);
-        const bruun_v2 q2m = V2_LD(q2 + 2 * m);
-        const bruun_v2 q3i = V2_LD(q3 + 2 * i);
-        const bruun_v2 q3m = V2_LD(q3 + 2 * m);
-
-        const bruun_v2 q0a = V2_UNPLO(q0i, q0m);
-        const bruun_v2 q0b = V2_UNPHI(q0i, q0m);
-        const bruun_v2 q1a = V2_UNPLO(q1i, q1m);
-        const bruun_v2 q1b = V2_UNPHI(q1i, q1m);
-        const bruun_v2 q2a = V2_UNPLO(q2i, q2m);
-        const bruun_v2 q2b = V2_UNPHI(q2i, q2m);
-        const bruun_v2 q3a = V2_UNPLO(q3i, q3m);
-        const bruun_v2 q3b = V2_UNPHI(q3i, q3m);
-
-        const bruun_v2 t2v = V2_LD(twp);
-        const bruun_v2 t1v = V2_LD(twp + 2);
-        const bruun_v2 t1q = V2_LD(twp + 4);
-
-        bruun_v2 h0la, h0lb, h0ha, h0hb, h1la, h1lb, h1ha, h1hb;
-        pair_reduce_v2(q0a, q0b, q1a, q1b, t2v, h0la, h0lb, h0ha, h0hb);
-        pair_reduce_v2(q2a, q2b, q3a, q3b, t2v, h1la, h1lb, h1ha, h1hb);
-
-        bruun_v2 fa, fb, fpa, fpb, ga, gb, gpa, gpb;
-        pair_reduce_v2(h0la, h0lb, h1la, h1lb, t1v, fa, fb, fpa, fpb);
-        pair_reduce_v2(h0ha, h0hb, h1ha, h1hb, t1q, ga, gb, gpa, gpb);
-
-        write_projected_pair(output, i, m, fa, fb);
-        write_projected_pair(output, hs - i, hs - m, fpa, fpb);
-        write_projected_pair(output, q4 - i, q4 - m, ga, gb);
-        write_projected_pair(output, q4 + i, q4 + m, gpa, gpb);
+    static BRUUN_ALWAYS_INLINE void store_butterfly4_v(double* vblk, int M, int i, const bruun_v2* o) {
+        V2_ST(vblk + 4 * i, o[0]);
+        V2_ST(vblk + 4 * i + 2, o[1]);
+        V2_ST(vblk + 4 * (4 * M - i), o[2]);
+        V2_ST(vblk + 4 * (4 * M - i) + 2, o[3]);
+        V2_ST(vblk + 4 * (2 * M - i), o[4]);
+        V2_ST(vblk + 4 * (2 * M - i) + 2, o[5]);
+        V2_ST(vblk + 4 * (2 * M + i), o[6]);
+        V2_ST(vblk + 4 * (2 * M + i) + 2, o[7]);
     }
 
-    template <typename Complex>
-    void butterfly4_terminal_adjacent_pair(const double* q0, const double* q1, const double* q2, const double* q3,
-                                           int i, const double* t2, const double* t1, int q4,
-                                           Complex* output, int hs) const {
-        const bruun_v2 q0i = V2_LD(q0 + 2 * i);
-        const bruun_v2 q0j = V2_LD(q0 + 2 * (i + 1));
-        const bruun_v2 q1i = V2_LD(q1 + 2 * i);
-        const bruun_v2 q1j = V2_LD(q1 + 2 * (i + 1));
-        const bruun_v2 q2i = V2_LD(q2 + 2 * i);
-        const bruun_v2 q2j = V2_LD(q2 + 2 * (i + 1));
-        const bruun_v2 q3i = V2_LD(q3 + 2 * i);
-        const bruun_v2 q3j = V2_LD(q3 + 2 * (i + 1));
+    // In-place radix-4 merge of four child blocks of M nodes each, both
+    // mirror lanes at once. The (i, M-i) pairing exists purely so all reads
+    // of a slot land before the palindromic writes that overwrite it.
+    void merge4_v(double* vblk, int M, const double* t2, const double* t1) const {
+        double* c0 = vblk;
+        double* c1 = vblk + 4 * M;
+        double* c2 = vblk + 8 * M;
+        double* c3 = vblk + 12 * M;
 
-        const bruun_v2 q0a = V2_UNPLO(q0i, q0j);
-        const bruun_v2 q0b = V2_UNPHI(q0i, q0j);
-        const bruun_v2 q1a = V2_UNPLO(q1i, q1j);
-        const bruun_v2 q1b = V2_UNPHI(q1i, q1j);
-        const bruun_v2 q2a = V2_UNPLO(q2i, q2j);
-        const bruun_v2 q2b = V2_UNPHI(q2i, q2j);
-        const bruun_v2 q3a = V2_UNPLO(q3i, q3j);
-        const bruun_v2 q3b = V2_UNPHI(q3i, q3j);
+        const bruun_v2 dc0 = V2_LD(c0);
+        const bruun_v2 ny0 = V2_LD(c0 + 2);
+        const bruun_v2 dc1 = V2_LD(c1);
+        const bruun_v2 ny1 = V2_LD(c1 + 2);
+        const bruun_v2 dc2 = V2_LD(c2);
+        const bruun_v2 ny2 = V2_LD(c2 + 2);
+        const bruun_v2 dc3 = V2_LD(c3);
+        const bruun_v2 ny3 = V2_LD(c3 + 2);
+        bruun_v2 ma, mb, mha, mhb;
+        pair_reduce_v2(ny0, ny1, ny2, ny3, V2_SET1(t1[M - 1]), ma, mb, mha, mhb);
+        const bruun_v2 h0dc = V2_ADD(dc0, dc1);
+        const bruun_v2 h0ny = V2_SUB(dc0, dc1);
+        const bruun_v2 h1dc = V2_ADD(dc2, dc3);
+        const bruun_v2 h1ny = V2_SUB(dc2, dc3);
+        V2_ST(c0, V2_ADD(h0dc, h1dc));          // node 0: (dc, ny)
+        V2_ST(c0 + 2, V2_SUB(h0dc, h1dc));
+        V2_ST(c1, ma);                          // node M (angle pi/4 of block)
+        V2_ST(c1 + 2, mb);
+        V2_ST(c2, h0ny);                        // node 2M (angle pi/2)
+        V2_ST(c2 + 2, h1ny);
+        V2_ST(c3, mha);                         // node 3M
+        V2_ST(c3 + 2, mhb);
 
-        const bruun_v2 t2v = V2_LD(t2 + i - 1);
-        const bruun_v2 t1v = V2_LD(t1 + i - 1);
-        const bruun_v2 t1q = v2_swap(V2_LD(t1 + q4 - i - 2));
-
-        bruun_v2 h0la, h0lb, h0ha, h0hb, h1la, h1lb, h1ha, h1hb;
-        pair_reduce_v2(q0a, q0b, q1a, q1b, t2v, h0la, h0lb, h0ha, h0hb);
-        pair_reduce_v2(q2a, q2b, q3a, q3b, t2v, h1la, h1lb, h1ha, h1hb);
-
-        bruun_v2 fa, fb, fpa, fpb, ga, gb, gpa, gpb;
-        pair_reduce_v2(h0la, h0lb, h1la, h1lb, t1v, fa, fb, fpa, fpb);
-        pair_reduce_v2(h0ha, h0hb, h1ha, h1hb, t1q, ga, gb, gpa, gpb);
-
-        write_projected_contiguous_pair(output, i, fa, fb);
-        write_projected_contiguous_pair(output, hs - i - 1, v2_swap(fpa), v2_swap(fpb));
-        write_projected_contiguous_pair(output, q4 - i - 1, v2_swap(ga), v2_swap(gb));
-        write_projected_contiguous_pair(output, q4 + i, gpa, gpb);
-    }
-
-#if defined(BRUUN_NEON_128)
-    static BRUUN_ALWAYS_INLINE void store_child_pair64_lanes(double* packed, int p0, int p1,
-                                                             bruun_v2 low_re, bruun_v2 low_im,
-                                                             bruun_v2 high_re, bruun_v2 high_im) {
-        V2_ST(packed + 4 * p0, V2_UNPLO(low_re, high_re));
-        V2_ST(packed + 4 * p0 + 2, V2_UNPLO(low_im, high_im));
-        V2_ST(packed + 4 * p1, V2_UNPHI(low_re, high_re));
-        V2_ST(packed + 4 * p1 + 2, V2_UNPHI(low_im, high_im));
-    }
-
-    BRUUN_ALWAYS_INLINE void merge4_to_child_pairs64_neon(double* block, double* packed,
-                                                          const double* t2, const double* t1, const double* twp) const {
-        constexpr int q4 = 16;
-        constexpr int h = 8;
-        double* q0 = block;
-        double* q1 = block + q4;
-        double* q2 = block + 2 * q4;
-        double* q3 = block + 3 * q4;
-
-        const double q0dc = q0[0];
-        const double q0ny = q0[1];
-        const double q1dc = q1[0];
-        const double q1ny = q1[1];
-        const double q2dc = q2[0];
-        const double q2ny = q2[1];
-        const double q3dc = q3[0];
-        const double q3ny = q3[1];
-        const double h0dc = q0dc + q1dc;
-        const double h0ny = q0dc - q1dc;
-        const double h1dc = q2dc + q3dc;
-        const double h1ny = q2dc - q3dc;
-        double b2a0, b2b0, b2a1, b2b1;
-        pair_reduce(q0ny, q1ny, q2ny, q3ny, t1[h - 1], b2a0, b2b0, b2a1, b2b1);
-        block[0] = h0dc + h1dc;
-        block[1] = h0dc - h1dc;
-        block[2 * q4] = h0ny;
-        block[2 * q4 + 1] = h1ny;
-        packed[4 * (h - 1) + 0] = b2a0;
-        packed[4 * (h - 1) + 1] = b2a1;
-        packed[4 * (h - 1) + 2] = b2b0;
-        packed[4 * (h - 1) + 3] = b2b1;
-
-        for (int i = 1; i < h - i; ++i) {
-            const int m = h - i;
-            const bruun_v2 q0i = V2_LD(q0 + 2 * i);
-            const bruun_v2 q0m = V2_LD(q0 + 2 * m);
-            const bruun_v2 q1i = V2_LD(q1 + 2 * i);
-            const bruun_v2 q1m = V2_LD(q1 + 2 * m);
-            const bruun_v2 q2i = V2_LD(q2 + 2 * i);
-            const bruun_v2 q2m = V2_LD(q2 + 2 * m);
-            const bruun_v2 q3i = V2_LD(q3 + 2 * i);
-            const bruun_v2 q3m = V2_LD(q3 + 2 * m);
-
-            const bruun_v2 q0a = V2_UNPLO(q0i, q0m);
-            const bruun_v2 q0b = V2_UNPHI(q0i, q0m);
-            const bruun_v2 q1a = V2_UNPLO(q1i, q1m);
-            const bruun_v2 q1b = V2_UNPHI(q1i, q1m);
-            const bruun_v2 q2a = V2_UNPLO(q2i, q2m);
-            const bruun_v2 q2b = V2_UNPHI(q2i, q2m);
-            const bruun_v2 q3a = V2_UNPLO(q3i, q3m);
-            const bruun_v2 q3b = V2_UNPHI(q3i, q3m);
-
-            const bruun_v2 t2v = V2_LD(twp);
-            const bruun_v2 t1v = V2_LD(twp + 2);
-            const bruun_v2 t1q = V2_LD(twp + 4);
-            twp += 6;
-
-            bruun_v2 h0la, h0lb, h0ha, h0hb, h1la, h1lb, h1ha, h1hb;
-            pair_reduce_v2(q0a, q0b, q1a, q1b, t2v, h0la, h0lb, h0ha, h0hb);
-            pair_reduce_v2(q2a, q2b, q3a, q3b, t2v, h1la, h1lb, h1ha, h1hb);
-
-            bruun_v2 fa, fb, fpa, fpb, ga, gb, gpa, gpb;
-            pair_reduce_v2(h0la, h0lb, h1la, h1lb, t1v, fa, fb, fpa, fpb);
-            pair_reduce_v2(h0ha, h0hb, h1ha, h1hb, t1q, ga, gb, gpa, gpb);
-
-            store_child_pair64_lanes(packed, i - 1, m - 1, fa, fb, fpa, fpb);
-            store_child_pair64_lanes(packed, q4 - i - 1, q4 - m - 1, ga, gb, gpa, gpb);
+        for (int i = 1; i < M - i; ++i) {
+            const int m = M - i;
+            const bruun_v2 a0i = V2_LD(c0 + 4 * i);
+            const bruun_v2 b0i = V2_LD(c0 + 4 * i + 2);
+            const bruun_v2 a1i = V2_LD(c1 + 4 * i);
+            const bruun_v2 b1i = V2_LD(c1 + 4 * i + 2);
+            const bruun_v2 a2i = V2_LD(c2 + 4 * i);
+            const bruun_v2 b2i = V2_LD(c2 + 4 * i + 2);
+            const bruun_v2 a3i = V2_LD(c3 + 4 * i);
+            const bruun_v2 b3i = V2_LD(c3 + 4 * i + 2);
+            const bruun_v2 a0m = V2_LD(c0 + 4 * m);
+            const bruun_v2 b0m = V2_LD(c0 + 4 * m + 2);
+            const bruun_v2 a1m = V2_LD(c1 + 4 * m);
+            const bruun_v2 b1m = V2_LD(c1 + 4 * m + 2);
+            const bruun_v2 a2m = V2_LD(c2 + 4 * m);
+            const bruun_v2 b2m = V2_LD(c2 + 4 * m + 2);
+            const bruun_v2 a3m = V2_LD(c3 + 4 * m);
+            const bruun_v2 b3m = V2_LD(c3 + 4 * m + 2);
+            bruun_v2 oi[8];
+            bruun_v2 om[8];
+            butterfly4_v(a0i, b0i, a1i, b1i, a2i, b2i, a3i, b3i,
+                         t2[i - 1], t1[i - 1], t1[2 * M - i - 1], oi);
+            butterfly4_v(a0m, b0m, a1m, b1m, a2m, b2m, a3m, b3m,
+                         t2[m - 1], t1[m - 1], t1[2 * M - m - 1], om);
+            store_butterfly4_v(vblk, M, i, oi);
+            store_butterfly4_v(vblk, M, m, om);
         }
 
-        {
-            constexpr int i = h >> 1;
-            double oi[8];
-            butterfly4_scalar(q0, q1, q2, q3, i, t2[i - 1], t1[i - 1], t1[q4 - i - 1], oi);
-            packed[4 * (i - 1) + 0] = oi[0];
-            packed[4 * (i - 1) + 1] = oi[2];
-            packed[4 * (i - 1) + 2] = oi[1];
-            packed[4 * (i - 1) + 3] = oi[3];
-            packed[4 * (q4 - i - 1) + 0] = oi[4];
-            packed[4 * (q4 - i - 1) + 1] = oi[6];
-            packed[4 * (q4 - i - 1) + 2] = oi[5];
-            packed[4 * (q4 - i - 1) + 3] = oi[7];
+        if (M >= 2) {
+            const int i = M >> 1;
+            const bruun_v2 a0i = V2_LD(c0 + 4 * i);
+            const bruun_v2 b0i = V2_LD(c0 + 4 * i + 2);
+            const bruun_v2 a1i = V2_LD(c1 + 4 * i);
+            const bruun_v2 b1i = V2_LD(c1 + 4 * i + 2);
+            const bruun_v2 a2i = V2_LD(c2 + 4 * i);
+            const bruun_v2 b2i = V2_LD(c2 + 4 * i + 2);
+            const bruun_v2 a3i = V2_LD(c3 + 4 * i);
+            const bruun_v2 b3i = V2_LD(c3 + 4 * i + 2);
+            bruun_v2 oi[8];
+            butterfly4_v(a0i, b0i, a1i, b1i, a2i, b2i, a3i, b3i,
+                         t2[i - 1], t1[i - 1], t1[2 * M - i - 1], oi);
+            store_butterfly4_v(vblk, M, i, oi);
         }
     }
 
-    BRUUN_ALWAYS_INLINE void merge4_child_pairs_256_neon(double* block, const double* packed,
-                                                         const double* t2, const double* t1, const double* twp) const {
-        constexpr int q4 = 64;
-        constexpr int hs = 128;
-        constexpr int h = 32;
-        constexpr int pair_count = 15;
-        const double* child[4] = { block, block + q4, block + 2 * q4, block + 3 * q4 };
-        const double q0dc = block[0];
-        const double q0ny = block[1];
-        const double q1dc = block[q4];
-        const double q1ny = block[q4 + 1];
-        const double q2dc = block[2 * q4];
-        const double q2ny = block[2 * q4 + 1];
-        const double q3dc = block[3 * q4];
-        const double q3ny = block[3 * q4 + 1];
-        const double h0dc = q0dc + q1dc;
-        const double h0ny = q0dc - q1dc;
-        const double h1dc = q2dc + q3dc;
-        const double h1ny = q2dc - q3dc;
-        double b2a0, b2b0, b2a1, b2b1;
-        pair_reduce(q0ny, q1ny, q2ny, q3ny, t1[h - 1], b2a0, b2b0, b2a1, b2b1);
-        block[0] = h0dc + h1dc;
-        block[1] = h0dc - h1dc;
-        block[2 * q4] = h0ny;
-        block[2 * q4 + 1] = h1ny;
-        block[2 * h] = b2a0;
-        block[2 * h + 1] = b2b0;
-        block[2 * (hs - h)] = b2a1;
-        block[2 * (hs - h) + 1] = b2b1;
-
-        {
-            constexpr int i = h >> 1;
-            double oi[8];
-            butterfly4_scalar(child[0], child[1], child[2], child[3],
-                              i, t2[i - 1], t1[i - 1], t1[q4 - i - 1], oi);
-            write_butterfly4(block, hs, q4, i, oi);
-        }
-
-        for (int p = 0; p < pair_count; ++p) {
-            const int i = p + 1;
-            const int m = h - i;
-            const double* q0p = packed + 0 * pair_count * 4 + p * 4;
-            const double* q1p = packed + 1 * pair_count * 4 + p * 4;
-            const double* q2p = packed + 2 * pair_count * 4 + p * 4;
-            const double* q3p = packed + 3 * pair_count * 4 + p * 4;
-            const bruun_v2 q0a = V2_LD(q0p);
-            const bruun_v2 q0b = V2_LD(q0p + 2);
-            const bruun_v2 q1a = V2_LD(q1p);
-            const bruun_v2 q1b = V2_LD(q1p + 2);
-            const bruun_v2 q2a = V2_LD(q2p);
-            const bruun_v2 q2b = V2_LD(q2p + 2);
-            const bruun_v2 q3a = V2_LD(q3p);
-            const bruun_v2 q3b = V2_LD(q3p + 2);
-
-            const bruun_v2 t2v = V2_LD(twp);
-            const bruun_v2 t1v = V2_LD(twp + 2);
-            const bruun_v2 t1q = V2_LD(twp + 4);
-            twp += 6;
-
-            bruun_v2 h0la, h0lb, h0ha, h0hb, h1la, h1lb, h1ha, h1hb;
-            pair_reduce_v2(q0a, q0b, q1a, q1b, t2v, h0la, h0lb, h0ha, h0hb);
-            pair_reduce_v2(q2a, q2b, q3a, q3b, t2v, h1la, h1lb, h1ha, h1hb);
-
-            bruun_v2 fa, fb, fpa, fpb, ga, gb, gpa, gpb;
-            pair_reduce_v2(h0la, h0lb, h1la, h1lb, t1v, fa, fb, fpa, fpb);
-            pair_reduce_v2(h0ha, h0hb, h1ha, h1hb, t1q, ga, gb, gpa, gpb);
-
-            V2_ST(block + 2 * i, V2_UNPLO(fa, fb));
-            V2_ST(block + 2 * m, V2_UNPHI(fa, fb));
-            V2_ST(block + 2 * (hs - i), V2_UNPLO(fpa, fpb));
-            V2_ST(block + 2 * (hs - m), V2_UNPHI(fpa, fpb));
-            V2_ST(block + 2 * (q4 - i), V2_UNPLO(ga, gb));
-            V2_ST(block + 2 * (q4 - m), V2_UNPHI(ga, gb));
-            V2_ST(block + 2 * (q4 + i), V2_UNPLO(gpa, gpb));
-            V2_ST(block + 2 * (q4 + m), V2_UNPHI(gpa, gpb));
-        }
-    }
-#endif
-
-#endif
-
-    template <bool use_simd>
-    void merge4_inplace(double* block, int s, const double* t2, const double* t1, const double* twp) const {
-        const int q4 = s >> 2;
-        const int hs = s >> 1;
-        double* q0 = block;
-        double* q1 = block + q4;
-        double* q2 = block + 2 * q4;
-        double* q3 = block + 3 * q4;
-
-        const double q0dc = q0[0];
-        const double q0ny = q0[1];
-        const double q1dc = q1[0];
-        const double q1ny = q1[1];
-        const double q2dc = q2[0];
-        const double q2ny = q2[1];
-        const double q3dc = q3[0];
-        const double q3ny = q3[1];
-        const double h0dc = q0dc + q1dc;
-        const double h0ny = q0dc - q1dc;
-        const double h1dc = q2dc + q3dc;
-        const double h1ny = q2dc - q3dc;
-        double b2a0, b2b0, b2a1, b2b1;
-        pair_reduce(q0ny, q1ny, q2ny, q3ny, t1[q4 / 2 - 1], b2a0, b2b0, b2a1, b2b1);
-        block[0] = h0dc + h1dc;
-        block[1] = h0dc - h1dc;
-        block[2 * q4] = h0ny;
-        block[2 * q4 + 1] = h1ny;
-        block[2 * (q4 / 2)] = b2a0;
-        block[2 * (q4 / 2) + 1] = b2b0;
-        block[2 * (hs - q4 / 2)] = b2a1;
-        block[2 * (hs - q4 / 2) + 1] = b2b1;
-
-        for (int i = 1; i < q4 / 2 - i; ++i) {
-            const int m = q4 / 2 - i;
-#if BRUUN_LEVEL >= 1
-            if (use_simd) {
-                butterfly4_pair(q0, q1, q2, q3, i, m, twp, q4, block, hs);
-                twp += 6;
-            } else
-#endif
-            {
-                double oi[8];
-                double om[8];
-                butterfly4_scalar(q0, q1, q2, q3, i, t2[i - 1], t1[i - 1], t1[q4 - i - 1], oi);
-                butterfly4_scalar(q0, q1, q2, q3, m, t2[m - 1], t1[m - 1], t1[q4 - m - 1], om);
-                write_butterfly4(block, hs, q4, i, oi);
-                write_butterfly4(block, hs, q4, m, om);
-            }
-        }
-
-        if (((q4 / 2) & 1) == 0 && q4 / 2 >= 2) {
-            const int i = q4 >> 2;
-            double oi[8];
-            butterfly4_scalar(q0, q1, q2, q3, i, t2[i - 1], t1[i - 1], t1[q4 - i - 1], oi);
-            write_butterfly4(block, hs, q4, i, oi);
-        }
-    }
-
-    template <bool use_simd, typename Complex>
-    void merge4_terminal_complex(double* block, int s, const double* t2, const double* t1, const double* twp,
-                                 Complex* output) const {
-        const int q4 = s >> 2;
-        const int hs = s >> 1;
-        double* q0 = block;
-        double* q1 = block + q4;
-        double* q2 = block + 2 * q4;
-        double* q3 = block + 3 * q4;
-
-        const double q0dc = q0[0];
-        const double q0ny = q0[1];
-        const double q1dc = q1[0];
-        const double q1ny = q1[1];
-        const double q2dc = q2[0];
-        const double q2ny = q2[1];
-        const double q3dc = q3[0];
-        const double q3ny = q3[1];
-        const double h0dc = q0dc + q1dc;
-        const double h0ny = q0dc - q1dc;
-        const double h1dc = q2dc + q3dc;
-        const double h1ny = q2dc - q3dc;
-        double b2a0, b2b0, b2a1, b2b1;
-        pair_reduce(q0ny, q1ny, q2ny, q3ny, t1[q4 / 2 - 1], b2a0, b2b0, b2a1, b2b1);
-        output[0].re = h0dc + h1dc;
-        output[0].im = 0.0;
-        output[hs].re = h0dc - h1dc;
-        output[hs].im = 0.0;
-        write_projected_bin(output, q4, h0ny, h1ny);
-        write_projected_bin(output, q4 / 2, b2a0, b2b0);
-        write_projected_bin(output, hs - q4 / 2, b2a1, b2b1);
-
-#if BRUUN_LEVEL >= 1
-        if constexpr (use_simd) {
-            int i = 1;
-            for (; i + 1 < q4 / 2; i += 2) {
-                butterfly4_terminal_adjacent_pair(q0, q1, q2, q3, i, t2, t1, q4, output, hs);
-            }
-            for (; i < q4 / 2; ++i) {
-                double oi[8];
-                butterfly4_scalar(q0, q1, q2, q3, i, t2[i - 1], t1[i - 1], t1[q4 - i - 1], oi);
-                write_projected_bin(output, i, oi[0], oi[1]);
-                write_projected_bin(output, hs - i, oi[2], oi[3]);
-                write_projected_bin(output, q4 - i, oi[4], oi[5]);
-                write_projected_bin(output, q4 + i, oi[6], oi[7]);
-            }
-            (void)twp;
-            return;
-        }
-#endif
-
-        for (int i = 1; i < q4 / 2 - i; ++i) {
-            const int m = q4 / 2 - i;
-#if BRUUN_LEVEL >= 1
-            if (use_simd) {
-                butterfly4_terminal_pair(q0, q1, q2, q3, i, m, twp, q4, output, hs);
-                twp += 6;
-            } else
-#endif
-            {
-                double oi[8];
-                double om[8];
-                butterfly4_scalar(q0, q1, q2, q3, i, t2[i - 1], t1[i - 1], t1[q4 - i - 1], oi);
-                butterfly4_scalar(q0, q1, q2, q3, m, t2[m - 1], t1[m - 1], t1[q4 - m - 1], om);
-                write_projected_bin(output, i, oi[0], oi[1]);
-                write_projected_bin(output, hs - i, oi[2], oi[3]);
-                write_projected_bin(output, q4 - i, oi[4], oi[5]);
-                write_projected_bin(output, q4 + i, oi[6], oi[7]);
-                write_projected_bin(output, m, om[0], om[1]);
-                write_projected_bin(output, hs - m, om[2], om[3]);
-                write_projected_bin(output, q4 - m, om[4], om[5]);
-                write_projected_bin(output, q4 + m, om[6], om[7]);
-            }
-        }
-
-        if (((q4 / 2) & 1) == 0 && q4 / 2 >= 2) {
-            const int i = q4 >> 2;
-            double oi[8];
-            butterfly4_scalar(q0, q1, q2, q3, i, t2[i - 1], t1[i - 1], t1[q4 - i - 1], oi);
-            write_projected_bin(output, i, oi[0], oi[1]);
-            write_projected_bin(output, hs - i, oi[2], oi[3]);
-            write_projected_bin(output, q4 - i, oi[4], oi[5]);
-            write_projected_bin(output, q4 + i, oi[6], oi[7]);
-        }
-    }
-
-    BRUUN_ALWAYS_INLINE void seed_merge2_pair(const double* input, double* work, int b) const {
-        const int j0 = rev_[static_cast<std::size_t>(b)];
-        const int j1 = rev_[static_cast<std::size_t>(b + 1)];
-        const double a0 = input[j0];
-        const double c0 = input[half_ + j0];
-        const double a1 = input[j1];
-        const double c1 = input[half_ + j1];
-        const double e0 = a0 + c0;
-        const double e1 = a1 + c1;
-        work[2 * b] = e0 + e1;
-        work[2 * b + 1] = e0 - e1;
-        work[2 * b + 2] = a0 - c0;
-        work[2 * b + 3] = a1 - c1;
-    }
-
-    BRUUN_ALWAYS_INLINE void seed_merge16_block(const double* input, double* work, int off16,
-                                                const double* t16_2, const double* t16_1, const double* twp16) const {
-        const int b0 = off16 >> 1;
-        for (int b = b0; b < b0 + 8; b += 2) {
-            seed_merge2_pair(input, work, b);
-        }
-        merge4_inplace<false>(work + off16, 16, t16_2, t16_1, twp16);
-    }
-
-    template <bool use_simd>
-    BRUUN_ALWAYS_INLINE void seed_merge64_block(const double* input, double* work, int off64,
-                                                const double* t16_2, const double* t16_1, const double* twp16,
-                                                const double* t64_2, const double* t64_1, const double* twp64) const {
-        for (int off16 = off64; off16 < off64 + 64; off16 += 16) {
-            seed_merge16_block(input, work, off16, t16_2, t16_1, twp16);
-        }
-        if constexpr (use_simd) {
-            merge4_inplace<true>(work + off64, 64, t64_2, t64_1, twp64);
-        } else {
-            merge4_inplace<false>(work + off64, 64, t64_2, t64_1, twp64);
-        }
-    }
-
-    template <bool use_simd>
-    BRUUN_ALWAYS_INLINE void seed_merge256_block(const double* input, double* work, int off256,
-                                                 const double* t16_2, const double* t16_1, const double* twp16,
-                                                 const double* t64_2, const double* t64_1, const double* twp64,
-                                                 const double* t256_2, const double* t256_1, const double* twp256) const {
-        if constexpr (use_simd) {
-#if defined(BRUUN_NEON_128)
-            constexpr int pair_count = 15;
-            alignas(64) double packed[4 * pair_count * 4];
-            for (int off16 = off256; off16 < off256 + 256; off16 += 16) {
-                seed_merge16_block(input, work, off16, t16_2, t16_1, twp16);
-            }
-            for (int c = 0; c < 4; ++c) {
-                const int off64 = off256 + 64 * c;
-                merge4_to_child_pairs64_neon(work + off64, packed + c * pair_count * 4, t64_2, t64_1, twp64);
-            }
-            merge4_child_pairs_256_neon(work + off256, packed, t256_2, t256_1, twp256);
-#else
-            for (int off64 = off256; off64 < off256 + 256; off64 += 64) {
-                seed_merge64_block<true>(input, work, off64, t16_2, t16_1, twp16, t64_2, t64_1, twp64);
-            }
-            merge4_inplace<true>(work + off256, 256, t256_2, t256_1, twp256);
-#endif
-        } else {
-            for (int off64 = off256; off64 < off256 + 256; off64 += 64) {
-                seed_merge64_block<false>(input, work, off64, t16_2, t16_1, twp16, t64_2, t64_1, twp64);
-            }
-            merge4_inplace<false>(work + off256, 256, t256_2, t256_1, twp256);
-        }
-    }
-
-    template <bool use_simd>
-    void compute_work(const double* input, double* work) const {
-        BRUUN_ASSERT(n_ >= 4);
-        const double* t16_2 = nullptr;
-        const double* t16_1 = nullptr;
-        const double* twp16 = nullptr;
-        if (n_ >= 16) {
-            t16_2 = twiddle_.data() + twiddle_offset_[1];
-            t16_1 = twiddle_.data() + twiddle_offset_[2];
-            twp16 = pair_twiddle_.data() + pair_twiddle_offset_[2];
-        }
-        if (n_ >= 256) {
-            const double* t64_2 = twiddle_.data() + twiddle_offset_[3];
-            const double* t64_1 = twiddle_.data() + twiddle_offset_[4];
-            const double* twp64 = pair_twiddle_.data() + pair_twiddle_offset_[4];
-            const double* t256_2 = twiddle_.data() + twiddle_offset_[5];
-            const double* t256_1 = twiddle_.data() + twiddle_offset_[6];
-            const double* twp256 = pair_twiddle_.data() + pair_twiddle_offset_[6];
-            for (int off256 = 0; off256 < n_; off256 += 256) {
-                seed_merge256_block<use_simd>(input, work, off256,
-                                              t16_2, t16_1, twp16,
-                                              t64_2, t64_1, twp64,
-                                              t256_2, t256_1, twp256);
-            }
-        } else if (n_ >= 64) {
-            const double* t64_2 = twiddle_.data() + twiddle_offset_[3];
-            const double* t64_1 = twiddle_.data() + twiddle_offset_[4];
-            const double* twp64 = pair_twiddle_.data() + pair_twiddle_offset_[4];
-            for (int off64 = 0; off64 < n_; off64 += 64) {
-                seed_merge64_block<use_simd>(input, work, off64, t16_2, t16_1, twp16, t64_2, t64_1, twp64);
-            }
-        } else if (n_ >= 16) {
-            for (int off = 0; off < n_; off += 16) {
-                seed_merge16_block(input, work, off, t16_2, t16_1, twp16);
-            }
-        } else {
-            for (int b = 0; b < half_; b += 2) {
-                seed_merge2_pair(input, work, b);
-            }
-        }
-        int stage = 8;
-        for (int s = 1024; s <= n_; s <<= 2, stage += 2) {
+    // Seed one fused slot block: vector seed plus in-cache radix-4 merges up
+    // to `count` slots (standard block size 2*count per lane).
+    void seed_fused_block_v(const double* input, double* vw, int base, int count) const {
+        seed_block_v(input, vw, base, count);
+        int stage = 2;
+        for (int s = 16; (s >> 1) <= count; s <<= 2, stage += 2) {
             const double* t2 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(stage - 1)];
             const double* t1 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(stage)];
-            const double* twp = pair_twiddle_.data() + pair_twiddle_offset_[static_cast<std::size_t>(stage)];
-            for (int off = 0; off < n_; off += s) {
-                if constexpr (use_simd) {
-                    merge4_inplace<true>(work + off, s, t2, t1, twp);
-                } else {
-                    merge4_inplace<false>(work + off, s, t2, t1, twp);
-                }
+            const int M = s >> 3;
+            for (int sub = base; sub < base + count; sub += (s >> 1)) {
+                merge4_v(vw + 4 * sub, M, t2, t1);
             }
         }
     }
 
-    template <bool use_simd>
-    void compute_work_before_terminal(const double* input, double* work) const {
-        BRUUN_ASSERT(n_ >= 1024);
-        const double* t16_2 = twiddle_.data() + twiddle_offset_[1];
-        const double* t16_1 = twiddle_.data() + twiddle_offset_[2];
-        const double* twp16 = pair_twiddle_.data() + pair_twiddle_offset_[2];
-        const double* t64_2 = twiddle_.data() + twiddle_offset_[3];
-        const double* t64_1 = twiddle_.data() + twiddle_offset_[4];
-        const double* twp64 = pair_twiddle_.data() + pair_twiddle_offset_[4];
-        const double* t256_2 = twiddle_.data() + twiddle_offset_[5];
-        const double* t256_1 = twiddle_.data() + twiddle_offset_[6];
-        const double* twp256 = pair_twiddle_.data() + pair_twiddle_offset_[6];
-        for (int off256 = 0; off256 < n_; off256 += 256) {
-            seed_merge256_block<use_simd>(input, work, off256,
-                                          t16_2, t16_1, twp16,
-                                          t64_2, t64_1, twp64,
-                                          t256_2, t256_1, twp256);
+    // Everything below the terminal merge. Seed blocks run in bit-reversed
+    // block order so the bit-reversed gather reads the input as sequential
+    // comb streams; the contiguous block writes tolerate any order.
+    void compute_vwork(const double* input, double* vw) const {
+        BRUUN_ASSERT(n_ >= 16);
+        const int q = half_ >> 1;
+        // Fused seed depth: one whole L1-resident transform when n == 4096;
+        // 256 for larger n, where a deeper seed block widens the gather comb
+        // past what the load streams tolerate (measured regression).
+        const int s_target = n_ > 4096 ? 256 : (n_ >> 2);
+        const int block_slots = s_target >> 1;
+        const int nb = q / block_slots;
+        const int nb_bits = ilog2_pow2(nb);
+        for (int p = 0; p < nb; ++p) {
+            const int base = bitrev_int(p, nb_bits) * block_slots;
+            seed_fused_block_v(input, vw, base, block_slots);
         }
 
-        int stage = 8;
-        for (int s = 1024; s < n_; s <<= 2, stage += 2) {
+        // Remaining stages as plain per-stage sweeps. A radix-16 paired sweep
+        // was tried here and measured slower at n=16384, neutral elsewhere.
+        int s = s_target << 2;
+        int stage = ilog2_pow2(s) - 2;
+        for (; s <= (n_ >> 2); s <<= 2, stage += 2) {
             const double* t2 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(stage - 1)];
             const double* t1 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(stage)];
-            const double* twp = pair_twiddle_.data() + pair_twiddle_offset_[static_cast<std::size_t>(stage)];
-            for (int off = 0; off < n_; off += s) {
-                if constexpr (use_simd) {
-                    merge4_inplace<true>(work + off, s, t2, t1, twp);
-                } else {
-                    merge4_inplace<false>(work + off, s, t2, t1, twp);
-                }
+            const int M = s >> 3;
+            for (int off = 0; off < n_; off += 2 * s) {
+                merge4_v(vw + off, M, t2, t1);
             }
         }
     }
 
-    template <bool use_simd>
-    void forward_impl(const double* input, double* output_re, double* output_im, double* work) const {
-        if constexpr (use_simd) {
-            compute_work<true>(input, work);
-            output_re[0] = work[0];
-            output_im[0] = 0.0;
-            output_re[half_] = work[1];
-            output_im[half_] = 0.0;
-#if BRUUN_LEVEL >= 1
-            int k = 1;
-            for (; k + 3 < half_; k += 4) {
-                project_work_pair_split(work, output_re, output_im, k);
-                project_work_pair_split(work, output_re, output_im, k + 2);
-            }
-            for (; k + 1 < half_; k += 2) {
-                project_work_pair_split(work, output_re, output_im, k);
-            }
-            for (; k < half_; ++k) {
-                const double a = work[2 * k];
-                const double b = work[2 * k + 1];
-                output_re[k] = a + b * cos_[static_cast<std::size_t>(k)];
-                output_im[k] = b * neg_sin_[static_cast<std::size_t>(k)];
-            }
-#else
-            for (int k = 1; k < half_; ++k) {
-                const double a = work[2 * k];
-                const double b = work[2 * k + 1];
-                output_re[k] = a + b * cos_[static_cast<std::size_t>(k)];
-                output_im[k] = b * neg_sin_[static_cast<std::size_t>(k)];
-            }
-#endif
-            return;
+    template <typename Complex>
+    struct terminal_complex_writer {
+        Complex* X;
+        BRUUN_ALWAYS_INLINE void store_bin(int k, double re, double im) const {
+            X[k].re = re;
+            X[k].im = im;
         }
-        compute_work<use_simd>(input, work);
-        output_re[0] = work[0];
-        output_im[0] = 0.0;
-        output_re[half_] = work[1];
-        output_im[half_] = 0.0;
-        for (int k = 1; k < half_; ++k) {
-            const double a = work[2 * k];
-            const double b = work[2 * k + 1];
-            output_re[k] = a + b * cos_[static_cast<std::size_t>(k)];
-            output_im[k] = b * neg_sin_[static_cast<std::size_t>(k)];
+        BRUUN_ALWAYS_INLINE void store_pair(int k0, int k1, bruun_v2 re, bruun_v2 im) const {
+            V2_ST(&X[k0].re, V2_UNPLO(re, im));
+            V2_ST(&X[k1].re, V2_UNPHI(re, im));
         }
-    }
+    };
 
-    template <bool use_simd, typename Complex>
-    void forward_complex_impl(const double* input, Complex* output, double* work) const {
-        if constexpr (use_simd) {
-            if (n_ >= 1024 && n_ <= 4096) {
-                compute_work_before_terminal<true>(input, work);
-                const int final_stage = stage_index(n_);
-                const double* t2 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(final_stage - 1)];
-                const double* t1 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(final_stage)];
-                const double* twp = pair_twiddle_.data() + pair_twiddle_offset_[static_cast<std::size_t>(final_stage)];
-                merge4_terminal_complex<true>(work, n_, t2, t1, twp, output);
-                return;
-            }
-            compute_work<true>(input, work);
-            output[0].re = work[0];
-            output[0].im = 0.0;
-            output[half_].re = work[1];
-            output[half_].im = 0.0;
-#if BRUUN_LEVEL >= 1
-            int k = 1;
-            for (; k + 3 < half_; k += 4) {
-                project_work_pair_complex(work, output, k);
-                project_work_pair_complex(work, output, k + 2);
-            }
-            for (; k + 1 < half_; k += 2) {
-                project_work_pair_complex(work, output, k);
-            }
-            for (; k < half_; ++k) {
-                write_projected_bin(output, k, work[2 * k], work[2 * k + 1]);
-            }
-#else
-            for (int k = 1; k < half_; ++k) {
-                write_projected_bin(output, k, work[2 * k], work[2 * k + 1]);
-            }
-#endif
-            return;
+    struct terminal_split_writer {
+        double* re_;
+        double* im_;
+        BRUUN_ALWAYS_INLINE void store_bin(int k, double re, double im) const {
+            re_[k] = re;
+            im_[k] = im;
         }
-        compute_work<use_simd>(input, work);
-        output[0].re = work[0];
-        output[0].im = 0.0;
-        output[half_].re = work[1];
-        output[half_].im = 0.0;
-        for (int k = 1; k < half_; ++k) {
-            const double a = work[2 * k];
-            const double b = work[2 * k + 1];
-            output[k].re = a + b * cos_[static_cast<std::size_t>(k)];
-            output[k].im = b * neg_sin_[static_cast<std::size_t>(k)];
+        BRUUN_ALWAYS_INLINE void store_pair(int k0, int k1, bruun_v2 re, bruun_v2 im) const {
+            re_[k0] = v2_lane0(re);
+            im_[k0] = v2_lane0(im);
+            re_[k1] = v2_lane1(re);
+            im_[k1] = v2_lane1(im);
+        }
+    };
+
+    // Terminal merge: the single lane crossing of the walk, fused with the
+    // residue -> complex projection. Children: lane 0 holds {C0 | C1}, lane 1
+    // holds {C2 | C3}; level A reduces (C0,C1) and (C2,C3) vertically, one
+    // trn pair rotates the lane axis, level B and the projection stay vector.
+    template <typename Writer>
+    void terminal_v(const double* vw, const Writer& w) const {
+        const int M = half_ >> 2;   // child node count = n/8
+        const double* cA = vw;
+        const double* cB = vw + 4 * M;
+        const double* t2 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(twiddle_stage_count_ - 2)];
+        const double* t1 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(twiddle_stage_count_ - 1)];
+
+        const bruun_v2 dcA = V2_LD(cA);
+        const bruun_v2 nyA = V2_LD(cA + 2);
+        const bruun_v2 dcB = V2_LD(cB);
+        const bruun_v2 nyB = V2_LD(cB + 2);
+        const bruun_v2 sum = V2_ADD(dcA, dcB);   // {h0dc, h1dc}
+        const bruun_v2 dif = V2_SUB(dcA, dcB);   // {h0ny, h1ny}
+        w.store_bin(0, v2_lane0(sum) + v2_lane1(sum), 0.0);
+        w.store_bin(half_, v2_lane0(sum) - v2_lane1(sum), 0.0);
+        w.store_bin(2 * M, v2_lane0(dif), -v2_lane1(dif));   // bin n/4: cos=0, -sin=-1
+        {
+            double la, lb, ha, hb;
+            pair_reduce(v2_lane0(nyA), v2_lane0(nyB), v2_lane1(nyA), v2_lane1(nyB),
+                        t1[M - 1], la, lb, ha, hb);
+            w.store_bin(M, la + lb * cos_[static_cast<std::size_t>(M)],
+                        lb * neg_sin_[static_cast<std::size_t>(M)]);
+            w.store_bin(half_ - M, ha + hb * cos_[static_cast<std::size_t>(half_ - M)],
+                        hb * neg_sin_[static_cast<std::size_t>(half_ - M)]);
+        }
+
+        const double* tw = term_tw_.data();
+        for (int i = 1; i < M; ++i, tw += 6) {
+            const bruun_v2 aA = V2_LD(cA + 4 * i);
+            const bruun_v2 bA = V2_LD(cA + 4 * i + 2);
+            const bruun_v2 aB = V2_LD(cB + 4 * i);
+            const bruun_v2 bB = V2_LD(cB + 4 * i + 2);
+            bruun_v2 la, lb, ha, hb;
+            pair_reduce_v2(aA, bA, aB, bB, V2_SET1(t2[i - 1]), la, lb, ha, hb);
+            const bruun_v2 ua = V2_UNPLO(la, ha);   // {h0 low, h0 high}
+            const bruun_v2 ub = V2_UNPLO(lb, hb);
+            const bruun_v2 va = V2_UNPHI(la, ha);   // {h1 low, h1 high}
+            const bruun_v2 vb = V2_UNPHI(lb, hb);
+            bruun_v2 fa, fb, ga, gb;
+            pair_reduce_v2(ua, ub, va, vb, V2_LD(tw), fa, fb, ga, gb);
+            // fa/fb lanes = bins {i, n/4 - i}; ga/gb lanes = bins {n/2 - i, n/4 + i}.
+            const bruun_v2 cs = V2_LD(tw + 2);    // { cos, sin }
+            const bruun_v2 msc = V2_LD(tw + 4);   // { -sin, -cos }
+            w.store_pair(i, 2 * M - i, V2_MADD(fa, fb, cs), V2_MUL(fb, msc));
+            w.store_pair(half_ - i, 2 * M + i, V2_MSUB(ga, gb, cs), V2_MUL(gb, msc));
         }
     }
+#endif  // BRUUN_LEVEL >= 1
 
     int n_;
     int half_;
     int twiddle_stage_count_;
     heap_array<int> rev_;
     heap_array<int> twiddle_offset_;
-    heap_array<int> pair_twiddle_offset_;
     heap_array<double> cos_;
     heap_array<double> neg_sin_;
     heap_array<double> twiddle_;
-    heap_array<double> pair_twiddle_;
+    heap_array<double> term_tw_;
 };
 
 } // namespace bruun
