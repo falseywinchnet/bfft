@@ -1,7 +1,7 @@
 #pragma once
 
 // MIT joshuah.rainstar@gmail.com 2026
-// Internal radix-4 real FFT experiment kernel.
+// Internal radix-4 real DIT FFT experiment kernel.
 //
 // This header keeps the standalone NEON prototype as a reusable kernel object:
 // construction owns all planning tables, callers provide input/output/work
