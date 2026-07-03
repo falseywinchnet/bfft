@@ -242,6 +242,16 @@ public:
     void inverse_simd(const complex_t* input, double* output, double* work) const {
 #if BRUUN_LEVEL >= 1
         if (n_ >= 16) {
+            // NOTE: an odd-size fused three-level inverse terminal
+            // (terminal3_inv_v_norm, radix-2 crossing + first radix-4 split in
+            // one pass) was implemented and measured 8-21% SLOWER than this
+            // two-pass path. The saved work round trip is real but smaller than
+            // the cost of de-vectorizing the radix-2 crossing: the palindromic
+            // split access reads 4 non-adjacent slots, so the crossing cannot
+            // stay lane-paired the way terminal_radix2_inv_v_norm does. Kept as
+            // two passes. (The f32 wide path is different -- see
+            // inverse_simd_f32_wide -- because it also carries a V2->V4F
+            // conversion pass that the fused terminal removes.)
             if (radix2_terminal_) {
                 terminal_radix2_inv_v_norm(input, work);
             } else {
@@ -1607,32 +1617,6 @@ private:
         }
     }
 
-    void depair_v4f_to_v2_f32(const float* fvw, float* vw) const {
-        const int pslots = half_ >> 2;
-        for (int i = 0; i < pslots; ++i) {
-            const float* src = fvw + 8 * i;
-            float* lo = vw + 4 * i;
-            float* hi = vw + 4 * (pslots + i);
-            const bruun_v4f a = V4F_LD(src);
-            const bruun_v4f b = V4F_LD(src + 4);
-            V4F_ST(lo, V4F_CATLO(a, b));
-            V4F_ST(hi, V4F_CATHI(a, b));
-        }
-    }
-
-    void pair_v2_to_v4f_f32(const float* vw, float* fvw) const {
-        const int pslots = half_ >> 2;
-        for (int i = 0; i < pslots; ++i) {
-            const float* lo = vw + 4 * i;
-            const float* hi = vw + 4 * (pslots + i);
-            float* dst = fvw + 8 * i;
-            const bruun_v4f l = V4F_LD(lo);
-            const bruun_v4f h = V4F_LD(hi);
-            V4F_ST(dst, V4F_CATLO(l, h));
-            V4F_ST(dst + 4, V4F_CATHI(l, h));
-        }
-    }
-
     BRUUN_ALWAYS_INLINE void butterfly4_v_norm_f32_v4_inputs(bruun_v4f n0, bruun_v4f n1,
                                                              bruun_v4f n2, bruun_v4f n3,
                                                              const double* cs2,
@@ -1660,16 +1644,6 @@ private:
         out[3] = V4F_CATLO(ha, hb);
     }
 
-    BRUUN_ALWAYS_INLINE void butterfly4_v_norm_f32_v4(const float* c0, const float* c1,
-                                                       const float* c2, const float* c3,
-                                                       int i, const double* cs2,
-                                                       const double* cs1, const double* cs1q,
-                                                       bruun_v4f* out) const {
-        butterfly4_v_norm_f32_v4_inputs(V4F_LD(c0 + 4 * i), V4F_LD(c1 + 4 * i),
-                                        V4F_LD(c2 + 4 * i), V4F_LD(c3 + 4 * i),
-                                        cs2, cs1, cs1q, out);
-    }
-
     static BRUUN_ALWAYS_INLINE void store_butterfly4_v_norm_f32_v4(float* vblk, int M, int i,
                                                                    const bruun_v4f* out) {
         V4F_ST(vblk + 4 * i, out[0]);
@@ -1678,72 +1652,68 @@ private:
         V4F_ST(vblk + 4 * (2 * M + i), out[3]);
     }
 
-    void merge4_v_norm_f32(float* vblk, int M, const double* cs2, const double* cs1) const {
-        float* c0 = vblk;
-        float* c1 = vblk + 4 * M;
-        float* c2 = vblk + 8 * M;
-        float* c3 = vblk + 12 * M;
+    // Fused V4F->V2 depair + the extra radix-2-level merge for the odd forward:
+    // reads the paired-V4F chain output fvw, produces the merge4 inputs in
+    // registers (paired-slot i depairs to V2-slots {i, 2M+i}, paired-slot M+i
+    // to {M+i, 3M+i} -- the four children of merge butterfly i), runs the merge,
+    // and writes the V2 layout to vw. Collapses depair_v4f_to_v2_f32 +
+    // merge4_v_norm_f32 into one pass. Source (fvw) and dest (vw) differ, so the
+    // in-place palindrome merge4 needs is unnecessary -- a linear i sweep reads
+    // every paired-slot once and writes every V2-slot once.
+    void depair_merge4_v_norm_f32(const float* fvw, float* vw, int M,
+                                  const double* cs2, const double* cs1) const {
+        float* c0 = vw;
+        float* c1 = vw + 4 * M;
+        float* c2 = vw + 8 * M;
+        float* c3 = vw + 12 * M;
 
-        float ma0, mb0, mha0, mhb0;
-        float ma1, mb1, mha1, mhb1;
-        pair_reduce_cs_f32(c0[2], c1[2], c2[2], c3[2],
-                           static_cast<float>(cs1[2 * (M - 1)]),
-                           static_cast<float>(cs1[2 * (M - 1) + 1]),
-                           ma0, mb0, mha0, mhb0);
-        pair_reduce_cs_f32(c0[3], c1[3], c2[3], c3[3],
-                           static_cast<float>(cs1[2 * (M - 1)]),
-                           static_cast<float>(cs1[2 * (M - 1) + 1]),
-                           ma1, mb1, mha1, mhb1);
-
-        const float h0dc0 = c0[0] + c1[0];
-        const float h0dc1 = c0[1] + c1[1];
-        const float h0ny0 = c0[0] - c1[0];
-        const float h0ny1 = c0[1] - c1[1];
-        const float h1dc0 = c2[0] + c3[0];
-        const float h1dc1 = c2[1] + c3[1];
-        const float h1ny0 = c2[0] - c3[0];
-        const float h1ny1 = c2[1] - c3[1];
-
-        c0[0] = h0dc0 + h1dc0;
-        c0[1] = h0dc1 + h1dc1;
-        c0[2] = h0dc0 - h1dc0;
-        c0[3] = h0dc1 - h1dc1;
-        c1[0] = ma0;
-        c1[1] = ma1;
-        c1[2] = mb0;
-        c1[3] = mb1;
-        c2[0] = h0ny0;
-        c2[1] = h0ny1;
-        c2[2] = h1ny0;
-        c2[3] = h1ny1;
-        c3[0] = mha0;
-        c3[1] = mha1;
-        c3[2] = mhb0;
-        c3[3] = mhb1;
-
-        for (int i = 1; i < M - i; ++i) {
-            const int m = M - i;
-            bruun_v4f oi[4];
-            const bruun_v4f n1m = V4F_LD(c1 + 4 * m);
-            const bruun_v4f n3m = V4F_LD(c3 + 4 * m);
-            butterfly4_v_norm_f32_v4(c0, c1, c2, c3, i,
-                                     cs2 + 2 * (i - 1), cs1 + 2 * (i - 1),
-                                     cs1 + 2 * (2 * M - i - 1), oi);
-            store_butterfly4_v_norm_f32_v4(vblk, M, i, oi);
-            bruun_v4f om[4];
-            butterfly4_v_norm_f32_v4_inputs(V4F_LD(c0 + 4 * m), n1m, V4F_LD(c2 + 4 * m), n3m,
-                                            cs2 + 2 * (m - 1), cs1 + 2 * (m - 1),
-                                            cs1 + 2 * (2 * M - m - 1), om);
-            store_butterfly4_v_norm_f32_v4(vblk, M, m, om);
+        // i = 0 special (merge4_v_norm_f32's DC/Nyquist block).
+        {
+            const bruun_v4f av0 = V4F_LD(fvw);
+            const bruun_v4f bv0 = V4F_LD(fvw + 4);
+            const bruun_v4f avM = V4F_LD(fvw + 8 * M);
+            const bruun_v4f bvM = V4F_LD(fvw + 8 * M + 4);
+            float s0[4], sM[4], s2[4], s3[4];
+            V4F_ST(s0, V4F_CATLO(av0, bv0));   // V2-slot 0
+            V4F_ST(s2, V4F_CATHI(av0, bv0));   // V2-slot 2M
+            V4F_ST(sM, V4F_CATLO(avM, bvM));   // V2-slot M
+            V4F_ST(s3, V4F_CATHI(avM, bvM));   // V2-slot 3M
+            float ma0, mb0, mha0, mhb0, ma1, mb1, mha1, mhb1;
+            pair_reduce_cs_f32(s0[2], sM[2], s2[2], s3[2],
+                               static_cast<float>(cs1[2 * (M - 1)]),
+                               static_cast<float>(cs1[2 * (M - 1) + 1]),
+                               ma0, mb0, mha0, mhb0);
+            pair_reduce_cs_f32(s0[3], sM[3], s2[3], s3[3],
+                               static_cast<float>(cs1[2 * (M - 1)]),
+                               static_cast<float>(cs1[2 * (M - 1) + 1]),
+                               ma1, mb1, mha1, mhb1);
+            const float h0dc0 = s0[0] + sM[0];
+            const float h0dc1 = s0[1] + sM[1];
+            const float h0ny0 = s0[0] - sM[0];
+            const float h0ny1 = s0[1] - sM[1];
+            const float h1dc0 = s2[0] + s3[0];
+            const float h1dc1 = s2[1] + s3[1];
+            const float h1ny0 = s2[0] - s3[0];
+            const float h1ny1 = s2[1] - s3[1];
+            c0[0] = h0dc0 + h1dc0; c0[1] = h0dc1 + h1dc1; c0[2] = h0dc0 - h1dc0; c0[3] = h0dc1 - h1dc1;
+            c1[0] = ma0; c1[1] = ma1; c1[2] = mb0; c1[3] = mb1;
+            c2[0] = h0ny0; c2[1] = h0ny1; c2[2] = h1ny0; c2[3] = h1ny1;
+            c3[0] = mha0; c3[1] = mha1; c3[2] = mhb0; c3[3] = mhb1;
         }
 
-        if (M >= 2) {
-            const int i = M >> 1;
-            bruun_v4f oi[4];
-            butterfly4_v_norm_f32_v4(c0, c1, c2, c3, i,
-                                     cs2 + 2 * (i - 1), cs1 + 2 * (i - 1),
-                                     cs1 + 2 * (2 * M - i - 1), oi);
-            store_butterfly4_v_norm_f32_v4(vblk, M, i, oi);
+        for (int i = 1; i < M; ++i) {
+            const bruun_v4f avi = V4F_LD(fvw + 8 * i);
+            const bruun_v4f bvi = V4F_LD(fvw + 8 * i + 4);
+            const bruun_v4f avM = V4F_LD(fvw + 8 * (M + i));
+            const bruun_v4f bvM = V4F_LD(fvw + 8 * (M + i) + 4);
+            bruun_v4f out[4];
+            butterfly4_v_norm_f32_v4_inputs(V4F_CATLO(avi, bvi),   // c0 = slot i
+                                            V4F_CATLO(avM, bvM),   // c1 = slot M+i
+                                            V4F_CATHI(avi, bvi),   // c2 = slot 2M+i
+                                            V4F_CATHI(avM, bvM),   // c3 = slot 3M+i
+                                            cs2 + 2 * (i - 1), cs1 + 2 * (i - 1),
+                                            cs1 + 2 * (2 * M - i - 1), out);
+            store_butterfly4_v_norm_f32_v4(vw, M, i, out);
         }
     }
 
@@ -1854,21 +1824,25 @@ private:
     bool f32_wide_ok() const { return n_ >= 16; }
 
     void forward_simd_f32_wide(const float* input, complex_f32_t* output, float* work) const {
-        compute_vwork_v4f(input, work);
         if (radix2_terminal_) {
-            float* terminal_work = reinterpret_cast<float*>(output);
-            depair_v4f_to_v2_f32(work, terminal_work);
+            // Odd log2(n): the shared V4F chain lands in the output buffer used
+            // as V4F scratch, the depair writes the V2 layout into work, the
+            // extra radix-2-level merge runs in place there, and the terminal
+            // reads work and writes the bins back into output. Swapping the
+            // V4F/V2 buffer roles this way removes the full-array copy the old
+            // ordering needed (it left the merged V2 data in output, which the
+            // terminal must also write).
+            float* v4f_scratch = reinterpret_cast<float*>(output);
+            compute_vwork_v4f(input, v4f_scratch);
             const int s = n_ >> 1;
             const int stage = ilog2_pow2(s) - 2;
             const double* cs2 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage - 1)];
             const double* cs1 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage)];
-            merge4_v_norm_f32(terminal_work, s >> 3, cs2, cs1);
-            for (int i = 0; i < n_; i += 4) {
-                V4F_ST(work + i, V4F_LD(terminal_work + i));
-            }
+            depair_merge4_v_norm_f32(v4f_scratch, work, s >> 3, cs2, cs1);
             terminal_radix2_v_norm_f32(work, output);
             return;
         }
+        compute_vwork_v4f(input, work);
         terminal_v4f_f32(work, output);
     }
 #endif  // BRUUN_LEVEL >= 1 (wide f32)
@@ -2381,78 +2355,6 @@ private:
         V4F_ST(vblk + 4 * (3 * M + i), out[3]);
     }
 
-    void split4_v_norm_f32(float* vblk, int M, const double* cs2, const double* cs1) const {
-        float* c0 = vblk;
-        float* c1 = vblk + 4 * M;
-        float* c2 = vblk + 8 * M;
-        float* c3 = vblk + 12 * M;
-
-        const float n0a0 = c0[0];
-        const float n0a1 = c0[1];
-        const float n0b0 = c0[2];
-        const float n0b1 = c0[3];
-        const float n2a0 = c2[0];
-        const float n2a1 = c2[1];
-        const float n2b0 = c2[2];
-        const float n2b1 = c2[3];
-        const float h0dc0 = 0.5f * (n0a0 + n0b0);
-        const float h0dc1 = 0.5f * (n0a1 + n0b1);
-        const float h1dc0 = 0.5f * (n0a0 - n0b0);
-        const float h1dc1 = 0.5f * (n0a1 - n0b1);
-        float ny00, ny01, ny10, ny11;
-        float ny20, ny21, ny30, ny31;
-        pair_expand_cs_f32(c1[0], c1[2], c3[0], c3[2],
-                           static_cast<float>(cs1[2 * (M - 1)]),
-                           static_cast<float>(cs1[2 * (M - 1) + 1]),
-                           ny00, ny01, ny20, ny21);
-        pair_expand_cs_f32(c1[1], c1[3], c3[1], c3[3],
-                           static_cast<float>(cs1[2 * (M - 1)]),
-                           static_cast<float>(cs1[2 * (M - 1) + 1]),
-                           ny10, ny11, ny30, ny31);
-        c0[0] = 0.5f * (h0dc0 + n2a0);
-        c0[1] = 0.5f * (h0dc1 + n2a1);
-        c0[2] = ny00;
-        c0[3] = ny10;
-        c1[0] = 0.5f * (h0dc0 - n2a0);
-        c1[1] = 0.5f * (h0dc1 - n2a1);
-        c1[2] = ny01;
-        c1[3] = ny11;
-        c2[0] = 0.5f * (h1dc0 + n2b0);
-        c2[1] = 0.5f * (h1dc1 + n2b1);
-        c2[2] = ny20;
-        c2[3] = ny30;
-        c3[0] = 0.5f * (h1dc0 - n2b0);
-        c3[1] = 0.5f * (h1dc1 - n2b1);
-        c3[2] = ny21;
-        c3[3] = ny31;
-
-        for (int i = 1; i < M - i; ++i) {
-            const int m = M - i;
-            bruun_v4f oi[4];
-            const bruun_v4f mh = V4F_LD(vblk + 4 * (4 * M - m));
-            const bruun_v4f mql = V4F_LD(vblk + 4 * (2 * M - m));
-            inv_butterfly4_v_norm_f32_v4(vblk, M, i,
-                                         cs1 + 2 * (i - 1), cs1 + 2 * (2 * M - i - 1),
-                                         cs2 + 2 * (i - 1), oi);
-            store_inv_butterfly4_v_norm_f32_v4(vblk, M, i, oi);
-            bruun_v4f om[4];
-            inv_butterfly4_v_norm_f32_v4_inputs(V4F_LD(vblk + 4 * m), mh, mql,
-                                                V4F_LD(vblk + 4 * (2 * M + m)),
-                                                cs1 + 2 * (m - 1), cs1 + 2 * (2 * M - m - 1),
-                                                cs2 + 2 * (m - 1), om);
-            store_inv_butterfly4_v_norm_f32_v4(vblk, M, m, om);
-        }
-
-        if (M >= 2) {
-            const int i = M >> 1;
-            bruun_v4f oi[4];
-            inv_butterfly4_v_norm_f32_v4(vblk, M, i,
-                                         cs1 + 2 * (i - 1), cs1 + 2 * (2 * M - i - 1),
-                                         cs2 + 2 * (i - 1), oi);
-            store_inv_butterfly4_v_norm_f32_v4(vblk, M, i, oi);
-        }
-    }
-
     void terminal_radix2_inv_v_norm_f32(const complex_f32_t* X, float* vw) const {
         const int q = half_ >> 1;
         vw[0] = 0.5f * (X[0].re + X[half_].re);
@@ -2645,6 +2547,51 @@ private:
         }
     }
 
+    // Fused first radix-4 split + V2->V4F pairing: reads the post-terminal
+    // V2-f32 slots from vw (cache-hot), writes the paired-V4F work layout
+    // directly, collapsing split4_v_norm_f32 + pair_v2_to_v4f_f32 into one
+    // pass. Same palindromic read pattern as split4_v_norm_f32, but on the
+    // cache-resident terminal output rather than the scattered input bins.
+    void split4_pair_v_norm_f32(const float* vw, float* fvw, int M,
+                                const double* cs2, const double* cs1) const {
+        // i = 0 special (split4_v_norm_f32's i=0 algebra), packed to paired 0/M.
+        {
+            const float* c0 = vw;
+            const float* c1 = vw + 4 * M;
+            const float* c2 = vw + 8 * M;
+            const float* c3 = vw + 12 * M;
+            const float h0dc0 = 0.5f * (c0[0] + c0[2]);
+            const float h0dc1 = 0.5f * (c0[1] + c0[3]);
+            const float h1dc0 = 0.5f * (c0[0] - c0[2]);
+            const float h1dc1 = 0.5f * (c0[1] - c0[3]);
+            const float cM = static_cast<float>(cs1[2 * (M - 1)]);
+            const float sM = static_cast<float>(cs1[2 * (M - 1) + 1]);
+            float ny00, ny01, ny20, ny21, ny10, ny11, ny30, ny31;
+            pair_expand_cs_f32(c1[0], c1[2], c3[0], c3[2], cM, sM, ny00, ny01, ny20, ny21);
+            pair_expand_cs_f32(c1[1], c1[3], c3[1], c3[3], cM, sM, ny10, ny11, ny30, ny31);
+            V4F_ST(fvw,     V4F_SET4(0.5f * (h0dc0 + c2[0]), 0.5f * (h0dc1 + c2[1]),
+                                     0.5f * (h1dc0 + c2[2]), 0.5f * (h1dc1 + c2[3])));
+            V4F_ST(fvw + 4, V4F_SET4(ny00, ny10, ny20, ny30));
+            V4F_ST(fvw + 8 * M,     V4F_SET4(0.5f * (h0dc0 - c2[0]), 0.5f * (h0dc1 - c2[1]),
+                                             0.5f * (h1dc0 - c2[2]), 0.5f * (h1dc1 - c2[3])));
+            V4F_ST(fvw + 8 * M + 4, V4F_SET4(ny01, ny11, ny21, ny31));
+        }
+
+        for (int i = 1; i < M; ++i) {
+            bruun_v4f out[4];
+            inv_butterfly4_v_norm_f32_v4_inputs(V4F_LD(vw + 4 * i),
+                                                V4F_LD(vw + 4 * (4 * M - i)),
+                                                V4F_LD(vw + 4 * (2 * M - i)),
+                                                V4F_LD(vw + 4 * (2 * M + i)),
+                                                cs1 + 2 * (i - 1), cs1 + 2 * (2 * M - i - 1),
+                                                cs2 + 2 * (i - 1), out);
+            V4F_ST(fvw + 8 * i,           V4F_CATLO(out[0], out[2]));
+            V4F_ST(fvw + 8 * i + 4,       V4F_CATHI(out[0], out[2]));
+            V4F_ST(fvw + 8 * (M + i),     V4F_CATLO(out[1], out[3]));
+            V4F_ST(fvw + 8 * (M + i) + 4, V4F_CATHI(out[1], out[3]));
+        }
+    }
+
     void inverse_simd_f32_wide(const complex_f32_t* input, float* output, float* work) const {
         if (radix2_terminal_) {
             terminal_radix2_inv_v_norm_f32(input, output);
@@ -2652,8 +2599,7 @@ private:
             const int stage = ilog2_pow2(s) - 2;
             const double* cs2 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage - 1)];
             const double* cs1 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage)];
-            split4_v_norm_f32(output, s >> 3, cs2, cs1);
-            pair_v2_to_v4f_f32(output, work);
+            split4_pair_v_norm_f32(output, work, s >> 3, cs2, cs1);
             compute_vwork_inv_v4f(work, output);
             return;
         }
