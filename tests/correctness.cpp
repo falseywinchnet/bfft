@@ -1,5 +1,6 @@
 #include <bfft/bfft.hpp>
 #include "../src/detail/bruun_dif_kernel.hpp"
+#include "../src/detail/bruun_dit_kernel.hpp"
 
 #include <cmath>
 #include <cstdio>
@@ -421,6 +422,59 @@ bool check_size_f32(std::size_t n) {
     return true;
 }
 
+bool check_dit_f32_direct(std::size_t n) {
+    if (n > static_cast<std::size_t>(std::numeric_limits<int>::max())) {
+        return false;
+    }
+
+    bruun::DIT_RFFT_kernel plan;
+    if (!plan.init(static_cast<int>(n))) {
+        std::fprintf(stderr, "n=%zu DIT f32 direct plan init failed\n", n);
+        return false;
+    }
+
+    std::vector<float> input(n);
+    std::mt19937 rng(static_cast<unsigned int>(0xD17u + n));
+    std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+    for (float& value : input) {
+        value = dist(rng);
+    }
+
+    std::vector<bruun::complex_f32_t> output(plan.bins());
+    std::vector<float> work(static_cast<std::size_t>(plan.work_size_f32()));
+    plan.forward_simd_f32(input.data(), output.data(), work.data());
+
+    const std::vector<bfft::complex_f32> expected = naive_rfft_f32(input);
+    double spectrum_error = 0.0;
+    for (std::size_t i = 0; i < expected.size(); ++i) {
+        spectrum_error = std::max(spectrum_error,
+                                  static_cast<double>(std::fabs(output[i].re - expected[i].re)));
+        spectrum_error = std::max(spectrum_error,
+                                  static_cast<double>(std::fabs(output[i].im - expected[i].im)));
+    }
+    const double tolerance = 8e-5 * static_cast<double>(n);
+    if (spectrum_error > tolerance) {
+        std::fprintf(stderr, "n=%zu DIT f32 direct spectrum error %.17g exceeds %.17g\n",
+                     n, spectrum_error, tolerance);
+        return false;
+    }
+
+    std::vector<float> roundtrip(n);
+    plan.inverse_simd_f32(output.data(), roundtrip.data(), work.data());
+    double inverse_error = 0.0;
+    for (std::size_t i = 0; i < n; ++i) {
+        inverse_error = std::max(inverse_error,
+                                 static_cast<double>(std::fabs(roundtrip[i] - input[i])));
+    }
+    if (inverse_error > tolerance) {
+        std::fprintf(stderr, "n=%zu DIT f32 direct inverse error %.17g exceeds %.17g\n",
+                     n, inverse_error, tolerance);
+        return false;
+    }
+
+    return true;
+}
+
 
 bool check_bh7_f32_native_sfdr(void) {
     constexpr std::size_t n = 32768;
@@ -607,6 +661,9 @@ int main(void) {
             return 1;
         }
         if (!check_size_f32(n)) {
+            return 1;
+        }
+        if (!check_dit_f32_direct(n)) {
             return 1;
         }
     }

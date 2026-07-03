@@ -16,9 +16,6 @@ struct bruun_phase_slope_leaf {
 template<typename T, int Leaves, int Q>
 struct bruun_phase_slope_tables;
 
-static constexpr double bruun_tau = 2.0 * M_PI;
-static constexpr double bruun_pio2 = 0.5 * M_PI;
-
 static BRUUN_ALWAYS_INLINE double bruun_fused_madd(double a, double b, double c) {
 #if defined(__FMA__)
     return __builtin_fma(a, b, c);

@@ -11,447 +11,40 @@
 // when the standard FFT-order output is large enough to win on the active SIMD
 // backend.
 
+#include "bruun_simd_backend.hpp"
+
 #include <algorithm>
-#include <cassert>
-#include <cmath>
-#include <cstdint>
-#include <cstdlib>
 #include <cstring>
-#include <new>
-
-// ---------------------------------------------------------------------------
-// SIMD backend resolution.
-//   BRUUN_LEVEL 0 = scalar, 1 = 128-bit (SSE2/NEON), 2 = AVX2+FMA
-// Wider levels reuse the narrower loops as tails where needed.
-// ---------------------------------------------------------------------------
-
-#if defined(__FMA__) || defined(_M_FMA)
-#  define BRUUN_HAS_FMA 1
-#endif
-
-#if defined(__AVX2__) && defined(BRUUN_HAS_FMA)
-#  define BRUUN_LEVEL 2
-#elif defined(__SSE2__) || defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || ((defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)) && (defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(_M_ARM64) || defined(_M_ARM64EC)))
-#  define BRUUN_LEVEL 1
-#else
-#  define BRUUN_LEVEL 0
-#endif
-
-#if BRUUN_LEVEL >= 2 || (BRUUN_LEVEL >= 1 && (defined(__SSE2__) || defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)))
-#  include <immintrin.h>
-#  define BRUUN_X86_128 1
-#endif
-
-#if BRUUN_LEVEL >= 1 && (defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)) && (defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(_M_ARM64) || defined(_M_ARM64EC))
-#  include <arm_neon.h>
-#  define BRUUN_NEON_128 1
-#endif
-
-#if BRUUN_LEVEL == 1 && !defined(BRUUN_X86_128) && !defined(BRUUN_NEON_128)
-#  undef BRUUN_LEVEL
-#  define BRUUN_LEVEL 0
-#endif
-
-// 2-lane double vector primitive shared by the SSE2 and NEON paths.
-#if defined(BRUUN_X86_128)
-typedef __m128d bruun_v2;
-#  define V2_LD(p)        _mm_loadu_pd(p)
-#  define V2_ST(p, a)     _mm_storeu_pd((p), (a))
-#  define V2_ADD(a, b)    _mm_add_pd((a), (b))
-#  define V2_SUB(a, b)    _mm_sub_pd((a), (b))
-#  define V2_MUL(a, b)    _mm_mul_pd((a), (b))
-#  define V2_DIV(a, b)    _mm_div_pd((a), (b))
-#  if defined(BRUUN_HAS_FMA)
-#    define V2_MADD(a, b, c) _mm_fmadd_pd((b), (c), (a))
-#    define V2_MSUB(a, b, c) _mm_fnmadd_pd((b), (c), (a))
-#  else
-#    define V2_MADD(a, b, c) V2_ADD((a), V2_MUL((b), (c)))
-#    define V2_MSUB(a, b, c) V2_SUB((a), V2_MUL((b), (c)))
-#  endif
-#  define V2_SET1(x)      _mm_set1_pd(x)
-#  define V2_SETLH(l, h)  _mm_set_pd((h), (l))
-#  define V2_UNPLO(a, b)  _mm_unpacklo_pd((a), (b))
-#  define V2_UNPHI(a, b)  _mm_unpackhi_pd((a), (b))
-#  define V2_DUP0(a)      _mm_unpacklo_pd((a), (a))
-#  define V2_DUP1(a)      _mm_unpackhi_pd((a), (a))
-#  define V2_NEGHI(a)     _mm_xor_pd((a), _mm_set_pd(-0.0, 0.0))
-#  define V2_CMPGT(a, b)   _mm_cmpgt_pd((a), (b))
-#  define V2_SELECT(m, t, f) _mm_or_pd(_mm_and_pd((m), (t)), _mm_andnot_pd((m), (f)))
-#elif defined(BRUUN_NEON_128)
-typedef float64x2_t bruun_v2;
-#  define V2_LD(p)        vld1q_f64(p)
-#  define V2_ST(p, a)     vst1q_f64((p), (a))
-#  define V2_ADD(a, b)    vaddq_f64((a), (b))
-#  define V2_SUB(a, b)    vsubq_f64((a), (b))
-#  define V2_MUL(a, b)    vmulq_f64((a), (b))
-#  define V2_DIV(a, b)    vdivq_f64((a), (b))
-#  define V2_MADD(a, b, c) vfmaq_f64((a), (b), (c))
-#  define V2_MSUB(a, b, c) vfmsq_f64((a), (b), (c))
-#  define V2_SET1(x)      vdupq_n_f64(x)
-#  define V2_SETLH(l, h)  vcombine_f64(vdup_n_f64(l), vdup_n_f64(h))
-#  define V2_UNPLO(a, b)  vtrn1q_f64((a), (b))
-#  define V2_UNPHI(a, b)  vtrn2q_f64((a), (b))
-#  define V2_DUP0(a)      vdupq_laneq_f64((a), 0)
-#  define V2_DUP1(a)      vdupq_laneq_f64((a), 1)
-static inline float64x2_t bruun_neghi(float64x2_t a) {
-    const uint64x2_t m = { 0ULL, 0x8000000000000000ULL };
-    return vreinterpretq_f64_u64(veorq_u64(vreinterpretq_u64_f64(a), m));
-}
-#  define V2_NEGHI(a)     bruun_neghi(a)
-static inline float64x2_t bruun_v2_cmpgt(float64x2_t a, float64x2_t b) {
-    return vreinterpretq_f64_u64(vcgtq_f64(a, b));
-}
-static inline float64x2_t bruun_v2_select(float64x2_t m, float64x2_t t, float64x2_t f) {
-    return vbslq_f64(vreinterpretq_u64_f64(m), t, f);
-}
-#  define V2_CMPGT(a, b)   bruun_v2_cmpgt((a), (b))
-#  define V2_SELECT(m, t, f) bruun_v2_select((m), (t), (f))
-#endif
-
-// 4-lane float vector primitive for internal float32 helper loops.
-#if defined(BRUUN_X86_128)
-typedef __m128 bruun_v4f;
-#  define V4F_LD(p)       _mm_loadu_ps(p)
-#  define V4F_ST(p, a)    _mm_storeu_ps((p), (a))
-#  define V4F_ADD(a, b)   _mm_add_ps((a), (b))
-#  define V4F_SUB(a, b)   _mm_sub_ps((a), (b))
-#  define V4F_MUL(a, b)   _mm_mul_ps((a), (b))
-#  if defined(BRUUN_HAS_FMA)
-#    define V4F_MADD(a, b, c) _mm_fmadd_ps((b), (c), (a))
-#    define V4F_MSUB(a, b, c) _mm_fnmadd_ps((b), (c), (a))
-#  else
-#    define V4F_MADD(a, b, c) V4F_ADD((a), V4F_MUL((b), (c)))
-#    define V4F_MSUB(a, b, c) V4F_SUB((a), V4F_MUL((b), (c)))
-#  endif
-#  define V4F_SET1(x)     _mm_set1_ps(x)
-#  define V4F_SET4(a,b,c,d) _mm_setr_ps((a), (b), (c), (d))
-#  define V4F_ZERO()      _mm_setzero_ps()
-#elif defined(BRUUN_NEON_128)
-typedef float32x4_t bruun_v4f;
-#  define V4F_LD(p)       vld1q_f32(p)
-#  define V4F_ST(p, a)    vst1q_f32((p), (a))
-#  define V4F_ADD(a, b)   vaddq_f32((a), (b))
-#  define V4F_SUB(a, b)   vsubq_f32((a), (b))
-#  define V4F_MUL(a, b)   vmulq_f32((a), (b))
-#  define V4F_MADD(a, b, c) vfmaq_f32((a), (b), (c))
-#  define V4F_MSUB(a, b, c) vfmsq_f32((a), (b), (c))
-#  define V4F_SET1(x)     vdupq_n_f32(x)
-#  define V4F_SET4(a,b,c,d) vsetq_lane_f32((d), vsetq_lane_f32((c), vsetq_lane_f32((b), vsetq_lane_f32((a), vdupq_n_f32(0.0f), 0), 1), 2), 3)
-#  define V4F_ZERO()      vdupq_n_f32(0.0f)
-#endif
-
-#if defined(_MSC_VER) && !defined(__clang__)
-#define RESTRICT __restrict
-#elif defined(__GNUC__) || defined(__clang__)
-#define RESTRICT __restrict__
-#else
-#define RESTRICT
-#endif
-
-
-#ifdef NDEBUG
-#define BRUUN_ASSERT(cond) ((void)0)
-#else
-#define BRUUN_ASSERT(cond) assert(cond)
-#endif
-
-// BFFT keeps heap-optimized native spectrum ordering enabled internally.
-// Applications select public layouts through the API instead of compile flags.
-#ifndef BRUUN_HEAPOPT_SPECTRUM_ORDER
-#define BRUUN_HEAPOPT_SPECTRUM_ORDER 1
-#endif
-
-
-#ifndef M_PI
-#define M_PI 3.141592653589793238462643383279502884
-#endif
 
 namespace bruun {
 
-#if defined(__GNUC__) || defined(__clang__)
-#define BRUUN_ASSUME_ALIGNED(ptr, bytes) __builtin_assume_aligned((ptr), (bytes))
-#else
-#define BRUUN_ASSUME_ALIGNED(ptr, bytes) (ptr)
-#endif
-
-#if defined(__GNUC__) || defined(__clang__)
-#define BRUUN_ALWAYS_INLINE inline __attribute__((always_inline))
-#else
-#define BRUUN_ALWAYS_INLINE inline
-#endif
-
-static constexpr std::size_t bruun_cache_alignment = 64;
-
-template <typename T>
-class heap_array {
-public:
-    heap_array() noexcept : ptr_(nullptr), cap_(0), len_(0) {}
-
-    heap_array(const heap_array&) = delete;
-    heap_array& operator=(const heap_array&) = delete;
-
-    heap_array(heap_array&& other) noexcept
-        : ptr_(other.ptr_), cap_(other.cap_), len_(other.len_) {
-        other.ptr_ = nullptr;
-        other.cap_ = 0;
-        other.len_ = 0;
-    }
-
-    heap_array& operator=(heap_array&& other) noexcept {
-        if (this != &other) {
-            release();
-            ptr_ = other.ptr_;
-            cap_ = other.cap_;
-            len_ = other.len_;
-            other.ptr_ = nullptr;
-            other.cap_ = 0;
-            other.len_ = 0;
-        }
-        return *this;
-    }
-
-    ~heap_array() { release(); }
-
-    bool resize(std::size_t size) {
-        release();
-        if (size == 0) return true;
-        if (!alloc_raw(size)) return false;
-        for (std::size_t i = 0; i < size; ++i) {
-            new (ptr_ + i) T();
-        }
-        len_ = size;
-        return true;
-    }
-
-    bool assign(std::size_t size, const T& value) {
-        if (!resize(size)) return false;
-        for (std::size_t i = 0; i < len_; ++i) {
-            ptr_[i] = value;
-        }
-        return true;
-    }
-
-    bool reserve(std::size_t cap) {
-        if (cap <= cap_) return true;
-        void* raw = aligned_alloc_raw(cap);
-        if (!raw) return false;
-        T* new_ptr = static_cast<T*>(raw);
-        for (std::size_t i = 0; i < len_; ++i) {
-            new (new_ptr + i) T(static_cast<T&&>(ptr_[i]));
-            ptr_[i].~T();
-        }
-        free_raw(ptr_);
-        ptr_ = new_ptr;
-        cap_ = cap;
-        return true;
-    }
-
-    bool push_back(const T& val) {
-        if (len_ >= cap_) {
-            std::size_t new_cap = 16;
-            if (cap_ != 0) {
-                if (cap_ > static_cast<std::size_t>(-1) / 2) {
-                    return false;
-                }
-                new_cap = cap_ * 2;
-            }
-            if (!reserve(new_cap)) return false;
-        }
-        new (ptr_ + len_) T(val);
-        ++len_;
-        return true;
-    }
-
-    void pop_back() noexcept {
-        BRUUN_ASSERT(len_ > 0);
-        --len_;
-        ptr_[len_].~T();
-    }
-
-    T& back() noexcept { return ptr_[len_ - 1]; }
-    const T& back() const noexcept { return ptr_[len_ - 1]; }
-
-    void clear() noexcept {
-        for (std::size_t i = len_; i > 0; --i) {
-            ptr_[i - 1].~T();
-        }
-        len_ = 0;
-    }
-
-    T* begin() noexcept { return ptr_; }
-    T* end() noexcept { return ptr_ + len_; }
-    const T* begin() const noexcept { return ptr_; }
-    const T* end() const noexcept { return ptr_ + len_; }
-    std::size_t size() const noexcept { return len_; }
-    bool empty() const noexcept { return len_ == 0; }
-    T* data() noexcept { return ptr_; }
-    const T* data() const noexcept { return ptr_; }
-    T& operator[](std::size_t index) noexcept { return ptr_[index]; }
-    const T& operator[](std::size_t index) const noexcept { return ptr_[index]; }
-
-private:
-    static void* aligned_alloc_raw(std::size_t count) {
-        if (count > static_cast<std::size_t>(-1) / sizeof(T)) {
-            return nullptr;
-        }
-        const std::size_t bytes = sizeof(T) * count;
-        std::size_t padded = bytes;
-        const std::size_t remainder = padded % bruun_cache_alignment;
-        if (remainder != 0) {
-            const std::size_t pad = bruun_cache_alignment - remainder;
-            if (padded > static_cast<std::size_t>(-1) - pad) {
-                return nullptr;
-            }
-            padded += pad;
-        }
-        void* raw = nullptr;
-#if defined(_MSC_VER)
-        raw = _aligned_malloc(padded, bruun_cache_alignment);
-#else
-        if (posix_memalign(&raw, bruun_cache_alignment, padded) != 0) raw = nullptr;
-#endif
-        return raw;
-    }
-
-    static void free_raw(void* p) noexcept {
-        if (!p) return;
-#if defined(_MSC_VER)
-        _aligned_free(p);
-#else
-        std::free(p);
-#endif
-    }
-
-    bool alloc_raw(std::size_t count) {
-        void* raw = aligned_alloc_raw(count);
-        if (!raw) return false;
-        ptr_ = static_cast<T*>(raw);
-        cap_ = count;
-        return true;
-    }
-
-    void release() noexcept {
-        if (!ptr_) { cap_ = 0; len_ = 0; return; }
-        for (std::size_t i = len_; i > 0; --i) {
-            ptr_[i - 1].~T();
-        }
-        free_raw(ptr_);
-        ptr_ = nullptr;
-        cap_ = 0;
-        len_ = 0;
-    }
-
-    T* ptr_;
-    std::size_t cap_;
-    std::size_t len_;
-};
-
-
-    struct MemHint {
-        uint32_t base;
-        uint32_t span;
-        uint16_t align;
-        uint16_t stream;
-        uint32_t next_base;
-    };
-
-    struct FwdOp {
-        uint32_t base;
-        uint32_t q;
-        uint32_t m;
-        uint16_t kind;
-        MemHint mem;
-    };
-
-    enum FwdOpKind : uint16_t {
-        FWD_OP_NORM2 = 1,
-        FWD_OP_CODELET_Q8 = 2,
-        FWD_OP_CODELET_D3 = 3,
-        FWD_OP_BINOMIAL = 4,
-        FWD_OP_SPINE_D3 = 5,
-        FWD_OP_SPINE_D2 = 6,
-        FWD_OP_SPINE_D1 = 7,
-        FWD_OP_SPINE_LEAF = 8,
-        FWD_OP_DC_NYQUIST = 9,
-        FWD_OP_SPINE_NORM2 = 10
-    };
-
-    // Small explicit traversal records keep depth-first segment ownership visible
-    // to the program instead of relying on recursive calls through inline member
-    // symbols. The stack bound covers every supported int-sized power-of-two plan.
-    struct DoubleSegment {
-        double* data;
-        int q;
-        int m;
-    };
-
-
-struct int_pair {
-    int first;
-    int second;
-};
-
-struct complex_t {
-    double re;
-    double im;
-};
-
-struct complex_f32_t {
-    float re;
-    float im;
-};
-
 #include "MAG_REPRESENT_KERNEL.hpp"
 
-static inline const char* simd_backend_name() {
-#if BRUUN_LEVEL == 2
-    return "avx2-fma-256";
-#elif defined(BRUUN_X86_128)
-    return "sse2-128";
-#elif defined(BRUUN_NEON_128)
-    return "neon-128";
-#else
-    return "scalar";
-#endif
-}
+struct FwdOp {
+    uint32_t base;
+    uint32_t q;
+    uint32_t m;
+    uint16_t kind;
+};
 
-static inline bool is_power2(int n) {
-    return n > 0 && ((n & (n - 1)) == 0);
-}
+enum FwdOpKind : uint16_t {
+    FWD_OP_NORM2 = 1,
+    FWD_OP_CODELET_Q8 = 2,
+    FWD_OP_CODELET_D3 = 3,
+    FWD_OP_BINOMIAL = 4,
+    FWD_OP_SPINE_D3 = 5,
+    FWD_OP_SPINE_D2 = 6,
+    FWD_OP_SPINE_D1 = 7,
+    FWD_OP_SPINE_LEAF = 8,
+    FWD_OP_DC_NYQUIST = 9,
+    FWD_OP_SPINE_NORM2 = 10
+};
 
-static inline int ilog2_pow2(int n) {
-    int l = 0;
-    while (n > 1) {
-        n >>= 1;
-        ++l;
-    }
-    return l;
-}
+static_assert(sizeof(FwdOp) == 16, "FwdOp is kept compact for hot schedule streaming");
 
-static inline int graydecode_int(int g) {
-    for (int s = 1; s < 32; s <<= 1) g ^= g >> s;
-    return g;
-}
-
-static inline int bitrev_int(int r, int t) {
-    int out = 0;
-    for (int i = 0; i < t; ++i) {
-        out = (out << 1) | (r & 1);
-        r >>= 1;
-    }
-    return out;
-}
-
-static inline int bruun_idx_int(int m, int L) {
-#if defined(__GNUC__) || defined(__clang__)
-    const int t = 31 - __builtin_clz((unsigned)m);
-#else
-    int t = 0;
-    for (int x = m; x > 1; x >>= 1) ++t;
-#endif
-    const int r = m ^ (1 << t);
-    return (2 * graydecode_int(bitrev_int(r, t)) + 1) << ((L - 2) - t);
-}
+// Small explicit traversal records keep depth-first segment ownership visible
+// to the program instead of relying on recursive calls through inline member
+// symbols. The stack bound covers every supported int-sized power-of-two plan.
 
 // ---------------------------------------------------------------------------
 // Streaming kernels. Each has an optional 256 block,
@@ -996,20 +589,6 @@ static inline void norm2_inv_fused(double* RESTRICT p, int q,
 // twice the scalar lane count on supported SIMD paths: 8-wide AVX2,
 // 4-wide SSE2/NEON, exact scalar tail.
 // ---------------------------------------------------------------------------
-
-#if BRUUN_LEVEL >= 1
-#  if defined(BRUUN_X86_128)
-#    define V4F_CATLO(a, b)  _mm_movelh_ps((a), (b))
-#    define V4F_CATHI(a, b)  _mm_movehl_ps((b), (a))
-#    define V4F_ZIPLO(a, b)  _mm_unpacklo_ps((a), (b))
-#    define V4F_ZIPHI(a, b)  _mm_unpackhi_ps((a), (b))
-#  elif defined(BRUUN_NEON_128)
-#    define V4F_CATLO(a, b)  vcombine_f32(vget_low_f32(a), vget_low_f32(b))
-#    define V4F_CATHI(a, b)  vcombine_f32(vget_high_f32(a), vget_high_f32(b))
-#    define V4F_ZIPLO(a, b)  vzip1q_f32((a), (b))
-#    define V4F_ZIPHI(a, b)  vzip2q_f32((a), (b))
-#  endif
-#endif
 
 static inline void binomial_fwd_f32(float* RESTRICT v, int h) {
     int i = 0;
@@ -1607,7 +1186,9 @@ public:
         // OUTIDX is the native complex-output slot for each Bruun leaf.
         // Default is ordinary FFTW frequency-bin order.
         OUTIDX[0] = 0;
+#if !defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
         for (int m = 1; m < N / 2; ++m) OUTIDX[m] = IDX[m];
+#endif
 
 #if defined(BRUUN_HEAPOPT_SPECTRUM_ORDER)
         // Legal fast-layout constraint:
@@ -1753,7 +1334,7 @@ public:
         for (int m = 1; m < N / 2; ++m) OUTIDX[m] = NATIVE_POS[m];
 #endif
 
-        // Packed per-leaf metadata: one contiguous 144-byte entry per depth-3 leaf
+        // Packed per-leaf metadata: one contiguous 96-byte entry per depth-3 leaf
         // block, read as a sequential stream during the transform instead of
         // heap-strided picks from C, S, and IDX.
         if (N >= 32) {
@@ -1831,10 +1412,10 @@ public:
 
     bool standard_output_uses_two_phase() const {
 #if BRUUN_LEVEL >= 2
-        return N >= 8192;
+        return N >= kAvx2TwoPhaseMinN;
 #endif
 #if BRUUN_LEVEL >= 1
-        return N > 1048576;
+        return N > kSimd128TwoPhaseMinExclusiveN;
 #else
         return false;
 #endif
@@ -1863,11 +1444,7 @@ public:
                                        double* RESTRICT work,
                                        bool workspace_is_aligned) const {
         if (fuse_tail && N >= 64) {
-            //if (N < 32768) {
-            //    forward_recursive_legacy(input, work, X);
-           // } else { use for all sizes, not just large ones
-                forward_recursive(input, work, X, workspace_is_aligned);
-            //}
+            forward_recursive(input, work, X, workspace_is_aligned);
             return;
         }
 
@@ -2525,6 +2102,12 @@ public:
     }
 
 private:
+    // Standard-output pack policy thresholds are deliberately backend-specific:
+    // AVX2 measured better with two-phase packing from 8192; 128-bit SIMD keeps
+    // fused scatter through 1048576 and only switches above it.
+    static constexpr int kAvx2TwoPhaseMinN = 8192;
+    static constexpr int kSimd128TwoPhaseMinExclusiveN = 1048576;
+
     int N;
     int L;
     int NB;
@@ -2579,32 +2162,12 @@ private:
                    uint16_t kind,
                    uint32_t base,
                    uint32_t q,
-                   uint32_t m,
-                   uint16_t stream) const {
+                   uint32_t m) const {
         FwdOp op{};
         op.base = base;
         op.q = q;
         op.m = m;
         op.kind = kind;
-        op.mem.base = base;
-        if (kind == FWD_OP_BINOMIAL) {
-            op.mem.span = 2 * q;
-        } else if (kind == FWD_OP_CODELET_D3 || kind == FWD_OP_SPINE_D3) {
-            op.mem.span = 16;
-        } else if (kind == FWD_OP_SPINE_D2) {
-            op.mem.span = 8;
-        } else if (kind == FWD_OP_SPINE_D1) {
-            op.mem.span = 4;
-        } else if (kind == FWD_OP_SPINE_NORM2) {
-            op.mem.span = 8;
-        } else if (kind == FWD_OP_SPINE_LEAF) {
-            op.mem.span = 2;
-        } else {
-            op.mem.span = 4 * q;
-        }
-        op.mem.align = static_cast<uint16_t>(bruun_cache_alignment);
-        op.mem.stream = stream;
-        op.mem.next_base = base + op.mem.span;
         return ops.push_back(op);
     }
 
@@ -2629,7 +2192,7 @@ private:
             const int q = segment.q;
             const int m = segment.m;
             if (q >= 16) {
-                if (!append_op(ops, FWD_OP_NORM2, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), 1)) return false;
+                if (!append_op(ops, FWD_OP_NORM2, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m))) return false;
                 const int qq = q >> 2;
                 const int child_m = 4 * m;
                 if (!stack.push_back(ScheduleSegment{base + static_cast<uint32_t>(3 * q), qq, child_m + 3})) return false;
@@ -2637,9 +2200,9 @@ private:
                 if (!stack.push_back(ScheduleSegment{base + static_cast<uint32_t>(q), qq, child_m + 1})) return false;
                 if (!stack.push_back(ScheduleSegment{base, qq, child_m})) return false;
             } else if (q == 8) {
-                if (!append_op(ops, FWD_OP_CODELET_Q8, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), 1)) return false;
+                if (!append_op(ops, FWD_OP_CODELET_Q8, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m))) return false;
             } else {
-                if (!append_op(ops, FWD_OP_CODELET_D3, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m), 1)) return false;
+                if (!append_op(ops, FWD_OP_CODELET_D3, base, static_cast<uint32_t>(q), static_cast<uint32_t>(m))) return false;
             }
             (void)pack_to_complex;
         }
@@ -2651,9 +2214,6 @@ private:
         for (std::size_t i = 0; i < source.size(); ++i) {
             target[i] = source[i];
         }
-        for (std::size_t i = 0; i + 1 < target.size(); ++i) {
-            target[i].mem.next_base = target[i + 1].mem.base;
-        }
         return true;
     }
 
@@ -2662,22 +2222,13 @@ private:
         if (!INV_RES_SCHEDULE.resize(source_count + 1)) return false;
         for (std::size_t i = 0; i < source_count; ++i) {
             INV_RES_SCHEDULE[i] = FWD_RES_SCHEDULE[source_count - 1 - i];
-            INV_RES_SCHEDULE[i].mem.stream = 2;
         }
         FwdOp final_op{};
         final_op.base = 0;
         final_op.q = static_cast<uint32_t>(N / 2);
         final_op.m = 0;
         final_op.kind = FWD_OP_BINOMIAL;
-        final_op.mem.base = 0;
-        final_op.mem.span = static_cast<uint32_t>(N);
-        final_op.mem.align = static_cast<uint16_t>(bruun_cache_alignment);
-        final_op.mem.stream = 2;
-        final_op.mem.next_base = 0;
         INV_RES_SCHEDULE[source_count] = final_op;
-        for (std::size_t i = 0; i + 1 < INV_RES_SCHEDULE.size(); ++i) {
-            INV_RES_SCHEDULE[i].mem.next_base = INV_RES_SCHEDULE[i + 1].mem.base;
-        }
         return true;
     }
 
@@ -2690,24 +2241,24 @@ private:
             for (int h = N / 2; h >= 32; h >>= 1) {
                 if (!append_segment_schedule(fused_ops, static_cast<uint32_t>(h), h >> 2, 1, true)) return false;
                 if (!append_segment_schedule(residue_ops, static_cast<uint32_t>(h), h >> 2, 1, false)) return false;
-                if (!append_op(fused_ops, FWD_OP_BINOMIAL, 0, static_cast<uint32_t>(h >> 1), 0, 0)) return false;
-                if (!append_op(residue_ops, FWD_OP_BINOMIAL, 0, static_cast<uint32_t>(h >> 1), 0, 0)) return false;
+                if (!append_op(fused_ops, FWD_OP_BINOMIAL, 0, static_cast<uint32_t>(h >> 1), 0)) return false;
+                if (!append_op(residue_ops, FWD_OP_BINOMIAL, 0, static_cast<uint32_t>(h >> 1), 0)) return false;
             }
-            if (!append_op(fused_ops, FWD_OP_SPINE_D3, 16, 0, 1, 0)) return false;
-            if (!append_op(fused_ops, FWD_OP_BINOMIAL, 0, 8, 0, 0)) return false;
-            if (!append_op(fused_ops, FWD_OP_SPINE_D2, 8, 0, 1, 0)) return false;
-            if (!append_op(fused_ops, FWD_OP_BINOMIAL, 0, 4, 0, 0)) return false;
-            if (!append_op(fused_ops, FWD_OP_SPINE_D1, 4, 0, 1, 0)) return false;
-            if (!append_op(fused_ops, FWD_OP_BINOMIAL, 0, 2, 0, 0)) return false;
-            if (!append_op(fused_ops, FWD_OP_SPINE_LEAF, 2, 0, 1, 0)) return false;
-            if (!append_op(fused_ops, FWD_OP_DC_NYQUIST, 0, 0, 0, 0)) return false;
+            if (!append_op(fused_ops, FWD_OP_SPINE_D3, 16, 0, 1)) return false;
+            if (!append_op(fused_ops, FWD_OP_BINOMIAL, 0, 8, 0)) return false;
+            if (!append_op(fused_ops, FWD_OP_SPINE_D2, 8, 0, 1)) return false;
+            if (!append_op(fused_ops, FWD_OP_BINOMIAL, 0, 4, 0)) return false;
+            if (!append_op(fused_ops, FWD_OP_SPINE_D1, 4, 0, 1)) return false;
+            if (!append_op(fused_ops, FWD_OP_BINOMIAL, 0, 2, 0)) return false;
+            if (!append_op(fused_ops, FWD_OP_SPINE_LEAF, 2, 0, 1)) return false;
+            if (!append_op(fused_ops, FWD_OP_DC_NYQUIST, 0, 0, 0)) return false;
 
-            if (!append_op(residue_ops, FWD_OP_SPINE_D3, 16, 0, 1, 0)) return false;
-            if (!append_op(residue_ops, FWD_OP_BINOMIAL, 0, 8, 0, 0)) return false;
-            if (!append_op(residue_ops, FWD_OP_SPINE_NORM2, 8, 2, 1, 0)) return false;
-            if (!append_op(residue_ops, FWD_OP_BINOMIAL, 0, 4, 0, 0)) return false;
-            if (!append_op(residue_ops, FWD_OP_SPINE_D1, 4, 0, 1, 0)) return false;
-            if (!append_op(residue_ops, FWD_OP_BINOMIAL, 0, 2, 0, 0)) return false;
+            if (!append_op(residue_ops, FWD_OP_SPINE_D3, 16, 0, 1)) return false;
+            if (!append_op(residue_ops, FWD_OP_BINOMIAL, 0, 8, 0)) return false;
+            if (!append_op(residue_ops, FWD_OP_SPINE_NORM2, 8, 2, 1)) return false;
+            if (!append_op(residue_ops, FWD_OP_BINOMIAL, 0, 4, 0)) return false;
+            if (!append_op(residue_ops, FWD_OP_SPINE_D1, 4, 0, 1)) return false;
+            if (!append_op(residue_ops, FWD_OP_BINOMIAL, 0, 2, 0)) return false;
         }
         if (!copy_schedule(fused_ops, FWD_SCHEDULE)) return false;
         if (!copy_schedule(residue_ops, FWD_RES_SCHEDULE)) return false;
@@ -2840,7 +2391,7 @@ private:
         const bruun_v4f B1v = V4F_CATHI(c0b, c1b);
 
         const bruun_v4f c2 = V4F_LD(t.c2d);
-        const bruun_v4f s2 = V4F_SET4(t.c2d[2], t.c2d[2], t.c2d[0], t.c2d[0]);
+        const bruun_v4f s2 = V4F_SWAP_HALVES(c2);
         const bruun_v4f R2 = V4F_MSUB(V4F_MUL(c2, B0v), s2, B1v);
         const bruun_v4f I2 = V4F_MADD(V4F_MUL(s2, B0v), c2, B1v);
 
@@ -2859,7 +2410,7 @@ private:
         const bruun_v4f B1w = V4F_CATHI(qwL, qwH);
 
         const bruun_v4f c4 = V4F_LD(t.c4);
-        const bruun_v4f s4 = V4F_SET4(t.c4[1], t.c4[0], t.c4[3], t.c4[2]);
+        const bruun_v4f s4 = V4F_SWAP_PAIRS(c4);
         const bruun_v4f R3 = V4F_MSUB(V4F_MUL(c4, B0w), s4, B1w);
         const bruun_v4f I3 = V4F_MADD(V4F_MUL(s4, B0w), c4, B1w);
 
@@ -2923,7 +2474,7 @@ private:
         const bruun_v4f I3  = V4F_MUL(hf, V4F_ADD(E1, O1));
         const bruun_v4f A1w = V4F_MUL(hf, V4F_SUB(E1, O1));
         const bruun_v4f c4 = V4F_LD(t.c4);
-        const bruun_v4f s4 = V4F_SET4(t.c4[1], t.c4[0], t.c4[3], t.c4[2]);
+        const bruun_v4f s4 = V4F_SWAP_PAIRS(c4);
         const bruun_v4f B0w = V4F_MADD(V4F_MUL(c4, R3), s4, I3);
         const bruun_v4f B1w = V4F_MSUB(V4F_MUL(c4, I3), s4, R3);
 
@@ -2942,7 +2493,7 @@ private:
         const bruun_v4f I2  = V4F_MUL(hf, V4F_ADD(Q, W));
         const bruun_v4f A1v = V4F_MUL(hf, V4F_SUB(Q, W));
         const bruun_v4f c2 = V4F_LD(t.c2d);
-        const bruun_v4f s2 = V4F_SET4(t.c2d[2], t.c2d[2], t.c2d[0], t.c2d[0]);
+        const bruun_v4f s2 = V4F_SWAP_HALVES(c2);
         const bruun_v4f B0v = V4F_MADD(V4F_MUL(c2, R2), s2, I2);
         const bruun_v4f B1v = V4F_MSUB(V4F_MUL(c2, I2), s2, R2);
 
@@ -3105,7 +2656,8 @@ private:
             const FwdOp& op = ops[op_index];
             float* RESTRICT base = v + op.base;
 #if defined(__GNUC__) || defined(__clang__)
-            __builtin_prefetch(v + op.mem.next_base, 1, 1);
+            const uint32_t next_base = op_index + 1 < op_count ? ops[op_index + 1].base : 0;
+            __builtin_prefetch(v + next_base, 1, 1);
 #endif
             switch (op.kind) {
             case FWD_OP_NORM2: {
@@ -3395,7 +2947,7 @@ private:
         const __m256d B1w = _mm256_unpackhi_pd(Q, W);
 
         const __m256d c4 = _mm256_loadu_pd(t.c4);
-        const __m256d s4 = _mm256_set_pd(t.c4[2], t.c4[3], t.c4[0], t.c4[1]);
+        const __m256d s4 = _mm256_permute_pd(c4, 0x5);
         const __m256d R3 = _mm256_fmsub_pd(c4, B0w, _mm256_mul_pd(s4, B1w));
         const __m256d I3 = _mm256_fmadd_pd(s4, B0w, _mm256_mul_pd(c4, B1w));
 
@@ -3482,7 +3034,7 @@ private:
         const __m256d B1w = _mm256_unpackhi_pd(Q, W);
 
         const __m256d c4 = _mm256_loadu_pd(t.c4);
-        const __m256d s4 = _mm256_set_pd(t.c4[2], t.c4[3], t.c4[0], t.c4[1]);
+        const __m256d s4 = _mm256_permute_pd(c4, 0x5);
         const __m256d R3 = _mm256_fmsub_pd(c4, B0w, _mm256_mul_pd(s4, B1w));
         const __m256d I3 = _mm256_fmadd_pd(s4, B0w, _mm256_mul_pd(c4, B1w));
 
@@ -3510,55 +3062,6 @@ private:
         norm_q1_fwd(p + 8, t.c4[2], t.c4[3]);
         norm_q1_fwd(p + 12, t.c4[3], t.c4[2]);
 #endif
-    }
-
-    void run_fwd_res_segments(double* RESTRICT root, int root_q, int root_m) const {
-        DoubleSegment stack[96];
-        int stack_size = 0;
-        stack[stack_size++] = DoubleSegment{root, root_q, root_m};
-
-        while (stack_size > 0) {
-            --stack_size;
-            const DoubleSegment segment = stack[stack_size];
-            double* RESTRICT v = segment.data;
-            const int q = segment.q;
-            const int m = segment.m;
-
-            if (q >= 16) {
-                norm2_fused(v, q, C[m], s_twiddle(m), C[2*m], s_twiddle(2*m), C[2*m+1], s_twiddle(2*m+1));
-                const int qq = q >> 2;
-                const int child_m = 4 * m;
-
-                stack[stack_size++] = DoubleSegment{v + 3*q, qq, child_m + 3};
-                stack[stack_size++] = DoubleSegment{v + 2*q, qq, child_m + 2};
-                stack[stack_size++] = DoubleSegment{v + q,   qq, child_m + 1};
-                stack[stack_size++] = DoubleSegment{v,       qq, child_m};
-                continue;
-            }
-
-            if (q == 8) {
-                norm_q_fwd(v, 8, C[m], s_twiddle(m));
-                codelet_d3_tw_res(v, TW[2*m]);
-                codelet_d3_tw_res(v + 16, TW[2*m + 1]);
-                continue;
-            }
-
-            codelet_d3_tw_res(v, TW[m]);
-        }
-    }
-
-    // Spine tail for residue-order transforms: the last spine blocks (16, 8, 4, 2)
-    // resolved fully in place. Shared by the fast residue forward and the
-    // optional two-phase pack.
-    void residue_spine_tail_fwd(double* RESTRICT v) const {
-        codelet_d3_tw_res(v + 16, TW[1]);
-        binomial_fwd(v, 8);
-        norm_q_fwd(v + 8, 2, C[1], s_twiddle(1));
-        norm_q1_fwd(v + 8, C[2], s_twiddle(2));
-        norm_q1_fwd(v + 12, C[3], s_twiddle(3));
-        binomial_fwd(v, 4);
-        norm_q1_fwd(v + 4, C[1], s_twiddle(1));
-        binomial_fwd(v, 2);
     }
 
     void run_fwd_residue_schedule(double* RESTRICT v) const {
@@ -3638,7 +3141,7 @@ private:
         const __m256d I3  = _mm256_mul_pd(hf, _mm256_add_pd(E1, O1));
         const __m256d A1w = _mm256_mul_pd(hf, _mm256_sub_pd(E1, O1));
         const __m256d c4 = _mm256_loadu_pd(t.c4);
-        const __m256d s4 = _mm256_set_pd(t.c4[2], t.c4[3], t.c4[0], t.c4[1]);
+        const __m256d s4 = _mm256_permute_pd(c4, 0x5);
         const __m256d B0w = _mm256_fmadd_pd(c4, R3, _mm256_mul_pd(s4, I3));
         const __m256d B1w = _mm256_fmsub_pd(c4, I3, _mm256_mul_pd(s4, R3));
 
@@ -3687,37 +3190,6 @@ private:
 #endif
     }
 
-    void rec_inv_res(double* RESTRICT v, int q, int m) const {
-        if (q >= 16) {
-            const int qq = q >> 2;
-            rec_inv_res(v,       qq, 4*m);
-            rec_inv_res(v + q,   qq, 4*m + 1);
-            rec_inv_res(v + 2*q, qq, 4*m + 2);
-            rec_inv_res(v + 3*q, qq, 4*m + 3);
-            norm2_inv_fused(v, q, C[m], s_twiddle(m), C[2*m], s_twiddle(2*m), C[2*m+1], s_twiddle(2*m+1));
-            return;
-        }
-        if (q == 8) {
-            codelet_d3_tw_res_inv(v, TW[2*m]);
-            codelet_d3_tw_res_inv(v + 16, TW[2*m + 1]);
-            norm_q_inv(v, 8, C[m], s_twiddle(m));
-            return;
-        }
-        codelet_d3_tw_res_inv(v, TW[m]);
-    }
-
-    // Exact reverse of residue_spine_tail_fwd.
-    void residue_spine_tail_inv(double* RESTRICT v) const {
-        binomial_inv(v, 2);
-        norm_q_inv(v + 4, 1, C[1], s_twiddle(1));
-        binomial_inv(v, 4);
-        norm_q_inv(v + 8, 1, C[2], s_twiddle(2));
-        norm_q_inv(v + 12, 1, C[3], s_twiddle(3));
-        norm_q_inv(v + 8, 2, C[1], s_twiddle(1));
-        binomial_inv(v, 8);
-        codelet_d3_tw_res_inv(v + 16, TW[1]);
-    }
-
     void run_inv_residue_schedule(double* RESTRICT v) const {
         const FwdOp* RESTRICT ops = INV_RES_SCHEDULE.data();
         const std::size_t op_count = INV_RES_SCHEDULE.size();
@@ -3725,7 +3197,8 @@ private:
             const FwdOp& op = ops[op_index];
             double* RESTRICT base = v + op.base;
 #if defined(__GNUC__) || defined(__clang__)
-            __builtin_prefetch(v + op.mem.next_base, 1, 1);
+            const uint32_t next_base = op_index + 1 < op_count ? ops[op_index + 1].base : 0;
+            __builtin_prefetch(v + next_base, 1, 1);
 #endif
             switch (op.kind) {
             case FWD_OP_NORM2: {
@@ -3765,21 +3238,10 @@ private:
     // Fast scheduled residue inverse: exact reverse of forward_residues_recursive.
     // Requires N >= 64.
     void inverse_residues_recursive(double* RESTRICT v) const {
-#if BRUUN_LEVEL <= 3
-        // Wide x86 uses the same flat inverse schedule as 128-bit SIMD.
-        // q==8 leaves deliberately stay on the shared d3+d3+norm path to keep
+        // Flat scheduled inverse on every backend (BRUUN_LEVEL is 0/1/2). q==8
+        // leaves deliberately stay on the shared d3+d3+norm path to keep
         // compiler pressure predictable across narrow and wide targets.
         run_inv_residue_schedule(v);
-#else
-        residue_spine_tail_inv(v);
-
-        for (int h = 32; h <= N / 2; h <<= 1) {
-            binomial_inv(v, h >> 1);
-            rec_inv_res(v + h, h >> 2, 1);
-        }
-
-        binomial_inv(v, N / 2);
-#endif
     }
 
     // Two-phase standard-output forward: residues land in block order in v, then
@@ -3807,68 +3269,6 @@ private:
             X[k].im = -v[2*m + 1];
         }
 #endif
-    }
-
-
-    // Depth-first traversal of the Bruun factor tree. Identical arithmetic to the
-    // breadth-first stages, reordered so every sub-block becomes cache-resident
-    // before the remaining log(s) passes touch it. Descends two levels per fused
-    // pass; bottoms out in the fused depth-3 leaf codelets.
-    void run_fwd_segments(double* RESTRICT root, int root_q, int root_m, complex_t* RESTRICT X) const {
-        DoubleSegment stack[96];
-        int stack_size = 0;
-        stack[stack_size++] = DoubleSegment{root, root_q, root_m};
-
-        while (stack_size > 0) {
-            --stack_size;
-            const DoubleSegment segment = stack[stack_size];
-            double* RESTRICT v = segment.data;
-            const int q = segment.q;
-            const int m = segment.m;
-
-            if (q >= 16) {
-                norm2_fused(v, q, C[m], s_twiddle(m), C[2*m], s_twiddle(2*m), C[2*m+1], s_twiddle(2*m+1));
-                const int qq = q >> 2;
-                const int child_m = 4 * m;
-
-                stack[stack_size++] = DoubleSegment{v + 3*q, qq, child_m + 3};
-                stack[stack_size++] = DoubleSegment{v + 2*q, qq, child_m + 2};
-                stack[stack_size++] = DoubleSegment{v + q,   qq, child_m + 1};
-                stack[stack_size++] = DoubleSegment{v,       qq, child_m};
-                continue;
-            }
-
-            if (q == 8) {
-                norm_q_fwd(v, 8, C[m], s_twiddle(m));
-                d3_one(v, 2*m, X);
-                d3_one(v + 16, 2*m + 1, X);
-                continue;
-            }
-
-            d3_one(v, m, X);
-        }
-    }
-
-    void forward_recursive_legacy(const double* RESTRICT input, double* RESTRICT v, complex_t* RESTRICT X) const {
-        binomial_oop(input, v, N / 2);
-
-        for (int h = N / 2; h >= 32; h >>= 1) {
-            run_fwd_segments(v + h, h >> 2, 1, X);
-            binomial_fwd(v, h >> 1);
-        }
-
-        d3_one(v + 16, 1, X);
-        binomial_fwd(v, 8);
-        codelet_d2_pack(v + 8, 1, X);
-        binomial_fwd(v, 4);
-        codelet_d1_pack(v + 4, 1, X);
-        binomial_fwd(v, 2);
-        pack_leaf_node(1, v[2], v[3], X);
-
-        X[0].re = v[0] + v[1];
-        X[0].im = 0.0;
-        X[N / 2].re = v[0] - v[1];
-        X[N / 2].im = 0.0;
     }
 
     // Fused copy + scheduled depth-first forward. Requires N >= 64.
