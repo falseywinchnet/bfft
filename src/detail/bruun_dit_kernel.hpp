@@ -1741,10 +1741,9 @@ private:
         BRUUN_ASSERT(n_ >= 16);
         const int q = half_ >> 1;
         const int chain_limit = radix2_terminal_ ? (n_ >> 1) : (n_ >> 2);
-        // Fused seed depth: one whole L1-resident transform when n == 4096;
-        // 256 for larger n, where a deeper seed block widens the gather comb
-        // past what the load streams tolerate (measured regression).
-        const int s_target = n_ > 4096 ? 256 : chain_limit;
+        // Fused seed depth: 4096 is already past the sweet spot for a single
+        // deep seed block; keep 256-slot blocks from here upward.
+        const int s_target = n_ >= 4096 ? 256 : chain_limit;
         const int block_slots = s_target >> 1;
         const int nb = q / block_slots;
         const int nb_bits = ilog2_pow2(nb);
@@ -1879,7 +1878,7 @@ private:
         BRUUN_ASSERT(n_ >= 16);
         const int q = half_ >> 1;
         const int chain_limit = radix2_terminal_ ? (n_ >> 1) : (n_ >> 2);
-        const int s_target = n_ > 4096 ? 256 : chain_limit;
+        const int s_target = n_ >= 4096 ? 256 : chain_limit;
         const int block_slots = s_target >> 1;
         const int nb = q / block_slots;
         const int nb_bits = ilog2_pow2(nb);
@@ -2146,12 +2145,13 @@ private:
     // The 4 v4f lanes are {cA.lo, cA.hi, cB.lo, cB.hi} = nodes
     // {s, s+N/4, s+N/8, s+3N/8}. cA and cB run identical twiddles through
     // every interior stage, so merge4_v4f / split4_v4f are byte-for-byte V4F
-    // transcriptions of merge4_v_norm / split4_v_norm; only the seed (gather
-    // via V4F_SET4) and the terminals (split the v4f into cA=low2 / cB=high2
-    // and run the terminal body scalar) are cA/cB-aware.
+    // transcriptions of merge4_v_norm / split4_v_norm; only the seed
+    // (contiguous paired V4F loads) and the terminals (split the v4f into
+    // cA=low2 / cB=high2) are cA/cB-aware.
     //
     // Odd log2(n) runs the paired interior through N/4, then depairs the
-    // final cross-lane merge4 plus radix-2 terminal into scalar f32.
+    // final cross-lane merge4 plus radix-2 terminal into the V2-like f32
+    // layout.
     // ==================================================================
 
     static BRUUN_ALWAYS_INLINE void pair_reduce_v4f_norm(bruun_v4f ea, bruun_v4f eb, bruun_v4f oa, bruun_v4f ob,
@@ -2291,18 +2291,17 @@ private:
     // Seed a pair of paired-slots (s, s+1): gather the cA mirror pairs (slots
     // s, s+1) into v4f lanes {0,1} and the cB mirror pairs (slots s+eighth,
     // s+eighth+1) into lanes {2,3}, so the seed radix-2 runs on all four lanes
-    // at once. V4F_SET4 gathers the four scattered rev inputs portably.
+    // at once with contiguous loads.
     BRUUN_ALWAYS_INLINE void seed_paired_pair_f32(const float* input, float* fvw, int s, int eighth) const {
         const int hq = half_ >> 1;
         const int jA = rev_[static_cast<std::size_t>(s)];
         const int jB = rev_[static_cast<std::size_t>(s + eighth)];
-        const bruun_v4f a0 = V4F_SET4(input[jA], input[jA + 1], input[jB], input[jB + 1]);
-        const bruun_v4f c0 = V4F_SET4(input[jA + half_], input[jA + half_ + 1],
-                                      input[jB + half_], input[jB + half_ + 1]);
-        const bruun_v4f a1 = V4F_SET4(input[jA + hq], input[jA + hq + 1],
-                                      input[jB + hq], input[jB + hq + 1]);
-        const bruun_v4f c1 = V4F_SET4(input[jA + hq + half_], input[jA + hq + half_ + 1],
-                                      input[jB + hq + half_], input[jB + hq + half_ + 1]);
+        BRUUN_ASSERT(jB == jA + 2);
+        (void)jB;
+        const bruun_v4f a0 = V4F_LD(input + jA);
+        const bruun_v4f c0 = V4F_LD(input + jA + half_);
+        const bruun_v4f a1 = V4F_LD(input + jA + hq);
+        const bruun_v4f c1 = V4F_LD(input + jA + hq + half_);
         const bruun_v4f e0 = V4F_ADD(a0, c0);
         const bruun_v4f e1 = V4F_ADD(a1, c1);
         V4F_ST(fvw + 8 * s, V4F_ADD(e0, e1));            // paired-slot s   a-comp
@@ -2311,14 +2310,37 @@ private:
         V4F_ST(fvw + 8 * (s + 1) + 4, V4F_SUB(a1, c1));  // paired-slot s+1 b-comp
     }
 
-    void compute_vwork_v4f(const float* input, float* fvw) const {
+    void seed_fused_block_v4f(const float* input, float* fvw, int base, int count) const {
         const int eighth = half_ >> 2;   // P = number of paired-slots = N/8
-        for (int s = 0; s < eighth; s += 2) {
+        for (int s = base; s < base + count; s += 2) {
             seed_paired_pair_f32(input, fvw, s, eighth);
         }
-        const int chain_limit = n_ >> 2;   // even: same stage schedule as the double walk
         int stage = 2;
-        for (int s = 16; s <= chain_limit; s <<= 2, stage += 2) {
+        for (int s = 16; (s >> 1) <= count; s <<= 2, stage += 2) {
+            const double* cs2 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage - 1)];
+            const double* cs1 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage)];
+            const int M = s >> 3;
+            for (int poff = base; poff < base + count; poff += (s >> 1)) {
+                merge4_v4f(fvw + 8 * poff, M, cs2, cs1);
+            }
+        }
+    }
+
+    void compute_vwork_v4f(const float* input, float* fvw) const {
+        const int eighth = half_ >> 2;   // P = number of paired-slots = N/8
+        const int chain_limit = n_ >> 2;   // odd sizes finish the N/2 top merge separately
+        const int s_target = n_ == 4096 ? 256 : chain_limit;
+        const int block_slots = s_target >> 1;
+        const int nb = eighth / block_slots;
+        const int nb_bits = ilog2_pow2(nb);
+        for (int p = 0; p < nb; ++p) {
+            const int base = bitrev_int(p, nb_bits) * block_slots;
+            seed_fused_block_v4f(input, fvw, base, block_slots);
+        }
+
+        int s = s_target << 2;
+        int stage = ilog2_pow2(s) - 2;
+        for (; s <= chain_limit; s <<= 2, stage += 2) {
             const double* cs2 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage - 1)];
             const double* cs1 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage)];
             const int M = s >> 3;
@@ -2334,14 +2356,10 @@ private:
             const float* src = fvw + 8 * i;
             float* lo = vw + 4 * i;
             float* hi = vw + 4 * (pslots + i);
-            lo[0] = src[0];
-            lo[1] = src[1];
-            lo[2] = src[4];
-            lo[3] = src[5];
-            hi[0] = src[2];
-            hi[1] = src[3];
-            hi[2] = src[6];
-            hi[3] = src[7];
+            const bruun_v4f a = V4F_LD(src);
+            const bruun_v4f b = V4F_LD(src + 4);
+            V4F_ST(lo, V4F_CATLO(a, b));
+            V4F_ST(hi, V4F_CATHI(a, b));
         }
     }
 
@@ -2351,14 +2369,10 @@ private:
             const float* lo = vw + 4 * i;
             const float* hi = vw + 4 * (pslots + i);
             float* dst = fvw + 8 * i;
-            dst[0] = lo[0];
-            dst[1] = lo[1];
-            dst[2] = hi[0];
-            dst[3] = hi[1];
-            dst[4] = lo[2];
-            dst[5] = lo[3];
-            dst[6] = hi[2];
-            dst[7] = hi[3];
+            const bruun_v4f l = V4F_LD(lo);
+            const bruun_v4f h = V4F_LD(hi);
+            V4F_ST(dst, V4F_CATLO(l, h));
+            V4F_ST(dst + 4, V4F_CATHI(l, h));
         }
     }
 
@@ -2407,6 +2421,46 @@ private:
         dst3[0] = out[12]; dst3[1] = out[13]; dst3[2] = out[14]; dst3[3] = out[15];
     }
 
+    BRUUN_ALWAYS_INLINE void butterfly4_v_norm_f32_v4(const float* c0, const float* c1,
+                                                       const float* c2, const float* c3,
+                                                       int i, const double* cs2,
+                                                       const double* cs1, const double* cs1q,
+                                                       bruun_v4f* out) const {
+        const bruun_v4f n0 = V4F_LD(c0 + 4 * i);
+        const bruun_v4f n1 = V4F_LD(c1 + 4 * i);
+        const bruun_v4f n2 = V4F_LD(c2 + 4 * i);
+        const bruun_v4f n3 = V4F_LD(c3 + 4 * i);
+
+        const bruun_v4f a02 = V4F_CATLO(n0, n2);
+        const bruun_v4f b02 = V4F_CATHI(n0, n2);
+        const bruun_v4f a13 = V4F_CATLO(n1, n3);
+        const bruun_v4f b13 = V4F_CATHI(n1, n3);
+
+        bruun_v4f hla, hlb, hha, hhb;
+        pair_reduce_v4f_norm(a02, b02, a13, b13,
+                             v4f_set1cs(cs2), v4f_set1cs(cs2 + 1),
+                             hla, hlb, hha, hhb);
+
+        bruun_v4f la, lb, ha, hb;
+        pair_reduce_v4f_norm(hla, hlb, V4F_CATHI(hla, hla), V4F_CATHI(hlb, hlb),
+                             v4f_set1cs(cs1), v4f_set1cs(cs1 + 1), la, lb, ha, hb);
+        out[0] = V4F_CATLO(la, lb);
+        out[1] = V4F_CATLO(ha, hb);
+
+        pair_reduce_v4f_norm(hha, hhb, V4F_CATHI(hha, hha), V4F_CATHI(hhb, hhb),
+                             v4f_set1cs(cs1q), v4f_set1cs(cs1q + 1), la, lb, ha, hb);
+        out[2] = V4F_CATLO(la, lb);
+        out[3] = V4F_CATLO(ha, hb);
+    }
+
+    static BRUUN_ALWAYS_INLINE void store_butterfly4_v_norm_f32_v4(float* vblk, int M, int i,
+                                                                   const bruun_v4f* out) {
+        V4F_ST(vblk + 4 * i, out[0]);
+        V4F_ST(vblk + 4 * (4 * M - i), out[1]);
+        V4F_ST(vblk + 4 * (2 * M - i), out[2]);
+        V4F_ST(vblk + 4 * (2 * M + i), out[3]);
+    }
+
     void merge4_v_norm_f32(float* vblk, int M, const double* cs2, const double* cs1) const {
         float* c0 = vblk;
         float* c1 = vblk + 4 * M;
@@ -2452,22 +2506,25 @@ private:
 
         for (int i = 1; i < M - i; ++i) {
             const int m = M - i;
-            float oi[16];
-            float om[16];
-            butterfly4_v_norm_f32(c0, c1, c2, c3, i,
-                                  cs2 + 2 * (i - 1), cs1 + 2 * (i - 1), cs1 + 2 * (2 * M - i - 1), oi);
-            butterfly4_v_norm_f32(c0, c1, c2, c3, m,
-                                  cs2 + 2 * (m - 1), cs1 + 2 * (m - 1), cs1 + 2 * (2 * M - m - 1), om);
-            store_butterfly4_v_norm_f32(vblk, M, i, oi);
-            store_butterfly4_v_norm_f32(vblk, M, m, om);
+            bruun_v4f oi[4];
+            bruun_v4f om[4];
+            butterfly4_v_norm_f32_v4(c0, c1, c2, c3, i,
+                                     cs2 + 2 * (i - 1), cs1 + 2 * (i - 1),
+                                     cs1 + 2 * (2 * M - i - 1), oi);
+            butterfly4_v_norm_f32_v4(c0, c1, c2, c3, m,
+                                     cs2 + 2 * (m - 1), cs1 + 2 * (m - 1),
+                                     cs1 + 2 * (2 * M - m - 1), om);
+            store_butterfly4_v_norm_f32_v4(vblk, M, i, oi);
+            store_butterfly4_v_norm_f32_v4(vblk, M, m, om);
         }
 
         if (M >= 2) {
             const int i = M >> 1;
-            float oi[16];
-            butterfly4_v_norm_f32(c0, c1, c2, c3, i,
-                                  cs2 + 2 * (i - 1), cs1 + 2 * (i - 1), cs1 + 2 * (2 * M - i - 1), oi);
-            store_butterfly4_v_norm_f32(vblk, M, i, oi);
+            bruun_v4f oi[4];
+            butterfly4_v_norm_f32_v4(c0, c1, c2, c3, i,
+                                     cs2 + 2 * (i - 1), cs1 + 2 * (i - 1),
+                                     cs1 + 2 * (2 * M - i - 1), oi);
+            store_butterfly4_v_norm_f32_v4(vblk, M, i, oi);
         }
     }
 
@@ -2480,7 +2537,35 @@ private:
         X[q].re = vw[2];
         X[q].im = -vw[3];
 
-        for (int i = 1; i < q; ++i) {
+        const bruun_v4f neg = V4F_SET1(-1.0f);
+        int i = 1;
+        for (; i + 1 < q; i += 2) {
+            const bruun_v4f n0 = V4F_LD(vw + 4 * i);
+            const bruun_v4f n1 = V4F_LD(vw + 4 * (i + 1));
+            const bruun_v4f ea_oa = V4F_ZIPLO(n0, n1);
+            const bruun_v4f eb_ob = V4F_ZIPHI(n0, n1);
+            const bruun_v4f ea = V4F_CATLO(ea_oa, ea_oa);
+            const bruun_v4f oa = V4F_CATHI(ea_oa, ea_oa);
+            const bruun_v4f eb = V4F_CATLO(eb_ob, eb_ob);
+            const bruun_v4f ob = V4F_CATHI(eb_ob, eb_ob);
+            const bruun_v4f cv = V4F_SET4(static_cast<float>(cos_[static_cast<std::size_t>(i)]),
+                                          static_cast<float>(cos_[static_cast<std::size_t>(i + 1)]),
+                                          static_cast<float>(cos_[static_cast<std::size_t>(i)]),
+                                          static_cast<float>(cos_[static_cast<std::size_t>(i + 1)]));
+            const bruun_v4f sv = V4F_SET4(static_cast<float>(-neg_sin_[static_cast<std::size_t>(i)]),
+                                          static_cast<float>(-neg_sin_[static_cast<std::size_t>(i + 1)]),
+                                          static_cast<float>(-neg_sin_[static_cast<std::size_t>(i)]),
+                                          static_cast<float>(-neg_sin_[static_cast<std::size_t>(i + 1)]));
+            bruun_v4f la, lb, ha, hb;
+            pair_reduce_v4f_norm(ea, eb, oa, ob, cv, sv, la, lb, ha, hb);
+            V4F_ST(&X[i].re, V4F_ZIPLO(la, V4F_MUL(lb, neg)));
+
+            const int hi = half_ - i;
+            const bruun_v4f high_pair = V4F_ZIPLO(ha, V4F_MUL(hb, neg));
+            V4F_ST(&X[hi - 1].re, V4F_CATLO(V4F_CATHI(high_pair, high_pair), high_pair));
+        }
+
+        for (; i < q; ++i) {
             const int hi = half_ - i;
             float la, lb, ha, hb;
             pair_reduce_cs_f32(vw[4 * i], vw[4 * i + 2],
@@ -2559,8 +2644,8 @@ private:
             const double* cs2 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage - 1)];
             const double* cs1 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage)];
             merge4_v_norm_f32(terminal_work, s >> 3, cs2, cs1);
-            for (int i = 0; i < n_; ++i) {
-                work[i] = terminal_work[i];
+            for (int i = 0; i < n_; i += 4) {
+                V4F_ST(work + i, V4F_LD(terminal_work + i));
             }
             terminal_radix2_v_norm_f32(work, output);
             return;
@@ -2755,7 +2840,7 @@ private:
         BRUUN_ASSERT(n_ >= 16);
         const int q = half_ >> 1;
         const int chain_limit = radix2_terminal_ ? (n_ >> 1) : (n_ >> 2);
-        const int s_target = n_ > 4096 ? 256 : chain_limit;
+        const int s_target = n_ >= 4096 ? 256 : chain_limit;
         const int block_slots = s_target >> 1;
         const int nb = q / block_slots;
         const int nb_bits = ilog2_pow2(nb);
@@ -3041,7 +3126,7 @@ private:
         BRUUN_ASSERT(n_ >= 16);
         const int q = half_ >> 1;
         const int chain_limit = radix2_terminal_ ? (n_ >> 1) : (n_ >> 2);
-        const int s_target = n_ > 4096 ? 256 : chain_limit;
+        const int s_target = n_ >= 4096 ? 256 : chain_limit;
         const int block_slots = s_target >> 1;
         const int nb = q / block_slots;
         const int nb_bits = ilog2_pow2(nb);
@@ -3364,6 +3449,48 @@ private:
         dst3[0] = out[12]; dst3[1] = out[13]; dst3[2] = out[14]; dst3[3] = out[15];
     }
 
+    BRUUN_ALWAYS_INLINE void inv_butterfly4_v_norm_f32_v4(const float* vblk, int M, int i,
+                                                           const double* cs1i, const double* cs1q,
+                                                           const double* cs2i, bruun_v4f* out) const {
+        const bruun_v4f ni = V4F_LD(vblk + 4 * i);
+        const bruun_v4f nh = V4F_LD(vblk + 4 * (4 * M - i));
+        const bruun_v4f nql = V4F_LD(vblk + 4 * (2 * M - i));
+        const bruun_v4f nqh = V4F_LD(vblk + 4 * (2 * M + i));
+
+        bruun_v4f h0la, h0lb, h1la, h1lb;
+        pair_expand_v4f_norm(V4F_CATLO(ni, ni), V4F_CATHI(ni, ni),
+                             V4F_CATLO(nh, nh), V4F_CATHI(nh, nh),
+                             v4f_set1cs(cs1i), v4f_set1cs(cs1i + 1),
+                             h0la, h0lb, h1la, h1lb);
+
+        bruun_v4f h0ha, h0hb, h1ha, h1hb;
+        pair_expand_v4f_norm(V4F_CATLO(nql, nql), V4F_CATHI(nql, nql),
+                             V4F_CATLO(nqh, nqh), V4F_CATHI(nqh, nqh),
+                             v4f_set1cs(cs1q), v4f_set1cs(cs1q + 1),
+                             h0ha, h0hb, h1ha, h1hb);
+
+        bruun_v4f ea, eb, oa, ob;
+        pair_expand_v4f_norm(h0la, h0lb, h0ha, h0hb,
+                             v4f_set1cs(cs2i), v4f_set1cs(cs2i + 1),
+                             ea, eb, oa, ob);
+        out[0] = V4F_CATLO(ea, eb);
+        out[1] = V4F_CATLO(oa, ob);
+
+        pair_expand_v4f_norm(h1la, h1lb, h1ha, h1hb,
+                             v4f_set1cs(cs2i), v4f_set1cs(cs2i + 1),
+                             ea, eb, oa, ob);
+        out[2] = V4F_CATLO(ea, eb);
+        out[3] = V4F_CATLO(oa, ob);
+    }
+
+    static BRUUN_ALWAYS_INLINE void store_inv_butterfly4_v_norm_f32_v4(float* vblk, int M, int i,
+                                                                       const bruun_v4f* out) {
+        V4F_ST(vblk + 4 * i, out[0]);
+        V4F_ST(vblk + 4 * (M + i), out[1]);
+        V4F_ST(vblk + 4 * (2 * M + i), out[2]);
+        V4F_ST(vblk + 4 * (3 * M + i), out[3]);
+    }
+
     void split4_v_norm_f32(float* vblk, int M, const double* cs2, const double* cs1) const {
         float* c0 = vblk;
         float* c1 = vblk + 4 * M;
@@ -3411,40 +3538,25 @@ private:
 
         for (int i = 1; i < M - i; ++i) {
             const int m = M - i;
-            float oi[16];
-            float om[16];
-            inv_butterfly4_v_norm_f32(vblk[4 * i], vblk[4 * i + 1], vblk[4 * i + 2], vblk[4 * i + 3],
-                                      vblk[4 * (4 * M - i)], vblk[4 * (4 * M - i) + 1],
-                                      vblk[4 * (4 * M - i) + 2], vblk[4 * (4 * M - i) + 3],
-                                      vblk[4 * (2 * M - i)], vblk[4 * (2 * M - i) + 1],
-                                      vblk[4 * (2 * M - i) + 2], vblk[4 * (2 * M - i) + 3],
-                                      vblk[4 * (2 * M + i)], vblk[4 * (2 * M + i) + 1],
-                                      vblk[4 * (2 * M + i) + 2], vblk[4 * (2 * M + i) + 3],
-                                      cs1 + 2 * (i - 1), cs1 + 2 * (2 * M - i - 1), cs2 + 2 * (i - 1), oi);
-            inv_butterfly4_v_norm_f32(vblk[4 * m], vblk[4 * m + 1], vblk[4 * m + 2], vblk[4 * m + 3],
-                                      vblk[4 * (4 * M - m)], vblk[4 * (4 * M - m) + 1],
-                                      vblk[4 * (4 * M - m) + 2], vblk[4 * (4 * M - m) + 3],
-                                      vblk[4 * (2 * M - m)], vblk[4 * (2 * M - m) + 1],
-                                      vblk[4 * (2 * M - m) + 2], vblk[4 * (2 * M - m) + 3],
-                                      vblk[4 * (2 * M + m)], vblk[4 * (2 * M + m) + 1],
-                                      vblk[4 * (2 * M + m) + 2], vblk[4 * (2 * M + m) + 3],
-                                      cs1 + 2 * (m - 1), cs1 + 2 * (2 * M - m - 1), cs2 + 2 * (m - 1), om);
-            store_inv_butterfly4_v_norm_f32(vblk, M, i, oi);
-            store_inv_butterfly4_v_norm_f32(vblk, M, m, om);
+            bruun_v4f oi[4];
+            bruun_v4f om[4];
+            inv_butterfly4_v_norm_f32_v4(vblk, M, i,
+                                         cs1 + 2 * (i - 1), cs1 + 2 * (2 * M - i - 1),
+                                         cs2 + 2 * (i - 1), oi);
+            inv_butterfly4_v_norm_f32_v4(vblk, M, m,
+                                         cs1 + 2 * (m - 1), cs1 + 2 * (2 * M - m - 1),
+                                         cs2 + 2 * (m - 1), om);
+            store_inv_butterfly4_v_norm_f32_v4(vblk, M, i, oi);
+            store_inv_butterfly4_v_norm_f32_v4(vblk, M, m, om);
         }
 
         if (M >= 2) {
             const int i = M >> 1;
-            float oi[16];
-            inv_butterfly4_v_norm_f32(vblk[4 * i], vblk[4 * i + 1], vblk[4 * i + 2], vblk[4 * i + 3],
-                                      vblk[4 * (4 * M - i)], vblk[4 * (4 * M - i) + 1],
-                                      vblk[4 * (4 * M - i) + 2], vblk[4 * (4 * M - i) + 3],
-                                      vblk[4 * (2 * M - i)], vblk[4 * (2 * M - i) + 1],
-                                      vblk[4 * (2 * M - i) + 2], vblk[4 * (2 * M - i) + 3],
-                                      vblk[4 * (2 * M + i)], vblk[4 * (2 * M + i) + 1],
-                                      vblk[4 * (2 * M + i) + 2], vblk[4 * (2 * M + i) + 3],
-                                      cs1 + 2 * (i - 1), cs1 + 2 * (2 * M - i - 1), cs2 + 2 * (i - 1), oi);
-            store_inv_butterfly4_v_norm_f32(vblk, M, i, oi);
+            bruun_v4f oi[4];
+            inv_butterfly4_v_norm_f32_v4(vblk, M, i,
+                                         cs1 + 2 * (i - 1), cs1 + 2 * (2 * M - i - 1),
+                                         cs2 + 2 * (i - 1), oi);
+            store_inv_butterfly4_v_norm_f32_v4(vblk, M, i, oi);
         }
     }
 
@@ -3523,30 +3635,25 @@ private:
     // Inverse seed scatter: reverse of seed_paired_pair_f32. cA is lanes {0,1},
     // cB is lanes {2,3}; each is the double seed_scatter_block_v core, scalar.
     BRUUN_ALWAYS_INLINE void seed_scatter_paired_pair_f32(const float* fvw, float* output, int s, int eighth) const {
+        const bruun_v4f hv = V4F_SET1(0.5f);
         const int hq = half_ >> 1;
         const float* p = fvw + 8 * s;
         const float* q = fvw + 8 * (s + 1);
-        // half = 0 -> cA (lane offset 0), half = 1 -> cB (lane offset 2)
-        for (int half = 0; half < 2; ++half) {
-            const int lo = 2 * half;
-            const int slot = s + half * eighth;
-            const int j0 = rev_[static_cast<std::size_t>(slot)];
-            const int j1 = j0 + hq;
-            const float va0 = p[lo],     va1 = p[lo + 1];       // slot a-comp {node, node+N/4}
-            const float vb0 = p[4 + lo], vb1 = p[4 + lo + 1];   // slot b-comp
-            const float vc0 = q[lo],     vc1 = q[lo + 1];       // slot+1 a-comp
-            const float vd0 = q[4 + lo], vd1 = q[4 + lo + 1];   // slot+1 b-comp
-            const float e00 = 0.5f * (va0 + vb0), e01 = 0.5f * (va1 + vb1);
-            const float e10 = 0.5f * (va0 - vb0), e11 = 0.5f * (va1 - vb1);
-            output[j0]         = 0.5f * (e00 + vc0);
-            output[j0 + 1]     = 0.5f * (e01 + vc1);
-            output[j0 + half_] = 0.5f * (e00 - vc0);
-            output[j0 + half_ + 1] = 0.5f * (e01 - vc1);
-            output[j1]         = 0.5f * (e10 + vd0);
-            output[j1 + 1]     = 0.5f * (e11 + vd1);
-            output[j1 + half_] = 0.5f * (e10 - vd0);
-            output[j1 + half_ + 1] = 0.5f * (e11 - vd1);
-        }
+        const int j0 = rev_[static_cast<std::size_t>(s)];
+        const int jB = rev_[static_cast<std::size_t>(s + eighth)];
+        BRUUN_ASSERT(jB == j0 + 2);
+        (void)jB;
+
+        const bruun_v4f va = V4F_LD(p);
+        const bruun_v4f vb = V4F_LD(p + 4);
+        const bruun_v4f vc = V4F_LD(q);
+        const bruun_v4f vd = V4F_LD(q + 4);
+        const bruun_v4f e0 = V4F_MUL(V4F_ADD(va, vb), hv);
+        const bruun_v4f e1 = V4F_MUL(V4F_SUB(va, vb), hv);
+        V4F_ST(output + j0,           V4F_MUL(V4F_ADD(e0, vc), hv));
+        V4F_ST(output + j0 + half_,   V4F_MUL(V4F_SUB(e0, vc), hv));
+        V4F_ST(output + j0 + hq,      V4F_MUL(V4F_ADD(e1, vd), hv));
+        V4F_ST(output + j0 + hq + half_, V4F_MUL(V4F_SUB(e1, vd), hv));
     }
 
     // Collect-a-scatter-then-organize (row tiles), paired-layout port of
