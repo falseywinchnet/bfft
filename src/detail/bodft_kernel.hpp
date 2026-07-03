@@ -34,7 +34,7 @@
 // complex_t/complex_f32_t and the SIMD-backend machinery from the Bruun real
 // kernel; only the decimation arithmetic is new.
 
-#include "bruun_kernel.hpp"
+#include "bruun_dif_kernel.hpp"
 
 #include <cmath>
 #include <cstddef>

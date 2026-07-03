@@ -75,6 +75,7 @@ PC_FILE := $(BUILD_DIR)/$(LIB_NAME).pc
 BENCH := $(BUILD_DIR)/examples/benchmark
 BODFT_BENCH := $(BUILD_DIR)/examples/bodft_benchmark
 DIF_DIT_BENCH := $(BUILD_DIR)/examples/dif_vs_dit_benchmark
+DIF_DIT_F32_BENCH := $(BUILD_DIR)/examples/dif_vs_dit_f32_benchmark
 APPLE_BENCH := $(BUILD_DIR)/examples/apple_benchmark
 ATAN2_BENCH := $(BUILD_DIR)/examples/atan2_benchmark
 LOCALITY_PROBE := $(BUILD_DIR)/examples/locality_probe
@@ -105,10 +106,10 @@ all: $(STATIC_LIB) $(SHARED_LIB) examples
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)/src $(BUILD_DIR)/examples $(BUILD_DIR)/tests $(BUILD_DIR)/benchmarks
 
-$(OBJ): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp src/detail/experimental_radix4_rfft_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
+$(OBJ): $(SRC) include/bfft/bfft.h src/detail/bruun_dif_kernel.hpp src/detail/bruun_dit_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
 
-$(BODFT_OBJ): $(BODFT_SRC) include/bfft/bodft.h include/bfft/bfft.h src/detail/bodft_kernel.hpp src/detail/bruun_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
+$(BODFT_OBJ): $(BODFT_SRC) include/bfft/bodft.h include/bfft/bfft.h src/detail/bodft_kernel.hpp src/detail/bruun_dif_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
 
 $(STFT_OBJ): $(STFT_SRC) include/bfft/stft.h include/bfft/bfft.h include/bfft/bodft.h | $(BUILD_DIR)
@@ -129,30 +130,33 @@ $(PC_FILE): pkgconfig/bfft.pc.in | $(BUILD_DIR)
 
 examples: $(BENCH) $(BODFT_BENCH) $(APPLE_EXAMPLES) $(LOCALITY_PROBE) $(C_DEMO) $(CPP_DEMO)
 
-benchmarks: $(BENCH) $(BODFT_BENCH) $(DIF_DIT_BENCH) $(ATAN2_BENCH)
+benchmarks: $(BENCH) $(BODFT_BENCH) $(DIF_DIT_BENCH) $(DIF_DIT_F32_BENCH) $(ATAN2_BENCH)
 
 asm-check: $(ASM_OUTPUTS)
 	@if [ -z "$(ASM_OUTPUTS)" ]; then echo "No x86 assembly variants supported by $(CXX)."; fi
 
-$(AVX2_ASM): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp src/detail/experimental_radix4_rfft_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
+$(AVX2_ASM): $(SRC) include/bfft/bfft.h src/detail/bruun_dif_kernel.hpp src/detail/bruun_dit_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(CXXFLAGS) $(AVX2_FLAGS) -S -fverbose-asm $< -o $@
 
-$(BODFT_AVX2_ASM): $(BODFT_SRC) include/bfft/bodft.h include/bfft/bfft.h src/detail/bodft_kernel.hpp src/detail/bruun_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
+$(BODFT_AVX2_ASM): $(BODFT_SRC) include/bfft/bodft.h include/bfft/bfft.h src/detail/bodft_kernel.hpp src/detail/bruun_dif_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(CXXFLAGS) $(AVX2_FLAGS) -S -fverbose-asm $< -o $@
 
-$(SSE2_ASM): $(SRC) include/bfft/bfft.h src/detail/bruun_kernel.hpp src/detail/experimental_radix4_rfft_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
+$(SSE2_ASM): $(SRC) include/bfft/bfft.h src/detail/bruun_dif_kernel.hpp src/detail/bruun_dit_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(CXXFLAGS) $(SSE2_FLAGS) -S -fverbose-asm $< -o $@
 
 $(BENCH): examples/benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) $(DL_LIBS) -o $@
 
-$(BODFT_BENCH): examples/bodft_benchmark.cpp src/detail/bodft_kernel.hpp src/detail/bruun_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
+$(BODFT_BENCH): examples/bodft_benchmark.cpp src/detail/bodft_kernel.hpp src/detail/bruun_dif_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(LDLIBS) -o $@
 
-$(DIF_DIT_BENCH): examples/dif_vs_dit_benchmark.cpp src/detail/experimental_radix4_rfft_kernel.hpp src/detail/bruun_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+$(DIF_DIT_BENCH): examples/dif_vs_dit_benchmark.cpp src/detail/bruun_dit_kernel.hpp src/detail/bruun_dif_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
-$(ATAN2_BENCH): examples/atan2_benchmark.cpp src/detail/bruun_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
+$(DIF_DIT_F32_BENCH): examples/dif_vs_dit_f32_benchmark.cpp src/detail/bruun_dit_kernel.hpp src/detail/bruun_dif_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
+
+$(ATAN2_BENCH): examples/atan2_benchmark.cpp src/detail/bruun_dif_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(LDLIBS) -o $@
 
 $(APPLE_BENCH): examples/apple_benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)

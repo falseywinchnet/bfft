@@ -1,5 +1,5 @@
 #include <bfft/bfft.hpp>
-#include "../src/detail/bruun_kernel.hpp"
+#include "../src/detail/bruun_dif_kernel.hpp"
 
 #include <cmath>
 #include <cstdio>

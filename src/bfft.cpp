@@ -1,7 +1,7 @@
 #include <bfft/bfft.h>
 
-#include "detail/bruun_kernel.hpp"
-#include "detail/experimental_radix4_rfft_kernel.hpp"
+#include "detail/bruun_dif_kernel.hpp"
+#include "detail/bruun_dit_kernel.hpp"
 #include <cmath>
 #include <cstddef>
 #include <new>

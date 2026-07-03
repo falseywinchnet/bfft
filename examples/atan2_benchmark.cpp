@@ -1,4 +1,4 @@
-#include "../src/detail/bruun_kernel.hpp"
+#include "../src/detail/bruun_dif_kernel.hpp"
 
 #include <chrono>
 #include <cmath>

@@ -1,6 +1,6 @@
 #include <bfft/bfft.hpp>
 
-#include "../src/detail/experimental_radix4_rfft_kernel.hpp"
+#include "../src/detail/bruun_dit_kernel.hpp"
 
 #include <algorithm>
 #include <chrono>
