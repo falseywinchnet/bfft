@@ -64,6 +64,23 @@
 //
 // The scalar path below keeps the plain single-lane walk for reference and
 // for BRUUN_LEVEL == 0 builds.
+//
+// ---------------------------------------------------------------------------
+// Normalized (unit-frame) basis  --  the live forward_simd / inverse_simd
+// ---------------------------------------------------------------------------
+// The residue merge above is written in a raw basis where the twiddle is
+// c2 = 2 cos(theta): it grows toward the tree top and forms 1 - c2^2
+// cancellations, costing accuracy (~e-12 roundtrip at N = 2^20). The live
+// SIMD path instead runs each merge as a Givens rotation with c^2 + s^2 = 1
+// exactly (pair_reduce_v2_norm / pair_expand_v2_norm, tables cs_ and
+// fterm_cs_). In this normalized basis a leaf residue pair is directly
+// (re, -im), so the forward's residue -> complex projection and the inverse's
+// complex -> residue deprojection both collapse to a sign flip, and there is
+// no per-bin cos/sin at the terminals. The mirrored-lane WALK (seed, lane
+// packing, block order, the single terminal lane crossing) is unchanged --
+// only the arithmetic primitive differs -- so the layout commentary above
+// still applies. Roundtrip is machine precision (~e-15 at every size) because
+// inverse_simd is the exact algebraic inverse of forward_simd.
 
 #include "bruun_kernel.hpp"
 
@@ -91,10 +108,14 @@
 
 namespace bruun {
 
-class radix4_rfft_kernel {
+class DIT_RFFT_kernel {
 public:
-    radix4_rfft_kernel() noexcept
+    DIT_RFFT_kernel() noexcept
         : n_(0), half_(0), twiddle_stage_count_(0), radix2_terminal_(false) {}
+
+    bool init(int n) {
+        return reset(n);
+    }
 
     bool reset(int n) {
         if (!valid_size(n)) {
@@ -185,6 +206,22 @@ public:
             inv_twiddle_[static_cast<std::size_t>(2 * t + 1)] = 1.0 - c * c;
         }
 
+        // Normalized-basis rotation table, parallel to twiddle_: per entry
+        // { c, s } = { cos(theta), sin(theta) } with c = 0.5 * twiddle_[t].
+        // These drive the stable Givens-rotation merge/expand (pair_reduce /
+        // pair_expand_norm) in the SIMD path, precomputed so the hot loop
+        // never runs the sqrt the scalar path uses. s uses the same
+        // sqrt(max(0, 1 - c^2)) sign convention as the scalar primitive.
+        if (!cs_.resize(static_cast<std::size_t>(2 * alloc_count))) {
+            clear();
+            return false;
+        }
+        for (int t = 0; t < twiddle_count; ++t) {
+            const double c = 0.5 * twiddle_[static_cast<std::size_t>(t)];
+            cs_[static_cast<std::size_t>(2 * t)] = c;
+            cs_[static_cast<std::size_t>(2 * t + 1)] = std::sqrt(std::max(0.0, 1.0 - c * c));
+        }
+
         // Terminal-stage table: for each i in [1, n/8) one 6-double record
         //   { t1[i], t1[n/4 - i], cos(th_i), sin(th_i), -sin(th_i), -cos(th_i) }
         // covering both level-B twiddles of the lane-crossing merge and the
@@ -232,6 +269,33 @@ public:
             dst[7] = -1.0 / dst[4];
         }
 
+        // Normalized forward terminal table: for each i in [1, n/8) one
+        // 6-double record { cA, sA, cBlo, cBhi, sBlo, sBhi }. cA/sA is the
+        // shared level-A rotation (angle of t2[i-1]); cBlo/sBlo and cBhi/sBhi
+        // are the two per-lane level-B rotations (bins {i, n/4-i} and
+        // {n/2-i, n/4+i}). Laid out so V2_LD(rec+2) = {cBlo, cBhi} and
+        // V2_LD(rec+4) = {sBlo, sBhi} load as lane-paired vectors.
+        int fterm_count = tm > 1 ? 6 * (tm - 1) : 1;
+        if (!fterm_cs_.resize(static_cast<std::size_t>(fterm_count))) {
+            clear();
+            return false;
+        }
+        if (tm > 1) {
+            const double* t2 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(twiddle_stage_count_ - 2)];
+            for (int i = 1; i < tm; ++i) {
+                double* dst = fterm_cs_.data() + 6 * (i - 1);
+                const double cA = 0.5 * t2[i - 1];
+                const double cBlo = 0.5 * term_tw_[static_cast<std::size_t>(6 * (i - 1))];
+                const double cBhi = 0.5 * term_tw_[static_cast<std::size_t>(6 * (i - 1) + 1)];
+                dst[0] = cA;
+                dst[1] = std::sqrt(std::max(0.0, 1.0 - cA * cA));
+                dst[2] = cBlo;
+                dst[3] = cBhi;
+                dst[4] = std::sqrt(std::max(0.0, 1.0 - cBlo * cBlo));
+                dst[5] = std::sqrt(std::max(0.0, 1.0 - cBhi * cBhi));
+            }
+        }
+
         if (!build_interp_plan()) {
             clear();
             return false;
@@ -243,109 +307,47 @@ public:
     int bins() const noexcept { return half_ + 1; }
     int work_size() const noexcept { return n_; }
 
-    void forward_scalar(const double* input, double* output_re, double* output_im, double* work) const {
-        forward_split_scalar(input, output_re, output_im, work);
+    void forward_scalar(const double* input, complex_t* output, double* work) const {
+        forward_standard_scalar_impl(input, output, work);
     }
 
-    void forward_simd(const double* input, double* output_re, double* output_im, double* work) const {
+    void forward_simd(const double* input, complex_t* output, double* work) const {
 #if BRUUN_LEVEL >= 1
         if (n_ >= 16) {
-            compute_vwork(input, work);
-            terminal_split_writer w{output_re, output_im};
+            compute_vwork_norm(input, work);
+            terminal_complex_writer<complex_t> w{output};
             if (radix2_terminal_) {
-                terminal_radix2_v(work, w);
+                terminal_radix2_v_norm(work, w);
             } else {
-                terminal_v(work, w);
+                terminal_v_norm(work, w);
             }
             return;
         }
 #endif
-        forward_split_scalar(input, output_re, output_im, work);
+        forward_scalar(input, output, work);
     }
 
-    template <typename Complex>
-    void forward_complex_scalar(const double* input, Complex* output, double* work) const {
-        forward_complex_scalar_impl(input, output, work);
-    }
-
-    template <typename Complex>
-    void forward_complex_simd(const double* input, Complex* output, double* work) const {
-#if BRUUN_LEVEL >= 1
-        if (n_ >= 16) {
-            compute_vwork(input, work);
-            terminal_complex_writer<Complex> w{output};
-            if (radix2_terminal_) {
-                terminal_radix2_v(work, w);
-            } else {
-                terminal_v(work, w);
-            }
-            return;
-        }
-#endif
-        forward_complex_scalar_impl(input, output, work);
-    }
-
-    // Normalized inverse from standard bins: inverse(forward(x)) == x.
-    template <typename Complex>
-    void inverse_complex_scalar(const Complex* input, double* output, double* work) const {
-        inverse_complex_scalar_impl(input, output, work);
-    }
-
-    template <typename Complex>
-    void inverse_complex_simd(const Complex* input, double* output, double* work) const {
-#if BRUUN_LEVEL >= 1
-        if (n_ >= 16) {
-            if (radix2_terminal_) {
-                terminal_radix2_inv_v(input, work);
-            } else {
-                terminal_inv_v(input, work);
-            }
-            compute_vwork_inv(work, output);
-            return;
-        }
-#endif
-        inverse_complex_scalar_impl(input, output, work);
-    }
-
-    // Experimental DIT-shaped inverse: standard bins -> compact Bruun residues,
-    // forward-flow residue split stages -> ordered real output. This is an
-    // internal development target for the no-tail-transport inverse.
-    template <typename Complex>
-    void inverse_complex_dit_compact_simd(const Complex* input, double* output, double* work) const {
-        inverse_complex_dit_compact_impl(input, output, work);
-    }
-
-    template <typename Complex>
-    void inverse_complex_dit_compact_fused_simd(const Complex* input, double* output, double* work) const {
-        inverse_complex_dit_compact_fused_impl(input, output, work);
-    }
-
-    // DIT-shaped interpolation inverse: the frequency-decimated factorization
-    // of the inverse (the accompanying basis of the mirrored-lane forward).
-    // Standard bins are gathered in Bruun factor-tree leaf order (the head
-    // shuffle, fused with (re,im) -> (a,b) deprojection - the single
-    // lane-crossing zone), CRT interpolation merges run forward-flow with one
-    // broadcast constant pair per block, and the root merge streams ordered
-    // real samples straight into the output. See the commentary above
-    // itp_prologue below.
-    template <typename Complex>
-    void inverse_complex_interp_scalar(const Complex* input, double* output, double* work) const {
+    void inverse_scalar(const complex_t* input, double* output, double* work) const {
         if (n_ < 16) {
-            inverse_complex_scalar_impl(input, output, work);
+            inverse_small_scalar_impl(input, output, work);
             return;
         }
-        inverse_interp_scalar_impl(input, output, work);
+        inverse_small_scalar_impl(input, output, work);
     }
 
-    template <typename Complex>
-    void inverse_complex_interp_simd(const Complex* input, double* output, double* work) const {
+    void inverse_simd(const complex_t* input, double* output, double* work) const {
 #if BRUUN_LEVEL >= 1
         if (n_ >= 16) {
-            inverse_interp_simd_impl(input, output, work);
+            if (radix2_terminal_) {
+                terminal_radix2_inv_v_norm(input, work);
+            } else {
+                terminal_inv_v_norm(input, work);
+            }
+            compute_vwork_inv_norm(work, output);
             return;
         }
 #endif
-        inverse_complex_interp_scalar(input, output, work);
+        inverse_scalar(input, output, work);
     }
 
 private:
@@ -371,6 +373,8 @@ private:
         twiddle_.clear();
         twiddle_offset_.clear();
         term_tw_.clear();
+        cs_.clear();
+        fterm_cs_.clear();
         inv_twiddle_.clear();
         iterm_tw_.clear();
         ihead_j_.clear();
@@ -386,13 +390,15 @@ private:
     // parent pairs at theta and pi - theta, c2 = 2*cos(theta).
     static BRUUN_ALWAYS_INLINE void pair_reduce(double ea, double eb, double oa, double ob, double c2,
                                                 double& la, double& lb, double& ha, double& hb) {
-        const double a = ea - eb;
-        const double c2sq = c2 * c2;
-        const double b = (oa - ob) + c2sq * ob;   // fma-friendly: no separate p
-        la = a - c2 * ob;   // fma
-        ha = a + c2 * ob;   // fma
-        lb = b + c2 * eb;   // fma
-        hb = b - c2 * eb;   // fma
+        const double c = 0.5 * c2;
+        const double s2 = std::max(0.0, 1.0 - c * c);
+        const double s = std::sqrt(s2);
+        const double r = c * oa - s * ob;
+        const double i = s * oa + c * ob;
+        la = ea + r;
+        lb = eb + i;
+        ha = ea - r;
+        hb = i - eb;
     }
 
     // ------------------------------------------------------------------
@@ -511,13 +517,13 @@ private:
         for (int k = 1; k < half_; ++k) {
             const double a = work[2 * k];
             const double b = work[2 * k + 1];
-            output_re[k] = a + b * cos_[static_cast<std::size_t>(k)];
-            output_im[k] = b * neg_sin_[static_cast<std::size_t>(k)];
+            output_re[k] = a;
+            output_im[k] = -b;
         }
     }
 
     template <typename Complex>
-    void forward_complex_scalar_impl(const double* input, Complex* output, double* work) const {
+    void forward_standard_scalar_impl(const double* input, Complex* output, double* work) const {
         compute_work_scalar(input, work);
         if (radix2_terminal_) {
             terminal_radix2_complex_scalar(work, output);
@@ -530,8 +536,8 @@ private:
         for (int k = 1; k < half_; ++k) {
             const double a = work[2 * k];
             const double b = work[2 * k + 1];
-            output[k].re = a + b * cos_[static_cast<std::size_t>(k)];
-            output[k].im = b * neg_sin_[static_cast<std::size_t>(k)];
+            output[k].re = a;
+            output[k].im = -b;
         }
     }
 
@@ -549,11 +555,11 @@ private:
                         twiddle_[static_cast<std::size_t>(twiddle_offset_[static_cast<std::size_t>(twiddle_stage_count_ - 1)] + i - 1)],
                         la, lb, ha, hb);
             store(i,
-                  la + lb * cos_[static_cast<std::size_t>(i)],
-                  lb * neg_sin_[static_cast<std::size_t>(i)]);
+                  la,
+                  -lb);
             store(hi,
-                  ha + hb * cos_[static_cast<std::size_t>(hi)],
-                  hb * neg_sin_[static_cast<std::size_t>(hi)]);
+                  ha,
+                  -hb);
         }
     }
 
@@ -574,12 +580,26 @@ private:
 
     // Exact inverse of pair_reduce. ic = 0.5/c2, w = 1 - c2^2 (precomputed).
     static BRUUN_ALWAYS_INLINE void pair_expand(double la, double lb, double ha, double hb,
-                                                double ic, double w,
+                                                double c2, double w,
                                                 double& ea, double& eb, double& oa, double& ob) {
-        ob = (ha - la) * ic;
-        eb = (lb - hb) * ic;
+        ob = (ha - la) * c2;
+        eb = (lb - hb) * c2;
         ea = 0.5 * (la + ha) + eb;
         oa = 0.5 * (lb + hb) + w * ob;
+    }
+
+    static BRUUN_ALWAYS_INLINE void pair_expand_norm(double la, double lb, double ha, double hb,
+                                                     double c2,
+                                                     double& ea, double& eb, double& oa, double& ob) {
+        const double c = 0.5 * c2;
+        const double s2 = std::max(0.0, 1.0 - c * c);
+        const double s = std::sqrt(s2);
+        const double r = 0.5 * (la - ha);
+        const double i = 0.5 * (lb + hb);
+        ea = 0.5 * (la + ha);
+        eb = 0.5 * (lb - hb);
+        oa = c * r + s * i;
+        ob = c * i - s * r;
     }
 
     // Exact inverse of butterfly4_scalar: parent nodes {i, hs-i, q4-i, q4+i}
@@ -588,16 +608,16 @@ private:
                                const double* it2, const double* it1, double* o) const {
         const int hs = q4 << 1;
         double h0a, h0b, h1a, h1b, h0pa, h0pb, h1pa, h1pb;
-        pair_expand(block[2 * i], block[2 * i + 1],
-                    block[2 * (hs - i)], block[2 * (hs - i) + 1],
-                    it1[2 * (i - 1)], it1[2 * (i - 1) + 1], h0a, h0b, h1a, h1b);
-        pair_expand(block[2 * (q4 - i)], block[2 * (q4 - i) + 1],
-                    block[2 * (q4 + i)], block[2 * (q4 + i) + 1],
-                    it1[2 * (q4 - i - 1)], it1[2 * (q4 - i - 1) + 1], h0pa, h0pb, h1pa, h1pb);
-        pair_expand(h0a, h0b, h0pa, h0pb, it2[2 * (i - 1)], it2[2 * (i - 1) + 1],
-                    o[0], o[1], o[2], o[3]);
-        pair_expand(h1a, h1b, h1pa, h1pb, it2[2 * (i - 1)], it2[2 * (i - 1) + 1],
-                    o[4], o[5], o[6], o[7]);
+        pair_expand_norm(block[2 * i], block[2 * i + 1],
+                         block[2 * (hs - i)], block[2 * (hs - i) + 1],
+                         it1[i - 1], h0a, h0b, h1a, h1b);
+        pair_expand_norm(block[2 * (q4 - i)], block[2 * (q4 - i) + 1],
+                         block[2 * (q4 + i)], block[2 * (q4 + i) + 1],
+                         it1[q4 - i - 1], h0pa, h0pb, h1pa, h1pb);
+        pair_expand_norm(h0a, h0b, h0pa, h0pb, it2[i - 1],
+                         o[0], o[1], o[2], o[3]);
+        pair_expand_norm(h1a, h1b, h1pa, h1pb, it2[i - 1],
+                         o[4], o[5], o[6], o[7]);
     }
 
     static void write_inv_butterfly4(double* q0, double* q1, double* q2, double* q3,
@@ -631,8 +651,7 @@ private:
         const double h0dc = 0.5 * (n0a + n0b);
         const double h1dc = 0.5 * (n0a - n0b);
         double ny0, ny1, ny2, ny3;
-        pair_expand(nMa, nMb, n3a, n3b,
-                    it1[2 * (M - 1)], it1[2 * (M - 1) + 1], ny0, ny1, ny2, ny3);
+        pair_expand_norm(nMa, nMb, n3a, n3b, it1[M - 1], ny0, ny1, ny2, ny3);
         q0[0] = 0.5 * (h0dc + n2a);
         q0[1] = ny0;
         q1[0] = 0.5 * (h0dc - n2a);
@@ -674,13 +693,13 @@ private:
     }
 
     template <typename Complex>
-    void inverse_complex_scalar_impl(const Complex* input, double* output, double* work) const {
+    void inverse_small_scalar_impl(const Complex* input, double* output, double* work) const {
         if (radix2_terminal_) {
             terminal_radix2_inv_scalar(input, work);
             int stage = twiddle_stage_count_ - 2;
             for (int s = n_ >> 1; s >= 16; s >>= 2, stage -= 2) {
-                const double* it2 = inv_twiddle_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage - 1)];
-                const double* it1 = inv_twiddle_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage)];
+                const double* it2 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(stage - 1)];
+                const double* it1 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(stage)];
                 for (int off = 0; off < n_; off += s) {
                     split4_scalar(work + off, s, it2, it1);
                 }
@@ -693,14 +712,13 @@ private:
         work[0] = input[0].re;
         work[1] = input[half_].re;
         for (int k = 1; k < half_; ++k) {
-            const double b = input[k].im * inv_neg_sin_[static_cast<std::size_t>(k)];
-            work[2 * k] = input[k].re - b * cos_[static_cast<std::size_t>(k)];
-            work[2 * k + 1] = b;
+            work[2 * k] = input[k].re;
+            work[2 * k + 1] = -input[k].im;
         }
         int stage = twiddle_stage_count_ - 1;
         for (int s = n_; s >= 16; s >>= 2, stage -= 2) {
-            const double* it2 = inv_twiddle_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage - 1)];
-            const double* it1 = inv_twiddle_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage)];
+            const double* it2 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(stage - 1)];
+            const double* it1 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(stage)];
             for (int off = 0; off < n_; off += s) {
                 split4_scalar(work + off, s, it2, it1);
             }
@@ -717,471 +735,19 @@ private:
         work[2 * q] = 0.5 * (input[0].re - input[half_].re);
         work[1] = input[q].re;
         work[2 * q + 1] = -input[q].im;
-        const double* it = inv_twiddle_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(twiddle_stage_count_ - 1)];
+        const double* it = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(twiddle_stage_count_ - 1)];
         for (int i = 1; i < q; ++i) {
             const int hi = half_ - i;
-            const double lb = input[i].im * inv_neg_sin_[static_cast<std::size_t>(i)];
-            const double la = input[i].re - lb * cos_[static_cast<std::size_t>(i)];
-            const double hb = input[hi].im * inv_neg_sin_[static_cast<std::size_t>(hi)];
-            const double ha = input[hi].re - hb * cos_[static_cast<std::size_t>(hi)];
+            const double la = input[i].re;
+            const double lb = -input[i].im;
+            const double ha = input[hi].re;
+            const double hb = -input[hi].im;
             double ea, eb, oa, ob;
-            pair_expand(la, lb, ha, hb, it[2 * (i - 1)], it[2 * (i - 1) + 1], ea, eb, oa, ob);
+            pair_expand_norm(la, lb, ha, hb, it[i - 1], ea, eb, oa, ob);
             work[2 * i] = ea;
             work[2 * i + 1] = eb;
             work[2 * (i + q)] = oa;
             work[2 * (i + q) + 1] = ob;
-        }
-    }
-
-    template <typename Complex>
-    void compact_residue_ingest(const Complex* input, double* work) const {
-        work[0] = input[0].re;
-        work[1] = input[half_].re;
-        for (int k = 1; k < half_; ++k) {
-            const double b = input[k].im * inv_neg_sin_[static_cast<std::size_t>(k)];
-            work[2 * k] = input[k].re - b * cos_[static_cast<std::size_t>(k)];
-            work[2 * k + 1] = b;
-        }
-    }
-
-#if BRUUN_LEVEL >= 1
-    template <typename Complex>
-    void compact_residue_ingest_v2(const Complex* input, double* work) const {
-        work[0] = input[0].re;
-        work[1] = input[half_].re;
-        int k = 1;
-        for (; k + 1 < half_; k += 2) {
-            const bruun_v2 x0 = V2_LD(&input[k].re);
-            const bruun_v2 x1 = V2_LD(&input[k + 1].re);
-            const bruun_v2 re = V2_UNPLO(x0, x1);
-            const bruun_v2 im = V2_UNPHI(x0, x1);
-            const bruun_v2 b = V2_MUL(im, V2_LD(inv_neg_sin_.data() + k));
-            const bruun_v2 a = V2_MSUB(re, b, V2_LD(cos_.data() + k));
-            V2_ST(work + 2 * k, V2_UNPLO(a, b));
-            V2_ST(work + 2 * k + 2, V2_UNPHI(a, b));
-        }
-        for (; k < half_; ++k) {
-            const double b = input[k].im * inv_neg_sin_[static_cast<std::size_t>(k)];
-            work[2 * k] = input[k].re - b * cos_[static_cast<std::size_t>(k)];
-            work[2 * k + 1] = b;
-        }
-    }
-#endif
-
-    BRUUN_ALWAYS_INLINE void compact_split_node_scalar(const double* parent, int len, int tw_stage,
-                                                       double* even, double* odd) const {
-        const int half = len >> 1;
-        const int quarter = len >> 2;
-        even[0] = 0.5 * (parent[0] + parent[1]);
-        odd[0] = 0.5 * (parent[0] - parent[1]);
-        const double* it = inv_twiddle_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(tw_stage)];
-        for (int r = 1; r < quarter; ++r) {
-            const double a = parent[2 * r];
-            const double b = parent[2 * r + 1];
-            const double A = parent[2 * (half - r)];
-            const double B = parent[2 * (half - r) + 1];
-            const double inv4c = it[2 * (r - 1)];
-            const double w = -it[2 * (r - 1) + 1] * inv4c;
-            const double db = b - B;
-            const double da = a - A;
-            const double eb = db * inv4c;
-            even[2 * r] = 0.5 * (a + A) + eb;
-            even[2 * r + 1] = eb;
-            odd[2 * r] = 0.5 * (b + B) + da * w;
-            odd[2 * r + 1] = -da * inv4c;
-        }
-        even[1] = parent[2 * quarter];
-        odd[1] = parent[2 * quarter + 1];
-    }
-
-    static BRUUN_ALWAYS_INLINE void compact_split_pair_scalar(double a, double b, double A, double B,
-                                                              double inv4c, double w,
-                                                              double& ea, double& eb,
-                                                              double& oa, double& ob) {
-        const double db = b - B;
-        const double da = a - A;
-        eb = db * inv4c;
-        ea = 0.5 * (a + A) + eb;
-        oa = 0.5 * (b + B) + da * w;
-        ob = -da * inv4c;
-    }
-
-    BRUUN_ALWAYS_INLINE void compact_split_first_pair_scalar(const double* parent, int len, int tw_stage, int r,
-                                                             double& ea, double& eb,
-                                                             double& oa, double& ob) const {
-        const int half = len >> 1;
-        const double* it = inv_twiddle_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(tw_stage)];
-        const double inv4c = it[2 * (r - 1)];
-        const double w = -it[2 * (r - 1) + 1] * inv4c;
-        compact_split_pair_scalar(parent[2 * r],
-                                  parent[2 * r + 1],
-                                  parent[2 * (half - r)],
-                                  parent[2 * (half - r) + 1],
-                                  inv4c,
-                                  w,
-                                  ea,
-                                  eb,
-                                  oa,
-                                  ob);
-    }
-
-    BRUUN_ALWAYS_INLINE void compact_split2_node_scalar(const double* parent, int len, int tw_stage,
-                                                        double* even_even, double* odd_even,
-                                                        double* even_odd, double* odd_odd) const {
-        const int quarter = len >> 2;
-        const int eighth = len >> 3;
-
-        const double e0 = 0.5 * (parent[0] + parent[1]);
-        const double o0 = 0.5 * (parent[0] - parent[1]);
-        const double eq = parent[2 * quarter];
-        const double oq = parent[2 * quarter + 1];
-        even_even[0] = 0.5 * (e0 + eq);
-        even_odd[0] = 0.5 * (e0 - eq);
-        odd_even[0] = 0.5 * (o0 + oq);
-        odd_odd[0] = 0.5 * (o0 - oq);
-
-        const double* it = inv_twiddle_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(tw_stage - 1)];
-        for (int r = 1; r < eighth; ++r) {
-            double ea, eb, oa, ob;
-            double eA, eB, oA, oB;
-            compact_split_first_pair_scalar(parent, len, tw_stage, r, ea, eb, oa, ob);
-            compact_split_first_pair_scalar(parent, len, tw_stage, quarter - r, eA, eB, oA, oB);
-
-            const double inv4c = it[2 * (r - 1)];
-            const double w = -it[2 * (r - 1) + 1] * inv4c;
-            double gaa, gab, gba, gbb;
-            compact_split_pair_scalar(ea, eb, eA, eB, inv4c, w, gaa, gab, gba, gbb);
-            even_even[2 * r] = gaa;
-            even_even[2 * r + 1] = gab;
-            even_odd[2 * r] = gba;
-            even_odd[2 * r + 1] = gbb;
-            compact_split_pair_scalar(oa, ob, oA, oB, inv4c, w, gaa, gab, gba, gbb);
-            odd_even[2 * r] = gaa;
-            odd_even[2 * r + 1] = gab;
-            odd_odd[2 * r] = gba;
-            odd_odd[2 * r + 1] = gbb;
-        }
-
-        double ea, eb, oa, ob;
-        compact_split_first_pair_scalar(parent, len, tw_stage, eighth, ea, eb, oa, ob);
-        even_even[1] = ea;
-        even_odd[1] = eb;
-        odd_even[1] = oa;
-        odd_odd[1] = ob;
-    }
-
-    BRUUN_ALWAYS_INLINE void compact_store_real_leaf(double* output, int leaf, double dc, double ny) const {
-        output[leaf] = 0.5 * (dc + ny);
-        output[leaf + half_] = 0.5 * (dc - ny);
-    }
-
-    BRUUN_ALWAYS_INLINE void compact_final4_node_to_real(const double* parent, int node, int nodes,
-                                                         double* output) const {
-        const double e0 = 0.5 * (parent[0] + parent[1]);
-        const double o0 = 0.5 * (parent[0] - parent[1]);
-        compact_store_real_leaf(output, node, e0, parent[2]);
-        compact_store_real_leaf(output, node + nodes, o0, parent[3]);
-    }
-
-    BRUUN_ALWAYS_INLINE void compact_final8_node_to_real(const double* parent, int node, int nodes,
-                                                         double* output) const {
-        const double e0 = 0.5 * (parent[0] + parent[1]);
-        const double o0 = 0.5 * (parent[0] - parent[1]);
-        const double eq = parent[4];
-        const double oq = parent[5];
-
-        double ea, eb, oa, ob;
-        compact_split_first_pair_scalar(parent, 8, 1, 1, ea, eb, oa, ob);
-        compact_store_real_leaf(output, node, 0.5 * (e0 + eq), ea);
-        compact_store_real_leaf(output, node + nodes, 0.5 * (o0 + oq), oa);
-        compact_store_real_leaf(output, node + 2 * nodes, 0.5 * (e0 - eq), eb);
-        compact_store_real_leaf(output, node + 3 * nodes, 0.5 * (o0 - oq), ob);
-    }
-
-#if BRUUN_LEVEL >= 1
-    static BRUUN_ALWAYS_INLINE bruun_v2 compact_swap_v2(bruun_v2 v) {
-        return V2_UNPLO(V2_DUP1(v), V2_DUP0(v));
-    }
-
-    static BRUUN_ALWAYS_INLINE void compact_split_pair_v2(bruun_v2 a, bruun_v2 b,
-                                                          bruun_v2 A, bruun_v2 B,
-                                                          bruun_v2 inv4c, bruun_v2 w,
-                                                          bruun_v2& ea, bruun_v2& eb,
-                                                          bruun_v2& oa, bruun_v2& ob) {
-        const bruun_v2 hv = V2_SET1(0.5);
-        const bruun_v2 zv = V2_SET1(0.0);
-        const bruun_v2 db = V2_SUB(b, B);
-        const bruun_v2 da = V2_SUB(a, A);
-        eb = V2_MUL(db, inv4c);
-        ea = V2_MADD(eb, V2_ADD(a, A), hv);
-        oa = V2_MADD(V2_MUL(V2_ADD(b, B), hv), da, w);
-        ob = V2_MUL(V2_SUB(zv, da), inv4c);
-    }
-
-    BRUUN_ALWAYS_INLINE void compact_split_first_pair_v2(const double* parent, int len, int tw_stage, int r,
-                                                         bruun_v2& ea, bruun_v2& eb,
-                                                         bruun_v2& oa, bruun_v2& ob) const {
-        const int half = len >> 1;
-        const double* it = inv_twiddle_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(tw_stage)];
-
-        const bruun_v2 lo0 = V2_LD(parent + 2 * r);
-        const bruun_v2 lo1 = V2_LD(parent + 2 * r + 2);
-        const bruun_v2 a = V2_UNPLO(lo0, lo1);
-        const bruun_v2 b = V2_UNPHI(lo0, lo1);
-
-        const bruun_v2 hi0 = V2_LD(parent + 2 * (half - r));
-        const bruun_v2 hi1 = V2_LD(parent + 2 * (half - r - 1));
-        const bruun_v2 A = V2_UNPLO(hi0, hi1);
-        const bruun_v2 B = V2_UNPHI(hi0, hi1);
-
-        const bruun_v2 inv4c = V2_SETLH(it[2 * (r - 1)], it[2 * r]);
-        const bruun_v2 oldw = V2_SETLH(it[2 * (r - 1) + 1], it[2 * r + 1]);
-        compact_split_pair_v2(a, b, A, B, inv4c, V2_MUL(V2_SUB(V2_SET1(0.0), oldw), inv4c), ea, eb, oa, ob);
-    }
-
-    BRUUN_ALWAYS_INLINE void compact_split2_node_v2(const double* parent, int len, int tw_stage,
-                                                    double* even_even, double* odd_even,
-                                                    double* even_odd, double* odd_odd) const {
-        const int quarter = len >> 2;
-        const int eighth = len >> 3;
-
-        const double e0 = 0.5 * (parent[0] + parent[1]);
-        const double o0 = 0.5 * (parent[0] - parent[1]);
-        const double eq = parent[2 * quarter];
-        const double oq = parent[2 * quarter + 1];
-        even_even[0] = 0.5 * (e0 + eq);
-        even_odd[0] = 0.5 * (e0 - eq);
-        odd_even[0] = 0.5 * (o0 + oq);
-        odd_odd[0] = 0.5 * (o0 - oq);
-
-        const double* it = inv_twiddle_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(tw_stage - 1)];
-        int r = 1;
-        for (; r + 1 < eighth; r += 2) {
-            bruun_v2 ea, eb, oa, ob;
-            bruun_v2 eA, eB, oA, oB;
-            compact_split_first_pair_v2(parent, len, tw_stage, r, ea, eb, oa, ob);
-            compact_split_first_pair_v2(parent, len, tw_stage, quarter - r - 1, eA, eB, oA, oB);
-            eA = compact_swap_v2(eA);
-            eB = compact_swap_v2(eB);
-            oA = compact_swap_v2(oA);
-            oB = compact_swap_v2(oB);
-
-            const bruun_v2 inv4c = V2_SETLH(it[2 * (r - 1)], it[2 * r]);
-            const bruun_v2 oldw = V2_SETLH(it[2 * (r - 1) + 1], it[2 * r + 1]);
-            const bruun_v2 w = V2_MUL(V2_SUB(V2_SET1(0.0), oldw), inv4c);
-            bruun_v2 gaa, gab, gba, gbb;
-            compact_split_pair_v2(ea, eb, eA, eB, inv4c, w, gaa, gab, gba, gbb);
-            V2_ST(even_even + 2 * r, V2_UNPLO(gaa, gab));
-            V2_ST(even_even + 2 * r + 2, V2_UNPHI(gaa, gab));
-            V2_ST(even_odd + 2 * r, V2_UNPLO(gba, gbb));
-            V2_ST(even_odd + 2 * r + 2, V2_UNPHI(gba, gbb));
-            compact_split_pair_v2(oa, ob, oA, oB, inv4c, w, gaa, gab, gba, gbb);
-            V2_ST(odd_even + 2 * r, V2_UNPLO(gaa, gab));
-            V2_ST(odd_even + 2 * r + 2, V2_UNPHI(gaa, gab));
-            V2_ST(odd_odd + 2 * r, V2_UNPLO(gba, gbb));
-            V2_ST(odd_odd + 2 * r + 2, V2_UNPHI(gba, gbb));
-        }
-
-        for (; r < eighth; ++r) {
-            double ea, eb, oa, ob;
-            double eA, eB, oA, oB;
-            compact_split_first_pair_scalar(parent, len, tw_stage, r, ea, eb, oa, ob);
-            compact_split_first_pair_scalar(parent, len, tw_stage, quarter - r, eA, eB, oA, oB);
-            const double inv4c = it[2 * (r - 1)];
-            const double w = -it[2 * (r - 1) + 1] * inv4c;
-            double gaa, gab, gba, gbb;
-            compact_split_pair_scalar(ea, eb, eA, eB, inv4c, w, gaa, gab, gba, gbb);
-            even_even[2 * r] = gaa;
-            even_even[2 * r + 1] = gab;
-            even_odd[2 * r] = gba;
-            even_odd[2 * r + 1] = gbb;
-            compact_split_pair_scalar(oa, ob, oA, oB, inv4c, w, gaa, gab, gba, gbb);
-            odd_even[2 * r] = gaa;
-            odd_even[2 * r + 1] = gab;
-            odd_odd[2 * r] = gba;
-            odd_odd[2 * r + 1] = gbb;
-        }
-
-        double ea, eb, oa, ob;
-        compact_split_first_pair_scalar(parent, len, tw_stage, eighth, ea, eb, oa, ob);
-        even_even[1] = ea;
-        even_odd[1] = eb;
-        odd_even[1] = oa;
-        odd_odd[1] = ob;
-    }
-
-    BRUUN_ALWAYS_INLINE void compact_split_node_v2(const double* parent, int len, int tw_stage,
-                                                   double* even, double* odd) const {
-        const int half = len >> 1;
-        const int quarter = len >> 2;
-        even[0] = 0.5 * (parent[0] + parent[1]);
-        odd[0] = 0.5 * (parent[0] - parent[1]);
-        const double* it = inv_twiddle_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(tw_stage)];
-        const bruun_v2 hv = V2_SET1(0.5);
-        const bruun_v2 zv = V2_SET1(0.0);
-        int r = 1;
-        for (; r + 1 < quarter; r += 2) {
-            const bruun_v2 lo0 = V2_LD(parent + 2 * r);
-            const bruun_v2 lo1 = V2_LD(parent + 2 * r + 2);
-            const bruun_v2 a = V2_UNPLO(lo0, lo1);
-            const bruun_v2 b = V2_UNPHI(lo0, lo1);
-
-            const bruun_v2 hi0 = V2_LD(parent + 2 * (half - r));
-            const bruun_v2 hi1 = V2_LD(parent + 2 * (half - r - 1));
-            const bruun_v2 A = V2_UNPLO(hi0, hi1);
-            const bruun_v2 B = V2_UNPHI(hi0, hi1);
-
-            const bruun_v2 inv4c = V2_SETLH(it[2 * (r - 1)], it[2 * r]);
-            const bruun_v2 oldw = V2_SETLH(it[2 * (r - 1) + 1], it[2 * r + 1]);
-            const bruun_v2 w = V2_MUL(V2_SUB(zv, oldw), inv4c);
-            const bruun_v2 db = V2_SUB(b, B);
-            const bruun_v2 da = V2_SUB(a, A);
-            const bruun_v2 eb = V2_MUL(db, inv4c);
-            const bruun_v2 ea = V2_MADD(eb, V2_ADD(a, A), hv);
-            const bruun_v2 oa = V2_MADD(V2_MUL(V2_ADD(b, B), hv), da, w);
-            const bruun_v2 ob = V2_MUL(V2_SUB(zv, da), inv4c);
-
-            V2_ST(even + 2 * r, V2_UNPLO(ea, eb));
-            V2_ST(even + 2 * r + 2, V2_UNPHI(ea, eb));
-            V2_ST(odd + 2 * r, V2_UNPLO(oa, ob));
-            V2_ST(odd + 2 * r + 2, V2_UNPHI(oa, ob));
-        }
-        for (; r < quarter; ++r) {
-            const double a = parent[2 * r];
-            const double b = parent[2 * r + 1];
-            const double A = parent[2 * (half - r)];
-            const double B = parent[2 * (half - r) + 1];
-            const double inv4c = it[2 * (r - 1)];
-            const double w = -it[2 * (r - 1) + 1] * inv4c;
-            const double db = b - B;
-            const double da = a - A;
-            const double eb = db * inv4c;
-            even[2 * r] = 0.5 * (a + A) + eb;
-            even[2 * r + 1] = eb;
-            odd[2 * r] = 0.5 * (b + B) + da * w;
-            odd[2 * r + 1] = -da * inv4c;
-        }
-        even[1] = parent[2 * quarter];
-        odd[1] = parent[2 * quarter + 1];
-    }
-#endif
-
-    template <typename Complex>
-    void inverse_complex_dit_compact_impl(const Complex* input, double* output, double* work) const {
-#if BRUUN_LEVEL >= 1
-        compact_residue_ingest_v2(input, work);
-#else
-        compact_residue_ingest(input, work);
-#endif
-
-        const double* cur = work;
-        double* next = output;
-        int nodes = 1;
-        int len = n_;
-        for (int depth = 0; depth < twiddle_stage_count_; ++depth) {
-            const int child_len = len >> 1;
-            const int tw_stage = ilog2_pow2(len) - 2;
-            for (int node = 0; node < nodes; ++node) {
-                const double* parent = cur + node * len;
-                double* even = next + node * child_len;
-                double* odd = next + (node + nodes) * child_len;
-#if BRUUN_LEVEL >= 1
-                compact_split_node_v2(parent, len, tw_stage, even, odd);
-#else
-                compact_split_node_scalar(parent, len, tw_stage, even, odd);
-#endif
-            }
-            cur = next;
-            next = (next == output) ? work : output;
-            nodes <<= 1;
-            len = child_len;
-        }
-
-        double* dst = (cur == output) ? work : output;
-        for (int node = 0; node < nodes; ++node) {
-            const double dc = cur[2 * node];
-            const double ny = cur[2 * node + 1];
-            dst[node] = 0.5 * (dc + ny);
-            dst[node + nodes] = 0.5 * (dc - ny);
-        }
-        if (dst != output) {
-            std::copy(dst, dst + n_, output);
-        }
-    }
-
-    template <typename Complex>
-    void inverse_complex_dit_compact_fused_impl(const Complex* input, double* output, double* work) const {
-#if BRUUN_LEVEL >= 1
-        compact_residue_ingest_v2(input, work);
-#else
-        compact_residue_ingest(input, work);
-#endif
-
-        const double* cur = work;
-        double* next = output;
-        int nodes = 1;
-        int len = n_;
-        int remaining = twiddle_stage_count_;
-        while (remaining >= 2) {
-            if (remaining == 2 && cur != output) {
-                for (int node = 0; node < nodes; ++node) {
-                    compact_final8_node_to_real(cur + node * len, node, nodes, output);
-                }
-                return;
-            }
-            const int child_len = len >> 2;
-            const int tw_stage = ilog2_pow2(len) - 2;
-            for (int node = 0; node < nodes; ++node) {
-                const double* parent = cur + node * len;
-                double* even_even = next + node * child_len;
-                double* odd_even = next + (node + nodes) * child_len;
-                double* even_odd = next + (node + 2 * nodes) * child_len;
-                double* odd_odd = next + (node + 3 * nodes) * child_len;
-#if BRUUN_LEVEL >= 1
-                compact_split2_node_v2(parent, len, tw_stage, even_even, odd_even, even_odd, odd_odd);
-#else
-                compact_split2_node_scalar(parent, len, tw_stage, even_even, odd_even, even_odd, odd_odd);
-#endif
-            }
-            cur = next;
-            next = (next == output) ? work : output;
-            nodes <<= 2;
-            len = child_len;
-            remaining -= 2;
-        }
-
-        if (remaining != 0) {
-            if (cur != output) {
-                for (int node = 0; node < nodes; ++node) {
-                    compact_final4_node_to_real(cur + node * len, node, nodes, output);
-                }
-                return;
-            }
-            const int child_len = len >> 1;
-            const int tw_stage = ilog2_pow2(len) - 2;
-            for (int node = 0; node < nodes; ++node) {
-                const double* parent = cur + node * len;
-                double* even = next + node * child_len;
-                double* odd = next + (node + nodes) * child_len;
-#if BRUUN_LEVEL >= 1
-                compact_split_node_v2(parent, len, tw_stage, even, odd);
-#else
-                compact_split_node_scalar(parent, len, tw_stage, even, odd);
-#endif
-            }
-            cur = next;
-            nodes <<= 1;
-        }
-
-        double* dst = (cur == output) ? work : output;
-        for (int node = 0; node < nodes; ++node) {
-            const double dc = cur[2 * node];
-            const double ny = cur[2 * node + 1];
-            dst[node] = 0.5 * (dc + ny);
-            dst[node + nodes] = 0.5 * (dc - ny);
-        }
-        if (dst != output) {
-            std::copy(dst, dst + n_, output);
         }
     }
 
@@ -1633,6 +1199,22 @@ private:
         hb = V2_MSUB(b, c2, eb);   // b - c2*eb
     }
 
+    // Normalized-basis merge, SIMD form of the scalar pair_reduce: the odd
+    // child (oa, ob) is rotated by (c, s) = (cos, sin) before combining with
+    // the even child. Because c^2 + s^2 = 1 exactly (no 2*cos twiddle that
+    // grows toward the tree top, no 1 - (2cos)^2 cancellation), residue pairs
+    // stay in the local unit frame and the leaf pair is directly (re, -im).
+    static BRUUN_ALWAYS_INLINE void pair_reduce_v2_norm(bruun_v2 ea, bruun_v2 eb, bruun_v2 oa, bruun_v2 ob,
+                                                        bruun_v2 c, bruun_v2 s,
+                                                        bruun_v2& la, bruun_v2& lb, bruun_v2& ha, bruun_v2& hb) {
+        const bruun_v2 r = V2_MSUB(V2_MUL(c, oa), s, ob);   // c*oa - s*ob
+        const bruun_v2 im = V2_MADD(V2_MUL(s, oa), c, ob);  // s*oa + c*ob
+        la = V2_ADD(ea, r);
+        lb = V2_ADD(eb, im);
+        ha = V2_SUB(ea, r);
+        hb = V2_SUB(im, eb);
+    }
+
     static BRUUN_ALWAYS_INLINE double v2_lane0(bruun_v2 v) {
 #if defined(BRUUN_NEON_128)
         return vgetq_lane_f64(v, 0);
@@ -1829,6 +1411,139 @@ private:
         }
     }
 
+    // -------- Normalized-basis SIMD forward (same walk, stable rotation) -----
+    // Identical mirrored-lane structure to butterfly4_v / merge4_v / the
+    // driver above, but every pair_reduce runs the (c, s) rotation. Twiddle
+    // pointers now index the {c, s} table cs_ (2 doubles per entry).
+
+    BRUUN_ALWAYS_INLINE void butterfly4_v_norm(bruun_v2 a0, bruun_v2 b0, bruun_v2 a1, bruun_v2 b1,
+                                               bruun_v2 a2, bruun_v2 b2, bruun_v2 a3, bruun_v2 b3,
+                                               const double* cs2, const double* cs1, const double* cs1q,
+                                               bruun_v2* o) const {
+        const bruun_v2 c2 = V2_SET1(cs2[0]);
+        const bruun_v2 s2 = V2_SET1(cs2[1]);
+        bruun_v2 h0la, h0lb, h0ha, h0hb, h1la, h1lb, h1ha, h1hb;
+        pair_reduce_v2_norm(a0, b0, a1, b1, c2, s2, h0la, h0lb, h0ha, h0hb);
+        pair_reduce_v2_norm(a2, b2, a3, b3, c2, s2, h1la, h1lb, h1ha, h1hb);
+        pair_reduce_v2_norm(h0la, h0lb, h1la, h1lb, V2_SET1(cs1[0]), V2_SET1(cs1[1]),
+                            o[0], o[1], o[2], o[3]);
+        pair_reduce_v2_norm(h0ha, h0hb, h1ha, h1hb, V2_SET1(cs1q[0]), V2_SET1(cs1q[1]),
+                            o[4], o[5], o[6], o[7]);
+    }
+
+    void merge4_v_norm(double* vblk, int M, const double* cs2, const double* cs1) const {
+        double* c0 = vblk;
+        double* c1 = vblk + 4 * M;
+        double* c2 = vblk + 8 * M;
+        double* c3 = vblk + 12 * M;
+
+        const bruun_v2 dc0 = V2_LD(c0);
+        const bruun_v2 ny0 = V2_LD(c0 + 2);
+        const bruun_v2 dc1 = V2_LD(c1);
+        const bruun_v2 ny1 = V2_LD(c1 + 2);
+        const bruun_v2 dc2 = V2_LD(c2);
+        const bruun_v2 ny2 = V2_LD(c2 + 2);
+        const bruun_v2 dc3 = V2_LD(c3);
+        const bruun_v2 ny3 = V2_LD(c3 + 2);
+        bruun_v2 ma, mb, mha, mhb;
+        pair_reduce_v2_norm(ny0, ny1, ny2, ny3, V2_SET1(cs1[2 * (M - 1)]), V2_SET1(cs1[2 * (M - 1) + 1]),
+                            ma, mb, mha, mhb);
+        const bruun_v2 h0dc = V2_ADD(dc0, dc1);
+        const bruun_v2 h0ny = V2_SUB(dc0, dc1);
+        const bruun_v2 h1dc = V2_ADD(dc2, dc3);
+        const bruun_v2 h1ny = V2_SUB(dc2, dc3);
+        V2_ST(c0, V2_ADD(h0dc, h1dc));
+        V2_ST(c0 + 2, V2_SUB(h0dc, h1dc));
+        V2_ST(c1, ma);
+        V2_ST(c1 + 2, mb);
+        V2_ST(c2, h0ny);
+        V2_ST(c2 + 2, h1ny);
+        V2_ST(c3, mha);
+        V2_ST(c3 + 2, mhb);
+
+        for (int i = 1; i < M - i; ++i) {
+            const int m = M - i;
+            const bruun_v2 a0i = V2_LD(c0 + 4 * i);
+            const bruun_v2 b0i = V2_LD(c0 + 4 * i + 2);
+            const bruun_v2 a1i = V2_LD(c1 + 4 * i);
+            const bruun_v2 b1i = V2_LD(c1 + 4 * i + 2);
+            const bruun_v2 a2i = V2_LD(c2 + 4 * i);
+            const bruun_v2 b2i = V2_LD(c2 + 4 * i + 2);
+            const bruun_v2 a3i = V2_LD(c3 + 4 * i);
+            const bruun_v2 b3i = V2_LD(c3 + 4 * i + 2);
+            const bruun_v2 a0m = V2_LD(c0 + 4 * m);
+            const bruun_v2 b0m = V2_LD(c0 + 4 * m + 2);
+            const bruun_v2 a1m = V2_LD(c1 + 4 * m);
+            const bruun_v2 b1m = V2_LD(c1 + 4 * m + 2);
+            const bruun_v2 a2m = V2_LD(c2 + 4 * m);
+            const bruun_v2 b2m = V2_LD(c2 + 4 * m + 2);
+            const bruun_v2 a3m = V2_LD(c3 + 4 * m);
+            const bruun_v2 b3m = V2_LD(c3 + 4 * m + 2);
+            bruun_v2 oi[8];
+            bruun_v2 om[8];
+            butterfly4_v_norm(a0i, b0i, a1i, b1i, a2i, b2i, a3i, b3i,
+                              cs2 + 2 * (i - 1), cs1 + 2 * (i - 1), cs1 + 2 * (2 * M - i - 1), oi);
+            butterfly4_v_norm(a0m, b0m, a1m, b1m, a2m, b2m, a3m, b3m,
+                              cs2 + 2 * (m - 1), cs1 + 2 * (m - 1), cs1 + 2 * (2 * M - m - 1), om);
+            store_butterfly4_v(vblk, M, i, oi);
+            store_butterfly4_v(vblk, M, m, om);
+        }
+
+        if (M >= 2) {
+            const int i = M >> 1;
+            const bruun_v2 a0i = V2_LD(c0 + 4 * i);
+            const bruun_v2 b0i = V2_LD(c0 + 4 * i + 2);
+            const bruun_v2 a1i = V2_LD(c1 + 4 * i);
+            const bruun_v2 b1i = V2_LD(c1 + 4 * i + 2);
+            const bruun_v2 a2i = V2_LD(c2 + 4 * i);
+            const bruun_v2 b2i = V2_LD(c2 + 4 * i + 2);
+            const bruun_v2 a3i = V2_LD(c3 + 4 * i);
+            const bruun_v2 b3i = V2_LD(c3 + 4 * i + 2);
+            bruun_v2 oi[8];
+            butterfly4_v_norm(a0i, b0i, a1i, b1i, a2i, b2i, a3i, b3i,
+                              cs2 + 2 * (i - 1), cs1 + 2 * (i - 1), cs1 + 2 * (2 * M - i - 1), oi);
+            store_butterfly4_v(vblk, M, i, oi);
+        }
+    }
+
+    void seed_fused_block_v_norm(const double* input, double* vw, int base, int count) const {
+        seed_block_v(input, vw, base, count);
+        int stage = 2;
+        for (int s = 16; (s >> 1) <= count; s <<= 2, stage += 2) {
+            const double* cs2 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage - 1)];
+            const double* cs1 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage)];
+            const int M = s >> 3;
+            for (int sub = base; sub < base + count; sub += (s >> 1)) {
+                merge4_v_norm(vw + 4 * sub, M, cs2, cs1);
+            }
+        }
+    }
+
+    void compute_vwork_norm(const double* input, double* vw) const {
+        BRUUN_ASSERT(n_ >= 16);
+        const int q = half_ >> 1;
+        const int chain_limit = radix2_terminal_ ? (n_ >> 1) : (n_ >> 2);
+        const int s_target = n_ > 4096 ? 256 : chain_limit;
+        const int block_slots = s_target >> 1;
+        const int nb = q / block_slots;
+        const int nb_bits = ilog2_pow2(nb);
+        for (int p = 0; p < nb; ++p) {
+            const int base = bitrev_int(p, nb_bits) * block_slots;
+            seed_fused_block_v_norm(input, vw, base, block_slots);
+        }
+
+        int s = s_target << 2;
+        int stage = ilog2_pow2(s) - 2;
+        for (; s <= chain_limit; s <<= 2, stage += 2) {
+            const double* cs2 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage - 1)];
+            const double* cs1 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage)];
+            const int M = s >> 3;
+            for (int off = 0; off < n_; off += 2 * s) {
+                merge4_v_norm(vw + off, M, cs2, cs1);
+            }
+        }
+    }
+
     template <typename Complex>
     struct terminal_complex_writer {
         Complex* X;
@@ -1962,6 +1677,104 @@ private:
             w.store_bin(hi,
                         ha + hb * cos_[static_cast<std::size_t>(hi)],
                         hb * neg_sin_[static_cast<std::size_t>(hi)]);
+        }
+    }
+
+    // -------- Normalized-basis SIMD terminals --------
+    // Same mirrored-lane structure as terminal_v / terminal_radix2_v, but the
+    // last merge runs the (c, s) rotation, so each leaf pair is already
+    // (re, -im): the residue -> complex projection collapses to a sign flip,
+    // and the high child needs no separate per-bin twiddle at all.
+    static BRUUN_ALWAYS_INLINE bruun_v2 v2_neg(bruun_v2 x) {
+        return V2_SUB(V2_SET1(0.0), x);
+    }
+
+    template <typename Writer>
+    void terminal_v_norm(const double* vw, const Writer& w) const {
+        const int M = half_ >> 2;   // child node count = n/8
+        const double* cA = vw;
+        const double* cB = vw + 4 * M;
+        const double* t1 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(twiddle_stage_count_ - 1)];
+
+        const bruun_v2 dcA = V2_LD(cA);
+        const bruun_v2 nyA = V2_LD(cA + 2);
+        const bruun_v2 dcB = V2_LD(cB);
+        const bruun_v2 nyB = V2_LD(cB + 2);
+        const bruun_v2 sum = V2_ADD(dcA, dcB);   // {h0dc, h1dc}
+        const bruun_v2 dif = V2_SUB(dcA, dcB);   // {h0ny, h1ny}
+        w.store_bin(0, v2_lane0(sum) + v2_lane1(sum), 0.0);
+        w.store_bin(half_, v2_lane0(sum) - v2_lane1(sum), 0.0);
+        w.store_bin(2 * M, v2_lane0(dif), -v2_lane1(dif));   // bin n/4
+        {
+            double la, lb, ha, hb;
+            pair_reduce(v2_lane0(nyA), v2_lane0(nyB), v2_lane1(nyA), v2_lane1(nyB),
+                        t1[M - 1], la, lb, ha, hb);
+            w.store_bin(M, la, -lb);
+            w.store_bin(half_ - M, ha, -hb);
+        }
+
+        const double* rec = fterm_cs_.data();
+        for (int i = 1; i < M; ++i, rec += 6) {
+            const bruun_v2 aA = V2_LD(cA + 4 * i);
+            const bruun_v2 bA = V2_LD(cA + 4 * i + 2);
+            const bruun_v2 aB = V2_LD(cB + 4 * i);
+            const bruun_v2 bB = V2_LD(cB + 4 * i + 2);
+            bruun_v2 la, lb, ha, hb;
+            pair_reduce_v2_norm(aA, bA, aB, bB, V2_SET1(rec[0]), V2_SET1(rec[1]), la, lb, ha, hb);
+            const bruun_v2 ua = V2_UNPLO(la, ha);   // {h0 low, h0 high}
+            const bruun_v2 ub = V2_UNPLO(lb, hb);
+            const bruun_v2 va = V2_UNPHI(la, ha);   // {h1 low, h1 high}
+            const bruun_v2 vb = V2_UNPHI(lb, hb);
+            bruun_v2 fa, fb, ga, gb;
+            pair_reduce_v2_norm(ua, ub, va, vb, V2_LD(rec + 2), V2_LD(rec + 4), fa, fb, ga, gb);
+            // fa/fb lanes = bins {i, n/4 - i}; ga/gb lanes = bins {n/2 - i, n/4 + i}.
+            w.store_pair(i, 2 * M - i, fa, v2_neg(fb));
+            w.store_pair(half_ - i, 2 * M + i, ga, v2_neg(gb));
+        }
+    }
+
+    template <typename Writer>
+    void terminal_radix2_v_norm(const double* vw, const Writer& w) const {
+        const int q = half_ >> 1;
+        const double* t = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(twiddle_stage_count_ - 1)];
+
+        const bruun_v2 dc = V2_LD(vw);
+        const bruun_v2 ny = V2_LD(vw + 2);
+        w.store_bin(0, v2_lane0(dc) + v2_lane1(dc), 0.0);
+        w.store_bin(half_, v2_lane0(dc) - v2_lane1(dc), 0.0);
+        w.store_bin(q, v2_lane0(ny), -v2_lane1(ny));
+
+        int i = 1;
+        for (; i + 1 < q; i += 2) {
+            const bruun_v2 a0 = V2_LD(vw + 4 * i);
+            const bruun_v2 b0 = V2_LD(vw + 4 * i + 2);
+            const bruun_v2 a1 = V2_LD(vw + 4 * (i + 1));
+            const bruun_v2 b1 = V2_LD(vw + 4 * (i + 1) + 2);
+            const bruun_v2 ea = V2_UNPLO(a0, a1);
+            const bruun_v2 oa = V2_UNPHI(a0, a1);
+            const bruun_v2 eb = V2_UNPLO(b0, b1);
+            const bruun_v2 ob = V2_UNPHI(b0, b1);
+            // c/s for the two lane nodes {i, i+1} come from the per-bin tables
+            // (cos_[k], sin_[k] = -neg_sin_[k]); the rotation emits both the
+            // low child (bins i, i+1) and its mirror high child (bins n/2-i,
+            // n/2-i-1) already as (re, -im).
+            const bruun_v2 cv = V2_LD(cos_.data() + i);
+            const bruun_v2 sv = v2_neg(V2_LD(neg_sin_.data() + i));
+            bruun_v2 la, lb, ha, hb;
+            pair_reduce_v2_norm(ea, eb, oa, ob, cv, sv, la, lb, ha, hb);
+            w.store_pair(i, i + 1, la, v2_neg(lb));
+            w.store_pair(half_ - i, half_ - i - 1, ha, v2_neg(hb));
+        }
+
+        if (i < q) {
+            const bruun_v2 a = V2_LD(vw + 4 * i);
+            const bruun_v2 b = V2_LD(vw + 4 * i + 2);
+            double la, lb, ha, hb;
+            pair_reduce(v2_lane0(a), v2_lane0(b), v2_lane1(a), v2_lane1(b),
+                        t[i - 1], la, lb, ha, hb);
+            const int hi = half_ - i;
+            w.store_bin(i, la, -lb);
+            w.store_bin(hi, ha, -hb);
         }
     }
 
@@ -2325,6 +2138,281 @@ private:
         }
     }
 
+    // -------- Normalized-basis SIMD inverse (exact inverse of the forward) --
+    // pair_expand_v2_norm undoes pair_reduce_v2_norm: the same (c, s) rotation
+    // run backwards, so the whole inverse composes with the forward to exactly
+    // 1/N with no separate normalization and no accuracy loss. Deprojection is
+    // now trivial - the forward stored (re, -im) = (a, b), so the inverse reads
+    // a = re, b = -im with no cos/sin at all.
+
+    static BRUUN_ALWAYS_INLINE void pair_expand_v2_norm(bruun_v2 la, bruun_v2 lb, bruun_v2 ha, bruun_v2 hb,
+                                                        bruun_v2 c, bruun_v2 s, bruun_v2 hv,
+                                                        bruun_v2& ea, bruun_v2& eb, bruun_v2& oa, bruun_v2& ob) {
+        const bruun_v2 r = V2_MUL(V2_SUB(la, ha), hv);   // 0.5*(la - ha)
+        const bruun_v2 im = V2_MUL(V2_ADD(lb, hb), hv);  // 0.5*(lb + hb)
+        ea = V2_MUL(V2_ADD(la, ha), hv);
+        eb = V2_MUL(V2_SUB(lb, hb), hv);
+        oa = V2_MADD(V2_MUL(c, r), s, im);   // c*r + s*im
+        ob = V2_MSUB(V2_MUL(c, im), s, r);   // c*im - s*r
+    }
+
+    BRUUN_ALWAYS_INLINE void inv_butterfly4_v_norm(bruun_v2 nia, bruun_v2 nib, bruun_v2 nha, bruun_v2 nhb,
+                                                   bruun_v2 nqla, bruun_v2 nqlb, bruun_v2 nqha, bruun_v2 nqhb,
+                                                   const double* cs1i, const double* cs1q, const double* cs2i,
+                                                   bruun_v2 hv, bruun_v2* o) const {
+        bruun_v2 h0la, h0lb, h1la, h1lb, h0ha, h0hb, h1ha, h1hb;
+        pair_expand_v2_norm(nia, nib, nha, nhb, V2_SET1(cs1i[0]), V2_SET1(cs1i[1]), hv,
+                            h0la, h0lb, h1la, h1lb);
+        pair_expand_v2_norm(nqla, nqlb, nqha, nqhb, V2_SET1(cs1q[0]), V2_SET1(cs1q[1]), hv,
+                            h0ha, h0hb, h1ha, h1hb);
+        const bruun_v2 c2 = V2_SET1(cs2i[0]);
+        const bruun_v2 s2 = V2_SET1(cs2i[1]);
+        pair_expand_v2_norm(h0la, h0lb, h0ha, h0hb, c2, s2, hv, o[0], o[1], o[2], o[3]);
+        pair_expand_v2_norm(h1la, h1lb, h1ha, h1hb, c2, s2, hv, o[4], o[5], o[6], o[7]);
+    }
+
+    void split4_v_norm(double* vblk, int M, const double* cs2, const double* cs1) const {
+        const bruun_v2 hv = V2_SET1(0.5);
+        double* c0 = vblk;
+        double* c1 = vblk + 4 * M;
+        double* c2 = vblk + 8 * M;
+        double* c3 = vblk + 12 * M;
+
+        const bruun_v2 n0a = V2_LD(c0);
+        const bruun_v2 n0b = V2_LD(c0 + 2);
+        const bruun_v2 nMa = V2_LD(c1);
+        const bruun_v2 nMb = V2_LD(c1 + 2);
+        const bruun_v2 n2a = V2_LD(c2);
+        const bruun_v2 n2b = V2_LD(c2 + 2);
+        const bruun_v2 n3a = V2_LD(c3);
+        const bruun_v2 n3b = V2_LD(c3 + 2);
+        const bruun_v2 h0dc = V2_MUL(V2_ADD(n0a, n0b), hv);
+        const bruun_v2 h1dc = V2_MUL(V2_SUB(n0a, n0b), hv);
+        bruun_v2 ny0, ny1, ny2, ny3;
+        pair_expand_v2_norm(nMa, nMb, n3a, n3b,
+                            V2_SET1(cs1[2 * (M - 1)]), V2_SET1(cs1[2 * (M - 1) + 1]), hv,
+                            ny0, ny1, ny2, ny3);
+        V2_ST(c0, V2_MUL(V2_ADD(h0dc, n2a), hv));
+        V2_ST(c0 + 2, ny0);
+        V2_ST(c1, V2_MUL(V2_SUB(h0dc, n2a), hv));
+        V2_ST(c1 + 2, ny1);
+        V2_ST(c2, V2_MUL(V2_ADD(h1dc, n2b), hv));
+        V2_ST(c2 + 2, ny2);
+        V2_ST(c3, V2_MUL(V2_SUB(h1dc, n2b), hv));
+        V2_ST(c3 + 2, ny3);
+
+        for (int i = 1; i < M - i; ++i) {
+            const int m = M - i;
+            const bruun_v2 ia = V2_LD(vblk + 4 * i);
+            const bruun_v2 ib = V2_LD(vblk + 4 * i + 2);
+            const bruun_v2 iha = V2_LD(vblk + 4 * (4 * M - i));
+            const bruun_v2 ihb = V2_LD(vblk + 4 * (4 * M - i) + 2);
+            const bruun_v2 iqla = V2_LD(vblk + 4 * (2 * M - i));
+            const bruun_v2 iqlb = V2_LD(vblk + 4 * (2 * M - i) + 2);
+            const bruun_v2 iqha = V2_LD(vblk + 4 * (2 * M + i));
+            const bruun_v2 iqhb = V2_LD(vblk + 4 * (2 * M + i) + 2);
+            const bruun_v2 ma = V2_LD(vblk + 4 * m);
+            const bruun_v2 mb = V2_LD(vblk + 4 * m + 2);
+            const bruun_v2 mha = V2_LD(vblk + 4 * (4 * M - m));
+            const bruun_v2 mhb = V2_LD(vblk + 4 * (4 * M - m) + 2);
+            const bruun_v2 mqla = V2_LD(vblk + 4 * (2 * M - m));
+            const bruun_v2 mqlb = V2_LD(vblk + 4 * (2 * M - m) + 2);
+            const bruun_v2 mqha = V2_LD(vblk + 4 * (2 * M + m));
+            const bruun_v2 mqhb = V2_LD(vblk + 4 * (2 * M + m) + 2);
+            bruun_v2 oi[8];
+            bruun_v2 om[8];
+            inv_butterfly4_v_norm(ia, ib, iha, ihb, iqla, iqlb, iqha, iqhb,
+                                  cs1 + 2 * (i - 1), cs1 + 2 * (2 * M - i - 1), cs2 + 2 * (i - 1), hv, oi);
+            inv_butterfly4_v_norm(ma, mb, mha, mhb, mqla, mqlb, mqha, mqhb,
+                                  cs1 + 2 * (m - 1), cs1 + 2 * (2 * M - m - 1), cs2 + 2 * (m - 1), hv, om);
+            store_inv_butterfly4_v(vblk, M, i, oi);
+            store_inv_butterfly4_v(vblk, M, m, om);
+        }
+
+        if (M >= 2) {
+            const int i = M >> 1;
+            const bruun_v2 ia = V2_LD(vblk + 4 * i);
+            const bruun_v2 ib = V2_LD(vblk + 4 * i + 2);
+            const bruun_v2 iha = V2_LD(vblk + 4 * (4 * M - i));
+            const bruun_v2 ihb = V2_LD(vblk + 4 * (4 * M - i) + 2);
+            const bruun_v2 iqla = V2_LD(vblk + 4 * (2 * M - i));
+            const bruun_v2 iqlb = V2_LD(vblk + 4 * (2 * M - i) + 2);
+            const bruun_v2 iqha = V2_LD(vblk + 4 * (2 * M + i));
+            const bruun_v2 iqhb = V2_LD(vblk + 4 * (2 * M + i) + 2);
+            bruun_v2 oi[8];
+            inv_butterfly4_v_norm(ia, ib, iha, ihb, iqla, iqlb, iqha, iqhb,
+                                  cs1 + 2 * (i - 1), cs1 + 2 * (2 * M - i - 1), cs2 + 2 * (i - 1), hv, oi);
+            store_inv_butterfly4_v(vblk, M, i, oi);
+        }
+    }
+
+    void compute_vwork_inv_norm(double* vw, double* output) const {
+        BRUUN_ASSERT(n_ >= 16);
+        const int q = half_ >> 1;
+        const int chain_limit = radix2_terminal_ ? (n_ >> 1) : (n_ >> 2);
+        const int s_target = n_ > 4096 ? 256 : chain_limit;
+        const int block_slots = s_target >> 1;
+        const int nb = q / block_slots;
+        const int nb_bits = ilog2_pow2(nb);
+
+        int s = chain_limit;
+        int stage = ilog2_pow2(s) - 2;
+        for (; s >= (s_target << 2); s >>= 2, stage -= 2) {
+            const double* cs2 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage - 1)];
+            const double* cs1 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(stage)];
+            const int M = s >> 3;
+            for (int off = 0; off < n_; off += 2 * s) {
+                split4_v_norm(vw + off, M, cs2, cs1);
+            }
+        }
+
+        if (nb >= 64) {
+            for (int p = 0; p < nb; ++p) {
+                const int base = p * block_slots;
+                int ss = s_target;
+                int st = ilog2_pow2(ss) - 2;
+                for (; ss >= 16; ss >>= 2, st -= 2) {
+                    const double* cs2 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(st - 1)];
+                    const double* cs1 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(st)];
+                    const int M = ss >> 3;
+                    for (int sub = base; sub < base + block_slots; sub += (ss >> 1)) {
+                        split4_v_norm(vw + 4 * sub, M, cs2, cs1);
+                    }
+                }
+            }
+            seed_scatter_row_tiles_v(vw, output, block_slots, nb, nb_bits);
+            return;
+        }
+
+        for (int p = 0; p < nb; ++p) {
+            const int base = bitrev_int(p, nb_bits) * block_slots;
+            int ss = s_target;
+            int st = ilog2_pow2(ss) - 2;
+            for (; ss >= 16; ss >>= 2, st -= 2) {
+                const double* cs2 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(st - 1)];
+                const double* cs1 = cs_.data() + 2 * twiddle_offset_[static_cast<std::size_t>(st)];
+                const int M = ss >> 3;
+                for (int sub = base; sub < base + block_slots; sub += (ss >> 1)) {
+                    split4_v_norm(vw + 4 * sub, M, cs2, cs1);
+                }
+            }
+            seed_scatter_block_v(vw, output, base, block_slots);
+        }
+    }
+
+    // Inverse terminal, normalized basis. Standard bins deproject to (a, b) =
+    // (re, -im) with no cos/sin, then two normalized inverse-rotation levels
+    // and the single lane crossing reproduce the mirrored-lane child slots.
+    template <typename Complex>
+    void terminal_inv_v_norm(const Complex* X, double* vw) const {
+        const int M = half_ >> 2;   // child node count = n/8
+        double* cA = vw;
+        double* cB = vw + 4 * M;
+        const double* t1 = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(twiddle_stage_count_ - 1)];
+        const bruun_v2 hv = V2_SET1(0.5);
+
+        const double h0dc = 0.5 * (X[0].re + X[half_].re);
+        const double h1dc = 0.5 * (X[0].re - X[half_].re);
+        const double h0ny = X[2 * M].re;
+        const double h1ny = -X[2 * M].im;
+        {
+            const double la = X[M].re;
+            const double lb = -X[M].im;
+            const double ha = X[half_ - M].re;
+            const double hb = -X[half_ - M].im;
+            double ny0, ny1, ny2, ny3;
+            pair_expand_norm(la, lb, ha, hb, t1[M - 1], ny0, ny1, ny2, ny3);
+            V2_ST(cA, V2_SETLH(0.5 * (h0dc + h0ny), 0.5 * (h1dc + h1ny)));   // {C0dc, C2dc}
+            V2_ST(cA + 2, V2_SETLH(ny0, ny2));                               // {C0ny, C2ny}
+            V2_ST(cB, V2_SETLH(0.5 * (h0dc - h0ny), 0.5 * (h1dc - h1ny)));   // {C1dc, C3dc}
+            V2_ST(cB + 2, V2_SETLH(ny1, ny3));                               // {C1ny, C3ny}
+        }
+
+        const double* rec = fterm_cs_.data();
+        for (int i = 1; i < M; ++i, rec += 6) {
+            const bruun_v2 xl0 = V2_LD(&X[i].re);
+            const bruun_v2 xl1 = V2_LD(&X[2 * M - i].re);
+            const bruun_v2 xh0 = V2_LD(&X[half_ - i].re);
+            const bruun_v2 xh1 = V2_LD(&X[2 * M + i].re);
+            const bruun_v2 re_l = V2_UNPLO(xl0, xl1);
+            const bruun_v2 im_l = V2_UNPHI(xl0, xl1);
+            const bruun_v2 re_h = V2_UNPLO(xh0, xh1);
+            const bruun_v2 im_h = V2_UNPHI(xh0, xh1);
+            // deproject: (a, b) = (re, -im) for bins {i, n/4-i} and {n/2-i, n/4+i}
+            const bruun_v2 fa = re_l;
+            const bruun_v2 fb = v2_neg(im_l);
+            const bruun_v2 ga = re_h;
+            const bruun_v2 gb = v2_neg(im_h);
+            bruun_v2 ua, ub, va, vb;
+            pair_expand_v2_norm(fa, fb, ga, gb, V2_LD(rec + 2), V2_LD(rec + 4), hv, ua, ub, va, vb);
+            const bruun_v2 la = V2_UNPLO(ua, va);   // {h0 low, h1 low}
+            const bruun_v2 lb = V2_UNPLO(ub, vb);
+            const bruun_v2 ha = V2_UNPHI(ua, va);   // {h0 high, h1 high}
+            const bruun_v2 hb = V2_UNPHI(ub, vb);
+            bruun_v2 aA, bA, aB, bB;
+            pair_expand_v2_norm(la, lb, ha, hb, V2_SET1(rec[0]), V2_SET1(rec[1]), hv, aA, bA, aB, bB);
+            V2_ST(cA + 4 * i, aA);
+            V2_ST(cA + 4 * i + 2, bA);
+            V2_ST(cB + 4 * i, aB);
+            V2_ST(cB + 4 * i + 2, bB);
+        }
+    }
+
+    template <typename Complex>
+    void terminal_radix2_inv_v_norm(const Complex* X, double* vw) const {
+        const int q = half_ >> 1;
+        const double* t = twiddle_.data() + twiddle_offset_[static_cast<std::size_t>(twiddle_stage_count_ - 1)];
+        const bruun_v2 hv = V2_SET1(0.5);
+
+        V2_ST(vw, V2_SETLH(0.5 * (X[0].re + X[half_].re),
+                           0.5 * (X[0].re - X[half_].re)));
+        V2_ST(vw + 2, V2_SETLH(X[q].re, -X[q].im));
+
+        int i = 1;
+        for (; i + 1 < q; i += 2) {
+            const bruun_v2 xl0 = V2_LD(&X[i].re);
+            const bruun_v2 xl1 = V2_LD(&X[i + 1].re);
+            const bruun_v2 re_l = V2_UNPLO(xl0, xl1);
+            const bruun_v2 im_l = V2_UNPHI(xl0, xl1);
+
+            const int hi0 = half_ - i;
+            const int hi1 = half_ - i - 1;
+            const bruun_v2 xh0 = V2_LD(&X[hi0].re);
+            const bruun_v2 xh1 = V2_LD(&X[hi1].re);
+            const bruun_v2 re_h = V2_UNPLO(xh0, xh1);
+            const bruun_v2 im_h = V2_UNPHI(xh0, xh1);
+
+            // low pair (bins i, i+1) and its mirror high pair both deproject
+            // to (re, -im); one rotation (c, s of nodes i, i+1) inverts them.
+            const bruun_v2 la = re_l;
+            const bruun_v2 lb = v2_neg(im_l);
+            const bruun_v2 ha = re_h;
+            const bruun_v2 hb = v2_neg(im_h);
+            const bruun_v2 cv = V2_LD(cos_.data() + i);
+            const bruun_v2 sv = v2_neg(V2_LD(neg_sin_.data() + i));
+
+            bruun_v2 ea, eb, oa, ob;
+            pair_expand_v2_norm(la, lb, ha, hb, cv, sv, hv, ea, eb, oa, ob);
+
+            V2_ST(vw + 4 * i, V2_UNPLO(ea, oa));
+            V2_ST(vw + 4 * i + 2, V2_UNPLO(eb, ob));
+            V2_ST(vw + 4 * (i + 1), V2_UNPHI(ea, oa));
+            V2_ST(vw + 4 * (i + 1) + 2, V2_UNPHI(eb, ob));
+        }
+
+        if (i < q) {
+            const int hi = half_ - i;
+            const double la = X[i].re;
+            const double lb = -X[i].im;
+            const double ha = X[hi].re;
+            const double hb = -X[hi].im;
+            double ea, eb, oa, ob;
+            pair_expand_norm(la, lb, ha, hb, t[i - 1], ea, eb, oa, ob);
+            V2_ST(vw + 4 * i, V2_SETLH(ea, oa));
+            V2_ST(vw + 4 * i + 2, V2_SETLH(eb, ob));
+        }
+    }
+
     // ------------------------------------------------------------------
     // Interpolation inverse, SIMD path. The head is the only shuffle zone
     // (mirror of terminal_inv_v); every merge above it is pure vertical
@@ -2552,6 +2640,8 @@ private:
     heap_array<double> inv_neg_sin_;
     heap_array<double> twiddle_;
     heap_array<double> term_tw_;
+    heap_array<double> cs_;
+    heap_array<double> fterm_cs_;
     heap_array<double> inv_twiddle_;
     heap_array<double> iterm_tw_;
     heap_array<int> ihead_j_;
