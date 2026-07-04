@@ -78,6 +78,55 @@ correct move is to block the real diagonal walk depth-first, with the cross-
 array re-addressing carried by the free diagonal shear rather than a transpose:
 interior → ~2 DRAM passes, boundary stays 0, cells stay real.
 
+## The blocking, made concrete (2026-07-04, validated)
+
+`experiments/dip_blocked.py` builds and MEASURES the depth-first blocking under
+an LRU cache-line simulator. Three walks, all exact to machine precision:
+
+| N | ping-pong (flat log-N) | blocked + transpose | **self-sorting** |
+|---|---|---|---|
+| 16384 | 28.0 | 4.9 | **3.0** |
+| 65536 | 32.0 | 5.0 | **3.0** |
+| 262144 | 36.0 | 5.0 | **3.0** |
+
+The winner is **self-sorting** (`blocked_ss`): recursive four-step on the column
+length `L = L1·L2`, real Givens cells only, with NO interior transpose:
+
+```
+blocked_ss(off, L, stride):
+  if L <= leaf:  in-cache DFT (the existing vectorized stages);  return
+  L1, L2 = split(L)           # ~sqrt factor
+  for i2 in [0,L2):  blocked_ss(off + i2, L1, L2·stride)      # column sub-transforms
+  for k1,i2:  elem at (i2 + perm(L1)[k1]·L2) *= W_L^{k1·i2}    # PHASE twiddle, perm-indexed
+  for k1 in [0,L1): blocked_ss(off + perm(L1)[k1]·L2, L2, stride)  # row sub-transforms
+  # output bin k lands at off + perm(L)[k]·stride  (perm composes: no data move)
+```
+
+`perm(L)[k2·L1+k1] = perm(L1)[k1]·L2 + perm(L2)[k2]`. The interior never moves
+data to reorder; the twiddle simply indexes through `perm(L1)`, and the single
+output permutation `perm(L)` is resolved in the boundary bin-extraction the
+kernel already does (`output[d].re = src[...]`). So: interior shuffle 0,
+boundary = the extraction that already exists, transport flat at 3 passes. The
+middle twiddle is the packet rotation — this is the phase-packet object.
+
+## The r2c composition (2026-07-04, validated)
+
+`dip_blocked.py :: r2c_composed` proves the whole thing composes for REAL input,
+machine precision (1e-14..1e-13, N up to 16384). Factor `N = N1·N2`, index map
+`n = n1 + N1·n2`, `k = N2·k1 + k2`:
+
+```
+inner   A[k2, n1] = Σ_{n2} x[n1 + N1·n2] · W_N2^{n2·k2}    real leg (real (a,b) cells)
+twiddle A[k2, n1] *= W_N^{n1·k2}                            phase Givens
+outer   R[k1]     = Σ_{n1} A[k2, n1] · W_N1^{n1·k1}         self-sorting complex leg
+        X[N2·k1 + k2] = R[k1]                               (k1 slow, k2 fast)
+```
+
+The inner legs are `phase_fft_real` (real cells, and — for the half spectrum —
+the r2c fold already validated); the outer legs are `blocked_ss` (self-sorting,
+real Givens, transport-flat). So all four properties hold together: exact, real
+cells only, boundary 0, DRAM flat at ~3 passes.
+
 ## C++ implementation plan
 
 1. **No gather in, no scatter out.** `x` enters in natural order; `X` leaves in

@@ -495,11 +495,8 @@ bool check_dip_direct(std::size_t n) {
     }
 
     std::vector<bruun::complex_t> output(plan.bins());
-    std::vector<bruun::complex_t> blocked_output(plan.bins());
     std::vector<double> work(static_cast<std::size_t>(plan.work_size()));
-    std::vector<double> blocked_work(static_cast<std::size_t>(plan.blocked_work_size()));
     plan.forward_standard(input.data(), output.data(), work.data());
-    plan.forward_standard_blocked(input.data(), blocked_output.data(), blocked_work.data());
 
     const std::vector<bfft::complex> expected = naive_rfft(input);
     double spectrum_error = 0.0;
@@ -515,19 +512,6 @@ bool check_dip_direct(std::size_t n) {
         return false;
     }
 
-    double blocked_spectrum_error = 0.0;
-    for (std::size_t i = 0; i < expected.size(); ++i) {
-        blocked_spectrum_error = std::max(blocked_spectrum_error,
-                                          std::fabs(blocked_output[i].re - expected[i].re));
-        blocked_spectrum_error = std::max(blocked_spectrum_error,
-                                          std::fabs(blocked_output[i].im - expected[i].im));
-    }
-    if (blocked_spectrum_error > tolerance) {
-        std::fprintf(stderr, "n=%zu blocked DIP direct spectrum error %.17g exceeds %.17g\n",
-                     n, blocked_spectrum_error, tolerance);
-        return false;
-    }
-
     std::vector<double> roundtrip(n);
     plan.inverse_standard(output.data(), roundtrip.data(), work.data());
     double inverse_error = 0.0;
@@ -537,18 +521,6 @@ bool check_dip_direct(std::size_t n) {
     if (inverse_error > tolerance) {
         std::fprintf(stderr, "n=%zu DIP direct inverse error %.17g exceeds %.17g\n",
                      n, inverse_error, tolerance);
-        return false;
-    }
-
-    std::vector<double> blocked_roundtrip(n);
-    plan.inverse_standard_blocked(blocked_output.data(), blocked_roundtrip.data(), blocked_work.data());
-    double blocked_inverse_error = 0.0;
-    for (std::size_t i = 0; i < n; ++i) {
-        blocked_inverse_error = std::max(blocked_inverse_error, std::fabs(blocked_roundtrip[i] - input[i]));
-    }
-    if (blocked_inverse_error > tolerance) {
-        std::fprintf(stderr, "n=%zu blocked DIP direct inverse error %.17g exceeds %.17g\n",
-                     n, blocked_inverse_error, tolerance);
         return false;
     }
 

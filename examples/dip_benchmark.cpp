@@ -28,18 +28,13 @@ struct result {
     int iters = 0;
     double baseline_forward_ns = 0.0;
     double dip_forward_ns = 0.0;
-    double blocked_forward_ns = 0.0;
     double baseline_inverse_ns = 0.0;
     double dip_inverse_ns = 0.0;
-    double blocked_inverse_ns = 0.0;
     double baseline_roundtrip_ns = 0.0;
     double dip_roundtrip_ns = 0.0;
-    double blocked_roundtrip_ns = 0.0;
     double forward_maxerr = 0.0;
-    double blocked_forward_maxerr = 0.0;
     double baseline_roundtrip_maxerr = 0.0;
     double dip_roundtrip_maxerr = 0.0;
-    double blocked_roundtrip_maxerr = 0.0;
     double sink = 0.0;
 };
 
@@ -61,15 +56,6 @@ int parse_iters(const char* text) {
     const long value = std::strtol(text, &end, 0);
     if (!end || *end != '\0' || value <= 0) {
         throw std::invalid_argument("invalid iteration count");
-    }
-    return static_cast<int>(value);
-}
-
-int parse_positive_int(const char* text, const char* name) {
-    char* end = nullptr;
-    const long value = std::strtol(text, &end, 0);
-    if (!end || *end != '\0' || value <= 0 || value > 1024) {
-        throw std::invalid_argument(name);
     }
     return static_cast<int>(value);
 }
@@ -140,7 +126,7 @@ double max_abs_real(const std::vector<double>& a, const std::vector<double>& b) 
     return err;
 }
 
-result run_one(std::size_t n, int forced_iters, int block_depth, int block_cols) {
+result run_one(std::size_t n, int forced_iters) {
     if (n > static_cast<std::size_t>(2147483647)) {
         throw std::invalid_argument("N is too large for the experimental kernel");
     }
@@ -158,30 +144,23 @@ result run_one(std::size_t n, int forced_iters, int block_depth, int block_cols)
 
     std::vector<bfft::complex> baseline_bins(nb);
     std::vector<bruun::complex_t> dip_bins(nb);
-    std::vector<bruun::complex_t> blocked_bins(nb);
     std::vector<bfft::complex> baseline_scratch(baseline_plan.native_scratch_size());
     std::vector<double> baseline_work(baseline_plan.work_size());
     std::vector<double> dip_work(static_cast<std::size_t>(dip_plan.work_size()));
-    std::vector<double> blocked_work(static_cast<std::size_t>(dip_plan.blocked_work_size()));
     std::vector<double> baseline_out(n);
     std::vector<double> dip_out(n);
-    std::vector<double> blocked_out(n);
 
     baseline_plan.forward(original.data(), baseline_bins.data(), baseline_work.data(), baseline_scratch.data());
     dip_plan.forward_standard(original.data(), dip_bins.data(), dip_work.data());
-    dip_plan.forward_standard_blocked(original.data(), blocked_bins.data(), blocked_work.data(), block_depth, block_cols);
     baseline_plan.inverse(baseline_bins.data(), baseline_out.data());
     dip_plan.inverse_standard(dip_bins.data(), dip_out.data(), dip_work.data());
-    dip_plan.inverse_standard_blocked(blocked_bins.data(), blocked_out.data(), blocked_work.data(), block_depth, block_cols);
 
     result r;
     r.n = n;
     r.iters = iters;
     r.forward_maxerr = max_abs_complex(baseline_bins, dip_bins);
-    r.blocked_forward_maxerr = max_abs_complex(baseline_bins, blocked_bins);
     r.baseline_roundtrip_maxerr = max_abs_real(original, baseline_out);
     r.dip_roundtrip_maxerr = max_abs_real(original, dip_out);
-    r.blocked_roundtrip_maxerr = max_abs_real(original, blocked_out);
 
     input = original;
     timing t = bench_ns(iters, [&](int i, double sink) {
@@ -201,15 +180,6 @@ result run_one(std::size_t n, int forced_iters, int block_depth, int block_cols)
     r.dip_forward_ns = t.best_ns;
     r.sink += t.sink;
 
-    input = original;
-    t = bench_ns(iters, [&](int i, double sink) {
-        input[(static_cast<std::size_t>(i) * 131u + static_cast<std::size_t>(sink)) & (n - 1)] += 1e-12;
-        dip_plan.forward_standard_blocked(input.data(), blocked_bins.data(), blocked_work.data(), block_depth, block_cols);
-        return blocked_bins[(static_cast<std::size_t>(i) * 17u) % nb].re;
-    });
-    r.blocked_forward_ns = t.best_ns;
-    r.sink += t.sink;
-
     baseline_plan.forward(original.data(), baseline_bins.data(), baseline_work.data(), baseline_scratch.data());
     t = bench_ns(iters, [&](int i, double) {
         baseline_bins[(static_cast<std::size_t>(i) * 17u) % nb].re += 1e-12;
@@ -226,15 +196,6 @@ result run_one(std::size_t n, int forced_iters, int block_depth, int block_cols)
         return dip_out[(static_cast<std::size_t>(i) * 31u) & (n - 1)];
     });
     r.dip_inverse_ns = t.best_ns;
-    r.sink += t.sink;
-
-    dip_plan.forward_standard_blocked(original.data(), blocked_bins.data(), blocked_work.data(), block_depth, block_cols);
-    t = bench_ns(iters, [&](int i, double) {
-        blocked_bins[(static_cast<std::size_t>(i) * 17u) % nb].re += 1e-12;
-        dip_plan.inverse_standard_blocked(blocked_bins.data(), blocked_out.data(), blocked_work.data(), block_depth, block_cols);
-        return blocked_out[(static_cast<std::size_t>(i) * 31u) & (n - 1)];
-    });
-    r.blocked_inverse_ns = t.best_ns;
     r.sink += t.sink;
 
     input = original;
@@ -257,52 +218,37 @@ result run_one(std::size_t n, int forced_iters, int block_depth, int block_cols)
     r.dip_roundtrip_ns = t.best_ns;
     r.sink += t.sink;
 
-    input = original;
-    t = bench_ns(iters, [&](int i, double sink) {
-        input[(static_cast<std::size_t>(i) * 131u + static_cast<std::size_t>(sink)) & (n - 1)] += 1e-12;
-        dip_plan.forward_standard_blocked(input.data(), blocked_bins.data(), blocked_work.data(), block_depth, block_cols);
-        dip_plan.inverse_standard_blocked(blocked_bins.data(), blocked_out.data(), blocked_work.data(), block_depth, block_cols);
-        return blocked_out[(static_cast<std::size_t>(i) * 31u) & (n - 1)];
-    });
-    r.blocked_roundtrip_ns = t.best_ns;
-    r.sink += t.sink;
-
     return r;
 }
 
 void print_header() {
-    std::printf("%9s %8s %11s %11s %11s %11s %11s %11s %11s %11s %11s %8s %8s %8s %12s\n",
-                "N", "iters", "base_fwd", "dip_fwd", "blk_fwd", "base_inv",
-                "dip_inv", "blk_inv", "base_rt", "dip_rt", "blk_rt",
-                "blkf_x", "blki_x", "blkr_x", "checks");
+    std::printf("%9s %8s %11s %11s %11s %11s %11s %11s %8s %8s %8s %12s\n",
+                "N", "iters", "base_fwd", "dip_fwd", "base_inv",
+                "dip_inv", "base_rt", "dip_rt",
+                "fwd_x", "inv_x", "rt_x", "checks");
     std::fflush(stdout);
 }
 
 void print_result(const result& r) {
-    const double blocked_fwd_ratio = r.blocked_forward_ns / r.dip_forward_ns;
-    const double blocked_inv_ratio = r.blocked_inverse_ns / r.dip_inverse_ns;
-    const double blocked_rt_ratio = r.blocked_roundtrip_ns / r.dip_roundtrip_ns;
-    std::printf("%9zu %8d %11.2f %11.2f %11.2f %11.2f %11.2f %11.2f %11.2f %11.2f %11.2f "
-                "%8.3f %8.3f %8.3f ferr %.2e blk_ferr %.2e base_rt %.2e dip_rt %.2e blk_rt %.2e sink %.3e\n",
+    const double fwd_ratio = r.dip_forward_ns / r.baseline_forward_ns;
+    const double inv_ratio = r.dip_inverse_ns / r.baseline_inverse_ns;
+    const double rt_ratio = r.dip_roundtrip_ns / r.baseline_roundtrip_ns;
+    std::printf("%9zu %8d %11.2f %11.2f %11.2f %11.2f %11.2f %11.2f "
+                "%8.3f %8.3f %8.3f ferr %.2e base_rt %.2e dip_rt %.2e sink %.3e\n",
                 r.n,
                 r.iters,
                 r.baseline_forward_ns,
                 r.dip_forward_ns,
-                r.blocked_forward_ns,
                 r.baseline_inverse_ns,
                 r.dip_inverse_ns,
-                r.blocked_inverse_ns,
                 r.baseline_roundtrip_ns,
                 r.dip_roundtrip_ns,
-                r.blocked_roundtrip_ns,
-                blocked_fwd_ratio,
-                blocked_inv_ratio,
-                blocked_rt_ratio,
+                fwd_ratio,
+                inv_ratio,
+                rt_ratio,
                 r.forward_maxerr,
-                r.blocked_forward_maxerr,
                 r.baseline_roundtrip_maxerr,
                 r.dip_roundtrip_maxerr,
-                r.blocked_roundtrip_maxerr,
                 r.sink);
     std::fflush(stdout);
 }
@@ -311,8 +257,8 @@ void print_result(const result& r) {
 
 int main(int argc, char** argv) {
     try {
-        if (argc > 5) {
-            std::fprintf(stderr, "usage: %s [N | max_pow] [iters] [block_depth] [block_cols]\n", argv[0]);
+        if (argc > 3) {
+            std::fprintf(stderr, "usage: %s [N | max_pow] [iters]\n", argv[0]);
             return 2;
         }
 
@@ -320,23 +266,15 @@ int main(int argc, char** argv) {
         if (argc >= 3) {
             forced_iters = parse_iters(argv[2]);
         }
-        int block_depth = 4;
-        int block_cols = 256;
-        if (argc >= 4) {
-            block_depth = parse_positive_int(argv[3], "invalid block depth");
-        }
-        if (argc >= 5) {
-            block_cols = parse_positive_int(argv[4], "invalid block column count");
-        }
 
         print_header();
         if (argc >= 2) {
             const std::size_t arg = parse_size(argv[1]);
             if (is_power2(arg) && arg >= 4) {
-                print_result(run_one(arg, forced_iters, block_depth, block_cols));
+                print_result(run_one(arg, forced_iters));
             } else if (arg >= 2 && arg <= 30) {
                 for (int p = 2; p <= static_cast<int>(arg); ++p) {
-                    print_result(run_one(static_cast<std::size_t>(1) << p, forced_iters, block_depth, block_cols));
+                    print_result(run_one(static_cast<std::size_t>(1) << p, forced_iters));
                 }
             } else {
                 throw std::invalid_argument("argument must be a power-of-two N or max_pow in [2, 30]");
@@ -345,7 +283,7 @@ int main(int argc, char** argv) {
         }
 
         for (int p = 4; p <= 20; ++p) {
-            print_result(run_one(static_cast<std::size_t>(1) << p, forced_iters, block_depth, block_cols));
+            print_result(run_one(static_cast<std::size_t>(1) << p, forced_iters));
         }
         return 0;
     } catch (const std::exception& e) {
