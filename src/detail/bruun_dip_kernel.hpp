@@ -30,6 +30,22 @@
 // diagonal walk is transport-optimal in the middle and pays only the seed/leaf
 // fold at the ends. Verified bit-exact against numpy.rfft in
 // experiments/dip_transport_proto.py.
+//
+// SIMD (2026-07-04): the stages are vectorized over the COLUMN axis. The
+// twiddle theta(d) is constant along columns, so a stage is an isoclinic
+// rotation -- broadcast (c, s) and run pure vertical SIMD with no permutes,
+// contiguous width-wide loads/stores (cell_fwd / cell_inv / ridge_*). q2 is
+// always 1 or an even power of two, so the AVX2 / V2 / scalar cascade has no
+// ragged tail. Roundtrip is machine precision at every size.
+//
+// TRANSPORT (the open item): the walk above is still breadth-first and
+// out-of-place -- each of ~log2(n) stages sweeps all n. DRAM read+write passes
+// grow as 2*log2(n) (32-40 at n>=1M), which is the ceiling that keeps this ~2x
+// DIF at large n. The transport-optimal reform is a phase-packet FOUR-STEP
+// (factor n = P*Q; real column leg = these diagonal cells, complex row leg =
+// the SAME cell with a full twiddle; DRAM touched a flat ~2 passes): design +
+// proof + prototype in notes/dip_phase_packet_design.md and
+// experiments/dip_phase_packet.py.
 
 #include "bruun_simd_backend.hpp"
 
@@ -248,6 +264,205 @@ private:
         ob = c * i - s * r;
     }
 
+    // -----------------------------------------------------------------------
+    // Column-vectorized cells. The twiddle (c, s) is constant along the column
+    // axis, so a stage is an isoclinic rotation: broadcast the twiddle and run
+    // pure vertical SIMD with no permutes. Every load and store is a contiguous
+    // width-wide slice of one interleaved row. q2 is always 1 or an even power
+    // of two, so the AVX2 / V2 / scalar cascade never leaves a ragged tail.
+    // -----------------------------------------------------------------------
+
+    // Forward Bruun cell over q2 columns: input bin on adjacent rows in_a/in_b
+    // (left half = even child, right half = odd child) -> output bin d on
+    // out_lo rows {2d, 2d+1} and mirror bin e-d on out_hi rows {2(e-d), +1}.
+    static BRUUN_ALWAYS_INLINE void cell_fwd(const double* RESTRICT in_a,
+                                             const double* RESTRICT in_b,
+                                             double* RESTRICT out_lo,
+                                             double* RESTRICT out_hi,
+                                             int q2, double c, double s) {
+        int i = 0;
+#if BRUUN_LEVEL >= 2
+        {
+            const __m256d vc = _mm256_set1_pd(c);
+            const __m256d vs = _mm256_set1_pd(s);
+            for (; i + 3 < q2; i += 4) {
+                const __m256d ea = _mm256_loadu_pd(in_a + i);
+                const __m256d eb = _mm256_loadu_pd(in_b + i);
+                const __m256d oa = _mm256_loadu_pd(in_a + q2 + i);
+                const __m256d ob = _mm256_loadu_pd(in_b + q2 + i);
+                const __m256d R = _mm256_fmsub_pd(vc, oa, _mm256_mul_pd(vs, ob));
+                const __m256d I = _mm256_fmadd_pd(vs, oa, _mm256_mul_pd(vc, ob));
+                _mm256_storeu_pd(out_lo + i, _mm256_add_pd(ea, R));
+                _mm256_storeu_pd(out_lo + q2 + i, _mm256_add_pd(eb, I));
+                _mm256_storeu_pd(out_hi + i, _mm256_sub_pd(ea, R));
+                _mm256_storeu_pd(out_hi + q2 + i, _mm256_sub_pd(I, eb));
+            }
+        }
+#endif
+#if BRUUN_LEVEL >= 1
+        {
+            const bruun_v2 vc = V2_SET1(c);
+            const bruun_v2 vs = V2_SET1(s);
+            for (; i + 1 < q2; i += 2) {
+                const bruun_v2 ea = V2_LD(in_a + i);
+                const bruun_v2 eb = V2_LD(in_b + i);
+                const bruun_v2 oa = V2_LD(in_a + q2 + i);
+                const bruun_v2 ob = V2_LD(in_b + q2 + i);
+                const bruun_v2 R = V2_MSUB(V2_MUL(vc, oa), vs, ob);
+                const bruun_v2 I = V2_MADD(V2_MUL(vs, oa), vc, ob);
+                V2_ST(out_lo + i, V2_ADD(ea, R));
+                V2_ST(out_lo + q2 + i, V2_ADD(eb, I));
+                V2_ST(out_hi + i, V2_SUB(ea, R));
+                V2_ST(out_hi + q2 + i, V2_SUB(I, eb));
+            }
+        }
+#endif
+        for (; i < q2; ++i) {
+            const double ea = in_a[i];
+            const double eb = in_b[i];
+            const double oa = in_a[q2 + i];
+            const double ob = in_b[q2 + i];
+            const double R = c * oa - s * ob;
+            const double I = s * oa + c * ob;
+            out_lo[i] = ea + R;
+            out_lo[q2 + i] = eb + I;
+            out_hi[i] = ea - R;
+            out_hi[q2 + i] = I - eb;
+        }
+    }
+
+    // Inverse Bruun cell over q2 columns. hc = 0.5*c, hs = 0.5*s fold the
+    // pair_expand 0.5 into the twiddle for the rotated (odd-child) outputs;
+    // the even-child outputs keep an explicit 0.5. Reads output bins d (in_lo)
+    // and e-d (in_hi); writes level-e bin d on out_a/out_b (a = even, o = odd).
+    static BRUUN_ALWAYS_INLINE void cell_inv(const double* RESTRICT in_lo,
+                                             const double* RESTRICT in_hi,
+                                             double* RESTRICT out_a,
+                                             double* RESTRICT out_b,
+                                             int q2, double hc, double hs) {
+        int i = 0;
+#if BRUUN_LEVEL >= 2
+        {
+            const __m256d vhc = _mm256_set1_pd(hc);
+            const __m256d vhs = _mm256_set1_pd(hs);
+            const __m256d half = _mm256_set1_pd(0.5);
+            for (; i + 3 < q2; i += 4) {
+                const __m256d la = _mm256_loadu_pd(in_lo + i);
+                const __m256d lb = _mm256_loadu_pd(in_lo + q2 + i);
+                const __m256d ha = _mm256_loadu_pd(in_hi + i);
+                const __m256d hb = _mm256_loadu_pd(in_hi + q2 + i);
+                const __m256d u = _mm256_sub_pd(la, ha);   // la - ha
+                const __m256d v = _mm256_add_pd(lb, hb);   // lb + hb
+                _mm256_storeu_pd(out_a + i, _mm256_mul_pd(half, _mm256_add_pd(la, ha)));
+                _mm256_storeu_pd(out_b + i, _mm256_mul_pd(half, _mm256_sub_pd(lb, hb)));
+                _mm256_storeu_pd(out_a + q2 + i, _mm256_fmadd_pd(vhc, u, _mm256_mul_pd(vhs, v)));
+                _mm256_storeu_pd(out_b + q2 + i, _mm256_fmsub_pd(vhc, v, _mm256_mul_pd(vhs, u)));
+            }
+        }
+#endif
+#if BRUUN_LEVEL >= 1
+        {
+            const bruun_v2 vhc = V2_SET1(hc);
+            const bruun_v2 vhs = V2_SET1(hs);
+            const bruun_v2 half = V2_SET1(0.5);
+            for (; i + 1 < q2; i += 2) {
+                const bruun_v2 la = V2_LD(in_lo + i);
+                const bruun_v2 lb = V2_LD(in_lo + q2 + i);
+                const bruun_v2 ha = V2_LD(in_hi + i);
+                const bruun_v2 hb = V2_LD(in_hi + q2 + i);
+                const bruun_v2 u = V2_SUB(la, ha);
+                const bruun_v2 v = V2_ADD(lb, hb);
+                V2_ST(out_a + i, V2_MUL(half, V2_ADD(la, ha)));
+                V2_ST(out_b + i, V2_MUL(half, V2_SUB(lb, hb)));
+                V2_ST(out_a + q2 + i, V2_MADD(V2_MUL(vhc, u), vhs, v));
+                V2_ST(out_b + q2 + i, V2_MSUB(V2_MUL(vhc, v), vhs, u));
+            }
+        }
+#endif
+        for (; i < q2; ++i) {
+            const double la = in_lo[i];
+            const double lb = in_lo[q2 + i];
+            const double ha = in_hi[i];
+            const double hb = in_hi[q2 + i];
+            const double u = la - ha;
+            const double v = lb + hb;
+            out_a[i] = 0.5 * (la + ha);
+            out_b[i] = 0.5 * (lb - hb);
+            out_a[q2 + i] = hc * u + hs * v;
+            out_b[q2 + i] = hc * v - hs * u;
+        }
+    }
+
+    // DC/Nyquist ridge fold: dc row (q wide) -> dc (lo+hi) and ny (lo-hi).
+    static BRUUN_ALWAYS_INLINE void ridge_fwd(const double* RESTRICT dc,
+                                              double* RESTRICT out_dc,
+                                              double* RESTRICT out_ny, int q2) {
+        int i = 0;
+#if BRUUN_LEVEL >= 2
+        for (; i + 3 < q2; i += 4) {
+            const __m256d lo = _mm256_loadu_pd(dc + i);
+            const __m256d hi = _mm256_loadu_pd(dc + q2 + i);
+            _mm256_storeu_pd(out_dc + i, _mm256_add_pd(lo, hi));
+            _mm256_storeu_pd(out_ny + i, _mm256_sub_pd(lo, hi));
+        }
+#endif
+#if BRUUN_LEVEL >= 1
+        for (; i + 1 < q2; i += 2) {
+            const bruun_v2 lo = V2_LD(dc + i);
+            const bruun_v2 hi = V2_LD(dc + q2 + i);
+            V2_ST(out_dc + i, V2_ADD(lo, hi));
+            V2_ST(out_ny + i, V2_SUB(lo, hi));
+        }
+#endif
+        for (; i < q2; ++i) {
+            const double lo = dc[i];
+            const double hi = dc[q2 + i];
+            out_dc[i] = lo + hi;
+            out_ny[i] = lo - hi;
+        }
+    }
+
+    // DC/Nyquist ridge unfold (inverse): dc/ny (q2 wide each) -> dc row (q).
+    static BRUUN_ALWAYS_INLINE void ridge_inv(const double* RESTRICT in_dc,
+                                              const double* RESTRICT in_ny,
+                                              double* RESTRICT out_dc, int q2) {
+        int i = 0;
+#if BRUUN_LEVEL >= 2
+        {
+            const __m256d half = _mm256_set1_pd(0.5);
+            for (; i + 3 < q2; i += 4) {
+                const __m256d dc = _mm256_loadu_pd(in_dc + i);
+                const __m256d ny = _mm256_loadu_pd(in_ny + i);
+                _mm256_storeu_pd(out_dc + i, _mm256_mul_pd(half, _mm256_add_pd(dc, ny)));
+                _mm256_storeu_pd(out_dc + q2 + i, _mm256_mul_pd(half, _mm256_sub_pd(dc, ny)));
+            }
+        }
+#endif
+#if BRUUN_LEVEL >= 1
+        {
+            const bruun_v2 half = V2_SET1(0.5);
+            for (; i + 1 < q2; i += 2) {
+                const bruun_v2 dc = V2_LD(in_dc + i);
+                const bruun_v2 ny = V2_LD(in_ny + i);
+                V2_ST(out_dc + i, V2_MUL(half, V2_ADD(dc, ny)));
+                V2_ST(out_dc + q2 + i, V2_MUL(half, V2_SUB(dc, ny)));
+            }
+        }
+#endif
+        for (; i < q2; ++i) {
+            const double dc = in_dc[i];
+            const double ny = in_ny[i];
+            out_dc[i] = 0.5 * (dc + ny);
+            out_dc[q2 + i] = 0.5 * (dc - ny);
+        }
+    }
+
+    // Straight copy of q2 contiguous doubles (row split / merge helper).
+    static BRUUN_ALWAYS_INLINE void copy_span(const double* RESTRICT src,
+                                              double* RESTRICT dst, int q2) {
+        std::memcpy(dst, src, sizeof(double) * static_cast<std::size_t>(q2));
+    }
+
     int phase_table_index(int d, int e) const noexcept {
         return static_cast<int>((static_cast<long long>(d) * n_) / (2LL * e));
     }
@@ -281,25 +496,13 @@ private:
         const int q2 = q >> 1;
 
         // DC / Nyquist ridge: interleaved rows 0 (dc) and 1 (ny) at level 2e.
-        const double* RESTRICT dc = src;                       // level-e row 0
-        double* RESTRICT out_dc = dst;                         // level-2e row 0
-        double* RESTRICT out_ny = dst + static_cast<std::size_t>(q2);  // row 1
-        for (int i = 0; i < q2; ++i) {
-            const double lo = dc[i];
-            const double hi = dc[q2 + i];
-            out_dc[i] = lo + hi;
-            out_ny[i] = lo - hi;
-        }
+        ridge_fwd(src, dst, dst + static_cast<std::size_t>(q2), q2);
 
         if (e >= 2) {
             // old Nyquist (level-e row 1) becomes new bin e/2 at rows e, e+1.
             const double* RESTRICT ny = src + static_cast<std::size_t>(q);
             double* RESTRICT out_a = dst + static_cast<std::size_t>(e) * q2;
-            double* RESTRICT out_b = dst + static_cast<std::size_t>(e + 1) * q2;
-            for (int i = 0; i < q2; ++i) {
-                out_a[i] = ny[i];
-                out_b[i] = ny[q2 + i];
-            }
+            copy_span(ny, out_a, q);   // rows e (a) and e+1 (b) are contiguous q2+q2
         }
 
         for (int d = 1; d < e / 2; ++d) {
@@ -314,18 +517,7 @@ private:
             double* RESTRICT out_lo = dst + static_cast<std::size_t>(2 * d) * q2;
             double* RESTRICT out_hi = dst + static_cast<std::size_t>(2 * (e - d)) * q2;
 
-            for (int i = 0; i < q2; ++i) {
-                const double ea = in_a[i];
-                const double eb = in_b[i];
-                const double oa = in_a[q2 + i];
-                const double ob = in_b[q2 + i];
-                double la, lb, ha, hb;
-                pair_reduce_cs(ea, eb, oa, ob, c, s, la, lb, ha, hb);
-                out_lo[i] = la;
-                out_lo[q2 + i] = lb;
-                out_hi[i] = ha;
-                out_hi[q2 + i] = hb;
-            }
+            cell_fwd(in_a, in_b, out_lo, out_hi, q2, c, s);
         }
     }
 
@@ -488,31 +680,19 @@ private:
         const int q2 = q >> 1;
 
         // DC / Nyquist ridge (level-2e interleaved rows 0, 1 -> level-e row 0).
-        const double* RESTRICT in_dc = src;
-        const double* RESTRICT in_ny = src + static_cast<std::size_t>(q2);
-        double* RESTRICT out_dc = dst;
-        for (int i = 0; i < q2; ++i) {
-            const double dc = in_dc[i];
-            const double ny = in_ny[i];
-            out_dc[i] = 0.5 * (dc + ny);
-            out_dc[q2 + i] = 0.5 * (dc - ny);
-        }
+        ridge_inv(src, src + static_cast<std::size_t>(q2), dst, q2);
 
         if (e >= 2) {
             // new bin e/2 (level-2e rows e, e+1) -> old Nyquist (level-e row 1).
             const double* RESTRICT in_a = src + static_cast<std::size_t>(e) * q2;
-            const double* RESTRICT in_b = src + static_cast<std::size_t>(e + 1) * q2;
             double* RESTRICT out_ny = dst + static_cast<std::size_t>(q);
-            for (int i = 0; i < q2; ++i) {
-                out_ny[i] = in_a[i];
-                out_ny[q2 + i] = in_b[i];
-            }
+            copy_span(in_a, out_ny, q);   // rows e, e+1 merge into the q-wide ny row
         }
 
         for (int d = 1; d < e / 2; ++d) {
             const int k = phase_table_index(d, e);
-            const double c = cos_[static_cast<std::size_t>(k)];
-            const double s = sin_[static_cast<std::size_t>(k)];
+            const double hc = 0.5 * cos_[static_cast<std::size_t>(k)];
+            const double hs = 0.5 * sin_[static_cast<std::size_t>(k)];
 
             // level-2e bins d (rows 2d,2d+1) and e-d (rows 2(e-d),+1) ->
             // level-e bin d on adjacent rows 2d (a) and 2d+1 (b).
@@ -521,23 +701,7 @@ private:
             double* RESTRICT out_a = dst + static_cast<std::size_t>(2 * d) * q;
             double* RESTRICT out_b = dst + static_cast<std::size_t>(2 * d + 1) * q;
 
-            for (int i = 0; i < q2; ++i) {
-                double ea, eb, oa, ob;
-                pair_expand_cs(in_lo[i],
-                               in_lo[q2 + i],
-                               in_hi[i],
-                               in_hi[q2 + i],
-                               c,
-                               s,
-                               ea,
-                               eb,
-                               oa,
-                               ob);
-                out_a[i] = ea;
-                out_a[q2 + i] = oa;
-                out_b[i] = eb;
-                out_b[q2 + i] = ob;
-            }
+            cell_inv(in_lo, in_hi, out_a, out_b, q2, hc, hs);
         }
     }
 
