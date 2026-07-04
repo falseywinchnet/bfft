@@ -18,11 +18,19 @@ CWARNFLAGS ?= -Wall -Wextra -Wpedantic
 CPPFLAGS ?=
 BFFT_USE_DIT_RFFT ?= 0
 BFFT_USE_DIT_RFFT_INVERSE ?= 0
+BFFT_USE_DIP_RFFT ?= 0
+BFFT_USE_DIP_RFFT_INVERSE ?= 0
 ifeq ($(BFFT_USE_DIT_RFFT),1)
   CPPFLAGS += -DBFFT_USE_DIT_RFFT=1
 endif
 ifeq ($(BFFT_USE_DIT_RFFT_INVERSE),1)
   CPPFLAGS += -DBFFT_USE_DIT_RFFT_INVERSE=1
+endif
+ifeq ($(BFFT_USE_DIP_RFFT),1)
+  CPPFLAGS += -DBFFT_USE_DIP_RFFT=1
+endif
+ifeq ($(BFFT_USE_DIP_RFFT_INVERSE),1)
+  CPPFLAGS += -DBFFT_USE_DIP_RFFT_INVERSE=1
 endif
 # BFFT_MAKE_DOCTOR_CXXFLAGS_GUARD_BEGIN
 ifeq ($(filter undefined default,$(origin CXXFLAGS)),)
@@ -74,6 +82,8 @@ SHARED_LIB := $(BUILD_DIR)/lib$(LIB_NAME).so
 PC_FILE := $(BUILD_DIR)/$(LIB_NAME).pc
 BENCH := $(BUILD_DIR)/examples/benchmark
 BODFT_BENCH := $(BUILD_DIR)/examples/bodft_benchmark
+DIP_BENCH := $(BUILD_DIR)/examples/dip_benchmark
+DIF_DIP_BENCH := $(BUILD_DIR)/examples/dif_vs_dip_benchmark
 DIF_DIT_BENCH := $(BUILD_DIR)/examples/dif_vs_dit_benchmark
 DIF_DIT_F32_BENCH := $(BUILD_DIR)/examples/dif_vs_dit_f32_benchmark
 APPLE_BENCH := $(BUILD_DIR)/examples/apple_benchmark
@@ -106,7 +116,7 @@ all: $(STATIC_LIB) $(SHARED_LIB) examples
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)/src $(BUILD_DIR)/examples $(BUILD_DIR)/tests $(BUILD_DIR)/benchmarks
 
-$(OBJ): $(SRC) include/bfft/bfft.h src/detail/bruun_dif_kernel.hpp src/detail/bruun_dit_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
+$(OBJ): $(SRC) include/bfft/bfft.h src/detail/bruun_dif_kernel.hpp src/detail/bruun_dit_kernel.hpp src/detail/bruun_dip_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
 
 $(BODFT_OBJ): $(BODFT_SRC) include/bfft/bodft.h include/bfft/bfft.h src/detail/bodft_kernel.hpp src/detail/bruun_dif_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
@@ -128,9 +138,9 @@ $(PC_FILE): pkgconfig/bfft.pc.in | $(BUILD_DIR)
 		-e 's|@PROJECT_VERSION@|$(VERSION)|g' \
 		$< > $@
 
-examples: $(BENCH) $(BODFT_BENCH) $(APPLE_EXAMPLES) $(LOCALITY_PROBE) $(C_DEMO) $(CPP_DEMO)
+examples: $(BENCH) $(BODFT_BENCH) $(DIP_BENCH) $(DIF_DIP_BENCH) $(APPLE_EXAMPLES) $(LOCALITY_PROBE) $(C_DEMO) $(CPP_DEMO)
 
-benchmarks: $(BENCH) $(BODFT_BENCH) $(DIF_DIT_BENCH) $(DIF_DIT_F32_BENCH) $(ATAN2_BENCH)
+benchmarks: $(BENCH) $(BODFT_BENCH) $(DIP_BENCH) $(DIF_DIP_BENCH) $(DIF_DIT_BENCH) $(DIF_DIT_F32_BENCH) $(ATAN2_BENCH)
 
 asm-check: $(ASM_OUTPUTS)
 	@if [ -z "$(ASM_OUTPUTS)" ]; then echo "No x86 assembly variants supported by $(CXX)."; fi
@@ -149,6 +159,12 @@ $(BENCH): examples/benchmark.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_D
 
 $(BODFT_BENCH): examples/bodft_benchmark.cpp src/detail/bodft_kernel.hpp src/detail/bruun_dif_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(LDLIBS) -o $@
+
+$(DIP_BENCH): examples/dip_benchmark.cpp src/detail/bruun_dip_kernel.hpp src/detail/bruun_dif_kernel.hpp src/detail/bruun_simd_backend.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
+
+$(DIF_DIP_BENCH): examples/dif_vs_dip_benchmark.cpp src/detail/bruun_dip_kernel.hpp src/detail/bruun_dif_kernel.hpp src/detail/bruun_simd_backend.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
 $(DIF_DIT_BENCH): examples/dif_vs_dit_benchmark.cpp src/detail/bruun_dit_kernel.hpp src/detail/bruun_dif_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
@@ -171,7 +187,7 @@ $(C_DEMO): examples/c_api_demo.c include/bfft/bfft.h $(STATIC_LIB) | $(BUILD_DIR
 $(CPP_DEMO): examples/cpp_api_demo.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
-$(CORRECTNESS_TEST): tests/correctness.cpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
+$(CORRECTNESS_TEST): tests/correctness.cpp include/bfft/bfft.hpp src/detail/bruun_dip_kernel.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
 

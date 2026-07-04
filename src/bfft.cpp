@@ -1,5 +1,6 @@
 #include <bfft/bfft.h>
 
+#include "detail/bruun_dip_kernel.hpp"
 #include "detail/bruun_dif_kernel.hpp"
 #include "detail/bruun_dit_kernel.hpp"
 #include <cmath>
@@ -24,6 +25,24 @@
 #define BFFT_ACTIVE_RFFT_DIT 0
 #endif
 
+#if defined(BFFT_USE_DIP_RFFT)
+#define BFFT_ACTIVE_RFFT_DIP_FORWARD 1
+#else
+#define BFFT_ACTIVE_RFFT_DIP_FORWARD 0
+#endif
+
+#if defined(BFFT_USE_DIP_RFFT_INVERSE)
+#define BFFT_ACTIVE_RFFT_DIP_INVERSE 1
+#else
+#define BFFT_ACTIVE_RFFT_DIP_INVERSE 0
+#endif
+
+#if BFFT_ACTIVE_RFFT_DIP_FORWARD || BFFT_ACTIVE_RFFT_DIP_INVERSE
+#define BFFT_ACTIVE_RFFT_DIP 1
+#else
+#define BFFT_ACTIVE_RFFT_DIP 0
+#endif
+
 static_assert(sizeof(bfft_complex) == sizeof(bruun::complex_t),
               "bfft_complex / bruun::complex_t size mismatch");
 static_assert(alignof(bfft_complex) == alignof(bruun::complex_t),
@@ -43,6 +62,9 @@ static_assert(offsetof(bfft_complex_f32, im) == offsetof(bruun::complex_f32_t, i
 
 struct bfft_plan {
     bruun::DIF_RFFT_kernel dif;
+#if BFFT_ACTIVE_RFFT_DIP
+    bruun::DIP_RFFT_kernel dip;
+#endif
 #if BFFT_ACTIVE_RFFT_DIT
     bruun::DIT_RFFT_kernel dit;
 #endif
@@ -139,6 +161,12 @@ bfft_status bfft_plan_create(size_t n, bfft_plan** plan) {
         return BFFT_ERROR_ALLOCATION;
     }
 #endif
+#if BFFT_ACTIVE_RFFT_DIP
+    if (!p->dip.init(ni)) {
+        delete p;
+        return BFFT_ERROR_ALLOCATION;
+    }
+#endif
     *plan = p;
     return BFFT_OK;
 }
@@ -168,10 +196,15 @@ size_t bfft_plan_work_size(const bfft_plan* plan) {
 #if BFFT_ACTIVE_RFFT_DIT
     const size_t dif_work = static_cast<size_t>(plan->dif.work_size());
     const size_t dit_work = static_cast<size_t>(plan->dit.work_size());
-    return dif_work > dit_work ? dif_work : dit_work;
+    size_t work = dif_work > dit_work ? dif_work : dit_work;
 #else
-    return static_cast<size_t>(plan->dif.work_size());
+    size_t work = static_cast<size_t>(plan->dif.work_size());
 #endif
+#if BFFT_ACTIVE_RFFT_DIP
+    const size_t dip_work = static_cast<size_t>(plan->dip.work_size());
+    work = work > dip_work ? work : dip_work;
+#endif
+    return work;
 }
 
 size_t bfft_plan_work_size_f32(const bfft_plan* plan) {
@@ -214,6 +247,18 @@ const char* bfft_plan_standard_policy(const bfft_plan* plan) {
     if (missing_plan(plan)) {
         return "invalid-plan";
     }
+#if BFFT_ACTIVE_RFFT_DIP_FORWARD
+#if BFFT_ACTIVE_RFFT_DIT_INVERSE
+    return "dip-forward-dit-inverse";
+#elif BFFT_ACTIVE_RFFT_DIP_INVERSE
+    return "dip-forward-dip-inverse";
+#else
+    return "dip-forward-dif-inverse";
+#endif
+#endif
+#if BFFT_ACTIVE_RFFT_DIP_INVERSE
+    return "dif-forward-dip-inverse";
+#endif
 #if BFFT_ACTIVE_RFFT_DIT
     if (BFFT_ACTIVE_RFFT_DIT_FORWARD && BFFT_ACTIVE_RFFT_DIT_INVERSE) {
         return "dit-forward-dit-inverse";
@@ -238,7 +283,10 @@ bfft_status bfft_forward(const bfft_plan* plan,
     if (missing_ptr(work)) {
         return BFFT_ERROR_INVALID_ARGUMENT;
     }
-#if BFFT_ACTIVE_RFFT_DIT_FORWARD
+#if BFFT_ACTIVE_RFFT_DIP_FORWARD
+    (void)native_scratch;
+    plan->dip.forward_standard(input, as_bruun_complex(output), work);
+#elif BFFT_ACTIVE_RFFT_DIT_FORWARD
     (void)native_scratch;
     if (plan->dit.size() >= 16) {
         plan->dit.forward_simd(input, as_bruun_complex(output), work);
@@ -396,6 +444,14 @@ bfft_status bfft_inverse(const bfft_plan* plan,
         plan->dit.inverse_simd(as_bruun_complex(input), output, work.data());
     } else {
         plan->dif.inverse(as_bruun_complex(input), output);
+    }
+#elif BFFT_ACTIVE_RFFT_DIP_INVERSE
+    {
+        bruun::heap_array<double> work;
+        if (!work.resize(static_cast<size_t>(plan->dip.work_size()))) {
+            return BFFT_ERROR_ALLOCATION;
+        }
+        plan->dip.inverse_standard(as_bruun_complex(input), output, work.data());
     }
 #else
     plan->dif.inverse(as_bruun_complex(input), output);

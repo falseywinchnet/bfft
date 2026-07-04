@@ -1,4 +1,5 @@
 #include <bfft/bfft.hpp>
+#include "../src/detail/bruun_dip_kernel.hpp"
 #include "../src/detail/bruun_dif_kernel.hpp"
 #include "../src/detail/bruun_dit_kernel.hpp"
 
@@ -475,6 +476,85 @@ bool check_dit_f32_direct(std::size_t n) {
     return true;
 }
 
+bool check_dip_direct(std::size_t n) {
+    if (n > static_cast<std::size_t>(std::numeric_limits<int>::max())) {
+        return false;
+    }
+
+    bruun::DIP_RFFT_kernel plan;
+    if (!plan.init(static_cast<int>(n))) {
+        std::fprintf(stderr, "n=%zu DIP direct plan init failed\n", n);
+        return false;
+    }
+
+    std::vector<double> input(n);
+    std::mt19937_64 rng(0xD1A60A1ULL + n);
+    std::uniform_real_distribution<double> dist(-1.0, 1.0);
+    for (double& value : input) {
+        value = dist(rng);
+    }
+
+    std::vector<bruun::complex_t> output(plan.bins());
+    std::vector<bruun::complex_t> blocked_output(plan.bins());
+    std::vector<double> work(static_cast<std::size_t>(plan.work_size()));
+    std::vector<double> blocked_work(static_cast<std::size_t>(plan.blocked_work_size()));
+    plan.forward_standard(input.data(), output.data(), work.data());
+    plan.forward_standard_blocked(input.data(), blocked_output.data(), blocked_work.data());
+
+    const std::vector<bfft::complex> expected = naive_rfft(input);
+    double spectrum_error = 0.0;
+    for (std::size_t i = 0; i < expected.size(); ++i) {
+        spectrum_error = std::max(spectrum_error, std::fabs(output[i].re - expected[i].re));
+        spectrum_error = std::max(spectrum_error, std::fabs(output[i].im - expected[i].im));
+    }
+
+    const double tolerance = 1e-8 * static_cast<double>(n);
+    if (spectrum_error > tolerance) {
+        std::fprintf(stderr, "n=%zu DIP direct spectrum error %.17g exceeds %.17g\n",
+                     n, spectrum_error, tolerance);
+        return false;
+    }
+
+    double blocked_spectrum_error = 0.0;
+    for (std::size_t i = 0; i < expected.size(); ++i) {
+        blocked_spectrum_error = std::max(blocked_spectrum_error,
+                                          std::fabs(blocked_output[i].re - expected[i].re));
+        blocked_spectrum_error = std::max(blocked_spectrum_error,
+                                          std::fabs(blocked_output[i].im - expected[i].im));
+    }
+    if (blocked_spectrum_error > tolerance) {
+        std::fprintf(stderr, "n=%zu blocked DIP direct spectrum error %.17g exceeds %.17g\n",
+                     n, blocked_spectrum_error, tolerance);
+        return false;
+    }
+
+    std::vector<double> roundtrip(n);
+    plan.inverse_standard(output.data(), roundtrip.data(), work.data());
+    double inverse_error = 0.0;
+    for (std::size_t i = 0; i < n; ++i) {
+        inverse_error = std::max(inverse_error, std::fabs(roundtrip[i] - input[i]));
+    }
+    if (inverse_error > tolerance) {
+        std::fprintf(stderr, "n=%zu DIP direct inverse error %.17g exceeds %.17g\n",
+                     n, inverse_error, tolerance);
+        return false;
+    }
+
+    std::vector<double> blocked_roundtrip(n);
+    plan.inverse_standard_blocked(blocked_output.data(), blocked_roundtrip.data(), blocked_work.data());
+    double blocked_inverse_error = 0.0;
+    for (std::size_t i = 0; i < n; ++i) {
+        blocked_inverse_error = std::max(blocked_inverse_error, std::fabs(blocked_roundtrip[i] - input[i]));
+    }
+    if (blocked_inverse_error > tolerance) {
+        std::fprintf(stderr, "n=%zu blocked DIP direct inverse error %.17g exceeds %.17g\n",
+                     n, blocked_inverse_error, tolerance);
+        return false;
+    }
+
+    return true;
+}
+
 
 bool check_bh7_f32_native_sfdr(void) {
     constexpr std::size_t n = 32768;
@@ -664,6 +744,9 @@ int main(void) {
             return 1;
         }
         if (!check_dit_f32_direct(n)) {
+            return 1;
+        }
+        if (!check_dip_direct(n)) {
             return 1;
         }
     }
