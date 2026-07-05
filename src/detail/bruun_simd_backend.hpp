@@ -65,6 +65,7 @@ typedef __m128d bruun_v2;
 #  define V2_DUP0(a)      _mm_unpacklo_pd((a), (a))
 #  define V2_DUP1(a)      _mm_unpackhi_pd((a), (a))
 #  define V2_NEGHI(a)     _mm_xor_pd((a), _mm_set_pd(-0.0, 0.0))
+#  define V2_SWAP(a)      _mm_shuffle_pd((a), (a), 1)
 #  define V2_CMPGT(a, b)   _mm_cmpgt_pd((a), (b))
 #  define V2_SELECT(m, t, f) _mm_or_pd(_mm_and_pd((m), (t)), _mm_andnot_pd((m), (f)))
 #elif defined(BRUUN_NEON_128)
@@ -88,6 +89,7 @@ static inline float64x2_t bruun_neghi(float64x2_t a) {
     return vreinterpretq_f64_u64(veorq_u64(vreinterpretq_u64_f64(a), m));
 }
 #  define V2_NEGHI(a)     bruun_neghi(a)
+#  define V2_SWAP(a)      vextq_f64((a), (a), 1)
 static inline float64x2_t bruun_v2_cmpgt(float64x2_t a, float64x2_t b) {
     return vreinterpretq_f64_u64(vcgtq_f64(a, b));
 }

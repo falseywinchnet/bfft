@@ -214,3 +214,69 @@ Remaining forward levers (larger efforts, uncertain payoff on this noisy box):
 flatten the recursion into a DIF-style precomputed op schedule (kills the
 residual call overhead), or restructure `cell4_fwd_ip` to shorten its two-level
 critical path (the 64K compute asymmetry). The inverse needs nothing.
+
+### The paired-lane census pass (2026-07-05, later)
+
+Hardened `dif_vs_dip_benchmark` first (interleaved DIF/DIP passes so both ride
+the same thermal trajectory, median-of-11, iteration counts calibrated to
+>= 2 ms per timed chunk) — small-n readings are now stable and reproducible.
+
+Then an exact dynamic instruction census at n = 4096 (static call tree ×
+per-loop op model, verified against the disassembly, which also confirmed
+seed8/tail8 auto-vectorize with only a dead scalar remainder). It showed
+scalar traffic nearly equal to vector traffic: ~12K scalar loads / ~8K scalar
+stores / ~10K scalar flops per transform — all from two sources: the ~1K
+`w2 == 1` deepest cells (fully scalar) and the ~2K boundary leaf moves.
+
+Fix, all vector:
+- **Paired-lane leaf cells** (`cell_fwd_pair` / `cell_inv_pair`): the deepest
+  span `[a|o|b|p]` is two contiguous vectors; `[R,I] = [c,s]·[o,o] +
+  [-s,c]·[p,p]`, lo child = `E+RI`, hi = `NEGHI(E-RI)`. Twiddle arrives as one
+  vector load from a new interleaved `cs_` table; `[-s,c]` = `SWAP(NEGHI(·))`.
+  4 shuffles/leaf fwd, 5 inv — the only permutes in the kernel.
+- **Vector boundary**: leaf pair and bin are both contiguous 16-byte pairs
+  differing only in the sign of lane 1, so egress/ingress is `V2_LD` +
+  `V2_NEGHI` + `V2_ST` per leaf.
+- `V2_SWAP` added to the SIMD backend (NEON `ext`, SSE `shufpd`).
+
+Census after (n = 4096, per transform): scalar stores 4, scalar flops 2,
+shuffles 4092 fwd / 5115 inv, ~2K scalar twiddle loads (feed broadcasts) —
+the stated optimality targets met. Measured (hardened bench): forward
+**0.999× DIF at 4096 (parity)**, 1.07–1.12× at 512–2048 (regression gone);
+inverse wins everywhere below 8K (0.86–0.90×) and 1.03× at 64K–131K. Large-n
+forward unchanged (~1.7–1.9×, walk-bound as established). 1M readings drift
+upward under sustained load — trust cool first runs only.
+
+### The seed-thrash hunt (2026-07-05, final forward pass)
+
+Top-down phase instrumentation of the real `forward_standard` (after
+bottom-up bisection showed every component FASTER forward than inverse in
+isolation — cell4 0.88, span walk 0.78, span8 0.75 — yet the composed walk
+2× slower at 256K) found the anomaly: **seed8 was 33–36% of the whole
+forward** (81 µs at 64K vs 27 µs isolated; 426 µs at 256K). Mechanism: at
+n ≥ 16K the comb stride (n/8 · 8B) is a multiple of the 16 KiB L1 set
+period, so all 16 streams (8 read + 8 write) alias ONE set — 16 lines
+fighting 8 ways, each line refetched ~4× before its doubles are consumed.
+Whether it bites depends on allocation offsets mod 16 KiB (why isolated
+probes and different binaries disagreed, and why n < 16K never pays: the
+streams spread over ≥ 4 sets there).
+
+Fix: **two-tile column-blocked seed** — copy-in one stream at a time into a
+16 KiB stack tile (≤ 2 active streams), compute tile→tile fully L1-resident,
+copy-out one stream at a time. No phase exceeds associativity; deterministic
+regardless of allocator luck; bit-identical; automatic storage so
+concurrency is preserved. A one-tile version (compute writing the 8 output
+streams directly) was still one line over capacity and measurably worse.
+Gated at q >= 2048 (= the exact aliasing threshold); below it the direct
+loop is copy-free and faster.
+
+Also probed and REJECTED: tiling the big cell4 passes the same way (0.97–
+1.03, a wash — 8 read/write streams at exactly 8-way capacity do NOT thrash;
+only the seed's 16 did).
+
+Result (hardened bench): forward **1.01× at 1K–4K, 1.27–1.30× at 16K,
+1.37–1.42× at 64K–131K** (from 1.88–1.92), 1.81–1.87× at 256K–1M (the
+residual is walk pass-count vs DIF's flattened schedule). Known loose end:
+the 16K INVERSE reading swings 1.36–1.84 across runs — the bins array is
+exactly L1-sized there, same fragility class as the seed; a future pass
+could apply comb-blocked ingress discipline at that boundary.

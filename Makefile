@@ -84,6 +84,7 @@ BENCH := $(BUILD_DIR)/examples/benchmark
 BODFT_BENCH := $(BUILD_DIR)/examples/bodft_benchmark
 DIP_BENCH := $(BUILD_DIR)/examples/dip_benchmark
 DIF_DIP_BENCH := $(BUILD_DIR)/examples/dif_vs_dip_benchmark
+DIF_DIT_DIP_BENCH := $(BUILD_DIR)/examples/dif_dit_dip_benchmark
 DIF_DIT_BENCH := $(BUILD_DIR)/examples/dif_vs_dit_benchmark
 DIF_DIT_F32_BENCH := $(BUILD_DIR)/examples/dif_vs_dit_f32_benchmark
 APPLE_BENCH := $(BUILD_DIR)/examples/apple_benchmark
@@ -138,9 +139,9 @@ $(PC_FILE): pkgconfig/bfft.pc.in | $(BUILD_DIR)
 		-e 's|@PROJECT_VERSION@|$(VERSION)|g' \
 		$< > $@
 
-examples: $(BENCH) $(BODFT_BENCH) $(DIP_BENCH) $(DIF_DIP_BENCH) $(APPLE_EXAMPLES) $(LOCALITY_PROBE) $(C_DEMO) $(CPP_DEMO)
+examples: $(BENCH) $(BODFT_BENCH) $(DIP_BENCH) $(DIF_DIP_BENCH) $(DIF_DIT_DIP_BENCH) $(APPLE_EXAMPLES) $(LOCALITY_PROBE) $(C_DEMO) $(CPP_DEMO)
 
-benchmarks: $(BENCH) $(BODFT_BENCH) $(DIP_BENCH) $(DIF_DIP_BENCH) $(DIF_DIT_BENCH) $(DIF_DIT_F32_BENCH) $(ATAN2_BENCH)
+benchmarks: $(BENCH) $(BODFT_BENCH) $(DIP_BENCH) $(DIF_DIP_BENCH) $(DIF_DIT_DIP_BENCH) $(DIF_DIT_BENCH) $(DIF_DIT_F32_BENCH) $(ATAN2_BENCH)
 
 asm-check: $(ASM_OUTPUTS)
 	@if [ -z "$(ASM_OUTPUTS)" ]; then echo "No x86 assembly variants supported by $(CXX)."; fi
@@ -164,6 +165,9 @@ $(DIP_BENCH): examples/dip_benchmark.cpp src/detail/bruun_dip_kernel.hpp src/det
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
 $(DIF_DIP_BENCH): examples/dif_vs_dip_benchmark.cpp src/detail/bruun_dip_kernel.hpp src/detail/bruun_dif_kernel.hpp src/detail/bruun_simd_backend.hpp $(STATIC_LIB) | $(BUILD_DIR)
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
+
+$(DIF_DIT_DIP_BENCH): examples/dif_dit_dip_benchmark.cpp src/detail/bruun_dip_kernel.hpp src/detail/bruun_dit_kernel.hpp src/detail/bruun_dif_kernel.hpp src/detail/bruun_simd_backend.hpp src/detail/MAG_REPRESENT_KERNEL.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(INCLUDES) $(CXXFLAGS) $(AUTO_SIMD_FLAGS) $< $(STATIC_LIB) $(LDLIBS) -o $@
 
 $(DIF_DIT_BENCH): examples/dif_vs_dit_benchmark.cpp src/detail/bruun_dit_kernel.hpp src/detail/bruun_dif_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp include/bfft/bfft.hpp $(STATIC_LIB) | $(BUILD_DIR)

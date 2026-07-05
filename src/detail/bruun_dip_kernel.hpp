@@ -55,10 +55,15 @@
 //
 // SIMD. Cells are isoclinic column rotations: (c, s) broadcast, four
 // contiguous vector streams, loads and stores to the same addresses, no
-// permutes at any width (AVX2 / V2 / scalar cascade; w2 is 1 or an even power
-// of two, so there is never a ragged tail). In-place operation halves the
-// memory traffic of the old out-of-place stage and the work buffer drops from
-// 2n to n doubles.
+// permutes at any width w2 >= 2 (AVX2 / V2 / scalar cascade; w2 is a power of
+// two, so there is never a ragged tail). The LAST level (w2 == 1) runs as
+// paired-lane vector cells (cell_fwd_pair / cell_inv_pair): the deepest span
+// [a|o|b|p] is two contiguous vectors, so 4-5 shuffles per leaf cell buy the
+// removal of all scalar flops and scalar moves. Instruction census at
+// n = 4096 (per transform): ~17.5K vector loads / 16.5K vector stores /
+// ~39K vector arith / ~4-5K shuffles vs 2 scalar flops, 4 scalar stores,
+// ~2K scalar twiddle loads. In-place operation halves the memory traffic of
+// the old out-of-place stage and the work buffer drops from 2n to n doubles.
 //
 // CONCURRENCY. The kernel is const after init; forward/inverse touch only the
 // caller's work buffer (exactly n doubles) and the output. No internal
@@ -94,6 +99,7 @@ public:
 
         if (!cos_.resize(static_cast<std::size_t>(half_ + 1)) ||
             !sin_.resize(static_cast<std::size_t>(half_ + 1)) ||
+            !cs_.resize(2 * static_cast<std::size_t>(half_ + 1)) ||
             !tperm_.resize(static_cast<std::size_t>(2 * kEgressW - 1))) {
             clear();
             return false;
@@ -103,6 +109,10 @@ public:
             const double theta = bruun_tau * static_cast<double>(k) / static_cast<double>(n_);
             cos_[static_cast<std::size_t>(k)] = std::cos(theta);
             sin_[static_cast<std::size_t>(k)] = std::sin(theta);
+            // interleaved copy for the paired-lane leaf cells: one vector
+            // load yields [c, s] instead of two scalar loads.
+            cs_[2 * static_cast<std::size_t>(k)] = cos_[static_cast<std::size_t>(k)];
+            cs_[2 * static_cast<std::size_t>(k) + 1] = sin_[static_cast<std::size_t>(k)];
         }
 
         // Universal within-subtree boundary permutations: T_w[rank] = tree
@@ -653,6 +663,52 @@ private:
     }
 
     // -----------------------------------------------------------------------
+    // Paired-lane LEAF cells (w2 == 1). The deepest span [ a | o | b | p ] is
+    // two contiguous vectors, so the last level runs fully in vector registers
+    // instead of scalar:  [R, I] = [c, s]*[o, o] + [-s, c]*[p, p], lo child =
+    // E + RI, hi child = NEGHI(E - RI) with E = [a, b]. The twiddle arrives as
+    // one vector load from the interleaved cs_ table; [-s, c] is
+    // SWAP(NEGHI([c, s])). 4 shuffles per cell -- the only permutes in the
+    // kernel, and they buy the removal of ~8 scalar flops + 8 scalar moves
+    // per leaf cell (the census target: zero scalar fp, zero scalar stores).
+    // -----------------------------------------------------------------------
+
+#if BRUUN_LEVEL >= 1
+    BRUUN_ALWAYS_INLINE void cell_fwd_pair(double* RESTRICT v, int k) const {
+        const bruun_v2 CS = V2_LD(cs_.data() + 2 * static_cast<std::size_t>(k));
+        const bruun_v2 MS = V2_SWAP(V2_NEGHI(CS));          // [-s, c]
+        const bruun_v2 L0 = V2_LD(v);                       // [a, o]
+        const bruun_v2 L1 = V2_LD(v + 2);                   // [b, p]
+        const bruun_v2 E = V2_UNPLO(L0, L1);                // [a, b]
+        const bruun_v2 RI = V2_MADD(V2_MUL(CS, V2_DUP1(L0)), MS, V2_DUP1(L1));
+        V2_ST(v, V2_ADD(E, RI));                            // [a+R, b+I]
+        V2_ST(v + 2, V2_NEGHI(V2_SUB(E, RI)));              // [a-R, I-b]
+    }
+
+    BRUUN_ALWAYS_INLINE void cell_inv_pair(double* RESTRICT v, int k) const {
+        const bruun_v2 half = V2_SET1(0.5);
+        const bruun_v2 HCS = V2_MUL(half, V2_LD(cs_.data() + 2 * static_cast<std::size_t>(k)));
+        const bruun_v2 L = V2_LD(v);                        // [la, lb]
+        const bruun_v2 NH = V2_NEGHI(V2_LD(v + 2));         // [ha, -hb]
+        const bruun_v2 E = V2_MUL(half, V2_ADD(L, NH));     // [ea, eb]
+        const bruun_v2 UT = V2_SUB(L, NH);                  // [u, t]
+        const bruun_v2 TU = V2_NEGHI(V2_SWAP(UT));          // [t, -u]
+        const bruun_v2 O = V2_MADD(V2_MUL(V2_DUP0(HCS), UT), V2_DUP1(HCS), TU);
+        V2_ST(v, V2_UNPLO(E, O));                           // [ea, oa]
+        V2_ST(v + 2, V2_UNPHI(E, O));                       // [eb, ob]
+    }
+#else
+    void cell_fwd_pair(double* RESTRICT v, int k) const {
+        cell_fwd_ip(v, 1, cos_[static_cast<std::size_t>(k)],
+                    sin_[static_cast<std::size_t>(k)]);
+    }
+    void cell_inv_pair(double* RESTRICT v, int k) const {
+        cell_inv_ip(v, 1, 0.5 * cos_[static_cast<std::size_t>(k)],
+                    0.5 * sin_[static_cast<std::size_t>(k)]);
+    }
+#endif
+
+    // -----------------------------------------------------------------------
     // The depth-first walk. fwd_span descends the packet (d, e) held in
     // [ a : w | b : w ] at v; leaves (w == 1) stay in place -- the boundary
     // pass in forward_standard/inverse_standard resolves the permutation.
@@ -673,10 +729,10 @@ private:
         cell_fwd_ip(v, 4, cos_[static_cast<std::size_t>(k0)], sin_[static_cast<std::size_t>(k0)]);
         cell_fwd_ip(v, 2, cos_[static_cast<std::size_t>(kl)], sin_[static_cast<std::size_t>(kl)]);
         cell_fwd_ip(v + 8, 2, cos_[static_cast<std::size_t>(kh)], sin_[static_cast<std::size_t>(kh)]);
-        cell_fwd_ip(v, 1, cos_[static_cast<std::size_t>(k00)], sin_[static_cast<std::size_t>(k00)]);
-        cell_fwd_ip(v + 4, 1, cos_[static_cast<std::size_t>(k01)], sin_[static_cast<std::size_t>(k01)]);
-        cell_fwd_ip(v + 8, 1, cos_[static_cast<std::size_t>(k10)], sin_[static_cast<std::size_t>(k10)]);
-        cell_fwd_ip(v + 12, 1, cos_[static_cast<std::size_t>(k11)], sin_[static_cast<std::size_t>(k11)]);
+        cell_fwd_pair(v, k00);
+        cell_fwd_pair(v + 4, k01);
+        cell_fwd_pair(v + 8, k10);
+        cell_fwd_pair(v + 12, k11);
     }
 
     BRUUN_ALWAYS_INLINE void span8_inv(double* RESTRICT v, int d, int e) const {
@@ -689,10 +745,10 @@ private:
         const int k01 = phase_table_index(e2 - d, e4);
         const int k10 = phase_table_index(e - d, e4);
         const int k11 = phase_table_index(e + d, e4);
-        cell_inv_ip(v, 1, 0.5 * cos_[static_cast<std::size_t>(k00)], 0.5 * sin_[static_cast<std::size_t>(k00)]);
-        cell_inv_ip(v + 4, 1, 0.5 * cos_[static_cast<std::size_t>(k01)], 0.5 * sin_[static_cast<std::size_t>(k01)]);
-        cell_inv_ip(v + 8, 1, 0.5 * cos_[static_cast<std::size_t>(k10)], 0.5 * sin_[static_cast<std::size_t>(k10)]);
-        cell_inv_ip(v + 12, 1, 0.5 * cos_[static_cast<std::size_t>(k11)], 0.5 * sin_[static_cast<std::size_t>(k11)]);
+        cell_inv_pair(v, k00);
+        cell_inv_pair(v + 4, k01);
+        cell_inv_pair(v + 8, k10);
+        cell_inv_pair(v + 12, k11);
         cell_inv_ip(v, 2, 0.5 * cos_[static_cast<std::size_t>(kl)], 0.5 * sin_[static_cast<std::size_t>(kl)]);
         cell_inv_ip(v + 8, 2, 0.5 * cos_[static_cast<std::size_t>(kh)], 0.5 * sin_[static_cast<std::size_t>(kh)]);
         cell_inv_ip(v, 4, 0.5 * cos_[static_cast<std::size_t>(k0)], 0.5 * sin_[static_cast<std::size_t>(k0)]);
@@ -733,13 +789,14 @@ private:
         if (w == 1) {
             return;
         }
+        if (w == 2) {
+            cell_fwd_pair(v, phase_table_index(d, e));
+            return;
+        }
         const int w2 = w >> 1;
         const int k = phase_table_index(d, e);
         cell_fwd_ip(v, w2, cos_[static_cast<std::size_t>(k)],
                     sin_[static_cast<std::size_t>(k)]);
-        if (w == 2) {
-            return;
-        }
         const int e2 = e << 1;
         fwd_span(v, w2, d, e2);
         fwd_span(v + w, w2, e - d, e2);
@@ -793,12 +850,14 @@ private:
         if (w == 1) {
             return;
         }
-        const int w2 = w >> 1;
-        if (w > 2) {
-            const int e2 = e << 1;
-            inv_span(v, w2, d, e2);
-            inv_span(v + w, w2, e - d, e2);
+        if (w == 2) {
+            cell_inv_pair(v, phase_table_index(d, e));
+            return;
         }
+        const int w2 = w >> 1;
+        const int e2 = e << 1;
+        inv_span(v, w2, d, e2);
+        inv_span(v + w, w2, e - d, e2);
         const int k = phase_table_index(d, e);
         cell_inv_ip(v, w2, 0.5 * cos_[static_cast<std::size_t>(k)],
                     0.5 * sin_[static_cast<std::size_t>(k)]);
@@ -835,14 +894,22 @@ private:
         return (r & 1) ? m * e - d : m * e + d;
     }
 
+    // The leaf pair (a, b) and the bin (re, im) are both contiguous 16-byte
+    // pairs differing only by the sign of the second lane, so each boundary
+    // move is one vector load + NEGHI + one vector store -- no scalar moves,
+    // no scalar flops.
     void egress_span(const double* RESTRICT v, int w, int d, int e,
                      complex_t* RESTRICT out) const {
         const int* RESTRICT T = tperm(w);
         for (int r = 0; r < w; ++r) {
             const int p = 2 * T[r];
             const int bin = rank_bin(r, d, e);
+#if BRUUN_LEVEL >= 1
+            V2_ST(&out[bin].re, V2_NEGHI(V2_LD(v + p)));
+#else
             out[bin].re = v[p];
             out[bin].im = -v[p + 1];
+#endif
         }
     }
 
@@ -852,8 +919,12 @@ private:
         for (int r = 0; r < w; ++r) {
             const int p = 2 * T[r];
             const int bin = rank_bin(r, d, e);
+#if BRUUN_LEVEL >= 1
+            V2_ST(v + p, V2_NEGHI(V2_LD(&in[bin].re)));
+#else
             v[p] = in[bin].re;
             v[p + 1] = -in[bin].im;
+#endif
         }
     }
 
@@ -966,7 +1037,88 @@ private:
         }
     }
 
+    // Two-tile column-blocked seed. The naive form runs 8 read + 8 write
+    // streams whose power-of-two comb strides all alias one L1 set at
+    // n >= 16K: 16 lines fighting 8 ways, each refetched ~4x before its
+    // doubles are consumed (measured 3x the pass cost, and allocation-offset
+    // dependent). Two stack tiles make the stream discipline deterministic:
+    //   copy-in : one input stream at a time  -> tin   (<= 2 active streams)
+    //   compute : tin -> tout, entirely L1-resident
+    //   copy-out: tout -> one output stream at a time (<= 2 active streams)
+    // No phase ever exceeds the associativity. Tiles are automatic storage
+    // (thread-local); no shared scratch, concurrency preserved. Bit-identical
+    // to the untiled seed; measured 0.60-0.87x the one-phase form.
     void forward_seed8(const double* RESTRICT input, double* RESTRICT dst) const {
+        const int q = n_ >> 3;
+        if (q < 2048) {
+            // comb stride q*8B below the L1 set period (16 KiB): the streams
+            // spread across sets, no aliasing -- the direct one-phase loop is
+            // copy-free and faster here.
+            forward_seed8_direct(input, dst);
+            return;
+        }
+        // tout row order = (dc, ny, a1, b1, a2, b2, a3, b3); slot targets:
+        double* RESTRICT rr[8] = {
+            dst,                                      // dc
+            dst + q,                                  // ny
+            dst + 4 * static_cast<std::size_t>(q),    // a1
+            dst + 5 * static_cast<std::size_t>(q),    // b1
+            dst + 2 * static_cast<std::size_t>(q),    // a2
+            dst + 3 * static_cast<std::size_t>(q),    // b2
+            dst + 6 * static_cast<std::size_t>(q),    // a3
+            dst + 7 * static_cast<std::size_t>(q)     // b3
+        };
+        constexpr double rt = 0.707106781186547524400844362104849039;
+        constexpr int TB = 256;              // columns per tile block
+        double tin[8 * TB];                  // 16 KiB each, stack
+        double tout[8 * TB];
+        for (int base = 0; base < q; base += TB) {
+            const int cols = (q - base < TB) ? (q - base) : TB;
+            for (int kk = 0; kk < 8; ++kk) {
+                const double* RESTRICT src =
+                    input + static_cast<std::size_t>(kk) * q + base;
+                double* RESTRICT trow = tin + static_cast<std::size_t>(kk) * TB;
+                for (int i = 0; i < cols; ++i) {
+                    trow[i] = src[i];
+                }
+            }
+            for (int i = 0; i < cols; ++i) {
+                const double a = tin[i];
+                const double b = tin[TB + i];
+                const double c = tin[2 * TB + i];
+                const double d = tin[3 * TB + i];
+                const double e = tin[4 * TB + i];
+                const double f = tin[5 * TB + i];
+                const double g = tin[6 * TB + i];
+                const double h = tin[7 * TB + i];
+
+                const double ae = a - e;
+                const double bf = b - f;
+                const double cg = c - g;
+                const double dh = d - h;
+                const double rot_r = rt * (bf - dh);
+                const double rot_i = rt * (bf + dh);
+
+                tout[i] = a + b + c + d + e + f + g + h;        // dc
+                tout[TB + i] = a - b + c - d + e - f + g - h;   // ny
+                tout[2 * TB + i] = ae + rot_r;                  // a1
+                tout[3 * TB + i] = cg + rot_i;                  // b1
+                tout[4 * TB + i] = a - c + e - g;               // a2
+                tout[5 * TB + i] = b - d + f - h;               // b2
+                tout[6 * TB + i] = ae - rot_r;                  // a3
+                tout[7 * TB + i] = rot_i - cg;                  // b3
+            }
+            for (int kk = 0; kk < 8; ++kk) {
+                const double* RESTRICT trow = tout + static_cast<std::size_t>(kk) * TB;
+                double* RESTRICT out = rr[kk] + base;
+                for (int i = 0; i < cols; ++i) {
+                    out[i] = trow[i];
+                }
+            }
+        }
+    }
+
+    void forward_seed8_direct(const double* RESTRICT input, double* RESTRICT dst) const {
         const int q = n_ >> 3;
         // level-8 slots: [ dc | ny | a2 | b2 | a1 | b1 | a3 | b3 ]
         double* RESTRICT r0 = dst;                                    // dc
@@ -1091,6 +1243,7 @@ private:
         half_ = 0;
         (void)cos_.resize(0);
         (void)sin_.resize(0);
+        (void)cs_.resize(0);
         (void)tperm_.resize(0);
     }
 
@@ -1098,6 +1251,7 @@ private:
     int half_;
     heap_array<double> cos_;
     heap_array<double> sin_;
+    heap_array<double> cs_;     // interleaved [cos, sin] pairs (leaf cells)
     heap_array<int> tperm_;
 };
 
