@@ -146,12 +146,71 @@ cells only, boundary 0, DRAM flat at ~3 passes.
 5. **Small-N (N ≤ leaf) stays on the current in-cache vectorized stages** — it
    is already fine there and needs no blocking.
 
-## Status
+## SHIPPED (2026-07-05): the in-place diagonal span walk
 
-Corrected: the transpose-four-step is retired (fails transport conservation +
-introduces complex arithmetic Bruun does not need). The real diagonal walk
-`phase_fft_real` is the target — exact r2c, real cells only, boundary transport
-0. The remaining build is the DEPTH-FIRST CACHE-BLOCKING of that walk (interior
-log N → ~2 passes) with natural order preserved at both ends; the vectorized
-real cells and the ordering theorem are in hand. `experiments/dip_phase_packet.py`
-(the four-step prototype) is kept only as the retired reference.
+The C++ that landed in `src/detail/bruun_dip_kernel.hpp` supersedes both the
+Python four-step prototype AND the self-sorting variant above. The realization
+that unlocked it: writing each cell's two children INTO THE PARENT'S OWN SPAN
+makes every span self-contained forever — fully in-place (work = n, down from
+2n; no ping-pong, no scratch, concurrency-safe), depth-first (cache transition
+emergent, no block knobs), the Nyquist-promotion copy free, and the SIMD purely
+vertical (4/8 contiguous streams, broadcast twiddles, zero permutes; radix-4
+fused two-level cells above the boundary granularity, `norm2_fused`-shape).
+
+The boundary (the user's dual-polarity insight, validated hard): pay the
+long-range disorder as COMB STREAMS at both ends, confine all scramble to L1.
+The leaves of any subtree `(d, E)` are the bins `{jE ± d}` (two combs), and
+the tree-order → bin-order permutation within a subtree is UNIVERSAL
+(d-independent; leaf value = `m·E + s·d` with `(m,s)` path-only), so one tiny
+shared table `T_w` per span size drives a streaming per-subtree egress
+(forward) / ingress (inverse). Asymmetries that measurement forced:
+- inverse ingress = comb reads + L1 scatter (a separate injection pass and a
+  fused per-leaf gather both lose);
+- forward egress = L1 gather + comb writes, with a radix-2 parity step so the
+  RFO-paying writes land on the densest combs the L1 span budget allows (the
+  inverse skips the parity step — reads prefetch at any density);
+- seed at level 8, not 16: 16+16 power-of-two-strided streams alias L1 sets
+  past associativity (measured 9× the 8-stream seed at 1M).
+
+Measured vs DIF (M-series NEON, min-of-5, `dif_vs_dip_benchmark`):
+
+| n | fwd DIP/DIF | inv DIP/DIF |
+|---|---|---|
+| 1024 | 1.28 | 1.00 |
+| 4096 | ~1.1–1.5 | **0.57–0.89 (wins)** |
+| 65536 | 1.56 | 1.10 |
+| 262144 | ~2.3 | 1.11 |
+| 1048576 | 1.89 | 1.17 |
+| 4194304 | 2.22 | 1.65 |
+
+Starting point was fwd 2.6×/inv 1.6–2.4× (breadth-first ping-pong). The
+inverse is at DIF parity (or wins) through 1M.
+
+### Forward optimization pass (2026-07-05)
+
+Two wins landed, both grounded by isolation profiling (`headcmp`/`wcmp`
+harnesses, in-process back-to-back to cancel this machine's severe thermal
+noise — DIF-ratio benchmarks swung ±30% run-to-run and could not be trusted):
+- **`phase_table_index` divide → shift.** `d*n/(2e)` was a 64-bit `sdiv` at
+  every node; `2e` is always a power of two and exactly divides `d*n`, so it is
+  `(d*n) >> (ctz(e)+1)`. (Index compute was NOT the dominant cost — `noidx`
+  ≈ `nocells` — but the sdiv still cost real cycles at small/mid n.)
+- **Inline the `span8` leaf codelets** (`BRUUN_ALWAYS_INLINE`). They were real
+  calls; inlining removed the leaf-call overhead. Net: 4096 forward 1.5→1.11×.
+
+What profiling RULED OUT (don't retry):
+- **Egress is cheap** — isolating it (`wcmp`) shows 0–11% of the forward,
+  mostly noise; it is NOT the gap. A split-comb (two monotonic streams) egress
+  measured a dead wash back-to-back.
+- **The WALK is the whole forward cost**, and the forward walk is ~35% slower
+  than the inverse walk at 64K (both cache-resident, same cell count) yet
+  converges by 4M — i.e. a COMPUTE/scheduling asymmetry in the forward cell's
+  dependency chain (`cell4_fwd_ip`), not transport. It hides once DRAM-bound.
+- The forward radix-2 parity step at `2*kEgressW` is net-neutral (its
+  egress-density rationale is void now that egress is cheap); kept only because
+  removing it is within noise and changes span sizing.
+
+Remaining forward levers (larger efforts, uncertain payoff on this noisy box):
+flatten the recursion into a DIF-style precomputed op schedule (kills the
+residual call overhead), or restructure `cell4_fwd_ip` to shorten its two-level
+critical path (the 64K compute asymmetry). The inverse needs nothing.

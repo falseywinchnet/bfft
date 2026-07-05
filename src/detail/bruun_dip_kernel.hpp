@@ -25,18 +25,29 @@
 // half, b = right half), so the old copy_span pass no longer exists.
 //
 // THE DISORDER LEDGER. The bit-reversal cannot be destroyed, only placed.
-// This walk splits it across the two boundaries, each paid in its cheap
-// currency:
-//   - input side: the seed reads 16 comb streams (long-range strides but
-//     sequential within each stream, prefetch-friendly) and writes 16
-//     contiguous rows -- one streaming pass.
-//   - output side: leaves stay IN PLACE (bin d's (a, b) pair ends at
-//     work[leaf_[d]]), and one boundary pass walks the output sequentially,
-//     gather-reading the leaf pairs through the precomputed leaf_ table --
-//     the same cost class as the DIF's residues_to_complex (IDX) or the
-//     DIT's input comb gather. Measured: fusing the scatter into the walk
-//     instead costs ~2x the whole transform at n >= 16K (far-range 16-byte
-//     writes from every terminal); the separated pass streams.
+// This walk pays the long-range component as COMB STREAMS at both ends and
+// confines all scramble to L1:
+//   - the seed reads 8 comb streams of the input (long-range strides but
+//     sequential within each stream, prefetch-friendly), one streaming pass.
+//     Stream count matters: power-of-two comb strides alias L1 sets, so a
+//     16-stream seed blows associativity (measured 9x the 8-stream pass);
+//   - the leaves of any subtree (d, E) are exactly the bins {j*E +/- d} --
+//     two arithmetic combs -- and the map from the subtree's tree order to
+//     ascending bin order is UNIVERSAL (d-independent): every leaf value is
+//     m*E + s*d with (m, s) a function of the path only (lo child keeps
+//     (m, s); the hi child at depth j maps to (2^j - m, -s)), and 2d < E
+//     makes every comparison depend on (m, s) alone. So one tiny shared
+//     table T_w per span size gives, when a cache-resident subtree
+//     completes, a streaming emission of its bins: L1-hot permuted reads,
+//     two monotonic strided writes (forward egress) -- and the mirror
+//     ingress for the inverse (two monotonic strided reads of the bins,
+//     L1-local scatter into the span, then a pure ascent). Measured: both
+//     a fused per-leaf scatter and a whole-array gather pass lose to this
+//     (far-range 16-byte traffic vs streams). The polarity is asymmetric:
+//     the forward takes a radix-2 parity step at w == 2*kEgressW so egress
+//     WRITES (which pay RFO) land on the densest combs the L1 span budget
+//     allows, while the inverse skips it -- comb READS prefetch at any
+//     density and the ingress scatter prefers the smaller landing span.
 // The interior pays ZERO rearrangement: no transposes, no swaps, no sorting.
 // Span addresses run in tree order; the ANGLE law stays purely diagonal:
 // theta = pi*d/e, served at every level by the one scale-indexed length-n
@@ -83,7 +94,7 @@ public:
 
         if (!cos_.resize(static_cast<std::size_t>(half_ + 1)) ||
             !sin_.resize(static_cast<std::size_t>(half_ + 1)) ||
-            !leaf_.resize(static_cast<std::size_t>(half_ > 1 ? half_ : 1))) {
+            !tperm_.resize(static_cast<std::size_t>(2 * kEgressW - 1))) {
             clear();
             return false;
         }
@@ -94,26 +105,13 @@ public:
             sin_[static_cast<std::size_t>(k)] = std::sin(theta);
         }
 
-        // leaf_[d] = work offset where bin d's (a, b) pair lands after the
-        // descent -- the boundary permutation, resolved once here.
-        if (n_ >= 16) {
-            const int q = n_ >> 4;
-            map_ridge(0, q, 16);
-            map_span(2 * q, q, 4, 16);
-            map_span(4 * q, q, 2, 16);
-            map_span(6 * q, q, 6, 16);
-            map_span(8 * q, q, 1, 16);
-            map_span(10 * q, q, 7, 16);
-            map_span(12 * q, q, 3, 16);
-            map_span(14 * q, q, 5, 16);
-        } else if (n_ == 8) {
-            map_ridge(0, 1, 8);
-            map_span(2, 1, 2, 8);
-            map_span(4, 1, 1, 8);
-            map_span(6, 1, 3, 8);
-        } else {
-            map_ridge(0, 1, 4);
-            map_span(2, 1, 1, 4);
+        // Universal within-subtree boundary permutations: T_w[rank] = tree
+        // position of the rank-th smallest leaf bin, identical for every
+        // subtree of row width w (see the header). Flat storage at offset
+        // w - 1; total 2*kEgressW - 1 ints, n-independent.
+        for (int w = 1; w <= kEgressW; w <<= 1) {
+            int pos = 0;
+            build_tperm(tperm_.data() + (w - 1), pos, 0, 1, 0, w);
         }
         return true;
     }
@@ -125,57 +123,39 @@ public:
     void forward_standard(const double* RESTRICT input,
                           complex_t* RESTRICT output,
                           double* RESTRICT work) const {
-        if (n_ >= 16) {
-            forward_seed16(input, work);
-            // level-16 slot order (tree order): [R][B4][B2][B6][B1][B7][B3][B5]
-            const int q = n_ >> 4;
-            fwd_ridge(work, q, 16);
-            fwd_span(work + 2 * static_cast<std::size_t>(q), q, 4, 16);
-            fwd_span(work + 4 * static_cast<std::size_t>(q), q, 2, 16);
-            fwd_span(work + 6 * static_cast<std::size_t>(q), q, 6, 16);
-            fwd_span(work + 8 * static_cast<std::size_t>(q), q, 1, 16);
-            fwd_span(work + 10 * static_cast<std::size_t>(q), q, 7, 16);
-            fwd_span(work + 12 * static_cast<std::size_t>(q), q, 3, 16);
-            fwd_span(work + 14 * static_cast<std::size_t>(q), q, 5, 16);
-        } else if (n_ == 8) {
+        if (n_ >= 8) {
+            // Seed at level 8: 8 comb read + 8 write streams, the mirror of
+            // the inverse's tail8. Seeding at 16 (16 + 16 streams at power-of-
+            // two strides) aliases L1 sets past associativity and measured 9x
+            // slower than seed8 in isolation (3.8 ms vs 0.43 ms at n = 1M).
             forward_seed8(input, work);
-            // level-8 slot order: [R][B2][B1][B3], q = 1
-            fwd_span(work + 2, 1, 2, 8);
-            fwd_span(work + 4, 1, 1, 8);
-            fwd_span(work + 6, 1, 3, 8);
+            // level-8 slot order (tree order): [R][B2][B1][B3]
+            const int q = n_ >> 3;
+            fwd_ridge(work, q, 8, output);
+            fwd_tree(work + 2 * static_cast<std::size_t>(q), q, 2, 8, output);
+            fwd_tree(work + 4 * static_cast<std::size_t>(q), q, 1, 8, output);
+            fwd_tree(work + 6 * static_cast<std::size_t>(q), q, 3, 8, output);
         } else {
             forward_seed4(input, work);
+            fwd_tree(work + 2, 1, 1, 4, output);
         }
-
-        // Boundary pass: sequential output walk, gather-read of leaf pairs.
         output[0].re = work[0];
         output[0].im = 0.0;
         output[half_].re = work[1];
         output[half_].im = 0.0;
-        const int* RESTRICT lf = leaf_.data();
-        for (int d = 1; d < half_; ++d) {
-            const int p = lf[d];
-            output[d].re = work[p];
-            output[d].im = -work[p + 1];
-        }
     }
 
     void inverse_standard(const complex_t* RESTRICT input,
                           double* RESTRICT output,
                           double* RESTRICT work) const {
-        // The inverse boundary is fused into the descent instead of paid as a
-        // separate injection pass: leaf gathers are scattered READS of the
-        // input (cheap; loads overlap) with writes landing in the cache-hot
-        // span, where an injection pass would pay scattered WRITES (measured
-        // ~1.5x slower at n >= 64K).
         if (n_ >= 8) {
-            // gather + ascend the level-8 subtrees, then unseed the slot
-            // state [R][B2][B1][B3] to time order.
+            // comb-ingress + ascend the level-8 subtrees, then unseed the
+            // slot state [R][B2][B1][B3] to time order.
             const int q = n_ >> 3;
             inv_ridge(work, q, 8, input);
-            inv_span(work + 2 * static_cast<std::size_t>(q), q, 2, 8, input);
-            inv_span(work + 4 * static_cast<std::size_t>(q), q, 1, 8, input);
-            inv_span(work + 6 * static_cast<std::size_t>(q), q, 3, 8, input);
+            inv_tree(work + 2 * static_cast<std::size_t>(q), q, 2, 8, input);
+            inv_tree(work + 4 * static_cast<std::size_t>(q), q, 1, 8, input);
+            inv_tree(work + 6 * static_cast<std::size_t>(q), q, 3, 8, input);
             inverse_tail8(work, output, q);
         } else {
             work[0] = input[0].re;      // dc
@@ -187,21 +167,6 @@ public:
     }
 
 private:
-    // Scalar reference cell (the algebra realized by cell_fwd_ip / cell_inv_ip;
-    // also used directly by the seeds).
-    static inline void pair_reduce_cs(double ea, double eb,
-                                      double oa, double ob,
-                                      double c, double s,
-                                      double& la, double& lb,
-                                      double& ha, double& hb) {
-        const double r = c * oa - s * ob;
-        const double i = s * oa + c * ob;
-        la = ea + r;
-        lb = eb + i;
-        ha = ea - r;
-        hb = i - eb;
-    }
-
     // -----------------------------------------------------------------------
     // In-place span cells. The twiddle (c, s) is constant along the column
     // axis (isoclinic rotation): broadcast it and run pure vertical SIMD on
@@ -678,8 +643,13 @@ private:
         }
     }
 
+    // theta(d, e) = pi*d/e -> table index d*n/(2e). e is always a power of
+    // two and 2e exactly divides d*n at every call site, so the divide is a
+    // shift by log2(2e) = ctz(e) + 1 (a single-cycle op, vs a ~12-cycle sdiv
+    // that dominated the recursion overhead).
     int phase_table_index(int d, int e) const noexcept {
-        return static_cast<int>((static_cast<long long>(d) * n_) / (2LL * e));
+        return static_cast<int>((static_cast<long long>(d) * n_) >>
+                                (__builtin_ctz(static_cast<unsigned>(e)) + 1));
     }
 
     // -----------------------------------------------------------------------
@@ -690,7 +660,7 @@ private:
     // the deep recursion collapses to one call per 16 doubles.
     // -----------------------------------------------------------------------
 
-    void span8_fwd(double* RESTRICT v, int d, int e) const {
+    BRUUN_ALWAYS_INLINE void span8_fwd(double* RESTRICT v, int d, int e) const {
         const int e2 = e << 1;
         const int e4 = e2 << 1;
         const int k0 = phase_table_index(d, e);
@@ -709,20 +679,9 @@ private:
         cell_fwd_ip(v + 12, 1, cos_[static_cast<std::size_t>(k11)], sin_[static_cast<std::size_t>(k11)]);
     }
 
-    void span8_inv(double* RESTRICT v, int d, int e,
-                   const complex_t* RESTRICT in) const {
+    BRUUN_ALWAYS_INLINE void span8_inv(double* RESTRICT v, int d, int e) const {
         const int e2 = e << 1;
         const int e4 = e2 << 1;
-        const int e3 = e2 + e;
-        // gather the eight leaves of this subtree (scattered reads, hot writes)
-        v[0] = in[d].re;             v[1] = -in[d].im;
-        v[2] = in[e4 - d].re;        v[3] = -in[e4 - d].im;
-        v[4] = in[e2 - d].re;        v[5] = -in[e2 - d].im;
-        v[6] = in[e2 + d].re;        v[7] = -in[e2 + d].im;
-        v[8] = in[e - d].re;         v[9] = -in[e - d].im;
-        v[10] = in[e3 + d].re;       v[11] = -in[e3 + d].im;
-        v[12] = in[e + d].re;        v[13] = -in[e + d].im;
-        v[14] = in[e3 - d].re;       v[15] = -in[e3 - d].im;
         const int k0 = phase_table_index(d, e);
         const int kl = phase_table_index(d, e2);
         const int kh = phase_table_index(e - d, e2);
@@ -786,28 +745,29 @@ private:
         fwd_span(v + w, w2, e - d, e2);
     }
 
-    void fwd_ridge(double* RESTRICT v, int q, int e) const {
+    void fwd_ridge(double* RESTRICT v, int q, int e,
+                   complex_t* RESTRICT out) const {
         if (q == 1) {
-            return;    // dc/ny final at v[0], v[1]
+            return;    // dc/ny final at v[0], v[1]; the driver emits them
         }
         const int q2 = q >> 1;
         binom_fwd_ip(v, q2);
         const int e2 = e << 1;
-        fwd_ridge(v, q2, e2);
-        fwd_span(v + q, q2, e >> 1, e2);   // promoted bin (e/2, 2e), free
+        fwd_ridge(v, q2, e2, out);
+        fwd_tree(v + q, q2, e >> 1, e2, out);   // promoted bin (e/2, 2e), free
     }
 
-    void inv_span(double* RESTRICT v, int w, int d, int e,
-                  const complex_t* RESTRICT in) const {
+    // Pure in-place ascent; leaves already sit in the span (comb ingress).
+    void inv_span(double* RESTRICT v, int w, int d, int e) const {
         if (w >= 32) {
             // radix-4 step: ascend grandchildren, then fused two-level cell.
             const int w4 = w >> 2;
             const int e2 = e << 1;
             const int e4 = e2 << 1;
-            inv_span(v, w4, d, e4, in);
-            inv_span(v + (w >> 1), w4, e2 - d, e4, in);
-            inv_span(v + w, w4, e - d, e4, in);
-            inv_span(v + w + (w >> 1), w4, e + d, e4, in);
+            inv_span(v, w4, d, e4);
+            inv_span(v + (w >> 1), w4, e2 - d, e4);
+            inv_span(v + w, w4, e - d, e4);
+            inv_span(v + w + (w >> 1), w4, e + d, e4);
             const int k0 = phase_table_index(d, e);
             const int kl = phase_table_index(d, e2);
             const int kh = phase_table_index(e - d, e2);
@@ -819,32 +779,25 @@ private:
         }
         if (w == 16) {
             const int e2 = e << 1;
-            span8_inv(v, d, e2, in);
-            span8_inv(v + 16, e - d, e2, in);
+            span8_inv(v, d, e2);
+            span8_inv(v + 16, e - d, e2);
             const int k = phase_table_index(d, e);
             cell_inv_ip(v, 8, 0.5 * cos_[static_cast<std::size_t>(k)],
                         0.5 * sin_[static_cast<std::size_t>(k)]);
             return;
         }
         if (w == 8) {
-            span8_inv(v, d, e, in);
+            span8_inv(v, d, e);
             return;
         }
         if (w == 1) {
-            v[0] = in[d].re;
-            v[1] = -in[d].im;
             return;
         }
         const int w2 = w >> 1;
-        if (w == 2) {
-            v[0] = in[d].re;
-            v[1] = -in[d].im;
-            v[2] = in[e - d].re;
-            v[3] = -in[e - d].im;
-        } else {
+        if (w > 2) {
             const int e2 = e << 1;
-            inv_span(v, w2, d, e2, in);
-            inv_span(v + w, w2, e - d, e2, in);
+            inv_span(v, w2, d, e2);
+            inv_span(v + w, w2, e - d, e2);
         }
         const int k = phase_table_index(d, e);
         cell_inv_ip(v, w2, 0.5 * cos_[static_cast<std::size_t>(k)],
@@ -861,34 +814,128 @@ private:
         const int q2 = q >> 1;
         const int e2 = e << 1;
         inv_ridge(v, q2, e2, in);
-        inv_span(v + q, q2, e >> 1, e2, in);
+        inv_tree(v + q, q2, e >> 1, e2, in);
         binom_inv_ip(v, q2);
     }
 
     // -----------------------------------------------------------------------
-    // Boundary permutation build (init only): where each bin's leaf pair
-    // lands. Mirrors the descent's address math exactly.
+    // Subtree drivers with the comb boundary. A subtree (d, e) of row width
+    // w <= kEgressW owns the bin combs {j*e +/- d}; its span is cache-
+    // resident, so the boundary permutation T_w runs entirely in L1 while
+    // the bins move as two monotonic strided streams.
     // -----------------------------------------------------------------------
 
-    void map_span(int off, int w, int d, int e) {
+    static constexpr int kEgressW = 4096;   // span = 2w doubles = 64 KiB
+
+    const int* tperm(int w) const noexcept { return tperm_.data() + (w - 1); }
+
+    // rank r of a subtree leaf -> bin (m*e + s*d with m = (r+1)/2, s = +/-).
+    static BRUUN_ALWAYS_INLINE int rank_bin(int r, int d, int e) noexcept {
+        const int m = (r + 1) >> 1;
+        return (r & 1) ? m * e - d : m * e + d;
+    }
+
+    void egress_span(const double* RESTRICT v, int w, int d, int e,
+                     complex_t* RESTRICT out) const {
+        const int* RESTRICT T = tperm(w);
+        for (int r = 0; r < w; ++r) {
+            const int p = 2 * T[r];
+            const int bin = rank_bin(r, d, e);
+            out[bin].re = v[p];
+            out[bin].im = -v[p + 1];
+        }
+    }
+
+    void ingress_span(double* RESTRICT v, int w, int d, int e,
+                      const complex_t* RESTRICT in) const {
+        const int* RESTRICT T = tperm(w);
+        for (int r = 0; r < w; ++r) {
+            const int p = 2 * T[r];
+            const int bin = rank_bin(r, d, e);
+            v[p] = in[bin].re;
+            v[p + 1] = -in[bin].im;
+        }
+    }
+
+    void fwd_tree(double* RESTRICT v, int w, int d, int e,
+                  complex_t* RESTRICT out) const {
+        if (w > 2 * kEgressW) {
+            // radix-4 descent above the boundary granularity.
+            const int w4 = w >> 2;
+            const int e2 = e << 1;
+            const int e4 = e2 << 1;
+            const int k0 = phase_table_index(d, e);
+            const int kl = phase_table_index(d, e2);
+            const int kh = phase_table_index(e - d, e2);
+            cell4_fwd_ip(v, w4,
+                         cos_[static_cast<std::size_t>(k0)], sin_[static_cast<std::size_t>(k0)],
+                         cos_[static_cast<std::size_t>(kl)], sin_[static_cast<std::size_t>(kl)],
+                         cos_[static_cast<std::size_t>(kh)], sin_[static_cast<std::size_t>(kh)]);
+            fwd_tree(v, w4, d, e4, out);
+            fwd_tree(v + (w >> 1), w4, e2 - d, e4, out);
+            fwd_tree(v + w, w4, e - d, e4, out);
+            fwd_tree(v + w + (w >> 1), w4, e + d, e4, out);
+            return;
+        }
+        if (w == 2 * kEgressW) {
+            // radix-2 parity step so the boundary always lands on kEgressW
+            // spans (densest bin combs the L1 budget allows).
+            const int w2 = w >> 1;
+            const int e2 = e << 1;
+            const int k = phase_table_index(d, e);
+            cell_fwd_ip(v, w2, cos_[static_cast<std::size_t>(k)],
+                        sin_[static_cast<std::size_t>(k)]);
+            fwd_tree(v, w2, d, e2, out);
+            fwd_tree(v + w, w2, e - d, e2, out);
+            return;
+        }
+        fwd_span(v, w, d, e);
+        egress_span(v, w, d, e, out);
+    }
+
+    void inv_tree(double* RESTRICT v, int w, int d, int e,
+                  const complex_t* RESTRICT in) const {
+        // No parity step on the inverse (unlike fwd_tree): comb READS
+        // prefetch fine at any density, and the ingress scatter prefers the
+        // smaller radix-4 landing span (a radix-2 step here measured ~2x
+        // slower at 64K).
+        if (w > kEgressW) {
+            const int w4 = w >> 2;
+            const int e2 = e << 1;
+            const int e4 = e2 << 1;
+            inv_tree(v, w4, d, e4, in);
+            inv_tree(v + (w >> 1), w4, e2 - d, e4, in);
+            inv_tree(v + w, w4, e - d, e4, in);
+            inv_tree(v + w + (w >> 1), w4, e + d, e4, in);
+            const int k0 = phase_table_index(d, e);
+            const int kl = phase_table_index(d, e2);
+            const int kh = phase_table_index(e - d, e2);
+            cell4_inv_ip(v, w4,
+                         0.5 * cos_[static_cast<std::size_t>(k0)], 0.5 * sin_[static_cast<std::size_t>(k0)],
+                         0.5 * cos_[static_cast<std::size_t>(kl)], 0.5 * sin_[static_cast<std::size_t>(kl)],
+                         0.5 * cos_[static_cast<std::size_t>(kh)], 0.5 * sin_[static_cast<std::size_t>(kh)]);
+            return;
+        }
+        ingress_span(v, w, d, e, in);
+        inv_span(v, w, d, e);
+    }
+
+    // -----------------------------------------------------------------------
+    // Universal boundary permutation build (init only). Leaf values of any
+    // subtree are m*e + s*d with (m, s) path-only: lo child keeps (m, s),
+    // the hi child at depth j maps to (2^j - m, -s). Ascending-bin rank of
+    // (m, s) is closed-form: 0 for m == 0, else 2m - 1 + (s > 0).
+    // -----------------------------------------------------------------------
+
+    void build_tperm(int* RESTRICT T, int& pos, int m, int s, int j, int w) {
         if (w == 1) {
-            leaf_[static_cast<std::size_t>(d)] = off;
+            const int rank = (m == 0) ? 0 : (2 * m - 1 + (s > 0 ? 1 : 0));
+            T[rank] = pos++;
             return;
         }
         const int w2 = w >> 1;
-        const int e2 = e << 1;
-        map_span(off, w2, d, e2);
-        map_span(off + w, w2, e - d, e2);
-    }
-
-    void map_ridge(int off, int q, int e) {
-        if (q == 1) {
-            return;    // dc/ny fixed at work[0], work[1]
-        }
-        const int q2 = q >> 1;
-        const int e2 = e << 1;
-        map_ridge(off, q2, e2);
-        map_span(off + q, q2, e >> 1, e2);
+        build_tperm(T, pos, m, s, j + 1, w2);
+        build_tperm(T, pos, (1 << j) - m, -s, j + 1, w2);
     }
 
     // -----------------------------------------------------------------------
@@ -964,88 +1011,6 @@ private:
             r5[i] = b - d + f - h;                   // b2
             r6[i] = ae - rot_r;                      // a3
             r7[i] = rot_i - cg;                      // b3
-        }
-    }
-
-    static inline void seed8_values(double a, double b, double c, double d,
-                                    double e, double f, double g, double h,
-                                    double& r0, double& r1, double& r2, double& r3,
-                                    double& r4, double& r5, double& r6, double& r7) {
-        constexpr double rt = 0.707106781186547524400844362104849039;
-        const double ae = a - e;
-        const double bf = b - f;
-        const double cg = c - g;
-        const double dh = d - h;
-        const double rot_r = rt * (bf - dh);
-        const double rot_i = rt * (bf + dh);
-
-        r0 = a + b + c + d + e + f + g + h;
-        r1 = ae + rot_r;
-        r2 = a - c + e - g;
-        r3 = ae - rot_r;
-        r4 = a - b + c - d + e - f + g - h;
-        r5 = rot_i - cg;
-        r6 = b - d + f - h;
-        r7 = cg + rot_i;
-    }
-
-    void forward_seed16(const double* RESTRICT input, double* RESTRICT dst) const {
-        const int q = n_ >> 4;
-        // level-16 slots: [ dc | ny | a4 b4 | a2 b2 | a6 b6 | a1 b1 | a7 b7 | a3 b3 | a5 b5 ]
-        double* RESTRICT r0 = dst;                                     // dc
-        double* RESTRICT r1 = dst + q;                                 // ny
-        double* RESTRICT r2 = dst + 8 * static_cast<std::size_t>(q);   // a1
-        double* RESTRICT r3 = dst + 9 * static_cast<std::size_t>(q);   // b1
-        double* RESTRICT r4 = dst + 4 * static_cast<std::size_t>(q);   // a2
-        double* RESTRICT r5 = dst + 5 * static_cast<std::size_t>(q);   // b2
-        double* RESTRICT r6 = dst + 12 * static_cast<std::size_t>(q);  // a3
-        double* RESTRICT r7 = dst + 13 * static_cast<std::size_t>(q);  // b3
-        double* RESTRICT r8 = dst + 2 * static_cast<std::size_t>(q);   // a4
-        double* RESTRICT r9 = dst + 3 * static_cast<std::size_t>(q);   // b4
-        double* RESTRICT r10 = dst + 14 * static_cast<std::size_t>(q); // a5
-        double* RESTRICT r11 = dst + 15 * static_cast<std::size_t>(q); // b5
-        double* RESTRICT r12 = dst + 6 * static_cast<std::size_t>(q);  // a6
-        double* RESTRICT r13 = dst + 7 * static_cast<std::size_t>(q);  // b6
-        double* RESTRICT r14 = dst + 10 * static_cast<std::size_t>(q); // a7
-        double* RESTRICT r15 = dst + 11 * static_cast<std::size_t>(q); // b7
-
-        const double c1 = 0.923879532511286756128183189396788287;
-        const double s1 = 0.382683432365089771728459984030398866;
-        const double c2 = 0.707106781186547524400844362104849039;
-        const double s2 = 0.707106781186547524400844362104849039;
-        const double c3 = 0.382683432365089771728459984030398866;
-        const double s3 = 0.923879532511286756128183189396788287;
-
-        for (int i = 0; i < q; ++i) {
-            double le0, le1, le2, le3, le4, le5, le6, le7;
-            double ro0, ro1, ro2, ro3, ro4, ro5, ro6, ro7;
-            seed8_values(input[i],
-                         input[2 * static_cast<std::size_t>(q) + i],
-                         input[4 * static_cast<std::size_t>(q) + i],
-                         input[6 * static_cast<std::size_t>(q) + i],
-                         input[8 * static_cast<std::size_t>(q) + i],
-                         input[10 * static_cast<std::size_t>(q) + i],
-                         input[12 * static_cast<std::size_t>(q) + i],
-                         input[14 * static_cast<std::size_t>(q) + i],
-                         le0, le1, le2, le3, le4, le5, le6, le7);
-            seed8_values(input[static_cast<std::size_t>(q) + i],
-                         input[3 * static_cast<std::size_t>(q) + i],
-                         input[5 * static_cast<std::size_t>(q) + i],
-                         input[7 * static_cast<std::size_t>(q) + i],
-                         input[9 * static_cast<std::size_t>(q) + i],
-                         input[11 * static_cast<std::size_t>(q) + i],
-                         input[13 * static_cast<std::size_t>(q) + i],
-                         input[15 * static_cast<std::size_t>(q) + i],
-                         ro0, ro1, ro2, ro3, ro4, ro5, ro6, ro7);
-
-            r0[i] = le0 + ro0;   // dc
-            r1[i] = le0 - ro0;   // ny
-            r8[i] = le4;         // a4
-            r9[i] = ro4;         // b4
-
-            pair_reduce_cs(le1, le7, ro1, ro7, c1, s1, r2[i], r3[i], r14[i], r15[i]);
-            pair_reduce_cs(le2, le6, ro2, ro6, c2, s2, r4[i], r5[i], r12[i], r13[i]);
-            pair_reduce_cs(le3, le5, ro3, ro5, c3, s3, r6[i], r7[i], r10[i], r11[i]);
         }
     }
 
@@ -1126,14 +1091,14 @@ private:
         half_ = 0;
         (void)cos_.resize(0);
         (void)sin_.resize(0);
-        (void)leaf_.resize(0);
+        (void)tperm_.resize(0);
     }
 
     int n_;
     int half_;
     heap_array<double> cos_;
     heap_array<double> sin_;
-    heap_array<int> leaf_;
+    heap_array<int> tperm_;
 };
 
 } // namespace bruun
