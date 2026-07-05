@@ -77,7 +77,18 @@
 #include "bruun_simd_backend.hpp"
 
 #include <cmath>
-
+#if defined(_MSC_VER)
+#include <intrin.h>
+static inline unsigned bfft_ctz_u32(unsigned x) {
+    unsigned long r;
+    _BitScanForward(&r, x);
+    return static_cast<unsigned>(r);
+}
+#else
+static inline unsigned bfft_ctz_u32(unsigned x) {
+    return static_cast<unsigned>(__builtin_ctz(x));
+}
+#endif
 namespace bruun {
 
 class DIP_RFFT_kernel {
@@ -109,6 +120,21 @@ public:
             const double theta = bruun_tau * static_cast<double>(k) / static_cast<double>(n_);
             cos_[static_cast<std::size_t>(k)] = std::cos(theta);
             sin_[static_cast<std::size_t>(k)] = std::sin(theta);
+        }
+        // Enforce quarter-wave symmetry bit-exactly on the cell range
+        // [0, n/4]: sibling spans (d, 2e) and (e-d, 2e) have complementary
+        // angles whose table indices sum to exactly n/4, so with
+        // sin_[k] == cos_[n/4 - k] by construction the mirror twiddle
+        // sharing below (one load + swap serves both siblings) is
+        // bit-identical to loading both.
+        {
+            const int quarter = n_ >> 2;
+            for (int k = 0; 2 * k <= quarter; ++k) {
+                sin_[static_cast<std::size_t>(quarter - k)] = cos_[static_cast<std::size_t>(k)];
+                cos_[static_cast<std::size_t>(quarter - k)] = sin_[static_cast<std::size_t>(k)];
+            }
+        }
+        for (int k = 0; k <= half_; ++k) {
             // interleaved copy for the paired-lane leaf cells: one vector
             // load yields [c, s] instead of two scalar loads.
             cs_[2 * static_cast<std::size_t>(k)] = cos_[static_cast<std::size_t>(k)];
@@ -659,7 +685,7 @@ private:
     // that dominated the recursion overhead).
     int phase_table_index(int d, int e) const noexcept {
         return static_cast<int>((static_cast<long long>(d) * n_) >>
-                                (__builtin_ctz(static_cast<unsigned>(e)) + 1));
+                                (bfft_ctz_u32(static_cast<unsigned>(e)) + 1));
     }
 
     // -----------------------------------------------------------------------
@@ -674,8 +700,12 @@ private:
     // -----------------------------------------------------------------------
 
 #if BRUUN_LEVEL >= 1
-    BRUUN_ALWAYS_INLINE void cell_fwd_pair(double* RESTRICT v, int k) const {
-        const bruun_v2 CS = V2_LD(cs_.data() + 2 * static_cast<std::size_t>(k));
+    // Register-twiddle forms: the caller passes [c, s] (forward) or the
+    // pre-halved [hc, hs] (inverse) directly, so sibling spans -- whose
+    // twiddles are exact swaps of each other (see the quarter-wave table
+    // symmetry in reset()) -- share one table load: CS and V2_SWAP(CS).
+    static BRUUN_ALWAYS_INLINE void cell_fwd_pair_v(double* RESTRICT v,
+                                                    bruun_v2 CS) {
         const bruun_v2 MS = V2_SWAP(V2_NEGHI(CS));          // [-s, c]
         const bruun_v2 L0 = V2_LD(v);                       // [a, o]
         const bruun_v2 L1 = V2_LD(v + 2);                   // [b, p]
@@ -685,9 +715,9 @@ private:
         V2_ST(v + 2, V2_NEGHI(V2_SUB(E, RI)));              // [a-R, I-b]
     }
 
-    BRUUN_ALWAYS_INLINE void cell_inv_pair(double* RESTRICT v, int k) const {
-        const bruun_v2 half = V2_SET1(0.5);
-        const bruun_v2 HCS = V2_MUL(half, V2_LD(cs_.data() + 2 * static_cast<std::size_t>(k)));
+    static BRUUN_ALWAYS_INLINE void cell_inv_pair_v(double* RESTRICT v,
+                                                    bruun_v2 HCS,
+                                                    bruun_v2 half) {
         const bruun_v2 L = V2_LD(v);                        // [la, lb]
         const bruun_v2 NH = V2_NEGHI(V2_LD(v + 2));         // [ha, -hb]
         const bruun_v2 E = V2_MUL(half, V2_ADD(L, NH));     // [ea, eb]
@@ -696,6 +726,15 @@ private:
         const bruun_v2 O = V2_MADD(V2_MUL(V2_DUP0(HCS), UT), V2_DUP1(HCS), TU);
         V2_ST(v, V2_UNPLO(E, O));                           // [ea, oa]
         V2_ST(v + 2, V2_UNPHI(E, O));                       // [eb, ob]
+    }
+
+    BRUUN_ALWAYS_INLINE void cell_fwd_pair(double* RESTRICT v, int k) const {
+        cell_fwd_pair_v(v, V2_LD(cs_.data() + 2 * static_cast<std::size_t>(k)));
+    }
+
+    BRUUN_ALWAYS_INLINE void cell_inv_pair(double* RESTRICT v, int k) const {
+        const bruun_v2 half = V2_SET1(0.5);
+        cell_inv_pair_v(v, V2_MUL(half, V2_LD(cs_.data() + 2 * static_cast<std::size_t>(k))), half);
     }
 #else
     void cell_fwd_pair(double* RESTRICT v, int k) const {
@@ -716,23 +755,37 @@ private:
     // the deep recursion collapses to one call per 16 doubles.
     // -----------------------------------------------------------------------
 
+    // Mirror twiddle sharing (the DIT's mirrored-lane trick, free in the DIP
+    // tree): sibling spans (d, 2e) and (e-d, 2e) have complementary angles,
+    // so theta indices sum to n/4 and the quarter-wave-symmetric table makes
+    // (cos, sin) of one sibling exactly the SWAP of the other. Each span8
+    // therefore computes 4 indices and loads 2 twiddle vectors + 1 scalar
+    // pair instead of 7 of each.
     BRUUN_ALWAYS_INLINE void span8_fwd(double* RESTRICT v, int d, int e) const {
         const int e2 = e << 1;
         const int e4 = e2 << 1;
         const int k0 = phase_table_index(d, e);
         const int kl = phase_table_index(d, e2);
-        const int kh = phase_table_index(e - d, e2);
         const int k00 = phase_table_index(d, e4);
-        const int k01 = phase_table_index(e2 - d, e4);
         const int k10 = phase_table_index(e - d, e4);
-        const int k11 = phase_table_index(e + d, e4);
+        const double cl = cos_[static_cast<std::size_t>(kl)];
+        const double sl = sin_[static_cast<std::size_t>(kl)];
         cell_fwd_ip(v, 4, cos_[static_cast<std::size_t>(k0)], sin_[static_cast<std::size_t>(k0)]);
-        cell_fwd_ip(v, 2, cos_[static_cast<std::size_t>(kl)], sin_[static_cast<std::size_t>(kl)]);
-        cell_fwd_ip(v + 8, 2, cos_[static_cast<std::size_t>(kh)], sin_[static_cast<std::size_t>(kh)]);
+        cell_fwd_ip(v, 2, cl, sl);
+        cell_fwd_ip(v + 8, 2, sl, cl);      // theta(e-d, 2e) = swap
+#if BRUUN_LEVEL >= 1
+        const bruun_v2 CS00 = V2_LD(cs_.data() + 2 * static_cast<std::size_t>(k00));
+        const bruun_v2 CS10 = V2_LD(cs_.data() + 2 * static_cast<std::size_t>(k10));
+        cell_fwd_pair_v(v, CS00);
+        cell_fwd_pair_v(v + 4, V2_SWAP(CS00));   // (e2-d, 4e) = swap of (d, 4e)
+        cell_fwd_pair_v(v + 8, CS10);
+        cell_fwd_pair_v(v + 12, V2_SWAP(CS10));  // (e+d, 4e) = swap of (e-d, 4e)
+#else
         cell_fwd_pair(v, k00);
-        cell_fwd_pair(v + 4, k01);
+        cell_fwd_pair(v + 4, phase_table_index(e2 - d, e4));
         cell_fwd_pair(v + 8, k10);
-        cell_fwd_pair(v + 12, k11);
+        cell_fwd_pair(v + 12, phase_table_index(e + d, e4));
+#endif
     }
 
     BRUUN_ALWAYS_INLINE void span8_inv(double* RESTRICT v, int d, int e) const {
@@ -740,17 +793,26 @@ private:
         const int e4 = e2 << 1;
         const int k0 = phase_table_index(d, e);
         const int kl = phase_table_index(d, e2);
-        const int kh = phase_table_index(e - d, e2);
         const int k00 = phase_table_index(d, e4);
-        const int k01 = phase_table_index(e2 - d, e4);
         const int k10 = phase_table_index(e - d, e4);
-        const int k11 = phase_table_index(e + d, e4);
+        const double hcl = 0.5 * cos_[static_cast<std::size_t>(kl)];
+        const double hsl = 0.5 * sin_[static_cast<std::size_t>(kl)];
+#if BRUUN_LEVEL >= 1
+        const bruun_v2 half = V2_SET1(0.5);
+        const bruun_v2 H00 = V2_MUL(half, V2_LD(cs_.data() + 2 * static_cast<std::size_t>(k00)));
+        const bruun_v2 H10 = V2_MUL(half, V2_LD(cs_.data() + 2 * static_cast<std::size_t>(k10)));
+        cell_inv_pair_v(v, H00, half);
+        cell_inv_pair_v(v + 4, V2_SWAP(H00), half);
+        cell_inv_pair_v(v + 8, H10, half);
+        cell_inv_pair_v(v + 12, V2_SWAP(H10), half);
+#else
         cell_inv_pair(v, k00);
-        cell_inv_pair(v + 4, k01);
+        cell_inv_pair(v + 4, phase_table_index(e2 - d, e4));
         cell_inv_pair(v + 8, k10);
-        cell_inv_pair(v + 12, k11);
-        cell_inv_ip(v, 2, 0.5 * cos_[static_cast<std::size_t>(kl)], 0.5 * sin_[static_cast<std::size_t>(kl)]);
-        cell_inv_ip(v + 8, 2, 0.5 * cos_[static_cast<std::size_t>(kh)], 0.5 * sin_[static_cast<std::size_t>(kh)]);
+        cell_inv_pair(v + 12, phase_table_index(e + d, e4));
+#endif
+        cell_inv_ip(v, 2, hcl, hsl);
+        cell_inv_ip(v + 8, 2, hsl, hcl);    // swap sibling
         cell_inv_ip(v, 4, 0.5 * cos_[static_cast<std::size_t>(k0)], 0.5 * sin_[static_cast<std::size_t>(k0)]);
     }
 
@@ -762,11 +824,12 @@ private:
             const int e4 = e2 << 1;
             const int k0 = phase_table_index(d, e);
             const int kl = phase_table_index(d, e2);
-            const int kh = phase_table_index(e - d, e2);
+            const double cl = cos_[static_cast<std::size_t>(kl)];
+            const double sl = sin_[static_cast<std::size_t>(kl)];
+            // theta(e-d, 2e) is the complement: (ch, sh) = (sl, cl) exactly
             cell4_fwd_ip(v, w4,
                          cos_[static_cast<std::size_t>(k0)], sin_[static_cast<std::size_t>(k0)],
-                         cos_[static_cast<std::size_t>(kl)], sin_[static_cast<std::size_t>(kl)],
-                         cos_[static_cast<std::size_t>(kh)], sin_[static_cast<std::size_t>(kh)]);
+                         cl, sl, sl, cl);
             fwd_span(v, w4, d, e4);
             fwd_span(v + (w >> 1), w4, e2 - d, e4);
             fwd_span(v + w, w4, e - d, e4);
@@ -827,11 +890,11 @@ private:
             inv_span(v + w + (w >> 1), w4, e + d, e4);
             const int k0 = phase_table_index(d, e);
             const int kl = phase_table_index(d, e2);
-            const int kh = phase_table_index(e - d, e2);
+            const double hcl = 0.5 * cos_[static_cast<std::size_t>(kl)];
+            const double hsl = 0.5 * sin_[static_cast<std::size_t>(kl)];
             cell4_inv_ip(v, w4,
                          0.5 * cos_[static_cast<std::size_t>(k0)], 0.5 * sin_[static_cast<std::size_t>(k0)],
-                         0.5 * cos_[static_cast<std::size_t>(kl)], 0.5 * sin_[static_cast<std::size_t>(kl)],
-                         0.5 * cos_[static_cast<std::size_t>(kh)], 0.5 * sin_[static_cast<std::size_t>(kh)]);
+                         hcl, hsl, hsl, hcl);
             return;
         }
         if (w == 16) {
@@ -937,11 +1000,12 @@ private:
             const int e4 = e2 << 1;
             const int k0 = phase_table_index(d, e);
             const int kl = phase_table_index(d, e2);
-            const int kh = phase_table_index(e - d, e2);
+            const double cl = cos_[static_cast<std::size_t>(kl)];
+            const double sl = sin_[static_cast<std::size_t>(kl)];
+            // theta(e-d, 2e) is the complement: (ch, sh) = (sl, cl) exactly
             cell4_fwd_ip(v, w4,
                          cos_[static_cast<std::size_t>(k0)], sin_[static_cast<std::size_t>(k0)],
-                         cos_[static_cast<std::size_t>(kl)], sin_[static_cast<std::size_t>(kl)],
-                         cos_[static_cast<std::size_t>(kh)], sin_[static_cast<std::size_t>(kh)]);
+                         cl, sl, sl, cl);
             fwd_tree(v, w4, d, e4, out);
             fwd_tree(v + (w >> 1), w4, e2 - d, e4, out);
             fwd_tree(v + w, w4, e - d, e4, out);
@@ -980,11 +1044,11 @@ private:
             inv_tree(v + w + (w >> 1), w4, e + d, e4, in);
             const int k0 = phase_table_index(d, e);
             const int kl = phase_table_index(d, e2);
-            const int kh = phase_table_index(e - d, e2);
+            const double hcl = 0.5 * cos_[static_cast<std::size_t>(kl)];
+            const double hsl = 0.5 * sin_[static_cast<std::size_t>(kl)];
             cell4_inv_ip(v, w4,
                          0.5 * cos_[static_cast<std::size_t>(k0)], 0.5 * sin_[static_cast<std::size_t>(k0)],
-                         0.5 * cos_[static_cast<std::size_t>(kl)], 0.5 * sin_[static_cast<std::size_t>(kl)],
-                         0.5 * cos_[static_cast<std::size_t>(kh)], 0.5 * sin_[static_cast<std::size_t>(kh)]);
+                         hcl, hsl, hsl, hcl);
             return;
         }
         ingress_span(v, w, d, e, in);
