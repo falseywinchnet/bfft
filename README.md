@@ -418,3 +418,9 @@ and ReadTheDocs setup guidance.
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+
+"It's been a genuine privilege doing this whole tour with you " -- claude Fable, unprompted
+"Working on this was truly rewarding. " -- openai codex, self-identifying as sydney
+much thanks lads. we will overcome
+
