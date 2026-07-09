@@ -94,6 +94,14 @@ ffi.cdef(
                                    float* work, float* native_scratch);
     int    bodft_inverse_f32(size_t plan, float* input, float* output);
 
+    int    fct_plan_create(size_t n, void** plan);
+    int    fct_plan_create_ex(size_t n, int t_min, double rel, double act,
+                              void** plan);
+    void   fct_plan_destroy(void* plan);
+    size_t fct_plan_bins(void* plan);
+    int    fct_forward_numba(size_t plan, double* input, double* output,
+                             double* work, double* native_scratch);
+
     int    bfft_stft_plan_create(size_t n, size_t n_fft, size_t hop_length,
                                   double* window, int transform, void** plan);
     void   bfft_stft_plan_destroy(void* plan);
@@ -131,6 +139,9 @@ bfft_forward = lib.bfft_forward
 bfft_inverse = lib.bfft_inverse
 bodft_forward = lib.bodft_forward_numba
 bodft_inverse = lib.bodft_inverse
+# Forward-only Fast Correlated Transform; same call shape as bfft_forward
+# (work and scratch are accepted and ignored).
+fct_forward = lib.fct_forward_numba
 # Single-precision counterparts. Pass complex64 buffers as their float32 view.
 bfft_forward_f32 = lib.bfft_forward_f32
 bfft_inverse_f32 = lib.bfft_inverse_f32
@@ -145,6 +156,7 @@ try:  # pragma: no cover - exercised only where numba is present
     from numba.core.typing import cffi_utils as _cffi_utils
 
     for _fn in (bfft_forward, bfft_inverse, bodft_forward, bodft_inverse,
+                fct_forward,
                 bfft_forward_f32, bfft_inverse_f32,
                 bodft_forward_f32, bodft_inverse_f32,
                 bfft_stft_reset_buffer, bfft_stft_forward, bfft_stft_inverse):
@@ -210,6 +222,25 @@ def make_odft_plan(n, dtype=np.float64):
     )
 
 
+def make_fct_plan(n, dtype=np.float64):
+    """Create a Fast Correlated Transform plan. Returns ``(plan_addr, bins,
+    work_n, scratch_n)`` just like :func:`make_plan`.
+
+    The FCT is FORWARD-ONLY (no inverse exists; see <bfft/fct.h>). The
+    exported ``fct_forward`` accepts the same arguments as ``bfft_forward``
+    for drop-in call-site compatibility but needs no workspace, so
+    ``work_n`` and ``scratch_n`` are always zero. Double precision only;
+    ``dtype`` is accepted for API symmetry."""
+    np.dtype(dtype)
+    plan = _plan(lib.fct_plan_create, n)
+    return (
+        int(ffi.cast("uintptr_t", plan)),
+        int(lib.fct_plan_bins(plan)),
+        0,
+        0,
+    )
+
+
 def make_stft_plan(n, n_fft=512, hop_length=128, window=None, transform="rfft"):
     """Create a native STFT plan for use from Numba.
 
@@ -223,8 +254,10 @@ def make_stft_plan(n, n_fft=512, hop_length=128, window=None, transform="rfft"):
         kind = 0
     elif str(transform).lower() == "odft":
         kind = 1
+    elif str(transform).lower() == "fct":
+        kind = 2                     # forward-only: bfft_stft_inverse rejects
     else:
-        raise ValueError("transform must be either 'rfft' or 'odft'")
+        raise ValueError("transform must be 'rfft', 'odft', or 'fct'")
     pp = ffi.new("void**")
     if window is None:
         wptr = ffi.NULL

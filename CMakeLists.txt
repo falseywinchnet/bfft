@@ -23,12 +23,15 @@ set(BFFT_PUBLIC_HEADERS
   include/bfft/bfft.hpp
   include/bfft/bodft.h
   include/bfft/bodft.hpp
+  include/bfft/fct.h
+  include/bfft/fct.hpp
   include/bfft/stft.h
   include/bfft/stft.hpp)
 
 set(BFFT_SOURCES
   src/bfft.cpp
   src/bodft.cpp
+  src/fct.cpp
   src/stft.cpp)
 
 set(BFFT_PLATFORM_LIBS)

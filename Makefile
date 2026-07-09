@@ -74,9 +74,11 @@ SRC := src/bfft.cpp
 OBJ := $(BUILD_DIR)/src/bfft.o
 BODFT_SRC := src/bodft.cpp
 BODFT_OBJ := $(BUILD_DIR)/src/bodft.o
+FCT_SRC := src/fct.cpp
+FCT_OBJ := $(BUILD_DIR)/src/fct.o
 STFT_SRC := src/stft.cpp
 STFT_OBJ := $(BUILD_DIR)/src/stft.o
-LIB_OBJS := $(OBJ) $(BODFT_OBJ) $(STFT_OBJ)
+LIB_OBJS := $(OBJ) $(BODFT_OBJ) $(FCT_OBJ) $(STFT_OBJ)
 STATIC_LIB := $(BUILD_DIR)/lib$(LIB_NAME).a
 SHARED_LIB := $(BUILD_DIR)/lib$(LIB_NAME).so
 PC_FILE := $(BUILD_DIR)/$(LIB_NAME).pc
@@ -123,7 +125,10 @@ $(OBJ): $(SRC) include/bfft/bfft.h src/detail/bruun_dif_kernel.hpp src/detail/br
 $(BODFT_OBJ): $(BODFT_SRC) include/bfft/bodft.h include/bfft/bfft.h src/detail/bodft_kernel.hpp src/detail/bruun_dif_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
 
-$(STFT_OBJ): $(STFT_SRC) include/bfft/stft.h include/bfft/bfft.h include/bfft/bodft.h | $(BUILD_DIR)
+$(FCT_OBJ): $(FCT_SRC) include/bfft/fct.h include/bfft/bfft.h src/detail/fct_kernel.hpp | $(BUILD_DIR)
+	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
+
+$(STFT_OBJ): $(STFT_SRC) include/bfft/stft.h include/bfft/bfft.h include/bfft/bodft.h include/bfft/fct.h | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
 
 $(STATIC_LIB): $(LIB_OBJS)
@@ -241,6 +246,8 @@ install: all $(PC_FILE)
 	$(INSTALL) -m 0644 include/bfft/bfft.hpp $(DESTDIR)$(PREFIX)/include/bfft/bfft.hpp
 	$(INSTALL) -m 0644 include/bfft/bodft.h $(DESTDIR)$(PREFIX)/include/bfft/bodft.h
 	$(INSTALL) -m 0644 include/bfft/bodft.hpp $(DESTDIR)$(PREFIX)/include/bfft/bodft.hpp
+	$(INSTALL) -m 0644 include/bfft/fct.h $(DESTDIR)$(PREFIX)/include/bfft/fct.h
+	$(INSTALL) -m 0644 include/bfft/fct.hpp $(DESTDIR)$(PREFIX)/include/bfft/fct.hpp
 	$(INSTALL) -m 0644 include/bfft/stft.h $(DESTDIR)$(PREFIX)/include/bfft/stft.h
 	$(INSTALL) -m 0644 include/bfft/stft.hpp $(DESTDIR)$(PREFIX)/include/bfft/stft.hpp
 	$(INSTALL) -m 0644 $(STATIC_LIB) $(DESTDIR)$(PREFIX)/lib/lib$(LIB_NAME).a
@@ -252,6 +259,8 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/include/bfft/bfft.hpp
 	rm -f $(DESTDIR)$(PREFIX)/include/bfft/bodft.h
 	rm -f $(DESTDIR)$(PREFIX)/include/bfft/bodft.hpp
+	rm -f $(DESTDIR)$(PREFIX)/include/bfft/fct.h
+	rm -f $(DESTDIR)$(PREFIX)/include/bfft/fct.hpp
 	rm -f $(DESTDIR)$(PREFIX)/include/bfft/stft.h
 	rm -f $(DESTDIR)$(PREFIX)/include/bfft/stft.hpp
 	rm -f $(DESTDIR)$(PREFIX)/lib/lib$(LIB_NAME).a

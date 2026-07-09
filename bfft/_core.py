@@ -113,6 +113,17 @@ _bodft_plan_bins = _decl("bodft_plan_bins", ctypes.c_size_t, [_plan_p])
 _bodft_forward = _decl("bodft_forward", ctypes.c_int, [_plan_p, _void_p, _void_p])
 _bodft_inverse = _decl("bodft_inverse", ctypes.c_int, [_plan_p, _void_p, _void_p])
 
+# --- fast correlated transform (fct.h) ---
+_fct_plan_create = _decl("fct_plan_create", ctypes.c_int,
+                         [ctypes.c_size_t, ctypes.POINTER(_plan_p)])
+_fct_plan_create_ex = _decl("fct_plan_create_ex", ctypes.c_int,
+                            [ctypes.c_size_t, ctypes.c_int, ctypes.c_double,
+                             ctypes.c_double, ctypes.POINTER(_plan_p)])
+_fct_plan_destroy = _decl("fct_plan_destroy", None, [_plan_p])
+_fct_plan_bins = _decl("fct_plan_bins", ctypes.c_size_t, [_plan_p])
+_fct_forward = _decl("fct_forward", ctypes.c_int,
+                     [_plan_p, _void_p, _void_p, _void_p])
+
 _OK = 0
 
 
@@ -160,6 +171,11 @@ def _check_rfft_n(n):
 def _check_odft_n(n):
     if not _is_pow2(n) or n < 2:
         raise ValueError("bfft ODFT requires a power-of-two length N >= 2")
+
+
+def _check_fct_n(n):
+    if not _is_pow2(n) or n < 16:
+        raise ValueError("bfft FCT requires a power-of-two length N >= 16")
 
 
 # --------------------------------------------------------------------------
@@ -247,6 +263,53 @@ class OdftPlan:
         return out
 
 
+class FctPlan:
+    """Reusable plan for the Fast Correlated Transform at a fixed
+    power-of-two size N >= 16.
+
+    FORWARD-ONLY.  ``FctPlan(N).fct(x)`` returns ``(C, tau)``: for each of
+    the ``N/2 + 1`` standard bins, ``C[k]`` is the leading-edge correlation
+    ``sum_{t < tau[k]} x[t] * exp(-2j*pi*k*t/N)`` at the slice
+    ``tau[k] in [1, N]`` where the bin maximally correlates under the score
+    ``|C|^2 / tau``.  Bins with no coherent leading edge default to
+    ``tau = N`` (the plain FFT bin), so the FCT degrades gracefully to the
+    real-FFT spectrum on incoherent content.  The selection is nonlinear and
+    no inverse exists.
+
+    A plan owns native scratch and is not thread-safe; create one plan per
+    thread."""
+
+    __slots__ = ("n", "bins", "_plan")
+
+    def __init__(self, n, t_min=None, rel=None, act=None):
+        n = int(n)
+        _check_fct_n(n)
+        self.n = n
+        if t_min is None and rel is None and act is None:
+            self._plan = _fct_plan(n)
+        else:
+            p = _plan_p()
+            _check(_fct_plan_create_ex(
+                n,
+                4 if t_min is None else int(t_min),
+                0.5 if rel is None else float(rel),
+                1.5 if act is None else float(act),
+                ctypes.byref(p)), "fct_plan_create_ex")
+            self._plan = p
+        self.bins = int(_fct_plan_bins(self._plan))
+
+    def fct(self, x, out=None, tau_out=None):
+        a = _as_f64_1d(x)
+        if a.shape[0] != self.n:
+            raise ValueError(f"FctPlan(N={self.n}).fct expects length {self.n}")
+        out = _out_buffer(out, self.bins, np.complex128, "FctPlan.fct")
+        tau_out = _out_buffer(tau_out, self.bins, np.int64, "FctPlan.fct tau")
+        _check(_fct_forward(self._plan, a.ctypes.data, out.ctypes.data,
+                            tau_out.ctypes.data),
+               "fct_forward")
+        return out, tau_out
+
+
 
 # --- short-time Fourier transform (stft.h) ---
 _bfft_stft_plan_p = ctypes.c_void_p
@@ -290,9 +353,12 @@ class STFTPlan:
         Optional analysis window of length ``n_fft``. If omitted, BFFT generates
         a Hann window. The matching MSE-optimal synthesis window is derived in
         the native plan.
-    transform : {"rfft", "odft"}
+    transform : {"rfft", "odft", "fct"}
         Per-frame transform. ``"rfft"`` returns ``n_fft // 2 + 1`` bins;
-        ``"odft"`` returns ``n_fft // 2`` half-bin shifted bins.
+        ``"odft"`` returns ``n_fft // 2`` half-bin shifted bins; ``"fct"``
+        returns ``n_fft // 2 + 1`` bins where each bin is emitted at its
+        maximally correlated leading-edge slice (forward-only: ``istft``
+        raises; frames are gathered in natural time order, no fftshift).
 
     Notes
     -----
@@ -315,8 +381,10 @@ class STFTPlan:
             kind = 0
         elif t == "odft":
             kind = 1
+        elif t == "fct":
+            kind = 2
         else:
-            raise ValueError("transform must be either 'rfft' or 'odft'")
+            raise ValueError("transform must be 'rfft', 'odft', or 'fct'")
         if window is None:
             w_ptr = None
             self._window = None
@@ -364,7 +432,13 @@ class STFTPlan:
         """Invert a spectrogram block and return a float64 signal block.
 
         The plan's internal overlap buffer is updated as part of this call.
+        Plans created with ``transform="fct"`` are forward-only and reject
+        this call.
         """
+        if self.transform == "fct":
+            raise ValueError(
+                "STFTPlan(transform='fct') is forward-only: the FCT's "
+                "per-bin slice selection is nonlinear and has no inverse")
         a = np.ascontiguousarray(Zx, dtype=np.complex128)
         if a.shape != (self.n_bins, self.n_segs):
             raise ValueError(f"Zx must have shape ({self.n_bins}, {self.n_segs})")
@@ -377,6 +451,7 @@ class STFTPlan:
 # Native plans are reusable per size; cache them so repeated calls avoid setup.
 _bfft_plans: dict[int, _plan_p] = {}
 _bodft_plans: dict[int, _plan_p] = {}
+_fct_plans: dict[int, _plan_p] = {}
 
 
 def _bfft_plan(n):
@@ -394,6 +469,15 @@ def _bodft_plan(n):
         p = _plan_p()
         _check(_bodft_plan_create(n, ctypes.byref(p)), "bodft_plan_create")
         _bodft_plans[n] = p
+    return p
+
+
+def _fct_plan(n):
+    p = _fct_plans.get(n)
+    if p is None:
+        p = _plan_p()
+        _check(_fct_plan_create(n, ctypes.byref(p)), "fct_plan_create")
+        _fct_plans[n] = p
     return p
 
 
@@ -477,3 +561,13 @@ def iodft(x, n=None):
     _check_odft_n(n)
     plan, _ = _cached_odft_plan(n)
     return plan.iodft(a)
+
+
+def fct(x):
+    """Fast Correlated Transform (forward-only) for power-of-two lengths
+    N >= 16.  Returns ``(C, tau)`` where ``C[k]`` is the leading-edge
+    correlation of standard bin ``k`` at its maximally correlated slice
+    ``tau[k]`` (see :class:`FctPlan`).  There is no inverse."""
+    a = _as_f64_1d(x)
+    _check_fct_n(a.shape[0])
+    return FctPlan(a.shape[0]).fct(a)

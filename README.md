@@ -39,6 +39,10 @@ creation returns `BFFT_ERROR_INVALID_ARGUMENT`.
 - Residue-domain transforms and filters.
 - C ABI in `<bfft/bfft.h>` and C++ wrapper in `<bfft/bfft.hpp>`.
 - BODFT half-bin transform API in `<bfft/bodft.h>` and `<bfft/bodft.hpp>`.
+- FCT Fast Correlated Transform API in `<bfft/fct.h>` and `<bfft/fct.hpp>`:
+  a forward-only transform that emits each bin at its maximally correlated
+  leading-edge slice (also available per-frame in the STFT as
+  `BFFT_STFT_FCT` / `transform="fct"`; no inverse exists).
 - Makefile, CMake, `pkg-config`, and CMake package installation support.
 
 ## Requirements
@@ -123,6 +127,8 @@ Installed files include:
 - `${PREFIX}/include/bfft/bfft.hpp`
 - `${PREFIX}/include/bfft/bodft.h`
 - `${PREFIX}/include/bfft/bodft.hpp`
+- `${PREFIX}/include/bfft/fct.h`
+- `${PREFIX}/include/bfft/fct.hpp`
 - `${PREFIX}/lib/libbfft.a`
 - `${PREFIX}/lib/libbfft.so`
 - `${PREFIX}/lib/pkgconfig/bfft.pc`
@@ -214,7 +220,8 @@ From a clone of the repository:
 pip install .
 ```
 
-This compiles `src/bfft.cpp` and `src/bodft.cpp` with your C++ compiler and
+This compiles `src/bfft.cpp`, `src/bodft.cpp`, `src/fct.cpp`, and
+`src/stft.cpp` with your C++ compiler and
 bundles the resulting shared library inside the installed package. A C++17
 compiler and NumPy are the only requirements.
 
@@ -249,6 +256,10 @@ x_back = bfft.irfft(X)             # == numpy.fft.irfft(X)       -> N samples
 
 H = bfft.odft(x)                   # half-bin-shifted transform  -> N/2 bins
 x_back2 = bfft.iodft(H)            # inverse of odft             -> N samples
+
+C, tau = bfft.fct(x)               # Fast Correlated Transform   -> N/2 + 1 bins
+                                   # each bin at its max-correlation leading-edge
+                                   # slice tau[k]; forward-only, no inverse
 ```
 
 | Function | Equivalent | Notes |

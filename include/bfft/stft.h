@@ -12,7 +12,13 @@ typedef struct bfft_stft_plan bfft_stft_plan;
 
 typedef enum bfft_stft_transform {
     BFFT_STFT_RFFT = 0,
-    BFFT_STFT_ODFT = 1
+    BFFT_STFT_ODFT = 1,
+    /* Fast Correlated Transform (see <bfft/fct.h>): each frame bin is
+       emitted at its maximally correlated leading-edge slice. Frames are
+       gathered in natural time order (no fftshift centering: the leading
+       edge is a time-domain notion). FORWARD-ONLY: bfft_stft_inverse
+       rejects plans created with this transform. */
+    BFFT_STFT_FCT = 2
 } bfft_stft_transform;
 
 /* Create a fixed-size, streaming STFT/ISTFT plan.

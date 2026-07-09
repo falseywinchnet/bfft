@@ -34,7 +34,9 @@ from bfft.numba_support import (
     bfft_inverse,
     bodft_forward,
     bodft_inverse,
+    fct_forward,
     ffi,
+    make_fct_plan,
     make_odft_plan,
     make_plan,
 )
@@ -97,25 +99,36 @@ def stft_kernel(
 
     for jx in range(n_segs):
         base = jx * hop
-        for a in range(n_fft):
-          idx = a + half
-          if idx >= n_fft:
-              idx -= n_fft
+        if transform_kind == 2:
+            # FCT frames stay in natural time order: the leading edge is a
+            # time-domain notion, so no fftshift centering and the window is
+            # applied unshifted (the class stores it unshifted for FCT).
+            for a in range(n_fft):
+                seg[a] = xp[base + a] * ana[a]
+        else:
+            for a in range(n_fft):
+                idx = a + half
+                if idx >= n_fft:
+                    idx -= n_fft
 
-          v = xp[base + idx] * ana[a]
+                v = xp[base + idx] * ana[a]
 
-          if transform_kind == 1 and a >= half:
-              v = -v
+                if transform_kind == 1 and a >= half:
+                    v = -v
 
-          seg[a] = v
+                seg[a] = v
         if transform_kind == 0:
             bfft_forward(plan,
                          ffi.from_buffer(seg), ffi.from_buffer(out_f),
                          ffi.from_buffer(work), ffi.from_buffer(scratch))
-        else:
+        elif transform_kind == 1:
             bodft_forward(plan,
                           ffi.from_buffer(seg), ffi.from_buffer(out_f),
                           ffi.from_buffer(work), ffi.from_buffer(scratch))
+        else:
+            fct_forward(plan,
+                        ffi.from_buffer(seg), ffi.from_buffer(out_f),
+                        ffi.from_buffer(work), ffi.from_buffer(scratch))
         for b in range(n_bins):
             Zx[b, jx] = out_f[2 * b] + 1j * out_f[2 * b + 1]
     return Zx
@@ -193,10 +206,15 @@ class STFT:
     window : array_like or None
         Analysis window of length ``n_fft``. Defaults to a Hann window. The
         MSE-optimal synthesis window is derived from it.
-    transform : {"rfft", "odft"}
+    transform : {"rfft", "odft", "fct"}
         Transform used for each frame. ``"odft"`` uses the half-bin ODFT path
         with ``n_fft // 2`` bins; ``"rfft"`` uses the standard real FFT path
-        with ``n_fft // 2 + 1`` bins.
+        with ``n_fft // 2 + 1`` bins. ``"fct"`` uses the Fast Correlated
+        Transform: ``n_fft // 2 + 1`` bins, each emitted at its maximally
+        correlated leading-edge slice within the frame. FCT frames are
+        gathered in natural time order (no fftshift: the leading edge is a
+        time-domain notion) and the path is FORWARD-ONLY -- :meth:`istft`
+        raises for it. Incoherent bins equal the plain rfft bins.
 
     Notes
     -----
@@ -229,12 +247,15 @@ class STFT:
         if transform == "rfft":
             transform_kind = 0
             plan_factory = make_plan
+        elif transform == "odft":
+            transform_kind = 1
+            plan_factory = make_odft_plan
+        elif transform == "fct":
+            transform_kind = 2
+            plan_factory = make_fct_plan
+            assert n_fft >= 16, "transform='fct' requires n_fft >= 16"
         else:
-            if transform == "odft":
-                transform_kind = 1
-                plan_factory = make_odft_plan
-            else:
-                raise ValueError("transform must be either 'rfft' or 'odft'")
+            raise ValueError("transform must be 'rfft', 'odft', or 'fct'")
 
         if window is None:
             window = np.hanning(n_fft)
@@ -267,8 +288,12 @@ class STFT:
         self.synthesis_window = synthesis
         # Analysis window is pre-shifted (ifftshift) and applied as the frame is
         # gathered with its fftshift; the synthesis window is applied after the
-        # inverse frame is un-fftshifted, so it is stored un-shifted.
-        self._ana = np.ascontiguousarray(np.fft.ifftshift(window))
+        # inverse frame is un-fftshifted, so it is stored un-shifted. FCT frames
+        # are gathered in natural order, so their window stays unshifted too.
+        if transform_kind == 2:
+            self._ana = np.ascontiguousarray(window)
+        else:
+            self._ana = np.ascontiguousarray(np.fft.ifftshift(window))
         self._syn = np.ascontiguousarray(synthesis)
         # Persistent overlap buffer length for streaming inversion.
         self.buffer_length = n_fft - hop_length
@@ -299,6 +324,10 @@ class STFT:
         ``buffer`` is the updated overlap state. Pass the returned ``buffer``
         back in to invert the next block continuously; omit it (or call
         :meth:`new_buffer`) to start a fresh stream."""
+        if self._transform_kind == 2:
+            raise ValueError(
+                "STFT(transform='fct') is forward-only: the FCT's per-bin "
+                "slice selection is nonlinear and has no inverse")
         Zx = np.ascontiguousarray(Zx, dtype=np.complex128)
         assert Zx.shape == (self.n_bins, self.n_segs), \
             f"Zx must have shape ({self.n_bins}, {self.n_segs})"

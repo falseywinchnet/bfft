@@ -16,6 +16,8 @@ inline void stft_check(status result) {
 using stft_transform = bfft_stft_transform;
 constexpr stft_transform stft_rfft = BFFT_STFT_RFFT;
 constexpr stft_transform stft_odft = BFFT_STFT_ODFT;
+/* Forward-only Fast Correlated Transform frames (see <bfft/fct.h>). */
+constexpr stft_transform stft_fct = BFFT_STFT_FCT;
 
 inline std::vector<double> hann_window(std::size_t n_fft) {
     std::vector<double> out(n_fft);

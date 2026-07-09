@@ -1,5 +1,6 @@
 #include <bfft/stft.h>
 #include <bfft/bodft.h>
+#include <bfft/fct.h>
 
 #include <algorithm>
 #include <cmath>
@@ -19,6 +20,7 @@ struct bfft_stft_plan {
 
     bfft_plan* rfft = nullptr;
     bodft_plan* odft = nullptr;
+    fct_plan* fct = nullptr;
 
     std::vector<double> window;
     std::vector<double> analysis;
@@ -35,6 +37,7 @@ struct bfft_stft_plan {
     ~bfft_stft_plan() {
         bfft_plan_destroy(rfft);
         bodft_plan_destroy(odft);
+        fct_plan_destroy(fct);
     }
 };
 
@@ -144,7 +147,9 @@ bfft_status bfft_stft_plan_create(size_t n, size_t n_fft, size_t hop_length, con
     if (n == 0 || n_fft < 4 || !is_power_of_two(n_fft) || (n_fft % 2) != 0) return BFFT_ERROR_INVALID_ARGUMENT;
     if (hop_length == 0 || hop_length > n_fft || (n_fft % hop_length) != 0) return BFFT_ERROR_INVALID_ARGUMENT;
     if ((n % hop_length) != 0) return BFFT_ERROR_INVALID_ARGUMENT;
-    if (transform != BFFT_STFT_RFFT && transform != BFFT_STFT_ODFT) return BFFT_ERROR_INVALID_ARGUMENT;
+    if (transform != BFFT_STFT_RFFT && transform != BFFT_STFT_ODFT &&
+        transform != BFFT_STFT_FCT) return BFFT_ERROR_INVALID_ARGUMENT;
+    if (transform == BFFT_STFT_FCT && n_fft < 16) return BFFT_ERROR_INVALID_ARGUMENT;
     if (n > static_cast<size_t>(std::numeric_limits<long long>::max())) return BFFT_ERROR_INVALID_ARGUMENT;
     if (n_fft > (static_cast<size_t>(std::numeric_limits<long long>::max()) + 2) / 2) return BFFT_ERROR_INVALID_ARGUMENT;
     if (n_fft > std::numeric_limits<int>::max()) return BFFT_ERROR_INVALID_ARGUMENT;
@@ -170,7 +175,13 @@ bfft_status bfft_stft_plan_create(size_t n, size_t n_fft, size_t hop_length, con
             if (st != BFFT_OK) return st;
         }
         p->analysis.resize(n_fft);
-        ifftshift_copy(p->window, p->analysis);
+        if (transform == BFFT_STFT_FCT) {
+            // Leading-edge frames stay in natural time order: no fftshift
+            // centering, so the analysis window is applied unshifted.
+            for (size_t i = 0; i < n_fft; ++i) p->analysis[i] = p->window[i];
+        } else {
+            ifftshift_copy(p->window, p->analysis);
+        }
         if (!synthesis_window(p->window, hop_length, p->synthesis)) return BFFT_ERROR_INVALID_ARGUMENT;
 
         if (transform == BFFT_STFT_RFFT) {
@@ -179,10 +190,14 @@ bfft_status bfft_stft_plan_create(size_t n, size_t n_fft, size_t hop_length, con
             p->bins = bfft_plan_bins(p->rfft);
             p->work.resize(bfft_plan_work_size(p->rfft));
             p->scratch.resize(bfft_plan_native_scratch_size(p->rfft));
-        } else {
+        } else if (transform == BFFT_STFT_ODFT) {
             bfft_status st = bodft_plan_create(n_fft, &p->odft);
             if (st != BFFT_OK) return st;
             p->bins = bodft_plan_bins(p->odft);
+        } else {
+            bfft_status st = fct_plan_create(n_fft, &p->fct);
+            if (st != BFFT_OK) return st;
+            p->bins = fct_plan_bins(p->fct);
         }
         p->buffer.assign(n_fft - hop_length, 0.0);
         p->xp.resize(n + n_fft - 1);
@@ -220,18 +235,27 @@ bfft_status bfft_stft_forward(bfft_stft_plan* plan, const double* input, bfft_co
     fill_reflect_pad(input, plan);
     for (size_t col = 0; col < plan->segments; ++col) {
         const size_t base = col * plan->hop;
-        for (size_t a = 0; a < half; ++a) plan->segment[a] = plan->xp[base + a + half] * plan->analysis[a];
-        for (size_t a = 0; a < half; ++a) {
-            const size_t j = a + half;
-            double v = plan->xp[base + a] * plan->analysis[j];
-            if (plan->transform == BFFT_STFT_ODFT) v = -v;
-            plan->segment[j] = v;
+        if (plan->transform == BFFT_STFT_FCT) {
+            // natural frame order: the leading edge is a time-domain notion
+            for (size_t a = 0; a < plan->n_fft; ++a) {
+                plan->segment[a] = plan->xp[base + a] * plan->analysis[a];
+            }
+        } else {
+            for (size_t a = 0; a < half; ++a) plan->segment[a] = plan->xp[base + a + half] * plan->analysis[a];
+            for (size_t a = 0; a < half; ++a) {
+                const size_t j = a + half;
+                double v = plan->xp[base + a] * plan->analysis[j];
+                if (plan->transform == BFFT_STFT_ODFT) v = -v;
+                plan->segment[j] = v;
+            }
         }
         bfft_status st;
         if (plan->transform == BFFT_STFT_RFFT) {
             st = bfft_forward(plan->rfft, plan->segment.data(), plan->tmp_bins.data(), plan->work.data(), plan->scratch.data());
-        } else {
+        } else if (plan->transform == BFFT_STFT_ODFT) {
             st = bodft_forward(plan->odft, plan->segment.data(), plan->tmp_bins.data());
+        } else {
+            st = fct_forward(plan->fct, plan->segment.data(), plan->tmp_bins.data(), nullptr);
         }
         if (st != BFFT_OK) return st;
         for (size_t bin = 0; bin < plan->bins; ++bin) output[bin * plan->segments + col] = plan->tmp_bins[bin];
@@ -241,6 +265,9 @@ bfft_status bfft_stft_forward(bfft_stft_plan* plan, const double* input, bfft_co
 
 bfft_status bfft_stft_inverse(bfft_stft_plan* plan, const bfft_complex* input, double* output) {
     if (!plan || !input || !output) return BFFT_ERROR_INVALID_ARGUMENT;
+    /* The FCT is forward-only: the per-bin slice selection is nonlinear and
+       the underlying truncation family is exponentially ill-conditioned. */
+    if (plan->transform == BFFT_STFT_FCT) return BFFT_ERROR_INVALID_ARGUMENT;
     const size_t half = plan->n_fft / 2;
     size_t pos = 0;
     for (size_t col = 0; col < plan->segments; ++col) {
