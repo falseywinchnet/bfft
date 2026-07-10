@@ -28,7 +28,7 @@ import numpy as np
 import dearpygui.dearpygui as dpg
 
 import iqwaterfall as iqw
-import dip_stream
+import two_lattice
 
 # ---------------------------------------------------------------------------
 # Colormaps: small anchor tables interpolated to 256-entry RGB LUTs.
@@ -105,6 +105,7 @@ class App:
         self.src: iqw.IQSource | None = None
         self.wf: iqw.Waterfall | None = None
         self.ra: iqw.Reassign | None = None
+        self.sr_ra: iqw.Reassign | None = None
 
         self.n_fft = 1024
         self.window = 0
@@ -129,33 +130,16 @@ class App:
         self.last_t = time.perf_counter()
         self.dirty = True
 
-        # DIP/PGHI streaming reconstruction
-        self.reconstruct = False
-        self.reconstructor: dip_stream.StreamReconstructor | None = None
-        self.recon_workers = 3
         self.recon_cov = 0.0
-        # Two-aperture DIP-Zak fusion super-resolution (F1xT2): the user picks
-        # both analysis windows; fine frequency comes from the long aperture
-        # endpoint, fine time from the measured short gates, both read off one
-        # refined active-delta state.
+        # Faithful Python two-lattice magnitude inversion.  Each aperture owns
+        # an independent STFT lattice; their only shared variable is a latent
+        # waveform.  Readout is a reassigned long STFT on the short (H=32)
+        # center lattice, exactly as in zak_superresolution_wav_demo.py.
         self.super_res = False
         self.sr_nb = 1024             # long aperture window (fine frequency)
         self.sr_ns = 128              # short aperture window (fine time)
-        self.sr_steps = 1             # fixed L5 (projection) steps
-        self.sr_alpha = 1.0           # projection step size (0.5..1.0)
-        self.sr_gate_floor = 0.05     # uniform-power mixture in the time gates
-        self.sr_beta = 1.0            # gate contrast (power-renormalized)
-        # "claim": gates normalized over the frame's full delta range with
-        # long-window weights -- off-band energy goes unclaimed, which removes
-        # the +-NB/2 transient halo (measured ~26 dB -> ~0 dB). "frame": exact
-        # per-frame conservation sum_e |F|^2 = |L|^2.
-        self.sr_norm = "claim"
-        self.srs: dip_stream.FusionStream | None = None
-        self.reassigned = False       # phase-reassigned STFT readout
-        # Cap the reconstructed span (raw-fills beyond coverage). Sized to the
-        # segment cache so zoomed-out views still reconstruct.
-        self.max_recon_span = 1_200_000
-
+        self.srs: two_lattice.TwoLatticeStream | None = None
+        self.reassigned = False       # ordinary phase-reassigned STFT
         self._block = None            # reusable (DH, n_fft) render buffer
         self._rgba = np.zeros((DH, DW, 4), dtype=np.float32)
         self._rgba[..., 3] = 1.0
@@ -165,9 +149,9 @@ class App:
         if self.srs:
             self.srs.close()
             self.srs = None
-        if self.reconstructor:
-            self.reconstructor.close()
-            self.reconstructor = None
+        if self.sr_ra:
+            self.sr_ra.close()
+            self.sr_ra = None
         if self.src:
             self.src.close()
             self.src = None
@@ -193,9 +177,6 @@ class App:
                 dpg.set_value("status", f"Open failed: {exc}")
                 return
         self._make_wf()
-        if self.reconstruct:
-            self.reconstructor = dip_stream.StreamReconstructor(
-                self.src, workers=self.recon_workers)
         self.position = 0
         self.playing = False
         self.dirty = True
@@ -220,58 +201,40 @@ class App:
         self._block = np.empty((DH, self.n_fft), dtype=np.float32)
 
     # -- rendering ----------------------------------------------------------
-    def _recon_buffer(self, need, label):
-        """Return a complex buffer for [position, position+need): reconstructed
-        (DIP) if enabled and within the span cap, else raw."""
-        if (self.reconstruct and self.reconstructor is not None
-                and need <= self.max_recon_span):
-            self.reconstructor.request(self.position, need)
-            buf, cov = self.reconstructor.assemble(self.position, need)
-            self.recon_cov = cov
-            dpg.set_value("recon_status", f"{label} (DIP): {cov*100:.0f}% ready")
-            if cov < 0.999:
-                self._recon_pending = True
-            return buf[0::2] + 1j * buf[1::2]
-        if self.reconstruct and self.reconstructor is not None:
-            dpg.set_value("recon_status", f"{label} (raw — zoom in for DIP)")
-        return self.src.read(self.position, need)
-
     def _fusion_block(self):
-        """Two-aperture DIP-Zak fusion super-resolution (F1xT2).
-
-        One refined active-delta state per long frame: the long-aperture
-        endpoint supplies fine frequency at true scale, and the measured short
-        endpoints at the constrained deltas gate that power across the owned
-        fine-time rows (sum_e |F|^2 = |L|^2). Native grid is HS=32-sample rows
-        x nb bins, resampled to the display span.
-        """
+        """Python two-lattice recovery followed by the reference readout."""
         if self.srs is None:
-            self.srs = dip_stream.FusionStream(
-                self.src, nb=self.sr_nb, ns=self.sr_ns,
-                n_steps=self.sr_steps, alpha=self.sr_alpha,
-                gate_floor=self.sr_gate_floor, beta=self.sr_beta,
-                norm=self.sr_norm)
-        fh = self.srs.frame_hop                     # HS = 32 samples
+            self.srs = two_lattice.TwoLatticeStream(
+                self.src, n_long=self.sr_nb, n_short=self.sr_ns,
+                h_short=32, iterations=80)
+            self.sr_ra = iqw.Reassign(self.sr_nb)
+        fh = self.srs.h_short
         span = DH * self.hop
-        # fine frame f is at sample (f + lo)*HS.
-        frame_lo = max(0, self.position // fh - self.srs.lo)
-        n_native = max(1, span // fh)
-        self.srs.request(frame_lo, n_native)
-        rows, cov = self.srs.assemble(frame_lo, n_native)     # [n_native, nb]
+        n_native = max(1, int(np.ceil(span / fh)))
+        # position is the first output center.  Both the reconstruction and
+        # reassignment use center coordinates; no aperture-dependent shift is
+        # hidden in a parent/crop index.
+        sample_start = self.position - self.sr_nb // 2
+        need = (n_native - 1) * fh + self.sr_nb
+        self.srs.request(sample_start, need)
+        latent, cov, error = self.srs.assemble(sample_start, need)
         self.recon_cov = cov
+        err_text = "pending" if not np.isfinite(error) else f"err {error:.3g}"
         dpg.set_value("recon_status",
-                      f"Fusion NB={self.sr_nb} NS={self.sr_ns}: "
-                      f"{cov*100:.0f}% ready")
+                      f"Python 2-lattice N={self.sr_nb}/{self.sr_ns}: "
+                      f"{cov*100:.0f}% ready, {err_text}")
         if cov < 0.999:
             self._recon_pending = True
-        block = 20.0 * np.log10(rows + 1e-9)                   # [n_native, nb]
-        block = _resample_axis(block, DH, axis=0)              # time -> DH rows
-        return np.fft.fftshift(block, axes=1)                  # col 0 = -Fs/2
+        if self.remove_dc:
+            latent = latent - np.mean(latent)
+        iq = np.empty(2 * need, dtype=np.float32)
+        iq[0::2] = latent.real
+        iq[1::2] = latent.imag
+        block = self.sr_ra.render_mem(iq, self.sr_nb // 2, fh, n_native)
+        return _resample_axis(block, DH, axis=0)
 
     def _reassigned_block(self):
-        """Phase-reassigned long-window STFT (kept as a separate observable)."""
-        if self.ra is None:
-            self.ra = iqw.Reassign(self.n_fft)
+        """Ordinary phase-reassigned long-window STFT."""
         half = self.n_fft // 2
         need = (DH - 1) * self.hop + self.n_fft
         z = self.src.read(self.position - half, need)
@@ -283,7 +246,7 @@ class App:
         block = self.ra.render_mem(iq, half, self.hop, DH)
         self.recon_cov = 1.0
         dpg.set_value("recon_status",
-                      f"Reassigned STFT: N={self.n_fft}, hop={self.hop} (phase-aware)")
+                      f"Reassigned STFT N={self.n_fft}, H={self.hop}")
         return block
 
     def recompute(self):
@@ -295,19 +258,8 @@ class App:
             block = self._fusion_block()
         elif self.reassigned:
             block = self._reassigned_block()
-        elif self.reconstruct and self.reconstructor is not None \
-                and (DH - 1) * self.hop + self.n_fft <= self.max_recon_span:
-            need = (DH - 1) * self.hop + self.n_fft
-            z = self._recon_buffer(need, "Reconstruction")
-            buf = np.empty(2 * z.size, dtype=np.float32)
-            buf[0::2] = z.real; buf[1::2] = z.imag
-            block = self.wf.render_mem(buf, 0, self.hop, DH,
-                                       remove_dc=self.remove_dc, out=self._block)
         else:
-            if self.reconstruct and self.reconstructor is not None:
-                dpg.set_value("recon_status",
-                              "Zoom in (smaller hop) to reconstruct this span")
-            # Conventional STFT and reassigned rows are center-timed.
+            # Conventional STFT rows are center-timed.
             block = self.wf.render(self.src, self.position - self.n_fft // 2,
                                    self.hop, DH, remove_dc=self.remove_dc,
                                    out=self._block)
@@ -516,38 +468,23 @@ def cb_dc(sender, val):
     app.dirty = True
 
 
-def cb_reconstruct(sender, val):
-    app.reconstruct = bool(val)
-    if app.reconstruct:
-        if app.src and app.reconstructor is None:
-            app.reconstructor = dip_stream.StreamReconstructor(
-                app.src, workers=app.recon_workers)
-    else:
-        dpg.set_value("recon_status", "")
-    app.dirty = True
-
-
 def cb_view_mode(sender, val):
     """Select one of three mathematically distinct display transforms."""
     app.super_res = val == "Super-resolution (two-aperture)"
     app.reassigned = val == "Reassigned STFT"
     is_streaming = val == "Streaming STFT"
     dpg.configure_item("win_combo", enabled=is_streaming)
-    dpg.configure_item("reconstruct_check", enabled=is_streaming)
-    for tag in ("sr_nb_combo", "sr_ns_combo", "sr_steps_combo",
-                "sr_alpha_slider", "sr_gate_slider", "sr_beta_slider",
-                "sr_frame_norm_check"):
+    for tag in ("sr_nb_combo", "sr_ns_combo"):
         dpg.configure_item(tag, enabled=app.super_res)
-    if not is_streaming and app.reconstruct:
-        app.reconstruct = False
-        dpg.set_value("reconstruct_check", False)
     if not app.super_res and app.srs:
         app.srs.close(); app.srs = None
+    if not app.super_res and app.sr_ra:
+        app.sr_ra.close(); app.sr_ra = None
     if app.super_res:
         dpg.set_value(
             "transform_note",
-            "Two apertures, one refined DIP-Zak state | fine freq from long "
-            "endpoint, fine time from measured short gates | HS=32 rows")
+            "Original Python two-lattice solve | independent magnitude "
+            "families -> one latent waveform -> reassigned long readout at H=32")
     elif app.reassigned:
         dense_hop = max(1, app.n_fft // 32)
         if app.hop > dense_hop:
@@ -555,7 +492,7 @@ def cb_view_mode(sender, val):
             dpg.set_value("hop_slider", dense_hop)
         dpg.set_value(
             "transform_note",
-            "Symmetric Hann | center time | phase reassignment | H<=N/32")
+            "Symmetric Hann | local phase reassignment | H<=N/32")
     else:
         dpg.set_value(
             "transform_note",
@@ -568,22 +505,15 @@ def _rebuild_srs():
     if app.srs:
         app.srs.close()
         app.srs = None
+    if app.sr_ra:
+        app.sr_ra.close()
+        app.sr_ra = None
     app.dirty = True
 
 
 def _max_valid_ns(nb):
-    """Largest short window for owned-band fusion.
-
-    Two constraints: the attach algebra needs ES <= EB-4 (ES=ns/32 a power of
-    two), and the centered owned band's last delta must be a valid crop,
-    lo + owned - 1 <= EB - ES, which reduces to ns <= 7*nb/16 + 32.  The
-    second is the binding one for large short windows (nb=1024 -> ns<=256).
-    """
-    max_es = min(nb // 32 - 4, (7 * nb // 16 + 32) // 32)
-    es = 2
-    while es * 2 <= max_es:
-        es *= 2
-    return es * 32
+    """Independent lattices require only that short is no longer than long."""
+    return int(nb)
 
 
 def cb_sr_nb(sender, val):
@@ -603,31 +533,6 @@ def cb_sr_ns(sender, val):
         ns = mx
         dpg.set_value("sr_ns_combo", str(ns))
     app.sr_ns = ns
-    _rebuild_srs()
-
-
-def cb_sr_steps(sender, val):
-    app.sr_steps = int(val)
-    _rebuild_srs()
-
-
-def cb_sr_alpha(sender, val):
-    app.sr_alpha = float(val)
-    _rebuild_srs()
-
-
-def cb_sr_gate(sender, val):
-    app.sr_gate_floor = float(val)
-    _rebuild_srs()
-
-
-def cb_sr_beta(sender, val):
-    app.sr_beta = float(val)
-    _rebuild_srs()
-
-
-def cb_sr_norm(sender, val):
-    app.sr_norm = "frame" if val else "claim"
     _rebuild_srs()
 
 
@@ -721,32 +626,6 @@ def build_ui():
                                   default_value="128", width=70,
                                   tag="sr_ns_combo", enabled=False,
                                   callback=cb_sr_ns)
-                with dpg.group(horizontal=True):
-                    dpg.add_text("L5 steps")
-                    dpg.add_combo(["0", "1", "2", "3"], default_value="1",
-                                  width=70, tag="sr_steps_combo", enabled=False,
-                                  callback=cb_sr_steps)
-                dpg.add_slider_float(label="alpha", min_value=0.0,
-                                     max_value=2.0, default_value=1.0,
-                                     tag="sr_alpha_slider", enabled=False,
-                                     callback=cb_sr_alpha)
-                dpg.add_slider_float(label="gate floor", min_value=0.0,
-                                     max_value=0.5, default_value=0.05,
-                                     tag="sr_gate_slider", enabled=False,
-                                     callback=cb_sr_gate)
-                dpg.add_slider_float(label="gate contrast", min_value=0.5,
-                                     max_value=3.0, default_value=1.0,
-                                     tag="sr_beta_slider", enabled=False,
-                                     callback=cb_sr_beta)
-                dpg.add_checkbox(label="Per-frame power conservation",
-                                 default_value=False,
-                                 tag="sr_frame_norm_check", enabled=False,
-                                 callback=cb_sr_norm)
-
-                dpg.add_separator()
-                dpg.add_text("DIP/PGHI reconstruction")
-                dpg.add_checkbox(label="Reconstruct (streaming)",
-                                 tag="reconstruct_check", callback=cb_reconstruct)
                 dpg.add_text("", tag="recon_status", color=(200, 180, 120))
 
                 dpg.add_separator()
@@ -827,10 +706,10 @@ def main():
         dpg.render_dearpygui_frame()
     if app.srs:
         app.srs.close()
+    if app.sr_ra:
+        app.sr_ra.close()
     if app.ra:
         app.ra.close()
-    if app.reconstructor:
-        app.reconstructor.close()
     dpg.destroy_context()
 
 

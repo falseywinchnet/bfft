@@ -741,3 +741,215 @@ IQW_API void iqw_ra_render_mem(iqw_ra* e, const float* iq, int64_t nsamples,
 }
 
 } // extern "C"
+
+// ---------------------------------------------------------------------------
+// FCT-phase-guided reassignment.
+//
+// The ordinary Hann reassignment supplies the local destination. An intrinsic
+// FCT over the same frame selects tau and supplies C plus its first moment M at
+// that exact tau:
+//
+//   time     = origin + Re(M/C)              = -d arg(C) / d omega
+//   frequency= d arg(C_origin) / d origin
+//
+// The origin derivative is evaluated without comparing different adaptive
+// supports.  At fixed tau, shifting the prefix by one sample is the exact
+// endpoint recurrence
+//
+//   C1 = exp(i*w) [C - x[0] + x[tau] exp(-i*w*tau)].
+//
+// Thus arg(C1*conj(C)) is the frequency assignment concluded by FCT phase. FCT
+// replaces a coordinate only inside the ordinary reassignment cell's local
+// basin (one dense time cell / 1.5 frequency bins). Outside that basin a
+// multimodal FCT prefix is answering a different question, so the ordinary
+// coordinate is retained. This is a geometric phase-consensus condition, not
+// a magnitude gate or a user control.
+// ---------------------------------------------------------------------------
+struct iqw_fct_ra {
+    int n = 0;
+    int out_bins = 0;
+    iqw_ra* spectral = nullptr;
+    fct_plan* guide = nullptr;
+    std::vector<bfft_complex> input;
+    std::vector<bfft_complex> corr;
+    std::vector<bfft_complex> moment;
+    std::vector<int64_t> tau;
+    std::vector<double> power;
+};
+
+extern "C" {
+
+IQW_API iqw_fct_ra* iqw_fct_ra_create(int n_fft, int min_support) {
+    if (n_fft < 16 || (n_fft & (n_fft - 1)) != 0 ||
+        min_support < 1 || min_support > n_fft)
+        return nullptr;
+    iqw_fct_ra* e = new iqw_fct_ra();
+    e->n = n_fft;
+    e->out_bins = 2 * n_fft;   // phase coordinates justify a half-bin raster
+    e->spectral = iqw_ra_create(n_fft);
+    if (!e->spectral ||
+        fct_plan_create_ex(static_cast<size_t>(n_fft), min_support, 0.5,
+                           0.0, &e->guide) != BFFT_OK) {
+        if (e->spectral) iqw_ra_destroy(e->spectral);
+        delete e;
+        return nullptr;
+    }
+    e->input.resize(static_cast<size_t>(n_fft) + 1);
+    e->corr.resize(n_fft);
+    e->moment.resize(n_fft);
+    e->tau.resize(n_fft);
+    return e;
+}
+
+IQW_API void iqw_fct_ra_destroy(iqw_fct_ra* e) {
+    if (!e) return;
+    if (e->spectral) iqw_ra_destroy(e->spectral);
+    if (e->guide) fct_plan_destroy(e->guide);
+    delete e;
+}
+
+IQW_API void iqw_fct_ra_render_mem(iqw_fct_ra* e, const float* iq,
+                                    int64_t nsamples, int64_t start,
+                                    int64_t hop, int n_rows, float* out_db,
+                                    int remove_dc) {
+    if (!e || !iq || !out_db || hop <= 0 || n_rows <= 0) return;
+    const int n = e->n, half = n / 2;
+    constexpr double twopi = 6.283185307179586476925286766559005768;
+    constexpr double eps = 1e-30;
+    const int out_bins = e->out_bins;
+    e->power.assign(static_cast<size_t>(n_rows) * out_bins, 0.0);
+
+    for (int r = 0; r < n_rows; ++r) {
+        const int64_t center = start + static_cast<int64_t>(r) * hop;
+        const int64_t origin = center - half;
+        double mean_re = 0.0, mean_im = 0.0;
+        if (remove_dc) {
+            for (int t = 0; t < n; ++t) {
+                const int64_t s = origin + t;
+                if (s >= 0 && s < nsamples) {
+                    mean_re += iq[2 * s];
+                    mean_im += iq[2 * s + 1];
+                }
+            }
+            mean_re /= n;
+            mean_im /= n;
+        }
+        for (int t = 0; t <= n; ++t) {
+            const int64_t s = origin + t;
+            const double re = (s >= 0 && s < nsamples ? iq[2 * s] : 0.0) -
+                              mean_re;
+            const double im = (s >= 0 && s < nsamples ? iq[2 * s + 1] : 0.0) -
+                              mean_im;
+            e->input[static_cast<size_t>(t)] = bfft_complex{re, im};
+        }
+
+        iqw_ra* a = e->spectral;
+        for (int t = 0; t < n; ++t) {
+            a->wr[t] = a->g[t] * e->input[static_cast<size_t>(t)].re;
+            a->wi[t] = a->g[t] * e->input[static_cast<size_t>(t)].im;
+        }
+        ra_cfft(a, a->wr.data(), a->wi.data(),
+                a->Yr.data(), a->Yi.data());
+        for (int t = 0; t < n; ++t) {
+            a->wr[t] = a->tg[t] * e->input[static_cast<size_t>(t)].re;
+            a->wi[t] = a->tg[t] * e->input[static_cast<size_t>(t)].im;
+        }
+        ra_cfft(a, a->wr.data(), a->wi.data(),
+                a->Ytr.data(), a->Yti.data());
+        for (int t = 0; t < n; ++t) {
+            a->wr[t] = a->dg[t] * e->input[static_cast<size_t>(t)].re;
+            a->wi[t] = a->dg[t] * e->input[static_cast<size_t>(t)].im;
+        }
+        ra_cfft(a, a->wr.data(), a->wi.data(),
+                a->Ydr.data(), a->Ydi.data());
+        if (fct_forward_complex_moment(
+                e->guide, e->input.data(), e->corr.data(), e->tau.data(),
+                e->moment.data()) != BFFT_OK)
+            continue;
+
+        double emax = 0.0;
+        for (int k = 0; k < n; ++k) {
+            const double p = a->Yr[k] * a->Yr[k] + a->Yi[k] * a->Yi[k];
+            emax = std::max(emax, p);
+        }
+        const double energy_threshold = 1e-8 * (emax + eps);
+        for (int k = 0; k < n; ++k) {
+            const double payload =
+                a->Yr[k] * a->Yr[k] + a->Yi[k] * a->Yi[k];
+            if (payload <= energy_threshold) continue;
+
+            const double inv_payload = 1.0 / (payload + eps);
+            const double reax =
+                a->Ytr[k] * a->Yr[k] + a->Yti[k] * a->Yi[k];
+            const double imdc =
+                a->Ydi[k] * a->Yr[k] - a->Ydr[k] * a->Yi[k];
+            double target_time = static_cast<double>(r) * hop +
+                                 reax * inv_payload;
+            double target_bin = k - imdc * inv_payload * n / twopi;
+            const int tr = static_cast<int>(
+                std::max<int64_t>(1, std::min<int64_t>(n, e->tau[k])));
+            const bfft_complex C = e->corr[k];
+            const double c2 = C.re * C.re + C.im * C.im;
+            if (c2 > eps) {
+                const bfft_complex M = e->moment[k];
+                double local_time = (M.re * C.re + M.im * C.im) / c2;
+                // Interference can put a phase centroid outside its finite
+                // support.  Such a location is not representable by this
+                // selected prefix, so project it onto that support.
+                local_time = std::max(0.0, std::min(tr - 1.0, local_time));
+                const double fct_time =
+                    static_cast<double>(r) * hop - half + local_time;
+
+                const double w = twopi * k / n;
+                const double cw = std::cos(w), sw = std::sin(w);
+                const double wt = w * tr;
+                const bfft_complex xt = e->input[static_cast<size_t>(tr)];
+                const double er = std::cos(wt), ei = -std::sin(wt);
+                const double xr = xt.re * er - xt.im * ei;
+                const double xi = xt.re * ei + xt.im * er;
+                const bfft_complex x0 = e->input[0];
+                const double br = C.re - x0.re + xr;
+                const double bi = C.im - x0.im + xi;
+                const double sr = cw * br - sw * bi;
+                const double si = sw * br + cw * bi;
+                const double cross_re = sr * C.re + si * C.im;
+                const double cross_im = si * C.re - sr * C.im;
+                double phase_advance = std::atan2(cross_im, cross_re);
+                if (phase_advance < 0.0) phase_advance += twopi;
+                const double fct_bin = phase_advance * n / twopi;
+
+                // Compare coordinates on their natural periodic/local scales.
+                // FCT is allowed to sharpen ordinary reassignment, but not to
+                // teleport a multimodal coefficient to a remote phase branch.
+                if (std::abs(fct_time - target_time) <=
+                        std::max<double>(hop, n / 32.0))
+                    target_time = fct_time;
+                double bin_delta = fct_bin - target_bin;
+                bin_delta -= n * std::round(bin_delta / n);
+                if (std::abs(bin_delta) <= 1.5)
+                    target_bin += bin_delta;
+            }
+            const int out_row =
+                static_cast<int>(std::llround(target_time / hop));
+            int out_bin = static_cast<int>(
+                std::llround(target_bin * 2.0)) % out_bins;
+            if (out_bin < 0) out_bin += out_bins;
+            if (out_row >= 0 && out_row < n_rows)
+                e->power[static_cast<size_t>(out_row) * out_bins + out_bin] +=
+                    payload;
+        }
+    }
+
+    for (int r = 0; r < n_rows; ++r) {
+        float* row = out_db + static_cast<size_t>(r) * out_bins;
+        const double* p = e->power.data() +
+                          static_cast<size_t>(r) * out_bins;
+        for (int c = 0; c < out_bins; ++c) {
+            int k = c + out_bins / 2;
+            if (k >= out_bins) k -= out_bins;
+            row[c] = static_cast<float>(10.0 * std::log10(p[k] + 1e-12));
+        }
+    }
+}
+
+} // extern "C"

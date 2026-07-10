@@ -31,6 +31,105 @@ FRAME_HOP = 128      # long-aperture hop (HB): native time resolution of readout
 # viewer/archive/fct_view.py; the FCT library itself remains shipped/tested.
 
 
+class FctReassignStream:
+    """Asynchronous FCT-phase-guided reassignment on a global center lattice."""
+
+    def __init__(self, src: iqw.IQSource, n_fft=1024, hop=32, workers=3,
+                 rows_per_tile=8, prefetch=1, cache_tiles=96,
+                 remove_dc=False):
+        self.src = src
+        self.n_fft = int(n_fft)
+        self.hop = max(1, int(hop))
+        self.rows_per_tile = int(rows_per_tile)
+        self.prefetch = int(prefetch)
+        self.cache_tiles = int(cache_tiles)
+        self.remove_dc = bool(remove_dc)
+        self.ntiles = max(1, (src.num_samples + self.hop - 1) //
+                          (self.rows_per_tile * self.hop) + 1)
+        self._pool = ThreadPoolExecutor(max_workers=workers)
+        self._cache: dict[int, np.ndarray | str | None] = {}
+        self._lock = threading.Lock()
+        self._io_lock = threading.Lock()
+        self._local = threading.local()
+        self._closed = False
+
+    def _engine(self):
+        engine = getattr(self._local, "engine", None)
+        if engine is None:
+            engine = iqw.FctReassign(
+                self.n_fft, min_support=max(4, self.n_fft // 32))
+            self._local.engine = engine
+        return engine
+
+    def _solve_tile(self, k):
+        first_center = k * self.rows_per_tile * self.hop
+        start_sample = first_center - self.n_fft // 2
+        count = ((self.rows_per_tile - 1) * self.hop +
+                 self.n_fft + 1)
+        with self._io_lock:
+            z = self.src.read(start_sample, count)
+        iq = np.empty(2 * count, dtype=np.float32)
+        iq[0::2] = z.real
+        iq[1::2] = z.imag
+        return self._engine().render_mem(
+            iq, self.n_fft // 2, self.hop, self.rows_per_tile,
+            remove_dc=self.remove_dc)
+
+    def _store(self, k, fut):
+        try:
+            result = fut.result()
+        except Exception:  # noqa: BLE001
+            result = None
+        with self._lock:
+            if not self._closed:
+                self._cache[k] = result
+
+    def request(self, frame_lo, n_frames):
+        rpt = self.rows_per_tile
+        k0 = int(np.floor(int(frame_lo) / rpt))
+        k1 = int(np.floor((int(frame_lo) + int(n_frames) - 1) / rpt))
+        submit = []
+        with self._lock:
+            for k in range(k0, k1 + 1 + self.prefetch):
+                if 0 <= k < self.ntiles and k not in self._cache:
+                    self._cache[k] = "pending"
+                    submit.append(k)
+            if len(self._cache) > self.cache_tiles:
+                for k in list(self._cache):
+                    if (k < k0 - self.prefetch or k > k1 + self.prefetch) and \
+                            isinstance(self._cache[k], np.ndarray):
+                        del self._cache[k]
+        for k in submit:
+            fut = self._pool.submit(self._solve_tile, k)
+            fut.add_done_callback(lambda f, kk=k: self._store(kk, f))
+
+    def assemble(self, frame_lo, n_frames):
+        frame_lo = int(frame_lo)
+        n_frames = int(n_frames)
+        rpt = self.rows_per_tile
+        out = np.full((n_frames, 2 * self.n_fft), -120.0, dtype=np.float32)
+        have = np.zeros(n_frames, dtype=bool)
+        k0 = frame_lo // rpt
+        k1 = (frame_lo + n_frames - 1) // rpt
+        with self._lock:
+            ready = {k: self._cache.get(k) for k in range(k0, k1 + 1)}
+        for k, data in ready.items():
+            if not isinstance(data, np.ndarray):
+                continue
+            g0 = k * rpt
+            lo = max(g0, frame_lo)
+            hi = min(g0 + rpt, frame_lo + n_frames)
+            if lo < hi:
+                out[lo - frame_lo:hi - frame_lo] = data[lo - g0:hi - g0]
+                have[lo - frame_lo:hi - frame_lo] = True
+        return out, float(np.mean(have))
+
+    def close(self):
+        with self._lock:
+            self._closed = True
+        self._pool.shutdown(wait=False, cancel_futures=True)
+
+
 class SuperResStream:
     """Streaming super-resolution waterfall via the active-delta endpoint readout.
 
@@ -127,21 +226,21 @@ class SuperResStream:
 
 
 class FusionStream:
-    """F1xT2 fusion super-resolution via calibrated gating.
+    """F1xT2 magnitude-partition baseline on one DIP-Zak state.
 
     The active-delta inverse constrains the OWNED band of deltas (owned = HB/HS,
     centered on the long frame). The readout emits ONLY those constrained deltas
     -- every fine-time row is a measured, fitted short, not a model-implied one.
-    Short-endpoint power partitions each long-bin power across the owned fine
-    rows.  Thus sum_e |F[e,k]|^2 = |L[k]|^2 (apart from the optional uniform
-    floor blend): no independent peak normalization and no fabricated energy.
+    In live ``claim`` mode, owned short power is divided by measured power over
+    every eligible delta. Off-owner energy is left unclaimed rather than forced
+    into the displayed rows. ``frame`` and ``row`` remain study-only diagnostics.
     The coarse short weights are circularly interpolated onto the long grid so
     coarse bins are centered rather than left-edge repeated. Rows are at HS=32
     hop / nb bins."""
 
     def __init__(self, src, nb=4096, ns=512, workers=4, prefetch=1,
                  cache_tiles=48, n_steps=1, alpha=1.0, mode=3, direct_seed=True,
-                 gate_floor=0.05, beta=1.0, norm="claim"):
+                 gate_floor=0.0, beta=1.0, norm="claim"):
         self.src = src
         self.nb = int(nb); self.ns = int(ns)
         # norm="frame": per-frame conservation sum_e |F[e,:]|^2 = |L[k]|^2.
@@ -153,15 +252,9 @@ class FusionStream:
         #   energy, T_e = (nb/ns)^2/owned * sum_q |S[e,q]|^2. Row totals are
         #   honest, but the row's spectral SHAPE still follows |L|, so the
         #   halo persists band-wise at reduced total power.
-        # norm="claim" (default): the gate denominator at coarse bin q runs
-        #   over the frame's ENTIRE delta range, each delta weighted by the
-        #   long window's squared value at that offset (its contribution to
-        #   |L|^2). A frame whose owned band does not contain an event sees
-        #   the true claimant in the denominator and emits almost none of the
-        #   event's power; the frame that owns it emits it instead. Off-band
-        #   energy is unclaimed rather than redistributed, which is what
-        #   removes the halo. A fixed per-row gain restores the steady-tone
-        #   amplitude convention exactly. Denominator shorts are measured
+        # norm="claim" (live): P_owned/sum_all_delta(P). There is no floor,
+        #   exponent, long-window weighting, restoration gain, or forced
+        #   conservation in the viewer. Denominator shorts are measured
         #   spectra; with the record-exact direct seed these equal the
         #   state-attached short endpoints to ~1e-13 (T3').
         self.norm = str(norm)
@@ -170,31 +263,60 @@ class FusionStream:
         self.Ib = iqw.frames_long(TILE, self.nb)
         self.owned = self.HB // self.HS               # fine rows per long frame
         self.lo = (self.nb // 2 - self.HB // 2) // self.HS   # first owned delta
-        # Every owned delta must be a valid crop: lo+owned-1 <= EB-ES, i.e.
-        # ns <= 7*nb/16 + 32.  (At nb=1024, ns=512 the owned band would need
-        # delta 17 of 0..16 -> the old code crashed in claim_wgt indexing.)
-        if self.lo + self.owned - 1 > self.nb // 32 - self.ns // 32:
+        max_delta = self.nb // self.HS - self.ns // self.HS
+        if max_delta < 4:
             raise ValueError(
-                f"short window ns={self.ns} too large for owned-band fusion "
-                f"at nb={self.nb}: need ns <= 7*nb/16 + 32 = "
-                f"{7 * self.nb // 16 + 32}")
-        # Constrain AND read exactly the owned band (contiguous, measured gates).
-        self.dsel = np.arange(self.lo, self.lo + self.owned, dtype=np.int32)
+                f"short window ns={self.ns} leaves no DIP attachment margin "
+                f"inside nb={self.nb}; require ns <= nb - 128")
+
+        # A short row belongs to the global HS lattice, not to one particular
+        # long frame.  If its desired local crop is not contained by owner j,
+        # route it to the nearest following overlapping long state that does
+        # contain exactly the same global short interval:
+        #
+        #   global_short = j*owned + desired
+        #                = (j+shift)*owned + local_delta.
+        #
+        # For NB/NS=1024/512 the desired deltas are 14..17, valid deltas are
+        # 0..16, and delta 17 is read as delta 13 of state j+1.  No second STFT
+        # is necessary; this is a parent-routing problem on the existing
+        # overlapping long-hop stream.
+        self.desired_delta = self.lo + np.arange(self.owned, dtype=np.int32)
+        self.parent_shift = np.maximum(
+            0, np.ceil((self.desired_delta - max_delta) / self.owned)
+        ).astype(np.int32)
+        self.local_delta = self.desired_delta - self.parent_shift * self.owned
+        if np.any(self.local_delta < 0) or np.any(self.local_delta > max_delta):
+            raise ValueError(
+                f"cannot route ns={self.ns} on nb={self.nb} long-hop lattice")
+        self.dsel = np.unique(self.local_delta).astype(np.int32)
+        delta_slot = {int(d): i for i, d in enumerate(self.dsel)}
+        self.route_slot = np.asarray(
+            [delta_slot[int(d)] for d in self.local_delta], dtype=np.intp)
+        self.max_parent_shift = int(self.parent_shift.max(initial=0))
+        self.owner_frames = self.Ib - self.max_parent_shift
+        if self.owner_frames <= 0:
+            raise ValueError("aperture routing leaves no complete output frames")
         self.parent = self.nb // self.ns              # exact grid ratio
         self.gate_floor = gate_floor; self.beta = beta
-        # Claim geometry: every delta of the long frame, weighted by the long
-        # window's squared value at that short-frame center (its contribution
-        # to |L|^2), plus the fixed per-row gain that restores the steady-tone
-        # convention (uniform claims -> exactly 1/owned per owned row).
-        self.ndelta = self.nb // 32 - self.ns // 32 + 1
-        wb = 0.5 - 0.5 * np.cos(2 * np.pi * np.arange(self.nb) / self.nb)
-        centers = np.arange(self.ndelta) * self.HS + self.ns // 2
-        self.claim_wgt = wb[centers] ** 2
-        self.claim_gain = np.sqrt(self.claim_wgt.sum() /
-                                  (self.owned * self.claim_wgt[self.dsel]))
+        # Claim geometry spans every eligible short position of the long frame.
+        # The live readout uses the direct measured fraction P_e/sum_d P_d:
+        # no floor, contrast exponent, long-Hann claim weighting, per-row gain,
+        # or forced conservation. Off-owner energy remains in the denominator
+        # and is therefore left for the frame that actually owns it.
+        self.ndelta = max_delta + 1
+        # Include every desired center in the claim denominator even when its
+        # short window is state-attached through a neighboring parent.
+        self.claim_count = max(self.ndelta, int(self.desired_delta[-1]) + 1)
+        centers = np.arange(self.claim_count) * self.HS + self.ns // 2
+        if centers[-1] >= self.nb:
+            raise ValueError("short-window centers exceed the long aperture")
         self.frame_hop = self.HS                      # native time res (samples)
-        self.rows_per_tile = self.Ib * self.owned
-        self.stride = self.Ib * self.HB
+        # Reserve the trailing parent states needed by cross-frame routes.
+        # The next tile begins exactly after the complete output rows, so no
+        # padded/partial short window can create a horizontal seam.
+        self.rows_per_tile = self.owner_frames * self.owned
+        self.stride = self.rows_per_tile * self.HS
         self.n_steps = n_steps; self.alpha = alpha
         self.mode = mode; self.direct = direct_seed
         self.prefetch = prefetch; self.cache_tiles = cache_tiles
@@ -227,20 +349,20 @@ class FusionStream:
         frac = coord - np.floor(coord)
         q1 = (q0 + 1) % self.ns
         row_scale = (self.nb / self.ns) ** 2 / self.owned
-        for j in range(self.Ib):
+        for j in range(self.owner_frames):
             L = long_mag[j]                          # [nb] fine freq (true scale)
-            S = short_mag[j]                         # [owned, ns] fine time
+            # Each row is the exact same global short interval as before, but
+            # may come from a neighboring containing paused state.
+            S = np.stack([
+                short_mag[j + int(self.parent_shift[e]),
+                          self.route_slot[e]]
+                for e in range(self.owned)
+            ])                                       # [owned, ns]
             P = S * S
             if self.norm == "claim":
                 sf = j * (self.HB // self.HS)
-                block = sp_full[sf:sf + self.ndelta]          # [ndelta, ns]
-                den = (block * self.claim_wgt[:, None]).sum(axis=0) + 1e-24
-                w_own = (P * self.claim_wgt[self.dsel][:, None]) / den[None, :]
-                # Mix the floor within the claimed owned mass: a frame that
-                # owns little of an event cannot re-inflate it via the floor.
-                s_own = w_own.sum(axis=0, keepdims=True)
-                weights = ((1.0 - self.gate_floor) * w_own +
-                           self.gate_floor * s_own / self.owned)
+                block = sp_full[sf:sf + self.claim_count]
+                weights = P / (block.sum(axis=0, keepdims=True) + 1e-24)
             else:
                 weights = P / (P.sum(axis=0, keepdims=True) + 1e-24)
                 # gate_floor is an honest uniform-power mixture, not a lower
@@ -255,15 +377,13 @@ class FusionStream:
                 if self.beta != 1.0:
                     w_up = np.power(w_up, self.beta)
                 row = L * np.sqrt(w_up)
-                if self.norm == "claim":
-                    row = row * self.claim_gain[e]
-                elif self.norm == "row":
+                if self.norm == "row":
                     target = row_scale * float(P[e].sum())
                     got = float(np.dot(row, row))
                     row = row * np.sqrt(target / (got + 1e-24))
                 out[j * self.owned + e] = row
         if self.beta != 1.0 and self.norm == "frame":
-            shaped = out.reshape(self.Ib, self.owned, self.nb)
+            shaped = out.reshape(self.owner_frames, self.owned, self.nb)
             den = np.sqrt(np.sum(shaped * shaped, axis=1, keepdims=True)) + 1e-24
             shaped *= long_mag[:, None, :] / den
         return out

@@ -1,0 +1,237 @@
+"""Faithful two-lattice magnitude fusion from the original Python demo.
+
+This module intentionally stays in NumPy.  It is the executable specification
+for the viewer mode, not the eventual fast kernel.  The long and short STFT
+families are independent measurements of one latent complex waveform.  They
+are coupled only by alternating waveform-domain overlap/add projections.
+
+There are no frequency-row claims, gates, active-delta parent assignments, or
+image-space multiplication in this implementation.
+"""
+from __future__ import annotations
+
+import threading
+from concurrent.futures import ThreadPoolExecutor
+
+import numpy as np
+
+
+def frame_offsets(length: int, n_fft: int, hop: int) -> np.ndarray:
+    """Starts of every complete frame on one independent lattice."""
+    return np.arange(0, length - n_fft + 1, hop, dtype=np.int64)
+
+
+class MagnitudeFamily:
+    """One symmetric-Hann STFT magnitude constraint family."""
+
+    def __init__(self, observed: np.ndarray, n_fft: int, hop: int):
+        self.n_fft = int(n_fft)
+        self.hop = int(hop)
+        self.offsets = frame_offsets(len(observed), self.n_fft, self.hop)
+        if not len(self.offsets):
+            raise ValueError("segment is shorter than an analysis aperture")
+        self.window = np.hanning(self.n_fft).astype(np.float64)
+        self.indices = (self.offsets[:, None] +
+                        np.arange(self.n_fft, dtype=np.int64)[None, :])
+        frames = observed[self.indices] * self.window[None, :]
+        self.target = np.abs(np.fft.fft(frames, axis=1))
+        self.den = np.zeros(len(observed), dtype=np.float64)
+        np.add.at(self.den, self.indices.ravel(),
+                  np.broadcast_to(self.window ** 2, self.indices.shape).ravel())
+        positive = self.den[self.den > 0.0]
+        median = float(np.median(positive)) if len(positive) else 1.0
+        self.support = self.den > 1e-2 * median
+
+    def project(self, latent: np.ndarray, fallback: np.ndarray, *,
+                real_signal: bool = False) -> np.ndarray:
+        """Nearest endpoint-magnitude frames followed by Hann overlap/add."""
+        frames = latent[self.indices] * self.window[None, :]
+        spectrum = np.fft.fft(frames, axis=1)
+        spectrum *= self.target / (np.abs(spectrum) + 1e-12)
+        fitted = np.fft.ifft(spectrum, axis=1)
+        if real_signal:
+            fitted = fitted.real
+
+        acc = np.zeros_like(latent, dtype=np.complex128)
+        np.add.at(acc, self.indices.ravel(),
+                  (fitted * self.window[None, :]).ravel())
+        out = acc / np.maximum(self.den, 1e-8)
+        # Symmetric Hann endpoints have no support.  Carry the previous iterate
+        # there, exactly as the standalone solver carries its seed/fallback.
+        return np.where(self.support, out, fallback)
+
+    def relative_error(self, latent: np.ndarray) -> float:
+        frames = latent[self.indices] * self.window[None, :]
+        got = np.abs(np.fft.fft(frames, axis=1))
+        num = np.sum((got - self.target) ** 2)
+        den = np.sum(self.target ** 2) + 1e-30
+        return float(np.sqrt(num / den))
+
+
+def recover_two_lattice(observed: np.ndarray, n_long: int, n_short: int,
+                        *, h_long: int | None = None, h_short: int = 32,
+                        iterations: int = 24, beta: float = 0.88,
+                        seed: int = 0, real_signal: bool = False
+                        ) -> tuple[np.ndarray, dict[str, float]]:
+    """Recover one complex latent waveform from two STFT magnitude families.
+
+    This is the complex-valued translation of ``gl_align`` in
+    ``zak_superresolution_wav_demo.py``.  The observation phase is not used by
+    the iterations.  It is consulted once after convergence to choose the
+    otherwise-free global phase, which makes neighboring reconstructed tiles
+    overlap-add coherently in an IQ recording.
+    """
+    z = np.ascontiguousarray(observed, dtype=np.complex128)
+    n_long = int(n_long)
+    n_short = int(n_short)
+    h_long = n_long // 8 if h_long is None else int(h_long)
+    h_short = int(h_short)
+    if n_long <= 0 or n_short <= 0 or n_short > n_long:
+        raise ValueError("require 0 < short aperture <= long aperture")
+    if h_long <= 0 or h_short <= 0:
+        raise ValueError("analysis hops must be positive")
+
+    long_family = MagnitudeFamily(z, n_long, h_long)
+    short_family = MagnitudeFamily(z, n_short, h_short)
+
+    rng = np.random.default_rng(seed)
+    rms = float(np.sqrt(np.mean(np.abs(z) ** 2)) + 1e-12)
+    if real_signal:
+        # Same seed law as the original standalone Python solver.
+        latent = 0.01 * rng.standard_normal(len(z))
+    else:
+        latent = (rng.standard_normal(len(z)) +
+                  1j * rng.standard_normal(len(z))) * (0.01 * rms / np.sqrt(2.0))
+    previous = latent.copy()
+
+    for _ in range(max(0, int(iterations))):
+        trial = latent + beta * (latent - previous)
+        if (not np.all(np.isfinite(trial)) or
+                np.max(np.abs(trial)) > 50.0 * max(rms, 1e-12)):
+            trial = latent.copy()
+        previous = latent
+        fitted_long = long_family.project(trial, trial,
+                                          real_signal=real_signal)
+        latent = short_family.project(fitted_long, fitted_long,
+                                      real_signal=real_signal)
+
+    # Select only the global phase.  Magnitudes and the recovered structure are
+    # unchanged.  vdot(latent, z) is the multiplier that maps latent toward z.
+    cross = np.vdot(latent, z)
+    if real_signal:
+        if np.real(cross) < 0.0:
+            latent *= -1.0
+        latent = latent.real
+    elif abs(cross) > 1e-30:
+        latent *= cross / abs(cross)
+
+    metrics = {
+        "long_relative_error": long_family.relative_error(latent),
+        "short_relative_error": short_family.relative_error(latent),
+    }
+    return latent, metrics
+
+
+class TwoLatticeStream:
+    """Asynchronous, overlap-added NumPy reference solver for an IQ source."""
+
+    def __init__(self, src, n_long=1024, n_short=128, *, h_short=32,
+                 iterations=24, workers=2, prefetch=1, cache_tiles=48):
+        self.src = src
+        self.n_long = int(n_long)
+        self.n_short = int(n_short)
+        self.h_long = self.n_long // 8
+        self.h_short = int(h_short)
+        self.iterations = int(iterations)
+        self.tile = max(8192, 2 * self.n_long)
+        self.step = self.tile // 2
+        self.ntiles = max(1, (src.num_samples + self.step - 1) // self.step)
+        self.prefetch = int(prefetch)
+        self.cache_tiles = int(cache_tiles)
+        self._ola_window = np.hanning(self.tile).astype(np.float64)
+        self._pool = ThreadPoolExecutor(max_workers=workers)
+        self._cache: dict[int, tuple[np.ndarray, dict[str, float]] | str | None] = {}
+        self._lock = threading.Lock()
+        self._io_lock = threading.Lock()
+        self._closed = False
+
+    def _solve_tile(self, tile_index: int):
+        start = tile_index * self.step
+        with self._io_lock:
+            observed = self.src.read(start, self.tile)
+        return recover_two_lattice(
+            observed, self.n_long, self.n_short,
+            h_long=self.h_long, h_short=self.h_short,
+            iterations=self.iterations, seed=0x5EED + tile_index,
+            real_signal=not self.src.is_complex)
+
+    def _store(self, tile_index, future):
+        try:
+            result = future.result()
+        except Exception:  # noqa: BLE001
+            result = None
+        with self._lock:
+            if not self._closed:
+                self._cache[tile_index] = result
+
+    def _tile_range(self, start: int, count: int) -> tuple[int, int]:
+        end = start + count
+        lo = max(0, (start - self.tile) // self.step + 1)
+        hi = min(self.ntiles - 1, (end - 1) // self.step)
+        return lo, hi
+
+    def request(self, start: int, count: int) -> None:
+        lo, hi = self._tile_range(int(start), int(count))
+        submit: list[int] = []
+        with self._lock:
+            for k in range(lo, min(self.ntiles, hi + 1 + self.prefetch)):
+                if k not in self._cache:
+                    self._cache[k] = "pending"
+                    submit.append(k)
+            if len(self._cache) > self.cache_tiles:
+                for k in list(self._cache):
+                    if ((k < lo - self.prefetch or k > hi + self.prefetch) and
+                            isinstance(self._cache[k], tuple)):
+                        del self._cache[k]
+        for k in submit:
+            future = self._pool.submit(self._solve_tile, k)
+            future.add_done_callback(lambda f, kk=k: self._store(kk, f))
+
+    def assemble(self, start: int, count: int, *, raw_fill=True):
+        start = int(start)
+        count = int(count)
+        lo, hi = self._tile_range(start, count)
+        acc = np.zeros(count, dtype=np.complex128)
+        den = np.zeros(count, dtype=np.float64)
+        errors: list[float] = []
+        with self._lock:
+            ready = {k: self._cache.get(k) for k in range(lo, hi + 1)}
+        for k, item in ready.items():
+            if not isinstance(item, tuple):
+                continue
+            data, metrics = item
+            tile_start = k * self.step
+            a = max(start, tile_start)
+            b = min(start + count, tile_start + self.tile)
+            if a >= b:
+                continue
+            sl_data = slice(a - tile_start, b - tile_start)
+            sl_out = slice(a - start, b - start)
+            w = self._ola_window[sl_data]
+            acc[sl_out] += data[sl_data] * w
+            den[sl_out] += w
+            errors.append(max(metrics.values()))
+        covered = den > 1e-8
+        out = np.zeros(count, dtype=np.complex128)
+        out[covered] = acc[covered] / den[covered]
+        if raw_fill and not np.all(covered):
+            with self._io_lock:
+                raw = self.src.read(start, count)
+            out[~covered] = raw[~covered]
+        error = float(max(errors)) if errors else float("nan")
+        return out, float(np.mean(covered)), error
+
+    def close(self):
+        with self._lock:
+            self._closed = True
+        self._pool.shutdown(wait=False, cancel_futures=True)

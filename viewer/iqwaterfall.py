@@ -101,6 +101,13 @@ _ra_destroy = _decl("iqw_ra_destroy", None, [_vp])
 _ra_render_mem = _decl("iqw_ra_render_mem", None,
                        [_vp, _vp, _ll, _ll, _ll, ctypes.c_int, _vp])
 
+_fct_ra_create = _decl("iqw_fct_ra_create", _vp,
+                       [ctypes.c_int, ctypes.c_int])
+_fct_ra_destroy = _decl("iqw_fct_ra_destroy", None, [_vp])
+_fct_ra_render_mem = _decl(
+    "iqw_fct_ra_render_mem", None,
+    [_vp, _vp, _ll, _ll, _ll, ctypes.c_int, _vp, ctypes.c_int])
+
 _dp = ctypes.POINTER(ctypes.c_double)
 _dip_run = _decl("iqw_dip_run", None,
                  [_dp, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.c_int,
@@ -340,6 +347,50 @@ class Reassign:
     def close(self):
         if getattr(self, "_h", None):
             _ra_destroy(self._h)
+            self._h = None
+
+    def __del__(self):
+        self.close()
+
+
+class FctReassign:
+    """Hann-STFT energy relocated by intrinsic-FCT phase derivatives.
+
+    FCT selects a leading-edge support per bin. Its correlation moment gives
+    the phase group delay, while an exact fixed-support endpoint recurrence
+    gives instantaneous frequency. This is deliberately a hybrid observable:
+    STFT supplies energy; FCT supplies the reassignment coordinates. Output
+    has ``2*N`` columns on a half-bin frequency raster.
+    """
+
+    def __init__(self, n_fft=1024, min_support=None):
+        n_fft = int(n_fft)
+        if min_support is None:
+            min_support = max(4, n_fft // 32)
+        h = _fct_ra_create(n_fft, int(min_support))
+        if not h:
+            raise ValueError(
+                f"invalid FCT reassignment n_fft={n_fft}, "
+                f"min_support={min_support}")
+        self._h = h
+        self.n_fft = n_fft
+        self.bins = 2 * n_fft
+        self.min_support = int(min_support)
+
+    def render_mem(self, iq_interleaved, start, hop, n_rows,
+                   remove_dc=False, out=None):
+        iq = np.ascontiguousarray(iq_interleaved, dtype=np.float32)
+        nsamples = iq.size // 2
+        if out is None or out.shape != (n_rows, self.bins):
+            out = np.empty((n_rows, self.bins), dtype=np.float32)
+        _fct_ra_render_mem(self._h, iq.ctypes.data, int(nsamples), int(start),
+                           int(hop), int(n_rows), out.ctypes.data,
+                           1 if remove_dc else 0)
+        return out
+
+    def close(self):
+        if getattr(self, "_h", None):
+            _fct_ra_destroy(self._h)
             self._h = None
 
     def __del__(self):

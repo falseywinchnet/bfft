@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Render the three viewer transforms on one IQ fixture without the GUI.
+"""Render the three live viewer transforms on one IQ fixture without the GUI.
 
 Modes: streaming STFT, two-aperture DIP-Zak fusion super-resolution, and the
-phase-reassigned STFT.  The fusion render goes through the production
+FCT-phase-guided reassignment.  The fusion render goes through the production
 ``dip_stream.FusionStream`` path (polled to full coverage), and the fusion
 energy-conservation invariant ``sum_e |F[e,k]|^2 = |L[k]|^2`` (beta=1) is
 checked directly on a solved tile.
@@ -24,18 +24,19 @@ import dip_stream
 import iqwaterfall as iqw
 
 
-def fusion_energy_check(src, nb, ns, gate_floor, n_steps, alpha):
+def fusion_energy_check(src, nb, ns):
     """sum over owned fine rows of |F|^2 vs |L|^2, per (frame, bin), tile 0.
 
     This is the frame-norm invariant; claim mode intentionally leaves
     off-band energy unclaimed, so the check pins norm="frame".
     """
     fs = dip_stream.FusionStream(src, nb=nb, ns=ns, workers=1,
-                                 gate_floor=gate_floor, beta=1.0,
-                                 n_steps=n_steps, alpha=alpha, norm="frame")
+                                 gate_floor=0.0, beta=1.0,
+                                 n_steps=1, alpha=1.0, norm="frame")
     try:
         tile = fs._solve_tile(0)                     # [Ib*owned, nb]
-        shaped = tile.reshape(fs.Ib, fs.owned, fs.nb).astype(np.float64)
+        shaped = tile.reshape(fs.owner_frames, fs.owned,
+                              fs.nb).astype(np.float64)
         fine_power = np.sum(shaped * shaped, axis=1)  # [Ib, nb]
         z = src.read(0, dip_stream.TILE)
         long_mag, _ = iqw.dip_fusion(np.ascontiguousarray(z), fs.dsel,
@@ -43,7 +44,7 @@ def fusion_energy_check(src, nb, ns, gate_floor, n_steps, alpha):
                                      n_steps=fs.n_steps,
                                      direct_seed=fs.direct, nb=fs.nb,
                                      ns=fs.ns)
-        long_power = long_mag * long_mag
+        long_power = long_mag[:fs.owner_frames] * long_mag[:fs.owner_frames]
         num = np.abs(fine_power - long_power)
         rel = num.max() / (long_power.max() + 1e-30)
         return float(rel)
@@ -51,14 +52,14 @@ def fusion_energy_check(src, nb, ns, gate_floor, n_steps, alpha):
         fs.close()
 
 
-def render_fusion(src, start, rows, nb, ns, gate_floor=0.05, beta=1.0,
-                  n_steps=1, alpha=1.0, norm="row", timeout=120.0):
+def render_fusion(src, start, rows, nb, ns, timeout=120.0):
     """Render `rows` fusion rows on the native HS lattice via FusionStream."""
-    fs = dip_stream.FusionStream(src, nb=nb, ns=ns, gate_floor=gate_floor,
-                                 beta=beta, n_steps=n_steps, alpha=alpha,
-                                 norm=norm)
+    fs = dip_stream.FusionStream(src, nb=nb, ns=ns, gate_floor=0.0,
+                                 beta=1.0, n_steps=1, alpha=1.0,
+                                 norm="claim")
     try:
-        frame_lo = max(0, start // fs.frame_hop - fs.lo)
+        frame_lo = max(0, start // fs.frame_hop - fs.lo -
+                       fs.ns // (2 * fs.frame_hop))
         t0 = time.perf_counter()
         fs.request(frame_lo, rows)
         deadline = t0 + timeout
@@ -75,12 +76,11 @@ def render_fusion(src, start, rows, nb, ns, gate_floor=0.05, beta=1.0,
 
 
 def render_modes(path, start=0, n_fft=1024, hop=None, rows=160,
-                 nb=1024, ns=128, gate_floor=0.05, beta=1.0,
-                 n_steps=1, alpha=1.0, norm="claim"):
+                 nb=1024, ns=128):
     hop = int(hop or max(1, n_fft // 32))
     src = iqw.IQSource(path)
     wf = iqw.Waterfall(n_fft, iqw.WINDOWS["Hann"])
-    ra = iqw.Reassign(n_fft)
+    fra = iqw.FctReassign(n_fft, min_support=max(4, n_fft // 32))
 
     timings = {}
     t0 = time.perf_counter()
@@ -93,31 +93,30 @@ def render_modes(path, start=0, n_fft=1024, hop=None, rows=160,
     iq[0::2] = z.real
     iq[1::2] = z.imag
     t0 = time.perf_counter()
-    reassigned = ra.render_mem(iq, n_fft // 2, hop, rows)
-    timings["reassigned_s"] = time.perf_counter() - t0
+    fct_reassigned = fra.render_mem(iq, n_fft // 2, hop, rows)
+    timings["fct_reassigned_s"] = time.perf_counter() - t0
 
     # Fusion rows live on the HS=32 lattice; ask for the same time span.
     span = rows * hop
     n_native = max(1, span // 32)
-    fusion_native, cov, dt = render_fusion(
-        src, start, n_native, nb, ns, gate_floor, beta, n_steps, alpha, norm)
+    fusion_native, cov, dt = render_fusion(src, start, n_native, nb, ns)
     timings["fusion_s"] = dt
     idx = np.linspace(0, n_native - 1, rows).astype(np.intp)
     fusion = fusion_native[idx]
 
-    energy_rel = fusion_energy_check(src, nb, ns, gate_floor, n_steps, alpha)
+    energy_rel = fusion_energy_check(src, nb, ns)
 
     blocks = {"streaming": streaming, "fusion": fusion,
-              "reassigned": reassigned}
+              "fct_reassigned": fct_reassigned}
     metrics = {
         "sample_rate": src.sample_rate,
         "header_samples": src.num_samples,
         "n_fft": n_fft,
         "hop": hop,
         "rows": rows,
-        "fusion_params": {"nb": nb, "ns": ns, "gate_floor": gate_floor,
-                          "beta": beta, "n_steps": n_steps, "alpha": alpha,
-                          "norm": norm, "coverage": cov,
+        "fusion_params": {"nb": nb, "ns": ns,
+                          "phase_projection_alpha": 1.0,
+                          "coverage": cov,
                           "energy_conservation_rel_err": energy_rel},
         "timings": timings,
     }
@@ -140,24 +139,18 @@ def main():
     parser.add_argument("--rows", type=int, default=160)
     parser.add_argument("--nb", type=int, default=1024)
     parser.add_argument("--ns", type=int, default=128)
-    parser.add_argument("--gate-floor", type=float, default=0.05)
-    parser.add_argument("--beta", type=float, default=1.0)
-    parser.add_argument("--steps", type=int, default=1)
-    parser.add_argument("--alpha", type=float, default=1.0)
-    parser.add_argument("--norm", choices=("claim", "row", "frame"), default="claim")
     parser.add_argument("--out", default="/tmp/bfft_viewer_modes.png")
     args = parser.parse_args()
     blocks, metrics = render_modes(
         args.path, args.start, args.n_fft, args.hop, args.rows,
-        args.nb, args.ns, args.gate_floor, args.beta, args.steps, args.alpha,
-        args.norm)
+        args.nb, args.ns)
     all_values = np.concatenate([b[b > -239].ravel() for b in blocks.values()])
     ceiling = float(np.percentile(all_values, 99.8))
     floor = ceiling - 80.0
     fig, axes = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
     labels = ["Streaming STFT",
               f"Two-aperture fusion (NB={args.nb}, NS={args.ns})",
-              "Reassigned STFT"]
+              "FCT-guided reassignment"]
     for ax, (name, block), label in zip(axes, blocks.items(), labels):
         ax.imshow(block, origin="lower", aspect="auto", cmap="viridis",
                   vmin=floor, vmax=ceiling,

@@ -34,7 +34,8 @@ HS = 32
 def fusion_linear(src, start, rows, timeout=120.0, **kw):
     fs = dip_stream.FusionStream(src, **kw)
     try:
-        frame_lo = max(0, start // fs.frame_hop - fs.lo)
+        frame_lo = max(0, start // fs.frame_hop - fs.lo -
+                       fs.ns // (2 * fs.frame_hop))
         t0 = time.perf_counter()
         fs.request(frame_lo, rows)
         while True:
@@ -70,6 +71,21 @@ def reassigned_linear(src, start, rows, n_fft=1024):
         return np.power(10.0, db.astype(np.float64) / 10.0)
     finally:
         ra.close()
+
+
+def fct_reassigned_linear(src, start, rows, n_fft=1024):
+    """2x frequency raster: STFT payload, consensus FCT phase coordinates."""
+    engine = iqw.FctReassign(n_fft, min_support=max(4, n_fft // 32))
+    try:
+        need = (rows - 1) * HS + n_fft + 1
+        z = src.read(start - n_fft // 2, need)
+        iq = np.empty(2 * need, np.float32)
+        iq[0::2] = z.real
+        iq[1::2] = z.imag
+        db = engine.render_mem(iq, n_fft // 2, HS, rows)
+        return np.power(10.0, db.astype(np.float64) / 10.0)
+    finally:
+        engine.close()
 
 
 def cols_for(nb, f_lo, f_hi):
@@ -148,6 +164,8 @@ def main():
         ("stft_long_1024", lambda: stft_linear(src, start, rows, 1024)),
         ("stft_short_128", lambda: stft_linear(src, start, rows, 128)),
         ("reassigned_1024", lambda: reassigned_linear(src, start, rows)),
+        ("fct_guided_reassigned_1024",
+         lambda: fct_reassigned_linear(src, start, rows)),
     ]:
         power = fn()
         results[name] = metrics(power, start, rows, power.shape[1])
