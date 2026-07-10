@@ -30,6 +30,7 @@
 #include <algorithm>
 
 #include <bfft/bfft.h>
+#include <bfft/fct.h>
 
 #if defined(_WIN32)
 #define IQW_API __declspec(dllexport)
@@ -172,13 +173,23 @@ static uint16_t rd_u16(FILE* f) {
     uint8_t b[2]; if (fread(b, 1, 2, f) != 2) return 0;
     return (uint16_t)b[0] | ((uint16_t)b[1] << 8);
 }
+static uint64_t rd_u64(FILE* f) {
+    uint8_t b[8]; if (fread(b, 1, 8, f) != 8) return 0;
+    uint64_t v = 0;
+    for (int i = 0; i < 8; ++i) v |= static_cast<uint64_t>(b[i]) << (8 * i);
+    return v;
+}
 
-// Parse a canonical WAV/RIFF header (mirrors WaveFile.cs ReadHeader).
+// Parse WAV/RIFF plus RF64/BW64 (EBU large-file WAV).  RF64 stores the real
+// data size in its ds64 chunk while the ordinary 32-bit data length is all 1s.
 static bool parse_wav(iqw_source* s) {
     FILE* f = s->fp;
     fseek(f, 0, SEEK_SET);
     char tag[4];
-    if (fread(tag, 1, 4, f) != 4 || memcmp(tag, "RIFF", 4) != 0) return false;
+    if (fread(tag, 1, 4, f) != 4) return false;
+    const bool is_rf64 = memcmp(tag, "RF64", 4) == 0 ||
+                         memcmp(tag, "BW64", 4) == 0;
+    if (!is_rf64 && memcmp(tag, "RIFF", 4) != 0) return false;
     rd_u32(f);  // riff size
     if (fread(tag, 1, 4, f) != 4 || memcmp(tag, "WAVE", 4) != 0) return false;
 
@@ -186,12 +197,22 @@ static bool parse_wav(iqw_source* s) {
     uint16_t channels = 0, bits = 0;
     uint32_t rate = 0;
     bool have_fmt = false;
+    uint64_t data_size64 = 0;
+    uint64_t sample_count64 = 0;
 
     // Walk chunks until we find 'fmt ' then 'data'.
     while (true) {
         if (fread(tag, 1, 4, f) != 4) return false;
         uint32_t len = rd_u32(f);
-        if (memcmp(tag, "fmt ", 4) == 0) {
+        if (memcmp(tag, "ds64", 4) == 0) {
+            if (len < 28) return false;
+            const long after = ftell(f) + static_cast<long>(len);
+            (void)rd_u64(f);                 // 64-bit RIFF size
+            data_size64 = rd_u64(f);
+            sample_count64 = rd_u64(f);
+            (void)rd_u32(f);                 // optional table entry count
+            fseek(f, after + (len & 1), SEEK_SET);
+        } else if (memcmp(tag, "fmt ", 4) == 0) {
             long after = ftell(f) + (long)len;
             fmt_tag  = (int16_t)rd_u16(f);
             channels = rd_u16(f);
@@ -211,7 +232,12 @@ static bool parse_wav(iqw_source* s) {
             s->bits     = bits;
             s->rate     = (double)rate;
             s->fmt      = fmt_from_bits(bits, fmt_tag == 3 /*IEEE float*/);
-            s->data_len = (int64_t)len / block;
+            const uint64_t data_bytes =
+                (is_rf64 && len == 0xffffffffu && data_size64 > 0)
+                    ? data_size64 : static_cast<uint64_t>(len);
+            s->data_len = sample_count64 > 0
+                ? static_cast<int64_t>(sample_count64)
+                : static_cast<int64_t>(data_bytes / block);
             return true;
         } else {
             // skip unknown chunk (pad to even per RIFF spec)
@@ -457,6 +483,121 @@ IQW_API void iqw_wf_render_mem(iqw_wf* e, const float* iq, int64_t nsamples,
             }
         }
         wf_frame_to_row(e, out_db + (size_t)r * N, remove_dc);
+    }
+}
+
+} // extern "C"
+
+// ---------------------------------------------------------------------------
+// Adaptive leading-edge FCT waterfall, complex/IQ.
+//
+// Unlike a windowed STFT, a row is a family of prefixes beginning at the row
+// origin.  The caller receives tau so it can place each bin at its selected
+// endpoint in waterfall time.  Magnitude is energy-normalized by sqrt(N/tau):
+// white-noise power has the same scale as an N-point FFT while coherent short
+// events retain the confidence benefit of longer support.  A rectangular
+// aperture is intentional; a symmetric Hann would bias the prefix selector.
+// ---------------------------------------------------------------------------
+struct iqw_fct {
+    int n = 0;
+    fct_plan* plan = nullptr;
+    std::vector<bfft_complex> input;
+    std::vector<bfft_complex> output;
+    std::vector<int64_t> tau;
+    std::vector<float> iq;
+};
+
+static void fct_frame(iqw_fct* e, float* db, float* support, int remove_dc) {
+    const int n = e->n;
+    double mr = 0.0, mi = 0.0;
+    if (remove_dc) {
+        for (int t = 0; t < n; ++t) {
+            mr += e->iq[2 * t];
+            mi += e->iq[2 * t + 1];
+        }
+        mr /= n;
+        mi /= n;
+    }
+    for (int t = 0; t < n; ++t) {
+        e->input[t].re = e->iq[2 * t] - mr;
+        e->input[t].im = e->iq[2 * t + 1] - mi;
+    }
+    if (fct_forward_complex(e->plan, e->input.data(), e->output.data(),
+                            e->tau.data()) != BFFT_OK) {
+        std::fill(db, db + n, -240.0f);
+        std::fill(support, support + n, 1.0f);
+        return;
+    }
+    const double eps = 1e-15;
+    for (int c = 0; c < n; ++c) {
+        int k = c + n / 2;
+        if (k >= n) k -= n;
+        const double tr = std::max<int64_t>(1, e->tau[k]);
+        const double re = e->output[k].re, im = e->output[k].im;
+        const double mag = std::sqrt(re * re + im * im) * std::sqrt(n / tr);
+        db[c] = static_cast<float>(20.0 * std::log10(mag + eps));
+        support[c] = static_cast<float>(tr / n);
+    }
+}
+
+extern "C" {
+
+IQW_API iqw_fct* iqw_fct_create(int n_fft) {
+    if (n_fft < 16 || (n_fft & (n_fft - 1)) != 0) return nullptr;
+    iqw_fct* e = new iqw_fct();
+    e->n = n_fft;
+    // Searching many prefixes raises the null maximum by about log(N).  The
+    // library's permissive research default (act=1.5) is useful for discovery
+    // but creates false short-support detections in a wideband waterfall.
+    const double waterfall_act = std::log(static_cast<double>(n_fft)) + 4.0;
+    if (fct_plan_create_ex(static_cast<size_t>(n_fft), 4, 0.5,
+                           waterfall_act, &e->plan) != BFFT_OK) {
+        delete e;
+        return nullptr;
+    }
+    e->input.resize(n_fft);
+    e->output.resize(n_fft);
+    e->tau.resize(n_fft);
+    e->iq.resize(static_cast<size_t>(2) * n_fft);
+    return e;
+}
+
+IQW_API void iqw_fct_destroy(iqw_fct* e) {
+    if (!e) return;
+    fct_plan_destroy(e->plan);
+    delete e;
+}
+
+IQW_API void iqw_fct_render(iqw_fct* e, iqw_source* src, int64_t start,
+                            int64_t hop, int n_rows, float* out_db,
+                            float* out_support, int remove_dc) {
+    if (!e || !src || !out_db || !out_support || n_rows <= 0) return;
+    for (int r = 0; r < n_rows; ++r) {
+        iqw_read(src, start + static_cast<int64_t>(r) * hop, e->n,
+                 e->iq.data());
+        fct_frame(e, out_db + static_cast<size_t>(r) * e->n,
+                  out_support + static_cast<size_t>(r) * e->n, remove_dc);
+    }
+}
+
+IQW_API void iqw_fct_render_mem(iqw_fct* e, const float* iq, int64_t nsamples,
+                                int64_t start, int64_t hop, int n_rows,
+                                float* out_db, float* out_support,
+                                int remove_dc) {
+    if (!e || !iq || !out_db || !out_support || n_rows <= 0) return;
+    for (int r = 0; r < n_rows; ++r) {
+        const int64_t base = start + static_cast<int64_t>(r) * hop;
+        for (int t = 0; t < e->n; ++t) {
+            const int64_t s = base + t;
+            if (s >= 0 && s < nsamples) {
+                e->iq[2 * t] = iq[2 * s];
+                e->iq[2 * t + 1] = iq[2 * s + 1];
+            } else {
+                e->iq[2 * t] = e->iq[2 * t + 1] = 0.0f;
+            }
+        }
+        fct_frame(e, out_db + static_cast<size_t>(r) * e->n,
+                  out_support + static_cast<size_t>(r) * e->n, remove_dc);
     }
 }
 

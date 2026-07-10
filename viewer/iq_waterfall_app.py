@@ -68,7 +68,7 @@ _LUTS = {name: _build_lut(anc) for name, anc in _ANCHORS.items()}
 DW = 1024
 DH = 640
 
-FFT_SIZES = [256, 512, 1024, 2048, 4096, 8192]
+FFT_SIZES = [256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536]
 
 
 class App:
@@ -104,6 +104,10 @@ class App:
         self.sr_nb = 1024             # long aperture window (fine freq)
         self.sr_ns = 128              # short aperture window (fine time)
         self.srs: dip_stream.FusionStream | None = None
+        self.fct_view = False         # heuristic FCT support-search baseline
+        self.fct_overlay = True       # color short-support selections warm
+        self.fcts: dip_stream.FctStream | None = None
+        self._fct_support = None
         # Cap the reconstructed span (raw-fills beyond coverage). Sized to the
         # segment cache so zoomed-out views still reconstruct.
         self.max_recon_span = 1_200_000
@@ -114,6 +118,9 @@ class App:
 
     # -- source management --------------------------------------------------
     def load(self, path, fmt, rate, is_complex):
+        if self.fcts:
+            self.fcts.close()
+            self.fcts = None
         if self.srs:
             self.srs.close()
             self.srs = None
@@ -156,6 +163,9 @@ class App:
             self.wf.close()
         self.wf = iqw.Waterfall(self.n_fft, self.window)
         self._block = np.empty((DH, self.n_fft), dtype=np.float32)
+        if self.fcts:
+            self.fcts.close()
+            self.fcts = None
 
     # -- rendering ----------------------------------------------------------
     def _recon_buffer(self, need, label):
@@ -199,13 +209,61 @@ class App:
         block = block[idx]
         return np.fft.fftshift(block, axes=1)                 # col 0 = -Fs/2
 
+    def _fct_block(self):
+        """Adaptive FCT detector rasterized at each bin's selected endpoint.
+
+        A conventional STFT assigns a single center time to a whole frame. FCT
+        has a different tau for every bin, so doing that would be a category
+        error. We analyze enough preceding origins to cover the visible range,
+        then scatter each cell to origin+tau and keep the strongest claimant.
+        """
+        if self.fcts is None:
+            self.fcts = dip_stream.FctStream(
+                self.src, n_fft=self.n_fft, hop=self.hop,
+                remove_dc=self.remove_dc)
+        frame_lo = self.position // self.hop
+        pad = (self.n_fft + self.hop - 1) // self.hop
+        raw_lo = frame_lo - pad
+        n_raw = DH + pad + 1
+        self.fcts.request(raw_lo, n_raw)
+        db, support, cov = self.fcts.assemble(raw_lo, n_raw)
+
+        block = np.full((DH, self.n_fft), -240.0, dtype=np.float32)
+        chosen_support = np.ones((DH, self.n_fft), dtype=np.float32)
+        cols_all = np.arange(self.n_fft)
+        for a in range(n_raw):
+            origin = raw_lo + a - frame_lo
+            target = origin + np.rint(
+                support[a] * self.n_fft / self.hop).astype(np.intp)
+            valid = (target >= 0) & (target < DH)
+            for dest in np.unique(target[valid]):
+                cols = cols_all[valid & (target == dest)]
+                better = db[a, cols] > block[dest, cols]
+                take = cols[better]
+                block[dest, take] = db[a, take]
+                chosen_support[dest, take] = support[a, take]
+
+        self._fct_support = chosen_support
+        adaptive = chosen_support[chosen_support < 0.999]
+        med = float(np.median(adaptive)) if adaptive.size else 1.0
+        self.recon_cov = cov
+        dpg.set_value("recon_status",
+                      f"FCT search baseline: {cov*100:.0f}% ready | "
+                      f"median adaptive support {med*100:.0f}%")
+        if cov < 0.999:
+            self._recon_pending = True
+        return block
+
     def recompute(self):
         if not (self.src and self.wf):
             return
         self._recon_pending = False
 
+        self._fct_support = None
         if self.super_res:
             block = self._super_res_block()
+        elif self.fct_view:
+            block = self._fct_block()
         elif self.reconstruct and self.reconstructor is not None \
                 and (DH - 1) * self.hop + self.n_fft <= self.max_recon_span:
             need = (DH - 1) * self.hop + self.n_fft
@@ -242,6 +300,14 @@ class App:
         lut = _LUTS[self.colormap]
         ui = (u * 255).astype(np.intp)
         rgb = lut[ui]                       # (DH, DW, 3)
+        if self.fct_view and self.fct_overlay and self._fct_support is not None:
+            sb = self._fct_support[:, c0:c1]
+            support_img = sb[:, idx]
+            # Short selected support is a second measurement, not intensity.
+            # Warm tint makes attacks/bursts visible without changing dB values.
+            mix = (0.38 * np.sqrt(np.clip(1.0 - support_img, 0.0, 1.0)))[..., None]
+            warm = np.array([1.0, 0.28, 0.03], dtype=np.float32)
+            rgb = rgb * (1.0 - mix) + warm * mix
         if self.flip_time:
             rgb = rgb[::-1]
         self._rgba[..., :3] = rgb
@@ -358,6 +424,8 @@ def cb_colormap(sender, val):
 
 def cb_hop(sender, val):
     app.hop = max(1, int(val))
+    if app.fcts:
+        app.fcts.close(); app.fcts = None
     app.dirty = True
 
 
@@ -388,6 +456,8 @@ def cb_freq_full():
 
 def cb_dc(sender, val):
     app.remove_dc = bool(val)
+    if app.fcts:
+        app.fcts.close(); app.fcts = None
     app.dirty = True
 
 
@@ -404,12 +474,35 @@ def cb_reconstruct(sender, val):
 
 def cb_superres(sender, val):
     app.super_res = bool(val)
+    if app.super_res and app.fct_view:
+        app.fct_view = False
+        dpg.set_value("fct_check", False)
     if app.super_res and app.src and app.srs is None:
         app.srs = dip_stream.FusionStream(app.src, n_steps=app.sr_steps,
                                           alpha=app.sr_alpha, nb=app.sr_nb,
                                           ns=app.sr_ns)
     if not app.super_res:
         dpg.set_value("recon_status", "")
+    app.dirty = True
+
+
+def cb_fct(sender, val):
+    app.fct_view = bool(val)
+    if app.fct_view and app.super_res:
+        app.super_res = False
+        dpg.set_value("superres_check", False)
+    if app.fct_view and app.reconstruct:
+        app.reconstruct = False
+        dpg.set_value("reconstruct_check", False)
+    if not app.fct_view and app.fcts:
+        app.fcts.close(); app.fcts = None
+    if not app.fct_view:
+        dpg.set_value("recon_status", "")
+    app.dirty = True
+
+
+def cb_fct_overlay(sender, val):
+    app.fct_overlay = bool(val)
     app.dirty = True
 
 
@@ -477,6 +570,8 @@ def cb_speed(sender, val):
 def cb_zoom_time(factor):
     app.hop = max(1, int(round(app.hop * factor)))
     dpg.set_value("hop_slider", app.hop)
+    if app.fcts:
+        app.fcts.close(); app.fcts = None
     app.dirty = True
 
 
@@ -528,13 +623,18 @@ def build_ui():
                 dpg.add_combo(list(iqw.WINDOWS.keys()), default_value="Hann",
                               tag="win_combo", width=-1, callback=cb_window)
                 dpg.add_checkbox(label="Remove DC per frame", callback=cb_dc)
+                dpg.add_checkbox(label="FCT support-search (experimental)",
+                                 tag="fct_check",
+                                 callback=cb_fct)
+                dpg.add_checkbox(label="Color adaptive support", default_value=True,
+                                 callback=cb_fct_overlay)
 
                 dpg.add_separator()
                 dpg.add_text("DIP/PGHI reconstruction")
                 dpg.add_checkbox(label="Reconstruct (streaming)",
-                                 callback=cb_reconstruct)
+                                 tag="reconstruct_check", callback=cb_reconstruct)
                 dpg.add_checkbox(label="Super-res (active-delta)",
-                                 callback=cb_superres)
+                                 tag="superres_check", callback=cb_superres)
                 with dpg.group(horizontal=True):
                     dpg.add_text("long win")
                     dpg.add_combo([512, 1024, 2048, 4096], default_value=1024,
@@ -616,6 +716,12 @@ def main():
     while dpg.is_dearpygui_running():
         app.tick()
         dpg.render_dearpygui_frame()
+    if app.fcts:
+        app.fcts.close()
+    if app.srs:
+        app.srs.close()
+    if app.reconstructor:
+        app.reconstructor.close()
     dpg.destroy_context()
 
 

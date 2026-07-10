@@ -383,19 +383,27 @@ Ten prefix_to_level_c(const Ten& frames, int I, int n, int level) {
     return Z;
 }
 
-// |fft| of windowed complex frames -> full-spectrum magnitudes [I,n].
-void windowed_frame_mag_c(const std::vector<cd>& z, int L, int n, int hop,
-                          std::vector<double>& mag_out, int& I_out) {
+// Complex spectra and magnitudes of windowed IQ frames [I,n].  The measured
+// spectrum is retained for waterfall seeding: unlike the older magnitude-only
+// reconstruction experiment, an IQ viewer already owns phase and must not run
+// PGHI merely to invent it again.
+void windowed_frame_spectrum_c(const std::vector<cd>& z, int L, int n, int hop,
+                               Ten& spectrum_out,
+                               std::vector<double>& mag_out, int& I_out) {
     auto offs = frame_offsets(L, n, hop);
     int I = (int)offs.size();
     I_out = I;
     auto win = periodic_hann(n);
+    spectrum_out.assign((size_t)I * n, cd(0, 0));
     mag_out.assign((size_t)I * n, 0.0);
     std::vector<cd> frame(n);
     for (int i = 0; i < I; ++i) {
         for (int j = 0; j < n; ++j) frame[j] = z[offs[i] + j] * win[j];
         fft_pow2(frame.data(), n, -1);
-        for (int j = 0; j < n; ++j) mag_out[(size_t)i * n + j] = std::abs(frame[j]);
+        for (int j = 0; j < n; ++j) {
+            spectrum_out[(size_t)i * n + j] = frame[j];
+            mag_out[(size_t)i * n + j] = std::abs(frame[j]);
+        }
     }
 }
 
@@ -791,14 +799,15 @@ struct Solver : DipBase {
 // ---------------------------------------------------------------------------
 struct SolverC : DipBase {
     std::vector<cd> z;
+    Ten Yb_measured, Ys_measured;
 
     SolverC(const cd* zin, int Lin, const int* ds, int nds, bool ren,
             int nb, int ns)
         : z(zin, zin + Lin) {
         setup_common(Lin, ds, nds, ren, nb, ns);
         int t;
-        windowed_frame_mag_c(z, L, NB, HB, yb, t);
-        windowed_frame_mag_c(z, L, NS, HS, ys, t);
+        windowed_frame_spectrum_c(z, L, NB, HB, Yb_measured, yb, t);
+        windowed_frame_spectrum_c(z, L, NS, HS, Ys_measured, ys, t);
     }
 
     Ten prefix_rect(const Ten& u) const {
@@ -923,15 +932,12 @@ struct SolverC : DipBase {
         return mag;
     }
 
-    // Direct tap-adjoint seed: PGHI endpoint -> back_to_level -> tap3_adj -> Zb.
-    // Streaming-compatible; no record OLA.
+    // Direct measured seed: complex IQ endpoint -> back_to_level -> tap3_adj.
+    // This is both streaming-compatible and phase-true.  PGHI remains available
+    // for the magnitude-only reconstruction API, but does not belong in an IQ
+    // waterfall analysis path where the complex endpoints are already known.
     Ten direct_seed() const {
-        std::vector<double> phase((size_t)Ib * NB);
-        pghi_core(yb.data(), Ib, NB, NB, HB, 0, nullptr, phase.data(), nullptr);
-        Ten Y((size_t)Ib * NB);
-        for (size_t k = 0; k < Y.size(); ++k)
-            Y[k] = yb[k] * cd(std::cos(phase[k]), std::sin(phase[k]));
-        Ten B = back_to_level(Y, Ib, NB, TB);
+        Ten B = back_to_level(Yb_measured, Ib, NB, TB);
         return tap3_adj(B, Ib, EB, QB, phb);
     }
 

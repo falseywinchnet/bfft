@@ -21,6 +21,9 @@ struct fct_plan {
 namespace {
 
 fct::cplx* as_c(bfft_complex* v) { return reinterpret_cast<fct::cplx*>(v); }
+const fct::cplx* as_c(const bfft_complex* v) {
+    return reinterpret_cast<const fct::cplx*>(v);
+}
 
 bool valid_size(size_t n) {
     if (n > static_cast<size_t>(2147483647)) return false;
@@ -65,6 +68,14 @@ bfft_status fct_forward(fct_plan* plan, const double* input,
                         bfft_complex* output, int64_t* tau) {
     if (!plan || !input || !output) return BFFT_ERROR_INVALID_ARGUMENT;
     if (!plan->p.forward(input, as_c(output), tau)) return BFFT_ERROR_INTERNAL;
+    return BFFT_OK;
+}
+
+bfft_status fct_forward_complex(fct_plan* plan, const bfft_complex* input,
+                                bfft_complex* output, int64_t* tau) {
+    if (!plan || !input || !output) return BFFT_ERROR_INVALID_ARGUMENT;
+    if (!plan->p.forward_complex(as_c(input), as_c(output), tau))
+        return BFFT_ERROR_INTERNAL;
     return BFFT_OK;
 }
 

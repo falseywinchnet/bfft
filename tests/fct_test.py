@@ -109,6 +109,24 @@ phase = np.abs(np.angle(C[coh] * np.conj(Cbf[coh, tau[coh] - 1])))
 check("emitted phase = arctan(A/B) at slice", np.max(phase) < 1e-6,
       f"max {np.degrees(np.max(phase)):.2e} deg")
 
+# Complex-IQ selection must be shared by I and Q.  Verify all wrapped bins,
+# including negative frequencies, directly against the emitted tau.
+print("3b. complex-IQ exactness at shared selected slices")
+N = 256
+t = np.arange(N)
+xc = (0.8 * np.exp(2j * np.pi * 37.25 * t / N) +
+      0.6 * (t < 143) * np.exp(-2j * np.pi * 61 * t / N + 0.4j) +
+      1e-3 * (rng.standard_normal(N) + 1j * rng.standard_normal(N)))
+Cc, tauc = bfft.FctPlan(N).fct_complex(xc)
+worst = 0.0
+for k in range(N):
+    ref = prefix_correlation(xc, k, int(tauc[k]))
+    worst = max(worst, abs(Cc[k] - ref) / (abs(ref) + 1.0))
+check("complex full-spectrum exactness", worst < 1e-9,
+      f"worst rel err {worst:.2e}")
+check("negative-frequency bins can adapt", bool(np.any(tauc[N // 2 + 1:] < N)),
+      f"adaptive negative bins {(tauc[N // 2 + 1:] < N).sum()}")
+
 # ---------------------------------------------------------------- 4
 print("4. C STFT path (bfft.STFTPlan transform='fct')")
 n_sig, n_fft, hop = 4096, 512, 128

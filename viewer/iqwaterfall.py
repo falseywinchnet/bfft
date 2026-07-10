@@ -86,6 +86,14 @@ _wf_render = _decl("iqw_wf_render", None,
 _wf_render_mem = _decl("iqw_wf_render_mem", None,
                        [_vp, _vp, _ll, _ll, _ll, ctypes.c_int, _vp, ctypes.c_int])
 
+_fct_create = _decl("iqw_fct_create", _vp, [ctypes.c_int])
+_fct_destroy = _decl("iqw_fct_destroy", None, [_vp])
+_fct_render = _decl("iqw_fct_render", None,
+                    [_vp, _vp, _ll, _ll, ctypes.c_int, _vp, _vp, ctypes.c_int])
+_fct_render_mem = _decl(
+    "iqw_fct_render_mem", None,
+    [_vp, _vp, _ll, _ll, _ll, ctypes.c_int, _vp, _vp, ctypes.c_int])
+
 _ra_create = _decl("iqw_ra_create", _vp, [ctypes.c_int])
 _ra_destroy = _decl("iqw_ra_destroy", None, [_vp])
 _ra_render_mem = _decl("iqw_ra_render_mem", None,
@@ -241,6 +249,55 @@ class Waterfall:
     def close(self):
         if getattr(self, "_h", None):
             _wf_destroy(self._h)
+            self._h = None
+
+    def __del__(self):
+        self.close()
+
+
+class FctWaterfall:
+    """Complex-IQ adaptive leading-edge waterfall engine.
+
+    ``render`` returns ``(db, support)`` in fftshifted full-spectrum order.
+    ``support`` is tau/N; callers should place a cell at frame_origin + tau,
+    rather than pretending every adaptive aperture has STFT-center timing.
+    """
+
+    def __init__(self, n_fft=1024):
+        h = _fct_create(int(n_fft))
+        if not h:
+            raise ValueError(f"invalid FCT n_fft={n_fft} (power of two >= 16)")
+        self._h = h
+        self.n_fft = int(n_fft)
+
+    def render(self, src: IQSource, start, hop, n_rows, remove_dc=False,
+               db_out=None, support_out=None):
+        shape = (int(n_rows), self.n_fft)
+        if db_out is None or db_out.shape != shape:
+            db_out = np.empty(shape, dtype=np.float32)
+        if support_out is None or support_out.shape != shape:
+            support_out = np.empty(shape, dtype=np.float32)
+        _fct_render(self._h, src._h, int(start), int(hop), int(n_rows),
+                    db_out.ctypes.data, support_out.ctypes.data,
+                    1 if remove_dc else 0)
+        return db_out, support_out
+
+    def render_mem(self, iq_interleaved, start, hop, n_rows, remove_dc=False,
+                   db_out=None, support_out=None):
+        iq = np.ascontiguousarray(iq_interleaved, dtype=np.float32)
+        shape = (int(n_rows), self.n_fft)
+        if db_out is None or db_out.shape != shape:
+            db_out = np.empty(shape, dtype=np.float32)
+        if support_out is None or support_out.shape != shape:
+            support_out = np.empty(shape, dtype=np.float32)
+        _fct_render_mem(self._h, iq.ctypes.data, iq.size // 2, int(start),
+                        int(hop), int(n_rows), db_out.ctypes.data,
+                        support_out.ctypes.data, 1 if remove_dc else 0)
+        return db_out, support_out
+
+    def close(self):
+        if getattr(self, "_h", None):
+            _fct_destroy(self._h)
             self._h = None
 
     def __del__(self):

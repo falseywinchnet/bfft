@@ -40,6 +40,12 @@ public:
         if (result != BFFT_OK) throw error(result);
     }
 
+    void forward_complex(const complex* input, complex* output,
+                         std::int64_t* tau = nullptr) {
+        status result = ::fct_forward_complex(impl_.get(), input, output, tau);
+        if (result != BFFT_OK) throw error(result);
+    }
+
     /* Returns the correlated spectrum and the selected slice per bin. */
     std::pair<std::vector<complex>, std::vector<std::int64_t>>
     forward(const std::vector<double>& input) {
@@ -47,6 +53,16 @@ public:
         std::vector<complex> output(bins());
         std::vector<std::int64_t> tau(bins());
         forward(input.data(), output.data(), tau.data());
+        return {std::move(output), std::move(tau)};
+    }
+
+
+    std::pair<std::vector<complex>, std::vector<std::int64_t>>
+    forward_complex(const std::vector<complex>& input) {
+        if (input.size() != size()) throw error(BFFT_ERROR_INVALID_ARGUMENT);
+        std::vector<complex> output(size());
+        std::vector<std::int64_t> tau(size());
+        forward_complex(input.data(), output.data(), tau.data());
         return {std::move(output), std::move(tau)};
     }
 

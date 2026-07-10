@@ -10,12 +10,14 @@
 
        C[k] = sum_{t=0}^{tau_k - 1} x[t] * exp(-2*pi*i*k*t/N)
 
-   at the slice tau_k in [1, N] where the bin maximally correlates under the
+   at a high-scoring slice tau_k in [1, N] selected under the
    score |C|^2 / tau (the emitted phase is the arctan(A/B) of the underlying
    sine/cosine correlation pair at that slice).  Bins with no coherent
    leading edge default to tau = N, i.e. the plain FFT bin, so the FCT
    degrades gracefully to the ordinary real-FFT spectrum on incoherent
-   content.  The selection is nonlinear and the fixed truncation family it
+   content.  The emitted correlation is exact at tau_k; the multiscale search
+   is heuristic and does not prove the global argmax for every signal. The
+   selection is nonlinear and the fixed truncation family it
    optimizes over is exponentially ill-conditioned, so no inverse exists;
    attempts to invert must reconstruct from the plain FFT bins instead.
 
@@ -59,6 +61,15 @@ bfft_status fct_forward(fct_plan* plan,
                         const double* input,
                         bfft_complex* output,
                         int64_t* tau);
+
+/* Complex-IQ forward FCT. input and output both contain N complex values;
+   tau contains N shared slice decisions.  The selector operates on the
+   complex correlation directly (it is not two independently selected real
+   transforms), so wrapped-negative frequencies are handled correctly. */
+bfft_status fct_forward_complex(fct_plan* plan,
+                                const bfft_complex* input,
+                                bfft_complex* output,
+                                int64_t* tau);
 
 /* Numba-compatible forward entry point with the same call shape as
    bfft_forward. work and native_scratch are accepted for drop-in call-site

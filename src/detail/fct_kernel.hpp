@@ -7,7 +7,7 @@
 //
 //     C(k, tau_k) = sum_{t=0}^{tau_k-1} x[t] * exp(-2*pi*i*k*t/n)
 //
-// at the slice tau_k in [1, n] where the bin maximally correlates under the
+// at a selected high-scoring slice tau_k in [1, n] under the
 // score |C|^2 / tau (energy-normalized coherent mass; the emitted phase is
 // the arctan(A/B) of the sine/cosine correlation pair at that slice).  Bins
 // with no coherent leading edge default to tau = n, i.e. the plain FFT bin.
@@ -43,9 +43,11 @@
 // (bfft_plan per level size), exactly as the STFT kernel does -- standard
 // spectrum order, no external FFT.
 //
-// Cost: pyramid n log^2 n cells (the (DFT, ODFT) tower closure of
-// notes/thle_transform.md T5b is the production lever to halve this), plus
+// Cost: pyramid n log^2 n cells plus
 // signal-adaptive refinement (measured 12-30x under the per-bin DDC bank).
+// The DFT/ODFT identity constructs a parent DFT, but the pair does not itself
+// recursively close: constructing a parent ODFT introduces quarter-bin child
+// channels.  An O(n log n) all-level tower remains an open factorization.
 //
 // Precision: double only.  CONCURRENCY: a plan owns its scratch, so one plan
 // serves one thread at a time; create one plan per thread.
@@ -87,6 +89,7 @@ struct level_state {
     std::vector<double> work;
     std::vector<bfft_complex> scratch;
     std::vector<bfft_complex> spec;      // one block spectrum, L/2 + 1 rows
+    std::vector<bfft_complex> spec_i;    // imaginary-channel spectrum (complex input)
     std::vector<cplx> cum;               // running block sum per row
     std::vector<int> best_m;             // per row: best boundary block index
     std::vector<double> best_s;          // per row: best score
@@ -118,18 +121,23 @@ public:
             lv.work.resize(bfft_plan_work_size(lv.plan));
             lv.scratch.resize(bfft_plan_native_scratch_size(lv.plan));
             lv.spec.resize(L / 2 + 1);
-            lv.cum.resize(L / 2 + 1);
-            lv.best_m.resize(L / 2 + 1);
-            lv.best_s.resize(L / 2 + 1);
+            lv.spec_i.resize(L / 2 + 1);
+            // The real path uses only L/2+1 rows.  The complex-IQ path needs
+            // all L rows; keeping one shared allocation avoids a second plan.
+            lv.cum.resize(L);
+            lv.best_m.resize(L);
+            lv.best_s.resize(L);
         }
         prefix_.resize(static_cast<size_t>(n_));
-        anchor_.resize(static_cast<size_t>(nbins_));
-        full_.resize(static_cast<size_t>(nbins_));
-        sc_.resize(levels_.size() * static_cast<size_t>(nbins_));
-        bd_.resize(levels_.size() * static_cast<size_t>(nbins_));
-        tau_c_.resize(static_cast<size_t>(nbins_));
-        win_.resize(static_cast<size_t>(nbins_));
-        order_.resize(static_cast<size_t>(nbins_));
+        prefix_i_.resize(static_cast<size_t>(n_));
+        anchor_.resize(static_cast<size_t>(n_));
+        anchor_i_.resize(static_cast<size_t>(n_ / 2 + 1));
+        full_.resize(static_cast<size_t>(n_));
+        sc_.resize(levels_.size() * static_cast<size_t>(n_));
+        bd_.resize(levels_.size() * static_cast<size_t>(n_));
+        tau_c_.resize(static_cast<size_t>(n_));
+        win_.resize(static_cast<size_t>(n_));
+        order_.resize(static_cast<size_t>(n_));
         ok_ = true;
     }
 
@@ -141,6 +149,7 @@ public:
     bool valid() const { return ok_; }
     int size() const { return n_; }
     int bins() const { return nbins_; }
+    int complex_bins() const { return n_; }
 
     // Forward FCT.  x has n real samples; out has n/2 + 1 packed standard
     // bins C(k, tau_k); tau (optional, may be null) receives the selected
@@ -333,7 +342,215 @@ public:
         return true;
     }
 
+    // Complex-IQ FCT.  Selection is performed on the complex correlation
+    // itself.  Running independent real FCTs on I and Q and combining their
+    // results is invalid because the selector is nonlinear and would generally
+    // choose two different tau values.  This path uses two house real FFTs only
+    // as a linear complex-FFT implementation, then makes one shared decision.
+    bool forward_complex(const cplx* x, cplx* out, int64_t* tau) {
+        if (!ok_) return false;
+        const int n = n_;
+        const int nb = n;
+
+        double mean_sq = 0.0;
+        for (int i = 0; i < n; ++i)
+            mean_sq += x[i].re * x[i].re + x[i].im * x[i].im;
+        mean_sq /= static_cast<double>(n);
+        const double floor_score = act_ * mean_sq;
+
+        // Dyadic leading-edge manifold.  For complex samples each block FFT is
+        // reconstructed from FFT(real) + i FFT(im), including wrapped-negative
+        // bins.  The lattice identity and row-shared prefix landscapes are
+        // otherwise identical to the real path.
+        for (level_state& lv : levels_) {
+            const int L = 1 << lv.t;
+            const int B = n >> lv.t;
+            for (int f = 0; f < L; ++f) {
+                lv.cum[static_cast<size_t>(f)] = cplx{};
+                lv.best_m[static_cast<size_t>(f)] = 0;
+                lv.best_s[static_cast<size_t>(f)] = -1.0;
+            }
+            for (int b = 0; b < B; ++b) {
+                for (int t = 0; t < L; ++t) {
+                    const cplx v = x[static_cast<size_t>(b) * L + t];
+                    prefix_[static_cast<size_t>(t)] = v.re;
+                    prefix_i_[static_cast<size_t>(t)] = v.im;
+                }
+                if (bfft_forward(lv.plan, prefix_.data(), lv.spec.data(),
+                                 lv.work.data(), lv.scratch.data()) != BFFT_OK ||
+                    bfft_forward(lv.plan, prefix_i_.data(), lv.spec_i.data(),
+                                 lv.work.data(), lv.scratch.data()) != BFFT_OK) {
+                    return false;
+                }
+                const double tau_here = static_cast<double>(b + 1) * L;
+                for (int f = 0; f < L; ++f) {
+                    const cplx z = combine_complex_bin(lv.spec, lv.spec_i, L, f);
+                    cplx& c = lv.cum[static_cast<size_t>(f)];
+                    c.re += z.re;
+                    c.im += z.im;
+                    const double s = (c.re * c.re + c.im * c.im) / tau_here;
+                    if (s > lv.best_s[static_cast<size_t>(f)]) {
+                        lv.best_s[static_cast<size_t>(f)] = s;
+                        lv.best_m[static_cast<size_t>(f)] = b;
+                    }
+                }
+            }
+            if (lv.t == T_)
+                for (int f = 0; f < L; ++f)
+                    full_[static_cast<size_t>(f)] = lv.cum[static_cast<size_t>(f)];
+        }
+
+        const size_t nlev = levels_.size();
+        for (size_t li = 0; li < nlev; ++li) {
+            const level_state& lv = levels_[li];
+            const int L = 1 << lv.t;
+            for (int k = 0; k < nb; ++k) {
+                int f = static_cast<int>(
+                    std::llround(static_cast<double>(k) * L / n)) % L;
+                sc_[li * nb + static_cast<size_t>(k)] =
+                    lv.best_s[static_cast<size_t>(f)];
+                bd_[li * nb + static_cast<size_t>(k)] =
+                    (lv.best_m[static_cast<size_t>(f)] + 1) * L;
+            }
+        }
+        for (int k = 0; k < nb; ++k) {
+            double smax = 0.0;
+            for (size_t li = 0; li < nlev; ++li)
+                smax = std::max(smax, sc_[li * nb + static_cast<size_t>(k)]);
+            // DC is deliberately left as the full-frame mean.  All other IQ
+            // bins, including wrapped-negative frequencies, are eligible.
+            const bool active = smax > floor_score && k != 0;
+            if (!active) {
+                tau_c_[static_cast<size_t>(k)] = n;
+                win_[static_cast<size_t>(k)] = 0;
+                continue;
+            }
+            size_t chosen = nlev - 1;
+            for (size_t li = 0; li < nlev; ++li) {
+                if (sc_[li * nb + static_cast<size_t>(k)] >= rel_ * smax) {
+                    chosen = li;
+                    break;
+                }
+            }
+            tau_c_[static_cast<size_t>(k)] = bd_[chosen * nb + static_cast<size_t>(k)];
+            win_[static_cast<size_t>(k)] = 1 << levels_[chosen].t;
+        }
+
+        int n_active = 0;
+        for (int k = 0; k < nb; ++k)
+            if (win_[static_cast<size_t>(k)] > 0)
+                order_[static_cast<size_t>(n_active++)] = k;
+        auto lo_of = [&](int k) {
+            const int wide = std::max(2 * win_[static_cast<size_t>(k)], n / 8);
+            return std::max(tau_c_[static_cast<size_t>(k)] - wide, 1);
+        };
+        std::sort(order_.begin(), order_.begin() + n_active,
+                  [&](int a, int b) { return lo_of(a) < lo_of(b); });
+
+        for (int k = 0; k < nb; ++k) {
+            out[k] = full_[static_cast<size_t>(k)];
+            if (tau) tau[k] = n;
+        }
+
+        int cur_anchor = -1;
+        for (int i = 0; i < n_active; ++i) {
+            const int k = order_[static_cast<size_t>(i)];
+            const int wide = std::max(2 * win_[static_cast<size_t>(k)], n / 8);
+            int lo = std::max(tau_c_[static_cast<size_t>(k)] - wide, 1);
+            int hi = std::min(tau_c_[static_cast<size_t>(k)] + wide, n);
+            if (lo != cur_anchor) {
+                for (int t = 0; t < lo; ++t) {
+                    prefix_[static_cast<size_t>(t)] = x[t].re;
+                    prefix_i_[static_cast<size_t>(t)] = x[t].im;
+                }
+                for (int t = lo; t < n; ++t) {
+                    prefix_[static_cast<size_t>(t)] = 0.0;
+                    prefix_i_[static_cast<size_t>(t)] = 0.0;
+                }
+                level_state& top = levels_.back();
+                if (bfft_forward(top.plan, prefix_.data(), anchor_.data(),
+                                 top.work.data(), top.scratch.data()) != BFFT_OK ||
+                    bfft_forward(top.plan, prefix_i_.data(), anchor_i_.data(),
+                                 top.work.data(), top.scratch.data()) != BFFT_OK) {
+                    return false;
+                }
+                cur_anchor = lo;
+            }
+            cplx c_lo = combine_complex_bin(anchor_, anchor_i_, n, k);
+            const double wk = 2.0 * kPi * static_cast<double>(k) / n;
+            int best_tau = 0;
+            cplx best_c{};
+            for (;;) {
+                double rr = std::cos(wk * lo);
+                double ri = -std::sin(wk * lo);
+                const double sr = std::cos(wk);
+                const double si = -std::sin(wk);
+                cplx c = c_lo;
+                double best_s = (c.re * c.re + c.im * c.im) /
+                                static_cast<double>(lo);
+                best_tau = lo;
+                best_c = c;
+                for (int t = lo; t < hi; ++t) {
+                    // (xr+i xi) * (rr+i ri)
+                    c.re += x[t].re * rr - x[t].im * ri;
+                    c.im += x[t].re * ri + x[t].im * rr;
+                    const double s = (c.re * c.re + c.im * c.im) /
+                                     static_cast<double>(t + 1);
+                    if (s > best_s) {
+                        best_s = s;
+                        best_tau = t + 1;
+                        best_c = c;
+                    }
+                    const double nr = rr * sr - ri * si;
+                    ri = rr * si + ri * sr;
+                    rr = nr;
+                }
+                const int span = hi - lo;
+                if (best_tau >= hi - 3 && hi < n) {
+                    hi = std::min(n, hi + span);
+                    continue;
+                }
+                if (best_tau <= lo + 2 && lo > 1) {
+                    lo = std::max(1, lo - span);
+                    c_lo = cplx{};
+                    double qr = 1.0, qi = 0.0;
+                    for (int t = 0; t < lo; ++t) {
+                        c_lo.re += x[t].re * qr - x[t].im * qi;
+                        c_lo.im += x[t].re * qi + x[t].im * qr;
+                        const double nq = qr * sr - qi * si;
+                        qi = qr * si + qi * sr;
+                        qr = nq;
+                    }
+                    continue;
+                }
+                break;
+            }
+            out[k] = best_c;
+            if (tau) tau[k] = best_tau;
+        }
+        return true;
+    }
+
 private:
+    static cplx combine_complex_bin(const std::vector<bfft_complex>& ar,
+                                    const std::vector<bfft_complex>& ai,
+                                    int n, int k) {
+        double rr, ri, ir, ii;
+        if (k <= n / 2) {
+            rr = ar[static_cast<size_t>(k)].re;
+            ri = ar[static_cast<size_t>(k)].im;
+            ir = ai[static_cast<size_t>(k)].re;
+            ii = ai[static_cast<size_t>(k)].im;
+        } else {
+            const int m = n - k;
+            rr = ar[static_cast<size_t>(m)].re;
+            ri = -ar[static_cast<size_t>(m)].im;
+            ir = ai[static_cast<size_t>(m)].re;
+            ii = -ai[static_cast<size_t>(m)].im;
+        }
+        return cplx{rr - ii, ri + ir};
+    }
+
     void destroy() {
         for (level_state& lv : levels_) {
             bfft_plan_destroy(lv.plan);
@@ -351,7 +568,9 @@ private:
 
     std::vector<level_state> levels_;
     std::vector<double> prefix_;
+    std::vector<double> prefix_i_;
     std::vector<bfft_complex> anchor_;
+    std::vector<bfft_complex> anchor_i_;
     std::vector<cplx> full_;
     std::vector<double> sc_;     // [level][bin] proxy score
     std::vector<int> bd_;        // [level][bin] proxy boundary

@@ -92,22 +92,27 @@ manifold**, concentrated fine-in-time where frequency is coarse and
 fine-in-frequency where time is coarse.  The "one period for the final
 wave" hyperbola of the original prompt is the f = 1 column of this pyramid.
 
-**T5b (BODFT closure).**  The contiguous-block tower is NOT walkable by the
-standard butterfly.  Parent spectra of a concatenated pair [u|v] close on
-the (DFT, ODFT) channel pair:
+**T5b (one-level BODFT identity; corrected).**  Parent spectra of a
+concatenated pair [u|v] use a DFT and ODFT child channel:
 
     parent[2f]   = DFT_h(u)[f] + DFT_h(v)[f]
     parent[2f+1] = ODFT_h(u)[f] − ODFT_h(v)[f]        (1e-14 measured)
 
-The half-bin transform — the repo's BODFT primitive — is exactly the
-missing sibling channel that makes leading-edge towers recursive.  (The
-naive per-level rebuild costs N log²N; the (DFT,ODFT) recursion is the
-production route.)
+The half-bin transform is exactly the missing sibling channel for constructing
+that **one parent DFT**.  It does not, by itself, make the channel pair
+recursive: constructing ODFT_{2h}([u|v]) requires quarter-bin and
+three-quarter-bin child transforms; recursively carrying those introduces
+eighth-bin channels, and so on.  Therefore the checked-in per-level rebuild is
+honestly O(N log²N).  An exact O(N logN) all-level tower needs a larger
+fractional-channel factorization or a different reuse theorem; it is open.
 
 ## 4. The adaptive transform (the discovered object)
 
-The answer to "which transform yields max-arctan slices for all bins without
-DDC work" is **not a linear transform**.  It is a three-stage nonlinear
+The answer to "which transform yields correlation-selected phase slices for all
+bins without DDC work" is **not a linear transform**.  Maximizing arctan itself
+would be branch-dependent and amplitude-blind; arctan(A/B) is the phase
+observable at the selected support, while selection uses |C|²/tau. It is a
+three-stage nonlinear
 object whose linear interior is the paused walk:
 
 1. **Manifold**: the block pyramid of §3 (walk passes, paused at every
@@ -127,7 +132,8 @@ object whose linear interior is the paused walk:
    per distinct window start (a handful) anchors C(:, lo) for every member
    bin; each bin then walks its own window by the endpoint recurrence
    C(k,τ+1) = C(k,τ) + x[τ]e^{-iω_k τ}, extending the window geometrically
-   whenever the argmax sits on an edge.  Exact inside the window.
+   whenever the local argmax sits on an edge.  Exact inside the searched
+   window, but not a proof against a disconnected, higher maximum elsewhere.
 6. **Egress**: the refinement already holds C(k, τ_k) exactly; one full FFT
    serves the defaults.
 
@@ -172,8 +178,9 @@ leading-edge tower needs.
   everything above carries through; not separately measured.
 - Two-sided apertures (onset AND offset per bin) — leaves the "leading
   edge" family, meets the aperture-ladder work.
-- Production kernel: (DFT,ODFT) recursive tower + per-row landscape scan +
-  endpoint refinement, all cells already in `bruun_dip_kernel.hpp` /
-  `bodft_kernel.hpp` idiom.  Numba port of `adaptive_transform` first.
+- Production kernel: discover an all-level reuse factorization (the DFT/ODFT
+  one-level identity alone is insufficient), then combine it with the per-row
+  landscape scan and endpoint refinement.  A Numba port remains a useful
+  intermediate benchmark.
 - Regularized/multi-aperture inversion of fixed THLE (its exponential
   conditioning makes the plain inverse a small-N tool only).

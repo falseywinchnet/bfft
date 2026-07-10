@@ -27,6 +27,110 @@ STEP = TILE // 2     # 50% overlap -> Hann OLA is constant (COLA)
 FRAME_HOP = 128      # long-aperture hop (HB): native time resolution of readout
 
 
+class FctStream:
+    """Asynchronous complex-IQ FCT rows on a fixed hop grid.
+
+    Cached rows retain both energy-normalized correlation dB and tau/N.  The
+    UI performs endpoint placement because tau is frequency-dependent; treating
+    the row origin as an STFT center is the timing error this class avoids.
+    """
+
+    def __init__(self, src: iqw.IQSource, n_fft=1024, hop=256, workers=3,
+                 rows_per_tile=24, prefetch=1, cache_tiles=96,
+                 remove_dc=False):
+        self.src = src
+        self.n_fft = int(n_fft)
+        self.hop = max(1, int(hop))
+        self.rows_per_tile = int(rows_per_tile)
+        self.prefetch = int(prefetch)
+        self.cache_tiles = int(cache_tiles)
+        self.remove_dc = bool(remove_dc)
+        self.ntiles = max(1, (src.num_samples + self.hop - 1) //
+                          (self.rows_per_tile * self.hop) + 1)
+        self._pool = ThreadPoolExecutor(max_workers=workers)
+        self._cache: dict[int, tuple[np.ndarray, np.ndarray] | str | None] = {}
+        self._lock = threading.Lock()
+        self._io_lock = threading.Lock()
+        self._local = threading.local()
+        self._closed = False
+
+    def _engine(self):
+        engine = getattr(self._local, "engine", None)
+        if engine is None:
+            engine = iqw.FctWaterfall(self.n_fft)
+            self._local.engine = engine
+        return engine
+
+    def _solve_tile(self, k):
+        start = k * self.rows_per_tile * self.hop
+        count = (self.rows_per_tile - 1) * self.hop + self.n_fft
+        with self._io_lock:
+            z = self.src.read(start, count)
+        iq = np.empty(2 * count, dtype=np.float32)
+        iq[0::2] = z.real
+        iq[1::2] = z.imag
+        return self._engine().render_mem(
+            iq, 0, self.hop, self.rows_per_tile, remove_dc=self.remove_dc)
+
+    def _store(self, k, fut):
+        try:
+            result = fut.result()
+        except Exception:  # noqa: BLE001
+            result = None
+        with self._lock:
+            if not self._closed:
+                self._cache[k] = result
+
+    def request(self, frame_lo, n_frames):
+        rpt = self.rows_per_tile
+        k0 = int(np.floor(int(frame_lo) / rpt))
+        k1 = int(np.floor((int(frame_lo) + int(n_frames) - 1) / rpt))
+        submit = []
+        with self._lock:
+            for k in range(k0, k1 + 1 + self.prefetch):
+                if k < self.ntiles and k not in self._cache:
+                    self._cache[k] = "pending"
+                    submit.append(k)
+            if len(self._cache) > self.cache_tiles:
+                for k in list(self._cache):
+                    if (k < k0 - self.prefetch or k > k1 + self.prefetch) and \
+                            isinstance(self._cache[k], tuple):
+                        del self._cache[k]
+        for k in submit:
+            fut = self._pool.submit(self._solve_tile, k)
+            fut.add_done_callback(lambda f, kk=k: self._store(kk, f))
+
+    def assemble(self, frame_lo, n_frames):
+        frame_lo = int(frame_lo)
+        n_frames = int(n_frames)
+        rpt = self.rows_per_tile
+        db = np.full((n_frames, self.n_fft), -240.0, dtype=np.float32)
+        support = np.ones((n_frames, self.n_fft), dtype=np.float32)
+        have = np.zeros(n_frames, dtype=bool)
+        k0 = int(np.floor(frame_lo / rpt))
+        k1 = int(np.floor((frame_lo + n_frames - 1) / rpt))
+        with self._lock:
+            ready = {k: self._cache.get(k) for k in range(k0, k1 + 1)}
+        for k, data in ready.items():
+            if not isinstance(data, tuple):
+                continue
+            g0 = k * rpt
+            lo = max(g0, frame_lo)
+            hi = min(g0 + rpt, frame_lo + n_frames)
+            if lo < hi:
+                dst = slice(lo - frame_lo, hi - frame_lo)
+                src = slice(lo - g0, hi - g0)
+                db[dst] = data[0][src]
+                support[dst] = data[1][src]
+                have[dst] = True
+        return db, support, float(np.mean(have))
+
+    def close(self):
+        with self._lock:
+            self._closed = True
+        self._pool.shutdown(wait=False, cancel_futures=True)
+
+
 class SuperResStream:
     """Streaming super-resolution waterfall via the active-delta endpoint readout.
 
@@ -128,10 +232,12 @@ class FusionStream:
     The active-delta inverse constrains the OWNED band of deltas (owned = HB/HS,
     centered on the long frame). The readout emits ONLY those constrained deltas
     -- every fine-time row is a measured, fitted short, not a model-implied one.
-    Each row = long endpoint amplitude (fine freq, kept at true scale) gated by
-    the short endpoint (fine time), the short only deciding WHERE in time energy
-    belongs: F = L * clamp(S/max_over_deltas(S), floor, 1)^beta. Rows are at
-    HS=32 hop / nb bins."""
+    Short-endpoint power partitions each long-bin power across the owned fine
+    rows.  Thus sum_e |F[e,k]|^2 = |L[k]|^2 (apart from the optional uniform
+    floor blend): no independent peak normalization and no fabricated energy.
+    The coarse short weights are circularly interpolated onto the long grid so
+    coarse bins are centered rather than left-edge repeated. Rows are at HS=32
+    hop / nb bins."""
 
     def __init__(self, src, nb=4096, ns=512, workers=4, prefetch=1,
                  cache_tiles=48, n_steps=1, alpha=1.0, mode=3, direct_seed=True,
@@ -145,7 +251,7 @@ class FusionStream:
         self.lo = (self.nb // 2 - self.HB // 2) // self.HS   # first owned delta
         # Constrain AND read exactly the owned band (contiguous, measured gates).
         self.dsel = np.arange(self.lo, self.lo + self.owned, dtype=np.int32)
-        self.parent = self.nb // self.ns              # long bin -> short coarse bin
+        self.parent = self.nb // self.ns              # exact grid ratio
         self.gate_floor = gate_floor; self.beta = beta
         self.frame_hop = self.HS                      # native time res (samples)
         self.rows_per_tile = self.Ib * self.owned
@@ -167,14 +273,31 @@ class FusionStream:
             z, self.dsel, mode=self.mode, alpha=self.alpha, n_steps=self.n_steps,
             direct_seed=self.direct, nb=self.nb, ns=self.ns)
         out = np.empty((self.rows_per_tile, self.nb), dtype=np.float32)
+        coord = np.arange(self.nb, dtype=np.float64) / self.parent
+        q0 = np.floor(coord).astype(np.intp) % self.ns
+        frac = coord - np.floor(coord)
+        q1 = (q0 + 1) % self.ns
         for j in range(self.Ib):
             L = long_mag[j]                          # [nb] fine freq (true scale)
             S = short_mag[j]                         # [owned, ns] fine time
-            den = S.max(axis=0) + 1e-12              # per coarse bin, max over time
+            P = S * S
+            weights = P / (P.sum(axis=0, keepdims=True) + 1e-24)
+            # gate_floor is now an honest uniform-power mixture, not a lower
+            # clamp that duplicates long-bin energy into every fine row.
+            weights = ((1.0 - self.gate_floor) * weights +
+                       self.gate_floor / self.owned)
             for e in range(self.owned):
-                gate = np.clip(S[e] / den, self.gate_floor, 1.0)   # [ns]
-                gate_up = np.repeat(gate, self.parent)             # -> nb (parent map)
-                out[j * self.owned + e] = L * gate_up ** self.beta
+                w = weights[e]
+                w_up = w[q0] * (1.0 - frac) + w[q1] * frac
+                # beta=1 conserves power.  Other values are explicitly a
+                # contrast rendering; renormalize so they still conserve it.
+                if self.beta != 1.0:
+                    w_up = np.power(w_up, self.beta)
+                out[j * self.owned + e] = L * np.sqrt(w_up)
+        if self.beta != 1.0:
+            shaped = out.reshape(self.Ib, self.owned, self.nb)
+            den = np.sqrt(np.sum(shaped * shaped, axis=1, keepdims=True)) + 1e-24
+            shaped *= long_mag[:, None, :] / den
         return out
 
     def _store(self, k, fut):

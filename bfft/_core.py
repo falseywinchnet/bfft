@@ -123,6 +123,8 @@ _fct_plan_destroy = _decl("fct_plan_destroy", None, [_plan_p])
 _fct_plan_bins = _decl("fct_plan_bins", ctypes.c_size_t, [_plan_p])
 _fct_forward = _decl("fct_forward", ctypes.c_int,
                      [_plan_p, _void_p, _void_p, _void_p])
+_fct_forward_complex = _decl("fct_forward_complex", ctypes.c_int,
+                             [_plan_p, _void_p, _void_p, _void_p])
 
 _OK = 0
 
@@ -270,11 +272,12 @@ class FctPlan:
     FORWARD-ONLY.  ``FctPlan(N).fct(x)`` returns ``(C, tau)``: for each of
     the ``N/2 + 1`` standard bins, ``C[k]`` is the leading-edge correlation
     ``sum_{t < tau[k]} x[t] * exp(-2j*pi*k*t/N)`` at the slice
-    ``tau[k] in [1, N]`` where the bin maximally correlates under the score
+    ``tau[k] in [1, N]`` selected for high correlation under the score
     ``|C|^2 / tau``.  Bins with no coherent leading edge default to
     ``tau = N`` (the plain FFT bin), so the FCT degrades gracefully to the
     real-FFT spectrum on incoherent content.  The selection is nonlinear and
-    no inverse exists.
+    no inverse exists. The correlation is exact at the emitted tau; selection
+    is a multiscale heuristic rather than a global-argmax guarantee.
 
     A plan owns native scratch and is not thread-safe; create one plan per
     thread."""
@@ -307,6 +310,26 @@ class FctPlan:
         _check(_fct_forward(self._plan, a.ctypes.data, out.ctypes.data,
                             tau_out.ctypes.data),
                "fct_forward")
+        return out, tau_out
+
+    def fct_complex(self, x, out=None, tau_out=None):
+        """Adaptive leading-edge analysis of a length-N complex-IQ frame.
+
+        Returns ``(C, tau)`` with N full-spectrum bins.  Tau is selected once
+        from the complex correlation; analyzing I and Q independently would be
+        incorrect because FCT selection is nonlinear.
+        """
+        a = _as_c128_1d(x)
+        if a.shape[0] != self.n:
+            raise ValueError(
+                f"FctPlan(N={self.n}).fct_complex expects length {self.n}")
+        out = _out_buffer(out, self.n, np.complex128,
+                          "FctPlan.fct_complex")
+        tau_out = _out_buffer(tau_out, self.n, np.int64,
+                              "FctPlan.fct_complex tau")
+        _check(_fct_forward_complex(self._plan, a.ctypes.data, out.ctypes.data,
+                                    tau_out.ctypes.data),
+               "fct_forward_complex")
         return out, tau_out
 
 
