@@ -87,6 +87,8 @@ _wf_render_mem = _decl("iqw_wf_render_mem", None,
                        [_vp, _vp, _ll, _ll, _ll, ctypes.c_int, _vp, ctypes.c_int])
 
 _fct_create = _decl("iqw_fct_create", _vp, [ctypes.c_int])
+_fct_create_ex = _decl("iqw_fct_create_ex", _vp,
+                       [ctypes.c_int, ctypes.c_int, ctypes.c_double])
 _fct_destroy = _decl("iqw_fct_destroy", None, [_vp])
 _fct_render = _decl("iqw_fct_render", None,
                     [_vp, _vp, _ll, _ll, ctypes.c_int, _vp, _vp, ctypes.c_int])
@@ -263,12 +265,16 @@ class FctWaterfall:
     rather than pretending every adaptive aperture has STFT-center timing.
     """
 
-    def __init__(self, n_fft=1024):
-        h = _fct_create(int(n_fft))
+    def __init__(self, n_fft=1024, min_support=1, activity=0.0):
+        h = _fct_create_ex(int(n_fft), int(min_support), float(activity))
         if not h:
-            raise ValueError(f"invalid FCT n_fft={n_fft} (power of two >= 16)")
+            raise ValueError(
+                f"invalid FCT n_fft={n_fft}, min_support={min_support}, "
+                f"activity={activity}")
         self._h = h
         self.n_fft = int(n_fft)
+        self.min_support = int(min_support)
+        self.activity = float(activity)
 
     def render(self, src: IQSource, start, hop, n_rows, remove_dc=False,
                db_out=None, support_out=None):

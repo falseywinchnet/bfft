@@ -274,10 +274,13 @@ class FctPlan:
     ``sum_{t < tau[k]} x[t] * exp(-2j*pi*k*t/N)`` at the slice
     ``tau[k] in [1, N]`` selected for high correlation under the score
     ``|C|^2 / tau``.  Bins with no coherent leading edge default to
-    ``tau = N`` (the plain FFT bin), so the FCT degrades gracefully to the
-    real-FFT spectrum on incoherent content.  The selection is nonlinear and
-    no inverse exists. The correlation is exact at the emitted tau; selection
-    is a multiscale heuristic rather than a global-argmax guarantee.
+    ``tau = N`` (the plain FFT bin). The intrinsic phase-disk selector certifies
+    the global ``|C|^2/tau`` argmax for every bin by default. With an explicit
+    positive ``act`` floor, bins proven below that floor emit full Fourier
+    support. An explicit ``t_min`` restricts the feasible domain to
+    ``tau in [t_min, N]`` without changing the exact objective; ``rel`` is kept
+    only for compatibility with the former selector. The selection is
+    nonlinear and no inverse exists.
 
     A plan owns native scratch and is not thread-safe; create one plan per
     thread."""
@@ -294,9 +297,9 @@ class FctPlan:
             p = _plan_p()
             _check(_fct_plan_create_ex(
                 n,
-                4 if t_min is None else int(t_min),
+                1 if t_min is None else int(t_min),
                 0.5 if rel is None else float(rel),
-                1.5 if act is None else float(act),
+                0.0 if act is None else float(act),
                 ctypes.byref(p)), "fct_plan_create_ex")
             self._plan = p
         self.bins = int(_fct_plan_bins(self._plan))

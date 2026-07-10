@@ -1,110 +1,147 @@
-# Waterfall math audit: paused-DIP and FCT
+# Waterfall math audit: STFT, reassignment, and intrinsic FCT
 
-Date: 2026-07-09
+Date: 2026-07-10
 
-This note records the corrections made while moving the STFT-era experiments
-into the streaming IQ waterfall.  It deliberately separates identities,
-heuristics, and display choices.
+This note separates the three viewer measurements and records the corrections
+that were necessary when the STFT experiments moved into a streaming complex-IQ
+waterfall.
 
-## 1. What the FCT actually returns
+## 1. The deployed FCT contract
 
-For complex IQ `x[t]`, the useful family is
+For complex IQ `x[t]`, define
 
     C(k,tau) = sum_{t=0}^{tau-1} x[t] exp(-2 pi i k t / N).
 
-The selector searches for a high value of `|C|^2/tau`.  The phase
-`arg C = atan2(A,B)` is an observable at that selected support; maximizing the
-angle itself would be amplitude-blind and dependent on the phase branch cut.
+The public FCT returns the globally maximizing support
 
-The checked-in FCT guarantees that its emitted value equals `C(k,tau_k)` at the
-emitted integer `tau_k` (machine precision in tests).  Its dyadic proxy and
-local refinement are a search heuristic.  They recover the planted reference
-events, but do not prove a global argmax for arbitrary multimodal signals.
+    tau_k = argmax_{tau in [t_min,N]} |C(k,tau)|^2 / tau
 
-For complex IQ, I and Q cannot be run through two independent FCT selectors and
-combined afterward: selection is nonlinear, so the channels can choose
-different supports.  `fct_forward_complex` computes the complex block spectra
-linearly with two real BFFTs, then makes one shared `tau` decision.
+and emits the complex value `C(k,tau_k)`. Its phase is therefore the requested
+`atan2(A,B)` of the sine/cosine correlation pair at the selected support.
 
-## 2. Complexity correction
+This is now the intrinsic phase-disk walk, not the former dyadic proxy plus
+local endpoint refinement. The half-edge disk tests are certified upper bounds;
+bins at one time node are joined into SIMD-mask packets, while an incremental
+fractional-frequency provider supplies the demanded block totals. Brute-force
+tests cover real and complex inputs, wrapped negative frequencies, adversarial
+events, and non-dyadic `t_min` boundaries.
 
-The implemented dyadic pyramid rebuilds block FFTs at every level:
+`activity=0` returns the exact optimum for every bin. A positive activity floor
+can return the ordinary full-support Fourier value for a bin whose proven
+optimum is below that floor; it does not substitute a guessed support.
 
-    sum_t (N/2^t) O(2^t t) = O(N log^2 N).
+## 2. Why the viewer declares a minimum aperture
 
-The identity
+The unconstrained mathematical reference has `t_min=1`. At `tau=1`, however,
+all frequency phasors equal one, so one complex sample contains no frequency
+identity. On wideband IQ the normalized objective can consequently choose one
+sample for most bins and produce a frequency-flat image. That is a correct but
+unhelpful answer to an underconstrained visualization question.
 
-    DFT_2h([u|v])[2f]   = DFT_h(u)[f] + DFT_h(v)[f]
-    DFT_2h([u|v])[2f+1] = ODFT_h(u)[f] - ODFT_h(v)[f]
+The viewer declares `t_min=N/32`, equal to its dense display hop. The intrinsic
+walk then certifies the optimum over `[N/32,N]`; it does not try to predict where
+the support should be. This boundary states the minimum aperture at which a
+cell is allowed to claim frequency identity. The unrestricted public transform
+remains available as the finish-line reference.
 
-is correct for constructing one parent DFT.  It does not recursively close the
-pair `(DFT, ODFT)`: the parent ODFT requires quarter-bin child transforms, the
-next level eighth-bin transforms, and so on.  An exact O(N log N) all-level
-factorization remains open.
+## 3. Timing and intensity are not STFT conventions
 
-## 3. Waterfall timing is not STFT timing
+An STFT frame owns one center time. An FCT frame owns one origin and a distinct
+endpoint `origin + tau[k]` for each frequency. The viewer therefore analyzes
+preceding origins, scatters every cell to its measured endpoint, and keeps the
+strongest claimant in each display cell. The sample-coordinate calculation
+retains the residual when a scrub position is not aligned to the hop.
 
-An STFT frame owns one center time.  An FCT frame owns one origin and a
-frequency-dependent endpoint `origin + tau[k]`.  Plotting every bin at the
-origin or center causes false time smear.  The viewer therefore analyzes enough
-preceding origins to cover the visible range, scatters each bin to its selected
-endpoint, and keeps the strongest claimant for a display cell.
+The displayed FCT amplitude is
 
-The displayed FCT magnitude is
+    M(k) = |C(k,tau)| / sqrt(tau),
 
-    M(k) = |C(k,tau)| sqrt(N/tau).
+whose square is exactly the optimized score. Multiplication by `sqrt(N)` would
+only add a transform-size-dependent dB offset and previously saturated the
+normal waterfall range. `tau/N` remains a second measurement and is encoded as
+a warm tint; it is not folded into intensity.
 
-This is the `|C|^2/tau` score on an N-point FFT power scale: white-noise level is
-approximately independent of support, while coherent energy earns the expected
-sqrt(tau) confidence.  `tau/N` is retained as a second measurement and shown as
-a warm tint for short supports.  It is not folded into intensity.
+## 4. What actually caused the blurry "super-res" waterfall (2026-07-10)
 
-The prefix search creates a multiple-comparisons effect.  Under a noise null,
-the largest prefix score grows approximately as `log N`; the research default
-activity gate `1.5 mean|x|^2` therefore produces false short supports in a
-wideband recording.  The viewer uses `(log N + 4) mean|x|^2` as a conservative
-false-alarm floor.  This is a display operating point, not a universal theorem.
+The 2026-07-09 conclusion — that the active-delta fusion was intrinsically
+"weaker and blurrier" than reassignment — was wrong.  Two concrete defects in
+the fusion path caused the blur, and both are now fixed; the two-aperture
+DIP-Zak fusion is again the viewer's super-resolution mode, with reassignment
+kept as a separate observable.
 
-## 4. Active-delta correction for complex IQ
+### 4a. The direct seed was not spectrum-consistent (Hann² defect)
 
-The earlier experiment began from magnitudes, so PGHI supplied a phase seed.
-The IQ viewer already has complex samples and measured complex STFT endpoints.
-Discarding those phases and invoking PGHI invents an unnecessary phase field.
-The waterfall's direct seed now uses the measured long-aperture complex
-endpoints, followed by `back_to_level` and `tap3_adj`.  Magnitude-only PGHI APIs
-remain available for their original reconstruction use.
+`SolverC::direct_seed` built the state as `tap3_adj(back_to_level(Y))`.  But
+`tap3` is pointwise periodic-Hann in frame time, so the readout round-trip
+`tap3 . tap3_adj` windowed every frame by Hann², widening the mainlobe from 4
+to 6 bins.  The adjoint is not the inverse.  Measured on a 1.5 kHz tone pair
+at Fs=456 kHz, NB=1024: plain Hann STFT valley −17.5 dB, state readout −4 dB —
+the pair was effectively erased before any refinement began.
 
-The previous fine-time readout used
+Fix: the direct seed is now the paused state OF THE RECORD ITSELF,
+`prefix_rect(z)`.  Then `forward_long` reproduces the measured Hann spectra
+exactly (verified 4e-14) and the short endpoints attach in-state through
+`M_delta` exactly (verified 1e-13, the T3' identity, through the production
+path).  The fusion is thus the gated product of two exact measurements
+computed through one DIP-Zak state.
 
-    L[k] * clamp(S[e,q] / max_e S[e,q], floor, 1),
+### 4b. Owned-band gate normalization caused the transient halo
 
-which does not conserve amplitude or power and left-aligns each short bin when
-it is repeated onto the long grid.  The corrected readout uses
+The F1xT2 gates were normalized across each frame's OWNED fine rows only.  A
+frame whose long window contains an event outside its owned band still has the
+event in `|L|²`, and per-frame conservation forces that off-band energy into
+its owned rows: a ±NB/2 halo (~26 dB in the event's band on the fixture).
+A row-energy normalization fixes totals but not band shape (halo persists).
 
-    w[e,q] = |S[e,q]|^2 / sum_e |S[e,q]|^2
-    |F[e,k]| = |L[k]| sqrt(interp_q_to_k w[e,q]).
+Fix (default, `norm="claim"`): normalize the gates over the frame's ENTIRE
+delta range, each delta weighted by the long window's squared value at that
+offset (its contribution to `|L|²`).  Off-band energy goes unclaimed by this
+frame — the frame that owns it emits it.  Denominator shorts are measured
+spectra (equal to the state-attached shorts to 1e-13).  A fixed per-row gain
+restores the steady-tone convention exactly.  Halo: ~26 dB → ~0 dB.
 
-Thus `sum_e |F[e,k]|^2 = |L[k]|^2`.  A small uniform-power mixture replaces the
-old lower clamp, and circular linear interpolation centers the short frequency
-grid on the long one.
+### 4c. Measured on the known-truth SR fixture
 
-## 5. What remains research
+`make_sr_fixture.py`: 1.5 kHz tone pair (long-aperture job), 60-sample click
+train (short-aperture job), a crossing chirp, noise.  `sr_fusion_study.py`,
+rows on the HS=32 lattice:
 
-- Replace leading-only support with a two-sided `(onset, offset)` aperture.  It
-  removes the silent-prefix penalty for late bursts but needs a 2-D support
-  search or a suffix/interval factorization.
-- Quantify the FCT selector's miss probability on adversarial multimodal prefix
-  landscapes; report score ratio, not only exactness at emitted `tau`.
-- Derive a statistically calibrated activity gate from a desired false-alarm
-  rate, accounting for correlated prefix trials and frequency bins.
-- Explore a causal taper family whose normalization is carried with each prefix.
-  A fixed symmetric Hann is incompatible with early-prefix comparison, while a
-  rectangle has high sidelobes.
-- Find the true all-level transform reuse law.  The DFT/ODFT one-level identity
-  is a clue, not closure.
-- Preserve phase in a future complex active-delta readout, not merely magnitude,
-  if the product needs coherent downstream detection rather than visualization.
+| config | click width (ms) | halo (dB) | tone dip (dB) |
+|---|---:|---:|---:|
+| STFT long N=1024 | 0.77 | +26.0 | −17.5 |
+| STFT short N=128 | 0.07 | −0.4 | 0 (unresolved) |
+| reassigned N=1024 | 0.07 | −1.2 | −20.8 |
+| fusion frame-norm NB=1024 | 0.18 | +25.8 | −17.5 |
+| fusion claim NB=1024/NS=128 | 0.07 | −0.6 | −16.8 |
+| **fusion claim NB=2048/NS=128** | **0.07** | **−0.9** | **−38.0** |
 
-The viewer labels the checked-in implementation **FCT support-search
-(experimental)**.  It is a useful baseline and detector, but not the intrinsic
-phase-space transform described by the larger research ambition.
+The claim-gated fusion at NB=2048 reaches single-row time localization AND
+the full long-window frequency separation simultaneously — joint resolution
+neither single window nor reassignment provides — at ~55 ms per 160 rows.
+Frame-norm conservation (`sum_e |F|² = |L|²`, verified 4e-8) remains available
+as a toggle.
+
+## 5. The three viewer modes
+
+- **Streaming STFT:** center-timed complex spectrum; cheap and continuous.
+- **Super-resolution (two-aperture fusion):** user-set long/short windows,
+  claim-gated F1xT2 readout off one refined active-delta state.
+- **Reassigned STFT:** phase derivatives relocate long-aperture energy to
+  measured centroids; sparse/speckled by construction; kept as a separate
+  observable.
+
+The intrinsic-FCT viewer mode is archived (`viewer/archive/fct_view.py`).
+The exact FCT transform, C ABI, and tests are unchanged; only the
+endpoint-timed display product was set aside.
+
+## 6. Open research
+
+- Cross-frame constraints in the fusion state (the refinement currently has
+  nothing to do for a known record; its value begins when constraints exceed
+  measurements, e.g. denoising or partial data).
+- A third aperture in the ladder (aperture_ladder measured +28 dB where blind
+  two-window fusion fails) as an additional claim scale.
+- Calibrate `gate_floor`/`beta` against a desired false-alarm probability on
+  noise-only rows.
+- For the archived FCT product: scale-aware phase bounds for coarse walk
+  demand, two-sided (onset, offset) apertures, provider vectorization.

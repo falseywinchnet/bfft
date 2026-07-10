@@ -357,7 +357,9 @@ struct iqw_wf {
 static void fill_window(std::vector<double>& w, int n, int type) {
     w.resize(n);
     for (int k = 0; k < n; ++k) {
-        double x = (double)k / (double)n;   // periodic
+        // Symmetric analysis windows: matches np.hanning/np.hamming and the
+        // paused-suffix STFT reference. Rows are center-timed by the app.
+        double x = n > 1 ? (double)k / (double)(n - 1) : 0.0;
         double v;
         switch (type) {
             case IQW_WIN_HAMMING:
@@ -493,10 +495,12 @@ IQW_API void iqw_wf_render_mem(iqw_wf* e, const float* iq, int64_t nsamples,
 //
 // Unlike a windowed STFT, a row is a family of prefixes beginning at the row
 // origin.  The caller receives tau so it can place each bin at its selected
-// endpoint in waterfall time.  Magnitude is energy-normalized by sqrt(N/tau):
-// white-noise power has the same scale as an N-point FFT while coherent short
-// events retain the confidence benefit of longer support.  A rectangular
-// aperture is intentional; a symmetric Hann would bias the prefix selector.
+// endpoint in waterfall time.  Intensity is the transform's objective amplitude
+// |C(tau)|/sqrt(tau), whose square is the normalized correlation being maximized.
+// Keeping that canonical scale (rather than multiplying it by sqrt(N)) prevents
+// short null prefixes from saturating a conventional waterfall dB range.  A
+// rectangular aperture is intentional; a symmetric Hann would bias the prefix
+// selector.
 // ---------------------------------------------------------------------------
 struct iqw_fct {
     int n = 0;
@@ -534,7 +538,7 @@ static void fct_frame(iqw_fct* e, float* db, float* support, int remove_dc) {
         if (k >= n) k -= n;
         const double tr = std::max<int64_t>(1, e->tau[k]);
         const double re = e->output[k].re, im = e->output[k].im;
-        const double mag = std::sqrt(re * re + im * im) * std::sqrt(n / tr);
+        const double mag = std::sqrt(re * re + im * im) / std::sqrt(tr);
         db[c] = static_cast<float>(20.0 * std::log10(mag + eps));
         support[c] = static_cast<float>(tr / n);
     }
@@ -542,16 +546,17 @@ static void fct_frame(iqw_fct* e, float* db, float* support, int remove_dc) {
 
 extern "C" {
 
-IQW_API iqw_fct* iqw_fct_create(int n_fft) {
+IQW_API iqw_fct* iqw_fct_create_ex(int n_fft, int min_support,
+                                    double activity) {
     if (n_fft < 16 || (n_fft & (n_fft - 1)) != 0) return nullptr;
+    if (min_support < 1 || min_support > n_fft || activity < 0.0)
+        return nullptr;
     iqw_fct* e = new iqw_fct();
     e->n = n_fft;
-    // Searching many prefixes raises the null maximum by about log(N).  The
-    // library's permissive research default (act=1.5) is useful for discovery
-    // but creates false short-support detections in a wideband waterfall.
-    const double waterfall_act = std::log(static_cast<double>(n_fft)) + 4.0;
-    if (fct_plan_create_ex(static_cast<size_t>(n_fft), 4, 0.5,
-                           waterfall_act, &e->plan) != BFFT_OK) {
+    // FCT now means the intrinsic exact support transform.  The minimum is a
+    // declared feasible-domain boundary, not a proxy selection heuristic.
+    if (fct_plan_create_ex(static_cast<size_t>(n_fft), min_support, 0.5,
+                           activity, &e->plan) != BFFT_OK) {
         delete e;
         return nullptr;
     }
@@ -560,6 +565,10 @@ IQW_API iqw_fct* iqw_fct_create(int n_fft) {
     e->tau.resize(n_fft);
     e->iq.resize(static_cast<size_t>(2) * n_fft);
     return e;
+}
+
+IQW_API iqw_fct* iqw_fct_create(int n_fft) {
+    return iqw_fct_create_ex(n_fft, 1, 0.0);
 }
 
 IQW_API void iqw_fct_destroy(iqw_fct* e) {
@@ -705,7 +714,7 @@ IQW_API void iqw_ra_render_mem(iqw_ra* e, const float* iq, int64_t nsamples,
             double E = e->Yr[k] * e->Yr[k] + e->Yi[k] * e->Yi[k];
             if (E > emax) emax = E;
         }
-        double thr = 1e-9 * (emax + 1e-30);
+        double thr = 1e-8 * (emax + 1e-30);   // Python reference threshold
         for (int k = 0; k < n; ++k) {
             double E = e->Yr[k] * e->Yr[k] + e->Yi[k] * e->Yi[k];
             if (E <= thr) continue;

@@ -387,3 +387,229 @@ grid disks are ineffective because the translation inflation
 `l1(S) pi/(4G)` grows linearly with block length while resonant disk radii
 do not.  A coarse phase bound that beats the Dirichlet envelope without
 O(L)-per-bin state is the next (and different) problem.
+
+## 9. Intrinsic half-edge phase type and corrected ledger (2026-07-10)
+
+Companion: `experiments/lazy_phase_type.py`; SIMD certificate:
+`src/detail/fct_half_edge_simd.hpp`; regressions in `tests/ipd_test.py` and
+`tests/fct_half_edge_simd.cpp`.
+
+The missing coarse phase state is smaller than the frequency-grid design.
+For a demodulated length-L block `y`, let
+
+    V = Sum y[n],       E = Sum |y[n]|^2,
+
+and let `P[j]` be any local leading-edge prefix. Then
+
+    P[j] - V/2 = (1/2) Sum s_j[n] y[n],
+
+where `s_j` is +1 on the prefix and -1 on the suffix. Since
+`||s_j||_2=sqrt(L)`, Cauchy-Schwarz gives the fixed-size certified type
+
+    |P[j] - V/2| <= sqrt(L E)/2.                       (half-edge disk)
+
+This is phase-aware at **zero additional channel demand**: `V` is already
+carried into every visited DIP node and `E` is frequency-free. It is also the
+literal centered half-leading-edge coordinate: the 0/1 prefix mask becomes
+its +1/-1 sign packet.
+
+Subtracting the coherent mean yields a tighter reference ellipse. Write
+`y=V/L+r`, `Sum r=0`, and `u=j/L`. Orthogonal projection of the prefix
+indicator away from the constant vector gives
+
+    P[j] = u V + R[j],
+    |R[j]|^2 <= L u(1-u) (E - |V|^2/L).                (coherence ellipse)
+
+The ellipse is centered at `V/2`, with semiaxes `sqrt(L E)/2` and
+`sqrt(L E-|V|^2)/2`; the minor axis vanishes on a coherent local tone. A
+still tighter score/denominator reference reduces to nonnegativity of one
+quadratic and one quartic and is certified by fixed-depth Bernstein
+subdivision. It is not the chosen hot path: at N=1024 on the chirp, it saves
+only 1.30 FFT-equivalents of shared V work (18.76 -> 17.46) while requiring
+21.4 quartic tests per bin. The rotated ellipse box itself saves just 0.10
+FFT-equivalents over the disk (18.86 -> 18.76).
+
+The centered disk is the better SIMD type. Put
+
+    h2 = |before + V/2|^2,
+    r2 = L E/4,
+    q  = incumbent * (lo+1),
+    g  = q-h2-r2.
+
+Then the half-edge disk certificate passes exactly when `g>=0` and
+`g^2>=4*h2*r2`; a passing certificate prunes the entire node. The
+implementation uses SoA frequency lanes visiting one
+time node, so `(lo,L,E)` are shared and `(before,V,incumbent)` vectorize. It
+needs no square root; guarded FMAs and two comparisons produce the lane mask.
+The ARM64 regression currently reports `neon-128` and certifies every positive
+mask against every actual prefix. In the release microbenchmark the branchless
+SoA loop is auto-vectorized (reported width 16 for byte-mask egress) and runs
+at 0.868 ns/lane, versus 0.916 scalar and 1.128 for handwritten two-lane NEON.
+The auto-vector loop is therefore the selected backend; the explicit intrinsic
+path remains in the benchmark as a check against future compilers.
+
+### Accounting correction
+
+The earlier hybrid/grid results are certified topology experiments, not
+end-to-end timings. Their Python selectors form the dense per-bin prefix
+cumsum and use it as an oracle for incumbents and scheduling. More seriously,
+`active_bins` computes a DDC bank and the reported ledger deletes the search
+work for bins classified inactive. That crossover is therefore not yet an
+executable-transform crossover.
+
+The lazy-half-edge experiment makes the oracle boundary explicit and charges
+every consumed value as an aligned dyadic block demand. Work used to certify
+an inactive bin remains charged. The activity floor is a certified incumbent:
+only a branch proven below it may default to full Fourier support. Eager
+dyadic seeds are also removed; every bin begins with the root FFT value and
+acquires another endpoint only when the walk requires it.
+
+Corrected all-bin chirp demand for the SIMD disk candidate is:
+
+| N | nodes/bin | shared V / FFT |
+|---:|---:|---:|
+| 128 | 21.9 | 8.20 |
+| 256 | 28.6 | 10.63 |
+| 512 | 37.1 | 14.54 |
+| 1024 | 45.6 | 18.86 |
+
+These are channel costs, not total runtime. The result closes the missing
+coarse **type**, but not the joint fractional-channel provider or a worst-case
+FFT-like complexity proof. The SIMD certificate therefore remains an
+internal candidate alongside the current FCT. Replacing the public `FctPlan`
+before its block totals are supplied by an executable shared DIP walk would
+only hide another oracle behind a cleaner selector.
+
+## 10. The executable fractional provider (2026-07-10, closure pass)
+
+Companions: `experiments/online_fractional_provider.py` and
+`src/detail/fct_fractional_provider.hpp`; regressions in `tests/ipd_test.py`
+and `tests/fct_fractional_provider.cpp`.
+
+The missing provider is an **incremental output-pruned twisted channel**, not
+a precomputed fractional tower. For a block beginning at `lo`, let `e=N/L`
+and write a global integer bin uniquely as `k=p e+delta`. Then
+
+    V([lo,lo+L),k)
+      = W_N^(k lo) F_L^(delta/e)[p],
+
+where
+
+    F_M^alpha[p] = E_M^alpha[r]
+                   + W_M^(r+alpha) O_M^alpha[r],
+    r = p mod M/2,
+
+with the sign changed for `p>=M/2`. The fractional coordinate `alpha` is
+inherited unchanged by both children. One recursive butterfly indexed by `r`
+therefore produces the paired outputs `r` and `r+M/2`.
+
+Memoize that pair. A later output request opens only missing ancestor cells;
+all old cells are reused. For any output request order, the final number of
+opened cells is exactly
+
+    cells(M,P) = 2 cells(M/2, unique(P mod M/2))
+                 + |unique(P mod M/2)|,
+
+the same pruned-cell recurrence used by the earlier theoretical ledger. This
+is an executable online service: the nonlinear selector may request values in
+whatever order its phase masks dictate, without knowing the future demand set.
+
+The apparently fractional twiddle also collapses to the ordinary frame root
+table. At recursive length `M`,
+
+    exp(-2 pi i (r+delta/e)/M)
+      = W_N^((r e+delta)(L/M)).
+
+Thus one `N`-entry root table supplies every channel and recursion scale; no
+per-cell trigonometry or floating fractional phase is present. The block-start
+egress is the same table lookup at exponent `k lo`.
+
+### Cross-scale synthesis is optional, not foundational
+
+The executable experiment also implements the exact alternative
+
+    V(parent,k) = V(left,k)+V(right,k)
+
+and an online marginal-cost router. On the corrected all-bin schedule it
+synthesizes very few values and does not reduce total work. The direct
+incremental provider already lands within 1-3% of the clairvoyant cross-scale
+DP in butterfly/leaf cells:
+
+| N | direct cells / FFT | offline DP / FFT | total incl. phase / FFT |
+|---:|---:|---:|---:|
+| 128 | 8.31 | 8.20 | 9.62 |
+| 256 | 10.84 | 10.63 | 12.57 |
+| 512 | 14.80 | 14.54 | 17.05 |
+| 1024 | 19.30 | 18.86 | 21.96 |
+
+For every direct-policy run the implementation asserts that its realized
+`butterfly_cells + leaf_values` equals the theoretical direct ledger exactly.
+At `N=1024` the provider opens 98,053 butterflies in 3,302 sparse channels for
+23,844 selector values. The remaining modeled gap is primarily 13,613 global
+phase multiplications, which are ordinary root-table complex multiplies and
+batch naturally by channel.
+
+The C++ provider passes 4,000 mixed adaptive block/bin requests at every size
+through `N=256` with worst absolute error `3.84e-12`. The selector regression
+then proves two things simultaneously: every selected support matches brute
+force, and the provider realizes exactly the pruned-channel work it claims.
+
+This closes the oracle gap. The next engineering object is no longer a new
+transform identity; it is a batched sparse-channel scheduler and cache layout
+that feeds same-time-node frequency packets into the half-edge SIMD mask.
+
+## 11. Provider/mask joined kernel (2026-07-10)
+
+Companions: `src/detail/fct_intrinsic_kernel.hpp`,
+`tests/fct_intrinsic_kernel.cpp`, and
+`examples/fct_intrinsic_benchmark.cpp`.
+
+The provider and phase type now execute as one exact kernel. Each frequency
+bin owns a depth-first task and deferred-sibling stack. On every scheduler
+round, current tasks are bucketed by dyadic time-node identity `(lo,L)`. All
+bins in a bucket become one SoA packet:
+
+    lane state:   before[k], V(node,k), incumbent[k]
+    shared state: lo, L, energy(node)
+
+The half-edge SIMD mask rejects certified lanes. Every surviving internal lane
+requests exactly one `V(left,k)` from the incremental twisted provider, derives
+`V(right,k)=V(node,k)-V(left,k)`, orders its two children by achieved endpoint
+score, defers the sibling, and continues depth-first. A pruned or completed
+lane resumes its own deferred sibling on the next packet round. Consequently
+interleaving bins does not weaken per-bin incumbent ordering or correctness.
+
+The joined C++ kernel matches brute-force support and correlation for every bin
+on random and burst signals through `N=128`; worst absolute value error is
+`8.33e-13`. Every visited node is counted as a SIMD-mask lane, so the test also
+guards against accidentally falling back to an unbatched scalar selector.
+
+### Cache layout result
+
+The first correct join used one `unordered_map` per channel and was 30-40x
+slower than the heuristic FCT. A frame-global flat hash reduced that to
+19-23x. Demand inspection showed that channels are actually 85-90% full, so
+sparsity was the wrong physical representation. The selected layout is now:
+
+    one append-only dense frame arena,
+    one L/2-by-log2(L) slab per opened channel,
+    one validity byte per paired butterfly,
+    channel objects stored inline in a reserved lookup table.
+
+This preserves incremental request semantics and the exact cell ledger while
+removing per-cell hashing and per-channel slab allocations. Release results on
+the complex chirp/burst benchmark are:
+
+| N | intrinsic us | heuristic FCT us | ratio | nodes/bin | avg/max packet | provider cells |
+|---:|---:|---:|---:|---:|---:|---:|
+| 128 | 82.5 | 13.9 | 5.95x | 17.86 | 3.44 / 128 | 3,394 |
+| 256 | 234.8 | 30.0 | 7.83x | 22.75 | 3.90 / 256 | 10,990 |
+| 512 | 769.4 | 97.5 | 7.89x | 31.77 | 5.46 / 512 | 32,881 |
+| 1024 | 2,168.5 | 371.8 | 5.83x | 39.92 | 6.86 / 1024 | 97,094 |
+
+The exact kernel is therefore joined and executable, but not yet a responsible
+default replacement for the much cheaper heuristic. The remaining engineering
+gap is now visible: persistent plan-wide roots/arenas, batched outputs within a
+channel (rather than recursive scalar requests), previous-frame tau seeding for
+the waterfall, and a lower-overhead channel index. Public `FctPlan` should gain
+an explicit intrinsic mode after those operations are measured, not before.

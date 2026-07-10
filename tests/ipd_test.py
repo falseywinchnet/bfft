@@ -30,6 +30,12 @@ from experiments.grid_disk_pyramid import (  # noqa: E402
     select_support_grid,
     self_test as grid_disk_self_test,
 )
+from experiments.lazy_phase_type import select_support_lazy_phase  # noqa: E402
+from experiments.online_fractional_provider import (  # noqa: E402
+    OnlineFractionalProvider,
+    select_support_online,
+)
+from experiments.fractional_channel_sharing import direct_cost  # noqa: E402
 
 
 def check_spectral_hybrid():
@@ -89,6 +95,66 @@ def check_grid_disk_walk():
           f"({store.builds} shared builds last trial)")
 
 
+def check_lazy_phase_type():
+    """Half-edge phase ellipse and Bernstein coupling remain certified."""
+    rng = np.random.default_rng(76)
+    for N in (32, 64, 128):
+        for _ in range(6):
+            x = rng.standard_normal(N) + 1j * rng.standard_normal(N)
+            for k in range(0, N, max(1, N // 16)):
+                # Both the cheap production candidate and stronger reference
+                # certificate assert against brute force internally.
+                select_support_lazy_phase(
+                    x, 2 * np.pi * k / N, depth=0, coupled=False)
+                select_support_lazy_phase(
+                    x, 2 * np.pi * k / N, depth=0, coupled=True)
+
+        # Activity is a certified incumbent, not post-hoc work deletion: if
+        # the true optimum is below it, full Fourier support is emitted.
+        gate = (np.log(N) + 2) * np.mean(np.abs(x) ** 2)
+        for k in range(0, N, max(1, N // 16)):
+            tau, z, _, _, _, _, _ = select_support_lazy_phase(
+                x, 2 * np.pi * k / N, depth=0, activity=gate,
+                coupled=False)
+            n = np.arange(N)
+            c = np.cumsum(x * np.exp(-2j * np.pi * k * n / N))
+            score = np.abs(c) ** 2 / (n + 1)
+            if np.max(score) <= gate:
+                assert tau == N and abs(z - c[-1]) < 1e-9
+            else:
+                assert tau == int(np.argmax(score)) + 1
+    print("PASS lazy half-edge phase type: SIMD disk and quartic "
+          "certificate exact; activity work retained")
+
+
+def check_online_fractional_provider():
+    """Exact selector values come from executable incremental channels."""
+    rng = np.random.default_rng(77)
+    for N in (32, 64, 128):
+        n = np.arange(N)
+        x = 0.1 * (rng.standard_normal(N) + 1j * rng.standard_normal(N))
+        for _ in range(3):
+            a = int(rng.integers(0, N - 4))
+            b = int(rng.integers(a + 2, N + 1))
+            k0 = float(rng.uniform(-N / 2, N / 2))
+            x[a:b] += np.exp(2j * np.pi * k0 * n[a:b] / N)
+        gate = (np.log(N) + 2) * np.mean(np.abs(x) ** 2)
+        provider = OnlineFractionalProvider(x, policy="direct")
+        demands = {}
+        prev = None
+        for k in range(N):
+            tau, _, score, used, _ = select_support_online(
+                x, k, provider, activity=gate, initial=prev)
+            prev = tau if score > gate else None
+            for block in used:
+                demands.setdefault(block, set()).add(k)
+        ledger = sum(direct_cost(N, length, bins)
+                     for (_, length), bins in demands.items())
+        assert provider.butterfly_cells + provider.stats.leaf_values == ledger
+    print("PASS online fractional provider: oracle-free selectors exact; "
+          "realized cells equal pruned-channel ledger")
+
+
 def main():
     rng = np.random.default_rng(73)
     for N in (32, 64, 128):
@@ -124,6 +190,8 @@ def main():
 
     check_spectral_hybrid()
     check_grid_disk_walk()
+    check_lazy_phase_type()
+    check_online_fractional_provider()
 
 
 if __name__ == "__main__":

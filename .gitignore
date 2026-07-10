@@ -1,4 +1,5 @@
 /build/
+/build-viewer-release/
 *.o
 *.a
 *.so

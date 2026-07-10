@@ -5,12 +5,20 @@ cd "$(dirname "$0")"
 
 ROOT=..
 INC=$ROOT/include
-BFFT_LIB=$ROOT/build/libbfft.a
+BFFT_BUILD=$ROOT/build-viewer-release
+BFFT_LIB=$BFFT_BUILD/libbfft.a
 
-if [ ! -f "$BFFT_LIB" ]; then
-    echo "libbfft.a not found; building it first..."
-    (cd $ROOT && make lib)
-fi
+# The intrinsic FCT is branch-and-bound heavy enough that accidentally linking
+# a Debug libbfft makes the viewer appear unusable.  Keep a small, isolated
+# Release build so this script cannot inherit the configuration of a developer
+# test tree in ../build.
+cmake -S "$ROOT" -B "$BFFT_BUILD" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBFFT_BUILD_SHARED=OFF \
+    -DBFFT_BUILD_EXAMPLES=OFF \
+    -DBFFT_BUILD_TESTS=OFF \
+    -DBFFT_BUILD_PROBES=OFF
+cmake --build "$BFFT_BUILD" --target bfft_static --parallel
 
 case "$(uname -s)" in
     Darwin) OUT=libiqwaterfall.dylib; FRAMEWORKS="-framework Accelerate" ;;

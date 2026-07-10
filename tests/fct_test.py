@@ -127,6 +127,18 @@ check("complex full-spectrum exactness", worst < 1e-9,
 check("negative-frequency bins can adapt", bool(np.any(tauc[N // 2 + 1:] < N)),
       f"adaptive negative bins {(tauc[N // 2 + 1:] < N).sum()}")
 
+# The public explicit-plan path must carry t_min into the certified walk.
+min_tau = 37
+Cc_min, tauc_min = bfft.FctPlan(N, t_min=min_tau).fct_complex(xc)
+S_min = np.empty((N, N - min_tau + 1))
+for k in range(N):
+    prefixes = np.cumsum(
+        xc * np.exp(-2j * np.pi * k * np.arange(N) / N))
+    S_min[k] = np.abs(prefixes[min_tau - 1:]) ** 2 / np.arange(min_tau, N + 1)
+tstar_min = np.argmax(S_min, axis=1) + min_tau
+check("explicit t_min domain is exact", np.array_equal(tauc_min, tstar_min),
+      f"minimum emitted tau {tauc_min.min()}")
+
 # ---------------------------------------------------------------- 4
 print("4. C STFT path (bfft.STFTPlan transform='fct')")
 n_sig, n_fft, hop = 4096, 512, 128

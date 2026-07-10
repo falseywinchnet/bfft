@@ -10,14 +10,13 @@
 
        C[k] = sum_{t=0}^{tau_k - 1} x[t] * exp(-2*pi*i*k*t/N)
 
-   at a high-scoring slice tau_k in [1, N] selected under the
+   at the globally maximizing slice tau_k in [t_min, N] selected under the
    score |C|^2 / tau (the emitted phase is the arctan(A/B) of the underlying
    sine/cosine correlation pair at that slice).  Bins with no coherent
-   leading edge default to tau = N, i.e. the plain FFT bin, so the FCT
-   degrades gracefully to the ordinary real-FFT spectrum on incoherent
-   content.  The emitted correlation is exact at tau_k; the multiscale search
-   is heuristic and does not prove the global argmax for every signal. The
-   selection is nonlinear and the fixed truncation family it
+   leading edge below an optional certified activity floor default to tau = N,
+   i.e. the plain FFT bin. The intrinsic phase-disk walk certifies the global
+   argmax for every emitted active bin; with the default zero floor every bin
+   is exact. The selection is nonlinear and the fixed truncation family it
    optimizes over is exponentially ill-conditioned, so no inverse exists;
    attempts to invert must reconstruct from the plain FFT bins instead.
 
@@ -41,9 +40,12 @@ typedef struct fct_plan fct_plan;
 bfft_status fct_plan_create(size_t n, fct_plan** plan);
 
 /* Create an FCT plan with explicit selection knobs.
-   t_min: finest pyramid level as log2 of the block length (default 4).
-   rel:   trust threshold for the coherence stop, in (0, 1] (default 0.5).
-   act:   activity gate in units of mean |x|^2 (default 1.5). */
+   t_min is the smallest feasible support. The intrinsic kernel still returns
+   the exact global argmax, now over tau in [t_min, N]. rel is retained for ABI
+   compatibility with the former heuristic selector and is ignored.
+   act is a certified activity floor in units of mean |x|^2. Bins whose proven
+   optimum is at or below the floor emit the full Fourier support. Use act=0
+   for an exact global argmax at every bin (the default). */
 bfft_status fct_plan_create_ex(size_t n, int t_min, double rel, double act,
                                fct_plan** plan);
 

@@ -12,11 +12,15 @@ DearPyGui front-end.
 | `iqwaterfall.cpp` | Monolithic backend: RIFF/RF64/BW64 WAV and raw-IQ reader, BFFT waterfall, reassignment, and complex-IQ FCT renderer. Flat C ABI. |
 | `dip_algo.cpp` | C++ port of `active_delta_center5_fast1` (DIP/finite-Zak walk + in-house PGHI seed + record OLA), real **and** complex-generalized solvers. Same library. |
 | `iqwaterfall.py`  | `ctypes` wrapper: `IQSource`, `Waterfall`, `FctWaterfall`, and DIP APIs. |
-| `dip_stream.py` | Asynchronous/cached FCT, active-delta fusion, and reconstruction streams. |
-| `superres.py` | Super-resolution readout: complex reassigned spectrogram (the aperture-ladder F1×T2 product). |
-| `validate_dip.py` | Bisected numerical check of the port vs the Python reference. |
+| `dip_stream.py` | Asynchronous/cached fusion super-resolution and reconstruction streams. |
+| `superres.py` | Python reference for the phase-aware reassigned spectrogram. |
+| `make_sr_fixture.py` | Synthesizes the known-truth SR fixture (tone pair + click train + chirp). |
+| `sr_fusion_study.py` | Quantified fusion quality study (click width, halo, tone dip, gate noise). |
+| `validate_modes.py` | Headless, timed comparison of streaming STFT, two-aperture fusion, and reassignment. |
+| `archive/validate_dip.py` | ARCHIVED: bisected port check; its Python reference module (`active_delta_center5_cpp_reference`) was never checked in, so it cannot run. `validate_modes.py` + `sr_fusion_study.py` cover the live paths. |
 | `iq_waterfall_app.py` | DearPyGui viewer (transport, zoom, dynamic range, colormaps, settings). |
-| `build.sh` | Compiles `libiqwaterfall.{dylib,so}`, linking `../build/libbfft.a`. |
+| `archive/fct_view.py` | ARCHIVED intrinsic-FCT viewer mode (stream + endpoint scatter). The FCT library itself stays shipped and tested. |
+| `build.sh` | Compiles `libiqwaterfall.{dylib,so}`, linking an isolated Release `libbfft.a`. |
 
 ## Build & run
 
@@ -43,6 +47,27 @@ from the two Hermitian half-spectra, then `fftshift`. Verified against
 
 ## Analysis modes
 
+The mode selector intentionally exposes three different measurements:
+
+1. **Streaming STFT** — a conventional symmetric-Hann complex spectrogram,
+   center-timed and cheap enough for continuous playback.
+2. **Super-resolution (two-aperture)** — the DIP-Zak F1xT2 fusion.  The user
+   sets both analysis windows: the long aperture supplies fine frequency at
+   true scale, the short aperture's measured endpoints gate that power across
+   the fine-time rows, and both are read off one refined active-delta state
+   (long readout exact to ~1e-14 against the measured Hann spectra; shorts
+   attach in-state through `M_delta` to ~1e-13).  Default gating is
+   claim-normalized: each frame's gates are normalized over its entire delta
+   range with long-window weights, so energy outside a frame's owned band goes
+   unclaimed instead of being smeared into it — this is what removes the
+   ±NB/2 transient halo (measured ~26 dB → ~0 dB on the SR fixture).
+3. **Reassigned STFT** — phase derivatives move long-window energy to its
+   measured time/frequency centroid.  Kept as a separate observable; sparse
+   and speckle-like by construction.
+
+The intrinsic-FCT viewer mode is archived in `archive/fct_view.py`; the exact
+FCT transform itself remains a shipped, tested library feature.
+
 - [x] Monolithic backend, IQ reader, BFFT waterfall — built & verified.
 - [x] DearPyGui viewer: open, play/pause/stop, scrub, time & frequency zoom,
       dynamic range, colormap/window/FFT-size settings.
@@ -58,26 +83,39 @@ from the two Hermitian half-spectra, then `fftshift`. Verified against
 - [x] Fixed block-boundary striping (overlapping segments + phase-align + Hann
       OLA) and made reconstruction work at zoomed-out spans (raw-fill beyond
       coverage).
-- [x] Active-delta waterfall: measured complex long-aperture endpoints seed the
-      paused state directly (no unnecessary PGHI phase invention). Short endpoint
-      power partitions each long-bin power over owned fine-time rows, conserving
-      power instead of independently normalizing or taking image-space MIN.
-- [x] FCT support-search baseline (experimental): the complex correlation selects one shared support
-      for I/Q, negative-frequency bins are native, and cells are placed at
-      `frame_origin + tau` rather than at an STFT center. Magnitude displays
-      `|C| sqrt(N/tau)` (noise/energy normalization); warm color indicates short
-      selected support. The wideband false-alarm gate is `log(N)+4` times mean
-      power because a prefix search's null maximum grows with `log(N)`. This is
-      Claude's dyadic-proxy + explicit endpoint-search algorithm, not the hoped-
-      for intrinsic DIP support type.
+- [x] Two-aperture DIP-Zak fusion restored as the super-resolution mode with
+      manual long/short window controls (2026-07-10).  Fixed the direct seed:
+      the former `tap3_adj` pullback made the readout round-trip apply Hann²
+      (adjoint ≠ inverse), erasing tone pairs the plain Hann STFT resolves;
+      the seed is now the paused state of the record itself, exact to ~1e-14.
+      Added claim-normalized gating (default), which removes the ±NB/2
+      transient halo.  On the known-truth fixture the claim-gated fusion at
+      NB=2048/NS=128 reaches single-row click localization (0.07 ms) AND the
+      full long-window tone separation (−38 dB) simultaneously; reassignment
+      gives 0.07 ms / −21 dB.  ~55 ms per 160 rows through the tile pool.
 - [x] Reassignment engine ported to C/bfft (`iqw_ra_*`, `iqwaterfall.Reassign`):
-      matches numpy 0.9999, ~2.4× faster. Available; not the super-res default
-      (single-window reassignment is not super-resolution).
-- [x] FFT sizes through 65,536 are selectable. FCT remains a research mode:
-      its checked-in pyramid is O(N log²N) plus signal-adaptive refinement, so
-      high-N active scenes may fill asynchronously rather than at playback rate.
+      cosine similarity 0.99999998 against the real-valued Python oracle on the
+      Dave-and-Simon fixture.  Kept as a separate observable mode.
+- [x] Intrinsic FCT viewer mode ARCHIVED (2026-07-10) to `archive/fct_view.py`
+      (endpoint-timed display set aside; ~13 s/160 rows was accepted but the
+      product direction is the fusion super-resolution).  The exact FCT
+      transform, its C ABI, wrapper, and test suite are unchanged.
 - [x] RF64 test: `08-18-24_15100000Hz.wav` opens as stereo int16 IQ; its header
       reports 456,000 Hz (not 390,000 Hz).
+- [x] Display pipeline overhaul (2026-07-10): the reference-figure look is a
+      transfer function, not a transform. New default "Amplitude (auto)" maps
+      linear amplitude against the image's 99.5th percentile (background to
+      zero, structure across the palette) — this is exactly what the STFT
+      reference figures do; "dB (auto range)" and the manual dB window remain.
+      Display resampling is now peak-preserving: max-pool when shrinking (a
+      one-bin tone / one-row click can no longer fall between output samples),
+      linear-power interpolation when zooming (>= -3 dB worst case; dB-domain
+      lerp lost tens of dB). Gamma slider added.
+- [x] Aperture validity fixed: owned-band fusion needs `ns <= 7*nb/16 + 32`
+      (stricter than the attach guard ES<=EB-4); nb=1024/ns=512 used to crash
+      with a delta index out of range. UI snaps, FusionStream raises clearly.
+- [x] File-open UX: concrete extension filter is now the default (".*" was
+      unreliable for click-selection), `selections` fallback in the callback,
+      and AUTO header-parse failure retries as raw int16 at the UI rate.
 - [ ] Solver FFT speed: `fft_pow2` (hand-written) is the per-tile hot path; could
       move to bfft (not Accelerate directly). Only matters for reconstruction throughput.
-- [ ] Smooth out the file-open dialog UX (currently needs double-click/retry).

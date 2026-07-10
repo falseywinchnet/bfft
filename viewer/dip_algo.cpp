@@ -932,13 +932,17 @@ struct SolverC : DipBase {
         return mag;
     }
 
-    // Direct measured seed: complex IQ endpoint -> back_to_level -> tap3_adj.
-    // This is both streaming-compatible and phase-true.  PGHI remains available
-    // for the magnitude-only reconstruction API, but does not belong in an IQ
-    // waterfall analysis path where the complex endpoints are already known.
+    // Direct measured seed: the paused-DIP state OF THE RECORD ITSELF.
+    // The former tap3_adj pullback of Yb_measured was NOT spectrum-consistent:
+    // tap3 is pointwise periodic-Hann in frame time, so the readout round-trip
+    // applied tap3 . tap3_adj = Hann^2, widening the mainlobe from 4 to 6 bins
+    // and erasing tone pairs the plain Hann STFT resolves (measured: a 1.5 kHz
+    // pair at NB=1024/Fs=456k lost -17.5 dB -> -4 dB of valley).  The adjoint
+    // is not the inverse.  prefix_rect(z) is exact: forward_long reproduces
+    // the measured Hann spectra at zero steps, phase-true, and the short
+    // endpoints attach in-state through M_delta as before.
     Ten direct_seed() const {
-        Ten B = back_to_level(Yb_measured, Ib, NB, TB);
-        return tap3_adj(B, Ib, EB, QB, phb);
+        return prefix_rect(z);
     }
 
     // Separable projection pullbacks with the radial residual R = y*Y/|Y| - Y,

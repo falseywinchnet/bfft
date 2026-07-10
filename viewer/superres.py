@@ -43,7 +43,7 @@ def reassigned_db(z, n, hop, n_rows, eps=1e-12):
     that = centers[:, None] + np.real(Yt * np.conj(Y)) * inv
     khat = np.arange(n)[None, :] - np.imag(Yd * np.conj(Y)) * inv * n / (2 * np.pi)
 
-    good = E > 1e-9 * (E.max() + 1e-30)
+    good = E > 1e-8 * (E.max() + 1e-30)
     cols = np.clip(np.round(that / hop), 0, n_rows - 1).astype(np.int64)
     rows = np.mod(np.round(khat).astype(np.int64), n)
     flat = (cols * n + rows)[good]                # scatter into [n_rows, n]
