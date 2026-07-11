@@ -65,6 +65,9 @@ The mode selector exposes three different measurements:
    evaluated directly on those external centers and conservatively splatted to
    the nearest 2×2 time/frequency cells; no internal rows are discarded and no
    post-transform floor is applied.
+   The one-step latent update uses a 75%-relaxed final long-family projection
+   after the short projection. This symmetric finish preserves weak chirp
+   terminals that the former long→short ordering could perturb.
 3. **Reassigned STFT** — ordinary symmetric-Hann phase reassignment, retained
    separately so the effect of the two-aperture solve remains inspectable.
 

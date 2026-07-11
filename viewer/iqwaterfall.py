@@ -122,7 +122,7 @@ _dip_run_complex = _decl("iqw_dip_run_complex", None,
                           _dp, _dp])
 _dip_unified = _decl(
     "iqw_dip_unified", None,
-    [_dp, _ci, _cip, _ci, _ci, _cdd, _ci, _ci, _ci, _ci, _ci, _cdd,
+    [_dp, _ci, _cip, _ci, _ci, _cdd, _ci, _ci, _ci, _ci, _ci, _cdd, _cdd,
      _dp, _dp])
 _dip_frames_long = _decl("iqw_dip_frames_long", _ci, [_ci, _ci])
 _dip_run_complex_warm = _decl(
@@ -467,7 +467,7 @@ def dip_run_complex(z, dsel=None, renorm=True, steepest_scale=2.5e-4,
 
 def dip_unified(z, dsel=None, renorm=True, steepest_scale=2.5e-4,
                 shared_steps=1, nb=NB_LONG, ns=None, h_short=None,
-                unified_steps=1, beta=0.88):
+                unified_steps=1, beta=0.88, final_long_relax=0.75):
     """Shared fast1 seed plus independent two-lattice waveform projections."""
     z = np.ascontiguousarray(z, dtype=np.complex128)
     if ns is None:
@@ -480,7 +480,7 @@ def dip_unified(z, dsel=None, renorm=True, steepest_scale=2.5e-4,
     _dip_unified(
         z.ctypes.data_as(_dp), z.size, ds_ptr, nds, 1 if renorm else 0,
         float(steepest_scale), int(shared_steps), int(nb), int(ns),
-        int(h_short), int(unified_steps), float(beta),
+        int(h_short), int(unified_steps), float(beta), float(final_long_relax),
         u.ctypes.data_as(_dp), ctypes.byref(loss0))
     return u, loss0.value
 

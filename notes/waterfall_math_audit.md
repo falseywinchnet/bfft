@@ -44,6 +44,19 @@ time/frequency destinations are now bilinearly splatted to their nearest 2×2
 cells. The four weights sum to one, so this fills only subpixel quantization
 gaps and preserves total power exactly; there is no baseline or floor.
 
+Finite chirp endpoints exposed a projection-order asymmetry. One unified step
+formerly ended as `P_short(P_long(u))`; the final short projection reduced
+long-aperture sweep-tail raster power to 91–95% even though the pre-readout
+endpoint magnitude remained present. The native solve now uses a relaxed
+symmetric finish
+
+    u <- P_short(P_long(u))
+    u <- u + 0.75 * (P_long(u) - u).
+
+On the abrupt-chirp fixture this retains 97.4–98.6% of terminal raster power,
+while preserving more short-family improvement than a full final long
+projection. The coefficient remains explicit in `dip_unified` for research.
+
 ## 1. The deployed FCT contract
 
 For complex IQ `x[t]`, define

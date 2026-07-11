@@ -1309,7 +1309,8 @@ IQW_API void iqw_dip_run_complex(const double* z_in, int L, const int* dsel,
 IQW_API void iqw_dip_unified(const double* z_in, int L, const int* dsel,
                              int ndsel, int renorm, double steepest_scale,
                              int shared_steps, int nb, int ns, int h_short,
-                             int unified_steps, double beta, double* u_out,
+                             int unified_steps, double beta,
+                             double final_long_relax, double* u_out,
                              double* loss0_out) {
     int nds = dsel ? ndsel : 0;
     const cd* zp = reinterpret_cast<const cd*>(z_in);
@@ -1327,6 +1328,12 @@ IQW_API void iqw_dip_unified(const double* z_in, int L, const int* dsel,
             trial[t] = latent[t] + beta * (latent[t] - previous[t]);
         previous = latent;
         latent = short_family.project(long_family.project(trial));
+    }
+    final_long_relax = std::min(1.0, std::max(0.0, final_long_relax));
+    if (steps > 0 && final_long_relax > 0.0) {
+        Ten corrected = long_family.project(latent);
+        for (int t = 0; t < L; ++t)
+            latent[t] += final_long_relax * (corrected[t] - latent[t]);
     }
     cd cross(0.0, 0.0);
     for (int t = 0; t < L; ++t) cross += std::conj(latent[t]) * observed[t];

@@ -55,6 +55,9 @@ def test_cpp_combined_kernel_matches_python_specification():
         z, n_steps=1, nb=1024, ns=256)
     expected, _ = recover_two_lattice(
         z, 1024, 256, h_short=128, iterations=1, initial=shared)
+    long_family = MagnitudeFamily(z, 1024, 128)
+    long_corrected = long_family.project(expected, expected)
+    expected += 0.75 * (long_corrected - expected)
     got, _ = iqw.dip_unified(
         z, nb=1024, ns=256, h_short=128, unified_steps=1)
     # Both paths already choose the same global phase. Keep the alignment here
