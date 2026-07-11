@@ -124,6 +124,10 @@ _dip_unified = _decl(
     "iqw_dip_unified", None,
     [_dp, _ci, _cip, _ci, _ci, _cdd, _ci, _ci, _ci, _ci, _ci, _cdd, _cdd,
      _dp, _dp])
+_dip_unified_ladder = _decl(
+    "iqw_dip_unified_ladder", None,
+    [_dp, _ci, _cip, _ci, _ci, _cdd, _ci, _ci, _ci, _cip, _cip, _ci, _ci,
+     _cdd, _cdd, _dp, _dp])
 _dip_frames_long = _decl("iqw_dip_frames_long", _ci, [_ci, _ci])
 _dip_run_complex_warm = _decl(
     "iqw_dip_run_complex_warm", None,
@@ -481,6 +485,34 @@ def dip_unified(z, dsel=None, renorm=True, steepest_scale=2.5e-4,
         z.ctypes.data_as(_dp), z.size, ds_ptr, nds, 1 if renorm else 0,
         float(steepest_scale), int(shared_steps), int(nb), int(ns),
         int(h_short), int(unified_steps), float(beta), float(final_long_relax),
+        u.ctypes.data_as(_dp), ctypes.byref(loss0))
+    return u, loss0.value
+
+
+def dip_unified_ladder(z, rungs, dsel=None, renorm=True,
+                       steepest_scale=2.5e-4, shared_steps=1,
+                       nb=NB_LONG, ns=None, unified_steps=1, beta=0.88,
+                       final_relax=0.75):
+    """Ladder generalization: shared fast1 seed + P magnitude families.
+
+    ``rungs`` is a sequence of (n_fft, hop) in application order (largest
+    first; the final relaxed projection uses rungs[0]).  The seed geometry
+    stays (nb, ns).  Executable spec: two_lattice.recover_ladder.
+    """
+    z = np.ascontiguousarray(z, dtype=np.complex128)
+    if ns is None:
+        ns = int(nb) // 4
+    rn = np.ascontiguousarray([int(n) for n, _ in rungs], dtype=np.int32)
+    rh = np.ascontiguousarray([int(h) for _, h in rungs], dtype=np.int32)
+    u = np.empty(z.size, dtype=np.complex128)
+    loss0 = ctypes.c_double(0.0)
+    ds_ptr, nds, _keep = _dsel_ptr(dsel)
+    _dip_unified_ladder(
+        z.ctypes.data_as(_dp), z.size, ds_ptr, nds, 1 if renorm else 0,
+        float(steepest_scale), int(shared_steps), int(nb), int(ns),
+        rn.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+        rh.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+        len(rungs), int(unified_steps), float(beta), float(final_relax),
         u.ctypes.data_as(_dp), ctypes.byref(loss0))
     return u, loss0.value
 

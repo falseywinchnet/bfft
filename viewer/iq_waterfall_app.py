@@ -139,6 +139,10 @@ class App:
         self.super_res = False
         self.sr_nb = 1024             # long aperture window (fine frequency)
         self.sr_ns = self.sr_nb // 4  # fixed unified geometry
+        # Optional upward rung (x2/x4 the long window): pins slow structure
+        # the {NB, NB/4} pair is provably blind to (coverage law, notes S5),
+        # at near-zero cost (few frames per tile).
+        self.sr_rung = 0              # 0 = off, else multiplier
         self.srs: two_lattice.TwoLatticeStream | None = None
         self.reassigned = False       # ordinary phase-reassigned STFT
         self._block = None            # reusable (DH, n_fft) render buffer
@@ -214,7 +218,8 @@ class App:
                 self.sr_ra.close()
             stream = two_lattice.TwoLatticeStream(
                 self.src, n_long=self.sr_nb, n_short=self.sr_ns,
-                h_short=self.sr_ns // 2, iterations=1)
+                h_short=self.sr_ns // 2, iterations=1,
+                rung_mult=self.sr_rung)
             readout = iqw.Reassign(self.sr_nb)
             readout.set_bilinear(True)
             self.srs, self.sr_ra = stream, readout
@@ -490,6 +495,7 @@ def cb_view_mode(sender, val):
     is_streaming = val == "Streaming STFT"
     dpg.configure_item("win_combo", enabled=is_streaming)
     dpg.configure_item("sr_nb_combo", enabled=app.super_res)
+    dpg.configure_item("sr_rung_combo", enabled=app.super_res)
     # Keep the solved SR tiles and its readout plan alive while comparing
     # modes. They are invalidated only by a source/aperture change. Closing
     # here made every A/B toggle restart PGHI and delayed the comparison.
@@ -531,6 +537,11 @@ def cb_sr_nb(sender, val):
     dpg.set_value(
         "sr_geometry",
         f"short {app.sr_ns} | internal hop {nb//8} | display hop {app.hop}")
+    _rebuild_srs()
+
+
+def cb_sr_rung(sender, val):
+    app.sr_rung = {"off": 0, "2x": 2, "4x": 4}[val]
     _rebuild_srs()
 
 
@@ -616,6 +627,11 @@ def build_ui():
                     dpg.add_text(
                         "short 256 | internal hop 128 | display hop 256",
                         tag="sr_geometry")
+                with dpg.group(horizontal=True):
+                    dpg.add_text("slow rung")
+                    dpg.add_combo(["off", "2x", "4x"], default_value="off",
+                                  width=70, tag="sr_rung_combo",
+                                  enabled=False, callback=cb_sr_rung)
                 dpg.add_text("", tag="recon_status", color=(200, 180, 120))
 
                 dpg.add_separator()

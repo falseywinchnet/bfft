@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from two_lattice import MagnitudeFamily, recover_two_lattice
+from two_lattice import MagnitudeFamily, recover_ladder, recover_two_lattice
 
 
 def fixture(length=8192):
@@ -69,6 +69,32 @@ def test_cpp_combined_kernel_matches_python_specification():
     assert relative < 2e-12
 
 
+def test_cpp_ladder_kernel_matches_python_specification():
+    import iqwaterfall as iqw
+
+    z = fixture()
+    shared, _ = iqw.dip_run_complex(z, n_steps=1, nb=1024, ns=256)
+    rungs = [(4096, 512), (1024, 128), (256, 128)]
+    expected, _ = recover_ladder(z, rungs, iterations=1, initial=shared)
+    got, _ = iqw.dip_unified_ladder(z, rungs, nb=1024, ns=256,
+                                    unified_steps=1)
+    phase = np.vdot(got, expected)
+    if abs(phase):
+        got = got * phase / abs(phase)
+    relative = np.max(np.abs(got - expected)) / np.max(np.abs(expected))
+    assert relative < 2e-12
+
+    # The pair ABI must remain a special case of the ladder ABI.
+    pair, _ = iqw.dip_unified(z, nb=1024, ns=256, h_short=128,
+                              unified_steps=1)
+    lad2, _ = iqw.dip_unified_ladder(z, [(1024, 128), (256, 128)],
+                                     nb=1024, ns=256, unified_steps=1)
+    phase = np.vdot(lad2, pair)
+    if abs(phase):
+        lad2 = lad2 * phase / abs(phase)
+    assert np.max(np.abs(lad2 - pair)) / np.max(np.abs(pair)) < 2e-12
+
+
 def test_bilinear_reassignment_conserves_power_and_fills_quantization_gaps():
     import iqwaterfall as iqw
 
@@ -93,5 +119,6 @@ if __name__ == "__main__":
     test_alternating_projection_converges_for_1024_512()
     test_real_reference_stays_real()
     test_cpp_combined_kernel_matches_python_specification()
+    test_cpp_ladder_kernel_matches_python_specification()
     test_bilinear_reassignment_conserves_power_and_fills_quantization_gaps()
     print("two-lattice reference: PASS")

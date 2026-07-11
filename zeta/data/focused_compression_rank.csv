@@ -1,0 +1,16 @@
+observable,rows,columns,rank_99pct,rank_99.9pct,rank_99.999pct,N,control
+theta_mean,5,16,4,4,4,32,zeta
+theta_mean,5,16,3,3,3,32,gaussian_fourier_phase
+theta_mean,5,16,4,4,4,32,finite_blaschke
+theta_mean,5,16,3,3,4,32,random_rational_allpass
+theta_mean,5,16,3,3,4,32,generic_smooth_unit_phase
+theta_mean,6,32,5,5,5,64,zeta
+theta_mean,6,32,4,5,5,64,gaussian_fourier_phase
+theta_mean,6,32,3,5,5,64,finite_blaschke
+theta_mean,6,32,4,5,5,64,random_rational_allpass
+theta_mean,6,32,4,5,5,64,generic_smooth_unit_phase
+theta_mean,7,64,5,6,6,128,zeta
+theta_mean,7,64,4,5,6,128,gaussian_fourier_phase
+theta_mean,7,64,4,5,6,128,finite_blaschke
+theta_mean,7,64,4,5,6,128,random_rational_allpass
+theta_mean,7,64,3,5,6,128,generic_smooth_unit_phase

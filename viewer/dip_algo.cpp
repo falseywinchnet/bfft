@@ -1346,6 +1346,59 @@ IQW_API void iqw_dip_unified(const double* z_in, int L, const int* dsel,
     if (loss0_out) *loss0_out = loss0;
 }
 
+// Ladder generalization of iqw_dip_unified: P magnitude families instead of
+// the fixed long/short pair.  rung_n/rung_h list the window lengths and hops
+// in APPLICATION ORDER (largest rung first by convention; the final relax is
+// applied on rung 0).  The shared fast1 seed still uses the deployed (nb, ns)
+// geometry.  Coverage law (notes/two_lattice_superresolution.md S5): a rung
+// pins packet pairs with dt + w <~ N, and recovery rate scales with pin
+// strength, so upward rungs (~2-2.5x the content separation) are the
+// high-value, low-cost additions -- a 4096 rung is 9 frames per 8192 tile.
+IQW_API void iqw_dip_unified_ladder(const double* z_in, int L,
+                                    const int* dsel, int ndsel, int renorm,
+                                    double steepest_scale, int shared_steps,
+                                    int nb, int ns,
+                                    const int* rung_n, const int* rung_h,
+                                    int n_rungs, int unified_steps,
+                                    double beta, double final_relax,
+                                    double* u_out, double* loss0_out) {
+    int nds = dsel ? ndsel : 0;
+    const cd* zp = reinterpret_cast<const cd*>(z_in);
+    Ten observed(zp, zp + L);
+    SolverC S(zp, L, dsel, nds, renorm != 0, nb, ns);
+    double loss0 = 0.0;
+    Ten latent = S.run(steepest_scale, shared_steps, false, loss0);
+    std::vector<MagnitudeProjectorC> fams;
+    fams.reserve(std::max(0, n_rungs));
+    for (int i = 0; i < n_rungs; ++i)
+        fams.emplace_back(observed, L, rung_n[i], rung_h[i]);
+    Ten previous = latent;
+    int steps = std::max(0, unified_steps);
+    for (int s = 0; s < steps; ++s) {
+        Ten trial(L);
+        for (int t = 0; t < L; ++t)
+            trial[t] = latent[t] + beta * (latent[t] - previous[t]);
+        previous = latent;
+        for (const auto& f : fams) trial = f.project(trial);
+        latent = trial;
+    }
+    final_relax = std::min(1.0, std::max(0.0, final_relax));
+    if (steps > 0 && final_relax > 0.0 && !fams.empty()) {
+        Ten corrected = fams.front().project(latent);
+        for (int t = 0; t < L; ++t)
+            latent[t] += final_relax * (corrected[t] - latent[t]);
+    }
+    cd cross(0.0, 0.0);
+    for (int t = 0; t < L; ++t) cross += std::conj(latent[t]) * observed[t];
+    if (std::abs(cross) > 1e-30) {
+        cd rot = cross / std::abs(cross);
+        for (cd& v : latent) v *= rot;
+    }
+    cd* out = reinterpret_cast<cd*>(u_out);
+    std::copy(latent.begin(), latent.end(), out);
+    if (loss0_out) *loss0_out = loss0;
+}
+
 // Number of long-aperture frames for record length L and window nb (hb=nb/8).
 IQW_API int iqw_dip_frames_long(int L, int nb) {
     int hb = nb / 8;

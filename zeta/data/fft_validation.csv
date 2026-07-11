@@ -1,0 +1,2 @@
+contract,fft_revalidation_performed,replacement_check
+DIP forward/inverse is trusted,False,reflection+zero-padding+DIP convolution+cropping vs dense

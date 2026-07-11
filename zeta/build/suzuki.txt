@@ -1,0 +1,2927 @@
+RIMS Kôkyûroku Bessatsu
+B34 (2012), 397435
+
+
+
+
+                       A canonical system of differential equations
+
+                               arising from the Riemann zeta‐function
+
+                                                                                                  By
+
+                                                                                                                                    *
+                                                                       Masatoshi Suzuki
+
+
+
+
+                                                                                         Abstract
+
+
+            This paper has two main results, which relate to a criteria for the Riemann hypothesis via
+the family of functions                   $\Theta$_{ $\omega$}(z)= $\xi$(\displaystyle \frac{1}{2}- $\omega$-iz)/ $\xi$(\frac{1}{2}+ $\omega$-iz) where $\omega$>0 is
+                                                                                                                               ,
+                                                                                                                                                                        a real   parameter and
+$\xi$(s) is the Riemann xi‐function. The first main result is necessary and sufficient conditions for
+$\Theta$_{ $\omega$} to be a meromorphic inner function in the upper half‐plane. It is related to the Riemann
+hypothesis directly whether $\Theta$_{ $\omega$} is a meromorphic inner function. In comparison with this, \mathrm{a}
+relation of the Riemann hypothesis and the second main result is indirect. It relates to the
+
+theory of de Branges, which associates a meromorphic inner function and a canonical system
+of linear differential equations (in the sense of de Branges). As the second main result, the
+canonical system associated with $\Theta$_{ $\omega$} is constructed explicitly and unconditionally under the
+restriction of the parameter $\omega$>1 by applying a method of J.‐F. Burnol in his recent work
+on   the gamma function to the Riemann xi‐function.                                                                      If such construction is extended to all
+
+       unconditionally,
+$\omega$>0                  get               we                      criterion for the Riemann
+                                                              hypothesis in terms of a family
+                                                                 a
+
+of canonical systems   parametrized by $\omega$>0 which explains the validity of the Riemann         ,
+
+
+
+hypothesis as positive semidefiniteness of the corresponding family of Hamiltonian matrices.
+
+
+
+
+                                                                          §1.             Introduction
+
+
+            Let              $\zeta$(s) be the Riemann zeta function.                                            The set of all non‐trivial                                       zeros   of the
+Riemann zeta function coincides with the set of all zeros of the Riemann xi‐function
+
+
+
+                                                        $\xi$(s)=\displaystyle \frac{1}{2}s(s-1)$\pi$^{-s/2} $\Gamma$(\frac{s}{2}) $\zeta$(s)    .
+
+
+
+
+         Received June 1, 2011. Revised January 21, 2012. Revised February 18, 2012.                                                                                         Accepted March 9,
+         2012.
+         2000 Mathematics Subject Classification(s): Primary 11\mathrm{M}06, 11\mathrm{M}26, 47\mathrm{B}32 Secondary 11\mathrm{M}41,                                    .
+
+
+
+
+         46\mathrm{E}22, 47\mathrm{E}05.
+         Key Words: Riemann zeta‐function, Riemann hypothesis, de Branges spaces, Model subspaces,
+         Canonical system, Hamiltonian
+         This work was supported by KAKENHI    (Grant‐in‐Aid for Young Scientists (B)) No. 21740004.
+     *
+         Department of Mathematics, Tokyo Institute of Technology, 2‐12‐1 Ookayama, Meguro‐ku, Tokyo
+         152‐8551, Japan.
+         \mathrm{e} ‐mail:   msuzuki@math.titech.ac.jp
+
+
+
+                       © 2012 Research Institute for Mathematical Sciences, Kyoto University. All rights reserved.
+398                                                                              Masatoshi Suzuki
+
+
+
+The Riemann hypothesis, which is often abbreviated to RH, assert that all zeros of $\xi$(s)
+lie on the critical line \Re(s)=1/2                                        .    We attempt to understand the nontrivial zeros of
+the Riemann zeta function via the family of functions
+
+
+(1.1)                  A^{ $\omega$}(z):=\displaystyle \frac{1}{2}( $\xi$(s+ $\omega$)+ $\xi$(s- $\omega$) , B^{ $\omega$}(z):=\frac{i}{2}( $\xi$(s+ $\omega$)- $\xi$(s- $\omega$)   ,
+
+
+
+
+where s=1/2-iz and $\omega$ is a positive real parameter. Functions A^{ $\omega$}(z) and B^{ $\omega$}(z) take
+real values on the real line and satisfy the functional equations A^{ $\omega$}(z)=A^{ $\omega$}(z) and
+
+B^{ $\omega$}(z)=-B^{ $\omega$}(z) by the functional equations $\xi$(s)= $\xi$(1-s) and $\xi$(s)=\overline{ $\xi$(\overline{s})}.
+        If all zeros of A^{ $\omega$}(z) lie on the real line for every $\omega$>0 it implies RH by Hurwitzs                      ,
+
+
+
+theorem in complex analysis. Conversely, all zeros of A^{ $\omega$}(z) lie on the real line for
+
+$\omega$\geq 1/2 unconditionally and for 0< $\omega$<1/2 under RH by a result of Lagarias [15]
+(see also Li [21] for an unconditional result for 0< $\omega$<1/2 ). We abbreviate to RH(A)
+(resp. \mathrm{R}\mathrm{H}(\mathrm{B}) ) the assertion that all zeros of A^{ $\omega$}(z) (resp. B^{ $\omega$}(z) ) lie on the real line,
+and abbreviate RH(A) and RH(B) as \mathrm{R}\mathrm{H}(A^{ $\omega$}, B^{ $\omega$})        Then the above things are stated
+                                                                                                                      .
+
+
+
+
+as    follows:
+
+
+          Proposition 1.1.                               RH holds if and only if RH(A) holds for all $\omega$>0.
+
+
+The latter condition is easier to                                          study in that it is currently known to hold for all
+$\omega$\geq 1/2   .   Also it is known to be related to some operators. We will study the latter
+
+problem of finding linear differential equation systems with boundary conditions for
+which the zeros of A^{ $\omega$}(z) are eigenvalues, for a suitable range of $\omega$.
+
+          It is believed that                      a    promising way to prove RH is the Hilbert‐Pólya conjecture
+which asserts that the non‐trivial                                             zeros       of the Riemann zeta function correspond to
+
+eigenvalues of some positive operator if RH is true. Therefore, if we refer to Proposition
+1.1, it is an interesting problem to find a canonical way realizing the zeros of A^{ $\omega$}(z)
+as    the eigenvalues of some positive operator.                                                         Fortunately, as shown in [15] (see also
+[16]), it is possible for $\omega$\geq 1/2 unconditionally and for 0< $\omega$<1/2 under RH if we
+use    the theory of de Branges spaces that are kind of reproducing kernel Hilbert spaces
+
+consisting of entire functions. However, unfortunately, RH is used essentially in [15] to
+construct corresponding de Branges spaces for                                                           0< $\omega$<1/2.
+          According to a general theory of de Branges spaces, there exists a unique canonical
+system of linear differential equations associated with a given de Branges space up
+to    a   normalization.                     And also, it is known that a special class of canonical system is
+transformed into a pair of Schrödinger equations endowed with a pair of (distributional)
+
+potentials. At this stage, the validity of RH(A) is encoded in analytic properties of
+potentials (see [16], and also [17]). Hence, a possible way to avoid assuming RH in the
+construction of the de Branges space arising from A^{ $\omega$}(z) for 0< $\omega$<1/2 is a direct
+
+construction of a pair of potentials without RH.                                                              However, in general, it is difficult to
+                               A canonical system 0F differential equations                                                                                399
+
+
+
+determine a pair of potentials corresponding to a given de Branges space, and it is so
+for the de Branges space arising from A^{ $\omega$}(z) even if $\omega$\geq 1/2.
+        A goal of the present paper is to describe unconditionally for $\omega$>1 ,                                                              a   canonical
+
+system and corresponding pair of potentials associated with a de Branges space arising
+from A^{ $\omega$}(z) in terms of Fredholm determinants of certain compact integral operators
+
+(Theorem 2.3). The restriction $\omega$>1 is expected to be relaxed to $\omega$>0 if RH is true
+(see comments after Theorem 2.3 and Section 5 for details).
+        In order to explain the above things more precisely, we review results on de Branges
+
+spaces, canonical systems and model subspaces.
+
+
+                         §1.1.                 de Branges spaces and canonical system
+
+        At first,   we    review the                     theory of de Branges spaces according to de Branges [9]
+and Lagarias [16, 17]                   (see also Remling [24]). Let E be an entire function satisfying the
+Hermite‐Biehler condition
+
+
+(1.2)                                                 |E(z)|>|E\#(z)|                                for   \Im(z)>0,
+
+where     E\#(z)=\overline{E(\overline{z})} Then entire function E generates the de Branges space
+                                   .
+
+
+
+
+                               B(E) := { f|f is entire, f/E and f/E\#\in H^{2} }
+
+endowed with norm                      \Vert f\Vert_{B(E)}:=\Vert f/E\Vert_{L^{2}(\mathbb{R})}   ,
+                                                                                                     where H^{2}=H^{2}() is the Hardy space
+in the upper half‐plane \mathbb{C}^{+} which is defined to be the space of all analytic functions f
+
+in \mathbb{C}^{+} endowed with norm
+                                     \displaystyle \Vert f\Vert_{H^{2}}^{2}:=\sup_{v>0}\int_{\mathbb{R}}|f(u+iv)|^{2}du<\infty An entire function
+                                                                                                                                     .
+
+
+
+
+F(z) is called a         real entire function if F(z)=F\#(z)                                         \overline{F(\overline{z})} ). Condition (1.2) implies
+that real entire functions
+
+
+
+                      A(z) :=\displaystyle \frac{1}{2}(E(z)+E\#(z)) , B(z) :=\frac{i}{2}(E(z)-E\#(z))
+have real zeros only, and these zeros interlace.                                                       Moreover, if E(z)\neq 0 on the real line,
+all   zeros   are   simple ([8,                   Lemma               5]).         A de              Branges space B(E) has an unbounded
+operator (\mathrm{M}, \mathfrak{D}(\mathrm{M})) multiplication by the independent variable (\mathrm{M}f)(z)=zf(z) with
+                               ,
+
+
+
+the domain \mathfrak{D}(\mathrm{M})=\{f\in B(E)|zf(z)\in B(E)\}                                            .       The   multiplication operator \mathrm{M} is
+symmetric and closed, and if \mathrm{D}(\mathrm{M}) is dense in B(E)                                                ,  (1, 1),
+                                                                                                                        it has deficiency indices
+
+and hence has         a    family of self‐adjoint extensions \mathrm{M}_{ $\theta$}parametrized by $\theta$\in[0, $\pi$ ). In
+particular, \mathrm{M}_{ $\pi$/2} and \mathrm{M}_{0} have pure discrete spectrum located at zeros of A(z) and B(z)
+respectively.
+        We put the normalization E(0)=1 for entire functions E satisfying                                                                         (1.2) for a
+convenience.        Then, for a given de Branges space B(E)                                                               ,
+                                                                                                                              there exists   a   chain of de
+
+Branges spaces B(E_{a})\subset B(E) 0<a\leq c(\leq\infty)        ,             family of entire                ,
+                                                                                                                   endowed with          a
+
+
+functions E_{a}(z) satisfying (1.2) and E_{a}(0)=1 such that B(E_{a})\subset B(E_{a'}) for a<a',
+400                                                                                                                                                        Masatoshi Suzuki
+
+
+
+and the parametrized pair of real entire functions (A_{a}, B_{a})                                                                                                                                                                                                              :=(\displaystyle \frac{1}{2}(E_{a}+E_{a}\#), \frac{i}{2}(E_{a}-E_{a}\#))
+satisfies the canonical system
+
+
+
+
+                             \displaystyle\frac{\partial}{\partiala}\left\{\begin{aray}{l} A_{a}(z)\ B_{a}(z) \end{aray}\right\}=z\left\{\begin{aray}{l} 0&-1\ 1&0 \end{aray}\right\}H(a)\displaystyle\left\{\begin{aray}{l} A_{a}(z)\ B_{a}(z) \end{aray}\right\},H(a)=\left\{\begin{aray}{l} $\alpha$(a)$\beta$(a)\ $\beta$(a)$\gam a$(a) \end{aray}\right\}
+of linear differential equations with the initial condition
+
+
+
+                                                                                                                      \displaystyle \lim_{a\rightarrow 0+}(A_{a}(z), B_{a}(z))=(1,0)
+for each z\in \mathbb{C} , and E_{c}(z)=E(z)
+                                   (see [9, Theorem 40], but note that it is formulated
+in terms of integral equations). Here the matrix H(a) is a measurable and real positive
+
+semidefinite symmetric matrix for almost all 0<a\leq c and which is integrable over the                                                                                                                                                                ,
+
+
+
+interval. The matrix H(a) is often called a Hamiltonian of a canonical system. These
+
+properties of H(a) are crucial, because the initial function E can be recovered from
+H(a) by solving the canonical system with the above initial condition ([9, Theorem
+41]). On the other hand, the spectrum of the extended multiplication operator \mathrm{M}_{$\theta$}
+coincides with the spectrum of the above canonical system with the boundary condition
+
+\displaystyle \lim_{a\rightarrow 0+}(A_{a}(z), B_{a}(z))=(1,0) and A_{c}(z)\sin $\theta$-B_{c}(z)\cos $\theta$=0.
+         If H(a) is diagonal ( $\beta$(a)=0) and $\alpha$(a) $\gamma$(a)=1 almost everywhere in (0, c], the
+
+corresponding canonical system is transformed into a pair of Schrödinger equations
+
+
+
+         (-\displaystyle \frac{d^{2} {da^{2} +V^{\pm}(a) $\psi$(a, z)=z^{2} $\psi$(a, z) V^{\pm}(a)=\displaystyle \frac{1}{4}(\frac{$\alpha$'(a)}{ $\alpha$(a)})^{2}\pm\frac{1}{2}(\frac{$\alpha$'(a)}{ $\alpha$(a)})',
+                                                                                                                                                                                       ,
+
+
+
+
+and the initial E is recovered by solving the pair of Schrödinger equations under the
+
+corresponding initial conditions.
+        Eventually, condition (1.2) of E is encoded in analytic properties of H(a) or V^{\pm}(a)                                                                                                                                                                                                                                                                 .
+
+
+
+
+In general, it is difficult to determine H(a) or                                                                                                                                                              V^{\pm}(a) for given E except for few special
+examples (see Chapter 3 of [9], and also [17, 6]).
+
+                                          §1.2.                                       Spectral realization of zeros of A^{ $\omega$} and B^{ $\omega$}
+
+        Suppose that the condition
+
+(1.3)                                                                                    | $\xi$(s+ $\omega$)|>| $\xi$(s- $\omega$)|                                                                                     for
+                                                                                                                                                                                                                                                    \displaystyle \Re(s)>\frac{1}{2}
+holds.         Then we find that                                E(z)=E^{ $\omega$}(z) := $\xi$(\displaystyle \frac{1}{2}+ $\omega$-iz) satisfies (1.2) by using the
+functional equations $\xi$(s)= $\xi$(1-s) and $\xi$(s)=\overline{ $\xi$(\overline{s})} Thus the de Branges space B(E)                                                                                                                    .
+
+
+
+
+is defined, and \mathrm{R}\mathrm{H}(A^{ $\omega$}, B^{ $\omega$}) holds. By a result of [15], condition (1.3) holds for $\omega$\geq 1/2
+
+unconditionally and for 0< $\omega$<1/2 under RH. This is the reason why RH implies
+RH(A) for all $\omega$>0 However, for fixed $\omega$>0 condition (1.3) is only a sufficient
+                                                                                 .
+                                                                                                                                                                                                                                     ,
+                                            A canonical system 0F differential equations                                                                                                                                                          401
+
+
+
+condition to \mathrm{R}\mathrm{H}(A^{ $\omega$}, B^{ $\omega$}) , that is,              RH(A) or RH(B) may be true even if condition
+(1.3) does not hold.
+         Anyway, we can regard the zeros of A^{ $\omega$}(z) and B^{ $\omega$}(z) as discrete spectrum of
+self‐adjoint extensions of (\mathrm{M}, \mathrm{D}(\mathrm{M}) on B(E) for $\omega$\geq 1/2 unconditionally and for
+0< $\omega$<1/2 under RH. Therefore, a natural problem on RH(A) and a spectral
+realization of the zeros of A^{ $\omega$}(z) is to find a way avoiding RH for 0< $\omega$<1/2                                                                                                                     .   A possible
+
+approach is to construct H(a) or V^{\pm}(a) associated with B(E) without assuming RH,
+and recover E^{ $\omega$}, A^{ $\omega$} and B^{ $\omega$} from the canonical system attached to H(a) or the pair of
+
+Schrödinger equations attached to V^{\pm}(a)                                                            .    We attempt to follow this way by using the
+
+theory of model subspaces.
+
+
+                                                                      §1.3.                   Model subspaces
+
+
+         For further discussions,                                   we         review a theory of model spaces                                                                      according to Havin‐
+Mashreghi [12, 13] (see also Baranov [1], MakarovPoltoratski [22]).                                                                                                                                A function $\Theta$ is
+called        an      inner function in                            \mathbb{C}^{+} if it is a bounded analytic function in \mathbb{C}^{+} such that
+
+\displaystyle \lim_{v\rightarrow 0+}| $\Theta$(u+iv)|=1 for almost all u\in \mathbb{R} with respect to Lebesgue measure.                                                                                                                           If
+an     inner function $\Theta$ in \mathbb{C}^{+} is extended to a meromorphic function in \mathb {C} , it is called a
+
+meromorphic inner function in \mathbb{C}^{+}                                        .       It is known that every meromorphic inner function
+
+is   expressed as                   $\Theta$=E\#/E by using an entire function E satisfying (1.2).                                                                                                                               For              an
+
+
+inner function $\Theta$ ,               a    model subspace                                 (or coinvariant subspace) K( $\Theta$) is defined by the
+orthogonal complement
+
+(1.4)                                                                           K( $\Theta$)=H^{2}\ominus $\Theta$ H^{2},
+
+where          $\Theta$ H^{2}=\{ $\Theta$(z)F(z)|F\in H^{2}\}                           .   It has the alternative representation
+
+
+
+(1.5)                                                                            K(\ominus)=H^{2_{\cap\ominus H^{2}}^{-}},
+
+where H^{2}-=H^{2}() is the Hardy space in the lower half‐plane \mathbb{C}^{-}                                                                                                       .    If $\Theta$ is a meromor‐
+
+phic inner function such that $\Theta$=E\#/E                                                        ,
+                                                                                                        the model subspace K( $\Theta$) is isomorphic to the
+de Branges space B(E) as a Hilbert space by K( $\Theta$)\rightarrow B(E):f\mapsto fE                                                                                                                  .     In particular,
+
+K( $\Theta$) is a reproducing kernel Hilbert space. The reproducing kernel of K( $\Theta$) is given
+by
+
+
+(1.6)                                         K(z, w)=\displaystyle \frac{1}{2 $\pi$ i}\frac{1-\overline{ $\Theta$(z)} $\Theta$(w)}{\overline{z}-w} (z, w\in \mathbb{C}^{+})   ,
+
+
+
+
+and the reproducing formula f(z)=\langle f,                                                         K(z, \cdot)\rangle_{L^{2}(\mathbb{R})}(f\in K( $\Theta$), z\in \mathbb{C}^{+}) remains true
+for z\in \mathbb{R} if $\Theta$ is analytic in a neighborhood of u , where \langle f,                                                                        g\displaystyle \rangle_{L^{2}(\mathbb{R})}=\int_{\mathbb{R} f(u)\overline{g(u)}du.
+402                                                                                             Masatoshi Suzuki
+
+
+
+
+                                      §1.4.              Model subspaces related to A^{ $\omega$} and B^{ $\omega$}
+
+          Now we apply the theory of model subspaces to the spaces B(E) of Section 1.2.
+
+For positive real $\omega$ , we define the meromorphic function                                                                                                                       $\Theta$_{ $\omega$}(z) in \mathb {C} by
+
+(1.7)
+                                                                        $\Theta$_{$\omega$}(z):=\displaystyle\frac{$\xi$(\frac{1}{2}-$\omega$-iz)}{$\xi$(\frac{1}{2}+$\omega$-iz)}.
+Then we have
+
+
+(1.8)                                                         $\Theta$_{ $\omega$}(z)$\Theta$_{ $\omega$}(-z)=1                                   for                   z\in \mathbb{C},
+
+
+(1.9)                                                                  |$\Theta$_{ $\omega$}(u)|=1                                 for                   u\in \mathbb{R},
+
+
+(1.10)                                                                                                $\Theta$_{ $\omega$}(0)=1,
+
+by functional equations $\xi$(s)= $\xi$(1-s) and $\xi$(\overline{s})=\overline{ $\xi$(s)}.
+          The inequality (1.3) can now be reinterpreted as the condition
+
+
+(1.11)                                                             |$\Theta$_{ $\omega$}(z)|<1                               for                    \Im(z)>0
+
+and vice versa. Recall that condition (1.3) is known to hold for $\omega$\geq 1/2 unconditionally
+
+and for 0< $\omega$<1/2 under RH. By (1.9), when condition (1.11) holds, it implies that
+
+$\Theta$_{ $\omega$}(z) is a meromorphic inner function in \mathbb{C}^{+} Therefore, whenever (1.11) holds, we                               .
+
+
+
+
+obtain a model subspace K($\Theta$_{ $\omega$}) which is isomorphic to the de Branges space B(E)
+
+generated by E^{ $\omega$}(z)= $\xi$(\displaystyle \frac{1}{2}+ $\omega$-iz)           .     Here we mention the following equivalence relation.
+
+
+          Proposition 1.2.                                 Let $\omega$_{0}\geq 0                 .       Then the following are equivalent:
+
+
+(1) $\zeta$(s)\neq 0 for \displaystyle \Re(s)>\frac{1}{2}+$\omega$_{0},
+
+(2) $\Theta$_{ $\omega$}(z) is a meromorphic inner function in \mathbb{C}^{+} for every $\omega$>$\omega$_{0}.
+
+          Proof.            Assume that 0\leq$\omega$_{0}<1/2 since we have nothing to say for $\omega$\geq 1/2                                                                                                                  .
+
+                                                                                                                                                                                                                                     By
+applying Theorem 4 of [18], we find that (1) implies that (1.11) holds for every $\omega$>$\omega$_{0}
+Thus we obtain (1)(2). The converse implication (2)(1) is proved by a way similar
+
+to the proof of Theorem 2.3                                      (1) in [26].                                                                                                                                                        \square
+
+
+          The changing of consideration from B(E) to K($\Theta$_{ $\omega$}) has the advantage that spaces
+
+$\Theta$_{ $\omega$}H^{2}, $\Theta$_{ $\omega$}H^{2}-, H^{2}\ominus(H^{2}\cap$\Theta$_{ $\omega$}H^{2}) and H^{2}\cap$\Theta$_{ $\omega$}H^{2}- are defined even if $\Theta$_{ $\omega$}(z) is not
+necessarily a meromorphic inner function in \mathbb{C}^{+} (see (1.4) and (1.5)), and it allows us
+to study these spaces for the range 0< $\omega$<1/2 without assuming RH. (Note that
+                                                         A canonical system 0F differential equations                                                                                                                                          403
+
+
+
+
+$\Theta$ H^{2}\not\subset H^{2} in general if $\Theta$ is not necessary a inner function in \mathbb{C}^{+}. ) To make a further
+discussion, we use Fourier analysis.
+
+                                                              §1.5.                    An operator related to K($\Theta$_{ $\omega$})
+
+             As usual we identify H^{2} and H^{2}- with subspaces of L^{2}() =L^{2}((-\infty, \infty), du) via
+
+nontangential boundary values on the real line such that L^{2}(\mathbb{R})=H^{2}\oplus H^{2}-                                                                                                                                      .    Then the
+shifted Fourier transform
+
+
+                         \mathrm{F}_{1/2}:L^{2}((0, \infty), dx)\rightarrow L^{2}(\mathbb{R})                       :
+
+                                                                                                                                (\displaystyle \mathrm{F}_{1/2}f)(z)=\int_{0}^{\infty}f(x)x^{\frac{1}{2}+iz}\frac{dx}{x},
+                             \mathrm{F}_{1/2}^{-1} L^{2}(\mathbb{R})\rightarrow L^{2}((0, \infty), dx)
+                                        :                                                                           :
+
+                                                                                                                                 (\displaystyle \mathrm{F}_{1/2}^{-1}g)(z)=\frac{1}{2 $\pi$}\int_{-\infty}^{\infty}g(u)x^{-\frac{1}{2}-iu}du
+provides an isometry of L^{2} ‐spaces up to a constant such that H^{2}=\mathrm{F}_{1/2}L^{2}((1, \infty), dx)
+and          H^{2}-=\mathrm{F}_{1/2}L^{2}((0,1), dx) by the Paley‐Wiener theorem.
+             Fourier analysis on K($\Theta$_{ $\omega$}) and $\Theta$_{ $\omega$}H^{2} enables us to state equivalent                                                                                                           or       sufficient
+conditions that $\Theta$_{ $\omega$}(z) is a meromorphic inner function in \mathbb{C}^{+}                                                                                                          (Theorem 2.2).
+              On the other hand, condition (1.9) allows us to define the Hankel type operator
+
+
+
+                                                                              (\displaystyle \mathrm{H}_{ $\omega$}^{*}f)(x)=\int_{0}^{\infty}h_{ $\omega$}^{*}(xy)f(y)dy
+on
+         L^{2}((0, \infty), dx) endowed with the kernel given by
+
+(1.12)
+                                                                        h_{ $\omega$}^{*}(x)=\displaystyle \frac{1}{2 $\pi$}\int_{-\infty}^{\infty}$\Theta$_{ $\omega$}(u)x^{-\frac{1}{2}-iu}du.
+Of course the definition of \mathrm{H}_{ $\omega$}^{*} has only a formal sense because of the problem of the
+
+convergence of integral in                                                   (1.12).                      However                          h_{ $\omega$}^{*}(x) is going to be identified with the
+function h(x) in Section 2, and then                                                                                    \mathrm{H}_{$\omega$}^{*} is going to be justified as the operator \mathrm{H}_{$\omega$}
+obtained by replacing the kernel h_{ $\omega$}^{*}(x) by h_{ $\omega$}(x)                                                                          .    Moreover the operator \mathrm{H}_{ $\omega$} is extended
+
+to an isometry from                                        L^{2}((0, \infty), dx) to L^{2}((0, \infty), dx) for $\omega$\geq 1/2 unconditionally, and
+for 0< $\omega$<1/2 under RH (see Lemma 4.1).
+             As developed in Burnol [6]                         (and his other related works [3, 4, 5]), the Hankel type
+operator \mathrm{H}_{ $\omega$} and its kernel h_{ $\omega$}(xy) is quite useful to study a structure of subspaces of
+
+\mathrm{F}_{1/2}^{-1}K($\Theta$_{ $\omega$}) corresponding to de Branges subspaces of B(E^{ $\omega$})\simeq K($\Theta$_{ $\omega$}) By applying                                                                         .
+
+
+
+
+Burnols theory to \mathrm{H}_{ $\omega$} and h_{ $\omega$}(x) we derive a canonical system of B(E) under the
+                                                                                                    ,
+
+
+
+restriction $\omega$>1 (Theorem 2.3 and studying in Section 4). Recall that the structure of
+
+subspaces of a de Branges space is controlled by its canonical system.
+
+                                                                                §1.6.                        Summary of issues
+
+              Briefly, we have two issues. The first is to state \mathrm{a} (nice) criterion for the innerness
+of $\Theta$_{ $\omega$}(z)   .    It is directly related to the zero‐free region of                                                                                                       $\zeta$(s) (Proposition 1.2).                        The
+404                                                                                                                       Masatoshi Suzuki
+
+
+
+second is to describe the Hamiltonian H(a) of the canonical system of B(E) explicitly
+
+by assuming that $\Theta$_{ $\omega$}(z) is a meromorphic inner function in \mathbb{C}^{+} if 0< $\omega$<1/2                                                                                                                                                         .    If it
+is   done, we can state that $\Theta$_{ $\omega$}(z) is a meromorphic inner function in \mathbb{C}^{+} if and only
+if       (A^{ $\omega$}, B^{ $\omega$})=(A_{c}, B_{c}) for the solution (A_{a}, B_{a}) of the canonical system for H(a)
+on
+           a\in(0, c] satisfying \displaystyle \lim_{a\rightarrow 0+}(A_{a}, B_{a})=(E^{ $\omega$}(0), 0) This description explains the                                                             .
+
+
+
+
+innerness of $\Theta$_{ $\omega$}(z) as a consequence of properties of H_{ $\omega$}(a) and it provides a criterion                                                                                                   ,
+
+
+
+for a zero‐free region of $\zeta$(s) in terms of a family of canonical systems attached to
+
+\{H_{ $\omega$}(a)\}_{ $\omega$>$\omega$_{0} via Proposition 1.2.
+                However the second problem is not trivial even if $\omega$\geq 1/2 In this paper, we deal                                                                                                                     .
+
+
+
+
+with the case $\omega$>1 for the second problem as the first attempt.
+
+
+
+                                                                         §1.7.                           Organization of the paper
+
+        The paper is organized as follows.                                                                                                 In Section                                     2, we state main results Theorem
+2.2 and Theorem 2.3 after a small preparation of notation. The first one is equivalent
+
+conditions on the Hermite‐Biehler condition                                                                                                                   (1.11) in terms of the function h(x) for
+fixed $\omega$>0               .     This is proved in Section 3. The second one is a result on the canonical
+
+system of B(E^{ $\omega$})\simeq K($\Theta$_{ $\omega$}) under the restriction $\omega$>1 It is proved in Section 4 together                                                                   .
+
+
+
+
+with related studies and auxiliary results.                                                                                                             In           addition, we present more sufficient or
+equivalent conditions that $\Theta$_{ $\omega$}(z) is a meromorphic inner function in \mathbb{C}^{+} in Appendix
+\mathrm{A} (Theorem A.1).
+
+
+        Here              we          mention that this paper,                                                                           particularly Appendix \mathrm{A}                                                         ,
+                                                                                                                                                                                                                                      is   a   sequel to [26],
+though it is independent and can be read separately. The operator \mathrm{H}_{$\omega$}^{*} of Section 1.5 is
+also justified as the Watson transform:
+
+
+
+
+         (\displaystyle \mathrm{H}_{ $\omega$}^{* }f)(x)=\frac{d}{dx}\int_{0}^{\infty}h_{ $\omega$}^{* }(xy)f(y)\frac{dy}{y}, h_{$\omega$}^{*}(x)=\displaystyle\frac{1}{2$\pi$}\int_{-\infty}^{\infty}\frac{$\Theta$_{$\omega$}(u)}{\frac{1}{2}-iu}x^{\frac{1}{2}-iu}du,
+which         gives a linear involution on L^{2}((0, \infty), dx)                                                               (1.8) (only for real z) and                             under
+
+(1.9) (see Titchmarsh [28, §8.5], BochnerChandrasekharan [2, Chap.V, §2]). More‐
+over, \mathrm{H}_{ $\omega$}^{* }=\mathrm{H}_{ $\omega$} if $\Theta$_{ $\omega$}(z) is inner in \mathbb{C}^{+} The Watson transform has the advantage that
+                                                                                                                                  .
+
+
+
+
+h_{ $\omega$}^{* }(x) always exists in L^{2} ‐sense by (1.9), and belongs to L^{2}((0, \infty), dx) While the                                                                                                                                    .
+
+
+
+
+modified function
+
+
+                                                                               h_{$\omega$}^{\langle1\rangle}(x)=\displaystyle\frac{1}{2$\pi$}\int_{-\infty}^{\infty}\frac{$\Theta$_{$\omega$}(u)}{-iu}x^{\frac{1}{2}-iu}du
+does not belong to L^{2}((0, \infty), dx)                                                                        although it is justified as a function (Appendix A).
+However it is also useful to study the space                                                                                                                    K($\Theta$_{ $\omega$}) and the operator \mathrm{H}_{$\omega$} because of
+formula (1.6) for the reproducing kernel. In fact, several sufficient or equivalent condi‐
+tions that $\Theta$_{ $\omega$}(z) is inner in \mathbb{C}^{+} are stated in terms of                                                                                                               h_{ $\omega$}^{\langle 1\rangle}(x) (Theorem A.1)      as       well as
+                                                    A canonical system 0F differential equations                                                                                                                                          405
+
+
+
+Theorem 2.2.                       Moreover, if $\Theta$_{ $\omega$}(z) is inner in \mathbb{C}^{+}                                          ,
+                                                                                                                                                we         obtain
+
+
+
+
+                           (\displaystyle \mathrm{H}_{ $\omega$}f)(x)=\int_{0}^{\infty}h_{ $\omega$}(xy) f(y)dy=\displaystyle \sqrt{x}\frac{d}{dx}\sqrt{x}\int_{0}^{\infty}h_{ $\omega$}^{\langle 1\rangle} ( ) f(y)dy
+                                                                                                                                                                                                  xy
+
+
+for compactly supported smooth functions f , and it is extended to L^{2}((0, \infty), dx) (The‐
+orem
+           A.2).             The function                              h_{ $\omega$}^{\langle 1\rangle}(x)   was   introduced and studied in                                                       [26] for more general
+L ‐functions, but                           a     relation with spaces B(E^{ $\omega$})\simeq K($\Theta$_{ $\omega$}) and operators                                                                               \mathrm{H}_{ $\omega$} were not
+mentioned there. In this sense, this paper is a sequel to [26].
+
+
+                                                                                  §1.8.                           De Branges works
+
+
+        Finally, we comment on de Branges works on B(E^{ $\omega$})                                                                                                                   .          The de    Branges space
+B(E)             was          considered first for the          $\omega$=1/2     Branges [10, pp.10‐              special value                                                     in de
+
+14], motivating        to generalize the Lax‐Phillips scattering theory      to the Laplace‐Beltrami
+operator, and for $\omega$\geq 1/2 in the subsequent paper [11, pp.205210]. (Precisely, we
+need to replace $\zeta$(s) by a Dirichlet L ‐function L(s, $\chi$) attached to an even primitive
+
+Dirichlet character $\chi$ in [10]). De Branges gave a sufficient condition on B(E) attached
+
+to general entire function E satisfying (1.2) such that the zeros of E(z) lie on the line
+
+\Im(z)=-1/2 which implies the (generalized) RH when E=E^{ $\omega$} for $\omega$=1/2 However
+                               ,
+                                                                                                                                                                                                                         .
+
+
+
+
+Conrey and Li [7] showed that B(E^{ $\omega$})( $\omega$=1/2) does not satisfy de Branges condition.
+For $\omega$\geq 1/2 de Branges studied the space B(E) by associating it with the weighted
+
+Hardy space \mathcal{F}(W)=WH^{2} for the weight function W(z)=\displaystyle \frac{1}{4}(s+ $\omega$)(s+ $\omega$-1) $\Gamma$(\frac{s+ $\omega$}{2})
+with      s=\displaystyle \frac{1}{2} —iz, but         we
+                                                               [11], and also [7]).
+                                                                 omit the details of this topic (see
+
+         In any case, de Branges directly related RH with a condition on B(E) for fixed
+
+$\omega$\geq 1/2 On the other hand, we reduced RH to the family of spaces \{B(E^{ $\omega$})\}_{ $\omega$>0} and
+                     .
+                                                                                                                                                                                                                                     ,
+
+
+
+study each space B(E) depending on a level of difficulty, which is determined by the
+value $\omega$   .       This is a major difference with de Branges approach and ours.
+
+
+Acknowlegements                                          I heartily thank the reviewer for many detailed and helpful com‐
+
+ments and corrections.                                         In particular, the readability of the paper was quite improved,
+
+and an error of the proof of Lemma 4.3 in the initial version was corrected by comments
+of the reviewer.
+
+
+
+                                                                                                         §2.        Main Results
+
+
+         Our first result is to derive                                                                       an   expression for $\Theta$_{ $\omega$}(z) as a Mellin transform of a
+function h(x) defined for                                                       0<x<\infty , which is valid for all real $\omega$>0                                                                                (Proposition
+2.1). To define this function we first define the numbers
+
+(2.1)
+                                                            c_{$\omega$}(n):=n^{$\omega$}\displaystyle\sum_{d|n}\frac{$\mu$(d)}{d^{2$\omega$}=n^{$\omega$}\prod_{p|n}(1-\frac{1}{p^{2$\omega$})
+406                                                                                                                                                            Masatoshi Suzuki
+
+
+
+for natural numbers n , where                                                                                                    $\mu$(n) is the Möbius function, that is, $\mu$(n)=0 if n is not
+a   square free                                     number, and                                                        $\mu$(n)=(-1)^{k} if n is a product of k distinct primes.                                                                                                                                                         The
+
+arithmetic function n\mapsto J_{2 $\omega$}(n)
+                                        :=n^{ $\omega$}c_{ $\omega$}(n) is called Jordans totient function, which
+gives Eulers totient function $\varphi$(n) for $\omega$=1/2.
+     Next we introduce a function g(x) defined on (0, \infty) by
+
+
+
+
+                                      g_{ $\omega$}(x)=\displaystyle \frac{2$\pi$^{ $\omega$} { $\Gam a$( $\omega$)}(x^{2- $\omega$}(1-x^{2})^{ $\omega$-1}- $\omega$ x^{ $\omega$-1}\int_{x^{2} ^{1}t^{\frac{1}{2}- $\omega$}(1-t)^{ $\omega$-1}dt)
+for 0<x<1 , and g_{ $\omega$}(x)=0 for x>1                                                                                                                                            .         It is continuous on                                                                            (0,1) and ( 1, \infty)              .     The
+behavior of g_{ $\omega$} near x=1 and x=0 is as follows. We have
+
+
+
+(2.2)
+                                                                               g_{ $\omega$}(x)=\displaystyle \frac{(2 $\pi$)^{ $\omega$} { $\Gam a$( $\omega$)}(1-x)^{ $\omega$-1}+o(1)                                                          as                  x\rightarrow 1^{-}
+
+
+
+Therefore g_{ $\omega$} is continuous at x=1 if and only if $\omega$>1 , and it is L^{1} (resp. L^{2} ) at x=1
+if $\omega$>0 (resp.                                       $\omega$>1/2 ). On the other hand, we have
+
+
+
+
+        g_{$\omega$}(x)=\left\{\begin{aray}{l} -4$\omega\pi$^{$\omega$-1/2}$\Gama$(3/2-$\omega$)x^{$\omega$-1}+o(1),&0<$\omega$<3/2,\\ 4$\pi$\sqrt{x}(3\logx+4-3\log2)+o(1),&$\omega$=3/2,\\ -6$\pi$^{$\omega$}(2$\omega$-3)^{-1}$\Gama$($\omega$)^{-1}x^{2-$\omega$}+o(1),&$\omega$>3/2, \end{aray}\right.
+Thus g_{ $\omega$} is L^{1}                               (resp. L^{2} ) at x=0 if 0< $\omega$<3 (resp. 1/2< $\omega$<5/2 ).
+                                                                                                                                                                                                                                                                                                              as   x\rightarrow 0^{+}.
+
+
+
+                                                                                                                                                                                                                                                                                                                      The size of
+the singularity at x=1 will be important in the sequel because it influences the type
+
+of operators \mathrm{H}_{ $\omega$,a} below, while there is no need to be careful about the behavior around
+x=0 in this paper.
+
+        Finally, we define the real‐valued function h_{ $\omega$} on (0, \infty) by
+
+
+(2.3)
+                                                                                                                            h_{$\omega$}(x)=\displaystyle\frac{1}{x}\sum_{n=1}^{\lflo rx\rflo r}c_{$\omega$}(n)g_{$\omega$}(\frac{n}{x})
+for x>1 , and h_{ $\omega$}(x)=0 for 0<x<1                                                                                                                                                .         The value                                           h(1) may be undefined, since
+c_{ $\omega$}(1)=1 and g_{ $\omega$}(1^{-})=+\infty for 0< $\omega$<1 by (2.2). By definition, h_{ $\omega$} has a support in
+[1, \infty) and is L^{1} (resp. L^{2} ) on every finite interval [ 1, b] if $\omega$>0 (resp. $\omega$>1/2 ). On
+               ,
+
+
+
+the other hand, the behavior of h_{ $\omega$} at x=+\infty is not obvious from its definition (see
+
+(4.22) below). Now the first result is stated as follows.
+
+        Proposition 2.1.                                                                                      For $\omega$>0 and \Im(z)>1/2+ $\omega$ ,                                                                                                              we              have
+
+
+
+(2.4)
+                                                                                                                         \displaystyle \int_{0}^{\infty}h_{ $\omega$}(x)x^{\frac{1}{2}+iz}\frac{dx}{x}=$\Theta$_{ $\omega$}(z)                                   ,
+
+
+
+
+where the integral converges absolutely.
+                                                                           A canonical system 0F differential equations                                                                                                                                                                                                                         407
+
+
+
+             We introduce                                               more                      notation in order to sate the main results mentioned in the
+
+introduction.                                    By (1.9), F(z)\mapsto$\Theta$_{ $\omega$}(z)F(z) defines a map L^{2}(\mathbb{R})\rightarrow L^{2}(\mathbb{R})                                                                                                                                                                 .      We denote
+it also by $\Theta$_{ $\omega$} if no confusion arises, and define
+
+
+                                                             \hat{ $\Theta$}_{ $\omega$}=\mathrm{F}_{1/2}^{-1}$\Theta$_{ $\omega$}\mathrm{F}_{1/2} L^{2}((0, \infty), dx)\rightarrow L^{2}((0, \infty), dx)
+                                                                                                                                               :                                                                                                                                                         .
+
+
+
+
+If $\Theta$_{ $\omega$}(z) is an inner function in \mathbb{C}^{+} , images $\Theta$_{ $\omega$}H^{2} and                                                                                                                                  \hat{ $\Theta$}_{ $\omega$}L^{2}((1, \infty), ds)                              are              subspaces
+of H^{2} and L^{2}((1, \infty), dx) , respectively.                                                                                                              Obviously the map \hat{$\Theta$}_{$\omega$} is related to the function
+h_{ $\omega$} by (2.4). In fact the innerness of $\Theta$_{ $\omega$}(z) is described in terms of h_{ $\omega$} as follows.
+
+             Theorem 2.2.                                                                  Let $\omega$>0                             .       The function $\Theta$_{ $\omega$}(z) is a meromorphic inner function
+
+in \mathbb{C}^{+}       if and only if one of the following conditions holds:
+
+(1) \hat{ $\Theta$}_{ $\omega$}f=h_{ $\omega$}*f for every f\in L^{2}((1, \infty), dx)                                                                                                             ,
+                                                                                                                                                                                                         where
+
+
+
+                                                                                                                (h_{ $\omega$}*f)(x)=\displaystyle \int_{0}^{\infty}h_{ $\omega$}(x/y)f(y)\frac{dy}{y}.
+(2) \hat{ $\Theta$}_{ $\omega$}f vanishes on (0,1) for every f\in L^{2}((1, \infty), dx)                                                                                                                                                    .
+
+
+
+
+(3) h_{ $\omega$}*f belongs to L^{2}((0, \infty), dx) for every f\in L^{2}((1, \infty), dx)                                                                                                                                                                                        .
+
+
+
+
+             Suppose that $\Theta$_{ $\omega$}(z) is an inner function in \mathbb{C}^{+}                                                                                                                                .      Then
+
+
+(2.5)
+                                                                                                               (\displaystyle \mathrm{H}_{ $\omega$}f)(x)=\int_{0}^{\infty}h_{ $\omega$}(xy) f(y)dy
+defines                 a
+                                          L^{2}((0, \infty), dx) to L^{2}((0, \infty), dx) (Lemma 4.1). For
+                              bounded operator from
+
+a>0 we denote by \mathrm{P}_{a} the orthogonal projection from L^{2}((0, \infty), dx) to L^{2}((0, a), dx)
+                ,                                                                                                                                                                                                                                                                                                                                 ,
+
+
+
+and define
+
+
+(2.6)                                                                \mathrm{H}_{ $\omega$,a}:=\mathrm{P}_{a}\mathrm{H}_{ $\omega$}\mathrm{P}_{a} : L^{2}((0, a), dx)\rightarrow L^{2}((0, a), dx)                                                                                               .
+
+
+
+
+A study of \mathrm{H}_{ $\omega$} and \mathrm{H}_{ $\omega$,a} yields a canonical system as follows:
+
+             Theorem 2.3.                                                                  Suppose that $\omega$>1                                                                .
+
+                                                                                                                                                                                           (It implies automatically that $\Theta$_{ $\omega$} is inner
+in \mathbb{C}^{+}.)         Then the operator \mathrm{H}_{ $\omega$,a} is                                                                          a        Hilbert‐Schmidt type self‐ adjoint operator with a
+continuous kernel for every a>1 , and \mathrm{H}_{ $\omega$,a}=0 for 0<a\leq 1                                                                                                                                                                                            .       Moreover 1\pm \mathrm{H}_{ $\omega$,a}                        are
+
+
+invertible for every a>0                                                                           .
+
+                                                                                                          Define
+
+
+                                                                                                            m(a):=m_{$\omega$}(a)=\displaystyle\frac{\det(1+\mathrm{H}_{$\omega$,a})}{\det(1-\mathrm{H}_{$\omega$,a})}
+by using Fredholm determinants.                                                                                                                     Then                       m(a) is real‐valued continuous function on
+(0, \infty)         ,
+                         and the canonical system
+
+
+
+
+                            -a\displaystyle\frac{\partial}{\partiala}\left\{\begin{aray}{l} X_{a}(z)\ Y_{a}(z) \end{aray}\right\}=z\left\{\begin{aray}{l} 0&-1\ 1&0 \end{aray}\right\}\displaystyle\left\{\begin{aray}{l} m(a)^{-2}&0\ 0&m(a)^{2} \end{aray}\right\}\left\{\begin{aray}{l} X_{a}(z)\ Y_{a}(z) \end{aray}\right\}(0<a<\infty)
+has the explicit solution (X_{a}, Y_{a})=(A_{a}, B_{a})                                                                                                                                    given by (4.26) in Section 4 such that
+408                                                                                            Masatoshi Suzuki
+
+
+
+
+(1) A(z) and B(z) are real entire functions as a function of z for every fixed a>0,
+
+(2) A_{a}(-z)=A(z) and B_{a}(-z)=-B(z) as a function of z for every fixed a>0,
+
+(3) (A_{1}(z), B_{1}(z))=(A^{ $\omega$}(z), B^{ $\omega$}(z)) and
+
+                                \displaystyle \lim_{a\rightarrow 1+}(A_{a}(z), B_{a}(z))=\lim_{a\rightarrow 1-}(A_{a}(z), B_{a}(z))=(A^{ $\omega$}(z), B^{ $\omega$}(z))
+        hold uniformly on every compact subset in \mathb {C} , where A^{ $\omega$}(z) and B^{ $\omega$}(z)                                                                                      are     real entire
+
+        functions defined in (1.1).
+
+Furthermore, the canonical system can be transfO rmed into the pair of Schödinger equa‐
+tions
+
+
+                                               (-a\displaystyle\frac{\partial}{\partiala} \displaystyle \frac{\partial}{\partial a}+V^{\pm}(a))$\psi$^{\pm}(a, z)=z^{2}$\psi$^{\pm}(a, z)
+                                                                     a
+
+
+
+
+with the pair of potentials
+
+
+
+
+                                 V^{\pm}(a)=(\displaystyle \frac{1}{m(a)}a\frac{\partial}{\partial a}m(a) ^{2}\mp a\frac{\partial}{\partial a}(\frac{1}{m(a)}a\frac{\partial}{\partial a}m(a)
+by taking $\psi$^{+}(a, z)=m^{-1}(a)A(z) and $\psi$^{-}(a, z)=m(a)B_{a}(z)                                                                                                   .
+
+
+
+
+         The assumption $\omega$>1 in Theorem 2.3 is required to obtain a continuity of the
+
+kernel        h(xy) in the proof in Section 4.3 and 4.4, since h(x) has a singularity at
+x=n\in \mathbb{Z}_{>0} for 0< $\omega$\leq 1 However, we observed that singularities at x=n\in \mathbb{Z}>0
+                                                                 .
+
+
+
+
+are    in L^{2}     exactly for $\omega$>1/2                             ,
+                                                                              and are in L^{1} for all $\omega$>0                                                  .    This implies that that the
+
+function h(x) on any interval [x_{0}, x_{1}] with 0<x_{0}<x_{1}<\infty lies in the same function
+
+spaces, and it affects the behavior of associated \mathrm{H}_{ $\omega$,a}                                                                     .   In fact, \mathrm{H}_{ $\omega$,a} is a Hilbert‐Schmidt
+
+type self‐adjoint operator such that 1\pm \mathrm{H}_{ $\omega$,a} are invertible for every a>0 if $\omega$>1/2
+(Lemma 4.2 and 4.4 below), and is a compact self‐adjoint operator for all $\omega$>0                                                                                                                               .   In
+
+addition, the type of singularities at x=n\in \mathbb{Z}>0 presumably affects the canonical
+system since it is given by determinants of 1\pm \mathrm{H}_{ $\omega$,a} if $\omega$>1.
+         On the other hand, as mentioned in Section 1.2 and 1.4, $\Theta$_{ $\omega$}(z) is an inner function
+in \mathbb{C}^{+} for all   $\omega$\geq 1/2 unconditionally, and for all $\omega$>0 under RH.
+         Therefore, it is plausible that all results of Theorem 2.3 can be extended to $\omega$>1/2
+unconditionally without essential difficulties. Moreover, it is expected that Theorem 2.3
+is generalized to $\omega$>0 if we assume RH for                                                                          $\zeta$(s)   .    See Section 5 for further comments
+on    the validity of Theorem 2.3.
+
+
+         Finally, we emphasize that the limit behavior \displaystyle \lim_{a\rightarrow+\infty}(A_{a}(z), B(z)) is still open
+even      if $\omega$>1     .    The expected result is                                                 \displaystyle \lim_{a\rightarrow+\infty}(E^{ $\omega$}(0), 0)=( $\xi$(\frac{1}{2}+ $\omega$), 0) if   we   note
+
+that E is normalized as E(0)=1 in Section 1.1.                                                                                      Provably, this limit behavior is related
+to the arithmetic                      properties of $\zeta$(s) in more deep level, because we need information
+                                                                        A canonical system 0F differential equations                                                                                                                                                                                                                               409
+
+
+
+for all \{c_{ $\omega$}(n)\}_{n\geq 1} to understand it differ from the situation that we need only finitely
+
+many c_{ $\omega$}(n) s to understand \mathrm{H}_{ $\omega$,a} for a finite range of a                                                                                                                                                                     .
+                                                                                                                                                                                                                                                                    However, we do not touch this
+problem further in this paper.
+
+
+                                                  §3.                             Proof of Proposition 2.1 and Theorems 2.2
+
+
+
+                                                                                                    §3.1.                                      Proof of Proposition 2.1
+
+        For convenience, we use variable s=1/2-iz                                                                                                                                                                                .      Put                     $\gamma$(s)=\displaystyle \frac{1}{2}s(s-1)$\pi$^{-s/2} $\Gamma$(s/2)              so
+
+
+that     $\xi$(s)= $\gamma$(s) $\zeta$(s)                                 .       Then
+
+
+
+
+                                                          \displaystyle\frac{$\gam a$(s-$\omega$)}{$\gam a$(s+$\omega$)}=$\pi$^{$\omega$}\frac{$\Gam a$(\frac{s-$\omega$}{2}+1)}{$\Gam a$(\frac{s+$\omega$}{2}+1)}-\frac{2$\omega\pi$^{$\omega$}{s+$\omega$-1}\frac{$\Gam a$(\frac{s-$\omega$}{2}+1)}{$\Gam a$(\frac{s+$\omega$}{2}+1)}.
+We have
+
+
+
+(3.1)
+                                                                        \displaystyle\frac{$\Gam a$(\frac{s-$\omega$}{2}+1)}{$\Gam a$(\frac{s+$\omega$}{2}+1)}=\frac{2}{$\Gam a$($\omega$)}\int_{0}^{1}x^{2-$\omega$}(1-x^{2})^{$\omega$-1}x^{s}\frac{dx}{x}
+for \Re(s+2)> $\omega$>0 by [23,                                                                                       (5.35) of p.195], and
+
+(3.2)
+                                                                                                                           \displaystyle \frac{1}{s+ $\omega$-1}=\int_{0}^{1}x^{ $\omega$-1}x^{s}\frac{dx}{x}
+for \Re(s)>1- $\omega$                                .
+
+                                                               Applying Theorem 44 of [28] to (3.1) and (3.2) together with
+
+
+                              \displaystyle\frac{2}{$\Gam a$($\omega$)}\int_{y}^{1}x^{2-$\omega$}(1-x^{2})^{$\omega$-1}(y/x)^{$\omega$-1}\frac{dx}{x}=\frac{y^{$\omega$-1} {$\Gam a$($\omega$)}$\beta$(y^{2},\frac{3}{2}-$\omega$, $\omega$)                                                                                                   ,
+
+
+
+
+we    obtain
+
+
+                                                                         \displaystyle\int_{0}^{\infty}g_{$\omega$}(x)x^{s}\frac{dx}{x}=\int_{0}^{1}g_{$\omega$}(x)x^{s}\frac{dx}{x}=\frac{$\gam a$(s-$\omega$)}{$\gam a$(s+$\omega$)}
+for \displaystyle \Re(s)>\max( $\omega$-2,1- $\omega$)                                                                 .       On the other hand, we have
+
+
+
+
+                 \displaystyle\frac{$\zeta$(s-$\omega$)}{$\zeta$(s+$\omega$)}=\sum_{m=1}^{\infty}\frac{$\mu$(m)m^{-$\omega$}{m^{s}\sum_{n=1}^{\infty}\frac{n^{$\omega$}{n^{s}=\sum_{n=1}^{\infty}\frac{1}{n^{s}\sum\frac{$\mu$(d)}{d^{$\omega$}(\frac{n}{d})^{$\omega$}=\sum_{n=1}^{\infty}\frac{c_{$\omega$}(n)}{n^{s}
+                                                                                                                                                                                                                                             d|n
+
+
+by definition (2.1), where the series converges absolutely for \Re(s)>1+ $\omega$ By definition                                                                                                                                                                                                                                            .
+
+
+
+
+(2.3), we have formally
+
+
+          \displaystyle \int_{0}^{\infty}h_{ $\omega$}(x)x^{1-s}\frac{dx}{x}=\sum_{n=1}^{\infty}c_{ $\omega$}(n)\int_{0}^{\infty}x^{-1}g_{ $\omega$}(n/x)x^{1-s}\frac{dx}{x}
+                                                                   =\displaystyle\sum_{n=1}^{\infty}\frac{c_{$\omega$}(n)}{n^{s}\int_{0}^{\infty}g_{$\omega$}(n/x)(n/x)^{s}\frac{dx}{x}=\frac{$\gam a$(s-$\omega$)}{$\gam a$(s+$\omega$)}\frac{$\zeta$(s-$\omega$)}{$\zeta$(s+$\omega$)},
+410                                                                                                   Masatoshi Suzuki
+
+
+
+and it is justified by Fubinis theorem for \Re(s)>1+ $\omega$                                                                                                   .
+
+                                                                                                                                                                      Replacing s by 1/2-iz                     ,
+                                                                                                                                                                                                                    we
+
+
+obtain (2.4).
+
+
+                                                                        §3.2.                    Proof of Theorem 2.2
+
+
+
+          It is sufficient to prove the following three assertions:
+
+i) condition (1) is equivalent that $\Theta$_{ $\omega$} is inner in \mathbb{C}^{+} ii) condition (2) implies that $\Theta$_{ $\omega$}              ,
+
+
+
+is inner in \mathbb{C}^{+} and iii) condition (3) implies that $\Theta$_{ $\omega$} is inner in \mathbb{C}^{+} since (1) implies
+                                  ,                                                                                                                                                             ,
+
+
+
+
+(2) and (3) by definition of \hat{$\Theta$}_{$\omega$} and h_{ $\omega$} We prove them after the following lemma.
+                                                                                                               .
+
+
+
+
+          Lemma 3.1.                                      Assume that $\Theta$_{ $\omega$}H^{2}\subset H^{2}                         .     Then $\Theta$_{ $\omega$} is inner in \mathbb{C}^{+}.
+
+
+
+     Proof. Let $\delta$>0 We find that $\Theta$_{ $\omega$}(z) is uniformly bounded on the upper half‐
+                                                               .
+
+
+
+
+plane \Im(z)\geq 1/2+ $\omega$+ $\delta$ by using a usual estimate for the Dirichlet series $\zeta$(s- $\omega$)/ $\zeta$(s+ $\omega$)
+and the Stirling formula for the gamma‐function. On the other hand, we know (1.9), and
+
+the assumption implies that $\Theta$_{ $\omega$} has no poles in \mathbb{C}^{+}                                                                 .
+                                                                                                                                                    Hence, by applying the Phragmén‐
+Lindelöf convexity principle to $\Theta$_{ $\omega$} in the strip                                                                   0\leq\Im(z)\leq 1/2+ $\omega$+ $\delta$ we find that $\Theta$_{ $\omega$}
+                                                                                                                                                                                                    ,
+
+
+
+is bounded on              0\leq\Im(z)\leq 1/2+ $\omega$+ $\delta$                                         .       Therefore $\Theta$_{ $\omega$} is a bounded analytic function is
+\mathbb{C}^{+} satisfying (1.9). This is the definition of an inner function in \mathbb{C}^{+}.                                                                                                                        \square
+
+
+     i) Suppose that $\Theta$_{ $\omega$} is inner in \mathbb{C}^{+} Then $\Theta$_{ $\omega$}F\in H^{2} for every F\in H^{2}
+                                                                                                                   .                                                                                    .   Thus the
+inverse (shifted) Fourier transform along the line \Im(z)=c
+
+
+
+
+                                                           \displaystyle \hat{ $\Theta$}_{ $\omega$}f(x)=\frac{1}{2 $\pi$}\int_{\Im(z)=c}$\Theta$_{ $\omega$}(z)F(z)x^{-\frac{1}{2}-iz}dz
+is independent of c>0 , and belongs to L^{2}((1, \infty), dx) , where
+                                                                                                                                                                            f=\mathrm{F}_{1/2}^{-1}F and the integral
+converges in the sense of L^{2}                                             .    On the other hand
+
+
+
+                                                    (h_{ $\omega$}*f)(x)=\displaystyle \frac{1}{2 $\pi$}\int_{\Im(z)=c'}$\Theta$_{ $\omega$}(z)F(z)x^{-\frac{1}{2}-iz}dz
+for c'>1/2+ $\omega$ by Proposition 2.1 and [28, Theorem 65], where the integral converges
+also in the sense of L^{2} Comparing these two formula for large c we obtain (1).
+                                                           .
+                                                                                                                                                                                            ,
+
+
+
+     Conversely, suppose that (1) holds. Write g=\hat{ $\Theta$}_{ $\omega$}f=h_{ $\omega$}*f for arbitrary fixed
+f\in L^{2}((1, \infty), dx) Then g belongs to L^{2}((0, \infty), dx) since \hat{$\Theta$}_{$\omega$} maps L^{2}((0, \infty), dx) to
+                                            .
+                                                                                                                                                         ,
+
+
+
+
+L^{2}((0, \infty), dx) by definition. In addition, g has a support in [1, \infty ), since both h_{ $\omega$} and f
+have support in [1, \infty ). Therefore g belongs to L^{2}((1, \infty), dx) Because f was arbitrary,                                                                          .
+
+
+
+
+we     have $\Theta$_{ $\omega$}H^{2}\subset H^{2}    .        Hence $\Theta$_{ $\omega$} is inner in \mathbb{C}^{+} by Lemma 3.1.                                                                                  \square
+
+
+          ii) Suppose that (2) holds.                                                         Then it                   implies \hat{ $\Theta$}_{ $\omega$}L^{2}((1, \infty), dx)\subset L^{2}((1, \infty), dx)               ,
+
+
+
+since       \hat{$\Theta$}_{$\omega$} maps L^{2}((0, \infty), dx)                 to      L^{2}((0, \infty), dx) by its definition. It means $\Theta$_{ $\omega$}H^{2}\subset H^{2}
+by definition of \hat{$\Theta$}_{$\omega$}      .    Hence $\Theta$_{ $\omega$} is inner in \mathbb{C}^{+} by Lemma 3.1                                                                                             \square
+                                                  A canonical system 0F differential equations                                                                                                                          411
+
+
+
+
+       iii) Suppose that (3) holds. Then h_{ $\omega$}*f belongs to L^{2}((1, \infty), dx) for every f in
+L^{2}((1, \infty), dx) since h_{ $\omega$}*f has a support in [1, \infty ) by its definition. Therefore
+                                   ,
+
+
+
+
+                                                                        \displaystyle \int_{0}^{\infty}h_{ $\omega$}*f(x)x^{\frac{1}{2}+iz}\frac{dx}{x}\in H^{2}
+Additionally,                          we        suppose                   that              f belongs                              to         the                dense         subset         L^{1}((1, \infty), dx)
+\cap L^{2}((1, \infty), dx)             .   Then
+
+
+
+                                                              \displaystyle \int_{0}^{\infty}h_{ $\omega$}*f(x)x^{\frac{1}{2}+iz}\frac{dx}{x}=$\Theta$_{ $\omega$}(z)F(z)
+for \Im(z)>1/2+ $\omega$ by [28, Theorem 44]. Therefore
+
+
+                                        \hat{ $\Theta$}_{ $\omega$}(L^{1}( 1, \infty), dx)\cap L^{2}( 1, \infty), dx) \subset L^{2}( 1, \infty), dx)                                      ,
+
+
+
+
+This        implies that \hat{ $\Theta$}_{ $\omega$}L^{2}((1, \infty), dx)\subset L^{2}((1, \infty), dx)                                                   ,
+                                                                                                                                                                 since      \hat{$\Theta$}_{$\omega$} is continuous by its
+definition. Therefore $\Theta$_{ $\omega$}H^{2}\subset H^{2} by definition of \hat{ $\Theta$}_{ $\omega$} , and hence $\Theta$_{ $\omega$} is inner in \mathbb{C}^{+} by
+Lemma 3.1.                                                                                                                                                                                                                 \square
+
+
+
+                                                                       §4.               Proof of Theorem 2.3
+
+
+          In this section, we study operators                                                               (2.5), (2.6), and their kernels toward Theorem
+2.3 referring to Burnol                                      [6].       However here we use classical arguments rather than the
+
+theory of distributions used in [6].
+
+                                                          §4.1.                  Fredholm integral equations
+
+          Lemma 4.1.                                  Suppose that $\Theta$_{ $\omega$} is inner in \mathbb{C}^{+}                                 .
+
+                                                                                                                                                               Define Hf by integral (2.5) for
+compactly supported smooth functions f                                                                     .     Then Hf                           belongs to L^{2}((0, \infty), dx)                     ,
+                                                                                                                                                                                                             and the
+
+linear map f\mapsto \mathrm{H}_{ $\omega$}f is extended to the isometry \mathrm{H}_{ $\omega$}                                                         :
+                                                                                                                                                               L^{2}((0, \infty), dx)\rightarrow L^{2}((0, \infty), dx)
+satisfy ing
+
+(4.1)                                                             (\mathrm{F}_{1/2}\mathrm{H}_{ $\omega$}f)(z)=$\Theta$_{ $\omega$}(z)(Ff)(z)
+forz\in \mathbb{R}     .
+                            Moreover, (4.1) holds for \Im(z)\geq 0 if f\in L^{2}((0, \infty), dx) has a support in              ,
+
+
+
+
+[0, b] for some b>0.
+          Remark.                       This is applied unconditionally to                                                                    $\omega$\geq 1/2          ,
+                                                                                                                                                                            and also to 0< $\omega$<1/2
+under RH by discussion in Section 1.2 and 1.4.
+
+
+          Proof.               If f is a compactly supported smooth function, we have
+
+
+
+   (\displaystyle\mathrm{F}_{1/2}\mathrm{H}_{$\omega$}f)(z)=\int_{0}^{\infty}\int_{0}^{\infty}h_{$\omega$} (xy) x^{\frac{1}{2}+iz}\displaystyle \frac{dx}{x}f(y)dy
+                                                   =\displaystyle \int_{0}^{\infty}h_{ $\omega$}(y)x^{\frac{1}{2}+iz}\frac{dx}{x}\int_{0}^{\infty}f(y)y^{\frac{1}{2}-iz}\frac{dy}{y}= $\Theta$(z)F(-z) (F=\mathrm{F}_{1/2}f)
+412                                                                                     Masatoshi Suzuki
+
+
+
+for \Im(z)>1/2+ $\omega$ by Proposition 2.1, and F(z) is an entire function satisfying
+F(-z)=O(|z|^{-n}) as |z|\rightarrow\infty in any horizontal strip c_{1}\leq\Im(z)\leq c_{2} for arbitrary fixed
+n>0        .
+               Therefore, we find that Hf belongs to L^{2}((0, \infty), dx) by applying the Fourier
+inversion formula to $\Theta$_{ $\omega$}(z)F(z) along a line \Im(z)=c>1/2+ $\omega$ and then moving the
+
+path of integration to the real line \Im(z)=0                                                                   ,
+                                                                                                                     since $\Theta$_{ $\omega$} is inner in \mathbb{C}^{+}        by assumption.
+Moreover
+
+                                                      \Vert \mathrm{H}_{ $\omega$}f\Vert=\Vert$\Theta$_{ $\omega$}(\cdot)F(-\cdot)\Vert=\Vert F\Vert=\Vert f\Vert
+by (1.9). Recall that the set of all compactly supported smooth function in L^{2}((0, \infty), dx)
+is dense in L^{2}((0, \infty), dx)                     .   Therefore f\mapsto \mathrm{H}_{ $\omega$}f is extended to all f\in L^{2}((0, \infty), dx) by
+
+continuity, and the extended operator is obviously isometric.
+        Equality (4.1) holds for real z by the continuity. Suppose that f\in L^{2}((0, \infty), dx)
+has a support in                       [0, b] for some b>0                                    .     Then              Hf belongs to L^{2}((0, \infty), dx) and has
+a    support in [1/b, \infty ).                     Therefore the left‐hand side of                                                              (4.1) is defined by the shifted
+Fourier integral and analytic in \mathbb{C}^{+}                                     .   On the other hand, (Ff)(z) in the right‐hand
+side of (4.1) is also defined by the shifted Fourier integral and analytic in \mathbb{C}^{+} , since f has
+
+a    support in [0, b] by the assumption. Hence both sides of (4.1) are analytic functions
+in \mathbb{C}^{+} , and they are equal on the real line. Thus equality (4.1) holds for \Im(z)\geq 0.                                                                                                           \square
+
+
+        Lemma 4.2.                             Suppose that $\omega$>1/2                                   .
+
+                                                                                                                  (It implies automatically that $\Theta$_{ $\omega$} is inner
+in \mathbb{C}^{+}.) Then the operator \mathrm{H}_{ $\omega$,a}=\mathrm{P}_{a}\mathrm{H}_{ $\omega$}\mathrm{P}_{a} defined in (2.6) is a self‐ adjoint Hilbert‐
+
+Schmidt type operator if a>1 and \mathrm{H}_{ $\omega$,a}=0 if 0<a\leq 1.
+                                                                     ,
+
+
+
+
+         Proof.            If 0<a\leq 1 and 0<x<a , we have
+
+
+
+                                                        \displaystyle \mathrm{H}_{ $\omega$}\mathrm{P}_{a}f(x)=\int_{0}^{a}h_{ $\omega$}(xy)f(y)dy=0,
+since h_{ $\omega$}(x)=0 for 0<x<1 , and 0\leq xy<a^{2}\leq 1                                                                      .    Hence \mathrm{H}_{ $\omega$,a}=0 if 0<a\leq 1.
+
+        Denote by K(x, y)=h_{ $\omega$}(xy) the kernel of \mathrm{H}_{ $\omega$,a}                                                  .   We have                     K(x, y)=\overline{K(y,x)} since       ,
+
+
+
+
+h_{ $\omega$}(xy) is real‐valued. Thus \mathrm{H}_{ $\omega$,a} is self‐adjoint. For a>1 we have                                                      ,
+
+
+
+
+           \displaystyle \int_{0}^{a}\int_{0}^{a}|K(x, y)|^{2}dxdy=\int_{1/a}^{a}\int_{1/a}^{a}|h_{ $\omega$}(xy)|^{2}dxdy
+                                                                 \displaystyle \leq\int_{1/a}^{a}\frac{dy}{y}\int_{1/a^{2} ^{a^{2} |h_{ $\omega$}(x)|^{2}dx=2\log a\int_{1}^{a^{2} |h_{ $\omega$}(x)|^{2}dx.
+Here
+          \displaystyle \int_{1}^{a^{2} |h_{ $\omega$}(x)|^{2}dx<\infty if $\omega$>1/2 since h(x) has only finitely many singularities
+                                                                                          ,
+
+
+
+at    x=n(1\leq n\leq\lfloor a^{2}\rfloor) in [ 1, a^{2}]                      ,
+                                                                                   and h_{ $\omega$}(x)\ll|x-n|^{ $\omega$-1} around x=n by (2.2) and
+
+(2.3). Hence, K(x, y)=h_{ $\omega$}(xy) is a Hilbert‐Schmidt kernel if a>1 and $\omega$>1/2.                                                                                                                   \square
+
+
+        Lemma 4.3.                            Let a>0                    .
+                                                                             Suppose that $\omega$>1/2                                       .     Then the support of HPf is
+
+not compact for                    f\in L^{2}((0, \infty), dx) unless HPf =0.
+                                                                      A canonical system 0F differential equations                                                                                                                                                                                    413
+
+
+
+
+                Proof.                        We prove this by contradiction.                                                                                   Suppose that HPf \neq 0 and has a com‐
+pact support. Then FHPf is an entire function of exponential type by the Paley‐
+Wiener theorem. On the other hand, we have
+
+
+                                                                                     \mathrm{F}_{1/2}\mathrm{H}_{ $\omega$}\mathrm{P}_{a}f(z)=$\Theta$_{ $\omega$}(z) \mathrm{F}_{1/2}\mathrm{P}_{a}f(-z)                 .
+
+
+
+
+This implies that G(z) :=\displaystyle \mathrm{P}_{a}f(-z)/ $\xi$(\frac{1}{2}+ $\omega$-iz) is entire, because (1.2) holds uncondi‐
+tionally for the denominator E(z)= $\xi$(\displaystyle \frac{1}{2}+ $\omega$-iz) of $\Theta$_{ $\omega$} defined in (1.7), and E(z)\neq 0
+on
+           \Im(z)=0 Thus, we have         .
+
+
+
+
+                                                                                   \displaystyle \mathrm{F}_{1/2}\mathrm{H}_{ $\omega$}\mathrm{P}_{a}f(z)= $\xi$(\frac{1}{2}- $\omega$-iz)\cdot G(z)                          ,
+
+
+
+
+where the right‐hand side is a product of entire functions. The point is that the zeros
+in the numerator of $\Theta$_{ $\omega$} can not kill the poles of the denominator, which therefore must
+
+be killed by zeros of \mathrm{P}_{a}f(-z)                                                               .
+
+
+                                                                                                                $\xi$(\displaystyle \frac{1}{2}- $\omega$-iz) to be factored out.
+                                                                                                                This allows
+
+                The entire function on                                                          the right‐hand side has at least \displaystyle \frac{1}{ $\pi$}T\log T        in the disk of                                                     zeros
+
+
+radius T around the origin, as T\rightarrow\infty ([27, Theorem 9.4]). However all entire functions
+
+of exponential type have at most             O(T) zeros in the disk of radius T around the origin,
+as T\rightarrow\infty because of the Jensen formula
+                                    ,               ( [20, §2.5 (15)] ) This is a contradiction. (The                                                                                                  .
+
+
+
+
+proof contained an error in the first version, but it was revised by the reviewer.)                 \square
+
+
+                Lemma 4.4.                      $\omega$>1/2 and a>1 We have i) \mathrm{H}_{ $\omega$,a}f=0 for every f\in
+                                                                           Let                                                                                     .
+
+
+
+
+ L^{2}((0,1/a), dx) ii ) \Vert \mathrm{H}_{ $\omega$,a}f\Vert<\Vert f\Vert for every 0\neq f\in L^{2}((0, a), dx) and iii) \Vert \mathrm{H}_{ $\omega$,a}\Vert<1.
+                                                      ,                                                                                                                                                                                  ,
+
+
+
+In particular, 1\pm \mathrm{H}_{ $\omega$,a} are invertible operator on L^{2}((0, a), dx)                                                                                                                                     .
+
+
+
+
+                Proof.                        If 0<x<1/a , we have
+
+
+
+                                                                                          \displaystyle \mathrm{H}_{ $\omega$}\mathrm{P}_{a}f(x)=\int_{0}^{a}h_{ $\omega$}(xy)f(y)dy=0,
+since h_{ $\omega$}(x)=0 for 0<x<1 , and 0\leq xy<1                                                                                                                .       Hence i) is proved.
+
+                To prove ii), it is sufficient to show \Vert \mathrm{H}_{ $\omega$,a}f\Vert\neq\Vert f\Vert unless                                                                                                            f=0 because \Vert \mathrm{H}_{ $\omega$}\Vert=1,
+                                                                                                                                                                                                                                             ,
+
+
+
+
+\Vert \mathrm{H}_{ $\omega$,a}\Vert\leq\Vert \mathrm{P}_{a}\Vert\cdot\Vert \mathrm{H}_{ $\omega$}\Vert\cdot\Vert \mathrm{P}_{a}\Vert=1 and \Vert \mathrm{H}_{ $\omega$,a}f\Vert\leq\Vert \mathrm{H}_{ $\omega$,a}\Vert\cdot\Vert f\Vert\leq\Vert f\Vert Here \Vert \mathrm{H}_{ $\omega$,a}f\Vert\neq\Vert f\Vert
+                                                                                                            ,
+                                                                                                                                                                                                                                     .
+
+
+
+
+is equivalent to \Vert \mathrm{P}_{a}\mathrm{H}_{ $\omega$}f\Vert\neq\Vert f\Vert since Pf =f for f\in L^{2}((0, a), dx)
+                                                                                                                   ,
+                                                                                                                                                                                                                                                           .
+                                                                                                                                                                                                                                                                  Suppose that
+\Vert \mathrm{P}_{a}\mathrm{H}_{ $\omega$}f\Vert=\Vert f\Vert for some 0\neq f\in L^{2}((0, a), dx) Then it implies \Vert \mathrm{P}_{a}\mathrm{H}_{ $\omega$}f\Vert=\Vert \mathrm{H}_{ $\omega$}f\Vert by
+                                                                                                                                                                       .
+
+
+
+
+\Vert \mathrm{H}_{ $\omega$}f\Vert=\Vert f\Vert Therefore
+                                               .
+
+
+
+
+                                                                                       \displaystyle \int_{0}^{a}|\mathrm{H}_{ $\omega$}f(x)|^{2}dx=\int_{0}^{\infty}|\mathrm{H}_{ $\omega$}f(x)|^{2}dx.
+Thus \mathrm{H}_{ $\omega$}f(x)=0 for almost every x>a                                                                                         .     On the other hand, we have
+
+
+
+
+                                                          \displaystyle \mathrm{H}_{ $\omega$}f(x)=\int_{0}^{a}h_{ $\omega$}(xy)f(y)dy=\int_{1/x}^{a}h_{ $\omega$}(xy)f(y)dy=0
+414                                                                                         Masatoshi Suzuki
+
+
+
+for 0<x<1/a by f\in L^{2}((0, a), dx)                                                         .       Hence Hf has a compact support contained in
+
+[1/a, a] However, it is impossible for any f\neq 0 by Lemma 4.3. As the consequence
+             .
+
+
+
+
+\Vert \mathrm{H}_{ $\omega$,a}f\Vert<\Vert f\Vert for 0\neq f\in L^{2}((1/a, a), dx)                              .
+
+
+
+
+                        Finally, we prove iii). By Lemma 4.2, \mathrm{H}_{ $\omega$,a} is a self‐adjoint compact operator.
+Therefore, \mathrm{H}_{ $\omega$,a} has purely discrete spectrum which has no accumulation points except
+for 0 and one \mathrm{o}\mathrm{f}\pm\Vert \mathrm{H}_{ $\omega$,a}\Vert is an eigenvalue of \mathrm{H}_{ $\omega$,a} However, by ii), every eigenvalue of
+        ,
+                                                                                                                                           .
+
+
+
+
+\mathrm{H}_{ $\omega$,a} has an absolute value less than 1. Hence \Vert \mathrm{H}_{ $\omega$,a}\Vert<1.                                                \square
+
+
+        Lemma 4.5.                     Let $\omega$>1/2, a>1 and $\epsilon$\in\{\pm 1\}                                                                     .      Then the integral equation
+
+
+
+(4.2)
+                                                X(x)+ $\epsilon$\displaystyle \int_{0}^{a}h_{ $\omega$}(xy)X(y)dy=h_{ $\omega$}(ax)
+has unique solution X=$\phi$_{a}^{ $\epsilon$} in L^{2}((0, a), dx) , which is real‐valued almost everywhere in
+
+[0, a] and vanishes almost everywhere in [0, 1/a].
+      Moreover, if $\omega$>1 the solution $\phi$_{a}^{$\epsilon$} is a real‐valued continuous function on [0, a]
+                                               ,
+
+
+
+vanishing on [0, 1/a].
+
+
+        Proof.By Lemmas 4.2 and 4.4, \mathrm{H}_{ $\omega$,a} is a compact operator such that \pm 1 be‐
+long to its resolvent set. Therefore, integral equation (4.2) has unique solution $\phi$_{a}^{$\epsilon$} in
+L^{2}((0, a), dx) by the Fredholm alternative. We have h_{ $\omega$}(ax)=0 and \displaystyle \int_{0}^{a}h_{ $\omega$}(xy)$\phi$_{a}^{ $\epsilon$}(y)dy
+=0 for almost every 0<x<1/a , since 0<xy<1 for 0<y\leq a , and h_{ $\omega$}(x)=0 for
+
+0<x<1.
+        On the other hand, if $\omega$>1                                           ,
+                                                                                        the integral                                 \displaystyle \int_{0}^{a}h_{ $\omega$}(xy)f(y)dy defines                                 a   continuous
+
+function on [0, a] which vanishes on [0, 1/a] for every f\in L^{2}((0, a), dx) , since the kernel
+
+h_{ $\omega$}(xy) is continuous on [0, a]\times[0, a] by (2.2). Hence $\phi$_{a}^{$\epsilon$} is continuous on [0, a] and
+$\phi$_{a}^{ $\epsilon$}(x)=0 for 0\leq x\leq 1/a Obviously $\phi$_{a}^{$\epsilon$} is real‐valued, since h(x) is real‐valued, \square
+                                                       .
+
+
+
+
+        Lemma 4.6.                     Let            $\omega$>1/2, a>1 and $\epsilon$\in\{\pm 1\}                                                                    .        Then the     integral equation
+(4.2) has unique extended solution X=\tilde{ $\phi$}_{a}^{ $\epsilon$} in L^{2}((0, b), dx) for arbitrary b>a                                                                                                                       ,
+                                                                                                                                                                                                                                        which is
+
+real‐valued almost everywhere in                                                [0, b]
+                                                         \tilde{ $\phi$}_{a}^{ $\epsilon$}(x)=$\phi$_{a}^{ $\epsilon$}(x) for almost every 0<x<a.
+                                                                                                  ,
+                                                                                                      and
+
+      Moreover, if $\omega$>1 the integral equation (4.2) has unique extended solution X=\tilde{ $\phi$}_{a}^{ $\epsilon$}
+                                          ,
+
+
+
+in C^{0}(0, \infty) which is real‐valued
+                     ,                      [0, \infty ) and satisfies \tilde{ $\phi$}_{a}^{ $\epsilon$}(x)=$\phi$_{a}^{ $\epsilon$}(x) for0<x<a.
+                                                                                 on
+
+
+
+
+        Proof.           The solution $\phi$_{a}^{ $\epsilon$} of Lemma 4.5 is extended to the solution                                                                                      \tilde{$\phi$}_{a}^{$\epsilon$}   on
+                                                                                                                                                                                                                                        (0, b) by
+
+(4.3)
+                                              \displaystyle \tilde{ $\phi$}_{a}^{ $\epsilon$}(x)=h_{ $\omega$}(ax)- $\epsilon$\int_{0}^{a}h_{ $\omega$}(xy)$\phi$_{a}^{ $\epsilon$}(y)dy.
+The right‐hand side belongs to L^{2}((0, b), dx) by the Cauchy‐Schwartz inequality, since
+
+h(x) belongs to L^{2}((0, b'), dx) for every 0<b'<\infty when $\omega$>1/2 and the integral on
+the right‐hand side vanishes for almost every 0<x<1/a Clearly, \tilde{ $\phi$}_{a}^{ $\epsilon$}(x)=$\phi$_{a}^{ $\epsilon$}(x) for                                       .
+                                      A canonical system 0F differential equations                                                                                                                                                                         415
+
+
+
+almost every 0<x<a                           .
+
+                                                 Conversely, equality (4.3) shows that every solution of (4.2) on
+(0, b) is determined by its restriction on (0, a)                                                            .   Hence the uniqueness of solutions follows
+
+from Lemma 4.5.                    By the way of the extension, \tilde{$\phi$}_{a}^{$\epsilon$} is real‐valued almost everywhere.
+        If $\omega$>1 ,       we   obtain unique extended continuous solution                                                                                          \tilde{$\phi$}_{a}^{$\epsilon$}       on
+                                                                                                                                                                                                                      (0, \infty) by (4.3),
+since h_{ $\omega$}(x) is continuous on (0, \infty) and C^{0}(0, a)\subset L^{2}((0, a), dx)                                                                                    .                                                                               \square
+
+
+        In what follows, we denote by $\phi$_{a}^{ $\epsilon$} the extended solution                                                                      \tilde{$\phi$}_{a}^{$\epsilon$} for a>1 if                        no   confusion
+arise. For 0<a\leq 1 , we take the convention that
+
+
+                                                 $\phi$_{a}^{+}(x)=$\phi$_{a}^{-}(x)=h_{ $\omega$}(ax) x\in(0, \infty)                                             .
+
+
+
+
+Obviously, these are continuous on (0, \infty) if $\omega$>1                                                                  .   This convention is compatible with
+Lemma 4.5 and 4.6, since integral equation (4.2) for 0<a\leq 1 should be X(x)=h_{ $\omega$}(ax)
+
+by Lemma 4.2, and h_{ $\omega$}(ax)=0 on (0, a) for 0<a\leq 1                                                                                    .    Then its extension                                                         \tilde{ $\phi$}_{a}^{ $\epsilon$}(x) to
+(0, \infty) should be h_{ $\omega$}(ax) by (4.3).
+
+                                          §4.2.                Differentiability of the solution
+        In this part,              we      handle the                      differentiability of the extended solution $\phi$_{a}^{ $\epsilon$}(x) with
+respect to x and a under the restriction to the parameter $\omega$>1                                                                                                                                     .    This restriction is
+
+required in order to obtain the continuity of the kernel K(x, y)=h_{ $\omega$}(xy)                                                                                                                                      .
+
+
+
+
+        Let a>1           .    The solution $\phi$_{a}^{ $\epsilon$} of(4.2) is related to the kernel of the resolvent (1−
+$\lambda$ \mathrm{H}_{ $\omega$,a})^{-1} as follows. The kernel K(x, y)=h_{ $\omega$}(xy) of \mathrm{H}_{ $\omega$,a} is continuous on [0, a]\times[0, a]
+by the assumption $\omega$>1 Then there exists a continuous function R(x, y; $\lambda$;a) for
+                                                       .
+
+
+
+
+(x, y, $\lambda$)\in[0, a]\times[0, a]\times \mathbb{C} satisfying integral equations
+
+
+(4.4)
+                                R(x, y; $\lambda$;a)- $\lambda$\displaystyle \int_{0}^{a}K(x, z)R(z, y; $\lambda$;a)dz=K(x, y)                                                                                ,
+
+
+
+
+                                R(x, y; $\lambda$;a)- $\lambda$\displaystyle \int_{0}^{a}K(z, y)R(x, z; $\lambda$;a)dz=K(x, y)
+(see Smithies [25, Chap. V], Lax [19, Chap. 24], for example). By taking y=a and
+$\lambda$=- $\epsilon$ in the first equation of (4.4), we have
+
+
+
+                               R(x, a;- $\epsilon$;a)+ $\epsilon$\displaystyle \int_{0}^{a}h_{ $\omega$}(xz)R(z, a;- $\epsilon$;a)dz=h_{ $\omega$}(ax)                                                            .
+
+
+
+
+Therefore, we obtain
+
+(4.5)                                                                   $\phi$_{a}^{ $\epsilon$}(x)=R(x, a;- $\epsilon$;a)
+for 0<x<a by the uniqueness of solutions of                                                                                       (4.2).             In        particular, we obtain the
+continuity of $\phi$_{a}^{ $\epsilon$}(x) for x again, and
+
+(4.6)                                             \displaystyle \lim_{a\rightar ow 1+}$\phi$_{a}^{ $\epsilon$}(a)=\lim_{a\rightar ow 1+}R(a, a;- $\epsilon$;a)=0
+416                                                                                                                                                      Masatoshi Suzuki
+
+
+
+
+by Lemma 4.2. We investigate the differentiability of $\phi$_{a}^{ $\epsilon$}(x) by using the resolvent kernel
+R(x, y; $\lambda$;a)    .       The following inequality is going to be used often.
+
+Hadamards                              inequality (see [25, Theorem 5.2.1], for example).                                                                                                                                                                                                                                Let A=(a_{ij}) be a
+
+n\times n   complex matrix. If |a_{ij}|\leq M(1\leq i, j\leq n)                                                                                                                                                             ,
+                                                                                                                                                                                                                                  then |\det A|^{2}\leq n^{n}M^{2n}.
+
+        We introduce the notation
+
+
+
+
+as
+                       K\left(\begin{aray}{ll}x_{1},x_{2}&\cdots&x_{n}\ y_{1},y_{2}&\cdots&y_{n}\end{aray}\right)=\det\left(\begin{aray}{ll}K(x_{1},y_{1})K(x_{1},y_{2})&\cdots&K(x_{1},y_{n})\ K(x_{2},y_{1})K(x_{2},y_{2})&\cdots&K(x_{2},y_{n})\ \vdots\vdots&\dots&\vdots\ \vdotsK(x_{n},y_{1})K(x_{n},y_{2})\cdot&.\cdot&K(x_{n},y_{n})\end{aray}\right)
+      usual. The Fredholm determinant d( $\lambda$;a) and the first Fredholm minor D(x, y; $\lambda$;a)
+of the continuous kernel K(x, y) on $\Omega$_{a}=[0, a]\times[0, a] are defined as follows:
+
+
+
+(4.7)
+                                                                                                                    d($\lambda$;a)=\displaystyle\sum_{n=0}^{\infty}d_{n}(a)$\lambda$^{n},
+(4.8)
+                                                                                                       D(x, y; $\lambda$;a)=\displaystyle \sum_{n=0}^{\infty}D_{n}(x, y;a)$\lambda$^{n},
+where d_{0}(a)=1, D_{0}(x, y;a)=K(x, y) and
+
+
+
+(4.9)
+                 d_{n}(a)=\displaystyle\frac{(-1)^{n} {n!}\int_{0}^{a}\cdots\int_{0}^{a}K\left(\begin{ar ay}{ll} x_{1},x_{2}&\cdots&x_{n}\ x_{1},x_{2}&\cdots&x_{n} \end{ar ay}\right)dx_{l}\displaystyle\ldotsdx_{n}(n\geq1)                                                                                                                                   ,
+
+
+
+
+(4.10)
+                    D_{n}(x, y;a)=\displaystyle \frac{(-1)^{n} {n!}\int_{0}^{a}\cdots\int_{0}^{a}K(_{y,x_{1}'}^{x,x_{1} ,\cdot\cdot x_{n}x_{n)}                                                                                                                                        dx 1.                     .    .
+                                                                                                                                                                                                                                                                                                                          dx_{n}                          (n\geq 1)   .
+
+
+
+
+The kernel D_{n}(x, y;a)                                                          are                 clearly continuous in (x, y)                                                                                                                .       It is well‐known that the series
+
+(4.8) converges uniformly and absolutely in (x, y, $\lambda$) when $\lambda$ is confined in a compact
+subset of \mathb {C} and D(x, y; $\lambda$;a) is a continuous function on $\Omega$_{a} for every $\lambda$\in \mathbb{C} (see [25,
+                       ,
+
+
+
+Theorem 5.3.1], for example). If d( $\lambda$;a)\neq 0 the resolvent kernel R(x, y; $\lambda$;a) is given                                                                                         ,
+
+
+
+by
+
+(4.11)
+                                                                                                                    R(x, y; $\lambda$;a)=\displaystyle \frac{D(x,y; $\lambda$;a)}{d( $\lambda$;a)}.
+Note that d(\pm 1;a)\neq 0 for every a>1 when K(x, y)=h_{ $\omega$}(xy) and $\omega$>1/2 by Lemma
+
+4.4 and Theorem 5.6.1 of [25].
+
+
+        Lemma 4.7.                                                         Let $\omega$>1, a>1 and $\epsilon$\in\{\pm 1\}                                                                                                                .         Then the extended solution $\phi$_{a}^{ $\epsilon$}(x)
+
+is continuously differentiable on                                                                                                     x\in[0, \infty ) \backslash \{n/a|n\in \mathbb{N}\}.
+                                                                              A canonical system 0F differential equations                                                                                                                                                                                                                                                                      417
+
+
+
+
+          Proof.                           By (4.3), (4.5) and (4.11), it is sufficient to prove that the Fredholm minor
+D(x, y; $\lambda$;a) for the kernel K(x, y)=h_{ $\omega$}(xy) on $\Omega$_{a}=[0, a]\times[0, a] is continuously
+differentiable on x\in D_{a} :=[0, a]\backslash \{n/a|n\in \mathbb{N}\} for every fixed y\in[0, a] since h_{ $\omega$} (ax)                                                                                                                                                                                                                       ,
+
+
+
+is continuously differentiable on
+                                               x\in[0, \infty ) \backslash \{n/a|n\in \mathbb{N}\} and |\displaystyle \frac{\partial}{\partial x}h_{ $\omega$}(xy)$\phi$_{a}^{ $\epsilon$}(y)| is                                                                                         ,
+
+
+
+integrable on [0, a] To prove it, we modify the proof of Theorem 5.3.1 in [25]. We have
+                                                                       .
+
+
+
+
+               K(_{y,x_{1}'}^{x,x_{1},\cdot\cdot\cdotx_{n}x_{n)}=\det\left(\begin{aray}{lll}K(x,y)&K(x,x_{1})&\cdots&\cdots&K(x,x_{n})\ K(x_{1},y)K(x_{1},x_{1})&\cdots&\cdots&\cdots&K(x_{1},x_{n})\ \vdots\vdots&&&\dots&\vdots\ \vdotsK(x_{n},y)K(x_{n},x_{1})\cdots&&&&K(x_{n},x_{n})\end{aray}\right)
+                                =K(x,y)K\left(\begin{aray}{ll}x_{1}&\cdots&x_{n}\ x_{1}&\cdots&x_{n}\end{aray}\right)+\det\left(\begin{aray}{ll}K(x,x_{1})0&\cdots&\cdots&K(x,x_{n})\ K(x_{1},y)K(x_{1},x_{1})&\cdots&\cdots&K(x_{1},x_{n})\ \vdots\vdots&&\dots&\vdots\ \vdotsK(x_{n},y)K(x_{n},x_{1})\cdot&.\cdot&&K(x_{n},x_{n})\end{aray}\right)
+Therefore, by (4.9) and (4.10), we have
+
+
+              \displaystyle \frac{\partial}{\partial x}D_{n}(x, y;a)=d_{n}(a)\frac{\partial}{\partial x}K(x, y)
+
+
+               +\displaystyle\frac{(-1)^{n}{n!}\int_{0}^{a}\cdots\int_{0}^{a}\det\left(\begin{aray}{ll}\frac{\partial}{\partialx}K(x,x_{1})0\cdots&&&\frac{\partial}{\partialx}K(x,x_{n})\\K(x_{1},y)K(x_{1},x_{1})&\cdots&\cdots&K(x_{1},x_{n})\\\vdots\vdots&&\dots&\vdots\\\vdotsK(x_{n},y)K(x_{n},x_{1})&\cdots&\cdots&K(x_{n},x_{n})\end{aray}\right)dx_{1}\displaystyle\ldotsdx_{n}
+               =d_{n}(a)\displaystyle \frac{\partial}{\partial x}K(x, y)+D_{n} $\dag er$(x, y;a)                                                                            ,
+
+
+
+
+say.      Then, we obtain
+
+
+
+                                                           \displaystyle \frac{\partial}{\partial x}D(x, y; $\lambda$;a)=d( $\lambda$;a)\frac{\partial}{\partial x}K(x, y)+\sum_{n=0}^{\infty}D_{n} $\dag er$(x, y;a)$\lambda$^{n}
+by (4.8).                     The first term on the right‐hand side is continuous on x\in D_{a}                                                                                                                                                                                                                                                           .
+                                                                                                                                                                                                                                                                                                                                                                    Therefore,
+in order to prove the existence and the continuity of
+                                                                                                                                                                                                                                                          \displaystyle \frac{\partial}{\partial x}D(x, y; $\lambda$;a)             on                x\in D_{a} it is                      ,
+
+
+
+sufficient to prove that the series on the right‐hand side converges uniformly on every
+
+compact subset in D_{a}                                                                 .      Put
+
+
+
+
+                          M_{1}(a)=a\displaystyle \sup_{(x,y)\in$\Omega$_{a} |K(x, y)|, M_{2}(a)=\sup_{x\in[0,a]}\int_{0}^{a}|\frac{\partial}{\partial x}K(x, y)|dy.
+The second constant    M(a) is well‐defined, since \displaystyle \int_{0}^{a}|\frac{\partial}{\partial x}K(x, y)|dy=\int_{0}^{a}|h_{ $\omega$}'(xy)|ydy
+is continuous on [0, a] (by $\omega$>1 ). Using the row expansion of the determinant and
+418                                                                                                                                                                   Masatoshi Suzuki
+
+
+
+Hadamards inequality, we have
+
+
+
+
+      |\det\left(\begin{aray}{l} \frac{\partial}{\partialx}K(x,x_{1})0&\frac{\partial}{\partialx}K(x,x_{n})\\ K(x_{1},y)K(x_{1},x_{1})&K(x_{1},x_{n})\\ K(x_{n},y)K(x_{n},x_{1})&K(x_{n},x_{n}) \end{aray}\right)
+Therefore, we obtain
+                                                                                                                                                                                                                     \displaystyle \leq n^{\frac{1}{2}n}(\frac{M_{1}(a)}{a})^{n}\sum_{j=1}^{n}|\frac{\partial}{\partialx}K(x,x_{j})|
+
+                        |D_{n} $\dag er$(x, y;a)|\displaystyle \leq\frac{n^{\frac{1}{2}n} {n!}(\frac{M_{1}(a)}{a})^{n}\int_{0}^{a}\cdots\int_{0}^{a}\sum_{j=1}^{n}|\frac{\partial}{\partial x}K(x, x_{j})|dx_{1}\ldots dx_{n}
+                                                          =\displaystyle\frac{n^{\frac{1}{2}n} {an!}M_{1}(a)^{n}\sum_{j=1}^{n}\int_{0}^{a}|\frac{\partial}{\partialx}K(x,x_{j})|dx_{j}\leq\frac{M_{2}(a)}{a}\frac{n^{\frac{1}{2}n}M_{1}(a)^{n} {(n-1)!}.
+Therefore, the series \displaystyle \sum_{n=0}^{\infty}D_{n} $\dagger$(x, y;a)$\lambda$^{n} converges uniformly and absolutely in (x, y, $\lambda$)
+\in$\Omega$_{a}\times \mathbb{C} when $\lambda$ is contained in a compact subset of \mathb {C}
+                                       ,
+                                                                                                                                                                                                                                                     .
+                                                                                                                                                                                                                                                           Hence, for fixed y\in[0, a],
+D(x, y; $\lambda$;a)-d( $\lambda$;a)K(x, y) is a continuously differentiable function on [0, a] such that
+
+
+                                                                         \displaystyle \frac{\partial}{\partial x}(D(x, y; $\lambda$;a)-d( $\lambda$;a)K(x, y) =\sum_{n=0}^{\infty}D_{n} $\dag er$(x, y)$\lambda$^{n}
+We complete the proof of the lemma.                                                                                                                                                                                                                                                                                                    \square
+
+
+              Lemma 4.8.                                                                      Let $\omega$>1 and $\epsilon$\in\{\pm 1\}                                                                       .     Then the extended solution $\phi$_{a}^{ $\epsilon$}(x) is con‐
+
+tinuous in a\in(1, \infty) for every fixed x>0                                                                                                                                                  .      In addition, it is continuously differentiable
+
+with respect to a in ( 1, \infty)\backslash \{n/x, \sqrt{n}|n\in \mathbb{N}\}.
+
+
+               Proof.                                 The continuity in a follows from                                                                                                                              (4.3) and (4.5).                                  Before the proof of the
+
+differentiability, we note that d( $\lambda$, a) is continuous in a                                                                                                                                                                        .   In fact, we have
+
+
+
+
+                                                                   |d_{n}(a)|\displaystyle \leq\frac{n^{\frac{1}{2}n}M_{1}(a)^{n} {n!} (M_{1}(a)=a\sup_{(x,y)\in$\Omega$_{a} |K(x, y)|)
+by definition (4.9) and Hadamards inequality, and hence the series of (4.7) converges
+absolutely and uniformly on a compact subset of ( $\lambda$, a)\in \mathbb{C}\times(1, \infty)                                                                                                                                                                                        .
+
+
+
+
+              Let $\lambda$\in \mathbb{C} such that d( $\lambda$;a)\neq 0 for every a>1                                                                                                                                          .    We have
+
+
+
+
+                                                 \displaystyle \frac{\partial}{\partial a}R(x, a; $\lambda$;a)=\frac{\frac{\partial}{\partial a}D(x,a; $\lambda$;a)d( $\lambda$;a)-D(x,a; $\lambda$;a)\frac{\partial}{\partial a}d( $\lambda$;a)}{d( $\lambda$;a)^{2}
+by (4.11). Therefore, in order to prove the lemma, we need (i) the existence and the
+continuity of \displaystyle \frac{\partial}{\partial a}d( $\lambda$;a) and (ii) the existence, the continuity and the integrability of
+\displaystyle \frac{\partial}{\partial a}D(x, a; $\lambda$;a) by (4.3), (4.5) and
+
+                                                 \displaystyle \frac{\partial}{\partial a}\int_{0}^{a}h_{ $\omega$}(xy)$\phi$_{a}^{ $\epsilon$}(y)dy=h_{ $\omega$}(ax)$\phi$_{a}^{ $\epsilon$}(a)+\int_{0}^{a}h_{ $\omega$} ( ) \displaystyle\frac{\partial}{\partiala}$\phi$_{a}^{$\epsilon$}(y)dy.
+                                                                                                                                                                                                                                                          xy
+                                                                A canonical system 0F differential equations                                                                                                                                                                        419
+
+
+
+We prove (i).                                By definition (4.7) and (4.9), we have
+
+
+
+ \displaystyle\frac{\partial}{\partiala}d($\lambda$;a)=-$\lambda$K(a,a)+\sum_{n=2}^{\infty}\frac{(-$\lambda$)^{n}{n!}\{\int_{0}^{a}\cdot\cdot\int_{0}^{a}K\left(\begin{ar ay}{ll} a,x_{2}&\cdots&x_{n}\\ a,x_{2}&\cdots&x_{n} \end{ar ay}\right)
+                                                                                                                                                                                                                                   dx2.       .   .
+                                                                                                                                                                                                                                                      dx_{n}
+
+
+
+
+                                         +\displaystyle\sum_{k=2}^{n-1}\int_{0}^{a}\cdot\int_{0^{a}K\left(\begin{ar ay}{lll} x_{1}&\cdots&x_{k-1},a,x_{k+1}&\cdots&x_{n}\ x_{1}&\cdots&x_{k-1},a,x_{k+1}&\cdots&x_{n} \end{ar ay}\right)dx_{l}\displaystyle\ldotsdx_{k-1}dx_{k+1}\ldotsdx_{n}
+                                         +\displaystyle\int_{0}^{a}\cdot\cdot\int_{0}^{a}K\left(\begin{ar ay}{ll} x_{1},x_{2}&\cdots&x_{n-1},a\ x_{1},x_{2}&\cdots&x_{n-1},a \end{ar ay}\right)dx_{1}\displaystyle\ldotsdx_{n-1}\}
+Clearly, each term in the series is continuous in a since K(x, y) is continuous. By using                                                                       ,
+
+
+
+Hadamards inequality,
+
+
+
+
+                |\displaystyle\frac{\partial}{\partiala}d($\lambda$;a)|\leq\sum_{n=1}^{\infty}\frac{|$\lambda$|^{n} {n!}n^{\frac{1}{2}n}(\frac{M_{1}(a)}{a})^{n}na^{n-1}=\frac{1}{a}\sum_{n=1}^{\infty}\frac{n^{\frac{1}{2}n} {(n-1)!}(|$\lambda$|M_{1}(a))^{n}
+The series on the right‐hand side converges uniformly on a compact subset of ( $\lambda$, a)\in
+
+\mathbb{C}\times[0, \infty)      .    Hence d( $\lambda$;a) is continuously differentiable for a.
+
+             Successively, we prove (ii). we have
+
+
+                                                                \displaystyle \frac{\partial}{\partial a}D(x, a; $\lambda$;a)=D_{y}(x, a; $\lambda$;a)+D_{a}(x, a; $\lambda$;a)                                            ,
+
+
+
+
+          (resp. D_{a} ) means the partial derivative with respect to the second (resp. the
+where D_{y}
+
+fourth) variable. We find that D(x, y; $\lambda$;a) is continuously differentiable with respect
+to    y\in[0, \infty)\backslash \{n/a|n\in \mathbb{N}\} and D_{y}(x, y; $\lambda$;a) is a continuous function on (x, y) \in
+                                                                                                  ,
+
+
+
+
+[0, \infty)\times([0, \infty)\backslash \{n/a|n\in \mathbb{N}\}) by a way similar to the proof of Lemma 4.7. Thus
+D_{y}(x, a; $\lambda$;a) is continuous on a\in(1, \infty)\backslash \{\sqrt{n}|n\in \mathbb{N}\} for fixed x and |D_{y}(x, a; $\lambda$;a)|                                                                                    ,
+
+
+
+is integrable on [0, a] with respect to x                                On the other hand, by definition (4.8) and                 .
+
+
+
+
+(4.10),
+
+
+     \displaystyle \frac{\partial}{\partial a}D(x, y; $\lambda$;a)=- $\lambda$ K(a, a)K(x, y)+ $\lambda$ K(x, a)K(a, y)
+                +\displaystyle\sum_{n=2}^{\infty}\frac{(-$\lambda$)^{n}{n!}\{\int_{0}^{a}\cdots\int_{0}^{a}K\left(\begin{aray}{ll} x,a,x_{2}&\cdots&x_{n}\ y,a,x_{2}&\cdots&x_{n} \end{aray}\right)
+                                                                                                                                                                            dx2.            .   .
+                                                                                                                                                                                                    dx_{n}
+
+
+
+
+                +\displaystyle\sum_{k=2}^{n-1}\int_{0}^{a}\cdots\int_{0}^{a}K\left(\begin{ar ay}{lll} x,x_{1}&\cdots&x_{k-1},a,x_{k+1}&\cdots&x_{n}\ y,x_{1}&\cdots&x_{k-1},a,x_{k+1}&\cdots&x_{n} \end{ar ay}\right)dx_{1}\displaystyle\ldotsdx_{k-1}dx_{k+1}\ldotsdx_{n}
+                 +\displaystyle\int_{0}^{a}\cdots\int_{0}^{a}K\left(\begin{ar ay}{ll} x,x_{1}&\cdots&x_{n-1},a\ y,x_{1}&\cdots&x_{n-1},a \end{ar ay}\right)dx_{1}\displaystyle\ldotsdx_{n-1}\}
+Clearly, each term in the series is continuous in (x, y, a)                                                                                                                                 ,
+                                                                                                                                                                                                    since            K(x, y) is continuous.
+420                                                                                                                                    Masatoshi Suzuki
+
+
+
+
+By the row expansion of the determinant and Hadamards inequality, we obtain
+
+
+
+       |\displaystyle \frac{\partial}{\partial a}D(x, y; $\lambda$;a)|\leq\sum_{n=1}^{\infty}\frac{| $\lambda$|^{n} {n!}n^{\frac{1}{2}n}(\frac{M_{1}(a)}{a})^{n}\int_{0}^{a}\cdots\int_{0}^{a}\sum_{j=1}^{n}|K(x, x_{j})|dx_{1}\ldots dx_{n-1}
+                                                          =\displaystyle \frac{1}{a^{2} \int_{0}^{a}|K(x, x_{1})|dx_{1}\sum_{n=1}^{\infty}\frac{n^{\frac{1}{2}n} {(n-1)!}(| $\lambda$|M_{1}(a) ^{n}
+when 0\leq y\leq a                                    .      The series on the right‐hand side converges uniformly on a compact
+
+subset of ( $\lambda$, a)\in \mathbb{C}\times(1, \infty)                                                 .       Thus D_{a}(x, a; $\lambda$;a) is continuous in a                                                                                                     .      In addition, the
+
+right‐hand side shows that |D_{a}(x, a; $\lambda$;a)| is integrable on [0, a] with respect to x.
+           Hence                                  \displaystyle \frac{\partial}{\partial a}R(x, a; $\lambda$;a) is continuous      a\in(1, \infty)\backslash \{\sqrt{n}|n\in \mathbb{N}\} for fixed
+                                                                                                                                                      on                                              and                                                                                                            x,
+
+
+|\displaystyle \frac{\partial}{\partial a}R(x, a; $\lambda$;a)| is integrable                                on
+                                                                                                                       [0, a] with respect to                    As           consequence           obtain    x     .                     a                                                          we
+
+
+the lemma by (4.3) and (4.5).                                                                                                                                                                                                                                                                                             \square
+
+
+
+                                                                    §4.3.                            The first order differential system
+
+           As in the previous section, we assume that $\omega$>1                                                                                                                                               .        Then $\Theta$_{ $\omega$} is an inner function
+in \mathbb{C}^{+} , the kernel h_{ $\omega$}(xy) of \mathrm{H}_{ $\omega$}
+                                      \mathrm{H}_{ $\omega$,a} is continuous, and $\phi$_{a}^{ $\epsilon$}(x) is continuously differ‐
+                                                                                                                    or
+
+
+entiable with respect to x and a outside loci ax=k(k\in \mathbb{N}) Under this situation, we                                                                                                                                          .
+
+
+
+
+derive a first order differential system arising from $\phi$_{a}^{ $\epsilon$}(a>1, $\epsilon$\in\{\pm 1\}) start from
+
+
+
+(4.12)
+                                                                                   $\phi$_{a}^{ $\epsilon$}(x)+ $\epsilon$\displaystyle \int_{0}^{a}h_{ $\omega$}(xy)$\phi$_{a}^{ $\epsilon$}(y)dy=h_{ $\omega$}(ax)                         .
+
+
+
+
+           Firstly, we operate a\displaystyle\frac{\partial}{\partiala} on both side of (4.12). Then,
+
+
+                                                           a\displaystyle\frac{\partial}{\partiala}$\phi$_{a}^{$\epsilon$}(x)+$\epsilon$a\frac{\partial}{\partiala}\int_{0}^{a}h_{$\omega$}(xy)$\phi$_{a}^{$\epsilon$}(y)dy=a\frac{\partial}{\partiala}h_{$\omega$} ( );
+                                                                                                                                                                                                                                                         ax
+
+
+
+
+                      a\displaystyle\frac{\partial}{\partiala}$\phi$_{a}^{$\epsilon$}(x)+$\epsilon$a$\phi$_{a}^{$\epsilon$}(a)h_{$\omega$}(ax)+$\epsilon$\int_{0}^{a}h_{$\omega$}(xy)a\frac{\partial}{\partiala}$\phi$_{a}^{$\epsilon$}(y)dy=a\frac{\partial}{\partiala}h_{$\omega$} ( );  ax
+
+
+
+
+(4.13)
+                          a\displaystyle\frac{\partial}{\partiala}$\phi$_{a}^{$\epsilon$}(x)+$\epsilon$\int_{0}^{a}h_{$\omega$}(xy)a\frac{\partial}{\partiala}$\phi$_{a}^{$\epsilon$}(y)dy=-$\epsilon$ $\phi$_{a}^{$\epsilon$}(a)h_{$\omega$}(ax)+a\displaystyle\frac{\partial}{\partiala}h_{$\omega$} ( x).
+                                                                                                                                                                                                        a                                                                                               a
+
+
+
+
+           Secondly, we operate x\displaystyle\frac{\partial}{\partialx} on both side of (4.12):
+
+
+                            x\displaystyle\frac{\partial}{\partialx}$\phi$_{a}^{$\epsilon$}(x)+$\epsilon$x\frac{\partial}{\partialx}\int_{0}^{a}h_{$\omega$}(xy)$\phi$_{a}^{$\epsilon$}(y)dy=x\frac{\partial}{\partialx}h_{$\omega$}(ax)=a\frac{\partial}{\partiala}h_{$\omega$} ( ). ax
+
+
+
+
+Using the identity x\displaystyle \frac{\partial}{\partial x}h_{ $\omega$}(xy)=y\frac{\partial}{\partial y}h(xy) and then applying integration by parts to
+the integral of the left‐hand side, we have
+
+
+
+                x\displaystyle\frac{\partial}{\partialx}$\phi$_{a}^{$\epsilon$}(x)+$\epsilon$ $\phi$_{a}^{$\epsilon$}(a)h_{$\omega$}(ax)-$\epsilon$\displaystyle\int_{0}^{a}h_{$\omega$} (xy) \displaystyle\frac{\partial}{\partialy}(y$\phi$_{a}^{$\epsilon$}(y) dy=a\frac{\partial}{\partiala}h_{$\omega$} (ax).
+                                                                        a
+                                                                        A canonical system 0F differential equations                                                                                                                                                                                                   421
+
+
+
+
+Putting $\delta$_{x}=x\displaystyle \frac{\partial}{\partial x}+\frac{1}{2}=\frac{\partial}{\partial x}x-\frac{1}{2}         ,
+                                                                                                                                  we           obtain
+
+
+
+
+(4.14)
+                                           $\delta$_{x}$\phi$_{a}^{$\epsilon$}(x)-\displaystyle\frac{1}{2}$\phi$_{a}^{$\epsilon$}(x)-$\epsilon$\int_{0}^{a}h_{$\omega$} ( ) ($\delta$_{y}$\phi$_{a}^{$\epsilon$}(y)+\displaystyle\frac{1}{2}$\phi$_{a}^{$\epsilon$}(y) dy
+                                                                                                                                                               xy
+
+
+                                                                                                                                                                                =- $\epsilon$ a
+                                                                                                                                                                                                               $\phi$_{a}^{$\epsilon$}(a)h_{$\omega$}(ax)+a\displaystyle\frac{\partial}{\partiala}h_{$\omega$} (ax).
+Next, we rewrite the left‐hand side of (4.14) as follows by using (4.12) for the second
+term of the left‐hand side:
+
+(4.15)
+
+      $\delta$_{x}$\phi$_{a}^{ $\epsilon$}(x)-\displaystyle \frac{1}{2}(h_{ $\omega$}(ax)- $\epsilon$\int_{0}^{a}h_{ $\omega$}(xy)$\phi$_{a}^{ $\epsilon$}(y)dy)- $\epsilon$\int_{0}^{a}h_{ $\omega$} (xy) ($\delta$_{y}$\phi$_{a}^{$\epsilon$}(y)+\displaystyle\frac{1}{2}$\phi$_{a}^{$\epsilon$}(y) dy
+                                                                                                           =$\delta$_{x}$\phi$_{a}^{ $\epsilon$}(x)-\displaystyle \frac{1}{2}h_{ $\omega$}(ax)- $\epsilon$\int_{0}^{a}h_{ $\omega$}(xy)$\delta$_{y}$\phi$_{a}^{ $\epsilon$}(y)dy.
+Substituting the right‐hand side of (4.15) for the left‐hand side of (4.14) and rearranging,
+we         obtain
+
+
+
+(4.16)
+                                $\delta$_{x}$\phi$_{a}^{$\epsilon$}(x)-$\epsilon$\displaystyle \int_{0}^{a}h_{$\omega$}(xy)$\delta$_{y}$\phi$_{a}^{$\epsilon$}(y)dy=(\frac{1}{2}-$\epsilon$ a$\phi$_{a}^{$\epsilon$}(a))h_{$\omega$}(ax)+a\frac{\partial}{\partiala}h_{$\omega$} ( x).                          a
+
+
+
+
+Subtracting (4.16) with choice - $\epsilon$ from (4.13) with $\epsilon$                                                                                                                                    ,
+                                                                                                                                                                                                                  we           obtain
+
+
+
+
+(4.17)
+                                            \displaystyle\{a\frac{\partial}{\partiala}$\phi$_{a}^{$\epsilon$}(x)-$\delta$_{x}$\phi$_{a}^{-$\epsilon$}(x)\}+$\epsilon$\int_{0}^{a}h_{$\omega$} ( ) \displaystyle\{a\frac{\partial}{\partiala}$\phi$_{a}^{$\epsilon$}(y)-$\delta$_{y}$\phi$_{a}^{-$\epsilon$}(y)\}dy
+                                                                                                                                                                                          xy
+
+
+
+
+                                                                                                                                                                                                           =-(\displaystyle \frac{1}{2}+ $\epsilon \mu$(a) h_{ $\omega$} (ax),
+where
+
+
+(4.18)                                                                                                              $\mu$(a)=a$\phi$_{a}^{+}(a)+a$\phi$_{a}^{-}(a)                                                    .
+
+
+
+
+By (4.6), Lemma 4.7 and 4.8, the function $\mu$(a) is continuous on ( 1, \infty)                                                                                                                                                                                                  ,
+                                                                                                                                                                                                                                                                                      which satisfies
+
+\displaystyle \lim_{a\rightarrow 1+} $\mu$(a)=0 and is continuously differentiable on ( 1, \infty)\backslash \{\sqrt{n}|n\in N\}.
+                                                              ,
+
+
+
+             Equality (4.17) shows that a\displaystyle \frac{\partial}{\partial a}$\phi$_{a}^{ $\epsilon$}(x)-$\delta$_{x}$\phi$_{a}^{- $\epsilon$}(x) is a continuous solution of (4.12).
+Hence, by comparing (4.12) with (4.17), we obtain
+
+
+(4.19)
+                                                a\displaystyle \frac{\partial}{\partial a}$\phi$_{a}^{ $\epsilon$}(x)-$\delta$_{x}$\phi$_{a}^{- $\epsilon$}(x)=-(\frac{1}{2}+ $\epsilon \mu$(a) $\phi$_{a}^{ $\epsilon$}(x) ( $\epsilon$\in\{\pm 1\})
+by the uniqueness of solutions (Lemmas 4.5 and 4.6). We use (4.19) in the form
+
+
+(4.20)
+                                                               (a\displaystyle \frac{\partial}{\partial a}+\frac{1}{2}+ $\epsilon \mu$(a))$\phi$_{a}^{ $\epsilon$}(x)=$\delta$_{x}$\phi$_{a}^{- $\epsilon$}(x) ( $\epsilon$\in\{\pm 1\})                                    .
+422                                                                                                                                                     Masatoshi Suzuki
+
+
+
+                    Now we introduce two special functions
+
+
+
+
+(4.21)
+               \displaystyle \tilde{A}_{a}(z):=\frac{a^{iz} {2}+\frac{\sqrt{a} {2}\int_{a}^{\infty}$\phi$_{a}^{+}(x)x^{\frac{1}{2}+iz}\frac{dx}{x}=\frac{a^{iz} {2}+\frac{\sqrt{a} {2}\mathrm{F}_{1/2}(1-\mathrm{P}_{a})$\phi$_{a}^{+}(z)                                                                                                                         ,
+
+
+
+
+       -i\displaystyle \tilde{B}_{a}(z):=\frac{a^{iz} {2}-\frac{\sqrt{a} {2}\int_{a}^{\infty}$\phi$_{a}^{-}(x)x^{\frac{1}{2}+iz}\frac{dx}{x}=\frac{a^{iz} {2}-\frac{\sqrt{a} {2}\mathrm{F}_{1/2}(1-\mathrm{P}_{a})$\phi$_{a}^{-}(z)
+for \Im(z)\gg 0 and a>1                                                                             .        These functions are defined as analytic functions for large
+
+\Im(z)>0 by integrals, since $\phi$_{a}^{\pm} are continuous and have at most polynomial growth at
++\infty by (4.12) and the rough estimate
+
+
+
+
+(4.22)                                    h_{ $\omega$}(x)=\displaystyle \frac{1}{2 $\pi$}\int_{-U+ic}^{U+ic}$\Theta$_{ $\omega$}(z)x^{-\frac{1}{2}-iz}dz+O(x^{c-\frac{1}{2} U^{1- $\omega$}) (c>1/2+ $\omega$)
+                                                                     =O(x^{c-\frac{1}{2}}U)+O(x^{c-\frac{1}{2}}U^{1- $\omega$})=O(x^{ $\omega$+ $\epsilon$})                                                                                                    .
+
+
+
+
+As shown below, \tilde{A}_{a} and \tilde{B}_{a} are analytically continuable to meromorphic functions in
+\mathb {C}   .   We put it off a little and derive a differential system satisfied by \tilde{A}_{a} and \tilde{B}_{a}                                                                                                                                                                                                                                       .
+
+                                                                                                                                                                                                                                                                                                                                                                Using
+(4.20),                    we        have
+
+
+
+
+             (a\displaystyle \frac{\partial}{\partial a}+ $\mu$(a))\tilde{A}_{a}(z)=(iz+ $\mu$(a))\frac{a^{iz} {2}+(a\frac{\partial}{\partial a}+ $\mu$(a))\frac{\sqrt{a} {2}\int_{a}^{\infty}$\phi$_{a}^{+}(x)x^{\frac{1}{2}+iz}\frac{dx}{x}
+                   =(iz+ $\mu$(a) \displaystyle \frac{a^{iz} {2}-\frac{\sqrt{a} {2}$\phi$_{a}^{+}(a)a^{\frac{1}{2}+iz}+\frac{\sqrt{a} {2}\int_{a}^{\infty}(a\frac{\partial}{\partial a}+\frac{1}{2}+ $\mu$(a) $\phi$_{a}^{+}(x)x^{\frac{1}{2}+iz}\frac{dx}{x}
+                   =(iz+ $\mu$(a))\displaystyle \frac{a^{iz} {2}-\frac{\sqrt{a} {2}$\phi$_{a}^{+}(a)a^{\frac{1}{2}+iz}+\frac{\sqrt{a} {2}\int_{a}^{\infty}(x\frac{\partial}{\partial x}+\frac{1}{2})$\phi$_{a}^{-}(x)x^{\frac{1}{2}+iz}\frac{dx}{x}
+                   =iz\displaystyle \frac{a^{iz} {2}-iz\frac{\sqrt{a} {2}\int_{a}^{\infty}$\phi$_{a}^{-}(x)x^{\frac{1}{2}+iz}\frac{dx}{x}=z\tilde{B}_{a}(z)
+for large \Im(z)>0 , and then it holds for all z\in \mathbb{C} by meromorphic continuation (below).
+We obtain a similar formula for                                                                                                      (a\displaystyle \frac{\partial}{\partial a}+ $\mu$(a) \tilde{B}_{a} As  .                     a        result, we obtain the first order
+differential system
+
+
+
+(4.23)
+                                           -\left\{a\frac{\partial}{\partiala}&+$\mu$(a)0&0a\frac{\partial}{\partiala}-$\mu$(a)\right\}\left\{\begin{aray}{l} \tilde{A}_{a}(z)\ \tilde{B}_{a}(z) \end{aray}\right\}=z\left\{\begin{aray}{l} 0&-1\ 1&0 \end{aray}\right\}\left\{\begin{aray}{l} \tilde{A}_{a}(z)\ \tilde{B}_{a}(z) \end{aray}\right\}(a>1)   .
+
+
+
+
+We extend the system to a>0 by taking the convention that
+
+
+(4.24)                                                                                                                                                              $\mu$(a)=0
+and
+
+
+
+
+(4.25)
+                                                     \displaystyle\tilde{A}_{a}(z)=\frac{a^{iz} {2}+\frac{\sqrt{a} {2}\int_{1/a}^{\infty}h_{$\omega$} x^{\frac{1}{2}+iz}\displaystyle \frac{dx}{x}=\frac{1}{2}(a^{iz}+$\Theta$_{ $\omega$}(z)a^{-iz})
+                                                                                                                                                                                ( ax )                                                                                                                                                                      ,
+
+
+
+
+                                            -i\displaystyle \tilde{B}_{a}(z)=\frac{a^{iz} {2}-\frac{\sqrt{a} {2}\int_{1/a}^{\infty}h_{ $\omega$} x^{\frac{1}{2}+iz}\displaystyle \frac{dx}{x}=\frac{1}{2}(a^{iz}-$\Theta$_{ $\omega$}(z)a^{-iz})
+                                                                                                                                                                                ( ax )
+                                                    A canonical system 0F differential equations                                                                                                                                                                                                                                             423
+
+
+
+for 0<a\leq 1            .
+
+                                 Actually the convention (4.24) and (4.25) for 0<a\leq 1 is compatible
+with Lemma 4.2 and the convention mentioned in the end of Section 4.1.
+
+       For a>0 , we define
+
+
+
+
+(4.26)
+                                                                            A_{a}(z)=m(a) $\xi$(\displaystyle \frac{1}{2}+ $\omega$-iz)\tilde{A}_{a}(z)                                                                                          ,
+
+
+
+
+                                                                            B_{a}(z)=\displaystyle \frac{1}{m(a)} $\xi$(\frac{1}{2}+ $\omega$-iz)\tilde{B}_{a}(z)
+with
+
+
+
+(4.27)
+                                        m(a)=\displaystyle \exp(\int_{1}^{a} $\mu$(b)\frac{db}{b}) ( $\mu$(a)=a\frac{d}{da}\log m(a)
+under (4.24) and (4.25). Note that m(a) is real‐valued by its definition. Then we can
+
+verify that system (4.23) implies that (A_{a}, B_{a}) satisfies the canonical system
+
+
+(4.28)
+                  -a\displaystyle\frac{\partial}{\partiala}\left\{\begin{aray}{l} X_{a}(z)\\ Y_{a}(z) \end{aray}\right\}=z\left\{\begin{aray}{l} 0&-1\\ 1&0 \end{aray}\right\}\displaystyle\left\{\begin{aray}{l} m(a)^{-2}&0\\ 0&m(a)^{2} \end{aray}\right\}\left\{\begin{aray}{l} X_{a}(z)\\ Y_{a}(z) \end{aray}\right\}(0<a<\infty)
+by elementary ways. It is concluded that (4.28) is the canonical system of Theorem 2.3
+if formula
+
+
+                                                                                                             m(a)=\displaystyle\frac{\det(1+\mathrm{H}_{$\omega$,a})}{\det(1-\mathrm{H}_{$\omega$,a})}
+is proved for a>1 , since
+                                                                               \displaystyle\frac{\det(1+\mathrm{H}_{$\omega$,a})}{\det(1-\mathrm{H}_{$\omega$,a})}=1 for 0<a\leq 1 by Lemma 4.2. This will follow
+from showing
+
+
+
+
+(4.29)
+                                                                                          $\phi$_{a}^{+}(a)=\displaystyle \frac{d}{da}\log\det(1+\mathrm{H}_{ $\omega$,a})                                                    ,
+
+
+
+
+                                                                                          $\phi$_{a}^{-}(a)=-\displaystyle \frac{d}{da}\log\det(1-\mathrm{H}_{ $\omega$,a})
+by definition (4.18) and (4.27).                                                                              This is a well‐known formula for an integral operator
+
+defined on a finite interval with a continuous kernel. In fact, it is proved by a way similar
+to the proof of Theorem 12 of Chapter 24 in                          [19]. (This also holds for 0<a<1 since                                                                                                                                                                                                                              ,
+
+
+
+
+$\phi$_{a}^{\pm}(a)=h_{ $\omega$}(a^{2})=0 by the convention in the end of Section 4.1 and \log\det(1\pm \mathrm{H}_{ $\omega$,a})=0
+by Lemma 4.2.)
+
+       For every fixed 0<a\leq 1, A_{a} and B_{a} are real entire functions satisfying A_{a}(-z)=
+
+A(z) and B_{a}(-z)=-B_{a}(z) respectively, by (4.25), (4.26) and functional equations            ,
+
+
+
+
+$\xi$(s)= $\xi$(1-s) and $\xi$(s)=\overline{ $\xi$(\overline{s})} Successively, we prove that A_{a} and B_{a} have these
+                                                                                                                .
+
+
+
+
+properties for a>1.
+424                                                                                                      Masatoshi Suzuki
+
+
+
+
+                 §4.4.                   Meromorphic continuation and functional equations
+       Under assumptions and notations of Section 4.3, we define
+
+
+                                               \tilde{E}_{a}(z):=\tilde{A}_{a}(z)-i\tilde{B}_{a}(z)
+
+                                                                    =a^{iz}+\displaystyle \frac{\sqrt{a} {2}\int_{a}^{\infty}($\phi$_{a}^{+}(x)-$\phi$_{a}^{-}(x))x^{\frac{1}{2}+iz}\frac{dx}{x}
+(4.30)
+                                                                    =a^{iz}+\displaystyle \frac{\sqrt{a} {2}\mathrm{F}_{1/2}(1-\mathrm{P}_{a})($\phi$_{a}^{+}-$\phi$_{a}^{-})(z)
+                                             \tilde{E}_{a}^{*}(z):=\tilde{A}_{a}(z)+i\tilde{B}_{a}(z)
+
+                                                                    =\displaystyle \frac{\sqrt{a} {2}\int_{a}^{\infty}($\phi$_{a}^{+}(x)+$\phi$_{a}^{-}(x) x^{\frac{1}{2}+iz}\frac{dx}{x}
+                                                                    =\displaystyle \frac{\sqrt{a} {2}\mathrm{F}_{1/2}(1-\mathrm{P}_{a})($\phi$_{a}^{+}+$\phi$_{a}^{-})(z)
+for \Im(z)\gg 0 and a>1                                      .    We deal with A_{a}, B_{a} via                                                        \tilde{E}_{a}(z) and \tilde{E}_{a}^{*}(z)               .
+
+
+
+
+       Lemma 4.9.                                     Let $\omega$>1 and a>1                                              .
+
+                                                                                                                                Define
+
+(4.31)
+                                                             $\Psi$_{a}(z)=\displaystyle \int_{a}^{\infty}($\phi$_{a}^{+}(x)-$\phi$_{a}^{-}(x) x^{\frac{1}{2}+iz}\frac{dx}{x}.
+Then integral of                    (4.31) converges absolutely for \Im(z)>0 and converges in the L^{2} ‐sense
+on
+      \Im(z)=0               .     Moreover $\Psi$_{a}(z) is extended to a meromorphic function in \mathb {C} which is
+
+analytic in \mathbb{C}^{+}.
+
+        Proof.            By (4. 12), we have
+
+(4.32)                                                                       $\phi$_{a}^{+}-$\phi$_{a}^{-}=-\mathrm{H}_{ $\omega$}\mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-})   ,
+
+
+
+
+where         \mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-}) has compact support in [1/a, a] Therefore $\phi$_{a}^{+}-$\phi$_{a}^{-} belongs to                    .
+
+
+
+
+L^{2}(( $\alpha$, \infty), dx) for every $\alpha$>0 Hence integral (4.31) converges absolutely for \Im(z)>0
+                                                                                   .
+
+
+
+
+and defines a function of H^{2} ([29, Chap. II, §10]). Using (4.32), we have
+
+
+                         $\Psi$_{a}(z)=\mathrm{F}_{1/2}(1-\mathrm{P}_{a})($\phi$_{a}^{+}-$\phi$_{a}^{-})(z)
+                                        =-\mathrm{F}_{1/2}(1-\mathrm{P}_{a})\mathrm{H}_{ $\omega$}\mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-})(z)
+                                        =-\mathrm{F}_{1/2}\mathrm{H}_{ $\omega$}\mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-})(z)+\mathrm{F}_{1/2}\mathrm{P}_{a}\mathrm{H}_{ $\omega$}\mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-})(z)
+for \Im(z)\gg 0          .       Here \mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-}) and \mathrm{P}\mathrm{H}\mathrm{P}($\phi$_{a}^{+}+$\phi$_{a}^{-}) have compact support in (0, \infty)                                                            .
+
+
+
+
+Therefore, we obtain
+
+(4.33)                   $\Psi$_{a}(z)=-$\Theta$_{ $\omega$}(z)\mathrm{F}_{1/2}\mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-})(-z)+\mathrm{F}_{1/2}\mathrm{P}_{a}\mathrm{H}_{ $\omega$}\mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-})(z)     ,
+
+
+
+
+where      \mathrm{F}_{1/2}\mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-})(z) and \mathrm{F}_{1/2}\mathrm{P}_{a}\mathrm{H}_{ $\omega$}\mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-})(z) are entire functions. Hence
+$\Psi$_{a}(z) is extended to a meromorphic function on \mathb {C}                                                                                             ,
+                                                                                                                                                                      and is analytic in \mathbb{C}^{+}                                 by (4.33),
+since $\Theta$_{ $\omega$}(z) is a meromorphic inner function in \mathbb{C}^{+}.                                                                                                                                                                \square
+                                                            A canonical system 0F differential equations                                                                                                                                                                              425
+
+
+
+            Lemma 4.10.                                                      \tilde{E}_{a}^{*} of (4.30)
+                                                                      Let $\omega$>1 and a>1                                                 .      Functions \tilde{E}_{a} and                                                                                    are           ana‐
+
+
+lytically continuable to meromorphic functions in \mathb {C} satisfy ing \tilde{E}_{a}^{*}(z)=$\Theta$_{ $\omega$}(z)\tilde{E}_{a}(-z)                                                                                                                                                        ,
+
+
+
+and they are analytic in \mathbb{C}^{+}                                               .
+                                                                                           Moreover,                            both             $\xi$(\displaystyle \frac{1}{2}+ $\omega$-iz)\tilde{E}_{a}(z)   and           $\xi$(\displaystyle \frac{1}{2}+ $\omega$-iz)\tilde{E}_{a}^{*}(z)
+are       entire functions.
+
+
+
+            Proof.                   We have
+
+
+(4.34)                                                     \mathrm{H}_{ $\omega$}\mathrm{P}_{a}($\phi$_{a}^{+}-$\phi$_{a}^{-})(x)=2h_{ $\omega$}(ax) -$\phi$_{a}^{+}(x)-$\phi$_{a}^{-}(x)
+by (4.12). Using (1.8), (4.32), and (4.33), we have
+
+
+                        $\Theta$_{ $\omega$}(z)\displaystyle \tilde{E}_{a}(-z) = $\Theta$_{ $\omega$}(z)a^{-iz}+$\Theta$_{ $\omega$}(z)\frac{\sqrt{a} {2}$\Psi$_{a}(-z)
+                                                                (4_{=^{33)}$\Theta$_{ $\omega$}(z)a^{-iz}-$\Theta$_{ $\omega$}(z)$\Theta$_{ $\omega$}(-z)\frac{\sqrt{a} {2}\mathrm{F}_{1/2}\mathrm{P}_{a}($\phi$_{a}^{+} +$\phi$_{a}^{-})(z)
+                                                                               +\displaystyle\frac{\sqrt{a} {2}$\Theta$_{$\omega$}(z)\mathrm{F}_{1/2}\mathrm{P}_{a}\mathrm{H}_{$\omega$}\mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-})(z)
+                                                                (1.8)=$\Theta$_{ $\omega$}(z)a^{-iz}-\displaystyle \frac{\sqrt{a} {2}\mathrm{F}_{1/2}\mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-})(z)
+                                                                               +$\Theta$_{$\omega$}(z)\displaystyle\frac{\sqrt{a} {2}\mathrm{F}_{1/2}\mathrm{P}_{a}\mathrm{H}_{$\omega$}\mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-})(z)
+                                                                (4_{=^{32)}$\Theta$_{ $\omega$}(z)a^{-iz}-\frac{\sqrt{a} {2}\mathrm{F}_{1/2}\mathrm{P}_{a}($\phi$_{a}^{+} +$\phi$_{a}^{-})(z)
+                                                                               -$\Theta$_{ $\omega$}(z)\displaystyle \frac{\sqrt{a} {2}\mathrm{F}_{1/2}\mathrm{P}_{a}($\phi$_{a}^{+}-$\phi$_{a}^{-})(z)
+for z\in \mathbb{C} , since \mathrm{P}_{a}($\phi$_{a}^{+}\pm$\phi$_{a}^{-}) , and \mathrm{P}\mathrm{H}\mathrm{P}($\phi$_{a}^{+}+$\phi$_{a}^{-}) have compact support.                                                                                               Further,
+by Proposition 2.1, Lemma 4.1, and (4.34), we have
+
+  $\Theta$_{ $\omega$}(z)\tilde{E}_{a}(-z)       =$\Theta$_{ $\omega$}(z)a^{-iz}-\displaystyle \frac{\sqrt{a} {2}\mathrm{F}_{1/2}\mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-})(z)
+                                                           -$\Theta$_{ $\omega$}(z)\displaystyle \frac{\sqrt{a} {2}\mathrm{F}_{1/2}\mathrm{P}_{a}($\phi$_{a}^{+}-$\phi$_{a}^{-})(z)
+                                             (4.1)=$\Theta$_{ $\omega$}(z)a^{-iz}-\displaystyle \frac{\sqrt{a} {2}\mathrm{F}_{1/2}\mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-})(z)-\frac{\sqrt{a} {2}\mathrm{F}_{1/2}\mathrm{H}_{ $\omega$}\mathrm{P}_{a}($\phi$_{a}^{+}-$\phi$_{a}^{-})(z)
+                                             (4_{=^{34)}$\Theta$_{ $\omega$}(z)a^{-iz}-\frac{\sqrt{a} {2}\mathrm{F}_{1/2}\mathrm{P}_{a}($\phi$_{a}^{+} +$\phi$_{a}^{-})(z)
+                                                           -\displaystyle \sqrt{a}\mathrm{F}_{1/2}(h_{ $\omega$}(ax) (z)+\frac{\sqrt{a} {2}\mathrm{F}_{1/2}($\phi$_{a}^{+}+$\phi$_{a}^{-})(z)
+                                             (2.4)=$\Theta$_{ $\omega$}(z)a^{-iz}-\displaystyle \frac{\sqrt{a} {2}\mathrm{F}_{1/2}\mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-})(z)
+                                                           -$\Theta$_{ $\omega$}(z)a^{-iz}+\displaystyle \frac{\sqrt{a} {2}\mathrm{F}_{1/2}($\phi$_{a}^{+}+$\phi$_{a}^{-})(z)
+                                             =\displaystyle \frac{\sqrt{a} {2}\mathrm{F}_{1/2}(1-\mathrm{P}_{a})($\phi$_{a}^{+}+$\phi$_{a}^{-})(z)=\tilde{E}_{a}^{*}(z)
+426                                                                                                           Masatoshi Suzuki
+
+
+
+for \Im(z)\gg 0 , since $\phi$_{a}^{+}+$\phi$_{a}^{-} is identically zero on (0,1/a) and has polynomial growth
+at        x=+\infty         \tilde{E}_{a}^{*}(z)=$\Theta$_{ $\omega$}(z)\tilde{E}_{a}(z) for \Im(z)\gg 0 By Lemma 4.9, \tilde{E}_{a}(z) is
+                                    .       Hence                                                                                                                   .
+
+
+
+
+meromorphic in \mathb {C} therefore, \tilde{E}_{a}^{*}(z) is also analytically continuable to meromorphic
+                                                       ,
+                                                                                                                                                                                                     a
+
+
+function in \mathb {C} Moreover, \tilde{E}_{a}(z)=$\Theta$_{ $\omega$}(z)( entire) +( entire) from the proof of Lemma
+                                        .
+
+
+
+
+4.9. Thus
+
+                                                           \tilde{E}_{a}^{*}(z)= $\Theta$(z)\tilde{E}_{a}(-z)=( entire) +$\Theta$_{ $\omega$}(\mathrm{z}) (entire)
+by (1.8), and hence \tilde{E}_{a}^{*}(z) is analytic in \mathbb{C}^{+} Simultaneously, these equalities show that                 .
+
+
+
+
+$\xi$(\displaystyle \frac{1}{2}+ $\omega$-iz)\tilde{E}_{a}(z) and $\xi$(\displaystyle \frac{1}{2}+ $\omega$-iz)\tilde{E}_{a}^{*}(z)   are     entire by definition of $\Theta$_{ $\omega$}(z)                       .                     \square
+
+
+             Lemma 4.10 implies the following immediately.
+
+
+             Lemma 4.11.                                            Let $\omega$>1 and a>1                                            .       Then    Ã(z) and \tilde{B}_{a}(z)                      are         analytically
+continuable to meromorphic functions in \mathb {C} , and they are                                                                                                analytic in \mathbb{C}^{+}                .
+                                                                                                                                                                                                               Also, A_{a}(z)
+and B(z)                         are         both entire functions. In addition,                                                                we    have functional equations
+
+
+                                                   $\Theta$_{ $\omega$}(z)\tilde{A}_{a}(-z)=\tilde{A}_{a}(z) , $\Theta$_{ $\omega$}(z)\tilde{B}_{a}(-z)=-\tilde{B}_{a}(z)                      ,
+
+
+
+
+                                                                     A_{a}(-z)=A_{a}(z) , B_{a}(-z)=-B_{a}(z)                                                                  .
+
+
+
+
+             Proof.                     We have                     2\tilde{A}_{a}=\tilde{E}_{a}+\tilde{E}_{a}^{*} and -2i\tilde{B}_{a}=\tilde{E}_{a}-\tilde{E}_{a}^{*} by definition (4.30).
+Therefore, they are analytically continuable to meromorphic function in \mathb {C} and satisfy
+2\tilde{A}_{a}(z)=\tilde{E}_{a}(z)+$\Theta$_{ $\omega$}(z)\tilde{E}_{a}(z) and -2i\tilde{B}_{a}(z)=\tilde{E}_{a}(z)-$\Theta$_{ $\omega$}(z)\tilde{E}_{a}(z) by Lemma 4.10.
+That imply the functional equations stated in the lemma. Other things are consequences
+
+of Lemma 4.10.                                                                                                                                                                                                                            \square
+
+
+             Lemma 4.12.                                            Let $\omega$>1 and a>1                                                .   Then A(z) and B(z)                                           are     real entire
+
+functions.
+
+
+             Proof.                     At first, we note that if F(z)=\mathrm{F}_{1/2}(f(x))(z) for \Im(z)\gg 0 then F\#(z)=                                                                          ,
+
+
+
+
+\mathrm{F}_{1/2}(x^{-1}\overline{f(x^{-1}}))(z)              and          F(-z)=\mathrm{F}_{1/2}(x^{-1}f(x^{-1}))(z)                                    for \Im(z)\ll 0                   .
+                                                                                                                                                                                              Therefore, if f(x)
+(resp. if (x) ) is real‐valued, F(z) is analytically continued to a meromorphic function
+in \mathb {C} and F(-z)=F(z) (resp. F(-z)=-F(z) ), then F\#(z)=F(z) holds for z\in \mathbb{C}.
+             ,
+
+
+
+Let
+
+
+
+                           $\phi$(x) :=\displaystyle \frac{1}{2}\frac{d}{dx}(x^{2}\frac{d}{dx} $\theta$(x^{2}) =2\sum_{n=1}^{\infty}(2$\pi$^{2}n^{4}x^{4}-3 $\pi$ n^{2}x^{2})\exp(- $\pi$ n^{2}x^{2})                   .
+
+
+
+
+Then                 $\phi$(1/x)=x $\phi$(x) and $\xi$(s)=\displaystyle \int_{0}^{\infty} $\phi$(x)x^{s}\frac{dx}{x} for every s\in \mathbb{C} ([27, §10.1]). Hence
+$\xi$(\displaystyle \frac{1}{2}+ $\omega$-iz)=\mathrm{F}_{1/2}(x^{- $\omega$} $\phi$(x))(z) for z\in \mathbb{C} On the other hand, by (4.21), \~{A}(z)=
+                                                                                                                                      .
+
+
+
+
+\displaystyle \mathrm{F}_{1/2}(\frac{\sqrt{a} {2}($\delta$_{a}+(1-\mathrm{P}_{a})$\phi$_{a}^{+}) (z) and \displaystyle \tilde{B}_{a}(z)=\mathrm{F}_{1/2}(\frac{i\sqrt{a} {2}($\delta$_{a}-(1-\mathrm{P}_{a})$\phi$_{a}^{-}))(z) for \Im(z)\gg 0
+,
+    where $\delta$_{a}(x) is the Dirac delta‐function at x=a Therefore A_{a}(z)=\mathrm{F}_{1/2}(f^{+}(x))(z)                                    .
+                                                     A canonical system 0F differential equations                                                                                                                              427
+
+
+
+and B_{a}(z)=\mathrm{F}_{1/2}(f^{-}(x))(z) for
+
+
+
+
+                        f^{+}(x):=\displaystyle \frac{m(a)\sqrt{a} {2}\int_{0}^{\infty}(x/y)^{- $\omega$} $\phi$(x/y)($\delta$_{a}(y)+(1-\mathrm{P}_{a})$\phi$_{a}^{+}(y) \frac{dy}{y}
+                                             =\displaystyle \frac{m(a)x^{- $\omega$} {2}(a^{ $\omega$-\frac{1}{2} $\phi$(x/a)+\sqrt{a}\int_{a}^{\infty} $\phi$(x/y)$\phi$_{a}^{+}(y)y^{ $\omega$-1}dy)            ,
+
+
+
+
+                             f^{-}(x):=\displaystyle \frac{i\sqrt{a} {2m(a)}\int_{0}^{\infty}(x/y)^{- $\omega$} $\phi$(x/y)($\delta$_{a}(y)-(1-\mathrm{P}_{a})$\phi$_{a}^{-}(y) \frac{dy}{y}
+                                                  =\displaystyle \frac{ix^{- $\omega$} {2m(a)}(a^{ $\omega$-\frac{1}{2} $\phi$(x/a)-\sqrt{a}\int_{a}^{\infty} $\phi$(x/y)$\phi$_{a}^{-}(y)y^{ $\omega$-1}dy)
+if \Im(z)\gg 0               .   Here f^{+}(x) and if^{-}(x) are both real‐valued, since m(a) is real, and                                                                                                                 $\phi$(x)   ,
+
+
+
+
+$\phi$_{a}^{\pm}(x)   are   real‐valued. In addition, A_{a}(-z)=A_{a}(z) and B_{a}(-z)=-B(z) for z\in \mathbb{C}
+
+by Lemma 4.11. Hence A_{a}\#=A_{a} and B_{a}\#=B_{a}.                                                                                                                                                                             \square
+
+
+               Now we complete the proof of Theorem 2.3                                                                                       (1), (2).                    The remaining assertion is
+
+(3). In order to prove it, we show the following lemma.
+
+               Lemma 4.13.                                   Let $\omega$>1                .     Then
+
+
+(4.35)                                                \displaystyle \lim_{a\rightar ow 1+}A_{a}(z)=A^{ $\omega$}(z)   ,
+                                                                                                                                  \displaystyle \lim_{a\rightar ow 1+}B_{a}(z)=B^{ $\omega$}(z)
+hold uniformly on every compact subset in \mathbb{C}.
+
+
+
+               Proof.            By (4.2) and (4.3), $\phi$_{a}^{\pm}(x)\rightarrow h(x) uniformly on [1/2, 3/2] as a\rightarrow 1^{+}.
+Therefore, by (4.30) and (4.33), \tilde{E}_{a}(z) converges to a meromorphic function in \mathb {C}
+uniformly on every compact subset in \mathb {C} as a\rightarrow 1^{+} since \mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-})(z) and                               ,
+
+
+
+
+\mathrm{P}_{a}\mathrm{H}_{ $\omega$}\mathrm{P}_{a}($\phi$_{a}^{+}+$\phi$_{a}^{-})(z) both have support in [1/a, a]                              .    On the other hand, we have
+
+
+
+(4.36)
+                                                $\phi$_{a}^{+}(x)-$\phi$_{a}^{-}(x)=-\displaystyle \int_{1/a}^{a}h_{ $\omega$}   ( xz ) ($\phi$_{a}^{+}(z)+$\phi$_{a}^{-}(z))dz
+
+by (4.12), since $\phi$_{a}^{\pm}(x)=0 for 0<x<1/a Multiplying by x^{-v} on both sides of (4.36),                         .
+
+
+
+
+and then tending a\rightarrow 1^{+} , we have
+
+
+
+                                                                               \displaystyle \lim_{a\rightar ow 1+}($\phi$_{a}^{+}(x)-$\phi$_{a}^{-}(x) x^{-v}=0
+uniformly on ( 1, \infty) if v>0 is large, since h_{ $\omega$} is of polynomial growth at +\infty                                                                                                                     .   Hence
+
+\displaystyle \lim_{a\rightarrow 1+}\tilde{E}_{a}(z)=1 uniformly                    on         every compact subset in \Im(z)>v                                                                   .   As a consequence
+
+\displaystyle \lim_{a\rightarrow 1+}\tilde{E}_{a}(z)=1 and
+                                                 ,
+
+
+
+
+                                    \displaystyle \lim_{a\rightar ow 1+}\tilde{A}_{a}(z)=\frac{1}{2}(1+$\Theta$_{ $\omega$}(z)) , \lim_{a\rightar ow 1+}\tilde{B}_{a}(z)=\frac{i}{2}(1-$\Theta$_{ $\omega$}(z))
+428                                                                                      Masatoshi Suzuki
+
+
+
+
+uniformly on every compact subset in \mathb {C} Multiplying by $\xi$(\displaystyle \frac{1}{2}+ $\omega$-iz) on both sides of
+                                                                                                          .
+
+
+
+
+these equalities, we obtain (4.35) by (4.6) and (4.26).                                                                    \square
+
+
+By definition, we have m(a)=1 and
+
+
+                                A_{a}(z)= $\xi$(\displaystyle \frac{1}{2}+ $\omega$-iz)a^{iz}+ $\xi$(\frac{1}{2}- $\omega$-iz)a^{-iz},
+                                B_{a}(z)= $\xi$(\displaystyle \frac{1}{2}+ $\omega$-iz)a^{iz}- $\xi$(\frac{1}{2}- $\omega$-iz)a^{-iz}
+for 0     <     a       \leq   1.      This shows                               (A_{1}, B_{1})                                     =
+                                                                                                                                                     (A^{ $\omega$}, B^{ $\omega$})                      and
+                                                                                                                                                                                                                 \displaystyle \lim_{a\rightar ow 1-}(A_{a}(z), B_{a}(z)
+                                                                                                                                                                                                                                                                           =
+
+
+
+
+(A^{ $\omega$}(z), B^{ $\omega$}(z)) uniformly on every compact subset in \mathb {C} Together with Lemma 4.13,                                                                                 .
+
+
+
+
+we obtain Theorem 2.3
+                                             (3), and hence we complete the proof of Theorem 2.3.
+
+
+                               §5.       Comments on the validity of Theorem 2.3
+
+
+       In this section,              we     comment                        on a                       range of $\omega$>0 where Theorem 2.3 is expected
+to be extended.                 There might be three levels of difficulties at least:                                                                                                                                              (i) $\omega$>1/2 (ii)             ,
+
+
+
+
+$\omega$=1/2 (iii) 0< $\omega$<1/2.
+            ,
+
+
+
+
+       It is natural to expect that Theorem 2.3 is proved unconditionally for the range (i)
+
+as    mentioned after Theorem 2.3. In fact, all lemmas in Section 4.1 are already proved
+for                 $\omega$>1/2 Therefore, the remaining problems are a proof of the differentiability of
+                    .
+
+
+
+
+$\phi$_{a}^{ $\epsilon$}(x) with respect to x and a and formula of m(a) by determinants. However, if we
+                                                         ,
+
+
+
+understand partial derivatives                               \displaystyle\frac{\partial}{\partialx}$\phi$_{a}^{$\epsilon$}(x) and \displaystyle\frac{\partial}{\partiala}$\phi$_{a}^{$\epsilon$}(x) in the   sense    of distributions as in
+Burnol [6], and if we use the theory of Fredholm determinants for L^{2} ‐kernels ([25, Chap.
+
+VI]), then most of Section 4.3 and 4.4 have reasonable meaning, and we may obtain
+Theorem 2.3 for $\omega$>1/2 This way is plausible, and must be carried out after a suitable
+                                             .
+
+
+
+
+preparation for the theory of distributions.
+       The case (ii) have more difficulties, because the kernel of \mathrm{H}_{ $\omega$,a} is no longer Hilbert‐
+
+Schmidt type. However, $\Theta$_{ $\omega$}(z) is still inner function in \mathbb{C}^{+} unconditionally.                                                                                                                                            Therefore,
+problems may be restricted to the theory of integral operators, its determinants, and the
+theory of integral equations only as well as the case (i). See the later half of comments
+on
+      (iii) below.
+       It is easily predicted that it is very hard to generalize Theorem 2.3 to the range
+
+(iii) unconditionally. A reason of difficulties is that problems of arithmetic and analysis
+are   mixed in this range.                   However, if we assume RH, the function $\Theta$_{ $\omega$} is inner in \mathbb{C}^{+} for
+every $\omega$>0 , and hence remaining problems may be restricted to the theory of integral
+
+operators and the theory of integral equations only.                                                                                                                                Such analytic problems may be
+solved without essential difficulties.
+                                 A canonical system 0F differential equations                                                                                                                                                              429
+
+
+
+         In   fact, if $\Theta$_{ $\omega$}(z) is an inner function in \mathbb{C}^{+}, \mathrm{H}_{$\omega$} is extended to an isometry on
+L^{2}((0, \infty), dx) by Lemma 4.1. On the other hand, \mathrm{H}_{ $\omega$,a} is a compact operator on
+L^{2}((0, a), dx) even for (iii) (and (ii)) because its kernel is a sum of finitely many weakly
+singular kernels. Therefore, in particular, the Fredholm alternative holds. Hence we may
+obtain reasonable generalization of results in Section 4.1 for $\omega$>0 under RH, and then
+
+throughout distribution theoretic dealing of Section 4.3 and 4.4, we may arrive at the
+generalization of Theorem 2.3 for the range (iii) (and (ii)) under RH. In this strategy, it
+is necessary to note that $\phi$_{a}^{ $\epsilon$}(x) have some possible singularities, which affect definition
+
+(4.18) of $\mu$(a) and definition (4.27) of m(a) and that the definition of determinants                              ,
+
+
+
+
+\det(1\pm \mathrm{H}_{ $\omega$,a}) should be changed as in König [14].
+         We leave a justification of the above argument for a future study.
+
+
+
+                                                                                 § Appendix A.
+
+         Suppose that $\Theta$_{ $\omega$}(z) is an inner function in \mathbb{C}^{+}                                                          .
+
+                                                                                                                                                      (It holds unconditionally for $\omega$\geq
+ 1/2 and also for 0< $\omega$<1/2 under RH.) Then it defines the reproducing kernel Hilbert
+     ,
+
+
+
+space K($\Theta$_{ $\omega$}) which is isomorhic to the de Branges space B(E) (see Section 1.3 and
+
+1.4). According to the theory of de Branges [9], the structure of B(E) is determined
+by associated canonical system, which was described in terms of the shifted Fourier
+inversion h(x) of $\Theta$_{ $\omega$}(z) under the restriction $\omega$>1                                                                        .    On the other hand, the structure
+of B(E) is also determined by the reproducing kernel of K($\Theta$_{ $\omega$}) :
+
+
+
+                                 K_{ $\omega$}(z, w)=\displaystyle \frac{1}{2 $\pi$ i}\frac{1-\overline{$\Theta$_{ $\omega$}(z)}$\Theta$_{ $\omega$}(w)}{\overline{z}-w} (z, w\in \mathb {C}^{+})
+(see Section 1.3). We find that K_{ $\omega$}(0, *) belongs to L() by (1.9) and (1.10), and thus
+its shifted Fourier inversion
+                                           \mathrm{F}_{1/2}^{-1}K_{ $\omega$}(0, *) belongs to L^{2}((0, \infty), dx)                                                                           .
+
+
+
+
+         However, if we           obtain
+                                         \mathrm{F}_{1/2}^{-1}K_{ $\omega$}(0, *) explicitly enough, may define \mathrm{F}_{1/2}^{-1}K_{ $\omega$}(0, *)               we
+
+
+regardless whether $\Theta$_{ $\omega$}(z) is an inner function in \mathbb{C}^{+}                                                                 .    In fact, it is carried out by using
+
+the weighted summatory function                                                     h_{ $\omega$}^{\langle 1\rangle}(x) defined below. Then sufficient                                              or          equivalent
+conditions for $\Theta$_{ $\omega$}(z) to be an inner function in \mathbb{C}^{+}                                                                  are        given in terms of                      h_{ $\omega$}^{\langle 1\rangle}(x)   as   in
+
+Theorem 2.2. This is the main result in the appendix.
+         The function         h_{ $\omega$}^{\langle 1\rangle}(x) is not only directly related to RH via the innerness of $\Theta$_{ $\omega$}(z)                                                                                               ,
+
+
+
+but also        directly related to the operator \mathrm{H}_{$\omega$} (Theorem A.2).                                                                                                      The above discussion
+
+clarifies the meaning of a part of functions studied in                                                                                               [26] (see the remark after Theorem
+A.1).
+
+                                                          A.1.                      Notation and Results
+
+         Let B(z;p, q) be the incomplete beta function defined by
+
+
+
+                B(z;p, q)=\displaystyle \int_{0}^{z}x^{p-1}(1-x)^{q-1}dx (0\leq z\leq 1, \Re(p)>0, \Re(q)>0)                                                                                                      .
+430                                                                                                                                                                     Masatoshi Suzuki
+
+
+
+We use the notation
+
+
+
+                                                               $\beta$(z;p, q):=B(p, q)-B(z;p, q)=\displaystyle \int_{z}^{1}x^{p-1}(1-x)^{q-1}dx,
+                  $\beta$(z;p, q) is defined by the integral on the right‐hand side if \Re(p)\leq
+and understand that
+
+0, \Re(q)>0 and 0<z<1 For example, g_{ $\omega$} of (2.2) can be written as
+                                            ,
+                                                                                                                  .
+
+
+
+
+                                             g_{ $\omega$}(x)=\displaystyle \frac{2$\pi$^{ $\omega$} { $\Gam a$( $\omega$)}[x^{2- $\omega$}(1-x^{2})^{ $\omega$-1}- $\omega$ x^{ $\omega$-1} $\beta$(x^{2}, \frac{3-2 $\omega$}{2}, $\omega$)]                                                                           .
+
+
+
+
+We define the real‐valued function                                                                                                                       g_{$\omega$}^{\langle1\rangle}   on
+                                                                                                                                                                                                  (0, \infty) by
+
+(A.1)                                                                                                                        g_{ $\omega$}^{\langle 1\rangle}(x)
+                                                                                                                                                                            :=\displaystyle\int_{x}^{1}\sqrt{\frac{y}{x} g_{$\omega$}(y)\frac{dy}{y}
+for 0<x<1 , and                                                                           g_{ $\omega$}^{\langle 1\rangle}(x)=0 for x>1 Then                                              .                       we              have
+
+
+  g_{ $\omega$}^{\langle 1\rangle}(x)=
+
+
+
+    \left\{\begin{aray}{l} \frac{4$\omega$}{2$\omega$-1}\frac{$\pi$^{$\omega$}{$\Gam a$($\omega$)}\{x^{$\omega$-1}$\beta$(x^{2},\frac{3-2$\omega$}{2},$\omega$)-\frac{2$\omega$+1}{4$\omega$}x^{-1/2}$\beta$(x^{2},\frac{5-2$\omega$}{4},$\omega$)\},$\omega$\neq\frac{1}{2},\\ \frac{2}{\sqrt{x}(2\sqrt{1-x^{2}+\logx-\log(1+\sqrt{1-x^{2}),$\omega$=\frac{1}{2} \end{aray}\right.
+for 0<x<1 by elementary ways.                                                                                                                                            Using g_{$\omega$}^{\langle1\rangle} and c(n) of (2.1), we define the real‐
+valued function                                                  h_{$\omega$}^{\langle1\rangle}   on
+                                                                                                          (0, \infty) by
+
+
+(A.2)
+                                                                                                                      h_{$\omega$}^{\langle1\rangle}(x)=\displaystyle\frac{1}{x}\sum_{n=1}^{\lflo rx\rflo r}c_{$\omega$}(n)g_{$\omega$}^{\langle1\rangle}(\frac{n}{x})
+for x>1 , and                                               h_{ $\omega$}^{\langle 1\rangle}(x)=0 for 0<x<1 Then h_{$\omega$}^{\langle1\rangle} is well‐defined                           .                                                                                                    on
+                                                                                                                                                                                                                                                                                                              (0, \infty) and has a
+support in [1, \infty ) as well as h_{ $\omega$}                                                                                   .       We also have
+
+
+
+(A.3)
+                                                                                                                              h_{$\omega$}^{\langle1\rangle}(x)=\displaystyle\int_{1}^{x}\sqrt{\frac{y}{x} h_{$\omega$}(y)\frac{dy}{y}
+for x>1 by definition (A.1). The function                                                                                                                                                         h_{$\omega$}^{\langle1\rangle} is related to K_{ $\omega$}(z, w) and $\Theta$_{$\omega$}                                                as follows.
+
+
+
+
+               Theorem A.1.                                                                               Let $\omega$>0.
+
+
+(1) If $\Theta$_{ $\omega$}(z) is an inner function in \mathbb{C}^{+}                                                                                                                         ,
+                                                                                                                                                                                                  we     have
+
+
+
+                                                                                                  F_{1/2}^{-1}K_{ $\omega$}(0, *)(z)=\displaystyle \frac{1}{2 $\pi$}(x^{-\frac{1}{2} 1_{(1,\infty)}(x)-h_{ $\omega$}^{\langle 1\rangle}(x)                                                                ,
+
+
+
+
+             where 1_{(1,\infty)} is the characteristic function of ( 1, \infty)                                                                                                                                                                           .
+                                                 A canonical system 0F differential equations                                                                                                                                                       431
+
+
+
+
+(2) $\Theta$_{ $\omega$}(z) is an inner function in \mathbb{C}^{+} if and only if (x^{-\frac{1}{2} 1_{(1,\infty)}(x)-h_{ $\omega$}^{\langle 1\rangle}(x)) belongs to
+         L^{2}((1, \infty), dx)              .
+
+
+
+
+(3) Assume that there exists x_{ $\omega$}\geq 1 such that h_{ $\omega$}^{\langle 1\rangle}(x) has a single sign for every x\geq x_{ $\omega$}.
+    Then $\Theta$_{ $\omega$}(z) is an inner function in \mathbb{C}^{+}.
+
+
+(4) Assume that \displaystyle \lim_{x\rightar ow\infty}\sqrt{x}h_{ $\omega$}^{\langle 1\rangle}(x) exists.                                  Then $\Theta$_{ $\omega$}(z) is an inner function in \mathbb{C}^{+}.
+
+
+(5) Assume that $\Theta$_{ $\omega$}(z) is an inner function in \mathbb{C}^{+} for all $\omega$>0                                                                                                             .   Then we have
+
+
+                                                                                                    \sqrt{x}h_{ $\omega$}^{\langle 1\rangle}(x)=1+o(1)
+          as     x\rightarrow+\infty for all $\omega$>0.
+
+
+           Remark.                      The case                  \displaystyle \lim_{x\rightar ow\infty}\sqrt{x}h_{ $\omega$}^{\langle 1\rangle}(x)=0 is allowed in (4), though it does not
+hold by (5) if RH holds for $\zeta$(s)                                                  .
+
+
+
+
+           Remark.                      Functions h(x) of (2.3) and                                                                          h_{ $\omega$}^{\langle 1\rangle}(x) of (A.2)                  were introduced and stud‐
+
+
+ied in [26] for more general L ‐functions, but notation is different a little. The function
+
+h_{ $\omega$}^{\langle 1\rangle}(x) (resp. h(x) )    was          denoted by
+                                                                                                                x^{-\frac{1}{2} h_{1, $\omega$}^{\langle 1\rangle}(x) (resp. x^{-\frac{1}{2} h_{1, $\omega$}^{\langle 0\rangle}(x) ) in [26].
+          Theorem A.2.                                      Suppose that $\Theta$_{ $\omega$}(z) is an inner function in \mathbb{C}^{+}                                                                                    .      We define
+
+
+
+
+                                                       (\displaystyle\tilde{\mathrm{H} _{$\omega$}f)(x)=\sqrt{x}\frac{d}{dx}\sqrt{x}\int_{0}^{\infty}h_{$\omega$}^{\langle1\rangle} ( ) f(y)dy
+                                                                                                                                                                               xy
+
+
+
+for compactly supported smooth functions f                                                                                              .
+
+                                                                                                                                             \tilde{\mathrm{H} _{$\omega$}f belongs to L^{2}((0, \infty), dx)
+                                                                                                                                                Then                                                                                            ,
+                                                                                                                                                                                                                                                    and
+
+f\mapsto\tilde{\mathrm{H} _{ $\omega$}f is extended to the isometry                                             on
+                                                                                                                            L^{2}((0, \infty), dx) satisfy ing \tilde{\mathrm{H} _{ $\omega$}f=\mathrm{H}_{ $\omega$}f.
+
+                                                                     A.2.                         Proof of Theorem A.1
+
+          We prove each statement of Theorem A.1 separately. At first, we note the following:
+
+
+          Proposition A.3.                                            For $\omega$>0 and \Im(z)>1/2+ $\omega$ ,                                                                                        we   have
+
+
+
+(A.4)
+                                                                     \displaystyle\int_{0}^{\infty}h_{$\omega$}^{\langle1\rangle}(x)x^{\frac{1}{2}+iz}\frac{dx}{x}=\frac{i}{z}$\Theta$_{$\omega$}(z)   ,
+
+
+
+
+where the integral converges absolutely.
+
+
+
+           Proof.              This is proved by a way similar to the proof of Proposition 2.1 in Section
+
+3.1      (see also Lemma 4.2 of [26]).                                                                                                                                                                                                               \square
+
+
+(3): By the assumption and a theorem of Landau (e.g. Widder [29, Chap.II5]),
+the integral in (A.4) converges for \Im(z)>v_{0} where iv_{0} is the first pure imaginary                                                            ,
+432                                                                                                                        Masatoshi Suzuki
+
+
+
+
+singularity of $\Theta$_{ $\omega$}(z)/z On the other hand, $\Theta$_{ $\omega$}(z) has no singularities on the imaginary
+                                                                       .
+
+
+
+
+axis, because it is known that $\xi$(s) has no real zeros. Hence $\Theta$_{ $\omega$}(z) is regular in \mathbb{C}^{+}                                                                                                                           .      It
+
+implies that $\Theta$_{ $\omega$}(z) is an inner function in \mathbb{C}^{+} by a way similar to the proof of Lemma
+3.1.                                                                                                                                                                                                                                                \square
+
+
+(1) and (2): Suppose that $\Theta$_{ $\omega$}(z) is an inner function in \mathbb{C}^{+}                                                                                                                        .       We have
+
+
+
+
+                                      h_{ $\omega$}^{\langle 1\rangle}(x)=\displaystyle \frac{1}{2 $\pi$}\lim_{U\rightar ow\infty}\int_{-U+ic}^{U+ic}\frac{$\Theta$_{ $\omega$}(z)}{-iz}x^{-\frac{1}{2}-iz}dz (c>1/2+ $\omega$)
+for x>1                      by the Mellin inversion formula (e.g. [28, Theorem 28]), since the integral
+in (2.4) converges absolutely for \Im(z)>1/2+ $\omega$ and h_{ $\omega$}^{\langle 1\rangle}(x) is in C^{1}(1, \infty) By the                                                                                                               .
+
+
+
+
+Stirling formula, we have $\Theta$_{ $\omega$}(u+iv)\l _{ $\omega$,v}u^{- $\omega$} for a fixed v>1/2+ $\omega$ Therefore                                                                                                          .
+
+
+
+
+                       h_{ $\omega$}^{\langle 1\rangle}(x)=\displaystyle \frac{1}{2 $\pi$}\int_{-U+ic}^{U+ic}\frac{$\Theta$_{ $\omega$}(z)}{-iz}x^{-\frac{1}{2}-iz}dz+O(x^{c-\frac{1}{2} U^{- $\omega$}) (c>1/2+ $\omega$)                 .
+
+
+
+
+Using the well‐known formula
+
+
+
+                                        x^{-\frac{1}{2} =\displaystyle \frac{1}{2 $\pi$}\int_{-U+ic}^{U+ic}\frac{1}{-iz}x^{-\frac{1}{2}-iz}dz+O(x^{c-\frac{1}{2} (\log x)^{-1}U^{-1})
+for x>1 and large U>1 , we have
+
+
+
+
+x^{-\frac{1}{2} -h_{ $\omega$}^{\langle 1\rangle}(x)=\displaystyle \frac{1}{2 $\pi$}\int_{-U+ic}^{U+ic}\frac{1-$\Theta$_{ $\omega$}(z)}{-iz}x^{-\frac{1}{2}-iz}dz+O(x^{c-\frac{1}{2} U^{- $\omega$})+O(x^{c-\frac{1}{2} (\log x)^{-1}U^{-1})                  .
+
+
+
+
+Here the integrand                                           (1-$\Theta$_{ $\omega$}(z))/z is bounded on \mathbb{C}^{+}\cup \mathbb{R}                                                                .      Thus the residue theorem
+
+gives
+
+
+
+x^{-\frac{1}{2} -h_{ $\omega$}^{\langle 1\rangle}(x)=\displaystyle \frac{1}{2 $\pi$}\int_{-U}^{U}\frac{1-$\Theta$_{ $\omega$}(z)}{-iz}x^{-\frac{1}{2}-iz}dz+O(x^{c-\frac{1}{2} U^{- $\omega$})+O(x^{c-\frac{1}{2} (\log x)^{-1}U^{-1})                        ,
+
+
+
+
+since          integrals on                          \displaystyle\int_{\pmU+i0}^{\pmU+ic}   are       bounded by                                   x^{c-\frac{1}{2}}(\log x)^{-1}U^{-1}                            .
+
+                                                                                                                                                                                                                            Tending U to +\infty for
+fixed x>1 , we have
+
+
+
+(A.5)
+                                         x^{-\frac{1}{2} -h_{ $\omega$}^{\langle 1\rangle}(x)=\displaystyle \frac{1}{2 $\pi$}\int_{-\infty}^{\infty}\frac{1-$\Theta$_{ $\omega$}(u)}{-iu}x^{-\frac{1}{2}-iu}du (x>1)                   .
+
+
+
+
+This implies that                                x^{-\frac{1}{2} 1_{(1,\infty)}(x)-h_{ $\omega$}^{\langle 1\rangle}(x) belongs to L^{2}((1, \infty), dx) since (1-$\Theta$_{ $\omega$}(u))/u                                 ,
+
+
+
+belongs to L^{2}() by (1.9) and (1.10). In addition, (A.5) implies (1).
+            Suppose that x^{-1/2}1_{(1,\infty)}-h_{ $\omega$}^{\langle 1\rangle} belongs to L^{2}((1, \infty), dx)                                                                                                      .   Then the integral
+
+
+
+(A.6)
+                                                                                \displaystyle \int_{0}^{\infty}[x^{-\frac{1}{2} 1_{(1,\infty)}(x)-h_{ $\omega$}^{\langle 1\rangle}(x)]x^{\frac{1}{2}+iz}\frac{dx}{x}
+                                                    A canonical system 0F differential equations                                                                                                                                      433
+
+
+
+
+converges                   on   the real line in L^{2} ‐sense, and converges                                                                                                              absolutely for \Im(z)>0 ([29,
+Chap.II, §10]). Hence integral (A.6) defines an analytic function in \mathbb{C}^{+} By Proposition                                                                                                                          .
+
+
+
+
+A.3, integral (A.6) is equal to (1-$\Theta$_{ $\omega$}(z))/(iz) for \Im(z)>1/2+ $\omega$                                                                                                                      .    Hence we find that
+
+ $\Theta$_{ $\omega$}(z) is an analytic function in \mathbb{C}^{+}                                           ,
+                                                                                                                  and it implies that $\Theta$_{ $\omega$}(z) is an inner function in
+
+\mathbb{C}^{+} as well as the proof of (3).                                                                                                                                                                                           \square
+
+
+(4): By formula (A.3), the assumption implies that the integral of (2.4) converges at
+z=0 in the sense
+
+
+                                                                                        \displaystyle\lim_{T\rightar ow\infty}\int_{1}^{T}h_{$\omega$}(x)x^{\frac{1}{2}+i0}\frac{dx}{x}.
+This implies that the integral of              (2.4) converges for \Im(z)>0 and defines an analytic                                                                                             ,
+
+
+
+function in \mathbb{C}^{+} ([29, Chap.II, §1]). Hence $\Theta$_{ $\omega$}(z) is an inner function in \mathbb{C}^{+} by (1.9). \square
+
+
+(5): If $\Theta$_{ $\omega$}(z) is an inner function in \mathbb{C}^{+} for all $\omega$>0 RH(A) holds for all $\omega$>0.                                                                  ,
+
+
+
+Hence RH holds by Proposition 1.1. Then we obtain (5) by a way similar to the proof
+
+of Theorem 2.3 (2‐b) in [26].                                                                                         \square
+
+
+                                                                             A.3.                     Proof of Theorem A.2
+
+
+        Suppose that $\Theta$_{ $\omega$}(z) is an inner function in \mathbb{C}^{+}                                                                                       .      Let f be a compactly supported
+
+smooth function. Put F=\mathrm{F}_{1/2}f and define
+
+
+
+
+                                                              g(x)=\displaystyle \frac{1}{2 $\pi$}\int_{c-i\infty}^{c+i\infty}$\Theta$_{ $\omega$}(z)F(-z)x^{-\frac{1}{2}-iz}dz
+for c\geq 0         .        Then the right‐hand side is independent of c\geq 0 by the assumption, and
+
+defines an member of L^{2}((0, \infty), dx) by (1.9).                                                                                               Moreover, we have
+
+
+
+                                                    \displaystyle \int_{0}^{x}\frac{g(u)}{\sqrt{u} du=\frac{1}{2 $\pi$}\int_{c-i\infty}^{c+i\infty}$\Theta$_{ $\omega$}(z)F(-z)\frac{x^{-iz} {-iz}dz.
+for c>0         .           On the other hand, by Proposition A.4, we obtain
+
+
+
+
+                                 \displaystyle\int_{0}^{\infty}h_{$\omega$}^{\langle1\rangle} ( ) f(y)dy=\displaystyle \frac{1}{2 $\pi$}\int_{c'-i\infty}^{c'+i\infty}\frac{$\Theta$_{ $\omega$}(z)}{-iz}F(-z)x^{-\frac{1}{2}-iz}dz
+                                                                 xy
+
+
+for c'\gg 0             .    Hence
+
+
+                                                                  \displaystyle\frac{1}{\sqrt{x} \int_{0}^{x}\frac{g(u)}{\sqrt{u} du=\int_{0}^{\infty}h_{$\omega$}^{\langle1\rangle} ( ) f(y)dy.
+                                                                                                                                                                        xy
+
+
+This implies that                              g=\tilde{\mathrm{H} _{ $\omega$}f   .   Thus                  \tilde{\mathrm{H} _{$\omega$}f is defined almost everywhere and belongs to
+L^{2}((0, \infty), dx)           ,
+                                     since g belongs to L^{2}((0, \infty), dx)                                                                              .     Moreover we obtain g= Hf by the
+
+definition of g and the latter half of the proof of Lemma 4.1. Hence \tilde{\mathrm{H} _{ $\omega$}f=\mathrm{H}_{ $\omega$}f , and it
+
+implies the extension of \tilde{\mathrm{H}_{$\omega$} to L^{2}((0, \infty), dx)                                                                .                                                                                         \square
+434                                                      Masatoshi Suzuki
+
+
+
+                                                          References
+
+
+
+ [1] Baranov, A., Isometric embeddings of the spaces K_{ $\Theta$} in the upper half‐plane, J. Math.
+     Sci. (New York), 105, (2001), no. 5, 23192329.
+
+ [2] Bochner, S. and Chandrasekharan, K., Fourier Transforms, Annals of Mathematics Stud‐
+       ies, no. 19, Princeton University Press, Princeton, N. J., 1949.
+ [3] Burnol, J.‐F., On Fourier and zeta(s), Forum Math., 16, (2004), no. 6, 789840.
+ [4] Burnol, J.‐F., Spacetime causality in the study of the Hankel transform, Ann. Henri
+     Poincaré, 7, (2006), no. 6, 10131034.
+ [5] Burnol, J.‐F., Entrelacement de co‐Poisson, Ann. Inst. Fourier (Grenoble), 57, (2007),
+       no.2, 525602.
+ [6] Burnol, J.‐F., Scattering, determinants, hyperfunctions in relation to $\Gamma$(1-s)/ $\Gamma$(s) Re‐                         ,
+
+
+
+     jecta Math. 2 (2011), no.1, 59118, available at http://arxiv.org/abs/math/0602425.
+ [7] Conrey, J. B. and Li, X.‐J., A note on some positivity conditions related to zeta and
+     L ‐functions, Internat. Math. Res. Notices, 2000, (2000), no. 18, 929940.
+
+ [8] de  Branges, L., Some Hilbert spaces of entire functions, Proc. Amer. Math. Soc., 10,
+       (1959), 840846.
+ [9]   de
+        Branges, L., Hilbert spaces of entire functions, Prentice‐Hall Inc., Englewood Cliffs,
+     N.J., 1968.
+[10] de Branges, L., The Riemann hypothesis for Hilbert spaces of entire functions, Bull. Amer.
+     Math. Soc. (N.S.), 15, (1986), no. 1, 117.
+
+[11] de Branges, L., The convergence of Euler products, J. Funct. Anal., 107, (1992), no. 1,
+       122210.
+
+[12] Havin, V. and Mashreghi, J., Admissible majorants for model subspaces of H^{2} I. Slow                                    .
+
+
+
+
+     winding of the generating inner function, Canad. J. Math., 55, (2003), no. 6, 12311263.
+[13] Havin, V. and Mashreghi, J., Admissible majorants for model subspaces of H^{2} II. Fast                               .
+
+
+
+
+     winding of the generating inner function, Canad. J. Math., 55, (2003), no. 6, 12641301.
+[14] König, H., A Fredholm determinant theory for p‐summing maps in Banach spaces, Math.
+     Ann., 247, (1980), no. 3, 255274.
+[15] Lagarias, J. C., Zero spacing distributions for differenced L ‐functions, Acta Arith., 120,
+     (2005), no. 2, 159184.
+[16] Lagarias, J. C., Hilbert spaces of entire functions and Dirichlet L ‐functions, Frontiers in
+       number theory, physics, and geometry. I, 365377, Springer, Berlin, 2006.
+
+[17]   Lagarias, J. C., The \mathrm{S}\mathrm{c}\mathrm{h}\d ot{\mathrm{r} odinger operator with Morse potential on the right half‐line,
+       Commun. Number Theory Phys., 3, (2009), no. 2, 323361.
+
+[18]   Lagarias, J. C. and Suzuki, M., The Riemann hypothesis for certain integrals of Eisenstein
+       series, J. Number Theory, 118, (2006), no. 1, 98122.
+[19]   Lax, P. D., Functional analysis, Pure and Applied Mathematics (New York), Wiley‐
+       Interscience, New York, 2002.
+[20]   Levin, B. Ya., Lectures on entire functions, Translations of Mathematical Monographs,
+       150, American Mathematical Society, Providence, RI, 1996.
+[21]   Li, X., Variation of the argument of the Riemann $\xi$ function on vertical lines, Acta Arith.,
+       137, (2009), no. 3, 277284.
+[22]   Makarov, N. G. and Poltoratski, A., Meromorphic inner functions, Toeplitz kernels and the
+       uncertainty principle, Perspectives in analysis, Math. Phys. Stud., 27, 185252, Springer,
+       Berlin, 2005.
+[23]   Oberhettinger, F., Tables of Mellin transfO rms, Springer‐Verlag, New York, 1974.
+                       A canonical system 0F differential equations                        435
+
+
+
+
+[24] Remling, C., Schrödinger operators and de Branges spaces, J. Funct. Anal., 196, (2002),
+       no.   2, 323394.
+[25]   Smithies, F., Integral equations, Cambridge Tracts in Mathematics and Mathematical
+       Physics, no. 49, Cambridge University Press, New York, 1958.
+[26]   Suzuki, M., On monotonicity of certain weighted summatory functions associated with
+        L ‐functions, Comment. Math. Univ. St. Pauli, 60, (2011), no. 1 & no. 2, 211225.
+
+[27]   Titchmarsh, C., The theory of the Riemann zeta‐function, Second ed., The Clarendon
+       Press Oxford University Press, New York, 1986.
+
+[28]   Titchmarsh, C., Introduction to the theory of Fourier integrals, Third ed., Chelsea Pub‐
+       lishing Co., New York, 1986.
+[29]   Widder, V., The Laplace TransfO rm, Princeton Mathematical Series, v. 6, Princeton Uni‐
+       versity Press, Princeton, N. J., 1941.
+

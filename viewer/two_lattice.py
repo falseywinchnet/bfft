@@ -140,11 +140,52 @@ def recover_two_lattice(observed: np.ndarray, n_long: int, n_short: int,
     return latent, metrics
 
 
+def recover_ladder(observed: np.ndarray, rungs, *, iterations: int = 1,
+                   beta: float = 0.88, final_relax: float = 0.75,
+                   initial: np.ndarray | None = None
+                   ) -> tuple[np.ndarray, dict[str, float]]:
+    """Ladder generalization of the two-family loop (executable spec for
+    ``iqw_dip_unified_ladder``).  ``rungs`` is a sequence of (n_fft, hop) in
+    application order (largest first by convention); the final relaxed
+    projection is applied on rungs[0].  Coverage rationale is recorded in
+    notes/two_lattice_superresolution.md S5: an upward rung pins slow packet
+    pairs the deployed pair cannot see, at nearly no cost.
+    """
+    z = np.ascontiguousarray(observed, dtype=np.complex128)
+    families = [MagnitudeFamily(z, int(n), int(h)) for n, h in rungs]
+    rms = float(np.sqrt(np.mean(np.abs(z) ** 2)) + 1e-12)
+    if initial is None:
+        latent = z.copy()
+    else:
+        latent = np.ascontiguousarray(initial, dtype=np.complex128).copy()
+    previous = latent.copy()
+    for _ in range(max(0, int(iterations))):
+        trial = latent + beta * (latent - previous)
+        if (not np.all(np.isfinite(trial)) or
+                np.max(np.abs(trial)) > 50.0 * max(rms, 1e-12)):
+            trial = latent.copy()
+        previous = latent
+        for fam in families:
+            trial = fam.project(trial, trial)
+        latent = trial
+    final_relax = min(1.0, max(0.0, float(final_relax)))
+    if iterations > 0 and final_relax > 0.0 and families:
+        corrected = families[0].project(latent, latent)
+        latent = latent + final_relax * (corrected - latent)
+    cross = np.vdot(latent, z)
+    if abs(cross) > 1e-30:
+        latent = latent * (cross / abs(cross))
+    metrics = {f"rung{n}_relative_error": fam.relative_error(latent)
+               for (n, _h), fam in zip(rungs, families)}
+    return latent, metrics
+
+
 class TwoLatticeStream:
     """Asynchronous, overlap-added NumPy reference solver for an IQ source."""
 
     def __init__(self, src, n_long=1024, n_short=128, *, h_short=32,
-                 iterations=24, workers=2, prefetch=1, cache_tiles=48):
+                 iterations=24, workers=2, prefetch=1, cache_tiles=48,
+                 rung_mult=0):
         self.src = src
         self.n_long = int(n_long)
         self.n_short = int(n_short)
@@ -152,6 +193,17 @@ class TwoLatticeStream:
         self.h_short = int(h_short)
         self.iterations = int(iterations)
         self.tile = max(8192, 2 * self.n_long)
+        # Optional upward rung (coverage law, notes S5): rung_mult in {0,2,4}
+        # adds a rung_mult*n_long window family, capped at the tile length.
+        # Upward rungs pin slow packet pairs (dt > n_long) the deployed pair
+        # is blind to, at near-zero cost (few frames per tile).
+        self.rung_mult = int(rung_mult)
+        self.rungs = None
+        if self.rung_mult > 1:
+            up = min(self.rung_mult * self.n_long, self.tile)
+            self.rungs = [(up, max(1, up // 8)),
+                          (self.n_long, self.h_long),
+                          (self.n_short, self.h_short)]
         self.step = self.tile // 2
         self.ntiles = max(1, (src.num_samples + self.step - 1) // self.step)
         self.prefetch = int(prefetch)
@@ -171,10 +223,16 @@ class TwoLatticeStream:
         # literal independent-family projection implemented above.  Keeping
         # the NumPy functions in this file makes the C++ semantics testable.
         import iqwaterfall as iqw
-        unified, _loss0 = iqw.dip_unified(
-            observed, steepest_scale=2.5e-4, shared_steps=1,
-            nb=self.n_long, ns=self.n_short, h_short=self.h_short,
-            unified_steps=self.iterations, beta=0.88)
+        if self.rungs is not None:
+            unified, _loss0 = iqw.dip_unified_ladder(
+                observed, self.rungs, steepest_scale=2.5e-4, shared_steps=1,
+                nb=self.n_long, ns=self.n_short,
+                unified_steps=self.iterations, beta=0.88)
+        else:
+            unified, _loss0 = iqw.dip_unified(
+                observed, steepest_scale=2.5e-4, shared_steps=1,
+                nb=self.n_long, ns=self.n_short, h_short=self.h_short,
+                unified_steps=self.iterations, beta=0.88)
         if not self.src.is_complex:
             unified = unified.real
         return unified, {}
