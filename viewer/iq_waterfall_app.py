@@ -609,7 +609,7 @@ def build_ui():
                 dpg.add_text("Super-resolution apertures")
                 with dpg.group(horizontal=True):
                     dpg.add_text("long win")
-                    dpg.add_combo(["512", "1024", "2048", "4096"],
+                    dpg.add_combo(["512", "1024", "2048", "4096","8192"],
                                   default_value="1024", width=80,
                                   tag="sr_nb_combo", enabled=False,
                                   callback=cb_sr_nb)
