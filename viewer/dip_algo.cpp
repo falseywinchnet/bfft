@@ -1310,27 +1310,50 @@ IQW_API void iqw_dip_unified(const double* z_in, int L, const int* dsel,
                              int ndsel, int renorm, double steepest_scale,
                              int shared_steps, int nb, int ns, int h_short,
                              int unified_steps, double beta,
-                             double final_long_relax, double* u_out,
+                             double final_long_relax, int finish_mode,
+                             int n_warm, const double* warm_internal,
+                             double* internal_out, double* u_out,
                              double* loss0_out) {
     int nds = dsel ? ndsel : 0;
     const cd* zp = reinterpret_cast<const cd*>(z_in);
     Ten observed(zp, zp + L);
     SolverC S(zp, L, dsel, nds, renorm != 0, nb, ns);
     double loss0 = 0.0;
-    Ten latent = S.run(steepest_scale, shared_steps, false, loss0);
+    Ten latent = S.run_warm(steepest_scale, shared_steps, false, n_warm,
+                            warm_internal, internal_out, loss0);
     MagnitudeProjectorC long_family(observed, L, nb, nb / 8);
     MagnitudeProjectorC short_family(observed, L, ns, h_short);
+    double rms2 = 0.0;
+    for (const cd& v : observed) rms2 += std::norm(v);
+    double rms = std::sqrt(rms2 / std::max(1, L)) + 1e-12;
     Ten previous = latent;
     int steps = std::max(0, unified_steps);
     for (int step = 0; step < steps; ++step) {
         Ten trial(L);
+        bool bad_trial = false;
         for (int t = 0; t < L; ++t)
+        {
             trial[t] = latent[t] + beta * (latent[t] - previous[t]);
+            double a = std::abs(trial[t]);
+            bad_trial = bad_trial || !std::isfinite(a) || a > 50.0 * rms;
+        }
+        if (bad_trial) trial = latent;
         previous = latent;
-        latent = short_family.project(long_family.project(trial));
+        if (finish_mode == 1) {
+            Ten corrected = long_family.project(trial);
+            for (int t = 0; t < L; ++t)
+                trial[t] += 0.5 * (corrected[t] - trial[t]);
+            trial = short_family.project(trial);
+            corrected = long_family.project(trial);
+            for (int t = 0; t < L; ++t)
+                trial[t] += 0.5 * (corrected[t] - trial[t]);
+            latent = std::move(trial);
+        } else {
+            latent = short_family.project(long_family.project(trial));
+        }
     }
     final_long_relax = std::min(1.0, std::max(0.0, final_long_relax));
-    if (steps > 0 && final_long_relax > 0.0) {
+    if (finish_mode == 0 && steps > 0 && final_long_relax > 0.0) {
         Ten corrected = long_family.project(latent);
         for (int t = 0; t < L; ++t)
             latent[t] += final_long_relax * (corrected[t] - latent[t]);
@@ -1361,29 +1384,58 @@ IQW_API void iqw_dip_unified_ladder(const double* z_in, int L,
                                     const int* rung_n, const int* rung_h,
                                     int n_rungs, int unified_steps,
                                     double beta, double final_relax,
-                                    double* u_out, double* loss0_out) {
+                                    int finish_mode,
+                                    int n_warm, const double* warm_internal,
+                                    double* internal_out, double* u_out,
+                                    double* loss0_out) {
     int nds = dsel ? ndsel : 0;
     const cd* zp = reinterpret_cast<const cd*>(z_in);
     Ten observed(zp, zp + L);
     SolverC S(zp, L, dsel, nds, renorm != 0, nb, ns);
     double loss0 = 0.0;
-    Ten latent = S.run(steepest_scale, shared_steps, false, loss0);
+    Ten latent = S.run_warm(steepest_scale, shared_steps, false, n_warm,
+                            warm_internal, internal_out, loss0);
     std::vector<MagnitudeProjectorC> fams;
     fams.reserve(std::max(0, n_rungs));
     for (int i = 0; i < n_rungs; ++i)
         fams.emplace_back(observed, L, rung_n[i], rung_h[i]);
+    double rms2 = 0.0;
+    for (const cd& v : observed) rms2 += std::norm(v);
+    double rms = std::sqrt(rms2 / std::max(1, L)) + 1e-12;
     Ten previous = latent;
     int steps = std::max(0, unified_steps);
     for (int s = 0; s < steps; ++s) {
         Ten trial(L);
+        bool bad_trial = false;
         for (int t = 0; t < L; ++t)
+        {
             trial[t] = latent[t] + beta * (latent[t] - previous[t]);
+            double a = std::abs(trial[t]);
+            bad_trial = bad_trial || !std::isfinite(a) || a > 50.0 * rms;
+        }
+        if (bad_trial) trial = latent;
         previous = latent;
-        for (const auto& f : fams) trial = f.project(trial);
-        latent = trial;
+        if (finish_mode == 1 && !fams.empty()) {
+            // Nested palindromic sweep.  Each outer family supplies equal
+            // half-corrections on both sides of the innermost full step.
+            for (size_t i = 0; i + 1 < fams.size(); ++i) {
+                Ten corrected = fams[i].project(trial);
+                for (int t = 0; t < L; ++t)
+                    trial[t] += 0.5 * (corrected[t] - trial[t]);
+            }
+            trial = fams.back().project(trial);
+            for (size_t i = fams.size() - 1; i-- > 0;) {
+                Ten corrected = fams[i].project(trial);
+                for (int t = 0; t < L; ++t)
+                    trial[t] += 0.5 * (corrected[t] - trial[t]);
+            }
+        } else {
+            for (const auto& f : fams) trial = f.project(trial);
+        }
+        latent = std::move(trial);
     }
     final_relax = std::min(1.0, std::max(0.0, final_relax));
-    if (steps > 0 && final_relax > 0.0 && !fams.empty()) {
+    if (finish_mode == 0 && steps > 0 && final_relax > 0.0 && !fams.empty()) {
         Ten corrected = fams.front().project(latent);
         for (int t = 0; t < L; ++t)
             latent[t] += final_relax * (corrected[t] - latent[t]);

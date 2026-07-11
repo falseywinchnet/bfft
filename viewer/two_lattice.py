@@ -72,7 +72,8 @@ def recover_two_lattice(observed: np.ndarray, n_long: int, n_short: int,
                         *, h_long: int | None = None, h_short: int = 32,
                         iterations: int = 24, beta: float = 0.88,
                         seed: int = 0, real_signal: bool = False,
-                        initial: np.ndarray | None = None
+                        initial: np.ndarray | None = None,
+                        finish_mode: str = "legacy"
                         ) -> tuple[np.ndarray, dict[str, float]]:
     """Recover one complex latent waveform from two STFT magnitude families.
 
@@ -118,10 +119,20 @@ def recover_two_lattice(observed: np.ndarray, n_long: int, n_short: int,
                 np.max(np.abs(trial)) > 50.0 * max(rms, 1e-12)):
             trial = latent.copy()
         previous = latent
-        fitted_long = long_family.project(trial, trial,
+        if finish_mode == "palindromic":
+            fitted = long_family.project(trial, trial,
+                                         real_signal=real_signal)
+            trial = trial + 0.5 * (fitted - trial)
+            trial = short_family.project(trial, trial,
+                                         real_signal=real_signal)
+            fitted = long_family.project(trial, trial,
+                                         real_signal=real_signal)
+            latent = trial + 0.5 * (fitted - trial)
+        else:
+            fitted_long = long_family.project(trial, trial,
+                                              real_signal=real_signal)
+            latent = short_family.project(fitted_long, fitted_long,
                                           real_signal=real_signal)
-        latent = short_family.project(fitted_long, fitted_long,
-                                      real_signal=real_signal)
 
     # Select only the global phase.  Magnitudes and the recovered structure are
     # unchanged.  vdot(latent, z) is the multiplier that maps latent toward z.
@@ -142,7 +153,8 @@ def recover_two_lattice(observed: np.ndarray, n_long: int, n_short: int,
 
 def recover_ladder(observed: np.ndarray, rungs, *, iterations: int = 1,
                    beta: float = 0.88, final_relax: float = 0.75,
-                   initial: np.ndarray | None = None
+                   initial: np.ndarray | None = None,
+                   finish_mode: str = "legacy"
                    ) -> tuple[np.ndarray, dict[str, float]]:
     """Ladder generalization of the two-family loop (executable spec for
     ``iqw_dip_unified_ladder``).  ``rungs`` is a sequence of (n_fft, hop) in
@@ -165,11 +177,21 @@ def recover_ladder(observed: np.ndarray, rungs, *, iterations: int = 1,
                 np.max(np.abs(trial)) > 50.0 * max(rms, 1e-12)):
             trial = latent.copy()
         previous = latent
-        for fam in families:
-            trial = fam.project(trial, trial)
+        if finish_mode == "palindromic" and families:
+            for fam in families[:-1]:
+                corrected = fam.project(trial, trial)
+                trial += 0.5 * (corrected - trial)
+            trial = families[-1].project(trial, trial)
+            for fam in reversed(families[:-1]):
+                corrected = fam.project(trial, trial)
+                trial += 0.5 * (corrected - trial)
+        else:
+            for fam in families:
+                trial = fam.project(trial, trial)
         latent = trial
     final_relax = min(1.0, max(0.0, float(final_relax)))
-    if iterations > 0 and final_relax > 0.0 and families:
+    if (finish_mode == "legacy" and iterations > 0 and
+            final_relax > 0.0 and families):
         corrected = families[0].project(latent, latent)
         latent = latent + final_relax * (corrected - latent)
     cross = np.vdot(latent, z)
@@ -185,13 +207,14 @@ class TwoLatticeStream:
 
     def __init__(self, src, n_long=1024, n_short=128, *, h_short=32,
                  iterations=24, workers=2, prefetch=1, cache_tiles=48,
-                 rung_mult=0):
+                 rung_mult=0, finish_mode="legacy"):
         self.src = src
         self.n_long = int(n_long)
         self.n_short = int(n_short)
         self.h_long = self.n_long // 8
         self.h_short = int(h_short)
         self.iterations = int(iterations)
+        self.finish_mode = str(finish_mode)
         self.tile = max(8192, 2 * self.n_long)
         # Optional upward rung (coverage law, notes S5): rung_mult in {0,2,4}
         # adds a rung_mult*n_long window family, capped at the tile length.
@@ -209,9 +232,14 @@ class TwoLatticeStream:
         self.prefetch = int(prefetch)
         self.cache_tiles = int(cache_tiles)
         self._ola_window = np.hanning(self.tile).astype(np.float64)
-        self._pool = ThreadPoolExecutor(max_workers=workers)
+        # Unified PGHI phases are chained tile-to-tile. A serial executor keeps
+        # ascending submissions deterministic; one tile is ~20 ms, so phase
+        # continuity is worth more than speculative parallel cold seeds.
+        self._pool = ThreadPoolExecutor(max_workers=1)
         self._cache: dict[int, tuple[np.ndarray, dict[str, float]] | str | None] = {}
+        self._warm_internal: dict[int, np.ndarray] = {}
         self._lock = threading.Lock()
+        self._lifecycle_lock = threading.Lock()
         self._io_lock = threading.Lock()
         self._closed = False
 
@@ -223,16 +251,27 @@ class TwoLatticeStream:
         # literal independent-family projection implemented above.  Keeping
         # the NumPy functions in this file makes the C++ semantics testable.
         import iqwaterfall as iqw
+        warm = None
+        previous = self._warm_internal.get(tile_index - 1)
+        if previous is not None and self.step % self.h_long == 0:
+            shift = self.step // self.h_long
+            if shift < previous.shape[1]:
+                warm = np.ascontiguousarray(previous[:, shift:])
         if self.rungs is not None:
-            unified, _loss0 = iqw.dip_unified_ladder(
+            unified, internal, _loss0 = iqw.dip_unified_ladder(
                 observed, self.rungs, steepest_scale=2.5e-4, shared_steps=1,
                 nb=self.n_long, ns=self.n_short,
-                unified_steps=self.iterations, beta=0.88)
+                unified_steps=self.iterations, beta=0.88,
+                finish_mode=self.finish_mode,
+                warm_internal=warm, return_internal=True)
         else:
-            unified, _loss0 = iqw.dip_unified(
+            unified, internal, _loss0 = iqw.dip_unified(
                 observed, steepest_scale=2.5e-4, shared_steps=1,
                 nb=self.n_long, ns=self.n_short, h_short=self.h_short,
-                unified_steps=self.iterations, beta=0.88)
+                unified_steps=self.iterations, beta=0.88,
+                finish_mode=self.finish_mode,
+                warm_internal=warm, return_internal=True)
+        self._warm_internal[tile_index] = internal
         if not self.src.is_complex:
             unified = unified.real
         return unified, {}
@@ -255,18 +294,29 @@ class TwoLatticeStream:
     def request(self, start: int, count: int) -> None:
         lo, hi = self._tile_range(int(start), int(count))
         submit: list[int] = []
-        with self._lock:
-            for k in range(lo, min(self.ntiles, hi + 1 + self.prefetch)):
-                if k not in self._cache:
-                    self._cache[k] = "pending"
-                    submit.append(k)
-            if len(self._cache) > self.cache_tiles:
-                for k in list(self._cache):
-                    if ((k < lo - self.prefetch or k > hi + self.prefetch) and
-                            isinstance(self._cache[k], tuple)):
-                        del self._cache[k]
-        for k in submit:
-            future = self._pool.submit(self._solve_tile, k)
+        futures = []
+        # Selection and submission are one lifecycle transaction. Previously
+        # a UI aperture callback could close the executor after the cache was
+        # marked pending but before submit(), raising "cannot schedule new
+        # futures after shutdown" on the next SR frame.
+        with self._lifecycle_lock:
+            if self._closed:
+                return
+            with self._lock:
+                for k in range(lo, min(self.ntiles, hi + 1 + self.prefetch)):
+                    if k not in self._cache:
+                        self._cache[k] = "pending"
+                        submit.append(k)
+                if len(self._cache) > self.cache_tiles:
+                    for k in list(self._cache):
+                        if ((k < lo - self.prefetch or
+                             k > hi + self.prefetch) and
+                                isinstance(self._cache[k], tuple)):
+                            del self._cache[k]
+                            self._warm_internal.pop(k, None)
+            for k in submit:
+                futures.append((k, self._pool.submit(self._solve_tile, k)))
+        for k, future in futures:
             future.add_done_callback(lambda f, kk=k: self._store(kk, f))
 
     def assemble(self, start: int, count: int, *, raw_fill=True):
@@ -310,6 +360,12 @@ class TwoLatticeStream:
         return out, ready_tiles / expected_tiles, error
 
     def close(self):
-        with self._lock:
-            self._closed = True
-        self._pool.shutdown(wait=False, cancel_futures=True)
+        with self._lifecycle_lock:
+            with self._lock:
+                if self._closed:
+                    return
+                self._closed = True
+            # A stream generation owns in-flight reads from the shared
+            # IQSource. Returning before those reads finish lets a newly
+            # selected rung start another worker on the same FILE*.
+            self._pool.shutdown(wait=True, cancel_futures=True)

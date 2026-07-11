@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import os
 import sys
+import threading
 import time
 
 # Make this app runnable from any working directory: ensure its own folder is
@@ -65,6 +66,36 @@ def _build_lut(anchors, n=256):
 _LUTS = {name: _build_lut(anc) for name, anc in _ANCHORS.items()}
 
 
+def _anchored_zoom(lo, hi, anchor_fraction, wheel,
+                   domain_lo=-0.5, domain_hi=0.5, min_span=1e-5):
+    """Zoom an interval while keeping the point under the cursor fixed."""
+    q = float(np.clip(anchor_fraction, 0.0, 1.0))
+    old_span = max(min_span, float(hi) - float(lo))
+    # One conventional wheel notch is one octave; fractional trackpad deltas
+    # remain continuous instead of being quantized into barely visible steps.
+    factor = 2.0 ** (-float(wheel))
+    span = float(np.clip(old_span * factor, min_span,
+                         domain_hi - domain_lo))
+    anchor = float(lo) + q * old_span
+    new_lo = anchor - q * span
+    new_hi = new_lo + span
+    if new_lo < domain_lo:
+        new_hi += domain_lo - new_lo
+        new_lo = domain_lo
+    if new_hi > domain_hi:
+        new_lo -= new_hi - domain_hi
+        new_hi = domain_hi
+    return max(domain_lo, new_lo), min(domain_hi, new_hi)
+
+
+def _rung_gain_db(n_fft, base_fft):
+    """Hann coherent-power gain relative to the base aperture, in dB."""
+    # For the symmetric Hann used by both NumPy and the native renderer,
+    # sum(w_N) == (N - 1) / 2.  Reassigned power therefore needs 20 log10
+    # of this ratio removed before max-fusing different aperture lengths.
+    return 20.0 * np.log10((int(n_fft) - 1) / (int(base_fft) - 1))
+
+
 def _resample_axis(img, n_out, axis=1):
     """Peak-preserving display resample.
 
@@ -106,11 +137,14 @@ class App:
         self.wf: iqw.Waterfall | None = None
         self.ra: iqw.Reassign | None = None
         self.sr_ra: iqw.Reassign | None = None
+        self.sr_extra_ras: dict[int, iqw.Reassign] = {}
+        self._sr_lock = threading.RLock()
 
         self.n_fft = 1024
         self.window = 0
         self.colormap = "Viridis"
-        self.hop = self.n_fft // 2    # symmetric-Hann COLA display hop
+        self.stft_hop_div = 2
+        self.hop = self.n_fft // self.stft_hop_div
         self.position = 0             # top-row complex-sample index
         self.floor_db = -90.0
         self.ceil_db = -10.0
@@ -129,6 +163,9 @@ class App:
         self.play_rate = 1.0          # x realtime
         self.last_t = time.perf_counter()
         self.dirty = True
+        self._wheel_target = None
+        self._wheel_pending = 0.0
+        self._wheel_anchor = 0.5
 
         self.recon_cov = 0.0
         # Faithful Python two-lattice magnitude inversion.  Each aperture owns
@@ -143,6 +180,9 @@ class App:
         # the {NB, NB/4} pair is provably blind to (coverage law, notes S5),
         # at near-zero cost (few frames per tile).
         self.sr_rung = 0              # 0 = off, else multiplier
+        self.sr_finish = "legacy"     # legacy 75% or palindromic cycle
+        self.sr_normalize_rungs = False
+        self.sr_stage = "unified"     # raw, seed, or unified
         self.srs: two_lattice.TwoLatticeStream | None = None
         self.reassigned = False       # ordinary phase-reassigned STFT
         self._block = None            # reusable (DH, n_fft) render buffer
@@ -157,6 +197,9 @@ class App:
         if self.sr_ra:
             self.sr_ra.close()
             self.sr_ra = None
+        for engine in self.sr_extra_ras.values():
+            engine.close()
+        self.sr_extra_ras.clear()
         if self.src:
             self.src.close()
             self.src = None
@@ -207,8 +250,16 @@ class App:
 
     # -- rendering ----------------------------------------------------------
     def _fusion_block(self):
+        # Dear PyGui can dispatch callbacks concurrently unless manual callback
+        # management is enabled.  Keep this barrier as defense in depth: a
+        # solver/readout generation must remain alive for the complete frame.
+        with self._sr_lock:
+            return self._fusion_block_locked()
+
+    def _fusion_block_locked(self):
         """Python two-lattice recovery followed by the reference readout."""
-        if self.srs is None or self.sr_ra is None:
+        needs_solver = self.sr_stage != "raw"
+        if self.sr_ra is None or (needs_solver and self.srs is None):
             # Treat solver and readout engine as one generation.  The old
             # two-step mutation could leave srs alive after an aperture change
             # had closed sr_ra, causing a None.render_mem crash.
@@ -216,13 +267,33 @@ class App:
                 self.srs.close()
             if self.sr_ra:
                 self.sr_ra.close()
-            stream = two_lattice.TwoLatticeStream(
-                self.src, n_long=self.sr_nb, n_short=self.sr_ns,
-                h_short=self.sr_ns // 2, iterations=1,
-                rung_mult=self.sr_rung)
+            for engine in self.sr_extra_ras.values():
+                engine.close()
+            self.sr_extra_ras.clear()
+            stream = None
+            if needs_solver:
+                stream = two_lattice.TwoLatticeStream(
+                    self.src, n_long=self.sr_nb, n_short=self.sr_ns,
+                    h_short=self.sr_ns // 2,
+                    iterations=0 if self.sr_stage == "seed" else 1,
+                    rung_mult=self.sr_rung, finish_mode=self.sr_finish)
             readout = iqw.Reassign(self.sr_nb)
             readout.set_bilinear(True)
             self.srs, self.sr_ra = stream, readout
+            readout_rungs = None
+            if self.sr_rung > 1:
+                tile = max(8192, 2 * self.sr_nb)
+                up = min(self.sr_rung * self.sr_nb, tile)
+                readout_rungs = [(up, max(1, up // 8)),
+                                 (self.sr_nb, self.sr_nb // 8),
+                                 (self.sr_ns, self.sr_ns // 2)]
+            if readout_rungs is not None:
+                for n, _h in readout_rungs:
+                    if n == self.sr_nb or n in self.sr_extra_ras:
+                        continue
+                    engine = iqw.Reassign(n)
+                    engine.set_bilinear(True)
+                    self.sr_extra_ras[n] = engine
         # The solve uses its independent short-COLA lattice internally, but
         # reassignment is evaluated DIRECTLY at the external comparison
         # centers. Rendering at N/8 and selecting even rows discarded every
@@ -232,14 +303,33 @@ class App:
         # position is the first output center.  Both the reconstruction and
         # reassignment use center coordinates; no aperture-dependent shift is
         # hidden in a parent/crop index.
-        sample_start = self.position - self.sr_nb // 2
-        need = (n_native - 1) * readout_hop + self.sr_nb
-        self.srs.request(sample_start, need)
-        latent, cov, error = self.srs.assemble(sample_start, need)
+        readout_sizes = [self.sr_nb, *self.sr_extra_ras.keys()]
+        display_n = max(readout_sizes)
+        sample_start = self.position - display_n // 2
+        need = (n_native - 1) * readout_hop + display_n
+        stream = self.srs
+        if self.sr_stage == "raw":
+            latent = self.src.read(sample_start, need)
+            cov, error = 1.0, float("nan")
+        else:
+            stream.request(sample_start, need)
+            latent, cov, error = stream.assemble(sample_start, need)
         self.recon_cov = cov
-        err_text = "C++ shared+1" if not np.isfinite(error) else f"err {error:.3g}"
+        finish_text = ({"raw": "raw IQ", "seed": "shared seed"}.get(
+            self.sr_stage) or
+            ("75%" if self.sr_finish == "legacy" else "symmetric"))
+        if self.sr_stage == "raw":
+            err_text = "direct | raw IQ"
+        else:
+            err_text = (f"C++ shared+1 | {finish_text}"
+                        if not np.isfinite(error)
+                        else f"err {error:.3g} | {finish_text}")
+        rung_text = ""
+        if self.sr_rung > 1:
+            tile = stream.tile if stream is not None else max(8192, 2*self.sr_nb)
+            rung_text = f" | rung {min(self.sr_rung*self.sr_nb, tile)}"
         dpg.set_value("recon_status",
-                      f"Python 2-lattice N={self.sr_nb}/{self.sr_ns}: "
+                      f"SR readout N={self.sr_nb}/{self.sr_ns}{rung_text}: "
                       f"{cov*100:.0f}% ready, {err_text}")
         if cov < 0.999:
             self._recon_pending = True
@@ -252,8 +342,21 @@ class App:
         if readout is None:  # generation changed between scheduling and readout
             self._recon_pending = True
             return np.full((DH, self.sr_nb), -120.0, dtype=np.float32)
-        block = readout.render_mem(
-            iq, self.sr_nb // 2, readout_hop, n_native)
+        blocks = [(self.sr_nb, readout.render_mem(
+            iq, display_n // 2, readout_hop, n_native))]
+        for n, engine in self.sr_extra_ras.items():
+            rung_block = engine.render_mem(
+                iq, display_n // 2, readout_hop, n_native)
+            if n != display_n:
+                rung_block = _resample_axis(rung_block, display_n, axis=1)
+            blocks.append((n, rung_block))
+        if self.sr_nb != display_n:
+            blocks[0] = (self.sr_nb, _resample_axis(
+                blocks[0][1], display_n, axis=1))
+        if self.sr_normalize_rungs:
+            blocks = [(n, b - _rung_gain_db(n, self.sr_nb))
+                      for n, b in blocks]
+        block = np.maximum.reduce([b for _n, b in blocks])
 
         return block
 
@@ -361,6 +464,7 @@ class App:
 
     # -- transport ----------------------------------------------------------
     def tick(self):
+        self._consume_wheel()
         now = time.perf_counter()
         dt = now - self.last_t
         self.last_t = now
@@ -377,6 +481,26 @@ class App:
         if self.dirty:
             self.recompute()
             self._sync_time_readout()
+
+    def _consume_wheel(self):
+        if not self.src or abs(self._wheel_pending) < 0.5:
+            return
+        step = 1.0 if self._wheel_pending > 0 else -1.0
+        self._wheel_pending -= step
+        if self._wheel_target == "position":
+            limit = max(0, self.src.num_samples - 1)
+            self.position = int(np.clip(
+                self.position + step * self.hop * 8, 0, limit))
+            dpg.set_value("pos_slider", self.position)
+            self._sync_time_readout()
+            self.dirty = True
+        elif self._wheel_target == "waterfall":
+            self.f_lo, self.f_hi = _anchored_zoom(
+                self.f_lo, self.f_hi, self._wheel_anchor, step,
+                min_span=1.0 / 65536.0)
+            dpg.set_value("freq_lo", self.f_lo)
+            dpg.set_value("freq_hi", self.f_hi)
+            self.dirty = True
 
 
 app = App()
@@ -424,12 +548,49 @@ def cb_pos(sender, val):
     app.dirty = True
 
 
+def cb_mouse_wheel(sender, wheel):
+    """Queue a bounded wheel impulse; the render thread consumes it."""
+    if not app.src or not wheel:
+        return
+    if dpg.is_item_hovered("pos_slider"):
+        target, anchor = "position", 0.5
+    elif dpg.is_item_hovered("wf_plot"):
+        x_hz, _y = dpg.get_plot_mouse_pos()
+        fs = float(app.src.sample_rate)
+        if fs <= 0:
+            return
+        span = max(1e-12, app.f_hi - app.f_lo)
+        target = "waterfall"
+        anchor = float(np.clip((float(x_hz) / fs - app.f_lo) / span,
+                               0.0, 1.0))
+    else:
+        return
+    if app._wheel_target != target:
+        app._wheel_pending = 0.0
+    app._wheel_target = target
+    app._wheel_anchor = anchor
+    # macOS reports tiny deltas for slow movement and very large deltas for a
+    # flick. Treat every callback as an impulse and cap the queued travel.
+    impulse = 1.0 if float(wheel) > 0 else -1.0
+    app._wheel_pending = float(np.clip(
+        app._wheel_pending + impulse, -3.0, 3.0))
+
+
 def cb_nfft(sender, val):
     app.n_fft = int(val)
     if not app.super_res:
-        app.set_derived_hop(app.n_fft // 2)
+        app.set_derived_hop(app.n_fft // app.stft_hop_div)
     if app.src:
         app._make_wf()
+    app.dirty = True
+
+
+def cb_stft_hop(sender, val):
+    app.stft_hop_div = {"N/8": 8, "N/4": 4, "N/2": 2}[val]
+    if not app.super_res:
+        app.set_derived_hop(app.n_fft // app.stft_hop_div)
+        app._sync_time_readout()
+        cb_view_mode(None, dpg.get_value("view_mode"))
     app.dirty = True
 
 
@@ -494,38 +655,54 @@ def cb_view_mode(sender, val):
     app.reassigned = val == "Reassigned STFT"
     is_streaming = val == "Streaming STFT"
     dpg.configure_item("win_combo", enabled=is_streaming)
+    dpg.configure_item("stft_hop_combo", enabled=not app.super_res)
     dpg.configure_item("sr_nb_combo", enabled=app.super_res)
     dpg.configure_item("sr_rung_combo", enabled=app.super_res)
+    dpg.configure_item("sr_finish_combo",
+                       enabled=app.super_res and app.sr_stage == "unified")
+    dpg.configure_item("sr_normalize_check", enabled=app.super_res)
+    dpg.configure_item("sr_stage_combo", enabled=app.super_res)
     # Keep the solved SR tiles and its readout plan alive while comparing
     # modes. They are invalidated only by a source/aperture change. Closing
     # here made every A/B toggle restart PGHI and delayed the comparison.
     if app.super_res:
+        profile = ({"raw": "raw IQ", "seed": "shared seed"}.get(
+            app.sr_stage) or f"{app.sr_finish} finish")
         app.set_derived_hop(app.sr_nb // 4)
-        dpg.set_value(
-            "transform_note",
-            "Original Python two-lattice solve | independent magnitude "
-            "families -> one latent waveform | short=N/4, internal H=N/8, display H=N/4")
+        if app.sr_rung > 1:
+            rung = min(app.sr_rung * app.sr_nb, max(8192, 2 * app.sr_nb))
+            note = (f"Super-resolution (ladder readout) | base {app.sr_nb} "
+                    f"| rung {rung} | {profile} | per-cell max power")
+        else:
+            note = ("Two-lattice solve | independent magnitude families -> "
+                    f"one latent waveform | {profile} | "
+                    "short=N/4, internal H=N/8, display H=N/4")
+        dpg.set_value("transform_note", note)
     elif app.reassigned:
-        app.set_derived_hop(app.n_fft // 2)
+        app.set_derived_hop(app.n_fft // app.stft_hop_div)
         dpg.set_value(
             "transform_note",
-            "Symmetric Hann | local phase reassignment | same N/2 COLA grid")
+            f"Symmetric Hann | local phase reassignment | H=N/{app.stft_hop_div}")
     else:
-        app.set_derived_hop(app.n_fft // 2)
+        app.set_derived_hop(app.n_fft // app.stft_hop_div)
         dpg.set_value(
             "transform_note",
-            "Selected window | center time | N/2 COLA grid")
+            f"Selected window | center time | H=N/{app.stft_hop_div}")
     dpg.set_value("recon_status", "")
     app.dirty = True
 
 
 def _rebuild_srs():
-    if app.srs:
-        app.srs.close()
-        app.srs = None
-    if app.sr_ra:
-        app.sr_ra.close()
-        app.sr_ra = None
+    with app._sr_lock:
+        if app.srs:
+            app.srs.close()
+            app.srs = None
+        if app.sr_ra:
+            app.sr_ra.close()
+            app.sr_ra = None
+        for engine in app.sr_extra_ras.values():
+            engine.close()
+        app.sr_extra_ras.clear()
     app.dirty = True
 
 
@@ -534,14 +711,52 @@ def cb_sr_nb(sender, val):
     app.sr_nb = nb
     app.sr_ns = nb // 4
     app.set_derived_hop(nb // 4)
+    rung = (min(app.sr_rung * nb, max(8192, 2 * nb))
+            if app.sr_rung > 1 else 0)
     dpg.set_value(
         "sr_geometry",
-        f"short {app.sr_ns} | internal hop {nb//8} | display hop {app.hop}")
+        f"short {app.sr_ns} | internal hop {nb//8} | display hop {app.hop}"
+        + (f" | rung {rung}" if rung else ""))
+    if app.super_res:
+        cb_view_mode(None, "Super-resolution (two-aperture)")
     _rebuild_srs()
 
 
 def cb_sr_rung(sender, val):
     app.sr_rung = {"off": 0, "2x": 2, "4x": 4}[val]
+    rung = (min(app.sr_rung * app.sr_nb, max(8192, 2 * app.sr_nb))
+            if app.sr_rung > 1 else 0)
+    dpg.set_value(
+        "sr_geometry",
+        f"short {app.sr_ns} | internal hop {app.sr_nb//8} | "
+        f"display hop {app.hop}" + (f" | rung {rung}" if rung else ""))
+    if app.super_res:
+        cb_view_mode(None, "Super-resolution (two-aperture)")
+    _rebuild_srs()
+
+
+def cb_sr_finish(sender, val):
+    app.sr_finish = {"Legacy 75% long": "legacy",
+                     "Symmetric cycle": "palindromic"}[val]
+    if app.super_res:
+        cb_view_mode(None, "Super-resolution (two-aperture)")
+    _rebuild_srs()
+
+
+def cb_sr_normalize(sender, val):
+    app.sr_normalize_rungs = bool(val)
+    # Readout-only calibration: completed latent tiles remain valid.
+    app.dirty = True
+
+
+def cb_sr_stage(sender, val):
+    app.sr_stage = {"Raw IQ through SR readout": "raw",
+                    "Shared seed through SR readout": "seed",
+                    "Unified SR": "unified"}[val]
+    dpg.configure_item("sr_finish_combo",
+                       enabled=app.super_res and app.sr_stage == "unified")
+    if app.super_res:
+        cb_view_mode(None, "Super-resolution (two-aperture)")
     _rebuild_srs()
 
 
@@ -559,6 +774,10 @@ def cb_speed(sender, val):
 # ---------------------------------------------------------------------------
 def build_ui():
     dpg.create_context()
+    dpg.configure_app(manual_callback_management=True)
+
+    with dpg.handler_registry():
+        dpg.add_mouse_wheel_handler(callback=cb_mouse_wheel)
 
     with dpg.texture_registry():
         dpg.add_raw_texture(DW, DH, app._rgba.ravel(),
@@ -604,6 +823,9 @@ def build_ui():
                 dpg.add_text("Transform")
                 dpg.add_combo(FFT_SIZES, default_value=1024, tag="nfft_combo",
                               width=-1, callback=cb_nfft)
+                dpg.add_combo(["N/8", "N/4", "N/2"], default_value="N/2",
+                              tag="stft_hop_combo", width=-1,
+                              callback=cb_stft_hop)
                 dpg.add_combo(list(iqw.WINDOWS.keys()), default_value="Hann",
                               tag="win_combo", width=-1, callback=cb_window)
                 dpg.add_checkbox(label="Remove DC per frame", callback=cb_dc)
@@ -632,6 +854,22 @@ def build_ui():
                     dpg.add_combo(["off", "2x", "4x"], default_value="off",
                                   width=70, tag="sr_rung_combo",
                                   enabled=False, callback=cb_sr_rung)
+                with dpg.group(horizontal=True):
+                    dpg.add_text("finish")
+                    dpg.add_combo(["Legacy 75% long", "Symmetric cycle"],
+                                  default_value="Legacy 75% long", width=170,
+                                  tag="sr_finish_combo", enabled=False,
+                                  callback=cb_sr_finish)
+                dpg.add_checkbox(label="Normalize rung gain",
+                                 default_value=False,
+                                 tag="sr_normalize_check", enabled=False,
+                                 callback=cb_sr_normalize)
+                dpg.add_combo(["Raw IQ through SR readout",
+                               "Shared seed through SR readout",
+                               "Unified SR"],
+                              default_value="Unified SR", width=-1,
+                              tag="sr_stage_combo", enabled=False,
+                              callback=cb_sr_stage)
                 dpg.add_text("", tag="recon_status", color=(200, 180, 120))
 
                 dpg.add_separator()
@@ -700,12 +938,17 @@ def build_ui():
 def main():
     build_ui()
     while dpg.is_dearpygui_running():
+        jobs = dpg.get_callback_queue()
+        if jobs:
+            dpg.run_callbacks(jobs)
         app.tick()
         dpg.render_dearpygui_frame()
     if app.srs:
         app.srs.close()
     if app.sr_ra:
         app.sr_ra.close()
+    for engine in app.sr_extra_ras.values():
+        engine.close()
     if app.ra:
         app.ra.close()
     dpg.destroy_context()

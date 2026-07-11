@@ -65,14 +65,47 @@ The mode selector exposes three different measurements:
    evaluated directly on those external centers and conservatively splatted to
    the nearest 2×2 time/frequency cells; no internal rows are discarded and no
    post-transform floor is applied.
-   The one-step latent update uses a 75%-relaxed final long-family projection
-   after the short projection. This symmetric finish preserves weak chirp
-   terminals that the former long→short ordering could perturb.
+   The finish selector A/Bs the deployed 75%-relaxed terminal long projection
+   against a genuinely palindromic half-long/full-short/half-long cycle.  The
+   former empirically preserves weak chirp terminals; the latter removes the
+   fitted coefficient and projection-order bias.
+   `Normalize rung gain` removes each aperture's exact symmetric-Hann coherent
+   power gain before max readout fusion, preventing longer windows from winning
+   merely because their FFT amplitude scales with window length. `Seed only`
+   displays the shared DIP/PGHI latent directly and skips all unified family
+   projections, providing an A/B for what the final fill actually contributes.
 3. **Reassigned STFT** — ordinary symmetric-Hann phase reassignment, retained
    separately so the effect of the two-aperture solve remains inspectable.
 
 The intrinsic-FCT viewer mode is archived in `archive/fct_view.py`; the exact
 FCT transform itself remains a shipped, tested library feature.
+
+### Minimal SDR integration: raw IQ through the SR readout
+
+This stage has no DIP solver, PGHI, tile cache, warm state, or magnitude-family
+projection.  For each display aperture `N`:
+
+1. Create `iqw_ra_create(N)` and optionally enable the conservative bilinear
+   splat with `iqw_ra_set_bilinear(engine, 1)`.
+2. Supply interleaved complex `float32` IQ and call
+   `iqw_ra_render_mem(engine, iq, nsamples, first_center, hop, rows, out_db)`.
+3. The engine computes Hann-windowed `Y`, time-weighted `Y_t`, and
+   derivative-windowed `Y_d` spectra.  Every non-negligible coefficient moves
+   its power `|Y|^2` to
+
+       time = row + Re(Y_t conj(Y)) / (|Y|^2 hop)
+       bin  = k - Im(Y_d conj(Y)) N / (2 pi |Y|^2)
+
+   and bilinearly splats it to the surrounding time/frequency cells.
+4. For a ladder, repeat with each desired `N`. Before per-cell maximum fusion,
+   optionally subtract the exact symmetric-Hann coherent-gain offset
+   `20 log10((N-1)/(N_base-1))` dB from each rung.
+
+The output is `rows x N` fft-shifted power in dB.  A single-aperture integration
+only needs the `iqw_ra_*` calls; the ladder normalization/resampling/max is a
+display policy and can be omitted.  This is reassigned analysis of raw IQ, not
+waveform super-resolution—the seed and unified stages are what alter the
+latent waveform.
 
 The live combined call is native C++ and agrees with the NumPy executable
 specification to 1.1e-13 worst case for N=512..4096. Representative 8192-sample
@@ -85,6 +118,17 @@ this removed the former 185 ms large-N setup wall.
 Mode and transform-size changes leave the position marker sample completely
 unchanged. SR tile caches remain alive across A/B mode changes, so returning to
 the unified view neither changes the marker nor reruns completed PGHI tiles.
+The mouse wheel scrubs by one transform hop while hovering the position slider.
+Over the waterfall it performs cursor-anchored frequency zoom: the frequency
+under the pointer remains fixed, so off-center zooms naturally pan as they
+expand or contract.
+Streaming and reassigned STFT modes expose `H=N/8`, `N/4`, and `N/2` display
+hops.  This changes temporal sampling without moving the position marker and
+allows a raw STFT to use the same external hop as an SR comparison.  The SR
+The SR stage selector separates raw IQ through the SR reassignment readout,
+the shared DIP/PGHI seed through that same readout, and the complete unified
+magnitude-family projection.  Raw stage makes no tile requests and therefore
+has no asynchronous readiness sweep.
 
 - [x] Monolithic backend, IQ reader, BFFT waterfall — built & verified.
 - [x] DearPyGui viewer: open, play/pause/stop, scrub, frequency zoom,

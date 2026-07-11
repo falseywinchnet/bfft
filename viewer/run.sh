@@ -4,8 +4,20 @@ set -e
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
 
-# Build the native lib if it isn't there yet.
-if [ ! -f "$HERE/libiqwaterfall.dylib" ] && [ ! -f "$HERE/libiqwaterfall.so" ]; then
+# Build when absent or stale.  The Python wrapper and native functions share a
+# C ABI; loading yesterday's dylib after changing an argument list corrupts the
+# call frame instead of raising a Python exception.
+case "$(uname -s)" in
+    Darwin) LIB="$HERE/libiqwaterfall.dylib" ;;
+    *)      LIB="$HERE/libiqwaterfall.so" ;;
+esac
+STALE=""
+if [ -f "$LIB" ]; then
+    STALE="$(find "$HERE" "$ROOT/include" "$ROOT/src" \
+        -type f \( -name '*.cpp' -o -name '*.c' -o -name '*.h' \
+        -o -name '*.hpp' \) -newer "$LIB" -print -quit)"
+fi
+if [ ! -f "$LIB" ] || [ -n "$STALE" ]; then
     "$HERE/build.sh"
 fi
 
