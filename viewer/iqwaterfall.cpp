@@ -628,6 +628,7 @@ struct iqw_ra {
     std::vector<bfft_complex> A, B;               // rfft outputs
     std::vector<double> Yr, Yi, Ytr, Yti, Ydr, Ydi;   // full-n complex spectra
     std::vector<double> P;                         // reassigned power accumulator
+    bool bilinear_splat = false;
 };
 
 // Full-n complex FFT of (re + j im) from two BFFT real FFTs.
@@ -679,6 +680,9 @@ IQW_API void iqw_ra_destroy(iqw_ra* e) {
 }
 
 IQW_API int iqw_ra_nfft(const iqw_ra* e) { return e ? e->n : 0; }
+IQW_API void iqw_ra_set_bilinear(iqw_ra* e, int enabled) {
+    if (e) e->bilinear_splat = enabled != 0;
+}
 
 // Reassigned spectrogram from an in-memory interleaved-IQ buffer.
 // out_db is n_rows * n_fft floats, row-major, fftshifted (col 0 = -Fs/2),
@@ -723,10 +727,29 @@ IQW_API void iqw_ra_render_mem(iqw_ra* e, const float* iq, int64_t nsamples,
             double imdc = e->Ydi[k] * e->Yr[k] - e->Ydr[k] * e->Yi[k];   // Im(Yd conj Y)
             double that = (double)c + reax * inv;
             double khat = k - imdc * inv * n / twopi;
-            long col = (long)std::lround(that / (double)hop);
-            if (col < 0) col = 0; else if (col >= n_rows) col = n_rows - 1;
-            long row = ((long)std::lround(khat) % n + n) % n;
-            e->P[(size_t)col * n + row] += E;
+            if (!e->bilinear_splat) {
+                long col = (long)std::lround(that / (double)hop);
+                if (col < 0) col = 0; else if (col >= n_rows) col = n_rows - 1;
+                long row = ((long)std::lround(khat) % n + n) % n;
+                e->P[(size_t)col * n + row] += E;
+            } else {
+                double tc = that / (double)hop;
+                long c0 = (long)std::floor(tc), c1 = c0 + 1;
+                double ft = tc - std::floor(tc);
+                long r0raw = (long)std::floor(khat), r1raw = r0raw + 1;
+                double ff = khat - std::floor(khat);
+                long cc[2] = {
+                    std::min<long>(n_rows - 1, std::max<long>(0, c0)),
+                    std::min<long>(n_rows - 1, std::max<long>(0, c1))};
+                long rr[2] = {
+                    ((r0raw % n) + n) % n,
+                    ((r1raw % n) + n) % n};
+                double wt[2] = {1.0 - ft, ft};
+                double wf[2] = {1.0 - ff, ff};
+                for (int a = 0; a < 2; ++a)
+                    for (int b = 0; b < 2; ++b)
+                        e->P[(size_t)cc[a] * n + rr[b]] += E * wt[a] * wf[b];
+            }
         }
     }
 

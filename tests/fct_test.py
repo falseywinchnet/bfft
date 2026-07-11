@@ -127,6 +127,19 @@ check("complex full-spectrum exactness", worst < 1e-9,
 check("negative-frequency bins can adapt", bool(np.any(tauc[N // 2 + 1:] < N)),
       f"adaptive negative bins {(tauc[N // 2 + 1:] < N).sum()}")
 
+Cm, taum, Mm = bfft.FctPlan(N).fct_complex_moment(xc)
+moment_err = 0.0
+for k in range(N):
+    tt_m = np.arange(int(taum[k]))
+    ref_m = np.sum(tt_m * xc[:len(tt_m)] *
+                   np.exp(-2j * np.pi * k * tt_m / N))
+    moment_err = max(moment_err,
+                     abs(Mm[k] - ref_m) / (abs(ref_m) + 1.0))
+check("selected-support phase moment exact", moment_err < 1e-9,
+      f"worst rel err {moment_err:.2e}")
+check("moment call preserves selection",
+      np.array_equal(taum, tauc) and np.max(np.abs(Cm - Cc)) < 1e-9)
+
 # The public explicit-plan path must carry t_min into the certified walk.
 min_tau = 37
 Cc_min, tauc_min = bfft.FctPlan(N, t_min=min_tau).fct_complex(xc)

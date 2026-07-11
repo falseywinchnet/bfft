@@ -28,23 +28,31 @@ int main() {
             }
             fct::intrinsic::plan plan(n);
             std::vector<value> out(static_cast<std::size_t>(n));
+            std::vector<value> moment(static_cast<std::size_t>(n));
             std::vector<std::int64_t> tau(static_cast<std::size_t>(n));
-            assert(plan.forward(x.data(), out.data(), tau.data(), 0.0));
+            assert(plan.forward(x.data(), out.data(), tau.data(), 0.0, 1,
+                                moment.data()));
 
             for (int k = 0; k < n; ++k) {
                 std::complex<double> prefix{};
                 double best_score = -1.0;
                 int best_tau = 0;
                 std::complex<double> best{};
+                std::complex<double> best_moment{};
+                std::complex<double> prefix_moment{};
                 for (int j = 0; j < n; ++j) {
                     const double a = -twopi * static_cast<double>(k) * j / n;
                     prefix += std::complex<double>(x[j].re, x[j].im) *
+                              std::complex<double>(std::cos(a), std::sin(a));
+                    prefix_moment += static_cast<double>(j) *
+                              std::complex<double>(x[j].re, x[j].im) *
                               std::complex<double>(std::cos(a), std::sin(a));
                     const double score = std::norm(prefix) / (j + 1.0);
                     if (score > best_score) {
                         best_score = score;
                         best_tau = j + 1;
                         best = prefix;
+                        best_moment = prefix_moment;
                     }
                 }
                 assert(tau[static_cast<std::size_t>(k)] == best_tau);
@@ -53,6 +61,11 @@ int main() {
                     out[static_cast<std::size_t>(k)].im);
                 worst = std::max(worst, std::abs(got - best));
                 assert(std::abs(got - best) <= 3e-9 * (1.0 + std::abs(best)));
+                const std::complex<double> got_moment(
+                    moment[static_cast<std::size_t>(k)].re,
+                    moment[static_cast<std::size_t>(k)].im);
+                assert(std::abs(got_moment - best_moment) <=
+                       2e-8 * (1.0 + std::abs(best_moment)));
             }
             assert(plan.stats().mask_lanes == plan.stats().nodes);
             assert(plan.stats().max_packet > 0);

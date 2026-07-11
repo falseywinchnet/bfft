@@ -11,8 +11,9 @@ DearPyGui front-end.
 |------|------|
 | `iqwaterfall.cpp` | Monolithic backend: RIFF/RF64/BW64 WAV and raw-IQ reader, BFFT waterfall, reassignment, and complex-IQ FCT renderer. Flat C ABI. |
 | `dip_algo.cpp` | C++ port of `active_delta_center5_fast1` (DIP/finite-Zak walk + in-house PGHI seed + record OLA), real **and** complex-generalized solvers. Same library. |
-| `iqwaterfall.py`  | `ctypes` wrapper: `IQSource`, `Waterfall`, `FctWaterfall`, and DIP APIs. |
-| `dip_stream.py` | Asynchronous/cached fusion and FCT-guided reassignment streams; reconstruction remains a library facility. |
+| `iqwaterfall.py`  | `ctypes` wrapper: `IQSource`, `Waterfall`, reassignment, DIP, and combined `dip_unified` APIs. |
+| `two_lattice.py` | NumPy executable specification: shared one-step DIP seed, independent long/short magnitude projection, tile OLA. |
+| `dip_stream.py` | Legacy shared-state/claim experiments and reconstruction utilities; not the live unified viewer path. |
 | `superres.py` | Python reference for the phase-aware reassigned spectrogram. |
 | `make_sr_fixture.py` | Synthesizes the known-truth SR fixture (tone pair + click train + chirp). |
 | `sr_fusion_study.py` | Quantified fusion quality study (click width, halo, tone dip, gate noise). |
@@ -48,31 +49,42 @@ from the two Hermitian half-spectra, then `fftshift`. Verified against
 
 ## Analysis modes
 
-The mode selector intentionally exposes three different measurements:
+The mode selector exposes three different measurements:
 
 1. **Streaming STFT** — a conventional symmetric-Hann complex spectrogram,
    center-timed and cheap enough for continuous playback.
-2. **Super-resolution (two-aperture)** — the DIP-Zak F1xT2 fusion.  The user
-   sets both analysis windows: the long aperture supplies fine frequency at
-   true scale, while state-attached short endpoints distribute it across
-   the fine-time rows, and both are read off one refined active-delta state
-   (long readout exact to ~1e-14 against the measured Hann spectra; shorts
-   attach in-state through `M_delta` to ~1e-13). A short row that crosses its
-   display owner's boundary is routed through the neighboring overlapping long
-   state containing the same global interval. Thus NB=1024/NS=512 is valid;
-   no parallel STFT bank is required.
-3. **FCT-guided reassignment** — ordinary Hann reassignment establishes the
-   local phase basin. The intrinsic FCT then supplies exact phase-derivative
-   coordinates at its selected support: `Re(M/C)` in time and a fixed-support
-   endpoint recurrence in frequency. FCT replaces a coordinate only when it
-   agrees with the local STFT branch. Energy is accumulated on a 2N half-bin
-   raster and the slow transform fills asynchronously.
+2. **Super-resolution (two-aperture)** — a waveform-domain combination of the
+   two useful SR observables. The Python `active_delta_center5_fast1` port gives
+   a smooth coherent shared-state seed (PGHI → one L5 step → consensus). One
+   literal Python alternating projection then applies independent long and
+   short magnitude families to that seed. Readout is the long reassigned STFT
+   on the short COLA lattice. There are no row claims, gates, or image-space
+   products. Geometry has one knob: long `N`, short `N/4`, internal short-COLA
+   hop `N/8`, and external comparison hop `N/4`. Thus SR 4096/1024 aligns with
+   conventional STFT N=2048/H=1024 without changing the solve. Reassignment is
+   evaluated directly on those external centers and conservatively splatted to
+   the nearest 2×2 time/frequency cells; no internal rows are discarded and no
+   post-transform floor is applied.
+3. **Reassigned STFT** — ordinary symmetric-Hann phase reassignment, retained
+   separately so the effect of the two-aperture solve remains inspectable.
 
 The intrinsic-FCT viewer mode is archived in `archive/fct_view.py`; the exact
 FCT transform itself remains a shipped, tested library feature.
 
+The live combined call is native C++ and agrees with the NumPy executable
+specification to 1.1e-13 worst case for N=512..4096. Representative 8192-sample
+IQ-tile times are about 16/18/18 ms for N=1024/2048/4096. Full complex frame
+FFTs use two SIMD-native BFFT real transforms and Hermitian recombination on
+every platform (Accelerate remains a benchmark override on macOS). Only the five demanded central
+attachment matrices are constructed, using the closed-form geometric sum;
+this removed the former 185 ms large-N setup wall.
+
+Mode and transform-size changes leave the position marker sample completely
+unchanged. SR tile caches remain alive across A/B mode changes, so returning to
+the unified view neither changes the marker nor reruns completed PGHI tiles.
+
 - [x] Monolithic backend, IQ reader, BFFT waterfall — built & verified.
-- [x] DearPyGui viewer: open, play/pause/stop, scrub, time & frequency zoom,
+- [x] DearPyGui viewer: open, play/pause/stop, scrub, frequency zoom,
       dynamic range, colormap/window/FFT-size settings.
 - [x] Port of `active_delta_center5` (DIP/finite-Zak walk) into the same lib,
       validated to ~1e-13 vs the Python reference (`validate_dip.py`).
@@ -87,16 +99,11 @@ FCT transform itself remains a shipped, tested library feature.
 - [x] Fixed block-boundary striping (overlapping segments + phase-align + Hann
       OLA) and made reconstruction work at zoomed-out spans (raw-fill beyond
       coverage).
-- [x] Two-aperture DIP-Zak fusion restored as the super-resolution mode with
-      manual long/short window controls (2026-07-10).  Fixed the direct seed:
-      the former `tap3_adj` pullback made the readout round-trip apply Hann²
-      (adjoint ≠ inverse), erasing tone pairs the plain Hann STFT resolves;
-      the seed is now the paused state of the record itself, exact to ~1e-14.
-      Added all-delta claim partitioning, which removes the ±NB/2
-      transient halo.  On the known-truth fixture the claim fusion at
-      NB=2048/NS=128 reaches single-row click localization (0.07 ms) AND the
-      full long-window tone separation (−38 dB) simultaneously; reassignment
-      gives 0.07 ms / −21 dB.  ~55 ms per 160 rows through the tile pool.
+- [x] Replaced the live magnitude-claim image with the original Python
+      waveform construction (2026-07-10): shared one-step DIP seed followed by
+      one independent two-family projection. The old claim result remains a
+      study baseline because it is smooth, but its horizontal row modulation
+      is not the Python super-resolution operator.
 - [x] Reassignment engine ported to C/bfft (`iqw_ra_*`, `iqwaterfall.Reassign`):
       cosine similarity 0.99999998 against the real-valued Python oracle on the
       Dave-and-Simon fixture.  Kept as a separate observable mode.
@@ -116,11 +123,9 @@ FCT transform itself remains a shipped, tested library feature.
       one-bin tone / one-row click can no longer fall between output samples),
       linear-power interpolation when zooming (>= -3 dB worst case; dB-domain
       lerp lost tens of dB). Gamma slider added.
-- [x] Cross-frame aperture routing: the former same-parent restriction made
-      NB=1024/NS=512 request invalid local delta 17. That global short interval
-      is exactly delta 13 of the next overlapping long state. The router now
-      performs this identity generally; only the true DIP attachment condition
-      `NS <= NB-128` remains.
+- [x] Removed the live same-parent support restriction entirely. Independent
+      frame families need no `M_delta` containment: the selected geometry is
+      simply short `N/4`, with its own COLA hop `N/8`.
 - [x] File-open UX: concrete extension filter is now the default (".*" was
       unreliable for click-selection), `selections` fallback in the callback,
       and AUTO header-parse failure retries as raw int16 at the UI rate.

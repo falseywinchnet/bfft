@@ -20,6 +20,14 @@
 #include <queue>
 #include <algorithm>
 #include <numeric>
+#include <cstdlib>
+#include <string>
+
+#include <bfft/bfft.h>
+
+#if defined(__APPLE__)
+#include <Accelerate/Accelerate.h>
+#endif
 
 #if defined(_WIN32)
 #define IQW_API __declspec(dllexport)
@@ -38,11 +46,129 @@ constexpr double PI = 3.14159265358979323846;
 // derived EB/TB/ES/TS/HB/NDELTA are per-solver runtime values (see DipBase).
 constexpr int QSTAR = 32, QB = 32, QS = 32, HS = 32;
 
+#if defined(__APPLE__)
+// Thread-local Accelerate provider for the full frame FFTs. Paused-state
+// transforms are only 2..32 points and stay in the scalar kernel below; at
+// frame lengths >=128, vDSP's vectorized provider amortizes split/copy cost.
+struct VdspFftProvider {
+    vDSP_DFT_SetupD forward[18]{};
+    vDSP_DFT_SetupD inverse[18]{};
+    std::vector<double> in_re, in_im, out_re, out_im;
+
+    ~VdspFftProvider() {
+        for (int i = 0; i < 18; ++i) {
+            if (forward[i]) vDSP_DFT_DestroySetupD(forward[i]);
+            if (inverse[i]) vDSP_DFT_DestroySetupD(inverse[i]);
+        }
+    }
+
+    bool execute(cd* a, int n, int sign) {
+        if (n < 128 || n > (1 << 17) || (n & (n - 1))) return false;
+        int lg = (int)std::lround(std::log2((double)n));
+        vDSP_DFT_SetupD& setup = sign < 0 ? forward[lg] : inverse[lg];
+        if (!setup) {
+            setup = vDSP_DFT_zop_CreateSetupD(
+                nullptr, (vDSP_Length)n,
+                sign < 0 ? vDSP_DFT_FORWARD : vDSP_DFT_INVERSE);
+        }
+        if (!setup) return false;
+        in_re.resize(n); in_im.resize(n); out_re.resize(n); out_im.resize(n);
+        for (int i = 0; i < n; ++i) {
+            in_re[i] = a[i].real();
+            in_im[i] = a[i].imag();
+        }
+        vDSP_DFT_ExecuteD(setup, in_re.data(), in_im.data(),
+                         out_re.data(), out_im.data());
+        for (int i = 0; i < n; ++i) a[i] = cd(out_re[i], out_im[i]);
+        return true;
+    }
+};
+
+thread_local VdspFftProvider g_vdsp_fft;
+#endif
+
+// Portable complex FFT adapter built from two SIMD-native BFFT real plans.
+// Forward recombines the two Hermitian half spectra. Inverse splits an
+// arbitrary complex spectrum into the Hermitian spectra of its real and
+// imaginary time-domain components, then performs two real inverse transforms.
+struct BfftComplexProvider {
+    bfft_plan* plans[18]{};
+    std::vector<double> re, im, work;
+    std::vector<bfft_complex> A, B, scratch;
+
+    ~BfftComplexProvider() {
+        for (bfft_plan* p : plans) if (p) bfft_plan_destroy(p);
+    }
+
+    bool execute(cd* a, int n, int sign) {
+        if (n < 128 || n > (1 << 17) || (n & (n - 1))) return false;
+        int lg = (int)std::lround(std::log2((double)n));
+        bfft_plan*& plan = plans[lg];
+        if (!plan && bfft_plan_create((size_t)n, &plan) != BFFT_OK) return false;
+        size_t bins = bfft_plan_bins(plan);
+        re.resize(n); im.resize(n); A.resize(bins); B.resize(bins);
+        work.resize(bfft_plan_work_size(plan));
+        scratch.resize(bfft_plan_native_scratch_size(plan) + 1);
+        if (sign < 0) {
+            for (int k = 0; k < n; ++k) { re[k] = a[k].real(); im[k] = a[k].imag(); }
+            if (bfft_forward(plan, re.data(), A.data(), work.data(), scratch.data()) != BFFT_OK ||
+                bfft_forward(plan, im.data(), B.data(), work.data(), scratch.data()) != BFFT_OK)
+                return false;
+            int half = n / 2;
+            for (int k = 0; k < n; ++k) {
+                int m = k <= half ? k : n - k;
+                double ar = A[m].re, ai = k <= half ? A[m].im : -A[m].im;
+                double br = B[m].re, bi = k <= half ? B[m].im : -B[m].im;
+                a[k] = cd(ar - bi, ai + br);
+            }
+        } else {
+            int half = n / 2;
+            for (int k = 0; k <= half; ++k) {
+                cd x = a[k];
+                cd y = std::conj(a[(n - k) % n]);
+                cd r = 0.5 * (x + y);
+                cd d = x - y;
+                cd q(0.5 * d.imag(), -0.5 * d.real());
+                A[k].re = r.real(); A[k].im = r.imag();
+                B[k].re = q.real(); B[k].im = q.imag();
+            }
+            if (bfft_inverse(plan, A.data(), re.data()) != BFFT_OK ||
+                bfft_inverse(plan, B.data(), im.data()) != BFFT_OK)
+                return false;
+            // bfft_inverse is normalized; fft_pow2's internal contract is an
+            // unnormalized inverse (its callers apply 1/N themselves).
+            for (int k = 0; k < n; ++k) a[k] = (double)n * cd(re[k], im[k]);
+        }
+        return true;
+    }
+};
+
+thread_local BfftComplexProvider g_bfft_fft;
+
+enum class FullFftProvider { scalar, bfft, accelerate };
+FullFftProvider full_fft_provider() {
+    static FullFftProvider value = [] {
+        const char* env = std::getenv("IQW_FFT_PROVIDER");
+        if (env && std::string(env) == "scalar") return FullFftProvider::scalar;
+        if (env && std::string(env) == "bfft") return FullFftProvider::bfft;
+#if defined(__APPLE__)
+        if (env && std::string(env) == "accelerate") return FullFftProvider::accelerate;
+#endif
+        return FullFftProvider::bfft;
+    }();
+    return value;
+}
+
 // ---------------------------------------------------------------------------
 // In-place iterative radix-2 FFT.  sign=-1 forward (numpy fft, unnormalized),
 // sign=+1 inverse without the 1/n scale (caller scales).
 // ---------------------------------------------------------------------------
 void fft_pow2(cd* a, int n, int sign) {
+    FullFftProvider provider = full_fft_provider();
+    if (provider == FullFftProvider::bfft && g_bfft_fft.execute(a, n, sign)) return;
+#if defined(__APPLE__)
+    if (provider == FullFftProvider::accelerate && g_vdsp_fft.execute(a, n, sign)) return;
+#endif
     for (int i = 1, j = 0; i < n; ++i) {
         int bit = n >> 1;
         for (; j & bit; bit >>= 1) j ^= bit;
@@ -210,23 +336,32 @@ std::vector<int> frame_offsets(int L, int n, int hop) {
     return offs;
 }
 
-// The (eb-es+1) attachment matrices M[d] [es,eb] = F_es @ crop_d @ F_eb^{-1}.
-// M[d][a][b] = sum_{k} exp(-2pi i a k/es) * exp(+2pi i (d+k) b/eb) / eb.
-std::vector<Ten> attachment_mats(int eb, int es) {
-    int ndelta = eb - es + 1;
-    std::vector<Ten> mats(ndelta, Ten((size_t)es * eb));
-    for (int d = 0; d < ndelta; ++d)
+// Selected attachment matrices M[d] = F_es @ crop_d @ F_eb^{-1}. Fast1 uses
+// five central deltas, so constructing every possible matrix was pure setup
+// waste (97 matrices at NB=4096/NS=1024). The k sum is geometric:
+//   sum_k exp(i*2pi*k*(b/eb-a/es)).
+std::vector<Ten> attachment_mats_selected(
+        int eb, int es, const std::vector<int>& deltas) {
+    std::vector<Ten> mats(deltas.size(), Ten((size_t)es * eb));
+    for (size_t di = 0; di < deltas.size(); ++di) {
+        int d = deltas[di];
         for (int a = 0; a < es; ++a)
             for (int b = 0; b < eb; ++b) {
-                cd acc(0.0, 0.0);
-                for (int k = 0; k < es; ++k) {
-                    cd fes(std::cos(-2 * PI * a * k / es), std::sin(-2 * PI * a * k / es));
-                    cd febi(std::cos(2 * PI * (d + k) * b / eb),
-                            std::sin(2 * PI * (d + k) * b / eb));
-                    acc += fes * febi / (double)eb;
+                double half = PI * ((double)b / eb - (double)a / es);
+                double den = std::sin(half);
+                cd series;
+                if (std::abs(den) < 1e-14) {
+                    series = cd((double)es, 0.0);
+                } else {
+                    double amp = std::sin(es * half) / den;
+                    double angle = (es - 1) * half;
+                    series = amp * cd(std::cos(angle), std::sin(angle));
                 }
-                mats[d][a * eb + b] = acc;
+                double shift = 2.0 * PI * d * b / eb;
+                cd phase(std::cos(shift), std::sin(shift));
+                mats[di][a * eb + b] = phase * series / (double)eb;
             }
+    }
     return mats;
 }
 
@@ -420,6 +555,75 @@ Ten ifft_complex_rows(const Ten& Y, int I, int n) {
     return out;
 }
 
+// One independent symmetric-Hann STFT magnitude family.  This is the direct
+// C++ translation of viewer/two_lattice.py::MagnitudeFamily: endpoint radial
+// projection followed by windowed overlap/add into one latent waveform.
+class MagnitudeProjectorC {
+public:
+    int L, n, hop, I;
+    std::vector<int> offs;
+    std::vector<double> win, target, den;
+    std::vector<char> supported;
+
+    MagnitudeProjectorC(const Ten& observed, int length, int nfft, int frame_hop)
+        : L(length), n(nfft), hop(frame_hop) {
+        offs = frame_offsets(L, n, hop);
+        I = (int)offs.size();
+        if (I <= 0) return;
+        win.resize(n);
+        for (int j = 0; j < n; ++j)
+            win[j] = 0.5 - 0.5 * std::cos(2.0 * PI * j / (n - 1));
+        target.resize((size_t)I * n);
+        den.assign(L, 0.0);
+        std::vector<cd> row(n);
+        for (int i = 0; i < I; ++i) {
+            int o = offs[i];
+            for (int j = 0; j < n; ++j) {
+                row[j] = observed[o + j] * win[j];
+                den[o + j] += win[j] * win[j];
+            }
+            fft_pow2(row.data(), n, -1);
+            for (int j = 0; j < n; ++j)
+                target[(size_t)i * n + j] = std::abs(row[j]);
+        }
+        std::vector<double> positive;
+        positive.reserve(L);
+        for (double v : den) if (v > 0.0) positive.push_back(v);
+        double median = 1.0;
+        if (!positive.empty()) {
+            size_t mid = positive.size() / 2;
+            std::nth_element(positive.begin(), positive.begin() + mid,
+                             positive.end());
+            median = positive[mid];
+        }
+        supported.resize(L);
+        for (int t = 0; t < L; ++t) supported[t] = den[t] > 1e-2 * median;
+    }
+
+    Ten project(const Ten& latent) const {
+        Ten acc(L, cd(0.0, 0.0));
+        std::vector<cd> row(n);
+        const double inv = 1.0 / n;
+        for (int i = 0; i < I; ++i) {
+            int o = offs[i];
+            for (int j = 0; j < n; ++j) row[j] = latent[o + j] * win[j];
+            fft_pow2(row.data(), n, -1);
+            for (int j = 0; j < n; ++j) {
+                double a = std::abs(row[j]);
+                row[j] *= target[(size_t)i * n + j] / (a + 1e-12);
+            }
+            fft_pow2(row.data(), n, +1);
+            for (int j = 0; j < n; ++j)
+                acc[o + j] += row[j] * (inv * win[j]);
+        }
+        Ten out(L);
+        for (int t = 0; t < L; ++t)
+            out[t] = supported[t] ? acc[t] / std::max(den[t], 1e-8)
+                                  : latent[t];
+        return out;
+    }
+};
+
 // Full-spectrum PGHI (complex signals): propagate over all nfft bins, no
 // Hermitian fold.  Same heap/gradient structure as pghi_phases.
 // Warm-startable core. If n_warm>0, the first n_warm frames (columns i) are
@@ -458,12 +662,6 @@ void pghi_core(const double* mag, int I, int nfft, int n, int hop,
     std::vector<char> active((size_t)F * I), done((size_t)F * I);
     double thr = rel_tol * (amax + 1e-30);
     for (size_t k = 0; k < A.size(); ++k) { active[k] = A[k] > thr; done[k] = !active[k]; }
-    std::vector<int> order(A.size());
-    std::iota(order.begin(), order.end(), 0);
-    std::sort(order.begin(), order.end(), [&](int x, int y) {
-        if (A[x] != A[y]) return A[x] > A[y];
-        return x > y;
-    });
     struct Node { double a; int f, i; };
     auto cmp = [](const Node& x, const Node& y) {
         if (x.a != y.a) return x.a < y.a;
@@ -513,11 +711,19 @@ void pghi_core(const double* mag, int I, int nfft, int n, int hop,
         flood();
     }
 
-    // Descending-magnitude seeding for remaining (disconnected) active cells.
-    for (int flat : order) {
+    // Seed each remaining connected component at its exact maximum. The old
+    // code sorted every cell merely to obtain these component maxima. Typical
+    // STFT activity is one connected component, so an exact max scan avoids an
+    // O(FI log(FI)) global sort without changing PGHI traversal or phase.
+    while (true) {
+        int flat = -1;
+        for (int k = 0; k < (int)A.size(); ++k) {
+            if (!active[k] || done[k]) continue;
+            if (flat < 0 || A[k] > A[flat] ||
+                (A[k] == A[flat] && k > flat)) flat = k;
+        }
+        if (flat < 0) break;
         int f = flat / I, i = flat % I;
-        if (!active[flat]) break;
-        if (done[flat]) continue;
         done[flat] = 1;
         heap.push({AT(f, i), f, i});
         flood();
@@ -593,8 +799,7 @@ struct DipBase {
         Ib = (int)ob.size(); Is = (int)os.size(); Dsel = (int)dsel.size();
         win_b = periodic_hann(NB); win_s = periodic_hann(NS);
 
-        auto allM = attachment_mats(EB, ES);
-        for (int d : dsel) M.push_back(allM[d]);
+        M = attachment_mats_selected(EB, ES, dsel);
         phb.resize(QB); for (int k = 0; k < QB; ++k)
             phb[k] = cd(std::cos(2 * PI * k / NB), std::sin(2 * PI * k / NB));
         phs.resize(QS); for (int k = 0; k < QS; ++k)
@@ -1094,6 +1299,43 @@ IQW_API void iqw_dip_run_complex(const double* z_in, int L, const int* dsel,
     Ten u = S.run(steepest_scale, n_steps, fuse_seed != 0, loss0);
     cd* uo = reinterpret_cast<cd*>(u_out);
     std::copy(u.begin(), u.end(), uo);
+    if (loss0_out) *loss0_out = loss0;
+}
+
+// Shared-seeded unified two-lattice solve.  The shared seed is exactly the
+// active_delta_center5_fast1 complex path above.  Each unified step is the
+// original Python P_short(P_long(momentum)) waveform projection, with
+// independent symmetric-Hann frame lattices.  h_short is normally ns/2.
+IQW_API void iqw_dip_unified(const double* z_in, int L, const int* dsel,
+                             int ndsel, int renorm, double steepest_scale,
+                             int shared_steps, int nb, int ns, int h_short,
+                             int unified_steps, double beta, double* u_out,
+                             double* loss0_out) {
+    int nds = dsel ? ndsel : 0;
+    const cd* zp = reinterpret_cast<const cd*>(z_in);
+    Ten observed(zp, zp + L);
+    SolverC S(zp, L, dsel, nds, renorm != 0, nb, ns);
+    double loss0 = 0.0;
+    Ten latent = S.run(steepest_scale, shared_steps, false, loss0);
+    MagnitudeProjectorC long_family(observed, L, nb, nb / 8);
+    MagnitudeProjectorC short_family(observed, L, ns, h_short);
+    Ten previous = latent;
+    int steps = std::max(0, unified_steps);
+    for (int step = 0; step < steps; ++step) {
+        Ten trial(L);
+        for (int t = 0; t < L; ++t)
+            trial[t] = latent[t] + beta * (latent[t] - previous[t]);
+        previous = latent;
+        latent = short_family.project(long_family.project(trial));
+    }
+    cd cross(0.0, 0.0);
+    for (int t = 0; t < L; ++t) cross += std::conj(latent[t]) * observed[t];
+    if (std::abs(cross) > 1e-30) {
+        cd rot = cross / std::abs(cross);
+        for (cd& v : latent) v *= rot;
+    }
+    cd* out = reinterpret_cast<cd*>(u_out);
+    std::copy(latent.begin(), latent.end(), out);
     if (loss0_out) *loss0_out = loss0;
 }
 

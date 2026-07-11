@@ -8,7 +8,7 @@ Features
   * Open WAV IQ files (auto header) or raw IQ (u8/s8/s16/s24/s32/f32, real or
     complex) with a user-set sample rate.
   * Play / Pause / Stop transport with a draggable position scrubber.
-  * Time zoom (samples-per-row) and frequency zoom (band select).
+  * Transform-derived COLA time sampling and frequency zoom (band select).
   * Adjustable dynamic range (floor / ceiling dB) to stretch the colormap.
   * FFT size, analysis window, and colormap settings.
 
@@ -110,7 +110,7 @@ class App:
         self.n_fft = 1024
         self.window = 0
         self.colormap = "Viridis"
-        self.hop = 256                # samples per waterfall row (time zoom)
+        self.hop = self.n_fft // 2    # symmetric-Hann COLA display hop
         self.position = 0             # top-row complex-sample index
         self.floor_db = -90.0
         self.ceil_db = -10.0
@@ -133,11 +133,12 @@ class App:
         self.recon_cov = 0.0
         # Faithful Python two-lattice magnitude inversion.  Each aperture owns
         # an independent STFT lattice; their only shared variable is a latent
-        # waveform.  Readout is a reassigned long STFT on the short (H=32)
-        # center lattice, exactly as in zak_superresolution_wav_demo.py.
+        # waveform. Internally the short family uses its COLA hop short/2
+        # (long/8). The displayed comparison lattice decimates that by two to
+        # long/4, so SR N aligns with conventional STFT N/2.
         self.super_res = False
         self.sr_nb = 1024             # long aperture window (fine frequency)
-        self.sr_ns = 128              # short aperture window (fine time)
+        self.sr_ns = self.sr_nb // 4  # fixed unified geometry
         self.srs: two_lattice.TwoLatticeStream | None = None
         self.reassigned = False       # ordinary phase-reassigned STFT
         self._block = None            # reusable (DH, n_fft) render buffer
@@ -203,23 +204,35 @@ class App:
     # -- rendering ----------------------------------------------------------
     def _fusion_block(self):
         """Python two-lattice recovery followed by the reference readout."""
-        if self.srs is None:
-            self.srs = two_lattice.TwoLatticeStream(
+        if self.srs is None or self.sr_ra is None:
+            # Treat solver and readout engine as one generation.  The old
+            # two-step mutation could leave srs alive after an aperture change
+            # had closed sr_ra, causing a None.render_mem crash.
+            if self.srs:
+                self.srs.close()
+            if self.sr_ra:
+                self.sr_ra.close()
+            stream = two_lattice.TwoLatticeStream(
                 self.src, n_long=self.sr_nb, n_short=self.sr_ns,
-                h_short=32, iterations=80)
-            self.sr_ra = iqw.Reassign(self.sr_nb)
-        fh = self.srs.h_short
-        span = DH * self.hop
-        n_native = max(1, int(np.ceil(span / fh)))
+                h_short=self.sr_ns // 2, iterations=1)
+            readout = iqw.Reassign(self.sr_nb)
+            readout.set_bilinear(True)
+            self.srs, self.sr_ra = stream, readout
+        # The solve uses its independent short-COLA lattice internally, but
+        # reassignment is evaluated DIRECTLY at the external comparison
+        # centers. Rendering at N/8 and selecting even rows discarded every
+        # quantum assigned to an odd row, which was the main source of holes.
+        readout_hop = self.hop
+        n_native = DH
         # position is the first output center.  Both the reconstruction and
         # reassignment use center coordinates; no aperture-dependent shift is
         # hidden in a parent/crop index.
         sample_start = self.position - self.sr_nb // 2
-        need = (n_native - 1) * fh + self.sr_nb
+        need = (n_native - 1) * readout_hop + self.sr_nb
         self.srs.request(sample_start, need)
         latent, cov, error = self.srs.assemble(sample_start, need)
         self.recon_cov = cov
-        err_text = "pending" if not np.isfinite(error) else f"err {error:.3g}"
+        err_text = "C++ shared+1" if not np.isfinite(error) else f"err {error:.3g}"
         dpg.set_value("recon_status",
                       f"Python 2-lattice N={self.sr_nb}/{self.sr_ns}: "
                       f"{cov*100:.0f}% ready, {err_text}")
@@ -230,8 +243,14 @@ class App:
         iq = np.empty(2 * need, dtype=np.float32)
         iq[0::2] = latent.real
         iq[1::2] = latent.imag
-        block = self.sr_ra.render_mem(iq, self.sr_nb // 2, fh, n_native)
-        return _resample_axis(block, DH, axis=0)
+        readout = self.sr_ra
+        if readout is None:  # generation changed between scheduling and readout
+            self._recon_pending = True
+            return np.full((DH, self.sr_nb), -120.0, dtype=np.float32)
+        block = readout.render_mem(
+            iq, self.sr_nb // 2, readout_hop, n_native)
+
+        return block
 
     def _reassigned_block(self):
         """Ordinary phase-reassigned long-window STFT."""
@@ -331,6 +350,10 @@ class App:
                       f"Row span: {span*1000:.1f} ms  |  hop {self.hop} smp  |  "
                       f"pos {self.position/fs:.3f} s" if fs else "")
 
+    def set_derived_hop(self, new_hop):
+        """Change analysis spacing without changing the position marker."""
+        self.hop = max(1, int(new_hop))
+
     # -- transport ----------------------------------------------------------
     def tick(self):
         now = time.perf_counter()
@@ -398,11 +421,8 @@ def cb_pos(sender, val):
 
 def cb_nfft(sender, val):
     app.n_fft = int(val)
-    if app.reassigned:
-        dense_hop = max(1, app.n_fft // 32)
-        if app.hop > dense_hop:
-            app.hop = dense_hop
-            dpg.set_value("hop_slider", dense_hop)
+    if not app.super_res:
+        app.set_derived_hop(app.n_fft // 2)
     if app.src:
         app._make_wf()
     app.dirty = True
@@ -417,11 +437,6 @@ def cb_window(sender, val):
 
 def cb_colormap(sender, val):
     app.colormap = val
-    app.dirty = True
-
-
-def cb_hop(sender, val):
-    app.hop = max(1, int(val))
     app.dirty = True
 
 
@@ -474,29 +489,26 @@ def cb_view_mode(sender, val):
     app.reassigned = val == "Reassigned STFT"
     is_streaming = val == "Streaming STFT"
     dpg.configure_item("win_combo", enabled=is_streaming)
-    for tag in ("sr_nb_combo", "sr_ns_combo"):
-        dpg.configure_item(tag, enabled=app.super_res)
-    if not app.super_res and app.srs:
-        app.srs.close(); app.srs = None
-    if not app.super_res and app.sr_ra:
-        app.sr_ra.close(); app.sr_ra = None
+    dpg.configure_item("sr_nb_combo", enabled=app.super_res)
+    # Keep the solved SR tiles and its readout plan alive while comparing
+    # modes. They are invalidated only by a source/aperture change. Closing
+    # here made every A/B toggle restart PGHI and delayed the comparison.
     if app.super_res:
+        app.set_derived_hop(app.sr_nb // 4)
         dpg.set_value(
             "transform_note",
             "Original Python two-lattice solve | independent magnitude "
-            "families -> one latent waveform -> reassigned long readout at H=32")
+            "families -> one latent waveform | short=N/4, internal H=N/8, display H=N/4")
     elif app.reassigned:
-        dense_hop = max(1, app.n_fft // 32)
-        if app.hop > dense_hop:
-            app.hop = dense_hop
-            dpg.set_value("hop_slider", dense_hop)
+        app.set_derived_hop(app.n_fft // 2)
         dpg.set_value(
             "transform_note",
-            "Symmetric Hann | local phase reassignment | H<=N/32")
+            "Symmetric Hann | local phase reassignment | same N/2 COLA grid")
     else:
+        app.set_derived_hop(app.n_fft // 2)
         dpg.set_value(
             "transform_note",
-            "Selected window | center time | continuous complex STFT")
+            "Selected window | center time | N/2 COLA grid")
     dpg.set_value("recon_status", "")
     app.dirty = True
 
@@ -511,28 +523,14 @@ def _rebuild_srs():
     app.dirty = True
 
 
-def _max_valid_ns(nb):
-    """Independent lattices require only that short is no longer than long."""
-    return int(nb)
-
-
 def cb_sr_nb(sender, val):
     nb = int(val)
-    mx = _max_valid_ns(nb)
-    if app.sr_ns > mx:                    # snap short window into valid range
-        app.sr_ns = mx
-        dpg.set_value("sr_ns_combo", str(mx))
     app.sr_nb = nb
-    _rebuild_srs()
-
-
-def cb_sr_ns(sender, val):
-    ns = int(val)
-    mx = _max_valid_ns(app.sr_nb)
-    if ns > mx:
-        ns = mx
-        dpg.set_value("sr_ns_combo", str(ns))
-    app.sr_ns = ns
+    app.sr_ns = nb // 4
+    app.set_derived_hop(nb // 4)
+    dpg.set_value(
+        "sr_geometry",
+        f"short {app.sr_ns} | internal hop {nb//8} | display hop {app.hop}")
     _rebuild_srs()
 
 
@@ -543,12 +541,6 @@ def cb_flip(sender, val):
 
 def cb_speed(sender, val):
     app.play_rate = float(val)
-
-
-def cb_zoom_time(factor):
-    app.hop = max(1, int(round(app.hop * factor)))
-    dpg.set_value("hop_slider", app.hop)
-    app.dirty = True
 
 
 # ---------------------------------------------------------------------------
@@ -621,11 +613,9 @@ def build_ui():
                                   default_value="1024", width=80,
                                   tag="sr_nb_combo", enabled=False,
                                   callback=cb_sr_nb)
-                    dpg.add_text("short win")
-                    dpg.add_combo(["64", "128", "256", "512"],
-                                  default_value="128", width=70,
-                                  tag="sr_ns_combo", enabled=False,
-                                  callback=cb_sr_ns)
+                    dpg.add_text(
+                        "short 256 | internal hop 128 | display hop 256",
+                        tag="sr_geometry")
                 dpg.add_text("", tag="recon_status", color=(200, 180, 120))
 
                 dpg.add_separator()
@@ -662,15 +652,7 @@ def build_ui():
                 dpg.add_button(label="Full band", callback=cb_freq_full)
 
                 dpg.add_separator()
-                dpg.add_text("Time zoom")
-                dpg.add_slider_int(label="hop (smp/row)", min_value=1,
-                                   max_value=65536, default_value=app.hop,
-                                   tag="hop_slider", callback=cb_hop)
-                with dpg.group(horizontal=True):
-                    dpg.add_button(label="Zoom in",
-                                   callback=lambda: cb_zoom_time(0.5))
-                    dpg.add_button(label="Zoom out",
-                                   callback=lambda: cb_zoom_time(2.0))
+                dpg.add_text("Time grid (transform-derived COLA)")
                 dpg.add_text("", tag="time_readout")
 
                 dpg.add_separator()

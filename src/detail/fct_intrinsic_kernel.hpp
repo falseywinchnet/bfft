@@ -66,6 +66,7 @@ public:
         lane_vi_.resize(bins);
         lane_threshold_.resize(bins);
         lane_mask_.resize(bins);
+        moment_input_.resize(bins);
     }
 
     int size() const noexcept { return n_; }
@@ -75,7 +76,8 @@ public:
     // argmax for every bin.  A negative value selects the research floor
     // log(N)+2, below which the ordinary full-support Fourier value is emitted.
     bool forward(const value* input, value* output, std::int64_t* tau,
-                 double activity_factor = -1.0, int min_tau = 1) {
+                 double activity_factor = -1.0, int min_tau = 1,
+                 value* moment = nullptr) {
         if (!input || !output || n_ < 2) return false;
         min_tau = std::max(1, std::min(n_, min_tau));
         stats_ = statistics{};
@@ -207,6 +209,36 @@ public:
                 if (tau) tau[k] = n_;
             }
         }
+        if (moment) {
+            // The frequency derivative of phase needs
+            // M(k,tau)=sum_{t<tau} t*x[t]*exp(-i*omega_k*t).  Evaluate it at
+            // the already-selected support, exactly, by decomposing that
+            // prefix into O(log N) dyadic blocks served by the same fractional
+            // provider abstraction.  Selection is not rerun on t*x.
+            for (int t = 0; t < n_; ++t) {
+                moment_input_[static_cast<std::size_t>(t)] = value{
+                    input[t].re * t, input[t].im * t};
+            }
+            fractional::provider moment_provider(
+                moment_input_.data(), n_, false);
+            for (int k = 0; k < n_; ++k) {
+                const int selected = best_score_[static_cast<std::size_t>(k)] >
+                        floor_score
+                    ? best_tau_[static_cast<std::size_t>(k)] : n_;
+                value acc{};
+                int lo = 0;
+                int remaining_tau = selected;
+                while (remaining_tau > 0) {
+                    int length = 1;
+                    while ((length << 1) <= remaining_tau) length <<= 1;
+                    acc = fractional::add(
+                        acc, moment_provider.get(lo, length, k));
+                    lo += length;
+                    remaining_tau -= length;
+                }
+                moment[k] = acc;
+            }
+        }
         stats_.provider_values = provider.value_count();
         stats_.provider_channels = provider.channel_count();
         stats_.provider_cells = provider.butterfly_cells();
@@ -261,6 +293,7 @@ private:
     std::vector<std::size_t> touched_;
     std::vector<double> lane_br_, lane_bi_, lane_vr_, lane_vi_, lane_threshold_;
     std::vector<std::uint8_t> lane_mask_;
+    std::vector<value> moment_input_;
 };
 
 } // namespace intrinsic

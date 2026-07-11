@@ -98,6 +98,7 @@ _fct_render_mem = _decl(
 
 _ra_create = _decl("iqw_ra_create", _vp, [ctypes.c_int])
 _ra_destroy = _decl("iqw_ra_destroy", None, [_vp])
+_ra_set_bilinear = _decl("iqw_ra_set_bilinear", None, [_vp, ctypes.c_int])
 _ra_render_mem = _decl("iqw_ra_render_mem", None,
                        [_vp, _vp, _ll, _ll, _ll, ctypes.c_int, _vp])
 
@@ -119,6 +120,10 @@ _cip = ctypes.POINTER(ctypes.c_int)
 _dip_run_complex = _decl("iqw_dip_run_complex", None,
                          [_dp, _ci, _cip, _ci, _ci, _cdd, _ci, _ci, _ci, _ci,
                           _dp, _dp])
+_dip_unified = _decl(
+    "iqw_dip_unified", None,
+    [_dp, _ci, _cip, _ci, _ci, _cdd, _ci, _ci, _ci, _ci, _ci, _cdd,
+     _dp, _dp])
 _dip_frames_long = _decl("iqw_dip_frames_long", _ci, [_ci, _ci])
 _dip_run_complex_warm = _decl(
     "iqw_dip_run_complex_warm", None,
@@ -344,6 +349,9 @@ class Reassign:
                        int(hop), int(n_rows), out.ctypes.data)
         return out
 
+    def set_bilinear(self, enabled=True):
+        _ra_set_bilinear(self._h, 1 if enabled else 0)
+
     def close(self):
         if getattr(self, "_h", None):
             _ra_destroy(self._h)
@@ -454,6 +462,26 @@ def dip_run_complex(z, dsel=None, renorm=True, steepest_scale=2.5e-4,
                      float(steepest_scale), int(n_steps), 1 if fuse_seed else 0,
                      int(nb), int(ns), u.ctypes.data_as(_dp),
                      ctypes.byref(loss0))
+    return u, loss0.value
+
+
+def dip_unified(z, dsel=None, renorm=True, steepest_scale=2.5e-4,
+                shared_steps=1, nb=NB_LONG, ns=None, h_short=None,
+                unified_steps=1, beta=0.88):
+    """Shared fast1 seed plus independent two-lattice waveform projections."""
+    z = np.ascontiguousarray(z, dtype=np.complex128)
+    if ns is None:
+        ns = int(nb) // 4
+    if h_short is None:
+        h_short = int(ns) // 2
+    u = np.empty(z.size, dtype=np.complex128)
+    loss0 = ctypes.c_double(0.0)
+    ds_ptr, nds, _keep = _dsel_ptr(dsel)
+    _dip_unified(
+        z.ctypes.data_as(_dp), z.size, ds_ptr, nds, 1 if renorm else 0,
+        float(steepest_scale), int(shared_steps), int(nb), int(ns),
+        int(h_short), int(unified_steps), float(beta),
+        u.ctypes.data_as(_dp), ctypes.byref(loss0))
     return u, loss0.value
 
 

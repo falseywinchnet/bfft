@@ -47,8 +47,48 @@ def test_real_reference_stays_real():
     assert np.all(np.isfinite(recovered))
 
 
+def test_cpp_combined_kernel_matches_python_specification():
+    import iqwaterfall as iqw
+
+    z = fixture()
+    shared, _ = iqw.dip_run_complex(
+        z, n_steps=1, nb=1024, ns=256)
+    expected, _ = recover_two_lattice(
+        z, 1024, 256, h_short=128, iterations=1, initial=shared)
+    got, _ = iqw.dip_unified(
+        z, nb=1024, ns=256, h_short=128, unified_steps=1)
+    # Both paths already choose the same global phase. Keep the alignment here
+    # so this remains an operator test if the phase-anchor implementation moves.
+    phase = np.vdot(got, expected)
+    if abs(phase):
+        got = got * phase / abs(phase)
+    relative = np.max(np.abs(got - expected)) / np.max(np.abs(expected))
+    assert relative < 2e-12
+
+
+def test_bilinear_reassignment_conserves_power_and_fills_quantization_gaps():
+    import iqwaterfall as iqw
+
+    z = fixture()
+    iq = np.empty(2 * len(z), dtype=np.float32)
+    iq[0::2] = z.real
+    iq[1::2] = z.imag
+    engine = iqw.Reassign(1024)
+    nearest_db = engine.render_mem(iq, 512, 256, 29).copy()
+    engine.set_bilinear(True)
+    splat_db = engine.render_mem(iq, 512, 256, 29).copy()
+    engine.close()
+    nearest = np.power(10.0, nearest_db / 10.0)
+    splat = np.power(10.0, splat_db / 10.0)
+    assert abs(float(splat.sum() / nearest.sum()) - 1.0) < 2e-6
+    assert np.count_nonzero(splat_db > -80.0) > np.count_nonzero(
+        nearest_db > -80.0)
+
+
 if __name__ == "__main__":
     test_independent_1024_512_lattices()
     test_alternating_projection_converges_for_1024_512()
     test_real_reference_stays_real()
+    test_cpp_combined_kernel_matches_python_specification()
+    test_bilinear_reassignment_conserves_power_and_fills_quantization_gaps()
     print("two-lattice reference: PASS")

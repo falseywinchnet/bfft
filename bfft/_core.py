@@ -125,6 +125,9 @@ _fct_forward = _decl("fct_forward", ctypes.c_int,
                      [_plan_p, _void_p, _void_p, _void_p])
 _fct_forward_complex = _decl("fct_forward_complex", ctypes.c_int,
                              [_plan_p, _void_p, _void_p, _void_p])
+_fct_forward_complex_moment = _decl(
+    "fct_forward_complex_moment", ctypes.c_int,
+    [_plan_p, _void_p, _void_p, _void_p, _void_p])
 
 _OK = 0
 
@@ -334,6 +337,30 @@ class FctPlan:
                                     tau_out.ctypes.data),
                "fct_forward_complex")
         return out, tau_out
+
+    def fct_complex_moment(self, x, out=None, tau_out=None, moment_out=None):
+        """Return ``(C, tau, M)`` with the exact phase moment at selected tau.
+
+        ``M[k] = sum(t*x[t]*exp(-2j*pi*k*t/N), t < tau[k])`` and therefore
+        ``Re(M/C)`` is the FCT phase group delay. Support selection is performed
+        once on ``x``; ``M`` is evaluated afterward at that same support.
+        """
+        a = _as_c128_1d(x)
+        if a.shape[0] != self.n:
+            raise ValueError(
+                f"FctPlan(N={self.n}).fct_complex_moment expects length "
+                f"{self.n}")
+        out = _out_buffer(out, self.n, np.complex128,
+                          "FctPlan.fct_complex_moment")
+        tau_out = _out_buffer(tau_out, self.n, np.int64,
+                              "FctPlan.fct_complex_moment tau")
+        moment_out = _out_buffer(moment_out, self.n, np.complex128,
+                                 "FctPlan.fct_complex_moment moment")
+        _check(_fct_forward_complex_moment(
+            self._plan, a.ctypes.data, out.ctypes.data,
+            tau_out.ctypes.data, moment_out.ctypes.data),
+            "fct_forward_complex_moment")
+        return out, tau_out, moment_out
 
 
 

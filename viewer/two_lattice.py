@@ -71,7 +71,8 @@ class MagnitudeFamily:
 def recover_two_lattice(observed: np.ndarray, n_long: int, n_short: int,
                         *, h_long: int | None = None, h_short: int = 32,
                         iterations: int = 24, beta: float = 0.88,
-                        seed: int = 0, real_signal: bool = False
+                        seed: int = 0, real_signal: bool = False,
+                        initial: np.ndarray | None = None
                         ) -> tuple[np.ndarray, dict[str, float]]:
     """Recover one complex latent waveform from two STFT magnitude families.
 
@@ -96,7 +97,14 @@ def recover_two_lattice(observed: np.ndarray, n_long: int, n_short: int,
 
     rng = np.random.default_rng(seed)
     rms = float(np.sqrt(np.mean(np.abs(z) ** 2)) + 1e-12)
-    if real_signal:
+    if initial is not None:
+        seed_value = np.asarray(initial).real if real_signal else initial
+        latent = np.ascontiguousarray(
+            seed_value, dtype=np.float64 if real_signal
+            else np.complex128).copy()
+        if latent.shape != z.shape:
+            raise ValueError("initial latent waveform has the wrong shape")
+    elif real_signal:
         # Same seed law as the original standalone Python solver.
         latent = 0.01 * rng.standard_normal(len(z))
     else:
@@ -159,11 +167,17 @@ class TwoLatticeStream:
         start = tile_index * self.step
         with self._io_lock:
             observed = self.src.read(start, self.tile)
-        return recover_two_lattice(
-            observed, self.n_long, self.n_short,
-            h_long=self.h_long, h_short=self.h_short,
-            iterations=self.iterations, seed=0x5EED + tile_index,
-            real_signal=not self.src.is_complex)
+        # One backend call now performs the validated shared fast1 seed and the
+        # literal independent-family projection implemented above.  Keeping
+        # the NumPy functions in this file makes the C++ semantics testable.
+        import iqwaterfall as iqw
+        unified, _loss0 = iqw.dip_unified(
+            observed, steepest_scale=2.5e-4, shared_steps=1,
+            nb=self.n_long, ns=self.n_short, h_short=self.h_short,
+            unified_steps=self.iterations, beta=0.88)
+        if not self.src.is_complex:
+            unified = unified.real
+        return unified, {}
 
     def _store(self, tile_index, future):
         try:
@@ -206,6 +220,8 @@ class TwoLatticeStream:
         errors: list[float] = []
         with self._lock:
             ready = {k: self._cache.get(k) for k in range(lo, hi + 1)}
+        ready_tiles = sum(isinstance(item, tuple) for item in ready.values())
+        expected_tiles = max(1, len(ready))
         for k, item in ready.items():
             if not isinstance(item, tuple):
                 continue
@@ -220,7 +236,8 @@ class TwoLatticeStream:
             w = self._ola_window[sl_data]
             acc[sl_out] += data[sl_data] * w
             den[sl_out] += w
-            errors.append(max(metrics.values()))
+            if metrics:
+                errors.append(max(metrics.values()))
         covered = den > 1e-8
         out = np.zeros(count, dtype=np.complex128)
         out[covered] = acc[covered] / den[covered]
@@ -229,7 +246,10 @@ class TwoLatticeStream:
                 raw = self.src.read(start, count)
             out[~covered] = raw[~covered]
         error = float(max(errors)) if errors else float("nan")
-        return out, float(np.mean(covered)), error
+        # Readiness is a cache property, not a Hann endpoint property.  Using
+        # sample coverage here made the GUI recompute forever at file edges,
+        # where a legitimate tile window is exactly zero and raw_fill applies.
+        return out, ready_tiles / expected_tiles, error
 
     def close(self):
         with self._lock:

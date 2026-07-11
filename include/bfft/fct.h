@@ -73,6 +73,19 @@ bfft_status fct_forward_complex(fct_plan* plan,
                                 bfft_complex* output,
                                 int64_t* tau);
 
+/* Complex FCT plus the exact first correlation moment at the selected support:
+
+       moment[k] = sum_{t < tau[k]} t * input[t] * exp(-2*pi*i*k*t/N).
+
+   This is the phase jet used by support-aware reassignment, since
+   -d arg(C)/d omega = Re(moment/C). Selection is performed only on input;
+   the moment is evaluated afterward at that same certified tau. */
+bfft_status fct_forward_complex_moment(fct_plan* plan,
+                                       const bfft_complex* input,
+                                       bfft_complex* output,
+                                       int64_t* tau,
+                                       bfft_complex* moment);
+
 /* Numba-compatible forward entry point with the same call shape as
    bfft_forward. work and native_scratch are accepted for drop-in call-site
    compatibility and are ignored; the slice indices are not emitted. */

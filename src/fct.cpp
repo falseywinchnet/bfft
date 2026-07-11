@@ -103,6 +103,20 @@ bfft_status fct_forward_complex(fct_plan* plan, const bfft_complex* input,
     return BFFT_OK;
 }
 
+bfft_status fct_forward_complex_moment(fct_plan* plan,
+                                       const bfft_complex* input,
+                                       bfft_complex* output,
+                                       int64_t* tau,
+                                       bfft_complex* moment) {
+    if (!plan || !input || !output || !moment)
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    if (!plan->p.forward(as_intrinsic(input), as_intrinsic(output), tau,
+                         plan->activity, plan->min_tau,
+                         as_intrinsic(moment)))
+        return BFFT_ERROR_INTERNAL;
+    return BFFT_OK;
+}
+
 bfft_status fct_forward_numba(fct_plan* plan, const double* input,
                               bfft_complex* output, double* /*work*/,
                               bfft_complex* /*native_scratch*/) {
