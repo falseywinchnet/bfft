@@ -147,6 +147,11 @@ typedef __m256d bruun_v4d;
 #  define V4D_UNPHI(a, b) _mm256_unpackhi_pd((a), (b))
 #  define V4D_SWAP_PAIRS(a) _mm256_permute_pd((a), 0x5)
 #  define V4D_SWAP_HALVES(a) _mm256_permute4x64_pd((a), 0x4E)
+#  define V4D_CAT128_LOHI(a, b) _mm256_permute2f128_pd((a), (b), 0x20)
+#  define V4D_CAT128_HIHI(a, b) _mm256_permute2f128_pd((a), (b), 0x31)
+#  define V4D_XOR(a, b)   _mm256_xor_pd((a), (b))
+#  define V4D_NEG_ZERO()   _mm256_set1_pd(-0.0)
+#  define V4D_LD2_DUP(p)  _mm256_permute4x64_pd(_mm256_castpd128_pd256(_mm_loadu_pd(p)), 0x50)
 #endif
 
 #if BRUUN_LEVEL >= 1

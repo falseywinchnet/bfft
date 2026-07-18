@@ -56,10 +56,10 @@ static inline void binomial_fwd(double* RESTRICT v, int h) {
 
 #if BRUUN_LEVEL >= 2
     for (; i + 3 < h; i += 4) {
-        const __m256d a = _mm256_loadu_pd(v + i);
-        const __m256d b = _mm256_loadu_pd(v + h + i);
-        _mm256_storeu_pd(v + i, _mm256_add_pd(a, b));
-        _mm256_storeu_pd(v + h + i, _mm256_sub_pd(a, b));
+        const bruun_v4d a = V4D_LD(v + i);
+        const bruun_v4d b = V4D_LD(v + h + i);
+        V4D_ST(v + i, V4D_ADD(a, b));
+        V4D_ST(v + h + i, V4D_SUB(a, b));
     }
 #endif
 #if BRUUN_LEVEL >= 1
@@ -85,10 +85,10 @@ static inline void binomial_oop(const double* RESTRICT in, double* RESTRICT v, i
 
 #if BRUUN_LEVEL >= 2
     for (; i + 3 < h; i += 4) {
-        const __m256d a = _mm256_loadu_pd(in + i);
-        const __m256d b = _mm256_loadu_pd(in + h + i);
-        _mm256_storeu_pd(v + i, _mm256_add_pd(a, b));
-        _mm256_storeu_pd(v + h + i, _mm256_sub_pd(a, b));
+        const bruun_v4d a = V4D_LD(in + i);
+        const bruun_v4d b = V4D_LD(in + h + i);
+        V4D_ST(v + i, V4D_ADD(a, b));
+        V4D_ST(v + h + i, V4D_SUB(a, b));
     }
 #endif
 #if BRUUN_LEVEL >= 1
@@ -112,12 +112,12 @@ static inline void binomial_inv(double* RESTRICT v, int h) {
     int i = 0;
 
 #if BRUUN_LEVEL >= 2
-    const __m256d half4 = _mm256_set1_pd(0.5);
+    const bruun_v4d half4 = V4D_SET1(0.5);
     for (; i + 3 < h; i += 4) {
-        const __m256d a = _mm256_loadu_pd(v + i);
-        const __m256d b = _mm256_loadu_pd(v + h + i);
-        _mm256_storeu_pd(v + i, _mm256_mul_pd(half4, _mm256_add_pd(a, b)));
-        _mm256_storeu_pd(v + h + i, _mm256_mul_pd(half4, _mm256_sub_pd(a, b)));
+        const bruun_v4d a = V4D_LD(v + i);
+        const bruun_v4d b = V4D_LD(v + h + i);
+        V4D_ST(v + i, V4D_MUL(half4, V4D_ADD(a, b)));
+        V4D_ST(v + h + i, V4D_MUL(half4, V4D_SUB(a, b)));
     }
 #endif
 #if BRUUN_LEVEL >= 1
@@ -149,22 +149,22 @@ static inline void norm_q_fwd(double* RESTRICT p, int q, double c_scalar, double
 
 #if BRUUN_LEVEL >= 2
     {
-        const __m256d vc = _mm256_set1_pd(c_scalar);
-        const __m256d vs = _mm256_set1_pd(s_scalar);
+        const bruun_v4d vc = V4D_SET1(c_scalar);
+        const bruun_v4d vs = V4D_SET1(s_scalar);
 
         for (; n + 3 < q; n += 4) {
-            const __m256d A0 = _mm256_loadu_pd(A0p + n);
-            const __m256d B0 = _mm256_loadu_pd(B0p + n);
-            const __m256d A1 = _mm256_loadu_pd(A1p + n);
-            const __m256d B1 = _mm256_loadu_pd(B1p + n);
+            const bruun_v4d A0 = V4D_LD(A0p + n);
+            const bruun_v4d B0 = V4D_LD(B0p + n);
+            const bruun_v4d A1 = V4D_LD(A1p + n);
+            const bruun_v4d B1 = V4D_LD(B1p + n);
 
-            const __m256d R = _mm256_fmsub_pd(vc, B0, _mm256_mul_pd(vs, B1));
-            const __m256d I = _mm256_fmadd_pd(vs, B0, _mm256_mul_pd(vc, B1));
+            const bruun_v4d R = V4D_MSUB(V4D_MUL(vc, B0), vs, B1);
+            const bruun_v4d I = V4D_MADD(V4D_MUL(vs, B0), vc, B1);
 
-            _mm256_storeu_pd(A0p + n, _mm256_add_pd(A0, R));
-            _mm256_storeu_pd(B0p + n, _mm256_add_pd(A1, I));
-            _mm256_storeu_pd(A1p + n, _mm256_sub_pd(A0, R));
-            _mm256_storeu_pd(B1p + n, _mm256_sub_pd(I, A1));
+            V4D_ST(A0p + n, V4D_ADD(A0, R));
+            V4D_ST(B0p + n, V4D_ADD(A1, I));
+            V4D_ST(A1p + n, V4D_SUB(A0, R));
+            V4D_ST(B1p + n, V4D_SUB(I, A1));
         }
     }
 #endif
@@ -357,8 +357,8 @@ static inline void norm_q_inv(double* RESTRICT p, int q, double c_scalar, double
 #if BRUUN_LEVEL >= 2
     {
         const __m256d half = _mm256_set1_pd(0.5);
-        const __m256d vc = _mm256_set1_pd(c_scalar);
-        const __m256d vs = _mm256_set1_pd(s_scalar);
+        const bruun_v4d vc = V4D_SET1(c_scalar);
+        const bruun_v4d vs = V4D_SET1(s_scalar);
 
         for (; n + 3 < q; n += 4) {
             const __m256d C0v = _mm256_loadu_pd(C0p + n);
@@ -2926,41 +2926,41 @@ private:
         const bruun_v4d c1a = V4D_SUB(A0, R1);
         const bruun_v4d c1b = V4D_SUB(I1, A1);
 
-        const __m256d A0v = _mm256_permute2f128_pd(c0a, c1a, 0x20);
-        const __m256d B0v = _mm256_permute2f128_pd(c0a, c1a, 0x31);
-        const __m256d A1v = _mm256_permute2f128_pd(c0b, c1b, 0x20);
-        const __m256d B1v = _mm256_permute2f128_pd(c0b, c1b, 0x31);
+        const bruun_v4d A0v = V4D_CAT128_LOHI(c0a, c1a);
+        const bruun_v4d B0v = V4D_CAT128_HIHI(c0a, c1a);
+        const bruun_v4d A1v = V4D_CAT128_LOHI(c0b, c1b);
+        const bruun_v4d B1v = V4D_CAT128_HIHI(c0b, c1b);
 
-        const __m256d c2 = _mm256_permute4x64_pd(_mm256_castpd128_pd256(_mm_loadu_pd(t.c2)), 0x50);
-        const __m256d s2 = _mm256_permute4x64_pd(c2, 0x4E);
-        const __m256d R2 = _mm256_fmsub_pd(c2, B0v, _mm256_mul_pd(s2, B1v));
-        const __m256d I2 = _mm256_fmadd_pd(s2, B0v, _mm256_mul_pd(c2, B1v));
+        const bruun_v4d c2 = V4D_LD2_DUP(t.c2);
+        const bruun_v4d s2 = V4D_SWAP_HALVES(c2);
+        const bruun_v4d R2 = V4D_MSUB(V4D_MUL(c2, B0v), s2, B1v);
+        const bruun_v4d I2 = V4D_MADD(V4D_MUL(s2, B0v), c2, B1v);
 
-        const __m256d P = _mm256_add_pd(A0v, R2);
-        const __m256d Q = _mm256_add_pd(A1v, I2);
-        const __m256d M = _mm256_sub_pd(A0v, R2);
-        const __m256d W = _mm256_sub_pd(I2, A1v);
+        const bruun_v4d P = V4D_ADD(A0v, R2);
+        const bruun_v4d Q = V4D_ADD(A1v, I2);
+        const bruun_v4d M = V4D_SUB(A0v, R2);
+        const bruun_v4d W = V4D_SUB(I2, A1v);
 
-        const __m256d A0w = _mm256_unpacklo_pd(P, M);
-        const __m256d B0w = _mm256_unpackhi_pd(P, M);
-        const __m256d A1w = _mm256_unpacklo_pd(Q, W);
-        const __m256d B1w = _mm256_unpackhi_pd(Q, W);
+        const bruun_v4d A0w = V4D_UNPLO(P, M);
+        const bruun_v4d B0w = V4D_UNPHI(P, M);
+        const bruun_v4d A1w = V4D_UNPLO(Q, W);
+        const bruun_v4d B1w = V4D_UNPHI(Q, W);
 
-        const __m256d c4 = _mm256_loadu_pd(t.c4);
-        const __m256d s4 = _mm256_permute_pd(c4, 0x5);
-        const __m256d R3 = _mm256_fmsub_pd(c4, B0w, _mm256_mul_pd(s4, B1w));
-        const __m256d I3 = _mm256_fmadd_pd(s4, B0w, _mm256_mul_pd(c4, B1w));
+        const bruun_v4d c4 = V4D_LD(t.c4);
+        const bruun_v4d s4 = V4D_SWAP_PAIRS(c4);
+        const bruun_v4d R3 = V4D_MSUB(V4D_MUL(c4, B0w), s4, B1w);
+        const bruun_v4d I3 = V4D_MADD(V4D_MUL(s4, B0w), c4, B1w);
 
-        const __m256d sgn = _mm256_set1_pd(-0.0);
-        const __m256d re_e = _mm256_add_pd(A0w, R3);
-        const __m256d re_o = _mm256_sub_pd(A0w, R3);
-        const __m256d im_e = _mm256_xor_pd(_mm256_add_pd(A1w, I3), sgn);
-        const __m256d im_o = _mm256_sub_pd(A1w, I3);
+        const bruun_v4d sgn = V4D_NEG_ZERO();
+        const bruun_v4d re_e = V4D_ADD(A0w, R3);
+        const bruun_v4d re_o = V4D_SUB(A0w, R3);
+        const bruun_v4d im_e = V4D_XOR(V4D_ADD(A1w, I3), sgn);
+        const bruun_v4d im_o = V4D_SUB(A1w, I3);
 
-        const __m256d pe = _mm256_unpacklo_pd(re_e, im_e); // leaves 8m,   8m+4
-        const __m256d ph = _mm256_unpackhi_pd(re_e, im_e); // leaves 8m+2, 8m+6
-        const __m256d qe = _mm256_unpacklo_pd(re_o, im_o); // leaves 8m+1, 8m+5
-        const __m256d qh = _mm256_unpackhi_pd(re_o, im_o); // leaves 8m+3, 8m+7
+        const bruun_v4d pe = V4D_UNPLO(re_e, im_e); // leaves 8m,   8m+4
+        const bruun_v4d ph = V4D_UNPHI(re_e, im_e); // leaves 8m+2, 8m+6
+        const bruun_v4d qe = V4D_UNPLO(re_o, im_o); // leaves 8m+1, 8m+5
+        const bruun_v4d qh = V4D_UNPHI(re_o, im_o); // leaves 8m+3, 8m+7
 
         const int32_t* RESTRICT idx = t.idx;
         _mm_storeu_pd(&X[idx[0]].re, _mm256_castpd256_pd128(pe));
@@ -2998,10 +2998,10 @@ private:
     // and for the optional two-phase pack.
     inline void codelet_d3_tw_res(double* RESTRICT p, const LeafTw& t) const {
 #if BRUUN_LEVEL >= 2
-        const __m256d A0 = _mm256_loadu_pd(p);
-        const __m256d B0 = _mm256_loadu_pd(p + 4);
-        const __m256d A1 = _mm256_loadu_pd(p + 8);
-        const __m256d B1 = _mm256_loadu_pd(p + 12);
+        const bruun_v4d A0 = V4D_LD(p);
+        const bruun_v4d B0 = V4D_LD(p + 4);
+        const bruun_v4d A1 = V4D_LD(p + 8);
+        const bruun_v4d B1 = V4D_LD(p + 12);
 
         const bruun_v4d c1 = V4D_SET1(t.c1);
         const bruun_v4d s1 = V4D_SET1(t.s1);
@@ -3013,30 +3013,30 @@ private:
         const bruun_v4d c1a = V4D_SUB(A0, R1);
         const bruun_v4d c1b = V4D_SUB(I1, A1);
 
-        const __m256d A0v = _mm256_permute2f128_pd(c0a, c1a, 0x20);
-        const __m256d B0v = _mm256_permute2f128_pd(c0a, c1a, 0x31);
-        const __m256d A1v = _mm256_permute2f128_pd(c0b, c1b, 0x20);
-        const __m256d B1v = _mm256_permute2f128_pd(c0b, c1b, 0x31);
+        const bruun_v4d A0v = V4D_CAT128_LOHI(c0a, c1a);
+        const bruun_v4d B0v = V4D_CAT128_HIHI(c0a, c1a);
+        const bruun_v4d A1v = V4D_CAT128_LOHI(c0b, c1b);
+        const bruun_v4d B1v = V4D_CAT128_HIHI(c0b, c1b);
 
-        const __m256d c2 = _mm256_permute4x64_pd(_mm256_castpd128_pd256(_mm_loadu_pd(t.c2)), 0x50);
-        const __m256d s2 = _mm256_permute4x64_pd(c2, 0x4E);
-        const __m256d R2 = _mm256_fmsub_pd(c2, B0v, _mm256_mul_pd(s2, B1v));
-        const __m256d I2 = _mm256_fmadd_pd(s2, B0v, _mm256_mul_pd(c2, B1v));
+        const bruun_v4d c2 = V4D_LD2_DUP(t.c2);
+        const bruun_v4d s2 = V4D_SWAP_HALVES(c2);
+        const bruun_v4d R2 = V4D_MSUB(V4D_MUL(c2, B0v), s2, B1v);
+        const bruun_v4d I2 = V4D_MADD(V4D_MUL(s2, B0v), c2, B1v);
 
-        const __m256d P = _mm256_add_pd(A0v, R2);
-        const __m256d Q = _mm256_add_pd(A1v, I2);
-        const __m256d M = _mm256_sub_pd(A0v, R2);
-        const __m256d W = _mm256_sub_pd(I2, A1v);
+        const bruun_v4d P = V4D_ADD(A0v, R2);
+        const bruun_v4d Q = V4D_ADD(A1v, I2);
+        const bruun_v4d M = V4D_SUB(A0v, R2);
+        const bruun_v4d W = V4D_SUB(I2, A1v);
 
-        const __m256d A0w = _mm256_unpacklo_pd(P, M);
-        const __m256d B0w = _mm256_unpackhi_pd(P, M);
-        const __m256d A1w = _mm256_unpacklo_pd(Q, W);
-        const __m256d B1w = _mm256_unpackhi_pd(Q, W);
+        const bruun_v4d A0w = V4D_UNPLO(P, M);
+        const bruun_v4d B0w = V4D_UNPHI(P, M);
+        const bruun_v4d A1w = V4D_UNPLO(Q, W);
+        const bruun_v4d B1w = V4D_UNPHI(Q, W);
 
-        const __m256d c4 = _mm256_loadu_pd(t.c4);
-        const __m256d s4 = _mm256_permute_pd(c4, 0x5);
-        const __m256d R3 = _mm256_fmsub_pd(c4, B0w, _mm256_mul_pd(s4, B1w));
-        const __m256d I3 = _mm256_fmadd_pd(s4, B0w, _mm256_mul_pd(c4, B1w));
+        const bruun_v4d c4 = V4D_LD(t.c4);
+        const bruun_v4d s4 = V4D_SWAP_PAIRS(c4);
+        const bruun_v4d R3 = V4D_MSUB(V4D_MUL(c4, B0w), s4, B1w);
+        const bruun_v4d I3 = V4D_MADD(V4D_MUL(s4, B0w), c4, B1w);
 
         const __m256d E0 = _mm256_add_pd(A0w, R3); // leaf even residue r0
         const __m256d E1 = _mm256_add_pd(A1w, I3); // leaf even residue r1
@@ -3140,8 +3140,8 @@ private:
         const __m256d R3  = _mm256_mul_pd(hf, _mm256_sub_pd(E0, O0));
         const __m256d I3  = _mm256_mul_pd(hf, _mm256_add_pd(E1, O1));
         const __m256d A1w = _mm256_mul_pd(hf, _mm256_sub_pd(E1, O1));
-        const __m256d c4 = _mm256_loadu_pd(t.c4);
-        const __m256d s4 = _mm256_permute_pd(c4, 0x5);
+        const bruun_v4d c4 = V4D_LD(t.c4);
+        const bruun_v4d s4 = V4D_SWAP_PAIRS(c4);
         const __m256d B0w = _mm256_fmadd_pd(c4, R3, _mm256_mul_pd(s4, I3));
         const __m256d B1w = _mm256_fmsub_pd(c4, I3, _mm256_mul_pd(s4, R3));
 
@@ -3155,8 +3155,8 @@ private:
         const __m256d R2  = _mm256_mul_pd(hf, _mm256_sub_pd(P, M));
         const __m256d I2  = _mm256_mul_pd(hf, _mm256_add_pd(Q, W));
         const __m256d A1v = _mm256_mul_pd(hf, _mm256_sub_pd(Q, W));
-        const __m256d c2 = _mm256_permute4x64_pd(_mm256_castpd128_pd256(_mm_loadu_pd(t.c2)), 0x50);
-        const __m256d s2 = _mm256_permute4x64_pd(c2, 0x4E);
+        const bruun_v4d c2 = V4D_LD2_DUP(t.c2);
+        const bruun_v4d s2 = V4D_SWAP_HALVES(c2);
         const __m256d B0v = _mm256_fmadd_pd(c2, R2, _mm256_mul_pd(s2, I2));
         const __m256d B1v = _mm256_fmsub_pd(c2, I2, _mm256_mul_pd(s2, R2));
 
