@@ -2914,17 +2914,17 @@ private:
 #if BRUUN_LEVEL >= 2
     // 256-bit depth-3 leaf core operating on register inputs: the four quarters
     // of one 16-double leaf block.
-    inline void d3_avx2_core(__m256d A0, __m256d B0, __m256d A1, __m256d B1,
+    inline void d3_avx2_core(bruun_v4d A0, bruun_v4d B0, bruun_v4d A1, bruun_v4d B1,
                              const LeafTw& t, complex_t* RESTRICT X) const {
-        const __m256d c1 = _mm256_set1_pd(t.c1);
-        const __m256d s1 = _mm256_set1_pd(t.s1);
-        const __m256d R1 = _mm256_fmsub_pd(c1, B0, _mm256_mul_pd(s1, B1));
-        const __m256d I1 = _mm256_fmadd_pd(s1, B0, _mm256_mul_pd(c1, B1));
+        const bruun_v4d c1 = V4D_SET1(t.c1);
+        const bruun_v4d s1 = V4D_SET1(t.s1);
+        const bruun_v4d R1 = V4D_MSUB(V4D_MUL(c1, B0), s1, B1);
+        const bruun_v4d I1 = V4D_MADD(V4D_MUL(s1, B0), c1, B1);
 
-        const __m256d c0a = _mm256_add_pd(A0, R1);
-        const __m256d c0b = _mm256_add_pd(A1, I1);
-        const __m256d c1a = _mm256_sub_pd(A0, R1);
-        const __m256d c1b = _mm256_sub_pd(I1, A1);
+        const bruun_v4d c0a = V4D_ADD(A0, R1);
+        const bruun_v4d c0b = V4D_ADD(A1, I1);
+        const bruun_v4d c1a = V4D_SUB(A0, R1);
+        const bruun_v4d c1b = V4D_SUB(I1, A1);
 
         const __m256d A0v = _mm256_permute2f128_pd(c0a, c1a, 0x20);
         const __m256d B0v = _mm256_permute2f128_pd(c0a, c1a, 0x31);
@@ -2974,8 +2974,8 @@ private:
     }
 
     inline void codelet_d3_tw_avx2(const double* RESTRICT p, const LeafTw& t, complex_t* RESTRICT X) const {
-        d3_avx2_core(_mm256_loadu_pd(p), _mm256_loadu_pd(p + 4),
-                     _mm256_loadu_pd(p + 8), _mm256_loadu_pd(p + 12), t, X);
+        d3_avx2_core(V4D_LD(p), V4D_LD(p + 4),
+                     V4D_LD(p + 8), V4D_LD(p + 12), t, X);
     }
 
 #endif
@@ -3003,15 +3003,15 @@ private:
         const __m256d A1 = _mm256_loadu_pd(p + 8);
         const __m256d B1 = _mm256_loadu_pd(p + 12);
 
-        const __m256d c1 = _mm256_set1_pd(t.c1);
-        const __m256d s1 = _mm256_set1_pd(t.s1);
-        const __m256d R1 = _mm256_fmsub_pd(c1, B0, _mm256_mul_pd(s1, B1));
-        const __m256d I1 = _mm256_fmadd_pd(s1, B0, _mm256_mul_pd(c1, B1));
+        const bruun_v4d c1 = V4D_SET1(t.c1);
+        const bruun_v4d s1 = V4D_SET1(t.s1);
+        const bruun_v4d R1 = V4D_MSUB(V4D_MUL(c1, B0), s1, B1);
+        const bruun_v4d I1 = V4D_MADD(V4D_MUL(s1, B0), c1, B1);
 
-        const __m256d c0a = _mm256_add_pd(A0, R1);
-        const __m256d c0b = _mm256_add_pd(A1, I1);
-        const __m256d c1a = _mm256_sub_pd(A0, R1);
-        const __m256d c1b = _mm256_sub_pd(I1, A1);
+        const bruun_v4d c0a = V4D_ADD(A0, R1);
+        const bruun_v4d c0b = V4D_ADD(A1, I1);
+        const bruun_v4d c1a = V4D_SUB(A0, R1);
+        const bruun_v4d c1b = V4D_SUB(I1, A1);
 
         const __m256d A0v = _mm256_permute2f128_pd(c0a, c1a, 0x20);
         const __m256d B0v = _mm256_permute2f128_pd(c0a, c1a, 0x31);
