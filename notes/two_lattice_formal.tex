@@ -1,0 +1,606 @@
+\documentclass[11pt]{article}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{measured}[theorem]{Measured Result}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cL}{\mathcal{L}}
+\newcommand{\ip}[2]{\langle #1,\,#2\rangle}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\abs}[1]{\lvert #1\rvert}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\supp}{\operatorname{supp}}
+
+\title{Super-resolution by intersection of aperture-magnitude varieties:\\
+a formal account of the two-lattice / aperture-ladder method}
+\author{BFFT project working notes}
+\date{2026-07-11 \; (v1)}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We formalize the super-resolution method deployed in the BFFT viewer and its
+image-fusion generalization.  One latent signal is constrained by the
+\emph{magnitudes} of several linear analyses (``apertures'': STFT windows of
+different lengths, blur channels, focus slices).  The estimate is obtained by
+alternating closed-form projections onto the corresponding nonconvex
+magnitude varieties from a data-driven seed.  We prove that the synthesis
+step used in practice is the Moore--Penrose pseudo-inverse of the analysis
+frame, that the true signal is an exact fixed point of every projector, and
+that the sensitivity of each family to a component-phase rotation (the
+quantity that decides what a family can super-resolve) admits a sharp
+closed-form bound: the \emph{min-overlap} of the component spectrograms.
+Empirically this bound is tight up to a universal factor
+$1/\sqrt2$ (log--log correlation $0.9995$, slope $0.997$), turning aperture
+design into a computable geometry problem.  We define coverage, dead zones,
+and aperture ladders; state the measured critical-ratio law for geometric
+ladders ($r^{*}\in(4,8]$); relate local convergence rates to the overlap
+functional; formalize relaxed (reliability-weighted) projections for
+mutually inconsistent families; and delimit the method against the
+optimal-transport barycenter formulation of Valdivia, Cazelles and
+F\'evotte~\cite{valdivia2026}, from which this work departed.  Statements
+are tagged as \emph{proved}, \emph{measured}, or \emph{conjectured}.
+\end{abstract}
+
+\section{Introduction}
+
+Time--frequency super-resolution by fusing analyses of different window
+lengths was recently formalized in~\cite{valdivia2026} as an unbalanced
+optimal-transport (UOT) barycenter problem over spectrogram measures.  That
+formulation is convex in the transport plans and is solved by a block
+majorization--minimization scheme; its output is a measure on a
+time--frequency grid.
+
+The present method replaces the barycentric \emph{average of
+representations} by the \emph{intersection of measurement constraints on a
+latent signal}.  The observed spectrogram magnitudes are not objects to be
+transported; they are equations that the latent signal must satisfy.  All
+super-resolving information then travels through the phase variables that
+magnitudes do not record, and the algorithmic content reduces to alternating
+closed-form projections.  Three structural consequences, each proved or
+measured below, distinguish the two formulations:
+(i) the true signal is an \emph{exact fixed point} of our iteration
+(Proposition~\ref{prop:fixed}), whereas a barycenter is generically not the
+spectrogram of any signal (Remark~\ref{rem:consistency});
+(ii) what can and cannot be super-resolved is decided by a computable
+overlap functional of the apertures (Theorem~\ref{thm:overlap},
+Measured Result~\ref{meas:tight}), not by a transport cost;
+(iii) the per-tile cost is a fixed, small number of FFT passes
+(Proposition~\ref{prop:complexity}), compatible with streaming real-time
+operation.
+
+\section{Notation and preliminaries}
+
+Signals are vectors $u\in\C^{L}$.  For $N\in\N$ dividing conventions we use
+the \emph{unitary} discrete Fourier transform $F_{N}\in\C^{N\times N}$,
+$(F_{N})_{mn}=N^{-1/2}e^{-2\pi i mn/N}$, so that $F_{N}^{*}F_{N}=I$.  (The
+implementation uses the unnormalized transform with compensating factors;
+all statements are invariant to this choice.)
+
+Fix a window $w\in\R^{N}$ (symmetric Hann throughout), a hop $H\in\N$, and
+the frame offsets
+\[
+  \tau_{k}=kH,\qquad k=0,\dots,K-1,\qquad K=\lfloor (L-N)/H\rfloor+1 .
+\]
+Let $S_{k}:\C^{L}\to\C^{N}$ be the selection $(S_{k}u)_{n}=u_{\tau_{k}+n}$.
+
+\begin{definition}[Aperture / analysis operator]\label{def:aperture}
+The \emph{aperture} with parameters $(N,H,w)$ is the linear map
+\[
+  \cA:\C^{L}\to\C^{K\times N},\qquad
+  (\cA u)_{k}=F_{N}\bigl(w\odot S_{k}u\bigr).
+\]
+A finite collection $\{\cA_{i}\}_{i=1}^{P}$ of apertures (possibly of
+different lengths $N_{i}$, hops $H_{i}$, or acting in other linearly
+reachable domains, cf.\ \S\ref{sec:domains}) is called a \emph{family set};
+when the $N_{i}$ form a scale sequence we call it an \emph{aperture ladder}.
+\end{definition}
+
+\begin{definition}[Weight function and COLA support]
+$d\in\R^{L}$, $d(n)=\sum_{k} w^{2}(n-\tau_{k})$ (indices where defined).
+The \emph{support} of the aperture is $\supp(\cA)=\{n: d(n)>0\}$.  The
+aperture is \emph{complete} if $\supp(\cA)=\{0,\dots,L-1\}$.
+\end{definition}
+
+Throughout, magnitudes, products and quotients of coefficient arrays are
+taken entrywise, and $\norm{\cdot}$ is the Euclidean ($\ell^{2}$ /
+Frobenius) norm.
+
+\section{Measurement model and constraint varieties}
+
+Let $z\in\C^{L}$ be the latent signal and let
+\[
+  m_{i}\;=\;\abs{\cA_{i}z}\in\R_{\ge0}^{K_{i}\times N_{i}},
+  \qquad i=1,\dots,P,
+\]
+be the observed magnitude arrays.  (In the audio deployment the $m_i$ are
+computed from the recorded IQ tile; in image fusion each capture supplies
+the $m_i$ of its own forward operator.)  Phases of $\cA_i z$ are
+\emph{not} used by the iteration; the observation phase enters exactly once,
+to fix the global gauge (\S\ref{sec:gauge}).
+
+\begin{definition}[Magnitude variety]
+$\cM_{i}=\{u\in\C^{L}: \abs{\cA_{i}u}=m_{i}\}$.  The \emph{feasible set} of
+the family set is $\cM=\bigcap_{i=1}^{P}\cM_{i}$.
+\end{definition}
+
+Each single-coefficient constraint $\abs{y_c}=m_c$ is a circle in $\C$;
+$\cM_i$ is the preimage of a torus under a linear map, a real-analytic
+variety that is nonconvex whenever some $m_c>0$.  By construction
+$z\in\cM$: the feasible set is never empty, and super-resolution is the
+statement that $\cM$ is \emph{small} around $z$ modulo the gauges of
+\S\ref{sec:gauge}.
+
+\begin{remark}[No convex signal-space model]\label{rem:convex}
+If $u\in\cM$ then $e^{i\theta}u\in\cM$ for all $\theta$; any convex set
+containing this orbit contains $0\notin\cM$ (whenever some $m_c>0$).  Hence
+no convex subset of $\C^{L}$ equals $\cM$; convexification requires the
+lifted matrix variable of PhaseLift~\cite{candes2013}, at dimension
+$L^{2}$.  The method below instead exploits that $\cM$ is
+\emph{locally} benign near $z$ (\S\ref{sec:convergence}).
+\end{remark}
+
+\section{Projectors}\label{sec:projectors}
+
+\begin{definition}[Radial map and family projector]\label{def:projector}
+For a target array $m$, define the radial map
+$R(y)=m\odot y/\abs{y}$ (entrywise, with $R(y)_c=0$ when $m_c=0$ and
+$R(y)_c$ left equal to $y_c$ scaled to $m_c$ arbitrarily on the null set
+$y_{c}=0$).  The \emph{family projector} of aperture $i$ is
+\[
+  P_{i}(u)\;=\;\cA_{i}^{+}\,R_{i}\bigl(\cA_{i}u\bigr),
+\]
+where $\cA_{i}^{+}$ denotes the Moore--Penrose pseudo-inverse, and samples
+outside $\supp(\cA_i)$ carry the input value ($P_i(u)_n=u_n$ there).
+\end{definition}
+
+\begin{lemma}[The OLA synthesis is the pseudo-inverse]\label{lem:pinv}
+For a complete aperture, $\cA^{*}\cA=\diag(d)$ with $d>0$, and
+\[
+  \cA^{+}Y=\diag(d)^{-1}\cA^{*}Y
+  =\Bigl(\textstyle\sum_{k}S_{k}^{T}\bigl(w\odot F_{N}^{*}Y_{k}\bigr)\Bigr)
+  \big/\,d ,
+\]
+i.e.\ inverse DFT of each frame, windowing, overlap--add, and division by
+the accumulated squared window.  This is exactly the synthesis implemented
+in \texttt{two\_lattice.MagnitudeFamily.project} and
+\texttt{MagnitudeProjectorC::project}.
+\end{lemma}
+
+\begin{proof}
+$\cA^{*}Y=\sum_{k}S_{k}^{T}(w\odot F_{N}^{*}Y_{k})$ by unitarity of
+$F_{N}$ and the definition of adjoints of $S_k$ and of entrywise
+multiplication by the real window.  Hence
+$\cA^{*}\cA u=\sum_{k}S_{k}^{T}(w^{2}\odot S_{k}u)=d\odot u$.  For an
+injective operator ($d>0$), $\cA^{+}=(\cA^{*}\cA)^{-1}\cA^{*}$.
+\end{proof}
+
+\begin{remark}
+$P_i$ is the classical Griffin--Lim composition~\cite{griffinlim1984}:
+$R_i$ is the exact metric projection of the coefficient array onto the
+torus $\{\abs{y}=m_i\}$ (nearest point on each circle), and
+$\cA_i\cA_i^{+}$ is the orthogonal projection onto the \emph{consistent}
+subspace $\operatorname{range}\cA_i$.  $P_i$ is a surrogate for---not equal
+to---the metric projection onto $\cM_i$; for the single-family iteration
+$u\mapsto P_i(u)$ the coefficient-domain residual
+$\norm{\,\abs{\cA_i u}-m_i\,}$ is nonincreasing~\cite{griffinlim1984}.  No
+such monotonicity is claimed for alternation between families.
+\end{remark}
+
+\begin{proposition}[Exact fixed point]\label{prop:fixed}
+If $m_{i}=\abs{\cA_{i}z}$ for all $i$, then $P_{i}(z)=z$ for every complete
+aperture, and $z$ is a fixed point of any composition, relaxation, or
+momentum extrapolation of the $P_{i}$ that fixes common fixed points.
+\end{proposition}
+
+\begin{proof}
+$R_{i}(\cA_{i}z)=\abs{\cA_i z}\odot \cA_i z/\abs{\cA_i z}=\cA_{i}z$, and by
+Lemma~\ref{lem:pinv} $\cA_{i}^{+}\cA_{i}=\diag(d)^{-1}\diag(d)=I$.
+\end{proof}
+
+Proposition~\ref{prop:fixed} was verified numerically to machine precision
+and separates this formulation from any averaging scheme: the truth is not
+merely near-optimal, it is \emph{stationary}.  Consequently the deployed
+one-iteration algorithm (\S\ref{sec:algorithm}) is a local polisher of its
+seed toward $\cM$, and all questions of super-resolution reduce to the local
+geometry of $\cM$ at $z$.
+
+\section{Gauge geometry and the overlap theorem}\label{sec:gauge}
+
+Write $z=a+b$ for a decomposition into two components (e.g.\ two tones, two
+packets, two image structures), and consider the \emph{relative-phase
+orbit} $z_{\varphi}=a+e^{i\varphi}b$.  Whether a family can distinguish
+$z_\varphi$ from $z$ is precisely whether it can super-resolve the pair,
+since the relative phase is what encodes beat timing / sub-cell structure.
+
+\begin{definition}[Pin strength]\label{def:pin}
+The pin strength of aperture $\cA$ on the pair $(a,b)$ at angle $\varphi$
+is
+\[
+  E_{\varphi}(a,b;\cA)\;=\;
+  \frac{\bigl\lVert\,\abs{\cA z_{\varphi}}-\abs{\cA z}\,\bigr\rVert}
+       {\norm{\cA z}} .
+\]
+A direction with $E\equiv0$ for all families is a \emph{gauge} of the
+family set; the pair is \emph{pinned} by the set if some family has
+$E_{\varphi}>0$.
+\end{definition}
+
+\begin{theorem}[Min-overlap bound]\label{thm:overlap}
+For any aperture $\cA$ and any $\varphi$,
+\[
+  E_{\varphi}(a,b;\cA)\;\le\;
+  \abs{1-e^{i\varphi}}\;
+  \frac{\Bigl(\sum_{c}\min\bigl(\abs{(\cA a)_{c}},\abs{(\cA b)_{c}}\bigr)^{2}
+        \Bigr)^{1/2}}
+       {\norm{\cA z}},
+\]
+where $c$ ranges over all time--frequency cells and
+$\abs{1-e^{i\varphi}}=2\abs{\sin(\varphi/2)}$.
+In particular, if the cell supports of $\cA a$ and $\cA b$ are disjoint
+(the min vanishes in every cell), the relative-phase orbit lies entirely in
+$\cM_{\cA}$: the pair is an exact gauge of that family.
+\end{theorem}
+
+\begin{proof}
+Per cell, with $\alpha=(\cA a)_{c}$ and $\beta=(\cA b)_{c}$, the reverse
+triangle inequality gives
+$\bigl|\,\abs{\alpha+e^{i\varphi}\beta}-\abs{\alpha+\beta}\,\bigr|
+ \le\abs{e^{i\varphi}\beta-\beta}=\abs{1-e^{i\varphi}}\,\abs{\beta}$.
+Factoring the unimodular $e^{i\varphi}$ from the first term,
+$\abs{\alpha+e^{i\varphi}\beta}=\abs{e^{-i\varphi}\alpha+\beta}$, the same
+inequality gives the bound with $\abs{\alpha}$ in place of $\abs{\beta}$.
+Taking the smaller of the two and summing squares over cells yields the
+claim; the disjoint-support case makes every summand zero, for every
+$\varphi$, hence $z_{\varphi}\in\cM_{\cA}$.
+\end{proof}
+
+\begin{measured}[Tightness up to a universal factor]\label{meas:tight}
+Over $57$ packet-pair configurations spanning three decades of pin strength
+(separations $\Delta t\in[60,2200]$ samples, $\Delta f\in[0,12]$ bins,
+windows $N\in\{256,\dots,2048\}$; \texttt{experiments/ladder\_theorem.py}),
+the measured $E_{\pi/2}$ against the bound of Theorem~\ref{thm:overlap}
+satisfies: log--log Pearson correlation $0.9995$, regression slope $0.997$,
+ratio median $0.685$ with interquartile range $[0.673,0.707]$.  The ratio
+is consistent with the value $1/\sqrt2$ obtained by averaging the radial
+component of the rotated interference over alignment angles.  Hence, to
+within a few percent,
+\[
+  E_{\pi/2}(a,b;\cA)\;\approx\;
+  \Bigl(\sum_{c}\min\bigl(\abs{\cA a}_{c},\abs{\cA b}_{c}\bigr)^{2}\Bigr)^{1/2}
+  \Big/\;\norm{\cA z} .
+\]
+The right-hand side is computable from single-component spectrograms alone:
+aperture design requires no probing.
+\end{measured}
+
+\begin{corollary}[Benign gauges of magnitude displays]
+Components that are cell-disjoint under \emph{every} family of the set
+(e.g.\ an isolated transient far from all other content) retain a free
+absolute phase.  This gauge is invisible to any magnitude readout and is
+therefore harmless for display purposes; it matters only for
+waveform-domain post-processing, where an additional constraint must pin
+it.  (Measured residuals for an isolated click: $0.008$ and $0.002$ for the
+deployed pair, i.e.\ numerically at the probe floor.)
+\end{corollary}
+
+\begin{measured}[Complementarity of the deployed pair]\label{meas:pair}
+For a tone pair separated by $1.4$ frequency bins of the long window
+($N_B=1024$), the measured pin strengths are $0.264$ (long) and $0.522$
+(short, $N_S=256$): the \emph{short} family pins the pair's relative phase
+twice as hard, because both tones occupy one short-window cell and the
+interference (beat) term appears in its magnitudes, while the long window
+separates them into different cells.  Conversely only the long family
+resolves the pair's existence.  This complementarity of constraints on the
+same latent degrees of freedom is the super-resolution mechanism; no
+representation-space blending occurs anywhere.
+\end{measured}
+
+\section{Coverage, dead zones, ladders}\label{sec:coverage}
+
+\begin{definition}[Coverage of a family set]
+For a content class parameterized by pair separations
+$(\Delta t,\Delta f)$ at component width $w$, the coverage of the set
+$\Lambda=\{\cA_{i}\}$ is
+$\sigma_{\Lambda}(\Delta t,\Delta f)=\max_{i}E_{\pi/2}(a,b;\cA_{i})$
+evaluated on canonical packet pairs.  The \emph{pinnable region} is where
+$\sup_{N}\sigma_{\{\cA_N\}}>\varepsilon$ over all admissible windows; the
+\emph{dead zone} of $\Lambda$ is the pinnable region minus
+$\{\sigma_{\Lambda}>\varepsilon\}$.
+\end{definition}
+
+\begin{proposition}[Visibility law; support geometry]\label{prop:visibility}
+For Hann packets of width $w$ at separation $(\Delta t,\Delta f)$, an
+aperture of length $N$ has $\sigma_N>0$ essentially iff some analysis cell
+contains energy of both components, i.e.
+\[
+  \Delta t + w \;\lesssim\; N
+  \qquad\text{and}\qquad
+  \Delta f \;\lesssim\; \tfrac{c_1}{w}+\tfrac{c_2}{N},
+\]
+with constants of order one determined by the window's essential supports.
+Consequently a pair with
+$(\Delta f - c_1/w)\,(\Delta t + w)\gtrsim 1$ is invisible to \emph{every}
+aperture (the uncertainty boundary), and coverage maps of single rungs are
+rectangles in $(\Delta t,\Delta f)$ with strength decaying toward the cell
+edges.  \textup{(Statement at the level of essential supports; constants
+measured in \texttt{experiments/aperture\_ladder\_coverage.py}, where the
+heatmaps realize exactly this geometry.)}
+\end{proposition}
+
+\begin{measured}[Deployed-pair coverage and interior redundancy]
+On a $(\Delta t,\Delta f)$ grid with $w=200$, $L=8192$: the deployed ladder
+$\{1024,256\}$ covers $53.2\%$ of the pinnable set; adding a $2048$ rung
+covers $100\%$; adding an interior $512$ rung instead adds exactly nothing.
+The deployed ladder's entire dead zone is the band
+$\Delta t\in(800,1500)$.
+\end{measured}
+
+\begin{measured}[Critical ratio of geometric ladders]\label{meas:rstar}
+Along the $\Delta f=0$ ridge, relative to the dense ($r=2$) strength
+envelope, geometric ladders with ratio $r=4$ attain the envelope
+\emph{exactly} (hole ratio $1.000$) and ladders with $r=8$ possess points
+of ratio $0.000$ (total holes), for packet widths $w\in\{100,200,400\}$ and
+span $[256,4096]$.  Hence the critical ratio satisfies $r^{*}\in(4,8]$ for
+this content class, and the deployed geometry $N_B/N_S=4$ is critical-safe.
+Covering a scale span $[N_{\min},N_{\max}]$ requires
+$\lceil\log_{4}(N_{\max}/N_{\min})\rceil+1$ rungs.
+\end{measured}
+
+\begin{conjecture}[Ladder theorem]\label{conj:ladder}
+For components of essential width $w$ and window family
+$\{\cA_{N}\}$, define the single-rung strength profile
+$s_{N}(\Delta t)=\sigma_{\{\cA_N\}}(\Delta t,0)$.  There is a critical
+ratio $r^{*}(w,\varepsilon)$, determined by the crossing points of
+neighboring profiles via the min-overlap functional of
+Theorem~\ref{thm:overlap}, such that a geometric ladder of ratio
+$r\le r^{*}$ attains the dense envelope up to factor $1-\varepsilon$
+throughout its scale span, while some $r>r^{*}$ ladder has interior zeros.
+The measured value $r^{*}\in(4,8]$ (Measured Result~\ref{meas:rstar}) and
+the closed-form profile of Measured Result~\ref{meas:tight} reduce the
+proof to elementary support estimates for Hann windows.
+\end{conjecture}
+
+\section{Convergence}\label{sec:convergence}
+
+The iteration is (heavy-ball accelerated) alternating projection between
+the $\cM_i$.  Local linear convergence of alternating projections for
+nonconvex sets holds under transversality of the intersection, with rate
+governed by the angle between tangent spaces; see
+\cite{lewisluke2009,drusvyatskiy2015}.  We do not restate those theorems;
+we record the empirical identification that makes them quantitative here.
+
+\begin{measured}[Strength--rate law]\label{meas:rate}
+Restart a pair on its relative-phase orbit ($\varphi_{0}=43^{\circ}$,
+$\Delta t=1600$) and iterate.  With pin strength $0.000$ (pair not covered)
+the error is retained indefinitely ($43.1^{\circ}$ after $300$ iterations);
+with strength $0.016$ (covered at a cell edge) the error decays to
+$13.1^{\circ}$ after $300$; with strength $0.286$ (covered deep in a cell,
+$N=4096$) it decays to $0.8^{\circ}$ by iteration $20$.  The decay rate
+scales approximately as the square of the pin strength, consistent with the
+angle interpretation.  \emph{Design rule: place expected content deep in
+some rung's cell (rung length ${\approx}2$--$2.5\times$ the content
+separation); cell-edge coverage is coverage in principle only.}
+\end{measured}
+
+\begin{measured}[Seed and basin]\label{meas:seed}
+From random initialization the alternating iteration stagnates (residual
+ratio ${\approx}0.996$--$0.998$ per step), the known Griffin--Lim regime.
+From a phase-degraded seed of fidelity $0.81$ it reaches $0.93$ in one
+iteration and $0.99$ in $24$.  The deployed seed (magnitude-only PGHI
+phase propagation~\cite{prusa2017} through the paused-DIP state, one
+gradient step, consensus) lands inside this basin on recorded IQ tiles;
+one unified iteration then suffices.  All global-search difficulty of the
+nonconvex problem is thereby carried by the seed, not by the projections.
+\end{measured}
+
+\section{Relaxed projections for inconsistent families}\label{sec:relaxed}
+
+When the families are measured by \emph{different} instruments
+(multi-focus or multi-blur captures), the arrays $m_i$ are generally not
+the magnitudes of any common latent: $\cM=\emptyset$.  The deployed
+generalization weights the radial correction per coefficient.
+
+\begin{definition}[Relaxed family projector]\label{def:relaxed}
+For weights $\omega_i\in[0,1]^{K_i\times N_i}$,
+\[
+  P_{i}^{\omega}(u)
+  \;=\;\cA_{i}^{+}\Bigl((1-\omega_{i})\odot\cA_{i}u
+        +\omega_{i}\odot R_{i}(\cA_{i}u)\Bigr)
+  \;=\;u+\cA_{i}^{+}\Bigl(\omega_{i}\odot
+        \bigl(R_{i}(\cA_{i}u)-\cA_{i}u\bigr)\Bigr),
+\]
+the second form by Lemma~\ref{lem:pinv}.  $\omega\equiv1$ recovers
+Definition~\ref{def:projector}; $\omega\equiv0$ ignores the family.
+\end{definition}
+
+\begin{proposition}[Stationarity of the averaged relaxed scheme]
+A point $u$ is stationary for the simultaneous (averaged) relaxed
+iteration $u\mapsto u+\tfrac1P\sum_{i}\cA_{i}^{+}(\omega_{i}\odot
+(R_{i}-I)\cA_{i}u)$ iff
+\[
+  \sum_{i}\cA_{i}^{+}\Bigl(\omega_{i}\odot
+   \bigl(m_{i}-\abs{\cA_{i}u}\bigr)\odot
+   \tfrac{\cA_{i}u}{\abs{\cA_{i}u}}\Bigr)=0 ,
+\]
+i.e.\ the reliability-weighted magnitude residuals cancel after synthesis:
+fixed points are weighted compromises exactly where families disagree.
+\end{proposition}
+
+\begin{proof}
+Immediate from the second form in Definition~\ref{def:relaxed} and
+$R_i(y)-y=(m_i-\abs{y})\odot y/\abs{y}$.
+\end{proof}
+
+\begin{remark}[Relation to unbalanced OT]
+The weights $\omega_i$ play the role of the marginal-relaxation parameters
+$\eta$ in the UOT formulation of~\cite{valdivia2026}: both interpolate
+between enforcing a family exactly and ignoring it, and both make the
+mutually-inconsistent case well-posed.  The difference is the ambient
+space: UOT relaxes marginals of a transport plan between representations;
+Definition~\ref{def:relaxed} relaxes constraint enforcement on the latent
+signal.
+\end{remark}
+
+\begin{measured}[Reliability weights that work, and two that do not]
+With $\omega$ = per-patch softmax of high-band energy across captures
+(defocus is a local low-pass, so relative high-band energy is measured
+reliability), the relaxed scheme fuses the MFFW3/4 focus stack without
+ringing or ghosting and beats a hard arg-max baseline
+(Laplacian variance $0.0101$ vs $0.0082$; best source $0.0040$).
+Two measured cautions: (i) an \emph{absolute} gate modeled on noise floors
+mis-weights coefficients that are confidently \emph{biased} (blurred), not
+noisy; (ii) when \emph{no} capture is locally reliable the residual is
+information-limited: Douglas--Rachford, RAAR, and gating all coincide with
+plain alternation to $\pm0.07$ dB, and only an added capture (a third blur
+angle) moved the dead-band error ($1.041\to0.813$; PSNR $26.30\to26.41$).
+Conversely, in an optimization-limited instance (global Fourier-modulus
+fusion, \S\ref{sec:domains}), Douglas--Rachford / RAAR
+splitting~\cite{luke2005} gains $+2.4$ dB over alternation.  The DR/AP gap
+is thus a practical \emph{discriminator} between the two failure classes.
+\end{measured}
+
+\section{Domain freedom}\label{sec:domains}
+
+Definition~\ref{def:aperture} nowhere requires the aperture to act in the
+time domain: any injective-on-support linear $\cA_i$ with a fast adjoint
+qualifies, e.g.\ two-dimensional patch transforms (image fusion), or the
+global Fourier transform, for which the radial map is the \emph{exact}
+metric projection since $F$ is unitary
+($P(u)=F^{*}(m\odot Fu/\abs{Fu})$).  Measured consequences: a
+capture misregistered by an unknown circular shift can be fused through
+its shift-invariant Fourier modulus (naive $12.9$ dB $\to$ DR fusion
+$24.6$ dB); a real (non-periodic) shift breaks modulus invariance at the
+aperture boundary; \emph{patched} Fourier moduli are not shift-invariant at
+all (targets constrain wrong locations).  Full-support natural images lack
+the compact-support constraint of classical phase
+retrieval~\cite{fienup1982}, so the global-modulus family is weakly
+identifying on its own; its practical role is diagnosis (phase
+correlation), with spatial families carrying the fusion.
+
+\section{The deployed algorithm}\label{sec:algorithm}
+
+\begin{algorithm}[h]
+\caption{Unified ladder solve (one tile; \texttt{iqw\_dip\_unified\_ladder})}
+\begin{algorithmic}[1]
+\State \textbf{Input:} tile $z\in\C^{L}$; ladder $\{(N_{i},H_{i})\}_{i=1}^{P}$
+       ordered largest first; iterations $T$ (deployed: $1$);
+       momentum $\beta=0.88$; terminal relaxation $\rho=0.75$
+\State $m_{i}\gets\abs{\cA_{i}z}$ for all $i$
+       \Comment{measured targets; phases discarded}
+\State $u_{0}\gets$ DIP/PGHI seed from $m$ (magnitude-only phase
+       propagation, one gradient step, consensus) \Comment{basin entry}
+\For{$t=1,\dots,T$}
+  \State $v\gets u_{t-1}+\beta\,(u_{t-1}-u_{t-2})$ \Comment{inert at $t{=}1$}
+  \For{$i=1,\dots,P$} $v\gets P_{i}(v)$ \Comment{Def.~\ref{def:projector}}
+  \EndFor
+  \State $u_{t}\gets v$
+\EndFor
+\State $u\gets u_{T}+\rho\,(P_{1}(u_{T})-u_{T})$
+       \Comment{empirical early-stop finish; see note \S1 audit}
+\State $u\gets u\cdot\ip{u}{z}/\abs{\ip{u}{z}}$
+       \Comment{global gauge fixed once}
+\State \textbf{Output:} latent $u$; display = reassigned STFT of $u$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{proposition}[Complexity]\label{prop:complexity}
+One pass of the projector cascade costs
+$\sum_{i=1}^{P}\Theta\bigl((L/H_{i})\,N_{i}\log N_{i}\bigr)$ flops; with
+the deployed hops $H_{i}=N_{i}/8$ this is $\Theta(P\,L\log N_{\max})$,
+independent of the rung lengths individually.  Long rungs are the cheap
+direction: at $L=8192$, adding an $N=4096$ rung ($9$ frames) to the
+$N_B=1024$ pair changed the measured tile time from $15.8$ to $16.3$ ms.
+For comparison, the block-MM UOT barycenter of~\cite{valdivia2026}
+optimizes over transport plans with $10^{4}$--$10^{7}$ retained entries for
+$57$--$945$ iterations (reported $0.43$--$9.4$ s on second-scale,
+kilohertz-rate material).
+\end{proposition}
+
+\begin{remark}[Barycenters are generically inconsistent]\label{rem:consistency}
+The set of \emph{consistent} magnitude arrays
+$\abs{\cA(\C^{L})}\subset\R_{\ge0}^{K\times N}$ has real dimension at most
+$2L-1$, while redundant apertures have $KN>2L$ coefficients; consistent
+arrays therefore form a measure-zero subset, characterized by nontrivial
+inter-frame relations.  A barycenter of two consistent arrays computed in
+measure space has no reason to satisfy those relations, and generically
+does not: it is a picture, not the analysis of any signal.  The intersection
+formulation returns a signal by construction, and every displayed quantity
+is a readout of it.
+\end{remark}
+
+\section{Summary of epistemic status}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Statement & Status & Where\\
+\midrule
+Synthesis $=$ pseudo-inverse & proved & Lemma~\ref{lem:pinv}\\
+Truth is an exact fixed point & proved $+$ verified & Prop.~\ref{prop:fixed}\\
+Min-overlap upper bound & proved & Thm.~\ref{thm:overlap}\\
+Disjoint supports $\Rightarrow$ gauge & proved & Thm.~\ref{thm:overlap}\\
+Bound tight up to $1/\sqrt2$ & measured ($r{=}0.9995$) & M.R.~\ref{meas:tight}\\
+Short window pins close pairs $2\times$ & measured & M.R.~\ref{meas:pair}\\
+Visibility law rectangles & support argument $+$ measured & Prop.~\ref{prop:visibility}\\
+$r^{*}\in(4,8]$, interior redundancy at $r{\le}4$ & measured & M.R.~\ref{meas:rstar}\\
+Ladder theorem with closed-form $r^{*}(w)$ & conjectured & Conj.~\ref{conj:ladder}\\
+Strength--rate law (rate $\sim$ strength$^2$) & measured & M.R.~\ref{meas:rate}\\
+Seed carries global search & measured & M.R.~\ref{meas:seed}\\
+Relaxed stationarity & proved & \S\ref{sec:relaxed}\\
+DR/AP gap discriminates failure class & measured & \S\ref{sec:relaxed}, \S\ref{sec:domains}\\
+Complexity $\Theta(PL\log N)$ per pass & proved $+$ timed & Prop.~\ref{prop:complexity}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Open items for full formality: a proof of Conjecture~\ref{conj:ladder}
+from Theorem~\ref{thm:overlap} with explicit Hann support constants; a
+transversality-angle theorem identifying the local convergence rate with
+the min-overlap functional (upgrading Measured Result~\ref{meas:rate});
+and conditions on the seed error under which one iteration attains a
+prescribed fidelity (quantifying Measured Result~\ref{meas:seed}).
+
+\begin{thebibliography}{9}
+\bibitem{valdivia2026} D.~Valdivia, E.~Cazelles, C.~F\'evotte,
+``Enhancing time-frequency resolution with optimal transport and
+barycentric fusion of multiple spectrograms,'' arXiv:2604.15055, 2026.
+\bibitem{griffinlim1984} D.~Griffin, J.~Lim, ``Signal estimation from
+modified short-time Fourier transform,'' IEEE TASSP 32(2), 1984.
+\bibitem{candes2013} E.~Cand\`es, T.~Strohmer, V.~Voroninski,
+``PhaseLift: exact and stable signal recovery from magnitude measurements
+via convex programming,'' Comm.\ Pure Appl.\ Math.\ 66(8), 2013.
+\bibitem{lewisluke2009} A.~Lewis, D.~R.~Luke, J.~Malick, ``Local linear
+convergence for alternating and averaged nonconvex projections,''
+Found.\ Comput.\ Math.\ 9, 2009.
+\bibitem{drusvyatskiy2015} D.~Drusvyatskiy, A.~Ioffe, A.~Lewis,
+``Transversality and alternating projections for nonconvex sets,''
+Found.\ Comput.\ Math.\ 15, 2015.
+\bibitem{prusa2017} Z.~Pr\r{u}\v{s}a, P.~Balazs, P.~S{\o}ndergaard,
+``A noniterative method for reconstruction of phase from STFT magnitude,''
+IEEE/ACM TASLP 25(5), 2017.
+\bibitem{fienup1982} J.~R.~Fienup, ``Phase retrieval algorithms: a
+comparison,'' Appl.\ Opt.\ 21(15), 1982.
+\bibitem{luke2005} D.~R.~Luke, ``Relaxed averaged alternating reflections
+for diffraction imaging,'' Inverse Problems 21, 2005.
+\end{thebibliography}
+
+\end{document}

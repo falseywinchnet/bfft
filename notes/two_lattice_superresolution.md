@@ -7,7 +7,8 @@ Companions: `viewer/two_lattice.py` (executable NumPy specification),
 `viewer/dip_algo.cpp` (`MagnitudeProjectorC`, `iqw_dip_unified`),
 `viewer/test_two_lattice.py` (C++ == Python to 2e-12),
 `experiments/two_lattice_theory.py` (all measurements below),
-`experiments/two_lattice_image.py` (2D prototype).
+`experiments/two_lattice_image.py` (2D prototype),
+`notes/two_lattice_formal.tex` (formal treatment: theorems, proofs, epistemic ledger).
 
 ## 1. The deployed pipeline, exactly
 
@@ -27,6 +28,26 @@ Per 8192-sample tile (tiles overlap 50%, Hann OLA across tiles):
    neighboring tiles OLA coherently.  Nothing else uses observed phase.
 4. **Readout**: reassigned STFT of the latent at the long aperture,
    bilinear 2x2 splat, evaluated directly at the display centers.
+
+### Early-stop finish audit (2026-07-11)
+
+The deployed `0.75` terminal long correction is **not** implied by the
+coverage theorem and is not a proven optimum.  `experiments/sr_endpoint_study.py`
+now separates four finishes at the same seed.  A palindromic half-long /
+full-short / half-long cycle (the order-symmetric, three-projector finish)
+is numerically equivalent to a terminal long relaxation near 0.5 and keeps
+95--97% of finite-chirp tail raster power.  A full terminal long projection,
+or two alternating complete cycles, keeps essentially 100%.  Thus 0.75 is
+an empirical early-stop compromise between joint-family symmetry and the
+long-aperture readout's endpoint preference; it is not a coverage parameter.
+
+The Task-10 min-overlap formula measures *two-component relative-gauge*
+transversality.  It cannot select this finish on a one-component chirp
+terminal.  Production retains 0.75 while the ladder-aware readout is A/B
+validated.  The principled removal criterion is finish-order invariance:
+once a covered/converged cycle gives the same raster for zero, symmetric,
+and long-last finishes, the terminal correction is redundant and should be
+deleted rather than retuned.
 
 Geometry (one knob): long window `NB`; `NS = NB/4`; `h_long = NB/8`;
 `h_short = NS/2 = NB/8`.  Windows are symmetric Hann (`np.hanning`).
@@ -483,6 +504,66 @@ of the ladder design rule.
   re-analysis) and the future ladder-aware readout (task 6b), not the
   current display.  The rung is on by choice, not default, until the
   readout learns to consult it.
+
+### Tasks 8-10 (charter complete)
+
+**Task 8 — the focus stack IS a focal ladder**
+(`experiments/two_lattice_focal.py`, MFFW3/4).  Coverage proxy = relative
+high-band patch energy.  All three slices own real territory (dominance
+25/39/36% of patches); each PAIR has a 13-22% focal dead zone.  The
+leave-one-out fusion test shows the coverage law territorially: dropping
+slice 1 leaves the pair fusion 44x softer exactly in slice-1's territory
+(lapvar 0.00029 vs the triple's 0.0127 there) while the overall metric
+barely moves (0.0081 vs 0.0101).  Dead zones are invisible in aggregate,
+total within their band — identical to the audio law.
+
+**Task 9 — Fourier-domain families: three positives, three negatives**
+(`experiments/two_lattice_fourier.py`).  Setting: capture A registered but
+disk-blurred; capture B sharp but misregistered by an unknown shift.
+Global Fourier modulus is shift-invariant, so B contributes WITHOUT
+registration; the FFT is orthogonal, so the radial step is an exact metric
+projection.  Measured (PSNR vs truth, A = 26.15):
+- naive B 12.92, pixel average 18.07, modulus-fusion AP 22.28,
+  **modulus-fusion DR 24.64**;
+- **the DR/AP discriminator confirmed**: DR gains +2.4 dB here
+  (optimization-limited: phase retrieval from modulus) and gained exactly
+  nothing in 4e (information-limited).  The pair of results is the
+  measured boundary between the two failure classes.
+Negatives, all measured: (a) real-crop misregistration breaks global
+modulus invariance at the aperture boundary (19.06) — translation is only
+a pure phase for the periodic scene; (b) PATCHED modulus is not
+shift-invariant at all for structured content (13.4 — targets constrain
+the wrong locations); (c) the absolute gate mis-weights A's mid-bands
+(22.0) because blurred magnitudes are confidently WRONG, not noisy — gates
+model noise, not bias.  Even the DR fusion caps below capture A: global
+modulus + positivity is weakly identifying for full-support natural images
+(no support constraint — the classic phase-retrieval gauge), so the
+practical route for misregistered fusion is estimate-the-shift (phase
+correlation = one FFT) + spatial families; the Fourier domain's real gift
+here is the diagnosis, not the constraint.
+
+**Task 10 — the ladder theorem, measured**
+(`experiments/ladder_theorem.py`).
+
+(i) CLOSED FORM for the coverage function.  Over 57 pinned (dt, df, N)
+cases spanning three decades: log-log Pearson 0.9995, slope 0.997,
+constant 0.685 ~ 1/sqrt(2), giving
+
+    gauge residual  =  sqrt( sum_cells min(|A a|, |A b|)^2
+                             / sum_cells |A z|^2 ).
+
+Pin strength is exactly the (min-form) spectrogram cross-overlap of the
+two components under the analysis window.  Coverage = transversality is
+now a formula computable from single-component spectrograms; no gauge
+probe is required to design a ladder.
+
+(ii) r*(w): relative to the dense (r=2) strength envelope on the dt ridge,
+geometric ladders with r=4 match it EXACTLY (hole ratio 1.000 — interior
+rungs are pure redundancy, cf. task 1's useless 512 rung), and r=8
+collapses to 0.000 (a total hole), for packet widths 100-400.  Hence
+r* in (4, 8]: **the deployed NB/NS = 4 geometry is precisely the
+critical-safe ratio**, and rung count for a scale span [N_min, N_max] is
+ceil(log_4(N_max/N_min)) + 1 — logarithmically few, wavelet-style.
 
 ## 6. Background research items
 

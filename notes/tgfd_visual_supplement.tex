@@ -1,0 +1,262 @@
+\documentclass[11pt]{article}
+
+\usepackage{amsmath,amssymb}
+\usepackage[margin=0.9in]{geometry}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{graphicx}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\graphicspath{{../experiments/out/supplement/}}
+
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\ROF}{\mathrm{ROF}}
+\newcommand{\dv}{\operatorname{div}}
+
+\title{Transport Geometry Fusion Descent:\\ visual supplement\\
+\large twenty cartoon + texture decompositions with scale-band separation}
+\author{Joshuah Rainstar\\
+\texttt{joshuah.rainstar@gmail.com}}
+\date{July 21, 2026}
+
+\begin{document}
+\maketitle
+
+\section{Contents and protocol}
+
+This supplement provides visual evidence for the companion paper
+\emph{Transport Geometry Fusion Descent: a sub-second implementation of
+Meyer's $G$-norm cartoon + texture decomposition}. It contains the full
+decomposition of twenty standard test images: the twelve images of Set12
+(Cameraman, House, Peppers, Starfish, Monarch, Airplane, Parrot, Lena,
+Barbara, Boat, Man, Couple) and the first eight images of BSD68.
+
+Each image $f$ is decomposed by transport geometry fusion descent (TGFD):
+the alternation
+\[
+u \leftarrow \ROF(f-v,\lambda),
+\qquad
+v \leftarrow (f-u)-\ROF(f-u,\,1/\mu),
+\]
+executed as one warm Split Bregman sweep per subproblem per pass against
+persistent auxiliary states, with $\lambda=0.05$, $\mu=40$, texture-side
+penalty $\eta=10/\mu$, and a wall budget of $0.9\,\mathrm{s}\times
+(\text{pixels}/512^2)$. The texture layer is then divided into scale bands
+along the rungs $\mu=\{40,10,2.5\}$ by independent ROF solves,
+\[
+s_k=\ROF(v,1/\mu_k),\qquad
+B_0=s_1-s_0,\quad B_1=s_2-s_1,\quad B_2=v-s_2,
+\]
+with the coarsest survivor $s_0$ returned to the cartoon. All computation
+is single-core NumPy; timings appear in Table~\ref{tab:runs} and in each
+figure header.
+
+Each of the twenty figures shows six panels. Top row: the input $f$; the
+cartoon $u$ (including $s_0$); the texture $v$ displayed on $[-40,40]$.
+Bottom row: the three scale bands displayed on $[-30,30]$ --- the coarse
+band ($\mu\,40\!\to\!10$), which carries large-scale oscillation and the
+contour-adjacent content that a single-$\mu$ decomposition mixes into its
+texture layer; the mid band ($\mu\,10\!\to\!2.5$), which carries the
+principal fabric and surface textures; and the fine band ($\mu<2.5$),
+which carries the finest detail and grain.
+
+Recurring observations across the twenty images:
+
+\begin{itemize}
+\item The cartoon layers are piecewise-smooth with preserved contours at
+every image size, obtained within the stated sub-second budgets
+(0.23\,s at $256^2$, 0.53--0.54\,s at $481\times321$, 0.90--0.92\,s at
+$512^2$).
+\item Contour-adjacent leakage --- the face line and table edge of
+Barbara, the tripod of Cameraman, the hull edges of Boat --- concentrates
+in the coarse band on every image where it occurs; the mid band carries
+the recognizable textures (Barbara's scarf and tablecloth, the grass of
+Cameraman, the plumage of Parrot and the BSD68 birds, the wave field of
+Boat).
+\item The fine band is near-uniform grain on the classic photographs and
+becomes structured only where genuine fine texture exists (Barbara's
+weave, starfish papillae), consistent with the ramp law of the companion
+paper: bands are graded, and content divides by scale with cross-talk
+decaying linearly in scale ratio.
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\caption{The twenty runs. Passes = outer TGFD passes completed within the
+budget; split = TGFD wall time; ladder = wall time of the three
+independent band solves.}
+\label{tab:runs}
+\begin{tabular}{lrrrr}
+\toprule
+image & size & passes & split (s) & ladder (s)\\
+\midrule
+Cameraman & $256\times256$ & 67 & 0.23 & 1.24 \\
+House & $256\times256$ & 98 & 0.23 & 1.35 \\
+Peppers & $256\times256$ & 89 & 0.23 & 1.14 \\
+Starfish & $256\times256$ & 86 & 0.23 & 1.24 \\
+Monarch & $256\times256$ & 86 & 0.23 & 1.07 \\
+Airplane & $256\times256$ & 95 & 0.23 & 1.22 \\
+Parrot & $256\times256$ & 89 & 0.23 & 1.16 \\
+Lena & $512\times512$ & 55 & 0.91 & 6.08 \\
+Barbara & $512\times512$ & 62 & 0.90 & 7.77 \\
+Boat & $512\times512$ & 53 & 0.91 & 6.37 \\
+Man & $512\times512$ & 60 & 0.90 & 8.43 \\
+Couple & $512\times512$ & 67 & 0.91 & 9.40 \\
+BSD68-01 & $481\times321$ & 37 & 0.54 & 6.59 \\
+BSD68-02 & $481\times321$ & 41 & 0.54 & 6.90 \\
+BSD68-03 & $481\times321$ & 41 & 0.53 & 6.15 \\
+BSD68-04 & $321\times481$ & 46 & 0.53 & 5.36 \\
+BSD68-05 & $321\times481$ & 44 & 0.54 & 5.62 \\
+BSD68-06 & $321\times481$ & 47 & 0.53 & 4.89 \\
+BSD68-07 & $321\times481$ & 48 & 0.53 & 5.26 \\
+BSD68-08 & $321\times481$ & 39 & 0.54 & 5.54 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\clearpage
+\section{Set12}
+
+\begin{center}
+\includegraphics[width=\textwidth]{set12_01.png}
+\captionof{figure}{Cameraman, $256^2$. The grass field divides between the mid and
+fine bands; the tripod's contour leakage sits in the coarse band.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{set12_02.png}
+\captionof{figure}{House, $256^2$. The brickwork and shingles appear in the mid
+band; the roof line and gutter contours in the coarse band.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{set12_03.png}
+\captionof{figure}{Peppers, $256^2$. A near-cartoon image: the texture layer is
+thin, and the bands contain principally specular detail and grain.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{set12_04.png}
+\captionof{figure}{Starfish, $256^2$. The papillae pattern is genuine fine-scale
+texture and populates the mid and fine bands; the arm outlines remain in
+the coarse band.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{set12_05.png}
+\captionof{figure}{Monarch, $256^2$. Wing venation in the coarse and mid bands;
+the flower texture divides by scale.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{set12_06.png}
+\captionof{figure}{Airplane, $256^2$. Lettering and insignia --- oscillatory at the
+scale of the $\mu$-ball --- enter the texture layer and sort into the
+coarse and mid bands.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{set12_07.png}
+\captionof{figure}{Parrot, $256^2$. Facial barring in the mid band; the beak and
+eye contours in the coarse band; feather grain in the fine band.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{set12_08.png}
+\captionof{figure}{Lena, $512^2$. The hat's straw texture and feather boa populate
+the coarse and mid bands; skin regions contribute almost nothing to the
+texture layer, as the model intends.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{set12_09.png}
+\captionof{figure}{Barbara, $512^2$. The image of the companion paper: scarf
+stripes and tablecloth check in the mid band; face-line and table-edge
+leakage confined to the coarse band; weave and grain in the fine band.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{set12_10.png}
+\captionof{figure}{Boat, $512^2$. The wave field and deck planking in the mid band;
+mast and hull contour leakage in the coarse band.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{set12_11.png}
+\captionof{figure}{Man, $512^2$. Hair and fabric in the mid band; the fine band is
+principally film grain, uniform across the frame.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{set12_12.png}
+\captionof{figure}{Couple, $512^2$. Clothing textures in the mid band; furniture
+contours in the coarse band.}
+\end{center}
+\clearpage
+
+\clearpage
+\section{BSD68 (first eight)}
+
+\begin{center}
+\includegraphics[width=\textwidth]{bsd68_001.png}
+\captionof{figure}{BSD68-01, $481\times321$. Natural foliage texture divides
+between the mid and fine bands.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{bsd68_002.png}
+\captionof{figure}{BSD68-02, $481\times321$.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{bsd68_003.png}
+\captionof{figure}{BSD68-03, $481\times321$.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{bsd68_004.png}
+\captionof{figure}{BSD68-04, $321\times481$. Plumage in the mid band; rock texture
+in the coarse and mid bands; the cartoon retains the animals' pose
+structure.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{bsd68_005.png}
+\captionof{figure}{BSD68-05, $321\times481$.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{bsd68_006.png}
+\captionof{figure}{BSD68-06, $321\times481$.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{bsd68_007.png}
+\captionof{figure}{BSD68-07, $321\times481$.}
+\end{center}
+\clearpage
+
+\begin{center}
+\includegraphics[width=\textwidth]{bsd68_008.png}
+\captionof{figure}{BSD68-08, $321\times481$.}
+\end{center}
+\clearpage
+
+\end{document}

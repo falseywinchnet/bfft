@@ -131,6 +131,34 @@ def main():
     for relax in (0.25, 0.5, 0.75, 1.0):
         variants[f"unified+long{relax:g}"] = (
             unified + relax * (long_exact - unified))
+
+    # Projection-order audit.  A terminal long projection is not part of the
+    # intersection definition; compare it with order-neutral alternatives.
+    # ``balanced`` averages the two possible Lie sweeps, while ``alternating``
+    # reverses the order on successive cycles.  Neither gives one family a
+    # permanent last word.
+    ls = short_family.project(long_family.project(shared, shared), shared)
+    sl = long_family.project(short_family.project(shared, shared), shared)
+    variants["one-cycle-balanced"] = 0.5 * (ls + sl)
+    # Strang-like palindromic cycle: the long constraint receives two half
+    # corrections around the full short correction.  This has the deployed
+    # three-projector cost but no empirical terminal coefficient or order
+    # discontinuity at the cycle boundary.
+    half = long_family.project(shared, shared)
+    pal = shared + 0.5 * (half - shared)
+    pal = short_family.project(pal, pal)
+    half = long_family.project(pal, pal)
+    variants["palindromic-half-long"] = pal + 0.5 * (half - pal)
+    for count in (1, 2, 4, 8):
+        alt = shared.copy()
+        for cycle in range(count):
+            if cycle & 1:
+                alt = long_family.project(
+                    short_family.project(alt, alt), alt)
+            else:
+                alt = short_family.project(
+                    long_family.project(alt, alt), alt)
+        variants[f"alternating-{count}"] = alt.copy()
     raw_mag = long_endpoint_magnitude(z, events)
     raw_tail = None
     for name, signal in variants.items():
