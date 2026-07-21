@@ -129,6 +129,19 @@ _fct_forward_complex_moment = _decl(
     "fct_forward_complex_moment", ctypes.c_int,
     [_plan_p, _void_p, _void_p, _void_p, _void_p])
 
+# --- Meyer G-norm decomposer (meyer.h) ---
+_meyer_plan_create = _decl("bfft_meyer_plan_create", ctypes.c_int,
+                           [ctypes.c_size_t, ctypes.c_size_t,
+                            ctypes.c_double, ctypes.c_double, ctypes.c_int,
+                            ctypes.c_int, ctypes.c_double, ctypes.c_int,
+                            ctypes.POINTER(_plan_p)])
+_meyer_plan_destroy = _decl("bfft_meyer_plan_destroy", None, [_plan_p])
+_meyer_split = _decl("bfft_meyer_split", ctypes.c_int,
+                     [_plan_p, _void_p, _void_p, _void_p])
+_meyer_decompose = _decl("bfft_meyer_decompose", ctypes.c_int,
+                         [_plan_p, _void_p, _void_p, _void_p, _void_p,
+                          _void_p, _void_p])
+
 _OK = 0
 
 
@@ -624,3 +637,147 @@ def fct(x):
     a = _as_f64_1d(x)
     _check_fct_n(a.shape[0])
     return FctPlan(a.shape[0]).fct(a)
+
+
+class MeyerPlan:
+    """Planned Meyer G-norm cartoon + texture decomposer (TGFD).
+
+    ``MeyerPlan((H, W)).decompose(image)`` runs the Gilles-Osher two-projector
+    alternation as warm interleaved Split Bregman sweeps (one per subproblem
+    per pass, persistent Bregman states, spectra of f/u/w maintained so each
+    sweep costs one forward + one inverse 2-D transform), then splits the
+    texture layer along the ratio-4 rung ladder {mu, mu/4, mu/16} with
+    independent ROF solves.  H and W must each be a power of two >= 8; use
+    :func:`meyer` for arbitrary sizes.  Images are [0, 255]-scaled floats.
+
+    Returns ``(cartoon, texture, band_coarse, band_mid, band_fine)`` with
+    ``cartoon + band_coarse + band_mid + band_fine == cartoon-layer u +
+    texture-layer v`` exactly (cartoon includes the coarsest rung survivor;
+    ``image - cartoon - bands`` is the model residual).  Not thread-safe;
+    create one plan per thread."""
+
+    __slots__ = ("shape", "lam", "mu", "passes", "rung_sweeps", "rung_tol",
+                 "threads", "_plan")
+
+    def __init__(self, shape, lam=0.05, mu=40.0, passes=64, rung_sweeps=600,
+                 rung_tol=1e-5, threads=0):
+        h, w = int(shape[0]), int(shape[1])
+        for n in (h, w):
+            if n < 8 or not _is_pow2(n):
+                raise ValueError(
+                    "MeyerPlan dimensions must be powers of two >= 8; "
+                    f"got {shape}. Use bfft.meyer() for arbitrary sizes.")
+        self.shape = (h, w)
+        self.lam = float(lam)
+        self.mu = float(mu)
+        self.passes = int(passes)
+        self.rung_sweeps = int(rung_sweeps)
+        self.rung_tol = float(rung_tol)
+        self.threads = int(threads)
+        plan = _plan_p()
+        _check(_meyer_plan_create(h, w, self.lam, self.mu, self.passes,
+                                  self.rung_sweeps, self.rung_tol,
+                                  self.threads, ctypes.byref(plan)),
+               "bfft_meyer_plan_create")
+        self._plan = plan
+
+    def __del__(self):
+        plan = getattr(self, "_plan", None)
+        if plan:
+            _meyer_plan_destroy(plan)
+
+    def split(self, image):
+        """The model decomposition alone: ``(cartoon, texture) = (u, v)``,
+        exactly the pair the Gilles-Osher alternation produces, with no
+        ladder.  Note :meth:`decompose` reports a different cartoon --
+        ``u`` plus the ladder's coarsest rung survivor -- so that its
+        cartoon and bands sum to ``u + v``."""
+        a = np.ascontiguousarray(image, dtype=np.float64)
+        if a.shape != self.shape:
+            raise ValueError(
+                f"MeyerPlan{self.shape}.split expects shape {self.shape}")
+        outs = (np.empty(self.shape, dtype=np.float64),
+                np.empty(self.shape, dtype=np.float64))
+        _check(_meyer_split(self._plan, a.ctypes.data,
+                            *(o.ctypes.data for o in outs)),
+               "bfft_meyer_split")
+        return outs
+
+    def decompose(self, image):
+        a = np.ascontiguousarray(image, dtype=np.float64)
+        if a.shape != self.shape:
+            raise ValueError(
+                f"MeyerPlan{self.shape}.decompose expects shape {self.shape}")
+        outs = tuple(np.empty(self.shape, dtype=np.float64)
+                     for _ in range(5))
+        _check(_meyer_decompose(self._plan, a.ctypes.data,
+                                *(o.ctypes.data for o in outs)),
+               "bfft_meyer_decompose")
+        return outs
+
+
+_MEYER_PLANS = {}
+_MEYER_LOCK = threading.Lock()
+
+
+def _meyer_padded(image, lam, mu, passes, rung_sweeps, rung_tol, threads):
+    """Shared arbitrary-size front end: returns (plan, padded, top, left,
+    h, w).  Pads each dimension up to the next power of two (>= 8) by
+    symmetric reflection with the image centered."""
+    a = np.ascontiguousarray(image, dtype=np.float64)
+    if a.ndim != 2:
+        raise ValueError("meyer expects a 2-D grayscale image")
+    h, w = a.shape
+    if h < 2 or w < 2:
+        raise ValueError("meyer expects an image at least 2x2")
+
+    def _next_pow2(n):
+        p = 8
+        while p < n:
+            p *= 2
+        return p
+
+    ph, pw = _next_pow2(h), _next_pow2(w)
+    top, left = (ph - h) // 2, (pw - w) // 2
+    if (ph, pw) != (h, w):
+        padded = np.pad(a, ((top, ph - h - top), (left, pw - w - left)),
+                        mode="symmetric")
+    else:
+        padded = a
+    key = (ph, pw, float(lam), float(mu), int(passes), int(rung_sweeps),
+           float(rung_tol), int(threads))
+    with _MEYER_LOCK:
+        plan = _MEYER_PLANS.get(key)
+        if plan is None:
+            plan = MeyerPlan((ph, pw), lam=lam, mu=mu, passes=passes,
+                             rung_sweeps=rung_sweeps, rung_tol=rung_tol,
+                             threads=threads)
+            _MEYER_PLANS[key] = plan
+    return plan, padded, top, left, h, w
+
+
+def meyer_split(image, lam=0.05, mu=40.0, passes=64, threads=0):
+    """Meyer cartoon + texture decomposition of an arbitrary-size grayscale
+    image, without the scale ladder: returns ``(cartoon, texture)``, the
+    pair the Gilles-Osher alternation produces.  This is the fast path --
+    the ladder in :func:`meyer` costs an order of magnitude more than the
+    decomposition itself."""
+    plan, padded, top, left, h, w = _meyer_padded(
+        image, lam, mu, passes, 1, 0.0, threads)
+    outs = plan.split(padded)
+    return tuple(o[top:top + h, left:left + w].copy() for o in outs)
+
+
+def meyer(image, lam=0.05, mu=40.0, passes=64, rung_sweeps=600,
+          rung_tol=1e-5, threads=0):
+    """Meyer G-norm cartoon + texture decomposition of an arbitrary-size
+    grayscale image (see :class:`MeyerPlan` for the algorithm and outputs).
+
+    Arbitrary sizes are handled by symmetric-reflection padding each
+    dimension up to the next power of two (>= 8) with the image centered;
+    the five outputs are cropped back to the input size.  Plans are cached
+    per (padded shape, parameters)."""
+    plan, padded, top, left, h, w = _meyer_padded(
+        image, lam, mu, passes, rung_sweeps, rung_tol, threads)
+    outs = plan.decompose(padded)
+    return tuple(o[top:top + h, left:left + w].copy() for o in outs)

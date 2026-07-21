@@ -11,16 +11,26 @@ Public functions (stateless drop-ins, with cached plans/buffers under the hood):
     bfft.fct(x)       -- Fast Correlated Transform (forward-only): (C, tau)
                          with each standard bin at its maximally correlated
                          leading-edge slice. No inverse exists.
+    bfft.meyer_split(img) -- Meyer G-norm cartoon + texture decomposition
+                         (TGFD) of an arbitrary-size grayscale image;
+                         returns (cartoon, texture).  The fast path.
+    bfft.meyer(img)   -- the same decomposition plus the 3-rung scale
+                         ladder; returns (cartoon, texture, band_coarse,
+                         band_mid, band_fine).  The ladder costs an order
+                         of magnitude more than the decomposition.
 
 Planned objects (lowest per-call overhead for hot loops; one per thread):
     bfft.Plan(N)      -- .rfft(x) / .irfft(X) at a fixed power-of-two size N.
     bfft.OdftPlan(N)  -- .odft(x) / .iodft(H) at a fixed power-of-two size N.
     bfft.FctPlan(N)   -- .fct(x) at a fixed power-of-two size N >= 16.
+    bfft.MeyerPlan((H, W)) -- .decompose(img) at fixed power-of-two dims.
 """
 
-from ._core import (FctPlan, OdftPlan, Plan, STFTPlan, fct, hann_window,
-                    iodft, irfft, odft, rfft)
+from ._core import (FctPlan, MeyerPlan, OdftPlan, Plan, STFTPlan, fct,
+                    hann_window, iodft, irfft, meyer, meyer_split, odft,
+                    rfft)
 
-__all__ = ["rfft", "irfft", "odft", "iodft", "fct", "Plan", "OdftPlan",
-           "FctPlan", "STFTPlan", "hann_window"]
+__all__ = ["rfft", "irfft", "odft", "iodft", "fct", "meyer",
+           "meyer_split", "Plan", "OdftPlan", "FctPlan", "MeyerPlan",
+           "STFTPlan", "hann_window"]
 __version__ = "1.0"
