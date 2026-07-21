@@ -18,6 +18,17 @@ Public functions (stateless drop-ins, with cached plans/buffers under the hood):
                          ladder; returns (cartoon, texture, band_coarse,
                          band_mid, band_fine).  The ladder costs an order
                          of magnitude more than the decomposition.
+    bfft.rof(img, c)  -- the plain total-variation solve the decomposition
+                         is built from, on its own.
+
+Recomposition effects (bfft.effects, pure numpy over the above):
+    bfft.meyer_channels(img)      -- the split applied per channel of a
+                         colour image in RGB, OKLab, or OKLab luma+chroma.
+    bfft.recompose(...) / bfft.recompose_channels(...)
+                      -- reassemble a split with independent gains on the
+                         cartoon, texture, and shading layers.
+    bfft.shade(cartoon, c)        -- the smooth illumination a flat cartoon
+                         discards: cartoon - ROF(cartoon, c).
 
 Planned objects (lowest per-call overhead for hot loops; one per thread):
     bfft.Plan(N)      -- .rfft(x) / .irfft(X) at a fixed power-of-two size N.
@@ -28,9 +39,12 @@ Planned objects (lowest per-call overhead for hot loops; one per thread):
 
 from ._core import (FctPlan, MeyerPlan, OdftPlan, Plan, STFTPlan, fct,
                     hann_window, iodft, irfft, meyer, meyer_split, odft,
-                    rfft)
+                    rfft, rof)
+from .effects import (lab_to_srgb, meyer_channels, recompose,
+                      recompose_channels, shade, srgb_to_lab)
 
 __all__ = ["rfft", "irfft", "odft", "iodft", "fct", "meyer",
-           "meyer_split", "Plan", "OdftPlan", "FctPlan", "MeyerPlan",
-           "STFTPlan", "hann_window"]
+           "meyer_split", "rof", "Plan", "OdftPlan", "FctPlan", "MeyerPlan",
+           "STFTPlan", "hann_window", "meyer_channels", "recompose",
+           "recompose_channels", "shade", "srgb_to_lab", "lab_to_srgb"]
 __version__ = "1.0"

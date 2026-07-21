@@ -68,3 +68,15 @@ bfft_status bfft_meyer_decompose(bfft_meyer_plan* plan, const double* image,
                         band_fine);
     return BFFT_OK;
 }
+
+bfft_status bfft_meyer_rof(bfft_meyer_plan* plan, const double* image,
+                           double* smooth, double c, double eta, int sweeps,
+                           double tol) {
+    if (plan == nullptr || image == nullptr || smooth == nullptr)
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    if (!(c > 0.0) || sweeps < 1 || !(tol >= 0.0))
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    if (!(eta > 0.0)) eta = 10.0 * c;
+    plan->eng.rof(image, smooth, c, eta, sweeps, tol);
+    return BFFT_OK;
+}

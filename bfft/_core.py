@@ -141,6 +141,9 @@ _meyer_split = _decl("bfft_meyer_split", ctypes.c_int,
 _meyer_decompose = _decl("bfft_meyer_decompose", ctypes.c_int,
                          [_plan_p, _void_p, _void_p, _void_p, _void_p,
                           _void_p, _void_p])
+_meyer_rof = _decl("bfft_meyer_rof", ctypes.c_int,
+                   [_plan_p, _void_p, _void_p, ctypes.c_double,
+                    ctypes.c_double, ctypes.c_int, ctypes.c_double])
 
 _OK = 0
 
@@ -703,6 +706,22 @@ class MeyerPlan:
                "bfft_meyer_split")
         return outs
 
+    def rof(self, image, c, eta=0.0, sweeps=200, tol=1e-5):
+        """A plain ROF solve, ``argmin_x TV(x) + (c/2)|x - image|^2``, run
+        by the same Split Bregman solver the ladder rungs use.  ``eta`` is
+        the Bregman penalty (0 selects the ladder convention, ``10 * c``);
+        sweeps stop early once the relative iterate change falls below
+        ``tol``.  ``image - rof(image, c)`` is the ROF residual."""
+        a = np.ascontiguousarray(image, dtype=np.float64)
+        if a.shape != self.shape:
+            raise ValueError(
+                f"MeyerPlan{self.shape}.rof expects shape {self.shape}")
+        out = np.empty(self.shape, dtype=np.float64)
+        _check(_meyer_rof(self._plan, a.ctypes.data, out.ctypes.data,
+                          float(c), float(eta), int(sweeps), float(tol)),
+               "bfft_meyer_rof")
+        return out
+
     def decompose(self, image):
         a = np.ascontiguousarray(image, dtype=np.float64)
         if a.shape != self.shape:
@@ -766,6 +785,21 @@ def meyer_split(image, lam=0.05, mu=40.0, passes=64, threads=0):
         image, lam, mu, passes, 1, 0.0, threads)
     outs = plan.split(padded)
     return tuple(o[top:top + h, left:left + w].copy() for o in outs)
+
+
+def rof(image, c=0.025, eta=0.0, sweeps=200, tol=1e-5, threads=0):
+    """Total-variation (Rudin-Osher-Fatemi) solve on an arbitrary-size
+    grayscale image: ``argmin_x TV(x) + (c/2)|x - image|^2``.
+
+    Smaller ``c`` smooths harder.  ``image - rof(image, c)`` is the ROF
+    residual; the Meyer decomposition is built from exactly this solver, and
+    subtracting a ROF solve of a cartoon layer isolates the smooth
+    illumination a flat cartoon discards.  Arbitrary sizes are handled by
+    the same symmetric-reflection padding as :func:`meyer`."""
+    plan, padded, top, left, h, w = _meyer_padded(
+        image, 0.05, 40.0, 1, 1, 0.0, threads)
+    out = plan.rof(padded, c, eta=eta, sweeps=sweeps, tol=tol)
+    return out[top:top + h, left:left + w].copy()
 
 
 def meyer(image, lam=0.05, mu=40.0, passes=64, rung_sweeps=600,

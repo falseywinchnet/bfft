@@ -204,6 +204,10 @@ struct engine {
     // symbol tables 1/(c - eta*lap_hat), expanded to interleaved (re, im)
     // stride: s[2*(k*HB+m)] == s[2*(k*HB+m)+1], one per (c, eta) pair
     std::vector<double> s_u, s_v, s_r0, s_r1, s_r2;
+    // table for the general ROF entry point, rebuilt only when (c, eta)
+    // changes
+    std::vector<double> s_gen;
+    double gen_c = 0.0, gen_eta = 0.0;
 
     // spatial planes, H*W
     std::vector<double> u, w, xit;             // xit = generic ROF iterate
@@ -606,6 +610,75 @@ struct engine {
         }
     }
 
+    // ---- a plain ROF solve from a spectrum already in hand ---------------
+    //
+    // out <- argmin_x TV(x) + (c/2)|x - g|^2 by Split Bregman sweeps from a
+    // FRESH state (Bregman states are c- and eta-scaled and must never be
+    // carried between different fidelity constants).  gs is the spectrum of
+    // g and gplane its samples (needed only to seed the change test); s is
+    // the symbol table for this (c, eta) pair.  Sweeps stop early once the
+    // relative iterate change falls below tol (tol <= 0 disables the test).
+    // u_spec is used as spectral scratch: the u plane is left intact, so
+    // decompose() may call this after run_passes().
+
+    void rof_from_spec(const spectrum& gs, const double* gplane, double c,
+                       double eta, const std::vector<double>& s, int sweeps,
+                       double tol, double* out) {
+        const std::size_t n = H * W;
+        std::memset(rbx.data(), 0, n * sizeof(double));
+        std::memset(rby.data(), 0, n * sizeof(double));
+        std::memcpy(prev.data(), gplane, n * sizeof(double));
+        bool done = false;
+        for (int sweep = 0; sweep < sweeps && !done; ++sweep) {
+            if (sweep == 0) {
+                solve_scale(gs.a.data(), gs.b.data(), c, s.data(),
+                            u_spec.a.data(), u_spec.b.data());
+            } else {
+                fwd2d_div(rdbx, rdby, d_spec);
+                solve_g(gs.a.data(), gs.b.data(), d_spec.a.data(),
+                        d_spec.b.data(), c, eta, s.data(), u_spec.a.data(),
+                        u_spec.b.data());
+            }
+            inv2d(u_spec, xit.data());
+            shrink(xit, rbx, rby, rdbx, rdby, eta);
+            if (tol > 0.0) {
+                // SERIAL by design: bit-identical for all thread counts
+                const double* __restrict xi = xit.data();
+                double* __restrict pv = prev.data();
+                double d0 = 0, d1 = 0, x0 = 0, x1 = 0;
+                for (std::size_t i = 0; i < n; i += 2) {
+                    const double a0 = xi[i] - pv[i];
+                    const double a1 = xi[i + 1] - pv[i + 1];
+                    d0 += a0 * a0;
+                    d1 += a1 * a1;
+                    x0 += xi[i] * xi[i];
+                    x1 += xi[i + 1] * xi[i + 1];
+                    pv[i] = xi[i];
+                    pv[i + 1] = xi[i + 1];
+                }
+                done = (d0 + d1) <= tol * tol * (x0 + x1);
+            }
+        }
+        std::memcpy(out, xit.data(), n * sizeof(double));
+    }
+
+    // ---- public ROF: transform the image, then solve --------------------
+    //
+    // The symbol table depends on (c, eta) and costs WB*HB cosine pairs to
+    // build, so the last one is cached: effect pipelines call this
+    // repeatedly with fixed constants.
+
+    void rof(const double* image, double* smooth, double c, double eta,
+             int sweeps, double tol) {
+        if (s_gen.empty() || c != gen_c || eta != gen_eta) {
+            symbol(s_gen, c, eta);
+            gen_c = c;
+            gen_eta = eta;
+        }
+        fwd2d(image, f_spec);
+        rof_from_spec(f_spec, image, c, eta, s_gen, sweeps, tol, smooth);
+    }
+
     // ---- split: the model decomposition alone, no ladder ----------------
     //
     // cartoon = u, texture = v: exactly the pair Gilles' Algorithm 3
@@ -647,49 +720,13 @@ struct engine {
 
         // ladder rungs: independent solves, fresh states, coarse -> fine
         // (u_spec is reused as spectral scratch; u spatial stays intact)
-        const double rung_mu[3] = {mu, mu / 4.0, mu / 16.0};
         const std::vector<double>* rung_s[3] = {&s_r0, &s_r1, &s_r2};
+        const double rung_mu[3] = {mu, mu / 4.0, mu / 16.0};
         double* rung_out[3] = {cartoon, band_mid, band_fine};  // staging
-        for (int rr = 0; rr < 3; ++rr) {
-            const double c = 1.0 / rung_mu[rr], eta = 10.0 / rung_mu[rr];
-            std::memset(rbx.data(), 0, n * sizeof(double));
-            std::memset(rby.data(), 0, n * sizeof(double));
-            std::memcpy(prev.data(), vplane.data(), n * sizeof(double));
-            bool done = false;
-            for (int sweep = 0; sweep < rung_sweeps && !done; ++sweep) {
-                if (sweep == 0) {
-                    solve_scale(v_spec.a.data(), v_spec.b.data(), c,
-                                rung_s[rr]->data(), u_spec.a.data(),
-                                u_spec.b.data());
-                } else {
-                    fwd2d_div(rdbx, rdby, d_spec);
-                    solve_g(v_spec.a.data(), v_spec.b.data(),
-                            d_spec.a.data(), d_spec.b.data(), c, eta,
-                            rung_s[rr]->data(), u_spec.a.data(),
-                            u_spec.b.data());
-                }
-                inv2d(u_spec, xit.data());
-                shrink(xit, rbx, rby, rdbx, rdby, eta);
-                if (rung_tol > 0.0) {
-                    // SERIAL by design: bit-identical for all thread counts
-                    const double* __restrict xi = xit.data();
-                    double* __restrict pv = prev.data();
-                    double d0 = 0, d1 = 0, x0 = 0, x1 = 0;
-                    for (std::size_t i = 0; i < n; i += 2) {
-                        const double a0 = xi[i] - pv[i];
-                        const double a1 = xi[i + 1] - pv[i + 1];
-                        d0 += a0 * a0;
-                        d1 += a1 * a1;
-                        x0 += xi[i] * xi[i];
-                        x1 += xi[i + 1] * xi[i + 1];
-                        pv[i] = xi[i];
-                        pv[i + 1] = xi[i + 1];
-                    }
-                    done = (d0 + d1) <= rung_tol * rung_tol * (x0 + x1);
-                }
-            }
-            std::memcpy(rung_out[rr], xit.data(), n * sizeof(double));
-        }
+        for (int rr = 0; rr < 3; ++rr)
+            rof_from_spec(v_spec, vplane.data(), 1.0 / rung_mu[rr],
+                          10.0 / rung_mu[rr], *rung_s[rr], rung_sweeps,
+                          rung_tol, rung_out[rr]);
 
         // assemble outputs: cartoon/band_mid/band_fine currently hold
         // s0/s1/s2 and are rewritten in place (per-index reads complete

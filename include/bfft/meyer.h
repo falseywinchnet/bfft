@@ -79,6 +79,28 @@ bfft_status bfft_meyer_decompose(bfft_meyer_plan* plan,
                                  double* band_mid,
                                  double* band_fine);
 
+/* Run a plain ROF (Rudin-Osher-Fatemi) solve on its own:
+
+       smooth <- argmin_x TV(x) + (c/2) |x - image|^2
+
+   by Split Bregman sweeps from a fresh state, with Bregman penalty eta
+   (pass eta <= 0 for the ladder's convention, eta = 10*c).  Sweeps stop
+   early once the relative iterate change falls below tol; pass tol = 0 to
+   run all of them.  image - smooth is the ROF residual, which is what the
+   G-ball projection identity turns into the texture layer.
+
+   This is the same solver the ladder rungs use, exposed because
+   recomposition effects need it: subtracting a ROF solve of the cartoon
+   layer isolates the smooth illumination the flat cartoon discards.  The
+   symbol table is cached, so repeated calls at fixed (c, eta) -- the video
+   case -- rebuild nothing.  image and smooth are height*width doubles,
+   row-major, non-aliasing. */
+bfft_status bfft_meyer_rof(bfft_meyer_plan* plan,
+                           const double* image,
+                           double* smooth,
+                           double c, double eta,
+                           int sweeps, double tol);
+
 #ifdef __cplusplus
 }
 #endif
