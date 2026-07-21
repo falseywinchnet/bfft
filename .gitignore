@@ -14,3 +14,6 @@
 __pycache__/
 *.egg-info/
 /dist/
+
+# generated reference-split caches (regenerated on demand)
+experiments/out/ref_*.npz
