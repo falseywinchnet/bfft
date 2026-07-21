@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-"""Visual supplement: TGFD decomposition + 3-rung ladder on 20 test images.
+"""Visual supplement: TGFD vs nested Gilles Alg.3 + ladder on 20 images.
 
-Set12 (12 classic images, 256^2/512^2) + first 8 of BSD68 (481x321).
-Per image: TGFD split (lam=0.05, mu=40, budget scaled by pixel count),
-then ladder bands mu = {40, 10, 2.5}.  One 2x3 panel PNG per image
-(f / u / v ; coarse / mid / fine band) into experiments/out/supplement/,
-plus a summary table printed for the LaTeX document.
+Set12 (12 classic images) + first 8 of BSD68.  Per image:
+  - reference: Gilles Algorithm 3, nested inner solves to tol 1e-4
+    (optimized implementation: warm inner states, eta=10/mu, threaded FFT);
+  - TGFD split (lam=0.05, mu=40, budget 0.9 s x pixels/512^2);
+  - ladder bands mu = {40, 10, 2.5} on the TGFD texture layer.
+One 3x3 panel PNG per image into experiments/out/supplement/:
+  row 1: f, Gilles u, Gilles v
+  row 2: |u_TGFD - u_Gilles| x20, TGFD u, TGFD v
+  row 3: coarse / mid / fine band.
+Prints the LaTeX table rows (sizes, passes, times, agreement).
 """
 from __future__ import annotations
 
@@ -21,7 +26,8 @@ OUT = HERE / "out" / "supplement"
 IMGS = Path("/private/tmp/claude-501/-Users-quentinkuttenkuler-bfft/"
             "63c039dd-f490-43f0-aba0-e10153ab8f90/scratchpad/testimgs")
 
-from meyer_bregman import a2bc_budget, texture_ladder, SWEEPS  # noqa: E402
+from meyer_bregman import (a2bc_budget, a2bc_nested_warm, texture_ladder,
+                           SWEEPS)  # noqa: E402
 
 NAMES = {
     "set12_01": "Cameraman", "set12_02": "House", "set12_03": "Peppers",
@@ -54,42 +60,64 @@ def main():
     rows = []
     for stem, title in NAMES.items():
         f = load(IMGS / f"{stem}.png")
-        # budget scaled to pixel count: 0.9 s at 512^2
+        nf = np.linalg.norm(f)
+
+        # reference: nested Gilles Alg.3 (optimized implementation)
+        t0 = time.perf_counter()
+        ug, vg, nout = a2bc_nested_warm(f, LAM, MU)
+        t_gilles = time.perf_counter() - t0
+
+        # TGFD
         budget = 0.9 * f.size / 512 ** 2
-        SWEEPS["n"] = 0
         t0 = time.perf_counter()
         u, v, npass = a2bc_budget(f, LAM, MU, budget_s=budget)
         t_split = time.perf_counter() - t0
+
+        # ladder on the TGFD texture layer
         t0 = time.perf_counter()
         s0, bands = texture_ladder(v, MUS)
         t_ladder = time.perf_counter() - t0
-        rows.append((title, f.shape, npass, t_split, t_ladder))
-        print(f"{title:>10s} {f.shape[0]}x{f.shape[1]} passes {npass:4d} "
-              f"split {t_split:5.2f}s ladder {t_ladder:5.2f}s")
 
-        landscape = f.shape[1] >= f.shape[0]
-        panels = [("$f$", f, 0, 255), ("$u$ (cartoon)", u + s0, 0, 255),
-                  ("$v$ (texture)", v, -40, 40),
-                  (r"band $\mu\,40\to10$", bands[0], -30, 30),
-                  (r"band $\mu\,10\to2.5$", bands[1], -30, 30),
-                  (r"band $\mu<2.5$", bands[2], -30, 30)]
+        agree = np.linalg.norm(u - ug) / nf
+        rows.append((title, f.shape, nout, t_gilles, npass, t_split,
+                     t_ladder, agree))
+        print(f"{title:>10s} {f.shape[0]}x{f.shape[1]} | gilles {nout:3d} "
+              f"outer {t_gilles:5.1f}s | tgfd {npass:3d} passes "
+              f"{t_split:4.2f}s | ladder {t_ladder:4.1f}s | "
+              f"agree {agree:.2e}")
+
+        panels = [
+            ("$f$", f, 0, 255),
+            (f"$u$ Gilles Alg.3 ({t_gilles:.1f} s)", ug, 0, 255),
+            ("$v$ Gilles Alg.3", vg, -40, 40),
+            (r"$|u_{\rm TGFD}-u_{\rm Gilles}|\times 20$",
+             20 * np.abs(u - ug), 0, 255),
+            (f"$u$ TGFD ({t_split:.2f} s)", u + s0, 0, 255),
+            ("$v$ TGFD", v, -40, 40),
+            (r"band $\mu\,40\to10$", bands[0], -30, 30),
+            (r"band $\mu\,10\to2.5$", bands[1], -30, 30),
+            (r"band $\mu<2.5$", bands[2], -30, 30),
+        ]
         ar = f.shape[0] / f.shape[1]
-        fig, axes = plt.subplots(2, 3, figsize=(12.6, 2 * 4.2 * ar + 1.7))
+        fig, axes = plt.subplots(3, 3, figsize=(12.6, 3 * 4.2 * ar + 2.2))
         for ax, (name, im, lo, hi) in zip(axes.ravel(), panels):
             ax.imshow(im, cmap="gray", vmin=lo, vmax=hi)
             ax.set_title(name, fontsize=10)
             ax.set_xticks([]); ax.set_yticks([])
-        fig.suptitle(f"{title} ({f.shape[0]}x{f.shape[1]}) — "
-                     f"TGFD {t_split:.2f}s, {npass} passes; "
-                     f"ladder {t_ladder:.2f}s", fontsize=11)
-        fig.tight_layout(rect=[0, 0, 1, 0.95], h_pad=2.2)
+        fig.suptitle(
+            f"{title} ({f.shape[0]}x{f.shape[1]}) — Gilles Alg.3 "
+            f"{t_gilles:.1f}s vs TGFD {t_split:.2f}s "
+            f"({t_gilles / t_split:.0f}x); agreement "
+            f"$\\|\\Delta u\\|/\\|f\\|$ = {agree:.1e}", fontsize=11)
+        fig.tight_layout(rect=[0, 0, 1, 0.96], h_pad=2.0)
         fig.savefig(OUT / f"{stem}.png", dpi=110)
         plt.close(fig)
 
     print("\n% LaTeX table rows")
-    for title, shape, npass, ts, tl in rows:
-        print(f"{title} & ${shape[0]}\\times{shape[1]}$ & {npass} & "
-              f"{ts:.2f} & {tl:.2f} \\\\")
+    for title, shape, nout, tg, npass, ts, tl, agree in rows:
+        print(f"{title} & ${shape[0]}\\times{shape[1]}$ & {tg:.1f} & "
+              f"{ts:.2f} & {tg/ts:.0f}$\\times$ & {tl:.1f} & "
+              f"${agree*1e3:.1f}\\times10^{{-3}}$ \\\\")
 
 
 if __name__ == "__main__":

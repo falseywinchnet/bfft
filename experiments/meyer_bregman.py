@@ -67,6 +67,21 @@ SCRATCH = Path("/private/tmp/claude-501/-Users-quentinkuttenkuler-bfft/"
 
 SWEEPS = {"n": 0}          # global inner-sweep counter (the cost currency)
 
+try:                        # threaded FFT backend (2.2x at 512^2)
+    import scipy.fft as _sfft
+
+    def _rfft2(a):
+        return _sfft.rfft2(a, workers=-1)
+
+    def _irfft2(a, s):
+        return _sfft.irfft2(a, s=s, workers=-1)
+except ImportError:
+    def _rfft2(a):
+        return np.fft.rfft2(a)
+
+    def _irfft2(a, s):
+        return np.fft.irfft2(a, s=s)
+
 
 def grad(u):
     """Forward differences, periodic."""
@@ -114,13 +129,13 @@ def rof_sb(g, c, eta=None, state=None, sweeps=None, tol=1e-4, max_sweeps=400):
     st = state if state is not None else RofState(g.shape)
     L = lap_hat(g.shape)
     denom = c - eta * L
-    g_hat = np.fft.rfft2(g)
+    g_hat = _rfft2(g)
     u = st.u if st.u is not None else g.copy()
     n = sweeps if sweeps is not None else max_sweeps
     for it in range(n):
-        rhs_hat = c * g_hat - eta * np.fft.rfft2(div(st.dx - st.bx,
-                                                     st.dy - st.by))
-        u_new = np.fft.irfft2(rhs_hat / denom, s=g.shape)
+        rhs_hat = c * g_hat - eta * _rfft2(div(st.dx - st.bx,
+                                               st.dy - st.by))
+        u_new = _irfft2(rhs_hat / denom, s=g.shape)
         ux, uy = grad(u_new)
         tx, ty = ux + st.bx, uy + st.by
         s = np.sqrt(tx * tx + ty * ty)
@@ -279,6 +294,33 @@ def a2bc_cold(f, lam, mu, outer_tol=1e-4, inner_tol=1e-4, max_outer=200,
         if delta < outer_tol:
             break
     return u, v, it + 1, ck
+
+
+def a2bc_nested_warm(f, lam, mu, inner_tol=1e-4, outer_tol=1e-4,
+                     max_outer=200, eta_v_mult=10.0, max_sweeps=400):
+    """Gilles Algorithm 3, optimized implementation.
+
+    Identical nesting discipline (each inner ROF solved to relative
+    tolerance, outer alternation to tolerance, cold start) with two
+    implementation-level optimizations that do not alter the algorithm:
+    warm-started inner Bregman states across outer passes, and the
+    measured accuracy-per-sweep penalty eta = eta_v_mult/mu on the
+    weak-fidelity texture step.  Threaded FFTs via the module backend.
+    """
+    st_u, st_v = None, None
+    u = np.zeros_like(f)
+    v = np.zeros_like(f)
+    for it in range(max_outer):
+        u_new, st_u = rof_sb(f - v, lam, state=st_u, tol=inner_tol,
+                             max_sweeps=max_sweeps)
+        w, st_v = rof_sb(f - u_new, 1.0 / mu, eta=eta_v_mult / mu,
+                         state=st_v, tol=inner_tol, max_sweeps=max_sweeps)
+        v_new = (f - u_new) - w
+        delta = np.linalg.norm(u_new - u) / (np.linalg.norm(u_new) + 1e-12)
+        u, v = u_new, v_new
+        if delta < outer_tol:
+            break
+    return u, v, it + 1
 
 
 def a2bc_fused(f, lam, mu, beta=0.0, seed_sweeps=0, sweeps_per_step=1,
