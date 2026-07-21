@@ -17,3 +17,8 @@ __pycache__/
 
 # generated reference-split caches (regenerated on demand)
 experiments/out/ref_*.npz
+
+# never commit key material
+*.key
+*.pem
+*.crt
