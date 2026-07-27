@@ -13,7 +13,11 @@ import math
 
 import numpy as np
 
-from bfft.vision import measure_residual_ridges
+from bfft.vision import (
+    hard_affine_fit_native,
+    hard_basis_refit_native,
+    measure_residual_ridges,
+)
 from experiments.dual_aperture_support import score
 
 
@@ -24,6 +28,46 @@ def _reduce(
 ) -> np.ndarray:
     return np.bincount(
         labels, weights=values, minlength=cells).astype(np.float64)
+
+
+def _eliminate_small_systems(
+    normal: np.ndarray,
+    rhs: np.ndarray,
+) -> np.ndarray:
+    """Directly eliminate tiny independent cell systems.
+
+    This is only the portable fallback for an older shared library; the live
+    viewer uses the fused C++ reduction and elimination kernel.
+    """
+    coefficient = np.empty_like(rhs)
+    width = normal.shape[1]
+    for cell in range(normal.shape[0]):
+        matrix = normal[cell].copy()
+        values = rhs[cell].copy()
+        for column in range(width):
+            pivot = column
+            pivot_size = abs(matrix[column, column])
+            for row in range(column + 1, width):
+                candidate = abs(matrix[row, column])
+                if candidate > pivot_size:
+                    pivot = row
+                    pivot_size = candidate
+            if pivot != column:
+                matrix[[column, pivot]] = matrix[[pivot, column]]
+                values[[column, pivot]] = values[[pivot, column]]
+            diagonal = matrix[column, column]
+            for row in range(column + 1, width):
+                multiplier = matrix[row, column] / diagonal
+                matrix[row, column + 1:] -= (
+                    multiplier * matrix[column, column + 1:])
+                values[row] -= multiplier * values[column]
+        for row in range(width - 1, -1, -1):
+            values[row] = (
+                values[row]
+                - matrix[row, row + 1:] @ values[row + 1:]
+            ) / matrix[row, row]
+        coefficient[cell] = values
+    return coefficient
 
 
 def _local_affine_basis(
@@ -54,49 +98,53 @@ def _fit_local_affine(
     labels_2d: np.ndarray,
     target_lab: np.ndarray,
     objective,
-) -> tuple[dict, np.ndarray, dict]:
-    labels, basis, count, radius, centroid = _local_affine_basis(labels_2d)
-    cells = len(count)
-    target = np.asarray(target_lab, dtype=np.float64).reshape(-1, 3)
-    ux, uy = basis[:, 1], basis[:, 2]
+) -> tuple[dict, np.ndarray, dict, tuple]:
+    native = hard_affine_fit_native(labels_2d, target_lab)
+    if native is not None:
+        labels, basis, count, radius, centroid, reconstruction = native
+    else:
+        labels, basis, count, radius, centroid = _local_affine_basis(
+            labels_2d)
+        cells = len(count)
+        target = np.asarray(target_lab, dtype=np.float64).reshape(-1, 3)
+        ux, uy = basis[:, 1], basis[:, 2]
 
-    rhs0 = np.column_stack([
-        _reduce(labels, target[:, channel], cells)
-        for channel in range(3)
-    ])
-    rhsx = np.column_stack([
-        _reduce(labels, ux * target[:, channel], cells)
-        for channel in range(3)
-    ])
-    rhsy = np.column_stack([
-        _reduce(labels, uy * target[:, channel], cells)
-        for channel in range(3)
-    ])
-    # Coefficients of ux=(x-cx)/r represent gradient*r.  A fixed penalty on
-    # the physical image-space gradient therefore transforms by 1/r^2 in
-    # this conditioned basis.  Keeping the same numeric ridge after scaling
-    # would silently change the model to penalize variation per cell.
-    gradient_regularization = (
-        1e-5 * count / np.maximum(radius * radius, 1e-30))
-    a = _reduce(labels, ux * ux, cells) + gradient_regularization
-    b = _reduce(labels, ux * uy, cells)
-    c = _reduce(labels, uy * uy, cells) + gradient_regularization
-    determinant = np.maximum(a * c - b * b, 1e-30)
+        rhs0 = np.column_stack([
+            _reduce(labels, target[:, channel], cells)
+            for channel in range(3)
+        ])
+        rhsx = np.column_stack([
+            _reduce(labels, ux * target[:, channel], cells)
+            for channel in range(3)
+        ])
+        rhsy = np.column_stack([
+            _reduce(labels, uy * target[:, channel], cells)
+            for channel in range(3)
+        ])
+        # Coefficients of ux=(x-cx)/r represent gradient*r.  A fixed penalty
+        # on the physical image-space gradient therefore transforms by 1/r^2.
+        gradient_regularization = (
+            1e-5 * count / np.maximum(radius * radius, 1e-30))
+        a = _reduce(labels, ux * ux, cells) + gradient_regularization
+        b = _reduce(labels, ux * uy, cells)
+        c = _reduce(labels, uy * uy, cells) + gradient_regularization
+        determinant = np.maximum(a * c - b * b, 1e-30)
 
-    coefficient = np.empty((cells, 3, 3), dtype=np.float64)
-    coefficient[:, 0, :] = rhs0 / ((1.0 + 1e-7) * count[:, None])
-    coefficient[:, 1, :] = (
-        c[:, None] * rhsx - b[:, None] * rhsy
-    ) / determinant[:, None]
-    coefficient[:, 2, :] = (
-        a[:, None] * rhsy - b[:, None] * rhsx
-    ) / determinant[:, None]
-    reconstruction = np.einsum(
-        "ni,nic->nc",
-        basis,
-        coefficient[labels],
-        optimize=False,
-    ).reshape(target_lab.shape)
+        coefficient = np.empty((cells, 3, 3), dtype=np.float64)
+        coefficient[:, 0, :] = (
+            rhs0 / ((1.0 + 1e-7) * count[:, None]))
+        coefficient[:, 1, :] = (
+            c[:, None] * rhsx - b[:, None] * rhsy
+        ) / determinant[:, None]
+        coefficient[:, 2, :] = (
+            a[:, None] * rhsy - b[:, None] * rhsx
+        ) / determinant[:, None]
+        reconstruction = np.einsum(
+            "ni,nic->nc",
+            basis,
+            coefficient[labels],
+            optimize=False,
+        ).reshape(target_lab.shape)
     return (
         score(objective, objective.target_rgb, reconstruction),
         reconstruction,
@@ -106,6 +154,7 @@ def _fit_local_affine(
             "centroid": centroid,
             "conditioned_frame": "cell_centroid_radius",
         },
+        (labels, basis, count, radius, centroid),
     )
 
 
@@ -121,9 +170,11 @@ def _fit_local_ridges(
     ridge_count: int = 1,
     initial_affine: np.ndarray,
     initial_record: dict,
+    basis_data=None,
 ) -> tuple[dict, np.ndarray, dict]:
-    labels, base_basis, count, radius, centroid = _local_affine_basis(
-        labels_2d)
+    if basis_data is None:
+        basis_data = _local_affine_basis(labels_2d)
+    labels, base_basis, count, radius, centroid = basis_data
     height, width = labels_2d.shape
     cells = len(count)
     yy, xx = np.mgrid[:height, :width]
@@ -145,6 +196,10 @@ def _fit_local_ridges(
     last_scored_rung = 0
 
     def refit(design: np.ndarray) -> np.ndarray:
+        native = hard_basis_refit_native(
+            labels, design, target, count, radius)
+        if native is not None:
+            return native.reshape(target_lab.shape)
         width_basis = design.shape[1]
         normal = np.empty(
             (cells, width_basis, width_basis), dtype=np.float64)
@@ -171,7 +226,7 @@ def _fit_local_ridges(
         normal[:, 2, 2] += gradient_regularization
         for component in range(3, width_basis):
             normal[:, component, component] += 2e-5 * count
-        coefficient = np.linalg.solve(normal, rhs)
+        coefficient = _eliminate_small_systems(normal, rhs)
         return np.einsum(
             "ni,nic->nc",
             design,
@@ -244,9 +299,14 @@ def fit_regions(
     affine=None,
 ):
     if affine_record is None or affine is None:
-        affine_record, affine, affine_information = _fit_local_affine(
-            labels, target_lab, objective)
+        (
+            affine_record,
+            affine,
+            affine_information,
+            basis_data,
+        ) = _fit_local_affine(labels, target_lab, objective)
     else:
+        basis_data = None
         affine_information = {
             "conditioned_frame": "provided",
         }
@@ -264,6 +324,7 @@ def fit_regions(
         ridge_count=int(ridge_count),
         initial_affine=affine,
         initial_record=affine_record,
+        basis_data=basis_data,
     )
     if affine_record["objective"] <= ridge_record["objective"]:
         information["selected"] = "affine"

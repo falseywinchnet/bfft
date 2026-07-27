@@ -93,7 +93,8 @@ C++ kernel can use dense block updates, but the scalar implementation is
 already decisively faster than the paths it replaces.
 
 SuperLU's symmetric mode prefers diagonal pivots rather than representing a
-general contract that factors are always Cholesky-shaped.  Production code
+general contract that factors always have a symmetric triangular shape.
+Production code
 must validate:
 
 1. `perm_r == perm_c`;
@@ -252,7 +253,7 @@ Suggested staging:
 3. Gather all per-cell diagonal blocks and optionally original normal-graph
    edge blocks in the same pass.  Use the pattern already built by fused
    normal assembly to request Alpha's adjacent blocks.
-4. Price each SPD block with a tiny fixed-size Cholesky/LDLT solve, not a
+4. Price each SPD block with a tiny fixed-size pivoted elimination, not a
    general pseudoinverse.  Retain a guarded pseudoinverse fallback only for a
    numerically singular block.
 5. Sigma: replace `deletion_costs` probing, rough ranking, and shortlist solves

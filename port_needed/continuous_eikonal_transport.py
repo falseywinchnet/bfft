@@ -16,6 +16,8 @@ import math
 
 import numpy as np
 
+from bfft.vision import fast_march_first_label_native
+
 from .metric_reduced_stencil import metric_reduced_superbase
 
 try:
@@ -780,6 +782,31 @@ def continuous_first_partition_prepared(
     ) / seed_values[nonzero]
     seed_values -= source_reach[seed_labels]
     seed_pixels = seed_y * width + seed_x
+    native = fast_march_first_label_native(
+        np.ascontiguousarray(seed_pixels, dtype=np.int32),
+        np.ascontiguousarray(seed_values, dtype=np.float64),
+        np.ascontiguousarray(seed_labels, dtype=np.int32),
+        np.ascontiguousarray(seed_gradient_x, dtype=np.float64),
+        np.ascontiguousarray(seed_gradient_y, dtype=np.float64),
+        prepared,
+    )
+    if native is None:
+        native = _fast_march_first_label(
+            np.ascontiguousarray(seed_pixels, dtype=np.int32),
+            np.ascontiguousarray(seed_values, dtype=np.float64),
+            np.ascontiguousarray(seed_labels, dtype=np.int32),
+            np.ascontiguousarray(seed_gradient_x, dtype=np.float64),
+            np.ascontiguousarray(seed_gradient_y, dtype=np.float64),
+            prepared["directions"],
+            prepared["direction_costs"],
+            prepared["direction_valid"],
+            prepared["cardinal_costs"],
+            prepared["inverse_offset"],
+            prepared["inverse_receiver"],
+            prepared["mxx"],
+            prepared["mxy"],
+            prepared["myy"],
+        )
     (
         owner,
         distance,
@@ -793,22 +820,7 @@ def continuous_first_partition_prepared(
         acceptance_order,
         push_count,
         maximum_heap_size,
-    ) = _fast_march_first_label(
-        np.ascontiguousarray(seed_pixels, dtype=np.int32),
-        np.ascontiguousarray(seed_values, dtype=np.float64),
-        np.ascontiguousarray(seed_labels, dtype=np.int32),
-        np.ascontiguousarray(seed_gradient_x, dtype=np.float64),
-        np.ascontiguousarray(seed_gradient_y, dtype=np.float64),
-        prepared["directions"],
-        prepared["direction_costs"],
-        prepared["direction_valid"],
-        prepared["cardinal_costs"],
-        prepared["inverse_offset"],
-        prepared["inverse_receiver"],
-        prepared["mxx"],
-        prepared["mxy"],
-        prepared["myy"],
-    )
+    ) = native
     return {
         "labels": owner.reshape(height, width),
         "distance": distance.reshape(height, width),

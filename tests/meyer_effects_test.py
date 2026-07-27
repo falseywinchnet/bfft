@@ -104,6 +104,17 @@ def main():
         print(f"   channels identity [{space:9s}]: {e:.3e}",
               "ok" if e < 1e-12 else "FAIL")
         ok &= e < 1e-12
+    serial = meyer_channels(
+        img, space="oklab_lc", passes=8, threads=1, solver=1)
+    parallel = meyer_channels(
+        img, space="oklab_lc", passes=8, threads=4, solver=1)
+    e = float(max(
+        np.max(np.abs(serial.cartoon - parallel.cartoon)),
+        np.max(np.abs(serial.texture - parallel.texture)),
+    ))
+    print(f"   concurrent channel split agreement: {e:.3e}",
+          "ok" if e == 0.0 else "FAIL")
+    ok &= e == 0.0
 
     # 4. gain linearity: out(gc, gt) - out(1, 1) == (gc-1)*u + (gt-1)*v
     a = recompose(f, u, v, 1.7, 0.3)

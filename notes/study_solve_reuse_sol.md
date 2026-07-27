@@ -14,7 +14,7 @@ one-shot exact solution of a **local Gauss-Newton quadratic**. Backtracking and
 outer steps are not paying for a weak sparse solver; they are globalizing a
 nonlinear model and crossing ownership chambers.
 
-An exact SPD Cholesky sideport is still worthwhile for the affine field normal
+An exact pivoted-direct sideport is still worthwhile for the affine field normal
 systems. Eigen's `SimplicialLDLT` reduced factor-plus-three-RHS time by about
 1.4x at both measured sizes. A custom 3x3 block LDLT is structurally
 well-matched, but its likely gain is a constant factor on a 6--12 ms
@@ -137,11 +137,11 @@ kernels without a fill penalty on these measured graphs.
 This is positive evidence for a compact BSR/block solver, but not evidence
 that it removes Newton iteration. Seven million dense-block flops are small;
 ordering, symbolic bookkeeping, indirect memory access, and assembly dominate.
-Eigen's fresh exact Cholesky already captures much of the available gain.
+Eigen's fresh exact direct factor already captures much of the available gain.
 
 ## Elimination and multilevel alternatives
 
-- Sparse Cholesky/LDLT with AMD or nested dissection is the correct exact
+- Sparse LDLT with AMD or nested dissection is the correct exact
   one-shot formulation. Nested dissection may improve scaling for much larger
   planar graphs, but it only changes ordering/fill; it does not solve the
   nonlinear reach objective in one shot.
@@ -160,7 +160,7 @@ Eigen's fresh exact Cholesky already captures much of the available gain.
    Use a fresh AMD-ordered `SimplicialLDLT` (portable) or CHOLMOD (optional
    high-performance backend). This is exact and one-shot for each measured
    affine field.
-2. Keep the reach solve as a scalar sparse Cholesky. Do not build AMG,
+2. Keep the reach solve as a scalar sparse direct factor. Do not build AMG,
    Woodbury machinery, or a custom multilevel solver for it.
 3. Do not claim that the graph-Newton line search can be replaced by an exact
    one-shot update. Removing its evaluations changes the algorithm to an

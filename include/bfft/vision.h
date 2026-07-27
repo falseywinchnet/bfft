@@ -148,6 +148,103 @@ bfft_status bfft_vision_support_normal_apply(
     const double* basis_x, const double* basis_y, const double* coefficient,
     double* pixel_scratch, double* output);
 
+/*
+   Correct tensor determinant density when a locally anisotropic support turns
+   too far to remain straight.
+
+   precision_* and base_measure are height*width float32 images. base_measure
+   is normalized and base_implied_cells restores its physical population
+   scale. All four image outputs are overwritten. corrected_measure is
+   normalized; corrected_implied_cells receives its physical integral.
+
+   The doubled-angle director derivative is sign invariant. The correction is
+
+       sqrt(max(1, kappa*a*a/(2*b))),
+
+   where a and b are the tangent and normal tensor semi-spans.
+*/
+bfft_status bfft_vision_curvature_population_f32(
+    size_t height, size_t width,
+    const float* precision_xx, const float* precision_xy,
+    const float* precision_yy, const float* base_measure,
+    double base_implied_cells,
+    float* corrected_measure, float* director_curvature,
+    float* sagitta_ratio, float* population_factor,
+    double* corrected_implied_cells);
+
+/*
+   Diffuse an HxWxC field through four undirected conductance families.
+
+   horizontal is Hx(W-1), vertical is (H-1)xW, and each diagonal family is
+   (H-1)x(W-1). output and scratch each contain H*W*C doubles and must not
+   overlap one another or the inputs. Every step is a convex gather, preserving
+   constants and the partition-of-unity sum exactly up to roundoff.
+*/
+bfft_status bfft_vision_soft_support_diffuse(
+    size_t height, size_t width, size_t channels, size_t passes,
+    double coupling, const double* field,
+    const double* horizontal, const double* vertical,
+    const double* diagonal_down_right, const double* diagonal_down_left,
+    double* output, double* scratch);
+
+/*
+   Exact one-label anisotropic fast march used by the continuous transport
+   partition. The receiver-local stencil has six cyclic directions and four
+   cardinal connectivity edges. inverse_offset/inverse_receiver is the CSR
+   inverse incidence from an accepted vertex to every receiver using it.
+
+   The implementation keeps one decrease-key heap entry per pixel. Outputs
+   preserve the reference walk's owner, distance, covector, source covector,
+   parent simplex, and acceptance-order bookkeeping.
+
+   directions is HxWx6x2, direction_costs and direction_valid are HxWx6,
+   cardinal_costs is HxWx4, and metric components are HxW. accepted_count,
+   push_count, and maximum_heap_size are scalar outputs.
+*/
+bfft_status bfft_vision_fast_march_first_label(
+    size_t height, size_t width, size_t seed_count,
+    const int32_t* seed_pixel, const double* seed_value,
+    const int32_t* seed_label, const double* seed_gradient_x,
+    const double* seed_gradient_y, const int32_t* directions,
+    const double* direction_costs, const uint8_t* direction_valid,
+    const double* cardinal_costs, const int64_t* inverse_offset,
+    size_t inverse_count, const int32_t* inverse_receiver,
+    const double* mxx, const double* mxy, const double* myy,
+    int32_t* owner, double* distance, double* gradient_x,
+    double* gradient_y, double* source_gradient_x,
+    double* source_gradient_y, int32_t* parent_first,
+    int32_t* parent_second, double* parent_fraction,
+    int32_t* acceptance_order, size_t* accepted_count,
+    size_t* push_count, size_t* maximum_heap_size);
+
+/*
+   Fit one independent conditioned affine RGB/Lab field per hard region.
+
+   The local basis is [1, (x-cx)/r, (y-cy)/r], with normalized image
+   coordinates, so the intercept is orthogonal to the two slopes. The native
+   kernel fuses the repeated label reductions and uses the same closed-form
+   2x2 slope solve as the reference.
+
+   labels is HxW, target and reconstruction are HxWx3, basis is HxWx3,
+   count/radius have cell_count entries, and centroid is cell_count x 2.
+*/
+bfft_status bfft_vision_hard_affine_fit(
+    size_t height, size_t width, size_t cell_count,
+    const int32_t* labels, const double* target,
+    double* basis, double* count, double* radius,
+    double* centroid, double* reconstruction);
+
+/*
+   Refit an already measured per-pixel hard-region basis. This is the fused
+   reduction/solve/render kernel used after appending residual ridge columns.
+   The first three basis columns receive the same affine regularization as
+   bfft_vision_hard_affine_fit; later columns receive 2e-5 * cell mass.
+*/
+bfft_status bfft_vision_hard_basis_refit(
+    size_t pixel_count, size_t cell_count, size_t basis_width,
+    const int32_t* labels, const double* design, const double* target,
+    const double* count, const double* radius, double* reconstruction);
+
 #ifdef __cplusplus
 }
 #endif

@@ -18,9 +18,20 @@ import math
 import numpy as np
 from scipy import sparse
 
-from ._core import (_check, _vision_assemble_normal, _vision_render_affine,
-                    _vision_scan_residual_ridges, _vision_support_forward,
-                    _vision_support_normal_apply, _vision_support_transpose)
+from ._core import (
+    _check,
+    _vision_assemble_normal,
+    _vision_curvature_population_f32,
+    _vision_fast_march_first_label,
+    _vision_hard_affine_fit,
+    _vision_hard_basis_refit,
+    _vision_render_affine,
+    _vision_scan_residual_ridges,
+    _vision_soft_support_diffuse,
+    _vision_support_forward,
+    _vision_support_normal_apply,
+    _vision_support_transpose,
+)
 
 try:
     from numba import njit
@@ -47,6 +58,293 @@ def vision_backend():
         _vision_scan_residual_ridges is not None)
     return "native C++" if native else (
         "Numba" if njit is not None else "portable Python")
+
+
+def curvature_population_native(
+    precision_xx,
+    precision_xy,
+    precision_yy,
+    base_measure,
+    base_implied_cells,
+):
+    """Return the native curvature-density fields, or ``None`` if unavailable."""
+    if _vision_curvature_population_f32 is None:
+        return None
+    qxx = np.ascontiguousarray(precision_xx, dtype=np.float32)
+    qxy = np.ascontiguousarray(precision_xy, dtype=np.float32)
+    qyy = np.ascontiguousarray(precision_yy, dtype=np.float32)
+    measure = np.ascontiguousarray(base_measure, dtype=np.float32)
+    if not (qxx.ndim == 2 and qxx.shape == qxy.shape == qyy.shape ==
+            measure.shape):
+        raise ValueError("curvature population fields must share one 2-D shape")
+    height, width = qxx.shape
+    corrected = np.empty_like(measure)
+    curvature = np.empty_like(measure)
+    sagitta = np.empty_like(measure)
+    factor = np.empty_like(measure)
+    implied = ctypes.c_double()
+    _check(_vision_curvature_population_f32(
+        height,
+        width,
+        _ptr(qxx, ctypes.c_float),
+        _ptr(qxy, ctypes.c_float),
+        _ptr(qyy, ctypes.c_float),
+        _ptr(measure, ctypes.c_float),
+        float(base_implied_cells),
+        _ptr(corrected, ctypes.c_float),
+        _ptr(curvature, ctypes.c_float),
+        _ptr(sagitta, ctypes.c_float),
+        _ptr(factor, ctypes.c_float),
+        ctypes.byref(implied),
+    ), "bfft_vision_curvature_population_f32")
+    return {
+        "measure": corrected,
+        "director_curvature": curvature,
+        "curvature_sagitta_ratio": sagitta,
+        "curvature_population_factor": factor,
+        "implied_cells": float(implied.value),
+    }
+
+
+def soft_support_diffuse_native(field, conductance, passes, coupling=0.8):
+    """Return the native soft field, or ``None`` for an older library."""
+    if _vision_soft_support_diffuse is None:
+        return None
+    value = np.ascontiguousarray(field, dtype=np.float64)
+    scalar = value.ndim == 2
+    if scalar:
+        value = np.ascontiguousarray(value[..., None])
+    if value.ndim != 3:
+        raise ValueError("soft-support field must have shape HxW or HxWxC")
+    height, width, channels = value.shape
+    expected = {
+        "horizontal": (height, width - 1),
+        "vertical": (height - 1, width),
+        "diagonal_down_right": (height - 1, width - 1),
+        "diagonal_down_left": (height - 1, width - 1),
+    }
+    edge = {}
+    for name, shape in expected.items():
+        edge[name] = np.ascontiguousarray(
+            conductance[name], dtype=np.float64)
+        if edge[name].shape != shape:
+            raise ValueError(
+                f"{name} conductance has shape {edge[name].shape}, "
+                f"expected {shape}")
+    output = np.empty_like(value)
+    scratch = np.empty_like(value)
+    _check(_vision_soft_support_diffuse(
+        height,
+        width,
+        channels,
+        max(int(passes), 0),
+        float(coupling),
+        _ptr(value, ctypes.c_double),
+        _ptr(edge["horizontal"], ctypes.c_double),
+        _ptr(edge["vertical"], ctypes.c_double),
+        _ptr(edge["diagonal_down_right"], ctypes.c_double),
+        _ptr(edge["diagonal_down_left"], ctypes.c_double),
+        _ptr(output, ctypes.c_double),
+        _ptr(scratch, ctypes.c_double),
+    ), "bfft_vision_soft_support_diffuse")
+    return output[..., 0] if scalar else output
+
+
+def fast_march_first_label_native(
+    seed_pixel,
+    seed_value,
+    seed_label,
+    seed_gradient_x,
+    seed_gradient_y,
+    prepared,
+):
+    """Run the exact native continuous first-arrival walk when available.
+
+    ``None`` means the installed shared library predates this kernel. The
+    returned tuple has the same contract as the Numba reference, including
+    acceptance order and heap diagnostics.
+    """
+    if _vision_fast_march_first_label is None:
+        return None
+    seeds = np.ascontiguousarray(seed_pixel, dtype=np.int32)
+    values = np.ascontiguousarray(seed_value, dtype=np.float64)
+    labels = np.ascontiguousarray(seed_label, dtype=np.int32)
+    seed_gx = np.ascontiguousarray(seed_gradient_x, dtype=np.float64)
+    seed_gy = np.ascontiguousarray(seed_gradient_y, dtype=np.float64)
+    if not (
+        seeds.ndim == values.ndim == labels.ndim ==
+        seed_gx.ndim == seed_gy.ndim == 1
+    ):
+        raise ValueError("fast-march seed arrays must be one-dimensional")
+    seed_count = seeds.size
+    if not (
+        values.size == labels.size == seed_gx.size ==
+        seed_gy.size == seed_count
+    ):
+        raise ValueError("fast-march seed arrays must have equal length")
+
+    mxx = np.ascontiguousarray(prepared["mxx"], dtype=np.float64)
+    mxy = np.ascontiguousarray(prepared["mxy"], dtype=np.float64)
+    myy = np.ascontiguousarray(prepared["myy"], dtype=np.float64)
+    if not (mxx.ndim == 2 and mxx.shape == mxy.shape == myy.shape):
+        raise ValueError("fast-march metric fields must share one 2-D shape")
+    height, width = mxx.shape
+    pixels = height * width
+    directions = np.ascontiguousarray(
+        prepared["directions"], dtype=np.int32)
+    direction_costs = np.ascontiguousarray(
+        prepared["direction_costs"], dtype=np.float64)
+    direction_valid = np.ascontiguousarray(
+        prepared["direction_valid"], dtype=np.uint8)
+    cardinal_costs = np.ascontiguousarray(
+        prepared["cardinal_costs"], dtype=np.float64)
+    inverse_offset = np.ascontiguousarray(
+        prepared["inverse_offset"], dtype=np.int64)
+    inverse_receiver = np.ascontiguousarray(
+        prepared["inverse_receiver"], dtype=np.int32)
+    if directions.shape != (height, width, 6, 2):
+        raise ValueError("fast-march directions must have shape HxWx6x2")
+    if (
+        direction_costs.shape != (height, width, 6) or
+        direction_valid.shape != (height, width, 6) or
+        cardinal_costs.shape != (height, width, 4)
+    ):
+        raise ValueError("fast-march stencil costs have invalid shapes")
+    if inverse_offset.shape != (pixels + 1,):
+        raise ValueError("fast-march inverse offset has invalid shape")
+
+    owner = np.empty(pixels, dtype=np.int32)
+    distance = np.empty(pixels, dtype=np.float64)
+    gradient_x = np.empty(pixels, dtype=np.float64)
+    gradient_y = np.empty(pixels, dtype=np.float64)
+    source_gradient_x = np.empty(pixels, dtype=np.float64)
+    source_gradient_y = np.empty(pixels, dtype=np.float64)
+    parent_first = np.empty(pixels, dtype=np.int32)
+    parent_second = np.empty(pixels, dtype=np.int32)
+    parent_fraction = np.empty(pixels, dtype=np.float64)
+    acceptance_order = np.empty(pixels, dtype=np.int32)
+    accepted_count = ctypes.c_size_t()
+    push_count = ctypes.c_size_t()
+    maximum_heap_size = ctypes.c_size_t()
+    _check(_vision_fast_march_first_label(
+        height,
+        width,
+        seed_count,
+        _ptr(seeds, ctypes.c_int32),
+        _ptr(values, ctypes.c_double),
+        _ptr(labels, ctypes.c_int32),
+        _ptr(seed_gx, ctypes.c_double),
+        _ptr(seed_gy, ctypes.c_double),
+        _ptr(directions, ctypes.c_int32),
+        _ptr(direction_costs, ctypes.c_double),
+        _ptr(direction_valid, ctypes.c_uint8),
+        _ptr(cardinal_costs, ctypes.c_double),
+        _ptr(inverse_offset, ctypes.c_int64),
+        inverse_receiver.size,
+        _ptr(inverse_receiver, ctypes.c_int32),
+        _ptr(mxx, ctypes.c_double),
+        _ptr(mxy, ctypes.c_double),
+        _ptr(myy, ctypes.c_double),
+        _ptr(owner, ctypes.c_int32),
+        _ptr(distance, ctypes.c_double),
+        _ptr(gradient_x, ctypes.c_double),
+        _ptr(gradient_y, ctypes.c_double),
+        _ptr(source_gradient_x, ctypes.c_double),
+        _ptr(source_gradient_y, ctypes.c_double),
+        _ptr(parent_first, ctypes.c_int32),
+        _ptr(parent_second, ctypes.c_int32),
+        _ptr(parent_fraction, ctypes.c_double),
+        _ptr(acceptance_order, ctypes.c_int32),
+        ctypes.byref(accepted_count),
+        ctypes.byref(push_count),
+        ctypes.byref(maximum_heap_size),
+    ), "bfft_vision_fast_march_first_label")
+    return (
+        owner,
+        distance,
+        gradient_x,
+        gradient_y,
+        source_gradient_x,
+        source_gradient_y,
+        parent_first,
+        parent_second,
+        parent_fraction,
+        acceptance_order[:accepted_count.value],
+        int(push_count.value),
+        int(maximum_heap_size.value),
+    )
+
+
+def hard_affine_fit_native(labels, target):
+    """Fit conditioned affine hard regions natively, or return ``None``."""
+    if _vision_hard_affine_fit is None:
+        return None
+    label_field = np.ascontiguousarray(labels, dtype=np.int32)
+    target_field = np.ascontiguousarray(target, dtype=np.float64)
+    if label_field.ndim != 2:
+        raise ValueError("hard-affine labels must be a two-dimensional field")
+    height, width = label_field.shape
+    if target_field.shape != (height, width, 3):
+        raise ValueError("hard-affine target must have shape HxWx3")
+    if label_field.size == 0 or np.min(label_field) < 0:
+        raise ValueError("hard-affine labels must be nonnegative")
+    cells = int(np.max(label_field)) + 1
+    basis = np.empty((height, width, 3), dtype=np.float64)
+    count = np.empty(cells, dtype=np.float64)
+    radius = np.empty(cells, dtype=np.float64)
+    centroid = np.empty((cells, 2), dtype=np.float64)
+    reconstruction = np.empty_like(target_field)
+    _check(_vision_hard_affine_fit(
+        height,
+        width,
+        cells,
+        _ptr(label_field, ctypes.c_int32),
+        _ptr(target_field, ctypes.c_double),
+        _ptr(basis, ctypes.c_double),
+        _ptr(count, ctypes.c_double),
+        _ptr(radius, ctypes.c_double),
+        _ptr(centroid, ctypes.c_double),
+        _ptr(reconstruction, ctypes.c_double),
+    ), "bfft_vision_hard_affine_fit")
+    return (
+        label_field.ravel(),
+        basis.reshape(-1, 3),
+        count,
+        radius,
+        centroid,
+        reconstruction,
+    )
+
+
+def hard_basis_refit_native(labels, design, target, count, radius):
+    """Refit an augmented hard-region basis natively, or return ``None``."""
+    if _vision_hard_basis_refit is None:
+        return None
+    label_vector = np.ascontiguousarray(labels, dtype=np.int32).ravel()
+    design_matrix = np.ascontiguousarray(design, dtype=np.float64)
+    target_matrix = np.ascontiguousarray(target, dtype=np.float64).reshape(
+        -1, 3)
+    count_vector = np.ascontiguousarray(count, dtype=np.float64)
+    radius_vector = np.ascontiguousarray(radius, dtype=np.float64)
+    if design_matrix.ndim != 2 or design_matrix.shape[0] != label_vector.size:
+        raise ValueError("hard-basis design must have one row per label")
+    if target_matrix.shape[0] != label_vector.size:
+        raise ValueError("hard-basis target must have one row per label")
+    if count_vector.ndim != 1 or radius_vector.shape != count_vector.shape:
+        raise ValueError("hard-basis count and radius must be equal vectors")
+    reconstruction = np.empty_like(target_matrix)
+    _check(_vision_hard_basis_refit(
+        label_vector.size,
+        count_vector.size,
+        design_matrix.shape[1],
+        _ptr(label_vector, ctypes.c_int32),
+        _ptr(design_matrix, ctypes.c_double),
+        _ptr(target_matrix, ctypes.c_double),
+        _ptr(count_vector, ctypes.c_double),
+        _ptr(radius_vector, ctypes.c_double),
+        _ptr(reconstruction, ctypes.c_double),
+    ), "bfft_vision_hard_basis_refit")
+    return reconstruction
 
 
 def compact_support_operators(rows, sites, weight, basis_x, basis_y,

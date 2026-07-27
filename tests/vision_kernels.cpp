@@ -319,11 +319,139 @@ void test_residual_ridge_scan() {
     require(best_bin == bin_reference, "ridge threshold differs");
 }
 
+void test_curvature_population_constant_director() {
+    constexpr std::size_t height = 9;
+    constexpr std::size_t width = 11;
+    constexpr std::size_t pixels = height * width;
+    constexpr double implied = 17.0;
+    std::vector<float> qxx(pixels, 1.0f);
+    std::vector<float> qxy(pixels, 0.0f);
+    std::vector<float> qyy(pixels, 0.04f);
+    std::vector<float> measure(
+        pixels, 1.0f / static_cast<float>(pixels));
+    std::vector<float> corrected(pixels);
+    std::vector<float> curvature(pixels);
+    std::vector<float> sagitta(pixels);
+    std::vector<float> factor(pixels);
+    double corrected_implied = 0.0;
+    require(bfft_vision_curvature_population_f32(
+                height, width, qxx.data(), qxy.data(), qyy.data(),
+                measure.data(), implied, corrected.data(), curvature.data(),
+                sagitta.data(), factor.data(), &corrected_implied) == BFFT_OK,
+            "curvature population returned an error");
+    double sum = 0.0;
+    for (std::size_t p = 0; p < pixels; ++p) {
+        require(curvature[p] == 0.0f, "constant director has curvature");
+        require(sagitta[p] == 0.0f, "constant director has sagitta");
+        require(factor[p] == 1.0f, "constant director changed population");
+        sum += corrected[p];
+    }
+    require(std::abs(sum - 1.0) < 1e-6,
+            "curvature population did not normalize measure");
+    require(std::abs(corrected_implied - implied) < 1e-6,
+            "constant director changed implied population");
+}
+
+void test_soft_support_preserves_partition() {
+    constexpr std::size_t height = 8;
+    constexpr std::size_t width = 10;
+    constexpr std::size_t channels = 2;
+    constexpr std::size_t pixels = height * width;
+    std::vector<double> field(pixels * channels, 0.0);
+    for (std::size_t y = 0; y < height; ++y) {
+        for (std::size_t x = 0; x < width; ++x) {
+            const std::size_t p = y * width + x;
+            field[p * channels + (x < width / 2 ? 0 : 1)] = 1.0;
+        }
+    }
+    std::vector<double> horizontal(height * (width - 1), 0.7);
+    std::vector<double> vertical((height - 1) * width, 0.9);
+    std::vector<double> diagonal((height - 1) * (width - 1), 0.25);
+    std::vector<double> output(field.size());
+    std::vector<double> scratch(field.size());
+    require(bfft_vision_soft_support_diffuse(
+                height, width, channels, 7, 0.8, field.data(),
+                horizontal.data(), vertical.data(), diagonal.data(),
+                diagonal.data(), output.data(), scratch.data()) == BFFT_OK,
+            "soft support returned an error");
+    for (std::size_t p = 0; p < pixels; ++p) {
+        require(output[p * channels] >= 0.0 &&
+                    output[p * channels] <= 1.0 &&
+                    output[p * channels + 1] >= 0.0 &&
+                    output[p * channels + 1] <= 1.0,
+                "soft support left the convex hull");
+        require(std::abs(
+                    output[p * channels] +
+                    output[p * channels + 1] - 1.0) < 2e-15,
+                "soft support lost partition sum");
+    }
+}
+
+void test_hard_region_fit_kernels() {
+    constexpr std::size_t height = 6;
+    constexpr std::size_t width = 8;
+    constexpr std::size_t pixels = height * width;
+    constexpr std::size_t cells = 2;
+    std::vector<std::int32_t> labels(pixels);
+    std::vector<double> target(pixels * 3);
+    const double colour[2][3] = {
+        {0.2, 0.4, 0.6},
+        {0.7, 0.3, 0.1},
+    };
+    for (std::size_t y = 0; y < height; ++y) {
+        for (std::size_t x = 0; x < width; ++x) {
+            const std::size_t pixel = y * width + x;
+            const std::size_t cell = x < width / 2 ? 0 : 1;
+            labels[pixel] = static_cast<std::int32_t>(cell);
+            for (std::size_t channel = 0; channel < 3; ++channel) {
+                target[pixel * 3 + channel] = colour[cell][channel];
+            }
+        }
+    }
+    std::vector<double> basis(pixels * 3);
+    std::vector<double> count(cells);
+    std::vector<double> radius(cells);
+    std::vector<double> centroid(cells * 2);
+    std::vector<double> affine(pixels * 3);
+    require(bfft_vision_hard_affine_fit(
+                height, width, cells, labels.data(), target.data(),
+                basis.data(), count.data(), radius.data(), centroid.data(),
+                affine.data()) == BFFT_OK,
+            "hard affine fit returned an error");
+    for (std::size_t pixel = 0; pixel < pixels; ++pixel) {
+        const std::size_t cell = static_cast<std::size_t>(labels[pixel]);
+        for (std::size_t channel = 0; channel < 3; ++channel) {
+            const double expected =
+                colour[cell][channel] / (1.0 + 1e-7);
+            require(std::abs(affine[pixel * 3 + channel] - expected) < 1e-13,
+                    "hard affine constant-region reconstruction differs");
+        }
+    }
+
+    std::vector<double> augmented(pixels * 4);
+    for (std::size_t pixel = 0; pixel < pixels; ++pixel) {
+        augmented[pixel * 4] = basis[pixel * 3];
+        augmented[pixel * 4 + 1] = basis[pixel * 3 + 1];
+        augmented[pixel * 4 + 2] = basis[pixel * 3 + 2];
+        augmented[pixel * 4 + 3] = 0.0;
+    }
+    std::vector<double> refit(pixels * 3);
+    require(bfft_vision_hard_basis_refit(
+                pixels, cells, 4, labels.data(), augmented.data(),
+                target.data(), count.data(), radius.data(), refit.data()) ==
+                BFFT_OK,
+            "hard augmented-basis refit returned an error");
+    require_close(refit, affine, 2e-15, "hard augmented-basis refit");
+}
+
 }  // namespace
 
 int main() {
     test_normal_assembly_and_render();
     test_residual_ridge_scan();
+    test_curvature_population_constant_director();
+    test_soft_support_preserves_partition();
+    test_hard_region_fit_kernels();
     std::cout << "vision kernels: scalar-reference agreement passed\n";
     return 0;
 }

@@ -35,8 +35,12 @@ therefore remains full resolution without making population inference scale
 with the source pixel count.
 
 The default allocator reads the complete population directly from the frozen
-BFFT support density, `sqrt(det(Q)) / pi`. A deterministic local phase turns
-that continuous density into germs in parallel. There is no initial
+BFFT support density, `sqrt(det(Q)) / pi`. Its curvature correction shortens a
+predicted long tangent support when the measured director turns far enough to
+leave that support's normal width; this is what gives a smooth closed contour
+more cells without treating every straight edge as texture. A deterministic
+local phase turns the resulting continuous density into germs in parallel.
+There is no initial
 barycenter, candidate list, top-k, requested population, offspring, deletion,
 or all-pairs cell operation. The safety ceiling only catches a misspecified
 support measure.
@@ -55,11 +59,20 @@ The right-panel diagnostics expose the representation itself:
 - **Site IDs + boundaries** shows every literal hard transport domain in a
   stable ID colour, matching the diagnostic needed to judge SAD-like panels
   and slivers.
+- **Soft Site IDs** evolves those hard indicators through the BFFT-gated
+  anisotropic heat cover. It is the literal co-owned partition-of-unity view;
+  **Soft Site IDs + hard boundaries** shows which geometric boundaries have
+  become functionally invisible without deleting their sites.
+- **Hard reconstruction** A/Bs the pre-cover fit against **Reconstruction**.
+  Soft support is adopted only when RGB plus the single-stage cartoon and
+  texture objective improves.
 - **Reconstruction + cell boundaries** exposes seams independently of PSNR,
   while **Reconstruction + sites** shows where the transported centers landed.
 - **Transport support measure**, **Metric anisotropy**, **Cartoon**,
   **Texture**, and **Transport glass** expose the one frozen geometry that
-  controls density, direction, and shape.
+  controls density, direction, and shape. **Curvature population factor**
+  shows exactly where a locally straight anisotropic support expires, while
+  **Soft support conductance** shows which boundaries may share territory.
 - **Residual energy**, **Reverse residual flow**, and **Refinement demand**
   expose the target-to-reconstruction failure, its predecessor-tree return,
   and the combined local bifurcation signal.
@@ -78,6 +91,8 @@ The model and performance rationale are documented in
 [`TRANSPORT_CELL_MATH.md`](TRANSPORT_CELL_MATH.md),
 [`TRANSPORT_VORONOI.md`](TRANSPORT_VORONOI.md), and
 [`../notes/FLOW_VOLUME_NUCLEATION.md`](../notes/FLOW_VOLUME_NUCLEATION.md),
+[`../notes/CURVATURE_AND_SOFT_SUPPORT.md`](../notes/CURVATURE_AND_SOFT_SUPPORT.md),
+[`../notes/NATIVE_SEGMENTING_VIEWER_ROUND.md`](../notes/NATIVE_SEGMENTING_VIEWER_ROUND.md),
 [`../notes/HD_SEGMENTATION_PERFORMANCE.md`](../notes/HD_SEGMENTATION_PERFORMANCE.md).
 `segmenting_veroni_app.py` is the current implementation module.
 `transport_measure_app.py` retains the canopy/static-overlap research

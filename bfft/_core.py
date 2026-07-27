@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import ctypes
 import ctypes.util
+import concurrent.futures
 import glob
 import os
 import sys
@@ -97,12 +98,14 @@ def _decl_optional(name, restype, argtypes):
 
 
 _dbl_p = ctypes.POINTER(ctypes.c_double)
+_flt_p = ctypes.POINTER(ctypes.c_float)
 _cplx_p = ctypes.POINTER(_Complex)
 _void_p = ctypes.c_void_p
 _plan_p = ctypes.c_void_p
 _i32_p = ctypes.POINTER(ctypes.c_int32)
 _i64_p = ctypes.POINTER(ctypes.c_int64)
 _u8_p = ctypes.POINTER(ctypes.c_uint8)
+_size_p = ctypes.POINTER(ctypes.c_size_t)
 
 # --- standard real FFT (bfft.h) ---
 _bfft_plan_create = _decl("bfft_plan_create", ctypes.c_int,
@@ -196,6 +199,34 @@ _vision_support_normal_apply = _decl_optional(
     "bfft_vision_support_normal_apply", ctypes.c_int,
     [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
      _i32_p, _i32_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p])
+_vision_curvature_population_f32 = _decl_optional(
+    "bfft_vision_curvature_population_f32", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t,
+     _flt_p, _flt_p, _flt_p, _flt_p, ctypes.c_double,
+     _flt_p, _flt_p, _flt_p, _flt_p, _dbl_p])
+_vision_soft_support_diffuse = _decl_optional(
+    "bfft_vision_soft_support_diffuse", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     ctypes.c_double, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p,
+     _dbl_p, _dbl_p])
+_vision_fast_march_first_label = _decl_optional(
+    "bfft_vision_fast_march_first_label", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _i32_p, _dbl_p, _i32_p, _dbl_p, _dbl_p,
+     _i32_p, _dbl_p, _u8_p, _dbl_p,
+     _i64_p, ctypes.c_size_t, _i32_p,
+     _dbl_p, _dbl_p, _dbl_p,
+     _i32_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p,
+     _i32_p, _i32_p, _dbl_p, _i32_p,
+     _size_p, _size_p, _size_p])
+_vision_hard_affine_fit = _decl_optional(
+    "bfft_vision_hard_affine_fit", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _i32_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p])
+_vision_hard_basis_refit = _decl_optional(
+    "bfft_vision_hard_basis_refit", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _i32_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p])
 
 _OK = 0
 
@@ -868,7 +899,9 @@ class MeyerPlan:
 
 
 _MEYER_PLANS = {}
+_MEYER_BATCH_PLANS = {}
 _MEYER_LOCK = threading.Lock()
+_MEYER_BATCH_EXECUTOR = concurrent.futures.ThreadPoolExecutor(max_workers=4)
 
 
 def _meyer_padded(image, lam, mu, passes, rung_sweeps, rung_tol, threads,
@@ -930,6 +963,99 @@ def meyer_split(image, lam=0.05, mu=40.0, passes=64, threads=0, solver=0):
         image, lam, mu, passes, 1, 0.0, threads, solver)
     outs = plan.split(padded)
     return tuple(o[top:top + h, left:left + w].copy() for o in outs)
+
+
+def meyer_split_batch(images, lam=0.05, mu=40.0, passes=64, threads=0,
+                      solver=0):
+    """Split equal-shaped planes concurrently with independent native plans.
+
+    A Meyer plan owns mutable scratch, so ordinary cached scalar plans cannot
+    safely be called from two Python workers. This routine caches one plan per
+    plane and divides the requested native worker lanes among them. The native
+    engine is bit-identical across thread counts.
+    """
+    planes = np.ascontiguousarray(images, dtype=np.float64)
+    if planes.ndim != 3 or planes.shape[0] < 1:
+        raise ValueError("meyer_split_batch expects KxHxW planes")
+    channels, h, w = planes.shape
+    lanes = int(threads)
+    if channels == 1 or lanes < channels:
+        split = [
+            meyer_split(
+                planes[channel], lam=lam, mu=mu, passes=passes,
+                threads=threads, solver=solver)
+            for channel in range(channels)
+        ]
+        return (
+            np.stack([item[0] for item in split]),
+            np.stack([item[1] for item in split]),
+        )
+    if h < 2 or w < 2:
+        raise ValueError("meyer expects images at least 2x2")
+
+    def next_pow2(value):
+        result = 8
+        while result < value:
+            result *= 2
+        return result
+
+    solver = int(solver)
+    if solver not in (0, 1, 2):
+        raise ValueError("solver must be 0, 1, or 2")
+    nh, nw = next_pow2(h), next_pow2(w)
+    if solver == 0:
+        ph, pw = nh, nw
+    elif h * nw <= nh * w:
+        ph, pw = h, nw
+    else:
+        ph, pw = nh, w
+    top, left = (ph - h) // 2, (pw - w) // 2
+    if (ph, pw) == (h, w):
+        padded = planes
+    else:
+        padded = np.stack([
+            np.pad(
+                planes[channel],
+                ((top, ph - h - top), (left, pw - w - left)),
+                mode="symmetric",
+            )
+            for channel in range(channels)
+        ])
+    plan_threads = max(lanes // channels, 1)
+    key = (
+        channels, ph, pw, float(lam), float(mu), int(passes),
+        plan_threads, solver,
+    )
+    with _MEYER_LOCK:
+        entry = _MEYER_BATCH_PLANS.get(key)
+        if entry is None:
+            plans = [
+                MeyerPlan(
+                    (ph, pw), lam=lam, mu=mu, passes=passes,
+                    rung_sweeps=1, rung_tol=0.0,
+                    threads=plan_threads, solver=solver,
+                )
+                for _ in range(channels)
+            ]
+            entry = (plans, threading.Lock())
+            _MEYER_BATCH_PLANS[key] = entry
+    plans, use_lock = entry
+    with use_lock:
+        futures = [
+            _MEYER_BATCH_EXECUTOR.submit(plans[channel].split, padded[channel])
+            for channel in range(channels)
+        ]
+        split = [future.result() for future in futures]
+    return (
+        np.stack([
+            item[0][top:top + h, left:left + w]
+            for item in split
+        ]),
+        np.stack([
+            item[1][top:top + h, left:left + w]
+            for item in split
+        ]),
+    )
 
 
 def meyer_trace(image, lam=0.05, mu=40.0, passes=64, threads=0, solver=0):

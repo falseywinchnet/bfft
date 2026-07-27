@@ -16,7 +16,10 @@ from .anisotropic_edge_cost import (
     build_residual_pressure_costs,
 )
 from .frozen_meyer_geometry import build_frozen_geometry, restrict_geometry
-from .density_population import emit_density_population
+from .density_population import (
+    curvature_limited_geometry,
+    emit_density_population,
+)
 from .continuous_eikonal_transport import (
     continuous_first_partition_prepared,
     prepare_continuous_metric,
@@ -25,6 +28,10 @@ from .first_arrival_site_force import safe_characteristic_site_step
 from .hard_region_fit import fit_regions
 from .residual_pressure_transport import relax_residual_pressure
 from .reverse_residual_flow import reverse_residual_refill
+from .soft_support_diffusion import (
+    build_soft_support_conductance,
+    diffuse_soft_support,
+)
 from .two_label_transport import (
     hard_partition_with_forest,
     local_hard_partition_with_forest,
@@ -49,6 +56,10 @@ class SegmentingConfig:
     minimum_region_pixels: int = 12
     maximum_rounds: int = 24
     safety_cells: int = 32768
+    curvature_limited_density: bool = False
+    soft_support_passes: int = 0
+    soft_support_coupling: float = 0.8
+    soft_support_colour_percentile: float = 60.0
     branch_bins: int = 64
     characteristic_passes: int = 1
     characteristic_trust_fraction: float = 0.5
@@ -79,6 +90,8 @@ def build_segmenting_representation(
         flow_sweeps=config.flow_sweeps,
         threads=config.threads,
     )
+    if config.curvature_limited_density:
+        geometry = curvature_limited_geometry(geometry)
     geometry_ms = 1000.0 * (time.perf_counter() - started)
 
     allocation_geometry = restrict_geometry(
@@ -322,6 +335,41 @@ def build_segmenting_representation(
             affine_record=record,
             affine=reconstruction_lab,
         )
+    hard_record = record
+    soft_support = None
+    if int(config.soft_support_passes) > 0:
+        conductance = build_soft_support_conductance(
+            geometry,
+            rgb,
+            metric_strength=config.metric_strength,
+            colour_percentile=config.soft_support_colour_percentile,
+        )
+        proposal_rgb = np.clip(diffuse_soft_support(
+            record["rgb"],
+            conductance,
+            passes=config.soft_support_passes,
+            coupling=config.soft_support_coupling,
+        ), 0.0, 1.0)
+        proposal_record = objective.evaluate(proposal_rgb)
+        # SingleStageDecompositionObjective evaluates scores only.  The
+        # established fit/score contract also carries the rendered RGB field,
+        # which every viewer and downstream refinement reads from ``record``.
+        proposal_record["rgb"] = proposal_rgb
+        accepted = (
+            proposal_record["objective"] <= hard_record["objective"])
+        if accepted:
+            record = proposal_record
+            reconstruction_lab = srgb_to_lab(proposal_rgb)
+        else:
+            objective.evaluate(hard_record["rgb"])
+        soft_support = {
+            "conductance": conductance,
+            "passes": int(config.soft_support_passes),
+            "coupling": float(config.soft_support_coupling),
+            "hard_record": hard_record,
+            "proposal_record": proposal_record,
+            "accepted": accepted,
+        }
     fit_ms = 1000.0 * (time.perf_counter() - fit_started)
     return {
         "geometry": geometry,
@@ -332,6 +380,7 @@ def build_segmenting_representation(
         "record": record,
         "reconstruction_lab": reconstruction_lab,
         "ridge": ridge,
+        "soft_support": soft_support,
         "refinements": refinements,
         "pressure": pressure,
         "characteristic": characteristic,

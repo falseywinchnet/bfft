@@ -18,6 +18,10 @@ for directory in (ROOT, ROOT / "viewer", ROOT / "experiments"):
 import dearpygui.dearpygui as dpg  # noqa: E402
 import gallery  # noqa: E402
 from port_needed import SegmentingConfig, build_segmenting_representation  # noqa: E402
+from port_needed.soft_support_diffusion import (  # noqa: E402
+    conductance_field,
+    diffuse_soft_support,
+)
 from transport_voronoi import _fit_rgb  # noqa: E402
 
 PANEL = 650
@@ -25,12 +29,17 @@ SOURCE = "segmenting_source_texture"
 RESULT = "segmenting_result_texture"
 VIEWS = (
     "Reconstruction",
+    "Hard reconstruction",
     "Reconstruction + cell boundaries",
     "Site IDs",
+    "Soft Site IDs",
+    "Soft Site IDs + hard boundaries",
     "Site IDs + boundaries",
     "Cell boundaries",
     "Reconstruction + sites",
     "Transport support measure",
+    "Curvature population factor",
+    "Soft support conductance",
     "Cartoon",
     "Texture",
     "Transport glass",
@@ -197,11 +206,35 @@ def current_view():
     reconstruction = result["record"]["rgb"]
     if view == "Reconstruction":
         return reconstruction
+    if view == "Hard reconstruction":
+        soft = result["soft_support"]
+        return (
+            reconstruction
+            if soft is None
+            else soft["hard_record"]["rgb"]
+        )
     if view == "Reconstruction + cell boundaries":
         return overlay_boundaries(reconstruction, labels)
     ids = site_ids(labels)
     if view == "Site IDs":
         return ids
+    if view in ("Soft Site IDs", "Soft Site IDs + hard boundaries"):
+        soft = result["soft_support"]
+        if soft is None:
+            return ids
+        if "site_ids" not in soft:
+            soft["site_ids"] = np.clip(diffuse_soft_support(
+                ids,
+                soft["conductance"],
+                passes=soft["passes"],
+                coupling=soft["coupling"],
+            ), 0.0, 1.0)
+        softened = soft["site_ids"]
+        return (
+            overlay_boundaries(softened, labels)
+            if view == "Soft Site IDs + hard boundaries"
+            else softened
+        )
     if view == "Site IDs + boundaries":
         return overlay_boundaries(ids, labels)
     if view == "Cell boundaries":
@@ -210,6 +243,16 @@ def current_view():
         return overlay_sites(reconstruction, result["centers"])
     if view == "Transport support measure":
         return colour_map(geometry["measure"])
+    if view == "Curvature population factor":
+        return colour_map(geometry.get(
+            "curvature_population_factor",
+            np.ones(labels.shape, dtype=np.float64),
+        ))
+    if view == "Soft support conductance":
+        soft = result["soft_support"]
+        if soft is None:
+            return np.zeros_like(reconstruction)
+        return colour_map(conductance_field(soft["conductance"]))
     if view == "Cartoon":
         return colour_map(geometry["cartoon"])
     if view == "Texture":
@@ -323,6 +366,20 @@ def refresh():
                 f"{100.0 * last['relative_action_change']:+.2f}%, "
                 f"front {last['front_updates_after'] / pixels:.2f} "
                 f"updates/px")
+    if result["soft_support"] is not None:
+        soft = result["soft_support"]
+        hard = soft["hard_record"]
+        refinement_text += (
+            f" | soft support {'accepted' if soft['accepted'] else 'rejected'}"
+            f", objective {hard['objective']:.3e} → "
+            f"{soft['proposal_record']['objective']:.3e}"
+        )
+    if "straight_implied_cells" in result["geometry"]:
+        refinement_text += (
+            f" | curvature population "
+            f"{result['geometry']['straight_implied_cells']:.0f} → "
+            f"{result['geometry']['implied_cells']:.0f}"
+        )
     dpg.set_value(
         "segmenting_metrics",
         f"{len(result['centers'])} cells | PSNR {record['psnr']:.2f} dB | "
@@ -363,6 +420,8 @@ def build_worker():
             minimum_region_pixels=int(dpg.get_value("segmenting_min_pixels")),
             maximum_rounds=int(dpg.get_value("segmenting_rounds")),
             safety_cells=int(dpg.get_value("segmenting_safety")),
+            curvature_limited_density=bool(
+                dpg.get_value("segmenting_curvature_density")),
             branch_bins=int(dpg.get_value("segmenting_bins")),
             characteristic_passes=(
                 int(dpg.get_value("segmenting_characteristic_passes"))
@@ -386,6 +445,12 @@ def build_worker():
             pressure_position_relaxation=float(dpg.get_value("segmenting_pressure_position")),
             pressure_capacity_relaxation=float(dpg.get_value("segmenting_pressure_capacity")),
             pressure_metric_gain=float(dpg.get_value("segmenting_pressure_metric")),
+            soft_support_passes=int(
+                dpg.get_value("segmenting_soft_passes")),
+            soft_support_coupling=float(
+                dpg.get_value("segmenting_soft_coupling")),
+            soft_support_colour_percentile=float(
+                dpg.get_value("segmenting_soft_colour")),
             queue="bucket" if dpg.get_value("segmenting_queue") == "Exact monotone bucket" else "heap")
         result = build_segmenting_representation(rgb, config)
         with S.lock:
@@ -487,9 +552,35 @@ def build_ui(labels, default_label):
                     default_value="Exact monotone bucket",
                     label="topology refresh", tag="segmenting_queue", width=260)
                 slider("segmenting_ridges", "measured ridge finish", 1, 0, 2)
+                dpg.add_checkbox(
+                    label="curvature-limited anisotropic population",
+                    tag="segmenting_curvature_density",
+                    default_value=True)
             dpg.add_text(
                 "Every unstable support refills at once. No top-k, candidate "
                 "scan, deletion, or population target.")
+        with dpg.collapsing_header(
+            label="Owner-free soft support",
+            default_open=True,
+        ):
+            with dpg.group(horizontal=True):
+                slider(
+                    "segmenting_soft_passes",
+                    "support diffusion passes", 16, 0, 64)
+                slider(
+                    "segmenting_soft_coupling",
+                    "boundary sharing", 0.8, 0.0, 2.0,
+                    floating=True)
+                slider(
+                    "segmenting_soft_colour",
+                    "target agreement percentile", 60.0, 0.0, 100.0,
+                    floating=True)
+            dpg.add_text(
+                "Hard arrival initializes an anisotropic heat cover. BFFT "
+                "transport and unchanged-target agreement gate each exchange; "
+                "constants are preserved, so the implicit site weights remain "
+                "a normalized partition of unity. Unsupported boundaries fade "
+                "without deleting a site.")
         with dpg.collapsing_header(label="Geometry evolution", default_open=True):
             dpg.add_combo(
                 (

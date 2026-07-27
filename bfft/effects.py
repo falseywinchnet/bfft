@@ -37,7 +37,7 @@ rescaling affine, unit gains reproduce the input to roundoff.
 
 import numpy as np
 
-from ._core import meyer_split, rof
+from ._core import meyer_split, meyer_split_batch, rof
 
 __all__ = ["srgb_to_lab", "lab_to_srgb", "shade", "recompose",
            "meyer_channels", "recompose_channels", "ChannelSplit",
@@ -265,11 +265,24 @@ def meyer_channels(image, space="oklab_lc", lam=0.05, mu=40.0, passes=64,
 
     cartoon = np.empty_like(work)
     texture = np.empty_like(work)
-    for i in range(k):
-        u, v = meyer_split(work[..., i], lam=lam, mu=mu, passes=passes,
-                           threads=threads, solver=solver)
-        cartoon[..., i] = u
-        texture[..., i] = v
+    if k > 1 and int(threads) >= k:
+        cartoon_planes, texture_planes = meyer_split_batch(
+            np.moveaxis(work, 2, 0),
+            lam=lam,
+            mu=mu,
+            passes=passes,
+            threads=threads,
+            solver=solver,
+        )
+        cartoon[...] = np.moveaxis(cartoon_planes, 0, 2)
+        texture[...] = np.moveaxis(texture_planes, 0, 2)
+    else:
+        for i in range(k):
+            u, v = meyer_split(
+                work[..., i], lam=lam, mu=mu, passes=passes,
+                threads=threads, solver=solver)
+            cartoon[..., i] = u
+            texture[..., i] = v
     carried["_was_gray"] = was_gray
     return ChannelSplit(space, names, work, cartoon, texture, offset, scale,
                         carried)
