@@ -69,7 +69,7 @@ class State:
         self.status = "Choose an image, then build the representation."
         self.lock = threading.Lock()
         self.buffers = {}
-        self.display_shape = (8, 8)
+        self.texture_shapes = {}
 
 
 S = State()
@@ -85,41 +85,65 @@ def _rgb(image):
     return np.clip(a, 0.0, 1.0)
 
 
-def alloc_textures(height, width):
-    S.display_shape = (height, width)
-    for tag in (SOURCE, RESULT):
-        if dpg.does_item_exist(tag):
-            dpg.delete_item(tag)
-        if dpg.does_alias_exist(tag):
-            dpg.remove_alias(tag)
-        S.buffers[tag] = np.ones(height * width * 4, dtype=np.float32)
+def alloc_texture(tag, height, width):
+    if dpg.does_item_exist(tag):
+        dpg.delete_item(tag)
+    if dpg.does_alias_exist(tag):
+        dpg.remove_alias(tag)
+    S.buffers[tag] = np.ones(height * width * 4, dtype=np.float32)
+    S.texture_shapes[tag] = (height, width)
     with dpg.texture_registry():
-        for tag in (SOURCE, RESULT):
-            dpg.add_raw_texture(
-                width, height, S.buffers[tag], tag=tag,
-                format=dpg.mvFormat_Float_rgba)
+        dpg.add_raw_texture(
+            width, height, S.buffers[tag], tag=tag,
+            format=dpg.mvFormat_Float_rgba)
     scale = PANEL / max(height, width)
-    for item, tag in (
-        ("segmenting_source_image", SOURCE),
-        ("segmenting_result_image", RESULT),
+    item = (
+        "segmenting_source_image"
+        if tag == SOURCE
+        else "segmenting_result_image"
+    )
+    if dpg.does_item_exist(item):
+        dpg.configure_item(
+            item, texture_tag=tag,
+            width=max(1, int(width * scale)),
+            height=max(1, int(height * scale)))
+
+
+def alloc_textures(height, width):
+    for tag in (SOURCE, RESULT):
+        alloc_texture(tag, height, width)
+
+
+def rgba_buffer(image, buffer=None):
+    """Pack an RGB display image, resizing stale storage when necessary."""
+    height, width = image.shape[:2]
+    required = height * width * 4
+    if (
+        buffer is None
+        or buffer.dtype != np.float32
+        or buffer.size != required
     ):
-        if dpg.does_item_exist(item):
-            dpg.configure_item(
-                item, texture_tag=tag,
-                width=max(1, int(width * scale)),
-                height=max(1, int(height * scale)))
+        buffer = np.empty(required, dtype=np.float32)
+    pixels = buffer.reshape(height, width, 4)
+    pixels[..., :3] = image
+    pixels[..., 3] = 1.0
+    return buffer
 
 
 def push_texture(tag, image):
     image = _rgb(image).astype(np.float32)
     if max(image.shape[:2]) > PANEL:
         image = _fit_rgb(image, PANEL).astype(np.float32)
-    if image.shape[:2] != S.display_shape:
-        alloc_textures(*image.shape[:2])
-    buffer = S.buffers[tag]
-    buffer[0::4], buffer[1::4], buffer[2::4] = (
-        image[..., 0].ravel(), image[..., 1].ravel(), image[..., 2].ravel())
-    buffer[3::4] = 1.0
+    shape = image.shape[:2]
+    expected = shape[0] * shape[1] * 4
+    if (
+        S.texture_shapes.get(tag) != shape
+        or tag not in S.buffers
+        or S.buffers[tag].size != expected
+    ):
+        alloc_texture(tag, *shape)
+    buffer = rgba_buffer(image, S.buffers.get(tag))
+    S.buffers[tag] = buffer
     dpg.set_value(tag, buffer)
 
 
@@ -194,9 +218,13 @@ def overlay_motion(image, initial_centers, final_centers):
     return out
 
 
-def current_view():
-    with S.lock:
-        rgb, result = S.rgb, S.result
+_CURRENT = object()
+
+
+def current_view(rgb=_CURRENT, result=_CURRENT):
+    if rgb is _CURRENT or result is _CURRENT:
+        with S.lock:
+            rgb, result = S.rgb, S.result
     if rgb is None:
         return np.full((8, 8, 3), 0.08)
     view = dpg.get_value("segmenting_view")
@@ -334,7 +362,7 @@ def refresh():
     if rgb is None:
         return
     push_texture(SOURCE, rgb)
-    push_texture(RESULT, current_view())
+    push_texture(RESULT, current_view(rgb, result))
     if result is None:
         dpg.set_value("segmenting_metrics", "Not built yet.")
         return
