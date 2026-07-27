@@ -25,6 +25,7 @@ from .continuous_eikonal_transport import (
     prepare_continuous_metric,
 )
 from .first_arrival_site_force import safe_characteristic_site_step
+from .fractional_interface_coverage import fractional_interface_coverage
 from .hard_region_fit import fit_regions
 from .residual_pressure_transport import relax_residual_pressure
 from .reverse_residual_flow import reverse_residual_refill
@@ -57,6 +58,9 @@ class SegmentingConfig:
     maximum_rounds: int = 24
     safety_cells: int = 32768
     curvature_limited_density: bool = False
+    null_evidence_strength: float = 0.5
+    boundary_jump_strength: float = 24.0
+    interface_coverage_strength: float = 0.4
     soft_support_passes: int = 0
     soft_support_coupling: float = 0.8
     soft_support_colour_percentile: float = 60.0
@@ -88,6 +92,7 @@ def build_segmenting_representation(
         rgb,
         tgfd_sweeps=config.tgfd_sweeps,
         flow_sweeps=config.flow_sweeps,
+        null_evidence_strength=config.null_evidence_strength,
         threads=config.threads,
     )
     if config.curvature_limited_density:
@@ -112,7 +117,11 @@ def build_segmenting_representation(
             safety_cells=config.safety_cells,
         )
         allocation_metric = prepare_continuous_metric(
-            *_metric_fields(allocation_geometry, config.metric_strength))
+            *_metric_fields(
+                allocation_geometry,
+                config.metric_strength,
+                config.boundary_jump_strength,
+            ))
         partition = continuous_first_partition_prepared(
             centers, allocation_metric)
         characteristic_trace = []
@@ -153,9 +162,14 @@ def build_segmenting_representation(
         # population and relaxes its germs; it never classifies final pixels.
         if allocation_geometry["measure"].shape == geometry["measure"].shape:
             forest = partition
+            full_metric = allocation_metric
         else:
             full_metric = prepare_continuous_metric(
-                *_metric_fields(geometry, config.metric_strength))
+                *_metric_fields(
+                    geometry,
+                    config.metric_strength,
+                    config.boundary_jump_strength,
+                ))
             forest = continuous_first_partition_prepared(
                 centers, full_metric)
         labels = forest["labels"]
@@ -336,6 +350,33 @@ def build_segmenting_representation(
             affine=reconstruction_lab,
         )
     hard_record = record
+    interface_coverage = None
+    if (
+        causal_allocation
+        and float(config.interface_coverage_strength) > 0.0
+    ):
+        proposal_rgb, interface_coverage = fractional_interface_coverage(
+            record["rgb"],
+            labels,
+            forest["distance"],
+            full_metric["cardinal_costs"],
+            geometry["boundary_confidence"],
+            strength=config.interface_coverage_strength,
+        )
+        proposal_record = objective.evaluate(proposal_rgb)
+        proposal_record["rgb"] = proposal_rgb
+        interface_coverage["hard_record"] = hard_record
+        interface_coverage["proposal_record"] = proposal_record
+        interface_coverage["accepted"] = (
+            proposal_record["objective"] <= hard_record["objective"])
+        if interface_coverage["accepted"]:
+            record = proposal_record
+            reconstruction_lab = srgb_to_lab(proposal_rgb)
+        else:
+            objective.evaluate(hard_record["rgb"])
+    # Soft support, when enabled, is judged against the best accepted hard
+    # readout including its geometric interface coverage.
+    hard_record = record
     soft_support = None
     if int(config.soft_support_passes) > 0:
         conductance = build_soft_support_conductance(
@@ -381,6 +422,7 @@ def build_segmenting_representation(
         "reconstruction_lab": reconstruction_lab,
         "ridge": ridge,
         "soft_support": soft_support,
+        "interface_coverage": interface_coverage,
         "refinements": refinements,
         "pressure": pressure,
         "characteristic": characteristic,

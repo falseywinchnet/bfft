@@ -159,6 +159,7 @@ def single_decomposition_geometry(
     flow_sweeps: int = 24,
     max_support_fraction: float = 0.18,
     coherent_tangent_fraction: float = 0.02,
+    null_evidence_strength: float = 0.0,
     threads: int = 4,
     meyer_solver: int = 1,
 ) -> dict[str, np.ndarray | float]:
@@ -228,18 +229,61 @@ def single_decomposition_geometry(
     # source.  This makes a flat white/black region broad again while keeping
     # the BFFT direction at its actual boundary.
     source_activity = np.zeros_like(cartoon, dtype=np.float64)
+    persistent_activity = np.zeros_like(cartoon, dtype=np.float64)
+    local_null_activity = np.zeros_like(cartoon, dtype=np.float64)
+    boundary_jxx = np.zeros_like(cartoon, dtype=np.float64)
+    boundary_jxy = np.zeros_like(cartoon, dtype=np.float64)
+    boundary_jyy = np.zeros_like(cartoon, dtype=np.float64)
     for channel in np.moveaxis(lab, -1, 0):
         local = channel - ndi.gaussian_filter(
             channel, 1.5, mode="reflect")
         gx = ndi.sobel(channel, axis=1, mode="reflect") / 8.0
         gy = ndi.sobel(channel, axis=0, mode="reflect") / 8.0
+        smooth = ndi.gaussian_filter(channel, 1.0, mode="reflect")
+        smooth_gx = ndi.sobel(smooth, axis=1, mode="reflect") / 8.0
+        smooth_gy = ndi.sobel(smooth, axis=0, mode="reflect") / 8.0
         source_activity += local * local + 0.35 * (gx * gx + gy * gy)
+        persistent_activity += np.maximum(
+            gx * smooth_gx + gy * smooth_gy, 0.0)
+        local_null_activity += (
+            (gx - smooth_gx) * (gx - smooth_gx)
+            + (gy - smooth_gy) * (gy - smooth_gy)
+        )
+        boundary_jxx += gx * gx
+        boundary_jxy += gx * gy
+        boundary_jyy += gy * gy
     source_activity = ndi.gaussian_filter(
         source_activity, 1.0, mode="reflect")
+    persistent_activity = ndi.gaussian_filter(
+        persistent_activity, 1.0, mode="reflect")
+    local_null_activity = ndi.gaussian_filter(
+        local_null_activity, 1.0, mode="reflect")
     source_scale = max(
         float(np.percentile(source_activity, 99.5)), 1e-20)
-    source_reliability = source_activity / (
+    amplitude_reliability = source_activity / (
         source_activity + 1e-5 * source_scale)
+    # Cross-scale gradient agreement is positive evidence that local
+    # variation belongs to a persistent structure rather than the finest
+    # unresolved carrier.  The disagreement energy is a local null model.
+    # Unlike a candidate/delete policy this is a simultaneous scalar field:
+    # unsupported sky noise simply commands less population everywhere.
+    evidence_floor = max(
+        1e-3 * source_scale,
+        (1.0 / 255.0) ** 2,
+    )
+    null_confidence = persistent_activity / (
+        persistent_activity + local_null_activity + evidence_floor)
+    null_strength = float(np.clip(null_evidence_strength, 0.0, 1.0))
+    # Only weak evidence is eligible for null suppression.  Strong texture
+    # remains population-bearing even when it is fine or locally isotropic;
+    # this distinction is what keeps grass while relaxing smooth camera sky.
+    weak_evidence = evidence_floor / (
+        source_activity + evidence_floor)
+    null_attenuation = (
+        1.0
+        - null_strength * weak_evidence * (1.0 - null_confidence)
+    )
+    source_reliability = amplitude_reliability * null_attenuation
     reliability = transport_reliability * source_reliability
     denominator = energy + 1e-5 * scale
     qxx = reliability * jxx / denominator
@@ -287,6 +331,36 @@ def single_decomposition_geometry(
     measure = np.sqrt(determinant) / math.pi
     implied_cells = float(np.sum(measure))
     measure /= max(implied_cells, 1e-30)
+
+    # Preserve the unchanged target's discontinuity tensor separately from
+    # the amplitude-normalized support metric.  Population uses Q above;
+    # transport may optionally charge this tensor as a finite jump action.
+    # Keeping the two fields separate prevents a strong boundary from
+    # manufacturing extra cells merely because it should block crossing.
+    boundary_jxx = ndi.gaussian_filter(
+        boundary_jxx, 0.65, mode="reflect")
+    boundary_jxy = ndi.gaussian_filter(
+        boundary_jxy, 0.65, mode="reflect")
+    boundary_jyy = ndi.gaussian_filter(
+        boundary_jyy, 0.65, mode="reflect")
+    boundary_energy = boundary_jxx + boundary_jyy
+    boundary_scale = max(
+        2e-2 * float(np.percentile(boundary_energy, 99.0)),
+        1e-2,
+    )
+    # Crossing discipline is reserved for an actual photometric jump.  The
+    # fourth-order onset leaves ordinary texture in the BFFT metric while a
+    # black/white or similarly decisive interface rapidly approaches one.
+    boundary_confidence = (
+        boundary_energy / (boundary_energy + boundary_scale)
+    ) ** 4
+    safe_boundary_energy = np.maximum(boundary_energy, 1e-30)
+    boundary_xx = (
+        boundary_confidence * boundary_jxx / safe_boundary_energy)
+    boundary_xy = (
+        boundary_confidence * boundary_jxy / safe_boundary_energy)
+    boundary_yy = (
+        boundary_confidence * boundary_jyy / safe_boundary_energy)
     return {
         "measure": measure,
         "precision_xx": qxx,
@@ -297,6 +371,17 @@ def single_decomposition_geometry(
         "glass": glass,
         "energy": energy,
         "source_reliability": source_reliability,
+        "amplitude_reliability": amplitude_reliability,
+        "persistent_activity": persistent_activity,
+        "local_null_activity": local_null_activity,
+        "null_confidence": null_confidence,
+        "null_attenuation": null_attenuation,
+        "null_evidence_strength": null_strength,
+        "boundary_xx": boundary_xx,
+        "boundary_xy": boundary_xy,
+        "boundary_yy": boundary_yy,
+        "boundary_confidence": boundary_confidence,
+        "boundary_scale": boundary_scale,
         "implied_cells": implied_cells,
         "max_support_px": max_length,
         "metric_trace_p90": max(

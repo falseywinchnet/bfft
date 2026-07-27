@@ -40,6 +40,7 @@ def primitive_directions(radius: int) -> np.ndarray:
 def _metric_fields(
     geometry: dict,
     metric_strength: float,
+    boundary_jump_strength: float = 0.0,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     qxx = np.asarray(geometry["precision_xx"], dtype=np.float64)
     qxy = np.asarray(geometry["precision_xy"], dtype=np.float64)
@@ -53,11 +54,23 @@ def _metric_fields(
         max(float(metric_strength), 0.0)
         * float(geometry["max_support_px"]) ** 2
     )
-    return (
-        1.0 + strength * qxx / scale,
-        strength * qxy / scale,
-        1.0 + strength * qyy / scale,
-    )
+    mxx = 1.0 + strength * qxx / scale
+    mxy = strength * qxy / scale
+    myy = 1.0 + strength * qyy / scale
+    jump = max(float(boundary_jump_strength), 0.0)
+    if jump > 0.0 and "boundary_xx" in geometry:
+        # ``jump`` is the maximum additional crossing action rather than a
+        # metric coefficient, hence the square.  The normalized tensor is
+        # rank one at a clean interface: motion across the normal becomes
+        # expensive while travel along the same contour remains free.
+        jump_squared = jump * jump
+        mxx = mxx + jump_squared * np.asarray(
+            geometry["boundary_xx"], dtype=np.float64)
+        mxy = mxy + jump_squared * np.asarray(
+            geometry["boundary_xy"], dtype=np.float64)
+        myy = myy + jump_squared * np.asarray(
+            geometry["boundary_yy"], dtype=np.float64)
+    return mxx, mxy, myy
 
 
 def build_wide_edge_costs(

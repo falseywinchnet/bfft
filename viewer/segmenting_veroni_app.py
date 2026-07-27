@@ -38,6 +38,9 @@ VIEWS = (
     "Cell boundaries",
     "Reconstruction + sites",
     "Transport support measure",
+    "Null evidence confidence",
+    "Boundary jump confidence",
+    "Interface coverage",
     "Curvature population factor",
     "Soft support conductance",
     "Cartoon",
@@ -235,6 +238,9 @@ def current_view(rgb=_CURRENT, result=_CURRENT):
     if view == "Reconstruction":
         return reconstruction
     if view == "Hard reconstruction":
+        interface = result.get("interface_coverage")
+        if interface is not None:
+            return interface["hard_record"]["rgb"]
         soft = result["soft_support"]
         return (
             reconstruction
@@ -271,6 +277,15 @@ def current_view(rgb=_CURRENT, result=_CURRENT):
         return overlay_sites(reconstruction, result["centers"])
     if view == "Transport support measure":
         return colour_map(geometry["measure"])
+    if view == "Null evidence confidence":
+        return colour_map(geometry["null_confidence"])
+    if view == "Boundary jump confidence":
+        return colour_map(geometry["boundary_confidence"])
+    if view == "Interface coverage":
+        interface = result.get("interface_coverage")
+        if interface is None:
+            return np.zeros_like(reconstruction)
+        return colour_map(interface["coverage"])
     if view == "Curvature population factor":
         return colour_map(geometry.get(
             "curvature_population_factor",
@@ -402,6 +417,20 @@ def refresh():
             f", objective {hard['objective']:.3e} → "
             f"{soft['proposal_record']['objective']:.3e}"
         )
+    if result.get("interface_coverage") is not None:
+        interface = result["interface_coverage"]
+        hard = interface["hard_record"]
+        refinement_text += (
+            f" | interface "
+            f"{'accepted' if interface['accepted'] else 'rejected'}, "
+            f"{interface['covered_pixels']} covered px, objective "
+            f"{hard['objective']:.3e} → "
+            f"{interface['proposal_record']['objective']:.3e}"
+        )
+    refinement_text += (
+        f" | null retention "
+        f"{100.0 * float(np.mean(result['geometry']['null_attenuation'])):.1f}%"
+    )
     if "straight_implied_cells" in result["geometry"]:
         refinement_text += (
             f" | curvature population "
@@ -450,6 +479,12 @@ def build_worker():
             safety_cells=int(dpg.get_value("segmenting_safety")),
             curvature_limited_density=bool(
                 dpg.get_value("segmenting_curvature_density")),
+            null_evidence_strength=float(
+                dpg.get_value("segmenting_null_evidence")),
+            boundary_jump_strength=float(
+                dpg.get_value("segmenting_boundary_jump")),
+            interface_coverage_strength=float(
+                dpg.get_value("segmenting_interface_coverage")),
             branch_bins=int(dpg.get_value("segmenting_bins")),
             characteristic_passes=(
                 int(dpg.get_value("segmenting_characteristic_passes"))
@@ -584,14 +619,29 @@ def build_ui(labels, default_label):
                     label="curvature-limited anisotropic population",
                     tag="segmenting_curvature_density",
                     default_value=True)
+            with dpg.group(horizontal=True):
+                slider(
+                    "segmenting_null_evidence",
+                    "weak-detail null confidence", 0.5, 0.0, 1.0,
+                    floating=True)
+                slider(
+                    "segmenting_boundary_jump",
+                    "true-edge crossing action", 24.0, 0.0, 48.0,
+                    floating=True)
             dpg.add_text(
-                "Every unstable support refills at once. No top-k, candidate "
-                "scan, deletion, or population target.")
+                "Cross-scale agreement suppresses unsupported weak detail; "
+                "decisive target jumps add finite action only across their "
+                "normal. No top-k, candidate scan, deletion, or population "
+                "target.")
         with dpg.collapsing_header(
             label="Owner-free soft support",
             default_open=True,
         ):
             with dpg.group(horizontal=True):
+                slider(
+                    "segmenting_interface_coverage",
+                    "fractional interface coverage", 0.4, 0.0, 1.0,
+                    floating=True)
                 slider(
                     "segmenting_soft_passes",
                     "support diffusion passes", 16, 0, 64)

@@ -40,6 +40,9 @@ from port_needed.first_arrival_site_force import (
 from port_needed.first_arrival_weight_newton import (
     equalize_first_arrival_mass,
 )
+from port_needed.fractional_interface_coverage import (
+    fractional_interface_coverage,
+)
 from port_needed.metric_reduced_stencil import (
     metric_reduced_superbase,
     validate_obtuse_superbase,
@@ -57,6 +60,7 @@ from port_needed.two_label_transport import (
     local_hard_partition_with_forest,
     walk_two_labels,
 )
+from port_needed.wide_stencil_transport import _metric_fields
 
 
 def _fixture(height=32, width=40):
@@ -75,6 +79,64 @@ def test_frozen_geometry_uses_one_target_decomposition():
     assert geometry["target_decompositions"] == 1.0
     assert geometry["measure"].dtype == np.float32
     assert np.isclose(np.sum(geometry["measure"]), 1.0, atol=1e-6)
+    assert np.isfinite(geometry["null_confidence"]).all()
+    assert np.isfinite(geometry["boundary_confidence"]).all()
+
+
+def test_null_evidence_only_attenuates_weak_unpersistent_activity():
+    geometry = build_frozen_geometry(
+        _fixture(),
+        tgfd_sweeps=4,
+        flow_sweeps=4,
+        threads=1,
+        null_evidence_strength=1.0,
+    )
+    attenuation = geometry["null_attenuation"]
+    assert np.min(attenuation) >= 0.0
+    assert np.max(attenuation) <= 1.0
+    assert float(np.mean(attenuation)) < 0.999
+
+
+def test_boundary_jump_adds_only_normal_crossing_action():
+    one = np.ones((5, 7))
+    zero = np.zeros((5, 7))
+    geometry = {
+        "precision_xx": zero,
+        "precision_xy": zero,
+        "precision_yy": zero,
+        "metric_trace_p90": 1.0,
+        "max_support_px": 1.0,
+        "boundary_xx": one,
+        "boundary_xy": zero,
+        "boundary_yy": zero,
+    }
+    mxx, mxy, myy = _metric_fields(
+        geometry, metric_strength=0.0, boundary_jump_strength=3.0)
+    assert np.allclose(mxx, 10.0)
+    assert np.allclose(mxy, 0.0)
+    assert np.allclose(myy, 1.0)
+
+
+def test_fractional_interface_uses_local_collision_geometry():
+    height, width = 3, 4
+    labels = np.zeros((height, width), dtype=np.int32)
+    labels[:, 2:] = 1
+    reconstruction = np.zeros((height, width, 3))
+    reconstruction[:, 2:] = 1.0
+    distance = np.zeros((height, width))
+    distance[:, 1] = 0.8
+    cardinal = np.ones((height, width, 4))
+    proposal, information = fractional_interface_coverage(
+        reconstruction,
+        labels,
+        distance,
+        cardinal,
+        np.ones((height, width)),
+        strength=1.0,
+    )
+    assert np.allclose(proposal[:, 1], 0.4)
+    assert np.allclose(proposal[:, 2], 1.0)
+    assert information["covered_pixels"] == height
 
 
 def test_monotone_bucket_matches_heap_distances():

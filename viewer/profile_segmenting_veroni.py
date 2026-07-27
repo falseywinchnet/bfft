@@ -59,6 +59,9 @@ def main():
     parser.add_argument("--characteristic-passes", type=int, default=1)
     parser.add_argument("--interface-safety", type=float, default=0.5)
     parser.add_argument("--germ-shell-radius", type=float, default=3.0)
+    parser.add_argument("--null-evidence", type=float, default=0.5)
+    parser.add_argument("--boundary-jump", type=float, default=24.0)
+    parser.add_argument("--interface-coverage", type=float, default=0.4)
     args = parser.parse_args()
 
     image, source = _load(args.image, args.gallery)
@@ -75,6 +78,9 @@ def main():
         characteristic_passes=args.characteristic_passes,
         characteristic_trust_fraction=args.interface_safety,
         characteristic_core_radius=args.germ_shell_radius,
+        null_evidence_strength=args.null_evidence,
+        boundary_jump_strength=args.boundary_jump,
+        interface_coverage_strength=args.interface_coverage,
     )
 
     print(f"source                      {source}")

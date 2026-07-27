@@ -45,6 +45,13 @@ barycenter, candidate list, top-k, requested population, offspring, deletion,
 or all-pairs cell operation. The safety ceiling only catches a misspecified
 support measure.
 
+Weak detail receives an additional local-null test before it commands
+population. Gradients that persist across scale count as positive structural
+evidence; finest-scale disagreement is the local null. Attenuation acts only
+where total evidence is already weak, allowing smooth sky and similar panels
+to command fewer cells without mistaking strong grass or other isotropic
+texture for noise.
+
 Those germs create one continuous, same-label first-arrival partition. Each
 pixel's support is then carried backward through the achieving causal front,
 giving every germ an intrinsic transport force without a runner-up field,
@@ -53,6 +60,15 @@ the germ's distance from its current hard interface. An exact remarch accepts
 the step only when every germ remains alive and the measured transport action
 decreases. One accepted pass is the default; the older residual-pressure and
 hierarchical split paths remain available as explicit research controls.
+
+At a decisive unchanged-target discontinuity, transport also receives a
+finite rank-one jump action across the measured normal. This prevents a
+white-side support from cheaply acquiring a few black-side pixels while
+leaving travel along the contour available. Once fronts collide, their local
+accepted actions determine the subpixel crossing position. Fractional
+interface coverage rasterizes that position before the optional soft cover;
+it does not propagate or rank a second owner. Both readout refinements remain
+guarded by the full RGB/cartoon/texture objective.
 
 The right-panel diagnostics expose the representation itself:
 
@@ -66,6 +82,9 @@ The right-panel diagnostics expose the representation itself:
 - **Hard reconstruction** A/Bs the pre-cover fit against **Reconstruction**.
   Soft support is adopted only when RGB plus the single-stage cartoon and
   texture objective improves.
+- **Null evidence confidence**, **Boundary jump confidence**, and
+  **Interface coverage** expose broad-panel confidence, crossing discipline,
+  and subpixel contour readout separately.
 - **Reconstruction + cell boundaries** exposes seams independently of PSNR,
   while **Reconstruction + sites** shows where the transported centers landed.
 - **Transport support measure**, **Metric anisotropy**, **Cartoon**,
@@ -93,6 +112,7 @@ The model and performance rationale are documented in
 [`../notes/FLOW_VOLUME_NUCLEATION.md`](../notes/FLOW_VOLUME_NUCLEATION.md),
 [`../notes/CURVATURE_AND_SOFT_SUPPORT.md`](../notes/CURVATURE_AND_SOFT_SUPPORT.md),
 [`../notes/NATIVE_SEGMENTING_VIEWER_ROUND.md`](../notes/NATIVE_SEGMENTING_VIEWER_ROUND.md),
+[`../notes/NULL_JUMP_INTERFACE_REFINEMENT.md`](../notes/NULL_JUMP_INTERFACE_REFINEMENT.md),
 [`../notes/HD_SEGMENTATION_PERFORMANCE.md`](../notes/HD_SEGMENTATION_PERFORMANCE.md).
 `segmenting_veroni_app.py` is the current implementation module.
 `transport_measure_app.py` retains the canopy/static-overlap research
