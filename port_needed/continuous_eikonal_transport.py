@@ -31,15 +31,143 @@ def _identity(function):  # pragma: no cover
 _compile = njit(cache=True) if njit is not None else _identity
 
 
+@_compile
+def _ordered_local_directions_kernel(
+    superbase: np.ndarray,
+) -> np.ndarray:
+    """Cyclically order six fixed vectors without angles or a general sort."""
+    height, width = superbase.shape[:2]
+    result = np.empty((height, width, 6, 2), dtype=np.int32)
+    for y in range(height):
+        for x in range(width):
+            for index in range(3):
+                result[y, x, index, 0] = superbase[y, x, index, 0]
+                result[y, x, index, 1] = superbase[y, x, index, 1]
+                result[y, x, index + 3, 0] = -superbase[y, x, index, 0]
+                result[y, x, index + 3, 1] = -superbase[y, x, index, 1]
+
+            # Six elements is a topological constant.  This insertion network
+            # compares half-planes and cross products; it does not perform an
+            # image-scale ordering or evaluate atan2.
+            for index in range(1, 6):
+                key_x = result[y, x, index, 0]
+                key_y = result[y, x, index, 1]
+                key_half = (
+                    0 if key_y < 0 or (key_y == 0 and key_x >= 0) else 1)
+                position = index
+                while position > 0:
+                    other_x = result[y, x, position - 1, 0]
+                    other_y = result[y, x, position - 1, 1]
+                    other_half = (
+                        0
+                        if other_y < 0 or (other_y == 0 and other_x >= 0)
+                        else 1
+                    )
+                    cross = other_x * key_y - other_y * key_x
+                    comes_before = (
+                        key_half < other_half
+                        or (key_half == other_half and cross < 0)
+                    )
+                    if not comes_before:
+                        break
+                    result[y, x, position, 0] = other_x
+                    result[y, x, position, 1] = other_y
+                    position -= 1
+                result[y, x, position, 0] = key_x
+                result[y, x, position, 1] = key_y
+    return result
+
+
 def ordered_local_directions(superbase: np.ndarray) -> np.ndarray:
     """Expand three superbasis vectors to one cyclic six-vector stencil."""
-    signed = np.concatenate((superbase, -superbase), axis=2)
-    angle = np.arctan2(signed[..., 1], signed[..., 0])
-    order = np.argsort(angle, axis=2)
-    return np.ascontiguousarray(
-        np.take_along_axis(signed, order[..., None], axis=2),
-        dtype=np.int32,
-    )
+    return _ordered_local_directions_kernel(
+        np.ascontiguousarray(superbase, dtype=np.int32))
+
+
+@_compile
+def _inverse_incidence_linear(
+    directions: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Build unique vertex-to-receiver CSR incidence in linear time."""
+    height, width = directions.shape[:2]
+    pixels = height * width
+    count = np.zeros(pixels, dtype=np.int64)
+    card_x = (1, -1, 0, 0)
+    card_y = (0, 0, 1, -1)
+
+    # Local reduced directions first, matching the old stable ordering.
+    for receiver in range(pixels):
+        y = receiver // width
+        x = receiver - y * width
+        for index in range(6):
+            nx = x + directions[y, x, index, 0]
+            ny = y + directions[y, x, index, 1]
+            if 0 <= nx < width and 0 <= ny < height:
+                count[ny * width + nx] += 1
+
+    # Cardinal edges are a connectivity floor.  Do not duplicate an
+    # incidence already supplied by the locally reduced stencil.
+    for receiver in range(pixels):
+        y = receiver // width
+        x = receiver - y * width
+        for index in range(4):
+            dx = card_x[index]
+            dy = card_y[index]
+            nx = x + dx
+            ny = y + dy
+            if nx < 0 or nx >= width or ny < 0 or ny >= height:
+                continue
+            duplicate = False
+            for local in range(6):
+                if (
+                    directions[y, x, local, 0] == dx
+                    and directions[y, x, local, 1] == dy
+                ):
+                    duplicate = True
+                    break
+            if not duplicate:
+                count[ny * width + nx] += 1
+
+    offset = np.empty(pixels + 1, dtype=np.int64)
+    offset[0] = 0
+    for pixel in range(pixels):
+        offset[pixel + 1] = offset[pixel] + count[pixel]
+    receiver_index = np.empty(offset[pixels], dtype=np.int32)
+    cursor = offset[:-1].copy()
+
+    for receiver in range(pixels):
+        y = receiver // width
+        x = receiver - y * width
+        for index in range(6):
+            nx = x + directions[y, x, index, 0]
+            ny = y + directions[y, x, index, 1]
+            if 0 <= nx < width and 0 <= ny < height:
+                vertex = ny * width + nx
+                receiver_index[cursor[vertex]] = receiver
+                cursor[vertex] += 1
+    for receiver in range(pixels):
+        y = receiver // width
+        x = receiver - y * width
+        for index in range(4):
+            dx = card_x[index]
+            dy = card_y[index]
+            nx = x + dx
+            ny = y + dy
+            if nx < 0 or nx >= width or ny < 0 or ny >= height:
+                continue
+            duplicate = False
+            for local in range(6):
+                if (
+                    directions[y, x, local, 0] == dx
+                    and directions[y, x, local, 1] == dy
+                ):
+                    duplicate = True
+                    break
+            if not duplicate:
+                vertex = ny * width + nx
+                receiver_index[cursor[vertex]] = receiver
+                cursor[vertex] += 1
+    return offset, receiver_index
 
 
 def inverse_incidence(
@@ -53,34 +181,8 @@ def inverse_incidence(
     strongly connected.  Cardinal edge updates remain valid upper bounds on
     continuum arrival time and do not quantize a successful simplex update.
     """
-    height, width = directions.shape[:2]
-    pixels = height * width
-    local_receiver = np.repeat(np.arange(pixels, dtype=np.int32), 6)
-    cardinal_receiver = np.repeat(np.arange(pixels, dtype=np.int32), 4)
-    receiver = np.concatenate((local_receiver, cardinal_receiver))
-    y = receiver // width
-    x = receiver - y * width
-    cardinal = np.tile(
-        np.array(((1, 0), (-1, 0), (0, 1), (0, -1)), dtype=np.int32),
-        (pixels, 1),
-    )
-    flat_direction = np.concatenate((
-        directions.reshape(-1, 2),
-        cardinal,
-    ))
-    nx = x + flat_direction[:, 0]
-    ny = y + flat_direction[:, 1]
-    valid = (0 <= nx) & (nx < width) & (0 <= ny) & (ny < height)
-    vertex = (ny[valid] * width + nx[valid]).astype(np.int32)
-    receiver = receiver[valid]
-    order = np.argsort(vertex, kind="stable")
-    vertex = vertex[order]
-    receiver = receiver[order]
-    count = np.bincount(vertex, minlength=pixels)
-    offset = np.empty(pixels + 1, dtype=np.int64)
-    offset[0] = 0
-    np.cumsum(count, out=offset[1:])
-    return np.ascontiguousarray(offset), np.ascontiguousarray(receiver)
+    return _inverse_incidence_linear(
+        np.ascontiguousarray(directions, dtype=np.int32))
 
 
 @_compile
@@ -192,36 +294,60 @@ def _simplex_candidate_with_fraction(
     delta_value = second_value - first_value
     delta_x = second_x - first_x
     delta_y = second_y - first_y
-
-    def derivative(t):
-        rx = first_x + t * delta_x
-        ry = first_y + t * delta_y
-        length = _metric_norm(rx, ry, mxx, mxy, myy)
-        return delta_value + (
-            delta_x * (mxx * rx + mxy * ry)
-            + delta_y * (mxy * rx + myy * ry)
-        ) / length
-
-    if derivative(0.0) >= 0.0:
+    quadratic_a = (
+        mxx * delta_x * delta_x
+        + 2.0 * mxy * delta_x * delta_y
+        + myy * delta_y * delta_y
+    )
+    quadratic_b = (
+        delta_x * (mxx * first_x + mxy * first_y)
+        + delta_y * (mxy * first_x + myy * first_y)
+    )
+    quadratic_c = (
+        mxx * first_x * first_x
+        + 2.0 * mxy * first_x * first_y
+        + myy * first_y * first_y
+    )
+    first_length = math.sqrt(max(quadratic_c, 1e-30))
+    derivative_first = delta_value + quadratic_b / first_length
+    if derivative_first >= 0.0:
         return (
-            first_value + _metric_norm(
-                first_x, first_y, mxx, mxy, myy),
+            first_value + first_length,
             0.0,
         )
-    if derivative(1.0) <= 0.0:
+    second_quadratic = (
+        quadratic_a + 2.0 * quadratic_b + quadratic_c)
+    second_length = math.sqrt(max(second_quadratic, 1e-30))
+    derivative_second = (
+        delta_value
+        + (quadratic_a + quadratic_b) / second_length)
+    if derivative_second <= 0.0:
         return (
-            second_value + _metric_norm(
-                second_x, second_y, mxx, mxy, myy),
+            second_value + second_length,
             1.0,
         )
-    low, high = 0.0, 1.0
-    for _ in range(18):
-        middle = 0.5 * (low + high)
-        if derivative(middle) < 0.0:
-            low = middle
-        else:
-            high = middle
-    t = 0.5 * (low + high)
+
+    # The interior Hopf--Lax minimizer is analytic.  With
+    # q(t)=A t^2+2Bt+C and d=second_value-first_value, stationarity is
+    # d+(At+B)/sqrt(q)=0.  Solving it without squaring away the sign gives
+    #
+    #   At+B = -d sqrt((AC-B^2)/(A-d^2)).
+    #
+    # The endpoint derivative test above implies A-d^2 > 0 for an interior
+    # causal update.  This replaces eighteen bisection rounds.
+    area = max(
+        quadratic_a * quadratic_c - quadratic_b * quadratic_b,
+        0.0,
+    )
+    causal = max(
+        quadratic_a - delta_value * delta_value,
+        1e-30,
+    )
+    t = (
+        -quadratic_b
+        - delta_value * math.sqrt(area / causal)
+    ) / max(quadratic_a, 1e-30)
+    t = min(max(t, 0.0), 1.0)
     rx = first_x + t * delta_x
     ry = first_y + t * delta_y
     return (
@@ -274,11 +400,15 @@ def _fast_march_first_label(
     acceptance_order = np.empty(pixels, dtype=np.int32)
     accepted_count = 0
 
-    capacity = pixels + 4 * len(seed_pixel) + 256
-    heap_value = np.empty(capacity, dtype=np.float64)
-    heap_pixel = np.empty(capacity, dtype=np.int32)
-    heap_label = np.empty(capacity, dtype=np.int32)
+    # One tentative value exists per unaccepted pixel, so the priority queue
+    # also needs exactly one entry per pixel.  Decrease-key relocates that
+    # entry in place; stale duplicates and heap growth are impossible.
+    heap_value = np.empty(pixels, dtype=np.float64)
+    heap_pixel = np.empty(pixels, dtype=np.int32)
+    heap_position = np.full(pixels, -1, dtype=np.int32)
     size = 0
+    push_count = 0
+    maximum_heap_size = 0
 
     for seed_index in range(len(seed_pixel)):
         pixel = seed_pixel[seed_index]
@@ -292,11 +422,15 @@ def _fast_march_first_label(
         tentative_gradient_y[pixel] = seed_gradient_y[seed_index]
         tentative_source_gradient_x[pixel] = -seed_gradient_x[seed_index]
         tentative_source_gradient_y[pixel] = -seed_gradient_y[seed_index]
-        heap_value[size] = value
-        heap_pixel[size] = pixel
-        heap_label[size] = label
-        child = size
-        size += 1
+        child = heap_position[pixel]
+        if child < 0:
+            child = size
+            heap_pixel[child] = pixel
+            heap_position[pixel] = child
+            size += 1
+        heap_value[child] = value
+        push_count += 1
+        maximum_heap_size = max(maximum_heap_size, size)
         while child > 0:
             parent = (child - 1) // 2
             if heap_value[parent] <= heap_value[child]:
@@ -305,44 +439,39 @@ def _fast_march_first_label(
                 heap_value[child], heap_value[parent])
             heap_pixel[parent], heap_pixel[child] = (
                 heap_pixel[child], heap_pixel[parent])
-            heap_label[parent], heap_label[child] = (
-                heap_label[child], heap_label[parent])
+            heap_position[heap_pixel[parent]] = parent
+            heap_position[heap_pixel[child]] = child
             child = parent
 
     while size > 0:
         value = heap_value[0]
         pixel = heap_pixel[0]
-        label = heap_label[0]
         size -= 1
-        heap_value[0] = heap_value[size]
-        heap_pixel[0] = heap_pixel[size]
-        heap_label[0] = heap_label[size]
-        node = 0
-        while True:
-            left = 2 * node + 1
-            right = left + 1
-            smallest = node
-            if left < size and heap_value[left] < heap_value[smallest]:
-                smallest = left
-            if right < size and heap_value[right] < heap_value[smallest]:
-                smallest = right
-            if smallest == node:
-                break
-            heap_value[node], heap_value[smallest] = (
-                heap_value[smallest], heap_value[node])
-            heap_pixel[node], heap_pixel[smallest] = (
-                heap_pixel[smallest], heap_pixel[node])
-            heap_label[node], heap_label[smallest] = (
-                heap_label[smallest], heap_label[node])
-            node = smallest
+        heap_position[pixel] = -2
+        if size > 0:
+            heap_value[0] = heap_value[size]
+            heap_pixel[0] = heap_pixel[size]
+            heap_position[heap_pixel[0]] = 0
+            node = 0
+            while True:
+                left = 2 * node + 1
+                right = left + 1
+                smallest = node
+                if left < size and heap_value[left] < heap_value[smallest]:
+                    smallest = left
+                if right < size and heap_value[right] < heap_value[smallest]:
+                    smallest = right
+                if smallest == node:
+                    break
+                heap_value[node], heap_value[smallest] = (
+                    heap_value[smallest], heap_value[node])
+                heap_pixel[node], heap_pixel[smallest] = (
+                    heap_pixel[smallest], heap_pixel[node])
+                heap_position[heap_pixel[node]] = node
+                heap_position[heap_pixel[smallest]] = smallest
+                node = smallest
 
-        if accepted[pixel]:
-            continue
-        if (
-            label != tentative_label[pixel]
-            or value > tentative[pixel] + 1e-12
-        ):
-            continue
+        label = tentative_label[pixel]
         accepted[pixel] = True
         distance[pixel] = value
         owner[pixel] = label
@@ -529,21 +658,15 @@ def _fast_march_first_label(
             tentative_parent_first[receiver] = best_parent_first
             tentative_parent_second[receiver] = best_parent_second
             tentative_parent_fraction[receiver] = best_parent_fraction
-            if size >= capacity:
-                capacity *= 2
-                new_value = np.empty(capacity, dtype=np.float64)
-                new_pixel = np.empty(capacity, dtype=np.int32)
-                new_label = np.empty(capacity, dtype=np.int32)
-                new_value[:size] = heap_value[:size]
-                new_pixel[:size] = heap_pixel[:size]
-                new_label[:size] = heap_label[:size]
-                heap_value, heap_pixel, heap_label = (
-                    new_value, new_pixel, new_label)
-            heap_value[size] = best_value
-            heap_pixel[size] = receiver
-            heap_label[size] = best_label
-            child = size
-            size += 1
+            child = heap_position[receiver]
+            if child < 0:
+                child = size
+                heap_pixel[child] = receiver
+                heap_position[receiver] = child
+                size += 1
+            heap_value[child] = best_value
+            push_count += 1
+            maximum_heap_size = max(maximum_heap_size, size)
             while child > 0:
                 parent = (child - 1) // 2
                 if heap_value[parent] <= heap_value[child]:
@@ -552,8 +675,8 @@ def _fast_march_first_label(
                     heap_value[child], heap_value[parent])
                 heap_pixel[parent], heap_pixel[child] = (
                     heap_pixel[child], heap_pixel[parent])
-                heap_label[parent], heap_label[child] = (
-                    heap_label[child], heap_label[parent])
+                heap_position[heap_pixel[parent]] = parent
+                heap_position[heap_pixel[child]] = child
                 child = parent
     return (
         owner,
@@ -566,6 +689,8 @@ def _fast_march_first_label(
         parent_second,
         parent_fraction,
         acceptance_order[:accepted_count],
+        push_count,
+        maximum_heap_size,
     )
 
 
@@ -627,37 +752,34 @@ def continuous_first_partition_prepared(
     # pixel centres receive exact local metric action.  This removes the
     # half-pixel dead zone that otherwise makes centroid/force relaxation
     # discontinuous and axis-biased.
-    seed_pixels = []
-    seed_values = []
-    seed_labels = []
-    seed_gradient_x = []
-    seed_gradient_y = []
-    for label, (sx, sy) in enumerate(zip(center_x, center_y)):
-        x0 = int(math.floor(sx))
-        x1 = min(x0 + 1, width - 1)
-        y0 = int(math.floor(sy))
-        y1 = min(y0 + 1, height - 1)
-        for px, py in ((x0, y0), (x1, y0), (x0, y1), (x1, y1)):
-            dx = float(px) - sx
-            dy = float(py) - sy
-            a = prepared["mxx"][py, px]
-            b = prepared["mxy"][py, px]
-            c = prepared["myy"][py, px]
-            local_length = math.sqrt(max(
-                a * dx * dx + 2.0 * b * dx * dy + c * dy * dy,
-                0.0,
-            ))
-            if local_length > 1e-15:
-                gx = (a * dx + b * dy) / local_length
-                gy = (b * dx + c * dy) / local_length
-            else:
-                gx = 0.0
-                gy = 0.0
-            seed_pixels.append(py * width + px)
-            seed_values.append(-source_reach[label] + local_length)
-            seed_labels.append(label)
-            seed_gradient_x.append(gx)
-            seed_gradient_y.append(gy)
+    x0 = np.floor(center_x).astype(np.int32)
+    x1 = np.minimum(x0 + 1, width - 1)
+    y0 = np.floor(center_y).astype(np.int32)
+    y1 = np.minimum(y0 + 1, height - 1)
+    seed_x = np.column_stack((x0, x1, x0, x1)).ravel()
+    seed_y = np.column_stack((y0, y0, y1, y1)).ravel()
+    seed_labels = np.repeat(
+        np.arange(len(centers), dtype=np.int32), 4)
+    dx = seed_x.astype(np.float64) - center_x[seed_labels]
+    dy = seed_y.astype(np.float64) - center_y[seed_labels]
+    a = prepared["mxx"][seed_y, seed_x]
+    b = prepared["mxy"][seed_y, seed_x]
+    c = prepared["myy"][seed_y, seed_x]
+    seed_values = np.sqrt(np.maximum(
+        a * dx * dx + 2.0 * b * dx * dy + c * dy * dy,
+        0.0,
+    ))
+    nonzero = seed_values > 1e-15
+    seed_gradient_x = np.zeros_like(seed_values)
+    seed_gradient_y = np.zeros_like(seed_values)
+    seed_gradient_x[nonzero] = (
+        a[nonzero] * dx[nonzero] + b[nonzero] * dy[nonzero]
+    ) / seed_values[nonzero]
+    seed_gradient_y[nonzero] = (
+        b[nonzero] * dx[nonzero] + c[nonzero] * dy[nonzero]
+    ) / seed_values[nonzero]
+    seed_values -= source_reach[seed_labels]
+    seed_pixels = seed_y * width + seed_x
     (
         owner,
         distance,
@@ -669,6 +791,8 @@ def continuous_first_partition_prepared(
         parent_second,
         parent_fraction,
         acceptance_order,
+        push_count,
+        maximum_heap_size,
     ) = _fast_march_first_label(
         np.ascontiguousarray(seed_pixels, dtype=np.int32),
         np.ascontiguousarray(seed_values, dtype=np.float64),
@@ -696,6 +820,8 @@ def continuous_first_partition_prepared(
         "parent_second": parent_second.reshape(height, width),
         "parent_fraction": parent_fraction.reshape(height, width),
         "acceptance_order": acceptance_order,
+        "front_pushes": int(push_count),
+        "front_maximum_heap": int(maximum_heap_size),
         "superbase": prepared["superbase"],
         "directions": prepared["directions"],
     }

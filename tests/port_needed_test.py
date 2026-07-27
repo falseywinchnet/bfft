@@ -14,7 +14,10 @@ sys.path.insert(0, str(ROOT / "experiments"))
 
 from port_needed.anisotropic_edge_cost import build_edge_costs
 from port_needed.continuous_eikonal_transport import (
+    _simplex_candidate_with_fraction,
     continuous_first_partition,
+    inverse_incidence,
+    ordered_local_directions,
     prepare_continuous_metric,
 )
 from port_needed.density_population import emit_density_population
@@ -119,6 +122,93 @@ def test_continuous_front_is_rotation_fair_on_constant_metric():
     assert float(np.mean(relative)) < 0.03
 
 
+def test_local_direction_order_matches_angular_reference():
+    angle = np.deg2rad(31.0)
+    tangent = np.array((np.cos(angle), np.sin(angle)))
+    normal = np.array((-tangent[1], tangent[0]))
+    metric = np.outer(tangent, tangent) + 37.0 * np.outer(normal, normal)
+    xx = np.full((7, 9), metric[0, 0])
+    xy = np.full((7, 9), metric[0, 1])
+    yy = np.full((7, 9), metric[1, 1])
+    superbase = metric_reduced_superbase(xx, xy, yy)
+    actual = ordered_local_directions(superbase)
+    signed = np.concatenate((superbase, -superbase), axis=2)
+    order = np.argsort(
+        np.arctan2(signed[..., 1], signed[..., 0]), axis=2)
+    reference = np.take_along_axis(
+        signed, order[..., None], axis=2)
+    assert np.array_equal(actual, reference)
+
+
+def test_inverse_incidence_is_unique_and_matches_reference_sets():
+    angle = np.deg2rad(19.0)
+    tangent = np.array((np.cos(angle), np.sin(angle)))
+    normal = np.array((-tangent[1], tangent[0]))
+    metric = np.outer(tangent, tangent) + 23.0 * np.outer(normal, normal)
+    xx = np.full((8, 10), metric[0, 0])
+    xy = np.full((8, 10), metric[0, 1])
+    yy = np.full((8, 10), metric[1, 1])
+    directions = ordered_local_directions(
+        metric_reduced_superbase(xx, xy, yy))
+    offset, receivers = inverse_incidence(directions)
+    height, width = xx.shape
+    expected = [set() for _ in range(height * width)]
+    cardinal = ((1, 0), (-1, 0), (0, 1), (0, -1))
+    for receiver in range(height * width):
+        y, x = divmod(receiver, width)
+        local = [tuple(value) for value in directions[y, x]]
+        for dx, dy in local + list(cardinal):
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < width and 0 <= ny < height:
+                expected[ny * width + nx].add(receiver)
+    for vertex in range(height * width):
+        actual = receivers[offset[vertex]:offset[vertex + 1]]
+        assert len(actual) == len(np.unique(actual))
+        assert set(actual.tolist()) == expected[vertex]
+
+
+def test_closed_form_simplex_matches_high_accuracy_search():
+    rng = np.random.default_rng(4)
+    checked = 0
+    for _ in range(500):
+        matrix = rng.standard_normal((2, 2))
+        metric = matrix.T @ matrix + 0.25 * np.eye(2)
+        first = rng.integers(-4, 5, size=2).astype(np.float64)
+        second = rng.integers(-4, 5, size=2).astype(np.float64)
+        if np.linalg.det(np.column_stack((first, second))) == 0.0:
+            continue
+        delta_value = rng.uniform(-1.0, 1.0)
+
+        def objective(t):
+            point = first + t * (second - first)
+            return t * delta_value + np.sqrt(point @ metric @ point)
+
+        low, high = 0.0, 1.0
+        for _ in range(80):
+            left = (2.0 * low + high) / 3.0
+            right = (low + 2.0 * high) / 3.0
+            if objective(left) <= objective(right):
+                high = right
+            else:
+                low = left
+        reference_t = 0.5 * (low + high)
+        value, fraction = _simplex_candidate_with_fraction(
+            0.0,
+            delta_value,
+            first[0],
+            first[1],
+            second[0],
+            second[1],
+            metric[0, 0],
+            metric[0, 1],
+            metric[1, 1],
+        )
+        assert value <= objective(reference_t) + 1e-8
+        assert abs(value - objective(fraction)) < 1e-12
+        checked += 1
+    assert checked >= 400
+
+
 def test_covector_interface_newton_nearly_equalizes_two_source_mass():
     size = 81
     one = np.ones((size, size))
@@ -173,10 +263,15 @@ def test_safe_characteristic_step_preserves_germ_and_lowers_action():
     moved, refreshed, diagnostic = safe_characteristic_site_step(
         centers, partition, prepared, one)
     assert diagnostic["accepted"]
+    assert diagnostic["descent_direction"]
+    assert not diagnostic["converged"]
     assert diagnostic["after_action"] < diagnostic["before_action"]
+    assert np.all(
+        diagnostic["regularized_curvature_determinant"] > 0.0)
     assert np.max(diagnostic["limited_step_px"]) <= np.max(
         diagnostic["trust_radius_px"]) + 1e-12
     assert np.unique(refreshed["labels"]).size == len(centers)
+    assert refreshed["front_maximum_heap"] <= size * size
     assert not np.array_equal(moved, centers)
 
 
@@ -186,6 +281,9 @@ if __name__ == "__main__":
     test_local_refresh_preserves_every_parent_pixel()
     test_metric_reduction_is_unimodular_and_obtuse()
     test_continuous_front_is_rotation_fair_on_constant_metric()
+    test_local_direction_order_matches_angular_reference()
+    test_inverse_incidence_is_unique_and_matches_reference_sets()
+    test_closed_form_simplex_matches_high_accuracy_search()
     test_covector_interface_newton_nearly_equalizes_two_source_mass()
     test_reverse_characteristic_force_balances_symmetric_domain()
     test_density_population_is_locally_emitted_without_a_budget_search()

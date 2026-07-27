@@ -46,7 +46,11 @@ def build_residual_pressure_costs(
     # authority while leaving coherent contours close to unit strength.
     coherence_gate = coherence * coherence
     pressure = residual / (residual + robust_scale) * coherence_gate
-    tensor_scale = max(float(np.percentile(qxx + qyy, 90.0)), 1e-12)
+    tensor_scale = (
+        float(geometry["metric_trace_p90"])
+        if "metric_trace_p90" in geometry
+        else max(float(np.percentile(qxx + qyy, 90.0)), 1e-12)
+    )
     horizon = float(geometry["max_support_px"])
     strength = (
         max(float(metric_strength), 0.0)

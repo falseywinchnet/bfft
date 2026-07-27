@@ -44,7 +44,11 @@ def _metric_fields(
     qxx = np.asarray(geometry["precision_xx"], dtype=np.float64)
     qxy = np.asarray(geometry["precision_xy"], dtype=np.float64)
     qyy = np.asarray(geometry["precision_yy"], dtype=np.float64)
-    scale = max(float(np.percentile(qxx + qyy, 90.0)), 1e-12)
+    scale = (
+        float(geometry["metric_trace_p90"])
+        if "metric_trace_p90" in geometry
+        else max(float(np.percentile(qxx + qyy, 90.0)), 1e-12)
+    )
     strength = (
         max(float(metric_strength), 0.0)
         * float(geometry["max_support_px"]) ** 2

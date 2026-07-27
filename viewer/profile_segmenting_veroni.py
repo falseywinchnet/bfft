@@ -96,12 +96,15 @@ def main():
     characteristic = result["characteristic"]
     if characteristic and characteristic["trace"]:
         for item in characteristic["trace"]:
+            pixels = rgb.shape[0] * rgb.shape[1]
             print(
                 f"front pass {item['iteration']:2d}             "
                 f"scale {item['accepted_scale']:.3f}, "
                 f"trials {item['trials']}, "
                 f"action {100.0 * item['relative_action_change']:+.3f}%, "
-                f"accepted {item['accepted']}")
+                f"accepted {item['accepted']}, "
+                f"{item['front_updates_after'] / pixels:.2f} updates/pixel, "
+                f"heap {100.0 * item['front_maximum_heap_after'] / pixels:.1f}%")
 
     print(f"peak resident memory         {_peak_rss_gib():10.3f} GiB")
     return 0

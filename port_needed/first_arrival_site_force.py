@@ -433,10 +433,14 @@ def safe_characteristic_site_step(
     hxy = curvature["curvature_xy"]
     hyy = curvature["curvature_yy"]
     trace = hxx + hyy
-    ridge = np.maximum(trace, 1e-12) * 1e-5
-    axx = hxx + ridge
-    ayy = hyy + ridge
-    determinant = np.maximum(axx * ayy - hxy * hxy, 1e-30)
+    disc = np.hypot(hxx - hyy, 2.0 * hxy)
+    eigen_low = 0.5 * (trace - disc)
+    eigen_high = np.maximum(0.5 * (trace + disc), 0.0)
+    eigen_floor = np.maximum(1e-5 * eigen_high, 1e-12)
+    diagonal_shift = np.maximum(eigen_floor - eigen_low, 0.0)
+    axx = hxx + diagonal_shift
+    ayy = hyy + diagonal_shift
+    determinant = axx * ayy - hxy * hxy
     raw_x = (
         ayy * force["force_x"] - hxy * force["force_y"]
     ) / determinant
@@ -464,7 +468,15 @@ def safe_characteristic_site_step(
     candidate_partition = partition
     candidate_centers = centers.copy()
     trials = 0
-    for trial in range(max(int(maximum_trials), 1)):
+    converged = bool(
+        np.max(np.hypot(step_x, step_y), initial=0.0) <= 1e-8)
+    descent_direction = bool(predicted_linear_decrease > 1e-20)
+    trial_count = (
+        max(int(maximum_trials), 1)
+        if descent_direction and not converged
+        else 0
+    )
+    for trial in range(trial_count):
         trials = trial + 1
         scale = 2.0 ** (-trial)
         proposed = centers.copy()
@@ -497,6 +509,8 @@ def safe_characteristic_site_step(
 
     diagnostic = {
         "accepted": accepted,
+        "converged": converged,
+        "descent_direction": descent_direction,
         "accepted_scale": accepted_scale,
         "trials": trials,
         "before_action": before_action,
@@ -512,6 +526,14 @@ def safe_characteristic_site_step(
         "limited_fraction": limiter,
         "force": force,
         "curvature": curvature,
+        "curvature_diagonal_shift": diagonal_shift,
+        "regularized_curvature_determinant": determinant,
+        "front_updates_before": int(partition.get(
+            "front_pushes", 0)),
+        "front_updates_after": int(candidate_partition.get(
+            "front_pushes", 0)),
+        "front_maximum_heap_after": int(candidate_partition.get(
+            "front_maximum_heap", 0)),
         "initial_centers": centers.copy(),
         "final_centers": candidate_centers.copy(),
     }

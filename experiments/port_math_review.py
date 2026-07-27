@@ -590,36 +590,29 @@ def port05(cells=8192):
     qyy = rng.random(cells) + 0.5
 
     t0 = time.perf_counter()
-    major, minor, direction = measure_instability(moments, qxx, qxy, qyy)
+    reference_major = np.empty(cells)
+    reference_minor = np.empty(cells)
+    reference_direction = np.empty((cells, 2))
+    for cell in range(cells):
+        value, vx0, vy0, other = _unstable_direction(
+            a[cell], b[cell], c[cell],
+            qxx[cell], qxy[cell], qyy[cell],
+        )
+        reference_major[cell] = value
+        reference_minor[cell] = other
+        reference_direction[cell] = (vx0, vy0)
     loop_ms = (time.perf_counter() - t0) * 1000.0
 
     t0 = time.perf_counter()
-    ma = a * qxx + b * qxy
-    mb = a * qxy + b * qyy
-    mc = b * qxx + c * qxy
-    md = b * qxy + c * qyy
-    trace = ma + md
-    determinant = np.maximum(ma * md - mb * mc, 0.0)
-    disc = np.sqrt(np.maximum(trace * trace - 4.0 * determinant, 0.0))
-    value = np.maximum(0.5 * (trace + disc), 0.0)
-    vx = mb.copy()
-    vy = value - ma
-    fallback = (np.abs(vx) + np.abs(vy)) < 1e-15
-    vx = np.where(fallback, value - md, vx)
-    vy = np.where(fallback, mc, vy)
-    norm = np.hypot(vx, vy)
-    degenerate = norm < 1e-15
-    vx = np.where(degenerate, np.where(a >= c, 1.0, 0.0), vx / np.maximum(norm, 1e-300))
-    vy = np.where(degenerate, np.where(a >= c, 0.0, 1.0), vy / np.maximum(norm, 1e-300))
-    other = np.maximum(trace - value, 0.0)
+    major, minor, direction = measure_instability(
+        moments, qxx, qxy, qyy)
     vector_ms = (time.perf_counter() - t0) * 1000.0
 
-    ok = (float(np.max(np.abs(major - value))) == 0.0 and
-          float(np.max(np.abs(minor - other))) == 0.0 and
-          float(np.max(np.abs(direction[:, 0] - vx))) == 0.0 and
-          float(np.max(np.abs(direction[:, 1] - vy))) == 0.0)
-    worst_vec = max(float(np.max(np.abs(direction[:, 0] - vx))),
-                    float(np.max(np.abs(direction[:, 1] - vy))))
+    ok = (
+        float(np.max(np.abs(major - reference_major))) == 0.0
+        and float(np.max(np.abs(minor - reference_minor))) == 0.0)
+    worst_vec = float(np.max(np.abs(
+        direction - reference_direction)))
     report("vectorised form agrees with the scalar loop",
            worst_vec <= 2.3e-16,
            f"eigenvalues exact, eigenvector within {worst_vec:.1e} (1 ulp)")
@@ -719,6 +712,10 @@ def port07(geometry, cells=600):
     print(f"         same ridge in the shift+scale basis: p1 {lo2:.2e}, "
           f"median {mid2:.2e}, p99 {hi2:.2e} "
           f"({hi2 / max(lo2, 1e-30):.0f}x spread)")
+    print("         follow-up: carrying the same numeric ridge through the "
+          "scale change is not model-invariant;")
+    print("         a physical image-gradient penalty transforms by 1/r^2, "
+          "which is the form used by the canonical port")
     print("         so cells near the image centre currently have their "
           "slopes damped up to 7%, and peripheral cells almost not at all")
     print("         and the 3x3 LU per cell becomes a scalar plus a 2x2 with "

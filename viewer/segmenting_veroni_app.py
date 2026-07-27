@@ -317,9 +317,12 @@ def refresh():
             f" | causal characteristic {accepted}/"
             f"{len(characteristic['trace'])} accepted")
         if last is not None:
+            pixels = ah * aw
             refinement_text += (
                 f", transport action "
-                f"{100.0 * last['relative_action_change']:+.2f}%")
+                f"{100.0 * last['relative_action_change']:+.2f}%, "
+                f"front {last['front_updates_after'] / pixels:.2f} "
+                f"updates/px")
     dpg.set_value(
         "segmenting_metrics",
         f"{len(result['centers'])} cells | PSNR {record['psnr']:.2f} dB | "

@@ -46,15 +46,17 @@ def emit_density_population(
     fractional = density - whole
     count_at = whole + (phase < fractional)
     flat_count = count_at.ravel()
+    realized = int(np.sum(flat_count, dtype=np.int64))
     pixel = np.repeat(np.arange(height * width), flat_count)
     if pixel.size == 0:
         pixel = np.array([int(np.argmax(density))], dtype=np.int64)
         occurrence = np.zeros(1, dtype=np.float64)
     else:
-        occurrence = np.concatenate([
-            np.arange(value, dtype=np.float64)
-            for value in flat_count if value > 0
-        ])
+        start = np.cumsum(flat_count, dtype=np.int64) - flat_count
+        occurrence = (
+            np.arange(pixel.size, dtype=np.float64)
+            - np.repeat(start, flat_count)
+        )
     py = pixel // width
     px = pixel - py * width
     jitter_x = _hash01(
@@ -82,7 +84,7 @@ def emit_density_population(
         "implied_cells": implied,
         "commanded_cells": commanded,
         "realized_cells": int(len(centers)),
-        "safety_limit_hit": implied > ceiling,
+        "safety_limit_hit": implied > ceiling or realized > ceiling,
         "quantization_error": float(len(centers) - commanded),
         "maximum_pixel_density": float(np.max(density)),
         "density": density,

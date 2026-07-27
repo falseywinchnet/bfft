@@ -12,10 +12,14 @@ The canonical causal-density path is:
 3. `metric_reduced_stencil.py` — obtuse unimodular stencil reduction of the
    measured metric.
 4. `continuous_eikonal_transport.py` — continuous-source, same-label
-   Hopf--Lax first arrival and its causal parent DAG.
+   Hopf--Lax first arrival and its causal parent DAG. Its local simplex
+   minimizer is closed form, reverse incidence is linear and duplicate-free,
+   and the heap has one decrease-key entry per unaccepted pixel.
 5. `first_arrival_site_force.py` — reverse characteristic force, local Newton
-   surrogate, half-inradius trust region, and exact action-decrease remarch.
-6. `hard_region_fit.py` — independent per-cell affine/ridge readout.
+   surrogate with an analytic positive-definite projection, half-inradius
+   trust region, and exact action-decrease remarch.
+6. `hard_region_fit.py` — centered/radius-scaled per-cell affine/ridge
+   readout with a physical image-gradient regularizer.
 
 The following remain supported experimental controls:
 
@@ -29,6 +33,10 @@ The following remain supported experimental controls:
 `pipeline.py` is orchestration, not a port target. `allocation_flow.py`
 composes the legacy allocation controls and contains no additional numerical
 kernel.
+
+The decisions and before/after measurements from the Python tightening round
+are recorded in
+[`../notes/causal_port_tightening.md`](../notes/causal_port_tightening.md).
 
 The guiding performance rule is structural: no candidate enumeration, top-k,
 site deletion, offspring, or all-pairs cell work. The only image-wide

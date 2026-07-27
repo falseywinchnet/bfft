@@ -262,19 +262,26 @@ def single_decomposition_geometry(
     disc = np.hypot(qxx - qyy, 2.0 * qxy)
     coherence = disc / np.maximum(trace, 1e-30)
     high = np.maximum(0.5 * (trace + disc), frequency_floor)
-    low = np.maximum(0.5 * (trace - disc), frequency_floor)
+    exact_high = 0.5 * (trace + disc)
+    exact_low = 0.5 * (trace - disc)
+    low = np.maximum(exact_low, frequency_floor)
     tangent_fraction = float(np.clip(
         coherent_tangent_fraction, 0.0, 1.0))
     low_factor = 1.0 - (1.0 - tangent_fraction) * coherence
     low = frequency_floor + low_factor * (low - frequency_floor)
-    normal_angle = 0.5 * np.arctan2(2.0 * qxy, qxx - qyy)
-    nx = np.cos(normal_angle)
-    ny = np.sin(normal_angle)
-    tx = -ny
-    ty = nx
-    qxx = high * nx * nx + low * tx * tx
-    qxy = high * nx * ny + low * tx * ty
-    qyy = high * ny * ny + low * ty * ty
+
+    # Rebuild the spectrum through its eigenprojectors.  For a symmetric
+    # 2x2 tensor this is exactly Q' = alpha Q + beta I; no angle or
+    # trigonometric eigenvectors are needed.  The isotropic limit is Q' = Q.
+    safe_disc = np.maximum(disc, 1e-30)
+    alpha = (high - low) / safe_disc
+    beta = (low * exact_high - high * exact_low) / safe_disc
+    degenerate = disc < 1e-18
+    alpha = np.where(degenerate, 1.0, alpha)
+    beta = np.where(degenerate, 0.0, beta)
+    qxx = alpha * qxx + beta
+    qxy = alpha * qxy
+    qyy = alpha * qyy + beta
 
     determinant = np.maximum(qxx * qyy - qxy * qxy, 0.0)
     measure = np.sqrt(determinant) / math.pi
@@ -292,6 +299,8 @@ def single_decomposition_geometry(
         "source_reliability": source_reliability,
         "implied_cells": implied_cells,
         "max_support_px": max_length,
+        "metric_trace_p90": max(
+            float(np.percentile(qxx + qyy, 90.0)), 1e-12),
         "coherent_tangent_fraction": tangent_fraction,
         "target_decompositions": 1.0,
     }
@@ -331,6 +340,11 @@ def pyramid_geometry(geometry: dict, maximum_side: int) -> dict:
     coarse["measure"] /= max(float(np.sum(coarse["measure"])), 1e-30)
     coarse["max_support_px"] = (
         float(geometry["max_support_px"]) * max(zoom))
+    coarse["metric_trace_p90"] = max(float(np.percentile(
+        np.asarray(coarse["precision_xx"])
+        + np.asarray(coarse["precision_yy"]),
+        90.0,
+    )), 1e-12)
     coarse["pyramid_source_shape"] = (height, width)
     return coarse
 
@@ -377,7 +391,11 @@ def _edge_cost_stack(
     qxy = np.asarray(geometry["precision_xy"], dtype=np.float64)
     qyy = np.asarray(geometry["precision_yy"], dtype=np.float64)
     height, width = qxx.shape
-    scale = max(float(np.percentile(qxx + qyy, 90.0)), 1e-12)
+    scale = (
+        float(geometry["metric_trace_p90"])
+        if "metric_trace_p90" in geometry
+        else max(float(np.percentile(qxx + qyy, 90.0)), 1e-12)
+    )
     # Q is measured per pixel while the stability radius is expressed as a
     # fraction of the support horizon.  A one-pixel discontinuity must retain
     # the same cost relative to that horizon at every resolution, hence the

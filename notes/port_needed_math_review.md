@@ -8,8 +8,11 @@ script prints `EXACT` or a measured bound.
 
     PYTHONPATH=.:viewer:experiments .venv/bin/python experiments/port_math_review.py
 
-Nothing in the shipped path was edited.  These are findings for the native
-port, and each one is independently adoptable.
+This file records the original review. The subsequent canonical tightening
+implemented the applicable findings and corrected the PORT 07 regularizer;
+see [`causal_port_tightening.md`](causal_port_tightening.md). In particular,
+the same numeric ridge is **not** invariant after radius scaling: a physical
+image-gradient penalty transforms by `1/r_i^2`.
 
 Status: **01, 02, 03, 04, 05, 07 reviewed.**  06 and 08 structurally read but not yet verified.
 
