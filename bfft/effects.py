@@ -66,7 +66,12 @@ _M1_INV = np.linalg.inv(_M1)
 
 def _apply(mat, planes):
     """(H, W, 3) x 3x3 matrix, contracting the channel axis."""
-    return planes @ mat.T
+    # NumPy routes a stacked (..., 3) @ (3, 3) through thousands of tiny
+    # BLAS matrix calls.  On large images that is both poor bookkeeping and,
+    # on some Accelerate/Python combinations, intermittently unsafe.  A
+    # single fixed-stride contraction is easier for the compiler to
+    # vectorize and avoids the batched-BLAS dispatcher entirely.
+    return np.einsum("...j,ij->...i", planes, mat, optimize=False)
 
 
 def _srgb_decode(c):
@@ -224,7 +229,7 @@ def _from_working(planes, space, carried, was_gray):
 
 
 def meyer_channels(image, space="oklab_lc", lam=0.05, mu=40.0, passes=64,
-                   threads=0):
+                   threads=0, solver=0):
     """Decompose a colour image plane by plane.
 
     ``space`` selects what gets decomposed:
@@ -262,7 +267,7 @@ def meyer_channels(image, space="oklab_lc", lam=0.05, mu=40.0, passes=64,
     texture = np.empty_like(work)
     for i in range(k):
         u, v = meyer_split(work[..., i], lam=lam, mu=mu, passes=passes,
-                           threads=threads)
+                           threads=threads, solver=solver)
         cartoon[..., i] = u
         texture[..., i] = v
     carried["_was_gray"] = was_gray

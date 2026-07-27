@@ -158,6 +158,26 @@ def main():
           f"texture == decompose {e_tex:.3e}", "ok" if ok_c else "FAIL")
     ok &= ok_c
 
+    # 4d. trace(): one native run is exactly the independently requested
+    # sequence of split states for pass counts 1..passes.
+    trace_plan = bfft.MeyerPlan(
+        f.shape, lam=lam, mu=mu, passes=12, rung_sweeps=1,
+        rung_tol=0.0, threads=4)
+    trace_cartoon, trace_texture = trace_plan.trace(f)
+    trace_exact = True
+    for stage in range(1, 13):
+        stage_plan = bfft.MeyerPlan(
+            f.shape, lam=lam, mu=mu, passes=stage, rung_sweeps=1,
+            rung_tol=0.0, threads=4)
+        stage_cartoon, stage_texture = stage_plan.split(f)
+        trace_exact &= np.array_equal(
+            trace_cartoon[stage - 1], stage_cartoon)
+        trace_exact &= np.array_equal(
+            trace_texture[stage - 1], stage_texture)
+    print("4d. one-run trace == independent pass states:",
+          "ok" if trace_exact else "FAIL")
+    ok &= trace_exact
+
     # 4b. thread-count invariance: outputs bit-identical for T = 1, 2, 4
     outs_t = {}
     for T in (1, 2, 4):

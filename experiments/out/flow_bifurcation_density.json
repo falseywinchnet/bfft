@@ -1,0 +1,284 @@
+{
+  "source": "gallery:pikachu",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "passes": 24,
+  "initial_cells": 180,
+  "transport_strength": 1.0,
+  "tensor_envelope_cells": 1250.1938625654766,
+  "transported_final_cells": 1263.8486337057893,
+  "cumulative_bifurcations": 1083.8486337057873,
+  "stages": [
+    {
+      "stage": 1,
+      "instantaneous_required_cells": 424.89575597311216,
+      "transported_cells_before_bifurcation": 180.0,
+      "inferred_bifurcations": 245.86052595582862,
+      "population_after_bifurcation": 425.8605259558286,
+      "cumulative_bifurcations": 245.86052595582862,
+      "bifurcation_weighted_aspect_ratio": 3.510389706856581,
+      "bifurcation_weighted_minor_px": 1.448218882463215,
+      "transport_rms_px": 0.1601264803731938
+    },
+    {
+      "stage": 2,
+      "instantaneous_required_cells": 506.93872474750196,
+      "transported_cells_before_bifurcation": 425.8605259558306,
+      "inferred_bifurcations": 150.67717604401003,
+      "population_after_bifurcation": 576.5377019998407,
+      "cumulative_bifurcations": 396.53770199983865,
+      "bifurcation_weighted_aspect_ratio": 4.09449299565757,
+      "bifurcation_weighted_minor_px": 1.298517542663377,
+      "transport_rms_px": 0.13878415303485117
+    },
+    {
+      "stage": 3,
+      "instantaneous_required_cells": 465.0928047985806,
+      "transported_cells_before_bifurcation": 576.5377019998407,
+      "inferred_bifurcations": 100.04430014647735,
+      "population_after_bifurcation": 676.582002146318,
+      "cumulative_bifurcations": 496.582002146316,
+      "bifurcation_weighted_aspect_ratio": 4.626402264620141,
+      "bifurcation_weighted_minor_px": 1.2349717520427212,
+      "transport_rms_px": 0.1361374792604624
+    },
+    {
+      "stage": 4,
+      "instantaneous_required_cells": 414.0267076593483,
+      "transported_cells_before_bifurcation": 676.5820021463179,
+      "inferred_bifurcations": 46.268016035851765,
+      "population_after_bifurcation": 722.8500181821697,
+      "cumulative_bifurcations": 542.8500181821678,
+      "bifurcation_weighted_aspect_ratio": 3.3609770296551402,
+      "bifurcation_weighted_minor_px": 1.3183340673385024,
+      "transport_rms_px": 0.13511803511421355
+    },
+    {
+      "stage": 5,
+      "instantaneous_required_cells": 389.0656913387713,
+      "transported_cells_before_bifurcation": 722.8500181821698,
+      "inferred_bifurcations": 30.802784058875297,
+      "population_after_bifurcation": 753.652802241045,
+      "cumulative_bifurcations": 573.6528022410431,
+      "bifurcation_weighted_aspect_ratio": 2.853768391283004,
+      "bifurcation_weighted_minor_px": 1.4012410507991806,
+      "transport_rms_px": 0.12004145906065332
+    },
+    {
+      "stage": 6,
+      "instantaneous_required_cells": 390.67003883647357,
+      "transported_cells_before_bifurcation": 753.652802241045,
+      "inferred_bifurcations": 27.32070537423575,
+      "population_after_bifurcation": 780.9735076152808,
+      "cumulative_bifurcations": 600.9735076152789,
+      "bifurcation_weighted_aspect_ratio": 2.9632204843498493,
+      "bifurcation_weighted_minor_px": 1.378747841849992,
+      "transport_rms_px": 0.10341874210414286
+    },
+    {
+      "stage": 7,
+      "instantaneous_required_cells": 408.007412580199,
+      "transported_cells_before_bifurcation": 780.9735076152808,
+      "inferred_bifurcations": 30.697604079613942,
+      "population_after_bifurcation": 811.6711116948948,
+      "cumulative_bifurcations": 631.6711116948928,
+      "bifurcation_weighted_aspect_ratio": 3.377416478219166,
+      "bifurcation_weighted_minor_px": 1.348313438751295,
+      "transport_rms_px": 0.11399131540328677
+    },
+    {
+      "stage": 8,
+      "instantaneous_required_cells": 448.84783954485084,
+      "transported_cells_before_bifurcation": 811.6711116948948,
+      "inferred_bifurcations": 42.22983460931309,
+      "population_after_bifurcation": 853.9009463042079,
+      "cumulative_bifurcations": 673.900946304206,
+      "bifurcation_weighted_aspect_ratio": 3.5819765680313638,
+      "bifurcation_weighted_minor_px": 1.323271788275831,
+      "transport_rms_px": 0.11943325859430194
+    },
+    {
+      "stage": 9,
+      "instantaneous_required_cells": 490.19385275318336,
+      "transported_cells_before_bifurcation": 853.9009463042078,
+      "inferred_bifurcations": 42.30187583824127,
+      "population_after_bifurcation": 896.2028221424491,
+      "cumulative_bifurcations": 716.2028221424472,
+      "bifurcation_weighted_aspect_ratio": 3.8242609725109222,
+      "bifurcation_weighted_minor_px": 1.3424306604218674,
+      "transport_rms_px": 0.10626039730303971
+    },
+    {
+      "stage": 10,
+      "instantaneous_required_cells": 523.2891720352403,
+      "transported_cells_before_bifurcation": 896.2028221424491,
+      "inferred_bifurcations": 42.114610530986454,
+      "population_after_bifurcation": 938.3174326734356,
+      "cumulative_bifurcations": 758.3174326734336,
+      "bifurcation_weighted_aspect_ratio": 3.6834275749050245,
+      "bifurcation_weighted_minor_px": 1.334940712298453,
+      "transport_rms_px": 0.106186491605171
+    },
+    {
+      "stage": 11,
+      "instantaneous_required_cells": 540.3156012648174,
+      "transported_cells_before_bifurcation": 938.3174326734356,
+      "inferred_bifurcations": 39.92028522788978,
+      "population_after_bifurcation": 978.2377179013254,
+      "cumulative_bifurcations": 798.2377179013233,
+      "bifurcation_weighted_aspect_ratio": 3.7573281186850713,
+      "bifurcation_weighted_minor_px": 1.333650258747329,
+      "transport_rms_px": 0.11304187349890316
+    },
+    {
+      "stage": 12,
+      "instantaneous_required_cells": 529.4799669522705,
+      "transported_cells_before_bifurcation": 978.2377179013254,
+      "inferred_bifurcations": 27.19180369653289,
+      "population_after_bifurcation": 1005.4295215978582,
+      "cumulative_bifurcations": 825.4295215978563,
+      "bifurcation_weighted_aspect_ratio": 3.2262835050428857,
+      "bifurcation_weighted_minor_px": 1.3848191684880569,
+      "transport_rms_px": 0.12704713168675938
+    },
+    {
+      "stage": 13,
+      "instantaneous_required_cells": 513.3194134085056,
+      "transported_cells_before_bifurcation": 1005.4295215978582,
+      "inferred_bifurcations": 23.27948426254587,
+      "population_after_bifurcation": 1028.709005860404,
+      "cumulative_bifurcations": 848.7090058604022,
+      "bifurcation_weighted_aspect_ratio": 3.1808408617781403,
+      "bifurcation_weighted_minor_px": 1.404000986343106,
+      "transport_rms_px": 0.13238153435745276
+    },
+    {
+      "stage": 14,
+      "instantaneous_required_cells": 503.6645843851788,
+      "transported_cells_before_bifurcation": 1028.709005860404,
+      "inferred_bifurcations": 22.474533424232263,
+      "population_after_bifurcation": 1051.1835392846365,
+      "cumulative_bifurcations": 871.1835392846344,
+      "bifurcation_weighted_aspect_ratio": 3.4364690679185204,
+      "bifurcation_weighted_minor_px": 1.3976063718879608,
+      "transport_rms_px": 0.1464068570767166
+    },
+    {
+      "stage": 15,
+      "instantaneous_required_cells": 496.0837791540357,
+      "transported_cells_before_bifurcation": 1051.1835392846365,
+      "inferred_bifurcations": 19.85423303127431,
+      "population_after_bifurcation": 1071.0377723159108,
+      "cumulative_bifurcations": 891.0377723159088,
+      "bifurcation_weighted_aspect_ratio": 4.249917166688845,
+      "bifurcation_weighted_minor_px": 1.3373627482255555,
+      "transport_rms_px": 0.14823429424813753
+    },
+    {
+      "stage": 16,
+      "instantaneous_required_cells": 496.48715020141185,
+      "transported_cells_before_bifurcation": 1071.0377723159106,
+      "inferred_bifurcations": 15.338913855718596,
+      "population_after_bifurcation": 1086.3766861716294,
+      "cumulative_bifurcations": 906.3766861716274,
+      "bifurcation_weighted_aspect_ratio": 3.8724984428843743,
+      "bifurcation_weighted_minor_px": 1.3591989468766172,
+      "transport_rms_px": 0.15219277299241105
+    },
+    {
+      "stage": 17,
+      "instantaneous_required_cells": 501.4243685998658,
+      "transported_cells_before_bifurcation": 1086.3766861716294,
+      "inferred_bifurcations": 15.337971579438811,
+      "population_after_bifurcation": 1101.714657751068,
+      "cumulative_bifurcations": 921.7146577510662,
+      "bifurcation_weighted_aspect_ratio": 3.51221855239361,
+      "bifurcation_weighted_minor_px": 1.354689142740612,
+      "transport_rms_px": 0.1473205736364285
+    },
+    {
+      "stage": 18,
+      "instantaneous_required_cells": 512.5776817514416,
+      "transported_cells_before_bifurcation": 1101.714657751068,
+      "inferred_bifurcations": 16.672324177175383,
+      "population_after_bifurcation": 1118.3869819282436,
+      "cumulative_bifurcations": 938.3869819282415,
+      "bifurcation_weighted_aspect_ratio": 2.897569495482307,
+      "bifurcation_weighted_minor_px": 1.3643395954110173,
+      "transport_rms_px": 0.13601232227082594
+    },
+    {
+      "stage": 19,
+      "instantaneous_required_cells": 525.6603769519727,
+      "transported_cells_before_bifurcation": 1118.3869819282434,
+      "inferred_bifurcations": 20.83323090941858,
+      "population_after_bifurcation": 1139.220212837662,
+      "cumulative_bifurcations": 959.2202128376601,
+      "bifurcation_weighted_aspect_ratio": 2.6660320789295135,
+      "bifurcation_weighted_minor_px": 1.3589972374928607,
+      "transport_rms_px": 0.12270994168642274
+    },
+    {
+      "stage": 20,
+      "instantaneous_required_cells": 535.0232518656907,
+      "transported_cells_before_bifurcation": 1139.220212837662,
+      "inferred_bifurcations": 21.653088704893715,
+      "population_after_bifurcation": 1160.8733015425557,
+      "cumulative_bifurcations": 980.8733015425538,
+      "bifurcation_weighted_aspect_ratio": 2.715850520406211,
+      "bifurcation_weighted_minor_px": 1.3656326582605665,
+      "transport_rms_px": 0.11037857127674025
+    },
+    {
+      "stage": 21,
+      "instantaneous_required_cells": 551.2839913640689,
+      "transported_cells_before_bifurcation": 1160.8733015425557,
+      "inferred_bifurcations": 26.176397638526357,
+      "population_after_bifurcation": 1187.0496991810821,
+      "cumulative_bifurcations": 1007.0496991810802,
+      "bifurcation_weighted_aspect_ratio": 2.79964566066596,
+      "bifurcation_weighted_minor_px": 1.3392979484071204,
+      "transport_rms_px": 0.10078031379829124
+    },
+    {
+      "stage": 22,
+      "instantaneous_required_cells": 568.3800129915646,
+      "transported_cells_before_bifurcation": 1187.049699181082,
+      "inferred_bifurcations": 28.629128274025764,
+      "population_after_bifurcation": 1215.678827455108,
+      "cumulative_bifurcations": 1035.6788274551059,
+      "bifurcation_weighted_aspect_ratio": 2.9499094251478706,
+      "bifurcation_weighted_minor_px": 1.291732456359321,
+      "transport_rms_px": 0.09842679654627638
+    },
+    {
+      "stage": 23,
+      "instantaneous_required_cells": 574.6929096826605,
+      "transported_cells_before_bifurcation": 1215.6788274551077,
+      "inferred_bifurcations": 24.893709524684805,
+      "population_after_bifurcation": 1240.5725369797929,
+      "cumulative_bifurcations": 1060.5725369797906,
+      "bifurcation_weighted_aspect_ratio": 2.7523489330881796,
+      "bifurcation_weighted_minor_px": 1.2970553034612304,
+      "transport_rms_px": 0.09807107716360493
+    },
+    {
+      "stage": 24,
+      "instantaneous_required_cells": 578.5476247430283,
+      "transported_cells_before_bifurcation": 1240.5725369797929,
+      "inferred_bifurcations": 23.276096725996595,
+      "population_after_bifurcation": 1263.8486337057893,
+      "cumulative_bifurcations": 1083.8486337057873,
+      "bifurcation_weighted_aspect_ratio": 2.7560331536657543,
+      "bifurcation_weighted_minor_px": 1.2772922164929805,
+      "transport_rms_px": 0.09593476818650007
+    }
+  ],
+  "outputs": {
+    "panel": "/Users/quentinkuttenkuler/bfft/experiments/out/flow_bifurcation_density.png",
+    "summary": "/Users/quentinkuttenkuler/bfft/experiments/out/flow_bifurcation_summary.png"
+  }
+}

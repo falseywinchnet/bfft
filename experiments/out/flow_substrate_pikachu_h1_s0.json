@@ -1,0 +1,95 @@
+{
+  "source": "gallery:pikachu",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "passes": 24,
+  "first_detail_stage": 2,
+  "base_cells": 180,
+  "requested_detail_cells": 800,
+  "total_cells": 1046,
+  "emission": {
+    "mass_quantum": 0.00125,
+    "expected_detail_cells": 799.9999999999999,
+    "emitted_detail_cells": 866,
+    "detail_minor_median": 1.8470449447631836,
+    "detail_major_median": 8.847925186157227,
+    "detail_ratio_median": 4.039590358734131,
+    "detail_area_sum_per_pixel": 4.4709062576293945,
+    "curvature_limit": true,
+    "specificity_power": 0.0,
+    "specificity_mix": 0.0,
+    "emission_mode": "independent",
+    "substrate_hint": 1.0,
+    "substrate_shape_hint": 0.0,
+    "substrate_displacement_rms": 4.625726925100041,
+    "substrate_displacement_q95": 7.777313926424618,
+    "substrate_ratio_median": 1.0,
+    "substrate_density_min": 0.39337093857327227,
+    "substrate_density_max": 1.822974941549391
+  },
+  "scores": {
+    "flow ellipses": {
+      "rgb_mse": 0.0016322706515807573,
+      "psnr": 27.872078279703494,
+      "cartoon_mse": 9.601561720167087e-05,
+      "texture_mse": 0.0004462526523231423,
+      "objective": 0.0021745389211055705
+    },
+    "same sites, circular": {
+      "rgb_mse": 0.003646672495785553,
+      "psnr": 24.38103238512339,
+      "cartoon_mse": 0.0003056148346258998,
+      "texture_mse": 0.0010008213232404334,
+      "objective": 0.004953108653651886
+    },
+    "uniform R2 circles": {
+      "rgb_mse": 0.0047304805811974465,
+      "psnr": 23.250947359725636,
+      "cartoon_mse": 0.0004937093938583488,
+      "texture_mse": 0.0010841745932435593,
+      "objective": 0.006308364568299355
+    },
+    "round cartoon + flow texture": {
+      "rgb_mse": 0.0017568579469239632,
+      "psnr": 27.55263352540631,
+      "cartoon_mse": 0.00014115248953609357,
+      "texture_mse": 0.0005402545756305911,
+      "objective": 0.002438265012090648
+    }
+  },
+  "diagnostics": {
+    "flow ellipses": {
+      "samples": 145249,
+      "uncovered_fraction": 0.00054931640625,
+      "dominance_mean": 0.32153886674466625,
+      "effective_contributors_mean": 5.1089397110004215,
+      "effective_contributors_median": 4.886396980376136
+    },
+    "same sites, circular": {
+      "samples": 143535,
+      "uncovered_fraction": 0.0001220703125,
+      "dominance_mean": 0.32333855412016854,
+      "effective_contributors_mean": 5.06583219829106,
+      "effective_contributors_median": 4.852004486792239
+    },
+    "uniform R2 circles": {
+      "samples": 81010,
+      "uncovered_fraction": 0.001220703125,
+      "dominance_mean": 0.49435560942110984,
+      "effective_contributors_mean": 2.872600591129346,
+      "effective_contributors_median": 2.9430428204427628
+    },
+    "round cartoon + flow texture": {
+      "cartoon_dominance_mean": 0.32333855412016854,
+      "texture_dominance_mean": 0.32153886674466625,
+      "cartoon_effective_median": 4.8522446840510405,
+      "texture_effective_median": 4.886830652521612
+    }
+  },
+  "flow_ms": 2819.0297500696033,
+  "solve_ms": 3883.8599580340087,
+  "output": "/Users/quentinkuttenkuler/bfft/experiments/out/flow_substrate_pikachu_h1_s0.png"
+}

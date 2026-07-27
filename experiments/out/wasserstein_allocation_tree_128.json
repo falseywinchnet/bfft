@@ -1,0 +1,147 @@
+{
+  "source": "gallery:pikachu",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "cells": 137,
+  "threshold": 4.0,
+  "target_decompositions_for_allocation": 1,
+  "tgfd_internal_sweeps": 24,
+  "continuous_implied_cells": 368.55699176422013,
+  "decomposition_seconds": 0.009757500025443733,
+  "allocation_seconds": 0.06388120795600116,
+  "fit_seconds": 0.012436041957698762,
+  "safety_limit_hit": false,
+  "record": {
+    "rgb_mse": 0.022841484775981108,
+    "psnr": 16.412756688562723,
+    "cartoon_mse": 0.004746003995912585,
+    "texture_mse": 0.0027825578030713583,
+    "objective": 0.030370046574965052
+  },
+  "trace": [
+    {
+      "round": 1,
+      "cells_before": 1,
+      "splits": 1,
+      "cells_after": 2,
+      "softness": 0.2,
+      "instability_p50": 246.2581281505691,
+      "instability_p90": 246.2581281505691,
+      "instability_max": 246.2581281505691,
+      "minimum_region_pixels": 7591
+    },
+    {
+      "round": 2,
+      "cells_before": 2,
+      "splits": 2,
+      "cells_after": 4,
+      "softness": 0.174510954422985,
+      "instability_p50": 225.14070400543994,
+      "instability_p90": 245.08211636035347,
+      "instability_max": 250.06746944908184,
+      "minimum_region_pixels": 3785
+    },
+    {
+      "round": 3,
+      "cells_before": 4,
+      "splits": 4,
+      "cells_after": 8,
+      "softness": 0.15227036606810573,
+      "instability_p50": 82.6000746135045,
+      "instability_p90": 95.83954583138191,
+      "instability_max": 98.97802667345653,
+      "minimum_region_pixels": 1222
+    },
+    {
+      "round": 4,
+      "cells_before": 8,
+      "splits": 8,
+      "cells_after": 16,
+      "softness": 0.13286423456441218,
+      "instability_p50": 55.22394365317615,
+      "instability_p90": 77.83650745238049,
+      "instability_max": 78.64044637323765,
+      "minimum_region_pixels": 510
+    },
+    {
+      "round": 5,
+      "cells_before": 16,
+      "splits": 16,
+      "cells_after": 32,
+      "softness": 0.11593132191257459,
+      "instability_p50": 23.119302015820235,
+      "instability_p90": 34.22830932537076,
+      "instability_max": 40.279165691330775,
+      "minimum_region_pixels": 212
+    },
+    {
+      "round": 6,
+      "cells_before": 32,
+      "splits": 32,
+      "cells_after": 64,
+      "softness": 0.10115642817240851,
+      "instability_p50": 12.400648395360498,
+      "instability_p90": 16.475478852210525,
+      "instability_max": 19.744305133643007,
+      "minimum_region_pixels": 97
+    },
+    {
+      "round": 7,
+      "cells_before": 64,
+      "splits": 47,
+      "cells_after": 111,
+      "softness": 0.08826452413193568,
+      "instability_p50": 5.355873814815331,
+      "instability_p90": 9.962916643141948,
+      "instability_max": 15.453674886360254,
+      "minimum_region_pixels": 37
+    },
+    {
+      "round": 8,
+      "cells_before": 111,
+      "splits": 23,
+      "cells_after": 134,
+      "softness": 0.07701563173977344,
+      "instability_p50": 3.035803179401343,
+      "instability_p90": 4.965335665644285,
+      "instability_max": 6.538402000443727,
+      "minimum_region_pixels": 27
+    },
+    {
+      "round": 9,
+      "cells_before": 134,
+      "splits": 2,
+      "cells_after": 136,
+      "softness": 0.06720035700198498,
+      "instability_p50": 2.2884419357241788,
+      "instability_p90": 3.615550070837596,
+      "instability_max": 7.0816477694564615,
+      "minimum_region_pixels": 27
+    },
+    {
+      "round": 10,
+      "cells_before": 136,
+      "splits": 1,
+      "cells_after": 137,
+      "softness": 0.05863599218990861,
+      "instability_p50": 2.2634373286476848,
+      "instability_p90": 3.6019278935320393,
+      "instability_max": 5.076793787212783,
+      "minimum_region_pixels": 27
+    },
+    {
+      "round": 11,
+      "cells_before": 137,
+      "splits": 0,
+      "cells_after": 137,
+      "softness": 0.05116311480299821,
+      "instability_p50": 2.2539970066530097,
+      "instability_p90": 3.5704093046453855,
+      "instability_max": 3.9653428182101536,
+      "minimum_region_pixels": 27
+    }
+  ]
+}

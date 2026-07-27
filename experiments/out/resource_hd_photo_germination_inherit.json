@@ -1,0 +1,92 @@
+{
+  "source": "/Users/quentinkuttenkuler/Downloads/Photo on 6-20-26 at 3.41\u202fAM.jpg",
+  "shape": [
+    960,
+    1440
+  ],
+  "config": {
+    "max_side": 0,
+    "cells": 180,
+    "passes": 6,
+    "flow_sweeps": 16,
+    "lam": 0.054,
+    "mu": 0.02,
+    "initial_overlap": 5.0,
+    "occupancy_floor": 0.002,
+    "kernel_power": 4.0,
+    "glass_strength": 0.25,
+    "glass_mode": "off",
+    "glass_guide_side": 128,
+    "flux_mix": 0.45,
+    "color_rate": 0.7,
+    "center_rate": 0.22,
+    "area_rate": 0.12,
+    "shape_rate": 0.24,
+    "max_ratio": 14.0,
+    "germination": true,
+    "germination_threshold": 3.25,
+    "germination_decay": 0.72,
+    "germination_separation": 0.34,
+    "germination_initial_scale": 0.35
+  },
+  "initialization_ms": 546.418791054748,
+  "final_psnr": 20.75050523401235,
+  "trace": [
+    {
+      "iteration": 1,
+      "psnr": 18.720369793153967,
+      "elapsed_ms": 1924.8811249854043,
+      "splat_visits": 17015606,
+      "visits_per_pixel": 12.308742766203704,
+      "mean_overlap": 1.0103217179514383,
+      "axis_ratio_mean": 1.0160767098545886,
+      "axis_ratio_max": 1.090242338032583,
+      "area_cv": 0.4570315110185915,
+      "cells": 228,
+      "births": 48,
+      "germination_max": 390.48519038018213
+    },
+    {
+      "iteration": 2,
+      "psnr": 19.799068487251606,
+      "elapsed_ms": 1952.5216670008376,
+      "splat_visits": 17555640,
+      "visits_per_pixel": 12.69939236111111,
+      "mean_overlap": 1.0436395267854592,
+      "axis_ratio_mean": 1.0332766885291715,
+      "axis_ratio_max": 1.1886283556387522,
+      "area_cv": 0.718014969950482,
+      "cells": 301,
+      "births": 73,
+      "germination_max": 161.23491268402867
+    },
+    {
+      "iteration": 3,
+      "psnr": 20.356307108671125,
+      "elapsed_ms": 2322.6757500087842,
+      "splat_visits": 18030765,
+      "visits_per_pixel": 13.043088107638889,
+      "mean_overlap": 1.0642337136143858,
+      "axis_ratio_mean": 1.0487671694720277,
+      "axis_ratio_max": 1.2958929575034177,
+      "area_cv": 0.8683348105317975,
+      "cells": 360,
+      "births": 59,
+      "germination_max": 116.09463879889182
+    },
+    {
+      "iteration": 4,
+      "psnr": 20.75050523401235,
+      "elapsed_ms": 2507.458542007953,
+      "splat_visits": 18354545,
+      "visits_per_pixel": 13.277303964120371,
+      "mean_overlap": 1.0791649578612457,
+      "axis_ratio_mean": 1.062134557247798,
+      "axis_ratio_max": 1.3962177296040816,
+      "area_cv": 0.9835985042346421,
+      "cells": 415,
+      "births": 55,
+      "germination_max": 83.5887864688322
+    }
+  ]
+}

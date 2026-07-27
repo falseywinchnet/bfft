@@ -1,0 +1,102 @@
+{
+  "source": "gallery:pikachu",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "passes": 24,
+  "first_detail_stage": 2,
+  "base_cells": 180,
+  "requested_detail_cells": 800,
+  "total_cells": 1046,
+  "emission": {
+    "mass_quantum": 0.00125,
+    "expected_detail_cells": 799.9999999999999,
+    "emitted_detail_cells": 866,
+    "detail_minor_median": 1.8470449447631836,
+    "detail_major_median": 8.847925186157227,
+    "detail_ratio_median": 4.039590358734131,
+    "detail_area_sum_per_pixel": 4.4709062576293945,
+    "curvature_limit": true,
+    "specificity_power": 0.0,
+    "specificity_mix": 0.0,
+    "emission_mode": "independent",
+    "substrate_hint": 0.0,
+    "substrate_shape_hint": 0.0,
+    "substrate_transport_hint": 0.5,
+    "splat_advection": 0.0,
+    "splat_advection_rms": 0.0,
+    "substrate_displacement_rms": 0.0,
+    "substrate_displacement_q95": 0.0,
+    "substrate_transport_displacement_rms": 0.9145976624753828,
+    "substrate_density_displacement_rms": 0.0,
+    "substrate_ratio_median": 1.0,
+    "substrate_density_min": 1.0,
+    "substrate_density_max": 1.0,
+    "substrate_vector_mode": "glass",
+    "substrate_vector_axis": "tangent"
+  },
+  "scores": {
+    "flow ellipses": {
+      "rgb_mse": 0.00117495620323731,
+      "psnr": 29.299783215172297,
+      "cartoon_mse": 5.6831870726274155e-05,
+      "texture_mse": 0.0004009601924207334,
+      "objective": 0.0016327482663843174
+    },
+    "same sites, circular": {
+      "rgb_mse": 0.00355147839913301,
+      "psnr": 24.495908224577484,
+      "cartoon_mse": 0.0003011447743736542,
+      "texture_mse": 0.0009708124842477109,
+      "objective": 0.004823435657754375
+    },
+    "uniform R2 circles": {
+      "rgb_mse": 0.0047304805811974465,
+      "psnr": 23.250947359725636,
+      "cartoon_mse": 0.0004937093938583488,
+      "texture_mse": 0.0010841745932435593,
+      "objective": 0.006308364568299355
+    },
+    "round cartoon + flow texture": {
+      "rgb_mse": 0.001671754634889032,
+      "psnr": 27.768274640581115,
+      "cartoon_mse": 0.00013829300191909086,
+      "texture_mse": 0.0005139264775850829,
+      "objective": 0.0023239741143932058
+    }
+  },
+  "diagnostics": {
+    "flow ellipses": {
+      "samples": 146495,
+      "uncovered_fraction": 0.0001220703125,
+      "dominance_mean": 0.31209676018527244,
+      "effective_contributors_mean": 5.142226202449593,
+      "effective_contributors_median": 4.973694259693866
+    },
+    "same sites, circular": {
+      "samples": 144781,
+      "uncovered_fraction": 6.103515625e-05,
+      "dominance_mean": 0.31436104171740986,
+      "effective_contributors_mean": 5.0987400265156415,
+      "effective_contributors_median": 4.916443427521846
+    },
+    "uniform R2 circles": {
+      "samples": 81010,
+      "uncovered_fraction": 0.001220703125,
+      "dominance_mean": 0.49435560942110984,
+      "effective_contributors_mean": 2.872600591129346,
+      "effective_contributors_median": 2.9430428204427628
+    },
+    "round cartoon + flow texture": {
+      "cartoon_dominance_mean": 0.31436104171740986,
+      "texture_dominance_mean": 0.31209676018527244,
+      "cartoon_effective_median": 4.916473661414628,
+      "texture_effective_median": 4.9740158356792215
+    }
+  },
+  "flow_ms": 3811.5847919834778,
+  "solve_ms": 7186.390959075652,
+  "output": "/Users/quentinkuttenkuler/bfft/experiments/out/flow_transport_pikachu_sub0.5_splat0.png"
+}

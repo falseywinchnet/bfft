@@ -1,0 +1,96 @@
+{
+  "source": "/Users/quentinkuttenkuler/Downloads/25.png",
+  "shape": [
+    128,
+    128
+  ],
+  "rounds": 30,
+  "birth_scale": 0.25,
+  "results": [
+    {
+      "area_rate": 0.12,
+      "cells": 382,
+      "psnr": 28.952537115336163,
+      "objective": {
+        "rgb_mse": 0.001272759327470171,
+        "psnr": 28.952537115336163,
+        "cartoon_mse": 0.0001637302065859554,
+        "texture_mse": 0.00039761580211153337,
+        "objective": 0.0018341053361676596
+      },
+      "initial_share_high_texture": 0.7643065302218709,
+      "dominance_mean": 0.6894577355832978,
+      "effective_mean": 1.938772147491011,
+      "old_radius_p50": 11.122853985357725,
+      "new_radius_p50": 3.3020582799939504
+    },
+    {
+      "area_rate": 0.24,
+      "cells": 469,
+      "psnr": 26.400440363624558,
+      "objective": {
+        "rgb_mse": 0.0022906353763560094,
+        "psnr": 26.400440363624558,
+        "cartoon_mse": 0.00039823424787274964,
+        "texture_mse": 0.0005040885094317838,
+        "objective": 0.003192958133660543
+      },
+      "initial_share_high_texture": 0.7331685078481724,
+      "dominance_mean": 0.6767549611156829,
+      "effective_mean": 1.9974476213904386,
+      "old_radius_p50": 10.842577403683896,
+      "new_radius_p50": 2.871034610155877
+    },
+    {
+      "area_rate": 0.4,
+      "cells": 592,
+      "psnr": 23.83947891493777,
+      "objective": {
+        "rgb_mse": 0.004130970641662984,
+        "psnr": 23.83947891493777,
+        "cartoon_mse": 0.0009217427552831083,
+        "texture_mse": 0.0006448442313081407,
+        "objective": 0.005697557628254233
+      },
+      "initial_share_high_texture": 0.6827304624444325,
+      "dominance_mean": 0.6538182501872034,
+      "effective_mean": 2.111725268881748,
+      "old_radius_p50": 10.96629039201369,
+      "new_radius_p50": 2.6054658558753463
+    },
+    {
+      "area_rate": 0.7,
+      "cells": 878,
+      "psnr": 21.85903412956701,
+      "objective": {
+        "rgb_mse": 0.006517733322579679,
+        "psnr": 21.85903412956701,
+        "cartoon_mse": 0.0016882483633425785,
+        "texture_mse": 0.0008362507451709132,
+        "objective": 0.00904223243109317
+      },
+      "initial_share_high_texture": 0.6254629787213661,
+      "dominance_mean": 0.6131061905176163,
+      "effective_mean": 2.351660932930745,
+      "old_radius_p50": 11.333058962538807,
+      "new_radius_p50": 2.5028023535331263
+    },
+    {
+      "area_rate": 1.0,
+      "cells": 1192,
+      "psnr": 19.786221538663384,
+      "objective": {
+        "rgb_mse": 0.010504559519087799,
+        "psnr": 19.786221538663384,
+        "cartoon_mse": 0.003027886851534388,
+        "texture_mse": 0.0010458983643613251,
+        "objective": 0.014578344734983513
+      },
+      "initial_share_high_texture": 0.5351983426939161,
+      "dominance_mean": 0.5577185948403371,
+      "effective_mean": 2.7119754323350063,
+      "old_radius_p50": 11.863045458316922,
+      "new_radius_p50": 2.513337347871851
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "source": "/Users/quentinkuttenkuler/Downloads/25.png",
+  "shape": [
+    128,
+    128
+  ],
+  "cells": 458,
+  "local_ellipse_psnr": 28.6512086379251,
+  "coupled_ellipse": {
+    "rgb_mse": 0.001089790336832877,
+    "psnr": 29.626570473024962,
+    "cartoon_mse": 3.760860326330991e-05,
+    "texture_mse": 0.0003522189937623637,
+    "objective": 0.0014796179338585505
+  },
+  "ellipse_support": {
+    "samples": 111961,
+    "coverage": 1.0,
+    "dominance_mean": 0.6957327617180451,
+    "effective_mean": 1.9121205287247784
+  },
+  "variants": {
+    "product alpha=0.1": {
+      "elapsed_s": 1.452282957965508,
+      "score": {
+        "rgb_mse": 0.001545853002376268,
+        "psnr": 28.10831806208172,
+        "cartoon_mse": 9.222431463505933e-05,
+        "texture_mse": 0.00047069713884380143,
+        "objective": 0.0021087744558551287
+      },
+      "support": {
+        "samples": 111961,
+        "coverage": 1.0,
+        "dominance_mean": 0.6916592564544655,
+        "effective_mean": 1.9243111944292188
+      }
+    },
+    "product alpha=0.25": {
+      "elapsed_s": 1.5204798750346527,
+      "score": {
+        "rgb_mse": 0.0016363572663127496,
+        "psnr": 27.86121870683623,
+        "cartoon_mse": 0.00011065089273374769,
+        "texture_mse": 0.00048776168853711965,
+        "objective": 0.002234769847583617
+      },
+      "support": {
+        "samples": 111961,
+        "coverage": 1.0,
+        "dominance_mean": 0.6796316923301209,
+        "effective_mean": 1.9705869706461179
+      }
+    },
+    "product alpha=0.5": {
+      "elapsed_s": 1.6162214590003714,
+      "score": {
+        "rgb_mse": 0.0018683054358653384,
+        "psnr": 27.28552122609472,
+        "cartoon_mse": 0.0001437388593168001,
+        "texture_mse": 0.0005465501996143513,
+        "objective": 0.0025585944947964898
+      },
+      "support": {
+        "samples": 111961,
+        "coverage": 1.0,
+        "dominance_mean": 0.664241131711661,
+        "effective_mean": 2.0376390598654197
+      }
+    },
+    "product alpha=1": {
+      "elapsed_s": 1.6881832500221208,
+      "score": {
+        "rgb_mse": 0.0020484592642319565,
+        "psnr": 26.88572668027745,
+        "cartoon_mse": 0.00018544923139605072,
+        "texture_mse": 0.0006005105764017515,
+        "objective": 0.0028344190720297584
+      },
+      "support": {
+        "samples": 111961,
+        "coverage": 1.0,
+        "dominance_mean": 0.6459909669751462,
+        "effective_mean": 2.1317877370841876
+      }
+    }
+  }
+}

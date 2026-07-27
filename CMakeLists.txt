@@ -27,14 +27,16 @@ set(BFFT_PUBLIC_HEADERS
   include/bfft/fct.hpp
   include/bfft/meyer.h
   include/bfft/stft.h
-  include/bfft/stft.hpp)
+  include/bfft/stft.hpp
+  include/bfft/vision.h)
 
 set(BFFT_SOURCES
   src/bfft.cpp
   src/bodft.cpp
   src/fct.cpp
   src/meyer.cpp
-  src/stft.cpp)
+  src/stft.cpp
+  src/vision.cpp)
 
 set(BFFT_PLATFORM_LIBS)
 if(NOT WIN32)
@@ -140,6 +142,7 @@ if(BFFT_BUILD_EXAMPLES)
   bfft_add_cpp_executable(dif_vs_dit_benchmark examples/dif_vs_dit_benchmark.cpp)
   bfft_add_cpp_executable(fct_half_edge_benchmark examples/fct_half_edge_benchmark.cpp)
   bfft_add_cpp_executable(fct_intrinsic_benchmark examples/fct_intrinsic_benchmark.cpp)
+  bfft_add_cpp_executable(meyer_facr_benchmark examples/meyer_facr_benchmark.cpp)
   bfft_add_cpp_executable(atan_vectoring_network_experiment src/atan_vectoring_network_experiment.cpp)
   bfft_add_cpp_executable(audio_magphase_roundtrip_benchmark examples/audio_magphase_roundtrip_benchmark.cpp)
   bfft_add_cpp_executable(fftw_polar_roundtrip_benchmark examples/fftw_polar_roundtrip_benchmark.cpp)
@@ -173,12 +176,18 @@ if(BFFT_BUILD_TESTS)
   bfft_add_cpp_executable(fct_half_edge_simd tests/fct_half_edge_simd.cpp)
   bfft_add_cpp_executable(fct_fractional_provider tests/fct_fractional_provider.cpp)
   bfft_add_cpp_executable(fct_intrinsic_kernel tests/fct_intrinsic_kernel.cpp)
+  bfft_add_cpp_executable(meyer_realtime_stress tests/meyer_realtime_stress.cpp)
+  bfft_add_cpp_executable(meyer_facr tests/meyer_facr.cpp)
+  bfft_add_cpp_executable(vision_kernels tests/vision_kernels.cpp)
 
   add_test(NAME correctness COMMAND correctness)
   add_test(NAME api_c COMMAND api_c)
   add_test(NAME fct_half_edge_simd COMMAND fct_half_edge_simd)
   add_test(NAME fct_fractional_provider COMMAND fct_fractional_provider)
   add_test(NAME fct_intrinsic_kernel COMMAND fct_intrinsic_kernel)
+  add_test(NAME meyer_realtime_stress COMMAND meyer_realtime_stress)
+  add_test(NAME meyer_facr COMMAND meyer_facr)
+  add_test(NAME vision_kernels COMMAND vision_kernels)
 endif()
 
 if(BFFT_BUILD_PROBES)

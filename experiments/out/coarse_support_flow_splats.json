@@ -1,0 +1,77 @@
+{
+  "source": "gallery:pikachu",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "carrier_cells": 458,
+  "flow_cells": 332,
+  "combined_coefficients": 7110,
+  "emission": {
+    "mass_quantum": 0.0033333333333333335,
+    "expected_detail_cells": 299.99999999999994,
+    "emitted_detail_cells": 332,
+    "detail_minor_median": 1.8548214435577393,
+    "detail_major_median": 10.113835334777832,
+    "detail_ratio_median": 4.616510391235352,
+    "detail_area_sum_per_pixel": 1.7591969966888428,
+    "curvature_limit": true,
+    "specificity_power": 0.0,
+    "specificity_mix": 0.0,
+    "emission_mode": "independent"
+  },
+  "carrier": {
+    "rgb_mse": 0.0036906281672817276,
+    "psnr": 24.328997079965152,
+    "cartoon_mse": 0.00023097462813791614,
+    "texture_mse": 0.0010379772308598716,
+    "objective": 0.004959580026279516
+  },
+  "variants": {
+    "flow ellipses": {
+      "rgb_mse": 0.002693164206295885,
+      "psnr": 25.69737166189643,
+      "cartoon_mse": 0.00014278007310580994,
+      "texture_mse": 0.0008234880039191608,
+      "objective": 0.0036594322833208557
+    },
+    "same sites circular": {
+      "rgb_mse": 0.003309122101862043,
+      "psnr": 24.802872077006572,
+      "cartoon_mse": 0.00019151677937913447,
+      "texture_mse": 0.0009505413768536158,
+      "objective": 0.004451180258094794
+    },
+    "uniform residual circles": {
+      "rgb_mse": 0.0034471466890549133,
+      "psnr": 24.62540235335419,
+      "cartoon_mse": 0.00019611980055820816,
+      "texture_mse": 0.001003383306814219,
+      "objective": 0.00464664979642734
+    }
+  },
+  "diagnostics": {
+    "flow ellipses": {
+      "samples": 27201,
+      "covered_fraction": 0.7569580078125,
+      "dominance_mean": 0.7946975779012841,
+      "effective_median": 1.221715526095605
+    },
+    "same sites circular": {
+      "samples": 26264,
+      "covered_fraction": 0.75042724609375,
+      "dominance_mean": 0.8030893837731408,
+      "effective_median": 1.1694264228929487
+    },
+    "uniform residual circles": {
+      "samples": 29066,
+      "covered_fraction": 0.96990966796875,
+      "dominance_mean": 0.8483446152175388,
+      "effective_median": 1.1979443146100521
+    }
+  },
+  "carrier_ms": 777.4162500863895,
+  "total_ms": 4552.252458059229,
+  "output": "/Users/quentinkuttenkuler/bfft/experiments/out/coarse_support_flow_splats.png"
+}

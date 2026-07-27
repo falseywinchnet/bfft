@@ -1,0 +1,130 @@
+{
+  "source": "gallery:camera",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "passes": 24,
+  "max_support_fraction": 0.18,
+  "support": {
+    "static_count": 1534.2213295983286,
+    "transported_count": 1606.3211239473333,
+    "broad_horizon_count": 9.824379203203417
+  },
+  "best": "phase-stack-static overlap=5",
+  "scores": {
+    "phase-stack-static overlap=5": {
+      "rgb_mse": 0.0006963899378494596,
+      "psnr": 31.571475126380296,
+      "cartoon_mse": 0.00486247778361567,
+      "texture_mse": 0.00025109829699002367,
+      "objective": 0.005809966018455154,
+      "population": {
+        "quantizer": "phase stack",
+        "cells": 1613,
+        "measure_integral": 1606.3211242487428,
+        "overlap": 5.0,
+        "advected": false,
+        "implied_by_stage": [
+          806.0616467089858,
+          176.28520494351415,
+          80.99616416307299,
+          52.82585936533769,
+          57.28449535147956,
+          41.38086531195131,
+          28.64795847478763,
+          27.17458110183543,
+          25.29265495598247,
+          26.245309734786588,
+          28.477462000908417,
+          27.090178427903084,
+          26.125402564695435,
+          27.93565403699904,
+          26.06801011599896,
+          22.36788108269684,
+          20.67797989203791,
+          19.046811394754513,
+          17.252215605382844,
+          17.19444746410045,
+          16.540280049584908,
+          13.83602831391363,
+          11.252145300677284,
+          10.261887887355897
+        ],
+        "realized_by_stage": [
+          813,
+          178,
+          79,
+          53,
+          73,
+          44,
+          28,
+          24,
+          19,
+          22,
+          20,
+          30,
+          20,
+          34,
+          22,
+          23,
+          16,
+          17,
+          13,
+          22,
+          15,
+          20,
+          14,
+          14
+        ],
+        "displacement_rms": 0.0,
+        "major_p10_p50_p90": [
+          4.286322217125055,
+          6.469206653358115,
+          14.467444015787438
+        ],
+        "minor_p10_p50_p90": [
+          2.5974599168841617,
+          3.1601285004989017,
+          4.230702629892122
+        ],
+        "ratio_p10_p50_p90": [
+          1.2757063053987299,
+          2.006242314898947,
+          4.526530895319815
+        ]
+      },
+      "diagnostic": {
+        "samples": 140502,
+        "uncovered_fraction": 0.0001220703125,
+        "dominance_mean": 0.32866826606724436,
+        "effective_contributors_mean": 5.0110556053327775,
+        "effective_contributors_median": 4.73397854367781
+      }
+    },
+    "uniform circular overlap=5": {
+      "rgb_mse": 0.002576346406130882,
+      "psnr": 25.88995743735856,
+      "cartoon_mse": 0.004763279014630155,
+      "texture_mse": 0.000756358368010515,
+      "objective": 0.008095983788771553,
+      "population": {
+        "quantizer": "uniform circular",
+        "cells": 1606,
+        "measure_integral": 1606.3211239473333,
+        "overlap": 5.0
+      },
+      "diagnostic": {
+        "samples": 81406,
+        "uncovered_fraction": 0.0035400390625,
+        "dominance_mean": 0.48430952330500465,
+        "effective_contributors_mean": 2.9024898465666067,
+        "effective_contributors_median": 2.96703207438009
+      }
+    }
+  },
+  "geometry_ms": 797.4649160169065,
+  "solve_ms": 399.75729095749557,
+  "output": "/Users/quentinkuttenkuler/bfft/experiments/out/transport_measure_camera.png"
+}

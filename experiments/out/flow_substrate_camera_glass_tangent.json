@@ -1,0 +1,97 @@
+{
+  "source": "gallery:camera",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "passes": 24,
+  "first_detail_stage": 2,
+  "base_cells": 180,
+  "requested_detail_cells": 800,
+  "total_cells": 1008,
+  "emission": {
+    "mass_quantum": 0.00125,
+    "expected_detail_cells": 800.0,
+    "emitted_detail_cells": 828,
+    "detail_minor_median": 2.0760676860809326,
+    "detail_major_median": 6.394508361816406,
+    "detail_ratio_median": 2.683220386505127,
+    "detail_area_sum_per_pixel": 3.7985332012176514,
+    "curvature_limit": true,
+    "specificity_power": 0.0,
+    "specificity_mix": 0.0,
+    "emission_mode": "independent",
+    "substrate_hint": 0.0,
+    "substrate_shape_hint": 1.0,
+    "substrate_displacement_rms": 0.0,
+    "substrate_displacement_q95": 0.0,
+    "substrate_ratio_median": 1.3578757344252677,
+    "substrate_density_min": 1.0,
+    "substrate_density_max": 1.0,
+    "substrate_vector_mode": "glass",
+    "substrate_vector_axis": "tangent"
+  },
+  "scores": {
+    "flow ellipses": {
+      "rgb_mse": 0.0010780471115028965,
+      "psnr": 29.67362259725652,
+      "cartoon_mse": 0.004889008858765364,
+      "texture_mse": 0.0003701146368047379,
+      "objective": 0.006337170607072998
+    },
+    "same sites, circular": {
+      "rgb_mse": 0.00144768939810601,
+      "psnr": 28.39324606065815,
+      "cartoon_mse": 0.0004305989418696048,
+      "texture_mse": 0.0004758975638779439,
+      "objective": 0.002354185903853559
+    },
+    "uniform R2 circles": {
+      "rgb_mse": 0.0023727346648007683,
+      "psnr": 26.24750824806572,
+      "cartoon_mse": 0.0048544052790637435,
+      "texture_mse": 0.0007325567787796925,
+      "objective": 0.007959696722644204
+    },
+    "round cartoon + flow texture": {
+      "rgb_mse": 0.0010442451754931494,
+      "psnr": 29.81197522537865,
+      "cartoon_mse": 0.0020930972753686918,
+      "texture_mse": 0.00034859663372164185,
+      "objective": 0.003485939084583483
+    }
+  },
+  "diagnostics": {
+    "flow ellipses": {
+      "samples": 136519,
+      "uncovered_fraction": 6.103515625e-05,
+      "dominance_mean": 0.33267156714145024,
+      "effective_contributors_mean": 4.811324681607425,
+      "effective_contributors_median": 4.679969596841028
+    },
+    "same sites, circular": {
+      "samples": 135924,
+      "uncovered_fraction": 0.0,
+      "dominance_mean": 0.33210456636429,
+      "effective_contributors_mean": 4.776940366039462,
+      "effective_contributors_median": 4.651624098698724
+    },
+    "uniform R2 circles": {
+      "samples": 80982,
+      "uncovered_fraction": 0.001708984375,
+      "dominance_mean": 0.4966868795427144,
+      "effective_contributors_mean": 2.869229428751057,
+      "effective_contributors_median": 2.928587919476308
+    },
+    "round cartoon + flow texture": {
+      "cartoon_dominance_mean": 0.33210456636429,
+      "texture_dominance_mean": 0.33267156714145024,
+      "cartoon_effective_median": 4.651624098698724,
+      "texture_effective_median": 4.6799701763500465
+    }
+  },
+  "flow_ms": 2872.831374988891,
+  "solve_ms": 4099.554042099044,
+  "output": "/Users/quentinkuttenkuler/bfft/experiments/out/flow_substrate_camera_glass_tangent.png"
+}

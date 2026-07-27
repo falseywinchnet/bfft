@@ -1,0 +1,161 @@
+{
+  "source": "/Users/quentinkuttenkuler/Downloads/25.png",
+  "shape": [
+    128,
+    128
+  ],
+  "config": {
+    "max_side": 128,
+    "cells": 180,
+    "passes": 6,
+    "flow_sweeps": 16,
+    "lam": 0.054,
+    "mu": 0.02,
+    "initial_overlap": 5.0,
+    "occupancy_floor": 0.002,
+    "kernel_power": 4.0,
+    "glass_strength": 3.0,
+    "flux_mix": 0.45,
+    "color_rate": 0.7,
+    "center_rate": 0.22,
+    "area_rate": 0.12,
+    "shape_rate": 0.24,
+    "max_ratio": 14.0
+  },
+  "initialization_ms": 80.57500002905726,
+  "final_psnr": 15.83811399841263,
+  "trace": [
+    {
+      "iteration": 1,
+      "psnr": 12.666649172592246,
+      "elapsed_ms": 88.05962500628084,
+      "splat_visits": 226571,
+      "visits_per_pixel": 13.82879638671875,
+      "mean_overlap": 0.9745686663397041,
+      "axis_ratio_mean": 1.0221611515279811,
+      "axis_ratio_max": 1.090242338032583,
+      "area_cv": 0.03573239607592396
+    },
+    {
+      "iteration": 2,
+      "psnr": 14.075361816072128,
+      "elapsed_ms": 95.89470794890076,
+      "splat_visits": 227070,
+      "visits_per_pixel": 13.8592529296875,
+      "mean_overlap": 0.9699500948731217,
+      "axis_ratio_mean": 1.050535713095829,
+      "axis_ratio_max": 1.1886283556387525,
+      "area_cv": 0.04892048894084921
+    },
+    {
+      "iteration": 3,
+      "psnr": 14.764815957584446,
+      "elapsed_ms": 89.12454196251929,
+      "splat_visits": 226893,
+      "visits_per_pixel": 13.84844970703125,
+      "mean_overlap": 0.9602031437170269,
+      "axis_ratio_mean": 1.0721466994653701,
+      "axis_ratio_max": 1.2958929575034177,
+      "area_cv": 0.066815854917478
+    },
+    {
+      "iteration": 4,
+      "psnr": 15.109305285189214,
+      "elapsed_ms": 86.07049996498972,
+      "splat_visits": 226408,
+      "visits_per_pixel": 13.81884765625,
+      "mean_overlap": 0.9602625794781753,
+      "axis_ratio_mean": 1.093375450052949,
+      "axis_ratio_max": 1.4128373678284847,
+      "area_cv": 0.07158086437173507
+    },
+    {
+      "iteration": 5,
+      "psnr": 15.101339084158994,
+      "elapsed_ms": 83.5903330007568,
+      "splat_visits": 225395,
+      "visits_per_pixel": 13.75701904296875,
+      "mean_overlap": 0.9507233433101216,
+      "axis_ratio_mean": 1.1071168716923807,
+      "axis_ratio_max": 1.5275788444991445,
+      "area_cv": 0.08654338583301141
+    },
+    {
+      "iteration": 6,
+      "psnr": 15.377660872388079,
+      "elapsed_ms": 93.64908293355256,
+      "splat_visits": 225286,
+      "visits_per_pixel": 13.7503662109375,
+      "mean_overlap": 0.9581359479391235,
+      "axis_ratio_mean": 1.1207191149893512,
+      "axis_ratio_max": 1.5782019347154723,
+      "area_cv": 0.0905196687632486
+    },
+    {
+      "iteration": 7,
+      "psnr": 15.268275580646959,
+      "elapsed_ms": 84.61795898620039,
+      "splat_visits": 225183,
+      "visits_per_pixel": 13.74407958984375,
+      "mean_overlap": 0.9474321627288833,
+      "axis_ratio_mean": 1.1292597305846963,
+      "axis_ratio_max": 1.6533940156126739,
+      "area_cv": 0.10167144702882949
+    },
+    {
+      "iteration": 8,
+      "psnr": 15.544545135072319,
+      "elapsed_ms": 108.43095800373703,
+      "splat_visits": 224589,
+      "visits_per_pixel": 13.70782470703125,
+      "mean_overlap": 0.9567078946604392,
+      "axis_ratio_mean": 1.1410868939443808,
+      "axis_ratio_max": 1.8026001572706423,
+      "area_cv": 0.10555003455663338
+    },
+    {
+      "iteration": 9,
+      "psnr": 15.531916416427512,
+      "elapsed_ms": 99.25916593056172,
+      "splat_visits": 224478,
+      "visits_per_pixel": 13.7010498046875,
+      "mean_overlap": 0.9473499680293347,
+      "axis_ratio_mean": 1.1459434837004958,
+      "axis_ratio_max": 1.8503381618670751,
+      "area_cv": 0.11464813615366196
+    },
+    {
+      "iteration": 10,
+      "psnr": 15.737684867265822,
+      "elapsed_ms": 87.81783294398338,
+      "splat_visits": 224780,
+      "visits_per_pixel": 13.719482421875,
+      "mean_overlap": 0.95869673672548,
+      "axis_ratio_mean": 1.1586320723250232,
+      "axis_ratio_max": 1.850338161867075,
+      "area_cv": 0.12049919278793228
+    },
+    {
+      "iteration": 11,
+      "psnr": 15.581972487450335,
+      "elapsed_ms": 91.00558399222791,
+      "splat_visits": 224923,
+      "visits_per_pixel": 13.72821044921875,
+      "mean_overlap": 0.9476343885777989,
+      "axis_ratio_mean": 1.1629889742095847,
+      "axis_ratio_max": 1.8503381618670751,
+      "area_cv": 0.12800655279191653
+    },
+    {
+      "iteration": 12,
+      "psnr": 15.83811399841263,
+      "elapsed_ms": 100.43433296959847,
+      "splat_visits": 225254,
+      "visits_per_pixel": 13.7484130859375,
+      "mean_overlap": 0.9597332273163681,
+      "axis_ratio_mean": 1.1753709856116936,
+      "axis_ratio_max": 1.9730104805640372,
+      "area_cv": 0.13314592125330563
+    }
+  ]
+}

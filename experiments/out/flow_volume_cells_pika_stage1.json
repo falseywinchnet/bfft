@@ -1,0 +1,71 @@
+{
+  "source": "gallery:pikachu",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "passes": 24,
+  "first_detail_stage": 1,
+  "base_cells": 180,
+  "requested_detail_cells": 800,
+  "total_cells": 1007,
+  "emission": {
+    "mass_quantum": 4.115544640460444,
+    "expected_detail_cells": 799.9999999999999,
+    "emitted_detail_cells": 827,
+    "detail_minor_median": 1.495639443397522,
+    "detail_major_median": 13.494223594665527,
+    "detail_ratio_median": 6.371819496154785,
+    "detail_area_sum_per_pixel": 3.929121494293213
+  },
+  "scores": {
+    "flow ellipses": {
+      "rgb_mse": 0.001117883789636868,
+      "psnr": 29.51603341478803,
+      "cartoon_mse": 7.16750206039707e-05,
+      "texture_mse": 0.0003937677090861052,
+      "objective": 0.0015833265193269438
+    },
+    "same sites, circular": {
+      "rgb_mse": 0.0034381112756596056,
+      "psnr": 24.63680071330503,
+      "cartoon_mse": 0.00031835275116798593,
+      "texture_mse": 0.0009332228676378418,
+      "objective": 0.004689686894465433
+    },
+    "uniform R2 circles": {
+      "rgb_mse": 0.005322377131098413,
+      "psnr": 22.738943556109895,
+      "cartoon_mse": 0.0005358937753158636,
+      "texture_mse": 0.001186735801063029,
+      "objective": 0.007045006707477305
+    }
+  },
+  "diagnostics": {
+    "flow ellipses": {
+      "samples": 138398,
+      "uncovered_fraction": 6.103515625e-05,
+      "dominance_mean": 0.3307605990707758,
+      "effective_contributors_mean": 6.103515624999999e+25,
+      "effective_contributors_median": 4.593748291812113
+    },
+    "same sites, circular": {
+      "samples": 137026,
+      "uncovered_fraction": 0.0,
+      "dominance_mean": 0.33500414341922663,
+      "effective_contributors_mean": 4.813949133884008,
+      "effective_contributors_median": 4.563101990963618
+    },
+    "uniform R2 circles": {
+      "samples": 80967,
+      "uncovered_fraction": 0.001708984375,
+      "dominance_mean": 0.49672482744216895,
+      "effective_contributors_mean": 1.7089843749999998e+27,
+      "effective_contributors_median": 2.9303662664786634
+    }
+  },
+  "flow_ms": 5930.0348330289125,
+  "solve_ms": 610.2440420072526,
+  "output": "/Users/quentinkuttenkuler/bfft/experiments/out/flow_volume_cells_pika_stage1.png"
+}

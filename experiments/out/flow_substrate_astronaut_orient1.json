@@ -1,0 +1,95 @@
+{
+  "source": "gallery:astronaut",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "passes": 24,
+  "first_detail_stage": 2,
+  "base_cells": 180,
+  "requested_detail_cells": 800,
+  "total_cells": 1021,
+  "emission": {
+    "mass_quantum": 0.00125,
+    "expected_detail_cells": 799.9999999999999,
+    "emitted_detail_cells": 841,
+    "detail_minor_median": 1.7733579874038696,
+    "detail_major_median": 5.382016658782959,
+    "detail_ratio_median": 2.7064692974090576,
+    "detail_area_sum_per_pixel": 2.308952808380127,
+    "curvature_limit": true,
+    "specificity_power": 0.0,
+    "specificity_mix": 0.0,
+    "emission_mode": "independent",
+    "substrate_hint": 0.0,
+    "substrate_shape_hint": 1.0,
+    "substrate_displacement_rms": 0.0,
+    "substrate_displacement_q95": 0.0,
+    "substrate_ratio_median": 1.5192083101957732,
+    "substrate_density_min": 1.0,
+    "substrate_density_max": 1.0
+  },
+  "scores": {
+    "flow ellipses": {
+      "rgb_mse": 0.0030942369695730852,
+      "psnr": 25.09446429280137,
+      "cartoon_mse": 7.919299779910401e-05,
+      "texture_mse": 0.0009061814605817755,
+      "objective": 0.004079611427953964
+    },
+    "same sites, circular": {
+      "rgb_mse": 0.003366402128175697,
+      "psnr": 24.72834007309537,
+      "cartoon_mse": 8.999092778284119e-05,
+      "texture_mse": 0.0009632405178421407,
+      "objective": 0.004419633573800679
+    },
+    "uniform R2 circles": {
+      "rgb_mse": 0.003366494267944419,
+      "psnr": 24.72822120659047,
+      "cartoon_mse": 0.00011188607172640886,
+      "texture_mse": 0.0010068207835609434,
+      "objective": 0.004485201123231771
+    },
+    "round cartoon + flow texture": {
+      "rgb_mse": 0.002934362422064024,
+      "psnr": 25.324862476222364,
+      "cartoon_mse": 7.177639262811604e-05,
+      "texture_mse": 0.0008621315172258448,
+      "objective": 0.0038682703319179853
+    }
+  },
+  "diagnostics": {
+    "flow ellipses": {
+      "samples": 113676,
+      "uncovered_fraction": 0.000244140625,
+      "dominance_mean": 0.3801672804036013,
+      "effective_contributors_mean": 4.02509846523091,
+      "effective_contributors_median": 3.89638124540946
+    },
+    "same sites, circular": {
+      "samples": 112820,
+      "uncovered_fraction": 0.0,
+      "dominance_mean": 0.38464009192340554,
+      "effective_contributors_mean": 3.9775841664422447,
+      "effective_contributors_median": 3.844694450225517
+    },
+    "uniform R2 circles": {
+      "samples": 81005,
+      "uncovered_fraction": 0.001708984375,
+      "dominance_mean": 0.49599372315491946,
+      "effective_contributors_mean": 2.871799193582029,
+      "effective_contributors_median": 2.934263414870059
+    },
+    "round cartoon + flow texture": {
+      "cartoon_dominance_mean": 0.38464009192340554,
+      "texture_dominance_mean": 0.3801672804036013,
+      "cartoon_effective_median": 3.844694450225517,
+      "texture_effective_median": 3.896617316029294
+    }
+  },
+  "flow_ms": 1361.6378749720752,
+  "solve_ms": 1142.2986250836402,
+  "output": "/Users/quentinkuttenkuler/bfft/experiments/out/flow_substrate_astronaut_orient1.png"
+}

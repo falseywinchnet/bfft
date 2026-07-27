@@ -1,0 +1,77 @@
+camera    ridge_enriched      30.17 dB obj 1.891e-03 struct 0.0020 solve 0.05s
+camera    graph_descent       28.80 dB obj 5.833e-03 struct 0.0029 solve 0.09s
+camera    leverage_exchange   28.16 dB obj 6.765e-03 struct 0.0029 solve 0.06s
+{
+  "protocol": {
+    "allocation_mode": "Expected affine gain",
+    "coupled_overlap": [
+      4.0,
+      16.0
+    ],
+    "images": [
+      "camera"
+    ],
+    "initial_cells": 96,
+    "max_side": 96,
+    "maximum_cells": 300,
+    "objective": "rgb_mse + cartoon_mse + texture_mse, lower better"
+  },
+  "results": [
+    {
+      "cartoon_mse": 0.0005966913154093232,
+      "cells": 300,
+      "coefficients": 1200,
+      "description": "Direct solve with one bounded tanh ridge column per cell, whose axis and offset come from the residual's own cumulative sign statistics.",
+      "grow_s": 0.9374804579420015,
+      "image": "camera",
+      "objective": 0.001891113977483757,
+      "psnr": 30.165269016382435,
+      "residual_structure": 0.0019992440384858185,
+      "rgb_mse": 0.0009626603807548893,
+      "solve_s": 0.053011667099781334,
+      "texture_mse": 0.0003317622813195445,
+      "trial": "ridge_enriched"
+    },
+    {
+      "cartoon_mse": 0.004054415005524985,
+      "cells": 300,
+      "description": "Learn a scalar barrier field on the pixel graph from the exact envelope-theorem gradient carried back over both shortest-path forests.",
+      "grow_s": 0.3631767920451239,
+      "image": "camera",
+      "objective": 0.005833329689171083,
+      "psnr": 28.801933534195157,
+      "psnr_history": [
+        28.123155259990966,
+        28.704143903700544,
+        28.752134908234325,
+        28.74439039310509,
+        28.801933534195157
+      ],
+      "residual_structure": 0.002880218299742148,
+      "rgb_mse": 0.0013176699645419353,
+      "scale_span": [
+        0.7555647387994884,
+        2.2064808217864735
+      ],
+      "solve_s": 0.09076166700106114,
+      "texture_mse": 0.00046124471910416183,
+      "trial": "graph_descent"
+    },
+    {
+      "cartoon_mse": 0.004709228888342882,
+      "cells": 300,
+      "description": "Retire cells by exact constrained-deletion cost and re-seed at exact Schur-complement gain.",
+      "exchanged": 12,
+      "grow_s": 0.3638616669923067,
+      "image": "camera",
+      "objective": 0.006764683700550517,
+      "psnr": 28.157055618956484,
+      "psnr_before_exchange": 28.123155259990966,
+      "residual_structure": 0.002947523338911582,
+      "rgb_mse": 0.001528602051495918,
+      "solve_s": 0.06295770895667374,
+      "texture_mse": 0.0005268527607117173,
+      "trial": "leverage_exchange"
+    }
+  ]
+}

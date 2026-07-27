@@ -1,0 +1,1109 @@
+{
+  "protocol": {
+    "anisotropy_amount": 0.55,
+    "capacity_steps": 4,
+    "capacity_trust": 2.0,
+    "capacity_weight": 0.08,
+    "cells": 180,
+    "competition_steps": 3,
+    "competition_trust": 1.0,
+    "deletion_ratio": 0.15,
+    "diffusion_steps": 3,
+    "diffusion_strength": 0.55,
+    "flow_sweeps": 16,
+    "fusion_strength": 0.0001,
+    "images": [
+      "pikachu",
+      "camera",
+      "astronaut",
+      "coins"
+    ],
+    "max_side": 96,
+    "passes": 4,
+    "survival_weight": 0.002,
+    "temperature": 4.0,
+    "top_k": 8
+  },
+  "results": [
+    {
+      "baseline_psnr": 20.4975739851755,
+      "cells": 180,
+      "elapsed_s": 7.975919042015448,
+      "image": "pikachu",
+      "variants": [
+        {
+          "boundary_edge_alignment": 0.24661964533593553,
+          "boundary_edges": 4098,
+          "cartoon_mse": 0.0005451094666518773,
+          "elapsed_s": 0.08540095796342939,
+          "extra_components": 121,
+          "fragmented_cells": 80,
+          "mass_cv": 0.39289124847324813,
+          "mean_entropy": 1.1941693319855913,
+          "mean_max_overlap": 7.092611332336931,
+          "name": "continuous anisotropic top-k",
+          "objective": 0.009683619578343159,
+          "psnr": 21.293528365459984,
+          "rgb_mse": 0.007424157274227076,
+          "texture_mse": 0.001714352837464206
+        },
+        {
+          "boundary_edge_alignment": 0.2518711721864887,
+          "boundary_edges": 3909,
+          "cartoon_mse": 0.0004302035169069736,
+          "elapsed_s": 0.14762379205785692,
+          "extra_components": 97,
+          "fragmented_cells": 65,
+          "mass_cv": 0.3919898210112303,
+          "mean_entropy": 1.2239518778095457,
+          "mean_max_overlap": 7.352154272813866,
+          "name": "transport-diffused support",
+          "objective": 0.008238283155107017,
+          "psnr": 21.994825930791432,
+          "rgb_mse": 0.006317094982757478,
+          "texture_mse": 0.0014909846554425643
+        },
+        {
+          "boundary_edge_alignment": 0.25705331092427924,
+          "boundary_edges": 3667,
+          "cartoon_mse": 0.00032867429220863434,
+          "elapsed_s": 2.1279928750591353,
+          "extra_components": 59,
+          "fragmented_cells": 47,
+          "mass_cv": 0.43022587444723154,
+          "mean_entropy": 1.1841232566404796,
+          "mean_max_overlap": 7.738231532298507,
+          "name": "diffusion + capacity",
+          "notes": {
+            "capacity_trace": [
+              {
+                "bias_p95": 1.9730585844048847,
+                "iteration": 0,
+                "relative_mass_error": 0.2123187682004764
+              },
+              {
+                "bias_p95": 2.0191012724788933,
+                "iteration": 1,
+                "relative_mass_error": 0.036006760503808875
+              },
+              {
+                "bias_p95": 2.014308739553823,
+                "iteration": 2,
+                "relative_mass_error": 0.001540604873890319
+              },
+              {
+                "bias_p95": 2.0145365646141853,
+                "iteration": 3,
+                "relative_mass_error": 0.00013638066249618589
+              }
+            ]
+          },
+          "objective": 0.007218807527550193,
+          "psnr": 22.573079076205097,
+          "rgb_mse": 0.005529579321601942,
+          "texture_mse": 0.0013605539137396165
+        },
+        {
+          "boundary_edge_alignment": 0.2594773868656787,
+          "boundary_edges": 3715,
+          "cartoon_mse": 0.0003668115910145399,
+          "elapsed_s": 0.2184337080689147,
+          "extra_components": 80,
+          "fragmented_cells": 57,
+          "mass_cv": 0.4302389631304503,
+          "mean_entropy": 1.0781471332011985,
+          "mean_max_overlap": 7.161749892874112,
+          "name": "adaptive temperature only",
+          "notes": {
+            "capacity_trace": [
+              {
+                "bias_p95": 2.7376147540517874,
+                "iteration": 0,
+                "relative_mass_error": 0.8106804054568224
+              },
+              {
+                "bias_p95": 3.434263268429644,
+                "iteration": 1,
+                "relative_mass_error": 0.3502198532768898
+              },
+              {
+                "bias_p95": 3.7696945232882877,
+                "iteration": 2,
+                "relative_mass_error": 0.05864508675436244
+              },
+              {
+                "bias_p95": 3.772816624516538,
+                "iteration": 3,
+                "relative_mass_error": 0.0042139683993287
+              }
+            ]
+          },
+          "objective": 0.00807425346227267,
+          "psnr": 22.090776457205724,
+          "rgb_mse": 0.00617905917409921,
+          "texture_mse": 0.0015283826971589196
+        },
+        {
+          "boundary_edge_alignment": 0.26291047171103327,
+          "boundary_edges": 3616,
+          "cartoon_mse": 0.00031751519577110043,
+          "elapsed_s": 0.14646575006190687,
+          "extra_components": 54,
+          "fragmented_cells": 43,
+          "mass_cv": 0.43023449016245036,
+          "mean_entropy": 1.1778670172903,
+          "mean_max_overlap": 7.634318462341615,
+          "name": "residual anisotropy only",
+          "notes": {
+            "capacity_trace": [
+              {
+                "bias_p95": 1.7900221663153448,
+                "iteration": 0,
+                "relative_mass_error": 0.07258930077680247
+              },
+              {
+                "bias_p95": 1.7331917240193266,
+                "iteration": 1,
+                "relative_mass_error": 0.010213580360236452
+              },
+              {
+                "bias_p95": 1.7168407333192925,
+                "iteration": 2,
+                "relative_mass_error": 0.0006678184811019044
+              },
+              {
+                "bias_p95": 1.7164437884288708,
+                "iteration": 3,
+                "relative_mass_error": 0.00026247548909211975
+              }
+            ]
+          },
+          "objective": 0.007019541647450615,
+          "psnr": 22.695197166760252,
+          "rgb_mse": 0.005376260247099484,
+          "texture_mse": 0.0013257662045800297
+        },
+        {
+          "boundary_edge_alignment": 0.2664483644797922,
+          "boundary_edges": 3632,
+          "cartoon_mse": 0.00034281156813585536,
+          "elapsed_s": 0.22218483302276582,
+          "extra_components": 66,
+          "fragmented_cells": 52,
+          "mass_cv": 0.43022317298000473,
+          "mean_entropy": 1.0663485648894333,
+          "mean_max_overlap": 7.0710152400188,
+          "name": "adaptive temperature + residual anisotropy",
+          "notes": {
+            "capacity_trace": [
+              {
+                "bias_p95": 3.180325807868142,
+                "iteration": 0,
+                "relative_mass_error": 0.8665360664341761
+              },
+              {
+                "bias_p95": 3.4887901853728707,
+                "iteration": 1,
+                "relative_mass_error": 0.40085798800517436
+              },
+              {
+                "bias_p95": 3.7565303287692116,
+                "iteration": 2,
+                "relative_mass_error": 0.10754041132913839
+              },
+              {
+                "bias_p95": 3.7549515365885737,
+                "iteration": 3,
+                "relative_mass_error": 0.016476593001324626
+              }
+            ]
+          },
+          "objective": 0.007676793164798514,
+          "psnr": 22.308180492757174,
+          "rgb_mse": 0.0058773553688809465,
+          "texture_mse": 0.0014566262277817118
+        },
+        {
+          "boundary_edge_alignment": 0.27466972687707397,
+          "boundary_edges": 3639,
+          "cartoon_mse": 0.00023778789744477967,
+          "elapsed_s": 0.18000799999572337,
+          "extra_components": 70,
+          "fragmented_cells": 54,
+          "mass_cv": 0.4397591393796506,
+          "mean_entropy": 1.0802227031828535,
+          "mean_max_overlap": 7.0462635697558,
+          "name": "receiver competition + survival",
+          "notes": {
+            "competition_trace": [
+              {
+                "gradient_norm": 3.4809351200721808,
+                "iteration": 0,
+                "mass_cv": 0.43022317298000473,
+                "minimum_capacity_ratio": 0.9919471389132247,
+                "psnr": 22.308180492757174,
+                "step_p95": 0.7585782557361221
+              },
+              {
+                "gradient_norm": 2.0357528472114885,
+                "iteration": 1,
+                "mass_cv": 0.4377254881444501,
+                "minimum_capacity_ratio": 0.8084952798613498,
+                "psnr": 22.92607498781188,
+                "step_p95": 0.34427086270735296
+              },
+              {
+                "gradient_norm": 1.4312962913986986,
+                "iteration": 2,
+                "mass_cv": 0.4392115047756004,
+                "minimum_capacity_ratio": 0.7317344342405869,
+                "psnr": 23.20494612301628,
+                "step_p95": 0.19656373959769058
+              }
+            ]
+          },
+          "objective": 0.00608350186103997,
+          "psnr": 23.343788397886694,
+          "rgb_mse": 0.004630428262329896,
+          "texture_mse": 0.0012152857012652939
+        },
+        {
+          "name": "hard delete extinguished supports",
+          "reason": "no support fell below the measured mass threshold",
+          "removed": 0,
+          "skipped": true
+        },
+        {
+          "boundary_edge_alignment": 0.2664483644797922,
+          "boundary_edges": 3632,
+          "cartoon_mse": 0.0003484753449465741,
+          "elapsed_s": 0.16991937498096377,
+          "extra_components": 66,
+          "fragmented_cells": 52,
+          "mass_cv": 0.43022317298000473,
+          "mean_entropy": 1.0663485648894333,
+          "mean_max_overlap": 7.0710152400188,
+          "name": "joint support + soft graph fusion",
+          "objective": 0.007755510023919317,
+          "psnr": 22.25806090156035,
+          "rgb_mse": 0.005945575656956935,
+          "texture_mse": 0.0014614590220158085
+        }
+      ],
+      "working_shape": [
+        96,
+        96
+      ]
+    },
+    {
+      "baseline_psnr": 26.12281357108346,
+      "cells": 180,
+      "elapsed_s": 5.847300250083208,
+      "image": "camera",
+      "variants": [
+        {
+          "boundary_edge_alignment": 0.14553499705630896,
+          "boundary_edges": 3707,
+          "cartoon_mse": 0.0011755077884770407,
+          "elapsed_s": 0.37489520898088813,
+          "extra_components": 72,
+          "fragmented_cells": 52,
+          "mass_cv": 0.5237741837707127,
+          "mean_entropy": 1.0909111616634664,
+          "mean_max_overlap": 7.302101316899421,
+          "name": "continuous anisotropic top-k",
+          "objective": 0.004205263404116344,
+          "psnr": 26.38666640568367,
+          "rgb_mse": 0.002297911821921608,
+          "texture_mse": 0.0007318437937176951
+        },
+        {
+          "boundary_edge_alignment": 0.1462988732565192,
+          "boundary_edges": 3595,
+          "cartoon_mse": 0.0005158418007601648,
+          "elapsed_s": 0.17182275000959635,
+          "extra_components": 61,
+          "fragmented_cells": 44,
+          "mass_cv": 0.5257369992870594,
+          "mean_entropy": 1.1207329919325075,
+          "mean_max_overlap": 7.5097258004518075,
+          "name": "transport-diffused support",
+          "objective": 0.0032988764759229695,
+          "psnr": 26.783802154354454,
+          "rgb_mse": 0.002097103111250145,
+          "texture_mse": 0.0006859315639126601
+        },
+        {
+          "boundary_edge_alignment": 0.14746817995886807,
+          "boundary_edges": 3544,
+          "cartoon_mse": 0.0010878989246998361,
+          "elapsed_s": 0.45837445894721895,
+          "extra_components": 62,
+          "fragmented_cells": 46,
+          "mass_cv": 0.5662748488212651,
+          "mean_entropy": 1.0891425859217165,
+          "mean_max_overlap": 7.623404754559672,
+          "name": "diffusion + capacity",
+          "notes": {
+            "capacity_trace": [
+              {
+                "bias_p95": 1.425653569734634,
+                "iteration": 0,
+                "relative_mass_error": 0.18219930571347617
+              },
+              {
+                "bias_p95": 1.4134758649530188,
+                "iteration": 1,
+                "relative_mass_error": 0.031607253027730556
+              },
+              {
+                "bias_p95": 1.4189764201169215,
+                "iteration": 2,
+                "relative_mass_error": 0.0015726510050556616
+              },
+              {
+                "bias_p95": 1.4179645635606153,
+                "iteration": 3,
+                "relative_mass_error": 0.00023939546291833642
+              }
+            ]
+          },
+          "objective": 0.003786387344109316,
+          "psnr": 26.942338067024373,
+          "rgb_mse": 0.0020219303595363967,
+          "texture_mse": 0.0006765580598730831
+        },
+        {
+          "boundary_edge_alignment": 0.14670957378811836,
+          "boundary_edges": 3531,
+          "cartoon_mse": 0.0018217542833932824,
+          "elapsed_s": 0.18940820801071823,
+          "extra_components": 69,
+          "fragmented_cells": 51,
+          "mass_cv": 0.5662654572542675,
+          "mean_entropy": 1.1710063159403237,
+          "mean_max_overlap": 8.209911555573658,
+          "name": "adaptive temperature only",
+          "notes": {
+            "capacity_trace": [
+              {
+                "bias_p95": 2.3270409406857695,
+                "iteration": 0,
+                "relative_mass_error": 0.35754490326264426
+              },
+              {
+                "bias_p95": 2.974976140889572,
+                "iteration": 1,
+                "relative_mass_error": 0.13993537135606546
+              },
+              {
+                "bias_p95": 3.0556033729453325,
+                "iteration": 2,
+                "relative_mass_error": 0.025530794090206744
+              },
+              {
+                "bias_p95": 3.0557797009676406,
+                "iteration": 3,
+                "relative_mass_error": 0.0015333986066922844
+              }
+            ]
+          },
+          "objective": 0.004485439947795781,
+          "psnr": 26.977705481271805,
+          "rgb_mse": 0.0020055313348148317,
+          "texture_mse": 0.0006581543295876671
+        },
+        {
+          "boundary_edge_alignment": 0.1485450114832081,
+          "boundary_edges": 3458,
+          "cartoon_mse": 0.0012819162513381607,
+          "elapsed_s": 0.1810994999250397,
+          "extra_components": 58,
+          "fragmented_cells": 42,
+          "mass_cv": 0.5662587917337755,
+          "mean_entropy": 1.0790015990534003,
+          "mean_max_overlap": 7.390676308202014,
+          "name": "residual anisotropy only",
+          "notes": {
+            "capacity_trace": [
+              {
+                "bias_p95": 1.4271122417621325,
+                "iteration": 0,
+                "relative_mass_error": 0.04978489534411143
+              },
+              {
+                "bias_p95": 1.4172648891721256,
+                "iteration": 1,
+                "relative_mass_error": 0.004012312962487268
+              },
+              {
+                "bias_p95": 1.4174160211120002,
+                "iteration": 2,
+                "relative_mass_error": 0.00023187636423116747
+              },
+              {
+                "bias_p95": 1.4177759276264914,
+                "iteration": 3,
+                "relative_mass_error": 0.0001751387004256917
+              }
+            ]
+          },
+          "objective": 0.003963802774984378,
+          "psnr": 26.970092517435027,
+          "rgb_mse": 0.0020090500135077336,
+          "texture_mse": 0.0006728365101384831
+        },
+        {
+          "boundary_edge_alignment": 0.14761040880567483,
+          "boundary_edges": 3456,
+          "cartoon_mse": 0.0014558660361423835,
+          "elapsed_s": 0.19788279198110104,
+          "extra_components": 47,
+          "fragmented_cells": 40,
+          "mass_cv": 0.5662873781274311,
+          "mean_entropy": 1.169782947938115,
+          "mean_max_overlap": 8.074912610589402,
+          "name": "adaptive temperature + residual anisotropy",
+          "notes": {
+            "capacity_trace": [
+              {
+                "bias_p95": 2.1551174316978945,
+                "iteration": 0,
+                "relative_mass_error": 0.36750327511144554
+              },
+              {
+                "bias_p95": 2.8267684281528638,
+                "iteration": 1,
+                "relative_mass_error": 0.14188990762600445
+              },
+              {
+                "bias_p95": 2.8589941174531193,
+                "iteration": 2,
+                "relative_mass_error": 0.025374822071152756
+              },
+              {
+                "bias_p95": 2.8600852249256907,
+                "iteration": 3,
+                "relative_mass_error": 0.001586126208467419
+              }
+            ]
+          },
+          "objective": 0.004113716912011173,
+          "psnr": 26.996557055100816,
+          "rgb_mse": 0.0019968447209640326,
+          "texture_mse": 0.0006610061549047566
+        },
+        {
+          "boundary_edge_alignment": 0.15123520096031526,
+          "boundary_edges": 3464,
+          "cartoon_mse": 0.0013140133407437567,
+          "elapsed_s": 0.1650901249377057,
+          "extra_components": 53,
+          "fragmented_cells": 42,
+          "mass_cv": 0.5690728292048515,
+          "mean_entropy": 1.1722274564512505,
+          "mean_max_overlap": 8.091369313370116,
+          "name": "receiver competition + survival",
+          "notes": {
+            "competition_trace": [
+              {
+                "gradient_norm": 0.5350093717104232,
+                "iteration": 0,
+                "mass_cv": 0.5662873781274311,
+                "minimum_capacity_ratio": 0.9988707118335084,
+                "psnr": 26.996557055100816,
+                "step_p95": 0.4053801132643739
+              },
+              {
+                "gradient_norm": 0.24171505276353972,
+                "iteration": 1,
+                "mass_cv": 0.5677354859763002,
+                "minimum_capacity_ratio": 0.888074885499579,
+                "psnr": 27.158204877414697,
+                "step_p95": 0.286262130541448
+              },
+              {
+                "gradient_norm": 0.15648289143032518,
+                "iteration": 2,
+                "mass_cv": 0.568459426063754,
+                "minimum_capacity_ratio": 0.8517656015560613,
+                "psnr": 27.207984230321895,
+                "step_p95": 0.20403451815623325
+              }
+            ]
+          },
+          "objective": 0.0038382889932542415,
+          "psnr": 27.234009383166864,
+          "rgb_mse": 0.001890597423414545,
+          "texture_mse": 0.0006336782290959396
+        },
+        {
+          "name": "hard delete extinguished supports",
+          "reason": "no support fell below the measured mass threshold",
+          "removed": 0,
+          "skipped": true
+        },
+        {
+          "boundary_edge_alignment": 0.14761040880567483,
+          "boundary_edges": 3456,
+          "cartoon_mse": 0.00143949584347696,
+          "elapsed_s": 0.18750104203354567,
+          "extra_components": 47,
+          "fragmented_cells": 40,
+          "mass_cv": 0.5662873781274311,
+          "mean_entropy": 1.169782947938115,
+          "mean_max_overlap": 8.074912610589402,
+          "name": "joint support + soft graph fusion",
+          "objective": 0.004109897722774917,
+          "psnr": 26.974293872317418,
+          "rgb_mse": 0.0020071074029108823,
+          "texture_mse": 0.0006632944763870744
+        }
+      ],
+      "working_shape": [
+        96,
+        96
+      ]
+    },
+    {
+      "baseline_psnr": 20.663514725509586,
+      "cells": 180,
+      "elapsed_s": 4.016971665900201,
+      "image": "astronaut",
+      "variants": [
+        {
+          "boundary_edge_alignment": 0.20212678837635137,
+          "boundary_edges": 3874,
+          "cartoon_mse": 0.0002415137242995971,
+          "elapsed_s": 0.11325012496672571,
+          "extra_components": 87,
+          "fragmented_cells": 62,
+          "mass_cv": 0.2954170016526829,
+          "mean_entropy": 1.1284571357498305,
+          "mean_max_overlap": 6.720665378522651,
+          "name": "continuous anisotropic top-k",
+          "objective": 0.010254227366841758,
+          "psnr": 21.00840491105079,
+          "rgb_mse": 0.007927924560504581,
+          "texture_mse": 0.0020847890820375804
+        },
+        {
+          "boundary_edge_alignment": 0.2056102605525609,
+          "boundary_edges": 3756,
+          "cartoon_mse": 0.00018142649126627985,
+          "elapsed_s": 0.14117204095236957,
+          "extra_components": 80,
+          "fragmented_cells": 55,
+          "mass_cv": 0.29830475216883096,
+          "mean_entropy": 1.160489163023592,
+          "mean_max_overlap": 6.970469999114483,
+          "name": "transport-diffused support",
+          "objective": 0.009356658039181972,
+          "psnr": 21.41591804438166,
+          "rgb_mse": 0.0072178557034016655,
+          "texture_mse": 0.0019573758445140276
+        },
+        {
+          "boundary_edge_alignment": 0.20611852121532168,
+          "boundary_edges": 3527,
+          "cartoon_mse": 0.00012713641110314084,
+          "elapsed_s": 0.21400204207748175,
+          "extra_components": 60,
+          "fragmented_cells": 47,
+          "mass_cv": 0.3936222914038613,
+          "mean_entropy": 1.1115637052339478,
+          "mean_max_overlap": 6.967737166757085,
+          "name": "diffusion + capacity",
+          "notes": {
+            "capacity_trace": [
+              {
+                "bias_p95": 1.8089989885542894,
+                "iteration": 0,
+                "relative_mass_error": 0.22437252085090137
+              },
+              {
+                "bias_p95": 1.9363383507216447,
+                "iteration": 1,
+                "relative_mass_error": 0.041991793188497224
+              },
+              {
+                "bias_p95": 1.9446961229220854,
+                "iteration": 2,
+                "relative_mass_error": 0.0029062455777227533
+              },
+              {
+                "bias_p95": 1.9429121508474794,
+                "iteration": 3,
+                "relative_mass_error": 0.0001921176045935265
+              }
+            ]
+          },
+          "objective": 0.008834246085982439,
+          "psnr": 21.677416422918885,
+          "rgb_mse": 0.00679607804685876,
+          "texture_mse": 0.0019110316280205385
+        },
+        {
+          "boundary_edge_alignment": 0.20840518483080553,
+          "boundary_edges": 3595,
+          "cartoon_mse": 0.0001438611411710543,
+          "elapsed_s": 0.16900712496135384,
+          "extra_components": 63,
+          "fragmented_cells": 52,
+          "mass_cv": 0.3936861217000929,
+          "mean_entropy": 1.0998308590474335,
+          "mean_max_overlap": 6.869394210365299,
+          "name": "adaptive temperature only",
+          "notes": {
+            "capacity_trace": [
+              {
+                "bias_p95": 2.7088387276643178,
+                "iteration": 0,
+                "relative_mass_error": 0.6094501701862288
+              },
+              {
+                "bias_p95": 3.137697540882588,
+                "iteration": 1,
+                "relative_mass_error": 0.2367753837606989
+              },
+              {
+                "bias_p95": 3.3656672432283044,
+                "iteration": 2,
+                "relative_mass_error": 0.0467282687988431
+              },
+              {
+                "bias_p95": 3.4024159182402154,
+                "iteration": 3,
+                "relative_mass_error": 0.005628774594134907
+              }
+            ]
+          },
+          "objective": 0.009294472543010052,
+          "psnr": 21.456147154376566,
+          "rgb_mse": 0.007151304730914866,
+          "texture_mse": 0.0019993066709241324
+        },
+        {
+          "boundary_edge_alignment": 0.20996625449817205,
+          "boundary_edges": 3422,
+          "cartoon_mse": 0.00011744856022252908,
+          "elapsed_s": 0.16195887501817197,
+          "extra_components": 45,
+          "fragmented_cells": 36,
+          "mass_cv": 0.39361681834519324,
+          "mean_entropy": 1.1092580649728492,
+          "mean_max_overlap": 7.071215890799414,
+          "name": "residual anisotropy only",
+          "notes": {
+            "capacity_trace": [
+              {
+                "bias_p95": 1.7197102886160778,
+                "iteration": 0,
+                "relative_mass_error": 0.042001410461510805
+              },
+              {
+                "bias_p95": 1.7380174415403384,
+                "iteration": 1,
+                "relative_mass_error": 0.0018591494919346916
+              },
+              {
+                "bias_p95": 1.7365594451449735,
+                "iteration": 2,
+                "relative_mass_error": 0.00020253503772928508
+              },
+              {
+                "bias_p95": 1.7367840149190734,
+                "iteration": 3,
+                "relative_mass_error": 0.0001041138435788145
+              }
+            ]
+          },
+          "objective": 0.0086660320194196,
+          "psnr": 21.75831193252251,
+          "rgb_mse": 0.006670660019818979,
+          "texture_mse": 0.0018779234393780915
+        },
+        {
+          "boundary_edge_alignment": 0.21228905242223162,
+          "boundary_edges": 3502,
+          "cartoon_mse": 0.00013152353351553582,
+          "elapsed_s": 0.1803612499497831,
+          "extra_components": 51,
+          "fragmented_cells": 44,
+          "mass_cv": 0.393657243654583,
+          "mean_entropy": 1.0952970013958014,
+          "mean_max_overlap": 6.995532944194156,
+          "name": "adaptive temperature + residual anisotropy",
+          "notes": {
+            "capacity_trace": [
+              {
+                "bias_p95": 2.5399845903782765,
+                "iteration": 0,
+                "relative_mass_error": 0.6002334585091172
+              },
+              {
+                "bias_p95": 2.93734385883938,
+                "iteration": 1,
+                "relative_mass_error": 0.2501368082790457
+              },
+              {
+                "bias_p95": 3.2035352142685594,
+                "iteration": 2,
+                "relative_mass_error": 0.049746325561490376
+              },
+              {
+                "bias_p95": 3.25497035590747,
+                "iteration": 3,
+                "relative_mass_error": 0.006174727894783774
+              }
+            ]
+          },
+          "objective": 0.009032546778738697,
+          "psnr": 21.579747908939897,
+          "rgb_mse": 0.006950646622188877,
+          "texture_mse": 0.0019503766230342845
+        },
+        {
+          "boundary_edge_alignment": 0.21490987826651153,
+          "boundary_edges": 3546,
+          "cartoon_mse": 0.00010090086211839719,
+          "elapsed_s": 0.13876208302099258,
+          "extra_components": 68,
+          "fragmented_cells": 55,
+          "mass_cv": 0.4043099189641761,
+          "mean_entropy": 1.106992598194842,
+          "mean_max_overlap": 7.026699754915126,
+          "name": "receiver competition + survival",
+          "notes": {
+            "competition_trace": [
+              {
+                "gradient_norm": 1.798772835388214,
+                "iteration": 0,
+                "mass_cv": 0.393657243654583,
+                "minimum_capacity_ratio": 0.9970533667502791,
+                "psnr": 21.579747908939897,
+                "step_p95": 0.7865104137806456
+              },
+              {
+                "gradient_norm": 0.8588451678791962,
+                "iteration": 1,
+                "mass_cv": 0.40040413482857556,
+                "minimum_capacity_ratio": 0.7302544403750287,
+                "psnr": 21.831426068173215,
+                "step_p95": 0.42205104161798757
+              },
+              {
+                "gradient_norm": 0.5414955648065102,
+                "iteration": 2,
+                "mass_cv": 0.4031306231425876,
+                "minimum_capacity_ratio": 0.6663633423151566,
+                "psnr": 21.932049048516404,
+                "step_p95": 0.2763479001542789
+              }
+            ]
+          },
+          "objective": 0.008268355934062775,
+          "psnr": 21.982527010129097,
+          "rgb_mse": 0.006335009915694274,
+          "texture_mse": 0.001832445156250104
+        },
+        {
+          "name": "hard delete extinguished supports",
+          "reason": "no support fell below the measured mass threshold",
+          "removed": 0,
+          "skipped": true
+        },
+        {
+          "boundary_edge_alignment": 0.21228905242223162,
+          "boundary_edges": 3502,
+          "cartoon_mse": 0.00013581142716729427,
+          "elapsed_s": 0.17180249991361052,
+          "extra_components": 51,
+          "fragmented_cells": 44,
+          "mass_cv": 0.393657243654583,
+          "mean_entropy": 1.0952970013958014,
+          "mean_max_overlap": 6.995532944194156,
+          "name": "joint support + soft graph fusion",
+          "objective": 0.009107019173363116,
+          "psnr": 21.53987735692798,
+          "rgb_mse": 0.00701475107524389,
+          "texture_mse": 0.001956456670951932
+        }
+      ],
+      "working_shape": [
+        96,
+        96
+      ]
+    },
+    {
+      "baseline_psnr": 23.79955638529196,
+      "cells": 180,
+      "elapsed_s": 3.0716906250454485,
+      "image": "coins",
+      "variants": [
+        {
+          "boundary_edge_alignment": 0.25601025591335513,
+          "boundary_edges": 3541,
+          "cartoon_mse": 0.0007847468229518001,
+          "elapsed_s": 0.07453874999191612,
+          "extra_components": 122,
+          "fragmented_cells": 87,
+          "mass_cv": 0.30036786164386947,
+          "mean_entropy": 1.1366307299511673,
+          "mean_max_overlap": 4.7866908026278185,
+          "name": "continuous anisotropic top-k",
+          "objective": 0.00793674751980734,
+          "psnr": 22.424147323592685,
+          "rgb_mse": 0.005722492967606148,
+          "texture_mse": 0.0014295077292493918
+        },
+        {
+          "boundary_edge_alignment": 0.2685564066061885,
+          "boundary_edges": 3373,
+          "cartoon_mse": 0.00015631324215157558,
+          "elapsed_s": 0.11344795802142471,
+          "extra_components": 99,
+          "fragmented_cells": 75,
+          "mass_cv": 0.3082724294016371,
+          "mean_entropy": 1.1816317570282517,
+          "mean_max_overlap": 5.014238772410796,
+          "name": "transport-diffused support",
+          "objective": 0.006178891101719816,
+          "psnr": 23.181878281695493,
+          "rgb_mse": 0.004806314350383819,
+          "texture_mse": 0.0012162635091844218
+        },
+        {
+          "boundary_edge_alignment": 0.27143979669718193,
+          "boundary_edges": 3241,
+          "cartoon_mse": 0.00015107196722353796,
+          "elapsed_s": 0.11259999999310821,
+          "extra_components": 105,
+          "fragmented_cells": 73,
+          "mass_cv": 0.4209663906436701,
+          "mean_entropy": 1.1374276288794503,
+          "mean_max_overlap": 4.985192463360071,
+          "name": "diffusion + capacity",
+          "notes": {
+            "capacity_trace": [
+              {
+                "bias_p95": 1.325372774897386,
+                "iteration": 0,
+                "relative_mass_error": 0.3045450105194264
+              },
+              {
+                "bias_p95": 1.4128180828300654,
+                "iteration": 1,
+                "relative_mass_error": 0.07429396556364452
+              },
+              {
+                "bias_p95": 1.4023759177585315,
+                "iteration": 2,
+                "relative_mass_error": 0.0048013171444623946
+              },
+              {
+                "bias_p95": 1.4037736084033292,
+                "iteration": 3,
+                "relative_mass_error": 0.00036153451046563347
+              }
+            ]
+          },
+          "objective": 0.005901524094805839,
+          "psnr": 23.382944176395778,
+          "rgb_mse": 0.004588868180488242,
+          "texture_mse": 0.0011615839470940595
+        },
+        {
+          "boundary_edge_alignment": 0.2723991718903501,
+          "boundary_edges": 3242,
+          "cartoon_mse": 0.00015064197717809785,
+          "elapsed_s": 0.11897099995985627,
+          "extra_components": 112,
+          "fragmented_cells": 82,
+          "mass_cv": 0.42096630083485215,
+          "mean_entropy": 1.0228310545376929,
+          "mean_max_overlap": 4.658229250761174,
+          "name": "adaptive temperature only",
+          "notes": {
+            "capacity_trace": [
+              {
+                "bias_p95": 2.2492063110635847,
+                "iteration": 0,
+                "relative_mass_error": 0.6277838836760904
+              },
+              {
+                "bias_p95": 3.013107583663117,
+                "iteration": 1,
+                "relative_mass_error": 0.199779956914664
+              },
+              {
+                "bias_p95": 3.066299325057859,
+                "iteration": 2,
+                "relative_mass_error": 0.03688059340329566
+              },
+              {
+                "bias_p95": 3.074589111417133,
+                "iteration": 3,
+                "relative_mass_error": 0.0036973223983073743
+              }
+            ]
+          },
+          "objective": 0.006415538772247716,
+          "psnr": 23.001339329223836,
+          "rgb_mse": 0.005010326953491129,
+          "texture_mse": 0.0012545698415784886
+        },
+        {
+          "boundary_edge_alignment": 0.2743741608329923,
+          "boundary_edges": 3152,
+          "cartoon_mse": 0.00011027229650043971,
+          "elapsed_s": 0.17717504198662937,
+          "extra_components": 90,
+          "fragmented_cells": 66,
+          "mass_cv": 0.4209521426183891,
+          "mean_entropy": 1.1367695379641614,
+          "mean_max_overlap": 5.023263071987236,
+          "name": "residual anisotropy only",
+          "notes": {
+            "capacity_trace": [
+              {
+                "bias_p95": 1.273357786748758,
+                "iteration": 0,
+                "relative_mass_error": 0.05213257454507358
+              },
+              {
+                "bias_p95": 1.3014205064756657,
+                "iteration": 1,
+                "relative_mass_error": 0.0032400090079471953
+              },
+              {
+                "bias_p95": 1.3015301990372141,
+                "iteration": 2,
+                "relative_mass_error": 0.00018318741130150394
+              },
+              {
+                "bias_p95": 1.301731582991526,
+                "iteration": 3,
+                "relative_mass_error": 0.0001359960118876925
+              }
+            ]
+          },
+          "objective": 0.00565798948466902,
+          "psnr": 23.53352069262047,
+          "rgb_mse": 0.004432491696899984,
+          "texture_mse": 0.0011152254912685964
+        },
+        {
+          "boundary_edge_alignment": 0.27214780603657224,
+          "boundary_edges": 3153,
+          "cartoon_mse": 0.0001469326898909583,
+          "elapsed_s": 0.12923745799344033,
+          "extra_components": 95,
+          "fragmented_cells": 70,
+          "mass_cv": 0.4209579846768938,
+          "mean_entropy": 1.0248222259468407,
+          "mean_max_overlap": 4.702125151168849,
+          "name": "adaptive temperature + residual anisotropy",
+          "notes": {
+            "capacity_trace": [
+              {
+                "bias_p95": 2.1890647973843738,
+                "iteration": 0,
+                "relative_mass_error": 0.6094073891251724
+              },
+              {
+                "bias_p95": 2.8513906051302094,
+                "iteration": 1,
+                "relative_mass_error": 0.1877706884928307
+              },
+              {
+                "bias_p95": 2.8993939441762904,
+                "iteration": 2,
+                "relative_mass_error": 0.032584870871059275
+              },
+              {
+                "bias_p95": 2.903788146509872,
+                "iteration": 3,
+                "relative_mass_error": 0.002893265577646982
+              }
+            ]
+          },
+          "objective": 0.006195237169095758,
+          "psnr": 23.15298495596015,
+          "rgb_mse": 0.004838397046777935,
+          "texture_mse": 0.001209907432426865
+        },
+        {
+          "boundary_edge_alignment": 0.27651429148925416,
+          "boundary_edges": 3174,
+          "cartoon_mse": 0.0002559212706974218,
+          "elapsed_s": 0.12017687503248453,
+          "extra_components": 100,
+          "fragmented_cells": 72,
+          "mass_cv": 0.4152481563930039,
+          "mean_entropy": 1.0358737641401858,
+          "mean_max_overlap": 4.731213488542374,
+          "name": "receiver competition + survival",
+          "notes": {
+            "competition_trace": [
+              {
+                "gradient_norm": 1.1567409620046811,
+                "iteration": 0,
+                "mass_cv": 0.4209579846768938,
+                "minimum_capacity_ratio": 0.9940330530382286,
+                "psnr": 23.15298495596015,
+                "step_p95": 0.3564738758194157
+              },
+              {
+                "gradient_norm": 0.4927934184763295,
+                "iteration": 1,
+                "mass_cv": 0.41618056550471116,
+                "minimum_capacity_ratio": 0.8134323521028931,
+                "psnr": 23.39875322145464,
+                "step_p95": 0.19048421359594772
+              },
+              {
+                "gradient_norm": 0.3110357987738106,
+                "iteration": 2,
+                "mass_cv": 0.4153876212522164,
+                "minimum_capacity_ratio": 0.7494161938364287,
+                "psnr": 23.485751317297915,
+                "step_p95": 0.13399252298703343
+              }
+            ]
+          },
+          "objective": 0.005837229993089303,
+          "psnr": 23.52386349718603,
+          "rgb_mse": 0.004442358980010212,
+          "texture_mse": 0.0011389497423816685
+        },
+        {
+          "name": "hard delete extinguished supports",
+          "reason": "no support fell below the measured mass threshold",
+          "removed": 0,
+          "skipped": true
+        },
+        {
+          "boundary_edge_alignment": 0.27214780603657224,
+          "boundary_edges": 3153,
+          "cartoon_mse": 0.00017770228038254272,
+          "elapsed_s": 0.13708220794796944,
+          "extra_components": 95,
+          "fragmented_cells": 70,
+          "mass_cv": 0.4209579846768938,
+          "mean_entropy": 1.0248222259468407,
+          "mean_max_overlap": 4.702125151168849,
+          "name": "joint support + soft graph fusion",
+          "objective": 0.006263731252731806,
+          "psnr": 23.11544109598703,
+          "rgb_mse": 0.004880405303547844,
+          "texture_mse": 0.0012056236688014186
+        }
+      ],
+      "working_shape": [
+        76,
+        96
+      ]
+    }
+  ]
+}

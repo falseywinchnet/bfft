@@ -1,0 +1,271 @@
+{
+  "source": "gallery:pikachu",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "passes": 24,
+  "cells": 1290,
+  "overlap": 8.0,
+  "sharpness_start": 1.5,
+  "sharpness_end": 7.0,
+  "initialization": "density",
+  "geometry_seconds": 1.0215583340032026,
+  "total_seconds": 1.752029416966252,
+  "record": {
+    "rgb_mse": 0.0010159530480684253,
+    "psnr": 29.931263623630947,
+    "cartoon_mse": 6.29441538309041e-05,
+    "texture_mse": 0.0003232359425865671,
+    "objective": 0.0014021331444858966
+  },
+  "diagnostic": {
+    "cells": 1290,
+    "samples": 125006,
+    "coverage": 1.0,
+    "effective_median": 2.485925754457788
+  },
+  "trace": [
+    {
+      "stage": 1,
+      "sharpness": 1.5,
+      "coverage": 0.9837646484375,
+      "support_mass_cv": 0.15730584251901691,
+      "support_mass_min": 0.27796056680486625,
+      "effective_median": 5.710425955004165,
+      "centroid_motion_rms": 0.5601059678383771,
+      "ratio_median": 1.4833029678910195
+    },
+    {
+      "stage": 2,
+      "sharpness": 1.6039045167371162,
+      "coverage": 0.99871826171875,
+      "support_mass_cv": 0.2587944970917131,
+      "support_mass_min": 0.5285328509784649,
+      "effective_median": 5.339638578005504,
+      "centroid_motion_rms": 0.7636815687215948,
+      "ratio_median": 1.8298769779670947
+    },
+    {
+      "stage": 3,
+      "sharpness": 1.7150064658731485,
+      "coverage": 0.99969482421875,
+      "support_mass_cv": 0.3785615528346917,
+      "support_mass_min": 0.520987932455316,
+      "effective_median": 5.309139920116044,
+      "centroid_motion_rms": 1.0279916733204442,
+      "ratio_median": 2.217012447769319
+    },
+    {
+      "stage": 4,
+      "sharpness": 1.8338044112315346,
+      "coverage": 0.99969482421875,
+      "support_mass_cv": 0.38485529901202487,
+      "support_mass_min": 0.49426630244903813,
+      "effective_median": 5.248308448143005,
+      "centroid_motion_rms": 1.177664318356293,
+      "ratio_median": 2.5760540346931835
+    },
+    {
+      "stage": 5,
+      "sharpness": 1.9608314519911376,
+      "coverage": 0.9996337890625,
+      "support_mass_cv": 0.3656353953668404,
+      "support_mass_min": 0.4512028746698847,
+      "effective_median": 5.191844615676612,
+      "centroid_motion_rms": 1.3061793989866994,
+      "ratio_median": 2.783326101816523
+    },
+    {
+      "stage": 6,
+      "sharpness": 2.096657614939189,
+      "coverage": 0.99908447265625,
+      "support_mass_cv": 0.3747913118987342,
+      "support_mass_min": 0.46546838276572455,
+      "effective_median": 5.068395015241185,
+      "centroid_motion_rms": 1.311500755504012,
+      "ratio_median": 2.9159075600439843
+    },
+    {
+      "stage": 7,
+      "sharpness": 2.241892412434823,
+      "coverage": 0.9996337890625,
+      "support_mass_cv": 0.3943380090888177,
+      "support_mass_min": 0.5079117196483062,
+      "effective_median": 4.965487745767206,
+      "centroid_motion_rms": 1.251991714181693,
+      "ratio_median": 2.988212816246665
+    },
+    {
+      "stage": 8,
+      "sharpness": 2.3971875775619225,
+      "coverage": 0.99859619140625,
+      "support_mass_cv": 0.40904003429089975,
+      "support_mass_min": 0.44179833446099065,
+      "effective_median": 4.835128826404034,
+      "centroid_motion_rms": 1.2588553637349762,
+      "ratio_median": 3.07054187307327
+    },
+    {
+      "stage": 9,
+      "sharpness": 2.5632399887451154,
+      "coverage": 0.99847412109375,
+      "support_mass_cv": 0.4182996246184147,
+      "support_mass_min": 0.40758521695077427,
+      "effective_median": 4.697062899308706,
+      "centroid_motion_rms": 1.214686410163337,
+      "ratio_median": 3.085100070482236
+    },
+    {
+      "stage": 10,
+      "sharpness": 2.740794796952991,
+      "coverage": 0.99896240234375,
+      "support_mass_cv": 0.3961830712688223,
+      "support_mass_min": 0.410879314134698,
+      "effective_median": 4.566587581213786,
+      "centroid_motion_rms": 1.163588475053149,
+      "ratio_median": 3.0412583679069325
+    },
+    {
+      "stage": 11,
+      "sharpness": 2.9306487695216594,
+      "coverage": 0.99810791015625,
+      "support_mass_cv": 0.37586674044829516,
+      "support_mass_min": 0.3850453398305431,
+      "effective_median": 4.41207671050488,
+      "centroid_motion_rms": 1.1692348526382754,
+      "ratio_median": 3.028602420943626
+    },
+    {
+      "stage": 12,
+      "sharpness": 3.133653865603908,
+      "coverage": 0.99700927734375,
+      "support_mass_cv": 0.35407588095335363,
+      "support_mass_min": 0.37078896371544007,
+      "effective_median": 4.234468484297683,
+      "centroid_motion_rms": 1.1728500941282782,
+      "ratio_median": 3.052132796167397
+    },
+    {
+      "stage": 13,
+      "sharpness": 3.350721059288555,
+      "coverage": 0.9974365234375,
+      "support_mass_cv": 0.34850566313284753,
+      "support_mass_min": 0.38249711833233535,
+      "effective_median": 4.070026935292093,
+      "centroid_motion_rms": 1.1733571601145174,
+      "ratio_median": 3.015279216627497
+    },
+    {
+      "stage": 14,
+      "sharpness": 3.5828244275460586,
+      "coverage": 0.99896240234375,
+      "support_mass_cv": 0.35184103635386654,
+      "support_mass_min": 0.3196764371730477,
+      "effective_median": 3.9056824630112854,
+      "centroid_motion_rms": 1.1664209598361284,
+      "ratio_median": 2.9588046876066825
+    },
+    {
+      "stage": 15,
+      "sharpness": 3.8310055213447978,
+      "coverage": 1.0,
+      "support_mass_cv": 0.35572821567265783,
+      "support_mass_min": 0.344424404370998,
+      "effective_median": 3.770599372009173,
+      "centroid_motion_rms": 1.1455024414253796,
+      "ratio_median": 2.8955820710344984
+    },
+    {
+      "stage": 16,
+      "sharpness": 4.096378039553168,
+      "coverage": 1.0,
+      "support_mass_cv": 0.36065928125565744,
+      "support_mass_min": 0.4426258306711078,
+      "effective_median": 3.62398747750491,
+      "centroid_motion_rms": 1.1091598308809414,
+      "ratio_median": 2.87954269397654
+    },
+    {
+      "stage": 17,
+      "sharpness": 4.380132826601373,
+      "coverage": 1.0,
+      "support_mass_cv": 0.3613798107557178,
+      "support_mass_min": 0.41760956232568813,
+      "effective_median": 3.458405628052631,
+      "centroid_motion_rms": 1.0663606614795822,
+      "ratio_median": 2.8682170412336516
+    },
+    {
+      "stage": 18,
+      "sharpness": 4.683543216329636,
+      "coverage": 1.0,
+      "support_mass_cv": 0.3536181201823297,
+      "support_mass_min": 0.4085567836461902,
+      "effective_median": 3.328907695727451,
+      "centroid_motion_rms": 1.03580477686707,
+      "ratio_median": 2.869390223670604
+    },
+    {
+      "stage": 19,
+      "sharpness": 5.007970746003057,
+      "coverage": 1.0,
+      "support_mass_cv": 0.34305478865833255,
+      "support_mass_min": 0.40959276186353005,
+      "effective_median": 3.1830919865761995,
+      "centroid_motion_rms": 1.0055281180514466,
+      "ratio_median": 2.898198086254105
+    },
+    {
+      "stage": 20,
+      "sharpness": 5.354871266134432,
+      "coverage": 1.0,
+      "support_mass_cv": 0.3403164309574553,
+      "support_mass_min": 0.3796788270431673,
+      "effective_median": 3.04387212045991,
+      "centroid_motion_rms": 0.9725868106160108,
+      "ratio_median": 2.8881437706124293
+    },
+    {
+      "stage": 21,
+      "sharpness": 5.725801473532544,
+      "coverage": 1.0,
+      "support_mass_cv": 0.3386598623858538,
+      "support_mass_min": 0.370994426714573,
+      "effective_median": 2.8997842078157996,
+      "centroid_motion_rms": 0.939580319940061,
+      "ratio_median": 2.9189424875302548
+    },
+    {
+      "stage": 22,
+      "sharpness": 6.122425896892588,
+      "coverage": 1.0,
+      "support_mass_cv": 0.3374104272104533,
+      "support_mass_min": 0.3829047668659731,
+      "effective_median": 2.7771432050128793,
+      "centroid_motion_rms": 0.907635612700461,
+      "ratio_median": 2.953269808364933
+    },
+    {
+      "stage": 23,
+      "sharpness": 6.546524366276211,
+      "coverage": 1.0,
+      "support_mass_cv": 0.3354911165372159,
+      "support_mass_min": 0.3958767972895583,
+      "effective_median": 2.632823429430431,
+      "centroid_motion_rms": 0.868840455392836,
+      "ratio_median": 2.945598596395005
+    },
+    {
+      "stage": 24,
+      "sharpness": 7.0,
+      "coverage": 1.0,
+      "support_mass_cv": 0.3356135771856525,
+      "support_mass_min": 0.4249225426103623,
+      "effective_median": 2.4943198005406293,
+      "centroid_motion_rms": 0.8150052347109641,
+      "ratio_median": 2.92753360133989
+    }
+  ]
+}

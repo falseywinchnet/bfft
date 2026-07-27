@@ -1,0 +1,170 @@
+camera    coupled_control     28.12 dB obj 6.801e-03 struct 0.0037 solve 0.13s
+camera    direct_normal       28.12 dB obj 6.780e-03 struct 0.0037 solve 0.02s
+camera    matched_budget      30.14 dB obj 1.765e-03 struct 0.0032 solve 0.01s
+camera    ridge_enriched      30.17 dB obj 1.891e-03 struct 0.0020 solve 0.04s
+camera    ridge_geometric     28.50 dB obj 7.100e-03 struct 0.0033 solve 0.02s
+camera    ridge_random        28.62 dB obj 6.049e-03 struct 0.0035 solve 0.03s
+camera    graph_descent       28.80 dB obj 5.833e-03 struct 0.0029 solve 0.19s
+camera    graph_random        28.12 dB obj 6.780e-03 struct 0.0037 solve 0.09s
+{
+  "protocol": {
+    "allocation_mode": "Expected affine gain",
+    "coupled_overlap": [
+      4.0,
+      16.0
+    ],
+    "images": [
+      "camera"
+    ],
+    "initial_cells": 96,
+    "max_side": 96,
+    "maximum_cells": 300,
+    "objective": "rgb_mse + cartoon_mse + texture_mse, lower better"
+  },
+  "results": [
+    {
+      "cartoon_mse": 0.0047311159446725625,
+      "cells": 300,
+      "description": "Validated workflow: LSMR coupled multiscale solve at overlap 4 / 16.",
+      "grow_s": 0.575192958000116,
+      "image": "camera",
+      "objective": 0.006800572227664182,
+      "psnr": 28.12194923742906,
+      "residual_structure": 0.003654835392577976,
+      "rgb_mse": 0.0015410086491028448,
+      "solve_s": 0.134904749924317,
+      "texture_mse": 0.000528447633888774,
+      "trial": "coupled_control"
+    },
+    {
+      "cartoon_mse": 0.0047110992150386595,
+      "cells": 300,
+      "description": "Same system, factored instead of iterated.  Direct sparse factorization of the renderer's normal matrix.",
+      "gram_nnz": 15624,
+      "grow_s": 0.4644759160000831,
+      "image": "camera",
+      "objective": 0.006779940935912745,
+      "psnr": 28.123155259990966,
+      "residual_structure": 0.003651041695515057,
+      "rgb_mse": 0.0015405807751022419,
+      "solve_s": 0.02440112503245473,
+      "texture_mse": 0.0005282609457718441,
+      "trial": "direct_normal",
+      "unknowns": 900
+    },
+    {
+      "cartoon_mse": 0.00045996428237178724,
+      "cells": 467,
+      "description": "Control for enrichment: plain affine cells, cell count raised so the two carry the same number of transmitted numbers (14 per enriched cell against 9 per affine cell).",
+      "gram_nnz": 24003,
+      "grow_s": 0.6096217499580234,
+      "image": "camera",
+      "objective": 0.0017647908026002016,
+      "psnr": 30.144288781015973,
+      "residual_structure": 0.003182411831312319,
+      "rgb_mse": 0.0009673221264360282,
+      "solve_s": 0.012490833061747253,
+      "texture_mse": 0.00033750439379238637,
+      "trial": "matched_budget",
+      "unknowns": 1401
+    },
+    {
+      "cartoon_mse": 0.0005966913154093232,
+      "cells": 300,
+      "description": "Direct solve with one bounded tanh ridge column per cell, whose axis and offset come from the residual's own cumulative sign statistics.",
+      "grow_s": 0.3653918750351295,
+      "image": "camera",
+      "numbers_per_cell": 14,
+      "objective": 0.001891113977483757,
+      "psnr": 30.165269016382435,
+      "residual_structure": 0.0019992440384858185,
+      "rgb_mse": 0.0009626603807548893,
+      "ridge_source": "measured",
+      "solve_s": 0.04353104194160551,
+      "texture_mse": 0.0003317622813195445,
+      "trial": "ridge_enriched"
+    },
+    {
+      "cartoon_mse": 0.005205310161854406,
+      "cells": 300,
+      "description": "Control for enrichment: the same bounded ridge, but its axis is the cartoon edge normal at the site and its offset is zero.  This is the rejected geometry-only dipole wearing the new basis.",
+      "grow_s": 0.3581960001029074,
+      "image": "camera",
+      "numbers_per_cell": 14,
+      "objective": 0.00710047259065308,
+      "psnr": 28.497314675373325,
+      "residual_structure": 0.00329051706824073,
+      "rgb_mse": 0.0014134112132816663,
+      "ridge_source": "geometric",
+      "solve_s": 0.022816583048552275,
+      "texture_mse": 0.00048175121551700766,
+      "trial": "ridge_geometric"
+    },
+    {
+      "cartoon_mse": 0.00419741740384845,
+      "cells": 300,
+      "description": "Control for enrichment: the same bounded ridge on a random axis through the site.  Isolates the value of the measurement from the value of owning a discontinuous basis at all.",
+      "grow_s": 0.361212040996179,
+      "image": "camera",
+      "numbers_per_cell": 14,
+      "objective": 0.006048938475139343,
+      "psnr": 28.61807188776654,
+      "residual_structure": 0.0034873144077765383,
+      "rgb_mse": 0.0013746521359603503,
+      "ridge_source": "random",
+      "solve_s": 0.027514041983522475,
+      "texture_mse": 0.00047686893533054324,
+      "trial": "ridge_random"
+    },
+    {
+      "cartoon_mse": 0.004054415005524985,
+      "cells": 300,
+      "description": "Learn a scalar barrier field on the pixel graph from the exact envelope-theorem gradient carried back over both shortest-path forests.",
+      "grow_s": 1.2414742080727592,
+      "image": "camera",
+      "objective": 0.005833329689171083,
+      "psnr": 28.801933534195157,
+      "psnr_history": [
+        28.123155259990966,
+        28.704143903700544,
+        28.752134908234325,
+        28.74439039310509,
+        28.801933534195157
+      ],
+      "residual_structure": 0.002880218299742148,
+      "rgb_mse": 0.0013176699645419353,
+      "scale_span": [
+        0.7555647387994884,
+        2.2064808217864735
+      ],
+      "solve_s": 0.18673912493977696,
+      "texture_mse": 0.00046124471910416183,
+      "trial": "graph_descent"
+    },
+    {
+      "cartoon_mse": 0.0047110992150386595,
+      "cells": 300,
+      "description": "Control for graph descent: a random smooth scale field with the same span, no gradient information.",
+      "grow_s": 0.6299734170315787,
+      "image": "camera",
+      "objective": 0.006779940935912745,
+      "psnr": 28.123155259990966,
+      "psnr_history": [
+        28.123155259990966,
+        27.677533707701485,
+        27.814722004785306,
+        27.595782030958034,
+        27.57729668478198
+      ],
+      "residual_structure": 0.003651041695515057,
+      "rgb_mse": 0.0015405807751022419,
+      "scale_span": [
+        1.0,
+        1.0
+      ],
+      "solve_s": 0.08810833294410259,
+      "texture_mse": 0.0005282609457718441,
+      "trial": "graph_random"
+    }
+  ]
+}

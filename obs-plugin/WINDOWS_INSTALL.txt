@@ -1,0 +1,46 @@
+BFFT Cartoon for OBS Studio 32.1.x — Windows x64
+=================================================
+
+This build includes Cartoon + texture, Difference field, Liquid chrome
+relief, Fine chrome, independent and individually delayed OKLCH, delayed hue
+sectors, echo prisms, hue-sector echoes, continuous hue-time dispersion,
+chroma comet trails, and the hue-time pinwheel.
+It also includes Live cartoon / delayed scene: a real-time texture-free
+cartoon foreshadow composited over one evenly delayed natural frame.
+Tiled time glass provides a grid alternative to the pinwheel, with per-pane
+delay, refraction, bevel, size, and randomness controls.
+
+Install
+-------
+
+1. Close OBS Studio.
+2. Open the OBS Studio installation directory. The default is:
+
+       C:\Program Files\obs-studio
+
+3. Copy the "obs-plugins" folder from this archive into that directory.
+   Allow Windows to merge the folder.
+4. Start OBS Studio.
+5. Open a video source's Filters, add "BFFT Cartoon", and choose a display
+   mode.
+
+Every OKLCH component and hue sector has its own delay from 0 to 500 ms.
+Each hue sector also has its own hue rotation and payload selector:
+processed lightness, Meyer residual, chroma data, or texture field.
+Temporal modes select timestamped history without sleeping or blocking OBS.
+History is compressed, hard-capped, and released when switching back to the
+original luma/chrome modes.
+
+The resulting DLL path should be:
+
+    C:\Program Files\obs-studio\obs-plugins\64bit\bfft-cartoon.dll
+
+Compatibility
+-------------
+
+* Windows 10 or 11, x64
+* OBS Studio 32.1.x, x64
+* No separate BFFT, MinGW, or Visual C++ runtime installation is required.
+
+If OBS was running during installation, restart it before looking for the
+filter.

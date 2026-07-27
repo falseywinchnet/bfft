@@ -1,4 +1,91 @@
-# BFFT IQ Waterfall Viewer
+# BFFT viewer lab
+
+The repository contains several viewer families because it is both a working
+vision tool and a research notebook. These are the supported starting points:
+
+| Goal | Run | Status |
+| --- | --- | --- |
+| Segment an image into BFFT-guided transport cells | `python viewer/segmenting_veroni_viewer.py` | **Canonical image-segmentation viewer** |
+| Explore owner-free residual-consuming cells | `python viewer/resource_transport_cells_viewer.py` | Isolated transport-cell experiment |
+| Explore cartoon/texture decomposition on still images | `python viewer/meyer_stills.py` | Canonical decomposition explorer |
+| Process or inspect decomposition on video | `python viewer/meyer_video.py` | Offline video path |
+| Apply the real-time webcam effect in OBS | See [`obs-plugin/README.md`](../obs-plugin/README.md) | Native real-time filter |
+| Inspect IQ waterfall / super-resolution work | `python viewer/iq_waterfall_app.py` | Separate signal viewer; build first below |
+
+The files named `recursive_*`, `seeded_*`, `error_spent_*`,
+`two_population_*`, and `claude_trial_*` are retained research controls. They
+are useful for reproducing discarded or intermediate allocation ideas, but
+they are not the place to begin another segmentation implementation.
+
+## Image segmentation quick start
+
+From the repository root:
+
+```sh
+python -m pip install -e '.[vision-viewer]'
+python viewer/segmenting_veroni_viewer.py
+```
+
+Choose a bundled image or open a file, select **full-resolution output** when
+desired, and press **Build representation**. The canonical path measures one
+finished Meyer/ROF geometry with the optimized one-axis solver. Allocation may
+run on a smaller sample of that frozen geometry, then one exact transport
+refresh classifies every original-resolution pixel. Large-image output
+therefore remains full resolution without making population inference scale
+with the source pixel count.
+
+The supported allocator begins at the support barycenter. Every unstable
+region simultaneously refills along its measured transport/metric direction;
+the fixed-pass local mass histogram replaces the earlier fourteen-pass balance
+bisection. There is no top-k, candidate enumeration, site deletion, requested
+population, or all-pairs cell operation. The safety ceiling only catches a
+misspecified instability threshold.
+
+The right-panel diagnostics expose the representation itself:
+
+- **Site IDs + boundaries** shows every literal hard transport domain in a
+  stable ID colour, matching the diagnostic needed to judge SAD-like panels
+  and slivers.
+- **Reconstruction + cell boundaries** exposes seams independently of PSNR,
+  while **Reconstruction + sites** shows where the transported centers landed.
+- **Transport support measure**, **Metric anisotropy**, **Cartoon**,
+  **Texture**, and **Transport glass** expose the one frozen geometry that
+  controls density, direction, and shape.
+
+For a headless HD phase trace:
+
+```sh
+python viewer/profile_segmenting_veroni.py /path/to/image.png \
+  --full-resolution
+```
+
+The model and performance rationale are documented in
+[`TRANSPORT_CELL_MATH.md`](TRANSPORT_CELL_MATH.md),
+[`TRANSPORT_VORONOI.md`](TRANSPORT_VORONOI.md), and
+[`../notes/FLOW_VOLUME_NUCLEATION.md`](../notes/FLOW_VOLUME_NUCLEATION.md),
+[`../notes/HD_SEGMENTATION_PERFORMANCE.md`](../notes/HD_SEGMENTATION_PERFORMANCE.md).
+`segmenting_veroni_app.py` is the current implementation module.
+`transport_measure_app.py` retains the canopy/static-overlap research
+controls, and `transport_voronoi_app.py` retains the previous iterative
+laboratory. The `segmenting_veroni_viewer.py` filename is the stable
+user-facing entry point. Algorithms awaiting native ports are separated under
+[`../port_needed`](../port_needed/README.md).
+
+## Owner-free resource-cell experiment
+
+```sh
+.venv/bin/python viewer/resource_transport_cells_viewer.py
+```
+
+This separate viewer runs the continuous diffuse/crystalline support model
+from `experiments/resource_transport_cells.py`. It has no owners, ranked
+candidate allocation, fixed birth batch, deletion, or population-scaled cell
+budget. The validated settings are the defaults; rejected controls remain
+available for direct A/B testing. Use **Measure C/T objective** when desired,
+since the full single-stage decomposition score is intentionally computed on
+demand.
+
+## IQ waterfall viewer
 
 A streaming, zoomable IQ waterfall viewer. The heavy lifting (file I/O, sample
 conversion, windowed complex FFTs) lives in a monolithic C++ library,

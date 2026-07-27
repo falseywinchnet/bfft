@@ -1,0 +1,103 @@
+{
+  "source": "gallery:astronaut",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "passes": 24,
+  "first_detail_stage": 2,
+  "base_cells": 180,
+  "requested_detail_cells": 800,
+  "total_cells": 1021,
+  "emission": {
+    "mass_quantum": 0.00125,
+    "expected_detail_cells": 799.9999999999999,
+    "emitted_detail_cells": 841,
+    "detail_minor_median": 1.7733579874038696,
+    "detail_major_median": 5.382016658782959,
+    "detail_ratio_median": 2.7064692974090576,
+    "detail_area_sum_per_pixel": 2.308952808380127,
+    "curvature_limit": true,
+    "specificity_power": 0.0,
+    "specificity_mix": 0.0,
+    "emission_mode": "independent",
+    "substrate_hint": 0.0,
+    "substrate_shape_hint": 0.0,
+    "substrate_transport_hint": 0.0,
+    "splat_advection": 0.5,
+    "transport_consistency_power": 1.0,
+    "splat_advection_rms": 0.3127645944034519,
+    "substrate_displacement_rms": 0.0,
+    "substrate_displacement_q95": 0.0,
+    "substrate_transport_displacement_rms": 0.0,
+    "substrate_density_displacement_rms": 0.0,
+    "substrate_ratio_median": 1.0,
+    "substrate_density_min": 1.0,
+    "substrate_density_max": 1.0,
+    "substrate_vector_mode": "glass",
+    "substrate_vector_axis": "tangent"
+  },
+  "scores": {
+    "flow ellipses": {
+      "rgb_mse": 0.0031362360480659927,
+      "psnr": 25.035912576857598,
+      "cartoon_mse": 7.196406990292098e-05,
+      "texture_mse": 0.0009126243271095789,
+      "objective": 0.004120824445078493
+    },
+    "same sites, circular": {
+      "rgb_mse": 0.003363624940051685,
+      "psnr": 24.731924360450233,
+      "cartoon_mse": 8.915936571394055e-05,
+      "texture_mse": 0.0009621937652126314,
+      "objective": 0.004414978070978257
+    },
+    "uniform R2 circles": {
+      "rgb_mse": 0.003366494267944419,
+      "psnr": 24.72822120659047,
+      "cartoon_mse": 0.00011188607172640886,
+      "texture_mse": 0.0010068207835609434,
+      "objective": 0.004485201123231771
+    },
+    "round cartoon + flow texture": {
+      "rgb_mse": 0.00301150175329607,
+      "psnr": 25.21216879647116,
+      "cartoon_mse": 7.410603620792664e-05,
+      "texture_mse": 0.0008765604793894269,
+      "objective": 0.0039621682688934234
+    }
+  },
+  "diagnostics": {
+    "flow ellipses": {
+      "samples": 113244,
+      "uncovered_fraction": 0.0,
+      "dominance_mean": 0.3820810126641636,
+      "effective_contributors_mean": 3.991442293751376,
+      "effective_contributors_median": 3.8549606610693385
+    },
+    "same sites, circular": {
+      "samples": 112889,
+      "uncovered_fraction": 0.0,
+      "dominance_mean": 0.38471993121500225,
+      "effective_contributors_mean": 3.97730153314774,
+      "effective_contributors_median": 3.850183254091325
+    },
+    "uniform R2 circles": {
+      "samples": 81005,
+      "uncovered_fraction": 0.001708984375,
+      "dominance_mean": 0.49599372315491946,
+      "effective_contributors_mean": 2.871799193582029,
+      "effective_contributors_median": 2.934263414870059
+    },
+    "round cartoon + flow texture": {
+      "cartoon_dominance_mean": 0.38471993121500225,
+      "texture_dominance_mean": 0.3820810126641636,
+      "cartoon_effective_median": 3.850183254091325,
+      "texture_effective_median": 3.8549606610693385
+    }
+  },
+  "flow_ms": 2852.335499948822,
+  "solve_ms": 2487.030458985828,
+  "output": "/Users/quentinkuttenkuler/bfft/experiments/out/flow_transport_astronaut_gate1.png"
+}

@@ -16,7 +16,10 @@ from setuptools import setup
 from setuptools.command.build_py import build_py
 
 ROOT = Path(__file__).resolve().parent
-SOURCES = ["src/bfft.cpp", "src/bodft.cpp", "src/fct.cpp", "src/stft.cpp"]
+SOURCES = [
+    "src/bfft.cpp", "src/bodft.cpp", "src/fct.cpp", "src/meyer.cpp",
+    "src/stft.cpp", "src/vision.cpp",
+]
 INCLUDE = "include"
 
 

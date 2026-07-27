@@ -1,0 +1,78 @@
+{
+  "source": "gallery:pikachu",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "carrier_kind": "resource",
+  "carrier_cells": 458,
+  "flow_cells": 332,
+  "combined_coefficients": 7110,
+  "emission": {
+    "mass_quantum": 0.0033333333333333335,
+    "expected_detail_cells": 299.99999999999994,
+    "emitted_detail_cells": 332,
+    "detail_minor_median": 1.8548214435577393,
+    "detail_major_median": 10.113835334777832,
+    "detail_ratio_median": 4.616510391235352,
+    "detail_area_sum_per_pixel": 1.7591969966888428,
+    "curvature_limit": true,
+    "specificity_power": 0.0,
+    "specificity_mix": 0.0,
+    "emission_mode": "independent"
+  },
+  "carrier": {
+    "rgb_mse": 0.001364203427077694,
+    "psnr": 28.6512086379251,
+    "cartoon_mse": 0.00019126475625731409,
+    "texture_mse": 0.00041473034940926984,
+    "objective": 0.0019701985327442778
+  },
+  "variants": {
+    "flow ellipses": {
+      "rgb_mse": 0.0009662997551088693,
+      "psnr": 30.148881305246846,
+      "cartoon_mse": 6.742975116661046e-05,
+      "texture_mse": 0.00032950437690928817,
+      "objective": 0.001363233883184768
+    },
+    "same sites circular": {
+      "rgb_mse": 0.0010568441177419951,
+      "psnr": 29.759890654806036,
+      "cartoon_mse": 7.7046735160015e-05,
+      "texture_mse": 0.0003532684736469775,
+      "objective": 0.0014871593265489876
+    },
+    "uniform residual circles": {
+      "rgb_mse": 0.001115320511164801,
+      "psnr": 29.526003108868153,
+      "cartoon_mse": 5.911372016862948e-05,
+      "texture_mse": 0.0003544664449665179,
+      "objective": 0.0015289006762999485
+    }
+  },
+  "diagnostics": {
+    "flow ellipses": {
+      "samples": 27201,
+      "covered_fraction": 0.7569580078125,
+      "dominance_mean": 0.7946975779012841,
+      "effective_median": 1.221715526095605
+    },
+    "same sites circular": {
+      "samples": 26264,
+      "covered_fraction": 0.75042724609375,
+      "dominance_mean": 0.8030893837731408,
+      "effective_median": 1.1694264228929487
+    },
+    "uniform residual circles": {
+      "samples": 29066,
+      "covered_fraction": 0.96990966796875,
+      "dominance_mean": 0.8483446152175388,
+      "effective_median": 1.1979443146100521
+    }
+  },
+  "carrier_ms": 14500.569042051211,
+  "total_ms": 17340.020459028892,
+  "output": "/Users/quentinkuttenkuler/bfft/experiments/out/resource_carrier_flow_splats.png"
+}

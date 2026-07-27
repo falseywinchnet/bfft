@@ -1,0 +1,86 @@
+{
+  "source": "gallery:pikachu",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "carrier_kind": "resource",
+  "carrier_cells": 458,
+  "flow_cells": 332,
+  "combined_coefficients": 7110,
+  "emission": {
+    "mass_quantum": 0.0033333333333333335,
+    "expected_detail_cells": 299.99999999999994,
+    "emitted_detail_cells": 332,
+    "detail_minor_median": 1.8548214435577393,
+    "detail_major_median": 10.113835334777832,
+    "detail_ratio_median": 4.616510391235352,
+    "detail_area_sum_per_pixel": 1.7591969966888428,
+    "curvature_limit": true,
+    "specificity_power": 0.0,
+    "specificity_mix": 0.0,
+    "emission_mode": "independent",
+    "substrate_hint": 0.0,
+    "substrate_shape_hint": 0.0,
+    "substrate_transport_hint": 0.0,
+    "splat_advection": 0.5,
+    "transport_consistency_power": 1.0,
+    "splat_advection_rms": 0.2927462918611791,
+    "substrate_displacement_rms": 0.0,
+    "substrate_ratio_median": 1.0
+  },
+  "carrier": {
+    "rgb_mse": 0.001364203427077694,
+    "psnr": 28.6512086379251,
+    "cartoon_mse": 0.00019126475625731409,
+    "texture_mse": 0.00041473034940926984,
+    "objective": 0.0019701985327442778
+  },
+  "variants": {
+    "flow ellipses": {
+      "rgb_mse": 0.0009628184952732783,
+      "psnr": 30.16455575731889,
+      "cartoon_mse": 6.729140379428734e-05,
+      "texture_mse": 0.00032861185369402837,
+      "objective": 0.001358721752761594
+    },
+    "same sites circular": {
+      "rgb_mse": 0.0010532124147184165,
+      "psnr": 29.77484030299044,
+      "cartoon_mse": 7.714025886770311e-05,
+      "texture_mse": 0.00035173590388406145,
+      "objective": 0.0014820885774701812
+    },
+    "uniform residual circles": {
+      "rgb_mse": 0.001115320511164801,
+      "psnr": 29.526003108868153,
+      "cartoon_mse": 5.911372016862948e-05,
+      "texture_mse": 0.0003544664449665179,
+      "objective": 0.0015289006762999485
+    }
+  },
+  "diagnostics": {
+    "flow ellipses": {
+      "samples": 27190,
+      "covered_fraction": 0.757080078125,
+      "dominance_mean": 0.7947498242723042,
+      "effective_median": 1.226679375155161
+    },
+    "same sites circular": {
+      "samples": 26282,
+      "covered_fraction": 0.7509765625,
+      "dominance_mean": 0.8033046994860061,
+      "effective_median": 1.1687897654884343
+    },
+    "uniform residual circles": {
+      "samples": 29066,
+      "covered_fraction": 0.96990966796875,
+      "dominance_mean": 0.8483446152175388,
+      "effective_median": 1.1979443146100521
+    }
+  },
+  "carrier_ms": 8768.513250048272,
+  "total_ms": 11061.108917114325,
+  "output": "/Users/quentinkuttenkuler/bfft/experiments/out/resource_carrier_flow_splats_advected.png"
+}

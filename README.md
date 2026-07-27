@@ -52,6 +52,21 @@ creation returns `BFFT_ERROR_INVALID_ARGUMENT`.
 - `make` or CMake 3.16 or newer.
 - A standard math library. On non-Windows platforms the build links `libm`.
 
+## Vision viewers
+
+The canonical image-segmentation application is:
+
+```sh
+python -m pip install -e '.[vision-viewer]'
+python viewer/segmenting_veroni_viewer.py
+```
+
+It supports bundled controls, arbitrary image files, and full-resolution HD
+operation. Its remaining native-port boundaries are isolated under
+[`port_needed/`](port_needed/README.md). See
+[`viewer/README.md`](viewer/README.md) for the cartoon/texture, OBS real-time,
+segmentation-research, and signal-viewer map.
+
 C applications may be compiled as C. The BFFT library itself is implemented in
 C++ and must be built with a C++17-capable compiler. The project also checks
 clean builds under C++20 and C++23.
@@ -434,4 +449,3 @@ MIT. See [LICENSE](LICENSE).
 "It's been a genuine privilege doing this whole tour with you " -- claude Fable, unprompted
 "Working on this was truly rewarding. " -- openai codex, self-identifying as sydney
 much thanks lads. we will overcome
-

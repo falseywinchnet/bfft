@@ -1,0 +1,71 @@
+{
+  "source": "gallery:astronaut",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "passes": 24,
+  "first_detail_stage": 2,
+  "base_cells": 180,
+  "requested_detail_cells": 800,
+  "total_cells": 1021,
+  "emission": {
+    "mass_quantum": 2.287018707478244,
+    "expected_detail_cells": 799.9999999999999,
+    "emitted_detail_cells": 841,
+    "detail_minor_median": 1.7733579874038696,
+    "detail_major_median": 5.670526504516602,
+    "detail_ratio_median": 2.8751580715179443,
+    "detail_area_sum_per_pixel": 2.5826005935668945
+  },
+  "scores": {
+    "flow ellipses": {
+      "rgb_mse": 0.0031133421526376415,
+      "psnr": 25.0677314824232,
+      "cartoon_mse": 6.88879536751474e-05,
+      "texture_mse": 0.0009104899491224504,
+      "objective": 0.004092720055435239
+    },
+    "same sites, circular": {
+      "rgb_mse": 0.003243712025652186,
+      "psnr": 24.88957709091473,
+      "cartoon_mse": 8.44807873583015e-05,
+      "texture_mse": 0.0009382274358548676,
+      "objective": 0.004266420248865355
+    },
+    "uniform R2 circles": {
+      "rgb_mse": 0.003366494267944419,
+      "psnr": 24.72822120659047,
+      "cartoon_mse": 0.00011188607172640886,
+      "texture_mse": 0.0010068207835609434,
+      "objective": 0.004485201123231771
+    }
+  },
+  "diagnostics": {
+    "flow ellipses": {
+      "samples": 117477,
+      "uncovered_fraction": 0.0,
+      "dominance_mean": 0.3712976123106088,
+      "effective_contributors_mean": 4.140529791063322,
+      "effective_contributors_median": 4.010571060671744
+    },
+    "same sites, circular": {
+      "samples": 117047,
+      "uncovered_fraction": 0.0,
+      "dominance_mean": 0.37461124323170303,
+      "effective_contributors_mean": 4.125797303969629,
+      "effective_contributors_median": 3.9749490024458574
+    },
+    "uniform R2 circles": {
+      "samples": 81005,
+      "uncovered_fraction": 0.001708984375,
+      "dominance_mean": 0.49599372315491946,
+      "effective_contributors_mean": 1.7089843749999998e+27,
+      "effective_contributors_median": 2.935670785716156
+    }
+  },
+  "flow_ms": 5883.080667001195,
+  "solve_ms": 545.3997500007972,
+  "output": "/Users/quentinkuttenkuler/bfft/experiments/out/flow_volume_cells_astronaut.png"
+}

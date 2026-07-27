@@ -1,0 +1,51 @@
+{
+  "source": "gallery:camera",
+  "shape": [
+    128,
+    128
+  ],
+  "rounds": 30,
+  "birth_scale": 0.25,
+  "results": [
+    {
+      "initial_overlap": 1.0,
+      "cells": 644,
+      "birth_rounds": 12,
+      "largest_birth": 136,
+      "psnr": 31.278680635929916,
+      "objective": {
+        "rgb_mse": 0.0007449582539796495,
+        "psnr": 31.278680635929916,
+        "cartoon_mse": 0.0003167601232586311,
+        "texture_mse": 0.0002484235729971594,
+        "objective": 0.0013101419502354402
+      },
+      "initial_radius_p50": 6.249360369647799,
+      "initial_share_high_texture": 0.5441845461325636,
+      "raw_coverage": 1.0,
+      "occupancy_p10": 0.052417480004356795,
+      "dominance_mean": 0.8131494602954908,
+      "effective_mean": 1.5264103535434
+    },
+    {
+      "initial_overlap": 5.0,
+      "cells": 950,
+      "birth_rounds": 20,
+      "largest_birth": 154,
+      "psnr": 36.1966186636024,
+      "objective": {
+        "rgb_mse": 0.00024007013331618383,
+        "psnr": 36.1966186636024,
+        "cartoon_mse": 5.0305347127709674e-05,
+        "texture_mse": 7.592486429918826e-05,
+        "objective": 0.00036630034474308175
+      },
+      "initial_radius_p50": 12.115237724210996,
+      "initial_share_high_texture": 0.47203977807051045,
+      "raw_coverage": 1.0,
+      "occupancy_p10": 0.5800900700660503,
+      "dominance_mean": 0.573158479093984,
+      "effective_mean": 2.613074456916884
+    }
+  ]
+}

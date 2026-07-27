@@ -1,0 +1,130 @@
+{
+  "source": "gallery:grass",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "passes": 24,
+  "max_support_fraction": 0.18,
+  "support": {
+    "static_count": 2051.011173686044,
+    "transported_count": 2383.9652080237342,
+    "broad_horizon_count": 9.824379203203417
+  },
+  "best": "phase-stack-static overlap=5",
+  "scores": {
+    "phase-stack-static overlap=5": {
+      "rgb_mse": 0.0016711058523560512,
+      "psnr": 27.769960398503954,
+      "cartoon_mse": 0.024788387972631498,
+      "texture_mse": 0.0006857084968869131,
+      "objective": 0.027145202321874465,
+      "population": {
+        "quantizer": "phase stack",
+        "cells": 2402,
+        "measure_integral": 2383.9652080700534,
+        "overlap": 5.0,
+        "advected": false,
+        "implied_by_stage": [
+          1363.4390281718224,
+          281.92764533487684,
+          59.689455750336606,
+          123.64959114679732,
+          153.67711907357398,
+          88.92180341386802,
+          50.96375443507077,
+          35.489634521225526,
+          29.910845079302817,
+          27.242670458899738,
+          26.33913662354462,
+          21.225335652183276,
+          15.925759534846293,
+          15.381361771724187,
+          13.171979940136225,
+          11.959911514099076,
+          9.29766246741201,
+          8.99815094576843,
+          8.73440593999112,
+          9.159300806696592,
+          8.736995386163471,
+          7.395579247793648,
+          6.347980815291521,
+          6.380100038629507
+        ],
+        "realized_by_stage": [
+          1381,
+          275,
+          55,
+          112,
+          153,
+          101,
+          47,
+          41,
+          36,
+          27,
+          25,
+          17,
+          9,
+          22,
+          15,
+          18,
+          11,
+          11,
+          5,
+          7,
+          9,
+          6,
+          5,
+          14
+        ],
+        "displacement_rms": 0.0,
+        "major_p10_p50_p90": [
+          3.987972204233017,
+          5.157717680522078,
+          7.171139035441425
+        ],
+        "minor_p10_p50_p90": [
+          2.7238526034795396,
+          3.2423245574009956,
+          3.975197314479061
+        ],
+        "ratio_p10_p50_p90": [
+          1.180912387421298,
+          1.5474215261882618,
+          2.326004749708823
+        ]
+      },
+      "diagnostic": {
+        "samples": 132478,
+        "uncovered_fraction": 6.103515625e-05,
+        "dominance_mean": 0.34140837046793693,
+        "effective_contributors_mean": 4.670805501651041,
+        "effective_contributors_median": 4.491507784057585
+      }
+    },
+    "uniform circular overlap=5": {
+      "rgb_mse": 0.003255891564821736,
+      "psnr": 24.873300674142097,
+      "cartoon_mse": 0.02398991612106798,
+      "texture_mse": 0.0011190688258850732,
+      "objective": 0.028364876511774786,
+      "population": {
+        "quantizer": "uniform circular",
+        "cells": 2384,
+        "measure_integral": 2383.9652080237342,
+        "overlap": 5.0
+      },
+      "diagnostic": {
+        "samples": 81625,
+        "uncovered_fraction": 0.00714111328125,
+        "dominance_mean": 0.48943060702636415,
+        "effective_contributors_mean": 2.8691918718290474,
+        "effective_contributors_median": 2.9789250909034712
+      }
+    }
+  },
+  "geometry_ms": 755.7449580635875,
+  "solve_ms": 560.0215840386227,
+  "output": "/Users/quentinkuttenkuler/bfft/experiments/out/transport_measure_grass.png"
+}

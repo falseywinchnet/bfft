@@ -1,0 +1,88 @@
+{
+  "source": "gallery:astronaut",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "passes": 24,
+  "first_detail_stage": 2,
+  "base_cells": 180,
+  "requested_detail_cells": 800,
+  "total_cells": 1024,
+  "emission": {
+    "mass_quantum": 0.00125,
+    "expected_detail_cells": 799.9999999999999,
+    "emitted_detail_cells": 844,
+    "detail_minor_median": 1.8254687786102295,
+    "detail_major_median": 5.626311779022217,
+    "detail_ratio_median": 2.6723594665527344,
+    "detail_area_sum_per_pixel": 2.506141185760498,
+    "curvature_limit": true,
+    "specificity_power": 0.0,
+    "specificity_mix": 0.0,
+    "emission_mode": "causal"
+  },
+  "scores": {
+    "flow ellipses": {
+      "rgb_mse": 0.0034204977788749222,
+      "psnr": 24.659106872516166,
+      "cartoon_mse": 9.183572771558562e-05,
+      "texture_mse": 0.0009731901470704706,
+      "objective": 0.004485523653660979
+    },
+    "same sites, circular": {
+      "rgb_mse": 0.003738275938994925,
+      "psnr": 24.273286445409727,
+      "cartoon_mse": 0.00011165470643513021,
+      "texture_mse": 0.0010322966773292064,
+      "objective": 0.004882227322759261
+    },
+    "uniform R2 circles": {
+      "rgb_mse": 0.0032857345320097997,
+      "psnr": 24.833675279187805,
+      "cartoon_mse": 0.00010953226200310547,
+      "texture_mse": 0.0009813589179287338,
+      "objective": 0.004376625711941639
+    },
+    "round cartoon + flow texture": {
+      "rgb_mse": 0.0033166126517268656,
+      "psnr": 24.79305246913028,
+      "cartoon_mse": 0.00010172349632195946,
+      "texture_mse": 0.0009367807382052176,
+      "objective": 0.004355116886254042
+    }
+  },
+  "diagnostics": {
+    "flow ellipses": {
+      "samples": 116462,
+      "uncovered_fraction": 6.103515625e-05,
+      "dominance_mean": 0.37224021072074265,
+      "effective_contributors_mean": 4.10476102058958,
+      "effective_contributors_median": 3.9906843047830525
+    },
+    "same sites, circular": {
+      "samples": 116059,
+      "uncovered_fraction": 6.103515625e-05,
+      "dominance_mean": 0.37353442173705326,
+      "effective_contributors_mean": 4.092495469060724,
+      "effective_contributors_median": 3.9744401739556623
+    },
+    "uniform R2 circles": {
+      "samples": 80997,
+      "uncovered_fraction": 0.00146484375,
+      "dominance_mean": 0.49580902657621695,
+      "effective_contributors_mean": 2.8711883868674977,
+      "effective_contributors_median": 2.9313485684705505
+    },
+    "round cartoon + flow texture": {
+      "cartoon_dominance_mean": 0.37353442173705326,
+      "texture_dominance_mean": 0.37224021072074265,
+      "cartoon_effective_median": 3.9749151005732593,
+      "texture_effective_median": 3.990747240551678
+    }
+  },
+  "flow_ms": 2249.0515829995275,
+  "solve_ms": 1748.7395000644028,
+  "output": "/Users/quentinkuttenkuler/bfft/experiments/out/flow_volume_cells_astronaut_p0_m0_causal.png"
+}

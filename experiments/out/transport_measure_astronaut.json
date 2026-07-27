@@ -1,0 +1,130 @@
+{
+  "source": "gallery:astronaut",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "passes": 24,
+  "max_support_fraction": 0.18,
+  "support": {
+    "static_count": 1750.633064764114,
+    "transported_count": 1795.2661136641505,
+    "broad_horizon_count": 9.824379203203417
+  },
+  "best": "phase-stack-static overlap=5",
+  "scores": {
+    "phase-stack-static overlap=5": {
+      "rgb_mse": 0.0011076810888861232,
+      "psnr": 29.555852588069907,
+      "cartoon_mse": 1.7583308783265935e-05,
+      "texture_mse": 0.00035825995468167306,
+      "objective": 0.0014835243523510621,
+      "population": {
+        "quantizer": "phase stack",
+        "cells": 1750,
+        "measure_integral": 1795.266114134104,
+        "overlap": 5.0,
+        "advected": false,
+        "implied_by_stage": [
+          844.700301321107,
+          155.45778633610036,
+          130.99504981686374,
+          69.76736725880983,
+          80.33600311254486,
+          63.881220575819725,
+          45.86654504149237,
+          33.3011113489315,
+          29.103634877366858,
+          28.36641733769011,
+          32.319795037988115,
+          40.10410892356231,
+          34.08309081959487,
+          23.90023564602734,
+          20.705078811322892,
+          21.417826673045056,
+          19.533519414558214,
+          17.61080124523619,
+          14.136288807784126,
+          15.374607313338856,
+          17.43075981398306,
+          17.37712813246253,
+          19.788031666204915,
+          19.70940480226909
+        ],
+        "realized_by_stage": [
+          836,
+          146,
+          121,
+          71,
+          90,
+          70,
+          43,
+          29,
+          19,
+          23,
+          28,
+          40,
+          30,
+          19,
+          21,
+          27,
+          17,
+          18,
+          13,
+          12,
+          17,
+          18,
+          18,
+          24
+        ],
+        "displacement_rms": 0.0,
+        "major_p10_p50_p90": [
+          4.279370095520005,
+          6.489498561453828,
+          13.042076050476208
+        ],
+        "minor_p10_p50_p90": [
+          2.59298659448711,
+          3.0792575804479703,
+          4.165688120959937
+        ],
+        "ratio_p10_p50_p90": [
+          1.2792285787518827,
+          2.0438106818964883,
+          4.3077377491720386
+        ]
+      },
+      "diagnostic": {
+        "samples": 140941,
+        "uncovered_fraction": 0.00018310546875,
+        "dominance_mean": 0.32566268112831914,
+        "effective_contributors_mean": 5.008608825260854,
+        "effective_contributors_median": 4.831782940130332
+      }
+    },
+    "uniform circular overlap=5": {
+      "rgb_mse": 0.002813792466614193,
+      "psnr": 25.50707937437169,
+      "cartoon_mse": 0.00017114004282343123,
+      "texture_mse": 0.0008188558522994421,
+      "objective": 0.0038037883617370663,
+      "population": {
+        "quantizer": "uniform circular",
+        "cells": 1795,
+        "measure_integral": 1795.2661136641505,
+        "overlap": 5.0
+      },
+      "diagnostic": {
+        "samples": 81500,
+        "uncovered_fraction": 0.0042724609375,
+        "dominance_mean": 0.48633715259349786,
+        "effective_contributors_mean": 2.8821042332831874,
+        "effective_contributors_median": 2.967642493278082
+      }
+    }
+  },
+  "geometry_ms": 785.1356250466779,
+  "solve_ms": 424.9443339649588,
+  "output": "/Users/quentinkuttenkuler/bfft/experiments/out/transport_measure_astronaut.png"
+}

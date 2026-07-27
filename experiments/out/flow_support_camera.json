@@ -1,0 +1,204 @@
+{
+  "source": "gallery:camera",
+  "side": 128,
+  "passes": 24,
+  "max_support_fraction": 0.18,
+  "max_support_px": 23.04,
+  "broad_horizon_count": 9.824379203203417,
+  "static_count": 1534.2213295983286,
+  "transported_count": 1606.3211239473333,
+  "stage_stats": [
+    {
+      "stage": 1,
+      "local_requirement": 806.0616464095135,
+      "transported_prior_requirement": 0.0,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 806.0616464095135,
+      "envelope_measure": 806.0616464095135
+    },
+    {
+      "stage": 2,
+      "local_requirement": 817.569781858653,
+      "transported_prior_requirement": 806.0616464095135,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 176.2852048354182,
+      "envelope_measure": 982.3468512449317
+    },
+    {
+      "stage": 3,
+      "local_requirement": 611.763700782778,
+      "transported_prior_requirement": 982.3468512449317,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 80.99616420172045,
+      "envelope_measure": 1063.3430154466523
+    },
+    {
+      "stage": 4,
+      "local_requirement": 577.4387379376317,
+      "transported_prior_requirement": 1063.343015446652,
+      "transported_prior_mass_error": -2.2737367544323206e-13,
+      "newly_binding_measure": 52.82585939618926,
+      "envelope_measure": 1116.1688748428412
+    },
+    {
+      "stage": 5,
+      "local_requirement": 556.6506631701466,
+      "transported_prior_requirement": 1116.1688748428414,
+      "transported_prior_mass_error": 2.2737367544323206e-13,
+      "newly_binding_measure": 57.28449534469219,
+      "envelope_measure": 1173.4533701875334
+    },
+    {
+      "stage": 6,
+      "local_requirement": 510.0480073306659,
+      "transported_prior_requirement": 1173.4533701875334,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 41.38086530610279,
+      "envelope_measure": 1214.8342354936365
+    },
+    {
+      "stage": 7,
+      "local_requirement": 469.72430189378304,
+      "transported_prior_requirement": 1214.8342354936365,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 28.647958459849892,
+      "envelope_measure": 1243.4821939534863
+    },
+    {
+      "stage": 8,
+      "local_requirement": 451.9470075653421,
+      "transported_prior_requirement": 1243.4821939534863,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 27.174581135567273,
+      "envelope_measure": 1270.6567750890536
+    },
+    {
+      "stage": 9,
+      "local_requirement": 457.65001890151893,
+      "transported_prior_requirement": 1270.6567750890536,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 25.292654992881875,
+      "envelope_measure": 1295.9494300819354
+    },
+    {
+      "stage": 10,
+      "local_requirement": 474.55617497841604,
+      "transported_prior_requirement": 1295.9494300819356,
+      "transported_prior_mass_error": 2.2737367544323206e-13,
+      "newly_binding_measure": 26.24530970294019,
+      "envelope_measure": 1322.1947397848758
+    },
+    {
+      "stage": 11,
+      "local_requirement": 500.4451410203534,
+      "transported_prior_requirement": 1322.1947397848758,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 28.477462007132047,
+      "envelope_measure": 1350.6722017920076
+    },
+    {
+      "stage": 12,
+      "local_requirement": 512.6300179385917,
+      "transported_prior_requirement": 1350.6722017920076,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 27.09017844429915,
+      "envelope_measure": 1377.7623802363069
+    },
+    {
+      "stage": 13,
+      "local_requirement": 521.2779031947839,
+      "transported_prior_requirement": 1377.7623802363069,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 26.125402566850845,
+      "envelope_measure": 1403.8877828031577
+    },
+    {
+      "stage": 14,
+      "local_requirement": 532.483758222357,
+      "transported_prior_requirement": 1403.8877828031577,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 27.935653995433057,
+      "envelope_measure": 1431.8234367985906
+    },
+    {
+      "stage": 15,
+      "local_requirement": 538.0238942554389,
+      "transported_prior_requirement": 1431.8234367985906,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 26.06801014477137,
+      "envelope_measure": 1457.891446943362
+    },
+    {
+      "stage": 16,
+      "local_requirement": 533.1767792173725,
+      "transported_prior_requirement": 1457.891446943362,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 22.367881059610447,
+      "envelope_measure": 1480.2593280029723
+    },
+    {
+      "stage": 17,
+      "local_requirement": 531.9569088262517,
+      "transported_prior_requirement": 1480.2593280029726,
+      "transported_prior_mass_error": 2.2737367544323206e-13,
+      "newly_binding_measure": 20.6779799199751,
+      "envelope_measure": 1500.9373079229476
+    },
+    {
+      "stage": 18,
+      "local_requirement": 531.5062799947516,
+      "transported_prior_requirement": 1500.9373079229476,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 19.046811380029567,
+      "envelope_measure": 1519.9841193029772
+    },
+    {
+      "stage": 19,
+      "local_requirement": 529.2964481643595,
+      "transported_prior_requirement": 1519.9841193029772,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 17.252215598690952,
+      "envelope_measure": 1537.2363349016682
+    },
+    {
+      "stage": 20,
+      "local_requirement": 533.5895328902507,
+      "transported_prior_requirement": 1537.2363349016682,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 17.19444746148343,
+      "envelope_measure": 1554.4307823631516
+    },
+    {
+      "stage": 21,
+      "local_requirement": 538.9499531148639,
+      "transported_prior_requirement": 1554.4307823631516,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 16.540280080003996,
+      "envelope_measure": 1570.9710624431555
+    },
+    {
+      "stage": 22,
+      "local_requirement": 527.989811283629,
+      "transported_prior_requirement": 1570.9710624431557,
+      "transported_prior_mass_error": 2.2737367544323206e-13,
+      "newly_binding_measure": 13.83602833772283,
+      "envelope_measure": 1584.8070907808783
+    },
+    {
+      "stage": 23,
+      "local_requirement": 515.4101534048234,
+      "transported_prior_requirement": 1584.8070907808783,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 11.252145283524534,
+      "envelope_measure": 1596.059236064403
+    },
+    {
+      "stage": 24,
+      "local_requirement": 506.87135458030264,
+      "transported_prior_requirement": 1596.059236064403,
+      "transported_prior_mass_error": 0.0,
+      "newly_binding_measure": 10.261887882930381,
+      "envelope_measure": 1606.3211239473333
+    }
+  ]
+}

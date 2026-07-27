@@ -1,0 +1,521 @@
+{
+  "source": "gallery:pikachu",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "passes": 24,
+  "max_support_fraction": 0.18,
+  "support": {
+    "static_count": 1249.8614666065903,
+    "transported_count": 1261.1112318813593,
+    "broad_horizon_count": 9.824379203203417
+  },
+  "best": "uniform overlap=8",
+  "scores": {
+    "rosenblatt overlap=4": {
+      "rgb_mse": 0.006137900567569935,
+      "psnr": 22.119801513074997,
+      "cartoon_mse": 0.0009927148529373458,
+      "texture_mse": 0.0007804666921585105,
+      "objective": 0.00791108211266579,
+      "population": {
+        "quantizer": "rosenblatt",
+        "cells": 1261,
+        "measure_integral": 1261.1112322087283,
+        "overlap": 4.0,
+        "sampled_density_p10_p50_p90": [
+          0.04685777483697025,
+          0.09644221441750658,
+          0.14731945492000548
+        ],
+        "major_p10_p50_p90": [
+          3.4731205455304344,
+          5.0470353339280125,
+          9.934290835882
+        ],
+        "minor_p10_p50_p90": [
+          2.0840872579301424,
+          2.5468842507349847,
+          3.269522319896139
+        ],
+        "ratio_p10_p50_p90": [
+          1.2496856859619976,
+          1.9025999893291585,
+          4.183424187199863
+        ]
+      },
+      "diagnostic": {
+        "samples": 65358,
+        "uncovered_fraction": 0.0076904296875,
+        "dominance_mean": 0.5653327648312905,
+        "effective_contributors_mean": 2.485461893411992,
+        "effective_contributors_median": 2.392397013279121
+      }
+    },
+    "rosenblatt overlap=5": {
+      "rgb_mse": 0.0030692745454099692,
+      "psnr": 25.12964262358753,
+      "cartoon_mse": 0.0003530450704666323,
+      "texture_mse": 0.0005509180928808665,
+      "objective": 0.003973237708757468,
+      "population": {
+        "quantizer": "rosenblatt",
+        "cells": 1261,
+        "measure_integral": 1261.1112322087283,
+        "overlap": 5.0,
+        "sampled_density_p10_p50_p90": [
+          0.04685777483697025,
+          0.09644221441750658,
+          0.14731945492000548
+        ],
+        "major_p10_p50_p90": [
+          3.8830668169286024,
+          5.642757045753193,
+          11.106874808642681
+        ],
+        "minor_p10_p50_p90": [
+          2.330080389886468,
+          2.8475031577335224,
+          3.6554370806202905
+        ],
+        "ratio_p10_p50_p90": [
+          1.2496856859619976,
+          1.9025999893291585,
+          4.183424187199863
+        ]
+      },
+      "diagnostic": {
+        "samples": 81419,
+        "uncovered_fraction": 0.0030517578125,
+        "dominance_mean": 0.48945343836675903,
+        "effective_contributors_mean": 2.9959736663191188,
+        "effective_contributors_median": 2.921471843014735
+      }
+    },
+    "rosenblatt overlap=6": {
+      "rgb_mse": 0.002218733033624061,
+      "psnr": 26.538949505840964,
+      "cartoon_mse": 0.00017786567592626296,
+      "texture_mse": 0.0004914591540462594,
+      "objective": 0.0028880578635965834,
+      "population": {
+        "quantizer": "rosenblatt",
+        "cells": 1261,
+        "measure_integral": 1261.1112322087283,
+        "overlap": 6.0,
+        "sampled_density_p10_p50_p90": [
+          0.04685777483697025,
+          0.09644221441750658,
+          0.14731945492000548
+        ],
+        "major_p10_p50_p90": [
+          4.253686575863157,
+          6.181330640960469,
+          12.166971752158943
+        ],
+        "minor_p10_p50_p90": [
+          2.552475180682502,
+          3.119283424115683,
+          4.004330693193127
+        ],
+        "ratio_p10_p50_p90": [
+          1.2496856859619976,
+          1.9025999893291585,
+          4.183424187199863
+        ]
+      },
+      "diagnostic": {
+        "samples": 97517,
+        "uncovered_fraction": 0.00146484375,
+        "dominance_mean": 0.4289222539326152,
+        "effective_contributors_mean": 3.5165268898681945,
+        "effective_contributors_median": 3.4508276838064305
+      }
+    },
+    "rosenblatt overlap=8": {
+      "rgb_mse": 0.0013446117209759446,
+      "psnr": 28.71403107321226,
+      "cartoon_mse": 8.005168761435717e-05,
+      "texture_mse": 0.00041464828081086777,
+      "objective": 0.0018393116894011696,
+      "population": {
+        "quantizer": "rosenblatt",
+        "cells": 1261,
+        "measure_integral": 1261.1112322087283,
+        "overlap": 8.0,
+        "sampled_density_p10_p50_p90": [
+          0.04685777483697025,
+          0.09644221441750658,
+          0.14731945492000548
+        ],
+        "major_p10_p50_p90": [
+          4.911734179245783,
+          7.137585819017217,
+          14.049208832663076
+        ],
+        "minor_p10_p50_p90": [
+          2.9473444653337624,
+          3.601838249183854,
+          4.623802807278666
+        ],
+        "ratio_p10_p50_p90": [
+          1.2496856859619976,
+          1.9025999893291585,
+          4.183424187199863
+        ]
+      },
+      "diagnostic": {
+        "samples": 129367,
+        "uncovered_fraction": 0.00018310546875,
+        "dominance_mean": 0.34149033461244255,
+        "effective_contributors_mean": 4.573320148272511,
+        "effective_contributors_median": 4.5104660713586995
+      }
+    },
+    "rosenblatt overlap=10": {
+      "rgb_mse": 0.0013406896998368317,
+      "psnr": 28.72671727176412,
+      "cartoon_mse": 9.175686982487269e-05,
+      "texture_mse": 0.0004114531471198029,
+      "objective": 0.0018438997167815072,
+      "population": {
+        "quantizer": "rosenblatt",
+        "cells": 1261,
+        "measure_integral": 1261.1112322087283,
+        "overlap": 10.0,
+        "sampled_density_p10_p50_p90": [
+          0.04685777483697025,
+          0.09644221441750658,
+          0.14731945492000548
+        ],
+        "major_p10_p50_p90": [
+          5.491485756101354,
+          7.9800635432805045,
+          15.707492989962555
+        ],
+        "minor_p10_p50_p90": [
+          3.2952312887970323,
+          4.0269775845669615,
+          5.1695686958147276
+        ],
+        "ratio_p10_p50_p90": [
+          1.2496856859619976,
+          1.9025999893291585,
+          4.183424187199863
+        ]
+      },
+      "diagnostic": {
+        "samples": 160853,
+        "uncovered_fraction": 0.0,
+        "dominance_mean": 0.28270249191250285,
+        "effective_contributors_mean": 5.637047628917921,
+        "effective_contributors_median": 5.556523763371817
+      }
+    },
+    "uniform overlap=4": {
+      "rgb_mse": 0.008940504751993827,
+      "psnr": 20.486379616495455,
+      "cartoon_mse": 0.0010585331707495095,
+      "texture_mse": 0.0011152009927750163,
+      "objective": 0.011114238915518352,
+      "population": {
+        "quantizer": "uniform",
+        "cells": 1261,
+        "measure_integral": 1261.1112322087283,
+        "overlap": 4.0,
+        "sampled_density_p10_p50_p90": [
+          0.027293401146327317,
+          0.07812738919534679,
+          0.13354206318054057
+        ],
+        "major_p10_p50_p90": [
+          3.722293635810377,
+          5.978005699146419,
+          18.583087915548017
+        ],
+        "minor_p10_p50_p90": [
+          2.0247694592897685,
+          2.5661372400951796,
+          3.4153473312652154
+        ],
+        "ratio_p10_p50_p90": [
+          1.2949226356469468,
+          2.2044617962157336,
+          7.954220429299678
+        ]
+      },
+      "diagnostic": {
+        "samples": 90600,
+        "uncovered_fraction": 0.00811767578125,
+        "dominance_mean": 0.48516330083765724,
+        "effective_contributors_mean": 3.3082295775765975,
+        "effective_contributors_median": 2.8647673460621323
+      }
+    },
+    "uniform overlap=5": {
+      "rgb_mse": 0.006041321110003734,
+      "psnr": 22.1886807991423,
+      "cartoon_mse": 0.0006583392048185584,
+      "texture_mse": 0.0008007781928055333,
+      "objective": 0.007500438507627826,
+      "population": {
+        "quantizer": "uniform",
+        "cells": 1261,
+        "measure_integral": 1261.1112322087283,
+        "overlap": 5.0,
+        "sampled_density_p10_p50_p90": [
+          0.027293401146327317,
+          0.07812738919534679,
+          0.13354206318054057
+        ],
+        "major_p10_p50_p90": [
+          4.161650800943423,
+          6.683613556586275,
+          20.776523905510118
+        ],
+        "minor_p10_p50_p90": [
+          2.2637610748687074,
+          2.8690286542232606,
+          3.818474399740757
+        ],
+        "ratio_p10_p50_p90": [
+          1.2949226356469468,
+          2.2044617962157336,
+          7.954220429299678
+        ]
+      },
+      "diagnostic": {
+        "samples": 112694,
+        "uncovered_fraction": 0.00518798828125,
+        "dominance_mean": 0.4128982050046879,
+        "effective_contributors_mean": 4.040537184129038,
+        "effective_contributors_median": 3.491521183625774
+      }
+    },
+    "uniform overlap=6": {
+      "rgb_mse": 0.004095683049202367,
+      "psnr": 23.876736592852623,
+      "cartoon_mse": 0.00042183519227464083,
+      "texture_mse": 0.000634051840988226,
+      "objective": 0.005151570082465235,
+      "population": {
+        "quantizer": "uniform",
+        "cells": 1261,
+        "measure_integral": 1261.1112322087283,
+        "overlap": 6.0,
+        "sampled_density_p10_p50_p90": [
+          0.027293401146327317,
+          0.07812738919534679,
+          0.13354206318054057
+        ],
+        "major_p10_p50_p90": [
+          4.558860040272311,
+          7.321531821179268,
+          22.759541619186447
+        ],
+        "minor_p10_p50_p90": [
+          2.4798260110154646,
+          3.1428634240935382,
+          4.182929127988023
+        ],
+        "ratio_p10_p50_p90": [
+          1.2949226356469468,
+          2.2044617962157336,
+          7.954220429299678
+        ]
+      },
+      "diagnostic": {
+        "samples": 134958,
+        "uncovered_fraction": 0.003173828125,
+        "dominance_mean": 0.3584214527021347,
+        "effective_contributors_mean": 4.775780865473813,
+        "effective_contributors_median": 4.1374282893888505
+      }
+    },
+    "uniform overlap=8": {
+      "rgb_mse": 0.0012487306942624077,
+      "psnr": 29.035312130323216,
+      "cartoon_mse": 6.44764812346752e-05,
+      "texture_mse": 0.00038478360404016606,
+      "objective": 0.001697990779537249,
+      "population": {
+        "quantizer": "uniform",
+        "cells": 1261,
+        "measure_integral": 1261.1112322087283,
+        "overlap": 8.0,
+        "sampled_density_p10_p50_p90": [
+          0.027293401146327317,
+          0.07812738919534679,
+          0.13354206318054057
+        ],
+        "major_p10_p50_p90": [
+          5.264118142898093,
+          8.454176735676523,
+          26.280454960939576
+        ],
+        "minor_p10_p50_p90": [
+          2.863456430006429,
+          3.6290660878532663,
+          4.830030516090024
+        ],
+        "ratio_p10_p50_p90": [
+          1.2949226356469468,
+          2.2044617962157336,
+          7.954220429299678
+        ]
+      },
+      "diagnostic": {
+        "samples": 178208,
+        "uncovered_fraction": 0.00018310546875,
+        "dominance_mean": 0.2826506812802958,
+        "effective_contributors_mean": 6.248960683145363,
+        "effective_contributors_median": 5.40869854219485
+      }
+    },
+    "uniform overlap=10": {
+      "rgb_mse": 0.0012309473809328825,
+      "psnr": 29.097605113732442,
+      "cartoon_mse": 7.554378145526472e-05,
+      "texture_mse": 0.0003931326093149479,
+      "objective": 0.001699623771703095,
+      "population": {
+        "quantizer": "uniform",
+        "cells": 1261,
+        "measure_integral": 1261.1112322087283,
+        "overlap": 10.0,
+        "sampled_density_p10_p50_p90": [
+          0.027293401146327317,
+          0.07812738919534679,
+          0.13354206318054057
+        ],
+        "major_p10_p50_p90": [
+          5.885463004555044,
+          9.452056937384988,
+          29.382441886141233
+        ],
+        "minor_p10_p50_p90": [
+          3.2014416140516215,
+          4.057419233639564,
+          5.400138283687842
+        ],
+        "ratio_p10_p50_p90": [
+          1.2949226356469468,
+          2.2044617962157336,
+          7.954220429299678
+        ]
+      },
+      "diagnostic": {
+        "samples": 220456,
+        "uncovered_fraction": 0.0,
+        "dominance_mean": 0.23100106368612827,
+        "effective_contributors_mean": 7.724888650656702,
+        "effective_contributors_median": 6.73190683061533
+      }
+    },
+    "uniform circular overlap=4": {
+      "rgb_mse": 0.008227050321899397,
+      "psnr": 20.84755846262982,
+      "cartoon_mse": 0.0008061345686121552,
+      "texture_mse": 0.0015092648526460538,
+      "objective": 0.010542449743157607,
+      "population": {
+        "quantizer": "uniform circular",
+        "cells": 1261,
+        "measure_integral": 1261.1112318813593,
+        "overlap": 4.0
+      },
+      "diagnostic": {
+        "samples": 65121,
+        "uncovered_fraction": 0.005615234375,
+        "dominance_mean": 0.563307387015516,
+        "effective_contributors_mean": 2.4030575160514474,
+        "effective_contributors_median": 2.3333898397398087
+      }
+    },
+    "uniform circular overlap=5": {
+      "rgb_mse": 0.004533349044633259,
+      "psnr": 23.435808412055398,
+      "cartoon_mse": 0.00032940219324384466,
+      "texture_mse": 0.0011099984550381643,
+      "objective": 0.005972749692915268,
+      "population": {
+        "quantizer": "uniform circular",
+        "cells": 1261,
+        "measure_integral": 1261.1112318813593,
+        "overlap": 5.0
+      },
+      "diagnostic": {
+        "samples": 81237,
+        "uncovered_fraction": 0.001708984375,
+        "dominance_mean": 0.48828653493490715,
+        "effective_contributors_mean": 2.9001410210705343,
+        "effective_contributors_median": 2.857702439110291
+      }
+    },
+    "uniform circular overlap=6": {
+      "rgb_mse": 0.0033161869028420477,
+      "psnr": 24.793610002612443,
+      "cartoon_mse": 0.0002801099532591358,
+      "texture_mse": 0.0009020051787992426,
+      "objective": 0.004498302034900426,
+      "population": {
+        "quantizer": "uniform circular",
+        "cells": 1261,
+        "measure_integral": 1261.1112318813593,
+        "overlap": 6.0
+      },
+      "diagnostic": {
+        "samples": 97258,
+        "uncovered_fraction": 0.0003662109375,
+        "dominance_mean": 0.4282550044259087,
+        "effective_contributors_mean": 3.4107717242151736,
+        "effective_contributors_median": 3.4328622702598524
+      }
+    },
+    "uniform circular overlap=8": {
+      "rgb_mse": 0.0032153752100026224,
+      "psnr": 24.92768340896614,
+      "cartoon_mse": 0.0002945398112372626,
+      "texture_mse": 0.0008517878941677675,
+      "objective": 0.004361702915407653,
+      "population": {
+        "quantizer": "uniform circular",
+        "cells": 1261,
+        "measure_integral": 1261.1112318813593,
+        "overlap": 8.0
+      },
+      "diagnostic": {
+        "samples": 129090,
+        "uncovered_fraction": 0.0,
+        "dominance_mean": 0.3407656037137939,
+        "effective_contributors_mean": 4.459589644547733,
+        "effective_contributors_median": 4.617572371860565
+      }
+    },
+    "uniform circular overlap=10": {
+      "rgb_mse": 0.0031544360680857406,
+      "psnr": 25.010782701470266,
+      "cartoon_mse": 0.00029465832596700317,
+      "texture_mse": 0.0008212986450215223,
+      "objective": 0.004270393039074266,
+      "population": {
+        "quantizer": "uniform circular",
+        "cells": 1261,
+        "measure_integral": 1261.1112318813593,
+        "overlap": 10.0
+      },
+      "diagnostic": {
+        "samples": 160709,
+        "uncovered_fraction": 0.0,
+        "dominance_mean": 0.28200809560228945,
+        "effective_contributors_mean": 5.5301698238147505,
+        "effective_contributors_median": 5.854677090705366
+      }
+    }
+  },
+  "geometry_ms": 612.4577909940854,
+  "solve_ms": 2068.8896669307724,
+  "output": "/Users/quentinkuttenkuler/bfft/experiments/out/transport_measure_overlap_sweep.png"
+}

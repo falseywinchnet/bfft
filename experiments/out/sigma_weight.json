@@ -1,0 +1,57 @@
+pikachu   weight_descent      31.50 dB obj 9.964e-04 struct 0.0033 solve 3.73s
+{
+  "protocol": {
+    "allocation_mode": "Expected affine gain",
+    "coupled_overlap": [
+      4.0,
+      16.0
+    ],
+    "images": [
+      "pikachu"
+    ],
+    "initial_cells": 180,
+    "max_side": 256,
+    "maximum_cells": 2400,
+    "objective": "rgb_mse + cartoon_mse + texture_mse, lower better"
+  },
+  "results": [
+    {
+      "cartoon_mse": 1.5108348901931104e-05,
+      "cells": 2400,
+      "description": "The same exact gradient restricted to one additive weight per site.  Asks whether the free barrier field is only relocating cell boundaries, which 2,400 numbers can already do.",
+      "grow_s": 15.334329209057614,
+      "image": "pikachu",
+      "objective": 0.000996395164125802,
+      "offset_span": [
+        -3.4698605432074365,
+        3.5230092395486423
+      ],
+      "parameters": 2400,
+      "psnr": 31.503860179345303,
+      "psnr_history": [
+        29.166683745603493,
+        27.053914565403634,
+        27.84472885456772,
+        29.33288714924184,
+        29.92413949531685,
+        30.1395343005545,
+        30.268837396490504,
+        30.248247247587198,
+        30.077637765181876,
+        30.49759163272867,
+        30.776816572632182,
+        30.92948686000451,
+        31.00653410982801,
+        31.193366571816952,
+        31.325477595642678,
+        31.503860179345303,
+        31.49947021772371
+      ],
+      "residual_structure": 0.0033462119829965795,
+      "rgb_mse": 0.0007073168140289357,
+      "solve_s": 3.7335670829052106,
+      "texture_mse": 0.00027397000119493543,
+      "trial": "weight_descent"
+    }
+  ]
+}

@@ -1,0 +1,141 @@
+{
+  "source": "/Users/quentinkuttenkuler/Downloads/25.png",
+  "shape": [
+    475,
+    475,
+    3
+  ],
+  "cells": 989,
+  "threshold": 2.5,
+  "metric_strength": 1.5,
+  "metric_extent_threshold": 8.0,
+  "branch_balance": "exact_bisection",
+  "pyramid_side": 192,
+  "pyramid_initial_cells": 313,
+  "coherent_tangent_fraction": 0.02,
+  "target_decompositions_for_allocation": 1,
+  "tgfd_internal_sweeps": 24,
+  "continuous_implied_cells": 717.5381229729355,
+  "decomposition_seconds": 0.4191461249720305,
+  "coarse_allocation_seconds": 1.2329976249020547,
+  "allocation_seconds": 1.4201518750051036,
+  "fit_seconds": 0.7785149159608409,
+  "ridge_info": {
+    "ridge_count": 1,
+    "ridge_score_mean": [
+      0.3146573189738438
+    ],
+    "ridge_score_nonzero": [
+      803
+    ],
+    "ridge_angles": 16,
+    "ridge_bins": 41
+  },
+  "safety_limit_hit": false,
+  "affine_record": {
+    "rgb_mse": 0.003970195666922314,
+    "psnr": 24.011880889621708,
+    "cartoon_mse": 0.0004515584780075709,
+    "texture_mse": 0.0009453594759274044,
+    "objective": 0.005367113620857289
+  },
+  "record": {
+    "rgb_mse": 0.0022815865965506465,
+    "psnr": 26.417630431348513,
+    "cartoon_mse": 0.00023450167092974904,
+    "texture_mse": 0.0006166223940321419,
+    "objective": 0.0031327106615125374
+  },
+  "trace": [
+    {
+      "round": 1,
+      "cells_before": 313,
+      "splits": 226,
+      "cells_after": 539,
+      "softness": 0.05,
+      "temperature_px": 4.275,
+      "transport_extent_p50": 2.7340454939699472,
+      "transport_extent_p90": 4.015805238180207,
+      "transport_extent_max": 5.5107453516164036,
+      "instability_p50": 4.033790967141658,
+      "instability_p90": 32.12525200309951,
+      "instability_max": 288.1271891283019,
+      "minor_instability_p90": 8.572852022269775,
+      "metric_aspect_p90": 30.57717573471304,
+      "metric_aspect_max": 407.513815675718,
+      "minimum_region_pixels": 11
+    },
+    {
+      "round": 2,
+      "cells_before": 539,
+      "splits": 219,
+      "cells_after": 758,
+      "softness": 0.029428309563827124,
+      "temperature_px": 2.516120467707219,
+      "transport_extent_p50": 2.1633950648472133,
+      "transport_extent_p90": 3.142439123362411,
+      "transport_extent_max": 4.629962427179358,
+      "instability_p50": 1.9727885870132962,
+      "instability_p90": 11.3359502716183,
+      "instability_max": 175.68524568270118,
+      "minor_instability_p90": 3.045771702307647,
+      "metric_aspect_p90": 31.25144956698898,
+      "metric_aspect_max": 342.70985389110666,
+      "minimum_region_pixels": 7
+    },
+    {
+      "round": 3,
+      "cells_before": 758,
+      "splits": 124,
+      "cells_after": 882,
+      "softness": 0.017320508075688773,
+      "temperature_px": 1.48090344047139,
+      "transport_extent_p50": 1.9638809288749242,
+      "transport_extent_p90": 2.4572516510432982,
+      "transport_extent_max": 4.029462762748138,
+      "instability_p50": 1.2387689988194464,
+      "instability_p90": 6.697794594725773,
+      "instability_max": 139.10772431248208,
+      "minor_instability_p90": 1.5950369229339143,
+      "metric_aspect_p90": 47.39786289325112,
+      "metric_aspect_max": 5773273888108.478,
+      "minimum_region_pixels": 5
+    },
+    {
+      "round": 4,
+      "cells_before": 882,
+      "splits": 66,
+      "cells_after": 948,
+      "softness": 0.010194265469082735,
+      "temperature_px": 0.8716096976065739,
+      "transport_extent_p50": 1.8620825739492814,
+      "transport_extent_p90": 2.2409546280843986,
+      "transport_extent_max": 3.0669919478278134,
+      "instability_p50": 1.0468971778754412,
+      "instability_p90": 5.149142340467722,
+      "instability_max": 67.32616186338088,
+      "minor_instability_p90": 1.25569199095371,
+      "metric_aspect_p90": 57.29079569161422,
+      "metric_aspect_max": 2823164831651.8433,
+      "minimum_region_pixels": 6
+    },
+    {
+      "round": 5,
+      "cells_before": 948,
+      "splits": 41,
+      "cells_after": 989,
+      "softness": 0.006,
+      "temperature_px": 0.513,
+      "transport_extent_p50": 1.8007301911137432,
+      "transport_extent_p90": 2.1568103786228257,
+      "transport_extent_max": 2.5126074466075696,
+      "instability_p50": 1.0212418710654614,
+      "instability_p90": 4.395178011724644,
+      "instability_max": 100.06124998075137,
+      "minor_instability_p90": 1.156092115116288,
+      "metric_aspect_p90": 65.15290260762754,
+      "metric_aspect_max": 14864983424796.914,
+      "minimum_region_pixels": 5
+    }
+  ]
+}

@@ -34,17 +34,30 @@ Planned objects (lowest per-call overhead for hot loops; one per thread):
     bfft.Plan(N)      -- .rfft(x) / .irfft(X) at a fixed power-of-two size N.
     bfft.OdftPlan(N)  -- .odft(x) / .iodft(H) at a fixed power-of-two size N.
     bfft.FctPlan(N)   -- .fct(x) at a fixed power-of-two size N >= 16.
-    bfft.MeyerPlan((H, W)) -- .decompose(img) at fixed power-of-two dims.
+    bfft.MeyerPlan((H, W)) -- .decompose(img) with spectral or one-axis
+                         FACR screened-Poisson solves.
 """
 
 from ._core import (FctPlan, MeyerPlan, OdftPlan, Plan, STFTPlan, fct,
-                    hann_window, iodft, irfft, meyer, meyer_split, odft,
+                    hann_window, iodft, irfft, meyer, meyer_split,
+                    meyer_trace, odft,
                     rfft, rof)
 from .effects import (lab_to_srgb, meyer_channels, recompose,
                       recompose_channels, shade, srgb_to_lab)
+from .vision import (CoownershipGraph, SingleStageDecompositionObjective,
+                     assemble_normal, compact_support_operators,
+                     coownership_graph, deletion_prices,
+                     measure_residual_ridges, render_partition,
+                     selected_inverse_blocks, vision_backend)
 
 __all__ = ["rfft", "irfft", "odft", "iodft", "fct", "meyer",
-           "meyer_split", "rof", "Plan", "OdftPlan", "FctPlan", "MeyerPlan",
+           "meyer_split", "meyer_trace", "rof", "Plan", "OdftPlan",
+           "FctPlan", "MeyerPlan",
            "STFTPlan", "hann_window", "meyer_channels", "recompose",
-           "recompose_channels", "shade", "srgb_to_lab", "lab_to_srgb"]
+           "recompose_channels", "shade", "srgb_to_lab", "lab_to_srgb",
+           "CoownershipGraph", "coownership_graph", "assemble_normal",
+           "compact_support_operators",
+           "render_partition", "measure_residual_ridges",
+           "selected_inverse_blocks", "deletion_prices",
+           "SingleStageDecompositionObjective", "vision_backend"]
 __version__ = "1.0"

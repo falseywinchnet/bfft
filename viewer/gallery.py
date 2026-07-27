@@ -50,6 +50,11 @@ def _sk(name):
     return getattr(data, name)()
 
 
+def _local_colour(path):
+    from skimage.io import imread
+    return _colour(imread(path))
+
+
 def _match_stats(a, mean=128.0, std=45.0):
     """Force a texture to a given mean and standard deviation.
 
@@ -196,6 +201,9 @@ ENTRIES = [
 
     ("astronaut", "colour", "astronaut",
      lambda: _colour(_sk("astronaut")), "colour"),
+    ("pikachu", "colour", "Pikachu allocation control",
+     lambda: _local_colour(
+         "/Users/quentinkuttenkuler/Downloads/25.png"), "colour"),
     ("chelsea", "colour", "cat (fur at several scales)",
      lambda: _colour(_sk("chelsea")), "colour"),
     ("coffee", "colour", "coffee", lambda: _colour(_sk("coffee")), "colour"),

@@ -9,6 +9,10 @@
 #include <cstdlib>
 #include <new>
 
+#if defined(_WIN32)
+#  include <malloc.h>
+#endif
+
 // ---------------------------------------------------------------------------
 // SIMD backend resolution.
 //   BRUUN_LEVEL 0 = scalar, 1 = 128-bit (SSE2/NEON), 2 = AVX2+FMA
@@ -337,7 +341,7 @@ private:
             padded += pad;
         }
         void* raw = nullptr;
-#if defined(_MSC_VER)
+#if defined(_WIN32)
         raw = _aligned_malloc(padded, bruun_cache_alignment);
 #else
         if (posix_memalign(&raw, bruun_cache_alignment, padded) != 0) raw = nullptr;
@@ -347,7 +351,7 @@ private:
 
     static void free_raw(void* p) noexcept {
         if (!p) return;
-#if defined(_MSC_VER)
+#if defined(_WIN32)
         _aligned_free(p);
 #else
         std::free(p);

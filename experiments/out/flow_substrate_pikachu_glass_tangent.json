@@ -1,0 +1,97 @@
+{
+  "source": "gallery:pikachu",
+  "shape": [
+    128,
+    128,
+    3
+  ],
+  "passes": 24,
+  "first_detail_stage": 2,
+  "base_cells": 180,
+  "requested_detail_cells": 800,
+  "total_cells": 1046,
+  "emission": {
+    "mass_quantum": 0.00125,
+    "expected_detail_cells": 799.9999999999999,
+    "emitted_detail_cells": 866,
+    "detail_minor_median": 1.8470449447631836,
+    "detail_major_median": 8.847925186157227,
+    "detail_ratio_median": 4.039590358734131,
+    "detail_area_sum_per_pixel": 4.4709062576293945,
+    "curvature_limit": true,
+    "specificity_power": 0.0,
+    "specificity_mix": 0.0,
+    "emission_mode": "independent",
+    "substrate_hint": 0.0,
+    "substrate_shape_hint": 1.0,
+    "substrate_displacement_rms": 0.0,
+    "substrate_displacement_q95": 0.0,
+    "substrate_ratio_median": 1.324299850035262,
+    "substrate_density_min": 1.0,
+    "substrate_density_max": 1.0,
+    "substrate_vector_mode": "glass",
+    "substrate_vector_axis": "tangent"
+  },
+  "scores": {
+    "flow ellipses": {
+      "rgb_mse": 0.0012797441546804251,
+      "psnr": 28.92876845443147,
+      "cartoon_mse": 6.184902843811663e-05,
+      "texture_mse": 0.0004060779126282752,
+      "objective": 0.0017476710957468168
+    },
+    "same sites, circular": {
+      "rgb_mse": 0.0035477999621895922,
+      "psnr": 24.500408752457112,
+      "cartoon_mse": 0.0003012543244711914,
+      "texture_mse": 0.0009701046031778532,
+      "objective": 0.004819158889838637
+    },
+    "uniform R2 circles": {
+      "rgb_mse": 0.0047304805811974465,
+      "psnr": 23.250947359725636,
+      "cartoon_mse": 0.0004937093938583488,
+      "texture_mse": 0.0010841745932435593,
+      "objective": 0.006308364568299355
+    },
+    "round cartoon + flow texture": {
+      "rgb_mse": 0.001669017240651685,
+      "psnr": 27.775391771127133,
+      "cartoon_mse": 0.00013697652359369753,
+      "texture_mse": 0.0005131303065937962,
+      "objective": 0.002319124070839179
+    }
+  },
+  "diagnostics": {
+    "flow ellipses": {
+      "samples": 146422,
+      "uncovered_fraction": 0.000244140625,
+      "dominance_mean": 0.3131490697766268,
+      "effective_contributors_mean": 5.143582787487194,
+      "effective_contributors_median": 4.968760808271446
+    },
+    "same sites, circular": {
+      "samples": 144772,
+      "uncovered_fraction": 6.103515625e-05,
+      "dominance_mean": 0.31477307185510034,
+      "effective_contributors_mean": 5.090641404323703,
+      "effective_contributors_median": 4.90275415115249
+    },
+    "uniform R2 circles": {
+      "samples": 81010,
+      "uncovered_fraction": 0.001220703125,
+      "dominance_mean": 0.49435560942110984,
+      "effective_contributors_mean": 2.872600591129346,
+      "effective_contributors_median": 2.9430428204427628
+    },
+    "round cartoon + flow texture": {
+      "cartoon_dominance_mean": 0.31477307185510034,
+      "texture_dominance_mean": 0.3131490697766268,
+      "cartoon_effective_median": 4.902939171400147,
+      "texture_effective_median": 4.969081901691914
+    }
+  },
+  "flow_ms": 2609.4524579821154,
+  "solve_ms": 3251.904458971694,
+  "output": "/Users/quentinkuttenkuler/bfft/experiments/out/flow_substrate_pikachu_glass_tangent.png"
+}

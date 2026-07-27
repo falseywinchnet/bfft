@@ -1,0 +1,20 @@
+camera    coupled_control     28.12 dB obj 6.801e-03 struct 0.0037 solve 0.17s
+camera    direct_normal       28.12 dB obj 6.780e-03 struct 0.0037 solve 0.02s
+Traceback (most recent call last):
+  File "/Users/quentinkuttenkuler/bfft/experiments/claude_trial_sigma_run.py", line 419, in <module>
+    main()
+    ~~~~^^
+  File "/Users/quentinkuttenkuler/bfft/experiments/claude_trial_sigma_run.py", line 404, in main
+    result = run_trial(image, cfg, trial, steps=args.steps)
+  File "/Users/quentinkuttenkuler/bfft/experiments/claude_trial_sigma_run.py", line 166, in run_trial
+    fields = solve_pair(
+        model, True, cartoon_softness, texture_softness,
+        residuals=residuals)
+  File "/Users/quentinkuttenkuler/bfft/experiments/claude_trial_sigma_run.py", line 116, in solve_pair
+    context = model.assemble(softness, enriched=enriched)
+  File "/Users/quentinkuttenkuler/bfft/viewer/claude_trial_sigma.py", line 331, in assemble
+    first = self._cell_basis(self.owner, spacing, angles, enriched)
+  File "/Users/quentinkuttenkuler/bfft/viewer/claude_trial_sigma.py", line 314, in _cell_basis
+    axis = self.ridge_axis[site_ids]
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+TypeError: 'NoneType' object is not subscriptable

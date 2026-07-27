@@ -88,10 +88,21 @@ def _decl(name, restype, argtypes):
     return fn
 
 
+def _decl_optional(name, restype, argtypes):
+    """Declare a newer optional kernel while accepting an older shared lib."""
+    try:
+        return _decl(name, restype, argtypes)
+    except AttributeError:
+        return None
+
+
 _dbl_p = ctypes.POINTER(ctypes.c_double)
 _cplx_p = ctypes.POINTER(_Complex)
 _void_p = ctypes.c_void_p
 _plan_p = ctypes.c_void_p
+_i32_p = ctypes.POINTER(ctypes.c_int32)
+_i64_p = ctypes.POINTER(ctypes.c_int64)
+_u8_p = ctypes.POINTER(ctypes.c_uint8)
 
 # --- standard real FFT (bfft.h) ---
 _bfft_plan_create = _decl("bfft_plan_create", ctypes.c_int,
@@ -136,14 +147,55 @@ _meyer_plan_create = _decl("bfft_meyer_plan_create", ctypes.c_int,
                             ctypes.c_int, ctypes.c_double, ctypes.c_int,
                             ctypes.POINTER(_plan_p)])
 _meyer_plan_destroy = _decl("bfft_meyer_plan_destroy", None, [_plan_p])
+_meyer_plan_set_solver = _decl_optional(
+    "bfft_meyer_plan_set_solver", ctypes.c_int, [_plan_p, ctypes.c_int])
+_meyer_plan_solver = _decl_optional(
+    "bfft_meyer_plan_solver", ctypes.c_int, [_plan_p])
 _meyer_split = _decl("bfft_meyer_split", ctypes.c_int,
                      [_plan_p, _void_p, _void_p, _void_p])
+_meyer_split_trace = _decl_optional(
+    "bfft_meyer_split_trace", ctypes.c_int,
+    [_plan_p, _void_p, _void_p, _void_p])
+_meyer_trace_callback = ctypes.CFUNCTYPE(
+    None, ctypes.c_int, _dbl_p, _dbl_p, ctypes.c_size_t, _void_p)
+_meyer_split_visit = _decl_optional(
+    "bfft_meyer_split_visit", ctypes.c_int,
+    [_plan_p, _void_p, _meyer_trace_callback, _void_p])
 _meyer_decompose = _decl("bfft_meyer_decompose", ctypes.c_int,
                          [_plan_p, _void_p, _void_p, _void_p, _void_p,
                           _void_p, _void_p])
 _meyer_rof = _decl("bfft_meyer_rof", ctypes.c_int,
                    [_plan_p, _void_p, _void_p, ctypes.c_double,
                     ctypes.c_double, ctypes.c_int, ctypes.c_double])
+
+# --- measured-graph vision kernels (vision.h; optional for old installs) ---
+_vision_assemble_normal = _decl_optional(
+    "bfft_vision_assemble_normal", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _i32_p, _i32_p, _u8_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p,
+     _i64_p, _i64_p, _i64_p, _dbl_p, _dbl_p])
+_vision_render_affine = _decl_optional(
+    "bfft_vision_render_affine", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _i32_p, _i32_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p,
+     _dbl_p, _dbl_p, _dbl_p])
+_vision_scan_residual_ridges = _decl_optional(
+    "bfft_vision_scan_residual_ridges", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     ctypes.c_double, ctypes.c_double, _i32_p, _dbl_p, _dbl_p, _dbl_p,
+     _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _i32_p, _i32_p])
+_vision_support_forward = _decl_optional(
+    "bfft_vision_support_forward", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _i32_p, _i32_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p])
+_vision_support_transpose = _decl_optional(
+    "bfft_vision_support_transpose", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _i32_p, _i32_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p])
+_vision_support_normal_apply = _decl_optional(
+    "bfft_vision_support_normal_apply", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _i32_p, _i32_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p])
 
 _OK = 0
 
@@ -650,8 +702,10 @@ class MeyerPlan:
     per pass, persistent Bregman states, spectra of f/u/w maintained so each
     sweep costs one forward + one inverse 2-D transform), then splits the
     texture layer along the ratio-4 rung ladder {mu, mu/4, mu/16} with
-    independent ROF solves.  H and W must each be a power of two >= 8; use
-    :func:`meyer` for arbitrary sizes.  Images are [0, 255]-scaled floats.
+    independent ROF solves.  Solver 0 requires power-of-two dimensions;
+    solvers 1 and 2 transform one power-of-two axis and sweep the other.
+    Use :func:`meyer` for automatic arbitrary-size padding.  Images are
+    [0, 255]-scaled floats.
 
     Returns ``(cartoon, texture, band_coarse, band_mid, band_fine)`` with
     ``cartoon + band_coarse + band_mid + band_fine == cartoon-layer u +
@@ -660,16 +714,23 @@ class MeyerPlan:
     create one plan per thread."""
 
     __slots__ = ("shape", "lam", "mu", "passes", "rung_sweeps", "rung_tol",
-                 "threads", "_plan")
+                 "threads", "solver", "_plan")
 
     def __init__(self, shape, lam=0.05, mu=40.0, passes=64, rung_sweeps=600,
-                 rung_tol=1e-5, threads=0):
+                 rung_tol=1e-5, threads=0, solver=0):
         h, w = int(shape[0]), int(shape[1])
-        for n in (h, w):
-            if n < 8 or not _is_pow2(n):
-                raise ValueError(
-                    "MeyerPlan dimensions must be powers of two >= 8; "
-                    f"got {shape}. Use bfft.meyer() for arbitrary sizes.")
+        solver = int(solver)
+        if solver not in (0, 1, 2):
+            raise ValueError("solver must be 0 (spectral), 1 (periodic FACR), "
+                             "or 2 (Neumann FACR)")
+        transformed = [n >= 8 and _is_pow2(n) for n in (h, w)]
+        if h < 2 or w < 2 or (
+                solver == 0 and not all(transformed)) or (
+                solver != 0 and not any(transformed)):
+            raise ValueError(
+                f"MeyerPlan shape {shape} is incompatible with solver "
+                f"{solver}; solver 0 needs two power-of-two axes >= 8, "
+                "FACR needs at least one")
         self.shape = (h, w)
         self.lam = float(lam)
         self.mu = float(mu)
@@ -677,12 +738,22 @@ class MeyerPlan:
         self.rung_sweeps = int(rung_sweeps)
         self.rung_tol = float(rung_tol)
         self.threads = int(threads)
+        self.solver = solver
         plan = _plan_p()
         _check(_meyer_plan_create(h, w, self.lam, self.mu, self.passes,
                                   self.rung_sweeps, self.rung_tol,
                                   self.threads, ctypes.byref(plan)),
                "bfft_meyer_plan_create")
         self._plan = plan
+        if solver:
+            if _meyer_plan_set_solver is None:
+                _meyer_plan_destroy(self._plan)
+                self._plan = None
+                raise RuntimeError(
+                    "installed BFFT native library predates FACR solvers; "
+                    "rebuild/reinstall the package")
+            _check(_meyer_plan_set_solver(self._plan, solver),
+                   "bfft_meyer_plan_set_solver")
 
     def __del__(self):
         plan = getattr(self, "_plan", None)
@@ -705,6 +776,67 @@ class MeyerPlan:
                             *(o.ctypes.data for o in outs)),
                "bfft_meyer_split")
         return outs
+
+    def trace(self, image):
+        """Return every intermediate ``(cartoon, texture)`` state.
+
+        Both arrays have shape ``(passes, height, width)``.  The native
+        engine executes the pass sequence once; this is exactly equivalent
+        to separate 1..passes splits without their quadratic repeated work.
+        """
+        if _meyer_split_trace is None:
+            raise RuntimeError(
+                "installed BFFT native library predates split tracing; "
+                "rebuild/reinstall the package")
+        a = np.ascontiguousarray(image, dtype=np.float64)
+        if a.shape != self.shape:
+            raise ValueError(
+                f"MeyerPlan{self.shape}.trace expects shape {self.shape}")
+        shape = (self.passes, *self.shape)
+        cartoon = np.empty(shape, dtype=np.float64)
+        texture = np.empty(shape, dtype=np.float64)
+        _check(_meyer_split_trace(
+            self._plan,
+            a.ctypes.data,
+            cartoon.ctypes.data,
+            texture.ctypes.data,
+        ), "bfft_meyer_split_trace")
+        return cartoon, texture
+
+    def visit(self, image, callback):
+        """Visit every intermediate split state without a pass-deep array.
+
+        ``callback(pass_number, cartoon, texture)`` receives read-only NumPy
+        views that are valid only until the callback returns.
+        """
+        if _meyer_split_visit is None:
+            raise RuntimeError(
+                "installed BFFT native library predates split visitors; "
+                "rebuild/reinstall the package")
+        a = np.ascontiguousarray(image, dtype=np.float64)
+        if a.shape != self.shape:
+            raise ValueError(
+                f"MeyerPlan{self.shape}.visit expects shape {self.shape}")
+        failure = []
+
+        @_meyer_trace_callback
+        def visitor(pass_number, cartoon_ptr, texture_ptr, count, user):
+            try:
+                cartoon = np.ctypeslib.as_array(
+                    cartoon_ptr, shape=(count,)).reshape(self.shape)
+                texture = np.ctypeslib.as_array(
+                    texture_ptr, shape=(count,)).reshape(self.shape)
+                cartoon.flags.writeable = False
+                texture.flags.writeable = False
+                callback(int(pass_number), cartoon, texture)
+            except BaseException as exc:  # ctypes cannot propagate callbacks
+                failure.append(exc)
+
+        _check(_meyer_split_visit(
+            self._plan, a.ctypes.data, visitor, None),
+            "bfft_meyer_split_visit")
+        if failure:
+            raise failure[0]
 
     def rof(self, image, c, eta=0.0, sweeps=200, tol=1e-5):
         """A plain ROF solve, ``argmin_x TV(x) + (c/2)|x - image|^2``, run
@@ -739,10 +871,11 @@ _MEYER_PLANS = {}
 _MEYER_LOCK = threading.Lock()
 
 
-def _meyer_padded(image, lam, mu, passes, rung_sweeps, rung_tol, threads):
+def _meyer_padded(image, lam, mu, passes, rung_sweeps, rung_tol, threads,
+                  solver=0):
     """Shared arbitrary-size front end: returns (plan, padded, top, left,
-    h, w).  Pads each dimension up to the next power of two (>= 8) by
-    symmetric reflection with the image centered."""
+    h, w).  The spectral solver pads both dimensions; FACR pads only its
+    transformed dimension.  Padding is symmetric with the image centered."""
     a = np.ascontiguousarray(image, dtype=np.float64)
     if a.ndim != 2:
         raise ValueError("meyer expects a 2-D grayscale image")
@@ -756,7 +889,16 @@ def _meyer_padded(image, lam, mu, passes, rung_sweeps, rung_tol, threads):
             p *= 2
         return p
 
-    ph, pw = _next_pow2(h), _next_pow2(w)
+    solver = int(solver)
+    if solver not in (0, 1, 2):
+        raise ValueError("solver must be 0, 1, or 2")
+    nh, nw = _next_pow2(h), _next_pow2(w)
+    if solver == 0:
+        ph, pw = nh, nw
+    elif h * nw <= nh * w:
+        ph, pw = h, nw       # sweep height, transform width
+    else:
+        ph, pw = nh, w       # sweep width, transform height
     top, left = (ph - h) // 2, (pw - w) // 2
     if (ph, pw) != (h, w):
         padded = np.pad(a, ((top, ph - h - top), (left, pw - w - left)),
@@ -764,30 +906,49 @@ def _meyer_padded(image, lam, mu, passes, rung_sweeps, rung_tol, threads):
     else:
         padded = a
     key = (ph, pw, float(lam), float(mu), int(passes), int(rung_sweeps),
-           float(rung_tol), int(threads))
+           float(rung_tol), int(threads), solver)
     with _MEYER_LOCK:
         plan = _MEYER_PLANS.get(key)
         if plan is None:
             plan = MeyerPlan((ph, pw), lam=lam, mu=mu, passes=passes,
                              rung_sweeps=rung_sweeps, rung_tol=rung_tol,
-                             threads=threads)
+                             threads=threads, solver=solver)
             _MEYER_PLANS[key] = plan
     return plan, padded, top, left, h, w
 
 
-def meyer_split(image, lam=0.05, mu=40.0, passes=64, threads=0):
+def meyer_split(image, lam=0.05, mu=40.0, passes=64, threads=0, solver=0):
     """Meyer cartoon + texture decomposition of an arbitrary-size grayscale
     image, without the scale ladder: returns ``(cartoon, texture)``, the
     pair the Gilles-Osher alternation produces.  This is the fast path --
     the ladder in :func:`meyer` costs an order of magnitude more than the
-    decomposition itself."""
+    decomposition itself. ``solver=1`` enables periodic FACR and avoids
+    padding the worse-padded axis (falling back to spectral when neither
+    axis needs padding); ``solver=2`` additionally uses Neumann boundaries
+    on that swept axis."""
     plan, padded, top, left, h, w = _meyer_padded(
-        image, lam, mu, passes, 1, 0.0, threads)
+        image, lam, mu, passes, 1, 0.0, threads, solver)
     outs = plan.split(padded)
     return tuple(o[top:top + h, left:left + w].copy() for o in outs)
 
 
-def rof(image, c=0.025, eta=0.0, sweeps=200, tol=1e-5, threads=0):
+def meyer_trace(image, lam=0.05, mu=40.0, passes=64, threads=0, solver=0):
+    """All intermediate Meyer split states from one native pass sequence.
+
+    Returns two arrays shaped ``(passes, height, width)``.  Arbitrary input
+    sizes use the padding policy selected by ``solver``.
+    """
+    plan, padded, top, left, h, w = _meyer_padded(
+        image, lam, mu, passes, 1, 0.0, threads, solver)
+    cartoon, texture = plan.trace(padded)
+    return (
+        cartoon[:, top:top + h, left:left + w].copy(),
+        texture[:, top:top + h, left:left + w].copy(),
+    )
+
+
+def rof(image, c=0.025, eta=0.0, sweeps=200, tol=1e-5, threads=0,
+        solver=0):
     """Total-variation (Rudin-Osher-Fatemi) solve on an arbitrary-size
     grayscale image: ``argmin_x TV(x) + (c/2)|x - image|^2``.
 
@@ -795,23 +956,24 @@ def rof(image, c=0.025, eta=0.0, sweeps=200, tol=1e-5, threads=0):
     residual; the Meyer decomposition is built from exactly this solver, and
     subtracting a ROF solve of a cartoon layer isolates the smooth
     illumination a flat cartoon discards.  Arbitrary sizes are handled by
-    the same symmetric-reflection padding as :func:`meyer`."""
+    the padding policy selected by ``solver``."""
     plan, padded, top, left, h, w = _meyer_padded(
-        image, 0.05, 40.0, 1, 1, 0.0, threads)
+        image, 0.05, 40.0, 1, 1, 0.0, threads, solver)
     out = plan.rof(padded, c, eta=eta, sweeps=sweeps, tol=tol)
     return out[top:top + h, left:left + w].copy()
 
 
 def meyer(image, lam=0.05, mu=40.0, passes=64, rung_sweeps=600,
-          rung_tol=1e-5, threads=0):
+          rung_tol=1e-5, threads=0, solver=0):
     """Meyer G-norm cartoon + texture decomposition of an arbitrary-size
     grayscale image (see :class:`MeyerPlan` for the algorithm and outputs).
 
-    Arbitrary sizes are handled by symmetric-reflection padding each
-    dimension up to the next power of two (>= 8) with the image centered;
-    the five outputs are cropped back to the input size.  Plans are cached
-    per (padded shape, parameters)."""
+    Solver 0 symmetrically pads each dimension to a power of two.  Solver 1
+    is periodic FACR and pads only the transformed axis; solver 2 uses the
+    same one-axis padding with Neumann boundaries on the swept axis.  The
+    five outputs are cropped back to the input size.  Plans are cached per
+    (padded shape, parameters, solver)."""
     plan, padded, top, left, h, w = _meyer_padded(
-        image, lam, mu, passes, rung_sweeps, rung_tol, threads)
+        image, lam, mu, passes, rung_sweeps, rung_tol, threads, solver)
     outs = plan.decompose(padded)
     return tuple(o[top:top + h, left:left + w].copy() for o in outs)
