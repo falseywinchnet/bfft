@@ -157,6 +157,7 @@ class SingleStageDecompositionObjective:
         scale = np.maximum(split.scale[None, None, :], 1e-12)
         self.target_cartoon = split.cartoon / scale
         self.target_texture = split.texture / scale
+        self.last_residual_energy = None
 
     def evaluate(self, reconstruction_rgb):
         """Return the three MSE terms and their equally weighted sum."""
@@ -177,6 +178,11 @@ class SingleStageDecompositionObjective:
             (self.target_cartoon - cartoon) ** 2))
         texture_mse = float(np.mean(
             (self.target_texture - texture) ** 2))
+        self.last_residual_energy = (
+            np.mean((self.target_rgb - reconstruction) ** 2, axis=2)
+            + np.mean((self.target_cartoon - cartoon) ** 2, axis=2)
+            + np.mean((self.target_texture - texture) ** 2, axis=2)
+        )
         return {
             "rgb_mse": rgb_mse,
             "psnr": -10.0 * math.log10(max(rgb_mse, 1e-12)),

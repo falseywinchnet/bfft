@@ -34,12 +34,21 @@ refresh classifies every original-resolution pixel. Large-image output
 therefore remains full resolution without making population inference scale
 with the source pixel count.
 
-The supported allocator begins at the support barycenter. Every unstable
-region simultaneously refills along its measured transport/metric direction;
-the fixed-pass local mass histogram replaces the earlier fourteen-pass balance
-bisection. There is no top-k, candidate enumeration, site deletion, requested
-population, or all-pairs cell operation. The safety ceiling only catches a
-misspecified instability threshold.
+The default allocator reads the complete population directly from the frozen
+BFFT support density, `sqrt(det(Q)) / pi`. A deterministic local phase turns
+that continuous density into germs in parallel. There is no initial
+barycenter, candidate list, top-k, requested population, offspring, deletion,
+or all-pairs cell operation. The safety ceiling only catches a misspecified
+support measure.
+
+Those germs create one continuous, same-label first-arrival partition. Each
+pixel's support is then carried backward through the achieving causal front,
+giving every germ an intrinsic transport force without a runner-up field,
+centroid, PCA, or direction bins. The position step is clipped to at most half
+the germ's distance from its current hard interface. An exact remarch accepts
+the step only when every germ remains alive and the measured transport action
+decreases. One accepted pass is the default; the older residual-pressure and
+hierarchical split paths remain available as explicit research controls.
 
 The right-panel diagnostics expose the representation itself:
 
@@ -51,6 +60,12 @@ The right-panel diagnostics expose the representation itself:
 - **Transport support measure**, **Metric anisotropy**, **Cartoon**,
   **Texture**, and **Transport glass** expose the one frozen geometry that
   controls density, direction, and shape.
+- **Residual energy**, **Reverse residual flow**, and **Refinement demand**
+  expose the target-to-reconstruction failure, its predecessor-tree return,
+  and the combined local bifurcation signal.
+- **Characteristic force**, **Topology clearance**, **Trust-limited step**,
+  and **Site motion** expose the causal position relaxation and its literal
+  safety bound.
 
 For a headless HD phase trace:
 

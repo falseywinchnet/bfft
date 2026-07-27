@@ -304,6 +304,81 @@ entirely on the padding and the transform count, and is untouched by this.
   slightly worse input. That is worth understanding before anyone tunes
   `passes` on the strength of it.
 
+## 9. Isotropic routes, after the picture rejected anisotropy
+
+The visual A/B (`experiments/cartoon_visual_ab.py`) killed 4-neighbour
+anisotropic TV: it staircases visibly on curved contours, and it gets worse
+with convergence — axis-aligned edge energy rises 60.0% → 61.8% → 62.1% at 8,
+24, 48 passes against a 51.8% target, so it is the functional, not the solver.
+The isotropic functional has to stay. Two isotropic routes were then tested.
+
+### 9a. Flat-zone coarse correction — dead, both variants
+
+`experiments/cartoon_zone_snap.py`. The flat zones are a coarse grid that
+respects edges exactly, unlike a geometric coarsening, so restricting the
+correction to them should fix the plateau levels globally in one step.
+
+**Replacement** (u constant on each zone) is rejected everywhere, by up to
+16x: a ROF solution is not piecewise constant on its zones, and flattening
+destroys the smooth shading the fidelity term wants.
+
+**Additive correction** (u + sum_k delta_k on zone k, a proper multigrid-style
+correction solved as a shifted fused lasso on the zone graph, accepted only
+when the true isotropic objective falls) is accepted — and worth **exactly one
+Bregman pass**, at 50x the cost, decaying to rejection by pass 24.
+
+The diagnosis is worth keeping: the zones are derived from the current
+iterate, whose jump set is only 88% correct at pass 24. **Correcting levels
+inside wrong zones cannot help.** The interiors were never the lever; §4's
+low-frequency signal was a symptom of the jump set, not a second problem. Any
+scheme that fixes levels rather than boundaries is answering the wrong
+question here.
+
+### 9b. Isotropy is a discretization, not a binary
+
+`experiments/cartoon_crofton.py`. The shipped isotropic TV is a 4-point
+forward-difference discretization, and that is *also* grid-biased. The
+Cauchy-Crofton construction gives a third point on the axis: for lattice
+directions `e_k` with lengths `l_k` and angular spacings `dtheta_k`,
+
+    TV(u) ~= sum_k w_k * sum_{lines along e_k} |du|,   w_k = dtheta_k/(2 l_k)
+
+converges to true Euclidean TV as the direction set grows. **Every term is a
+1-D total variation along disjoint lattice lines, so every subproblem is
+still exactly solvable by the taut string.** The mechanism that beat split
+Bregman 2.8-3.9x survives; only the number of directions it decides along
+changes.
+
+Axis-aligned edge energy on Pikachu at 475², all against the *same* object —
+a plain ROF solve at `c = 0.05`, not the TGFD cartoon:
+
+| | within 10° of an axis | excess over target |
+|---|---:|---:|
+| target | 51.8% | — |
+| shipped isotropic ROF | 53.9% | +2.1 |
+| Crofton, 2 directions (= anisotropic) | 54.4% | +2.6 |
+| Crofton, 4 directions | 53.7% | +1.9 |
+| Crofton, 8 directions | **53.4%** | **+1.5** |
+
+Two-direction Crofton is worse than the shipped isotropic, which is exactly
+what the picture said. Four and eight are **better** — eight cuts the excess
+bias by 29%. All four solutions sit within 0.7% of each other as functions.
+
+### What this does not yet establish
+
+- **The margin is small at ROF level.** +1.5 against +2.1, on one image, on
+  one statistic.
+- **The decisive test has not been run.** A first version of this table
+  compared Crofton ROF solves against the *TGFD cartoon* and showed a much
+  larger margin (+5.3 for shipped). That was apples-to-oranges and the number
+  above replaces it — but it exposed something worth chasing: the TGFD
+  alternation **amplifies** grid bias, 53.9% at ROF level against 57.1% for
+  the cartoon it produces. The Crofton construction therefore has to be tested
+  *inside* the alternation, where the bias it is fixing is twice as large.
+- PPXA convergence at 40 iterations is unverified, and it needs `K+1` sweeps
+  per iteration against Douglas-Rachford's 2, so per-iteration cost grows with
+  the direction count.
+
 ### Status
 
 Quality: demonstrated on two images at one configuration. Speed: **not

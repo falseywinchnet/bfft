@@ -35,6 +35,16 @@ VIEWS = (
     "Texture",
     "Transport glass",
     "Metric anisotropy",
+    "Residual energy",
+    "Reverse residual flow",
+    "Refinement demand",
+    "Residual pressure density",
+    "Residual metric pressure",
+    "Power reach",
+    "Site motion",
+    "Characteristic force",
+    "Topology clearance",
+    "Trust-limited step",
     "RGB error",
     "Original",
 )
@@ -156,6 +166,25 @@ def overlay_sites(image, centers):
     return out
 
 
+def overlay_motion(image, initial_centers, final_centers):
+    out = np.asarray(image, dtype=np.float64).copy()
+    height, width = out.shape[:2]
+    for start, stop in zip(initial_centers, final_centers):
+        x0, y0 = start[0] * width - 0.5, start[1] * height - 0.5
+        x1, y1 = stop[0] * width - 0.5, stop[1] * height - 0.5
+        samples = max(int(np.ceil(np.hypot(x1 - x0, y1 - y0))), 1)
+        xs = np.clip(
+            np.rint(np.linspace(x0, x1, samples + 1)).astype(np.int32),
+            0, width - 1)
+        ys = np.clip(
+            np.rint(np.linspace(y0, y1, samples + 1)).astype(np.int32),
+            0, height - 1)
+        out[ys, xs] = (1.0, 0.15, 0.05)
+        out[int(np.clip(round(y1), 0, height - 1)),
+            int(np.clip(round(x1), 0, width - 1))] = (0.05, 1.0, 0.95)
+    return out
+
+
 def current_view():
     with S.lock:
         rgb, result = S.rgb, S.result
@@ -196,6 +225,61 @@ def current_view():
         return colour_map(np.log1p(np.sqrt(
             np.maximum(trace + disc, 1e-20)
             / np.maximum(trace - disc, 1e-20))))
+    if view == "Residual energy":
+        return colour_map(result["residual_energy"])
+    if view == "Reverse residual flow":
+        if not result["refinements"]:
+            return np.zeros_like(reconstruction)
+        return colour_map(np.log1p(result["refinements"][-1]["flux"]))
+    if view == "Refinement demand":
+        if not result["refinements"]:
+            return np.zeros_like(reconstruction)
+        refinement = result["refinements"][-1]
+        return colour_map(
+            refinement["error_ratio_map"]
+            * refinement["return_extent_map"])
+    if view == "Residual pressure density":
+        if result["pressure"] is None:
+            return np.zeros_like(reconstruction)
+        return colour_map(result["pressure"]["density"])
+    if view == "Residual metric pressure":
+        if result["pressure"] is None:
+            return np.zeros_like(reconstruction)
+        return colour_map(result["pressure"]["metric_pressure"])
+    if view == "Power reach":
+        if result["pressure"] is None:
+            return np.zeros_like(reconstruction)
+        return colour_map(result["pressure"]["reach"][labels])
+    if view == "Site motion":
+        if result["characteristic"] is not None:
+            return overlay_motion(
+                reconstruction,
+                result["characteristic"]["initial_centers"],
+                result["centers"],
+            )
+        if result["pressure"] is not None:
+            return overlay_motion(
+                reconstruction,
+                result["pressure"]["initial_centers"],
+                result["centers"],
+            )
+        return np.zeros_like(reconstruction)
+    if view in (
+        "Characteristic force",
+        "Topology clearance",
+        "Trust-limited step",
+    ):
+        characteristic = result["characteristic"]
+        if characteristic is None or not characteristic["trace"]:
+            return np.zeros_like(reconstruction)
+        last = characteristic["trace"][-1]
+        if view == "Characteristic force":
+            field = last["force"]["force_per_mass"]
+        elif view == "Topology clearance":
+            field = last["inradius_px"]
+        else:
+            field = last["limited_step_px"]
+        return colour_map(np.asarray(field)[labels])
     if view == "RGB error":
         return colour_map(np.sqrt(np.mean((rgb - reconstruction) ** 2, axis=2)))
     return reconstruction
@@ -213,6 +297,29 @@ def refresh():
         return
     record, timing = result["record"], result["timing"]
     ah, aw = result["allocation_geometry"]["measure"].shape
+    refinement_text = ""
+    if result["refinements"]:
+        counts = [str(item["split_count"]) for item in result["refinements"]]
+        refinement_text = f" | residual splits {' → '.join(counts)}"
+    if result["pressure"] is not None:
+        pressure = result["pressure"]
+        refinement_text += (
+            f" | organic pressure {len(pressure['trace'])} passes, "
+            f"{pressure['initial_cells']} → {pressure['final_cells']} sites")
+    if result["characteristic"] is not None:
+        characteristic = result["characteristic"]
+        accepted = sum(
+            bool(item["accepted"]) for item in characteristic["trace"])
+        last = (
+            characteristic["trace"][-1]
+            if characteristic["trace"] else None)
+        refinement_text += (
+            f" | causal characteristic {accepted}/"
+            f"{len(characteristic['trace'])} accepted")
+        if last is not None:
+            refinement_text += (
+                f", transport action "
+                f"{100.0 * last['relative_action_change']:+.2f}%")
     dpg.set_value(
         "segmenting_metrics",
         f"{len(result['centers'])} cells | PSNR {record['psnr']:.2f} dB | "
@@ -221,7 +328,8 @@ def refresh():
         f"allocation {aw}×{ah} → readout {rgb.shape[1]}×{rgb.shape[0]} | "
         f"Meyer {timing['geometry_ms']:.0f} ms | "
         f"transport {timing['allocation_ms']:.0f} ms | "
-        f"fit/score {timing['fit_ms']:.0f} ms")
+        f"fit/refine/score {timing['fit_ms']:.0f} ms"
+        f"{refinement_text}")
 
 
 def work_side():
@@ -236,7 +344,13 @@ def build_worker():
     try:
         rgb = _fit_rgb(S.image, work_side())
         S.status = "Measuring one frozen optimized Meyer geometry..."
+        evolution = dpg.get_value("segmenting_evolution")
         config = SegmentingConfig(
+            allocation_method=(
+                "causal_density"
+                if evolution == "Causal characteristic relaxation"
+                else "legacy_bifurcation"
+            ),
             allocation_max_side=int(dpg.get_value("segmenting_allocation_side")),
             tgfd_sweeps=int(dpg.get_value("segmenting_tgfd_sweeps")),
             flow_sweeps=int(dpg.get_value("segmenting_flow_sweeps")),
@@ -247,7 +361,28 @@ def build_worker():
             maximum_rounds=int(dpg.get_value("segmenting_rounds")),
             safety_cells=int(dpg.get_value("segmenting_safety")),
             branch_bins=int(dpg.get_value("segmenting_bins")),
+            characteristic_passes=(
+                int(dpg.get_value("segmenting_characteristic_passes"))
+                if evolution == "Causal characteristic relaxation" else 0),
+            characteristic_trust_fraction=float(
+                dpg.get_value("segmenting_characteristic_trust")),
+            characteristic_core_radius=float(
+                dpg.get_value("segmenting_characteristic_core")),
             ridge_count=int(dpg.get_value("segmenting_ridges")),
+            refinement_iterations=(
+                int(dpg.get_value("segmenting_refinement_iterations"))
+                if evolution == "Hierarchical split control" else 0),
+            refinement_error_ratio=float(dpg.get_value("segmenting_refinement_error")),
+            refinement_return_distance=float(dpg.get_value("segmenting_refinement_extent")),
+            refinement_detail_gain=float(dpg.get_value("segmenting_refinement_gain")),
+            pressure_passes=(
+                int(dpg.get_value("segmenting_pressure_passes"))
+                if evolution == "Organic residual pressure" else 0),
+            pressure_strength=float(dpg.get_value("segmenting_pressure_strength")),
+            pressure_temperature=float(dpg.get_value("segmenting_pressure_temperature")),
+            pressure_position_relaxation=float(dpg.get_value("segmenting_pressure_position")),
+            pressure_capacity_relaxation=float(dpg.get_value("segmenting_pressure_capacity")),
+            pressure_metric_gain=float(dpg.get_value("segmenting_pressure_metric")),
             queue="bucket" if dpg.get_value("segmenting_queue") == "Exact monotone bucket" else "heap")
         result = build_segmenting_representation(rgb, config)
         with S.lock:
@@ -341,7 +476,7 @@ def build_ui(labels, default_label):
             with dpg.group(horizontal=True):
                 slider("segmenting_min_pixels", "minimum region pixels", 12, 2, 128)
                 slider("segmenting_rounds", "refill rounds", 24, 2, 32)
-                slider("segmenting_safety", "safety ceiling (not target)", 8192, 256, 32768, width=310)
+                slider("segmenting_safety", "safety ceiling (not target)", 32768, 256, 65536, width=310)
             with dpg.group(horizontal=True):
                 slider("segmenting_bins", "local balance bins", 64, 16, 256)
                 dpg.add_combo(
@@ -352,6 +487,79 @@ def build_ui(labels, default_label):
             dpg.add_text(
                 "Every unstable support refills at once. No top-k, candidate "
                 "scan, deletion, or population target.")
+        with dpg.collapsing_header(label="Geometry evolution", default_open=True):
+            dpg.add_combo(
+                (
+                    "Causal characteristic relaxation",
+                    "Organic residual pressure",
+                    "Hierarchical split control",
+                    "None",
+                ),
+                default_value="Causal characteristic relaxation",
+                label="method",
+                tag="segmenting_evolution",
+                width=300)
+            dpg.add_text(
+                "Causal mode emits the complete population directly from the "
+                "frozen BFFT tensor, then moves each germ only within its "
+                "topology-safe first-arrival clearance.")
+        with dpg.collapsing_header(
+            label="Causal characteristic relaxation",
+            default_open=True,
+        ):
+            with dpg.group(horizontal=True):
+                slider(
+                    "segmenting_characteristic_passes",
+                    "exact front passes", 1, 0, 4)
+                slider(
+                    "segmenting_characteristic_trust",
+                    "interface safety", 0.5, 0.05, 0.5,
+                    floating=True)
+                slider(
+                    "segmenting_characteristic_core",
+                    "germ shell radius", 3.0, 2.0, 8.0,
+                    floating=True)
+            dpg.add_text(
+                "No runner-up field or centroid motion. Resource is carried "
+                "back through each achieving front; half-inradius trust "
+                "regions and exact action decrease keep every germ alive.")
+        with dpg.collapsing_header(label="Organic residual pressure", default_open=True):
+            with dpg.group(horizontal=True):
+                slider("segmenting_pressure_passes", "equilibrium passes", 4, 1, 16)
+                slider(
+                    "segmenting_pressure_strength", "residual density", 0.5,
+                    0.0, 4.0, floating=True)
+                slider(
+                    "segmenting_pressure_metric", "local metric pressure", 4.0,
+                    0.0, 16.0, floating=True)
+            with dpg.group(horizontal=True):
+                slider(
+                    "segmenting_pressure_position", "site mobility", 0.25,
+                    0.0, 1.0, floating=True)
+                slider(
+                    "segmenting_pressure_capacity", "capacity equalization", 0.0,
+                    0.0, 1.0, floating=True)
+                slider(
+                    "segmenting_pressure_temperature", "soft occupancy", 2.0,
+                    0.25, 8.0, floating=True)
+            dpg.add_text(
+                "Residual strengthens the pointwise BFFT metric and softly "
+                "moves existing sites. Count is conserved exactly.")
+        with dpg.collapsing_header(label="Hierarchical split control", default_open=False):
+            with dpg.group(horizontal=True):
+                slider("segmenting_refinement_iterations", "iterations", 1, 0, 4)
+                slider(
+                    "segmenting_refinement_error", "local error ratio", 1.5,
+                    1.0, 12.0, floating=True)
+                slider(
+                    "segmenting_refinement_extent", "return-flow extent", 8.0,
+                    0.0, 24.0, floating=True)
+                slider(
+                    "segmenting_refinement_gain", "detail pull", 1.0,
+                    0.0, 4.0, floating=True)
+            dpg.add_text(
+                "Single-stage residual energy flows backward along each exact "
+                "transport tree. Deserving cells refill forward together.")
         with dpg.group(horizontal=True):
             dpg.add_text("Right panel")
             dpg.add_combo(

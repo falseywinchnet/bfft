@@ -1147,6 +1147,8 @@ def bifurcate_allocation(
     direct_metric_coherence: float = 0.0,
     direct_metric_local_levels: int = 0,
     transport_queue: str = "heap",
+    transport_stencil_radius: int = 1,
+    transport_model: str = "edge",
     trace_topology: bool = False,
     capture_center_history: bool = False,
 ) -> tuple[np.ndarray, dict, list[dict]]:
@@ -1166,12 +1168,73 @@ def bifurcate_allocation(
     qxx_p = qxx_p.ravel()
     qxy_p = qxy_p.ravel()
     qyy_p = qyy_p.ravel()
-    costs = _edge_cost_stack(geometry, metric_strength)
-    if transport_queue == "bucket":
-        walk = _dijkstra_two_best_bucket_adapter
-    elif transport_queue == "heap":
-        walk = _dijkstra_two_best_packed
+    stencil_radius = max(int(transport_stencil_radius), 1)
+    if transport_model == "continuous":
+        from port_needed.continuous_eikonal_transport import (
+            continuous_first_partition_prepared,
+            prepare_continuous_metric,
+        )
+        from port_needed.wide_stencil_transport import _metric_fields
+
+        prepared_continuous = prepare_continuous_metric(
+            *_metric_fields(geometry, metric_strength))
+        costs = np.empty((0, height, width), dtype=np.float32)
+
+        def walk(seed_x, seed_y, reach, edge_costs, h, w):
+            normalized_centers = np.column_stack((
+                (seed_x.astype(np.float64) + 0.5) / w,
+                (seed_y.astype(np.float64) + 0.5) / h,
+            ))
+            result = continuous_first_partition_prepared(
+                normalized_centers,
+                prepared_continuous,
+                reach=np.asarray(reach, dtype=np.float64),
+            )
+            first = result["distance"].ravel()
+            owner_result = result["labels"].ravel()
+            return (
+                owner_result,
+                np.full(owner_result.shape, -1, dtype=np.int32),
+                first,
+                np.full(first.shape, np.inf, dtype=np.float64),
+            )
+    elif transport_model == "edge" and stencil_radius > 1:
+        from port_needed.wide_stencil_transport import (
+            build_wide_edge_costs,
+            _dijkstra_two_best_wide,
+        )
+
+        costs, wide_directions = build_wide_edge_costs(
+            geometry, metric_strength, stencil_radius)
+
+        def walk(seed_x, seed_y, reach, edge_costs, h, w):
+            result = _dijkstra_two_best_wide(
+                seed_x,
+                seed_y,
+                reach,
+                edge_costs,
+                wide_directions,
+                h,
+                w,
+            )
+            return result[0], result[1], result[2], result[3]
+    elif transport_model == "edge":
+        costs = _edge_cost_stack(geometry, metric_strength)
     else:
+        raise ValueError(f"unknown transport model: {transport_model}")
+    if (
+        transport_model == "edge"
+        and stencil_radius == 1
+        and transport_queue == "bucket"
+    ):
+        walk = _dijkstra_two_best_bucket_adapter
+    elif (
+        transport_model == "edge"
+        and stencil_radius == 1
+        and transport_queue == "heap"
+    ):
+        walk = _dijkstra_two_best_packed
+    elif transport_model == "edge" and stencil_radius == 1:
         raise ValueError(f"unknown transport queue: {transport_queue}")
     trace: list[dict] = []
     if initial_centers is None:
@@ -1575,6 +1638,8 @@ def bifurcate_allocation(
         "cells": cells,
         "safety_limit_hit": safety_limit_hit,
         "center_history": center_history,
+        "transport_stencil_radius": stencil_radius,
+        "transport_model": transport_model,
     }, trace
 
 
@@ -1624,9 +1689,15 @@ def fit_hard_regions_with_ridge(
     ridge_angles: int = 16,
     ridge_bins: int = 41,
     ridge_count: int = 1,
+    initial_affine: np.ndarray | None = None,
 ) -> tuple[dict, np.ndarray, dict]:
     """Refit hard regions with a small measured bounded ridge ladder."""
-    _, affine = fit_hard_regions(labels_2d, target_lab, objective)
+    if initial_affine is None:
+        _, affine = fit_hard_regions(labels_2d, target_lab, objective)
+    else:
+        affine = np.asarray(initial_affine, dtype=np.float64)
+        if affine.shape != target_lab.shape:
+            raise ValueError("initial affine reconstruction shape mismatch")
     labels = np.asarray(labels_2d, dtype=np.int32).ravel()
     height, width = labels_2d.shape
     cells = int(np.max(labels)) + 1

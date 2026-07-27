@@ -1,0 +1,202 @@
+[
+  {
+    "angle": 0.0,
+    "mean_relative_error": 0.008600835819799868,
+    "p95_relative_error": 0.04890985973652117,
+    "maximum_reduced_reach": 1,
+    "superbase": [
+      [
+        -1,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ]
+    ]
+  },
+  {
+    "angle": 5.0,
+    "mean_relative_error": 0.013187117367252367,
+    "p95_relative_error": 0.031182512849627926,
+    "maximum_reduced_reach": 4,
+    "superbase": [
+      [
+        3,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        -4,
+        -1
+      ]
+    ]
+  },
+  {
+    "angle": 10.0,
+    "mean_relative_error": 0.011237454402550489,
+    "p95_relative_error": 0.016626573977356725,
+    "maximum_reduced_reach": 4,
+    "superbase": [
+      [
+        3,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        -4,
+        -1
+      ]
+    ]
+  },
+  {
+    "angle": 15.0,
+    "mean_relative_error": 0.01170197287027957,
+    "p95_relative_error": 0.02670319529698196,
+    "maximum_reduced_reach": 4,
+    "superbase": [
+      [
+        -4,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        3,
+        1
+      ]
+    ]
+  },
+  {
+    "angle": 20.0,
+    "mean_relative_error": 0.006594082334852456,
+    "p95_relative_error": 0.01472252148965714,
+    "maximum_reduced_reach": 3,
+    "superbase": [
+      [
+        -3,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        2,
+        1
+      ]
+    ]
+  },
+  {
+    "angle": 25.0,
+    "mean_relative_error": 0.004847946928828003,
+    "p95_relative_error": 0.024024129730750233,
+    "maximum_reduced_reach": 2,
+    "superbase": [
+      [
+        -1,
+        -1
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        -1,
+        0
+      ]
+    ]
+  },
+  {
+    "angle": 30.0,
+    "mean_relative_error": 0.01093309461985296,
+    "p95_relative_error": 0.027274935898447122,
+    "maximum_reduced_reach": 3,
+    "superbase": [
+      [
+        -3,
+        -2
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ]
+  },
+  {
+    "angle": 35.0,
+    "mean_relative_error": 0.009576645196427522,
+    "p95_relative_error": 0.013295109890640564,
+    "maximum_reduced_reach": 3,
+    "superbase": [
+      [
+        -3,
+        -2
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        2,
+        1
+      ]
+    ]
+  },
+  {
+    "angle": 40.0,
+    "mean_relative_error": 0.01108972195628357,
+    "p95_relative_error": 0.025485424686435887,
+    "maximum_reduced_reach": 3,
+    "superbase": [
+      [
+        -3,
+        -2
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        2,
+        1
+      ]
+    ]
+  },
+  {
+    "angle": 45.0,
+    "mean_relative_error": 0.006176168143923306,
+    "p95_relative_error": 0.03857566125257246,
+    "maximum_reduced_reach": 1,
+    "superbase": [
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        -1,
+        0
+      ]
+    ]
+  }
+]

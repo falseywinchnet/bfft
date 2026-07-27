@@ -13,11 +13,33 @@ from experiments.wasserstein_allocation_tree import (
 )
 
 
-def fit_regions(labels, centers, target_lab, objective, *, ridge_count=0):
-    if int(ridge_count) <= 0:
-        record, reconstruction = _fit_hard_regions(
+def fit_regions(
+    labels,
+    centers,
+    target_lab,
+    objective,
+    *,
+    ridge_count=0,
+    affine_record=None,
+    affine=None,
+):
+    if affine_record is None or affine is None:
+        affine_record, affine = _fit_hard_regions(
             labels, target_lab, objective)
-        return record, reconstruction, {"ridge_count": 0}
-    return _fit_hard_regions_with_ridge(
+    if int(ridge_count) <= 0:
+        return affine_record, affine, {
+            "ridge_count": 0, "selected": "affine"}
+    ridge_record, ridge, information = _fit_hard_regions_with_ridge(
         labels, centers, target_lab, objective,
-        ridge_count=int(ridge_count))
+        ridge_count=int(ridge_count),
+        initial_affine=affine,
+    )
+    if affine_record["objective"] <= ridge_record["objective"]:
+        # Restore the residual field to the actually selected readout.
+        objective.evaluate(affine_record["rgb"])
+        information["selected"] = "affine"
+        information["rejected_ridge_objective"] = ridge_record["objective"]
+        return affine_record, affine, information
+    information["selected"] = "ridge"
+    information["affine_objective"] = affine_record["objective"]
+    return ridge_record, ridge, information

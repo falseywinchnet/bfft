@@ -15,16 +15,16 @@ import sys
 import time
 from pathlib import Path
 
-import numpy as np
-
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "viewer"))
 sys.path.insert(0, str(ROOT / "experiments"))
 
 import gallery  # noqa: E402
-from receiver_guided_graph import ReceiverGuidedVoronoi  # noqa: E402
-from transport_voronoi import Config  # noqa: E402
+from port_needed.pipeline import (  # noqa: E402
+    SegmentingConfig,
+    build_segmenting_representation,
+)
 
 
 def _load(path: str | None, gallery_key: str):
@@ -44,14 +44,6 @@ def _peak_rss_gib():
     return value / (1024.0 ** 2)
 
 
-def _time(label, operation):
-    started = time.perf_counter()
-    operation()
-    elapsed = (time.perf_counter() - started) * 1000.0
-    print(f"{label:28s} {elapsed:10.1f} ms")
-    return elapsed
-
-
 def main():
     parser = argparse.ArgumentParser(
         description="Profile BFFT segmentation from initialization onward.")
@@ -62,50 +54,56 @@ def main():
     parser.add_argument("--full-resolution", action="store_true")
     parser.add_argument("--passes", type=int, default=24)
     parser.add_argument("--flow-sweeps", type=int, default=64)
-    parser.add_argument("--cells", type=int, default=180)
-    parser.add_argument("--max-cells", type=int, default=1200)
-    parser.add_argument("--split-batch", type=int, default=24)
-    parser.add_argument(
-        "--measure-decomposition", action="store_true",
-        help="also time the deliberately deferred cartoon/texture metric")
+    parser.add_argument("--allocation-side", type=int, default=512)
+    parser.add_argument("--safety-cells", type=int, default=32768)
+    parser.add_argument("--characteristic-passes", type=int, default=1)
+    parser.add_argument("--interface-safety", type=float, default=0.5)
+    parser.add_argument("--germ-shell-radius", type=float, default=3.0)
     args = parser.parse_args()
 
     image, source = _load(args.image, args.gallery)
     max_side = 0 if args.full_resolution else args.max_side
-    config = Config(
-        max_side=max_side, passes=args.passes,
-        flow_sweeps=args.flow_sweeps, initial_cells=args.cells,
-        max_cells=args.max_cells, split_batch=args.split_batch,
-        marked_cells=False, territory_count=1,
-        allocation_mode="Expected affine gain")
+    from transport_voronoi import _fit_rgb
+
+    rgb = _fit_rgb(image, max_side)
+    config = SegmentingConfig(
+        allocation_method="causal_density",
+        allocation_max_side=args.allocation_side,
+        tgfd_sweeps=args.passes,
+        flow_sweeps=args.flow_sweeps,
+        safety_cells=args.safety_cells,
+        characteristic_passes=args.characteristic_passes,
+        characteristic_trust_fraction=args.interface_safety,
+        characteristic_core_radius=args.germ_shell_radius,
+    )
 
     print(f"source                      {source}")
     started = time.perf_counter()
-    model = ReceiverGuidedVoronoi(image, config)
+    result = build_segmenting_representation(rgb, config)
     total = (time.perf_counter() - started) * 1000.0
-    print(f"working image               {model.w} x {model.h} "
-          f"({model.npix:,} pixels)")
-    for phase, elapsed in model.init_timings.items():
-        print(f"init: {phase:22s} {elapsed:10.1f} ms")
-    print(f"initialization total         {total:10.1f} ms")
-    print(f"initial PSNR                 {model.psnr:10.3f} dB")
-
-    _time("repeat: geodesic assign", model._assign)
-    _time("repeat: local affine fit", model._fit_models)
-    _time("repeat: render + pressure", model._render)
-    _time("round: choose new sites", model._subdivide)
-
-    if args.measure_decomposition:
-        _time("explicit decomp metrics",
-              model.refresh_decomposition_metrics)
-        print(f"cartoon / texture MSE        "
-              f"{model.cartoon_decomp_mse:.4e} / "
-              f"{model.texture_decomp_mse:.4e}")
+    record = result["record"]
+    timing = result["timing"]
+    print(f"working image               {rgb.shape[1]} x {rgb.shape[0]} "
+          f"({rgb.shape[0] * rgb.shape[1]:,} pixels)")
+    print(f"cells                       {len(result['centers']):10,d}")
+    print(f"Meyer geometry              {timing['geometry_ms']:10.1f} ms")
+    print(f"population/front/step       {timing['allocation_ms']:10.1f} ms")
+    print(f"fit/ridge/score             {timing['fit_ms']:10.1f} ms")
+    print(f"wall total                  {total:10.1f} ms")
+    print(f"PSNR                        {record['psnr']:10.3f} dB")
+    print(f"cartoon / texture MSE       "
+          f"{record['cartoon_mse']:.4e} / {record['texture_mse']:.4e}")
+    characteristic = result["characteristic"]
+    if characteristic and characteristic["trace"]:
+        for item in characteristic["trace"]:
+            print(
+                f"front pass {item['iteration']:2d}             "
+                f"scale {item['accepted_scale']:.3f}, "
+                f"trials {item['trials']}, "
+                f"action {100.0 * item['relative_action_change']:+.3f}%, "
+                f"accepted {item['accepted']}")
 
     print(f"peak resident memory         {_peak_rss_gib():10.3f} GiB")
-    print(f"packed edge graph            "
-          f"{model._edge_cost_volume.nbytes / (1024 ** 2):10.1f} MiB "
-          f"({model._edge_cost_volume.dtype})")
     return 0
 
 

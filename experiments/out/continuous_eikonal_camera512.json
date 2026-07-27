@@ -1,0 +1,9 @@
+{
+  "cells": 3804,
+  "base_psnr": 25.787386213271443,
+  "base_objective": 0.006625029179723658,
+  "continuous_psnr": 27.788073279387365,
+  "continuous_objective": 0.0022104238264468844,
+  "march_seconds": 0.4309562909184024,
+  "fit_seconds": 0.5151802500477061
+}
