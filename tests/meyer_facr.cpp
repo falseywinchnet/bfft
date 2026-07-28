@@ -139,7 +139,9 @@ int main() {
 
     // Non-power-of-two swept dimensions and both sweep orientations.
     for (const auto shape : {std::pair<std::size_t, std::size_t>{37, 64},
-                             {64, 45}}) {
+                             {64, 45},
+                             // Exact 16:9 work grid used by the OBS filter.
+                             {288, 512}}) {
         const std::size_t n = shape.first * shape.second;
         std::vector<double> in(n), ca(n), va(n), cb(n), vb(n);
         fill(in);

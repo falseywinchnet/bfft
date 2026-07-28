@@ -127,3 +127,28 @@ bfft_status bfft_meyer_rof(bfft_meyer_plan* plan, const double* image,
     plan->eng.rof(image, smooth, c, eta, sweeps, tol);
     return BFFT_OK;
 }
+
+bfft_status bfft_meyer_rof_accelerated(
+        bfft_meyer_plan* plan, const double* image, double* smooth,
+        double c, double eta, int sweeps, double tol, int hodge_after) {
+    if (plan == nullptr || !plan->configured || image == nullptr ||
+        smooth == nullptr)
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    if (!(c > 0.0) || sweeps < 1 || !(tol >= 0.0) ||
+        hodge_after < 1 || hodge_after > sweeps)
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    if (!(eta > 0.0)) eta = 10.0 * c;
+    if (!plan->eng.rof_accelerated(
+            image, smooth, c, eta, sweeps, tol, hodge_after))
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    return BFFT_OK;
+}
+
+int bfft_meyer_plan_last_rof_sweeps(const bfft_meyer_plan* plan) {
+    return plan == nullptr ? 0 : plan->eng.last_rof_sweeps;
+}
+
+int bfft_meyer_plan_last_rof_hodge_applied(
+        const bfft_meyer_plan* plan) {
+    return plan != nullptr && plan->eng.last_rof_hodge_applied ? 1 : 0;
+}

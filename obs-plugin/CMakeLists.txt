@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(bfft-obs VERSION 0.1.1 LANGUAGES C CXX)
+project(bfft-obs VERSION 0.4.0 LANGUAGES C CXX)
 
 include(FetchContent)
 
@@ -31,14 +31,18 @@ set(BFFT_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(BFFT_BUILD_PROBES OFF CACHE BOOL "" FORCE)
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/.." bfft-core EXCLUDE_FROM_ALL)
 
-add_library(bfft-cartoon MODULE bfft-cartoon-filter.cpp)
+add_library(bfft-cartoon MODULE
+  bfft-cartoon-filter.cpp
+  "${CMAKE_CURRENT_LIST_DIR}/../high_vision/obs/high-vision-obs-filter.cpp")
 target_compile_features(bfft-cartoon PRIVATE cxx_std_17)
 target_include_directories(bfft-cartoon PRIVATE
   "${CMAKE_CURRENT_BINARY_DIR}"
   "${simde_SOURCE_DIR}"
   "${OBS_SOURCE_DIR}/libobs"
   "${OBS_SOURCE_DIR}/libobs/util")
-target_link_libraries(bfft-cartoon PRIVATE bfft::static)
+target_link_libraries(bfft-cartoon PRIVATE
+  bfft::static
+  high_vision::high_vision)
 
 if(APPLE)
   target_link_libraries(bfft-cartoon PRIVATE
@@ -58,6 +62,8 @@ if(APPLE)
     COMMAND "${CMAKE_COMMAND}" -E copy
       "${CMAKE_CURRENT_BINARY_DIR}/Info.plist"
       "${CMAKE_CURRENT_BINARY_DIR}/bfft-cartoon.plugin/Contents/Info.plist"
+    COMMAND /usr/bin/codesign --force --sign -
+      "${CMAKE_CURRENT_BINARY_DIR}/bfft-cartoon.plugin"
     VERBATIM)
 elseif(UNIX)
   find_package(PkgConfig REQUIRED)

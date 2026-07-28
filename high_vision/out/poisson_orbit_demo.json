@@ -1,0 +1,130 @@
+{
+  "camera": {
+    "size": 48,
+    "frames": 4096,
+    "photons_at_white": 0.75,
+    "dark_electrons": 0.002,
+    "read_noise_electrons": 0.0,
+    "gatherers": 3,
+    "seed": 7,
+    "batch": 128,
+    "bispectrum_steps": 20,
+    "full_circle_support": false,
+    "poisson_phase_seed": false,
+    "optimizer_iterations": 220
+  },
+  "elapsed_seconds": 13.374868915998377,
+  "mean_electrons_per_frame": 878.852883897227,
+  "nonzero_fraction_first_frame": 0.3129340277777778,
+  "diagnostic_first_frame_electrons": 904.558,
+  "steps": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      47,
+      1
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      46,
+      0
+    ],
+    [
+      47,
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      46,
+      1
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      46,
+      2
+    ],
+    [
+      2,
+      2
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      45,
+      0
+    ],
+    [
+      47,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      45,
+      1
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      46,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "recovered_global_shift": [
+    5,
+    35
+  ],
+  "phase_seed": "path_integrated",
+  "optimizer_success": false,
+  "optimizer_message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+  "optimizer_iterations": 220,
+  "phase_objective": 0.001004877839458657,
+  "constraints_used": 5837,
+  "metrics": {
+    "single": {
+      "psnr_db": 4.77980080091512,
+      "ssim": 0.000631094437523391
+    },
+    "unregistered_mean": {
+      "psnr_db": 11.631842801405751,
+      "ssim": 0.27072505297331784
+    },
+    "fraudulent_mean": {
+      "psnr_db": 11.637027288422818,
+      "ssim": 0.26713375416375984
+    },
+    "orbit_cross_bispectrum": {
+      "psnr_db": 21.797618678399722,
+      "ssim": 0.5390909426061957
+    }
+  }
+}

@@ -1,0 +1,1910 @@
+                                               IMAGE DECOMPOSITION: THEORY, NUMERICAL
+                                                SCHEMES, AND PERFORMANCE EVALUATION
+
+                                                                            JÉRÔME GILLES
+
+
+
+
+arXiv:2411.05265v1 [eess.IV] 8 Nov 2024
+                                                 Abstract. This paper describes the many image decomposition mod-
+                                                 els that allow to separate structures and textures or structures, textures,
+                                                 and noise. These models combined a total variation approach with dif-
+                                                 ferent adapted functional spaces such as Besov or Contourlet spaces or
+                                                 a special oscillating function space based on the work of Yves Meyer.
+                                                 We propose a method to evaluate the performance of such algorithms
+                                                 to enhance understanding of the behavior of these models.
+
+
+
+
+                                          Keywords. image decomposition; BV ; texture; noise; oscillating functions;
+                                          Besov spaces; local adaptivity; contourlet spaces; soft thresholding; perfor-
+                                          mance evaluation
+
+
+                                                                               Contents
+                                            1. Introduction                                                                     2
+                                            2. Preliminaries                                                                    2
+                                            2.1. Wavelets                                                                       3
+                                            2.2. Multiresolution Analysis                                                       5
+                                            2.3. Directional Multiresolution Analysis                                           6
+                                            2.4. Ridgelets                                                                      6
+                                            2.5. Curvelets                                                                      7
+                                            2.6. Contourlets                                                                    8
+                                            2.7. Function Spaces                                                                9
+                                            3. Structures + Textures Decomposition                                             12
+                                            4. Structures + Textures + Noise Decomposition                                     20
+                                            4.1. BV -G-G Local Adaptative Model                                                21
+                                            4.2. Aujol-Chambolle BV -G-E Model                                                 25
+                                            4.3. The BV -G-Co ˙ ∞
+                                                                −1,∞ Decomposition Model                                       27
+                                            5. Performance Evaluation                                                          31
+                                            5.1. Test Image                                                                    32
+                                            5.2. Evaluation Metrics                                                            32
+                                            5.3. Image Decomposition Performance Evaluation                                    35
+                                            6. Conclusion                                                                      38
+                                            Appendix A. Chambolle’s Nonlinear Projectors                                       38
+                                            A.1. Notations and Definitions                                                     39
+                                            A.2. Total Variation                                                               39
+                                                                                     1
+2                              JÉRÔME GILLES
+
+    A.3. Chambolle’s Projectors                                            40
+    A.4. Extension                                                         42
+    References                                                             43
+
+
+
+                             1. Introduction
+   In the last few years, different algorithms have been proposed to decom-
+pose an image into its structures and textures components and then its struc-
+tures, textures, and noise components. The initial idea was proposed by [1].
+He proposed starting from the Rudin-Osher-Fatemi algorithm, ([2]), which
+was designed to perform image denoising. Meyer showed that this model
+rejects the textures and then proposed to use a new function space, G, by re-
+placing the L2 -norm by the G-norm. He proved that this space corresponds
+to a space of oscillating functions that are useful to model textures. Two
+years later, two numerical schemes were proposed to solve Meyer’s model,
+particularly the algorithm based on Chambolle’s nonlinear projector. It is
+easy to implement, and convergence conditions are given by a theorem.
+   These models work well provided no noise is present in the image. Oth-
+erwise, it is necessary to extend the model to a three-part model. Different
+approachs were proposed based on a local adaptable algorithm or wavelet
+soft thresholding [3, 4].
+   This paper describes the philosophy developped by Meyer and gives a
+description of the different structures + textures models in section 3 and
+structures + textures + noise models in section 4. A new three-part model,
+based on contourlet soft thresholding, is introduce. This mode improves the
+results of the previous algorithms.
+   Section 5 deals with performance evaluation of the decomposition algo-
+rithms. A specific methodology is proposed. First we create test images by
+recomposing structures, textures, and noise reference images that are gen-
+erated separatly. We define some metrics to evaluate the quality of the dif-
+ferent components obtained at the output of the decomposition algorithms
+(especially, the problem of how to measure the remaining residue in the
+noise).
+   Before detailing the different decomposition models, the first section pro-
+vides some preliminaries and notations like the wavelet, contourlet formal-
+ism. It also presents the different function spaces and their associated norms
+that are used in the remainder of the paper.
+   We conclude by summarizing the different models and their performance.
+We also give some perspectives to this work.
+
+                             2. Preliminaries
+  This section describes all the definitions used in the chapter. We start
+by recalling the multiresolution formalism, specially based on wavelets and
+                             IMAGE DECOMPOSITION                              3
+
+other geometric approachs like curvelets and contourlets. We also introduce
+different function spaces like the space of bounded variations functions (BV ),
+Besov spaces, and so on. We complete these descriptions by defining a space
+based on the contourlet expansion, which will be used in the new three-part
+decomposition model presented in section 4.3.
+
+2.1. Wavelets. Let us start with the notations and properties of wavelet
+analysis. The first wavelet expansion of a one dimensional (1D) signal ap-
+peared in the 1980’s ([5, 6, 7]). The well-known contributors of the wavelet
+theory are, but not restricted to, [8], [6], and [9].
+
+   In the following, we assume that we have a 1D signal but the D-dimensional
+extension is naturally obtained by using D separable transforms along the
+different variables. Wavelet analysis outperforms the Fourier representation.
+Fourier transform decomposes a signal over a sine-cosine basis. This trans-
+form is well localized in frequency but not in time (sine and cosine functions
+are defined over an infinite domain). For example, if we analyze a transient
+phenomenon, its Fourier transform covers all the frequency plane while it is
+well localized in time. It is evident that a transform that is both localized
+in time and frequency is needed. The first solution used a windowed-Fourier
+transform. It allows decomposition of the time-frequency plane into many
+time-frequency atoms. However, this transform is not completely satisfac-
+tory because it does not authorize adaptable atoms. However we could be
+interested in analyzing many transient phenomena with different lengths,
+then adaptable atoms are necessary. The wavelet transform affords us this
+opportunity, and we now recall its definition.
+
+
+2.1.1. Continuous Case. Wavelet transform decomposes a signal over a set
+of translated and dilated versions of a mother wavelet. A mother wavelet is
+a function ψ ∈ L2 (R) that respects some criteria as follows:
+                        Z
+(1)                          ψ(t)dt = 0      zero mean,
+                         R
+
+
+(2)                      ∥ψ∥L2 = 1        normalized,
+and ψ needs to be centered on 0. If we denote a and b as the dilation and
+translation parameters, respectively, then the set of wavelets is obtained
+from the mother wavelet ψ by
+                                                      
+                                        1        t−b
+(3)                         ψa,b (t) = √ ψ                 .
+                                         a        a
+   Then, we can define the wavelet transform of a function f ∈ L2 (R) at
+time b and scale a by (ψ ∗ is the complex conjugate of ψ)
+4                                 JÉRÔME GILLES
+
+
+
+                                                                  
+                                                             t−b
+                                         Z
+                                                  1
+(4)           WT f (a, b) = ⟨f, ψa,b ⟩ =   f (t) √ ψ ∗                 dt.
+                                         R         a          a
+   It is easy to see that a wavelet transform can be written as a convolution
+product (denoted ⋆)
+                                                              
+                                                        1 ∗ −t
+(5)       WT f (a, b) = f ⋆ ψ̄a (b),   where ψ̄a (t) = √ ψ          .
+                                                         a      a
+  The following theorem gives the conditions that permit reconstruction of
+the function f from its wavelet expansion.
+Theorem 1. Let ψ ∈ L2 (R) be a real wavelet that respects the following
+admissibility condition:
+                             Z +∞
+                                  |ψ̂(ξ)|2
+(6)                     Cψ =               dξ < +∞,
+                              0       ξ
+where ψ̂ is the Fourier transform of ψ. Then, all functions f ∈ L2 (R) verify
+                         Z +∞ Z                          
+                       1                       1      t−b     da
+(7)           f (t) =             WT f (a, b) √   ψ         db 2
+                      Cψ 0      R               a      a      a
+and (Parseval relation)
+               Z                  Z +∞ Z
+                         2      1                        da
+(8)               |f (t)| dt =            |WT f (a, b)|db 2 .
+                R              Cψ 0     R                a
+    A proof can be find in [6].
+
+  Many papers in the literature deal with the choice of the mother wavelet
+ψ. According to the concerned applications, we can impose some comple-
+mentary constraints to the wavelet (e.g. its regularity, the length of its
+support, the number of its zero moments).
+
+2.1.2. Discrete Case. In practice, we have digital signals composed of N
+samples denoted f [n]. Let ψ(t) be a continous wavelet where its support is
+[−K/2, K/2]; then the discrete wavelet, dilated by 2j , is defined as
+
+                                   1
+(9)                     ψjn [k] = √ ψ[2−j k − n].
+                                   2j
+Then the discrete wavelet transform can be written as
+
+                                   X
+                                             ∗
+(10)               WT f [n, j] =       f [m]ψjn [m] = ⟨f, ψjn ⟩,
+                                   m
+
+and the reconstruction formula is true if ψ has some complementary prop-
+erties, (see [6] for more details). Then, we have
+                              IMAGE DECOMPOSITION                                5
+
+
+
+                                  +∞ X
+                                  X
+(11)                   f [m] =             WT f [n, j]ψjn [n].
+                                   j=0 n
+
+  These relations show that filter banks, defined from ψ, can be used to
+implement the wavelet transform and its inverse.
+
+2.2. Multiresolution Analysis. Multiresolution analysis is defined in [6].
+Let {Vj }j∈Z be a set of closed subspaces of L2 (R). We said it is a multires-
+olution approximation if it meets the following conditions:
+
+
+(12)             ∀(j, k) ∈ Z2 , f (t) ∈ Vj ⇔ f (t − 2j k) ∈ Vj ,
+(13)                          ∀j ∈ Z , Vj+1 ⊂ Vj ,
+                                              
+                                              t
+(14)                 ∀j ∈ Z , f (t) ∈ Vj ⇔ f       ∈ Vj+1 ,
+                                              2
+                                       +∞
+                                        \
+(15)                       lim Vj =        Vj = {0},
+                             j→+∞
+                                           j=−∞
+
+
+                                           +∞
+                                           [
+(16)                         lim Vj =            Vj = L2 (R),
+                         j→−∞
+                                        j=−∞
+
+and there exists a function θ such that {θ(t − n)}n∈Z is a Riesz basis of V0 .
+
+  Let φ be a function (called the scale function) with its Fourier transform
+be defined by:
+                                                θ̂(ω)
+(17)                 φ̂(ω) = 
+                                  P+∞                           1/2 .
+                                     k=−∞   |θ̂(ω + 2kπ)|2
+
+  Then the set {φjn }n∈Z defined by
+                                                           
+                                        1             t−n
+(18)                         φjn (t) = √ φ
+                                        2j             2j
+is an orthonormal basis of Vj . If we define Wj = Vj ⊖ Vj+1 , the wavelet set
+{ψjn }n∈Z associated with φ (see [5, 6, 7] to learn to build such functions) is an
+orthonormal basis of Wj . Then all functions f ∈ L2 (R) can be decomposed
+to
+
+                             X                   +∞ X
+                                                 X
+(19)               f (t) =        αn φ0n (t) +           βjn ψjn (t),
+                              n                  j=0 n
+6                                   JÉRÔME GILLES
+
+where the coefficients βjn = ⟨f, ψjn ⟩ are the wavelet transform coefficients
+and αn = ⟨f, φ0n ⟩ are the coefficients from the projection on the subspace
+V0 . In other terms, we have
+
+                                                          ∞
+                                                          M
+(20)                         (19) ⇐⇒ f ∈ V0 ⊕                   Wj .
+                                                          j=0
+
+
+2.3. Directional Multiresolution Analysis. The two dimensional (2D)
+extension of a wavelet generally uses the separability principle. It uses a 1D
+wavelet filter along the horizontal and vertical directions. In natural images,
+however, the information is not limited to these two directions. It is easy
+to understand that the multiresolution analysis needs to be extended to en-
+compass directions in the image. Many authors propose different approachs
+to do this directional analysis. This chapter describes only those best known
+in the literature: the ridgelets, curvelets, and contourlets.
+
+2.4. Ridgelets. In his doctoral dissertation, [10] proposes a new transform
+that deals with directionality in images: the ridgelet transform.
+   The ridgelets functions ψa,b,θ are defined in a manner similar to wavelets
+but add the notion of orientation (tuned by the θ parameter):
+
+(21)                        ψa,b,θ : R2 −→ R2
+                                                                 
+                                    1     x1 cos θ + x2 sin θ − b
+(22)           ψa,b,θ (x1 , x2 ) = √ ψ                              .
+                                     a               a
+   The ψa,b,θ is constant along the lines x1 cos θ + x2 sin θ = c (c is a con-
+stant) and is a wavelet ψ in the orthogonal direction. Many properties of
+the wavelet theory can be transposed.
+
+
+Definition 1. The admissibility condition for a ridgelet is:
+                                                     2
+                                     Z    ψ̂(ξ)
+(23)                          Kψ =                       dξ < ∞,
+                                           |ξ|2
+                         R
+which is equivalent to       ψ(t)dt = 0.
+
+    Morever, we assume that ψ is normalized:
+                                                 2
+                                    Z    ψ̂(ξ)
+(24)                            ⇒                    dξ = 1.
+                                          |ξ|2
+   Under these assumptions, Candès defines the ridgelet transform of a func-
+tion f by
+                             IMAGE DECOMPOSITION                              7
+
+Definition 2. For a function f , the coefficients of its ridgelet transform are
+given by
+                       Z
+                          ∗
+(25)     Rf (a, b, θ) = ψa,b,θ (x1 , x2 )f (x1 , x2 )dx1 dx2 =< f, ψa,b,θ >,
+
+and the reconstruction formula is given by
+                         Z 2π Z +∞ Z +∞
+                                                              da dθ
+(26)      f (x1 , x2 ) =                Rf (a, b, θ)ψa,b,θ (x) 3 db .
+                          0    −∞   0                         a    4π
+  In addition, the Parseval relation is verified as in proposition 1 below,
+
+Proposition 1. If f ∈ L1 ∩ L2 (R2 ) and if ψ is admissible, then
+                              Z
+                                              da dθ
+(27)               ∥f ∥L2 = cψ |⟨f, ψa,b,θ ⟩|2 3 db ,
+                       2
+                                              a    4π
+where cψ = (4π)−1 Kψ−1 .
+   The proof can be found in [10].
+   In pratice, the ridgelet transform can be implemented by using the Radon
+transform and the 1D wavelet transform (see [10] for more details).
+2.5. Curvelets. From the definition of the ridgelet transform, it is easy to
+see that this transform is a global transform (we mean that it is efficient to
+represent lines that go through the entire image). But images contain more
+general edges that are present locally. [11, 12, 13] propose a new approach
+that provides a local directional multiresolution analysis called the curvelet
+transform.
+The idea is to do a specific tiling of the space and frequency planes by using
+two windows, the radial window W (r) and the angular window V (t), where
+(r, θ) are the polar coordinates in the frequency plane and r ∈ (1/2, 2). The
+window V is defined for t ∈ [−1, 1]. These windows obey the following
+admissibility conditions:
+                     +∞
+                     X
+(28)                        W 2 (2j r) = 1   r ∈ (3/4, 3/2)
+                    j=−∞
+and
+                    +∞
+                    X
+(29)                       V 2 (t − l) = 1   t ∈ (−1/2, 1/2)
+                   l=−∞
+Then for each j ⩾ j0 , a frequency window U is defined in the Fourier domain
+by
+                                                          !
+                                                2 ⌊j/2⌋ θ
+(30)              Uj (r, θ) = 2−3j/4 W (2−j r)V             ,
+                                                   2π
+where ⌊j/2⌋ is the integer part of j/2. Let φj (x) denote the function such
+that its Fourier transform φ̂j (ω) = Uj (w) ((r, θ) are the polar coordinates
+8                                 JÉRÔME GILLES
+
+corresponding to w = (w1 , w2 )). Then we define at scale 2−j , orientation θl ,
+              (j,l)
+and position xk a set of curvelets by
+                                                    
+                                               (j,l)
+(31)                 φj,l,k (x) = φj Rθl (x − xk ) ,
+where Rθl is the rotation by θl radians. Then the curvelet transform is
+simply defined by the inner product between a function f ∈ R2 with the set
+of curvelets. A curvelet coefficient can be written
+                                             Z
+(32)             c(j, l, k) = ⟨f, φj,l,k ⟩ =   f (x)φ∗j,l,k (x)dx.
+                                              R2
+More details can be found in [12]. In their paper, the authors prove the
+following proposition.
+Proposition 2. Let f ∈ L2 (R2 ) denote a function expanded over a set of
+curvelets φj,l,k ; we have the following reconstruction formula:
+                        X
+(33)                f=      ⟨f, φj,l,k ⟩φj,l,k (Tight frame,)
+                          j,l,k
+
+and the Parseval relation is verified:
+               X
+(34)                |⟨f, φj,l,k ⟩|2 = ∥f ∥2L2 ,      ∀f ∈ L2 (R2 ).
+                  j,l,k
+
+    All details about the numerical aspects can be found in [12].
+2.6. Contourlets. In 1999, when Candès et al. proposed the curvelet trans-
+form, the authors showed many promising results. The main drawback of the
+first version of curvelets is the difficulty of its numerical implementation (the
+discrete curvelet transform was proposed in 2005 [12]). In order to “over-
+come” this problem, [14, 15, 16, 17, 18, 19, 20] proposed a new algorithm,
+called the contourlet transform, initially designed in a discrete framework.
+The idea is to combine a multiscale decomposition and directional filtering
+at each scale (Figure 1).
+   The multiscale decomposition is obtained by using a Laplacian pyramid
+decomposition (LP) ([21]). The directional filtering uses a directional filter
+bank (DFB) based on quincunx filters ([22]). In the next theorem, the
+authors show that this transform produces a tight frame.
+Theorem 2. Let j be the scale, n the position, {lj }j⩽j0 the set of number
+of directions for each scale j. Then, the set
+                    n                      o
+                                  (lj )
+(35)                 ϕj0 ,n (t); ρj,k,n (t)   l        2
+                                           j⩽j0 , 0⩽k⩽2 j −1, n∈Z
+
+is a tight frame of L2 (R2 ).
+                                                                    j (l )
+  All details about the construction of functions ϕj0 ,n (t) and ρj,k,n (t) can
+be found in [14].
+  This implies
+                              IMAGE DECOMPOSITION                                 9
+
+
+
+
+                 Figure 1. Contourlet transform principle.
+
+Corollary 1.
+                                                   l
+                                                j −1
+                       X                     X 2X    X                 (l )
+                                                                        j
+(36)         f (t) =       αn ϕj0 ,n (t) +                    βj,k,n ρj,k,n (t)
+                       n                     j⩽j0 k=0     n
+
+or
+                                      l
+                                    j −1
+                                 X 2X    X                (l )
+                                                            j
+(37)                   f (t) =                    βj,k,n ρj,k,n (t),
+                                 j∈Z k=0      n
+
+                                              j   (l )
+  where αn = ⟨f |ϕj0 ,n ⟩ and βj,k,n = ⟨f |ρj,k,n ⟩ are the contourlet transform
+coefficients.
+
+2.7. Function Spaces. In Sections 3 and 4, we will use some function
+spaces and more particularly their associated norms. This section briefly
+describes the spaces of interest (it is assumed that the reader knows the
+Lp spaces and d is the dimension). The goal of the different spaces is to
+characterize some properties like the differentiability and the regularity of
+functions.
+
+2.7.1. Sobolev Spaces. The first spaces we are interested in are the Sobolev
+spaces W k,p . These spaces are defined as the spaces of functions f such that
+they and their weak derivatives up to some order k have a finite Lp norm,
+10                                     JÉRÔME GILLES
+
+for a given p ⩾ 1. These spaces are endowed with the following norm:
+
+                           k
+                                               !1/p               k Z
+                                                                                               !1/p
+                                 ∥f (i) ∥pLp
+                           X                                      X
+(38)       ∥f ∥W k,p =                                 =                       |f (i) (t)|p dt        .
+                           i=0                                    i=0
+
+  An interesting particular case is for p = 2, denoted H k = W k,2 , because of
+their relation with the Fourier series. More information about the Sobolev
+spaces can be found in the book by [23].
+
+2.7.2. Besov Spaces. The next kind of spaces are Besov spaces Bp,qs . Func-
+                s                          p
+tions taken in Bp,q have s derivatives in L . The parameter q permits more
+precise characterization of the regularity. A general description of these
+spaces can be found in [24]. In this paper, we give only their connection
+with wavelets. Indeed, different expressions exists for the norm associated
+with Besov space but one uses the wavelet coefficients, see (39).
+                                     "                  #1/p
+                                         X
+             s
+       ∀f ∈ Bp,q     ∥f ∥Bp,q
+                          s   =                |αn |p
+                                         n
+                                     
+                                     +∞       "                #q/p 1/q
+                                          d 1          p
+                                        j − +s q
+                                     X            X
+(39)                              +   2 2 p        2j 2 |βjn |p       .
+                                         j=0                                   n
+
+     The homogeneous version is
+                                       
+                                             +∞                                "               #q/p 1/q
+                                                               d
+                                                       j         − p1 +s       q        j p2
+                                             X                                    X
+            s
+(40) ∀f ∈ Ḃp,q          ∥f ∥Ḃ s =               2           2
+                                                                                       2 |βjn |p       ,
+                             p,q
+                                           j=−∞                                    n
+
+where αn and βjn are the coefficients issued from the wavelet expansion (see
+Section 2.2).
+
+2.7.3. Ridgelet Spaces. In the same way as previous, Candès define the
+                  s
+ridgelet spaces Rp,q endowed with the norm based on the ridgelet coeffi-
+cients.
+                                                        s if f ∈ L1 and
+Definition 3. For s ⩾ 0 and p, q > 0, we said that f ∈ Rp,q
+
+(41) Ave∥Rf (u, .) ⋆ φ∥Lp < ∞
+      u
+                                                             1/p 
+                          js j(d−1)/2                       p
+               and       2 2            Ave∥Rf (u, .) ⋆ ψj ∥Lp        ∈ lq (N),
+                                                        u
+                 R
+where Rf (u, t) = u.x=t f (x)dx is the Radon transform of f (u = (cos θ; sin θ)).
+The function φ is the scale function associated with ψ.
+                                     IMAGE DECOMPOSITION                                          11
+
+  Then the induced norm is defined by
+
+(42) ∥f ∥Rp,q
+          s   = Ave∥Rf (u, .) ⋆ φ∥Lp
+                 u
+                                                                           1/q
+                   X                                                   q 
+                                                                     1/p
+                           2js 2j(d−1)/2 Aveu ∥Rf (u, .) ⋆ ψj ∥pLp
+                                                                   
+                 +
+                                                                           
+                               j⩾0
+
+                               s
+and its homogeneous version Ṙp,q
+                                                                       1/q
+                  X                                                q 
+                                                                 1/p
+                       2js 2j(d−1)/2 Aveu ∥Rf (u, .) ⋆ ψj ∥pLp
+                                                               
+(43)    ∥f ∥Ṙs =                                                            .
+              p,q                                                      
+                        j∈Z
+
+As in the Besov case, these norms can be calculated from the ridgelet co-
+efficients. Let wj (u, b)(f ) = ⟨f (x), ψj (u.x − b)⟩ for j ⩾ 0 and v(u, b)(f ) =
+⟨f (x), φ(u.x − b)⟩ these ridgelet coefficients, then
+                  Z                          1/p
+(44) ∥f ∥Rp,q
+          s   =            |v(u, b)(f )|p dudb
+
+                                                                                 1/p !q 1/q
+                                                                                        
+                       X                              Z
+                  +                  2js 2j(d−1)/2          |wj (u, b)(f )|p dudb             .
+                                                                                        
+                           j⩾0
+
+  More information can be found in [10].
+
+2.7.4. Contourlet Spaces. Inspired from the previous spaces, we propose to
+define the contourlet spaces, which will be denoted Cosp,q .
+Definition 4. Let s ⩾ 0 and p, q > 0, if f ∈ Cosp,q ; then
+
+                       "                      #1/p
+                           X
+                                          p
+        ∥f ∥Cosp,q =            |αj0 ,n |
+                           n
+                                                     l                   q/p 1/q
+                                                    2Xj −1                   
+                                     j d2 − p1 +s q
+                       X                                     X p               
+                                                                j2        p
+(45)              +              2                            2 |βj,k,n |           ,
+                                                                               
+                       j⩽j0                            k=0 n                   
+
+or in the homogeneous case,
+                                             l                  q/p 1/q
+                                            2 j −1                  
+                               j d2 − p1 +s q
+                       X                       X X p                  
+                                                       j2        p
+(46)      ∥f ∥Co
+               ˙ s   =       2                       2 |βj,k,n |           ,
+                 p,q                                                  
+                        j∈Z                    k=0 n                  
+
+where αj0 ,n and βj,k,n are the contourlet coefficients mentioned in Section
+2.6.
+12                              JÉRÔME GILLES
+
+2.7.5. Bounded Variation (BV ) Spaces. The last space of interest is the BV
+space, the space of bounded variations functions. This space is widely used
+in image processing because it is a good candidate to modelize structures in
+images.
+Definition 5. The space BV over a domain Ω is defined as
+                                   Z           
+                              1
+(47)              BV = f ∈ L (Ω); |∇f | < ∞ ,
+                                             Ω
+where ∇f is the gradient, in the distributional sense, of f and
+       Z              Z                                          
+(48)      |∇f | = sup      f div −
+                                 →
+                                 φ;      →
+                                         −
+                                         φ ∈ C01 (Ω, R2 ), |−
+                                                            →
+                                                            φ| ⩽ 1 .
+         Ω          −
+                    →
+                    φ       Ω
+
+  This space is endowed with the following norm:
+                                         Z
+(49)                   ∥f ∥BV = ∥f ∥L1 +    |∇f |.
+                                                 Ω
+But in general, we only keep the second term, which is well known as the
+total variation of f . In the rest of the paper, we will use the notation
+                                         Z
+(50)                            J(f ) =     |∇f |.
+                                         Ω
+More information about the BV space is available in [25, 26].
+
+   We now have all the basic tools needed to describe the image decompo-
+sition models. The next two sections present the structures + textures and
+structures + textures + noise models, respectively.
+
+             3. Structures + Textures Decomposition
+   The starting point of the image decomposition models is the work of [1]
+about the Rudin-Osher-Fatemi (ROF) algorithm ([2]). Let us recall the
+ROF model. Assume f is an observed image that is the addition of the
+ideal scene image u, which we want to retrieve, and a noise b. The authors
+propose to minimize the following functional to get u:
+
+(51)                    FλROF (u) = J(u) + λ∥f − u∥2L2 .
+   This model assumes that u is in BV because this space preserves sharp
+edges. This algorithm gives good results and is very easy to implement by
+using the nonlinear projectors proposed by [27] (see Appendix A).
+   Now if we take the image decomposition point of view, f = u + v, the
+functional in Eq.(51) can be rewritten as
+(52)                     FλROF (u, v) = J(u) + λ∥v∥2L2 .
+  We remind the reader that decomposition means u is the structures part
+and v the textures part. Meyer shows that this model is not adapted to
+achieve this decomposition. In order to convince us, the following example
+                           IMAGE DECOMPOSITION                                13
+
+illustrates that the more a texture is oscillating, the more it is removed from
+both the u and v parts.
+Example 1. Let v be a texture created from an oscillating signal over a
+finite domain. Then v can be written (x = (x1 , x2 )) as follows:
+(53)                        v(x) = cos(ωx1 )θ(x),
+where ω is the frequency and θ the indicator function over the considered
+domain. Then we can calculate the L2 and BV norms of v, respectively.
+We get
+                                       1
+(54)                          ∥v∥L2 ≈ √ ∥θ∥L2 ,
+                                        2
+which is constant ∀ω and does not specially capture textures. In addition,
+                                     ω
+(55)                       ∥v∥BV =      ∥θ∥L1 ,
+                                     2π
+which grows as ω → ∞ and then clearly rejects textures.
+   In order to adapt the ROF model to capture the textures in the v compo-
+nent, Meyer proposes to replace L2 space by another space, called G, which
+is a space of oscillating functions. He proves that this space is the dual space
+of BV (where BV = {f ∈ L2 (R2 ) , ∇f ∈ L1 (R2 )}, which is close to the BV
+space and the total variation described earlier in the paper); see [1] for more
+theoretical details about these spaces.
+   This space G is endowed by the following norm:
+                                                  1
+                        ∥v∥G = inf |g1 |2 + |g2 |2
+                                                    2
+(56)                                                      ,
+                               g
+                                                     L∞
+
+where g = (g1 , g2 ) ∈ L∞ (R2 ) × L∞ (R2 ) and v = div g. If we calculate the
+G-norm of the oscillating texture in Eq.(53) of example 1, we get
+                                             C
+(57)                               ∥v∥G ⩽       ,
+                                            |ω|
+where C is a constant. Then it is easy to see that this space G is well
+adapted to capture textures. Now, the modified functional performing the
+structures + textures decomposition is
+
+
+(58)                     FλY M (u, v) = J(u) + λ∥v∥G ,
+where f = u + v, f ∈ G, u ∈ BV , v ∈ G. The drawback of this model is the
+presence of an L∞ norm in the the expression of the G-norm (this does not
+allow classic variational calculus).
+   The first people who proposed a numerical algorithm to solve the Meyer
+model were [28]. Their approach was to use the theorem which tells that
+14                               JÉRÔME GILLES
+
+∀f ∈ L∞ (Ω), ∥f ∥L∞ = limp→∞ ∥f ∥Lp and a slightly modified version of
+Meyer’s functional:
+                                                         q
+          OV
+(59)    Fλ,µ,p (u, g) = J(u) + λ∥f − (u + div g)∥2L2 + µ  g12 + g22 .
+                                                                       Lp
+Then variational calculus applies and results in a system of three connected
+partial differential equations. All the details of the equations discretization
+are available in [28]. This algorithm works well but is very sensitive in the
+choice of its parameters, which induced many instability.
+  Another way to solve Meyer model was proposed by [29, 30, 31]. The
+authors propose a dual-method approach that naturally arises because of
+the dual relation between the G and BV spaces. The problem is assumed to
+be in the discrete case and defined over a finite domain Ω. They proposed
+a modified functional to minimize.
+                                          
+                                          v
+(60)           AU
+              Fλ,µ (u, v) = J(u) + J ∗       + (2λ)−1 ∥f − u − v∥2L2
+                                          µ
+     and
+(61)                        (u, v) ∈ BV (Ω) × Gµ (Ω).
+   The set Gµ is the subset in G where ∀v ∈ Gµ , ∥v∥G ⩽ µ. Moreover, J ∗
+is the characteristic function over G1 with the property that J ∗ is the dual
+operator of J (J ∗∗ = J). Thus,
+                                    (
+                             ∗       0  if v ∈ G1
+(62)                        J (v) =
+                                     +∞     else.
+   The interesting point is that the precited Chambolle’s projectors are the
+projector over the sets Gµ , ∀µ; these operators will be denoted PGµ in the
+rest of the paper. More details about these projectors can be found in [27]
+and recalled in Appendix A. Then the authors propose an iterative algorithm
+                                       AU (u, v).
+that gives the minimizers (û, v̂) of Fλ,µ
+       • Let us fix v, we seek for the minimizer u of
+                       inf J(u) + (2λ)−1 ∥f − u − v∥2L2 .
+                                                       
+(63)
+                        u
+     • Now we fix u and seek for the minimizer v of
+                              
+                              v
+(64)                 inf J ∗      + ∥f − u − v∥2L2 .
+                      v       µ
+     Chambolle’s results show that the solution of Eq.(63) is given by
+(65)                         û = f − v̂ − PGλ (f − v̂)
+and the solution of Eq. (64) by
+(66)                             v̂ = PGµ (f − û).
+                               IMAGE DECOMPOSITION                              15
+
+     Then the numerical algorithm is
+
+      (1) Initialization:
+                                     u0 = v0 = 0
+      (2) Iteration n + 1:
+                              vn+1 = PGµ (f − un )
+                        un+1 = f − vn+1 − PGλ (f − vn+1 )
+      (3) We stop the algorithm if
+                        max (|un+1 − un |, |vn+1 − vn |) ⩽ ϵ
+        or if we reach a prescribed maximal number of iterations.
+   The authors prove that the minimizers (û, v̂) are also minimizers of the
+original Meyer functional Eq. (58), and that it is better to start by calcu-
+lating vn+1 than un+1 . See [29, 30] for the complete proofs.
+
+   Figure 2 presents the three original images (Barbara, House, and Leopard)
+use for tests in the rest of the paper. Figures 3, 4, and 5 illustrate the
+results from Aujol’s algorithm. The chosen parameters are (λ = 1, µ = 100),
+(λ = 10, µ = 1000), and (λ = 5, µ = 1000) respectively. For clarity reasons,
+we enhanced the contrasts of the textured components. On each test we
+see that the separation between structures and textures works well. Some
+residual textures remain in the structures part; this can be explained by the
+fact the parameter λ acts as a tradeoff between the “power” of separability
+and too much regularization of u.
+   As the G-norm is difficult to handle, [1] proposes to replace the space G
+                        ∞
+by the Besov space Ḃ−1,∞                     ∞
+                             because G ⊂ Ḃ−1,∞    (in the following, we will
+               ∞
+denote E = Ḃ−1,∞ ). The advantage is that the norm of a function v over
+this space can be defined from its wavelet coefficients. The corresponding
+model proposed by Meyer is
+(67)                         FλY M 2 (u, v) = J(u) + λ∥v∥E
+   Aujol and Chambolle were the first to propose a numerical algorithm that
+uses the space E. As previously, they reformulated the model in a dual-
+method approach, where Eµ is the subset of E, where ∀f ∈ Eµ , ∥f ∥E ⩽ µ
+and B ∗ (f ) is the indicator function over E1 . Then the functional to minimize
+is
+                                          
+                                          v
+(68)           AC
+              Fλ,µ (u, v) = J(u) + B ∗       + (2λ)−1 ∥f − u − v∥2L2 .
+                                          µ
+     [32] proved the existence of a projector on this space, denoted PEµ , defined
+by
+(69)                         PEµ (f ) = f − W ST (f, 2µ),
+16                            JÉRÔME GILLES
+
+
+
+
+        Figure 2. Original Barbara, House, and Leopard images.
+
+
+
+
+                Structures                        Textures
+
+       Figure 3. BV -G structures + textures image decomposi-
+       tion of Barbara image.
+
+where W ST is the wavelet soft thresholding operator (we mean that we first
+perform the wavelet expansion of the function, then we do the soft threshold-
+ing of the wavelet coefficients, and end by reconstructing the image). Then
+the new numerical algorithm is as follows:
+                        IMAGE DECOMPOSITION                           17
+
+
+
+
+              Structures                         Textures
+
+     Figure 4. BV -G structures + textures image decomposi-
+     tion of House image.
+
+
+
+
+              Structures                         Textures
+
+     Figure 5. BV -G structures + textures image decomposi-
+     tion of Leopard image.
+
+ (1) Initialization:
+                              u0 = v0 = 0
+ (2) Iteration n + 1:
+          vn+1 = PEµ (f − un ) = f − un − W ST (f − un , 2µ)
+                 un+1 = f − vn+1 − PGλ (f − vn+1 )
+ (3) We stop if
+                   max (|un+1 − un |, |vn+1 − vn |) ⩽ ϵ
+     or if we reach a prescribed maximal number of iterations.
+The results obtained by this model are presented in Figures 6, 7, and 8.
+18                             JÉRÔME GILLES
+
+
+
+
+                Structures                         Textures
+
+       Figure 6. BV -Eµ structures + textures image decomposi-
+       tion of Barbara image.
+
+
+
+
+                Structures                         Textures
+
+       Figure 7. BV -Eµ structures + textures image decomposi-
+       tion of House image.
+
+   This algorithm works, but its main drawback is that it captures some
+structures informations (like the legs of the table in the Barbara image; see
+Figure 6). This behavior appears because the space E is much bigger than
+the space G, in particular the space E contains functions that are not only
+textures.
+   [33] explore the possibility of replacing the space G by the Sobolev space
+H −1 . They propose the following functional (v is obtained by v = f − u):
+
+(70)                  FλV S (u) = J(u) + λ∥f − u∥2H −1 ,
+where ∥v∥H −1 = |∇(∆−1 )v|2 dxdy. The authors give the corresponding
+                  R
+Euler-Lagrange equations and their discretization. Another way to numeri-
+cally solve the problem is to use a modified version of Chambolle’s projector
+                           IMAGE DECOMPOSITION                              19
+
+
+
+
+                Structures                         Textures
+
+       Figure 8. BV -Eµ structures + textures image decomposi-
+       tion of Leopard image.
+
+
+PH −1 (see Appendix A). Figures 9, 10, and 11 present the results obtained
+   λ
+with this algorithm.
+
+
+
+
+                Structures                         Textures
+
+       Figure 9. BV -H −1 structures + textures image decompo-
+       sition of Barbara image.
+
+   Some other models were proposed that test different spaces to replace
+BV or G spaces. We mention the work of [3, 34] who propose replacing the
+space BV by the smaller Besov space B1,1  1 , or replacing G by some Hilbert
+
+spaces, which permits the possibility of extracting textures with a certain
+                                                      1 , instead of BV (the
+directionality. [25] proposes using the Besov space Ḃ1,∞
+norms over these two spaces are equivalent) with the L2 norm for the v
+part. [35, 36] study the use of the spaces div (BM O), BM  ˙ O−α , and Ẇ −α,p
+to modelize the textures component.
+20                            JÉRÔME GILLES
+
+
+
+
+                Structures                        Textures
+
+       Figure 10. BV -H −1 structures + textures image decompo-
+       sition of House image.
+
+
+
+
+                Structures                        Textures
+
+       Figure 11. BV -H −1 structures + textures image decompo-
+       sition of Leopard image.
+
+        4. Structures + Textures + Noise Decomposition
+   The previous algorithms yield good results but are of limited interest for
+noisy images (we add a gaussian noise with σ = 20 on each test image of
+Figure 2; the corresponding noisy test images can be viewed in Figure 12).
+Indeed, noise can be viewed as a very highly oscillatory function (this means
+that noise can be view as living in the space G). Therefore, the algorithms
+incorporate the noise in the textures components. Then the textures are
+corrupted by noise (see Figure 13 for example).
+
+   In this section, we present some extension of the two-component model to
+the three-component model, f = u + v + w, which could discriminate among
+structures (u), textures (v), and noise (w).
+                         IMAGE DECOMPOSITION                           21
+
+
+
+
+       Figure 12. Original Barbara, House, and Leopard images
+       corrupted by gaussian noise (σ = 20).
+
+
+
+
+               Structures                      Textures
+
+       Figure 13. BV -G structures + textures image decomposi-
+       tion of the noisy Barbara image.
+
+4.1. BV -G-G Local Adaptative Model. In [4], we proposed a new model
+to decompose an image into three parts: structures (u), textures (v), and
+22                                    JÉRÔME GILLES
+
+noise (w). As in the u+v model, we consider that structures and textures are
+modelized by functions in BV and G spaces, respectively. We also consider
+a zero mean gaussian noise added to the image. Let us view noise as a
+specific very oscillating function. In virtue of Meyer’s work ([1]), where it is
+shown that the more a function is oscillatory, the smaller its G-norm is, we
+propose to modelize w as a function in G and consider that its G-norm is
+much smaller than the norm of textures (∥v∥G ≫ ∥w∥G ). These assumptions
+are equivalent to choosing
+
+(71)               v ∈ Gµ1 , w ∈ Gµ2 ,          where   µ1 ≫ µ2 .
+
+   To increase the performance, we propose adding a local adaptability be-
+havior to the algorithm following an idea proposed by [37]. These authors
+investigate the ROF model given by Eq.(51) and propose a modified version
+that can preserve textures in the denoising process. To do this, they do
+not choose λ as a constant on the entire image but as a function λ(f )(x, y)
+which represents local properties of the image. In a cartoon-type region, the
+algorithm enhances the denoising process by increasing the value of λ; in a
+texture-type region, the algorithm decreases λ to attenuate the regulariza-
+tion to preserve the details of textures. So λ(f )(x, y) can be viewed as a
+smoothed partition between textured and untextured regions.
+Then, in order to decompose an image into three parts, we propose to use
+the following functional:
+
+(72)                                           
+                                      v          w
+ JG
+Fλ,µ 1 ,µ2
+           (u, v, w) = J(u)+J ∗            +J ∗
+                                                    +(2λ)−1 ∥f −u−ν1 v−ν2 w∥2L2 ,
+                                      µ1         µ2
+
+where the functions νi represent the smoothed partition of textured and un-
+textured regions (and play the role of λ in Gilboa’s paper). The νi functions
+must have the following behavior:
+
+       • for a textured region, we want to favor v instead of w. This is
+         equivalent to ν1 close to 1 and ν2 close to 0,
+       • for an untextured region, we want to favor w instead of v. This is
+         equivalent to ν1 closed to 0 and ν2 close to 1.
+
+We see that ν1 and ν2 are complementary, so it is natural to choose ν2 =
+1 − ν1 : R2 →]0; 1[. The choice of ν1 and ν2 is discussed after the following
+                                                      JG
+proposition, which characterizes the minimizers of Fλ,µ       (u, v, w).
+                                                        1 ,µ2
+
+
+Proposition 3. Let u ∈ BV , v ∈ Gµ1 , and w ∈ Gµ2 be the structures,
+textures, and noise parts, respectively, and f the original noisy image. Let
+the functions (ν1 (f )(., .), ν2 (f )(., .)) be defined on R2 →]0; 1[, and assume
+that these functions could be considered as locally constant compared to the
+                                  IMAGE DECOMPOSITION                             23
+
+variation of v and w. Then a minimizer defined by
+                                                           JG
+(73)          (û, v̂, ŵ) =           arg            min Fλ,µ 1 ,µ2
+                                                                     (u, v, w),
+                               (u,v,w)∈BV ×Gµ1 ×Gµ2
+
+is given by
+(74)               û = f − ν1 v̂ − ν2 ŵ − PGλ (f − ν1 v̂ − ν2 ŵ),
+                                               
+                                 f − û − ν2 ŵ
+(75)                v̂ = PGµ1                      ,
+                                      ν1
+                                               
+                                 f − û − ν1 v̂
+(76)               ŵ = PGµ2                      ,
+                                      ν2
+where PGµ denotes Chambolle’s non-linear projectors (see Appendix A).
+
+
+ The proof of this proposition can be found in [4]. As in the two-part
+BV -G decomposition model, we get an equivalent numerical scheme:
+
+   (1) Initialization: u0 = v0 = w0 = 0,
+   (2) Compute ν1 and ν2 = 1− ν1 from f,
+   (3) Compute wn+1 = PGµ2 f −uνn2 +κ −ν1 vn
+                                               , (κ is a small value in order to
+       prevent the division byzero),           
+   (4) Compute vn+1 = PGµ1 f −unν−ν     2 wn+1
+                                     1 +κ
+                                                  ,
+   (5) Compute un+1 = f − ν1 vn+1 − ν2 wn+1 − PGλ (f − ν1 vn+1 − ν2 wn+1 ),
+   (6) If max{|un+1 − un |, |vn+1 − vn |, |wn+1 − wn |} ⩽ ϵ or if we did Nstep
+          iterations then stop the algorithm, else jump to step 3.
+   Concerning the choice of the νi functions, we were inspired by the work
+of [37]. The authors choose to compute a local variance on the texture +
+noise part of the image obtained by the ROF model (f − u). In our model,
+we use the same strategy but on the v component obtained by the two
+parts decomposition algorithm. This choice is implied by the fact that the
+additive gaussian noise can be considered as orthogonal to textures. As a
+consequence, the variance of a textured region is larger than the variance of
+an untextured region.
+So, in practice, we first compute the two-part decomposition of the image f .
+On the textures part, for all the pixels (i, j), we compute the local variance
+on a small window (odd size L) centered on (i, j). At the least, we normalized
+it to obtain the values in ]0; 1[. All the details about the computation of
+the νi ’s function can be found in [4]. Figure 14 shows an example from the
+noisy Barbara image. As expected, the variance is higher in the textured
+regions and lower in the others.
+   Figures 15, 16, and 17 show the results of the u + v + w decomposition
+we obtained by the BV -G-G local adaptive model. This model can separate
+noise from the textures. If we look more precisely, we can see that some
+24                            JÉRÔME GILLES
+
+
+
+
+Figure 14. Texture partition ν1 obtained by local variance computation.
+
+
+
+
+                Structures                       Textures
+
+
+
+
+                   Noise
+
+       Figure 15. BV -G-G structures + textures + noise image
+       decomposition of Barbara image.
+
+
+residual noise remains in the textures, and some textures are partially cap-
+tured in the noise part. This is due to the choice of the parameters λ, µ1 ,
+and µ2 which act on the separability power of the algorithm.
+                            IMAGE DECOMPOSITION                               25
+
+
+
+
+                 Structures                           Textures
+
+
+
+
+                    Noise
+
+        Figure 16. BV -G-G structures + textures + noise image
+        decomposition of House image.
+
+
+4.2. Aujol-Chambolle BV -G-E Model. The same time as our work, [3]
+thought of the same structures + textures + noise decomposition problem.
+They proposed a model close to our model described in the previous sub-
+section but with the difference that they consider the noise as a distribution
+                                 ∞
+taken in the Besov space E = Ḃ−1,∞   . Then the associated functional is
+
+                                      
+                                      v       w
+      AC2
+(77) Fλ,µ,δ (u, v, w) = J(u) + J ∗       + B∗     + (2λ)−1 ∥f − u − v − w∥2L2 ,
+                                      µ        δ
+where u ∈ BV , v ∈ Gµ , and w ∈ Eδ as defined in the previous sections. The
+authors prove that the minimizers are (see [3]):
+
+(78)      û = f − v̂ − ŵ − PGλ (f − v̂ − ŵ),
+(79)      v̂ = PGµ (f − û − ŵ),
+(80)      ŵ = PEδ (f − û − v̂) = f − û − v̂ − W ST (f − û − v̂, 2δ),
+26                             JÉRÔME GILLES
+
+
+
+
+                 Structures                        Textures
+
+
+
+
+                   Noise
+
+       Figure 17. BV -G-G structures + textures + noise image
+       decomposition of Leopard image.
+
+where W ST (f − û− v̂, 2δ) is the Wavelet Soft Thresholding operator applied
+on f − û − v̂ with a threshold set to 2δ.
+   Then the numerical algorithm is given by
+    (1) Initialization: u0 = v0 = w0 = 0,
+    (2) Compute wn+1 = f − un − vn − W ST (f − un − vn , 2δ),
+    (3) Compute vn+1 = PGµ (f − un − wn+1 ),
+    (4) Compute un+1 = f − vn+1 − wn+1 − PGλ (f − vn+1 − wn+1 ),
+    (5) If max{|un+1 − un |, |vn+1 − vn |, |wn+1 − wn |} ⩽ ϵ or if we performed
+        Nstep
+           iterations, then stop the algorithm, else jump to step 2.
+   The results of this algorithm on our test images are shown in Figures 18,
+19, and 20, respectively. We can see that textures are better denoised by
+this model. This is a consequence of a better noise modeling by distribu-
+tions in the Besov space. But the residual texture is more important than
+the one given by our algorithm in the noise part. Another drawback ap-
+pears in the structures part; the edges in the image are damaged because
+                           IMAGE DECOMPOSITION                              27
+
+some important wavelet coefficients are removed. Previously, [4] provides
+the possibility to add the local adaptivity behavior of the BV -G-G model
+to the BV -G-E model. We refer the reader to [4] to see the BV -G-E local
+adaptivity functional and find the corresponding results. This modified ver-
+sion shows less improvement compared to the original. We prefer to explore
+the replacement of wavelets by new geometric multiresolution tools such as
+contourlets.
+
+
+
+
+                Structures                         Textures
+
+
+
+
+                   Noise
+
+       Figure 18. BV -G-E structures + textures + noise image
+       decomposition of Barbara image.
+
+
+4.3. The BV -G-Co   ˙ ∞
+                      −1,∞ Decomposition Model. As mentionned previ-
+ously, the new directional multiresolution tools, such as curvelets or con-
+tourlets, exhibit very good results in denoising. They also better reconstruct
+the edge in an image. So, the idea to replace the use of wavelet by curvelets
+or contourlets naturally arises. In this paper, we focus on the choice of con-
+tourlets. This choice is equivalent to changing the Besov space in the model
+described in the previous subsection by the homogeneous contourlet space
+ ˙ ∞
+Co −1,∞ . Then, the equivalent functional is given in Eq.(81) as below:
+28                             JÉRÔME GILLES
+
+
+
+
+                Structures                        Textures
+
+
+
+
+                   Noise
+
+       Figure 19. BV -G-E structures + textures + noise image
+       decomposition of House image.
+
+
+                                    
+                                    v       w
+      Co
+(81) Fλ,µ,δ (u, v, w) = J(u)+J ∗         ∗
+                                       +JCo     +(2λ)−1 ∥f −u−v −w∥2L2 ,
+                                    µ        δ
+        ∗ (f ) is the indicator function over the set Co if we denote Co =
+where JCo
+n                              o                        1               δ
+         ∞
+  f ∈ Co−1,∞ /∥f ∥Co−1,∞ ⩽ δ (norm over the contourlet spaces is defined
+                      ∞
+
+in the subsection 2.7.4) defined by
+                                   (
+                          ∗         0     if f ∈ Co1
+(82)                    JCo (f ) =
+                                    +∞        else.
+
+  Then, the following proposition gives the solutions that minimize the
+previous functional.
+Proposition 4. Let u ∈ BV , v ∈ Gµ , w ∈ Coδ be the structures, tex-
+tures, and noise components derived from the image decomposition. Then
+                                IMAGE DECOMPOSITION                          29
+
+
+
+
+                 Structures                                 Textures
+
+
+
+
+                    Noise
+
+       Figure 20. BV -G-E structures + textures + noise image
+       decomposition of Leopard image.
+
+the solution
+                                                           Co
+(83)           (û, v̂, ŵ) =          arg            inf Fλ,µ,δ (u, v, w)
+                                (u,v,w)∈BV ×Gµ ×Coδ
+
+is given by
+                     û = f − v̂ − ŵ − PGλ (f − v̂ − ŵ)
+                     v̂ = PGµ (f − û − ŵ)
+                    ŵ = f − û − v̂ − CST (f − û − v̂; 2δ) ,
+where PGλ is the Chambolle nonlinear projector and CST (f, 2δ) is the con-
+tourlet soft thresholding operator of f − u − v.
+
+Proof. The components û, v̂ are obtained by the same arguments used in
+the proof of Proposition 3 (this proof is available in [4]). The particular
+point concerns the expression of ŵ expressed with the soft thresholding
+                                                               Co (u, v, w)
+of the contourlet coefficients. Assume we want to minimize Fλ,µ,δ
+30                                   JÉRÔME GILLES
+
+compared to w; it is equivalent to find w solution of (we set g = f − u − v)
+                       ŵ = arg min ∥g − w∥2L2 .
+                                       
+(84)
+                                   w∈Coδ
+
+We can replace it by its dual formulation: ŵ = g − ĥ, such that
+                                n                         o
+(85)            ĥ = arg min 2δ∥h∥Co11,1 + ∥g − h∥2L2 .
+                        h∈Co11,1
+
+We can use the same approach used by [32].
+   Let (cj,k,n )j∈Z,0⩽k⩽2(lj ) ,n∈Z2 and (dj,k,n )j∈Z,0⩽k⩽2(lj ) ,n∈Z2 denote the coef-
+ficients issued from the contourlet expansions of g and h, respectively. As
+contourlets form a tight frame, with a bound of 1, we have (we denote
+Ω = Z × J0, 2(lj ) K × Z2 )
+                                          X
+(86)                            ∥g∥2L2 =          |cj,k,n |2 .
+                                           (j,k,n)∈Ω
+
+  Then Eq.(85) can be rewritten as
+                X                                         X
+(87)                  |cj,k,n − dj,k,n |2 + 2δ                     |dj,k,n |,
+                  (j,k,n)∈Ω                            (j,k,n)∈Ω
+
+which is equivalent to
+(88)                          |cj,k,n − dj,k,n |2 + 2δ|dj,k,n |.
+However, [32] prove that the solution of this kind of problem is the soft
+thresholding of the coefficients (cj,k,n ) with 2δ as the threshold.
+  Then ĥ = CST (g, 2δ), which by duality implies that ŵ = g − CST (g, 2δ).
+We conclude that
+(89)                  ŵ = f − û − v̂ − CST (f − û − v̂, 2δ)
+which end the proof.                                                                □
+   The corresponding numerical scheme is the same as in the BV -G-E algo-
+rithm, except we replace the wavelet expansion by the contourlet expansion
+in the soft thresholding:
+
+    (1) Initialization: u0 = v0 = w0 = 0,
+    (2) Compute wn+1 = f − un − vn − CST (f − un − vn , 2δ),
+    (3) Compute vn+1 = PGµ (f − un − wn+1 ),
+    (4) Compute un+1 = f − vn+1 − wn+1 − PGλ (f − vn+1 − wn+1 ),
+    (5) If max{|un+1 − un |, |vn+1 − vn |, |wn+1 − wn |} ⩽ ϵ or if we performed
+        Nstep
+           iterations, then stop the algorithm; else jump to step 2.
+  Figures 21, 22, and 23 show the results obtained by replacing wavelets by
+contourlets. The advantage of using geometric frames is that it preserves
+well the integrity of oriented textures as seen in the zoomed images in Figure
+                           IMAGE DECOMPOSITION                             31
+
+24.
+
+   In this section, we presented many decomposition models. We can imag-
+ine the use of other frames and basis like curvelets, cosines, and so on.
+The idea of decomposing an image by thresholding different basis expansion
+coefficients corresponds to the recent theory of morphological component
+analysis (MCA) [38], [39]. This approach seeks sparse representation of the
+different components and is useful for sources separation.
+
+
+
+
+                Structures                        Textures
+
+
+
+
+                   Noise
+
+       Figure 21. BV -G-Co structures + textures + noise image
+       decomposition of Barbara image.
+
+
+                     5. Performance Evaluation
+  The previous section described different decomposition models based on
+specific function spaces. But one question arises: Which is the best one?
+
+  This section adresses this question by defining well-adapted criteria and
+their associated metrics. We build a special test image by creating different
+32                             JÉRÔME GILLES
+
+
+
+
+                 Structures                        Textures
+
+
+
+
+                   Noise
+
+       Figure 22. BV -G-Co structures + textures + noise image
+       decomposition of House image.
+
+
+components separatly and then by adding them. We will denote f0 the test
+image composed of u0 (the structures reference image) + v0 (the textures
+reference image) + w0 (the noise reference image). We finish by giving the
+measures obtained for this image.
+
+5.1. Test Image. Because we want to compare the quality of each extracted
+components, we will create specific components: u0 for structures, v0 for
+textures, and w0 for noise. Textures are built by sine functions over some
+finite domains; structures are made by drawing some shapes with an adapted
+software like GIMP. The noise part is simply a gaussian noise with σ = 20.
+The u0 and v0 reference parts and the recomposed test image are shown in
+Figure 25.
+
+5.2. Evaluation Metrics. Assume the test image is composed of known
+reference images u0 , v0 , and w0 . We choose the following criteria to measure
+the decomposition quality: the L2 -norms of errors u − u0 and v − v0 , where
+                  IMAGE DECOMPOSITION                     33
+
+
+
+
+        Structures                      Textures
+
+
+
+
+          Noise
+
+Figure 23. BV -G-Co structures + textures + noise image
+decomposition of Leopard image.
+
+
+
+
+   Wavelet thresholding        Contourlet thresholding
+
+Figure 24. Zoomed image for the textured components of
+wavelet, and contourlet, based algorithms.
+34                                    JÉRÔME GILLES
+
+
+
+
+       Figure 25. Structures and textures reference images and
+       the recomposed test image.
+
+u and v are the structures and textures components issued from the decom-
+position. Another quantity that is interesting to evaluate is the residual
+structures + textures present in the noise component w. To measure this
+quantity we prove the following proposition.
+Proposition 5. Let b(i, j) denote a gaussian noise of variance σ 2 and d(i, j)
+an image free of noise (we assume that the intercorrelation between b and d
+is negligible). Let f = Ad + b be a simulated noise + residue image where
+A ∈ R corresponds to residue level. Then
+(90)                                ∥γf − γb ∥L2 ≈ A2 ,
+where γf and γb are the autocorrelation functions of f and b, respectively.
+Proof. We start by calculating the autocorrelation function of f :
+                                     X
+(91)                  γf (k, l) =              f (i, j)f ∗ (i + k, j + l).
+                                    (i,j)∈Z2
+
+However, we assume that images are real, then f (i, j) = f ∗ (i, j) and we
+deduce that
+(92)
+               X
+   γf (k, l) =   [Ad(i, j) + b(i, j)] [Ad(i + k, j + l) + b(i + k, j + l)]
+              (i,j)∈Z2
+               X                                            X
+          =              A2 d(i, j)d(i + k, j + l) +                 b(i, j)b(i + k, j + k)+
+              (i,j)∈Z2                                    (i,j)∈Z2
+            X
+(93)                 [Ad(i, j)b(i + k, j + l) + Ad(i + k, j + l)b(i, j)]
+          (i,j)∈Z2
+
+(94)      = A2 γd (k, l) + γb (k, l) + A (γdb (k, l) + γbd (k, l))
+   Now we examine the norm ∥.∥L2 of this autocorrelation function. First,
+notice that γb (k, l) = σ 2 δ(k, l) (where δ(k, l) is the Kronecker symbol) be-
+cause we assumed that the noise is gaussian. The statement of the proposi-
+tion assumed that the intercorrelations are negligible; in pratice, it is easy
+                            IMAGE DECOMPOSITION                                 35
+
+to check that the quantity A (γdb (k, l) + γbd (k, l)) is negligible compared to
+A2 γd (k, l). We deduce that
+(95)                    γf (k, l) − γb (k, l) ≈ A2 γd (k, l);
+then, by passing to the norm, we get
+
+(96)                       ∥γf − γb ∥L2 ≈ A2 ∥γd ∥L2 .
+                                                                                □
+   To illustrate this proposition, assume that we take the image in Figure
+26 as d(i, j) and we generate an image b(i, j) full of gaussian noise (σ =
+20). Then we compose the image f = Ad + b for the different values A ∈
+{0.05; 0.1; 0.2; 0.3; 0.4; 0.5; 0.6; 0.7; 0.8; 0.9} (this means that more and more
+residue appears as A increases, see Figure 27 top row).
+
+
+
+
+                   Figure 26. Residual reference image.
+
+  Figure 28 gives the measured values of ∥γf − γb ∥L2 and shows the as-
+sociated graph. As announced by the proposition, we show the quadratic
+behavior of the norm of the autocorrelation differences as A grows. We will
+use this metric in the next subsection to evaluate the residual quantity in
+the noise parts at the output of the different decomposition algorithms.
+5.3. Image Decomposition Performance Evaluation. In this subsec-
+tion we apply three-part image decomposition on the test image built in
+subsection 5.1 and use the metrics defined in subsection 5.2 to evaluate
+their performances. In this chapter, we restrict the choice of the different
+parameters to only the ones that give the best visual performances, but in
+the future, a more global, in terms of parameters variability, test could be to
+explore the complete behaviors of the algorithms. The choosen parameters
+are
+      • Algorithm F JG : λ = 10, µ1 = 1000, µ2 = 100, and a window size of
+        3 × 3 pixels,
+      • Algorithm F AC2 : λ = 1, µ = 500 and δ = 9.4 (κ = 0.2 and σ = 20),
+      • Algorithm F Co : λ = 1, µ = 500 and δ = 23.5 (κ = 0.5 and σ = 20).
+36                                JÉRÔME GILLES
+
+
+
+
+            A = 0.05                   A = 0.3                  A = 0.8
+
+            Figure 27. Noisy reference images affected by different
+            residual levels and their associated autocorrelation images.
+
+
+
+
+      A      ∥γf − γb ∥L2
+     0.05     849.093432
+     0.1     3312.071022
+     0.2    13099.095280
+     0.3    29367.800483
+     0.4    52118.223554
+     0.5    81350.371724
+     0.6    117064.247377
+     0.7    159259.851531
+     0.8    207937.184693
+     0.9    263096.247142
+
+            Figure 28. Results of the measure norm ∥γf − γb ∥L2 for the
+            different values of A (left) and its associated graph.
+
+
+  Figure 29 shows the outputs of the different algorithms while table 1 gives
+the corresponding measures.
+                         IMAGE DECOMPOSITION                            37
+
+
+
+
+       Figure 29. Outputs of the decomposition algorithms. First
+       row: F JG algorithm; second row: F AC2 algorithm; last row:
+       F Co algorithm.
+
+    Algorithm        F JG           F AC2           F Co
+    ∥ũ − u0 ∥L2     792.8          873.5           984.6
+    ∥ṽ − v0 ∥L2     1844.9         2832.4          1598.6
+    ∥γw − γw0 ∥L2    423.2          423.5           255.3
+        Table 1. Evaluation Measures Obtained for All u, v, w De-
+        composition Algorithms.
+
+
+
+  We can see the BV -G-G-based algorithm F JG has the smallest error for
+the structures image but the textures are slightly less preserved than the
+contourlet-based model F Co . Its noisy part is of the same quality as the
+wavelet-based model F AC2 . Moreover, it is clear the F Co algorithm gives
+the best denoising performance and has the least residue; it also has the
+38                             JÉRÔME GILLES
+
+best score for the textures quality. Even if the visual quality seems to be
+close to the F JG algorithm, the contourlet-based model has the worst score
+on the structures component. Then globally, as expected, the model based
+on contourlet expansion gives the best decomposition.
+
+
+                              6. Conclusion
+   This chapter provides an overview of structures + textures image de-
+composition. We also present the extension to noisy images decomposition
+and show that it is necessary to adopt a three-part decomposition model
+(structures + textures + noise). The different models are based on the
+bounded-variation space to describe the structures component of an image.
+The textures are defined by the space G of oscillating functions proposed
+by Meyer; different stategies can be used for the noise. Some other function
+spaces can be chosen; most often it is equivalent to choosing the best basis
+or frame to represent the different components. This approach is the same
+philosophy as the principle of morphological component analysis recently
+introduced by the work of [38, 39].
+   An interesting property used in the BV -G-G model is the local adaptibil-
+ity of the algorithm by choosing a nonconstant parameter ν. Some recent
+theoretical work on the Besov and Triebel-Lizorkin spaces seems to provide
+some insight on the local behavior of an image (in terms of local scales).
+Here this approach is used to improve the quality of the decomposition.
+   The main problem of the decomposition models, and it remains an open
+question, is the choice of the different parameters. [31] propose a method
+of automatically selecting the parameter λ, but it is very expansive in com-
+puting time. We currently start some work to find some solutions.
+   We have proposed a method, which consists of building specific test im-
+ages and using three different metrics, to evaluate the performance of the
+quality of components issued from the different decomposition algorithms.
+The first tests seem to confirm that the model based on the thresholding of
+contourlets coefficients is the best one. However, more complete tests based
+on different test images with different kind of textures, noise, or structures
+and by tuning the different parameters are needed. This could help us to
+understand completely the behaviors of this kind of algorithm.
+   The last topic explored in this study is the application of the image de-
+composition. A previous study, [40], proves that the BV -G model enhanced
+the thin and long structures. Then, we use the textures component as the
+input of a road detection algorithm in aerial images. We believe that many
+applications could be created in the future.
+
+
+         Appendix A. Chambolle’s Nonlinear Projectors
+   [27] proposes an algorithm based on a nonlinear projector to solved a cer-
+tain category of total variation based functional. This appendix summarizes
+                                IMAGE DECOMPOSITION                          39
+
+this work. Some proofs are provided because they are relevant to the rest
+of the chapter.
+
+A.1. Notations and Definitions. We assume the processed image is size
+M × N . We denote X = RM ×N and Y = X × X.
+Definition 6. Let u ∈ X; then the discret gradient of u, written ∇u ∈ Y =
+X × X, is defined by
+                      (∇u)i,j = (∇u)1i,j , (∇u)2i,j
+                                                    
+(97)
+with ∀i, j ∈ J0, . . . , M − 1K × J0, . . . , N − 1K
+                                 
+                                 ui+1,j − ui,j if             i<M −1
+(98)                  (∇u)1i,j =
+                                 0                  if        i=M −1
+                                 
+                                 ui,j+1 − ui,j          if    j <N −1
+(99)                (∇u)2i,j =                                           .
+                                 0                      if    j =N −1
+
+Definition 7. Let p ∈ Y (p = (p1 , p2 )), we define the numerical divergence
+operator div : Y → X such that div = −∇∗ (∇∗ is the adjoint operator of
+∇) by the following:
+(100)                                            
+                1     1                              2     2
+            pi,j − pi−1,j if 0 < i < M − 1 
+                                                 pi,j − pi,j−1 if 0 < j < N − 1
+(div p)i,j = p1i,j         if i = 0            + p2i,j           if j = 0         .
+             1
+                                                  2
+                                                  
+              −pi−1,j      if i = M − 1            −pi,j−1       if j = N − 1
+We recall that ⟨−div p, u⟩X = ⟨p, ∇u⟩Y .
+A.2. Total Variation. In the discrete case, the total variation can be writ-
+ten by:
+                                  P
+(101)       J(u) =                      |(∇u)i,j |
+                                       0<i<M −1
+                                       0<j<N −1
+                                      r                2             2
+                                             (∇u)1i,j         + (∇u)2i,j .
+                                P
+(102)                  =
+                            0<i<M −1
+                            0<j<N −1
+
+However, J is a 1-homogeneous function (J(λu) = λJ(u)); then if we apply
+the Legendre-Fenchel transform, we get:
+(103)                        J ∗ (v) = sup ⟨u, v⟩X − J(u)
+                                         u
+
+with
+                                               X
+(104)                            ⟨u, v⟩X =            ui,j vi,j ,
+                                                i,j
+40                                   JÉRÔME GILLES
+
+where J ∗ is the characteristic function of the closed convex set K:
+                                       (
+                     ∗                  0      if v ∈ K
+(105)               J (v) = χK (v) =                      .
+                                        +∞ else
+We have the property J ∗∗ = J.
+
+  In the continuous case (see the properties of the BV space), we have:
+           K = G1 = div ξ : ξ ∈ Cc1 (Ω, R2 ); |ξ(x)| ⩽ 1, ∀x ∈ Ω
+                     
+(106)
+then
+(107)               Z                                                            
+     J(u) = sup           u(x)div ξ(x)dx : ξ ∈ Cc1 (Ω, R2 ); |ξ(x)| ⩽ 1, ∀x ∈ Ω       ;
+                ξ     Ω
+           R
+however,       Ω u(x)div ξ(x)dx = ⟨u, div ξ⟩X , then we can write:
+(108)                            J(u) = sup ⟨u, div ξ⟩X ,
+                                          ξ
+
+which is equivalent, if we write v = div ξ, to
+(109)                              J(u) = sup ⟨u, v⟩X .
+                                           v∈K
+Now, we would like to have the same kind of expression for the discrete case.
+Chambolle proves the following lemma:
+Lemma 1. In the discrete case, we have:
+(110)                              J(u) = sup ⟨v, u⟩ ,
+                                              v∈G1
+
+(111)                    where   G1 = {div p; p ∈ Y ; |pi,j | ⩽ 1} .
+
+                 us define1the2 inner product over Y : let p ∈ Y, q ∈ Y such
+Definition 8. Let
+          1   2
+that p = p , p and q = q , q ; then
+                                 X
+(112)              ⟨p, q⟩Y =           (p1i,j qi,j
+                                               1
+                                                   + p2i,j qi,j
+                                                            2
+                                                                ).
+                                    0<i<M −1
+                                    0<j<N −1
+
+A.3. Chambolle’s Projectors. We want to solve
+                                      ∥u − g∥2
+(113)                             min          + J(u)
+                                  u∈X    2λ
+     with g ∈ X, λ > 0, ∥.∥ is the euclidean norm defined by ∥u∥2 = ⟨u, u⟩X .
+
+     If we apply Euler-Lagrange calculus to Eq.(113), we get
+
+                                  2(u − g)
+(114)                                      + ∂J(u) ∋ 0
+                                     2λ
+(115)                            ⇐⇒ u − g + λ∂J(u) ∋ 0,
+                          IMAGE DECOMPOSITION                         41
+
+where ∂J is the subdifferential of J defined by
+(116)        w ∈ ∂J(u) ⇐⇒ J(v) ⩾ J(u) + ⟨w, v − u⟩X     ∀v,
+then Eq.(115) can be written as
+
+                             g−u
+(117)                               ∈ ∂J(u)
+                                λ
+                                         
+                                     g−u
+(118)                     ⇐⇒ ∂J ∗           ∋u
+                                      λ
+                                             
+                             u 1 ∗ g−u
+(119)                   ⇐⇒ ∈ ∂J
+                             λ λ            λ
+                                                 
+                         g   g−u 1 ∗ g−u
+(120)               ⇐⇒ ∈           + ∂J             .
+                        λ      λ      λ        λ
+  If we reach a minimizer of
+                                   2
+                           w − λg       1
+(121)                                 + J ∗ (w)
+                              2         λ
+then by applying Euler-Lagrange calculus to Eq.(121), we get
+                              g    1
+(122)                     w − + ∂J ∗ (w) ∋ 0
+                              λ λ
+                                        1 ∗       g
+(123)                    ⇐⇒ w +           ∂J (w) ∋ .
+                                        λ         λ
+  Thanks to Eq.(120), we see that
+                                         g−u
+(124)                             w=
+                                          λ
+is a minimizer of Eq.(121).
+
+  However as J ∗ (w) = χG1 (w) and if w = PG1 λg (the projector operator
+                                                
+
+over G1 ), then J ∗ (w) = 0 and w − λg is minimum. We deduced that
+
+                                      g−u
+                                    g
+(125)                         PG1         =
+                                λ       λ
+                                       g
+(126)                    u = g − λPG1      .
+                                        λ
+We have PGλ λg = λPG1 λg , then we have
+                         
+                                      g
+(127)                     u = g − PGλ     .
+                                        λ
+   Now, we need to find how to calculate PGλ (g). Chambolle gives the
+following result:
+(128) computing PGλ (g) ⇐⇒ min ∥λdiv (p) − g∥2 ; |pi,j |2 ⩽ 1 ∀i, j .
+                                  
+                                  p∈Y
+42                               JÉRÔME GILLES
+
+The Karush-Kuhn-Tucker conditions showed the existence of a Lagrange
+multiplier αi,j ⩾ 0 associated with each constraint of Eq.(128) such that we
+have ∀i, j:
+(129)                − (∇ (λdiv (p) − g))i,j + αi,j pi,j = 0
+with
+(130)                      αi,j > 0    and |pi,j | = 1
+
+(131)                      αi,j = 0    and |pi,j | < 1.
+  Then we can see that if αi,j = 0, then (∇ (λdiv (p) − g))i,j = 0; which is
+not an interesting case. For the case αi,j ̸= 0:
+(132)                    αi,j pi,j = (∇ (div (p) − g))i,j
+
+(133)                ⇒ |αi,j ||pi,j | = (∇ (div (p) − g))i,j ;
+
+however, |αi,j | = αi,j because αi,j > 0 and |pi,j | = 1; then
+
+(134)                    αi,j = (∇ (div (p) − g))i,j .
+
+   Now, if we use a gradient steepest descent method with τ > 0; p0 = 0;
+n ⩾ 0, we get
+(135)                                                             
+   n+1     n                n    g        
+                                                    n    g     n+1
+  pi,j = pi,j + τ ∇ div (p ) −          − ∇ div (p ) −          p      .
+                                 λ i,j                   λ i,j i,j
+Finally, we get the following iterative formulation:
+                              pni,j + τ ∇ div (pn ) − λg i,j
+                                                        
+(136)                pn+1
+                      i,j =                             .
+                              1 + τ ∇ div (pn ) − λg i,j
+     Chambolle proves the following important theorem.
+Theorem 3. If τ < 81 then λdiv (pn ) converges to PGλ (g) when n → +∞.
+  In pratice, we note that the choice n = 20 is sufficient to reach the wanted
+convergence.
+
+A.4. Extension. The previous result can be extended to the case of BV −H
+functional where H is a Hilbert space such that there exists a linear positive
+symmetric operator K that defines the following norm over H:
+(137)                         ⟨f, g⟩H = ⟨f, Kg⟩L2
+     Then, if we want to minimize
+                                      λ
+(138)                         J(u) +    ∥f − u∥2H ,
+                                      2
+     we can use the following modified Chambolle projector:
+                               IMAGE DECOMPOSITION                                     43
+
+
+
+                             pni,j + τ ∇ K −1 div (pn ) − λg i,j
+                                                            
+(139)               pn+1
+                     i,j =                                  .
+                             1 + τ ∇ K −1 div (pn ) − λg i,j
+   And the corresponding convergence theorem is shown below.
+                      1
+Theorem 4. If τ < 8∥K −1 ∥ 2
+                             , then λ1 K −1 div (pn ) converges to v̂ when
+                                   L
+n → +∞ and f − λ1 K −1 div (pn ) → û where û is the minimizer of Eq.(138).
+  A special case is for K = −∆−1 , which corresponds to the Sobolev case
+H = H −1 .
+
+                                       References
+ [1] Y. Meyer, Oscillating patterns in image processing and in some nonlinear evolution
+     equations, The Fifteenth Dean Jacquelines B. Lewis Memorial Lectures, American
+     Mathematical Society, 2001.
+ [2] L. Rudin, S. Osher, E. Fatemi, Nonlinear total variation based noise removal algo-
+     rithms, Physica D 60 (1992) 259–268.
+ [3] J. Aujol, A. Chambolle, Dual norms and image decomposition models, International
+     Journal of Computer Vision 63 (1) (2005) 85–104.
+ [4] J. Gilles, Noisy image decomposition: a new structure, texture and noise model based
+     on local adaptivity, Journal of Mathematical Imaging and Vision 28 (3) (2007) 285–
+     295.
+ [5] W. Härdle, G. Kerkyacharian, D. Picard, A. Tsybakov, Wavelets, approximation and
+     statistical applications, proceeding of Paris-Berlin seminar (1997).
+     URL https://cdn.preterhuman.net/texts/math/Wavelets.pdf
+ [6] S. Mallat, A wavelet tour of signal processing, Academic Press, 1999.
+ [7] B.         Vidakovic,         P.       Mueller,         Wavelets       for      kids,
+     https://www2.isye.gatech.edu/ brani/wp/kidsA.pdf, cours d’introduction aux
+     ondelettes (1991).
+ [8] Y. Meyer, Wavelets: Algorithms and Applications, Society for Industrial and Applied
+     Mathematics, 1993.
+ [9] I. Daubechies, Ten lectures on wavelets, Society for Industrial and Applied Mathe-
+     matics, 1992.
+[10] E. Candès, Ridgelets: Theory and applications, Ph.D. thesis, Department of Statis-
+     tics, Stanford University (1998).
+[11] E. Candès, D. Donoho, Curvelets: A surprisingly effective nonadaptive representa-
+     tion of objects with edges, Tech. rep., Department of Statistics, Stanford University
+     (1999).
+[12] E. Candès, L. Demanet, D. Donoho, L. Ying, Fast discrete curvelet transforms, Mul-
+     tiscale Modeling and Simulation 5 (2005) 861–899.
+[13] D. Donoho, M. Duncan, Digital curvelet transform: strategy, implementation and
+     experiments, Tech. rep., Department of Statistics, Stanford University (1999).
+[14] M. Do, Directional multiresolution image representations, Ph.D. thesis, Department
+     of Communication Systems, Swiss Federal Institute of Technology Lausanne (2001).
+[15] M. Do, Contourlets and sparse image representations, SPIE conference on Wavelet
+     Applications in Signal and Image Processing X, San Diego, USA, 2003.
+[16] M. Do, M. Vetterli, Pyramidal directional filter banks and curvelets, IEEE Interna-
+     tional Conference on Image Processing (ICIP), Thessaloniki, Greece, 2001.
+[17] M. Do, M. Vetterli, Contourlets: A directional multiresolution image representation,
+     IEEE International Conference on Image Processing (ICIP), Rochester, 2002.
+44                                    JÉRÔME GILLES
+
+[18] M. Do, M. Vetterli, The contourlet transform: an efficient directional multiresolution
+     image representation, IEEE Trans. Image Processing 14 (12) (2003) 2091–2106.
+[19] M. Do, M. Vetterli, Framing pyramids, IEEE Trans. Signal Processing 51 (2003)
+     2329–2342.
+[20] D. Po, M. Do, Directional multiscale modeling of images using the contourlet trans-
+     form, IEEE Trans. Image Processing 15 (6) (2006) 1610–1620.
+[21] P. Burt, E. Adelson, The laplacian pyramid as a compact image code, IEEE Trans.
+     Commun. 31 (4) (1983) 532–540.
+[22] R. Bamberger, M. Smith, A filter bank for the directional decomposition of images:
+     Theory and design, IEEE Trans. Signal Processing 40 (4) (1992) 882–893.
+[23] R. Adams, Sobolev spaces, Academic Press, 1975.
+[24] H. Triebel, Theory of function spaces II, Birkhàuser Basel, 1992.
+[25] A. Haddad, Méthodes variationnelles en traitement d’image, Ph.D. thesis, Ecole Nor-
+     male Supérieure de Cachan, France (2005).
+[26] L. Vese, Variational methods and partial differential equations for image analysis and
+     curve evolution, Ph.D. thesis, University of Nice - Sophia Antipolis, France (1996).
+[27] A. Chambolle, An algorithm for total variation minimization and applications, Jour-
+     nal of Mathematical Imaging and Vision 20 (1-2) (2004) 89–97.
+[28] L. Vese, S. Osher, Modeling textures with total variation minimization and oscillating
+     patterns in image processing, Journal of Scientific Computing 19 (1-3) (2002) 553–
+     572.
+[29] J. Aujol, Contribution à l’analyse de textures en traitement d’images par méthodes
+     variationnelles et équations aux dérivées partielles, Ph.D. thesis, University of Nice
+     Sophia Antipolis (2004).
+[30] J. Aujol, G. Aubert, L. Blanc-Féraud, A. Chambolle, Decomposing an image. appli-
+     cation to textured images and SAR images, Tech. rep., University of Nice Sophia-
+     Antipolis (2003).
+[31] J. Aujol, G. Gilboa, T. Chan, S. Osher, Structure-texture image decomposition-
+     modeling, algorithms and parameter selection, International Journal of Computer
+     Vision 67 (1) (2006) 111–136.
+[32] A. Chambolle, R. DeVore, N. Lee, B. Lucier, Nonlinear wavelet image processing:
+     variational problems, compression and noise removal through wavelet shrinkage, IEEE
+     Trans. on Image Processing 7 (1998) 319–335.
+[33] S. Osher, A. Sole, L. Vese, Image decomposition and restoration using total variation
+     minimization and the H −1 norm, Multiscale Modeling and Simulation: A SIAM
+     Interdisciplinary Journal 1 (3) (2002) 349–370.
+[34] J. Aujol, G. Gilboa, Constrained and snr-based solutions for tv-hilbert space image
+     denoising, Journal of Mathematical Imaging and Vision 26 (1-2) (2006) 217–237.
+[35] J. Garnett, P. Jones, M. Triet, L. Vese, Modeling oscillatory components with the
+     homogeneous spaces BM     ˙ O−α and Ẇ −α,p , Tech. rep., UCLA CAM Report 07-21
+     (2005).
+[36] M. Triet, L. Vese, Image decomposition using total variation and div(BM O), Multi-
+     scale Modeling and Simulation, SIAM Interdisciplinary Journal 4 (2) (2005) 390–423.
+[37] G. Gilboa, Y. Zeevi, N. Sochen, Texture preserving variational denoising using an
+     adaptive fidelity term, Proceedings of VLSM, 2003, pp. 137–144.
+[38] J. Bobin, J.-L. Starck, J. Fadili, Y. Moudden, Sparsity, morphological diversity and
+     blind source separation, IEEE Trans. on Image Processing 16 (11) (2007) 2662–2674.
+[39] J. Bobin, J.-L. Starck, J. Fadili, Y. Moudden, D. Donoho, Morphological compo-
+     nent analysis: an adaptative thresholding strategy, IEEE Trans. on Image Processing
+     16 (11) (2007) 2675–2681.
+[40] J. Gilles, Choix d’un espace de représentation image adpaté à’ la détection de réseaux
+     routiers, Traitement et Analyse de l’Information: Méthode et Application (TAIMA)
+     Workshop, Hammamet, Tunisia, 2007.
+                        IMAGE DECOMPOSITION                         45
+
+  DGA/CEP - EORD department,, 16bis rue Prieur de la Côte d’Or, 94110
+Arcueil, France
+  Email address: jerome.gilles@etca.fr
+

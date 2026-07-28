@@ -279,7 +279,9 @@ struct engine {
     std::vector<double> bux, buy, dbux, dbuy;
     std::vector<double> bvx, bvy, dbvx, dbvy;
     std::vector<double> rbx, rby, rdbx, rdby;  // rung solver (reused)
-    std::vector<double> vplane, prev;
+    std::vector<double> vplane, prev, rhodge, rhodge_x, rhodge_y;
+    int last_rof_sweeps = 0;
+    bool last_rof_hodge_applied = false;
 
     // column-major stage planes for the 2-D transforms, WB*H each
     std::vector<double> reT, imT;
@@ -360,6 +362,13 @@ struct engine {
     void ensure_rof_storage() {
         const std::size_t n = H * W;
         for (auto* p : {&xit, &rbx, &rby, &rdbx, &rdby, &prev})
+            if (p->empty()) p->assign(n, 0.0);
+    }
+
+    void ensure_rof_hodge_storage() {
+        ensure_rof_storage();
+        const std::size_t n = H * W;
+        for (auto* p : {&rhodge, &rhodge_x, &rhodge_y})
             if (p->empty()) p->assign(n, 0.0);
     }
 
@@ -1464,13 +1473,186 @@ struct engine {
     // u_spec is used as spectral scratch: the u plane is left intact, so
     // decompose() may call this after run_passes().
 
+    bool rof_hodge_drop(const double* gplane, double c, double eta,
+                        const std::vector<double>& s) {
+        const std::size_t n = H * W;
+
+        // The current feasible dual flux is p = eta*b.  Ask Fourier for the
+        // minimum-energy longitudinal correction whose divergence closes
+        // c*(u-g)-div(p), preserving the current transverse route.
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yp = (y == 0 ? H : y) - 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xp = (x == 0 ? W : x) - 1;
+                    const std::size_t i = y * W + x;
+                    const double div_b =
+                        rbx[i] - rbx[y * W + xp] +
+                        rby[i] - rby[yp * W + x];
+                    rhodge[i] = c * (xit[i] - gplane[i]) - eta * div_b;
+                }
+            }
+        });
+
+        // Solve Delta(phi)=mismatch.  Since
+        // s=1/(c+eta*L), -1/L = -eta*s/(1-c*s).  The zero mode is pinned.
+        fwd2d(rhodge.data(), d_spec);
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            double* __restrict da = d_spec.a.data();
+            double* __restrict db = d_spec.b.data();
+            const double* __restrict ps = s.data();
+            for (std::size_t i = lo; i < hi; ++i) {
+                const double denominator = 1.0 - c * ps[i];
+                const double factor = denominator > 1e-13
+                    ? -eta * ps[i] / denominator : 0.0;
+                da[i] *= factor;
+                db[i] *= factor;
+            }
+        });
+        inv2d(d_spec, rhodge.data());
+
+        // p0 = p + grad(phi), followed by the one allowed unit-disk hit.
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yn = (y + 1 == H) ? 0 : y + 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xn = (x + 1 == W) ? 0 : x + 1;
+                    const std::size_t i = y * W + x;
+                    double px = eta * rbx[i] +
+                        rhodge[y * W + xn] - rhodge[i];
+                    double py = eta * rby[i] +
+                        rhodge[yn * W + x] - rhodge[i];
+                    const double scale =
+                        std::fmax(1.0, std::sqrt(px * px + py * py));
+                    rhodge_x[i] = px / scale;
+                    rhodge_y[i] = py / scale;
+                }
+            }
+        });
+
+        // Dual-induced primal.  rhodge is no longer needed as the potential.
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yp = (y == 0 ? H : y) - 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xp = (x == 0 ? W : x) - 1;
+                    const std::size_t i = y * W + x;
+                    const double div_p =
+                        rhodge_x[i] - rhodge_x[y * W + xp] +
+                        rhodge_y[i] - rhodge_y[yp * W + x];
+                    rhodge[i] = gplane[i] + div_p / c;
+                }
+            }
+        });
+
+        double minimum = xit[0], maximum = xit[0];
+        for (std::size_t i = 1; i < n; ++i) {
+            minimum = std::min(minimum, xit[i]);
+            maximum = std::max(maximum, xit[i]);
+        }
+        const double gradient_tolerance =
+            1e-10 * std::max(maximum - minimum, 1.0);
+        double first = 0.0;
+        double second = 0.0;
+        for (std::size_t y = 0; y < H; ++y) {
+            const std::size_t yn = (y + 1 == H) ? 0 : y + 1;
+            for (std::size_t x = 0; x < W; ++x) {
+                const std::size_t xn = (x + 1 == W) ? 0 : x + 1;
+                const std::size_t i = y * W + x;
+                const double direction = rhodge[i] - xit[i];
+                const double gx = xit[y * W + xn] - xit[i];
+                const double gy = xit[yn * W + x] - xit[i];
+                const double dx =
+                    (rhodge[y * W + xn] - xit[y * W + xn]) - direction;
+                const double dy =
+                    (rhodge[yn * W + x] - xit[yn * W + x]) - direction;
+                const double magnitude = std::sqrt(gx * gx + gy * gy);
+                first += c * (xit[i] - gplane[i]) * direction;
+                if (magnitude > gradient_tolerance) {
+                    first += (gx * dx + gy * dy) / magnitude;
+                    const double cross = gx * dy - gy * dx;
+                    second += cross * cross /
+                        (magnitude * magnitude * magnitude);
+                } else {
+                    first += std::sqrt(dx * dx + dy * dy);
+                }
+                second += c * direction * direction;
+            }
+        }
+        if (!(first < 0.0) || !(second > 0.0)) return false;
+        const double alpha =
+            std::min(1.0, std::max(0.0, -first / second));
+        if (!(alpha > 0.0)) return false;
+
+        double old_objective = 0.0;
+        double new_objective = 0.0;
+        for (std::size_t y = 0; y < H; ++y) {
+            const std::size_t yn = (y + 1 == H) ? 0 : y + 1;
+            for (std::size_t x = 0; x < W; ++x) {
+                const std::size_t xn = (x + 1 == W) ? 0 : x + 1;
+                const std::size_t i = y * W + x;
+                const double direction = rhodge[i] - xit[i];
+                const double gx = xit[y * W + xn] - xit[i];
+                const double gy = xit[yn * W + x] - xit[i];
+                const double dx =
+                    (rhodge[y * W + xn] - xit[y * W + xn]) - direction;
+                const double dy =
+                    (rhodge[yn * W + x] - xit[yn * W + x]) - direction;
+                const double old_residual = xit[i] - gplane[i];
+                const double new_residual = old_residual + alpha * direction;
+                old_objective += std::sqrt(gx * gx + gy * gy) +
+                    0.5 * c * old_residual * old_residual;
+                new_objective +=
+                    std::sqrt((gx + alpha * dx) * (gx + alpha * dx) +
+                              (gy + alpha * dy) * (gy + alpha * dy)) +
+                    0.5 * c * new_residual * new_residual;
+            }
+        }
+        if (!(new_objective < old_objective)) return false;
+
+        // Re-seat ADMM at the same ROF target:
+        // b <- feasible dual / eta, d <- grad(accelerated primal).
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t i = y * W + x;
+                    xit[i] += alpha * (rhodge[i] - xit[i]);
+                    rbx[i] = rhodge_x[i] / eta;
+                    rby[i] = rhodge_y[i] / eta;
+                }
+                // xit must be fully updated before gradients are read.
+            }
+        });
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yn = (y + 1 == H) ? 0 : y + 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xn = (x + 1 == W) ? 0 : x + 1;
+                    const std::size_t i = y * W + x;
+                    rdbx[i] = xit[y * W + xn] - xit[i] - rbx[i];
+                    rdby[i] = xit[yn * W + x] - xit[i] - rby[i];
+                }
+            }
+        });
+        return true;
+    }
+
     void rof_from_spec(const spectrum& gs, const double* gplane, double c,
                        double eta, const std::vector<double>& s, int sweeps,
-                       double tol, double* out) {
+                       double tol, double* out, int hodge_after = 0) {
         const std::size_t n = H * W;
         std::memset(rbx.data(), 0, n * sizeof(double));
         std::memset(rby.data(), 0, n * sizeof(double));
         std::memcpy(prev.data(), gplane, n * sizeof(double));
+        last_rof_sweeps = 0;
+        last_rof_hodge_applied = false;
         bool done = false;
         for (int sweep = 0; sweep < sweeps && !done; ++sweep) {
             if (sweep == 0) {
@@ -1484,6 +1666,11 @@ struct engine {
             }
             inv2d(u_spec, xit.data());
             shrink(xit, rbx, rby, rdbx, rdby, eta);
+            ++last_rof_sweeps;
+            if (hodge_after > 0 && sweep + 1 == hodge_after) {
+                last_rof_hodge_applied =
+                    rof_hodge_drop(gplane, c, eta, s);
+            }
             if (tol > 0.0) {
                 // SERIAL by design: bit-identical for all thread counts
                 const double* __restrict xi = xit.data();
@@ -1514,6 +1701,8 @@ struct engine {
         std::memset(rdbx.data(), 0, n * sizeof(double));
         std::memset(rdby.data(), 0, n * sizeof(double));
         std::memcpy(prev.data(), gplane, n * sizeof(double));
+        last_rof_sweeps = 0;
+        last_rof_hodge_applied = false;
         bool done = false;
         for (int sweep = 0; sweep < sweeps && !done; ++sweep) {
             if (sweep == 0) {
@@ -1524,6 +1713,7 @@ struct engine {
             }
             facr_inv(fu_spec, xit.data());
             shrink(xit, rbx, rby, rdbx, rdby, eta);
+            ++last_rof_sweeps;
             if (tol > 0.0) {
                 double d0 = 0.0, d1 = 0.0, x0 = 0.0, x1 = 0.0;
                 std::size_t i = 0;
@@ -1568,6 +1758,23 @@ struct engine {
         }
         fwd2d(image, f_spec);
         rof_from_spec(f_spec, image, c, eta, s_gen, sweeps, tol, smooth);
+    }
+
+    bool rof_accelerated(const double* image, double* smooth, double c,
+                         double eta, int sweeps, double tol,
+                         int hodge_after) {
+        if (facr_active || hodge_after < 1 || hodge_after > sweeps)
+            return false;
+        ensure_rof_hodge_storage();
+        if (s_gen.empty() || c != gen_c || eta != gen_eta) {
+            symbol(s_gen, c, eta);
+            gen_c = c;
+            gen_eta = eta;
+        }
+        fwd2d(image, f_spec);
+        rof_from_spec(f_spec, image, c, eta, s_gen, sweeps, tol, smooth,
+                      hodge_after);
+        return true;
     }
 
     // ---- split: the model decomposition alone, no ladder ----------------

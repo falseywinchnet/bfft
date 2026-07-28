@@ -1,0 +1,18 @@
+{
+  "cells": 6374,
+  "interface_accepted": false,
+  "record": {
+    "cartoon_mse": 0.0008122292014580474,
+    "objective": 0.0021507285274160013,
+    "psnr": 30.009332340566473,
+    "rgb_mse": 0.000997853456299975,
+    "texture_mse": 0.0003406458696579789
+  },
+  "soft_accepted": true,
+  "timing": {
+    "allocation_ms": 825.0052500516176,
+    "fit_ms": 1256.8823749898002,
+    "geometry_ms": 239.6635829936713,
+    "total_ms": 2321.551208035089
+  }
+}

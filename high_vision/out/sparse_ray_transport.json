@@ -1,0 +1,597 @@
+{
+  "config": {
+    "grid": 64,
+    "frames": 1024,
+    "validation_frames": 256,
+    "photons_at_white": 0.08,
+    "background_photons": 0.0,
+    "shift_radius": 8,
+    "batch": 32,
+    "support_cap": 256,
+    "temperature": 4.0,
+    "replay_sweeps": 8,
+    "seed": 149
+  },
+  "metrics": {
+    "unregistered_mean": {
+      "psnr_db": 16.352405089088712,
+      "ssim": 0.17695201462290477,
+      "heldout_log_evidence_per_pixel": -0.16504404303979361
+    },
+    "oracle_registered_mean": {
+      "psnr_db": 22.17556279011042,
+      "ssim": 0.5429632754503447,
+      "heldout_log_evidence_per_pixel": -0.16385928171549818
+    },
+    "continual_soft_ray": {
+      "psnr_db": 22.09259918490233,
+      "ssim": 0.676589680129987,
+      "heldout_log_evidence_per_pixel": -0.1640547250800469
+    },
+    "replayed_soft_ray": {
+      "psnr_db": 22.835970017524772,
+      "ssim": 0.716320079153696,
+      "heldout_log_evidence_per_pixel": -0.1639820732527532
+    },
+    "nearly_hard_ray": {
+      "psnr_db": 19.146807695127745,
+      "ssim": 0.4338389495015229,
+      "heldout_log_evidence_per_pixel": -0.16413765341687553
+    },
+    "noise_perturbed_ray_consensus": {
+      "psnr_db": 21.271410053152472,
+      "ssim": 0.6483811754806456,
+      "heldout_log_evidence_per_pixel": -0.1641763876996703
+    },
+    "autocorrelation_phase_retrieval": {
+      "psnr_db": 11.89587662253274,
+      "ssim": 0.059803858338605936,
+      "heldout_log_evidence_per_pixel": -0.1749345838472935
+    }
+  },
+  "continual": {
+    "mode": "strictly_continual_tempered_ray_transport",
+    "passes_over_frames": 1,
+    "trace": [
+      {
+        "frames": 64,
+        "mean_entropy_nats": 4.4578726114948175,
+        "effective_shifts": 86.30371213672431,
+        "mean_peak_probability": 0.04950922765000203,
+        "psnr_db": 16.912833916407315,
+        "ssim": 0.23198119852103316
+      },
+      {
+        "frames": 96,
+        "mean_entropy_nats": 4.256644234441264,
+        "effective_shifts": 70.57276000634182,
+        "mean_peak_probability": 0.050983385970854014,
+        "psnr_db": 18.048340950818808,
+        "ssim": 0.3017101146766884
+      },
+      {
+        "frames": 128,
+        "mean_entropy_nats": 4.355597608984222,
+        "effective_shifts": 77.91337315853507,
+        "mean_peak_probability": 0.04062245058892447,
+        "psnr_db": 18.685251303342486,
+        "ssim": 0.3530500992595746
+      },
+      {
+        "frames": 160,
+        "mean_entropy_nats": 4.363203739432622,
+        "effective_shifts": 78.50825193326628,
+        "mean_peak_probability": 0.03911467818056743,
+        "psnr_db": 19.107562488752425,
+        "ssim": 0.3936564117651643
+      },
+      {
+        "frames": 192,
+        "mean_entropy_nats": 4.2953130242991975,
+        "effective_shifts": 73.35517280313381,
+        "mean_peak_probability": 0.04073700075725014,
+        "psnr_db": 19.41614870651017,
+        "ssim": 0.4224097284097337
+      },
+      {
+        "frames": 224,
+        "mean_entropy_nats": 4.193260817317528,
+        "effective_shifts": 66.23843061020395,
+        "mean_peak_probability": 0.04669510339578778,
+        "psnr_db": 19.688569736891182,
+        "ssim": 0.454695346319805
+      },
+      {
+        "frames": 256,
+        "mean_entropy_nats": 4.213485043914171,
+        "effective_shifts": 67.59168982532441,
+        "mean_peak_probability": 0.04241961862616584,
+        "psnr_db": 19.917046810809925,
+        "ssim": 0.47918081990828915
+      },
+      {
+        "frames": 288,
+        "mean_entropy_nats": 4.210172102460653,
+        "effective_shifts": 67.36813303394156,
+        "mean_peak_probability": 0.04273960330806917,
+        "psnr_db": 20.112282341247262,
+        "ssim": 0.501392570093888
+      },
+      {
+        "frames": 320,
+        "mean_entropy_nats": 4.194086655210402,
+        "effective_shifts": 66.2931554099628,
+        "mean_peak_probability": 0.044049062561072584,
+        "psnr_db": 20.236087190843385,
+        "ssim": 0.5194455056447665
+      },
+      {
+        "frames": 352,
+        "mean_entropy_nats": 4.202713425121332,
+        "effective_shifts": 66.86752512393663,
+        "mean_peak_probability": 0.04188437361504822,
+        "psnr_db": 20.35144293990134,
+        "ssim": 0.5318790427146811
+      },
+      {
+        "frames": 384,
+        "mean_entropy_nats": 4.1828924333991075,
+        "effective_shifts": 65.5551932857767,
+        "mean_peak_probability": 0.042501874278777094,
+        "psnr_db": 20.479106888829385,
+        "ssim": 0.5442076995870886
+      },
+      {
+        "frames": 416,
+        "mean_entropy_nats": 4.252129856554249,
+        "effective_shifts": 70.25488594081523,
+        "mean_peak_probability": 0.04028701398499229,
+        "psnr_db": 20.580830918618176,
+        "ssim": 0.554646617172944
+      },
+      {
+        "frames": 448,
+        "mean_entropy_nats": 4.1757400505159605,
+        "effective_shifts": 65.08799024264991,
+        "mean_peak_probability": 0.04396940903989675,
+        "psnr_db": 20.720882032626204,
+        "ssim": 0.5673813596729802
+      },
+      {
+        "frames": 480,
+        "mean_entropy_nats": 4.1590023215994965,
+        "effective_shifts": 64.0076317023351,
+        "mean_peak_probability": 0.04377471791056589,
+        "psnr_db": 20.831469805419637,
+        "ssim": 0.5755819106482961
+      },
+      {
+        "frames": 512,
+        "mean_entropy_nats": 4.183610632204216,
+        "effective_shifts": 65.60229185830796,
+        "mean_peak_probability": 0.04355615212935958,
+        "psnr_db": 20.903956308862153,
+        "ssim": 0.5871957504618289
+      },
+      {
+        "frames": 544,
+        "mean_entropy_nats": 3.9977883125257696,
+        "effective_shifts": 54.477529425312106,
+        "mean_peak_probability": 0.051760427132376434,
+        "psnr_db": 21.040790825168976,
+        "ssim": 0.6005005601492751
+      },
+      {
+        "frames": 576,
+        "mean_entropy_nats": 3.9387905806028827,
+        "effective_shifts": 51.356452236458644,
+        "mean_peak_probability": 0.05740413924709245,
+        "psnr_db": 21.196925507392322,
+        "ssim": 0.6133017597114422
+      },
+      {
+        "frames": 608,
+        "mean_entropy_nats": 4.073370905622218,
+        "effective_shifts": 58.75468565197351,
+        "mean_peak_probability": 0.05378858612318012,
+        "psnr_db": 21.257786080983823,
+        "ssim": 0.6142074772562544
+      },
+      {
+        "frames": 640,
+        "mean_entropy_nats": 4.032144104830801,
+        "effective_shifts": 56.38166995211691,
+        "mean_peak_probability": 0.051913342795862544,
+        "psnr_db": 21.308525738147935,
+        "ssim": 0.6191817261143543
+      },
+      {
+        "frames": 672,
+        "mean_entropy_nats": 4.020798093600442,
+        "effective_shifts": 55.74557826711797,
+        "mean_peak_probability": 0.05508069801012794,
+        "psnr_db": 21.45653477866545,
+        "ssim": 0.6289381198247308
+      },
+      {
+        "frames": 704,
+        "mean_entropy_nats": 4.082756205329004,
+        "effective_shifts": 59.308711769852636,
+        "mean_peak_probability": 0.0480262975594548,
+        "psnr_db": 21.51575252316997,
+        "ssim": 0.6383044850835583
+      },
+      {
+        "frames": 736,
+        "mean_entropy_nats": 3.952289961665123,
+        "effective_shifts": 52.05443311051956,
+        "mean_peak_probability": 0.05608728780903219,
+        "psnr_db": 21.61374981147226,
+        "ssim": 0.6433178350930377
+      },
+      {
+        "frames": 768,
+        "mean_entropy_nats": 4.02320636820831,
+        "effective_shifts": 55.879990713837174,
+        "mean_peak_probability": 0.05170419710917067,
+        "psnr_db": 21.65866921290894,
+        "ssim": 0.6450209775490556
+      },
+      {
+        "frames": 800,
+        "mean_entropy_nats": 3.9983057735210594,
+        "effective_shifts": 54.50572671677953,
+        "mean_peak_probability": 0.053467459201308964,
+        "psnr_db": 21.716930816864508,
+        "ssim": 0.6483515467667286
+      },
+      {
+        "frames": 832,
+        "mean_entropy_nats": 3.9899048779015853,
+        "effective_shifts": 54.04974779336312,
+        "mean_peak_probability": 0.053815367690029085,
+        "psnr_db": 21.77108548769878,
+        "ssim": 0.6525258520730315
+      },
+      {
+        "frames": 864,
+        "mean_entropy_nats": 3.907984486742816,
+        "effective_shifts": 49.79848125822688,
+        "mean_peak_probability": 0.060010139945388535,
+        "psnr_db": 21.874252796706244,
+        "ssim": 0.6592239614462613
+      },
+      {
+        "frames": 896,
+        "mean_entropy_nats": 4.099474565717891,
+        "effective_shifts": 60.308591069616384,
+        "mean_peak_probability": 0.050003334705529354,
+        "psnr_db": 21.827160033680975,
+        "ssim": 0.6596670839677182
+      },
+      {
+        "frames": 928,
+        "mean_entropy_nats": 4.050410149627936,
+        "effective_shifts": 57.42100341953606,
+        "mean_peak_probability": 0.05323321326673605,
+        "psnr_db": 21.88876315433108,
+        "ssim": 0.6650212609795239
+      },
+      {
+        "frames": 960,
+        "mean_entropy_nats": 3.9638148916272224,
+        "effective_shifts": 52.657827164688605,
+        "mean_peak_probability": 0.05468810693315901,
+        "psnr_db": 21.963568207542924,
+        "ssim": 0.6694468115225308
+      },
+      {
+        "frames": 992,
+        "mean_entropy_nats": 3.955483364136887,
+        "effective_shifts": 52.22092956949106,
+        "mean_peak_probability": 0.058638278626090085,
+        "psnr_db": 21.997277232602773,
+        "ssim": 0.6706278184047645
+      },
+      {
+        "frames": 1024,
+        "mean_entropy_nats": 3.898562887076162,
+        "effective_shifts": 49.331503198301796,
+        "mean_peak_probability": 0.06063086382211272,
+        "psnr_db": 22.09259918490233,
+        "ssim": 0.676589680129987
+      }
+    ]
+  },
+  "soft_replay": {
+    "mode": "replayed_tempered_ray_transport",
+    "passes_over_frames": 8,
+    "temperature": 4.0,
+    "logit_noise": 0.0,
+    "trace": [
+      {
+        "sweep": 1,
+        "mean_entropy_nats": 4.589746327731407,
+        "effective_shifts": 98.60958035287496,
+        "psnr_db": 19.322860206522904,
+        "ssim": 0.5102591206439919
+      },
+      {
+        "sweep": 2,
+        "mean_entropy_nats": 4.365677851226204,
+        "effective_shifts": 78.85700379664891,
+        "psnr_db": 20.52271004858538,
+        "ssim": 0.6072518855164393
+      },
+      {
+        "sweep": 3,
+        "mean_entropy_nats": 4.196399908394675,
+        "effective_shifts": 66.60476752393754,
+        "psnr_db": 21.336456984677167,
+        "ssim": 0.6575185364986197
+      },
+      {
+        "sweep": 4,
+        "mean_entropy_nats": 4.078704741149771,
+        "effective_shifts": 59.22851761141328,
+        "psnr_db": 21.889288415299816,
+        "ssim": 0.6840279935370851
+      },
+      {
+        "sweep": 5,
+        "mean_entropy_nats": 3.999249610204959,
+        "effective_shifts": 54.717877760790216,
+        "psnr_db": 22.268210337661202,
+        "ssim": 0.6988353298755253
+      },
+      {
+        "sweep": 6,
+        "mean_entropy_nats": 3.9460857760429233,
+        "effective_shifts": 51.894097861386804,
+        "psnr_db": 22.52960667331198,
+        "ssim": 0.7075602072298948
+      },
+      {
+        "sweep": 7,
+        "mean_entropy_nats": 3.910529663815879,
+        "effective_shifts": 50.087817801264734,
+        "psnr_db": 22.710537029403955,
+        "ssim": 0.7129201653476822
+      },
+      {
+        "sweep": 8,
+        "mean_entropy_nats": 3.8866777086126074,
+        "effective_shifts": 48.911748597496015,
+        "psnr_db": 22.835970017524772,
+        "ssim": 0.716320079153696
+      }
+    ]
+  },
+  "hard_replay": {
+    "mode": "replayed_tempered_ray_transport",
+    "passes_over_frames": 8,
+    "temperature": 0.5,
+    "logit_noise": 0.0,
+    "trace": [
+      {
+        "sweep": 1,
+        "mean_entropy_nats": 2.662262227684374,
+        "effective_shifts": 14.386244035247095,
+        "psnr_db": 21.022987839639736,
+        "ssim": 0.5231586902709009
+      },
+      {
+        "sweep": 2,
+        "mean_entropy_nats": 1.4934741070873896,
+        "effective_shifts": 4.47855721315495,
+        "psnr_db": 22.591316490821242,
+        "ssim": 0.5473670827366571
+      },
+      {
+        "sweep": 3,
+        "mean_entropy_nats": 0.5525209930612074,
+        "effective_shifts": 1.7438605655058126,
+        "psnr_db": 21.14194843398305,
+        "ssim": 0.4917703411235415
+      },
+      {
+        "sweep": 4,
+        "mean_entropy_nats": 0.19050757043727257,
+        "effective_shifts": 1.2112988088626535,
+        "psnr_db": 20.028183433442926,
+        "ssim": 0.458779251838203
+      },
+      {
+        "sweep": 5,
+        "mean_entropy_nats": 0.08219699843035652,
+        "effective_shifts": 1.0862478620540794,
+        "psnr_db": 19.526498167001527,
+        "ssim": 0.4447905453760632
+      },
+      {
+        "sweep": 6,
+        "mean_entropy_nats": 0.044540741580142706,
+        "effective_shifts": 1.0459801373995665,
+        "psnr_db": 19.292751163499,
+        "ssim": 0.43828193745920313
+      },
+      {
+        "sweep": 7,
+        "mean_entropy_nats": 0.03118329585703021,
+        "effective_shifts": 1.0319568858122854,
+        "psnr_db": 19.190185739625452,
+        "ssim": 0.43519564634151064
+      },
+      {
+        "sweep": 8,
+        "mean_entropy_nats": 0.026270370294666834,
+        "effective_shifts": 1.026756401444504,
+        "psnr_db": 19.146807695127745,
+        "ssim": 0.4338389495015229
+      }
+    ]
+  },
+  "stochastic_lanes": [
+    {
+      "mode": "replayed_tempered_ray_transport",
+      "passes_over_frames": 3,
+      "temperature": 4.0,
+      "logit_noise": 2.0,
+      "trace": [
+        {
+          "sweep": 1,
+          "mean_entropy_nats": 4.241965094694806,
+          "effective_shifts": 69.6934667174621
+        },
+        {
+          "sweep": 2,
+          "mean_entropy_nats": 4.040730876948929,
+          "effective_shifts": 56.989924557724855
+        },
+        {
+          "sweep": 3,
+          "mean_entropy_nats": 3.8833126749780074,
+          "effective_shifts": 48.7285536869183
+        }
+      ]
+    },
+    {
+      "mode": "replayed_tempered_ray_transport",
+      "passes_over_frames": 3,
+      "temperature": 4.0,
+      "logit_noise": 2.0,
+      "trace": [
+        {
+          "sweep": 1,
+          "mean_entropy_nats": 4.252313899588443,
+          "effective_shifts": 70.47876257301994
+        },
+        {
+          "sweep": 2,
+          "mean_entropy_nats": 4.026189504636337,
+          "effective_shifts": 56.1724493759268
+        },
+        {
+          "sweep": 3,
+          "mean_entropy_nats": 3.866026595800358,
+          "effective_shifts": 47.94537305795906
+        }
+      ]
+    },
+    {
+      "mode": "replayed_tempered_ray_transport",
+      "passes_over_frames": 3,
+      "temperature": 4.0,
+      "logit_noise": 2.0,
+      "trace": [
+        {
+          "sweep": 1,
+          "mean_entropy_nats": 4.243646923702461,
+          "effective_shifts": 69.83675323341
+        },
+        {
+          "sweep": 2,
+          "mean_entropy_nats": 4.0418209166995736,
+          "effective_shifts": 57.060810660049626
+        },
+        {
+          "sweep": 3,
+          "mean_entropy_nats": 3.8852797937397203,
+          "effective_shifts": 48.78501799934603
+        }
+      ]
+    },
+    {
+      "mode": "replayed_tempered_ray_transport",
+      "passes_over_frames": 3,
+      "temperature": 4.0,
+      "logit_noise": 2.0,
+      "trace": [
+        {
+          "sweep": 1,
+          "mean_entropy_nats": 4.246623671298722,
+          "effective_shifts": 70.01962117125646
+        },
+        {
+          "sweep": 2,
+          "mean_entropy_nats": 4.044485167570545,
+          "effective_shifts": 57.190547223786794
+        },
+        {
+          "sweep": 3,
+          "mean_entropy_nats": 3.88360591359535,
+          "effective_shifts": 48.7294501828878
+        }
+      ]
+    }
+  ],
+  "autocorrelation": {
+    "mode": "autocorrelation_positive_phase_retrieval",
+    "lanes": 4,
+    "sweeps_per_lane": 200,
+    "mean_lane_disagreement": 0.2068498353229924
+  },
+  "noise_ablation": {
+    "persistent_scene_speckle": {
+      "psnr_db": 22.14193701093769,
+      "ssim": 0.6697198906678565,
+      "mean_entropy_nats": 3.913083246111553,
+      "effective_shifts": 50.053040146862536,
+      "mean_peak_probability": 0.060310205137763334,
+      "global_gauge_yx": [
+        0,
+        0
+      ],
+      "median_shift_error": 1.0,
+      "p90_shift_error": 2.0,
+      "mean_shift_error": 0.9945940933247588
+    },
+    "ordinary_scene": {
+      "psnr_db": 22.09259918490233,
+      "ssim": 0.676589680129987,
+      "mean_entropy_nats": 3.9464838595596587,
+      "effective_shifts": 51.75307546006624,
+      "mean_peak_probability": 0.058080766567565834,
+      "global_gauge_yx": [
+        0,
+        0
+      ],
+      "median_shift_error": 1.0,
+      "p90_shift_error": 2.0,
+      "mean_shift_error": 0.9682286550878489
+    },
+    "added_independent_background": {
+      "psnr_db": 18.32027242260316,
+      "ssim": 0.4461551212486949,
+      "mean_entropy_nats": 5.116484336331073,
+      "effective_shifts": 166.74810765425556,
+      "mean_peak_probability": 0.01154440287537816,
+      "global_gauge_yx": [
+        0,
+        0
+      ],
+      "median_shift_error": 2.23606797749979,
+      "p90_shift_error": 5.656854249492381,
+      "mean_shift_error": 2.987481173237737
+    },
+    "eight_hdr_guide_stars": {
+      "mean_entropy_nats": 2.4624533871522694,
+      "effective_shifts": 11.73356322932377,
+      "mean_peak_probability": 0.39618523418666163,
+      "global_gauge_yx": [
+        0,
+        0
+      ],
+      "median_shift_error": 0.0,
+      "p90_shift_error": 0.0,
+      "mean_shift_error": 0.08138244231491101,
+      "star_radiance_relative_to_white": 10.0,
+      "continual_trace_final": {
+        "frames": 1024,
+        "mean_entropy_nats": 2.5854752098657343,
+        "effective_shifts": 13.269593433620193,
+        "mean_peak_probability": 0.3489773258603338
+      }
+    }
+  }
+}

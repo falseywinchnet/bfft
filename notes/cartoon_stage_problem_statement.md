@@ -387,3 +387,416 @@ for the shipped C 24-pass split at 128², because it is NumPy and Numba
 against optimized C. The iteration-count advantage of §7 is the reason to
 expect a compiled version to win, and that remains a prediction.
 
+## 10. Exact-isotropic radial/angular factorization
+
+The Crofton fork is excluded here: fixed spatial directions recover a
+metrication method rather than preserving the pointwise Euclidean norm. The
+experiment in `experiments/cartoon_radial_direction.py` instead factors the
+exact isotropic dual flux as
+
+    p_i = rho_i n_i,       0 <= rho_i <= 1,       |n_i| = 1.
+
+For the continuous directions `n` captured from an early isotropic Split
+Bregman pass, it solves the radial box-QP
+
+    min_rho  1/2 ||g + div(rho n)/c||^2.
+
+No direction is quantized and the feasible set remains the Euclidean unit
+disk. An independent Neumann FGP reference was solved to relative duality gap
+`2.0e-8` on Cameraman and `3.6e-8` on the synthetic field.
+
+### Direction settles before support
+
+On final-edge pixels, the early dual directions are substantially more stable
+than the binary jump set:
+
+| field | pass | jump-set agreement | directions within 10 degrees |
+|---|---:|---:|---:|
+| Cameraman | 8 | 0.893 | 99.0% |
+| synthetic | 8 | 0.583 | 75.4% |
+| synthetic | 24 | 0.712 | 95.4% |
+
+This invalidates the strongest version of the earlier objection to Newton:
+the angular geometry can be useful well before the active set is complete.
+
+### The radial solve is a predictor, not a primal replacement
+
+The fixed-direction solve improves Cameraman's jump-set agreement sharply
+(pass 2: `0.52 -> 0.88`; pass 8: `0.87 -> 0.96`) and improves the feasible
+dual bound by `1.6-2.9x`. But its primal objective is worse than the
+originating Bregman iterate after the first few passes. Frozen directions
+select plausible boundaries while violating angular primal-dual consistency
+elsewhere.
+
+Used as a feasible dual warm start for an unrestricted isotropic FGP
+corrector, it reduces the steps to a one-percent relative gap:
+
+| field | captured pass | raw Bregman dual | radial predictor |
+|---|---:|---:|---:|
+| Cameraman | 4 | 41 | 24 |
+| Cameraman | 8 | 31 | 13 |
+| Cameraman | 12 | 21 | 7 |
+| synthetic | 8 | 76 | 67 |
+| synthetic | 16 | 54 | 45 |
+| synthetic | 24 | 34 | 26 |
+
+The mechanism is real but content-dependent: decisive on Cameraman, modest on
+the texture-heavy synthetic field.
+
+### Falsification result
+
+The generic radial QP needs `249-926` L-BFGS-B iterations at 256 squared, so
+this implementation is not competitive with Split Bregman. RK on the
+projected flow is not the missing operation either; it would repeatedly pay
+for the same activation events. The remaining viable version is narrower:
+
+1. use a few isotropic Bregman passes only as a direction predictor;
+2. solve radial complementarity with a genuine box-QP active-set or multilevel
+   method rather than generic first-order optimization;
+3. update directions by a tangent Newton model, applying each step by an exact
+   unit-circle rotation;
+4. accept against the exact isotropic primal-dual gap.
+
+The BFFT half-angle tree may bound angular sectors or implement the final
+rotation, but a fixed-depth leaf must not define the feasible disk; that would
+return to metrication.
+
+### Segmenting-front transplant: local analytic acceptance is insufficient
+
+`segmenting_veroni_app.py` does not optimize its first-arrival front to a
+tolerance. On fixed topology it computes a closed-form local stationary point,
+accepts it in causal order, and never revisits it. The same construction
+applies to the radial QP because one `rho_i` changes only three entries of
+`div(rho*n)`. Its exact clipped coordinate minimizer is
+
+    rho_i <- clip(rho_i - (a_i dot u) / (a_i dot a_i), 0, 1),
+
+where `a_i` is that three-entry divergence column. A low-to-high pass updates
+the residual immediately, so every accepted coordinate sees all causal
+predecessors. The warm compiled pass costs about `0.7-1.5 ms` at 256 squared.
+
+It is not decisive. On Cameraman it advances pass 2 to the objective reached
+at Bregman pass 4 and pass 4 to pass 5, but from pass 8 onward it is neutral or
+harmful. On the synthetic field it advances pass 4 to pass 7 and pass 8 to
+pass 9, then falls behind. It barely changes the unrestricted correction
+count. Local exactness is still local.
+
+The oracle explains why. At Cameraman 128 squared from pass-8 directions,
+`38.3%` of optimal radial variables are capacity-saturated, only `1.3%` are
+zero, and `60.3%` are interior. The answer is not a binary capacity mask.
+Interior radial flux must accumulate continuously across whole supports.
+
+The segmenting primitive that matches this structure is therefore not the
+local Newton step but **reverse residual transport**:
+
+1. build a causal forest following the continuous dual direction;
+2. fit a tentative plateau level by the closed-form regional mean;
+3. reverse-accumulate `c*(u-g)` through the forest, which gives every required
+   interior flux exactly by subtree summation;
+4. where accumulated flux first exceeds unit capacity, saturate that event
+   and bifurcate the support;
+5. repeat the same reduction recursively on the emitted subtrees.
+
+This is the radial analogue of direct density population plus predecessor-tree
+refill. It is a finite capacity-event construction, not a box-QP solver. Its
+remaining mathematical obligation is to define the characteristic forest and
+its edge capacities so that its discrete divergence is the existing
+forward-difference divergence; otherwise it would silently substitute a
+directional graph functional.
+
+## 11. Finite characteristic-tree solve
+
+`experiments/cartoon_characteristic_tree.py` implements the conditional tree
+problem explicitly:
+
+    min_u  (c/2) sum_v (u_v-g_v)^2
+           + sum_(v,w in T) a_vw |u_v-u_w|.
+
+For a rooted tree, the derivative message before clipping is
+
+    H_v(x) = c(x-g_v) + sum_(w child of v) clip(H_w(x), -a_vw, a_vw).
+
+Every message is continuous, monotone, and piecewise linear. Its two capacity
+events are the analytical crossings `H_v(x)=-a_vw` and `H_v(x)=a_vw`.
+A bottom-up meld of slope events, one root crossing, and the top-down rule
+
+    u_w = clip(u_v, crossing_w^-, crossing_w^+)
+
+therefore solve the fixed-tree problem exactly without a tolerance or
+convergence loop. A reverse subtree sum independently certifies its KKT
+conditions; measured violations are `7e-13` to `1e-11`.
+
+This does **not** declare tree-TV to be isotropic TV. It is a finite proposal,
+and it is accepted only when it lowers the original forward-difference
+Euclidean-TV objective.
+
+Two tree constructors were tested at 128 squared:
+
+- a direction-weighted 8-neighbor minimum spanning tree;
+- a linear-work causal raster tree, where each pixel chooses the best-aligned
+  already-accepted neighbor.
+
+From the raw image gradient, the cheaper causal tree reaches approximately
+Bregman pass 3 on both Cameraman and the texture-heavy synthetic field. Its
+original-objective deficit falls from `132741` to `36784` on Cameraman and
+from `199878` to `23141` on synthetic. Starting from pass-2 directions, the
+MST reaches pass 3 on Cameraman and pass 4 on synthetic, so paying for the
+direction warm-up buys little.
+
+The global capacity normalization is image-dependent. An oracle sweep prefers
+about `0.85x` on Cameraman and `1.5x` on synthetic. On a fixed tree active
+set, however, every fused plateau is affine in that multiplier:
+
+    d u_C / d s = u_C - mean(g_C).
+
+The experiment uses this identity for one one-sided Taylor drop in the true
+isotropic objective, including the exact absolute-value kink at zero spatial
+gradients. It predicts `0.878x` on Cameraman and improves the deficit from
+`37377` to `36784`. On synthetic it correctly refuses a local move: reaching
+the `1.5x` oracle requires crossing capacity events, not a higher-order local
+integrator.
+
+The initial Python timings were `~60 ms` construction and `~180-260 ms`
+treap solve. Both causal construction and exact message passing were then
+compiled. The compiled result is bit-identical to the Python reference and
+costs about `0.68 + 7.5 ms` at 128 squared. At 256 squared it costs
+`2.9 + 65 ms`, while a warmed optimized Bregman pass costs `5.6 ms`.
+
+This closes the cost question for the present construction. The finite tree
+solve replaces about three Bregman passes at 128 squared but costs about
+sixteen; at 256 squared it costs about twelve passes before any isotropic
+correction. It remains a useful exact oracle and proves that reverse
+capacity-event transport can be implemented without optimization, but the
+single-tree surrogate is too weak per unit work to become the cartoon-stage
+descent. More engineering cannot bridge the required `4-5x` gain in useful
+objective progress; the next analytical construction must preserve more than
+one incident flux constraint per pixel rather than compressing the grid to one
+tree edge.
+
+## 12. Fourier/Hodge transport closure
+
+`experiments/cartoon_fourier_transport.py` keeps both incident flux
+components and asks which part of their motion Fourier space can complete
+analytically.
+
+With a frozen Split-Bregman projection branch, the longitudinal increment of
+each Fourier mode follows the exact scalar recurrence
+
+    r(omega) = eta L(omega) / (c + eta L(omega)),
+
+where `L` is the positive symbol of the periodic negative Laplacian. The
+remaining geometric tail is therefore
+
+    D_k(omega) r/(1-r) = D_k(omega) eta L(omega)/c.
+
+This tail is phase coherent in measurement: after pass 4, `94-100%` of
+increment power lies in shells whose consecutive complex increments have
+coherence above `0.85`. Nevertheless, an objective-safe Taylor drop along
+the frozen-symbol limit advances only one Bregman pass. Frequency phase is
+not what changes. The spatial unit-disk branch is.
+
+### The missing field is the divergence-free route
+
+The periodic Hodge split is
+
+    p = p_L + p_T,
+    p_L = grad phi,
+    div p_T = 0.
+
+The ROF quadratic sees only `div p = div p_L`, so `p_L` is diagonal in
+Fourier space. But `p_L` alone is not pointwise feasible. At the converged
+128-squared reference:
+
+| field | transverse flux energy | pixels with `|p_L|>1` | `max |p_L|` |
+|---|---:|---:|---:|
+| Cameraman | 30.6% | 17.4% | 2.51 |
+| synthetic | 56.2% | 8.1% | 2.09 |
+
+Thus the nominally invisible transverse flux carries essential spatial
+information: it routes the longitudinal load so the sum stays in the unit
+disk. Its cosine agreement with the final transverse field grows gradually,
+for example `0.51 -> 0.64 -> 0.77 -> 0.87` at Cameraman passes
+`2,4,8,16`. A Fourier-only extrapolator necessarily moves along the correct
+frequency phase but through the wrong local capacity branches.
+
+### One-shot consistency closure
+
+The Hodge decomposition does yield a useful finite operation. Given the
+current primal `u`, feasible dual flux `p`, and desired divergence
+`q=c(u-g)`, compute
+
+    delta_p = grad Delta^{-1}(q - div p).
+
+This is one scalar Poisson solve (one FFT pair). Adding `delta_p` changes
+only the longitudinal flux, so it preserves the current transverse route.
+Then perform exactly one pointwise disk projection,
+
+    p_hat = projection_unit_disk(p + delta_p),
+    u_dual = g + div(p_hat)/c,
+
+and take one one-sided quadratic Taylor drop from `u` toward `u_dual`.
+The candidate is evaluated in the original isotropic objective and rejected
+if it does not decrease it. There is no convergence loop.
+
+Measured equivalent-pass advances:
+
+| size | field | pass 2 | pass 4 | pass 8 |
+|---|---|---:|---:|---:|
+| 128 | Cameraman | 4 | 7 | 10 |
+| 128 | synthetic | 5 | 7 | 11 |
+| 256 | Cameraman | 4 | 6 | 9 |
+| 256 | synthetic | 4 | 7 | 11 |
+
+The NumPy prototype costs `0.69 ms` at 128 squared and `2.87 ms` at
+256 squared, versus periodic Bregman sweep costs of `0.31 ms` and
+`1.61 ms`, respectively. At 256 squared the closure costs `1.78` sweeps
+and often replaces `2-3`, crossing the possibility-of-cheaper gate.
+At 512 squared the measured ratio remains `1.92` sweeps. The internal C
+kernel already owns the Laplacian symbol, divergence stream, vector flux,
+and FFT workspaces, so a fused implementation should avoid most prototype
+allocation.
+
+This is not a terminal ROF solve. It is an analytical consistency drop,
+best used once after `2-8` ordinary sweeps. Applying it to an isolated
+static ROF subproblem is objective-safe; the distinct moving-frame use is
+tested below.
+
+That moving-frame test is negative. On the 128-squared Meyer rig, applying
+the closure to the cartoon subproblem after every outer sweep lowers
+error-to-reference by only `5-10%` at a given outer count while approximately
+doubling wall time; closing both subproblems adds essentially no accuracy and
+triples time. For example at 32 outers, baseline error/time is
+`2.41e-2 / 22.3 ms`, cartoon-closure is `2.16e-2 / 47.1 ms`, and closing
+both is `2.16e-2 / 75.3 ms`. The Fourier/Hodge drop therefore belongs to a
+static low-budget ROF solve, not inside every moving Meyer pass. This matches
+the earlier reduced-composite result: spending extra work to solve a
+soon-to-move inner objective is waste.
+
+## 13. The active-capacity Fourier coupling
+
+`experiments/cartoon_fourier_active_coupling.py` isolates the obstruction
+left by §12. Let `D` be periodic divergence and
+
+    P_T = I - D* (D D*)^-1 D
+
+the Fourier-diagonal transverse projector. For a fixed overloaded set, let
+`N` sample the current outward normal component at those pixels. The exact
+linear fixed-normal coupling is the Schur matrix
+
+    S = N P_T N*.
+
+Given a divergence-feasible preflux `p0`, the formal capacity correction is
+
+    delta p = P_T N* S^+ (1 - |p0|).
+
+The Green tensor of `P_T` builds `S` explicitly, so the experiment can
+separate mathematical structure from iterative-solver behavior.
+
+### What the Schur block looks like
+
+At pass 4 and 32 squared:
+
+| field | active | components | rank | condition | rank for 99% energy |
+|---|---:|---:|---:|---:|---:|
+| Cameraman | 362 (35.4%) | 8 | 362/362 | `1.4e3` | 279 |
+| synthetic | 216 (21.1%) | 7 | 216/216 | `2.8e3` | 177 |
+
+It is not low rank. It is, however, spatially concentrated: `98.6-99.0%`
+of Frobenius energy is within one pixel and `99.6-99.7%` within two.
+Interactions between distinct overload components still carry `3-9%` of
+the norm, and the largest component contains most active pixels.
+
+The locality does not create a causal ordering. In a strongest-first finite
+capacity-event sweep, `89-93%` of already accepted pixels are overloaded
+again by later exact Green responses. A radius-2 truncation breaks
+divergence conservation and performs worse. The symmetric transverse
+projector is reciprocal, unlike a first-arrival predecessor graph.
+
+### Why freezing directions also fails
+
+The normal-hyperplane Schur solve satisfies its linear equations to
+`1e-12`, but its weak modes permit enormous tangential motion: flux norms
+reach `42-50`, and `66-88%` of pixels remain overloaded. Enforcing the full
+two-component condition `p_i=n_i` removes that tangent escape but makes the
+system rank deficient:
+
+| field | vector constraints | rank |
+|---|---:|---:|
+| Cameraman | 724 | 535 |
+| synthetic | 432 | 353 |
+
+The direction residual remains order one. Early disk directions cannot all
+coexist with the requested divergence; active directions must rotate
+together with the capacity set.
+
+A diagonal self-coupling inverse plus one analytical Rayleigh gain is stable
+and sometimes lowers the Hodge objective slightly, but it does not advance
+another equivalent pass and costs another transverse projection. It is not
+a speed result.
+
+### The mask is not a small Fourier convolution
+
+The final possible diagonalization is spectral sparsity of the active tangent
+tensor `M(x)`. It is also absent generically. At 128 squared, the largest
+1024 Fourier coefficients retain only `57%` of Cameraman tensor energy and
+`59%` of synthetic energy; a centered radius-16 square retains about `50%`.
+The bandwidth grows with image size because the spatial mask has edges.
+
+The conclusion is precise: Fourier eliminates the longitudinal block, but
+the remaining generic disk-mask coupling is full-rank, spectrally broad,
+reciprocal, and nonlinear in its angles. It admits a direct closure only for
+special masks (constant, one-dimensional, or genuinely band-limited).
+For ordinary images, closing all inner passes requires either repeated
+active-angle updates or a global masked elliptic solve. The one-shot Hodge
+drop of §12 is therefore the maximal analytical Fourier reduction found
+without reintroducing an iterative solver.
+
+## 14. Native one-shot engineering result
+
+The §12 closure is now implemented inside the native periodic ROF engine as
+an opt-in path. It reuses the plan's spectral symbol and FFT workspaces,
+allocates three additional image planes only when requested, and leaves the
+ordinary ROF, moving Meyer alternation, ladder, FACR, and Neumann paths
+unchanged.
+
+The state transition after an accepted proposal is important. The projected
+flux `p_hat` is installed as `b = p_hat/eta`, the accelerated primal is
+installed as `u`, and the reflected field is rebuilt as
+`d-b = grad(u)-b`. Ordinary Split Bregman then continues from a consistent
+state toward the original target. A rejected proposal mutates none of those
+live fields; the constant-image rejection test is bit-identical to plain ROF.
+
+An independent NumPy construction and the native output after the closure
+agree to relative maximum error `7.4e-16`. The compiled tests also establish:
+
+- strict objective and reference-error improvement at an early fixed budget;
+- agreement with the ordinary high-precision target after continued sweeps;
+- bit-identical output for one and four worker lanes;
+- exact no-op behavior on rejection;
+- correct early-stop diagnostics when tolerance fires before the closure;
+- explicit rejection on FACR and Neumann plans.
+
+The performance result is narrower than the mathematical result. On the
+current native benchmark, the closure costs about two ordinary sweeps: it
+contains one FFT pair plus the spatial projection, exact Taylor reduction,
+objective check, and state re-seat. At 128 squared it advances the early
+trajectory enough to reduce both objective and reference error at eight
+sweeps. On a deterministic 512-squared field, a pass-4 proposal is accepted
+but is too weak to repay its cost, and continued pass-8 output can be worse
+than the ordinary pass-8 trajectory. At `1e-5` stopping tolerances the two
+paths reach the same accuracy regime with essentially the same ordinary
+sweep count, leaving the closure overhead exposed.
+
+Therefore the accelerator is shipped as an explicit `hodge_after` choice,
+not silently baked into every ROF call. This is the serious boundary:
+
+1. the one-shot is analytically valid, objective-safe at insertion, and
+   high-precision target preserving;
+2. it can be a low-budget accelerator on favorable fields;
+3. it is not a universal wall-time accelerator, and no present content-free
+   insertion rule makes it one;
+4. integration into a production hot path should be gated by
+   `examples/meyer_hodge_benchmark.cpp` on that workload.
+
+The implementation keeps the useful primitive available without converting
+a conditional numerical win into a default performance regression.

@@ -1,0 +1,2029 @@
+{
+  "records": [
+    {
+      "name": "steps-4",
+      "result": {
+        "camera": {
+          "size": 32,
+          "frames": 4096,
+          "photons_at_white": 0.75,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "gatherers": 3,
+          "seed": 7,
+          "batch": 128,
+          "bispectrum_steps": 4,
+          "full_circle_support": false,
+          "optimizer_iterations": 400
+        },
+        "elapsed_seconds": 1.6710710829356685,
+        "mean_electrons_per_frame": 390.58042864570893,
+        "nonzero_fraction_first_frame": 0.29296875,
+        "diagnostic_first_frame_electrons": 387.4,
+        "steps": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            31,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "recovered_global_shift": [
+          3,
+          24
+        ],
+        "optimizer_success": false,
+        "optimizer_message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+        "optimizer_iterations": 400,
+        "phase_objective": 0.00017611024468460932,
+        "constraints_used": 640,
+        "metrics": {
+          "single": {
+            "psnr_db": 4.849097156197592,
+            "ssim": -0.005745864195587493
+          },
+          "unregistered_mean": {
+            "psnr_db": 11.861316743238097,
+            "ssim": 0.19116476333207574
+          },
+          "fraudulent_mean": {
+            "psnr_db": 11.835981015682489,
+            "ssim": 0.18994542483671153
+          },
+          "orbit_cross_bispectrum": {
+            "psnr_db": 22.09303724918159,
+            "ssim": 0.6684513308712559
+          }
+        }
+      }
+    },
+    {
+      "name": "steps-8",
+      "result": {
+        "camera": {
+          "size": 32,
+          "frames": 4096,
+          "photons_at_white": 0.75,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "gatherers": 3,
+          "seed": 7,
+          "batch": 128,
+          "bispectrum_steps": 8,
+          "full_circle_support": false,
+          "optimizer_iterations": 400
+        },
+        "elapsed_seconds": 3.231848791008815,
+        "mean_electrons_per_frame": 390.58042864570893,
+        "nonzero_fraction_first_frame": 0.29296875,
+        "diagnostic_first_frame_electrons": 387.4,
+        "steps": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            31,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            30,
+            0
+          ],
+          [
+            31,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "recovered_global_shift": [
+          3,
+          24
+        ],
+        "optimizer_success": false,
+        "optimizer_message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+        "optimizer_iterations": 400,
+        "phase_objective": 0.00036781527111694255,
+        "constraints_used": 1302,
+        "metrics": {
+          "single": {
+            "psnr_db": 4.849097156197592,
+            "ssim": -0.005745864195587493
+          },
+          "unregistered_mean": {
+            "psnr_db": 11.861316743238097,
+            "ssim": 0.19116476333207574
+          },
+          "fraudulent_mean": {
+            "psnr_db": 11.835981015682489,
+            "ssim": 0.18994542483671153
+          },
+          "orbit_cross_bispectrum": {
+            "psnr_db": 22.417508280678366,
+            "ssim": 0.6835493098527912
+          }
+        }
+      }
+    },
+    {
+      "name": "steps-16",
+      "result": {
+        "camera": {
+          "size": 32,
+          "frames": 4096,
+          "photons_at_white": 0.75,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "gatherers": 3,
+          "seed": 7,
+          "batch": 128,
+          "bispectrum_steps": 16,
+          "full_circle_support": false,
+          "optimizer_iterations": 400
+        },
+        "elapsed_seconds": 4.890557083999738,
+        "mean_electrons_per_frame": 390.58042864570893,
+        "nonzero_fraction_first_frame": 0.29296875,
+        "diagnostic_first_frame_electrons": 387.4,
+        "steps": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            31,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            30,
+            0
+          ],
+          [
+            31,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            30,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            30,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            29,
+            0
+          ],
+          [
+            31,
+            3
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "recovered_global_shift": [
+          3,
+          24
+        ],
+        "optimizer_success": false,
+        "optimizer_message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+        "optimizer_iterations": 400,
+        "phase_objective": 0.0005627247298389409,
+        "constraints_used": 2256,
+        "metrics": {
+          "single": {
+            "psnr_db": 4.849097156197592,
+            "ssim": -0.005745864195587493
+          },
+          "unregistered_mean": {
+            "psnr_db": 11.861316743238097,
+            "ssim": 0.19116476333207574
+          },
+          "fraudulent_mean": {
+            "psnr_db": 11.835981015682489,
+            "ssim": 0.18994542483671153
+          },
+          "orbit_cross_bispectrum": {
+            "psnr_db": 22.677433038991325,
+            "ssim": 0.6924395037679355
+          }
+        }
+      }
+    },
+    {
+      "name": "steps-32",
+      "result": {
+        "camera": {
+          "size": 32,
+          "frames": 4096,
+          "photons_at_white": 0.75,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "gatherers": 3,
+          "seed": 7,
+          "batch": 128,
+          "bispectrum_steps": 32,
+          "full_circle_support": false,
+          "optimizer_iterations": 400
+        },
+        "elapsed_seconds": 7.2814972079358995,
+        "mean_electrons_per_frame": 390.58042864570893,
+        "nonzero_fraction_first_frame": 0.29296875,
+        "diagnostic_first_frame_electrons": 387.4,
+        "steps": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            31,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            30,
+            0
+          ],
+          [
+            31,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            30,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            30,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            29,
+            0
+          ],
+          [
+            31,
+            3
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            29,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            30,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            29,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            28,
+            0
+          ],
+          [
+            31,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            28,
+            1
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            29,
+            3
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            30,
+            4
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "recovered_global_shift": [
+          3,
+          24
+        ],
+        "optimizer_success": false,
+        "optimizer_message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+        "optimizer_iterations": 400,
+        "phase_objective": 0.0009904275273657955,
+        "constraints_used": 4023,
+        "metrics": {
+          "single": {
+            "psnr_db": 4.849097156197592,
+            "ssim": -0.005745864195587493
+          },
+          "unregistered_mean": {
+            "psnr_db": 11.861316743238097,
+            "ssim": 0.19116476333207574
+          },
+          "fraudulent_mean": {
+            "psnr_db": 11.835981015682489,
+            "ssim": 0.18994542483671153
+          },
+          "orbit_cross_bispectrum": {
+            "psnr_db": 22.743049269639815,
+            "ssim": 0.6962449406893725
+          }
+        }
+      }
+    },
+    {
+      "name": "steps-48",
+      "result": {
+        "camera": {
+          "size": 32,
+          "frames": 4096,
+          "photons_at_white": 0.75,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "gatherers": 3,
+          "seed": 7,
+          "batch": 128,
+          "bispectrum_steps": 48,
+          "full_circle_support": false,
+          "optimizer_iterations": 400
+        },
+        "elapsed_seconds": 10.248145958059467,
+        "mean_electrons_per_frame": 390.58042864570893,
+        "nonzero_fraction_first_frame": 0.29296875,
+        "diagnostic_first_frame_electrons": 387.4,
+        "steps": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            31,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            30,
+            0
+          ],
+          [
+            31,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            30,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            30,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            29,
+            0
+          ],
+          [
+            31,
+            3
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            29,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            30,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            29,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            28,
+            0
+          ],
+          [
+            31,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            28,
+            1
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            29,
+            3
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            30,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            28,
+            2
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            29,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            28,
+            3
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            27,
+            0
+          ],
+          [
+            31,
+            5
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            27,
+            1
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            30,
+            5
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            27,
+            2
+          ],
+          [
+            5,
+            2
+          ]
+        ],
+        "recovered_global_shift": [
+          3,
+          24
+        ],
+        "optimizer_success": false,
+        "optimizer_message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+        "optimizer_iterations": 400,
+        "phase_objective": 0.0013948741470041002,
+        "constraints_used": 5594,
+        "metrics": {
+          "single": {
+            "psnr_db": 4.849097156197592,
+            "ssim": -0.005745864195587493
+          },
+          "unregistered_mean": {
+            "psnr_db": 11.861316743238097,
+            "ssim": 0.19116476333207574
+          },
+          "fraudulent_mean": {
+            "psnr_db": 11.835981015682489,
+            "ssim": 0.18994542483671153
+          },
+          "orbit_cross_bispectrum": {
+            "psnr_db": 22.822639366822116,
+            "ssim": 0.6996014234789512
+          }
+        }
+      }
+    },
+    {
+      "name": "frames-1024",
+      "result": {
+        "camera": {
+          "size": 32,
+          "frames": 1024,
+          "photons_at_white": 0.75,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "gatherers": 3,
+          "seed": 7,
+          "batch": 128,
+          "bispectrum_steps": 32,
+          "full_circle_support": false,
+          "optimizer_iterations": 400
+        },
+        "elapsed_seconds": 1.839894250035286,
+        "mean_electrons_per_frame": 390.58042864570893,
+        "nonzero_fraction_first_frame": 0.29296875,
+        "diagnostic_first_frame_electrons": 387.4,
+        "steps": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            31,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            30,
+            0
+          ],
+          [
+            31,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            30,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            30,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            29,
+            0
+          ],
+          [
+            31,
+            3
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            29,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            30,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            29,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            28,
+            0
+          ],
+          [
+            31,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            28,
+            1
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            29,
+            3
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            30,
+            4
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "recovered_global_shift": [
+          3,
+          24
+        ],
+        "optimizer_success": false,
+        "optimizer_message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+        "optimizer_iterations": 400,
+        "phase_objective": 0.013206982494638003,
+        "constraints_used": 17535,
+        "metrics": {
+          "single": {
+            "psnr_db": 4.849097156197592,
+            "ssim": -0.005745864195587493
+          },
+          "unregistered_mean": {
+            "psnr_db": 11.788843842301652,
+            "ssim": 0.13446187031928333
+          },
+          "fraudulent_mean": {
+            "psnr_db": 11.699836449820918,
+            "ssim": 0.1392221025953494
+          },
+          "orbit_cross_bispectrum": {
+            "psnr_db": 20.623199777631676,
+            "ssim": 0.6044004264766164
+          }
+        }
+      }
+    },
+    {
+      "name": "frames-2048",
+      "result": {
+        "camera": {
+          "size": 32,
+          "frames": 2048,
+          "photons_at_white": 0.75,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "gatherers": 3,
+          "seed": 7,
+          "batch": 128,
+          "bispectrum_steps": 32,
+          "full_circle_support": false,
+          "optimizer_iterations": 400
+        },
+        "elapsed_seconds": 3.3925862080650404,
+        "mean_electrons_per_frame": 390.58042864570893,
+        "nonzero_fraction_first_frame": 0.29296875,
+        "diagnostic_first_frame_electrons": 387.4,
+        "steps": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            31,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            30,
+            0
+          ],
+          [
+            31,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            30,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            30,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            29,
+            0
+          ],
+          [
+            31,
+            3
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            29,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            30,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            29,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            28,
+            0
+          ],
+          [
+            31,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            28,
+            1
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            29,
+            3
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            30,
+            4
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "recovered_global_shift": [
+          3,
+          24
+        ],
+        "optimizer_success": false,
+        "optimizer_message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+        "optimizer_iterations": 400,
+        "phase_objective": 0.00427675144889344,
+        "constraints_used": 9806,
+        "metrics": {
+          "single": {
+            "psnr_db": 4.849097156197592,
+            "ssim": -0.005745864195587493
+          },
+          "unregistered_mean": {
+            "psnr_db": 11.839699652698775,
+            "ssim": 0.17213209942519378
+          },
+          "fraudulent_mean": {
+            "psnr_db": 11.766834890821865,
+            "ssim": 0.1736056526952036
+          },
+          "orbit_cross_bispectrum": {
+            "psnr_db": 20.817761606672907,
+            "ssim": 0.6172005156987654
+          }
+        }
+      }
+    },
+    {
+      "name": "frames-8192",
+      "result": {
+        "camera": {
+          "size": 32,
+          "frames": 8192,
+          "photons_at_white": 0.75,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "gatherers": 3,
+          "seed": 7,
+          "batch": 128,
+          "bispectrum_steps": 32,
+          "full_circle_support": false,
+          "optimizer_iterations": 400
+        },
+        "elapsed_seconds": 15.829206333961338,
+        "mean_electrons_per_frame": 390.58042864570893,
+        "nonzero_fraction_first_frame": 0.29296875,
+        "diagnostic_first_frame_electrons": 387.4,
+        "steps": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            31,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            30,
+            0
+          ],
+          [
+            31,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            30,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            30,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            29,
+            0
+          ],
+          [
+            31,
+            3
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            29,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            30,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            29,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            28,
+            0
+          ],
+          [
+            31,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            28,
+            1
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            29,
+            3
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            30,
+            4
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "recovered_global_shift": [
+          3,
+          24
+        ],
+        "optimizer_success": false,
+        "optimizer_message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+        "optimizer_iterations": 400,
+        "phase_objective": 0.00020380494429101783,
+        "constraints_used": 2114,
+        "metrics": {
+          "single": {
+            "psnr_db": 4.849097156197592,
+            "ssim": -0.005745864195587493
+          },
+          "unregistered_mean": {
+            "psnr_db": 11.8178907782297,
+            "ssim": 0.2001684440609938
+          },
+          "fraudulent_mean": {
+            "psnr_db": 11.843065874038611,
+            "ssim": 0.20261277006783213
+          },
+          "orbit_cross_bispectrum": {
+            "psnr_db": 23.52598160121602,
+            "ssim": 0.7339586907814779
+          }
+        }
+      }
+    },
+    {
+      "name": "full-circle-64",
+      "result": {
+        "camera": {
+          "size": 32,
+          "frames": 4096,
+          "photons_at_white": 0.75,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "gatherers": 3,
+          "seed": 7,
+          "batch": 128,
+          "bispectrum_steps": 64,
+          "full_circle_support": true,
+          "optimizer_iterations": 400
+        },
+        "elapsed_seconds": 17.522202833089978,
+        "mean_electrons_per_frame": 390.58042864570893,
+        "nonzero_fraction_first_frame": 0.29296875,
+        "diagnostic_first_frame_electrons": 387.4,
+        "steps": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            31,
+            0
+          ],
+          [
+            0,
+            31
+          ],
+          [
+            31,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            31,
+            31
+          ],
+          [
+            1,
+            31
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            30,
+            0
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            0,
+            30
+          ],
+          [
+            31,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            30,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            30,
+            31
+          ],
+          [
+            2,
+            31
+          ],
+          [
+            31,
+            30
+          ],
+          [
+            1,
+            30
+          ],
+          [
+            30,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            30,
+            30
+          ],
+          [
+            2,
+            30
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            29,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            0,
+            29
+          ],
+          [
+            31,
+            3
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            29,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            29,
+            31
+          ],
+          [
+            3,
+            31
+          ],
+          [
+            31,
+            29
+          ],
+          [
+            1,
+            29
+          ],
+          [
+            30,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            29,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            29,
+            30
+          ],
+          [
+            3,
+            30
+          ],
+          [
+            30,
+            29
+          ],
+          [
+            2,
+            29
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            28,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            0,
+            28
+          ],
+          [
+            31,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            28,
+            1
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            28,
+            31
+          ],
+          [
+            4,
+            31
+          ],
+          [
+            31,
+            28
+          ],
+          [
+            1,
+            28
+          ],
+          [
+            29,
+            3
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            29,
+            29
+          ],
+          [
+            3,
+            29
+          ],
+          [
+            30,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            28,
+            2
+          ],
+          [
+            4,
+            2
+          ]
+        ],
+        "recovered_global_shift": [
+          3,
+          24
+        ],
+        "optimizer_success": false,
+        "optimizer_message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+        "optimizer_iterations": 400,
+        "phase_objective": 0.0010092283831926968,
+        "constraints_used": 8056,
+        "metrics": {
+          "single": {
+            "psnr_db": 4.849097156197592,
+            "ssim": -0.005745864195587493
+          },
+          "unregistered_mean": {
+            "psnr_db": 11.861316743238097,
+            "ssim": 0.19116476333207574
+          },
+          "fraudulent_mean": {
+            "psnr_db": 11.835981015682489,
+            "ssim": 0.18994542483671153
+          },
+          "orbit_cross_bispectrum": {
+            "psnr_db": 22.749200396669128,
+            "ssim": 0.6962423713251551
+          }
+        }
+      }
+    },
+    {
+      "name": "poisson-seed-400",
+      "result": {
+        "camera": {
+          "size": 32,
+          "frames": 4096,
+          "photons_at_white": 0.75,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "gatherers": 3,
+          "seed": 7,
+          "batch": 128,
+          "bispectrum_steps": 48,
+          "full_circle_support": false,
+          "poisson_phase_seed": true,
+          "optimizer_iterations": 400
+        },
+        "elapsed_seconds": 15.205503542092629,
+        "mean_electrons_per_frame": 390.58042864570893,
+        "nonzero_fraction_first_frame": 0.29296875,
+        "diagnostic_first_frame_electrons": 387.4,
+        "steps": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            31,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            30,
+            0
+          ],
+          [
+            31,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            30,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            30,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            29,
+            0
+          ],
+          [
+            31,
+            3
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            29,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            30,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            29,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            28,
+            0
+          ],
+          [
+            31,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            28,
+            1
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            29,
+            3
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            30,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            28,
+            2
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            29,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            28,
+            3
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            27,
+            0
+          ],
+          [
+            31,
+            5
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            27,
+            1
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            30,
+            5
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            27,
+            2
+          ],
+          [
+            5,
+            2
+          ]
+        ],
+        "recovered_global_shift": [
+          3,
+          23
+        ],
+        "phase_seed": "weighted_poisson_then_circle",
+        "poisson_seed_objective": 0.16264943712456426,
+        "poisson_seed_iterations": 360,
+        "optimizer_success": false,
+        "optimizer_message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+        "optimizer_iterations": 400,
+        "phase_objective": 0.0014223176883614642,
+        "constraints_used": 5594,
+        "metrics": {
+          "single": {
+            "psnr_db": 4.849097156197592,
+            "ssim": -0.005745864195587493
+          },
+          "unregistered_mean": {
+            "psnr_db": 11.861316743238097,
+            "ssim": 0.19116476333207574
+          },
+          "fraudulent_mean": {
+            "psnr_db": 11.835981015682489,
+            "ssim": 0.18994542483671153
+          },
+          "orbit_cross_bispectrum": {
+            "psnr_db": 20.203829993380317,
+            "ssim": 0.5945577035989712
+          }
+        }
+      }
+    },
+    {
+      "name": "poisson-seed-1400",
+      "result": {
+        "camera": {
+          "size": 32,
+          "frames": 4096,
+          "photons_at_white": 0.75,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "gatherers": 3,
+          "seed": 7,
+          "batch": 128,
+          "bispectrum_steps": 48,
+          "full_circle_support": false,
+          "poisson_phase_seed": true,
+          "optimizer_iterations": 1400
+        },
+        "elapsed_seconds": 13.837419124902226,
+        "mean_electrons_per_frame": 390.58042864570893,
+        "nonzero_fraction_first_frame": 0.29296875,
+        "diagnostic_first_frame_electrons": 387.4,
+        "steps": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            31,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            30,
+            0
+          ],
+          [
+            31,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            30,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            30,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            29,
+            0
+          ],
+          [
+            31,
+            3
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            29,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            30,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            29,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            28,
+            0
+          ],
+          [
+            31,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            28,
+            1
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            29,
+            3
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            30,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            28,
+            2
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            29,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            28,
+            3
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            27,
+            0
+          ],
+          [
+            31,
+            5
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            27,
+            1
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            30,
+            5
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            27,
+            2
+          ],
+          [
+            5,
+            2
+          ]
+        ],
+        "recovered_global_shift": [
+          3,
+          23
+        ],
+        "phase_seed": "weighted_poisson_then_circle",
+        "poisson_seed_objective": 0.16264943712456426,
+        "poisson_seed_iterations": 360,
+        "optimizer_success": false,
+        "optimizer_message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+        "optimizer_iterations": 1400,
+        "phase_objective": 0.0007806179853434316,
+        "constraints_used": 5594,
+        "metrics": {
+          "single": {
+            "psnr_db": 4.849097156197592,
+            "ssim": -0.005745864195587493
+          },
+          "unregistered_mean": {
+            "psnr_db": 11.861316743238097,
+            "ssim": 0.19116476333207574
+          },
+          "fraudulent_mean": {
+            "psnr_db": 11.835981015682489,
+            "ssim": 0.18994542483671153
+          },
+          "orbit_cross_bispectrum": {
+            "psnr_db": 21.344521765354358,
+            "ssim": 0.6450277837531746
+          }
+        }
+      }
+    }
+  ]
+}

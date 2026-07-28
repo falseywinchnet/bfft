@@ -6,6 +6,7 @@ vision tool and a research notebook. These are the supported starting points:
 | Goal | Run | Status |
 | --- | --- | --- |
 | Segment an image into BFFT-guided transport cells | `python viewer/segmenting_veroni_viewer.py` | **Canonical image-segmentation viewer** |
+| Explore emergent object IDs on the finished cell graph | `python viewer/object_transport_segmentation_viewer.py` | Experimental object-support hierarchy |
 | Explore owner-free residual-consuming cells | `python viewer/resource_transport_cells_viewer.py` | Isolated transport-cell experiment |
 | Explore cartoon/texture decomposition on still images | `python viewer/meyer_stills.py` | Canonical decomposition explorer |
 | Process or inspect decomposition on video | `python viewer/meyer_video.py` | Offline video path |
@@ -120,6 +121,75 @@ controls, and `transport_voronoi_app.py` retains the previous iterative
 laboratory. The `segmenting_veroni_viewer.py` filename is the stable
 user-facing entry point. Algorithms awaiting native ports are separated under
 [`../port_needed`](../port_needed/README.md).
+
+## Emergent object-support experiment
+
+```sh
+python viewer/object_transport_segmentation_viewer.py
+```
+
+This separate viewer runs the canonical cell pipeline once, splits each
+reconstruction site into connected unchanged-target support fragments,
+constructs their literal sparse graph, and tests an evolving
+atom-to-part-to-object hierarchy on that graph. The right panel exposes every
+cue, hard IDs, boundary-local soft uncertainty, connected-material quotient
+failures, core altitude, and best-versus-second saddle confidence. It also
+preserves and displays separately connected interface arcs and junctions—the
+planar support needed for closure, common-surround, T-junction, and amodal
+continuation experiments.
+
+The first eight right-panel views are a pre-hierarchy forensic microscope.
+Clicking any rendered pixel anchors its connected canonical support fragment,
+then independently displays colour, transport action, metric tensor,
+action-plus-metric, complete-state likeness, or a phase-preserving graph
+scattering response across every fragment. The local scattering view retains
+only the first literal transport neighborhood; the multiscale view retains
+all five dyadic bands. These maps consume no object IDs and are not merge
+decisions.
+
+The **centered edge relation** views go one step further without forming
+objects. They compare the observed joint distribution of scattering patterns
+on literal transport interfaces with the independent product distribution.
+Positive values mean the two patterns co-occur more than prevalence predicts;
+negative values mean they avoid one another. The complete signed spectrum is
+retained—there is no candidate list or selected eigenmode.
+
+Use **Connected support fragment IDs** and **Intra-site topology cuts** to
+inspect where a reconstruction basis function had crossed or disconnected
+scene topology. **Unconstrained path disagreement** A/Bs the old free
+two-path readout against the connected first-arrival watershed.
+
+Click the right image to inspect its pixel, cell, hard object, runner-up,
+diagnostic material basin, and weakest neighboring interfaces. **Anchored
+witnesses only** is a research control that prevents allocation/support
+changes from creating a boundary without direct target/cartoon/glass evidence.
+The additive and anchored barriers remain visible side by side.
+
+The **Part → parent topology** section retains every visible hard part.
+Containment and first-arrival completion through a common surround are the
+active parent mechanisms. Embedded T-junctions are retained as directed depth
+observations: the continuing region is in front of the two regions whose
+contour terminates there. They do not merge the two rear regions. The former
+T-junction attraction rule is available only as an explicitly experimental
+control because it falsely joined the astronaut's face to the background.
+
+Use **T-junction depth order** and **T-implied contour sides** to inspect the
+sparse occlusion hypothesis. The latter paints its proposed front side cyan
+and back side red. This is not treated as proof: a material seam terminating
+at a silhouette has the same local T geometry. **Enclosed seam attachment
+proposals** exposes the competing hypothesis when the terminating pair forms
+a bounded union predominantly enclosed by the third region. **T-implied
+frontness** aggregates the first hypothesis per part; **Transport-depth
+extrapolation** shows the scene-specific support direction fitted from it.
+Neither research readout affects object merging. **Surround completion
+proposals** shows the separate sparse wavefront collision used for amodal
+completion.
+
+Use **Recompute objects only** while tuning the object controls. It reuses the
+finished cells and graph rather than decomposing or fitting the image again.
+The formal model, current timings, known matched-texture failure, and the
+unsigned figure/ground limitation are recorded in
+[`../notes/TRANSPORT_OBJECT_SUPPORT.md`](../notes/TRANSPORT_OBJECT_SUPPORT.md).
 
 ## Owner-free resource-cell experiment
 

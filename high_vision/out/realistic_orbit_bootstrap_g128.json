@@ -1,0 +1,120 @@
+{
+  "camera": {
+    "size": 512,
+    "canvas_margin": 40,
+    "frames": 4096,
+    "fps": 120.0,
+    "scene_illuminance_lux": 0.05,
+    "photons_at_white": 0.86,
+    "read_noise_electrons": 1.5,
+    "row_noise_electrons": 0.2,
+    "column_noise_electrons": 0.08,
+    "dark_electrons": 0.008,
+    "dsnu_electrons": 0.12,
+    "prnu_fraction": 0.008,
+    "hot_pixel_fraction": 0.0002,
+    "hot_pixel_electrons": 2.5,
+    "electrons_per_dn": 0.25,
+    "adc_bits": 12,
+    "black_level_dn": 512,
+    "shift_radius": 24,
+    "motion_step": 1,
+    "registration_group": 128,
+    "thumbnail": 128,
+    "registration_upsample": 8,
+    "seed": 73
+  },
+  "orbit": {
+    "grid": 32,
+    "frames": 4096,
+    "projection_steps": 32,
+    "optimizer_iterations": 600,
+    "batch": 128
+  },
+  "frames_accumulated": 4096,
+  "elapsed_seconds": 44.88126783305779,
+  "white_noise_floor": 9.092199869762347,
+  "row_axis_noise_floor": 91.01219986976236,
+  "column_axis_noise_floor": 22.199399869762345,
+  "mean_signal_electrons_per_thumbnail_pixel": 2.393542863717739,
+  "recovered_global_shift": [
+    4,
+    3
+  ],
+  "mean_global_shift": [
+    0,
+    0
+  ],
+  "truth_fourier_coherence_by_radius": [
+    1.0,
+    0.997453436072035,
+    0.9911644842423526,
+    0.9761511900083186,
+    0.9715998281928154,
+    0.9256917601405831,
+    0.8859519306955929,
+    0.9024739847588155,
+    0.7272093866378089,
+    0.5877675955685544,
+    0.5403504307986372,
+    0.5161856587287013,
+    0.3398531276851445,
+    0.3412110010772456,
+    0.19017062088237432,
+    0.5021860560652176,
+    0.33996515916555103,
+    0.24842507107780729,
+    0.059915022857731974,
+    0.10129627807202254,
+    0.012732261483045609,
+    0.04752290025942803,
+    0.7326823516294416,
+    4.7362835330737353e-07
+  ],
+  "registration": {
+    "false_mean_attractor": {
+      "mean": 12.751766474170857,
+      "median": 11.788252229444364,
+      "p90": 21.668174026091815,
+      "global_gauge_yx": [
+        -9,
+        3
+      ]
+    },
+    "orbit_direct": {
+      "mean": 10.718538959207594,
+      "median": 10.307764064044152,
+      "p90": 17.327723451163457,
+      "global_gauge_yx": [
+        0,
+        2
+      ]
+    },
+    "orbit_then_local": {
+      "mean": 12.192993574902001,
+      "median": 11.147535745221655,
+      "p90": 21.331079383159008,
+      "global_gauge_yx": [
+        -9,
+        1
+      ]
+    }
+  },
+  "optimizer_success": false,
+  "optimizer_message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+  "optimizer_iterations": 600,
+  "phase_objective": 0.01595741756050754,
+  "constraints_used": 20389,
+  "metrics": {
+    "false_mean": {
+      "linear_psnr_db": 48.12166205864368,
+      "log_psnr_db": 28.53847294620689,
+      "log_ssim": 0.6626550733126214
+    },
+    "orbit": {
+      "linear_psnr_db": 41.589592166315,
+      "log_psnr_db": 21.530204767609288,
+      "log_ssim": 0.33046226557606645
+    }
+  }
+}

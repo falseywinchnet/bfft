@@ -1,0 +1,868 @@
+                                           Noisy image decomposition: a new structure,
+                                         texture and noise model based on local adaptivity
+                                                                          Jérôme Gilles
+
+
+
+
+arXiv:2411.08292v1 [cs.CV] 13 Nov 2024
+                                                                    Centre d’Expertise Parisien
+                                             16 bis, avenue Prieur de la Côte d’Or 94114 ARCUEIL Cedex FRANCE
+                                                                        jerome.gilles@etca.fr
+                                                  The original publication is available at www.springerlink.com.
+
+                                                                              Abstract
+                                                   These last few years, image decomposition algorithms have been pro-
+                                               posed to split an image into two parts: the structures and the textures.
+                                               These algorithms are not adapted to the case of noisy images because
+                                               the textures are corrupted by noise. In this paper, we propose a new
+                                               model which decomposes an image into three parts (structures, textures
+                                               and noise) based on a local regularization scheme. We compare our re-
+                                               sults with the recent work of Aujol and Chambolle. We finish by giving
+                                               another model which combines the advantages of the two previous ones.
+
+                                                   Keywords: image decomposition, BV , texture, noise, oscillating func-
+                                               tions, Besov spaces, local adaptivity.
+
+
+                                         1     Introduction
+                                         In 2001, in [3], Y.Meyer investigated the model of image restoration proposed
+                                         by Rudin-Osher-Fatemi [5]:
+
+                                                               F ROF (u) = J(u) + (2λ)−1 ∥f − u∥2L2                        (1)
+
+                                         where f is the measured image which implies an estimation:
+
+                                                                      û = arg inf F ROF (u),                              (2)
+                                                                               u∈BV
+
+                                         of the restored image. The main hypothesis is that u belongs to the space BV
+                                         (the space of bounded variation functions). The quantity J(u) is a semi-norm
+                                         on BV . It is also knowing as the total variation of the function u and can be
+                                         expressed by                           Z
+                                                                        J(u) = |∇u|.                                (3)
+
+                                         If we write v = f − u and take the point of view of image decomposition (i.e f
+                                         is composed of structures (u) and textures (v)), we can rewrite equation (1) as
+
+                                                                 F ROF (u) = J(u) + (2λ)−1 ∥v∥2L2 .                        (4)
+
+
+                                                                                  1
+    Y.Meyer proved that this model rejects the oscillatory component of f which
+is considered to be the textured component. Then, he proposed a new model
+where the L2 norm of v is replaced by a norm in a space G close to the dual space
+of BV and which contains oscillatory functions. The new model introduced by
+Y.Meyer is then given by
+
+                            F Y M (u, v) = J(u) + (2λ)−1 ∥v∥G ,                                               (5)
+
+where the G−norm is defined by:
+
+Definition 1 For v = ∂1 g1 + ∂2 g2 where g1 ∈ L∞ (R2 ), g2 ∈ L∞ (R2 ),
+                                                                       21
+                                                       2           2
+                            ∥v∥G = inf             |g1 | + |g2 |                   .                          (6)
+                                          g
+                                                                              L∞
+
+    Due to its non-linearity, the G−norm is difficult to compute numerically
+(see [3]). Then two approaches can be found in the litterature to run Meyer’s
+algorithm.
+The first one is the algorithm proposed by L.Vese and S.Osher in [2]. The
+authors use the following approximation:
+
+                            ∀v ∈ L∞           ∥v∥L∞ = lim ∥v∥Lp ,                                             (7)
+                                                           p→+∞
+
+and the property that any function v in G can be written as v = div (g) where
+g = (g1 , g2 ) ∈ (L∞ × L∞ ). Then they give a new formulation of the problem:
+                                                                                       q
+        F V O (u, g) = J(u) + (2λ)−1 ∥f − (u + div g)∥2L2 + µ                           g12 + g22        .    (8)
+                                                                                                    Lp
+
+The authors seek for
+
+               (û, gˆ1 , gˆ2 ) = arg                inf                  F V O (u, g1 , g2 ))                (9)
+                                        (u,g1 ,g2 )∈(BV ×L∞ ×L∞
+
+    The authors deduce the related partial differential equation system and its
+discrete formulation (see [2] for details). The drawback of their approach is the
+numerical stability of the algorithm.
+
+    The second approach is proposed by Aujol et al. in [1, 11]. Their model is
+given by                               
+                                       v
+             F AU (u, v) = J(u) + J ∗     + (2λ)−1 ∥f − u − v∥2L2 ,      (10)
+                                       µ
+                           (û, v̂) = arg            inf      F AU (u, v))                                   (11)
+                                              (u,v)∈(BV ×G
+
+where
+                                 Gµ = {v ∈ G/∥v∥G ⩽ µ},                                                      (12)
+and J ∗ is the adjoint of J; therefore it is the indicator function defined by
+                              (
+                          ∗  v          0      if v ∈ Gµ ,
+                        J        =                                             (13)
+                             µ          +∞ if v ∈ G\Gµ .
+
+
+                                                     2
+Figure 1: Two part decomposition of noisy image, from left to right: noisy
+image, object part, texture part corrupted by noise.
+
+
+
+The authors prove that the solution of minimizing (10) can be found by an iter-
+ative algorithm based on non-linear projectors PGµ proposed by A.Chambolle
+(see [4] for details and for a convergence theorem). This algorithm gives good
+results but is of limited interest in the case of noisy images. Indeed, the noise
+can be viewed as a very highly oscillatory function (this means that noise is in
+Gµ ). Therefore the algorithm incorporates the noise in the texture component.
+Then the textures are corrupted by noise (see fig.1 for an example).
+
+    In this paper, we propose to extend the two components model to a three
+components model, f = u + v + w, which discriminates between structures (u),
+textures (v) and noise (w). This work was initiated in [13].
+    An outline of the paper is given now. In section 2, we describe our new algo-
+rithm based on a local regularization principle [7, 10]. We give some numerical
+aspects of the algorithm and show some results. In section 3 we recall the recent
+model proposed by Aujol and Chambolle [6] which also decomposes an image
+into three parts. A comparison between our approach and their model shows
+the advantages and disadvantages of each algorithm. In section 4, we propose
+another algorithm which incorporates the advantages of each the previous ones.
+We conclude and give some perspectives of this work in section 5.
+
+
+2    Three part image decomposition: a local adap-
+     tative algorithm
+In this section, we propose a new model to decompose an image into three parts:
+structures (u), textures (v) and noise (w). As in the u + v model, we consider
+that structures and textures are modelized by functions in BV and G spaces
+respectively. We also consider a zero mean gaussian noise added to the image.
+Let us view noise as a specific very oscillating function. In virtue to the work
+in [3], where it is shown that the more a function is oscillatory, the smaller its
+G−norm is, we propose to modelize w as a function in G and consider that its
+G−norm is much smaller than the norm of the textures (∥v∥G ≫ ∥w∥G ). These
+assumptions are equivalent to choose
+
+                    v ∈ Gµ1 , w ∈ Gµ2       where   µ1 ≫ µ2                  (14)
+
+
+
+                                        3
+    In order to increase the performance, we propose to add a local adaptability
+behaviour to the algorithm following an idea proposed by G.Gilboa et al. in
+[7]. The authors investigate the ROF model given by equation (1) and propose
+a modified version which is able to preserve textures in the denoising process.
+To do this, they don’t choose λ as a constant on the whole image but as a
+function λ(f )(x, y) which represents local properties of the image. In a cartoon-
+type region, the algorithm enhances the denoising process by increasing the
+value of λ; in a texture-type region the algorithm decreases λ to attenuate the
+regularization in order to preserve the details of textures. So λ(f )(x, y) can be
+viewed as a smoothed partition between textured and untextured regions.
+Then, in order to decompose an image into three parts, we propose to use the
+following functionnal:
+
+                                                                
+                                        v             ∗       w
+ JG
+Fλ,µ1 ,µ2
+          (u, v, w) = J(u) + J ∗                 +J                    + (2λ)−1 ∥f − u − ν1 v − ν2 w∥2L2 ,
+                                        µ1                    µ2
+                                                                          (15)
+   where the functions νi represent the smoothed partition of textured and un-
+textured regions (and play the role of λ in Gilboa’s paper). The νi functions
+must have the following behaviour:
+
+
+   • if we are in a textured region, we want to favour v instead of w. This is
+     equivalent to ν1 close to 1 and ν2 close to 0,
+   • if we are in an untextured region, we want to favour w instead of v. This
+     is equivalent to ν1 closed to 0 and ν2 close to 1.
+
+
+We see that ν1 and ν2 are complementary so it is natural to choose ν2 = 1 − ν1 :
+R2 →]0; 1[. The choice of ν1 and ν2 is discussed after the following proposition
+                                        JG
+which characterizes the minimizers of Fλ,µ 1 ,µ2
+                                                 (u, v, w).
+
+Proposition 2.1 Let u ∈ BV , v ∈ Gµ1 , w ∈ Gµ2 be the structures, textures
+and noise parts respectively and f the original noisy image. Let the functions
+(ν1 (f )(., .), ν2 (f )(., .)) be defined on R2 →]0; 1[, and assume that these functions
+could be considered as locally constant compared to the variation of v and w (see
+the proof for details). Then a minimizer defined by
+                                                                    JG
+               (û, v̂, ŵ) =            arg                   min Fλ,µ 1 ,µ2
+                                                                              (u, v, w),             (16)
+                                (u,v,w)∈BV ×Gµ1 ×Gµ2
+
+is given by
+
+                     û = f − ν1 v̂ − ν2 ŵ − PGλ (f − ν1 v̂ − ν2 ŵ),                               (17)
+                                                 
+                                   f − û − ν2 ŵ
+                      v̂ = PGµ1                      ,                                               (18)
+                                        ν1
+                                                 
+                                   f − û − ν1 v̂
+                     ŵ = PGµ2                      ,                                                (19)
+                                        ν2
+
+where PGµ is the Chambolle’s non-linear projectors (see [4]).
+
+
+
+                                                  4
+     The proof of this proposition is given in appendix A. Notice that we have
+still no results on the uniqness of the minimizer.
+
+   In pratice, we propose the following iterative numerical scheme:
+
+  1. initialization: u0 = v0 = w0 = 0,
+
+  2. compute ν1 and ν2 = 1 − ν1 from f (see below for the choice of νi ),
+                                       
+  3. compute wn+1 = PGµ2 f −uνn2 +κ
+                                 −ν1 vn
+                                          , (κ is a small value in order to prevent
+      the division by zero),
+                                                    
+                                    f −un −ν2 wn+1
+  4. compute vn+1 = PGµ1                ν1 +κ            ,
+
+  5. compute un+1 = f − ν1 vn+1 − ν2 wn+1 − PGλ (f − ν1 vn+1 − ν2 wn+1 ),
+
+  6. if max{|un+1 − un |, |vn+1 − vn |, |wn+1 − wn |} ⩽ ϵ or if we did Nstep
+     iterations then stop the algorithm, else jump to step 3.
+
+
+    Now, let’s deal with the choice of the νi functions. In [7], the authors choose
+to compute a local variance on the texture + noise part of the image obtained
+by the ROF model (f − u). In this paper, we use the same strategy but on the
+v component obtained by the two part decomposition algorithm. This choice is
+implied by the fact that the additive gaussian noise can be considered orthogonal
+to the textures. As a consequence, the variance of a textured region is larger
+than the variance of an untextured region.
+So, in practice, we first compute the two part decomposition of the image f .
+On the v component, ∀(i, j), we compute the local variance on a small window
+(odd size L) centered on (i, j). Then ν1 (i, j) can be expressed by
+                                                                              2
+                        1      X                      1   X
+            ν1 (i, j) = 2                v 2 (p, q) − 4                 v(p, q) ,   (20)
+                       L                             L
+                            (p,q)∈Zij                        (p,q)∈Zij
+
+            ν2 (i, j) = 1 − ν1 (i, j),                                                (21)
+
+where Zij = [i − (L − 1)/2; i + (L − 1)/2] × [j − (L − 1)/2; j + (L − 1)/2].
+    At least, we normalize it in order to get the values in ]0; 1[. Figure 2 shows
+an example on a noisy version of Barbara (σ = 20). We see that this image,
+which represents ν1 , has larger values in the textured regions. Denote that
+in [8], the same authors propose to estimate the optimal parameter based on a
+SNR criteria. At this time, we did not incorporate this method in our algorithm.
+
+   We experimented our algorithm on three different images: on a synthetic
+one (show on the top-left of figure 3), on Barbara (show on the left of figure 2)
+and on a real outdoor image (show on the top-left of figure 5). The parameters
+are set to
+   • Synthetic: λ = 50, µ1 = 1000, µ2 = 10, the size of the window for
+     computing ν is 7 pixels,
+
+
+
+                                              5
+Figure 2: On left we have the noisy image (Barbara+gaussian noise, σ = 20);
+on right, texture partition ν1 .
+
+
+
+
+                Noisy original image             Structures
+
+
+
+
+                      Textures                     Noise
+                                  JG
+      Figure 3: Results given by Fλ,µ 1 ,µ2
+                                            applied on the synthetic image.
+
+
+   • Barbara: λ = 10, µ1 = 1000, µ2 = 1, the size of the window for computing
+     ν is 15 pixels,
+   • Outdoor: λ = 50, µ1 = 1000, µ2 = 10, the size of the window for comput-
+     ing ν is 7 pixels.
+
+
+   The results are given respectively in figures 3, 4 and 5. We can see in the
+whole cases, that the proposed algorithm successfully separates the noise from
+textures. In the zoomed images of figure 4, we can see that some residual noise
+stayed in the textured part and some residual texture is extracted in the noise
+part. This is inevitable since the νi functions made a tradeoff between extracting
+the information in the texture part or in the noise part.
+
+
+                                        6
+      Structures                      Textures                         Noise
+
+
+
+
+    Structures zoom                 Textures zoom                   Noise zoom
+                            JG
+Figure 4: Results given by Fλ,µ1 ,µ2
+                                     applied on Barbara. First row gives the
+whole images and second row zooms on a section of the images.
+
+
+3      Aujol-Chambolle’s algorithm
+In [6], the authors propose another model to decompose an image into three
+parts. Their assumption is to consider noise as a distribution modelized by the
+               ∞
+Besov space Ḃ−1,∞ , and the following functional is used:
+                                  
+                                  v       w
+  AC
+ Fλ,µ,δ (u, v, w) = J(u) + J ∗       + B∗     + (2λ)−1 ∥f − u − v − w∥2L2 , (22)
+                                  µ        δ
+
+where u ∈ BV ,v ∈ Gµ , w ∈ Eδ are defined by (we use the standard setting
+                                        p
+s = −1, p = q = +∞ for the Besov space Bs,q ):
+                           n                                 o
+                                  ∞
+                       Eδ = w ∈ Ḃ−1,∞ /∥w∥Ḃ ∞            ⩽δ .                  (23)
+                                                    −1,∞
+
+
+   The term B ∗ (.) is the indicator function on Eδ defined in the same way as
+equation (13). Then the minimizer is given by (see [6]):
+
+            û = f − v̂ − ŵ − PGλ (f − v̂ − ŵ),                                (24)
+            v̂ = PGµ (f − û − ŵ),                                              (25)
+            ŵ = PEδ (f − û − v̂) = f − û − v̂ − W ST (f − û − v̂, 2δ),       (26)
+
+where W ST (f − û − v̂, 2δ) is the Wavelet Soft Thresholding
+                                                   √             operator applied
+on f − û − v̂ with a threshold set to 2δ (δ = ησ log N and N is the number
+of pixels, η is a tuning parameter, see [12, 9]). A numerical iterative algorithm
+
+
+                                          7
+      Noisy original image                           Structures
+
+
+
+
+            Textures                                    Noise
+                                JG
+    Figure 5: Results given by Fλ,µ 1 ,µ2
+                                          applied on the real outdoor image.
+
+
+can be deduced from these formula (see [6]).
+
+   Figures 6, 7, 8 give the results obtained with this model on the same three
+image test used in the previous section. The parameters are set to
+   • Synthetic: µ = 1000, λ = 20, σ = 20, η = 0.2,
+   • Barbara: µ = 100, λ = 1, σ = 20, η = 0.1,
+   • Outdoor: µ = 5000, λ = 20, σ = 20, η = 0.1.
+    We can see that the textures are better denoised by this model. This is
+a consequence of a better noise modeling by distributions in the Besov space.
+But the residual texture is more important than the one given by our algorithm
+in the noise part. This behavior is certainly implied by the local adaptivity
+capabilities of our algorithm. In the next section, we propose to merge the use
+of Besov space and the local adpativity in a unique algorithm.
+
+
+                                       8
+               Noisy original image            Structures
+
+
+
+
+                    Textures                     Noise
+                                AC
+    Figure 6: Results given by Fλ,µ,δ applied on the synthetic image.
+
+
+
+
+  Structures                     Textures                     Noise
+
+
+
+
+Structures zoom                Textures zoom                Noise zoom
+                                     AC
+         Figure 7: Results given by Fλ,µ,δ applied on Barbara.
+
+
+
+
+                                      9
+      Noisy original image                             Structures
+
+
+
+
+            Textures                                     Noise
+                                       AC
+           Figure 8: Results given by Fλ,µ,δ applied on the outdoor.
+
+
+4    Adaptative wavelet algorithm
+                                                         ∞
+We saw in the previous sections that the Besov space Ḃ−1,∞   is better adapted
+to modelize the noise than the set Gµ (where µ is very small). In the same
+way, we saw that local adaptivity implies a decrease of the residual quantity of
+texture in the noise part. So the question is: how to merge these advantages in
+a unique algorithm? We propose the following model as an answer:
+
+                                      w
+                                v
+  JG2
+ Fλ,µ,δ (u, v, w) = J(u)+J ∗       +B ∗     +(2λ)−1 ∥f −u−ν1 v −ν2 w∥2L2 , (27)
+                                µ        δ
+
+   where u ∈ BV, v ∈ G, w ∈ Eδ (as defined in the previous section) and the νi
+functions are the ones defined in section 2. A minimizer is given by the following
+proposition.
+
+
+
+                                         10
+      Figure 9: Local smoothed partition ν and it’s pyramidal version ν̃.
+
+Proposition 4.1 Let u ∈ BV , v ∈ Gµ , w ∈ Eδ be the structures, textures and
+noise parts respectively and (ν1 (f )(x, y), ν2 (f )(x, y)) be defined as in proposition
+2.1. Then a minimizer of:
+                                                             JG2
+                  (û, v̂, ŵ) ∈          arg           min Fλ,µ,δ (u, v, w)             (28)
+                                   (u,v,w)∈BV ×Gµ ×Eδ
+
+is given by:
+        û = f − ν1 v̂ − ν2 ŵ − PGλ (f − ν1 v̂ − ν2 ŵ),
+                                   
+                     f − û − ν2 ŵ
+         v̂ = PGµ                     ,
+                        ν1 + κ
+                                                                         2δ 2 ν̃22
+                                                                                  
+              f − û − ν1 v̂       λ     ˆ       δν2
+        ŵ =                 − 2        W ST          (f − û − ν1 v̂) ;             ,
+                ν2 + κ         δν2 + κ            λ                        λ
+
+where PGλ is the Chambolle’s nonlinear projector defined in [4] and W ˆST (f, δ)
+is a modified Wavelet Soft Thresholding of f . The threshold is dependent on the
+location in each wavelet coefficient, ν˜2 is a pyramidal version of ν2 (see fig 9).
+
+
+    A proof of this proposition is given in appendix B.
+
+   This “merged-algorithm” gives the results showed in figure 10, 11.and 12.
+The parameters are set to
+    • Synthetic: µ = 1000, λ = 50, σ = 20, η = 0.7, window’s size for νi = 7,
+    • Barbara: µ = 1000, λ = 30, σ = 20, η = 0.5, window’s size for νi = 7,
+    • Outdoor: µ = 1000, λ = 30, σ = 20, η = 0.3, window’s size for νi = 5.
+    As we expected, the combination of the two properties (Besov space and
+local adaptivity) increases the quality of the decomposition. Textures are better
+denoised and the noise part contains less residual texture. However, the noise
+is “damaged” by the local behaviour of the algorithm.
+
+
+5     Conclusion
+In this paper, we presented an original extension of the two components image
+decomposition algorithm of Aujol et al [1] in order to deal with the case of
+
+
+                                                11
+                 Noisy original image            Structures
+
+
+
+
+                      Textures                     Noise
+                               JG2
+  Figure 10: Results given by Fλ,µ,δ (u, v, w) applied on the synthetic image.
+
+
+
+
+    Structures                     Textures                       Noise
+
+
+
+
+  Structures zoom                Textures zoom                 Noise zoom
+                                    JG2
+       Figure 11: Results given by Fλ,µ,δ (u, v, w) applied on Barbara.
+
+
+noisy images. This new algorithm uses the assumption that noise is a highly
+
+
+
+                                        12
+      Noisy original image                           Structures
+
+
+
+
+            Textures                                    Noise
+                               JG2
+  Figure 12: Results given by Fλ,µ,δ (u, v, w) applied on the outdoor image.
+
+
+oscillatory function and uses a local adaptivity principle. We compared our
+results with ones obtained by the Aujol-Chambolle’s algorithm and we then
+proposed a “merged-algorithm” which incorporates the advantages of the two
+preceding models. The results are quite promising. Futur work will focus on
+the choice of the different parameters. This choice is still not automated, and
+a manual choice of the good parameters is not an easy task. Another line
+of research is on the choice of the functions νi . Another modeling of the local
+behavior of the image may be obtained from a local approximation of oscillation
+quantity in term of the G−norm. Some other interesting works are done in
+[14, 18, 16, 17, 15] where different functional spaces are tested and may be an
+alternative way to the space G. It is another important issue to built objective
+comparison criteria, for comparing the different decomposition algorithms. We
+developped metrics adapted to each image component. These metrics will be
+describe in a futur paper.
+
+
+
+                                      13
+Acknowledgements
+The author would like to thank Prof. Yves Meyer for his salient remarks in the
+redaction of this paper. We also wants to thank the reviewers for their remarks
+which resulted in a great improvement of the paper.
+
+
+A     Appendix A
+The proof of proposition 2.1 is largely inspired from [4], but is detailed now for
+the reader convenience.
+The Euler-Lagrange equations with respect to u are
+
+                     1
+                    − (f − u − ν1 v − ν2 w) + ∂J(u) ∋ 0                         (29)
+                     λ                                
+                            ∗   1
+                   ⇔ u ∈ ∂J       (f − u − ν1 v − ν2 w) .                       (30)
+                                λ
+
+By adding f − u − ν1 v − ν2 w on each side and multiplying by λ1 , it is deduced:
+
+            1                           1
+              (f − ν1 v − ν2 w) ∈       λ (f − u − ν1 v − ν2 w) +               (31)
+            λ
+                                     1    ∗   1
+                                                                        
+                                     λ ∂J     λ (f − u − ν1 v − ν2 w)       .
+
+By setting η = (f − u − ν1 v − ν2 w)/λ, it comes:
+                       1                        1
+                         (f − ν1 v − ν2 w) ∈ η + ∂J ∗ (η).                      (32)
+                       λ                        λ
+Thus, using the results in [4], we get
+                                        
+                      1                    1
+            η = PG      (f − ν1 v − ν2 w) = PGλ (f − ν1 v − ν2 w).              (33)
+                      λ                    λ
+
+Using the expression of η we conclude that
+
+                   û = f − ν1 v − ν2 w − PGλ (f − ν1 v − ν2 w).                (34)
+
+    The u part is now completed. To compute the v and w parts, we use the
+following lemma.
+
+Lemma A.1 Let be f ∈ L2 (R2 ), v ∈ Gµ and ν : R2 →]0; 1[. As ν is more
+regular than v, we assume ν as locally constant compared to v (this assumption
+is like a first-order assumption). Then the solution:
+                                                        
+                                    −1          2     ∗  v
+                   v̂ = arg inf (2λ) ∥f − νv∥L2 + J                       (35)
+                        v∈Gµ                             µ
+
+can be approximated by:                       
+                                              f
+                                    v̂ = PGµ                                    (36)
+                                              ν
+
+
+
+                                         14
+   By setting η = µv , we get
+
+                         F (η) = (2λ)−1 ∥f − µνη∥2L2 + J ∗ (η)                         (37)
+
+and now we seek for
+                                        η̂ = arg inf F (η).                            (38)
+                                              η
+
+   First, let’s show that it exists some Fm (η) and FM (η) such that
+
+                                  Fm (η) ⩽ F (η) ⩽ FM (η).                             (39)
+
+   Let’s begin by FM (η),
+                                                                2
+                                                     f
+                   F (η) = (2λ)−1 µν                    −η                + J ∗ (η)    (40)
+                                                     µν              L2
+                                                                      2
+                                                         f
+                           ⩽ (2λ)−1 ∥µν∥2L2                 −η    + J ∗ (η)            (41)
+                                                         µν    L2
+
+   then we choose
+                                                                      2
+                                                         f
+                  FM (η) = (2λ)−1 ∥µν∥2L2                   −η    + J ∗ (η).           (42)
+                                                         µν    L2
+
+   Now let’s deal with Fm (η), if we choose
+                                                                      2
+                                             µ           f
+                  Fm (η) = (2λ)−1                           −η    + J ∗ (η).           (43)
+                                           ∥ν∥2L2        µν    L2
+
+   We have
+                                    2                                      2
+                         f                 1                    f
+                            −η    ⩽ ∥ν∥2L2                         −η                  (44)
+                         µν    L2          ν                    µν             L2
+then
+                                             2                             2
+                    1             f          1                  f
+               =⇒                    −η    ⩽                       −η                  (45)
+                  ∥ν∥2L2          µν    L2   ν                  µν             L2
+                                                                                2
+                                                          1
+                                                     =        (f − µνη)                (46)
+                                                         µν 2           L2
+                                                                 2
+                                                          1
+                                                     ⩽                ∥f − µνη∥2L2 .   (47)
+                                                         µν 2    L2
+
+                    1     2
+We suppose that     ν2    L2
+                             ≲ 1 (we can verify it in all our experiments). Then
+                                                 2
+                           1       f         1
+                                      −η    ⩽ ∥f − µνη∥2L2 .                           (48)
+                         ∥ν∥2L2    µν    L2  µ
+This implies
+                                         Fm (η) ⩽ F (η)                                (49)
+   Now we want to characterize F (η) by studying the behaviour of Fm (η) and
+FM (η). First, as the three energy are convex, we have
+
+                          inf Fm (η) ⩽ inf F (η) ⩽ inf FM (η).                         (50)
+
+
+                                                  15
+               min                   min
+Let calculate Fm   = inf Fm (η) and FM   = inf FM (η). First, we have
+
+                                 η̂M = arg inf FM (η).                           (51)
+                                               η
+                                                            
+                               −1                      f
+                    ⇐⇒ −(2λ)        ∥µν∥2L2               − η + ∂J ∗ (η) ∋ 0     (52)
+                                                       µν
+                                         2λ               f
+                            ⇐⇒ η +             ∂J ∗ (η) ∋                        (53)
+                                       ∥µν∥2L2            µν
+Chambolle [4] shows that
+                                                                  
+                                           f                1       f
+                           η̂M = PG1                    =     PG                 (54)
+                                           µν               µ µ     ν
+
+and then                                                             2
+                                                        f           f
+                       min
+                      FM   = (2λ)−1 ∥ν∥2L2                − PGµ          .       (55)
+                                                        ν           ν L2
+By the same way, we find that
+                                                                  
+                                           f             1          f
+                           η̂m = PG1                    = PG µ                   (56)
+                                           µν            µ          ν
+
+and                                                 2
+                         min   (2λ)−1    f         f
+                        Fm   =             − PG µ       .                        (57)
+                               ∥ν∥2L2    ν         ν L2
+                                          2
+                                f        f
+Then if we set B = (2λ)−1       ν − PG µ ν    , we get
+                                                         L2
+
+                            B
+                                 ⩽ F min = F (η̂) ⩽ B∥ν∥2L2                      (58)
+                          ∥ν∥2L2
+                                           2
+Remind that we suppose that ν12 L2 ≲ 1, in pratice we can easily check that
+∥ν∥L2 ≈ 1 and as η̂m = η̂M , a good approximation of η̂ is given by
+                                          
+                                    1      f
+                                η̂ = PGµ                               (59)
+                                    µ      ν
+
+      Since η̂ = µv̂ , we conclude the proof of the lemma that v̂ is well approximated
+by:                                            
+                                               f
+                                     v̂ = PGµ     .                              (60)
+                                               ν
+                                         JG
+   We apply this lemma two times to Fλ,µ   1 ,µ2
+                                                 (u, v, w). Then v̂ is obtained
+from u and w, while ŵ is obtained from u and v. This concludes the proof of
+proposition 2.1.
+
+
+
+
+                                                   16
+B     Appendix B
+Now, we give the proof of proposition 4.1 of section 4. First, it is easy to see that
+for the components u and v, the proof is the same as the one of proposition 2.1
+given in appendix A. So we will focus on w and then suppose the components
+u and v are fixed. We need to find
+                        n                                          w o
+                                                        2
+          ŵ = arg min (2λ)−1 ∥f − u − ν1 v − ν2 w∥L2 + B ∗               .      (61)
+               w∈Eδ                                                  δ
+
+To get this solution, the following lemma will be used
+
+Lemma B.1 Let f ∈ L2 , w ∈ Eδ and ν : R2 →]0; 1[. Assume that, the function
+ν can be considered as locally constant compared to the variation of v. Then the
+minimizer:                      n                         w o
+                ŵ = arg min (2λ)−1 ∥f − νw∥2L2 + B ∗                       (62)
+                     w∈Eδ                                  δ
+is given by:
+                                                  δf ν 2δ 2 ν̃ 2
+                                                                  
+                           f  λ
+                       ŵ = − 2 W ST                  ;                ,        (63)
+                           ν δν                    λ     λ
+.
+where W ST (f, δ) is the Wavelet Soft Thresholding operator (see [9, 12]).
+   The proof is based on the differentiation of (62) with respect to w. Using
+the Euler-Lagrange equation, we get
+                           ν             1     w
+                      0 ∈ − (f − νw) + ∂B ∗                                (64)
+                           λ         δ          δ
+                           w          δν(f − νw)
+                         ⇔    ∈ ∂B                  .                      (65)
+                            δ              λ
+
+Let η = δν(fλ−νw) . Then
+                              λ       f
+                             0∈    η−     + ∂B(η)                               (66)
+                            δ2 ν 2    δν
+                              δf ν    δ2 ν 2
+                        ⇔0∈η−       +        ∂B(η).                             (67)
+                                λ       λ
+This comes from the Euler-Lagrange equation of
+                          (                               )
+                                      2
+                            1    δf ν      δ2 ν 2
+                  arg inf     η−         +        ∥η∥B1,1
+                                                      1     .                   (68)
+                 η∈L2       2     λ L2       λ
+
+Based on the result of Chambolle et al. [9] and because we suppose the ν
+behaves locally as a constant compared to η, we get
+                                       δf ν 2δ 2 ν̃ 2
+                                                     
+                           η̂ = W ST       ;                        (69)
+                                        λ     λ
+where ν̃ is the pyramidal version of ν defined in section 4. Now, we get from
+the expression of η̂:
+                             δν 2 ŵ          δf ν 2δ 2 ν̃ 2
+                                                            
+                      δf ν
+                           −         = W ST       ;                       (70)
+                       λ       λ               λ     λ
+
+                                         17
+                                                δf ν 2δ 2 ν̃ 2
+                                                                
+                             f   λ
+                    ⇒ ŵ =     − 2 W ST             ;                .      (71)
+                             ν  δν               λ     λ
+   In order to end the proof of proposition 4.1, we just have to substitute f by
+f − u − ν1 v and ν by ν2 in the previous lemma. Then we get:
+
+                                                               2δ 2 ν̃22
+                                                                        
+               f − u − ν1 v    λ          δν2
+          ŵ =              − 2 W ST          (f − u − ν1 v) ;             . (72)
+                    ν2        δν2          λ                     λ
+
+References
+ [1] J.F. Aujol and G. Aubert and L. Blanc-Féraud and A. Chambolle, De-
+     composing an image: Application to SAR images, Scale-Space’03, Lecture
+     Notes in Computer Science, Vol 1682, 2003.
+ [2] L. Vese and S. Osher, Modeling textures with total variation minimization
+     and oscillating patterns in image processing, Journal of Scientific Comput-
+     ing, Vol 19, No 1-3, 553–572, 2002.
+ [3] Y. Meyer, Oscillating patterns in image processing and in some nonlinear
+     evolution equations, The Fifteenth Dean Jacquelines B. Lewis Memorial
+     Lectures, American Mathematical Society, 2001.
+ [4] A. Chambolle, An algorithm for total variation minimization and applica-
+     tions, Journal of Mathematical Imaging and Vision, Vol 20, No 1-2, 89–97,
+     2004.
+ [5] L. Rudin and S. Osher and E. Fatemi, Nonlinear total variation based noise
+     removal algorithms, Physica D, Vol 60, 259–268, 1992.
+ [6] J.F. Aujol and A. Chambolle, Dual norms and image decomposition mod-
+     els, International Journal of Computer Vision, Vol 63, No 1, 85-104, 2005.
+ [7] G. Gilboa and Y. Zeevi and N. Sochen, Texture preserving variational
+     denoising using an adaptive fidelity term, IEEE Trans. Image Proc, Vol
+     15(8), 2281–2289, 2006.
+ [8] G. Gilboa and N. Sochen and Y. Zeevi, Estimation of optimal PDE-based
+     denoising in the SNR sense, IEEE Trans. Image Proc, Vol 15(8), 2269–2280,
+     2006.
+ [9] A. Chambolle and R.A. DeVore and N. Lee and B.J. Lucier, Nonlinear
+     wavelet image processing: variational problems, compression and noise re-
+     moval through wavelet shrinkage, IEEE Trans. on Image Processing, Vol 7,
+     319–335, 1998.
+[10] J.F. Aujol and G. Gilboa and T. Chan and S. Osher, Structure-texture
+     image decomposition-modeling, algorithms and parameter selection, Inter-
+     national Journal of Computer Vision, Vol 67, No 1, 111–136, 2006.
+[11] J.F. Aujol, Contribution à’ l’analyse de textures en traitement d’images
+     par méthodes variationnelles et équations aux dérivées partielles, PhD,
+     Université de Nice Sophia Antipolis, 2004.
+
+
+                                       18
+[12] D. Donoho, De-noising by soft-thresholding, IEEE Trans. Inform. Theory,
+     Vol 41, 613–627 1995.
+
+[13] J. Gilles, Décomposition et détection de structures géométriques
+     en imagerie,       PhD, Ecole Normale Supérieure de Cachan,
+     http://jerome.gilles91.free.fr, 2006.
+[14] A. Haddad, Méthodes variationnelles en traitement d’image, PhD, Ecole
+     Normale Supérieure de Cachan, 2005.
+
+[15] L. Lieu, Contribution to Problems in Image Restoration, Decomposition,
+     and Segmentation by Variational Methods and Partial Differential Equa-
+     tions, Ph.D. Thesis, CAM Report 06-46, 2006.
+[16] J.B. Garnett and T.M. Le and Y. Meyer and L. Vese, Image Decompositions
+     Using Bounded Variation and Homogeneous Besov Spaces, CAM Report
+     05-57, 2005.
+[17] T.M. Le and L. Vese, Image decomposition using total variation and
+     div(BMO), CAM Report 04-36, 2004.
+[18] A. Haddad and Y. Meyer, Variational Methods in Image Processing, CAM
+     Report 04-52, 2004.
+
+
+
+
+                                    19
+

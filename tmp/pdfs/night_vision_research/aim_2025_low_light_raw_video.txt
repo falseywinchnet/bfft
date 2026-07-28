@@ -1,0 +1,765 @@
+                                                                  AIM 2025 Low-light RAW Video Denoising Challenge:
+                                                                            Dataset, Methods and Results
+
+                                                  Alexander Yakovenko† George Chakvetadze† Ilya Khrapov† Maksim Zhelezov†
+                                                  Dmitry Vatolin† Radu Timofte† Youngjin Oh Junhyeong Kwon Junyoung Park
+                                                 Nam Ik Cho Senyan Xu Ruixuan Jiang Long Peng Xueyang Fu Zheng-Jun Zha
+                                                        Xiaoping Peng Hansen Feng Zhanyi Tie Ziming Xia Lizhi Wang
+
+
+
+
+arXiv:2508.16830v1 [cs.CV] 22 Aug 2025
+                                                                       Abstract
+
+                                         This paper reviews the AIM 2025 (Advances in Image Ma-
+                                         nipulation) Low-Light RAW Video Denoising Challenge.
+                                         The task is to develop methods that denoise low-light RAW
+                                         video by exploiting temporal redundancy while operat-
+                                         ing under exposure-time limits imposed by frame rate and
+                                         adapting to sensor-specific, signal-dependent noise. We
+                                         introduce a new benchmark of 756 ten-frame sequences
+                                         captured with 14 smartphone camera sensors across nine
+                                         conditions (illumination: 1/5/10 lx; exposure: 1/24, 1/60,
+                                                                                                                          Figure 1. Challenge teaser image. A section of spring scene
+                                         1/120 s), with high-SNR references obtained via burst av-                        showcasing the different capture conditions (varying illumination
+                                         eraging. Participants process linear RAW sequences and                           and exposure). The raw .dng files produced by smartphone were
+                                         output the denoised 10th frame while preserving the Bayer                        rendered to sRGB with Adobe Photoshop [3] for visualization with
+                                         pattern. Submissions are evaluated on a private test set us-                     slightly improved contrast and saturation.
+                                         ing full-reference PSNR and SSIM, with final ranking given
+                                         by the mean of per-metric ranks. This report describes the
+                                         dataset, challenge protocol, and submitted approaches.                           dress. Temporal aggregation can increase effective signal-
+                                                                                                                          to-noise-ratio (SNR), yet robust multi-frame denoising is
+                                                                                                                          challenging due to inter-frame misalignment and scene mo-
+                                         1. Introduction                                                                  tion, and because the RAW measurements exhibit sensor-
+                                                                                                                          specific, signal-dependent noise characteristics.
+                                         Low-light RAW video denoising is critical for both con-                              Various denoising approaches have been explored. Clas-
+                                         sumer photography and downstream computer-vision ap-                             sical non-local methods group similar patches and jointly
+                                         plications. In extremely dim conditions, sensors must op-                        filter them [8, 18], with temporal extensions as long-
+                                         erate at high gain and short exposure; moreover, unlike                          standing baselines [6, 40]. Learned models replaced hand-
+                                         still imaging, video imposes an upper bound on exposure                          crafted priors with CNN/RNN designs, in single-frame and
+                                         time to maintain a target frame rate (e.g., 1/24-1/120 s),                       multi-frame settings [15, 48, 49, 60, 61]. Real low-light
+                                         preventing simple exposure increases to collect more light.                      RAW data revealed poor transfer from sRGB or additive-
+                                         As a result, read noise, photon shot noise, and sensor-                          Gaussian training; RAW datasets made this gap explicit and
+                                         specific artifacts dominate [27, 54], producing severe degra-                    standardized evaluation [1, 45]. Camera/ISP-aware data
+                                         dation that single-image algorithms cannot adequately ad-                        generation synthesizes RAW measurements with signal-
+                                             † Alexander Yakovenko, George Chakvetadze, Ilya Khrapov, Maksim
+                                                                                                                          dependent noise [2, 7, 26, 58]. For dynamic scenes, RAW
+                                         Zhelezov, Dmitry Vatolin, and Radu Timofte are the challenge organizers.         video datasets support supervised learning under realistic
+                                         The other authors participated in the challenge. Each team described its         motion and gain [56, 57]. Recent method families include
+                                         own method in the report. Appendix A contains the teams, affiliations, and       single-image restorers [12, 36, 53, 59], burst fusion [19, 41],
+                                         architectures if available.
+                                                                                                                          and video models that aggregate long-range context with
+                                         AIM 2025 webpage: https://cvlai.net/aim/2025.
+                                         Challenge Page: https : / / codabench . org / competitions /                     alignment/consistency handling [9, 37, 38, 56, 57].
+                                         8729/.                                                                               Modern methods typically train on aligned noisy/clean
+
+
+                                                                                                                      1
+pairs. SIDD [1] is a widely used single-image benchmark                                       3.
+with diverse sensors and a high-quality ground-truth pro-
+cedure. Extending to video is harder: reproducing iden-                     1.
+tical trajectories is difficult, so object-motion datasets [56]
+still exhibit noticeable misalignment; remote rigs [4, 23, 51]
+achieve alignment but yield low-/normal-light pairs, not
+suited for denoising. Exposure-dependent blur further pre-
+vents capturing matched sequences at different exposures
+(unlike single-image low-light denoising [10]). Conse-                                                                             4.
+quently, existing low-light video datasets [11, 42] lack
+motion-consistent ground truth.
+   To stimulate progress under realistic constraints, we or-
+
+
+                                                                                                                      Ti
+                                                                                                                       me-
+                                                                                                                         To-
+                                                                                                                           Pos   «Mo
+                                                                                                                                   ve!
+                                                                                                                                     »
+ganized the AIM 2025 Low-Light RAW Video Denoising                                   2.                        !»
+                                                                                                             l
+                                                                                                             im
+Challenge and propose a new multi-device, multi-condition                 1.Sce
+                                                                              ne                           «F
+                                                                                                           ps
+dataset. Using an automated rail, we recorded 10-frame                    2.Phone                       te
+                                                                                                          m
+                                                                                                       es
+RAW bursts from 14 smartphone sensors (wide, ultraw-                      3.Li
+                                                                             ghtSo urce             T
+                                                                                                     m
+                                                                                                     i
+ide, telephoto, and front modules across five device) un-                 4.RailControl
+                                                                                      ler
+der nine conditions (exposure 1/24, 1/60, 1/120 s; illumi-                5.Coordi
+                                                                                 na t
+                                                                                    ingDe vi
+                                                                                           ce                 5
+                                                                                                              .
+nation 1/5/10 lx). Six controlled-lighting scenes yield 756
+sequences for training/validation; a seventh is held out for
+testing. High-SNR references are obtained via burst aver-             Figure 2. Data capture setup. The scene (1) is illuminated by a
+aging (200 frames for train/val; 500 for test), extending the         controlled light source (3) and recorded by a smartphone camera
+SIDD protocol [1] to video. This provides realistic noise             (2) mounted on a motorized rail. A rail controller (4) manages
+statistics and repeatability without synthetic degradations,          precise stage translations, while a coordinating device (5) syn-
+establishing a fair benchmark and public leaderboard.                 chronizes motion and image acquisition via wireless commands.
+                                                                      This setup ensures repeatable, precisely aligned captures under
+    This challenge is one of the AIM 2025 workshop as-                controlled illumination, enabling consistent data collection across
+sociated challenges on: high FPS non-uniform motion de-               sensors and capture conditions.
+blurring [14], rip current segmentation [20], inverse tone
+mapping [50], robust offline video super-resolution [32],
+screen-content video quality assessment [47], real-world              2.1. Challenge data
+raw denoising [16], perceptual image super-resolution [17],
+efficient real-world deblurring [24], 4K super-resolution             For data capturing purposes we construct an automated data
+on mobile NPUs [28], efficient denoising on smartphone                acquisition pipeline. The schematic of our setup is shown in
+GPUs [30], efficient learned ISP on mobile GPUs [29], and             Fig. 2. We rigidly mount each smartphone on a motorized
+stable diffusion for on-device inference [31]. Descriptions           linear translation stage. Both stage motion and camera trig-
+of the datasets, methods, and results can be found in the             gering are controlled from NVIDIA Jetson Nano. For image
+corresponding challenge reports.                                      acquisition we modified the Pani [13] RAW-Burst captur-
+                                                                      ing app by combining it with libsoftwareasync [5], which
+                                                                      enabled us to capture RAW bursts with arbitrary camera
+2. Challenge                                                          settings and full remote control. We capture the data in a
+                                                                      stop-motion manner: move the phone to a location, capture
+Existing low-light video datasets include data from only a            a frame, move to the next location, capture a frame, and so
+small number of sensors and usually either provide poorly             on until the sequence is complete.
+aligned ground truths or opt to rely on synthetic degra-                 We use a photo box and a non-flickering LED light for
+dation models which limits their applicability for bench-             fine-grained control over scene illumination. We use a large
+marking real-world video denoising performance. To offer              assortment of both textured and textureless objects such as
+a stronger benchmark, we capture a new dataset using 14               toys, books, fake flowers, etc. to ensure a wide variety of
+smartphone cameras and additionally obtain high-SNR ref-              content in the captured scenes. We set the illuminance of
+erences as ground truth. This dataset forms the basis of the          each scene capture to 1 lx, 5 lx, or 10 lx which we verify
+AIM 2025 Low-Light RAW Video Denoising Challenge.                     using a luxmeter.
+                                                                         Three frame-rate conditions (24 fps, 60 fps, 120 fps) are
+                                                                      emulated by changing the exposure times and by translating
+   https://www.cvlai.net/aim/2025/                                    the stage with different step sizes between successive shots,
+
+
+                                                                  2
+                                                                                hardware                spring                 color
+
+
+
+
+                                                                                   toys                  yarn                   folk
+
+                                                                            Figure 4. Dataset scene overview. We collected 6 distinct scenes
+                                                                            with varying content. We included objects with varying levels
+                                                                            of details. Pictures shown were taken using the main camera of
+Figure 3. Capture protocol. Different capture settings are em-              Google Pixel 7 Pro at 1/24 s exposure and with 10 lx of illumina-
+ulated by varying both the exposure time and the amount of mo-              tion. Viewer is advised to zoom in.
+tion between frames. The translation distance between consecu-
+tive frames is scaled linearly with the effective ‘frame rate’ of the       Table 2. Camera sensor list. The dataset was captured using
+capture. At the final position, an additional large burst is recorded       14 camera sensors from 5 smartphones. For each sensor, we also
+for ground-truth calculation.                                               report the maximum supported ISO, as some sensors could not
+                                                                            reach the designated ISO values listed in Tab. 1.
+
+for example, the displacement for the 1/24 s setting was five                     Device          Camera        Max ISO       Resolution
+times larger than for 1/120 s, matching a realistic trade-off
+between the exposure time and motion magnitude (see Fig.                                            Wide          1600        4080×3060
+                                                                               Samsung
+3). Sensor ISO is adjusted for each (lux, exposure) pair so                                       Ultrawide       10000       4080×3060
+                                                                             Galaxy Z Fold4
+that the brightness of all the sequences is roughly the same                                      Telephoto       10000       3648×2736
+(Tab. 1).                                                                                           Wide          7109        4032×3024
+                                                                                 Google
+                                                                                                  Ultrawide       9208        4032×3022
+Table 1. ISO settings for each illuminance (lux) and exposure-time               Pixel 5a
+                                                                                                    Front         10000       3280×2464
+combination used during data capture.
+                                                                                                    Wide          10000       4080×3072
+          Illuminance       1/24 s     1/60 s    1/120 s                          Google          Ultrawide       10000       4080×3072
+                                                                                Pixel 7 Pro       Telephoto        1143       4080×3072
+               10 lx          800      2 000      4 000                                             Front          3918       3440×2448
+                5 lx         1 250     3 125       6 250
+                                                                                Samsung             Wide          9993        4000×3000
+                1 lx         2 000     5 000      10 000
+                                                                               Galaxy S20         Ultrawide       10000       4000×3000
+                                                                                  POCO              Wide          10000       4000×3000
+    Each capture produces a 10-frame RAW sequence. To
+                                                                                  X3 Pro            Front         10000       2592×1940
+obtain a high-SNR reference for the target view (final frame
+of the sequence), we record a burst of additional frames and
+average them following the SIDD [1] benchmark. For train-
+ing/validation, we capture 200-shot bursts per sequence,                    and capture a total of 756 RAW video sequences (= 14 sen-
+whereas for testing we use 500-shot bursts to yield ground                  sors × 9 conditions × 6 scenes) to be used for method train-
+truths with even lower residual noise.                                      ing. An additional seventh scene is captured for testing, the
+    We collect our dataset using 14 camera modules across                   contents of this scene are constructed out of the same ob-
+five smartphones: Samsung Galaxy Z Fold4, Google Pixel                      jects but with slight changes to prevent overfitting; exactly
+5a, Google Pixel 7 Pro, Samsung Galaxy S20, and POCO                        one (lux, exposure) condition per sensor was selected at ran-
+X3 Pro; covering wide, ultrawide, telephoto, and front cam-                 dom and subsequently captured using our automated setup.
+eras (Tab. 2). This variety, together with the controlled
+motion, light levels, and burst-derived references, yields a
+                                                                            2.2. Challenge organization
+rigorous benchmark for low-light RAW video denoising.                       The challenge was set up using CodaBench [55] platform.
+    In total we create 6 capture scenes showcased in Fig. 4,                It consisted of two development stages and a final testing
+
+
+                                                                        3
+Table 3. Results of the AIM 2025 Low-light RAW Video De-                3.1. Test data results
+noising Challenge. PSNR and SSIM are computed on the 14 se-
+quences of the private test set. Final rankings are determined by       From 52 registered participants, 4 teams successfully en-
+averaging the ranks from both metrics.                                  tered the final phase, submitting valid results, executable
+                                                                        code, and method descriptions. Tab. 3 summarizes the final
+                                      Metric                            results, reporting PSNR and SSIM on the private test set,
+                     Multi-                            Final
+   Method                                                               while Fig. 6 presents qualitative examples on two represen-
+                     frame     PSNR ↑      SSIM ↑      rank
+                                                                        tative sequences.
+   SNU-ISPL            ✓        48.32       0.9879       1                  The best results were achieved by SNU-ISPL, closely
+   XJAI                ✓        48.19       0.9865       2              followed by XJAI, with a significant margin separating
+   AxeraAI             ×        46.52       0.9814       3              these two multi-frame solutions from the remaining single-
+   VMCL-ISP            ×        45.76       0.9682       4              frame approaches. This performance gap highlights the
+                                                                        substantial benefits of leveraging temporal information for
+   UNet w/ Attn        ✓        45.72       0.9797       —
+                                                                        low-light RAW video denoising. Both top-ranked teams ex-
+   UNet                ×        43.52       0.9691       —
+                                                                        ploited multiple noisy frames, whereas the other two sub-
+   Noisy               —        36.06       0.8093       —
+                                                                        missions relied on single-frame processing.
+                                                                            SNU-ISPL’s winning method, DarkVRAI, combines a
+                                                                        selective burst-scan mechanism with capture-condition con-
+stage. For the first development stage, hardware and                    ditioning for both alignment and denoising, achieving su-
+spring scenes were released for training, while a portion               perior temporal aggregation. XJAI adopts an efficient hi-
+of yarn scene was used as validation. For the second stage              erarchical transformer architecture with progressive refine-
+we released the rest of yarn sequences and full color and               ment, processing sequences of nine frames with noise vari-
+toys scenes, leaving folk to be used as validation. For                 ation to improve robustness. The third-ranked team, Axer-
+each validation subset we use the same 14 condition-sensor              aAI, focuses on convolutional models, employing a high-
+pairs as in the final test data. The data was released in the           performing single-frame NAFNet [12] baseline. VMCL-
+form of .npz compressed dictionaries each containing the                ISP builds on their prior YOND [22] framework, emphasiz-
+10-frame noisy video sequence along with 20 additional in-              ing data-centric noise modeling with a variance-stabilizing
+dependent noise realizations of the last frame and higher-              transform and Restormer-based denoiser [59].
+SNR GT obtained via a pipeline similar to SIDD [1]. All                     For reference, we also include two baselines: a single-
+images were transformed to [0, 1] value range by removing               image UNet [46] trained with a Noise2Noise [34] objec-
+black level and mapping white level to 1, the black/white               tive, and its channel-attention variant for noisy-frame fu-
+level values were retrieved from capture metadata.                      sion. Consistent with the challenge results, these baselines
+                                                                        further confirm the advantage of multi-frame processing for
+2.3. Evaluation                                                         RAW video denoising.
+
+For evaluation, we compute PSNR and SSIM [52] on the                    3.2. Extended results on validation data
+linear, mosaicked RAW data. Each submission is ranked
+                                                                        We further study the cross-sensor and cross-condition per-
+according to both metrics, and the average of the two ranks
+                                                                        formance of the challenge methods using the complete
+determines the final leaderboard position.
+                                                                        folk scene, which contains data from all 14 sensors across
+                                                                        9 capture conditions. We select this scene in particular, be-
+2.4. Submissions                                                        cause most of these sequences were unseen during the train-
+                                                                        ing of participants’ solutions.
+For each validation / test sequence the participants were
+tasked with submitting the center 1024×1024 crop of the                 3.2.1. Cross-sensor performance
+denoised 10th frame, preserving both the linear RAW for-
+                                                                        Tab. 4 reports PSNR values averaged over all capture con-
+mat and the Bayer pattern. In order to be eligible for inclu-
+                                                                        ditions for each sensor. Among the multi-frame methods,
+sion in the final challenge report the teams were required to
+                                                                        SNU-ISPL is the most consistent, outperforming or match-
+send the code that reproduces the final submissions.
+                                                                        ing competitors on 9 out of 14 sensors. Its mean PSNR
+                                                                        is slightly lower than XJAI due to larger performance gaps
+3. Challenge results                                                    on the Galaxy Z Fold4 Telephoto and POCO X3 Pro Wide
+                                                                        cameras. We attribute part of this discrepancy to differ-
+In this section we showcase main challenge results on test              ences in ground truth quality between the validation and
+data and provide additional method performance analysis                 final test sets (200 vs. 500-frame averaging). For single-
+using held out portion of folk scene.                                   frame methods, AxeraAI achieves the highest per-sensor
+
+
+                                                                    4
+                                          SNU-ISPL                             XJAI
+                                                                                                       4. Challenge Methods and Teams
+                          10   49.86        47.47       47.75    50.14        48.25       47.81
+                                                                                                       4.1. SNU-ISPL
+
+      Illumination (lx)
+                          5    47.32        47.23       46.79    47.31        47.48       46.63        The SNU-ISPL team proposes a low-light RAW video de-
+                                                                                                       noising framework, DarkVRAI, that exploits the prior in-
+                                                                                                       formation related to a given low-light noisy video frame se-
+                          1    47.90        46.66       46.17    48.14        46.62       45.94
+                                                                                                       quence in both aligning and denoising process, and lever-
+                                          AxeraAI                          VMCL-ISP                    ages the temporal relationship between frames with a new
+                               49.09        46.76       45.83    49.16        46.78       45.61
+                                                                                                       selective scan mechanism.
+                          10
+                                                                                                           The prior information in the scope of this challenge are
+
+      Illumination (lx)
+                                                                                                       the sensor type, scene illuminance (lx), and frame rate (fps),
+                          5    46.18        45.85       44.45    46.39        45.66       44.06
+                                                                                                       but are not limited to these when additional information is
+                                                                                                       available. These auxiliary cues provide critical informa-
+                          1    46.83        45.16       43.58    46.81        44.87       42.84        tion for both the alignment and denoising of low-light RAW
+                               1/24         1/60         1/120   1/24         1/60         1/120
+                                                                                                       video frames. Further referred as the ‘capture conditions’.
+                                       Exposure time (s)                 Exposure time (s)
+                                                                                                           Furthermore, they introduce a Burst-Order Selective
+                                                                                                       Scan (BOSS) module that scans the frames in burst order
+Figure 5. Cross-condition performance. We test the submitted
+solutions on the folk scene and plot each methods performance
+                                                                                                       to capture the long-range dependency of temporal informa-
+(PSNR values) depending on the shooting conditions, averaged by                                        tion.
+all devices.                                                                                               Their framework DarkVRAI consists of two stages, each
+                                                                                                       assisted by the capture conditions. The framework takes 10
+                                                                                                       noisy consecutive RAW frames as an input, and produces a
+wins, leading on 10 out of 14 sensors. The multi-frame                                                 single denoised RAW frame. The overall pipeline is shown
+baseline UNet with attention consistently outperforms its                                              in Fig. 7, and each stage is illustrated in Fig. 8.
+single-frame variant, confirming that temporal information                                             Frame Alignment. For the frame alignment, they build
+is beneficial even for a relatively simple architecture.                                               upon the alignment module in [19]. The module is modified
+                                                                                                       to produce aligned features Fi , with the number of chan-
+3.2.2. Cross-condition performance                                                                     nels C as 48, from a sequence of 10 input RAW frames,
+                                                                                                       where each frame is packed according to their Bayer pat-
+Fig. 5 shows the performance of all methods across                                                     tern. BOSS module, which is based on [25], is applied in
+illumination-exposure combinations on the folk scene.                                                  front of each encoder and alignment stage to progressively
+While multi-frame methods generally achieve higher                                                     aggregate long-range temporal cues, ensuring robust and ac-
+PSNR, the magnitude of improvement depends on the noise                                                curate frame correspondence along the temporal axis.
+level. In bright conditions (10 lx, 1/24 s), all methods                                               Denoising. They choose convolutional NAFBlocks [12] to
+perform similarly, indicating that temporal information of-                                            build their network for the denoising stage. In this stage,
+fers limited gains when SNR is high. At shorter exposures                                              the aligned and enriched features Fi from the previous stage
+or lower illumination, performance differences widen, and                                              are further processed to remove noise and finally unpacked
+in the noisiest regime (1 lx, 1/120 s) the best multi-frame                                            to produce a single restored RAW frame. The number of
+methods exceed single-frame approaches by over 3 dB.                                                   blocks for the encoder and decoder stages are 4,4,4 each,
+    We observe that (i) XJAI maintains more even perfor-                                               and 8 for the bottleneck stage.
+mance across illumination levels, particularly at intermedi-                                           Conditioning with Capture Conditions. Inspired by [43],
+ate exposures, (ii) SNU-ISPL remains competitive across                                                each capture condition is first one-hot encoded and trans-
+most conditions but shows slightly larger drops in some                                                formed into a trainable representative degradation vector,
+extreme settings, and (iii) single-frame methods (Axer-                                                optimized through end-to-end training. This vector is then
+aAI, VMCL-ISP) degrade more sharply in low-light, short-                                               used to condition both alignment and denoising networks
+exposure regimes, reflecting the limits of spatial-only de-                                            via adaptive layer normalization [44].
+noising in RAW video.                                                                                  Implementation Details. The training data containing 5
+    Overall, while mean PSNR determines leaderboard po-                                                scenes provided by the challenge organizers is cropped into
+sition, per-sensor and per-condition analyses highlight dif-                                           patches of size 256 with stride 192. The proposed method
+ferences in robustness: some methods achieve higher peak                                               is trained solely on this challenge data without further aug-
+performance on select sensors or conditions, whereas others                                            mentation to preserve the Bayer pattern. The model is
+offer more uniform results across the entire range of capture                                          trained using Adam optimizer [33] (β1 = 0.9, β2 = 0.999)
+setups.                                                                                                with an initial learning rate of 2e-4, gradually decaying to
+
+
+                                                                                                   5
+Table 4. Cross-sensor performance. We test the performance of submitted solutions on the folk scene and list PSNR values correspond-
+ing to each camera sensor. We list the phone model and the camera module: W, UW, T, F — stand for Wide, Ultrawide, Telephoto, and
+Front camera sensors, respectively.
+
+                      Samsung                                                                                                           Samsung                       POCO
+                                             Google Pixel 5a              Google Pixel 7 Pro
+ Method             Galaxy Z Fold4                                                                                                     Galaxy S20                     X3 Pro
+                   W      UW        T       W       UW        F       W           UW                   T                 F              W                UW         W                F
+ SNU-ISPL        52.36 49.44 46.15 43.16 46.69 45.56 45.40 45.18 53.00 45.79 52.60 45.19 45.53 48.39
+ XJAI            52.04 49.44 47.60 43.01 46.66 45.02 45.45 45.12 53.30 45.47 52.73 45.07 47.01 48.36
+ VMCL-ISP        46.92 48.07 45.17 41.01 44.51 43.44 44.43 43.19 52.48 43.45 52.51 43.46 46.19 46.35
+ AxeraAI         48.63 47.92 46.04 41.19 44.92 43.49 44.69 42.96 52.51 43.54 51.77 43.32 46.24 46.37
+ UNet w/ Attn 49.45 46.84 45.93 39.74 44.03 41.77 42.14 42.35 50.66 43.47 49.74 42.90 44.32 45.70
+ UNet         46.86 43.68 43.81 38.78 42.22 40.52 40.91 40.88 49.06 41.68 46.51 40.63 43.50 43.30
+
+
+
+
+     Noisy frame           VMCL-ISP                AxeraAI                  XJAI                                     SNU-ISPL                                Ground Truth
+
+Figure 6. Qualitative comparison. Two sequences from final test data are selected for visual comparison. Viewer is advised to zoom in.
+
+
+                                                                                                Burst-Order                         Capture conditions
+                                                                                                                                                                   Overall Pipeline
+1e-6 using Cosine Annealing scheduling [39], for 300K it-                                  …
+                                                                                               Selective Scan                           Sensor type
+                                                                                                                                     Scene illumination
+erations with batch size of 4 using a combination of L1                   Noisy video frames
+                                                                           10 × 𝐻 × 𝑊 × 1
+                                                                                                                𝑇                  Frame rate (exposure)
+                                                                                                                                                                       Restored frame
+and MS-SSIM loss [52] in an end-to-end manner. All ex-                           packing
+                                                                                                  Alignment stage          Aligned frame         Denoising stage
+                                                                                                                                                                         𝐻×𝑊×1
+                                                                                                                             features 𝐹𝑖
+                                                                                                                                                                         unpacking
+periments were performed using PyTorch framework and                                  …
+                                                                                                                             𝐻 𝑊
+                                                                                                                               × ×𝐶
+                                                                                                                             2 2
+                                                                                                BOSS            BOSS
+NVIDIA RTX 3090 GPUs.                                                     10 ×
+                                                                                 𝐻 𝑊
+                                                                                  × ×4
+                                                                                 2 2
+                                                                                                                    Base frame residual connection
+
+4.2. XJAI
+                                                                      Figure 7. Overall pipeline of Team SNU-ISPL’s proposed frame-
+The XJAI team proposes a multi-level hierarchical frame-              work DarkVRAI for low-light RAW video denoising.
+work based on efficient transformer architecture for high-
+resolution image restoration, which includes patch embed-
+ding, multi-scale feature extraction, and progressive refine-         embedding module that converts the input image into fea-
+ment, see Figure 9.                                                   ture representations. Unlike traditional non-overlapping
+Patch Embedding. They begin with an overlapped patch                  patch partitioning, their approach uses 3×3 convolutions to
+
+
+                                                                  6
+                   𝐻 𝑊                                                                                                                         Alignment
+       𝐵×𝑇×4×       ×
+
+
+                                               encoder1                                                encoder2
+                   2 2
+
+                                BOSS                              down1                BOSS                              down2
+         conv3x3
+                          𝐻 𝑊
+             𝐵×𝑇×𝐶×        ×
+                          2 2
+
+
+
+
+                                                          BOSS                                                    BOSS
+          BOSS
+
+
+                                       alignment0                         offset_up1      alignment1                             offset_up2   alignment2
+       cascade                                                                                                                                             BOSS
+      alignment
+
+     adapt_burst    𝑇→1
+        _pool                                                             up1                                                    up2
+                    𝐻 𝑊
+           𝐵×𝐶×      ×
+                    2 2
+                                                                                                                                                  Denoising
+                  NAFBlock_enc1                                                                                   NAFBlock_dec1
+                     down1                                                                                                 up1
+
+                  NAFBlock_enc2                                                                                   NAFBlock_dec2
+                     down2                                                                                            up2
+                                                                                                                                                   conv3x3                         Figure 9. XJAI team pipeline schema.
+                  NAFBlock_enc3                                                                                   NAFBlock_dec3
+                     down3                                                                                            up3
+                                                                                                                                                            𝐻 𝑊
+                                                                                                                                              𝐵×4×           ×
+                                                                 NAFBlock_mid                                                                               2 2
+
+
+                                                                                                                                                                      4.3. AxeraAI
+     Figure 8. Team SNU-ISPL DarkVRAI network details.
+                                                                                                                                                                      Considering the computational constraints (encompassing
+                                                                                                                                                                      power consumption and processing capabilities) inherent in
+generate overlapped patches, that better preserves local spa-                                                                                                         edge devices in the real world, convolutional neural network
+tial information and reduces artifacts at patch boundaries.                                                                                                           (Conv-based) models remain critically important. Conse-
+Multi-scale Feature Extraction. Their framework em-                                                                                                                   quently, they sought to quantitatively evaluate the achiev-
+ploys a U-Net-like encoder-decoder architecture with four                                                                                                             able performance limits of Conv-based models. Following
+hierarchical levels. At each level, they utilize Trans-                                                                                                               an exhaustive search across all potential candidates, they
+formerBlock modules adapted from Restormer [59]. The                                                                                                                  identified NAFNet [12] as exhibiting superior performance
+encoder progressively downsamples features using Pix-                                                                                                                 and consequently selected it as the baseline model for the
+elUnshuffle operations, allowing the model to capture both                                                                                                            experiments. To maximize performance, they implemented
+fine-grained local details and global contextual information.                                                                                                         and evaluated three distinct methodological approaches:
+The number of transformer blocks at each level follows                                                                                                                • Supervised Single-Frame Training: They trained a
+the configuration [4, 6, 6, 8], with attention heads scaling as                                                                                                         NAFNet model from scratch using a purely supervised,
+[1, 2, 4, 8] to match the feature complexity.                                                                                                                           single-frame approach, employing only the fundamental
+Progressive Refinement. The decoder reconstructs high-                                                                                                                  L1 loss function.
+resolution features through symmetric upsampling opera-                                                                                                               • Self-Supervised Single-Frame Training: This approach
+tions using PixelShuffle, with skip connections from corre-                                                                                                             utilized a purely self-supervised, single-frame method-
+sponding encoder levels to preserve spatial details. Chan-                                                                                                              ology, drawing inspiration from the principles of
+nel reduction convolutions are applied to manage feature                                                                                                                Noise2Noise [34].
+concatenation efficiently. Finally, a refinement stage with 4                                                                                                         • Multi-Frame Finetuning: The single-frame model from
+additional transformer blocks further enhances the restored                                                                                                             Approach 1 served as a pre-trained foundation for the
+image quality. The output layer includes a residual connec-                                                                                                             progressive training of a multi-frame model. Despite ex-
+tion with the input image to facilitate stable training and                                                                                                             perimentation with various multi-frame fusion strategies,
+better convergence.                                                                                                                                                     none yielded performance improvements over the base-
+Training Strategy. The training approach processes se-                                                                                                                  line single-frame model.
+quences of 9 consecutive frames as input with a ran-                                                                                                                  It is noted that exclusively the training data provided by the
+dom noise replacement strategy for enhanced robustness.                                                                                                               competition organizers was utilized throughout these ex-
+For each training sample, they randomly select one of                                                                                                                 periments. During the validation phase, Approach 1 (su-
+20 additional noisy variants (extra noisy 09 00 to                                                                                                                    pervised single-frame training) consistently outperformed
+extra noisy 09 19) with equal probability to replace                                                                                                                  the alternatives. Therefore, the results obtained using this
+the target frame, ensuring diverse noise exposure during                                                                                                              method were directly utilized for the final testing phase
+training. They train the model using AdamW optimizer                                                                                                                  evaluation.
+with learning rate 5×10−4 , Charbonnier loss, and true
+cosine annealing schedule over 80 000 iterations. The                                                                                                                    They train the model with a single NVIDIA 4090 GPU,
+Restormer architecture is configured with 10 input chan-                                                                                                              which cost about 10 hours. They use Adam optimizer with
+nels for multi-frame processing and single-channel output,                                                                                                            a learning rate 1e-4. The batch size is 8, and the patch size
+maintaining hierarchical transformer blocks [4,6,6,8] with                                                                                                            is 256×256×4. The total epoch number is 2000, and they
+bias-free LayerNorm for efficient high-resolution denois-                                                                                                             sample fixed 80 instances in every epoch.
+ing.                                                                                                                                                                     The whole pipeline can be found in Fig. 10.
+
+
+                                                                                                                                                                  7
+                                                                                                       Transformed              SNR-Net (Restormer ver.)                                         Transformed
+ input         conv                                            conv                   output
+                                                                                                       Noisy Image                                                                              Denoised Image
+
+
+          Encoder Block                                   Decoder Block                                                          SNRB     Down   SNRB       ···   SNRB    Up   SNRB
+
+          NAFNet Block                                    NAFNet Block
+                          x N1                                                 x N9                     𝜎𝑆𝑁𝑅
+
+          conv stride=2                                 conv + pixel shuffle                                                                                                     SNR-Block
+
+                                                                                                               1x1Conv          1x1Conv           1x1Conv
+                                                                                                        𝜎𝑆𝑁𝑅
+                                                                                                                                                                               (MDTA ver.)
+                                                                                                                         SiLU             SiLU
+                                                                                                                                                                   β γ
+
+                                                                                                                                                                               * (1 + 𝛾)𝐹1 + β
+          Encoder Block                                    Decoder Block
+                                                                                                                                                                               + 𝐹1 + 𝐹2
+                                                                                                                                                  Q                            × 𝐹1 ∙ 𝐹2
+                                                                                                         𝐹𝑖𝑛       LN                                                    CxC
+          Encoder Block                                    Decoder Block
+                                                                                                                 1x1Conv          *               K          ×           A
+                                                                                                                 3x3Conv
+
+                                                                                                                                                                                      1x1Conv
+                                                                                                                                                                                                          𝐹𝑜𝑢𝑡
+          Encoder Block                                    Decoder Block
+                                                                                                                                                  V                      ×                       +
+
+                                  Middle Block
+
+                                 NAFNet Block    x N5
+                                                                                                     Figure 11. Detailed network structure of proposed SNR-Net.
+
+Figure 10. Team AxeraAI pipeline. They reuse the NAFNet con-                                         Noisy Image                 Denoised                         Ground Truth                   Denoised GT
+structed by the NAFNet Block.
+
+
+4.4. VMCL-ISP
+The VMCL-ISP team’s solution builds upon their previous
+work “YOND: Practical Blind Raw Image Denoising Free                                               Figure 12. The visualization of data defects under low-light con-
+from Camera-Specific Data Dependency” [22]. They focus                                             dition. “Denoised” and “Denoised GT” are blind denoised by the
+on data-centric approaches for raw image denoising, includ-                                        same YOND without additional training.
+ing dataset collection and noise modeling. In this section
+they first briefly outline proposed framework, then discuss                                        demonstrates limited effectiveness in low-light scenarios.
+their key data observations.                                                                       As shown in Figure 12, they can identify a series of data
+Framework. YOND follows traditional VST-based blind                                                defects from the comparison between the denoising results
+denoising pipeline: first utilizing coarse-to-fine noise esti-                                     and the GT, including significant residual noise and defec-
+mation (CNE) to identify camera noise characteristics, then                                        tive pixels. Furthermore, some sensors exhibit systemic
+applying expectation-matched variance-stabilizing trans-                                           color bias due to black level errors, which means signals
+form (EM-VST) to eliminate camera-specific data depen-                                             that should be zero are not normalized to zero. Calibrating
+dency, and finally employing an SNR-guided AWGN de-                                                the actual black level from noisy images (preferably dark
+noiser (SNR-Net) for the final denoising. To further im-                                           frames) serves as a conventional solution. Unfortunately,
+prove noise estimation accuracy, they estimate noise param-                                        the provided data has clipped negative noise values, which
+eters from color chart scenes in the training set under spe-                                       substantially complicates black level estimation. Therefore,
+cific sensor and capture conditions, then apply correspond-                                        they reiterate their call for heightened attention to the data
+ing noise parameters to textural test scenes. Further details                                      quality in denoising.
+can be found in [22].
+    They adopt Restormer [59] as the backbone for this
+                                                                                                   5. Conclusion
+SNR-Net. And augment Restormer with a guidance branch
+to fit the framework, as shown in Figure 11. For train-                                            We introduced the first AIM 2025 Low-Light RAW Video
+ing data, they adopt the LSDIR dataset [35], synthesizing                                          Denoising Challenge and a multi-device RAW video bench-
+pseudo-raw images via unprocessing and injecting clipped                                           mark captured under nine illumination-exposure conditions
+Gaussian noise.                                                                                    with high-SNR references. Participants denoised linear
+Discussion. As emphasized in their prior work PMN [21],                                            RAW sequences and were ranked on a private test set using
+they advocate for improved data acquisition protocols to                                           PSNR and SSIM. We expect the released dataset, protocol,
+ensure data quality. This dataset employs multi-frame av-                                          and baselines to enable reproducible research and encour-
+eraging (similar to SIDD [1]) to obtain the GT, which                                              age further progress on RAW video denoising.
+
+
+                                                                                               8
+Acknowledgments                                                         [15] Michele Claus and Jan Van Gemert. Videnn: Deep blind
+                                                                             video denoising. In CVPRW, pages 0–0, 2019. 1
+This work was partially supported by the Alexander von
+                                                                        [16] Marcos Conde, Feiran Li, Jiacheng Li, Beril Besbinar, Vlad
+Humboldt Foundation. We thank the AIM 2025 sponsors:                         Hosu, Daisuke Iso, Radu Timofte, et al. Real-world raw de-
+AI Witchlabs and University of Würzburg (Computer Vi-                       noising using diverse cameras: AIM 2025 challenge report.
+sion Lab). The evaluation was carried out using the MSU-                     In Proceedings of the IEEE/CVF International Conference
+270 supercomputer of the Lomonosov Moscow State Uni-                         on Computer Vision (ICCV) Workshops, 2025. 2
+versity.                                                                [17] Marcos Conde, Bruno Longarela, Álvaro Garcı́a, Radu Tim-
+                                                                             ofte, et al. AIM 2025 perceptual image super-resolution chal-
+References                                                                   lenge. In Proceedings of the IEEE/CVF International Con-
+                                                                             ference on Computer Vision (ICCV) Workshops, 2025. 2
+ [1] Abdelrahman Abdelhamed, Stephen Lin, and Michael S
+     Brown. A high-quality denoising dataset for smartphone             [18] Kostadin Dabov, Alessandro Foi, Vladimir Katkovnik, and
+     cameras. In CVPR, pages 1692–1700, 2018. 1, 2, 3, 4, 8                  Karen Egiazarian. Image denoising by sparse 3-d transform-
+ [2] Abdelrahman Abdelhamed, Marcus A Brubaker, and                          domain collaborative filtering. IEEE TIP, 16(8):2080–2095,
+     Michael S Brown. Noise flow: Noise modeling with condi-                 2007. 1
+     tional normalizing flows. In ICCV, pages 3165–3173, 2019.          [19] Akshay Dudhane, Syed Waqas Zamir, Salman Khan, Fa-
+     1                                                                       had Shahbaz Khan, and Ming-Hsuan Yang. Burstormer:
+ [3] Adobe Inc. Adobe photoshop. 1                                           Burst image restoration and enhancement transformer. In
+ [4] Nantheera Anantrasirichai, Ruirui Lin, Alexandra Malyug-                CVPR, pages 5703–5712. IEEE, 2023. 1, 5
+     ina, and David Bull. Bvi-lowlight: Fully registered bench-         [20] Andrei Dumitriu, Florin Miron, Florin Tatui, Radu Tudor
+     mark dataset for low-light video enhancement. arXiv                     Ionescu, Radu Timofte, Aakash Ralhan, Florin-Alexandru
+     preprint arXiv:2402.01970, 2024. 2                                      Vasluianu, et al. AIM 2025 challenge on rip current seg-
+ [5] Sameer Ansari, Neal Wadhwa, Rahul Garg, and Jiawen                      mentation (RipSeg). In Proceedings of the IEEE/CVF Inter-
+     Chen. Wireless software synchronization of multiple dis-                national Conference on Computer Vision (ICCV) Workshops,
+     tributed cameras. ICCP, 2019. 2                                         2025. 2
+ [6] Pablo Arias and Jean-Michel Morel. Video denoising via             [21] Hansen Feng, Lizhi Wang, Yuzhi Wang, Haoqiang Fan, and
+     empirical bayesian estimation of space-time patches. Journal            Hua Huang. Learnability enhancement for low-light raw im-
+     of Mathematical Imaging and Vision, 60(1):70–93, 2018. 1                age denoising: A data perspective. IEEE TPAMI, 46(1):370–
+ [7] Tim Brooks, Ben Mildenhall, Tianfan Xue, Jiawen Chen,                   387, 2024. 8
+     Dillon Sharlet, and Jonathan T Barron. Unprocessing images         [22] Hansen Feng, Lizhi Wang, Yiqi Huang, Tong Li, Lin Zhu,
+     for learned raw denoising. In CVPR, pages 11036–11045,                  and Hua Huang. Yond: Practical blind raw image denoising
+     2019. 1                                                                 free from camera-specific data dependency. arXiv preprint
+ [8] Antoni Buades, Bartomeu Coll, and Jean-Michel Morel. A                  arXiv:2506.03645, 2025. 4, 8
+     non-local algorithm for image denoising. In CVPR, pages            [23] Huiyuan Fu, Wenkai Zheng, Xicong Wang, Jiaxuan Wang,
+     60–65. IEEE Computer Society, 2005. 1                                   Heng Zhang, and Huadong Ma. Dancing in the dark: A
+ [9] Kelvin CK Chan, Shangchen Zhou, Xiangyu Xu, and                         benchmark towards general low-light video enhancement. In
+     Chen Change Loy. Basicvsr++: Improving video super-                     CVPR, pages 12877–12886, 2023. 2
+     resolution with enhanced propagation and alignment. In
+                                                                        [24] Paula Garrido, Marcos Conde, Jaesung Rim, Alvaro Garcia,
+     CVPR, pages 5972–5981, 2022. 1
+                                                                             Sunghyun Cho, Radu Timofte, et al. Efficient real-world de-
+[10] Chen Chen, Qifeng Chen, Jia Xu, and Vladlen Koltun.
+                                                                             blurring using single images: AIM 2025 challenge report. In
+     Learning to see in the dark. In CVPR, pages 3291–3300,
+                                                                             Proceedings of the IEEE/CVF International Conference on
+     2018. 2
+                                                                             Computer Vision (ICCV) Workshops, 2025. 2
+[11] Chen Chen, Qifeng Chen, Minh N Do, and Vladlen Koltun.
+                                                                        [25] Hang Guo, Jinmin Li, Tao Dai, Zhihao Ouyang, Xudong
+     Seeing motion in the dark. In CVPR, pages 3185–3194,
+                                                                             Ren, and Shu-Tao Xia. Mambair: A simple baseline for
+     2019. 2
+                                                                             image restoration with state-space model. In ECCV, pages
+[12] Liangyu Chen, Xiaojie Chu, Xiangyu Zhang, and Jian Sun.
+                                                                             222–241. Springer, 2024. 5
+     Simple baselines for image restoration. In ECCV, pages 17–
+     33. Springer, 2022. 1, 4, 5, 7                                     [26] Shi Guo, Zifei Yan, Kai Zhang, Wangmeng Zuo, and Lei
+[13] Ilya Chugunov, Amogh Joshi, Kiran Murthy, Francois                      Zhang. Toward convolutional blind denoising of real pho-
+     Bleibel, and Felix Heide. Neural light spheres for Implicit             tographs. In CVPR, pages 1712–1722, 2019. 1
+     Image Stitching and View Synthesis. In Proceedings of the          [27] Samuel W Hasinoff. Photon, poisson noise. In Computer
+     ACM SIGGRAPH Asia 2024. ACM, 2024. 2                                    vision, pages 608–610. Springer, 2014. 1
+[14] George Ciubotariu, Florin-Alexandru Vasluianu, Zhuyun              [28] Andrey Ignatov, Georgy Perevozchikov, Radu Timofte, et al.
+     Zhou, Nancy Mehta, Radu Timofte, et al. AIM 2025 high                   4K image super-resolution on mobile NPUs: Mobile AI &
+     FPS non-uniform motion deblurring challenge report. In                  AIM 2025 challenge report. In Proceedings of the IEEE/CVF
+     Proceedings of the IEEE/CVF International Conference on                 International Conference on Computer Vision (ICCV) Work-
+     Computer Vision (ICCV) Workshops, 2025. 2                               shops, 2025. 2
+
+
+                                                                    9
+[29] Andrey Ignatov, Georgy Perevozchikov, Radu Timofte, et al.              [44] William Peebles and Saining Xie. Scalable diffusion models
+     Efficient learned smartphone ISP on mobile GPUs: Mo-                         with transformers. In ICCV, pages 4195–4205, 2023. 5
+     bile AI & AIM 2025 challenge report. In Proceedings of                  [45] Tobias Plotz and Stefan Roth. Benchmarking denoising al-
+     the IEEE/CVF International Conference on Computer Vision                     gorithms with real photographs. In CVPR, pages 1586–1595,
+     (ICCV) Workshops, 2025. 2                                                    2017. 1
+[30] Andrey Ignatov, Georgy Perevozchikov, Radu Timofte, et al.              [46] Olaf Ronneberger, Philipp Fischer, and Thomas Brox. U-
+     Efficient image denoising on smartphone GPUs: Mobile                         net: Convolutional networks for biomedical image segmen-
+     AI & AIM 2025 challenge report. In Proceedings of the                        tation. In International Conference on Medical image com-
+     IEEE/CVF International Conference on Computer Vision                         puting and computer-assisted intervention, pages 234–241.
+     (ICCV) Workshops, 2025. 2                                                    Springer, 2015. 4
+[31] Andrey Ignatov, Georgy Perevozchikov, Radu Timofte, et al.              [47] Nickolay Safonov, Mikhail Rakhmanov, Dmitriy Vatolin,
+     Adapting stable diffusion for on-device inference: Mobile                    Radu Timofte, et al. AIM 2025 challenge on screen-content
+     AI & AIM 2025 challenge report. In Proceedings of the                        video quality assessment: Methods and results. In Proceed-
+     IEEE/CVF International Conference on Computer Vision                         ings of the IEEE/CVF International Conference on Com-
+     (ICCV) Workshops, 2025. 2                                                    puter Vision (ICCV) Workshops, 2025. 2
+[32] Nikolai Karetin, Ivan Molodetskikh, Dmitry Vatolin, Radu                [48] Matias Tassano, Julie Delon, and Thomas Veit. Dvdnet: A
+     Timofte, et al. AIM 2025 challenge on robust offline video                   fast network for deep video denoising. In ICIP, pages 1805–
+     super-resolution: Dataset, methods and results. In Proceed-                  1809. IEEE, 2019. 1
+     ings of the IEEE/CVF International Conference on Com-
+                                                                             [49] Matias Tassano, Julie Delon, and Thomas Veit. Fastdvdnet:
+     puter Vision (ICCV) Workshops, 2025. 2
+                                                                                  Towards real-time deep video denoising without flow esti-
+[33] Diederik P Kingma and Jimmy Lei Ba. Adam: A method for                       mation. In CVPR, pages 1354–1363, 2020. 1
+     stochastic gradient descent. In ICLR, pages 1–15, 2015. 5
+                                                                             [50] Chao Wang, Francesco Banterle, Bin Ren, Radu Timofte,
+[34] Jaakko Lehtinen, Jacob Munkberg, Jon Hasselgren, Samuli
+                                                                                  et al. AIM 2025 challenge on inverse tone mapping report:
+     Laine, Tero Karras, Miika Aittala, and Timo Aila.
+                                                                                  Methods and results. In Proceedings of the IEEE/CVF Inter-
+     Noise2noise: Learning image restoration without clean data.
+                                                                                  national Conference on Computer Vision (ICCV) Workshops,
+     In ICML, pages 2965–2974. PMLR, 2018. 4, 7
+                                                                                  2025. 2
+[35] Yawei Li, Kai Zhang, Jingyun Liang, Jiezhang Cao, Ce Liu,
+                                                                             [51] Ruixing Wang, Xiaogang Xu, Chi-Wing Fu, Jiangbo Lu, Bei
+     Rui Gong, Yulun Zhang, Hao Tang, Yun Liu, Denis Deman-
+                                                                                  Yu, and Jiaya Jia. Seeing dynamic scene in the dark: A high-
+     dolx, et al. Lsdir: A large scale dataset for image restoration.
+                                                                                  quality video dataset with mechatronic alignment. In ICCV,
+     In CVPR, pages 1775–1787, 2023. 8
+                                                                                  pages 9700–9709, 2021. 2
+[36] Jingyun Liang, Jiezhang Cao, Guolei Sun, Kai Zhang, Luc
+     Van Gool, and Radu Timofte. Swinir: Image restoration us-               [52] Zhou Wang, Eero P Simoncelli, and Alan C Bovik. Multi-
+     ing swin transformer. In CVPR, pages 1833–1844, 2021. 1                      scale structural similarity for image quality assessment. In
+                                                                                  The thrity-seventh asilomar conference on signals, systems
+[37] Jingyun Liang, Yuchen Fan, Xiaoyu Xiang, Rakesh Ranjan,
+                                                                                  & computers, 2003, pages 1398–1402. Ieee, 2003. 4, 6
+     Eddy Ilg, Simon Green, Jiezhang Cao, Kai Zhang, Radu
+     Timofte, and Luc V Gool. Recurrent video restoration trans-             [53] Zhendong Wang, Xiaodong Cun, Jianmin Bao, Wengang
+     former with guided deformable attention. NeurIPS, 35:378–                    Zhou, Jianzhuang Liu, and Houqiang Li. Uformer: A gen-
+     393, 2022. 1                                                                 eral u-shaped transformer for image restoration. In CVPR,
+[38] Jingyun Liang, Jiezhang Cao, Yuchen Fan, Kai Zhang,                          pages 17683–17693, 2022. 1
+     Rakesh Ranjan, Yawei Li, Radu Timofte, and Luc Van Gool.                [54] Kaixuan Wei, Ying Fu, Jiaolong Yang, and Hua Huang. A
+     Vrt: A video restoration transformer. IEEE TIP, 33:2171–                     physics-based noise formation model for extreme low-light
+     2182, 2024. 1                                                                raw denoising. In CVPR, pages 2758–2767, 2020. 1
+[39] Ilya Loshchilov and Frank Hutter. Sgdr: Stochastic gradient             [55] Zhen Xu, Sergio Escalera, Adrien Pavão, Magali Richard,
+     descent with warm restarts. In ICLR, 2017. 6                                 Wei-Wei Tu, Quanming Yao, Huan Zhao, and Isabelle
+[40] Matteo Maggioni, Giacomo Boracchi, Alessandro Foi, and                       Guyon. Codabench: Flexible, easy-to-use, and reproducible
+     Karen Egiazarian. Video denoising, deblocking, and en-                       meta-benchmark platform. Patterns, 3(7):100543, 2022. 3
+     hancement through separable 4-d nonlocal spatiotemporal                 [56] Huanjing Yue, Cong Cao, Lei Liao, Ronghe Chu, and Jingyu
+     transforms. IEEE TIP, 21(9):3952–3966, 2012. 1                               Yang. Supervised raw video denoising with a benchmark
+[41] Ben Mildenhall, Jonathan T Barron, Jiawen Chen, Dillon                       dataset on dynamic scenes. In CVPR, pages 2301–2310,
+     Sharlet, Ren Ng, and Robert Carroll. Burst denoising with                    2020. 1, 2
+     kernel prediction networks. In CVPR, pages 2502–2510,                   [57] Huanjing Yue, Cong Cao, Lei Liao, and Jingyu Yang. Rvide-
+     2018. 1                                                                      former: Efficient raw video denoising transformer with a
+[42] Kristina Monakhova, Stephan R Richter, Laura Waller, and                     larger benchmark dataset. IEEE Transactions on Circuits
+     Vladlen Koltun. Dancing under the stars: video denoising in                  and Systems for Video Technology, 2025. 1
+     starlight. In CVPR, pages 16241–16251, 2022. 2                          [58] Syed Waqas Zamir, Aditya Arora, Salman Khan, Munawar
+[43] Youngjin Oh, Junhyeong Kwon, Keuntek Lee, and Nam Ik                         Hayat, Fahad Shahbaz Khan, Ming-Hsuan Yang, and Ling
+     Cho. Towards controllable real image denoising with camera                   Shao. Cycleisp: Real image restoration via improved data
+     parameters. arXiv preprint arXiv:2507.01587, 2025. 5                         synthesis. In CVPR, pages 2696–2705, 2020. 1
+
+
+                                                                        10
+[59] Syed Waqas Zamir, Aditya Arora, Salman Khan, Mu-
+     nawar Hayat, Fahad Shahbaz Khan, and Ming-Hsuan Yang.
+     Restormer: Efficient transformer for high-resolution image
+     restoration. In CVPR, pages 5728–5739, 2022. 1, 4, 7, 8
+[60] Kai Zhang, Wangmeng Zuo, Yunjin Chen, Deyu Meng, and
+     Lei Zhang. Beyond a gaussian denoiser: Residual learning of
+     deep cnn for image denoising. IEEE TIP, 26(7):3142–3155,
+     2017. 1
+[61] Kai Zhang, Wangmeng Zuo, and Lei Zhang. Ffdnet: Toward
+     a fast and flexible solution for cnn-based image denoising.
+     IEEE TIP, 27(9):4608–4622, 2018. 1
+
+
+
+
+                                                                   11
+A. Teams and Affiliations                                    Team:
+                                                             XJAI
+Team:                                                        Members:
+Organizers of AIM 2025 Low-light RAW Video Denoising         Senyan Xu (syxu@mail.ustc.edu.cn),
+Challenge                                                    Ruixuan Jiang (ruixuanjiang@mail.ustc.edu.cn),
+Members:
+                                                             Long Peng (longp2001@mail.ustc.edu.cn),
+Alexander Yakovenko1,2
+                                                             Xueyang Fu (xyfu@ustc.edu.cn),
+(alexander.yakovenko@graphics.cs.msu.ru),                    Zheng-Jun Zha (zhazj@ustc.edu.cn)
+George Chakvetadze1                                          Affiliations:
+(george.chakvetadze@graphics.cs.msu.ru),                     University of Science and Technology of China, China
+Ilya Khrapov1 (ilya.khrapov@graphics.cs.msu.ru),
+Maksim Zhelezov1
+                                                             Team:
+(maksim.zhelezov@graphics.cs.msu.ru),
+                                                             AxeraAI
+Dmitry Vatolin1,2 (dmitriy@graphics.cs.msu.ru),              Members:
+Radu Timofte3 (radu.timofte@uni-wuerzburg.de)                Xiaoping Peng (pengxiaoping@axera-tech.com)
+Affiliations:                                                Affiliations:
+1
+  : Lomonosov Moscow State University, Russia
+2                                                            Axera Semiconductor Co., Ltd, China
+  : MSU Institute for Artificial Intelligence, Russia
+3
+  : University of Würzburg, Germany
+                                                             Team:
+                                                             VMCL-ISP
+Team:                                                        Members:
+SNU-ISPL                                                     Hansen Feng1 (fenghansen@bit.edu.cn),
+Members:
+                                                             Zhanyi Tie1 (tiezhanyi@bit.edu.cn),
+Youngjin Oh (yjymoh0211@snu.ac.kr),
+                                                             Ziming Xia1 (xiazimin@bit.edu.cn),
+Junhyeong Kwon (gjh8760@snu.ac.kr),
+                                                             Lizhi Wang2 (wanglizhi@bnu.edu.cn)
+Junyoung Park (parkjun21@snu.ac.kr),                         Affiliations:
+Nam Ik Cho (nicho@snu.ac.kr)                                 1
+                                                               : Beijing Institute of Technology, China
+Affiliations:                                                2
+                                                               : Beijing Normal University, China
+Seoul National University, Republic of Korea
+
+
+
+
+                                                        12
+

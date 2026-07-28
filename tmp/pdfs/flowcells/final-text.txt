@@ -1,0 +1,820 @@
+ FlowCells: Single-Decomposition Transport Geometry
+              for Adaptive Image Regions
+            Joshuah Rainstar             OpenAI Codex Sydney                Claude Opus 5
+
+                                             July 27, 2026
+
+
+                                                Abstract
+         We present FlowCells, a training-free explicit image representation that turns one frozen
+     Meyer G-norm cartoon–texture decomposition into a connected, anisotropic cell cover. The
+     method treats the decomposition as geometric evidence rather than as the ﬁnal segmentation.
+     Cartoon variation, texture, and a ﬁxed outer-defect ﬁeld deﬁne an amplitude-normalized support
+     tensor. Its Riemannian area form supplies local cell density; a curvature horizon corrects the
+     rank-one failure of long curved contours; and a deterministic low-discrepancy phase converts the
+     continuous measure into a complete site population without candidate ranking, top-k allocation,
+     spawning, or deletion. The sites induce connected regions by continuous-direction anisotropic
+     ﬁrst arrival. One reverse pass through the causal front transports support mass back to each
+     site and permits a topology-safe position update. Each resulting cell receives a conditioned
+     aﬃne OKLab model and, when justiﬁed by the residual, one measured nonlinear ridge. Decisive
+     target jumps modify crossing action without manufacturing population; collision geometry sup-
+     plies fractional pixel coverage; and a transport-gated heat step can relax unsupported internal
+     boundaries while preserving a partition of unity.
+         The method is evaluated by RGB error together with errors after applying the same single-
+     stage cartoon and texture operators to target and reconstruction. On a 640 × 427 photographic
+     control, the current CPU implementation infers 6,374 cells, reaches 30.009 dB, and completes
+     in 2.32 s on an 8-core Apple M3. Across ﬁve 256-pixel controls, curvature-limited population
+     improves PSNR by 0.43–2.68 dB. Objective-gated soft support is accepted on four controls and
+     correctly leaves the ﬁfth unchanged. Native kernels reproduce the reference front topology ex-
+     actly and reduce the isolated aﬃne, residual-ridge, curvature, and soft-support kernels by factors
+     of 11.18, 4.30, 2.52, and 6.79, respectively. These results support a bottom-up construction in
+     which one measured transport substrate determines population, direction, connectivity, and the
+     permissible softening of region identity.
+
+Keywords: adaptive image representation; anisotropic regions; cartoon–texture decomposition;
+ﬁrst-arrival geometry; partition of unity.
+
+
+1    Introduction
+An image region is asked to satisfy several requirements that are individually familiar and jointly
+diﬃcult. It should be broad in a smooth panel, narrow along a sliver, connected without a repair
+pass, resistant to crossing a decisive boundary, and capable of sharing support where two ﬁtted
+ﬁelds are visually continuous. A ﬁxed pixel grid provides none of these properties. A conventional
+superpixel method provides connected territory, but commonly begins from a requested count and
+a compactness prior. Overlapping primitives provide smooth reconstruction, but do not necessarily
+provide a territorial graph. A learned representation can optimize all of these variables, but then
+the geometric support is discovered through many parameter updates.
+
+                                                     1
+         Input        single cartoon--texture split normalized support tensor   measure quantization   causal support + readout
+
+
+
+
+                         cartoon       texture
+
+Figure 1: Method overview. One frozen cartoon–texture split is converted into an amplitude-normalized
+precision ﬁeld. Its local area form is quantized directly into sites. Continuous-direction ﬁrst arrival creates
+connected support, after which local ﬁtting and evidence-gated interface operations produce the reconstruc-
+tion. The schematic ellipses visualize local tensors; the implemented cells are geodesic ﬁrst-arrival regions,
+not rasterized ellipses.
+
+
+   FlowCellsbegins from a diﬀerent question: what local population and transport geometry are
+already measured by a single cartoon–texture decomposition? The motivating observation is ele-
+mentary. Suppressing ﬁne variation leaves a stable coarse organization of the scene, while the
+removed ﬁeld localizes directional detail. Applied computationally, the cartoon component sup-
+plies region-scale structure and the texture component supplies ﬁne directional demand. A further
+defect between the cartoon and its ﬁxed ROF projection exposes where the two constraint fami-
+lies have not settled into the same local support. These three ﬁelds are inexpensive in the bfft
+implementation and are complementary.
+   The ﬁrst attempts to use them as allocation scores failed for a precise reason. Average edge error
+and density-squared sampling place sites repeatedly on already represented contours. Recursive
+splitting then turns persistent rasterization error into an instruction to create still more boundary
+cells. Broad under-resolved regions lose the allocation contest. Replacing the score by integrated
+error improves coverage, but retains an image-wide ranking process and makes population a con-
+sequence of an arbitrated search. The canonical method removes that search. It asks the support
+tensor for its local volume element, quantizes the resulting measure simultaneously, and lets a
+causal transport solve determine where each site’s inﬂuence stops.
+   This choice separates four objects which are often conﬂated:
+
+1. Population: how many local degrees of freedom the measured support can justify.
+2. Metric: how expensive it is for support to travel in each direction.
+3. Topology: which site arrives ﬁrst under that metric.
+4. Readout: how the target is reconstructed inside and across the resulting regions.
+
+Population is not a collection of births, topology is not a nearest-neighbor guess, and soft support
+is not a post-hoc deletion pass. Each is derived from the same frozen substrate and has a separate
+diagnostic ﬁeld.
+   The resulting contribution is an engineering-mathematical pipeline with the following properties:
+
+• one decomposition of the unchanged target induces all allocation geometry;
+• cell count is inferred from a local Riemannian measure rather than supplied as a target;
+• anisotropic connectivity follows from a monotone ﬁrst-arrival solve with no runner-up ownership
+  ﬁeld;
+
+                                                               2
+• one reverse characteristic pass moves sites only when the current causal topology certiﬁes a safe
+  descent step;
+• hard, fractional, and soft support are successive readout levels, each accepted by the same
+  RGB–cartoon–texture objective; and
+• measured tight loops have stable C interfaces and numerically controlled fallbacks.
+
+
+2    Related Work
+Cartoon–texture decomposition. Meyer’s G-norm model separates bounded-variation struc-
+ture from oscillatory content [Meyer, 2001]. Aujol et al. made the model computational through
+alternating projections [Aujol et al., 2005, Chambolle, 2004], and Gilles and Osher formulated an
+eﬃcient Split Bregman implementation [Goldstein and Osher, 2009, Gilles and Osher, 2024]. TGFD
+interleaves persistent Bregman states instead of nesting fully converged inner solves [Rainstar, 2026].
+FlowCellsuses that accelerated operator once to obtain geometry. It does not recursively decompose
+successive reconstructions to decide population.
+
+Superpixels and arrival partitions. SNIC grows connected regions non-iteratively from reg-
+ularly distributed seeds [Achanta and Süsstrunk, 2017]. Rooted Spanning Superpixels similarly
+makes each region a tree under a path cost [Chai, 2020]; Dynamic Random Walk uses ﬁrst-arrival
+probabilities and gradient-derived entropy [Kang et al., 2020]; and Superpixel Hierarchy organizes
+multiple counts into a topology-preserving tree [Wei et al., 2018]. These works establish that con-
+nectivity and coverage can follow from growth or graph structure rather than from a cleanup step.
+FlowCellsdiﬀers in the object being ﬁt: the output is a reconstructive anisotropic basis, and both
+its seed measure and path metric are induced by a frozen cartoon–texture substrate.
+
+Tensor-guided and transport tessellations. Optimal Voronoi Tessellations convert a pre-
+scribed Hessian and sizing ﬁeld into anisotropic Bregman cells [Budninskiy et al., 2016]. Semi-
+discrete transport relates a diﬀuse density to generalized Laguerre diagrams and quantization
+[Bourne et al., 2025]; anisotropic power diagrams extend transport costs to curved grain geom-
+etry [Buze et al., 2024]. These methods supply the closest formal precedent for the step from a
+tensor ﬁeld to density and shape. FlowCellsuses a spatially varying image-derived metric and a ﬁrst-
+arrival partition, so a region can bend with the substrate rather than remaining a straight-edged
+cell of one ﬁxed local quadratic.
+
+Diﬀerentiable and explicit image primitives. Superpixel Sampling Networks relax local as-
+sociations to permit end-to-end learning [Jampani et al., 2018]. GaussianImage and Image-GS
+optimize anisotropic 2D Gaussians as compact explicit image representations [Zhang et al., 2024,
+2025]; NeuRBF learns adaptive radial basis functions ranging from disks to near-lines [Chen et al.,
+2023]. Most directly, Soft Anisotropic Diagrams (SAD) associate each learnable site with position,
+color, radius, metric, and temperature, then render a softmax partition over an approximate top-K
+site list [Iinbor et al., 2026]. Its site-ID image blends deterministic ID colors by the same soft
+ownership weights, so continuous color denotes shared support rather than a hard winning label.
+   SAD and FlowCellstherefore share an important representational goal: anisotropic, content-
+aligned sites with a soft partition of unity. Their construction diﬀers. SAD learns the site parame-
+ters with gradient optimization, densiﬁcation, and pruning. FlowCellsmeasures a support substrate
+
+
+                                                  3
+once, obtains population from its volume form, uses a causal arrival solve for territory, and closes
+most local ﬁtting in small independent systems. The comparison is one of mechanisms, not of task
+identity.
+
+Discontinuity and semantic segmentation. Diﬀerentiable rasterization shows how pixel pre-
+ﬁltering makes subpixel boundary coverage a well-deﬁned component of optimization [Li et al., 2020];
+discontinuity- aware neural ﬁelds encode smooth ﬁelds and sharp jumps as distinct representation
+elements [Belhe et al., 2023]. These ideas motivate our separation of population, crossing action,
+and fractional coverage. Semantic methods such as Mask2Former and Segment Anything predict
+object-level masks from learned priors [Cheng et al., 2022, Kirillov et al., 2023]. FlowCellsinstead
+produces a low-level, training-free support representation and assigns no semantic identity.
+
+
+3     Problem and Design Constraints
+Let f : Ωh → [0, 1]3 be an sRGB image on a rectangular pixel lattice. We seek sites S = {si }N
+                                                                                             i=1 ,
+                                               ˆ
+connected supports {Ci }, and a reconstruction f such that:
+
+1. N follows from local evidence rather than a requested count;
+2. region extent and direction adapt to scene structure;
+3. every pixel is reached and every site retains nonempty support;
+4. strong target discontinuities resist cross-boundary leakage;
+5. unsupported internal boundaries may become soft without destroying the sum-to-one invariant;
+   and
+6. each optional reﬁnement is judged against one ﬁxed measurement objective.
+
+   The canonical allocator excludes an image-wide candidate list, residual top-k, cell deletion, and
+recursive oﬀspring. A safety ceiling protects memory, but is not an optimization target. This
+restriction is both computational and epistemic: local support evidence should determine local
+representational density before a global reconstruction error is allowed to redistribute it.
+
+3.1   Evaluation objective
+RGB MSE alone rewards blur at an edge and can hide a change in the image’s cartoon–texture
+organization. Let C(·) and T (·) be the normalized cartoon and texture channels produced by the
+same single-stage operator and parameters used for the target. We measure
+
+                  J (fˆ; f ) = MSE(fˆ, f ) + MSE(C(fˆ), C(f )) + MSE(T (fˆ), T (f )).            (1)
+
+The target decomposition in J is cached once. Candidate reconstructions are decomposed on
+demand. The objective is used to accept the residual ridge, fractional coverage, and soft support.
+It does not change the frozen allocation geometry.
+
+
+
+
+                                                  4
+4     One Frozen Decomposition as Geometry
+4.1   Cartoon, texture, and the outer defect
+We convert f to OKLab z = (L, a, b) and apply the scalar Meyer model to ℓ = 255L. For ﬁxed
+λ = 0.05, µ = 40, and P = 24 interleaved sweeps, the bfft operator returns
+                                             ℓ = u + v,                                         (2)
+where u is the cartoon component and v is the oscillatory component. The underlying Meyer norm
+represents v as a divergence ﬁeld [Meyer, 2001]. The optimized TGFD implementation carries the
+Bregman auxiliary state across these P sweeps [Rainstar, 2026]. The sweep index is solver work
+inside one decomposition, not a temporal sequence of images and not a segmentation hierarchy.
+   We also evaluate one ﬁxed cartoon-side projection
+                                                              u − ũ
+                                ũ = ROF(ℓ − v, λ),              g=  .                           (3)
+                                                               255
+We call g the outer defect or glass ﬁeld. It measures the discrepancy between the returned cartoon
+and the ROF state implied by the ﬁxed texture. It is not a second decomposition of a changed target.
+Empirically, u carries broad region topology, v carries ﬁne directional demand, and g exposes the
+smaller transport-like waves between those states.
+
+4.2   Amplitude-normalized support precision
+After scaling u, v, g to unit intensity, deﬁne three event channels
+                                                    √               √
+                         c1 = u − G3 ∗ u,      c2 = 0.65 v,     c3 = 0.70 g,                    (4)
+where Gσ is Gaussian convolution. Their energy and smoothed structure tensor are
+                                                   ∑
+                                                   3
+                                     E = G1.5 ∗          c2k ,                                  (5)
+                                                   k=1
+                                                   ∑3
+                                      J = G1.5 ∗         ∇ck ∇c⊤
+                                                               k.                               (6)
+                                                   k=1
+
+An unnormalized structure tensor confounds contrast with inverse support size. We therefore divide
+orientation energy by local event energy and gate it by reliability:
+                                                       J(x)
+                                   Q0 (x) = r(x)                 ,                              (7)
+                                                   E(x) + εE99.5
+where E99.5 is the 99.5th percentile and ε = 10−5 .
+  Meyer’s response is nonlocal. A real edge can carry a diminishing orientation ﬁeld well into an
+otherwise ﬂat panel. That ﬁeld is useful for direction but does not justify additional cells. We
+therefore derive local evidence from the unchanged OKLab target. For each channel zk , let
+                                     ∑[                                  ]
+                          A = G1 ∗        (zk − G1.5 ∗ zk )2 + 0.35∥∇zk ∥2 ,                    (8)
+                                     k
+                                     ∑
+                          P = G1 ∗       max (∇zk · ∇(G1 ∗ zk ), 0) ,                           (9)
+                                     k
+                                     ∑
+                         N0 = G1 ∗       ∥∇zk − ∇(G1 ∗ zk )∥2 .                                (10)
+                                     k
+
+
+                                                   5
+Here P is cross-scale positive evidence and N0 is a local null model. Deﬁne
+                                                   (                             )
+                                  ϵA = max 10−3 A99.5 , (1/255)2 .                                 (11)
+
+Then
+                              A                                                    P
+                   rA =                ,                               rP =                ,       (12)
+                        A + 10−5 A99.5                                         P + N0 + ϵA
+                          ϵA
+                   wA =        ,                                       α0 = 1 − η0 wA (1 − rP ).   (13)
+                        A + ϵA
+The default η0 = 0.5 suppresses only weak, cross-scale-inconsistent evidence. Strong ﬁne texture
+remains population-bearing. The total reliability in equation (7) is
+                                                     E
+                                         r=                    rA α0 .                             (14)
+                                                E + 10−5 E99.5
+    A ﬁnite isotropic horizon prevents an exactly singular support:
+                           Q = Q0 + ℓ−2
+                                     max I,                 ℓmax = 0.18 max(H, W ).                (15)
+For a coherent contour, numerical disagreement can leave a spurious tangential eigenvalue. The
+implementation reduces that eigenvalue toward the ﬂoor in proportion to tensor coherence, with
+a retained fraction 0.02, while leaving isotropic texture unchanged. For a symmetric 2 × 2 tensor
+this spectral adjustment is evaluated as Q′ = αQ + βI, avoiding angles, trigonometric eigenvectors,
+and branch cuts. We use Q′ below and write it again as Q.
+
+4.3    Boundary action is not population
+Population and boundary discipline must remain distinct. From the unchanged target gradient we
+build                                   ∑
+                           Jb = G0.65 ∗    ∇zk ∇zk⊤ ,    eb = tr Jb .                     (16)
+                                                   k
+With ﬁxed scale sb = max(0.02(eb )99 , 0.01), the decisive-jump conﬁdence is
+                                     (             )4
+                                            eb                               Jb
+                              γb =                      ,        B = γb               .            (17)
+                                         eb + sb                          max(eb , ϵ)
+B changes transport action across a strong normal but contributes no allocation mass. This sepa-
+ration repairs black–white leakage without ﬁlling every ordinary photographic edge with cells.
+
+
+5     Population from the Support Measure
+5.1    The local area law
+The precision tensor deﬁnes an ellipse {ξ : ξ ⊤ Q(x)ξ ≤ 1} with area
+                                                                  π
+                                            A∗ (x) = √                   .                         (18)
+                                                                det Q(x)
+The reciprocal area is the local population measure
+                                          √
+                                              det Q(x)                       ∑
+                             ρ∗ (x) =                  ,           N∗ =          ρ∗ (x).           (19)
+                                                π                         x∈Ωh
+
+
+                                                            6
+      straight coherent support        curvature breaks the tangent horizon      curvature-limited population
+
+
+                                                                     κa 2/(2b)
+
+ one long cell remains locally valid                                        extra measure appears only where required
+
+Figure 2: Curvature horizon. Determinant density correctly permits one long cell on a straight coherent
+feature (left). The same tangent span leaves a curved feature by approximately κa2 /2 (center). The multi-
+plicative correction in equation (21) increases population only until each local straight support ﬁts within
+its normal span (right).
+
+
+Thus density, scale, and aspect ratio come from one object. A broad isotropic region has small
+determinant and asks for few cells. An isotropic textured region has two active eigenvalues and
+asks for many. A coherent line has one high eigenvalue and one low eigenvalue, yielding fewer,
+elongated supports. The ceiling on N∗ is solely a memory guard.
+
+5.2     Curvature limits a rank-one horizon
+The determinant law has a speciﬁc failure on smooth closed contours. Locally, every point appears
+rank one and nearly straight. A long support that is valid for a line may cross both sides of a
+curved boundary. Let
+                                          −1/2          −1/2
+                                    a = λlow ,    b = λhigh                                  (20)
+be tangent and normal semi-spans, and let κ be the derivative of the principal line ﬁeld along
+its tangent. The departure of the contour from its tangent over span a is approximately κa2 /2.
+Requiring that sagitta to remain within b gives the correction
+                                           √       (             )
+                                                      κ(x)a(x)2
+                                χκ (x) =       max 1,           ,         ρκ = χκ ρ∗ .                           (21)
+                                                        2b(x)
+
+The line-ﬁeld derivative uses doubled-angle coordinates (cos 2θ, sin 2θ), so eigenvector sign ﬂips
+disappear without angle unwrapping. Figure 2 illustrates the geometry.
+
+5.3     Simultaneous deterministic quantization
+Normalize ρκ and let d(x) be its commanded local count. Each pixel emits ⌊d(x)⌋ sites plus one
+fractional site when a ﬁxed low-discrepancy phase ϕ(x) ∈ [0, 1) satisﬁes
+
+                                                ϕ(x) < d(x) − ⌊d(x)⌋.                                            (22)
+
+Multiple sites within one pixel receive deterministic subpixel jitter. The phase is a spatial hash
+with ﬁxed constants and no image-dependent search. The realized population diﬀers from the
+continuous mass only by quantization error; there is no blue-noise candidate pool, no sorting, and
+no population objective.
+
+
+
+
+                                                          7
+6     Causal Anisotropic Support
+6.1   The transport metric
+The ﬁrst-arrival metric combines an isotropic connectivity ﬂoor, normalized support precision, and
+the separate jump tensor:
+                                                ℓ2
+                                M (x) = I + ηM max Q(x) + ηb2 B(x),                            (23)
+                                                 q90
+where q90 is the 90th percentile of tr Q, ηM = 1.5, and ηb = 24 by default. The path action is
+                                                        ∫ 1√
+                         dM (s, x) =         inf               γ̇(t)⊤ M (γ(t))γ̇(t) dt.           (24)
+                                        γ(0)=s,γ(1)=x 0
+
+The hard region of site si is
+
+                                Ci = {x : dM (si , x) ≤ dM (sj , x) for all j}.                   (25)
+
+Every pixel receives exactly one ﬁrst label; no runner-up ﬁeld is propagated.
+
+6.2   Continuous-direction ﬁrst arrival
+Axis-aligned graph Dijkstra approximates a strongly anisotropic metric by a crystalline norm. We
+instead follow the lattice-basis-reduction construction of anisotropic fast marching [Mirebeau, 2014,
+Mirebeau and Portegies, 2019]. At each receiver, Gauss reduction produces an obtuse superbase for
+M (x). Its three vectors and their negatives deﬁne a cyclic six-vector stencil. A Hopf–Lax update
+minimizes arrival over the continuous barycentric coordinate on an opposing simplex edge. Thus
+direction is selected by the local energy rather than by a global menu of image axes.
+   The implementation integrates each stencil vector over its crossed pixels and rejects a simplex if
+the endpoint metric and integrated action disagree beyond a ﬁxed consistency bound. Four cardinal
+edges remain as a connectivity ﬂoor. The front is monotone and stores, for every accepted pixel,
+its source label, ﬁrst and optional second simplex parent, barycentric fraction, arrival covector, and
+acceptance order. An inverse-incidence CSR structure lets an accepted vertex update exactly the
+receivers whose stencils use it. A decrease-key heap contains at most one live entry per unaccepted
+pixel.
+
+6.3   One topology-safe characteristic step
+The emitted population is complete, but deterministic phase places sites within their local pixels
+rather than at transport equilibrium. We allow one position correction that uses the already
+accepted front. For the semi-discrete action
+                                             ∫
+                                    E(S) =         min dM (si , x) ρκ (x) dx,                     (26)
+                                              Ω     i
+
+the envelope theorem removes explicit interface-motion terms while the ﬁrst-arrival topology is
+ﬁxed. In a constant metric, the source gradient is the negative terminal arrival covector integrated
+over its cell. In the varying metric, we reverse the causal Hopf–Lax directed acyclic graph: each
+pixel’s mass is transported to its parents by the stored barycentric fractions until it reaches a small
+shell around its source. The local arrival covector there estimates the initial geodesic momentum.
+   This is one reverse pass over pixels, not one path trace per site. A regularized local 2 × 2
+curvature model proposes a site displacement. The step is clipped to half the current interface
+
+                                                         8
+inradius, all germs must survive the exact remarch, and the total action in equation (26) must
+decrease. A converged or non-descent force does not trigger a remarch. These conditions make the
+step a topology-certiﬁed correction, not a centroid or PCA update.
+
+
+7     Cell Readout and Support Softening
+7.1   Conditioned aﬃne ﬁelds
+Let Ci contain ni pixels, centroid x̄i , and RMS radius ri . In normalized coordinates u = (x − x̄i )/ri ,
+the local basis is
+                                           ψi (x) = [1, ux , uy ]⊤ .                                (27)
+Centering makes the intercept orthogonal to both slopes. The coeﬃcient solve reduces to a mean
+and a closed 2 × 2 elimination per cell. A ﬁxed penalty on physical image gradient transforms
+as λg ni /ri2 ; applying the same numerical regularizer in normalized coordinates would change the
+model. Fits are performed in OKLab and converted to sRGB for scoring.
+
+7.2   A measured residual ridge
+One aﬃne ﬁeld cannot represent every thin transition inside a correct cell. For each cell we measure
+the residual over a ﬁxed set of 16 projected axes and 41 oﬀsets, select the strongest signed cumulative
+separation, and append                        ( (                       ))
+                                                    (x − si ) · ni
+                                 hi (x) = tanh κr                  − oi                            (28)
+                                                         r̄
+to the local basis, with κr = 4 and global spacing r̄. The augmented system is still independent per
+cell and has ﬁxed small dimension. The ridge rung is retained only if J decreases. This operation
+enriches a ﬁxed support; it does not move or divide a site.
+
+7.3   Fractional collision coverage
+A continuous ﬁrst-arrival interface is rasterized when two accepted labels meet on a cardinal lattice
+edge. If the endpoint actions are d1 , d2 and the incident edge cost is c, their equality crossing along
+the edge is                                   (                   )
+                                                1 d2 − d1
+                                    t∗ = clip     +         , 0, 1 .                                 (29)
+                                                2      2c
+Only the pixel footprint cut by this crossing receives fractional color from its neighbor, scaled by the
+boundary conﬁdence γb and a default strength 0.4. When several interfaces cut a pixel, all incident
+coverage is scaled together so its own nonnegative contribution remains. This is an antialiasing
+measure derived from the accepted collision, not a propagated second owner. The proposal is
+objective-gated.
+
+7.4   Owner-free soft support
+Hard ﬁrst arrival supplies connected topology, but not every hard interface deserves permanent
+visual identity. Let wi (0, x) = 1[x ∈ Ci ]. Deﬁne the implicit soft weights
+
+                                      wi (t, ·) = exp(tLg )wi (0, ·),                                (30)
+
+
+
+                                                    9
+                input                          support measure                  site support (6,374)
+
+
+
+
+      hard affine + ridge readout        accepted interface/soft finish         final residual energy
+
+
+
+
+Figure 3: Full-resolution photographic diagnostic. The one frozen support measure allocates 6,374
+cells on the 640 × 427 skimage rocket image. Site colors are deterministic IDs softened by the same accepted
+heat operator used for reconstruction; black curves show hard ﬁrst-arrival boundaries. The ﬁnal residual
+remains concentrated on narrow structures and high-contrast lights rather than being spread through the
+smooth sky. The ﬁnal reconstruction reaches 30.009 dB and J = 2.151 × 10−3 .
+
+
+where Lg is an edge-weighted heat generator. For a neighboring pixel pair (x, y), conductance is
+
+                                            exp(−∥z(x) − z(y)∥2 /σc2 )
+                                    gxy =                              .                                (31)
+                                              (y − x)⊤ M̄xy (y − x)
+
+Thus unchanged-target color agreement and low transport action are both required for support
+sharing. The simultaneous update is a convex local average and preserves a constant ﬁeld. Conse-
+quently,                                ∑
+                                           wi (t, x) = 1                                    (32)
+                                               i
+
+without storing a dense pixels-by-sites matrix. Diﬀusing a rendered ﬁeld directly is equivalent to
+           ∑
+evaluating i wi ci . In a site-ID diagnostic, each site color is a deterministic hash; smooth mixtures
+then reveal shared support exactly as in the corresponding SAD diagnostic. Sixteen heat steps
+with coupling 0.8 are the default, again accepted only when J does not increase.
+
+
+
+
+                                                      10
+8     Canonical Algorithm and Complexity
+Algorithm 1: FlowCells on one image
+1. Convert the unchanged target to OKLab; compute one Meyer split (u, v) and the ﬁxed
+   outer defect g.
+ 2. Form amplitude-normalized precision Q, local null evidence, and separate decisive-jump
+    tensor B.
+                                                     √
+ 3. Apply the curvature horizon and quantize ρκ = χκ det Q/π with ﬁxed local phase.
+ 4. Build M ; solve continuous-direction multi-source ﬁrst arrival.
+ 5. Reverse support mass through the causal front; accept at most one topology-safe charac-
+    teristic displacement and exact remarch.
+ 6. Fit conditioned aﬃne OKLab ﬁelds; test one measured residual ridge.
+  7. Test fractional collision coverage and transport-gated soft support. Return the lowest-J
+     accepted readout and all diagnostic ﬁelds.
+   Let P = HW be pixel count, N realized cells, and K = 6 the local reduced stencil size. The
+one-stage geometry, evidence ﬁelds, curvature, phase quantization, reverse force, aﬃne reductions,
+and each heat step are O(P + N ) with ﬁxed local constants. Metric reduction is pointwise in two
+dimensions. The monotone front is O(P log P ) with a binary decrease-key heap; observed updates
+are approximately 1.8–2.1 per pixel and live occupancy is 5–38%, depending on scene. No N 2 cell
+interaction is constructed. The only cell systems are independent ﬁxed-small matrices.
+   When geometry is computed on a restricted allocation grid, the target is still decomposed at
+its working resolution ﬁrst. The completed tensor is sampled to emit and relax sites; one exact
+full-resolution front then classiﬁes output pixels. A resized image is never decomposed in place
+of the original target. This distinction is what allows full-resolution output without changing the
+support evidence.
+
+
+9     Evaluation
+9.1   Protocol
+All results use λ = 0.05, µ = 40, 24 Meyer sweeps, 24 ﬁxed glass sweeps, metric strength 1.5,
+curvature-limited population, one characteristic pass, one residual ridge, null strength 0.5, jump
+action 24, fractional coverage strength 0.4, and 16 soft-support steps unless a component is under
+ablation. The safety ceiling is 32,768 cells. Images are processed in ﬂoating point with an OKLab
+lightness/chroma objective. The ﬁve 256-pixel controls are the skimage camera, Chelsea, coins,
+and astronaut images plus a 475 × 475 cartoon diagnostic named 25.png. The full-resolution
+photographic control is skimage.data.rocket().
+   PSNR is reported from RGB MSE. Because FlowCellsis a reconstructive representation rather
+than an object-mask predictor, we report population, RGB PSNR, cartoon MSE, texture MSE,
+the combined objective, and runtime separately. Component proposals are compared on identical
+partitions where stated.
+
+
+
+
+                                                11
+Table 1: Curvature control on the 475-pixel cartoon diagnostic. The matched-count rows separate
+population placement from count. Lower cheek-band MSE is better.
+
+                  Allocation                          Cells      PSNR (dB)      Cheek MSE
+                  Straight support law                  730           25.250        0.03967
+                  Curvature, ﬁxed count                 728           25.145        0.02245
+                  Straight, matched larger count      1,192           26.994        0.02683
+                  Curvature, natural count            1,194          27.784        0.01400
+
+Table 2: Objective-gated soft support at 256 pixels. Arrows show hard to soft. Coins rejects the
+proposal and is unchanged.
+
+      Image       Accept PSNR (dB)         Cartoon MSE           Texture MSE           J
+      Camera       yes   29.755 → 29.832   2.624e-3 → 6.730e-4   3.250e-4 → 3.147e-4   4.007e-3 → 2.027e-3
+      Chelsea      yes   31.631 → 31.767   7.114e-4 → 3.675e-4   2.310e-4 → 2.226e-4   1.629e-3 → 1.256e-3
+      Coins        no    unchanged         unchanged             unchanged             unchanged
+      Astronaut    yes   27.496 → 27.612   nearly unchanged      5.182e-4 → 5.027e-4   2.349e-3 → 2.287e-3
+      Cartoon      yes   25.772 → 25.852   nearly unchanged      7.043e-4 → 6.904e-4   3.559e-3 → 3.497e-3
+
+
+
+9.2    Curvature addresses a geometric, not a budget, failure
+Table 1 isolates the smooth-contour failure. At the old cell count, curvature-aware placement re-
+duces cheek-band error by 43% while trading 0.10 dB globally. At the natural count, it reduces
+cheek-band error by 47.8% relative to a matched-count straight law and adds 0.79 dB. The im-
+provement is not explained by spending more cells alone.
+  Across all ﬁve 256-pixel controls, natural curvature population changes RGB PSNR by +2.68
+dB (camera), +0.43 (Chelsea), +0.46 (coins), +1.53 (astronaut), and +1.58 (cartoon diagnostic).
+The spread is expected: the correction is active where a coherent line ﬁeld curves faster than its
+predicted tangent horizon.
+
+9.3    Soft support improves the decomposition objective selectively
+Table 2 compares the hard readout to 16 support-diﬀusion steps on the same curvature-aware
+partition. Four proposals are accepted. Coins is the useful refusal: its ﬁne isotropic structure does
+not support the proposed boundary relaxation, and objective gating retains the hard result.
+
+9.4    Null, jump, and fractional coverage are independent
+Three controls separate failures that look similar in the rendered image. On the cartoon diagnostic,
+weak-detail null evidence reduces population from 1,194 to 1,030 cells and PSNR from 27.862 to
+27.700 dB; on rocket it reduces population from 8,465 to 6,374 while changing PSNR from 30.069
+to 30.013 dB and improving J from 2.329 × 10−3 to 2.150 × 10−3 . The sky’s upper third retains
+67.5% of its former weak-detail conﬁdence while the textured lower third retains 85.3%. An earlier
+indiscriminate persistence multiplier reduced the cartoon control to 560 cells and 24.90 dB; that
+form is excluded.
+   Adding jump action 24 changes the cartoon control from 27.862 to 27.916 dB and J from
+2.259 × 10−3 to 2.231 × 10−3 , while rocket is neutral to the reported precision. Fractional coverage
+at strength 0.4 changes the cartoon control to 27.974 dB and is accepted; the rocket proposal is
+
+
+                                                     12
+                                        curvature-limited population                                                       objective-gated soft support
+                         2.5                                                                              0.125
+
+
+
+
+                                                                              accepted PSNR change (dB)
+      PSNR change (dB)
+                         2.0                                                                              0.100
+                         1.5                                                                              0.075
+                         1.0                                                                              0.050
+                         0.5                                                                              0.025
+                         0.0                                                                              0.000
+                               c am
+                                   era helsea    coin
+                                                     s        naut Pikachu                                        c am
+                                                                                                                      era helsea        s       t
+                                                                                                                                    coin stronau Pikachu
+                                       C                 astro                                                            C               a
+
+Figure 4: Cross-image component eﬀects. Curvature changes the actual population and can produce
+multi-decibel gains. Soft support is a bounded readout correction and therefore produces smaller accepted
+PSNR changes; its larger eﬀect can be in the cartoon term of J , as shown in table 2. A rejected proposal is
+plotted as zero.
+
+Table 3: Isolated native-kernel timings. The front port establishes a stable ownership boundary; the
+larger gains come from fused per-cell reductions and simultaneous diﬀusion.
+
+                                   Kernel                                    Reference                                 Native C++         Speedup
+                                   Conditioned hard aﬃne ﬁt                   24.94 ms                                      2.23 ms         11.18×
+                                   One-ridge augmented reﬁt                   15.57 ms                                      3.62 ms          4.30×
+                                   Continuous ﬁrst-arrival walk              181.76 ms                                    164.83 ms          1.10×
+                                   Curvature population                        7.49 ms                                      2.97 ms          2.52×
+                                   16-step, 3-channel soft support           315.49 ms                                     46.46 ms          6.79×
+
+
+rejected. Strength 1.0 is also rejected on the cartoon control. These outcomes support the intended
+roles: null evidence controls population, jump evidence controls crossing, and fractional coverage
+corrects only the rasterized collision.
+   The combined defaults produce 1,030 cells and 27.841 dB on the cartoon diagnostic. On rocket
+they produce 6,374 cells, 30.009 dB, and J = 2.151 × 10−3 , as shown in ﬁgure 3.
+
+9.5      Runtime and native equivalence
+The ﬁgure-generation run for ﬁgure 3 used an 8-core Apple M3 with 8 GB RAM and macOS
+14.8.7. Geometry took 239.7 ms, population/front/characteristic work took 825.0 ms, and ﬁtting
+plus objective-gated ﬁnishes took 1,256.9 ms, for 2,321.6 ms total. These are warm process timings
+from the current source, NumPy 2.4.6, SciPy 1.18.0, and scikit-image 0.26.0.
+   The native front was compared with the executable reference on a nonconstant 73×91 tensor with
+47 sources. Owner labels, both simplex parents, acceptance order, heap push count, and maximum
+heap occupancy are identical. Distances, covectors, source covectors, and simplex fractions diﬀer
+by less than 2.8 × 10−14 . The native hard aﬃne reconstruction diﬀers by less than 3 × 10−15 , and
+the augmented ridge ﬁt by less than 3 × 10−13 .
+   On a warm 475 × 475 control with 1,194 cells, one characteristic refresh, one ridge, and 16 soft
+steps, end-to-end time changes from 1,063.3 ms with executable fallbacks to 1,036.1 ms with native
+kernels. The smaller end-to-end change reﬂects the remaining structural costs: target and candidate
+Meyer evaluations and two exact global fronts. The accelerated kernels remove bookkeeping as the
+
+
+                                                                             13
+dominant cost without changing the population law.
+
+
+10     Why the Construction Works
+The method is easier to understand as a sequence of obligations than as a collection of ﬁlters.
+
+Coarse organization and ﬁne demand are complementary. The cartoon component is
+stable over a region and therefore provides the geometry of broad support. Texture and the outer
+defect indicate where that broad explanation cannot account for the local event. Summing raw
+channel energies would simply favor contrast. Dividing a structure tensor by event energy instead
+asks for inverse support scale and direction.
+
+A volume form is a population law. The eigenvectors of Q determine direction and its
+eigenvalues determine reciprocal length. Their determinant is reciprocal area. Once that relation
+is accepted, a global site budget is no longer the primitive decision. The support substrate already
+says how many local degrees of freedom ﬁt in each area. Deterministic phase only discretizes that
+statement.
+
+First arrival converts a local metric into connected territory. The precision ﬁeld by itself
+is not a segmentation. Causal propagation integrates it: support travels cheaply along coherent
+structure and expensively across it. A site does not own pixels by ﬁat; it reaches them before
+another source under one shared action. Connectedness and full coverage follow from the solve.
+
+Curvature is missing information in a pointwise rank-one tensor. A local tensor knows a
+tangent but not how long that tangent remains valid. The curvature horizon supplies exactly that
+missing scale. It does not add a second anisotropy heuristic; it limits the ﬁrst one by the geometry
+of its own line ﬁeld.
+
+Hard and soft support answer diﬀerent questions. Hard support determines topology and
+gives the representation a sparse cell graph. Fractional coverage says where a continuous hard
+interface crossed a pixel. Heat support asks whether an internal identity should remain visible
+under target agreement and transport action. Applying these operations in that order prevents a
+soft renderer from concealing a misspeciﬁed hard partition.
+
+Residuals enrich readout after support is established. The residual ridge is permitted to
+change a cell’s local ﬁeld, not its existence. This discipline avoids using persistent edge error as an
+instruction to crowd a boundary. It also explains why the residual can remain diﬀuse: a correct
+support with an imperfect basis should be enriched before its topology is replaced.
+
+
+11     Limitations and Research Directions
+The current support law is local before transport. Repeated weak texture can still produce more
+population than a semantic interpretation of a panel would require. Cross-scale null evidence
+reduces that eﬀect only when the evidence is weak; it deliberately preserves strong ﬁne texture.
+
+
+
+                                                  14
+A future density law may use a longer support-consistency horizon without reintroducing ranked
+allocation.
+   The curvature correction is a second-order sagitta model. It handles smooth rank-one curves
+but does not explicitly model junction order, self-approach, or curvature variation across an entire
+future cell. Those phenomena do inﬂuence the subsequent arrival solve, but not the initial count.
+A transport-derived nonlocal validity radius is the natural extension.
+   One characteristic update is conservative. It preserves all germs and requires exact action de-
+crease, but some images may beneﬁt from additional local topology refreshes. The method allows
+them, yet each global remarch has material cost. A local exact refresh whose domain is certiﬁed
+by the current causal DAG would preserve the method’s ﬁrst-arrival semantics while lowering that
+cost.
+   The objective requires candidate cartoon–texture evaluations. Geometry remains single-
+decomposition, but accepted readout proposals are not free. A fused incremental objective or
+a local certiﬁcate for the decomposition terms would reduce runtime without weakening the
+acceptance rule.
+   Finally, the present representation is per image. Video adds a temporal support question:
+whether the measured substrate should advect existing sites or quantize a new measure. The one-
+stage geometry and causal front are compatible with a space–time metric, but temporal stability
+is not evaluated here.
+
+
+12     Reproducibility and Provenance
+The canonical application entry point is viewer/segmenting_veroni_viewer.py. The supported
+pipeline is port_needed/pipeline.py; its stages are separated into frozen geometry, density pop-
+ulation, continuous eikonal transport, characteristic force, conditioned ﬁt, fractional coverage, and
+soft diﬀusion modules. Native interfaces are declared in include/bfft/vision.h and implemented
+in src/vision.cpp. Each native stage has an executable fallback and numerical equivalence tests.
+The source for the paper’s scientiﬁc ﬁgures is paper/flowcells/scripts/make_figures.py; it
+records the rocket metrics beside the rendered ﬁgure.
+   The methodology was developed collaboratively by Joshuah Rainstar, OpenAI Codex Sydney,
+and Claude Opus 5. The manuscript reports only mechanisms present in the canonical code or mea-
+surements recorded in the repository’s experiment notes. Earlier candidate-ranking, recursive-birth,
+two-owner, canopy, and residual-pressure variants remain research controls and are not described
+as components of FlowCells.
+
+
+13     Conclusion
+FlowCellsturns one frozen cartoon–texture decomposition into a complete adaptive image repre-
+sentation. The construction proceeds from local evidence to local precision, from precision to
+population, from population to causal territory, and from territory to hard, fractional, and soft
+readout. Each stage answers one question and leaves the next question visible. This separation
+is what permits broad smooth cells, dense textured cells, curved-contour correction, decisive-edge
+blocking, and support fusion to coexist without a global candidate allocator.
+   The experiments establish the role of the principal components. Curvature corrects a speciﬁc
+rank-one support failure across all tested controls; soft support improves or refuses the ﬁxed de-
+composition objective as intended; null evidence, jump action, and fractional coverage address
+
+                                                 15
+independent defects; and the native ports preserve the reference mathematics while removing mea-
+sured hot-loop overhead. The remaining work is concentrated rather than diﬀuse: a better nonlocal
+support-validity law, cheaper exact topology refresh, and faster evaluation of the ﬁxed decomposi-
+tion objective.
+
+
+Acknowledgments
+We thank Lucky Iyinbor, publishing as Laki Iinbor, for the exploration of soft anisotropic diagrams
+that inspired us to take up this representation challenge. Without that exploration, this line of
+work would not have begun. We also thank the authors of the Meyer, Bregman, anisotropic fast-
+marching, transport tessellation, and explicit image-representation methods on which the present
+construction builds.
+
+References                                               minimization and applications. Journal of Mathe-
+                                                         matical Imaging and Vision, 20:89–97, 2004. doi:
+Radhakrishna Achanta and Sabine Süsstrunk. Super-        10.1023/B:JMIV.0000011325.36760.1e.
+  pixels and polygons using simple non-iterative clus- Zhang Chen et al. NeuRBF: A neural ﬁelds repre-
+  tering. In Proceedings of the IEEE Conference on       sentation with adaptive radial basis functions. In
+  Computer Vision and Pattern Recognition, pages         Proceedings of the IEEE/CVF International Con-
+  4895–4904, 2017. doi: 10.1109/CVPR.2017.520.           ference on Computer Vision, 2023. URL https:
+Jean-François Aujol, Gilles Aubert, Laure Blanc-         //arxiv.org/abs/2309.15426.
+  Féraud, and Antonin Chambolle. Image decom- Bowen Cheng, Ishan Misra, Alexander G. Schwing,
+  position into a bounded variation component and        Alexander Kirillov, and Rohit Girdhar. Masked-
+  an oscillating component. Journal of Mathemat-         attention mask transformer for universal image
+  ical Imaging and Vision, 22:71–88, 2005. doi:          segmentation. In Proceedings of the IEEE/CVF
+  10.1007/s10851-005-4783-8.                             Conference on Computer Vision and Pattern
+Yash Belhe et al. Discontinuity-aware 2d neural          Recognition, pages 1290–1299, 2022.          URL
+  ﬁelds. In ACM SIGGRAPH Asia Conference Pro-            https://openaccess.thecvf.com/content/
+  ceedings, 2023. URL https://yashbelhe.github.          CVPR2022/html/Cheng_Masked-Attention_
+  io/danf/index.html.                                    Mask_Transformer_for_Universal_Image_
+David P. Bourne, Bernhard Schmitzer, and                 Segmentation_CVPR_2022_paper.html.
+  Benedikt Wirth.         Semi-discrete unbalanced Jérôme Gilles and Stanley Osher. Bregman im-
+  optimal transport and quantization.           arXiv    plementation of Meyer’s G-norm for cartoon
+  preprint arXiv:1808.01962,        2025.        URL     + textures decomposition.         arXiv preprint
+  https://arxiv.org/abs/1808.01962.                      arXiv:2410.22777, 2024. URL https://arxiv.
+Max Budninskiy, Beibei Liu, Fernando de Goes, Yiy-       org/abs/2410.22777.
+  ing Tong, Pierre Alliez, and Mathieu Desbrun. Tom Goldstein and Stanley Osher. The split Breg-
+  Optimal voronoi tessellations with hessian-based       man method for L1-regularized problems. SIAM
+  anisotropy. ACM Transactions on Graphics, 35           Journal on Imaging Sciences, 2(2):323–343, 2009.
+  (6):242:1–242:12, 2016. doi: 10.1145/2980179.          doi: 10.1137/080725891.
+  2980245.                                             Laki Iinbor, Zhiyang Dou, and Wojciech Matusik.
+Maciej Buze, Jean Feydy, Steven M. Roper, Karo           Soft anisotropic diagrams for diﬀerentiable image
+  Sedighiani, and David P. Bourne. Anisotropic           representation. ACM Transactions on Graphics,
+  power diagrams for polycrystal modelling: Eﬃ-          2026. URL https://luckyiyi.github.io/SAD/
+  cient generation of curved grains via optimal trans-   index.html. SIGGRAPH 2026.
+  port. arXiv preprint arXiv:2403.03571, 2024. URL Varun Jampani, Deqing Sun, Ming-Yu Liu, Ming-
+  https://arxiv.org/abs/2403.03571.                      Hsuan Yang, and Jan Kautz. Superpixel sam-
+Dengfeng Chai. Rooted spanning superpixels. In-          pling networks. In European Conference on Com-
+  ternational Journal of Computer Vision, 128:2962–      puter Vision, pages 352–368, 2018. doi: 10.1007/
+  2978, 2020. doi: 10.1007/s11263-020-01352-9.           978-3-030-01234-2_22.
+Antonin Chambolle. An algorithm for total variation
+
+
+                                                   16
+Xuejing Kang, Lei Zhu, and Anlong Ming. Dynamic           anisotropic and non-holonomic eikonal PDEs. Im-
+  random walk for superpixel segmentation. IEEE           age Processing On Line, 9:47–93, 2019. doi: 10.
+  Transactions on Image Processing, 29:3871–3884,         5201/ipol.2019.227.
+  2020. doi: 10.1109/TIP.2020.2967583.                  Joshuah Rainstar. Transport geometry fusion de-
+Alexander Kirillov et al. Segment anything. In            scent: A sub-second implementation of Meyer’s G-
+  Proceedings of the IEEE/CVF International               norm cartoon + texture decomposition. Technical
+  Conference on Computer Vision, pages 4015–4026,         report, Independent Research, July 2026.
+  2023. URL https://openaccess.thecvf.com/              Xing Wei, Qingxiong Yang, Yihong Gong, Narendra
+  content/ICCV2023/html/Kirillov_Segment_                 Ahuja, and Ming-Hsuan Yang. Superpixel hier-
+  Anything_ICCV_2023_paper.html.                          archy. IEEE Transactions on Image Processing,
+Tzu-Mao Li, Michal Lukáč, Michaël Gharbi, and             27(10):4838–4849, 2018. doi: 10.1109/TIP.2018.
+  Jonathan Ragan-Kelley.         Diﬀerentiable vector     2836309.
+  graphics rasterization for editing and learning.      Xinjie Zhang, Xingtong Ge, Tongda Xu, Dailan He,
+  ACM Transactions on Graphics, 39(6), 2020. doi:         Yan Wang, Hongwei Qin, Guo Lu, Jing Geng, and
+  10.1145/3414685.3417871.                                Jun Zhang. Gaussianimage: 1000 fps image rep-
+Yves Meyer. Oscillating Patterns in Image Process-        resentation and compression by 2d gaussian splat-
+  ing and in Some Nonlinear Evolution Equations,          ting. In European Conference on Computer Vi-
+  volume 22 of University Lecture Series. American        sion, 2024. URL https://www.ecva.net/papers/
+  Mathematical Society, 2001. doi: 10.1090/ulect/         eccv_2024/papers_ECCV/papers/01421.pdf.
+  022.                                                  Yunxiang Zhang, Bingxuan Li, Alexandr Kuznetsov,
+Jean-Marie Mirebeau. Anisotropic fast-marching on         Akshay Jindal, Stavros Diolatzis, Kenneth Chen,
+  cartesian grids using lattice basis reduction. SIAM     Anton Sochenov, Anton Kaplanyan, and Qi Sun.
+  Journal on Numerical Analysis, 52(4):1573–1599,         Image-gs: Content-adaptive image representation
+  2014. doi: 10.1137/120861667.                           via 2d gaussians. In ACM SIGGRAPH Confer-
+Jean-Marie Mirebeau and Jorg Portegies. Hamil-            ence Proceedings, pages 1–20, 2025. URL https:
+  tonian fast marching: A numerical solver for            //arxiv.org/abs/2407.01866.
+
+
+
+
+                                                    17
+

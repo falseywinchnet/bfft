@@ -170,6 +170,14 @@ _meyer_decompose = _decl("bfft_meyer_decompose", ctypes.c_int,
 _meyer_rof = _decl("bfft_meyer_rof", ctypes.c_int,
                    [_plan_p, _void_p, _void_p, ctypes.c_double,
                     ctypes.c_double, ctypes.c_int, ctypes.c_double])
+_meyer_rof_accelerated = _decl_optional(
+    "bfft_meyer_rof_accelerated", ctypes.c_int,
+    [_plan_p, _void_p, _void_p, ctypes.c_double, ctypes.c_double,
+     ctypes.c_int, ctypes.c_double, ctypes.c_int])
+_meyer_last_rof_sweeps = _decl_optional(
+    "bfft_meyer_plan_last_rof_sweeps", ctypes.c_int, [_plan_p])
+_meyer_last_rof_hodge_applied = _decl_optional(
+    "bfft_meyer_plan_last_rof_hodge_applied", ctypes.c_int, [_plan_p])
 
 # --- measured-graph vision kernels (vision.h; optional for old installs) ---
 _vision_assemble_normal = _decl_optional(
@@ -869,21 +877,47 @@ class MeyerPlan:
         if failure:
             raise failure[0]
 
-    def rof(self, image, c, eta=0.0, sweeps=200, tol=1e-5):
+    def rof(self, image, c, eta=0.0, sweeps=200, tol=1e-5,
+            hodge_after=0):
         """A plain ROF solve, ``argmin_x TV(x) + (c/2)|x - image|^2``, run
         by the same Split Bregman solver the ladder rungs use.  ``eta`` is
         the Bregman penalty (0 selects the ladder convention, ``10 * c``);
         sweeps stop early once the relative iterate change falls below
-        ``tol``.  ``image - rof(image, c)`` is the ROF residual."""
+        ``tol``.  ``hodge_after > 0`` enables one objective-checked
+        Fourier/Hodge closure after that many sweeps, then continues the same
+        ROF problem; it currently requires solver 0.  ``image - rof(image,
+        c)`` is the ROF residual."""
         a = np.ascontiguousarray(image, dtype=np.float64)
         if a.shape != self.shape:
             raise ValueError(
                 f"MeyerPlan{self.shape}.rof expects shape {self.shape}")
         out = np.empty(self.shape, dtype=np.float64)
-        _check(_meyer_rof(self._plan, a.ctypes.data, out.ctypes.data,
-                          float(c), float(eta), int(sweeps), float(tol)),
-               "bfft_meyer_rof")
+        hodge_after = int(hodge_after)
+        if hodge_after:
+            if _meyer_rof_accelerated is None:
+                raise RuntimeError(
+                    "this bfft build does not provide ROF Hodge acceleration")
+            _check(_meyer_rof_accelerated(
+                self._plan, a.ctypes.data, out.ctypes.data, float(c),
+                float(eta), int(sweeps), float(tol), hodge_after),
+                "bfft_meyer_rof_accelerated")
+        else:
+            _check(_meyer_rof(self._plan, a.ctypes.data, out.ctypes.data,
+                              float(c), float(eta), int(sweeps), float(tol)),
+                   "bfft_meyer_rof")
         return out
+
+    @property
+    def last_rof_sweeps(self):
+        """Ordinary Split-Bregman sweeps used by the most recent ROF call."""
+        return (None if _meyer_last_rof_sweeps is None
+                else int(_meyer_last_rof_sweeps(self._plan)))
+
+    @property
+    def last_rof_hodge_applied(self):
+        """Whether the most recent ROF call accepted its Hodge proposal."""
+        return (None if _meyer_last_rof_hodge_applied is None
+                else bool(_meyer_last_rof_hodge_applied(self._plan)))
 
     def decompose(self, image):
         a = np.ascontiguousarray(image, dtype=np.float64)
@@ -1074,18 +1108,22 @@ def meyer_trace(image, lam=0.05, mu=40.0, passes=64, threads=0, solver=0):
 
 
 def rof(image, c=0.025, eta=0.0, sweeps=200, tol=1e-5, threads=0,
-        solver=0):
+        solver=0, hodge_after=0):
     """Total-variation (Rudin-Osher-Fatemi) solve on an arbitrary-size
     grayscale image: ``argmin_x TV(x) + (c/2)|x - image|^2``.
 
     Smaller ``c`` smooths harder.  ``image - rof(image, c)`` is the ROF
     residual; the Meyer decomposition is built from exactly this solver, and
     subtracting a ROF solve of a cartoon layer isolates the smooth
-    illumination a flat cartoon discards.  Arbitrary sizes are handled by
-    the padding policy selected by ``solver``."""
+    illumination a flat cartoon discards.  ``hodge_after > 0`` applies the
+    optional one-shot static-ROF accelerator after that many ordinary
+    sweeps; it requires ``solver=0``.  Arbitrary sizes are handled by the
+    padding policy selected by ``solver``."""
     plan, padded, top, left, h, w = _meyer_padded(
         image, 0.05, 40.0, 1, 1, 0.0, threads, solver)
-    out = plan.rof(padded, c, eta=eta, sweeps=sweeps, tol=tol)
+    out = plan.rof(
+        padded, c, eta=eta, sweeps=sweeps, tol=tol,
+        hodge_after=hodge_after)
     return out[top:top + h, left:left + w].copy()
 
 

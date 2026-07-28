@@ -1,0 +1,744 @@
+{
+  "records": [
+    {
+      "name": "0.10e 256f",
+      "result": {
+        "budget": {
+          "size": 512,
+          "frames": 256,
+          "photons_at_white": 0.1,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "shift_radius": 12,
+          "motion_step": 1,
+          "registration_group": 8,
+          "registration_rounds": 1,
+          "thumbnail": 128,
+          "registration_upsample": 8,
+          "wiener_ring_width": 2,
+          "sampler": "auto",
+          "seed": 19
+        },
+        "mean_detected_electrons_per_frame": 13785.5146484375,
+        "nonzero_fraction_first_frame": 0.050792694091796875,
+        "first_pass_seconds": 0.6106670419685543,
+        "registration_and_fusion_seconds": 0.7283773749368265,
+        "total_seconds": 1.3390444169053808,
+        "milliseconds_per_input_frame_all_passes": 5.230642253536644,
+        "streaming_passes": 2,
+        "registration_rounds": [
+          {
+            "round": 1,
+            "gauge_yx": [
+              -7,
+              -10
+            ],
+            "median_error": 2.0,
+            "p90_error": 3.1622776601683795
+          }
+        ],
+        "registration_error_pixels": {
+          "mean": 1.8988148930256,
+          "median": 2.0,
+          "p90": 3.1622776601683795,
+          "exact_fraction": 0.05078125,
+          "global_gauge_yx": [
+            -7,
+            -10
+          ]
+        },
+        "evaluation_global_gauge": {
+          "unregistered": [
+            7,
+            10
+          ],
+          "registered": [
+            7,
+            10
+          ],
+          "cross_wiener": [
+            7,
+            10
+          ]
+        },
+        "split_half_support": {
+          "before": {
+            "snr_db": 5.465544972377465,
+            "noise_rms": 0.1438133415731802,
+            "signal_rms": 0.2698214215692658
+          },
+          "after": {
+            "snr_db": 21.66514765578334,
+            "noise_rms": 0.02210980206986353,
+            "signal_rms": 0.2678195262760859
+          },
+          "noise_reduction_db": 16.264286454284907,
+          "ring_width": 2,
+          "rings": 182,
+          "median_gain": 0.0058051212031144574,
+          "half_gain_last_radius": 50.0
+        },
+        "metrics": {
+          "single": {
+            "psnr_db": 4.979784213254281,
+            "ssim": 0.008806220463856864
+          },
+          "unregistered": {
+            "psnr_db": 16.617432527037636,
+            "ssim": 0.12322837459457271
+          },
+          "bounded_registered": {
+            "psnr_db": 16.988025000838405,
+            "ssim": 0.15749898160706297
+          },
+          "circular_cross_wiener": {
+            "psnr_db": 24.57853829611029,
+            "ssim": 0.6232068344013878
+          }
+        }
+      },
+      "projection_variants": [
+        {
+          "ring_width": 1,
+          "metrics": {
+            "psnr_db": 24.568502565893017,
+            "ssim": 0.621252520415196
+          },
+          "noise_rms": 0.02215067221763895,
+          "snr_db": 21.647728308501485,
+          "rings": 363,
+          "median_gain": 0.01077846394873696,
+          "half_gain_last_radius": 52.0
+        },
+        {
+          "ring_width": 2,
+          "metrics": {
+            "psnr_db": 24.57853829611029,
+            "ssim": 0.6232068344013878
+          },
+          "noise_rms": 0.02210980206986353,
+          "snr_db": 21.66514765578334,
+          "rings": 182,
+          "median_gain": 0.0058051212031144574,
+          "half_gain_last_radius": 50.0
+        },
+        {
+          "ring_width": 4,
+          "metrics": {
+            "psnr_db": 24.59391388051168,
+            "ssim": 0.6232358415035961
+          },
+          "noise_rms": 0.022242479046207866,
+          "snr_db": 21.617903512655694,
+          "rings": 91,
+          "median_gain": 0.0,
+          "half_gain_last_radius": 48.0
+        },
+        {
+          "ring_width": 8,
+          "metrics": {
+            "psnr_db": 24.639747741996516,
+            "ssim": 0.6191829536503035
+          },
+          "noise_rms": 0.023064249612289436,
+          "snr_db": 21.31612823984071,
+          "rings": 46,
+          "median_gain": 0.003139697283520959,
+          "half_gain_last_radius": 48.0
+        }
+      ]
+    },
+    {
+      "name": "0.10e 512f",
+      "result": {
+        "budget": {
+          "size": 512,
+          "frames": 512,
+          "photons_at_white": 0.1,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "shift_radius": 12,
+          "motion_step": 1,
+          "registration_group": 8,
+          "registration_rounds": 1,
+          "thumbnail": 128,
+          "registration_upsample": 8,
+          "wiener_ring_width": 2,
+          "sampler": "auto",
+          "seed": 19
+        },
+        "mean_detected_electrons_per_frame": 13785.5146484375,
+        "nonzero_fraction_first_frame": 0.050792694091796875,
+        "first_pass_seconds": 1.5162184580694884,
+        "registration_and_fusion_seconds": 1.458792292047292,
+        "total_seconds": 2.9750107501167804,
+        "milliseconds_per_input_frame_all_passes": 5.810567871321837,
+        "streaming_passes": 2,
+        "registration_rounds": [
+          {
+            "round": 1,
+            "gauge_yx": [
+              -7,
+              -9
+            ],
+            "median_error": 1.4142135623730951,
+            "p90_error": 2.7691912100215705
+          }
+        ],
+        "registration_error_pixels": {
+          "mean": 1.505879537710963,
+          "median": 1.4142135623730951,
+          "p90": 2.7691912100215705,
+          "exact_fraction": 0.095703125,
+          "global_gauge_yx": [
+            -7,
+            -9
+          ]
+        },
+        "evaluation_global_gauge": {
+          "unregistered": [
+            7,
+            10
+          ],
+          "registered": [
+            7,
+            9
+          ],
+          "cross_wiener": [
+            7,
+            9
+          ]
+        },
+        "split_half_support": {
+          "before": {
+            "snr_db": 8.559816480391904,
+            "noise_rms": 0.10134067158348001,
+            "signal_rms": 0.2715029808176152
+          },
+          "after": {
+            "snr_db": 22.483070517967498,
+            "noise_rms": 0.020252537776815807,
+            "signal_rms": 0.2695460530311245
+          },
+          "noise_reduction_db": 13.986086541994977,
+          "ring_width": 2,
+          "rings": 182,
+          "median_gain": 0.01784349745748757,
+          "half_gain_last_radius": 68.0
+        },
+        "metrics": {
+          "single": {
+            "psnr_db": 4.979784213254281,
+            "ssim": 0.008806220463856864
+          },
+          "unregistered": {
+            "psnr_db": 18.24565952610475,
+            "ssim": 0.16114087572778366
+          },
+          "bounded_registered": {
+            "psnr_db": 19.500103875209145,
+            "ssim": 0.23892187551387944
+          },
+          "circular_cross_wiener": {
+            "psnr_db": 25.622189320853266,
+            "ssim": 0.657278503200191
+          }
+        }
+      },
+      "projection_variants": [
+        {
+          "ring_width": 1,
+          "metrics": {
+            "psnr_db": 25.615700632499863,
+            "ssim": 0.6561798961166404
+          },
+          "noise_rms": 0.020292433412954614,
+          "snr_db": 22.46520650454835,
+          "rings": 363,
+          "median_gain": 0.02295828200129109,
+          "half_gain_last_radius": 69.0
+        },
+        {
+          "ring_width": 2,
+          "metrics": {
+            "psnr_db": 25.622189320853266,
+            "ssim": 0.657278503200191
+          },
+          "noise_rms": 0.020252537776815807,
+          "snr_db": 22.483070517967498,
+          "rings": 182,
+          "median_gain": 0.01784349745748757,
+          "half_gain_last_radius": 68.0
+        },
+        {
+          "ring_width": 4,
+          "metrics": {
+            "psnr_db": 25.631357539747064,
+            "ssim": 0.6571656580855393
+          },
+          "noise_rms": 0.020320532618758658,
+          "snr_db": 22.456626512636987,
+          "rings": 91,
+          "median_gain": 0.014986537946322378,
+          "half_gain_last_radius": 64.0
+        },
+        {
+          "ring_width": 8,
+          "metrics": {
+            "psnr_db": 25.66189106126523,
+            "ssim": 0.6545693284536519
+          },
+          "noise_rms": 0.020793640659227005,
+          "snr_db": 22.26453463128515,
+          "rings": 46,
+          "median_gain": 0.010949081301646419,
+          "half_gain_last_radius": 64.0
+        }
+      ]
+    },
+    {
+      "name": "0.10e 1024f",
+      "result": {
+        "budget": {
+          "size": 512,
+          "frames": 1024,
+          "photons_at_white": 0.1,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "shift_radius": 12,
+          "motion_step": 1,
+          "registration_group": 8,
+          "registration_rounds": 1,
+          "thumbnail": 128,
+          "registration_upsample": 8,
+          "wiener_ring_width": 2,
+          "sampler": "auto",
+          "seed": 19
+        },
+        "mean_detected_electrons_per_frame": 13785.5146484375,
+        "nonzero_fraction_first_frame": 0.050792694091796875,
+        "first_pass_seconds": 3.06308116693981,
+        "registration_and_fusion_seconds": 3.217261707992293,
+        "total_seconds": 6.280342874932103,
+        "milliseconds_per_input_frame_all_passes": 6.133147338800882,
+        "streaming_passes": 2,
+        "registration_rounds": [
+          {
+            "round": 1,
+            "gauge_yx": [
+              -6,
+              -1
+            ],
+            "median_error": 1.4142135623730951,
+            "p90_error": 2.23606797749979
+          }
+        ],
+        "registration_error_pixels": {
+          "mean": 1.4105777784977926,
+          "median": 1.4142135623730951,
+          "p90": 2.23606797749979,
+          "exact_fraction": 0.1240234375,
+          "global_gauge_yx": [
+            -6,
+            -1
+          ]
+        },
+        "evaluation_global_gauge": {
+          "unregistered": [
+            6,
+            1
+          ],
+          "registered": [
+            6,
+            1
+          ],
+          "cross_wiener": [
+            6,
+            1
+          ]
+        },
+        "split_half_support": {
+          "before": {
+            "snr_db": 11.582445539941268,
+            "noise_rms": 0.07167210808472564,
+            "signal_rms": 0.2719396006965259
+          },
+          "after": {
+            "snr_db": 24.03745932388884,
+            "noise_rms": 0.017000590594999924,
+            "signal_rms": 0.2706057216892054
+          },
+          "noise_reduction_db": 12.497723392578939,
+          "ring_width": 2,
+          "rings": 182,
+          "median_gain": 0.0246285923650272,
+          "half_gain_last_radius": 78.0
+        },
+        "metrics": {
+          "single": {
+            "psnr_db": 4.979784213254281,
+            "ssim": 0.008806220463856864
+          },
+          "unregistered": {
+            "psnr_db": 19.407220688487946,
+            "ssim": 0.19734600963056181
+          },
+          "bounded_registered": {
+            "psnr_db": 21.84438465194775,
+            "ssim": 0.3322216701768312
+          },
+          "circular_cross_wiener": {
+            "psnr_db": 26.28496918147631,
+            "ssim": 0.6934391209934041
+          }
+        }
+      },
+      "projection_variants": [
+        {
+          "ring_width": 1,
+          "metrics": {
+            "psnr_db": 26.281001128947835,
+            "ssim": 0.6928201595160384
+          },
+          "noise_rms": 0.017023950905649392,
+          "snr_db": 24.025162035110036,
+          "rings": 363,
+          "median_gain": 0.028817904166273924,
+          "half_gain_last_radius": 362.0
+        },
+        {
+          "ring_width": 2,
+          "metrics": {
+            "psnr_db": 26.28496918147631,
+            "ssim": 0.6934391209934041
+          },
+          "noise_rms": 0.017000590594999924,
+          "snr_db": 24.03745932388884,
+          "rings": 182,
+          "median_gain": 0.0246285923650272,
+          "half_gain_last_radius": 78.0
+        },
+        {
+          "ring_width": 4,
+          "metrics": {
+            "psnr_db": 26.29293624802019,
+            "ssim": 0.6934871326158519
+          },
+          "noise_rms": 0.017038027389069395,
+          "snr_db": 24.019732327721442,
+          "rings": 91,
+          "median_gain": 0.016176570084913765,
+          "half_gain_last_radius": 76.0
+        },
+        {
+          "ring_width": 8,
+          "metrics": {
+            "psnr_db": 26.31645552661558,
+            "ssim": 0.6918903788960157
+          },
+          "noise_rms": 0.01734119080426163,
+          "snr_db": 23.87101303266475,
+          "rings": 46,
+          "median_gain": 0.011935699436302818,
+          "half_gain_last_radius": 72.0
+        }
+      ]
+    },
+    {
+      "name": "0.10e 2048f",
+      "result": {
+        "budget": {
+          "size": 512,
+          "frames": 2048,
+          "photons_at_white": 0.1,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "shift_radius": 12,
+          "motion_step": 1,
+          "registration_group": 8,
+          "registration_rounds": 1,
+          "thumbnail": 128,
+          "registration_upsample": 8,
+          "wiener_ring_width": 2,
+          "sampler": "auto",
+          "seed": 19
+        },
+        "mean_detected_electrons_per_frame": 13785.5146484375,
+        "nonzero_fraction_first_frame": 0.050792694091796875,
+        "first_pass_seconds": 5.299213916994631,
+        "registration_and_fusion_seconds": 6.2441713330335915,
+        "total_seconds": 11.543385250028223,
+        "milliseconds_per_input_frame_all_passes": 5.636418579115343,
+        "streaming_passes": 2,
+        "registration_rounds": [
+          {
+            "round": 1,
+            "gauge_yx": [
+              -3,
+              -1
+            ],
+            "median_error": 1.0,
+            "p90_error": 2.23606797749979
+          }
+        ],
+        "registration_error_pixels": {
+          "mean": 1.248711840958713,
+          "median": 1.0,
+          "p90": 2.23606797749979,
+          "exact_fraction": 0.1455078125,
+          "global_gauge_yx": [
+            -3,
+            -1
+          ]
+        },
+        "evaluation_global_gauge": {
+          "unregistered": [
+            3,
+            1
+          ],
+          "registered": [
+            3,
+            1
+          ],
+          "cross_wiener": [
+            3,
+            1
+          ]
+        },
+        "split_half_support": {
+          "before": {
+            "snr_db": 14.606559337084349,
+            "noise_rms": 0.050662712169575824,
+            "signal_rms": 0.27228041406819026
+          },
+          "after": {
+            "snr_db": 25.80989477289431,
+            "noise_rms": 0.013904720935237792,
+            "signal_rms": 0.2714294806597559
+          },
+          "noise_reduction_db": 11.23052316875812,
+          "ring_width": 2,
+          "rings": 182,
+          "median_gain": 0.02273331645522436,
+          "half_gain_last_radius": 88.0
+        },
+        "metrics": {
+          "single": {
+            "psnr_db": 4.979784213254281,
+            "ssim": 0.008806220463856864
+          },
+          "unregistered": {
+            "psnr_db": 20.228101463788747,
+            "ssim": 0.26776730752370687
+          },
+          "bounded_registered": {
+            "psnr_db": 24.31747275197807,
+            "ssim": 0.4470210157241514
+          },
+          "circular_cross_wiener": {
+            "psnr_db": 27.301302649330353,
+            "ssim": 0.7382294698457145
+          }
+        }
+      },
+      "projection_variants": [
+        {
+          "ring_width": 1,
+          "metrics": {
+            "psnr_db": 27.298417501234283,
+            "ssim": 0.7379885051804715
+          },
+          "noise_rms": 0.013907404110492636,
+          "snr_db": 25.80801827344054,
+          "rings": 363,
+          "median_gain": 0.03425698837345155,
+          "half_gain_last_radius": 90.0
+        },
+        {
+          "ring_width": 2,
+          "metrics": {
+            "psnr_db": 27.301302649330353,
+            "ssim": 0.7382294698457145
+          },
+          "noise_rms": 0.013904720935237792,
+          "snr_db": 25.80989477289431,
+          "rings": 182,
+          "median_gain": 0.02273331645522436,
+          "half_gain_last_radius": 88.0
+        },
+        {
+          "ring_width": 4,
+          "metrics": {
+            "psnr_db": 27.309294544841144,
+            "ssim": 0.7380581569355162
+          },
+          "noise_rms": 0.013958289407315866,
+          "snr_db": 25.77723398371632,
+          "rings": 91,
+          "median_gain": 0.021874867596736174,
+          "half_gain_last_radius": 88.0
+        },
+        {
+          "ring_width": 8,
+          "metrics": {
+            "psnr_db": 27.338462504668108,
+            "ssim": 0.7370860324909937
+          },
+          "noise_rms": 0.014199411887916655,
+          "snr_db": 25.63097472292329,
+          "rings": 46,
+          "median_gain": 0.01811801123150564,
+          "half_gain_last_radius": 88.0
+        }
+      ]
+    },
+    {
+      "name": "0.04e 2048f",
+      "result": {
+        "budget": {
+          "size": 512,
+          "frames": 2048,
+          "photons_at_white": 0.04,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "shift_radius": 12,
+          "motion_step": 1,
+          "registration_group": 16,
+          "registration_rounds": 1,
+          "thumbnail": 128,
+          "registration_upsample": 8,
+          "wiener_ring_width": 2,
+          "sampler": "auto",
+          "seed": 19
+        },
+        "mean_detected_electrons_per_frame": 5828.7783203125,
+        "nonzero_fraction_first_frame": 0.022037506103515625,
+        "first_pass_seconds": 3.258455041097477,
+        "registration_and_fusion_seconds": 3.763944666949101,
+        "total_seconds": 7.022399708046578,
+        "milliseconds_per_input_frame_all_passes": 3.428906107444618,
+        "streaming_passes": 2,
+        "registration_rounds": [
+          {
+            "round": 1,
+            "gauge_yx": [
+              4,
+              -2
+            ],
+            "median_error": 2.0,
+            "p90_error": 3.605551275463989
+          }
+        ],
+        "registration_error_pixels": {
+          "mean": 2.002139595622304,
+          "median": 2.0,
+          "p90": 3.605551275463989,
+          "exact_fraction": 0.0703125,
+          "global_gauge_yx": [
+            4,
+            -2
+          ]
+        },
+        "evaluation_global_gauge": {
+          "unregistered": [
+            508,
+            1
+          ],
+          "registered": [
+            508,
+            2
+          ],
+          "cross_wiener": [
+            508,
+            2
+          ]
+        },
+        "split_half_support": {
+          "before": {
+            "snr_db": 10.294978848395823,
+            "noise_rms": 0.08238735236021612,
+            "signal_rms": 0.2695314755198191
+          },
+          "after": {
+            "snr_db": 24.4878096465885,
+            "noise_rms": 0.01601227953991276,
+            "signal_rms": 0.2684377844273501
+          },
+          "noise_reduction_db": 14.228147660780513,
+          "ring_width": 2,
+          "rings": 182,
+          "median_gain": 0.010495903083619983,
+          "half_gain_last_radius": 62.0
+        },
+        "metrics": {
+          "single": {
+            "psnr_db": 4.862427833032418,
+            "ssim": 0.006047645239653993
+          },
+          "unregistered": {
+            "psnr_db": 18.414970028745877,
+            "ssim": 0.14571952828288998
+          },
+          "bounded_registered": {
+            "psnr_db": 20.693325211837546,
+            "ssim": 0.2600250916447909
+          },
+          "circular_cross_wiener": {
+            "psnr_db": 25.351804878041413,
+            "ssim": 0.6692404958468957
+          }
+        }
+      },
+      "projection_variants": [
+        {
+          "ring_width": 1,
+          "metrics": {
+            "psnr_db": 25.346252774898783,
+            "ssim": 0.668309433506928
+          },
+          "noise_rms": 0.01604458447873267,
+          "snr_db": 24.469771931783384,
+          "rings": 363,
+          "median_gain": 0.01370625027909901,
+          "half_gain_last_radius": 64.0
+        },
+        {
+          "ring_width": 2,
+          "metrics": {
+            "psnr_db": 25.351804878041413,
+            "ssim": 0.6692404958468957
+          },
+          "noise_rms": 0.01601227953991276,
+          "snr_db": 24.4878096465885,
+          "rings": 182,
+          "median_gain": 0.010495903083619983,
+          "half_gain_last_radius": 62.0
+        },
+        {
+          "ring_width": 4,
+          "metrics": {
+            "psnr_db": 25.365417208156362,
+            "ssim": 0.6691490311213923
+          },
+          "noise_rms": 0.016088777872461664,
+          "snr_db": 24.448370724665686,
+          "rings": 91,
+          "median_gain": 0.008981934833531532,
+          "half_gain_last_radius": 60.0
+        },
+        {
+          "ring_width": 8,
+          "metrics": {
+            "psnr_db": 25.411426676898188,
+            "ssim": 0.6668988649250511
+          },
+          "noise_rms": 0.016545492116214693,
+          "snr_db": 24.211131181912844,
+          "rings": 46,
+          "median_gain": 0.007091416855421516,
+          "half_gain_last_radius": 56.0
+        }
+      ]
+    }
+  ]
+}

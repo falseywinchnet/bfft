@@ -1,0 +1,2 @@
+high_vision_tests 13 0.0232287
+---

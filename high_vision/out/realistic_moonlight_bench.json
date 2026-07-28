@@ -1,0 +1,96 @@
+{
+  "camera": {
+    "size": 512,
+    "canvas_margin": 40,
+    "frames": 1024,
+    "fps": 120.0,
+    "scene_illuminance_lux": 0.05,
+    "photons_at_white": 0.86,
+    "read_noise_electrons": 1.5,
+    "row_noise_electrons": 0.2,
+    "column_noise_electrons": 0.08,
+    "dark_electrons": 0.008,
+    "dsnu_electrons": 0.12,
+    "prnu_fraction": 0.008,
+    "hot_pixel_fraction": 0.0002,
+    "hot_pixel_electrons": 2.5,
+    "electrons_per_dn": 0.25,
+    "adc_bits": 12,
+    "black_level_dn": 512,
+    "shift_radius": 24,
+    "motion_step": 1,
+    "registration_group": 32,
+    "thumbnail": 128,
+    "registration_upsample": 8,
+    "seed": 73
+  },
+  "scene": {
+    "radiance_min": 8.930231706472114e-05,
+    "radiance_max": 0.9718388319015503,
+    "radiance_dynamic_range_stops": 13.4097318649292,
+    "mean_signal_electrons_per_pixel_per_frame": 0.009349776431918144
+  },
+  "elapsed_seconds": 11.088740417035297,
+  "milliseconds_per_input_frame_two_pass": 10.828848063511032,
+  "registration_error_pixels": {
+    "mean": 7.180544376641846,
+    "median": 7.0710678118654755,
+    "p90": 12.083045973594572,
+    "global_gauge_yx": [
+      -8,
+      2
+    ]
+  },
+  "support": {
+    "unregistered": {
+      "ring_width": 2,
+      "rings": 182,
+      "median_gain": 0.8810964990352153,
+      "half_gain_last_radius": 362.0
+    },
+    "registered": {
+      "ring_width": 2,
+      "rings": 182,
+      "median_gain": 0.8810964990352153,
+      "half_gain_last_radius": 362.0
+    },
+    "oracle": {
+      "ring_width": 2,
+      "rings": 182,
+      "median_gain": 0.009570799234684076,
+      "half_gain_last_radius": 22.0
+    }
+  },
+  "metrics": {
+    "raw_mean": {
+      "linear_psnr_db": 19.416774278687083,
+      "log_psnr_db": 9.293973662562742,
+      "log_ssim": 0.005400795054032555,
+      "shadow_rmse": 0.10650796315712827
+    },
+    "unregistered_supported": {
+      "linear_psnr_db": 20.48709058183151,
+      "log_psnr_db": 9.675079739767334,
+      "log_ssim": 0.00600212106280196,
+      "shadow_rmse": 0.09405589749354833
+    },
+    "raw_registered": {
+      "linear_psnr_db": 19.416774278687083,
+      "log_psnr_db": 9.293973662562742,
+      "log_ssim": 0.005400795054032555,
+      "shadow_rmse": 0.10650796315712827
+    },
+    "registered_supported": {
+      "linear_psnr_db": 20.48709058183151,
+      "log_psnr_db": 9.675079739767334,
+      "log_ssim": 0.00600212106280196,
+      "shadow_rmse": 0.09405589749354833
+    },
+    "oracle_supported": {
+      "linear_psnr_db": 42.058485628325364,
+      "log_psnr_db": 21.57171071146039,
+      "log_ssim": 0.3079047665333728,
+      "shadow_rmse": 0.00637325654440396
+    }
+  }
+}

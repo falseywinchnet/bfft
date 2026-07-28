@@ -1,14 +1,15 @@
 BFFT Cartoon for OBS Studio 32.1.x — Windows x64
 =================================================
 
-This build includes Cartoon + texture, Difference field, Liquid chrome
-relief, Fine chrome, independent and individually delayed OKLCH, delayed hue
-sectors, echo prisms, hue-sector echoes, continuous hue-time dispersion,
-chroma comet trails, and the hue-time pinwheel.
-It also includes Live cartoon / delayed scene: a real-time texture-free
-cartoon foreshadow composited over one evenly delayed natural frame.
-Tiled time glass provides a grid alternative to the pinwheel, with per-pane
-delay, refraction, bevel, size, and randomness controls.
+This streamlined build includes exactly two display modes:
+
+* Cartoon + texture
+* Fine chrome
+
+The processing grid preserves the source aspect ratio. Its FACR backend
+accepts an arbitrary length on one axis, avoiding the old two-axis
+power-of-two padding and distortion while remaining fast for standard video
+sizes.
 
 Install
 -------
@@ -24,12 +25,14 @@ Install
 5. Open a video source's Filters, add "BFFT Cartoon", and choose a display
    mode.
 
-Every OKLCH component and hue sector has its own delay from 0 to 500 ms.
-Each hue sector also has its own hue rotation and payload selector:
-processed lightness, Meyer residual, chroma data, or texture field.
-Temporal modes select timestamped history without sleeping or blocking OBS.
-History is compressed, hard-capped, and released when switching back to the
-original luma/chrome modes.
+Fine chrome uses the one-step correction
+cartoon - ROF(input - texture, shading_c), then renders that field as a
+displaced chrome surface. Cartoon + texture exposes independent cartoon,
+texture, and shading gains.
+
+With Cartoon set exactly to zero, signed texture and residual detail is shown
+around neutral gray. Source chroma is removed in that view so empty regions
+do not turn red.
 
 The resulting DLL path should be:
 

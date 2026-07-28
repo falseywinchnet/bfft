@@ -1,0 +1,104 @@
+{
+  "budget": {
+    "size": 512,
+    "frames": 512,
+    "photons_at_white": 0.1,
+    "dark_electrons": 0.002,
+    "read_noise_electrons": 0.0,
+    "shift_radius": 12,
+    "motion_step": 1,
+    "registration_group": 8,
+    "registration_rounds": 2,
+    "thumbnail": 128,
+    "registration_upsample": 8,
+    "wiener_ring_width": 2,
+    "sampler": "auto",
+    "seed": 19
+  },
+  "mean_detected_electrons_per_frame": 13785.5146484375,
+  "nonzero_fraction_first_frame": 0.050792694091796875,
+  "first_pass_seconds": 1.411299208062701,
+  "registration_and_fusion_seconds": 3.078375709010288,
+  "total_seconds": 4.489674917072989,
+  "milliseconds_per_input_frame_all_passes": 8.768896322408182,
+  "streaming_passes": 3,
+  "registration_rounds": [
+    {
+      "round": 1,
+      "gauge_yx": [
+        -7,
+        -9
+      ],
+      "median_error": 1.4142135623730951,
+      "p90_error": 2.7691912100215705
+    },
+    {
+      "round": 2,
+      "gauge_yx": [
+        -7,
+        -9
+      ],
+      "median_error": 1.0,
+      "p90_error": 2.23606797749979
+    }
+  ],
+  "registration_error_pixels": {
+    "mean": 1.31213565107497,
+    "median": 1.0,
+    "p90": 2.23606797749979,
+    "exact_fraction": 0.123046875,
+    "global_gauge_yx": [
+      -7,
+      -9
+    ]
+  },
+  "evaluation_global_gauge": {
+    "unregistered": [
+      7,
+      10
+    ],
+    "registered": [
+      7,
+      9
+    ],
+    "cross_wiener": [
+      7,
+      9
+    ]
+  },
+  "split_half_support": {
+    "before": {
+      "snr_db": 8.56855206891036,
+      "noise_rms": 0.1014562563021317,
+      "signal_rms": 0.2720861506054201
+    },
+    "after": {
+      "snr_db": 22.082854741700064,
+      "noise_rms": 0.021246018696238485,
+      "signal_rms": 0.2700351482678421
+    },
+    "noise_reduction_db": 13.58002547314966,
+    "ring_width": 2,
+    "rings": 182,
+    "median_gain": 0.015246404025010278,
+    "half_gain_last_radius": 70.0
+  },
+  "metrics": {
+    "single": {
+      "psnr_db": 4.979784213254281,
+      "ssim": 0.008806220463856864
+    },
+    "unregistered": {
+      "psnr_db": 18.24565952610475,
+      "ssim": 0.16114087572778366
+    },
+    "bounded_registered": {
+      "psnr_db": 19.604634706167253,
+      "ssim": 0.2491006090549109
+    },
+    "circular_cross_wiener": {
+      "psnr_db": 25.86729577933802,
+      "ssim": 0.6581471923249947
+    }
+  }
+}

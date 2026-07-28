@@ -1,0 +1,2 @@
+/usr/bin/ar qc libhigh_vision.a CMakeFiles/high_vision.dir/src/high_vision.cpp.o
+/usr/bin/ranlib libhigh_vision.a

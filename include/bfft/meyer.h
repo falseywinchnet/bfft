@@ -146,6 +146,26 @@ bfft_status bfft_meyer_rof(bfft_meyer_plan* plan,
                            double c, double eta,
                            int sweeps, double tol);
 
+/* Static-ROF-only one-shot Fourier/Hodge accelerator.
+
+   Runs the same Split Bregman problem and state equations as bfft_meyer_rof,
+   but after hodge_after ordinary sweeps performs one objective-checked
+   longitudinal Hodge closure, projects its flux onto the Euclidean unit
+   disk, and re-seats (d,b) before continuing.  This changes the trajectory,
+   not the ROF target.  It is opt-in and currently requires solver mode 0
+   (the full periodic spectral path); FACR and Neumann plans return
+   BFFT_ERROR_INVALID_ARGUMENT. */
+bfft_status bfft_meyer_rof_accelerated(bfft_meyer_plan* plan,
+                                       const double* image,
+                                       double* smooth,
+                                       double c, double eta,
+                                       int sweeps, double tol,
+                                       int hodge_after);
+
+/* Diagnostics for the most recent plain or accelerated ROF call. */
+int bfft_meyer_plan_last_rof_sweeps(const bfft_meyer_plan* plan);
+int bfft_meyer_plan_last_rof_hodge_applied(const bfft_meyer_plan* plan);
+
 #ifdef __cplusplus
 }
 #endif

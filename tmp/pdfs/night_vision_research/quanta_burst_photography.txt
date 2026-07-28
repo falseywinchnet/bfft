@@ -1,0 +1,1709 @@
+                                         Quanta Burst Photography
+                                         SIZHUO MA and SHANTANU GUPTA, University of Wisconsin-Madison, USA
+                                         ARIN C. ULKU, CLAUDIO BRUSCHINI, and EDOARDO CHARBON, EPFL, Switzerland
+                                         MOHIT GUPTA, University of Wisconsin-Madison, USA
+
+                                               dark              scene
+                                                                                           Quanta Image Sequence
+                                                                                            (stochastic and binary)
+                                                                           High-speed                                                       Per-frame Patch Flow                                High-Quality Image
+                                                                             capture                                        Hierarchical                               Robust Merging &
+                                              High-speed motion            (≈ 100kfps)                                      Alignment                                     Denoising
+
+
+
+
+arXiv:2006.11840v1 [cs.CV] 21 Jun 2020
+                                                                                                                                               y
+                                                                                                                                                   x
+
+                                                                                                                                                                                                Low blur and noise
+                                                                                                                                                                                                High dynamic range
+                                                    SPAD Array
+
+                                               Ground Truth (DSLR, Tripod)                          Binary Sequence                                Naive Averaging                         Proposed Method
+
+
+
+
+                                         Fig. 1. Quanta burst photography. (Top) Single-photon image sensors capture stochastic, binary image sequences at high speeds (∼ 100 kfps). Such
+                                         high-speed image sequences can be aligned to compensate for scene/camera motion using a spatial-temporal hierarchical alignment algorithm. By merging
+                                         the aligned sequence robustly, a high-quality image can be reconstructed, with minimal motion blur and noise, and high dynamic range, even in challenging
+                                         photography conditions. (Bottom, from left to right) An example low-light scene captured by a DSLR camera on a tripod to avoid camera shake; binary image
+                                         sequence captured by a handheld single-photon camera; image reconstructed by naive averaging of the binary sequence (shown to illustrate the amount of
+                                         motion during capture); super-resolved image reconstructed using the proposed techniques has low blur and noise. Zoom in for details.
+
+                                         Single-photon avalanche diodes (SPADs) are an emerging sensor technology                          the SNR and dynamic range of quanta burst photography, and identify the
+                                         capable of detecting individual incident photons, and capturing their time-of-                    imaging regimes where it provides significant benefits. We demonstrate,
+                                         arrival with high timing precision. While these sensors were limited to single-                   via a recently developed SPAD array, that the proposed method is able to
+                                         pixel or low-resolution devices in the past, recently, large (up to 1 MPixel)                     generate high-quality images for scenes with challenging lighting, complex
+                                         SPAD arrays have been developed. These single-photon cameras (SPCs) are                           geometries, high dynamic range and moving objects. With the ongoing
+                                         capable of capturing high-speed sequences of binary single-photon images                          development of SPAD arrays, we envision quanta burst photography finding
+                                         with no read noise. We present quanta burst photography, a computational                          applications in both consumer and scientific photography.
+                                         photography technique that leverages SPCs as passive imaging devices for                          CCS Concepts: • Computing methodologies → Computational pho-
+                                         photography in challenging conditions, including ultra low-light and fast                         tography.
+                                         motion. Inspired by recent success of conventional burst photography, we
+                                         design algorithms that align and merge binary sequences captured by SPCs                          Additional Key Words and Phrases: Single-photon camera, single-photon
+                                         into intensity images with minimal motion blur and artifacts, high signal-                        avalanche diode, quanta image sensor, burst photography, super-resolution,
+                                         to-noise ratio (SNR), and high dynamic range. We theoretically analyze                            high dynamic range, high-speed imaging, low-light imaging
+
+                                         Authors’ addresses: Sizhuo Ma, sizhuoma@cs.wisc.edu; Shantanu Gupta, sgupta226@                   ACM Reference Format:
+                                         wisc.edu, University of Wisconsin-Madison, USA; Arin C. Ulku, arin.ulku@epfl.ch;                  Sizhuo Ma, Shantanu Gupta, Arin C. Ulku, Claudio Bruschini, Edoardo
+                                         Claudio Bruschini, claudio.bruschini@epfl.ch; Edoardo Charbon, edoardo.charbon@                   Charbon, and Mohit Gupta. 2020. Quanta Burst Photography. ACM Trans.
+                                         epfl.ch, EPFL, Switzerland; Mohit Gupta, mohitg@cs.wisc.edu, University of Wisconsin-             Graph. 39, 4, Article 79 (July 2020), 16 pages. https://doi.org/10.1145/3386569.
+                                         Madison, USA.
+                                                                                                                                           3392470
+                                         © 2020 Association for Computing Machinery.
+                                         This is the author’s version of the work. It is posted here for your personal use. Not for        1   THE SINGLE-PHOTON REVOLUTION
+                                         redistribution. The definitive Version of Record was published in ACM Transactions on
+                                         Graphics, https://doi.org/10.1145/3386569.3392470.                                                A conventional camera typically captures hundreds to thousands of
+                                                                                                                                           photons per pixel to create an image. An emerging class of sensors,
+
+                                                                                                                                                       ACM Trans. Graph., Vol. 39, No. 4, Article 79. Publication date: July 2020.
+79:2   •   Ma, S. et al
+
+
+called single-photon avalanche diodes (SPADs) [Niclass et al. 2005;                       on light level, dynamic range and motion), instead of 5 − 10 as in
+Rochas 2003], can record individual photons, and precisely measure                        conventional burst photography.
+their time-of-arrival. Due to their sensitivity and picosecond time
+resolution, SPADs are driving an imaging revolution. A new gen-                              Why quanta burst photography? One of the key benefits of SPCs
+eration of devices is emerging, with novel functionalities such as                        is the low read noise in the raw binary frames [Bruschini et al. 2019],
+imaging at trillion fps [O’Toole et al. 2017], non-line-of-sight (NLOS)                   which enables dividing the exposure time finely into a long sequence
+imaging [Buttafava et al. 2015; O’Toole et al. 2018], and microscopic                     of frames to handle fast motion. This results in virtually negligible
+imaging of nano time-scale bio-phenomena [Bruschini et al. 2019].                         intra-frame motion blur and low noise, even for rapid motion (e.g.,
+                                                                                          sports and wildlife photography). 2 Furthermore, although at first
+   Passive single-photon imaging: So far, most SPAD-based imaging                         glance it may appear that SPCs, due to their high sensitivity, are
+systems are active, where the SPAD is used in precise temporal                            useful only in photon-starved scenarios, surprisingly, they can also
+synchronization with an active light source (e.g., a pulsed laser).                       image bright scenes where conventional sensors saturate [Antolovic
+This includes applications such as NLOS imaging, LiDAR [Shin et al.                       et al. 2018; Ingle et al. 2019]. This is because although each binary im-
+2016], and microscopy. Can SPADs be used not just with controlled                         age is quantized, a large collection of single-photon measurements,
+and precisely synchronized active light sources as is the norm, but                       when combined, naturally avoids saturation [Yang et al. 2012], and
+more generally under passive, uncontrolled illumination (e.g., sun-                       thus, achieve extreme dynamic range. There are two catalysts for
+light, moonlight)? Such passive SPAD-based imaging systems have                           key quanta burst photography:
+the potential to expand the scope of SPADs to a considerably larger                       (a) Emergence of large SPCs arrays: Till recently, SPCs were avail-
+set of applications, including machine vision and photography.                            able as single-pixel or small arrays (e.g., 32x32 pixels), which, while
+   Consider a SPAD sensor (an array of SPAD pixels) imaging a scene                       sufficient for several scientific imaging applications, are not suit-
+illuminated by passive lighting. Since photons arrive at the sensor                       able for consumer domain photography. Fortunately, due to their
+randomly according to Poisson statistics, photon detection events                         compatibility with mainstream CMOS fabrication lines, it is now
+are also random, and can be visualized as a spatio-temporal photon-                       possible to develop large SPCs arrays, with the world’s first 1 MPixel
+cube [Fossum 2011]. A SPAD camera can capture a sequence of thin,                         jots [Ma et al. 2017] and SPAD arrays [Morimoto et al. 2020] re-
+temporal slices of the photon-cube, where each slice is a binary (1-                      ported recently, while maintaining high sensor quality and room
+bit) image, as shown in in Fig. 1. Each pixel location records a 1 if it                  temperature operation.
+receives one or more photons during the temporal extent of the slice,                     (b) High-performance burst photography: We are inspired by the
+and 0 otherwise. For example, a recent SPAD camera [Ulku et al.                           recent success of burst photography algorithms [Hasinoff et al. 2016;
+2019] can capture ∼ 105 binary frames per second, at 1/4 MPixel                           Liba et al. 2019; Wronski et al. 2019], which, for the first time, are
+resolution.1 Due to the random nature of photon arrivals, the binary                      starting to produce reliably artifact-free images in almost all circum-
+images are stochastic.                                                                    stances, including challenging scenes with occlusions and non-rigid
+                                                                                          motion. These motion estimation and merging methods are robust
+   Passive single-photon imaging under motion: How does motion                            enough to be shipped to consumer devices, a gold-standard for
+manifest in a stochastic binary image sequence? If the scene (or cam-                     computational photography techniques.
+era) moves during acquisition, the photons emitted by a scene point                          We adopt the design principles and best practices from these burst
+get mis-aligned and spread over multiple SPC pixels. In this paper,                       photography approaches, and design algorithms tailored for single-
+we propose quanta burst photography, a computational photogra-                            photon binary stochastic images. We demonstrate, via simulations
+phy technique that computationally re-aligns the photons along                            and experiments on a 1/8 megapixel SPAD array (SwissSPAD2 [Ulku
+motion trajectories, for achieving high-quality images in challeng-                       et al. 2019]) that quanta burst photography is able to generate high
+ing scenarios, including low-light and high-speed motion (Fig. 1).                        SNR, blur-free and super-resolved images in extreme scenarios (low-
+We develop algorithms that align the binary slices, thus creating a                       light, fast motion, large dynamic range) which would be considered
+high-bit-depth, high-dynamic-range, potentially super-resolved (via                       challenging for burst photography on conventional cameras.
+sub-pixel alignment [Park et al. 2003; Wronski et al. 2019]) image of
+the scene, while minimizing noise and motion blur. This is similar                          Scope and limitations: Are single-photon cameras and quanta
+in spirit to conventional burst photography where a burst of noisy,                       burst photography ready to be deployed on consumer devices?
+short-exposure images are aligned and merged into a single high-                          Not yet. So far, we have focused on achieving high image quality.
+quality image [Hasinoff et al. 2016; Liba et al. 2019]. Quanta burst                      Our current unoptimized implementation, however, is not directly
+photography can be considered a limiting case because each binary                         amenable to consumer devices, which have strong constraints on
+image captures at most one photon per pixel, and is thus extremely                        speed, power and memory. The current sensor prototype does not
+noisy and quantized (1-bit). On the other hand, due to fast capture,                      have a color filter array (e.g., a Bayer pattern), and thus, the result-
+we have a long sequence available (102 − 105 frames, depending                            ing images are gray-scale. The resolution, although highest to-date
+                                                                                          among SPAD cameras, is still relatively low (1/8 MPixel) for con-
+                                                                                          sumer applications. Fortunately, the capabilities of single-photon
+1 Photon-cubes and single-photon binary image sequences were first considered in the
+context of jots [Fossum 2005, 2011], another emerging single-photon sensing technology.
+In this paper, we primarily focus on SPADs due to their high frame rate. However, since   2 For conventional cameras, there is a fixed read noise penalty for each captured frame.
+both jots and SPADs have similar imaging model and data format, the analysis and          Therefore, dividing the exposure time finely into a large number of frames increases
+techniques presented here are applicable to jots as well.                                 the effective read noise in the merged image.
+
+
+ACM Trans. Graph., Vol. 39, No. 4, Article 79. Publication date: July 2020.
+                                                                                                                             Quanta Burst Photography     •   79:3
+
+
+sensors continue to improve, with higher resolution [Morimoto et al.             Wide-dynamic-range sensors. There are several wide-dynamic-
+2020] and color sensors [Elgendy and Chan 2019] on the horizon.               range image sensors based on different technologies, such as loga-
+   The proposed approach is not meant to directly compete with                rithmic response [Kavadias et al. 2000] and light-to-frequency con-
+conventional CMOS sensors and burst photography pipelines, which              version [Wang et al. 2006]. Such sensors have an extended dynamic
+have been optimized over several years, and can produce compelling            range compared to conventional CMOS sensors, but the blur-noise
+photographic experiences. Instead, our goal is to explore and analyze         trade-off still exists, which makes them less effective for low-light,
+a nascent but promising imaging modality, which, if successful,               fast-motion scenarios. In addition, especially for logarithmic sensors,
+could lead to capabilities (high quality photography in ultra low-            photo response non-uniformity (PRNU) is a limitation in conven-
+light and fast motion) that were hitherto considered impossible. This         tional implementations [Yang et al. 2009]; this effect compounds the
+paper should be seen just as a first step toward that goal.                   above issues, significantly limiting image quality.
+                                                                                 Image reconstruction from single-photon sensor data. There is prior
+2 RELATED WORK                                                                work on reconstructing intensity images from single-photon binary
+   Image denoising. Single image denoising algorithms denoise im-             frames using denoising techniques such as total variation and BM3D
+ages by imposing various image prior such as spatial smoothness               [Chan et al. 2016; Gnanasambandam et al. 2019], or by an end-to-
+[Beck and Teboulle 2009], sparsity [Elad and Aharon 2006] and self-           end neural network [Chandramouli et al. 2019; Choi et al. 2018].
+similarity [Buades et al. 2005]. Such priors are also used in transform       In the presence of motion, Fossum [2013] suggested shifting the
+domains such as frequency domain [Gonzalez and Woods 2006],                   binary images to compensate for motion and achieve blur-free image
+wavelets [Malfait and Roose 1997], and 3D transform (BM3D) [Dabov             reconstruction. This idea has been implemented recently [Gyongy
+et al. 2007b]. Recent data-driven denoising algorithms attempt to             et al. 2017, 2018; Iwabuchi et al. 2019], albeit for simplistic motion
+capture the noise statistics using a neural network instead of an ex-         models (e.g., planar objects with in-plane motion and no occlusions).
+plicit prior [Zhang et al. 2018b]. Single image denoising approaches          Our approach is based on a much less restrictive assumption (motion
+tend to fail when the image has a very low SNR due to low light,              can be approximated by patch-wise 2D translation and remains
+and/or limited exposure time because of fast scene/camera motion.             constant within temporal blocks), and can reliably produce high-
+In these cases it is essential to combine information from multiple           quality images for a broad range of complex, real-world scenes.
+images to generate a high-quality image.
+                                                                              3   PASSIVE SINGLE-PHOTON IMAGING MODEL
+   Burst denoising. Burst denoising methods take a sequence of un-            Consider a SPC pixel array observing a scene. The number Z (x, y) of
+derexposed images and merge them into a single image. The SNR is              photons arriving at pixel (x, y) during an exposure time of τ seconds
+improved since more photons are collected. The key technical chal-            is modeled as a Poisson random variable [Yang et al. 2012]:
+lenge for burst denoising is to accurately align and merge frames                                               (ϕτη)k e −ϕτ η
+as the camera moves. This can be addressed either by a two-step                                     P {Z = k } =               ,                (1)
+                                                                                                                      k!
+align-and-merge approach [Hasinoff et al. 2016; Heide et al. 2014;
+                                                                              where ϕ(x, y) is the photon flux (photons/seconds) incident at (x, y).
+Liba et al. 2019; Liu et al. 2014; Wronski et al. 2019], or joint optimiza-
+                                                                              η is the quantum efficiency. Each pixel detects at most one photon
+tion [Heide et al. 2016]. Recently, deep learning based methods have
+                                                                              during an exposure time, returning a binary value B(x, y) such
+also been proposed [Godard et al. 2018; Mildenhall et al. 2018]. A
+                                                                              that B(x, y) = 1 if Z (x, y) ≥ 1; B(x, y) = 0 otherwise. Due to the
+related problem is video denoising, where both input and output are
+                                                                              randomness in photon arrival, B(x, y) is a random variable with
+sequence of images [Chen et al. 2019; Dabov et al. 2007a; Maggioni
+                                                                              Bernoulli distribution:
+et al. 2012]. Our goal is to create a single, high-quality image from a
+burst of binary single-photon frames.                                                              P {B = 0} = e −(ϕτ η+r q τ ) ,
+                                                                                                                                                              (2)
+                                                                                                   P {B = 1} = 1 − e −(ϕτ η+r q τ ) ,
+   Quanta (single-photon) sensors. Currently, there are two main en-
+abling technologies for large single-photon camera arrays: SPADs              where rq is the dark count rate (DCR), which is the rate of spurious
+and jots. SPADs achieve single photon sensitivity by amplifying               counts unrelated to photons.
+the weak signal from each incident photon via avalanche multipli-                To estimate the number of incident photons ϕ (proportional to the
+cation, which enables zero read noise and extremely high frame                linear intensity image of the scene), suppose the camera captures a
+rate ( ∼ 100kfps). Jots, on the other hand, amplify the single-photon         sequence of binary frames. Assuming no motion between binary
+signal by using an active pixel with high conversion gain (low capac-         frames, or that the binary frames are aligned perfectly to compensate
+itance) [Fossum 2005]. By avoiding avalanche, jots achieve smaller            for motion, we define S(x, y) as the sum of all binary frames:
+pixel pitch, higher quantum efficiency and lower dark current, but                                                  Õ
+                                                                                                                    nq
+have lower temporal resolution [Ma et al. 2017]. Although the tech-                                     S(x, y) =          Bt (x, y) ,                        (3)
+niques in this paper are applicable to both SPADs and jots, we                                                      t =1
+primarily focus on SPADs because of their capability to resolve fast          where Bt (x, y) is the binary frame at time t, and nq is the number
+motion due to high temporal resolution. We show simulation-based              of frames. S(x, y) is the total number of photons detected at (x, y)
+comparisons between the two types of sensors, and a discussion on             over the entire binary image sequence. Since each binary frame is
+their relative merits, in Sec. 7.                                             independent, the expected value of the sum image is the product of
+
+                                                                                       ACM Trans. Graph., Vol. 39, No. 4, Article 79. Publication date: July 2020.
+79:4                           •   Ma, S. et al
+
+
+                                                                                                                                        noise (currently ∼ 0.2e− [Ma et al. 2017]), which although consid-
+
+
+
+
+Avg. # of detected photons                                        Avg. # of detected photons
+                                                                                                                                        erably lower than conventional CMOS sensors, can still limit the
+                             Full well capacity                                                Total # of binary frames
+                                                                                                                                        image quality in ultra low-light conditions [Fossum et al. 2016].
+                                                     Saturation
+                                                                                                                    Soft saturation        In contrast, SPADs directly measure the photon counts, skipping
+                                                                                                                                        the intermediate analog conversion, thereby avoiding read noise.
+                                                                                                                                        This allows a SPAD camera to finely divide the exposure time into a
+                                                                                                                                        large number nq of binary frames for motion compensation, thereby
+                                    # of incoming photons                                             # of incoming photons             simultaneously achieving low motion-blur and high SNR.
+
+                             Conventional Image Sensor                                            Single-Photon Sensor                  4   SINGLE-PHOTON IMAGING UNDER MOTION
+Fig. 2. Response curves for conventional sensors and SPADs. The re-                                                                     If the scene or camera moves during capture, then simply summing
+sponse curve for a sensor is defined as the plot of the average number of                                                               the binary sequence (Eq. 3) leads to merging of photons from dif-
+photons detected as a function of number of photons incident on the sensor.                                                             ferent scene points, resulting in motion blur. Therefore, to avoid
+(Left) The response curve for conventional sensors is linear, until saturation                                                          motion blur, the binary frames must be aligned to compensate for
+when the full well capacity is reached. (Right) For SPADs, the response                                                                 inter-frame motion before merging them.
+curve is non-linear, and asymptotically approaches a limit, which is the                                                                    Aligning the binary frames directly is challenging because the
+total number of binary frames captured in the given time duration. SPADs
+                                                                                                                                        traditional brightness constancy assumption does not hold for the
+suffer from only soft saturation since the number of detected photons keeps
+                                                                                                                                        observed random binary signal due to extremely low SNR. Although
+increasing, albeit progressively slowly, for increasing incident flux.
+                                                                                                                                        it may be possible to estimate the inter-frame motion when the
+the number of frames nq , and the expected value of the Bernoulli                                                                       motion is a global, low-dimensional transform such as global 2D
+variable B:                                                                                                                             translation or global homography, for general, unstructured scenes
+                                                                                                                                      with unknown geometry, the transform must be formulated as a
+        E[S(x, y)] = nq E[B(x, y)] = nq 1 − e −(ϕτ η+r q τ ) . (4)                                                                      pixelwise 2D motion field (or optical flow). In this case, the total
+                                                                                                                                        number of unknown parameters to estimate is 2MN for image res-
+   The maximum likelihood estimate (MLE) of the intensity image
+                                                                                                                                        olution M × N . Such a complex, high-dimensional motion model
+ϕ is given as [Antolovic et al. 2016]:
+                                                                                                                                        cannot be solved precisely from the random binary input data.
+                                      ˆ y) = − ln(1 − S(x, y)/nq )/τη − rq (x, y)/η .
+                                      ϕ(x,                                                                                        (5)       Fortunately, SPADs are able to capture binary frames at high
+                                                                                                                                        frame rates (97.7kfps for SwissSPAD2 [Ulku et al. 2019]). At such
+   Dynamic range: Eq. 4 describes the relationship between S, the to-                                                                   high frame rates, the velocity at each pixel can be treated as a con-
+tal number of photons detected by the camera, and ϕ, the number of                                                                      stant within a local temporal window. We use this observation as an
+photons incident on the camera (the quantity we wish to estimate).                                                                      additional constraint to solve the otherwise challenging optical flow
+This non-linear relationship [Sbaiz et al. 2009], as plotted in Fig. 2,                                                                 problem on stochastic binary frames. One way to incorporate such
+is similar to the D-log H curve for photographic films proposed by                                                                      a constraint is to compute a temporally coherent optical flow [Black
+Hurter and Diffield in 1890, because single-photon cameras emulate                                                                      1994; Volz et al. 2011; Weickert and Schnörr 2001]. In practice, we
+the silver halide emulsion film process [Fossum 2005]. The key ob-                                                                      choose a simple, less computationally intensive approach: We divide
+servation is that this response curve asymptotically approaches its                                                                     the entire image sequence into non-overlapping temporal blocks,
+maximum value (nq ), while never reaching it. This soft saturation [In-                                                                 compute the sum image for each block (called block-sum images) and
+gle et al. 2019] suggests that the value of S keeps increasing (albeit                                                                  align the block-sum images. The block-sum images have a higher
+progressively slowly) as the number of incident photons increases,                                                                      SNR than individual binary frames, which makes it possible to use
+which means the incident flux can be recovered even for bright                                                                          traditional optical flow methods to align them.
+scenes. In contrast, the response curve for conventional sensors is a
+straight line before hitting the full well capacity, and then flattens                                                                     Block-level vs. frame-level alignment. Fig. 3 shows an overview of
+due to saturation. Therefore, a passive single-photon camera, while                                                                     the method. We call the block in the center of the sequence the ref-
+capable of imaging low-light scenes, somewhat counter-intuitively,                                                                      erence block. All the other blocks, called auxiliary blocks, are aligned
+can also image bright scenes where conventional sensors saturate,                                                                       to the reference block. After aligning the block-sum images, we do
+providing an extremely wide dynamic range.                                                                                              not use the coarse-temporal-scale motion field between temporal
+                                                                                                                                        blocks to merge them directly. Instead, we linearly interpolate the
+   Read noise: Conventional sensors convert discrete incident pho-                                                                      motion field in time to obtain motion between successive binary
+tons to analog current, which is again converted to a discrete number                                                                   frames. This fine-scale motion field is used to warp each binary
+by an analog-to-digital converter (ADC). This discrete → analog →                                                                       frame and align to a central reference frame in the reference block,
+discrete pipeline results in read noise, which is the dominant source                                                                   before merging. This hierarchical approach removes the motion
+of noise in low-light. This places a limit on exposure time used in                                                                     blur within each temporal block, resulting in sharp images even
+conventional burst photography. Given a fixed total capture time,                                                                       for fast moving scenes. After warping, a frequency-space merging
+increasing the number of frames may reduce motion artifacts, but                                                                        algorithm is used to merge the temporal blocks, which provides
+since each additional frames incurs a read noise penalty, the SNR                                                                       robustness to small alignment error. In the next two sections, we
+of the merged image is lowered. Jots have a deep sub-electron read                                                                      provide details of the align and merge algorithms.
+
+ACM Trans. Graph., Vol. 39, No. 4, Article 79. Publication date: July 2020.
+                                                                                                                                                         Quanta Burst Photography     •   79:5
+
+
+      t                                  …
+                                                                                        y
+                                                                                            x                  …
+                                                                     (2) Hierarchical                    𝑊                       (4) Warp and Sum
+                                                                        Alignment
+
+
+          Auxiliary Block (100 frames)
+                                             (1) Compute Sum Image
+                                                      𝑆                                                                                 𝑆
+                                                                           𝑊
+                                         …                                                                     …
+                                                                                                         𝑊
+
+
+
+
+          𝐵           𝐵           𝐵
+                                         …                                                                     …
+                                                                                                         𝑊
+
+                                                                                                                                                                       (5) Robust
+                                                                                                                                                                   Frequency-Domain
+                                                                                                                                                                        Merging
+                                                                                                         𝑊
+
+
+
+          Reference Block (100 frames)
+                                                     𝑆                     𝑊                                                            𝑆
+                                         …                                              (3) Patch Flow         …
+                                                                                         Interpolation   𝑊
+
+
+
+
+           𝐵           𝐵          𝐵
+                                         …                                                                     …
+                                                                                                         𝑊
+
+
+
+
+                                                                                                         𝑊
+
+
+
+          Auxiliary Block (100 frames)
+                                                     𝑆                   𝑊                                                              𝑆
+                                         …                                                                     …
+                                                                                                         𝑊
+
+
+
+
+          𝐵           𝐵           𝐵
+                                         …                                                                     …
+                                                                                                         𝑊
+
+
+                                         …                                                                     …
+
+
+Fig. 3. Algorithm overview. In this example, the binary sequence is divided into 100-frame temporal blocks. The central block is chosen as the reference
+block. (1) For each block, the binary frames are added to form the block-sum image. (2) Every other block is aligned to the reference block, resulting in a
+coarse patch flow between the center frames of the blocks. (3) Coarse patch flow is temporally interpolated to estimate the fine-scale patch flow between
+individual binary frames. (4) Binary frames are warped using the fine-scale patch flow and added together to form warped block-sum images. (5) Warped
+block-sum images are merged together using a robust frequency-domain approach.
+
+5 ALIGNING TEMPORAL BLOCKS                                                                               find the smallest motion vector (u, v) that minimizes:
+Given a reference and an auxiliary block, we compute the 2D corre-                                                              Õ −1 (j+1)M
+                                                                                                                             (i+1)M     Õ −1
+spondence map between them based on their appearance. Instead of                                         Ed (u, v; i, j) =                          |S aux (x + u, y + v) − Sr ef (x, y)| .
+using a pixel-wise optical flow algorithm, we use a patch-based align-                                                        x =i M    y=j M
+ment approach 3 since it is more resilient to noise than pixel-wise                                                                                                     (6)
+optical flow [Bruhn et al. 2005; Zimmer et al. 2011]. Furthermore,                                       The size of the patch is M × M. S aux is the auxiliary block-sum
+even for merging (Sec. 6), patch-based approaches achieve more                                           image and Sr ef is the reference block-sum image.
+robust results than pixel-based merging [Liu et al. 2014] in low
+                                                                                                           Spatial regularization at finest level. We perform a global reg-
+SNR images. For patch-based merging, it is sufficient to compute a
+                                                                                                         ularization at the finest level of the pyramid to further refine the
+motion field at the patch level, thereby saving computational time.
+                                                                                                         patch alignment results (especially for blocks with extremely small
+                                                                                                         number of photons) and to provide sub-pixel alignment for super-
+   Hierarchical patch alignment. We use a hierarchical patch align-
+                                                                                                         resolution. This is performed by minimizing the following energy:
+ment approach similar to [Hasinoff et al. 2016] on an image pyramid                                                         ∫
+built from the block-sum images. The number of pyramid levels                                                min E(u, v) =       Ed (u, v; i, j) + λ(∥∇u∥1 + ∥∇v∥1 ) didj , (7)
+can be adjusted according to the spatial resolution of the binary                                            u,v                Ωi j
+images. We use a 3-level pyramid for the 512x256 images used in                                          where Ωi j = [0,W /M]×[0, H /M] is the spatial domain for the patch
+our experiments. The matching is done by minimizing L1 matching                                          indices i, j. u, v are the motion fields defined on Ωi j , and H × W
+error in a spatial neighborhood. For a patch with indices (i, j), which                                  is the spatial resolution of the input images. Ed is the matching
+expands the pixel indices [iM, (i + 1)M − 1] × [jM, (j + 1)M − 1], we                                    error defined √ in Eq. 6. In practice, we minimize the Charbonnier
+                                                                                                         loss ρ(x) = x 2 + ϵ 2 as an differentiable alternative for the L1 loss.
+                                                                                                            Interpolating the motion field. The computed inter-block motion is
+3 In this paper, we refer to temporal sum of frames as “blocks” and spatial windows of                   treated as motion between the center frames of each block. A linear
+pixels as “patches”.                                                                                     interpolation is then performed to compute the motion between
+
+                                                                                                                   ACM Trans. Graph., Vol. 39, No. 4, Article 79. Publication date: July 2020.
+79:6   •   Ma, S. et al
+
+
+       No Alignment            Block-Level Alignment        Frame-Level Alignment          Binary Image             Frame-Level                       Block-Level
+                                                                                        (Reference Frame)          Wiener Filtering                  Wiener Filtering
+
+
+
+
+Fig. 4. Effect of frame-level alignment. (Left) Simple sum of binary
+frames captured by a moving camera shows the significant motion blur.               Fig. 5. Block-level Wiener filtering. (Left) The binary reference frame
+(Center) Alignment at the block level (each consisting of 100 binary frames)        is extremely noisy due to the stochastic nature of photon arrival. (Center)
+does not remove the motion blur completely. (Right) Blur is reduced by              Wiener filtering is applied such that each auxiliary frame is weighted by
+interpolating the block-level alignment to achieve frame-level alignment.           measuring its difference with the reference frame. Since the difference is
+                                                                                    large even for mid and low spatial frequencies, the noise in the reference
+individual frames. Higher-order interpolation (e.g., cubic or spline)               frame is preserved in the merged image. (Right) Wiener filtering is applied
+                                                                                    to warped block-sum images, resulting in merged images with higher SNR.
+may improve the temporal smoothness, but will increase the de-
+pendency on other blocks. In practice, linear interpolation achieves                        Auxiliary Block        Reference Block                  Auxiliary Block
+                                                                                                                                                                                       t
+good results for SPADs with high temporal resolution. Fig. 4 shows                      𝐵        𝐵         𝐵   𝐵         𝐵        𝐵            𝐵          𝐵         𝐵
+an example demonstrating the benefits of frame-level interpolation.                 …        …           …           …        …                          …         …             …
+While alignment at the block level does not remove the motion
+                                                                                                                           (1) Warp and Sum
+blur completely, blur is considerably reduced by frame-level inter-                                      𝑆                    𝑆                                    𝑆
+polation. An evaluation of frame-level interpolation on real data is
+                                                                                                                              (2) Robust Filtering
+provided in the supplementary report.                                                                                                                                  Samples
+
+
+6 MERGING BINARY SEQUENCE                                                                                                          Low-resolution grid
+
+
+After estimating inter-frame motion, one way to merge the binary                                                      (3) Kernel-Based Reconstruction
+                                                                                                                                                               Super-resolution grid
+image sequence is to warp the binary images, compute the sum
+image of all warped images, and finally, compute the MLE of the
+sum (Eq. 5). However, the estimated motion field may have errors
+due to occlusions, motion discontinuities, and non-rigid scene de-
+                                                                                               (Flat)
+formations. In this case, simply summing the warped binary images                                                                                        Anisotropic Kernel
+will create strong blurring or ghosting artifacts.                                                                                                            (Edge)
+
+   Can robust merging be used for binary frames? Robust merging
+methods such as Wiener frequency-domain filtering have long been
+used in video denoising and burst denoising [Hasinoff et al. 2016]                           (Texture)
+to account for potentially incorrect estimated motion. The key idea
+is that if a patch in a warped frame is significantly different from                Fig. 6. Super-resolution merging. (1) Binary frames within a block are
+that in the reference frame, then the alignment is likely erroneous.                warped and summed using the fine-scale inter-frame patch flow. (2) The
+The final merged patch is computed by taking a weighted average                     resulting warped block-sum image is filtered according to a guide image
+of all matched patches, where the patches with large difference                     (the warped block-sum image for the reference block). This step prepares
+                                                                                    matches for the reconstruction step by mitigating the noise and alignment
+with the reference path (likely erroneous) are given a lower weight.
+                                                                                    errors. (3) The weighted patches are placed on a supersampled output grid,
+This approach, while successful for conventional cameras, cannot be                 where pixels in the individual patches are treated as samples. For each pixel
+directly applied to merge the single-photon binary frames. This is be-              on the output grid, an anisotropic Gaussian kernel is used to combine the
+cause even if two binary frames are perfectly aligned, the difference               samples in a local neighborhood. The shape and size of the anisotropic
+between the frames could still be high due to the dominating shot                   kernel is determined by analyzing the structure tensor of the guide image.
+noise. As a result, every auxiliary frame will have a low weight, and
+will make a low contribution to the final merged image, resulting in                to be amenable to a traditional frequency-domain robust-merging
+low SNR, as shown in Fig. 5.                                                        approach [Hasinoff et al. 2016]. Therefore, Wiener filtering is applied
+   In order to address this limitation, we adopt a two-step approach.               to the warped block-sum images in the second step, so that they can
+First, we warp the frames within each block to the block’s reference                be merged stably to reduce the noise level. Fig. 5 shows the result
+frame by using the estimated fine-scale inter-frame motion. The                     of applying block-level Wiener filtering, resulting in considerably
+frames are simply added to form a warped block-sum image without                    higher SNR than naive frame-level merging.
+any robust merge, since the amount of motion within each block
+is small, reducing the likelihood of alignment errors. This warping                    Merging with super-resolution: The high-speed single-photon data
+makes it possible to remove the motion blur within each block, as                   leads to small inter-frame motion (∼ 0.01 pixels), which can be lever-
+shown in Fig. 4. The warped block-sum images have sufficient SNR                    aged to generate a merged image that has a higher resolution than
+
+ACM Trans. Graph., Vol. 39, No. 4, Article 79. Publication date: July 2020.
+                                                                                                                            Quanta Burst Photography      •   79:7
+
+
+                    Table 1. Simulation Configuration                         for the SPAD camera are based on the SwissSPAD2 sensor we use for
+                                                                              our experiments. Currently SwissSPAD2 does not have a Bayer filter
+ Sensor Type                         Conventional          Jot       SPAD     for color imaging. We do not simulate the Bayer filter and demosaic-
+ Resolution                                           Same                    ing process but render the RGB channels directly. The alignment is
+ Pixel Pitch                                          Same                    performed on a grayscale version of the image and the merging is
+ Bit Depth                                  10              1          1      applied to the three channels independently. The fraction of incident
+ QE / PDE (R)                              59%            64%         17%     photons that are measured by a SPAD is given by its photon detec-
+ QE / PDE (G)                              64%            71%         23%     tion efficiency (PDE), which is defined as the product of quantum
+ QE / PDE (B)                              47%            62%         21%     efficiency, fill factor and photon detection probability (PDP). (See
+ Read Noise (per pixel)                   2.4e −         0.24e −       0      Sec. 9 for a detailed discussion.) The PDE used in the simulation is
+ Dark Current Noise /                                                         computed by multiplying the PDP of SwissSPAD2 with the spectral
+                                          1e − /s       0.16e − /s   7.5cps
+ Dark Count Rate (per pixel)                                                  response of a set of contrived color filters and the fill factor (assumed
+                                                                              to be 50% which can be achieved with microlenses [Antolović et al.
+                                                                              2019]). The dark count rate is assumed to be spatially uniform (no
+the input frames [Park et al. 2003; Wronski et al. 2019]. We develop          hot pixels). For real images, this non-uniformity can be calibrated
+a simple super-resolution algorithm based on kernel regression by             and compensated as shown in Eq. 5.
+adapting the original merging method described above. As above,
+after the inter-frame motion field is computed, frames within the                Comparison of conventional and quanta burst photography. We
+same block are warped and added up to form the warped block-sum               compare the results for single-shot conventional image, conven-
+images. However, instead of computing the weighted average of                 tional burst photography and quanta burst photography for differ-
+patches, the weighted patches are treated as a bag of sample points,          ent lighting conditions. For conventional burst result, we use an
+as shown in Fig. 6. Each patch is warped to sub-pixel locations on            approach similar to conventional burst photography methods [Hasi-
+a higher-resolution output pixel grid. The algorithm then scans               noff et al. 2016]. The exposure time and number of bursts are deter-
+through each pixel on the output grid. At each pixel, an anisotropic          mined using the strategy described in Sec. 8.
+Gaussian kernel [Takeda et al. 2007; Wronski et al. 2019] is used to             Fig. 7 shows the simulation results for different lighting condi-
+combine the sample points within a spatial neighborhood. Instead              tions. The scene is kept static while the camera is moving. The
+of the point-wise robustness term used in recent conventional burst           trajectory of the camera is set to be a linear 3D translation plus a
+photography [Wronski et al. 2019], our super-resolution method                small, smooth random 6 degrees-of-freedom (DoF) perturbation at
+uses the frequency-domain robust merging approach (the same                   each frame. For a scene with sufficient light, both burst methods
+approach used in original-resolution merging). This approach is               generate high-quality images. In low light, SPAD-based quanta burst
+more robust in practice, at the cost of slightly higher computational         photography generates much better result as there is no read noise.
+complexity. Please refer to the supplementary technical report for            Please refer to the supplementary report for a comparison of the
+design details of the kernel regression method.                               two methods for different motion speeds under extremely low light.
+
+   Post-denoising and tone mapping: After using the proposed motion-             Performance for different types of camera motion. Fig. 8
+compensating temporal denoising method to generate a final sum                shows the quanta burst reconstruction results for different kinds of
+image, existing single-photon image reconstruction methods can                camera motion, including rotation around y-axis, rotation around z-
+be applied for further denoising (see the supplementary report                axis, translation along z-axis and random 6DoF motion. In all cases,
+for comparisons of different reconstruction methods). We apply                relatively blur-free images are reconstructed.
+Anscombe transform [Anscombe 1948] to the sum image and apply
+BM3D [Dabov et al. 2007b] for spatial denoising [Chan et al. 2016].           7.2   Comparison between Jots and SPADs
+   After merging and denoising, we use Eq. 5 to invert the non-linear         The quanta burst photography approach discussed so far is appli-
+response to get a linear image. Gamma correction and tone-mapping             cable to both single-photon sensing technologies: SPAD and jots.
+is then applied to generate images suited for viewing.                        What are the relative benefits of the two technologies? In this sec-
+                                                                              tion, we address this question by comparing their performance in
+7 RESULTS
+                                                                              various imaging scenarios.
+7.1 Simulation Results
+We simulate the imaging process for a SPAD camera and a con-                     Adapting proposed approaches to spatially oversampling jots. Due
+ventional camera of the same resolution and pixel pitch. We first             to the spatially oversampling nature of jots, the spatial resolution
+simulate the ground-truth linear intensity images using a ray tracer          of raw jots images is typically higher than the final output image
+(POV-Ray) and then draw Bernoulli samples according to Eq. 2 to               (oversampling factor K > 1 [Yang et al. 2012]). A box filter is ap-
+synthesize the binary images. Tab. 1 shows the sensor parameters              plied to downsample the raw binary images (related to the boxcar
+we used for the simulation. The parameters for the conventional               function used in [Chan et al. 2016]) and convert them to floating
+sensor are for a high-end machine-vision camera 4 . The parameters            point intensity values. The float images are then divided into tem-
+                                                                              poral blocks as with SPADs (although with smaller block sizes than
+4 https://www.flir.com/products/grasshopper3-usb3/?model=GS3-U3-123S6C-C      SPADs) and processed through the align and merge pipeline.
+
+                                                                                       ACM Trans. Graph., Vol. 39, No. 4, Article 79. Publication date: July 2020.
+79:8        •       Ma, S. et al
+
+
+                                                                              Conventional Burst                               Quanta Burst (SPAD)
+                     Conventional Single        Conventional Burst                                   Quanta Burst (SPAD)
+                                                                                 (Denoised)                                        (Denoised)
+
+
+
+       High Light
+
+
+
+
+       Low Light
+
+
+
+
+Fig. 7. Simulation results under different lighting conditions. We simulate a 2000-frame binary sequence of a still indoor scene under three different
+lighting conditions. The camera motion is the same in all three sequences. (Top) When there is sufficient light, the SNR of conventional and quanta burst
+photography are comparable, although the latter generates a sharper image with less motion blur. (Bottom) As the light level decreases, quanta burst provides
+a higher SNR than conventional cameras.
+
+
+                                   Y Rotation                   Z Rotation                     Z Translation                  Complex 6DoF
+
+
+
+
+   No Alignment
+
+
+
+
+   Quanta Burst
+
+
+
+Fig. 8. Performance for different types of camera motion. We simulate four different types of motion for the same scene: rotation around y-axis, rotation
+around z-axis, translation along z-axis and a random 6 degrees-of-freedom (DoF) trajectory. In all cases, the proposed algorithm is able to align the binary
+images and generate high-quality images.
+
+   Comparison under different amounts of motion. Fig. 9 shows a com-                    that total number of pixel measurements (data bandwidth) of the
+parison between the reconstruction results of SPADs and jots. We                        two sensors is the same. We assign the same data bandwidth to the
+simulate two sequences of the same scene where the camera moves                         two sensors based on the assumption that the bandwidth will be
+at different speeds. Since jots-based devices have yet to achieve a                     an important limiting factor for the frame rate for both sensors, as
+very high resolution (1024×1024 so far), and their temporal reso-                       their specifications evolve in the future.
+lution is lower than SPAD (1kHz vs 97.7kHz), we compare SPADs                             Under fast motion, the merged image from jots contains motion
+with a “projected jot device” with a resolution of 5120 × 5120, such                    blur, while SPADs are able to register the binary images and merge
+
+
+ACM Trans. Graph., Vol. 39, No. 4, Article 79. Publication date: July 2020.
+                                                                                                                            Quanta Burst Photography      •   79:9
+
+
+
+                            Fast Motion           Slow Motion
+
+
+
+
+         (a) No Alignment
+
+                                                                              Fig. 10. Camera setup. (Left) The SwissSPAD2 board [Ulku et al. 2019].
+                                                                              (Right) Camera setup.
+
+
+
+(b) Single-Bit Jots
+                                                                              sensor completely from light sources. The hot pixels are corrected
+                                                                              for each binary frame. See the supplementary report for details.
+
+
+    (Projected)
+                                                                                 Performance for different lighting conditions. Fig. 11 shows the
+                                                                              performance of quanta burst photography for different lighting con-
+                                                                              ditions. We choose the same still scene for all sequences. The camera
+                                                                              was moved horizontally to emsure the motion is controllable and
+                                                                              reproducible across different sequences. The conventional camera
+                                                                              images are emulated from the captured binary images by first re-
+                                                                              constructing the intensity using Eq. 5 and then adding the read
+                                                                              noise and quantization error according to the parameters in Tab. 1.
+                                                                              Quanta burst photography generates images with higher quality
+
+         (c) SPADs
+                                                                              than conventional single and burst images. Even in very low light,
+                                                                              where the individual binary frames are sufficiently sparse to make
+                                                                              it nearly impossible to make out the scene structure, a reasonable
+                                                                              image is reconstructed by aligning and merging the sparse and noisy
+                                                                              binary frames. Please see the supplementary report for performance
+                                                                              of the proposed method for different camera moving speeds.
+Fig. 9. Comparison of jots and SPADs under different motion speeds.              The purpose of this experiment is not to compare a conventional
+We simulate a projected jots device with the same bandwidth as SPADs (and     sensor and SPAD sensor directly. In fact, due to the low resolution
+thus, higher spatial resolution). For fast motion, temporally super-sampled   and low quantum efficiency of current SPAD sensors, the SPAD will
+SPADs are able to resolve the motion blur and achieve sharper image. For      almost always generate worse-quality images than a commercial
+slow motion, spatially super-sampled jots are able to reconstruct image
+                                                                              CMOS sensor. Here we simulate the conventional images by assum-
+details with higher fidelity.
+                                                                              ing a conventional sensor with the same resolution and quantum
+                                                                              efficiency as the SPAD array. Due to the blur-noise trade-off, con-
+them into a sharp image. On the other hand, when the motion is                ventional sensor struggles in reconstructing high-quality images,
+slow, jots are able to generate a sharper image due to their high             while SPAD has the potential of super-sampling in time and mitigate
+spatial resolution. Therefore, we envision these two technologies             motion blur even for low-light and fast-moving scenes.
+to complement each other: SPADs achieve higher performance in
+high-speed scenarios, while jots with projected high resolution will            Reconstructing challenging scenes. Fig. 12 shows various scenes
+achieve better image quality for scenes with relatively slow mo-              involving large depth variations, specular high lights, complex ge-
+tion and high-frequency texture details. The reader is referred to            ometry and fine structures. Such scenes are usually challenging for
+the supplementary technical report for more comparisons includ-               optical flow and block matching algorithms. The camera was hand-
+ing those for multi-bit jots, and for comparisons using the sensor            held, and underwent a random 6DoF motion when capturing the
+parameters of currently available state-of-the-art prototypes for             images. Since a long-focus lens is used, even natural hand tremor
+jots [Gnanasambandam et al. 2019] and SPADs [Ulku et al. 2019].               causes a large apparent motion in the image space. Despite these
+                                                                              challenges, the proposed method is able to reconstruct blur-free
+7.3               Experiments                                                 images with high SNR.
+We use a SwissSPAD2 camera [Ulku et al. 2019] to perform real                    Comparison of denoising algorithms. After aligning and merging
+experiments (Fig. 10). This SPAD camera can capture binary frames             the binary frames into a sum image with low noise and blur, its
+at a spatial resolution of 512×256. The maximum frame rate of the             SNR can be further improved via spatial denoising algorithms (e.g.,
+camera is 96.8kHz. The camera does not have microlenses and has a             BM3D [Dabov et al. 2007b], total variation (TV) [Chan and Lu 2014]).
+native fill factor of about 13%. Currently the sensor is not equipped         BM3D is applied as a post-processing step after the Anscombe trans-
+with Bayer filters, so only grayscale images are reconstructed. We            form, whereas total variation is formulated as a joint reconstruction
+identify the hot pixels by taking 100000 frames while covering the            and denoising optimization problem [Chan and Lu 2014]. Fig. 13
+
+                                                                                       ACM Trans. Graph., Vol. 39, No. 4, Article 79. Publication date: July 2020.
+79:10            • Ma, S. et al
+
+
+                        Conventional Single               Conventional Burst                  Binary Image                     Quanta Burst
+
+
+
+  High Light
+
+
+
+
+  Medium Light
+
+
+
+
+  Low Light
+
+
+Fig. 11. Performance under different lighting conditions. We capture three 2000-frame binary sequences for the same scene under three different lighting
+conditions. A sample binary image from each sequence is shown in the third column. The binary images become sparser as the light level decreases. For
+conventional cameras, there is a trade-off between motion blur and noise, which makes it difficult to generate a high-quality image in low-light environments,
+either with a single long exposure (first column) or with a burst (second column). For quanta burst photography, it is possible to resolve fast motion without
+sacrificing the SNR (fourth column). Even in very low light, a reasonable image is reconstructed by aligning and merging the sparse and noisy binary frames.
+
+                                  Depth Variation                Specular Highlights        Complex Geometry               Fine Structures
+
+   Ground Truth
+
+   (DSLR, Tripod)
+
+
+
+     Naive
+   Averaging
+
+
+
+
+          Our Result
+
+
+Fig. 12. Challenging scenes. We show the reconstruction results of the proposed method for various challenging scenes involving high depth variation,
+specular highlights, complex scene geometry and fine structures. The camera was handheld, and follows a random 6DoF motion. Images are reconstructed
+from 10000 binary frames. In all cases, the proposed method is able to create a blur-free image with high SNR.
+
+compares the results of different combinations of spatio-temporal                      than TV, which results in over-smoothing for short exposure, and
+denoising schemes. Traditional single-photon image reconstruction                      loss of contrast for long exposure. See the supplementary technical
+(naive average) contains either motion blur in the long sequence,                      report for more comparisons.
+or heavy noise in the short sequence which cannot be perfectly re-
+moved using BM3D. In contrast, quanta burst photography approach
+in combination with spatial denoising is able to generate sharp, less                    Super-resolution. Fig. 14 demonstrates the performance of the
+noisy image. In our experiments, BM3D consistently performs better                     super-resolution algorithm. A high-resolution lens is used with
+                                                                                       the camera which creates aliasing in the image when the scene is
+
+ACM Trans. Graph., Vol. 39, No. 4, Article 79. Publication date: July 2020.
+                                                                                                                             Quanta Burst Photography       •   79:11
+
+
+
+                  Naive Average, Long Exposure           Naive Average, Short Exposure                                   Quanta Burst
+
+
+
+
+   No Denoising
+
+
+
+
+   TV
+
+
+
+
+   BM3D
+
+
+Fig. 13. Comparison of denoising algorithms. (Left) Naive average reconstruction without motion compensation on a long sequence (200 images). Results
+contain severe motion blur. (Center) Naive average reconstruction without motion compensation on a short sequence (20 images). Results are sharp but
+contain strong noise. Denoising algorithms reduce noise but also remove high-frequency image details. (Right) Burst align and merge results on 200 images.
+Results are sharp and less noisy. Applying denoising algorithms further reduces noise. BM3D outperforms TV, which results in oversmoothing for short
+exposure and loss of contrast for long exposure (red rectangle).
+
+            Without Super-Resolution                                                                           With Super-Resolution
+
+
+
+
+Fig. 14. Achieving super-resolution. We compare the output of the normal merging algorithm vs. the super-resolution algorithm. The super-resolution
+algorithm is able to reconstruct image at 2x resolution, creating sharper edges and mitigating aliasing artifacts.
+
+
+perfectly in focus. The super-resolution algorithm is able to uti-              dynamic range, but the text is still indiscernible due to read noise.
+lize the aliasing and sub-pixel motion between frames to create a               Quanta burst photography is able to recover both the filament and
+higher-resolution image with sharper image details and less aliasing            the text at the same time.
+artifacts than the normal merging algorithm.
+                                                                                   Resolving scene motion. Since the proposed method only computes
+   Reconstructing high dynamic range scenes. Fig. 15 shows a high               patch-wise motion and does not assume any global motion model, it
+dynamic range scene captured by the SPAD array. The only light                  is capable of resolving scene motion. Fig. 16 shows a person plucking
+source in the scene, the lamp (red box), is directly visible in the             the lowest two strings on the guitar. Simple averaging of binary
+image, which is about 2000 times brighter than the text on the                  frames creates ghosting artifacts or strong noise. Our method is able
+plaque (blue box), which does not receive any direct light. Similar             to resolve the plucking motion of the thumb and the vibration of
+as in Fig. 11, we simulate the conventional images by adding read               the strings with lower noise.
+noise and quantization error. With a single capture, the conventional
+image is either saturated around the lamp, or cannot recover the                  Indoor scenes with different, natural lighting. In addition to the
+texts on the plaque. Conventional burst photography improves the                controlled scenes in the lab, we captured a few indoor scenes with
+
+                                                                                          ACM Trans. Graph., Vol. 39, No. 4, Article 79. Publication date: July 2020.
+79:12   • Ma, S. et al
+
+
+          Conventional Single                         Conventional Single
+                                                                                           Conventional Burst                    Quanta Burst
+           (Long Exposure)                             (Short Exposure)
+                                        Lens
+                                        flare
+
+
+
+
+Fig. 15. Reconstructing high dynamic range scenes. We capture a scene with high dynamic range where the light source (the lamp) is directly visible in
+the image. A single conventional image either gets saturated (long exposure) or fails to capture the details in the dark regions (short exposure). Conventional
+burst photography improves the dynamic range, but remains noisy in the dark regions due to read noise. Quanta burst photography achieves very high
+dynamic range and is able to recover the details of the filament and the text on the plaque at the same time. 100000 frames are captured to reconstruct the full
+dynamic range. All images are processed using the same tone-mapping algorithm [Ashikhmin 2002].
+
+                                                        Naive Averaging                     Naive Averaging
+                   Scene                                                                                                          Our Result
+                                                        (Long Sequence)                    (Short Sequence)
+
+
+
+
+Fig. 16. Resolving scene motion. A person plucking the lowest two strings of a guitar. Averaging the captured binary sequence results in either ghosting
+artifacts (long sequence with 2000 binary frames) or a low SNR (short sequence with 100 binary frames). Our method is able to reconstruct a high-quality
+image from 2000 frames despite fast and non-rigid scene motion. See supplementary video for a short video reconstruction.
+
+        Ground Truth (DSLR, Tripod)                                           Naive Averaging                                 Our Result
+
+
+
+
+Fig. 17. Indoor scenes with different lighting. The proposed method is able to recover sharp images despite the aggressive camera motion and high
+dynamic range, for various scenes under different, real-world lighting conditions.
+
+
+
+
+ACM Trans. Graph., Vol. 39, No. 4, Article 79. Publication date: July 2020.
+                                                                                                                                                                                                                                                                         Quanta Burst Photography                                 •   79:13
+
+
+                                   SNR Difference (dB)                                                  SNR Difference (dB)                                                SNR Difference (dB)                                    25                                                              20
+
+
+
+
+                                                                                                                                                                                                            SNR Difference (dB)                                             SNR Difference (dB)
+                           25                                                                 25                                                                  25
+                                                               25                                                                  15                                                                  20                         20                                                              15
+
+
+
+
+ Photon Flux (photons/s)                                            Photon Flux (photons/s)                                             Photon Flux (photons/s)
+                           100                                 20                             100                                                                 100                                  16                         15
+                                                                                                                                   10                                                                                                                                                             10
+                                                                                                                                                                                                                                  10
+                                                               15                                                                                                                                      12                                                                                         5
+                                                                                                                                   5                                                                                              5
+                                                               10                                                                                                                                      8                                                                                          0
+                           1000                                                               1000                                                                1000                                                            0
+                                                               5                                                                   0                                                                                                                                                              -5
+                                                                                                                                                                                                       4                          -5 25     100        1000         10000                          10          100      1000      10000
+                                                               0                                                                                                                                                                            Photon flux (photons/s)                                           Apparent speed (px/s)
+                                                                                                                                   -5                                                                  0
+                           10000
+                              10      100      1000    10000                                  10000                                                               10000
+                                                                                                                                                                      10      100     1000     10000
+                                                                                                                                                                                                                                        Current Projected                                              Current Projected
+                                                                                                  10      100     1000     10000                                                                                                                            100 px/s                                                       100 photons/s
+                                   Apparent speed (px/s)                                               Apparent speed (px/s)                                               Apparent speed (px/s)                                                            1000 px/s                                                      1000 photons/s
+                                                                                                                                                                                                                                                            10000 px/s                                                     10000 photons/s
+                                   (a) Current SPADs vs                                          (b) Current SPADs vs                                               (c) Projected SPADs vs
+                                       Conventional                                           Sub-Electron Conventional                                           Sub-Electron Conventional                                           (d) SNR Diff vs Photon Flux                                         (e) SNR Diff vs Speed
+
+Fig. 18. Theoretical SNR analysis. (a) SNR difference between quanta burst photography based on current SPADs and conventional burst photography
+based on a machine vision CMOS sensor. (S N R quant a − S N R conv ) in dB as a function of incident photon flux and apparent motion speed. SPADs achieve
+significantly higher SNR under very low light and high speed. On the other hand, in well-lit scenes with small motion, quanta burst photography performs
+worse due to lower quantum efficiency and higher dark current noise. The red line indicates the iso-contour for SNR difference = 0 (equal performance). (b)
+SNR difference between current SPADs and the recent conventional image sensor on iPhone 7. The conventional sensor works better for a wider range of flux
+intensity and apparent speeds due to its sub-electron read noise. (c) SNR difference between projected SPADs with PDE = 50% and iPhone 7 sensor. (d, e) 1D
+slices of the 2D plots in (b) and (c) by fixing a specific flux or speed. In each case, the difference is higher for low light levels and large motions.
+
+more natural lighting. As shown in Fig. 17, the proposed method is                                                                                                                      process. Assuming the images are perfectly aligned such that the
+able to reconstruct high-quality images under these unstructured                                                                                                                        nc images can be merged simply by taking their average:
+environments. Please refer to the supplementary technical report
+                                                                                                                                                                                                                                                       1 Õ
+                                                                                                                                                                                                                                                             nc
+for more simulation and experimental results.                                                                                                                                                                                             ϕˆc =                  (It − τc rc ) ,                                                      (10)
+                                                                                                                                                                                                                                                   nc τc ηc t =1
+8 WHEN TO USE QUANTA BURST PHOTOGRAPHY?                                                                                                                                                 where It is the image captured at time t. We assume the dark current
+What are the imaging regimes where quanta burst photography                                                                                                                             noise can be calibrated at each pixel. The mean of the calibrated
+can outperform conventional cameras? 5 To address this question,                                                                                                                        dark current noise is subtracted from the sum of images to give an
+we characterize the performance of conventional and quanta burst                                                                                                                        unbiased estimate of the photon flux (linear intensity image).
+photography in terms of the SNR of the reconstructed linear image:                                                                                                                         From the noise model, the root mean squared error (RMSE) of
+                                         ϕˆ                                                                                                                                             this estimator due to noise variance is given by
+                     SN R = 20 log10                             (8)                                                                                                                                                         s
+                                     RMSE( ˆ                                                                                                                                                                    q
+                                            ϕ)                                                                                                                                                                                  ϕηc + rc nc σr2c
+                                                                                                                                                                                                  RMSE(ϕˆc ) = Var[ϕˆc ] =               +        ,     (11)
+where ϕˆ is the estimated image intensity, and RMSE ϕˆ is the root                                                                                                                                                                T ηc2    T 2ηc2
+mean squared error of the estimate. We assume that the input images                                                                                                                     where T = nc τc is the total exposure time for the sequence.
+are perfectly aligned (no mis-alignment errors) for both conven-
+tional and single-photon cameras, so that the estimation error is                                                                                                                         SPAD cameras: A maximum likelihood estimator for SPAD cam-
+only due to image noise.                                                                                                                                                                era is derived in Eq. 5. For a sufficiently long sequence nq > 30, the
+                                                                                                                                                                                        variance of the MLE can be estimated using Fisher information (See
+  Conventional cameras: The image formation of conventional im-                                                                                                                         the supplementary technical report for the derivation):
+age sensors is given by an affine model [Hasinoff et al. 2010]:                                                                                                                                                                     v
+                                                                                                                                                                                                                                    t
+                                                                                                                                                                                                           q
+                                                                                                                                                                           (9)                                               1        e ϕτq ηq +r q τq − 1
+                                                           I = Z + ϵr c + ϵdc ,                                                                                                             RMSE(ϕq ) = Var[ϕq ] ≈ p
+                                                                                                                                                                                                    ˆ             ˆ               =                        , (12)
+where Z ∼ Pois(ϕτc ηc ) is the photon counts as in Eq. 1 (τc and ηc                                                                                                                                                         I (ϕ)          nq τq2ηq2
+are the exposure time and quantum efficiency for the conventional                                                                                                                       where τq and ηq are the exposure time and quantum efficiency for
+sensor). ϵr c ∼ N (0, σr c ) is the read noise. ϵdc ∼ Pois(τc rc ) is the                                                                                                               the single-photon camera.
+dark current noise caused by thermal current with flux rc . These                                                                                                                          The RMSE for both modalities depend on the total exposure time
+three components are statistically independent of each other. To                                                                                                                        T of the image sequence (assumed same for both modalities for a
+simplify the analysis, we assume all images are captured at the same                                                                                                                    fair comparison) and the total number of frames nc and nq , which,
+ISO speed and temperature such that σr c and rc are fixed.                                                                                                                              in practice, in turn depend on the photon flux level ϕ and camera
+   Suppose a conventional burst photography algorithm captures a                                                                                                                        motion: longer exposure is preferred when the light level is low and
+burst of nc images. The process of merging the captured images into                                                                                                                     the camera is moving slowly. [Liba et al. 2019] proposes “motion
+a result image can be viewed as a maximum likelihood estimation                                                                                                                         metering” which automatically selects the exposure time based on
+5 This analysis is not meant to be a direct comparison between current single-photon and                                                                                                a prediction of future scene and camera motion. We take a similar
+conventional cameras. Conventional CMOS sensors have considerably higher spatial                                                                                                        approach for our analysis: we assume the scene and camera motion
+resolution and color filters, and thus, will achieve better image quality as compared to                                                                                                are known or can be estimated such that T and n can be determined
+current SPAD arrays in the foreseeable future. The goal of this analysis is to provide
+guidelines on when using quanta burst photography can be beneficial, assuming SPAD                                                                                                      according to the following three principles: (1) When the motion is
+arrays can match the spatial resolution of sCMOS sensors.                                                                                                                               slow, the total exposure time is chosen to meet a target total number
+
+                                                                                                                                                                                                       ACM Trans. Graph., Vol. 39, No. 4, Article 79. Publication date: July 2020.
+79:14   • Ma, S. et al
+
+
+of photons to ensure high SNR. (2) When the motion is fast, the total         in turn is limited by the necessity of placing a guard ring 6 around
+exposure time is limited by a maximum amount of motion across                 each SPAD pixel. In current CMOS technologies, due to the guard
+the sequence. (3) The total number of frames is chosen to ensure              ring, SPAD pitch cannot be reduced below 1µm. At that pitch, the
+the per-frame motion blur is below a threshold. Details about the             guard ring occupies a large portion of the pixel, thus reducing the
+strategy can be found in the supplementary report. The SNR of both            fill factor to a minimum. This limitation could be addressed via
+approaches can then be expressed as a function of photon flux and             3D-stacking [Pavia et al. 2015], a potentially effective way to reduce
+camera motion, which allows comparison of the two approaches.                 SPAD pixel pitch by moving all the active and passive components
+                                                                              associated with a SPAD pixel to the bottom tier of the sensor.
+   SNR comparisons between conventional and SPAD cameras: Fig. 18                Frame rate and power consumption: The frame rate of a SPAD
+plots the difference of SNRs (SN Rquant a − SN Rconv ) in dB for a            sensor array is limited by the bit-rate the chip can deliver and by
+wide range of photon fluxes and apparent speeds. Fig. 18 (a) com-             the number of communication channels it can host. For example,
+pares the burst photography performance between a current SPAD                a 1 Mpixel camera with a frame rate of 1kfps, will generate 1Gbps
+sensor and a machine-vision CMOS sensor with parameters listed                of data, which can be handled by a single LVDS (low-voltage dif-
+in Tab. 1. At ultra low light and high speeds, the SPAD sensor per-           ferential signalling) communication channel. Typically, this kind of
+forms considerably better than the CMOS sensor (up to 27.5dB =                channel requires about 10mW of power at full speed. If one wants
+23.7 times). On the other hand, in well-lit scenes with negligible            to increase the frame rate by, say, 100X , then the data rate will
+motion, the SPAD performs worse (albeit at most by a factor of 0.5)           increase to 100Gbps, with 1W of power required, which may be
+due to relatively low PDE and high DCR of current SPAD arrays.                prohibitive for consumer devices. This assumes that the internal
+   Recently, advanced CMOS sensors used in high-end cellphones                power dissipation due to SPADs and chip operation is negligible,
+have achieved sub-electron read noise. Fig. 18 (b) plots the SNR              and that the readout speed of the pixels internally is not the bot-
+difference between current SPADs and iPhone 7’s sensor, which is              tleneck. The communication power consumption can be mitigated
+reported to have a read noise of 0.68 electrons [Claff [n.d.]]. Such          by performing on-chip image processing operations, and designing
+low read noise makes its performance better than current SPADs                more efficient motion computation and image alignment operations
+for a wider range of flux intensity and motion speeds. Since SPADs            that are amenable to on-chip processing. Furthermore, it is possible
+are an emerging technology, their specifications (in particular, res-         to exploit the spatio-temporal sparsity in the photon-cube raw data
+olution and PDE) continue to improve, arguably at a faster rate               in low-light scenarios. Depending on the light-level in the scene,
+than conventional sensors which are already a mature technology.              one could achieve a considerable data rate reduction by compressing
+Fig. Supp18 (c) compares iPhone 7’s sensor with a projected SPADs             the raw photon-cube data [Zhang et al. 2018a].
+which achieve a PDE of 50%. To visualize the variations of the SNR
+                                                                                 Photon detection efficiency (PDE):. PDE is defined as the product
+difference with respect to one specific parameter, we show 1-D slices
+                                                                              of the pixel fill factor, and the photon detection probability (PDP),
+of the comparison between iPhone 7 and current/projected SPAD
+                                                                              which is the probability that an impinging photon generates a de-
+sensor in (d) and (e), where either the photon flux or the appar-
+                                                                              tectable signal. PDP is the product of quantum efficiency and the
+ent speed is fixed. These figures demonstrate how the proposed
+                                                                              probability of triggering an avalanche. PDP is dependent on the
+analysis framework can be used to direct future development of
+                                                                              wavelength of photons; for current devices, the PDP is typically
+SPADs for best performance under certain light levels and amount
+                                                                              50 − 70% at 450 − 550 nm. Due to low fill factors, earlier SPAD arrays
+of motion. A theoretical dynamic range analysis can be found in the
+                                                                              had PDEs as low as 1% making them highly inefficient due to signif-
+supplementary technical report.
+                                                                              icant light loss. However, the PDE in recent arrays has increased to
+                                                                              approximately 40% by using microlens arrays, which increase PDE
+9 OUTLOOK ON SINGLE-PHOTON SENSORS                                            by effectively increasing the fill factor. While still lagging the quan-
+                                                                              tum efficiency of conventional sensors (approximately 60 − 90%), the
+In this section, we discuss the current state and future outlook of
+                                                                              PDE of SPAD arrays will likely improve due to improving fabrication
+SPAD sensor arrays, in terms of their key characteristics: spatial
+                                                                              processes, including 3D stacking.
+resolution, temporal frame rate, photon detection efficiency (PDE),
+and the dark count rate (DCR).                                                   Dark count rate (DCR):. DCR is the rate of avalanche counts un-
+                                                                              related to photons, measured in counts-per-second (cps). Earlier
+                                                                              SPAD devices were largely considered impractical due to high DCR,
+   Spatial resolution: Due to their compatibility with mainstream
+                                                                              up to several tens of cps at cryogenic temperatures, and tens of
+CMOS fabrication lines, it was predicted in 2008 that SPAD image
+                                                                              kcps at room temperature. Fortunately, for current devices, DCR
+sensors could reach large resolutions within one decade [Charbon
+                                                                              has been drastically reduced to 2 cps [Morimoto et al. 2020], even at
+2007, 2008]. In recent years, significant effort has been devoted
+                                                                              room temperature. Since SPADs do not have read noise, this DCR
+to achieve this goal, with the world’s first 1 MPixel SPAD array
+                                                                              is sufficiently low to achieve nearly shot-noise-limited SNR, even
+reported recently [Morimoto et al. 2020]. With the same fabrication
+process, it is possible to go up to 5-10 MPixel, not far from their           6 A SPAD pixel detects single photons by creating an avalanche of photo-electrons (large
+
+counterparts in CMOS imagers in several cell-phone cameras. Can               current) when a photon is incident, and sensing the avalanche current via a comparator
+                                                                              or a high-gain amplifier. A guard ring is a region around each SPAD pixel that forces
+we go even higher (e.g., 50 MPixel) in the long term? The key factor          the avalanche to be confined in the region, in order to prevent edge breakdown. Guard
+that limits the spatial resolution is the minimum pixel pitch, which          rings are implemented via geometric structures that are not sensitive to light.
+
+
+ACM Trans. Graph., Vol. 39, No. 4, Article 79. Publication date: July 2020.
+                                                                                                                          Quanta Burst Photography       •   79:15
+
+
+in ultra low-light. Since DCR is proportional to the active area of a    are several other essential processing steps in the image processing
+SPAD, as the pixels become smaller, DCR could be further reduced.        pipeline including demosaicking, white balancing, and dehazing.
+                                                                         Specifically, demosaicking is a non-trivial problem since tempo-
+10 LIMITATIONS AND DISCUSSION                                            ral interpolation of alignment can introduce color artifacts. Recent
+   Resolving larger range of motions. The proposed alignment al-         research suggests that there is a potential benefit of performing
+gorithm assumes the motion of the spatial image patches can be           end-to-end processing from the raw sensor data [Chen et al. 2019;
+approximated by a 2D translation, which is usually appropriate for       Gharbi et al. 2016; Heide et al. 2014]. A promising next step is to de-
+camera motion and rigid object motion. When this assumption does         sign a similar framework for quanta burst photography and explore
+not hold, the discrepancies between the true deformation of the          whether similar benefits exist for single-photon images.
+patch and the translation approximation can be mitigated by the ro-
+bust merging algorithm. However, when the scene contains several         ACKNOWLEDGMENTS
+small objects or undergoes nonrigid motion, such an approximation        This research is supported in part by the DARPA REVEAL program,
+no longer holds, which can result in artifacts in the merged image.      a Wisconsin Alumni Research Foundation (WARF) Fall Competi-
+An interesting future research direction is to design optical flow       tion award (UW-Madison), the Swiss National Science Foundation
+algorithms for aligning images for such challenging scenes.              Grant 166289 and The Netherlands Organization for Scientific Re-
+                                                                         search Project 13916 (EPFL).
+   Fast, energy-efficient processing. Currently, our algorithms are
+implemented in unoptimized MATLAB code which takes about 30              REFERENCES
+minutes for processing a sequence with 10000 binary frames, which        F J Anscombe. 1948. The Transformation of Poisson, Binomial and Negative-Binomial
+is far from real-time. For consumer photography applications, it is          Data. Biometrika 35, 3/4 (1948), 246–254.
+                                                                         Ivan Michel Antolovic, Claudio Bruschini, and Edoardo Charbon. 2018. Dynamic Range
+critical to perform the processing in a fast and also energy-efficient       Extension for Photon Counting Arrays. Optics Express 26, 17 (Aug. 2018), 22234.
+way. In our current implementation, the binary frames are treated        Ivan Michel Antolovic, Samuel Burri, Claudio Bruschini, Ron Hoebe, and Edoardo
+as real numbers (e.g., when warping them during the merging stage).          Charbon. 2016. Nonuniformity Analysis of a 65-Kpixel CMOS SPAD Imager. IEEE
+                                                                             Transactions on Electron Devices 63, 1 (Jan. 2016), 57–64.
+One potential way to improve the efficiency is to utilize specialized    Ivan Michel Antolović, Arin Can Ulku, Ekin Kizilkan, Scott Lindner, Frédéric Zanella,
+computing architectures and algorithms for binary data [Daruwalla            Rolando Ferrini, Marc Schnieper, Edoardo Charbon, and Claudio Bruschini. 2019.
+et al. 2019; Pfeiffer and Pfeil 2018].                                       Optical-Stack Optimization for Improved SPAD Photon Detection Efficiency. In
+                                                                             Quantum Sensing and Nano Electronics and Photonics XVI, Manijeh Razeghi, Jay S.
+                                                                             Lewis, Giti A. Khodaparast, and Eric Tournié (Eds.). SPIE, San Francisco, United
+   Bandwidth limitation. The high dynamic range of SPADs comes               States, 99.
+at the cost of large bandwidth requirement. Currently, the captured      Michael Ashikhmin. 2002. A Tone Mapping Algorithm for High Contrast Images. In
+binary images are stored on-board, and then transferred to a PC and          Eurographics Workshop on Rendering. 145–156.
+                                                                         A. Beck and M. Teboulle. 2009. Fast Gradient-Based Algorithms for Constrained Total
+processed offline. The bandwidth requirement can be relaxed by               Variation Image Denoising and Deblurring Problems. IEEE Transactions on Image
+capturing multi-bit images (which sacrifices temporal resolution).           Processing 18, 11 (Nov. 2009), 2419–2434.
+The bandwidth in future SPAD sensors can also be improved by             Michael J. Black. 1994. Recursive Non-Linear Estimation of Discontinuous Flow Fields.
+                                                                             In European Conference on Computer Vision (ECCV), Gerhard Goos, Juris Hartmanis,
+using faster interfaces such as PCIexpress and CameraLink.                   and Jan-Olof Eklundh (Eds.), Vol. 800. Springer Berlin Heidelberg, Berlin, Heidelberg,
+                                                                             138–145.
+   Video reconstruction. The proposed method can be used for re-         Andrés Bruhn, Joachim Weickert, and Christoph Schnörr. 2005. Lucas/Kanade Meets
+constructing videos by shifting the reference frame in time. An ex-          Horn/Schunck: Combining Local and Global Optic Flow Methods. International
+                                                                             Journal of Computer Vision (IJCV) 61, 3 (2005), 211–231.
+ample reconstructed video for the guitar sequence is shown               Claudio Bruschini, Harald Homulle, Ivan Michel Antolovic, Samuel Burri, and Edoardo
+in the supplementary video. While the current approach recon-                Charbon. 2019. Single-Photon Avalanche Diode Imagers in Biophotonics: Review
+structs the video sequence one frame at a time, novel algorithms             and Outlook. Light: Science & Applications 8, 1 (Dec. 2019), 87.
+                                                                         A. Buades, B. Coll, and J.-M. Morel. 2005. A Non-Local Algorithm for Image Denoising.
+that enforce temporal coherency across reconstructed frames could            In IEEE Computer Society Conference on Computer Vision and Pattern Recognition
+be developed, resulting in improved video quality as well as lower           (CVPR), Vol. 2. IEEE, San Diego, CA, USA, 60–65.
+                                                                         Mauro Buttafava, Jessica Zeman, Alberto Tosi, Kevin Eliceiri, and Andreas Velten. 2015.
+computational complexity.                                                    Non-line-of-sight imaging using a time-gated single photon avalanche diode. Optics
+                                                                             express 23, 16 (2015), 20997–21011.
+   Free-running SPADs. The proposed techniques are designed for          Stanley Chan, Omar Elgendy, and Xiran Wang. 2016. Images from Bits: Non-Iterative
+SPAD arrays operating in synchronous clock-driven mode where all             Image Reconstruction for Quanta Image Sensors. Sensors 16, 11 (Nov. 2016), 1961.
+                                                                         Stanley H. Chan and Yue M. Lu. 2014. Efficient Image Reconstruction for Gigapixel
+the pixels read off measurements simultaneously, at fixed intervals.         Quantum Image Sensors. In IEEE Global Conference on Signal and Information Pro-
+It has recently been shown that event-driven [Antolovic et al. 2018]         cessing (GlobalSIP). IEEE, Atlanta, GA, USA, 312–316.
+or free-running SPADs [Ingle et al. 2019] achieve a higher dynamic       Paramanand Chandramouli, Samuel Burri, Claudio Bruschini, Edoardo Charbon, and
+                                                                             Andreas Kolb. 2019. A Bit Too Much? High Speed Imaging from Sparse Photon
+range by recharging the SPAD as soon as the dead time due to a               Counts. In IEEE International Conference on Computational Photography (ICCP).
+photon detection is over. An interesting future direction is to de-          Tokyo, Japan, 1–9. arXiv:1811.02396
+sign quanta burst photography techniques for asynchronous SPAD           E. Charbon. 2007. Will Avalanche Photodiode Arrays Ever Reach 1 Megapixel? Image
+                                                                             Sensors Workshop (2007).
+arrays where pixels return binary measurement independently.             E. Charbon. 2008. Towards large scale CMOS single-photon detector arrays for lab-on-
+                                                                             chip applications. J. of Phys. D: Appl. Phys. 41 (12) (2008).
+   Quanta image processing pipeline. The primary focus of this paper     Chen Chen, Qifeng Chen, Minh N Do, and Vladlen Koltun. 2019. Seeing Motion in the
+is on the alignment and merging of binary images. We apply de-               Dark. In International Conference on Computer Vision (ICCV). 3185–3194.
+                                                                         Joon Hee Choi, Omar A. Elgendy, and Stanley H. Chan. 2018. Image Reconstruction for
+noising and tone-mapping as a post-processing step to the merged             Quanta Image Sensors Using Deep Neural Networks. In IEEE International Conference
+images. For modern camera systems with color filter arrays, there            on Acoustics, Speech and Signal Processing (ICASSP). IEEE, Calgary, AB, 6543–6547.
+
+
+                                                                                     ACM Trans. Graph., Vol. 39, No. 4, Article 79. Publication date: July 2020.
+79:16   • Ma, S. et al
+
+
+William J. Claff. [n.d.].           Input-Referred Read Noise versus ISO Setting.             Matteo Maggioni, Giacomo Boracchi, Alessandro Foi, and Karen Egiazarian. 2012.
+    https://www.photonstophotos.net/Charts/RN_e.htm.                                             Video Denoising, Deblocking, and Enhancement Through Separable 4-D Nonlocal
+Kostadin Dabov, Alessandro Foi, and Karen Egiazarian. 2007a. Video Denoising by                  Spatiotemporal Transforms. IEEE Transactions on Image Processing 21, 9 (Sept. 2012),
+    Sparse 3D Transform-Domain Collaborative Filtering. In European Signal Processing            3952–3966.
+    Conference. 145–149.                                                                      M. Malfait and D. Roose. 1997. Wavelet-Based Image Denoising Using a Markov
+Kostadin Dabov, Alessandro Foi, Vladimir Katkovnik, and Karen Egiazarian. 2007b.                 Random Field a Priori Model. IEEE Transactions on Image Processing 6, 4 (April 1997),
+    Image Denoising by Sparse 3-D Transform-Domain Collaborative Filtering. IEEE                 549–565.
+    Transactions on Image Processing 16, 8 (Aug. 2007), 2080–2095.                            Ben Mildenhall, Jonathan T. Barron, Jiawen Chen, Dillon Sharlet, Ren Ng, and Robert
+Kyle Daruwalla, Heng Zhuo, Carly Schulz, and Mikko Lipasti. 2019. BitBench: A Bench-             Carroll. 2018. Burst Denoising with Kernel Prediction Networks. In IEEE/CVF
+    mark for Bitstream Computing. In ACM SIGPLAN/SIGBED International Conference                 Conference on Computer Vision and Pattern Recognition (CVPR). IEEE, Salt Lake City,
+    on Languages, Compilers, and Tools for Embedded Systems (LCTES). ACM Press,                  UT, 2502–2510.
+    Phoenix, AZ, USA, 177–187.                                                                Kazuhiro Morimoto, Andrei Ardelean, Ming-Lo Wu, Arin Can Ulku, Ivan Michel An-
+Michael Elad and Michal Aharon. 2006. Image Denoising Via Sparse and Redundant                   tolovic, Claudio Bruschini, and Edoardo Charbon. 2020. Megapixel time-gated SPAD
+    Representations Over Learned Dictionaries. IEEE Transactions on Image Processing             image sensor for 2D and 3D imaging applications. Optica 7, 4 (Apr 2020), 346–354.
+    15, 12 (Dec. 2006), 3736–3745.                                                            C. Niclass, A. Rochas, P.-A. Besse, and E. Charbon. 2005. Design and Characterization of
+Omar A. Elgendy and Stanley H. Chan. 2019. Color Filter Arrays for Quanta Image                  a CMOS 3-D Image Sensor Based on Single Photon Avalanche Diodes. IEEE Journal
+    Sensors. https:// arxiv.org/ abs/ 1903.09823 (2019).                                         of Solid-State Circuits 40, 9 (Sept. 2005), 1847–1854.
+Eric Fossum. 2005. What To Do With Sub-Diffraction Limit (SDL) Pixels?—A Proposal             M. O’Toole, F. Heide, D. B. Lindell, K. Zang, S. Diamond, and G. Wetzstein. 2017. Re-
+    for a Gigapixel Digital Film Sensor (DFS). In IEEE Workshop on Charge-Coupled                constructing Transient Images from Single-Photon Sensors. In 2017 IEEE Conference
+    Devices and Advanced Image Sensors. 214–217.                                                 on Computer Vision and Pattern Recognition (CVPR). 2289–2297.
+Eric Fossum, Jiaju Ma, Saleh Masoodian, Leo Anzagira, and Rachel Zizza. 2016. The             Matthew O’Toole, David B. Lindell, and Gordon Wetzstein. 2018. Confocal non-line-of-
+    Quanta Image Sensor: Every Photon Counts. Sensors 16, 8 (Aug. 2016), 1260.                   sight imaging based on the light-cone transform. Nature 555 (Mar 2018), 338–341.
+Eric R. Fossum. 2011. The Quanta Image Sensor (QIS): Concepts and Challenges. In              Sung Cheol Park, Min Kyu Park, and Moon Gi Kang. 2003. Super-Resolution Image
+    OSA Topical Mtg on Computational Optical Sensing and Imaging. Toronto, Canada.               Reconstruction: A Technical Overview. IEEE Signal Processing Magazine 20, 3 (May
+Eric R. Fossum. 2013. Modeling the Performance of Single-Bit and Multi-Bit Quanta                2003), 21–36.
+    Image Sensors. IEEE Journal of the Electron Devices Society 1, 9 (Sept. 2013), 166–174.   Juan Mata Pavia, Mario Scandini, Scott Lindner, Martin Wolf, and Edoardo Charbon.
+Michaël Gharbi, Gaurav Chaurasia, Sylvain Paris, and Frédo Durand. 2016. Deep Joint              2015. A 1 × 400 Backside-Illuminated SPAD Sensor With 49.7 Ps Resolution, 30
+    Demosaicking and Denoising. ACM Transactions on Graphics 35, 6 (Nov. 2016),                  pJ/Sample TDCs Fabricated in 3D CMOS Technology for Near-Infrared Optical
+    1–12.                                                                                        Tomography. IEEE Journal of Solid-State Circuits 50, 10 (Oct. 2015), 2406–2418.
+Abhiram Gnanasambandam, Omar Elgendy, Jiaju Ma, and Stanley H. Chan. 2019.                    Michael Pfeiffer and Thomas Pfeil. 2018. Deep Learning With Spiking Neurons: Oppor-
+    Megapixel Photon-Counting Color Imaging Using Quanta Image Sensor. Optics                    tunities and Challenges. Frontiers in Neuroscience 12 (Oct. 2018), 774.
+    Express 27, 12 (June 2019), 17298.                                                        Alexis Rochas. 2003. Single Photon Avalanche Diodes in CMOS Technology. Ph.D.
+Clément Godard, Kevin Matzen, and Matt Uyttendaele. 2018. Deep Burst Denoising. In               Dissertation. EPFL.
+    European Conference on Computer Vision (ECCV), Vittorio Ferrari, Martial Hebert,          Luciano Sbaiz, Feng Yang, Edoardo Charbon, Sabine Susstrunk, and Martin Vetterli.
+    Cristian Sminchisescu, and Yair Weiss (Eds.). Springer International Publishing,             2009. The Gigavision Camera. In IEEE International Conference on Acoustics, Speech
+    Cham, 538–554.                                                                               and Signal Processing (ICASSP). IEEE, Taipei, Taiwan, 1093–1096.
+Rafael C. Gonzalez and Richard E. Woods. 2006. Digital Image Processing (3rd Edition).        Dongeek Shin, Feihu Xu, Dheera Venkatraman, Rudi Lussana, Federica Villa, Franco
+    Prentice-Hall, Inc., USA.                                                                    Zappa, Vivek K. Goyal, Franco N. C. Wong, and Jeffrey H. Shapiro. 2016. Photon-
+Istvan Gyongy, Tarek Al Abbas, Neale A W Dutton, and Robert K Henderson. 2017.                   efficient imaging with a single-photon camera. Nature Communications 7 (Jun 2016),
+    Object Tracking and Reconstruction with a Quanta Image Sensor. In International              12046.
+    Image Sensor Workshop (IISW). 5.                                                          Hiroyuki Takeda, Sina Farsiu, and Peyman Milanfar. 2007. Kernel Regression for Image
+Istvan Gyongy, Neale Dutton, and Robert Henderson. 2018. Single-Photon Tracking                  Processing and Reconstruction. IEEE Transactions on Image Processing 16, 2 (Feb.
+    for High-Speed Vision. Sensors 18, 2 (Jan. 2018), 323.                                       2007), 349–366.
+Samuel W. Hasinoff, Frédo Durand, and William T. Freeman. 2010. Noise-Optimal                 Arin Can Ulku, Claudio Bruschini, Ivan Michel Antolovic, Yung Kuo, Rinat Ankri,
+    Capture for High Dynamic Range Photography. In IEEE Computer Society Conference              Shimon Weiss, Xavier Michalet, and Edoardo Charbon. 2019. A 512 × 512 SPAD
+    on Computer Vision and Pattern Recognition (CVPR). 553–560.                                  Image Sensor With Integrated Gating for Widefield FLIM. IEEE Journal of Selected
+Samuel W. Hasinoff, Dillon Sharlet, Ryan Geiss, Andrew Adams, Jonathan T. Barron,                Topics in Quantum Electronics 25, 1 (Jan. 2019), 1–12.
+    Florian Kainz, Jiawen Chen, and Marc Levoy. 2016. Burst Photography for High              Sebastian Volz, Andres Bruhn, Levi Valgaerts, and Henning Zimmer. 2011. Modeling
+    Dynamic Range and Low-Light Imaging on Mobile Cameras. ACM Transactions on                   Temporal Coherence for Optical Flow. In IEEE International Conference on Computer
+    Graphics 35, 6 (Nov. 2016), 1–12.                                                            Vision (ICCV). IEEE, Barcelona, Spain, 1116–1123.
+Felix Heide, Steven Diamond, Matthias Nießner, Jonathan Ragan-Kelley, Wolfgang                Xiuling Wang, Winnifred Wong, and Richard Hornsey. 2006. A High Dynamic Range
+    Heidrich, and Gordon Wetzstein. 2016. ProxImaL: Efficient Image Optimization                 CMOS Image Sensor With Inpixel Light-to-Frequency Conversion. IEEE Transactions
+    Using Proximal Algorithms. ACM Transactions on Graphics 35, 4 (July 2016), 1–15.             on Electron Devices 53, 12 (Dec. 2006), 2988–2992.
+Felix Heide, Karen Egiazarian, Jan Kautz, Kari Pulli, Markus Steinberger, Yun-Ta Tsai,        Joachim Weickert and Christoph Schnörr. 2001. Variational Optic Flow Computation
+    Mushfiqur Rouf, Dawid Pająk, Dikpal Reddy, Orazio Gallo, Jing Liu, and Wolfgang              with a Spatio-Temporal Smoothness Constraint. Journal of Mathematical Imaging
+    Heidrich. 2014. FlexISP: A Flexible Camera Image Processing Framework. ACM                   and Vision 14, 3 (2001), 245–255.
+    Transactions on Graphics 33, 6 (Nov. 2014), 1–13.                                         Bartlomiej Wronski, Ignacio Garcia-Dorado, Manfred Ernst, Damien Kelly, Michael
+Atul Ingle, Andreas Velten, and Mohit Gupta. 2019. High Flux Passive Imaging with                Krainin, Chia-Kai Liang, Marc Levoy, and Peyman Milanfar. 2019. Handheld Multi-
+    Single-Photon Sensors. In IEEE Conference on Computer Vision and Pattern Recogni-            Frame Super-Resolution. ACM Transactions on Graphics 38, 4 (July 2019), 1–18.
+    tion (CVPR). 6760–6769.                                                                      arXiv:1905.03277
+Kiyotaka Iwabuchi, Tomohiro Yamazaki, and Takayuki Hamamoto. 2019. Iterative                  Feng Yang, Y. M. Lu, L. Sbaiz, and M. Vetterli. 2012. Bits From Photons: Oversampled
+    Image Reconstruction for Quanta Image Sensor by Using Variance-Based Motion                  Image Acquisition Using Binary Poisson Statistics. IEEE Transactions on Image
+    Estimation. In International Image Sensor Workshop (IISW). 4.                                Processing 21, 4 (April 2012), 1421–1436.
+S. Kavadias, B. Dierickx, D. Scheffer, A. Alaerts, D. Uwaerts, and J. Bogaerts. 2000. A       Feng Yang, Luciano Sbaiz, Edoardo Charbon, Sabine Susstrunk, and Martin Vetterli. 2009.
+    Logarithmic Response CMOS Image Sensor with On-Chip Calibration. IEEE Journal                Image Reconstruction in the Gigavision Camera. In IEEE International Conference
+    of Solid-State Circuits 35, 8 (Aug. 2000), 1146–1152.                                        on Computer Vision Workshops (ICCV Workshops). IEEE, Kyoto, 2212–2219.
+Orly Liba, Ryan Geiss, Samuel W. Hasinoff, Yael Pritch, Marc Levoy, Kiran Murthy,             C. Zhang, S. A. Lindner, I. M. Antolovic, J. M. Pavia, M. Wolf, and E. Charbon. 2018a. A
+    Yun-Ta Tsai, Tim Brooks, Tianfan Xue, Nikhil Karnad, Qiurui He, Jonathan T. Barron,          30-frames/s, 252x144 SPAD Flash LiDAR with 1728 Dual-Clock 48.8-ps TDCs, and
+    and Dillon Sharlet. 2019. Handheld Mobile Photography in Very Low Light. ACM                 Pixel-Wise Integrated Histogramming. IEEE Journal of Solid-State Circuits 54 (4)
+    Transactions on Graphics 38, 6 (Nov. 2019), 1–16.                                            (2018).
+Ziwei Liu, Lu Yuan, Xiaoou Tang, Matt Uyttendaele, and Jian Sun. 2014. Fast Burst             Kai Zhang, Wangmeng Zuo, and Lei Zhang. 2018b. FFDNet: Toward a Fast and Flexible
+    Images Denoising. ACM Transactions on Graphics 33, 6 (Nov. 2014), 1–9.                       Solution for CNN-Based Image Denoising. IEEE Transactions on Image Processing
+Jiaju Ma, Saleh Masoodian, Dakota A. Starkey, and Eric R. Fossum. 2017. Photon-                  27, 9 (Sept. 2018), 4608–4622.
+    Number-Resolving Megapixel Image Sensor at Room Temperature without                       Henning Zimmer, Andrés Bruhn, and Joachim Weickert. 2011. Optic Flow in Harmony.
+    Avalanche Gain. Optica 4, 12 (Dec. 2017), 1474.                                              International Journal of Computer Vision (IJCV) 93, 3 (July 2011), 368–388.
+
+
+
+
+ACM Trans. Graph., Vol. 39, No. 4, Article 79. Publication date: July 2020.
+                                                    Quanta Burst Photography: Supplementary Technical Report
+
+                                         Sizhuo Ma1 , Shantanu Gupta1 , Arin C. Ulku2 , Claudio Bruschini2 , Edoardo Charbon2 , and
+                                                                              Mohit Gupta1
+                                                                       1
+                                                                    University of Wisconsin-Madison, USA
+                                                              2
+                                                            École polytechnique fédérale de Lausanne, Switzerland
+                                                    sizhuoma@cs.wisc.edu, sgupta226@wisc.edu, {arin.ulku, claudio.bruschini,
+
+
+
+
+arXiv:2006.11840v1 [cs.CV] 21 Jun 2020
+                                                                edoardo.charbon}@epfl.ch, mohitg@cs.wisc.edu
+
+
+                                             In this report, we provide additional technical details, analysis and experimental results that are not
+                                         included in the main paper for better presentation.
+
+
+                                         1     Technical Details for the Proposed Algorithm
+                                         1.1    Removal of Hot Pixels
+                                         Dark count rate (DCR) distribution on a real SPAD array is usually non-uniform in space. A few pixels
+                                         which have very high DCR will always show up as bright pixels in the block-sum image, which are usually
+                                         called “hot pixels”. Such pixels can be identified by taking a dark image and locate the pixels with high
+                                         counts.
+                                             To remove them in the reconstructed image, one naive method is to perform a median filtering after
+                                         merging. However, the existence of hot pixels interferes with the aligning process, especially in very dark
+                                         scenes. Since hot pixels have very high intensity and do not move as the camera or scene moves, they bias
+                                         the motion estimate towards zero motion, causing systematic alignment error.
+                                             Another potential approach is to exclude the hot pixels in the data terms during alignment. This results
+                                         in correct alignment, however when the binary images are warped in the merging stage, the hot pixels will
+                                         sweep along the estimated motion trajectory, causing a “hot stripe” in the merged image.
+                                             Following the analysis above, it is necessary to correct the hot pixels in the binary frames. We adopt
+                                         a simple approach by randomly assigning a hot pixel the binary value of one of its spatial neighbors. This
+                                         approach essentially applies a spatially averaging filter at the binary frame level, which has shown to remove
+                                         most of the hot pixels in real experiments.
+
+                                         1.2    Choice of Block Size for Motion Estimation
+                                         Block size is an important parameter for achieving accurate frame alignment. If the block size is too small,
+                                         each block has a low photon count (low SNR), which results in high alignment error. On the other hand,
+                                         if the block size is too large, the block alignment is computed only at sparse timestamps, which is unable
+                                         to capture high-frequency variations in the camera or scene motion. The optimal block size for a specific
+                                         application depends on both the light level and the motion variations, and can be determined from prior
+                                         knowledge of approximate scene flux levels and motion amounts. An interesting extension is to automatically
+                                         determine the block size by performing light and motion metering. In the experiments, we use block sizes
+                                         ranging from 100 to 500 frames.
+
+
+
+
+                                                                                               1
+1.3    Choice of Block Size for Robust Merging
+The block size used in the merging stage does not have to be the same as in the aligning stage. Once we
+estimate the fine-scale inter-frame motion field, the binary frames can be warped separately and grouped
+into blocks using a different block size. The choice of block size plays an important role in the merging stage
+as well. Too small a block size preserves the shot noise. Extremely large block sizes preserve alignment
+artifacts, since the frames within a block are simply added together. The optimal choice of block size again
+depends on the light level and the variation in scene/camera motion.
+
+1.4    Choice of Patch Size
+Patch size is another important factor on the image quality. Choosing a large patch size is likely to gather
+more photons and capture more features of the scene, which makes alignment easier. However, large patch
+sizes cannot correctly model nonrigid scene motion, resulting in motion artifacts. Choice of block size is
+especially important for current SPAD sensors whose spatial resolution is relatively low. We use 16x16
+patches for most experiments, 8x8 for nonrigid scene motion, and 32x32 for dark scenes with global motion.
+
+1.5    Super-Resolution
+In this section we give details on the super-resolution algorithm. As mentioned in the main paper, after
+computing the fine-scale motion field, the binary frames are combined into warped block-sum images and
+filtered using the Wiener filter:
+
+                               Ŝfw (ω) = Ŝref
+                                            w                  w
+                                                (ω) + Ai (ω)(Ŝaux,i         w
+                                                                     (ω) − Ŝref (ω)) .                       (1)
+
+This step is used to reduce the misalignment artifacts, which plays a similar role as the point-wise robustness
+factor in [1]. As mentioned in the main paper, we found this step more robust, at the cost of computational
+complexity.
+    Instead of summing them up to form a merged patch in the original-resolution grid as in the original
+merging algorithm, each patch is treated as a bag of samples and warped to a higher-resolution grid. The
+value at each pixel of the high-resolution grid is computed by combining all samples in a neighborhood using
+a anisotropic kernel:                                  P
+                                                         i∈N wi · Si
+                                          SSR (x, y) = P             ,                                      (2)
+                                                           i∈N wi
+
+where N is the set of all sample points in the neighborhood around pixel (x, y). Si is the photon counts of
+the i-th sample point. wi is the weight given by the anisotropic Gaussian kernel,
+                                                                      
+                                               1         T −1
+                                  wi = exp − (xi − x) Ω (xi − x) ,                                      (3)
+                                               2
+
+where x = (x, y) is the pixel location of interest, xi = (xi , yi ) is the location of the sample point. The shape
+and size of the anisotropic kernel (encoded in the covariance matrix Ω) is determined by the analysis of the
+local structure tensor of a guide image. The guide image can be either the reference block-sum image (for
+faster computation) or a original-resolution reconstructed image obtained by running the normal merging
+algorithm beforehand (for better quality). For a flat region, a larger kernel is used to gather more pixels
+for denoising. For an edge, the kernel is stretched along the edge to avoiding over-smoothing and mitigate
+the alignment error around the edges. For a corner or local window with high variations, a small kernel is
+chosen to preserve the details (Fig. 6 in the main paper).
+    The exact kernel design is very similar to the heuristics used in [1]. The only difference is that we set an
+upper bound to the anisotropy factor A which determines the ratio of the major axis and short axis of the
+elliptical kernel:                                        p
+                                            A = 1 + min( λ1 /λ2 , 5)                                           (4)
+
+
+                                                          2
+where λ1 , λ2 are the eigenvalues of the local structure tensor. This prevents the kernel from begin elongated
+too much, which causes artifacts along the edges. The exact parameters we use for the images we capture
+with SwissSPAD2 cameras are: Ts = [8, 16] depending on light level, kdetail = 0.3, kdenoise = 1, Dth =
+0.005, Dtr = 0.5, kstretch = 1, kshrink = 1.
+Using small block sizes. Compared to original-resolution merging, super-resolution merging requires a
+larger number of blocks (smaller block size). This is because super-resolution benefits from larger number
+of sample points with different sub-pixel offsets, which grows with the number of blocks. As a result, super-
+resolution merging may suffer from the noise problem due to small block size (see Sec. 6 in the main paper).
+Our approach to solve this problem is to replace the reference block image Sref in Eq. 1 with the pre-
+reconstructed guide image, which has a much higher SNR. The noise estimate σ and the scaling factor c
+need to be adjusted correspondingly.
+
+
+2     Further Discussion on When to Use Quanta Burst Photography
+2.1    Derivation of Eq. 12
+Here we give a derivation of Eq. 12 in the main paper which gives the RMSE of the maximum likelihood
+estimator for quanta burst photography. Recall that the binary value B at a SPAD pixel follows a Bernoulli
+distribution:
+                                      P {B = 0} = e−(φτ η+rq τ ) ,
+                                                                                                      (5)
+                                      P {B = 1} = 1 − e−(φτ η+rq τ ) ,
+where φ is the photon flux incident at the pixel, τ is the exposure time, η is the quantum efficiency, rq is the
+dark count rate.
+   The sum image is defined as the sum of all binary images
+                                                            nq
+                                                            X
+                                              S(x, y) =           Bt (x, y) ,                               (6)
+                                                            t=1
+
+Assuming no motion, all photons incident at (x, y) coming from the same scene point, which means Bt (x, y)
+are i.i.d Bernoulli variables. Therefore S follows a binomial distribution. The likelihood function for the
+unknown parameter φ given an observed number of photons S = s:
+                                             
+                                          nq
+                          f (φ | s) =           (e−(φτ η+rq τ ) )s (1 − e−(φτ η+rq τ ) )nq −s .         (7)
+                                        nq − s
+
+The maximum likelihood estimation (MLE) is given by:
+
+                                        φ̂ = − ln(1 − s/nq )/τ η − rq /η .                                  (8)
+
+The Fisher information can be computed as:
+                                                N
+                                                X ∂2
+                                    I(φ) = −                log f (φ | s)P {S = s}                          (9)
+                                                s=0
+                                                      ∂φ2
+                                                  nq τq2 ηq2
+                                         =                      .                                          (10)
+                                              e q ηq +rq τq − 1
+                                               φτ
+
+For a sufficiently long sequence nq > 30, the variance of the MLE can be estimated using Fisher information.
+Therefore,                                                       s
+                                          q
+                                                          1        eφτq ηq +rq τq − 1
+                            RMSE(φ̂q ) = Var[φ̂q ] ≈ p         =                      ,                 (11)
+                                                          I(φ)          nq τq2 ηq2
+which is consistent with the result in [2].
+
+
+                                                            3
+2.2    Auto-Exposure Strategy for Signal-to-Noise Ratio (SNR) Analysis
+Here we give the details of the strategy we use to determine the total exposure time and number of frames
+for the SNR analysis in Sec. 7 of the main paper. We only consider a single pixel for this analysis. For a fair
+comparison, the total exposure time (sum of exposure time for all frames in the sequence) for both systems
+are assumed to be same, which is determined by
+                                          T = min(ct /φ, mmax /v) ,                                       (12)
+where ct is a predetermined target count of photons. φ is the photon flux. mmax is the maximum tolerable
+total motion in pixels. v is the apparent speed of the pixel in pixels/s (we assume the speed is constant
+during the exposure). This strategy can be interpreted as attempting to choose an exposure time which
+allows us to record a target number ct of photons in the burst, while making sure that the total motion
+over the exposure doesn’t exceed the set threshold mmax . In case the motion is too fast, the exposure time
+(and the number of photons recorded) is reduced proportionally so as to restrict it to mmax . This is because
+for too large apparent motion, the perfect alignment assumption usually does not hold – due to brightness
+change, viewpoint change, or moving beyond the field of view. In practice, even if we take a long burst of
+images in this case, later images will not contribute to the merging due to matching difficulties.
+    In general, the number of frames nc for conventional burst photography is determined by balancing the
+motion blur and SNR of the resulting image: Choosing a larger nc will mitigate motion blur but also decrease
+SNR due to read noise. It is hard to compare the SNR of the methods when a single (conventional) frame
+contains motion blur. Therefore, we choose nc to be the minimum number that keeps the motion blur for a
+single frame below a certain threshold mf (e.g., 1 pixel) and ignore the effects of motion blur when computing
+SNR.
+                                                          vT
+                                                   nc =                                                   (13)
+                                                          mf
+where mf is the maximum tolerable motion per frame. This is also similar to the auto-exposure strategy
+used in [3]. In the analysis, we choose ct = 1000, mmax = 60 (assuming a 512x256 camera), mf = 1.
+    For quanta burst photography, we always choose the maximum reachable frame rate since increasing the
+number of frames will not reduce SNR:
+                                                          T
+                                                   nq =      ,                                            (14)
+                                                          τq
+where τq is the minimum frame time that is determined by the hardware.
+
+2.3    Dynamic Range Analysis
+In this section we give a theoretical analysis of the dynamic range of both conventional and quanta burst
+photography. We define the dynamic range as the ratio between the maximum measurable photon flux and
+the minimum measurable photon flux:
+                                                             φmax
+                                             DR = 20 log10                                              (15)
+                                                             φmin
+where φmax is defined as the highest photon flux before saturation. For conventional sensors, this is the
+case when the expected number of detected photons for each frame is equal to F ullW ellCapacity − 1. For
+SPADs, this corresponds to the detection of nq − 1 photons in a total of nq frames,i.e., S = nq − 1 in Eq. 8
+.φmin is defined as the lowest photon flux for which the SNR is above certain threshold. Here we choose the
+threshold to be 1 (0dB) which is consistent with previous works on SPAD [4, 5] and common definition for
+conventional sensors.
+    Fig. 1 shows the dynamic range for conventional and quanta burst photography for different exposure
+time. The curves are plotted for a few typical frame rates for both image sensors. Quanta burst photography
+tends to perform worse for a short exposure time due to the low number of frames (low full well capacity),
+but grows faster than conventional burst photography as the exposure time increases. For example, 100kfps
+quanta burst photography performs better than 1kfps conventional burst photography as long as the exposure
+time is longer than 0.04s.
+
+
+                                                      4
+                                                    140
+                                                                 Conventional 10fps      Quanta 10kfps
+                                                    130          Conventional 100fps     Quanta 25kfps
+                                                                 Conventional 1kfps      Quanta 100kfps
+                                                    120
+
+
+
+
+                               Dynamic Range (dB)
+                                                    110
+
+                                                    100
+
+                                                    90
+
+                                                    80
+
+                                                    70
+
+                                                    60
+
+                                                    50
+                                                          0.01             0.1                1            10   100
+                                                                                       Exposure Time (s)
+
+
+Fig. Supp-1: DR analysis. We plot the theoretical dynamic range of conventional burst photography and
+quanta burst photography as a function of exposure time. For both methods, we choose three typical frame
+rates. The dynamic range of quanta burst photography is lower due to low number of frames but grows very
+fast as the exposure time increases.
+
+
+3      Results
+3.1      Simulation Results
+The simulated images in the main paper and supplementary material is rendered using POV-Ray. Code is
+adapted from Jaime Vives Piqueres’ Lightsys demo1 .
+Comparison of conventional burst photography and quanta burst photography. Fig. Supp-2
+shows the simulation results for three different motion speeds. According to the strategy in Sec. 2, when the
+apparent speed gets faster, the total exposure time is limited by the maximum tolerable amount of motion to
+avoid appearance changes due to significant viewpoint change, which results in a smaller number of incoming
+photons. Similar to Fig. 8 in the main paper, the quality of conventional burst result goes down faster than
+quanta burst result. The results of these two sets of simulation match the theoretical analysis of SNR in
+Sec. 7 of the main paper: Quanta burst photography performs better in low light and fast moving scenarios.
+Performance for different photon detection efficiency (PDE). Fig. Supp-3 shows the reconstruction
+results with different assumed PDE of the single-photon camera, which corresponds the current specification
+without microlens, with microlens, double fill factor than current specification, and double fill factor and
+double PDP than current specification. PDE is an essential factor that determines the final image quality.
+We expect PDE of SPAD cameras to keep improving due to improving fabrication processes.
+Comparison of jots and SPADs. Fig. Supp-4 shows the comparison between jots and SPADs-based
+quanta burst photography. The proposed quanta burst photography is adapted to single-bit and multi-bit
+jots. The input to the align process is not binary images but spatially downsampled versions of single-bit
+and multi-bit images (using a box filter, normalized in 0-1). The rest of the pipeline still works with this data
+format. After merging, a linear response function is applied to recover the intensities for multi-bit jots [6].
+    As mentioned in the main paper, because of the limited spatial and temporal resolution, current jots
+perform worse than SPADs. The projected single-bit and multi-bit jots are not able to remove the motion
+blur for extremely fast motion. For slow motion, they are able to generate sharper images than SPADs
+thanks to higher spatial resolution. Multi-bit jots generate slightly blurred images due to their lower frame
+rate.
+    Fig. Supp-5 shows the comparison between jots and SPADs in extremely low and high lighting conditions.
+In the low light condition, single-bit jots images are noisy because the read noise, albeit deep sub-electron,
+makes the pixels flip between 0 and 1. In such low lighting, most pixel receive 0 photon during the exposure.
+Therefore, more pixels are flipped from 0 to 1, resulting in a whitened, noisy image. The result cannot
+    1 http://www.ignorancia.org/index.php/technical/lightsys/
+
+
+
+
+                                                                                              5
+                                                  Conventional Burst                      Quanta Burst
+       Conventional Single   Conventional Burst                        Quanta Burst
+                                                     (Denoised)                            (Denoised)
+
+
+
+
+Fig. Supp-2: Simulation results for different camera moving speeds. We simulate the indoor scene
+with three different camera moving speeds. The camera moves linearly (with perturbations) at different
+speeds. (Top) When the camera motion is slow, the exposure time is chosen to meet a target number
+of total collected photons (1000), in which case both methods generate high-quality images. The quanta
+burst photography gives slightly worse results due to higher dark current noise. (Middle) As the camera
+speed increases, the total exposure time is limited by the maximum tolerable apparent motion and a smaller
+number of photons are collected. As a result, the performance of both methods deteriorates. (Bottom) In
+the extremely fast case, the quanta burst photography can still recover the overall structure of the objects,
+while the conventional burst photography is completely dominated by noise.
+
+
+be improved by setting a threshold larger than one photon, since few pixels receive more than 1 photon.
+Multi-bit jots generate better result because the signal is stronger compared to read noise due to the longer
+exposure and higher full well capacity. SPADs contain least noise since there is no read noise.
+   In the high light condition, 4-bit jots saturate more easily than 1-bit jots. This is because single-bit jots
+have a nonlinear response curve. Increasing the number of bit will decrease the overexposure latitude and
+result in a more linear response curve [7]. It is not clear whether such nonlinearity can be used to extend
+the dynamic range for multi-bit reconstruction, which is also likely to be limited by the non-uniformity of
+the jots. Here we follow the practice in [6] and use a linear response function for reconstructing multi-bit
+images.
+   Notice that all the analysis above assumes bandwidth is the bottleneck for all types of sensors. In practice,
+frame rate and spatial resolution may be constrained by other factors in chip design and manufacture. The
+analysis is a based on current specification of jots and SPADs. In the future, jots may be able to achieve
+read noise lower than 0.15e− which will result in improved dynamic range.
+
+
+
+                                                          6
+         PDE=4.6%                    PDE=23%                     PDE=46%                    PDE=92%
+
+
+
+
+Fig. Supp-3: Performance for different PDEs. We show the reconstruction results for the same scene
+under same camera motion for different PDE. The figure titles show the PDE of the green channel, which
+correspond to current specification without microlens, current specification with microlens, double fill factor,
+double fill factor and double PDP. PDE is an essential factor of the final image quality, as shown in the
+close-ups.
+
+
+3.2    Experimental Results
+Performance for different camera moving speeds. Fig. Supp-6 shows the performance of the proposed
+method for different camera moving speeds. Same as Fig. 11 in the main paper, the conventional images
+are simulated by reconstructing intensities from binary frames and then adding read noise and quantization
+error. As the camera moves faster, the sensors collect a lower number of photons, and the results for both
+methods degenerate. In the fastest scenario, conventional camera captures images with either significant
+blur or low SNR, while quanta burst photography is able to resolve the motion and achieve an acceptable
+SNR.
+Comparison of single-photon imaging denoising algorithms. In this paper we focus on combining
+information from all other auxiliary frames in a sequence to help denoise the reference frame. After merging
+all frames into a single sum image, it is still possible to apply single-image denoising and reconstruction
+algorithm, using spatial information to further improve the SNR of the image. Fig. Supp-7 (right) show the
+results of applying two denoising algorithms after burst merging: BM3D and total variation (TV). BM3D is
+applied as a post-processing step after Anscombe transform, as noted in the main paper. Total variation is
+formulated as a joint reconstruction-denoising optimization problem [8]:
+                                           X
+                                     min −     log f (φi | si ) + λtv kDφk1 ,                           (16)
+                                      φ
+                                           i∈Ω
+
+where φ is a vector representation of the photon flux at each pixel. Ω is the image domain. f (φi | si ) is the
+likelihood function defined in Eq. 7. D is the finite difference operator that is used to compute the gradients.
+λtv is a parameter used to control the amount of spatial smoothing.
+    The two sequences are temporally subsampled from the original sequences in Fig. 12 in the main paper,
+which contain only 200 binary images and therefore the results are much noisier. We notice that in general
+BM3D performs better than TV. In Fig. Supp-7 (Scene 1, Burst), TV is not able to preserve the contrast
+in the region indicated by the red rectangle. In (Scene 2, Burst), the darker region in the scene is noisier in
+TV than in BM3D.
+    We also compare the result of the proposed quanta burst photography with directly denoising a simple
+average of the binary sequence as is done in previous papers (without compensating for motion). Since the
+scene is moving, the naive average results are either with heavy motion blur (long sequence), or contain a
+lot of noise (short sequence). By comparing the naive result with short sequence and burst result, it is clear
+that using temporal information for denoising helps remove noise while keep the spatial details of the image.
+
+
+                                                       7
+                                 (b) Single-Bit Jots   (c) Single-Bit Jots   (d) Multi-Bit Jots
+              (a) No Alignment                                                                    (e) SPADs
+                                      (Current)            (Projected)          (Projected)
+
+
+
+
+Fast Motion
+
+
+
+
+Slow Motion
+
+
+
+
+Fig. Supp-4: Comparison of jots and SPADs under different motion speeds. Current implementa-
+tion of jots perform worse than SPADs for both fast and slow motion. We simulate a projected jots which
+is assumed to have the same bandwidth as SPADs and work in both single-bit and 4-bit mode. For fast
+motion, temporally-supersampled SPADs are able to resolve the motion blur and give sharper image. For
+slow motion, spatially-supersampled jots are able to reconstruct better image details. Multi-bit jots generate
+slightly blurred image due to lower frame rate. We expect SPADs and jots to complement each other and
+work for different motion ranges.
+
+
+Effects of frame-level flow interpolation. One of the main technical contributions of the proposed
+quanta burst photography method is that the alignment is performed on aggregated block sum images and
+is then interpolated to obtain frame-level patch flow, which is later used for merging. Fig. Supp-8 shows how
+the frame-level patch flow interpolation helps resolve motion blur. If we divide the 2000-frame sequence into
+100-frame blocks (“coarser blocks”, 20 blocks in total) and do not interpolate the flow within the block (i.e.,
+merge the block sum image directly) , the result contains noticeable motion blur. The motion blur can be
+resolved by dividing into finer blocks (20 frames per block × 100 blocks), but this results in a noisier image.
+This is because more noise is preserved when a smaller block size is used, as discussed in Sec. 6 in the main
+paper. Frame-level flow interpolation (interpolated from coarse block division) is able to remove the motion
+blur while not adding extra noise.
+Resolving scene motion. Fig. Supp-9 shows another sequence with scene motion: A tennis ball is dropped
+vertically. Naive averaging of the binary sequences results in either motion blur or lots of shot noise. By
+aligning the image patches that constitute the tennis ball properly, the proposed method is able to generate
+a high-SNR image without motion blur.
+Indoor scene with natural lighting. Fig. Supp-10 shows another sequence of indoor scene with natural
+lighting. The intense camera motion between the frames is correctly resolved and a clear, sharp image is
+generated.
+
+
+
+
+                                                              8
+                                    (b) Single-Bit Jots        (c) Multi-Bit Jots
+             (a) No Alignment                                                                (d) SPADs
+                                       (Projected)                (Projected)
+
+
+
+
+Low Light
+
+
+
+
+High Light
+
+
+
+
+Fig. Supp-5: Comparison of jots and SPADs under different lighting conditions. In a dark
+environment, single-bit jots contain significant noise. Multi-bit jots contain less noise due to its longer
+exposure time and more discrete light levels. SPADs contain least noise since there is no read noise. In
+a bright scene, single-bit jots are near to saturation. Multi-bit jots are saturated and the image appears
+washed out. SPADs are able to reconstruct the high flux scene points.
+
+
+References
+[1] B. Wronski, I. Garcia-Dorado, M. Ernst, D. Kelly, M. Krainin, C.-K. Liang, M. Levoy, and P. Milanfar,
+    “Handheld Multi-Frame Super-Resolution,” ACM Transactions on Graphics, vol. 38, pp. 1–18, July 2019.
+[2] A. Ingle, A. Velten, and M. Gupta, “High Flux Passive Imaging with Single-Photon Sensors,” in IEEE
+    Conference on Computer Vision and Pattern Recognition (CVPR), pp. 6760–6769, 2019.
+[3] O. Liba, R. Geiss, S. W. Hasinoff, Y. Pritch, M. Levoy, K. Murthy, Y.-T. Tsai, T. Brooks, T. Xue,
+    N. Karnad, Q. He, J. T. Barron, and D. Sharlet, “Handheld mobile photography in very low light,” ACM
+    Transactions on Graphics, vol. 38, pp. 1–16, Nov. 2019.
+[4] M. Zarghami, L. Gasparini, M. Perenzoni, and L. Pancheri, “High Dynamic Range Imaging with TDC-
+    Based CMOS SPAD Arrays,” Instruments, vol. 3, p. 38, Aug. 2019.
+[5] F. Zappa, S. Tisa, A. Tosi, and S. Cova, “Principles and features of single-photon avalanche diode arrays,”
+    Sensors and Actuators A: Physical, vol. 140, pp. 103–112, Oct. 2007.
+[6] A. Gnanasambandam, O. Elgendy, J. Ma, and S. H. Chan, “Megapixel photon-counting color imaging
+    using quanta image sensor,” Optics Express, vol. 27, p. 17298, June 2019.
+[7] E. R. Fossum, “Modeling the Performance of Single-Bit and Multi-Bit Quanta Image Sensors,” IEEE
+    Journal of the Electron Devices Society, vol. 1, pp. 166–174, Sept. 2013.
+[8] S. H. Chan and Y. M. Lu, “Efficient image reconstruction for gigapixel quantum image sensors,” in IEEE
+    Global Conference on Signal and Information Processing (GlobalSIP), (Atlanta, GA, USA), pp. 312–316,
+    IEEE, Dec. 2014.
+
+
+
+                                                          9
+                Conventional Single          Conventional Burst                  Quanta Burst
+
+
+
+
+Slow Motion
+
+
+
+
+Medium Motion
+
+
+
+
+Fast Motion
+
+
+
+Fig. Supp-6: Performance for different camera moving speeds. We capture three binary sequences
+for the same scene with the camera moving at different speeds. For fast motion, conventional cameras can
+generate either a heavily blurred image or an image with significant noise, while quanta burst photography
+can reconstruct a blur-free image with much lower noise.
+
+
+
+
+                                                   10
+    Scene 1
+        Naive Average, Long Exposure     Naive Average, Short Exposure             Quanta Burst
+
+
+
+
+  No Denoising
+
+
+
+
+  TV
+
+
+
+
+  BM3D
+
+
+
+    Scene 2
+        Naive Average, Long Exposure     Naive Average, Short Exposure             Quanta Burst
+
+
+
+
+  No Denoising
+
+
+
+
+  TV
+
+
+
+
+  BM3D
+
+
+
+
+Fig. Supp-7: Comparison of denoising algorithms. (Left) Naive average reconstruction without motion
+compensation on a long sequence (200 images). Results contain severe motion blur. (Center) Naive average
+reconstruction without motion compensation on a short sequence (20 images). Results are sharp but contain
+a lot of noise. Applying denoising algorithms help reduce noise but also remove high-frequency image details.
+(Right) Burst align and merge results on 200 images. Results are sharp and less noisy. Applying denoising
+algorithms further reduce noise. BM3D performs better than TV as TV reduces intensity contrast in bright
+regions (Scene 1) and does not reduce noise well in dark regions (Scene 2).
+
+
+
+
+                                                     11
+                                  Block-Level Alignment        Block-Level Alignment
+         No Alignment                                                                  Frame-Level Alignment
+                                     (Coarser Blocks)              (Finer Blocks)
+
+
+
+
+Fig. Supp-8: Effects of frame-level flow interpolation. A short sequence that contains 2000 binary
+frames, which is divided into 100-frame blocks (coarser blocks) and 20-frame blocks (finer blocks). Results
+from blocker-level alignment either contain motion blur (coarser blocks) or more noise (finer blocks), while
+the interpolated frame-level alignment is able to remove motion blur without increasing the amount of noise.
+
+
+
+
+                                  Naive Averaging                Naive Averaging
+          Scene                                                                               Our Result
+                                  (Long Sequence)               (Short Sequence)
+
+
+
+
+Fig. Supp-9: Resolving scene motion. We capture a binary image sequence where a tennis ball is dropped
+vertically. Quanta burst photography is able to align the images to generate a blur-free image with high
+SNR.
+
+
+
+
+    Ground Truth (DSLR, Tripod)                   Naive Averaging                       Our Result
+
+
+
+
+Fig. Supp-10: Indoor scene under natural lighting. The binary sequence is correctly aligned to each
+other despite intense camera motion, resulting in a clear, sharp image.
+
+
+
+
+                                                          12
+

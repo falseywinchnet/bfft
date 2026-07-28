@@ -54,6 +54,11 @@ creation returns `BFFT_ERROR_INVALID_ARGUMENT`.
 
 ## Vision viewers
 
+The real-time temporal-imaging work lives in
+[`high_vision/`](high_vision/README.md). It provides the portable support
+transport and radiance-belief engine plus the **BFFT High Vision** OBS filter
+for synthetic HDR, night integration, and future inverse-diffusion stages.
+
 The canonical image-segmentation application is:
 
 ```sh
@@ -70,6 +75,29 @@ segmentation-research, and signal-viewer map.
 C applications may be compiled as C. The BFFT library itself is implemented in
 C++ and must be built with a C++17-capable compiler. The project also checks
 clean builds under C++20 and C++23.
+
+### One-shot Hodge acceleration for static ROF
+
+The periodic spectral ROF path has an opt-in analytical accelerator. After a
+chosen number of ordinary Split-Bregman sweeps it closes the longitudinal
+dual inconsistency with one Poisson solve, retains the current transverse
+route, projects once onto the isotropic unit disk, and accepts only an exact
+ROF-objective decrease:
+
+```python
+smooth = bfft.rof(
+    image, c=0.05, eta=0.10, sweeps=8, tol=0.0, hodge_after=4
+)
+```
+
+The equivalent C entry point is `bfft_meyer_rof_accelerated`; its companion
+diagnostics report the ordinary sweep count and whether the proposal was
+accepted. The operation changes the path, not the ROF target, and continuing
+the ordinary solver retains high-precision convergence. It is deliberately
+not the default: the useful insertion point and wall-time benefit are
+image- and scale-dependent, and FACR/Neumann plans do not implement the same
+two-axis periodic Hodge projector. Run `meyer_hodge_benchmark` on the target
+workload before enabling it in a hot path.
 
 ## Build
 
@@ -106,6 +134,7 @@ Useful CMake options include:
 | `BFFT_BUILD_EXAMPLES` | `ON` | Build examples and benchmark programs. |
 | `BFFT_BUILD_TESTS` | `ON` | Build the test executables and CTest entries. |
 | `BFFT_BUILD_PROBES` | `ON` | Build optional comparison and diagnostic probes. |
+| `BFFT_BUILD_HIGH_VISION` | `ON` | Build the High Vision temporal-imaging engine. |
 | `BFFT_ENABLE_AUTO_SIMD` | `ON` | Enable host SIMD flags detected by CMake. |
 | `BFFT_COMPARE_WITH_IPP` | `ON` | Use Intel IPP in the comparison probe when available. |
 | `BFFT_ENABLE_PFFFT_BENCHMARK` | `ON` | Use PFFFT in the benchmark when available. |

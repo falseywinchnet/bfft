@@ -1,0 +1,38 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Macro packages by Lizhi (2021-8-9)
+% Thank Min idea
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%====================================================================%
+\usepackage{ifpdf}
+%\usepackage{graphicx}
+% for commenting
+%\newcommand{\TODO}[3]{}                             % for Final draft
+\ifpdf
+  \newcommand{\TODO}[3]{\textcolor{#2}{\textbf{[\textsc{#1:} \textit{#3}}]}}
+\else
+  \newcommand{\TODO}[3]{{\textbf{[\textsc{#1:} \textit{#3}}]}}  % for work in progress
+\fi
+%====================================================================%
+\newcommand{\MIN}[1]{\TODO{Min}{blue}{#1}}
+\newcommand{\Lizhi}[1]{\TODO{Lizhi}{red}{#1}}
+\newcommand{\Hansen}[1]{\TODO{Hansen}{red}{#1}}
+\newcommand{\CHECK}[1]{{\textbf{\color{blue}{#1}}}} % for writing
+\newcommand{\OLD}[1]{{\color{gray}{#1}}}% for writing
+\newcommand{\DIFF}[1]{{\color{magenta}{#1}}} % for writing
+\newcommand{\NEW}[1]{{\color{red}{#1}}}% for writing
+\newcommand{\mask}[1]{\sethlcolor{yellow}\hl{#1}}
+\newcommand{\mparagraph}[1]{\vspace{1mm}\noindent\textsf{\textbf{#1.}\hspace{2mm}}}
+\newcommand{\eg}{\textit{e}.\textit{g}.}
+\newcommand{\ie}{\textit{i}.\textit{e}.}
+
+%====================================================================%
+\usepackage{color}
+\definecolor{cyan}{cmyk}{1,0,0,0}
+\definecolor{darkgreen}{rgb}{0,0.5,0}
+\definecolor{orange}{rgb}{1,0.5,0}
+\definecolor{magenta}{cmyk}{0,1,0,0}
+\definecolor{darkyellow}{cmyk}{0,0,0.75,0}
+\definecolor{gray}{rgb}{0.8,0.8,0.8}
+\definecolor{lightgray}{gray}{0.9}
+\definecolor{lightblue}{rgb}{0.5,0.5,0.8}
+%====================================================================%

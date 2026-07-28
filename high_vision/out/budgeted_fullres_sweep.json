@@ -1,0 +1,643 @@
+{
+  "records": [
+    {
+      "name": "128f",
+      "result": {
+        "budget": {
+          "size": 512,
+          "frames": 128,
+          "photons_at_white": 0.1,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "shift_radius": 12,
+          "motion_step": 1,
+          "registration_group": 8,
+          "registration_rounds": 2,
+          "thumbnail": 128,
+          "registration_upsample": 8,
+          "sampler": "auto",
+          "seed": 19
+        },
+        "mean_detected_electrons_per_frame": 13785.5146484375,
+        "nonzero_fraction_first_frame": 0.050792694091796875,
+        "first_pass_seconds": 0.3351135839475319,
+        "registration_and_fusion_seconds": 0.6920677920570597,
+        "total_seconds": 1.0271813760045916,
+        "milliseconds_per_input_frame_all_passes": 8.024854500035872,
+        "streaming_passes": 3,
+        "registration_rounds": [
+          {
+            "round": 1,
+            "gauge_yx": [
+              -5,
+              -9
+            ],
+            "median_error": 2.8284271247461903,
+            "p90_error": 6.324555320336759
+          },
+          {
+            "round": 2,
+            "gauge_yx": [
+              -5,
+              -8
+            ],
+            "median_error": 2.23606797749979,
+            "p90_error": 4.242640687119285
+          }
+        ],
+        "registration_error_pixels": {
+          "mean": 2.528026050489312,
+          "median": 2.23606797749979,
+          "p90": 4.242640687119285,
+          "exact_fraction": 0.0234375,
+          "global_gauge_yx": [
+            -5,
+            -8
+          ]
+        },
+        "evaluation_global_gauge": {
+          "unregistered": [
+            5,
+            8
+          ],
+          "registered": [
+            5,
+            9
+          ]
+        },
+        "metrics": {
+          "single": {
+            "psnr_db": 4.979784213254281,
+            "ssim": 0.008806220463856864
+          },
+          "unregistered": {
+            "psnr_db": 14.222430516076114,
+            "ssim": 0.06887160942066949
+          },
+          "bounded_registered": {
+            "psnr_db": 14.450946443863181,
+            "ssim": 0.0918174765130002
+          }
+        }
+      }
+    },
+    {
+      "name": "one round",
+      "result": {
+        "budget": {
+          "size": 512,
+          "frames": 512,
+          "photons_at_white": 0.1,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "shift_radius": 12,
+          "motion_step": 1,
+          "registration_group": 8,
+          "registration_rounds": 1,
+          "thumbnail": 128,
+          "registration_upsample": 8,
+          "sampler": "auto",
+          "seed": 19
+        },
+        "mean_detected_electrons_per_frame": 13785.5146484375,
+        "nonzero_fraction_first_frame": 0.050792694091796875,
+        "first_pass_seconds": 1.3113698749803007,
+        "registration_and_fusion_seconds": 1.4053281670203432,
+        "total_seconds": 2.716698042000644,
+        "milliseconds_per_input_frame_all_passes": 5.306050863282508,
+        "streaming_passes": 2,
+        "registration_rounds": [
+          {
+            "round": 1,
+            "gauge_yx": [
+              -7,
+              -9
+            ],
+            "median_error": 1.4142135623730951,
+            "p90_error": 2.7691912100215705
+          }
+        ],
+        "registration_error_pixels": {
+          "mean": 1.505879537710963,
+          "median": 1.4142135623730951,
+          "p90": 2.7691912100215705,
+          "exact_fraction": 0.095703125,
+          "global_gauge_yx": [
+            -7,
+            -9
+          ]
+        },
+        "evaluation_global_gauge": {
+          "unregistered": [
+            7,
+            10
+          ],
+          "registered": [
+            7,
+            9
+          ]
+        },
+        "metrics": {
+          "single": {
+            "psnr_db": 4.979784213254281,
+            "ssim": 0.008806220463856864
+          },
+          "unregistered": {
+            "psnr_db": 18.24565952610475,
+            "ssim": 0.16114087572778366
+          },
+          "bounded_registered": {
+            "psnr_db": 19.500103875209145,
+            "ssim": 0.23892187551387944
+          }
+        }
+      }
+    },
+    {
+      "name": "baseline",
+      "result": {
+        "budget": {
+          "size": 512,
+          "frames": 512,
+          "photons_at_white": 0.1,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "shift_radius": 12,
+          "motion_step": 1,
+          "registration_group": 8,
+          "registration_rounds": 2,
+          "thumbnail": 128,
+          "registration_upsample": 8,
+          "sampler": "auto",
+          "seed": 19
+        },
+        "mean_detected_electrons_per_frame": 13785.5146484375,
+        "nonzero_fraction_first_frame": 0.050792694091796875,
+        "first_pass_seconds": 1.3172775830607861,
+        "registration_and_fusion_seconds": 2.7384131249273196,
+        "total_seconds": 4.055690707988106,
+        "milliseconds_per_input_frame_all_passes": 7.921270914039269,
+        "streaming_passes": 3,
+        "registration_rounds": [
+          {
+            "round": 1,
+            "gauge_yx": [
+              -7,
+              -9
+            ],
+            "median_error": 1.4142135623730951,
+            "p90_error": 2.7691912100215705
+          },
+          {
+            "round": 2,
+            "gauge_yx": [
+              -7,
+              -9
+            ],
+            "median_error": 1.0,
+            "p90_error": 2.23606797749979
+          }
+        ],
+        "registration_error_pixels": {
+          "mean": 1.31213565107497,
+          "median": 1.0,
+          "p90": 2.23606797749979,
+          "exact_fraction": 0.123046875,
+          "global_gauge_yx": [
+            -7,
+            -9
+          ]
+        },
+        "evaluation_global_gauge": {
+          "unregistered": [
+            7,
+            10
+          ],
+          "registered": [
+            7,
+            9
+          ]
+        },
+        "metrics": {
+          "single": {
+            "psnr_db": 4.979784213254281,
+            "ssim": 0.008806220463856864
+          },
+          "unregistered": {
+            "psnr_db": 18.24565952610475,
+            "ssim": 0.16114087572778366
+          },
+          "bounded_registered": {
+            "psnr_db": 19.604634706167253,
+            "ssim": 0.2491006090549109
+          }
+        }
+      }
+    },
+    {
+      "name": "0.04 e-",
+      "result": {
+        "budget": {
+          "size": 512,
+          "frames": 512,
+          "photons_at_white": 0.04,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "shift_radius": 12,
+          "motion_step": 1,
+          "registration_group": 16,
+          "registration_rounds": 2,
+          "thumbnail": 128,
+          "registration_upsample": 8,
+          "sampler": "auto",
+          "seed": 19
+        },
+        "mean_detected_electrons_per_frame": 5828.7783203125,
+        "nonzero_fraction_first_frame": 0.022037506103515625,
+        "first_pass_seconds": 0.7512421669671312,
+        "registration_and_fusion_seconds": 1.5837189999874681,
+        "total_seconds": 2.3349611669545993,
+        "milliseconds_per_input_frame_all_passes": 4.560471029208202,
+        "streaming_passes": 3,
+        "registration_rounds": [
+          {
+            "round": 1,
+            "gauge_yx": [
+              8,
+              -7
+            ],
+            "median_error": 3.605551275463989,
+            "p90_error": 6.4031242374328485
+          },
+          {
+            "round": 2,
+            "gauge_yx": [
+              9,
+              -8
+            ],
+            "median_error": 2.23606797749979,
+            "p90_error": 4.242640687119285
+          }
+        ],
+        "registration_error_pixels": {
+          "mean": 2.428216067886158,
+          "median": 2.23606797749979,
+          "p90": 4.242640687119285,
+          "exact_fraction": 0.041015625,
+          "global_gauge_yx": [
+            9,
+            -8
+          ]
+        },
+        "evaluation_global_gauge": {
+          "unregistered": [
+            504,
+            7
+          ],
+          "registered": [
+            503,
+            8
+          ]
+        },
+        "metrics": {
+          "single": {
+            "psnr_db": 4.862427833032418,
+            "ssim": 0.006047645239653993
+          },
+          "unregistered": {
+            "psnr_db": 15.303316786826839,
+            "ssim": 0.07022693653058835
+          },
+          "bounded_registered": {
+            "psnr_db": 15.870280146196238,
+            "ssim": 0.11432600437619593
+          }
+        }
+      }
+    },
+    {
+      "name": "0.02 e-",
+      "result": {
+        "budget": {
+          "size": 512,
+          "frames": 1024,
+          "photons_at_white": 0.02,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "shift_radius": 12,
+          "motion_step": 1,
+          "registration_group": 32,
+          "registration_rounds": 2,
+          "thumbnail": 128,
+          "registration_upsample": 8,
+          "sampler": "auto",
+          "seed": 19
+        },
+        "mean_detected_electrons_per_frame": 3176.53369140625,
+        "nonzero_fraction_first_frame": 0.011997222900390625,
+        "first_pass_seconds": 1.131129042012617,
+        "registration_and_fusion_seconds": 2.2726842910051346,
+        "total_seconds": 3.4038133330177516,
+        "milliseconds_per_input_frame_all_passes": 3.324036458025148,
+        "streaming_passes": 3,
+        "registration_rounds": [
+          {
+            "round": 1,
+            "gauge_yx": [
+              -3,
+              -9
+            ],
+            "median_error": 3.605551275463989,
+            "p90_error": 8.06225774829855
+          },
+          {
+            "round": 2,
+            "gauge_yx": [
+              -3,
+              -9
+            ],
+            "median_error": 2.23606797749979,
+            "p90_error": 5.830951894845301
+          }
+        ],
+        "registration_error_pixels": {
+          "mean": 2.8010725700214385,
+          "median": 2.23606797749979,
+          "p90": 5.830951894845301,
+          "exact_fraction": 0.046875,
+          "global_gauge_yx": [
+            -3,
+            -9
+          ]
+        },
+        "evaluation_global_gauge": {
+          "unregistered": [
+            3,
+            10
+          ],
+          "registered": [
+            3,
+            9
+          ]
+        },
+        "metrics": {
+          "single": {
+            "psnr_db": 4.819869226543249,
+            "ssim": 0.004964774787129901
+          },
+          "unregistered": {
+            "psnr_db": 14.978466134019083,
+            "ssim": 0.06524443282047628
+          },
+          "bounded_registered": {
+            "psnr_db": 15.59030123241085,
+            "ssim": 0.10459362607027735
+          }
+        }
+      }
+    },
+    {
+      "name": "read 0.15",
+      "result": {
+        "budget": {
+          "size": 512,
+          "frames": 512,
+          "photons_at_white": 0.1,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.15,
+          "shift_radius": 12,
+          "motion_step": 1,
+          "registration_group": 8,
+          "registration_rounds": 2,
+          "thumbnail": 128,
+          "registration_upsample": 8,
+          "sampler": "auto",
+          "seed": 19
+        },
+        "mean_detected_electrons_per_frame": 13785.5146484375,
+        "nonzero_fraction_first_frame": 0.5204505920410156,
+        "first_pass_seconds": 2.053986042039469,
+        "registration_and_fusion_seconds": 4.10043662507087,
+        "total_seconds": 6.154422667110339,
+        "milliseconds_per_input_frame_all_passes": 12.02035677169988,
+        "streaming_passes": 3,
+        "registration_rounds": [
+          {
+            "round": 1,
+            "gauge_yx": [
+              0,
+              -3
+            ],
+            "median_error": 1.4142135623730951,
+            "p90_error": 3.605551275463989
+          },
+          {
+            "round": 2,
+            "gauge_yx": [
+              0,
+              -3
+            ],
+            "median_error": 1.0,
+            "p90_error": 2.23606797749979
+          }
+        ],
+        "registration_error_pixels": {
+          "mean": 1.257062000291718,
+          "median": 1.0,
+          "p90": 2.23606797749979,
+          "exact_fraction": 0.17578125,
+          "global_gauge_yx": [
+            0,
+            -3
+          ]
+        },
+        "evaluation_global_gauge": {
+          "unregistered": [
+            0,
+            4
+          ],
+          "registered": [
+            0,
+            3
+          ]
+        },
+        "metrics": {
+          "single": {
+            "psnr_db": 5.532789123025133,
+            "ssim": 0.00564867372435535
+          },
+          "unregistered": {
+            "psnr_db": 16.8158530227987,
+            "ssim": 0.08830079221150273
+          },
+          "bounded_registered": {
+            "psnr_db": 18.377736255870495,
+            "ssim": 0.1885783965866333
+          }
+        }
+      }
+    },
+    {
+      "name": "read 0.30",
+      "result": {
+        "budget": {
+          "size": 512,
+          "frames": 512,
+          "photons_at_white": 0.1,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.3,
+          "shift_radius": 12,
+          "motion_step": 1,
+          "registration_group": 8,
+          "registration_rounds": 2,
+          "thumbnail": 128,
+          "registration_upsample": 8,
+          "sampler": "auto",
+          "seed": 19
+        },
+        "mean_detected_electrons_per_frame": 13785.5146484375,
+        "nonzero_fraction_first_frame": 0.5230598449707031,
+        "first_pass_seconds": 2.10175629099831,
+        "registration_and_fusion_seconds": 4.164915708010085,
+        "total_seconds": 6.266671999008395,
+        "milliseconds_per_input_frame_all_passes": 12.239593748063271,
+        "streaming_passes": 3,
+        "registration_rounds": [
+          {
+            "round": 1,
+            "gauge_yx": [
+              0,
+              -3
+            ],
+            "median_error": 2.23606797749979,
+            "p90_error": 5.830951894845301
+          },
+          {
+            "round": 2,
+            "gauge_yx": [
+              0,
+              -3
+            ],
+            "median_error": 1.4142135623730951,
+            "p90_error": 2.8284271247461903
+          }
+        ],
+        "registration_error_pixels": {
+          "mean": 1.67335750479903,
+          "median": 1.4142135623730951,
+          "p90": 2.8284271247461903,
+          "exact_fraction": 0.087890625,
+          "global_gauge_yx": [
+            0,
+            -3
+          ]
+        },
+        "evaluation_global_gauge": {
+          "unregistered": [
+            0,
+            4
+          ],
+          "registered": [
+            0,
+            3
+          ]
+        },
+        "metrics": {
+          "single": {
+            "psnr_db": 5.2496912191370795,
+            "ssim": 0.004920325837084725
+          },
+          "unregistered": {
+            "psnr_db": 15.025062910007712,
+            "ssim": 0.05302330178853123
+          },
+          "bounded_registered": {
+            "psnr_db": 15.949820211988845,
+            "ssim": 0.11351617671551724
+          }
+        }
+      }
+    },
+    {
+      "name": "support 32",
+      "result": {
+        "budget": {
+          "size": 512,
+          "frames": 512,
+          "photons_at_white": 0.1,
+          "dark_electrons": 0.002,
+          "read_noise_electrons": 0.0,
+          "shift_radius": 32,
+          "motion_step": 3,
+          "registration_group": 12,
+          "registration_rounds": 2,
+          "thumbnail": 128,
+          "registration_upsample": 8,
+          "sampler": "auto",
+          "seed": 19
+        },
+        "mean_detected_electrons_per_frame": 13785.5146484375,
+        "nonzero_fraction_first_frame": 0.050792694091796875,
+        "first_pass_seconds": 1.3955119580496103,
+        "registration_and_fusion_seconds": 2.9026540420018137,
+        "total_seconds": 4.298166000051424,
+        "milliseconds_per_input_frame_all_passes": 8.394855468850437,
+        "streaming_passes": 3,
+        "registration_rounds": [
+          {
+            "round": 1,
+            "gauge_yx": [
+              -17,
+              -24
+            ],
+            "median_error": 3.1622776601683795,
+            "p90_error": 6.324555320336759
+          },
+          {
+            "round": 2,
+            "gauge_yx": [
+              -17,
+              -24
+            ],
+            "median_error": 3.0,
+            "p90_error": 5.830951894845301
+          }
+        ],
+        "registration_error_pixels": {
+          "mean": 3.281499255417498,
+          "median": 3.0,
+          "p90": 5.830951894845301,
+          "exact_fraction": 0.02734375,
+          "global_gauge_yx": [
+            -17,
+            -24
+          ]
+        },
+        "evaluation_global_gauge": {
+          "unregistered": [
+            18,
+            24
+          ],
+          "registered": [
+            17,
+            24
+          ]
+        },
+        "metrics": {
+          "single": {
+            "psnr_db": 4.979784213254281,
+            "ssim": 0.008806220463856864
+          },
+          "unregistered": {
+            "psnr_db": 17.29465626357752,
+            "ssim": 0.11607316611904514
+          },
+          "bounded_registered": {
+            "psnr_db": 18.86149108349121,
+            "ssim": 0.18211681943553554
+          }
+        }
+      }
+    }
+  ]
+}

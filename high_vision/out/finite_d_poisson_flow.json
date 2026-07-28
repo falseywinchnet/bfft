@@ -1,0 +1,667 @@
+{
+  "config": {
+    "grid": 64,
+    "frames": 1024,
+    "validation_frames": 256,
+    "photons_at_white": 0.08,
+    "background_photons": 0.0,
+    "shift_radius": 8,
+    "batch": 32,
+    "support_cap": 256,
+    "temperature": 4.0,
+    "replay_sweeps": 8,
+    "seed": 149
+  },
+  "flow": {
+    "split_probability": 0.5,
+    "likelihood_dimensions": [
+      "4",
+      "16",
+      "64",
+      "128",
+      "inf"
+    ],
+    "likelihood_temperatures": [
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      4.0
+    ],
+    "split_temperatures": [
+      0.75,
+      1.0,
+      1.25,
+      1.5,
+      2.0
+    ],
+    "charge_dimensions": [
+      "16",
+      "64",
+      "128",
+      "inf"
+    ],
+    "charge_radii": [
+      1.0,
+      2.0,
+      4.0,
+      8.0
+    ],
+    "charge_lanes": 16,
+    "charge_patch": 8,
+    "split_seed_offset": 77
+  },
+  "baselines": {
+    "unregistered_mean": {
+      "psnr_db": 16.352405089088712,
+      "ssim": 0.17695201462290477
+    },
+    "oracle_registered_mean": {
+      "psnr_db": 22.17556279011042,
+      "ssim": 0.5429632754503447
+    },
+    "standard_soft": {
+      "psnr_db": 22.09259918490233,
+      "ssim": 0.676589680129987,
+      "heldout_log_evidence_per_pixel": -0.1640547250800469,
+      "final_effective_shifts": 49.331503198301796
+    }
+  },
+  "likelihood_flow": {
+    "selection_rule": "maximum marginal Poisson evidence on a separate capture",
+    "selected": {
+      "dimension": "inf",
+      "temperature": 2.0,
+      "witness_log_evidence_per_pixel": -0.163830517338025,
+      "psnr_db": 23.00932862989611,
+      "ssim": 0.602867683174541,
+      "final_effective_shifts": 11.909397433793293
+    },
+    "sweep": [
+      {
+        "dimension": "4",
+        "temperature": 1.5,
+        "witness_log_evidence_per_pixel": -0.16395356772972222,
+        "psnr_db": 23.039545366395075,
+        "ssim": 0.6557905186119691,
+        "final_effective_shifts": 37.2106173902434
+      },
+      {
+        "dimension": "4",
+        "temperature": 2.0,
+        "witness_log_evidence_per_pixel": -0.16404837536156897,
+        "psnr_db": 22.404099190913023,
+        "ssim": 0.6736742356995987,
+        "final_effective_shifts": 53.994780875548216
+      },
+      {
+        "dimension": "4",
+        "temperature": 2.5,
+        "witness_log_evidence_per_pixel": -0.16413823133155175,
+        "psnr_db": 21.757671270404167,
+        "ssim": 0.6658390324033703,
+        "final_effective_shifts": 68.25687945007357
+      },
+      {
+        "dimension": "4",
+        "temperature": 3.0,
+        "witness_log_evidence_per_pixel": -0.16421982455357714,
+        "psnr_db": 21.218323482333155,
+        "ssim": 0.64940657519939,
+        "final_effective_shifts": 80.71475681294534
+      },
+      {
+        "dimension": "4",
+        "temperature": 4.0,
+        "witness_log_evidence_per_pixel": -0.16435920505017879,
+        "psnr_db": 20.415085454296506,
+        "ssim": 0.612776535521215,
+        "final_effective_shifts": 101.344056575566
+      },
+      {
+        "dimension": "16",
+        "temperature": 1.5,
+        "witness_log_evidence_per_pixel": -0.16384405450416376,
+        "psnr_db": 22.240455495287755,
+        "ssim": 0.5529336187756652,
+        "final_effective_shifts": 9.636980575157038
+      },
+      {
+        "dimension": "16",
+        "temperature": 2.0,
+        "witness_log_evidence_per_pixel": -0.16385433321908635,
+        "psnr_db": 23.37346938042119,
+        "ssim": 0.6396370446059033,
+        "final_effective_shifts": 18.75075531856053
+      },
+      {
+        "dimension": "16",
+        "temperature": 2.5,
+        "witness_log_evidence_per_pixel": -0.16391453290439886,
+        "psnr_db": 23.194450176835563,
+        "ssim": 0.6761667895584652,
+        "final_effective_shifts": 29.708822703259592
+      },
+      {
+        "dimension": "16",
+        "temperature": 3.0,
+        "witness_log_evidence_per_pixel": -0.16398809943434184,
+        "psnr_db": 22.65674577035332,
+        "ssim": 0.6839333489565661,
+        "final_effective_shifts": 41.31428730388769
+      },
+      {
+        "dimension": "16",
+        "temperature": 4.0,
+        "witness_log_evidence_per_pixel": -0.16413959096942526,
+        "psnr_db": 21.566916864162376,
+        "ssim": 0.6610021050910265,
+        "final_effective_shifts": 64.07671290347464
+      },
+      {
+        "dimension": "64",
+        "temperature": 1.5,
+        "witness_log_evidence_per_pixel": -0.16387520948241638,
+        "psnr_db": 21.311733570800197,
+        "ssim": 0.5098555075884208,
+        "final_effective_shifts": 6.497239981380632
+      },
+      {
+        "dimension": "64",
+        "temperature": 2.0,
+        "witness_log_evidence_per_pixel": -0.16383379011969929,
+        "psnr_db": 23.1428404106666,
+        "ssim": 0.6129411427988476,
+        "final_effective_shifts": 13.304559417640975
+      },
+      {
+        "dimension": "64",
+        "temperature": 2.5,
+        "witness_log_evidence_per_pixel": -0.16387338384268724,
+        "psnr_db": 23.379723576292577,
+        "ssim": 0.6636653732340289,
+        "final_effective_shifts": 21.94899719482412
+      },
+      {
+        "dimension": "64",
+        "temperature": 3.0,
+        "witness_log_evidence_per_pixel": -0.16393457924710914,
+        "psnr_db": 23.01400544632303,
+        "ssim": 0.6833705562265633,
+        "final_effective_shifts": 31.885768251381673
+      },
+      {
+        "dimension": "64",
+        "temperature": 4.0,
+        "witness_log_evidence_per_pixel": -0.1640753875196834,
+        "psnr_db": 21.960008406093618,
+        "ssim": 0.6731456390598323,
+        "final_effective_shifts": 52.89987974766817
+      },
+      {
+        "dimension": "128",
+        "temperature": 1.5,
+        "witness_log_evidence_per_pixel": -0.1638837042710203,
+        "psnr_db": 21.14529122788138,
+        "ssim": 0.5043193217064973,
+        "final_effective_shifts": 6.090008329726704
+      },
+      {
+        "dimension": "128",
+        "temperature": 2.0,
+        "witness_log_evidence_per_pixel": -0.1638319342733362,
+        "psnr_db": 23.079139282484427,
+        "ssim": 0.6079664760750352,
+        "final_effective_shifts": 12.583237873292987
+      },
+      {
+        "dimension": "128",
+        "temperature": 2.5,
+        "witness_log_evidence_per_pixel": -0.16386782750851492,
+        "psnr_db": 23.392150198667935,
+        "ssim": 0.6608813675684548,
+        "final_effective_shifts": 20.847841889172987
+      },
+      {
+        "dimension": "128",
+        "temperature": 3.0,
+        "witness_log_evidence_per_pixel": -0.163926643094107,
+        "psnr_db": 23.06463394336688,
+        "ssim": 0.6826159599461814,
+        "final_effective_shifts": 30.474125324423856
+      },
+      {
+        "dimension": "128",
+        "temperature": 4.0,
+        "witness_log_evidence_per_pixel": -0.16406497904641337,
+        "psnr_db": 22.026432220005585,
+        "ssim": 0.6749168903403241,
+        "final_effective_shifts": 51.10007196426709
+      },
+      {
+        "dimension": "inf",
+        "temperature": 1.5,
+        "witness_log_evidence_per_pixel": -0.16389301640448334,
+        "psnr_db": 20.98913792571432,
+        "ssim": 0.49742136816227267,
+        "final_effective_shifts": 5.7156551854144855
+      },
+      {
+        "dimension": "inf",
+        "temperature": 2.0,
+        "witness_log_evidence_per_pixel": -0.163830517338025,
+        "psnr_db": 23.00932862989611,
+        "ssim": 0.602867683174541,
+        "final_effective_shifts": 11.909397433793293
+      },
+      {
+        "dimension": "inf",
+        "temperature": 2.5,
+        "witness_log_evidence_per_pixel": -0.16386265390468305,
+        "psnr_db": 23.398874328955955,
+        "ssim": 0.6579180859346507,
+        "final_effective_shifts": 19.802724750838827
+      },
+      {
+        "dimension": "inf",
+        "temperature": 3.0,
+        "witness_log_evidence_per_pixel": -0.16391902709022324,
+        "psnr_db": 23.11196965154004,
+        "ssim": 0.6816663880939924,
+        "final_effective_shifts": 29.1144278196952
+      },
+      {
+        "dimension": "inf",
+        "temperature": 4.0,
+        "witness_log_evidence_per_pixel": -0.1640547250800469,
+        "psnr_db": 22.09259918490233,
+        "ssim": 0.676589680129987,
+        "final_effective_shifts": 49.331503198301796
+      }
+    ]
+  },
+  "photon_thinned_crossfit": {
+    "selection_rule": "maximum mean bidirectional complementary-photon evidence",
+    "selected": {
+      "dimension": "64",
+      "temperature": 1.5,
+      "first_to_second_log_evidence": -0.09674908973164198,
+      "second_to_first_log_evidence": -0.09626670098007961,
+      "mean_cross_log_evidence": -0.0965078953558608,
+      "psnr_db": 22.244644816040665,
+      "ssim": 0.5547860820085845
+    },
+    "sweep": [
+      {
+        "dimension": "4",
+        "temperature": 0.75,
+        "first_to_second_log_evidence": -0.0967872124850489,
+        "second_to_first_log_evidence": -0.0963089664551662,
+        "mean_cross_log_evidence": -0.09654808947010755,
+        "psnr_db": 21.275447959632498,
+        "ssim": 0.49990673131091484
+      },
+      {
+        "dimension": "4",
+        "temperature": 1.0,
+        "first_to_second_log_evidence": -0.09679947904443176,
+        "second_to_first_log_evidence": -0.09632270249491307,
+        "mean_cross_log_evidence": -0.09656109076967241,
+        "psnr_db": 21.795911460618353,
+        "ssim": 0.5830333177763549
+      },
+      {
+        "dimension": "4",
+        "temperature": 1.25,
+        "first_to_second_log_evidence": -0.09682258513751009,
+        "second_to_first_log_evidence": -0.09634604066961339,
+        "mean_cross_log_evidence": -0.09658431290356173,
+        "psnr_db": 21.569327067122394,
+        "ssim": 0.616100595769012
+      },
+      {
+        "dimension": "4",
+        "temperature": 1.5,
+        "first_to_second_log_evidence": -0.09684820267888368,
+        "second_to_first_log_evidence": -0.09637154316936092,
+        "mean_cross_log_evidence": -0.09660987292412229,
+        "psnr_db": 21.20506179053734,
+        "ssim": 0.6212745486836606
+      },
+      {
+        "dimension": "4",
+        "temperature": 2.0,
+        "first_to_second_log_evidence": -0.09689829904864013,
+        "second_to_first_log_evidence": -0.09642123723235133,
+        "mean_cross_log_evidence": -0.09665976814049573,
+        "psnr_db": 20.52479022930185,
+        "ssim": 0.6039839535122898
+      },
+      {
+        "dimension": "16",
+        "temperature": 0.75,
+        "first_to_second_log_evidence": -0.09698329405043524,
+        "second_to_first_log_evidence": -0.09654168277075588,
+        "mean_cross_log_evidence": -0.09676248841059557,
+        "psnr_db": 17.86350693465488,
+        "ssim": 0.3428759147896997
+      },
+      {
+        "dimension": "16",
+        "temperature": 1.0,
+        "first_to_second_log_evidence": -0.09682762137771331,
+        "second_to_first_log_evidence": -0.09635139848293958,
+        "mean_cross_log_evidence": -0.09658950993032644,
+        "psnr_db": 19.57339512738984,
+        "ssim": 0.41321073648435785
+      },
+      {
+        "dimension": "16",
+        "temperature": 1.25,
+        "first_to_second_log_evidence": -0.09675635735373962,
+        "second_to_first_log_evidence": -0.09627331360286827,
+        "mean_cross_log_evidence": -0.09651483547830395,
+        "psnr_db": 21.792355731872483,
+        "ssim": 0.5208380398614598
+      },
+      {
+        "dimension": "16",
+        "temperature": 1.5,
+        "first_to_second_log_evidence": -0.09675867321594037,
+        "second_to_first_log_evidence": -0.09627907078808541,
+        "mean_cross_log_evidence": -0.0965188720020129,
+        "psnr_db": 22.403584792799897,
+        "ssim": 0.6007122895958754
+      },
+      {
+        "dimension": "16",
+        "temperature": 2.0,
+        "first_to_second_log_evidence": -0.09680085101055322,
+        "second_to_first_log_evidence": -0.09632303049546101,
+        "mean_cross_log_evidence": -0.09656194075300711,
+        "psnr_db": 21.79385163821997,
+        "ssim": 0.6401191674561226
+      },
+      {
+        "dimension": "64",
+        "temperature": 0.75,
+        "first_to_second_log_evidence": -0.09708258474060662,
+        "second_to_first_log_evidence": -0.09658796239948451,
+        "mean_cross_log_evidence": -0.09683527357004557,
+        "psnr_db": 17.36343719609962,
+        "ssim": 0.31456018433017274
+      },
+      {
+        "dimension": "64",
+        "temperature": 1.0,
+        "first_to_second_log_evidence": -0.09691952638814097,
+        "second_to_first_log_evidence": -0.09644282983343513,
+        "mean_cross_log_evidence": -0.09668117811078805,
+        "psnr_db": 18.451271404478142,
+        "ssim": 0.3689238424774044
+      },
+      {
+        "dimension": "64",
+        "temperature": 1.25,
+        "first_to_second_log_evidence": -0.09679215455957059,
+        "second_to_first_log_evidence": -0.09630007648700475,
+        "mean_cross_log_evidence": -0.09654611552328768,
+        "psnr_db": 20.516408549316203,
+        "ssim": 0.4530918584895697
+      },
+      {
+        "dimension": "64",
+        "temperature": 1.5,
+        "first_to_second_log_evidence": -0.09674908973164198,
+        "second_to_first_log_evidence": -0.09626670098007961,
+        "mean_cross_log_evidence": -0.0965078953558608,
+        "psnr_db": 22.244644816040665,
+        "ssim": 0.5547860820085845
+      },
+      {
+        "dimension": "64",
+        "temperature": 2.0,
+        "first_to_second_log_evidence": -0.09677568743278603,
+        "second_to_first_log_evidence": -0.0962969813905091,
+        "mean_cross_log_evidence": -0.09653633441164756,
+        "psnr_db": 22.19383251960487,
+        "ssim": 0.640580519224604
+      },
+      {
+        "dimension": "128",
+        "temperature": 0.75,
+        "first_to_second_log_evidence": -0.0971006963427724,
+        "second_to_first_log_evidence": -0.09660897010393693,
+        "mean_cross_log_evidence": -0.09685483322335467,
+        "psnr_db": 17.2324403235261,
+        "ssim": 0.3084215495338977
+      },
+      {
+        "dimension": "128",
+        "temperature": 1.0,
+        "first_to_second_log_evidence": -0.09693081773530834,
+        "second_to_first_log_evidence": -0.09645708589686047,
+        "mean_cross_log_evidence": -0.09669395181608441,
+        "psnr_db": 18.350590239722347,
+        "ssim": 0.3645677473631115
+      },
+      {
+        "dimension": "128",
+        "temperature": 1.25,
+        "first_to_second_log_evidence": -0.09680314822837775,
+        "second_to_first_log_evidence": -0.09631089311914606,
+        "mean_cross_log_evidence": -0.0965570206737619,
+        "psnr_db": 20.257987483150366,
+        "ssim": 0.4423373748418535
+      },
+      {
+        "dimension": "128",
+        "temperature": 1.5,
+        "first_to_second_log_evidence": -0.09674955339120453,
+        "second_to_first_log_evidence": -0.09626627653271508,
+        "mean_cross_log_evidence": -0.0965079149619598,
+        "psnr_db": 22.139057429209316,
+        "ssim": 0.5438496775374964
+      },
+      {
+        "dimension": "128",
+        "temperature": 2.0,
+        "first_to_second_log_evidence": -0.09677191940348356,
+        "second_to_first_log_evidence": -0.09629296928615325,
+        "mean_cross_log_evidence": -0.0965324443448184,
+        "psnr_db": 22.256551956346534,
+        "ssim": 0.6396016165416385
+      },
+      {
+        "dimension": "inf",
+        "temperature": 0.75,
+        "first_to_second_log_evidence": -0.09711580419050649,
+        "second_to_first_log_evidence": -0.09662435136796277,
+        "mean_cross_log_evidence": -0.09687007777923462,
+        "psnr_db": 17.192201176841525,
+        "ssim": 0.3051344847715642
+      },
+      {
+        "dimension": "inf",
+        "temperature": 1.0,
+        "first_to_second_log_evidence": -0.09693842135442896,
+        "second_to_first_log_evidence": -0.09647114991255022,
+        "mean_cross_log_evidence": -0.09670478563348958,
+        "psnr_db": 18.272057474847486,
+        "ssim": 0.3609745387753643
+      },
+      {
+        "dimension": "inf",
+        "temperature": 1.25,
+        "first_to_second_log_evidence": -0.09681549101346626,
+        "second_to_first_log_evidence": -0.09632328111323221,
+        "mean_cross_log_evidence": -0.09656938606334924,
+        "psnr_db": 20.004551824823015,
+        "ssim": 0.43208035162802483
+      },
+      {
+        "dimension": "inf",
+        "temperature": 1.5,
+        "first_to_second_log_evidence": -0.09675103498266388,
+        "second_to_first_log_evidence": -0.0962665600305773,
+        "mean_cross_log_evidence": -0.09650879750662059,
+        "psnr_db": 22.00331231802599,
+        "ssim": 0.5320279907406027
+      },
+      {
+        "dimension": "inf",
+        "temperature": 2.0,
+        "first_to_second_log_evidence": -0.096768322407472,
+        "second_to_first_log_evidence": -0.09628909469695612,
+        "mean_cross_log_evidence": -0.09652870855221407,
+        "psnr_db": 22.316826342845726,
+        "ssim": 0.6382303329273733
+      }
+    ]
+  },
+  "image_charge_flow": {
+    "selection_rule": "first photon stream proposes; complementary stream selects",
+    "selected_first_direction": {
+      "dimension": "inf",
+      "radius": 4.0,
+      "witness_log_evidence_per_pixel": -0.09695719061541586,
+      "psnr_db": 18.9614230955913,
+      "ssim": 0.37157645687727553,
+      "final_effective_charges": 15.68512889599025
+    },
+    "selected_crossfit_metrics": {
+      "psnr_db": 19.36996806519788,
+      "ssim": 0.4321489612588331
+    },
+    "sweep": [
+      {
+        "dimension": "16",
+        "radius": 1.0,
+        "witness_log_evidence_per_pixel": -0.09717759587199484,
+        "psnr_db": 14.454769933441298,
+        "ssim": 0.17058905372477076,
+        "final_effective_charges": 1.0540916698280616
+      },
+      {
+        "dimension": "16",
+        "radius": 2.0,
+        "witness_log_evidence_per_pixel": -0.09716864991349117,
+        "psnr_db": 14.50929856953723,
+        "ssim": 0.16698109072689096,
+        "final_effective_charges": 1.139177852452756
+      },
+      {
+        "dimension": "16",
+        "radius": 4.0,
+        "witness_log_evidence_per_pixel": -0.09700232570315541,
+        "psnr_db": 16.43450772133888,
+        "ssim": 0.2656844986439694,
+        "final_effective_charges": 5.966354065388608
+      },
+      {
+        "dimension": "16",
+        "radius": 8.0,
+        "witness_log_evidence_per_pixel": -0.0969594229695189,
+        "psnr_db": 18.967097272581018,
+        "ssim": 0.36320838160372104,
+        "final_effective_charges": 15.533212369789375
+      },
+      {
+        "dimension": "64",
+        "radius": 1.0,
+        "witness_log_evidence_per_pixel": -0.09721399691317842,
+        "psnr_db": 14.509042326238081,
+        "ssim": 0.17080449534838119,
+        "final_effective_charges": 1.0518760326678556
+      },
+      {
+        "dimension": "64",
+        "radius": 2.0,
+        "witness_log_evidence_per_pixel": -0.09714698692747342,
+        "psnr_db": 14.728690168633921,
+        "ssim": 0.1756590982459096,
+        "final_effective_charges": 1.4742890485785591
+      },
+      {
+        "dimension": "64",
+        "radius": 4.0,
+        "witness_log_evidence_per_pixel": -0.09695980796524317,
+        "psnr_db": 18.945453110586286,
+        "ssim": 0.36367937268676315,
+        "final_effective_charges": 14.789065297594954
+      },
+      {
+        "dimension": "64",
+        "radius": 8.0,
+        "witness_log_evidence_per_pixel": -0.09696040694248789,
+        "psnr_db": 18.96655436992732,
+        "ssim": 0.3677159442350355,
+        "final_effective_charges": 15.924886689042008
+      },
+      {
+        "dimension": "128",
+        "radius": 1.0,
+        "witness_log_evidence_per_pixel": -0.09717892934200884,
+        "psnr_db": 14.632432254003675,
+        "ssim": 0.1774751670062804,
+        "final_effective_charges": 1.0691328891932972
+      },
+      {
+        "dimension": "128",
+        "radius": 2.0,
+        "witness_log_evidence_per_pixel": -0.0971241246610369,
+        "psnr_db": 15.030216838358655,
+        "ssim": 0.19472602137219694,
+        "final_effective_charges": 1.8254193091696975
+      },
+      {
+        "dimension": "128",
+        "radius": 4.0,
+        "witness_log_evidence_per_pixel": -0.09696092382056608,
+        "psnr_db": 18.945617048964873,
+        "ssim": 0.3652522084406853,
+        "final_effective_charges": 15.304190079205442
+      },
+      {
+        "dimension": "128",
+        "radius": 8.0,
+        "witness_log_evidence_per_pixel": -0.09696177797552326,
+        "psnr_db": 18.995021652030083,
+        "ssim": 0.37311256266319925,
+        "final_effective_charges": 15.957484271186704
+      },
+      {
+        "dimension": "inf",
+        "radius": 1.0,
+        "witness_log_evidence_per_pixel": -0.0971862546883084,
+        "psnr_db": 14.696305993740548,
+        "ssim": 0.17708751854274601,
+        "final_effective_charges": 1.0718426164741444
+      },
+      {
+        "dimension": "inf",
+        "radius": 2.0,
+        "witness_log_evidence_per_pixel": -0.0969679196971949,
+        "psnr_db": 17.937542784493623,
+        "ssim": 0.31518290463193754,
+        "final_effective_charges": 9.965923987954799
+      },
+      {
+        "dimension": "inf",
+        "radius": 4.0,
+        "witness_log_evidence_per_pixel": -0.09695719061541586,
+        "psnr_db": 18.9614230955913,
+        "ssim": 0.37157645687727553,
+        "final_effective_charges": 15.68512889599025
+      },
+      {
+        "dimension": "inf",
+        "radius": 8.0,
+        "witness_log_evidence_per_pixel": -0.096959763915107,
+        "psnr_db": 19.043992095851745,
+        "ssim": 0.37601454317428107,
+        "final_effective_charges": 15.980456103669773
+      }
+    ]
+  }
+}

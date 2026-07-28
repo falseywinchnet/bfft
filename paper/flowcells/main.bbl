@@ -1,0 +1,192 @@
+\begin{thebibliography}{24}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Achanta and S{\"u}sstrunk(2017)]{achanta2017snic}
+Radhakrishna Achanta and Sabine S{\"u}sstrunk.
+\newblock Superpixels and polygons using simple non-iterative clustering.
+\newblock In \emph{Proceedings of the IEEE Conference on Computer Vision and
+  Pattern Recognition}, pages 4895--4904, 2017.
+\newblock \doi{10.1109/CVPR.2017.520}.
+
+\bibitem[Aujol et~al.(2005)Aujol, Aubert, Blanc-F{\'e}raud, and
+  Chambolle]{aujol2005decomposition}
+Jean-Fran{\c c}ois Aujol, Gilles Aubert, Laure Blanc-F{\'e}raud, and Antonin
+  Chambolle.
+\newblock Image decomposition into a bounded variation component and an
+  oscillating component.
+\newblock \emph{Journal of Mathematical Imaging and Vision}, 22:\penalty0
+  71--88, 2005.
+\newblock \doi{10.1007/s10851-005-4783-8}.
+
+\bibitem[Belhe et~al.(2023)]{belhe2023danf}
+Yash Belhe et~al.
+\newblock Discontinuity-aware 2d neural fields.
+\newblock In \emph{ACM SIGGRAPH Asia Conference Proceedings}, 2023.
+\newblock URL \url{https://yashbelhe.github.io/danf/index.html}.
+
+\bibitem[Bourne et~al.(2025)Bourne, Schmitzer, and Wirth]{bourne2025unbalanced}
+David~P. Bourne, Bernhard Schmitzer, and Benedikt Wirth.
+\newblock Semi-discrete unbalanced optimal transport and quantization.
+\newblock \emph{arXiv preprint arXiv:1808.01962}, 2025.
+\newblock URL \url{https://arxiv.org/abs/1808.01962}.
+
+\bibitem[Budninskiy et~al.(2016)Budninskiy, Liu, de~Goes, Tong, Alliez, and
+  Desbrun]{budninskiy2016ovt}
+Max Budninskiy, Beibei Liu, Fernando de~Goes, Yiying Tong, Pierre Alliez, and
+  Mathieu Desbrun.
+\newblock Optimal voronoi tessellations with hessian-based anisotropy.
+\newblock \emph{ACM Transactions on Graphics}, 35\penalty0 (6):\penalty0
+  242:1--242:12, 2016.
+\newblock \doi{10.1145/2980179.2980245}.
+
+\bibitem[Buze et~al.(2024)Buze, Feydy, Roper, Sedighiani, and
+  Bourne]{buze2024anisotropic}
+Maciej Buze, Jean Feydy, Steven~M. Roper, Karo Sedighiani, and David~P. Bourne.
+\newblock Anisotropic power diagrams for polycrystal modelling: Efficient
+  generation of curved grains via optimal transport.
+\newblock \emph{arXiv preprint arXiv:2403.03571}, 2024.
+\newblock URL \url{https://arxiv.org/abs/2403.03571}.
+
+\bibitem[Chai(2020)]{chai2020rss}
+Dengfeng Chai.
+\newblock Rooted spanning superpixels.
+\newblock \emph{International Journal of Computer Vision}, 128:\penalty0
+  2962--2978, 2020.
+\newblock \doi{10.1007/s11263-020-01352-9}.
+
+\bibitem[Chambolle(2004)]{chambolle2004algorithm}
+Antonin Chambolle.
+\newblock An algorithm for total variation minimization and applications.
+\newblock \emph{Journal of Mathematical Imaging and Vision}, 20:\penalty0
+  89--97, 2004.
+\newblock \doi{10.1023/B:JMIV.0000011325.36760.1e}.
+
+\bibitem[Chen et~al.(2023)]{chen2023neurbf}
+Zhang Chen et~al.
+\newblock {NeuRBF}: A neural fields representation with adaptive radial basis
+  functions.
+\newblock In \emph{Proceedings of the IEEE/CVF International Conference on
+  Computer Vision}, 2023.
+\newblock URL \url{https://arxiv.org/abs/2309.15426}.
+
+\bibitem[Cheng et~al.(2022)Cheng, Misra, Schwing, Kirillov, and
+  Girdhar]{cheng2022mask2former}
+Bowen Cheng, Ishan Misra, Alexander~G. Schwing, Alexander Kirillov, and Rohit
+  Girdhar.
+\newblock Masked-attention mask transformer for universal image segmentation.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision
+  and Pattern Recognition}, pages 1290--1299, 2022.
+\newblock URL
+  \url{https://openaccess.thecvf.com/content/CVPR2022/html/Cheng_Masked-Attention_Mask_Transformer_for_Universal_Image_Segmentation_CVPR_2022_paper.html}.
+
+\bibitem[Gilles and Osher(2024)]{gilles2024bregman}
+J{\'e}r{\^o}me Gilles and Stanley Osher.
+\newblock Bregman implementation of {Meyer}'s {G}-norm for cartoon + textures
+  decomposition.
+\newblock \emph{arXiv preprint arXiv:2410.22777}, 2024.
+\newblock URL \url{https://arxiv.org/abs/2410.22777}.
+
+\bibitem[Goldstein and Osher(2009)]{goldstein2009split}
+Tom Goldstein and Stanley Osher.
+\newblock The split {Bregman} method for {L1}-regularized problems.
+\newblock \emph{SIAM Journal on Imaging Sciences}, 2\penalty0 (2):\penalty0
+  323--343, 2009.
+\newblock \doi{10.1137/080725891}.
+
+\bibitem[Iinbor et~al.(2026)Iinbor, Dou, and Matusik]{iinbor2026sad}
+Laki Iinbor, Zhiyang Dou, and Wojciech Matusik.
+\newblock Soft anisotropic diagrams for differentiable image representation.
+\newblock \emph{ACM Transactions on Graphics}, 2026.
+\newblock URL \url{https://luckyiyi.github.io/SAD/index.html}.
+\newblock SIGGRAPH 2026.
+
+\bibitem[Jampani et~al.(2018)Jampani, Sun, Liu, Yang, and
+  Kautz]{jampani2018ssn}
+Varun Jampani, Deqing Sun, Ming-Yu Liu, Ming-Hsuan Yang, and Jan Kautz.
+\newblock Superpixel sampling networks.
+\newblock In \emph{European Conference on Computer Vision}, pages 352--368,
+  2018.
+\newblock \doi{10.1007/978-3-030-01234-2_22}.
+
+\bibitem[Kang et~al.(2020)Kang, Zhu, and Ming]{kang2020drw}
+Xuejing Kang, Lei Zhu, and Anlong Ming.
+\newblock Dynamic random walk for superpixel segmentation.
+\newblock \emph{IEEE Transactions on Image Processing}, 29:\penalty0
+  3871--3884, 2020.
+\newblock \doi{10.1109/TIP.2020.2967583}.
+
+\bibitem[Kirillov et~al.(2023)]{kirillov2023sam}
+Alexander Kirillov et~al.
+\newblock Segment anything.
+\newblock In \emph{Proceedings of the IEEE/CVF International Conference on
+  Computer Vision}, pages 4015--4026, 2023.
+\newblock URL
+  \url{https://openaccess.thecvf.com/content/ICCV2023/html/Kirillov_Segment_Anything_ICCV_2023_paper.html}.
+
+\bibitem[Li et~al.(2020)Li, Luk{\'a}{\v c}, Gharbi, and
+  Ragan-Kelley]{li2020diffvg}
+Tzu-Mao Li, Michal Luk{\'a}{\v c}, Micha{\"e}l Gharbi, and Jonathan
+  Ragan-Kelley.
+\newblock Differentiable vector graphics rasterization for editing and
+  learning.
+\newblock \emph{ACM Transactions on Graphics}, 39\penalty0 (6), 2020.
+\newblock \doi{10.1145/3414685.3417871}.
+
+\bibitem[Meyer(2001)]{meyer2001oscillating}
+Yves Meyer.
+\newblock \emph{Oscillating Patterns in Image Processing and in Some Nonlinear
+  Evolution Equations}, volume~22 of \emph{University Lecture Series}.
+\newblock American Mathematical Society, 2001.
+\newblock \doi{10.1090/ulect/022}.
+
+\bibitem[Mirebeau(2014)]{mirebeau2014afm}
+Jean-Marie Mirebeau.
+\newblock Anisotropic fast-marching on cartesian grids using lattice basis
+  reduction.
+\newblock \emph{SIAM Journal on Numerical Analysis}, 52\penalty0 (4):\penalty0
+  1573--1599, 2014.
+\newblock \doi{10.1137/120861667}.
+
+\bibitem[Mirebeau and Portegies(2019)]{mirebeau2019hfm}
+Jean-Marie Mirebeau and Jorg Portegies.
+\newblock Hamiltonian fast marching: A numerical solver for anisotropic and
+  non-holonomic eikonal {PDE}s.
+\newblock \emph{Image Processing On Line}, 9:\penalty0 47--93, 2019.
+\newblock \doi{10.5201/ipol.2019.227}.
+
+\bibitem[Rainstar(2026)]{rainstar2026tgfd}
+Joshuah Rainstar.
+\newblock Transport geometry fusion descent: A sub-second implementation of
+  {Meyer}'s {G}-norm cartoon + texture decomposition.
+\newblock Technical report, Independent Research, July 2026.
+
+\bibitem[Wei et~al.(2018)Wei, Yang, Gong, Ahuja, and Yang]{wei2018hierarchy}
+Xing Wei, Qingxiong Yang, Yihong Gong, Narendra Ahuja, and Ming-Hsuan Yang.
+\newblock Superpixel hierarchy.
+\newblock \emph{IEEE Transactions on Image Processing}, 27\penalty0
+  (10):\penalty0 4838--4849, 2018.
+\newblock \doi{10.1109/TIP.2018.2836309}.
+
+\bibitem[Zhang et~al.(2024)Zhang, Ge, Xu, He, Wang, Qin, Lu, Geng, and
+  Zhang]{zhang2024gaussianimage}
+Xinjie Zhang, Xingtong Ge, Tongda Xu, Dailan He, Yan Wang, Hongwei Qin, Guo Lu,
+  Jing Geng, and Jun Zhang.
+\newblock Gaussianimage: 1000 fps image representation and compression by 2d
+  gaussian splatting.
+\newblock In \emph{European Conference on Computer Vision}, 2024.
+\newblock URL
+  \url{https://www.ecva.net/papers/eccv_2024/papers_ECCV/papers/01421.pdf}.
+
+\bibitem[Zhang et~al.(2025)Zhang, Li, Kuznetsov, Jindal, Diolatzis, Chen,
+  Sochenov, Kaplanyan, and Sun]{zhang2025imagegs}
+Yunxiang Zhang, Bingxuan Li, Alexandr Kuznetsov, Akshay Jindal, Stavros
+  Diolatzis, Kenneth Chen, Anton Sochenov, Anton Kaplanyan, and Qi~Sun.
+\newblock Image-gs: Content-adaptive image representation via 2d gaussians.
+\newblock In \emph{ACM SIGGRAPH Conference Proceedings}, pages 1--20, 2025.
+\newblock URL \url{https://arxiv.org/abs/2407.01866}.
+
+\end{thebibliography}
