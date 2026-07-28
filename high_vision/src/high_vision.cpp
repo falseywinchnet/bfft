@@ -18,6 +18,12 @@ float clamp01(float value)
 	return std::clamp(value, 0.0f, 1.0f);
 }
 
+bool is_night_mode(Mode mode)
+{
+	return mode == Mode::night_integrator ||
+	       mode == Mode::night_likelihood;
+}
+
 float smoothstep(float edge0, float edge1, float value)
 {
 	if (!(edge1 > edge0))
@@ -467,6 +473,14 @@ struct Processor::Impl {
 			std::clamp(cfg.change_threshold, 0.005f, 1.0f);
 		cfg.scene_cut_threshold =
 			std::clamp(cfg.scene_cut_threshold, 0.05f, 1.0f);
+		cfg.likelihood_release_low =
+			std::max(cfg.likelihood_release_low, 0.0f);
+		cfg.likelihood_release_high = std::max(
+			cfg.likelihood_release_high,
+			cfg.likelihood_release_low + 0.1f);
+		cfg.likelihood_evidence_limit = std::max(
+			cfg.likelihood_evidence_limit,
+			cfg.likelihood_release_high);
 		cfg.shadow_floor = std::clamp(cfg.shadow_floor, 0.0f, 0.25f);
 		cfg.highlight_knee =
 			std::clamp(cfg.highlight_knee, 0.5f, 0.999f);
@@ -667,7 +681,7 @@ struct Processor::Impl {
 
 	void estimate_motion()
 	{
-		if (cfg.mode == Mode::night_integrator) {
+		if (is_night_mode(cfg.mode)) {
 			// The accumulated scene belief is the highest-SNR witness already
 			// available in the stream. Compare a small spatial gather of the
 			// incoming frame against a matched gather of that belief instead
@@ -811,8 +825,7 @@ struct Processor::Impl {
 				float dx, dy, confidence;
 				flow_at(static_cast<float>(x), static_cast<float>(y),
 					dx, dy, confidence);
-				const bool night =
-					cfg.mode == Mode::night_integrator;
+				const bool night = is_night_mode(cfg.mode);
 				if (night) {
 					// Do not recursively deform a high-support radiance
 					// estimate through independently noisy tile flows.
@@ -876,7 +889,7 @@ struct Processor::Impl {
 					dx, dy, confidence);
 				if (confidence < 0.45f)
 					continue;
-				if (cfg.mode == Mode::night_integrator) {
+				if (is_night_mode(cfg.mode)) {
 					dx = diag.global_dx;
 					dy = diag.global_dy;
 				}
@@ -920,7 +933,7 @@ struct Processor::Impl {
 
 	void update_sensor_pattern()
 	{
-		if (cfg.mode != Mode::night_integrator ||
+		if (!is_night_mode(cfg.mode) ||
 		    !cfg.sensor_pattern_correction ||
 		    cfg.sensor_pattern_learning_rate <= 0.0f ||
 		    cfg.sensor_pattern_limit <= 0.0f)
@@ -1014,7 +1027,9 @@ struct Processor::Impl {
 		double support_sum = 0.0;
 		double change_sum = 0.0;
 		std::size_t clipped = 0;
-		const bool night = cfg.mode == Mode::night_integrator;
+		const bool night = is_night_mode(cfg.mode);
+		const bool likelihood =
+			cfg.mode == Mode::night_likelihood;
 		const float decay = cfg.support_decay;
 		for (std::size_t i = 0; i < current.size(); ++i) {
 			const float encoded = current[i];
@@ -1035,7 +1050,86 @@ struct Processor::Impl {
 			const float residual = obs - predicted;
 			float retention = 1.0f;
 			float change_probability = 0.0f;
-			if (night) {
+			if (likelihood) {
+				// A one-sided sequential generalized likelihood ratio is
+				// the evidence bank. Under the transported hypothesis its
+				// expected increment is negative, so ordinary noise erodes
+				// the bank. A persistent dark occluder contributes positive
+				// evidence even when its samples approach zero.
+				const float mean_variance =
+					std::max(transported_variance[i], 0.0f) /
+					std::max(transported_support[i], 1.0f);
+				const float signal = std::max(
+					{std::abs(obs), std::abs(predicted),
+					 cfg.shadow_floor + cfg.read_noise});
+				const float null_variance =
+					noise_sigma(predicted) *
+						noise_sigma(predicted) +
+					mean_variance;
+				const float separation = std::max(
+					cfg.change_threshold * signal,
+					2.0f * std::sqrt(null_variance));
+				const float darker =
+					std::max(predicted - separation, 0.0f);
+				const float brighter = predicted + separation;
+				const float inverse_two_variance =
+					0.5f /
+					std::max(null_variance, 1e-12f);
+				const float null_squared =
+					residual * residual;
+				const float down_residual = obs - darker;
+				const float up_residual = obs - brighter;
+				const float down_increment = std::clamp(
+					(null_squared -
+					 down_residual * down_residual) *
+						inverse_two_variance,
+					-4.0f, 8.0f);
+				const float up_increment = std::clamp(
+					(null_squared -
+					 up_residual * up_residual) *
+						inverse_two_variance,
+					-4.0f, 8.0f);
+				const bool down = down_increment > up_increment;
+				const float increment =
+					down ? down_increment : up_increment;
+				float bank = down
+					? std::max(-transported_innovation[i], 0.0f)
+					: std::max(transported_innovation[i], 0.0f);
+				bank = std::clamp(
+					bank + increment, 0.0f,
+					cfg.likelihood_evidence_limit);
+				coherent_innovation[i] = down ? -bank : bank;
+				const float sequential_probability = smoothstep(
+					cfg.likelihood_release_low,
+					cfg.likelihood_release_high, bank);
+
+				// A very strong single-frame contradiction should not wait
+				// for the sequential bank. Retain Night's calibrated
+				// instantaneous safety valve, while the likelihood bank
+				// handles weaker but persistent evidence on later frames.
+				const float mean_sigma =
+					std::sqrt(mean_variance);
+				const float total_sigma = std::hypot(
+					observation_sigma, mean_sigma);
+				const float instant_scale =
+					cfg.change_threshold * signal +
+					3.0f * total_sigma;
+				const float normalized =
+					residual /
+					std::max(instant_scale, 1e-6f);
+				const float directional =
+					normalized < 0.0f
+						? -1.25f * normalized
+						: normalized;
+				const float instantaneous_probability =
+					smoothstep(0.90f, 1.70f,
+						   std::abs(directional));
+				change_probability = std::max(
+					sequential_probability,
+					instantaneous_probability);
+				retention =
+					1.0f - 0.98f * change_probability;
+			} else if (night) {
 				// The old absolute threshold made shadow changes nearly
 				// invisible: a 4% radiance drop is enormous at 5% signal
 				// but tiny next to an absolute threshold of 8–15%.
@@ -1256,7 +1350,7 @@ struct Processor::Impl {
 		} else {
 			estimate_motion();
 			const float scene_cut_threshold =
-				cfg.mode == Mode::night_integrator
+				is_night_mode(cfg.mode)
 					? std::max(cfg.scene_cut_threshold, 0.65f)
 					: cfg.scene_cut_threshold;
 			if (diag.registration_error > scene_cut_threshold) {

@@ -12,12 +12,10 @@ This module registers two native OBS asynchronous-video filters:
   radiance, precision, and variance through estimated camera motion while
   releasing support in changing regions.
 
-The filter keeps the source color and runs its decomposition on luma. Its work
-grid preserves the source aspect ratio with a long side of at most 512 pixels.
-The backend uses the periodic FACR solver: one axis remains an exact
-power-of-two transform while the other may be any length. For example, a 16:9
-source uses 512x288 instead of being distorted to 512x256. If both axes are
-powers of two, the backend automatically retains its spectral path.
+The Cartoon filter keeps the source color and runs its decomposition on luma.
+High Vision instead processes the camera's native pixel lattice. Photon
+evidence, detector-fixed noise, and motion are not inferred from a resized
+surrogate. Night emits monochrome luma; Synthetic HDR retains source chroma.
 
 The main effect uses the same independent layer mixer as the Python still
 viewer:
@@ -88,9 +86,9 @@ When the camera does not expose gain/shutter metadata, Night changes its
 exposure gauge only for a spatially coherent registered brightness step;
 low-light frame ratios cannot accumulate into an unbounded AGC random walk.
 The **Evidence persistence** control is honored directly; Night no longer
-silently raises it to `0.997`. Mode changes reset temporal state. The High
-Vision processing grid preserves the source aspect ratio
-(`1920x1080 → 512x288`).
+silently raises it to `0.997`. Mode changes reset temporal state. High Vision
+uses the exact source dimensions (`1920x1080 → 1920x1080`); OBS scaling belongs
+after the filter.
 
 Night registration now uses BFFT's existing high-speed TGFD/Meyer cartoon
 carrier for both the incoming frame and the accumulated belief. The oscillatory
@@ -100,12 +98,18 @@ field remains in detector coordinates and is learned only when accepted camera
 motion makes it identifiable. The physical uncertainty law adds read and shot
 variances rather than their standard deviations.
 
-For YUV camera formats, Night also transports and integrates U/V independently.
-Chroma saturation grows from chroma's own evidence and is capped by the luma
-support lifecycle. Unsupported shadows therefore begin near neutral instead of
-combining enhanced luma with the current frame's green/purple chroma noise. A
-slow robust estimate from the darkest luma population removes global U/V
-black-level bias. Synthetic HDR retains the source chroma path unchanged.
+Night deliberately does not infer color from photon-starved ISP chroma. YUV
+output is neutralized and RGB output receives equal channels, yielding a
+monochrome luminance estimate. Synthetic HDR retains the source chroma path
+unchanged.
+
+**Night likelihood (experimental)** shares Night's native-resolution
+registration, transport, detector-pattern gauge, and monochrome output, but
+replaces its signed innovation memory with a sequential generalized
+Poisson-Gaussian likelihood-ratio bank. It is a secondary dogfood path, not a
+replacement for established Night. In the deterministic 128x96 shadow rig it
+raises noise reduction from 17.70 dB to 19.21 dB and frame-2 dark-object
+recovery from 73.9% to 86.7%; frame-1 recovery is slower (32.8% versus 40.3%).
 
 The entropy-budgeted photon-registration controller is present in the linked
 High Vision core but is not applied to ordinary OBS luma. OBS receives

@@ -89,6 +89,9 @@ int main()
 	config.tone_strength = 0.0f;
 	config.local_contrast = 0.0f;
 	high_vision::Processor processor(config);
+	high_vision::Config likelihood_config = config;
+	likelihood_config.mode = high_vision::Mode::night_likelihood;
+	high_vision::Processor likelihood_processor(likelihood_config);
 
 	std::mt19937 random(0x65f00dU);
 	std::normal_distribution<float> gaussian(0.0f, 1.0f);
@@ -118,7 +121,10 @@ int main()
 			++raw_samples;
 		}
 		if (!processor.process(frame.data(), width, output.data(), width,
-				      width, height))
+				      width, height) ||
+		    !likelihood_processor.process(
+			    frame.data(), width, output.data(), width, width,
+			    height))
 			return 1;
 	}
 	const double elapsed_ms =
@@ -128,8 +134,12 @@ int main()
 	const double raw_rmse =
 		std::sqrt(raw_squared / static_cast<double>(raw_samples));
 	const double belief_rmse = rmse(processor.belief(), truth);
+	const double likelihood_belief_rmse =
+		rmse(likelihood_processor.belief(), truth);
 	const double old_object_level =
 		rectangle_mean(processor.belief(), width, 44, 30, 84, 66);
+	const double likelihood_old_object_level = rectangle_mean(
+		likelihood_processor.belief(), width, 44, 30, 84, 66);
 
 	std::vector<float> occluded = truth;
 	for (std::size_t y = 30; y < 66; ++y)
@@ -139,17 +149,30 @@ int main()
 		rectangle_mean(occluded, width, 44, 30, 84, 66);
 
 	std::vector<double> recovery;
+	std::vector<double> likelihood_recovery;
 	for (int index = 1; index <= 8; ++index) {
 		sample(occluded);
 		if (!processor.process(frame.data(), width, output.data(), width,
-				      width, height))
+				      width, height) ||
+		    !likelihood_processor.process(
+			    frame.data(), width, output.data(), width, width,
+			    height))
 			return 1;
 		if (index == 1 || index == 2 || index == 4 || index == 8) {
 			const double level = rectangle_mean(
 				processor.belief(), width, 44, 30, 84, 66);
+			const double likelihood_level = rectangle_mean(
+				likelihood_processor.belief(), width, 44, 30,
+				84, 66);
 			recovery.push_back(std::clamp(
 				(old_object_level - level) /
 					std::max(old_object_level - target_level,
+						 1e-9),
+				0.0, 1.0));
+			likelihood_recovery.push_back(std::clamp(
+				(likelihood_old_object_level - likelihood_level) /
+					std::max(likelihood_old_object_level -
+							 target_level,
 						 1e-9),
 				0.0, 1.0));
 		}
@@ -244,6 +267,27 @@ int main()
 		  << "    \"frame_2\": " << recovery[1] << ",\n"
 		  << "    \"frame_4\": " << recovery[2] << ",\n"
 		  << "    \"frame_8\": " << recovery[3] << "\n"
+		  << "  },\n"
+		  << "  \"likelihood_path\": {\n"
+		  << "    \"belief_shadow_rmse\": "
+		  << likelihood_belief_rmse << ",\n"
+		  << "    \"noise_reduction_db\": "
+		  << 20.0 *
+			     std::log10(raw_rmse / likelihood_belief_rmse)
+		  << ",\n"
+		  << "    \"mean_support\": "
+		  << likelihood_processor.diagnostics().mean_support
+		  << ",\n"
+		  << "    \"dark_object_recovery\": {\n"
+		  << "      \"frame_1\": " << likelihood_recovery[0]
+		  << ",\n"
+		  << "      \"frame_2\": " << likelihood_recovery[1]
+		  << ",\n"
+		  << "      \"frame_4\": " << likelihood_recovery[2]
+		  << ",\n"
+		  << "      \"frame_8\": " << likelihood_recovery[3]
+		  << "\n"
+		  << "    }\n"
 		  << "  },\n"
 		  << "  \"sensor_pattern\": {\n"
 		  << "    \"uncorrected_rmse\": " << uncorrected_pattern_rmse

@@ -40,16 +40,24 @@ radiometric value.
   while scene radiance moves through the camera gauge. Registered camera motion
   provides the diversity needed to estimate fixed-pattern noise; a stationary
   scene does not falsely claim that the two fields are identifiable.
-- Night's OBS YUV adapter owns a separate transported chroma belief. Chroma
-  earns saturation from its own evidence and its lifetime is capped by luma
-  support, preventing current-frame green/purple noise from being painted onto
-  accumulated luminance. A slow dark-population estimate corrects global U/V
-  black bias before fusion.
+- Night's OBS adapter is deliberately luma-only. It neutralizes YUV chroma or
+  emits equal RGB channels instead of inventing color from photon-starved,
+  ISP-processed chroma measurements.
+- High Vision's OBS adapter preserves the native camera lattice end to end.
+  Resizing before inference would alter photon evidence, detector-fixed noise,
+  and motion statistics; any preview scaling is left to OBS after the filter.
 - Organic support replacement. A leaky signed innovation fusor distinguishes
   temporally coherent scene change from zero-mean sensor noise. Its scale is
   relative to local signal and to the uncertainty of the accumulated mean, so
   a dark occluder can rapidly bankrupt stale bright support without forfeiting
   stable shadow denoising.
+- A separate **Night likelihood** mode keeps a sequential generalized
+  Poisson-Gaussian likelihood-ratio bank. The null hypothesis is the
+  transported radiance; darker and brighter alternatives are separated by the
+  modeled observation uncertainty. Ordinary noise has negative expected
+  evidence, while repeated unexpectedly dark samples accumulate evidence that
+  releases stale support. A conservative instantaneous gate remains as a
+  one-frame safety valve.
 - Highlight-safe evidence fusion. Near-black and near-clipped samples have low
   precision; a fully clipped sample cannot overwrite an earlier usable
   highlight estimate.
@@ -69,10 +77,9 @@ OBS/camera frame
     -> conservative transport (belief, support, variance, signed innovation)
     -> exposure normalization
     -> reliability/change-weighted fusion
-    -> independent chroma evidence fusion (OBS YUV Night adapter)
     -> optional ExperimentalStage
     -> display AGC + tone map
-    -> OBS frame
+    -> monochrome Night / source-chroma HDR OBS frame
 ```
 
 The separation matters: an experimental night estimator receives the current
@@ -106,11 +113,9 @@ cmake --build build-high-vision --target high_vision_benchmark --parallel
 builds high support on a structured 128x96 shadow scene with heteroscedastic
 Poisson-Gaussian read/shot noise, reports temporal noise reduction, then
 inserts a persistent dark rectangle and measures how much of its contrast has
-appeared after 1/2/4/8 frames. It also moves the scene across a detector-fixed
-random/row pattern and compares corrected and uncorrected scene beliefs. Local
-tile search is deliberately enabled in the stationary section, making
-recursive elastic transport an adversarial failure rather than an aesthetic
-judgment.
+appeared after 1/2/4/8 frames. It runs established Night and Night likelihood
+against the exact same samples. It also moves the scene across a detector-fixed
+random/row pattern and compares corrected and uncorrected scene beliefs.
 
 ```sh
 ./build-high-vision/high_vision_night_dynamic_benchmark

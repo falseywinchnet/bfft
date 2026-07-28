@@ -14,7 +14,8 @@ enum class Mode {
 	passthrough = 0,
 	synthetic_hdr = 1,
 	night_integrator = 2,
-	experimental = 3,
+	night_likelihood = 3,
+	experimental = 4,
 };
 
 struct FrameMetadata {
@@ -47,6 +48,15 @@ struct Config {
 	float support_decay = 0.985f;
 	float change_threshold = 0.08f;
 	float scene_cut_threshold = 0.24f;
+
+	// Experimental Night likelihood path. Rather than treating a residual
+	// magnitude as change, it accumulates a sequential log-likelihood ratio
+	// between the transported belief and meaningful darker/brighter
+	// alternatives. Negative observations therefore count as evidence: a run
+	// of unexpectedly dark samples can quickly bankrupt stale bright support.
+	float likelihood_release_low = 3.0f;
+	float likelihood_release_high = 8.0f;
+	float likelihood_evidence_limit = 16.0f;
 
 	// Approximate linear-camera reliability model. For scene-linear x,
 	// Var[y | x] = read_noise^2 + shot_noise^2 * x. In a calibrated RAW

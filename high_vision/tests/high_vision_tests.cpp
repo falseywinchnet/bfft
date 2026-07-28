@@ -249,6 +249,10 @@ int main()
 		config.tone_strength = 0.0f;
 		config.local_contrast = 0.0f;
 		high_vision::Processor processor(config);
+		high_vision::Config likelihood_config = config;
+		likelihood_config.mode =
+			high_vision::Mode::night_likelihood;
+		high_vision::Processor likelihood(likelihood_config);
 		std::vector<float> frame(width * height);
 		std::uint32_t noise = 0x91e10da5u;
 		auto render = [&](bool occluded) {
@@ -276,29 +280,50 @@ int main()
 					frame.data(), width, output.data(), width,
 					width, height),
 				"Night rejected a shadow accumulation frame");
+			require(likelihood.process(
+					frame.data(), width, output.data(), width,
+					width, height),
+				"Night likelihood rejected a shadow frame");
 		}
 		require(processor.diagnostics().mean_support > 80.0f,
 			"shadow control did not build high support");
 		require(std::abs(processor.diagnostics().relative_exposure - 1.0f) <
 				0.02f,
 			"fallback exposure gauge drifted on a stable shadow");
+		auto object_mean = [&](const high_vision::Processor &candidate) {
+			double sum = 0.0;
+			std::size_t count = 0;
+			for (std::size_t y = 18; y < 38; ++y)
+				for (std::size_t x = 28; x < 52; ++x) {
+					sum += candidate.belief()[y * width + x];
+					++count;
+				}
+			return sum / static_cast<double>(count);
+		};
+		double night_after_two = 0.0;
+		double likelihood_after_two = 0.0;
 		for (int index = 0; index < 4; ++index) {
 			render(true);
 			require(processor.process(
 					frame.data(), width, output.data(), width,
 					width, height),
 				"Night rejected a dark-object frame");
-		}
-		double object_mean = 0.0;
-		std::size_t object_pixels = 0;
-		for (std::size_t y = 18; y < 38; ++y)
-			for (std::size_t x = 28; x < 52; ++x) {
-				object_mean += processor.belief()[y * width + x];
-				++object_pixels;
+			require(likelihood.process(
+					frame.data(), width, output.data(), width,
+					width, height),
+				"Night likelihood rejected a dark-object frame");
+			if (index == 1) {
+				night_after_two = object_mean(processor);
+				likelihood_after_two = object_mean(likelihood);
 			}
-		object_mean /= static_cast<double>(object_pixels);
-		require(object_mean < 0.018,
+		}
+		require(object_mean(processor) < 0.018,
 			"high support integrated a persistent dark object away");
+		require(likelihood_after_two < night_after_two,
+			"likelihood evidence did not accelerate persistent dark "
+			"object recovery");
+		require(likelihood.diagnostics().mean_support > 40.0f,
+			"likelihood path destabilized unchanged shadow support");
 	}
 
 	{

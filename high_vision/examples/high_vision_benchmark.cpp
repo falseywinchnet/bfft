@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 						     argv[2], nullptr, 10))
 					   : 256;
 	const int frames = argc > 3 ? std::atoi(argv[3]) : 60;
-	const bool night = argc > 4 && std::string(argv[4]) == "night";
+	const std::string requested_mode = argc > 4 ? argv[4] : "hdr";
 	if (width < 8 || height < 8 || frames < 2)
 		return 2;
 
@@ -34,8 +34,11 @@ int main(int argc, char **argv)
 	}
 
 	high_vision::Config config;
-	config.mode = night ? high_vision::Mode::night_integrator
-			    : high_vision::Mode::synthetic_hdr;
+	config.mode = requested_mode == "night"
+			      ? high_vision::Mode::night_integrator
+		      : requested_mode == "likelihood"
+			      ? high_vision::Mode::night_likelihood
+			      : high_vision::Mode::synthetic_hdr;
 	high_vision::Processor processor(config);
 	const auto started = std::chrono::steady_clock::now();
 	for (int frame = 0; frame < frames; ++frame) {
@@ -70,7 +73,7 @@ int main(int argc, char **argv)
 	const double per_frame = milliseconds / frames;
 	const auto &diagnostics = processor.diagnostics();
 	std::cout << width << 'x' << height << ", " << frames << ' '
-		  << (night ? "night" : "hdr") << " frames: "
+		  << requested_mode << " frames: "
 		  << std::fixed << std::setprecision(2) << per_frame
 		  << " ms/frame (" << 1000.0 / per_frame << " fps), support "
 		  << diagnostics.mean_support << ", meyer registration "
