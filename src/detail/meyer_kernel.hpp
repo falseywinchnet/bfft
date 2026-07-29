@@ -286,8 +286,8 @@ struct engine {
     // column-major stage planes for the 2-D transforms, WB*H each
     std::vector<double> reT, imT;
 
-    spectrum f_spec, u_spec, w_spec, d_spec, v_spec;
-    facr_spectrum ff_spec, fu_spec, fw_spec, fd_spec, fv_spec;
+    spectrum f_spec, u_spec, w_spec, d_spec, q_spec, v_spec;
+    facr_spectrum ff_spec, fu_spec, fw_spec, fd_spec, fq_spec, fv_spec;
 
     bfft_status init(std::size_t h, std::size_t wdt, double lam_, double mu_,
                      int passes_, int rung_sweeps_, double rung_tol_,
@@ -331,14 +331,15 @@ struct engine {
         symbol(s_v, 1.0 / mu, 10.0 / mu);
         reT.assign(WB * H, 0.0);
         imT.assign(WB * H, 0.0);
-        for (auto* s : {&f_spec, &u_spec, &w_spec, &d_spec})
+        // q_spec holds the second reflected-divergence spectrum in the
+        // split-only triangular Meyer pass.
+        for (auto* s : {&f_spec, &u_spec, &w_spec, &d_spec, &q_spec})
             s->alloc(HB, WB);
     }
 
     void ensure_decompose_storage() {
         const std::size_t n = H * W;
-        for (auto* p : {&dbux, &dbuy, &dbvx, &dbvy, &vplane})
-            if (p->empty()) p->assign(n, 0.0);
+        if (vplane.empty()) vplane.assign(n, 0.0);
         ensure_rof_storage();
         if (facr_active) {
             if (fv_spec.a.empty()) fv_spec.alloc(FS, FB);
@@ -380,14 +381,16 @@ struct engine {
         for (auto* v : {&s_u, &s_v, &s_r0, &s_r1, &s_r2, &s_gen,
                         &reT, &imT})
             std::vector<double>().swap(*v);
-        for (auto* s : {&f_spec, &u_spec, &w_spec, &d_spec, &v_spec}) {
+        for (auto* s : {&f_spec, &u_spec, &w_spec, &d_spec, &q_spec,
+                        &v_spec}) {
             std::vector<double>().swap(s->a);
             std::vector<double>().swap(s->b);
         }
     }
 
     void clear_facr_storage() {
-        for (auto* s : {&ff_spec, &fu_spec, &fw_spec, &fd_spec, &fv_spec}) {
+        for (auto* s : {&ff_spec, &fu_spec, &fw_spec, &fd_spec, &fq_spec,
+                        &fv_spec}) {
             std::vector<double>().swap(s->a);
             std::vector<double>().swap(s->b);
         }
@@ -424,7 +427,7 @@ struct engine {
         FT = sweep_height ? W : H;
         FB = FT / 2 + 1;
 
-        for (auto* s : {&ff_spec, &fu_spec, &fw_spec, &fd_spec})
+        for (auto* s : {&ff_spec, &fu_spec, &fw_spec, &fd_spec, &fq_spec})
             s->alloc(FS, FB);
         build_factors(t_u, lam, 2.0 * lam);
         build_factors(t_v, 1.0 / mu, 10.0 / mu);
@@ -614,21 +617,25 @@ struct engine {
             lane& L = *lanes[tid];
             for (std::size_t i0 = std::size_t(tid) * PANEL; i0 < H;
                  i0 += std::size_t(P.lanes()) * PANEL) {
+                const std::size_t yp0 = (i0 == 0 ? H : i0) - 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    double unused;
+                    reflected(tx[yp0 * W + x], ty[yp0 * W + x],
+                              threshold, unused, L.correction[x]);
+                }
                 for (std::size_t r = 0; r < PANEL; ++r) {
                     const std::size_t y = i0 + r;
-                    const std::size_t yp = (y == 0 ? H : y) - 1;
                     for (std::size_t x = 0; x < W; ++x)
                         reflected(tx[y * W + x], ty[y * W + x], threshold,
                                   L.reflect_x[x], L.reflect_y[x]);
                     for (std::size_t x = 0; x < W; ++x) {
-                        double unused, prev_y;
-                        reflected(tx[yp * W + x], ty[yp * W + x],
-                                  threshold, unused, prev_y);
                         const std::size_t xp = (x == 0 ? W : x) - 1;
                         L.line[x] = L.reflect_x[x] - L.reflect_x[xp] +
-                            L.reflect_y[x] - prev_y;
+                            L.reflect_y[x] - L.correction[x];
                     }
                     L.row.fwd(L.line.data(), L.stage.data() + r * WB);
+                    std::memcpy(L.correction.data(), L.reflect_y.data(),
+                                W * sizeof(double));
                 }
                 panel_scatter(L, i0);
             }
@@ -726,27 +733,36 @@ struct engine {
             for (std::size_t s0 = std::size_t(tid) * PANEL; s0 < FS;
                  s0 += std::size_t(P.lanes()) * PANEL) {
                 const std::size_t nr = std::min(PANEL, FS - s0);
-                for (std::size_t r = 0; r < nr; ++r) {
-                    const std::size_t s = s0 + r;
-                    if (sweep_height) {
-                        const std::size_t y = s;
-                        const std::size_t yp = (y == 0 ? H : y) - 1;
+                if (sweep_height) {
+                    const std::size_t yp0 = (s0 == 0 ? H : s0) - 1;
+                    for (std::size_t x = 0; x < W; ++x) {
+                        if (solver == 2 && s0 == 0) {
+                            L.correction[x] = 0.0;
+                        } else {
+                            double unused;
+                            reflected(tx[yp0 * W + x], ty[yp0 * W + x],
+                                      threshold, unused, L.correction[x]);
+                        }
+                    }
+                    for (std::size_t r = 0; r < nr; ++r) {
+                        const std::size_t y = s0 + r;
                         for (std::size_t x = 0; x < W; ++x)
                             reflected(tx[y * W + x], ty[y * W + x],
                                       threshold, L.reflect_x[x],
                                       L.reflect_y[x]);
                         for (std::size_t x = 0; x < W; ++x) {
-                            double unused, prev_y = 0.0;
-                            if (!(solver == 2 && y == 0))
-                                reflected(tx[yp * W + x], ty[yp * W + x],
-                                          threshold, unused, prev_y);
                             const std::size_t xp = (x == 0 ? W : x) - 1;
                             L.line[x] =
                                 L.reflect_x[x] - L.reflect_x[xp] +
-                                L.reflect_y[x] - prev_y;
+                                L.reflect_y[x] - L.correction[x];
                         }
-                    } else {
-                        const std::size_t x = s;
+                        std::memcpy(L.correction.data(), L.reflect_y.data(),
+                                    W * sizeof(double));
+                        F.fwd(L.line.data(), L.stage.data() + r * FB);
+                    }
+                } else {
+                    for (std::size_t r = 0; r < nr; ++r) {
+                        const std::size_t x = s0 + r;
                         const std::size_t xp = (x == 0 ? W : x) - 1;
                         for (std::size_t y = 0; y < H; ++y)
                             reflected(tx[y * W + x], ty[y * W + x],
@@ -758,15 +774,12 @@ struct engine {
                             if (!(solver == 2 && x == 0))
                                 reflected(tx[y * W + xp], ty[y * W + xp],
                                           threshold, prev_x, unused);
-                            double prev_y;
-                            reflected(tx[yp * W + x], ty[yp * W + x],
-                                      threshold, unused, prev_y);
                             L.line[y] =
                                 L.reflect_x[y] - prev_x +
-                                L.reflect_y[y] - prev_y;
+                                L.reflect_y[y] - L.reflect_y[yp];
                         }
+                        F.fwd(L.line.data(), L.stage.data() + r * FB);
                     }
-                    F.fwd(L.line.data(), L.stage.data() + r * FB);
                 }
                 for (std::size_t k = 0; k < FB; ++k) {
                     double* ar = spec.a.data() + k * FS + s0;
@@ -927,22 +940,20 @@ struct engine {
             [&](std::size_t i) { return c * g.b[i] - eta * d.b[i]; });
     }
 
-    // t_next = grad(x) + proj(t, 1/eta), in place.  Together with
-    // fwd*_reflection this is exactly the reduced Split-Bregman recursion.
-    void update_reflected_dual(const std::vector<double>& x,
-                               std::vector<double>& tx,
-                               std::vector<double>& ty, double eta) {
+    void update_reflected_dual_rows(const std::vector<double>& x,
+                                    std::vector<double>& tx,
+                                    std::vector<double>& ty, double eta,
+                                    int tid) {
         const double threshold = 1.0 / eta;
-        P.run([&](int tid) {
-            for (std::size_t y = std::size_t(tid); y < H;
-                 y += std::size_t(P.lanes())) {
-                const double* xi = x.data() + y * W;
-                const double* xn =
-                    x.data() + ((y + 1 == H) ? 0 : y + 1) * W;
-                double* px = tx.data() + y * W;
-                double* py = ty.data() + y * W;
-                const bool neumann_y =
-                    solver == 2 && sweep_height && y + 1 == H;
+        for (std::size_t y = std::size_t(tid); y < H;
+             y += std::size_t(P.lanes())) {
+            const double* xi = x.data() + y * W;
+            const double* xn =
+                x.data() + ((y + 1 == H) ? 0 : y + 1) * W;
+            double* px = tx.data() + y * W;
+            double* py = ty.data() + y * W;
+            const bool neumann_y =
+                solver == 2 && sweep_height && y + 1 == H;
                 for (std::size_t j = 0; j < W; ++j) {
                     const double old_x = px[j], old_y = py[j];
                     const double radius =
@@ -951,15 +962,35 @@ struct engine {
                         std::fmax(radius - threshold, 0.0) /
                         std::fmax(radius, 1e-12);
                     const double project = 1.0 - shrink;
-                    const bool neumann_x =
-                        solver == 2 && !sweep_height && j + 1 == W;
-                    const double gx = neumann_x ? 0.0 :
-                        xi[j + 1 == W ? 0 : j + 1] - xi[j];
-                    const double gy = neumann_y ? 0.0 : xn[j] - xi[j];
-                    px[j] = neumann_x ? 0.0 : gx + project * old_x;
-                    py[j] = neumann_y ? 0.0 : gy + project * old_y;
-                }
+                const bool neumann_x =
+                    solver == 2 && !sweep_height && j + 1 == W;
+                const double gx = neumann_x ? 0.0 :
+                    xi[j + 1 == W ? 0 : j + 1] - xi[j];
+                const double gy = neumann_y ? 0.0 : xn[j] - xi[j];
+                px[j] = neumann_x ? 0.0 : gx + project * old_x;
+                py[j] = neumann_y ? 0.0 : gy + project * old_y;
             }
+        }
+    }
+
+    // t_next = grad(x) + proj(t, 1/eta), in place.  Together with
+    // fwd*_reflection this is exactly the reduced Split-Bregman recursion.
+    void update_reflected_dual(const std::vector<double>& x,
+                               std::vector<double>& tx,
+                               std::vector<double>& ty, double eta) {
+        P.run([&](int tid) {
+            update_reflected_dual_rows(x, tx, ty, eta, tid);
+        });
+    }
+
+    void update_reflected_dual_pair(
+            const std::vector<double>& x0, std::vector<double>& tx0,
+            std::vector<double>& ty0, double eta0,
+            const std::vector<double>& x1, std::vector<double>& tx1,
+            std::vector<double>& ty1, double eta1) {
+        P.run([&](int tid) {
+            update_reflected_dual_rows(x0, tx0, ty0, eta0, tid);
+            update_reflected_dual_rows(x1, tx1, ty1, eta1, tid);
         });
     }
 
@@ -967,41 +998,58 @@ struct engine {
     // current reflected row and one predecessor row are enough, so the
     // iterate plane can serve as scalar scratch without restoring either
     // eliminated vector-field plane.
+    void reflection_divergence_rows(const std::vector<double>& tx,
+                                    const std::vector<double>& ty,
+                                    double eta, double* out, int tid) {
+        const double threshold = 1.0 / eta;
+        const std::size_t lanes_n = std::size_t(P.lanes());
+        const std::size_t lo = H * std::size_t(tid) / lanes_n;
+        const std::size_t hi = H * (std::size_t(tid) + 1) / lanes_n;
+        if (lo == hi) return;
+        lane& L = *lanes[tid];
+        const std::size_t yp0 = (lo == 0 ? H : lo) - 1;
+        for (std::size_t x = 0; x < W; ++x) {
+            double unused;
+            if (solver == 2 && sweep_height && lo == 0) {
+                L.line[x] = 0.0;
+            } else {
+                reflected(tx[yp0 * W + x], ty[yp0 * W + x], threshold,
+                          unused, L.line[x]);
+            }
+        }
+        for (std::size_t y = lo; y < hi; ++y) {
+            for (std::size_t x = 0; x < W; ++x) {
+                reflected(tx[y * W + x], ty[y * W + x], threshold,
+                          L.reflect_x[x], L.reflect_y[x]);
+            }
+            for (std::size_t x = 0; x < W; ++x) {
+                const std::size_t xp = (x == 0 ? W : x) - 1;
+                const double prev_x =
+                    (solver == 2 && x == 0) ? 0.0 : L.reflect_x[xp];
+                out[y * W + x] =
+                    L.reflect_x[x] - prev_x +
+                    L.reflect_y[x] - L.line[x];
+            }
+            std::memcpy(L.line.data(), L.reflect_y.data(),
+                        W * sizeof(double));
+        }
+    }
+
     void reflection_divergence_plane(const std::vector<double>& tx,
                                      const std::vector<double>& ty,
                                      double eta, double* out) {
-        const double threshold = 1.0 / eta;
         P.run([&](int tid) {
-            const std::size_t lanes_n = std::size_t(P.lanes());
-            const std::size_t lo = H * std::size_t(tid) / lanes_n;
-            const std::size_t hi = H * (std::size_t(tid) + 1) / lanes_n;
-            if (lo == hi) return;
-            lane& L = *lanes[tid];
-            const std::size_t yp0 = (lo == 0 ? H : lo) - 1;
-            for (std::size_t x = 0; x < W; ++x) {
-                double unused;
-                if (solver == 2 && sweep_height && lo == 0) {
-                    L.line[x] = 0.0;
-                } else {
-                    reflected(tx[yp0 * W + x], ty[yp0 * W + x], threshold,
-                              unused, L.line[x]);
-                }
-            }
-            for (std::size_t y = lo; y < hi; ++y) {
-                for (std::size_t x = 0; x < W; ++x)
-                    reflected(tx[y * W + x], ty[y * W + x], threshold,
-                              L.reflect_x[x], L.reflect_y[x]);
-                for (std::size_t x = 0; x < W; ++x) {
-                    const std::size_t xp = (x == 0 ? W : x) - 1;
-                    const double prev_x =
-                        (solver == 2 && x == 0) ? 0.0 : L.reflect_x[xp];
-                    out[y * W + x] =
-                        L.reflect_x[x] - prev_x +
-                        L.reflect_y[x] - L.line[x];
-                }
-                std::memcpy(L.line.data(), L.reflect_y.data(),
-                            W * sizeof(double));
-            }
+            reflection_divergence_rows(tx, ty, eta, out, tid);
+        });
+    }
+
+    void reflection_divergence_pair(
+            const std::vector<double>& tx0, const std::vector<double>& ty0,
+            double eta0, double* out0, const std::vector<double>& tx1,
+            const std::vector<double>& ty1, double eta1, double* out1) {
+        P.run([&](int tid) {
+            reflection_divergence_rows(tx0, ty0, eta0, out0, tid);
+            reflection_divergence_rows(tx1, ty1, eta1, out1, tid);
         });
     }
 
@@ -1163,6 +1211,74 @@ struct engine {
         });
     }
 
+    // The two Meyer ROF sweeps are lower triangular in spectral space:
+    //
+    //   U' = S_u [c_u(U + W) - eta_u D_u]
+    //   W' = S_v [c_v(F - U') - eta_v D_v].
+    //
+    // D_u and D_v depend only on the reflected-dual state at the beginning
+    // of the pass.  Consequently both may be transformed first and the two
+    // solves may share one range traversal before either inverse transform.
+    void solve_meyer_triangle(
+            const spectrum& du, const spectrum& dv, double c_u,
+            double eta_u, double c_v, double eta_v) {
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            const double* __restrict fa = f_spec.a.data();
+            const double* __restrict fb = f_spec.b.data();
+            const double* __restrict dua = du.a.data();
+            const double* __restrict dub = du.b.data();
+            const double* __restrict dva = dv.a.data();
+            const double* __restrict dvb = dv.b.data();
+            const double* __restrict su = s_u.data();
+            const double* __restrict sv = s_v.data();
+            double* __restrict ua = u_spec.a.data();
+            double* __restrict ub = u_spec.b.data();
+            double* __restrict wa = w_spec.a.data();
+            double* __restrict wb = w_spec.b.data();
+            for (std::size_t r = lo; r < hi; ++r) {
+                const double un =
+                    (c_u * (ua[r] + wa[r]) - eta_u * dua[r]) * su[r];
+                ua[r] = un;
+                wa[r] =
+                    (c_v * (fa[r] - un) - eta_v * dva[r]) * sv[r];
+            }
+            for (std::size_t r = lo; r < hi; ++r) {
+                const double un =
+                    (c_u * (ub[r] + wb[r]) - eta_u * dub[r]) * su[r];
+                ub[r] = un;
+                wb[r] =
+                    (c_v * (fb[r] - un) - eta_v * dvb[r]) * sv[r];
+            }
+        });
+    }
+
+    void solve_meyer_triangle_first(double c_u, double c_v) {
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            const double* __restrict fa = f_spec.a.data();
+            const double* __restrict fb = f_spec.b.data();
+            const double* __restrict su = s_u.data();
+            const double* __restrict sv = s_v.data();
+            double* __restrict ua = u_spec.a.data();
+            double* __restrict ub = u_spec.b.data();
+            double* __restrict wa = w_spec.a.data();
+            double* __restrict wb = w_spec.b.data();
+            for (std::size_t r = lo; r < hi; ++r) {
+                const double un = c_u * fa[r] * su[r];
+                ua[r] = un;
+                wa[r] = c_v * (fa[r] - un) * sv[r];
+            }
+            for (std::size_t r = lo; r < hi; ++r) {
+                const double un = c_u * fb[r] * su[r];
+                ub[r] = un;
+                wb[r] = c_v * (fb[r] - un) * sv[r];
+            }
+        });
+    }
+
     // out = (c * g - eta * d) * s            (rung sweeps: g fixed)
     void solve_g(const double* gA, const double* gB, const double* dA,
                  const double* dB, double c, double eta, const double* s,
@@ -1224,34 +1340,17 @@ struct engine {
         const double c_v = 1.0 / mu, eta_v = 10.0 / mu;
         for (int pass = 0; pass < passes; ++pass) {
             if (pass == 0) {
-                solve_scale(f_spec.a.data(), f_spec.b.data(), c_u,
-                            s_u.data(), u_spec.a.data(), u_spec.b.data());
+                solve_meyer_triangle_first(c_u, c_v);
             } else {
-                reflection_divergence_plane(bux, buy, eta_u, u.data());
-                fwd2d(u.data(), d_spec);
-                solve_sum_inplace(u_spec.a.data(), u_spec.b.data(),
-                                  w_spec.a.data(), w_spec.b.data(),
-                                  d_spec.a.data(), d_spec.b.data(), c_u,
-                                  eta_u, s_u.data());
+                fwd2d_reflection(bux, buy, eta_u, d_spec);
+                fwd2d_reflection(bvx, bvy, eta_v, q_spec);
+                solve_meyer_triangle(d_spec, q_spec, c_u, eta_u, c_v,
+                                     eta_v);
             }
             inv2d(u_spec, u.data());
-            update_reflected_dual(u, bux, buy, eta_u);
-
-            if (pass == 0) {
-                solve_diff_scale(f_spec.a.data(), f_spec.b.data(),
-                                 u_spec.a.data(), u_spec.b.data(), c_v,
-                                 s_v.data(), w_spec.a.data(),
-                                 w_spec.b.data());
-            } else {
-                reflection_divergence_plane(bvx, bvy, eta_v, w.data());
-                fwd2d(w.data(), d_spec);
-                solve_diff(f_spec.a.data(), f_spec.b.data(),
-                           u_spec.a.data(), u_spec.b.data(),
-                           d_spec.a.data(), d_spec.b.data(), c_v, eta_v,
-                           s_v.data(), w_spec.a.data(), w_spec.b.data());
-            }
             inv2d(w_spec, w.data());
-            update_reflected_dual(w, bvx, bvy, eta_v);
+            update_reflected_dual_pair(
+                u, bux, buy, eta_u, w, bvx, bvy, eta_v);
             emit_split_state(image, pass, cartoon_trace, texture_trace,
                              visitor, user);
         }
@@ -1273,26 +1372,31 @@ struct engine {
         for (int pass = 0; pass < passes; ++pass) {
             if (pass == 0) {
                 facr_scale(ff_spec, c_u, t_u, fu_spec);
-            } else {
-                reflection_divergence_plane(bux, buy, eta_u, u.data());
-                facr_fwd(u.data(), fd_spec);
-                facr_sum_inplace(fu_spec, fw_spec, fd_spec, c_u, eta_u,
-                                  t_u);
-            }
-            facr_inv(fu_spec, u.data());
-            update_reflected_dual(u, bux, buy, eta_u);
-
-            if (pass == 0) {
                 facr_diff(ff_spec, fu_spec, nullptr, c_v, eta_v, t_v,
                           fw_spec);
             } else {
-                reflection_divergence_plane(bvx, bvy, eta_v, w.data());
-                facr_fwd(w.data(), fd_spec);
-                facr_diff(ff_spec, fu_spec, &fd_spec, c_v, eta_v, t_v,
+                if (sweep_height) {
+                    facr_fwd_reflection(bux, buy, eta_u, fd_spec);
+                    facr_fwd_reflection(bvx, bvy, eta_v, fq_spec);
+                } else {
+                    // Column transforms make all four reflected-dual
+                    // streams strided.  A row-major materialization is
+                    // faster here despite the scalar scratch traffic.
+                    reflection_divergence_pair(
+                        bux, buy, eta_u, u.data(),
+                        bvx, bvy, eta_v, w.data());
+                    facr_fwd(u.data(), fd_spec);
+                    facr_fwd(w.data(), fq_spec);
+                }
+                facr_sum_inplace(fu_spec, fw_spec, fd_spec, c_u, eta_u,
+                                  t_u);
+                facr_diff(ff_spec, fu_spec, &fq_spec, c_v, eta_v, t_v,
                           fw_spec);
             }
+            facr_inv(fu_spec, u.data());
             facr_inv(fw_spec, w.data());
-            update_reflected_dual(w, bvx, bvy, eta_v);
+            update_reflected_dual_pair(
+                u, bux, buy, eta_u, w, bvx, bvy, eta_v);
             emit_split_state(image, pass, cartoon_trace, texture_trace,
                              visitor, user);
         }
@@ -1323,6 +1427,8 @@ struct engine {
                              trace_visitor visitor = nullptr,
                              void* user = nullptr) {
         const std::size_t n = H * W;
+        for (auto* p : {&dbux, &dbuy, &dbvx, &dbvy})
+            if (p->empty()) p->assign(n, 0.0);
         for (auto* p : {&u, &w, &bux, &buy, &dbux, &dbuy, &bvx, &bvy, &dbvx,
                         &dbvy})
             std::memset(p->data(), 0, n * sizeof(double));
@@ -1402,6 +1508,8 @@ struct engine {
                          trace_visitor visitor = nullptr,
                          void* user = nullptr) {
         const std::size_t n = H * W;
+        for (auto* p : {&dbux, &dbuy, &dbvx, &dbvy})
+            if (p->empty()) p->assign(n, 0.0);
         for (auto* p : {&u, &w, &bux, &buy, &dbux, &dbuy, &bvx, &bvy,
                         &dbvx, &dbvy})
             std::memset(p->data(), 0, n * sizeof(double));
@@ -1813,7 +1921,7 @@ struct engine {
             return;
         }
         const std::size_t n = H * W;
-        run_passes(image);
+        run_split_reduced_spectral(image, vplane.data());
 
         // g for every rung is v: spectrum by linear combination, no
         // transform
@@ -1866,7 +1974,7 @@ struct engine {
                         double* texture, double* band_coarse,
                         double* band_mid, double* band_fine) {
         const std::size_t n = H * W;
-        run_passes_facr(image);
+        run_split_reduced_facr(image, vplane.data());
         const std::size_t m = FS * FB;
         for (std::size_t i = 0; i < m; ++i) {
             fv_spec.a[i] = ff_spec.a[i] - fu_spec.a[i] - fw_spec.a[i];

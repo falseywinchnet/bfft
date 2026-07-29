@@ -1,8 +1,0 @@
-/Users/quentinkuttenkuler/bfft/build-high-vision/CMakeFiles/high_vision.dir
-/Users/quentinkuttenkuler/bfft/build-high-vision/CMakeFiles/high_vision_tests.dir
-/Users/quentinkuttenkuler/bfft/build-high-vision/CMakeFiles/high_vision_benchmark.dir
-/Users/quentinkuttenkuler/bfft/build-high-vision/CMakeFiles/high_vision_entropy_benchmark.dir
-/Users/quentinkuttenkuler/bfft/build-high-vision/CMakeFiles/high_vision_night_dynamic_benchmark.dir
-/Users/quentinkuttenkuler/bfft/build-high-vision/CMakeFiles/test.dir
-/Users/quentinkuttenkuler/bfft/build-high-vision/CMakeFiles/edit_cache.dir
-/Users/quentinkuttenkuler/bfft/build-high-vision/CMakeFiles/rebuild_cache.dir

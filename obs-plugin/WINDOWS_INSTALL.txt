@@ -1,15 +1,19 @@
 BFFT Cartoon for OBS Studio 32.1.x — Windows x64
 =================================================
 
-This streamlined build includes exactly two display modes:
+This build includes five display modes:
 
 * Cartoon + texture
 * Fine chrome
+* Recursive recovery
+* Layer interference
+* Information caustics
 
-The processing grid preserves the source aspect ratio. Its FACR backend
-accepts an arbitrary length on one axis, avoiding the old two-axis
-power-of-two padding and distortion while remaining fast for standard video
-sizes.
+The filter processes every source pixel at its original pitch. Its FACR
+backend accepts an arbitrary length on one axis. If neither source axis is a
+supported power-of-two length, the cheaper axis is extended with symmetric
+reflection and the exact source rectangle is cropped afterward. There is no
+work-resolution scaling or aspect distortion.
 
 Install
 -------
@@ -28,7 +32,11 @@ Install
 Fine chrome uses the one-step correction
 cartoon - ROF(input - texture, shading_c), then renders that field as a
 displaced chrome surface. Cartoon + texture exposes independent cartoon,
-texture, and shading gains.
+texture, and shading gains. Recursive recovery performs the useful two-stage
+texture recovery directly, without an intervening 8-bit OBS round trip. Layer
+interference displays the interaction between texture and the model residual.
+Information caustics turns that information into a color-preserving refractive
+field.
 
 With Cartoon set exactly to zero, signed texture and residual detail is shown
 around neutral gray. Source chroma is removed in that view so empty regions
@@ -47,3 +55,8 @@ Compatibility
 
 If OBS was running during installation, restart it before looking for the
 filter.
+
+Native-resolution processing is intentionally more expensive than the older
+small surrogate grid. Start with 2 Native quality passes and 6 CPU threads.
+Recursive recovery performs two decompositions per frame and is the heaviest
+of these modes.

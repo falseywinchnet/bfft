@@ -15,7 +15,8 @@ enum class Mode {
 	synthetic_hdr = 1,
 	night_integrator = 2,
 	night_likelihood = 3,
-	experimental = 4,
+	night_moments = 4,
+	experimental = 5,
 };
 
 struct FrameMetadata {
@@ -66,6 +67,17 @@ struct Config {
 	float read_noise = 0.006f;
 	float shot_noise = 0.035f;
 
+	// Night moments treats the transported temporal population as signal.
+	// The ordinary belief remains the registered mean; display radiance is
+	// reconstructed from a bounded power response plus empirical standard
+	// deviation. This is the fourth OBS path intended for fast, noisy 420v
+	// capture rather than a camera/adapter's internally averaged preview.
+	float moment_response_power = 0.10f;
+	float moment_variance_gain = 6.0f;
+	float moment_variance_floor = 0.002f;
+	float moment_min_support = 4.0f;
+	float moment_integration_seconds = 4.0f;
+
 	// A sensor-fixed nuisance field lives in detector coordinates rather
 	// than in the transported scene gauge. It is identifiable only while
 	// registered scene content moves across the detector, so updates are
@@ -94,6 +106,10 @@ struct Diagnostics {
 	float mean_change_probability = 0.0f;
 	float clipped_fraction = 0.0f;
 	float sensor_pattern_rms = 0.0f;
+	float mean_temporal_sigma = 0.0f;
+	float mean_moment_lift = 0.0f;
+	float moment_effective_fps = 0.0f;
+	float moment_window_frames = 0.0f;
 	std::uint64_t sensor_pattern_updates = 0;
 	bool meyer_registration_applied = false;
 	bool reset = false;

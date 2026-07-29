@@ -21,7 +21,8 @@ float clamp01(float value)
 bool is_night_mode(Mode mode)
 {
 	return mode == Mode::night_integrator ||
-	       mode == Mode::night_likelihood;
+	       mode == Mode::night_likelihood ||
+	       mode == Mode::night_moments;
 }
 
 float smoothstep(float edge0, float edge1, float value)
@@ -433,6 +434,7 @@ struct Processor::Impl {
 	std::vector<double> meyer_texture;
 #endif
 	std::vector<float> display;
+	std::vector<float> recovered_radiance;
 	std::vector<std::uint8_t> current_census;
 	std::vector<std::uint8_t> previous_census;
 
@@ -446,6 +448,10 @@ struct Processor::Impl {
 	double telemetry_anchor = 0.0;
 	float display_black = 0.0f;
 	float display_white = 1.0f;
+	std::array<float, 4097> moment_response_lut{};
+	float moment_response_lut_power = -1.0f;
+	std::uint64_t previous_timestamp_ns = 0;
+	float moment_effective_fps = 30.0f;
 
 	explicit Impl(Config config) : cfg(std::move(config))
 	{
@@ -486,6 +492,16 @@ struct Processor::Impl {
 			std::clamp(cfg.highlight_knee, 0.5f, 0.999f);
 		cfg.read_noise = std::max(cfg.read_noise, 1e-6f);
 		cfg.shot_noise = std::max(cfg.shot_noise, 0.0f);
+		cfg.moment_response_power =
+			std::clamp(cfg.moment_response_power, 0.02f, 1.0f);
+		cfg.moment_variance_gain =
+			std::clamp(cfg.moment_variance_gain, 0.0f, 64.0f);
+		cfg.moment_variance_floor =
+			std::clamp(cfg.moment_variance_floor, 0.0f, 0.25f);
+		cfg.moment_min_support =
+			std::clamp(cfg.moment_min_support, 1.0f, 64.0f);
+		cfg.moment_integration_seconds =
+			std::clamp(cfg.moment_integration_seconds, 1.0f, 60.0f);
 		cfg.sensor_pattern_learning_rate =
 			std::clamp(cfg.sensor_pattern_learning_rate, 0.0f, 0.25f);
 		cfg.sensor_pattern_limit =
@@ -541,6 +557,7 @@ struct Processor::Impl {
 		}
 #endif
 		display.assign(count, 0.0f);
+		recovered_radiance.assign(count, 0.0f);
 		current_census.assign(count, 0);
 		previous_census.assign(count, 0);
 		tiles_x = (width + static_cast<std::size_t>(cfg.tile_size) - 1) /
@@ -555,6 +572,9 @@ struct Processor::Impl {
 		telemetry_anchor = 0.0;
 		display_black = 0.0f;
 		display_white = 1.0f;
+		moment_response_lut_power = -1.0f;
+		previous_timestamp_ns = 0;
+		moment_effective_fps = 30.0f;
 		diag = {};
 		if (stage)
 			stage->reset(width, height);
@@ -843,7 +863,9 @@ struct Processor::Impl {
 					bilinear(belief, width, height, px, py, current[i]);
 				transported_support[i] =
 					bilinear(support, width, height, px, py, 0.0f) *
-					cfg.support_decay *
+					(cfg.mode == Mode::night_moments
+						 ? 1.0f
+						 : cfg.support_decay) *
 					(night ? 1.0f : confidence);
 				transported_variance[i] =
 					bilinear(variance, width, height, px, py, 0.0f);
@@ -867,6 +889,13 @@ struct Processor::Impl {
 				telemetry_anchor = telemetry;
 			return static_cast<float>(
 				std::clamp(telemetry / telemetry_anchor, 1e-4, 1e4));
+		}
+		if (cfg.mode == Mode::night_moments && initialized) {
+			// This mode promotes frame-population spread into radiance.
+			// Inferring exposure from that same spread would divide away
+			// the evidence and can create a false gain trajectory. Without
+			// telemetry, retain the existing camera gauge.
+			return relative_exposure;
 		}
 
 		// Without telemetry, exposure and a global illumination change are
@@ -1030,6 +1059,13 @@ struct Processor::Impl {
 		const bool night = is_night_mode(cfg.mode);
 		const bool likelihood =
 			cfg.mode == Mode::night_likelihood;
+		const bool moments =
+			cfg.mode == Mode::night_moments;
+		const float support_limit = moments
+			? std::max(cfg.moment_min_support,
+				   cfg.moment_integration_seconds *
+					   moment_effective_fps)
+			: cfg.support_limit;
 		const float decay = cfg.support_decay;
 		for (std::size_t i = 0; i < current.size(); ++i) {
 			const float encoded = current[i];
@@ -1046,7 +1082,18 @@ struct Processor::Impl {
 			float prior = transported_support[i] *
 				      (decay / std::max(cfg.support_decay, 1e-6f));
 			const float predicted = transported_belief[i];
-			const float observation_sigma = noise_sigma(obs);
+			float observation_sigma = noise_sigma(obs);
+			if (moments &&
+			    transported_support[i] >= cfg.moment_min_support) {
+				// Fast 420v capture can expose a much wider temporal
+				// population than the nominal read/shot model predicts.
+				// Once a local population exists, use its measured spread
+				// to distinguish ordinary frame noise from coherent change.
+				observation_sigma = std::max(
+					observation_sigma,
+					std::sqrt(std::max(
+						transported_variance[i], 0.0f)));
+			}
 			const float residual = obs - predicted;
 			float retention = 1.0f;
 			float change_probability = 0.0f;
@@ -1130,6 +1177,16 @@ struct Processor::Impl {
 				retention =
 					1.0f - 0.98f * change_probability;
 			} else if (night) {
+				if (moments &&
+				    transported_support[i] <
+					    cfg.moment_min_support) {
+					// Bootstrap a population before asking its moments
+					// to adjudicate change. Otherwise the first noisy
+					// disagreement continually bankrupts support and the
+					// empirical variance can never nucleate.
+					coherent_innovation[i] = 0.0f;
+					retention = 1.0f;
+				} else {
 				// The old absolute threshold made shadow changes nearly
 				// invisible: a 4% radiance drop is enormous at 5% signal
 				// but tiny next to an absolute threshold of 8–15%.
@@ -1172,6 +1229,7 @@ struct Processor::Impl {
 				change_probability =
 					smoothstep(0.65f, 1.40f, release_score);
 				retention = 1.0f - 0.98f * change_probability;
+				}
 			} else {
 				const float scale =
 					cfg.change_threshold +
@@ -1208,7 +1266,7 @@ struct Processor::Impl {
 					 observation_weight * delta * delta) /
 					total;
 				belief[i] = std::max(next, 0.0f);
-				support[i] = std::min(total, cfg.support_limit);
+				support[i] = std::min(total, support_limit);
 			} else {
 				belief[i] = std::max(predicted, 0.0f);
 				support[i] = prior;
@@ -1223,25 +1281,31 @@ struct Processor::Impl {
 			change_sum / std::max<std::size_t>(support.size(), 1));
 		diag.clipped_fraction = static_cast<float>(clipped) /
 					std::max<std::size_t>(current.size(), 1);
+		diag.moment_effective_fps =
+			moments ? moment_effective_fps : 0.0f;
+		diag.moment_window_frames =
+			moments ? support_limit : 0.0f;
 	}
 
-	std::pair<float, float> belief_range() const
+	std::pair<float, float>
+	signal_range(const std::vector<float> &signal) const
 	{
 		constexpr std::size_t bins = 2048;
 		std::array<std::size_t, bins> histogram{};
 		float maximum = 0.0f;
-		for (std::size_t i = 0; i < belief.size(); ++i)
-			if (support[i] > 0.05f && std::isfinite(belief[i]))
-				maximum = std::max(maximum, belief[i]);
+		for (std::size_t i = 0; i < signal.size(); ++i)
+			if (support[i] > 0.05f && std::isfinite(signal[i]))
+				maximum = std::max(maximum, signal[i]);
 		if (!(maximum > 1e-8f))
 			return {0.0f, 1.0f};
 		std::size_t population = 0;
-		for (std::size_t i = 0; i < belief.size(); ++i) {
-			if (support[i] <= 0.05f || !std::isfinite(belief[i]))
+		for (std::size_t i = 0; i < signal.size(); ++i) {
+			if (support[i] <= 0.05f || !std::isfinite(signal[i]))
 				continue;
 			const std::size_t bin = std::min<std::size_t>(
 				static_cast<std::size_t>(
-					belief[i] / maximum * static_cast<float>(bins - 1)),
+					signal[i] / maximum *
+					static_cast<float>(bins - 1)),
 				bins - 1);
 			++histogram[bin];
 			++population;
@@ -1264,7 +1328,75 @@ struct Processor::Impl {
 
 	void tone_map(float *output, std::size_t output_stride)
 	{
-		auto range = belief_range();
+		const std::vector<float> *radiance = &belief;
+		if (cfg.mode == Mode::night_moments) {
+			const float variance_floor =
+				cfg.moment_variance_floor *
+				cfg.moment_variance_floor;
+			constexpr float response_floor = 1e-5f;
+			if (moment_response_lut_power !=
+			    cfg.moment_response_power) {
+				const float response_black = std::pow(
+					response_floor,
+					cfg.moment_response_power);
+				for (std::size_t bin = 0;
+				     bin < moment_response_lut.size(); ++bin) {
+					const float value =
+						static_cast<float>(bin) /
+						static_cast<float>(
+							moment_response_lut.size() -
+							1);
+					moment_response_lut[bin] = std::max(
+						std::pow(value + response_floor,
+							 cfg.moment_response_power) -
+							response_black,
+						0.0f);
+				}
+				moment_response_lut_power =
+					cfg.moment_response_power;
+			}
+			double sigma_sum = 0.0;
+			double lift_sum = 0.0;
+			for (std::size_t i = 0; i < belief.size(); ++i) {
+				const float empirical_sigma = std::sqrt(std::max(
+					variance[i] - variance_floor, 0.0f));
+				const float support_confidence = smoothstep(
+					1.0f, cfg.moment_min_support, support[i]);
+				const float coordinate = std::clamp(
+					belief[i], 0.0f, 1.0f) *
+					static_cast<float>(
+						moment_response_lut.size() - 1);
+				const std::size_t low =
+					static_cast<std::size_t>(coordinate);
+				const std::size_t high = std::min(
+					low + 1,
+					moment_response_lut.size() - 1);
+				const float fraction =
+					coordinate - static_cast<float>(low);
+				const float response =
+					moment_response_lut[low] *
+						(1.0f - fraction) +
+					moment_response_lut[high] * fraction;
+				const float lift =
+					cfg.moment_variance_gain * empirical_sigma *
+					support_confidence;
+				recovered_radiance[i] = response + lift;
+				sigma_sum += empirical_sigma;
+				lift_sum += lift;
+			}
+			const double population = static_cast<double>(
+				std::max<std::size_t>(belief.size(), 1));
+			diag.mean_temporal_sigma =
+				static_cast<float>(sigma_sum / population);
+			diag.mean_moment_lift =
+				static_cast<float>(lift_sum / population);
+			radiance = &recovered_radiance;
+		} else {
+			diag.mean_temporal_sigma = 0.0f;
+			diag.mean_moment_lift = 0.0f;
+		}
+
+		auto range = signal_range(*radiance);
 		if (diag.frame_index <= 1 || !(display_white > display_black)) {
 			display_black = range.first;
 			display_white = range.second;
@@ -1275,9 +1407,10 @@ struct Processor::Impl {
 		}
 		const float span = std::max(display_white - display_black, 1e-5f);
 		const float log_den = std::log1p(8.0f);
-		for (std::size_t i = 0; i < belief.size(); ++i) {
+		for (std::size_t i = 0; i < radiance->size(); ++i) {
 			const float normalized =
-				std::max((belief[i] - display_black) / span, 0.0f);
+				std::max(((*radiance)[i] - display_black) / span,
+					 0.0f);
 			const float mapped = std::log1p(8.0f * normalized) / log_den;
 			display[i] =
 				clamp01(cfg.tone_strength * mapped +
@@ -1334,6 +1467,30 @@ struct Processor::Impl {
 
 		diag.reset = false;
 		++diag.frame_index;
+		if (cfg.mode == Mode::night_moments) {
+			if (metadata.timestamp_ns > previous_timestamp_ns &&
+			    previous_timestamp_ns != 0) {
+				const double seconds =
+					static_cast<double>(
+						metadata.timestamp_ns -
+						previous_timestamp_ns) *
+					1e-9;
+				if (seconds >= 1.0 / 240.0 && seconds <= 1.0) {
+					const float measured_fps = static_cast<float>(
+						std::clamp(1.0 / seconds, 1.0, 120.0));
+					moment_effective_fps +=
+						0.08f *
+						(measured_fps -
+						 moment_effective_fps);
+				}
+			}
+			if (metadata.timestamp_ns != 0)
+				previous_timestamp_ns = metadata.timestamp_ns;
+			diag.moment_effective_fps = moment_effective_fps;
+			diag.moment_window_frames =
+				cfg.moment_integration_seconds *
+				moment_effective_fps;
+		}
 		if (cfg.mode == Mode::passthrough) {
 			for (std::size_t y = 0; y < height; ++y)
 				std::copy_n(input + y * input_stride, width,

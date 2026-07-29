@@ -8,6 +8,12 @@
 #include <mutex>
 #include <vector>
 
+#include "../src/detail/bruun_simd_backend.hpp"
+namespace bruun {
+#include "../src/detail/MAG_REPRESENT_KERNEL.hpp"
+}
+namespace effect_trig = bruun;
+
 void register_high_vision_filter();
 
 OBS_DECLARE_MODULE()
@@ -22,12 +28,16 @@ constexpr const char *kCartoon = "cartoon_gain_v2";
 constexpr const char *kTexture = "texture_gain_v2";
 constexpr const char *kShading = "shading_gain_v2";
 constexpr const char *kShadeC = "shading_rof_c_v2";
-constexpr const char *kPasses = "passes";
+// Native-pitch plans have roughly nine times the old 512x288 area. A new
+// key intentionally avoids inheriting an old 12-24-pass saved setting.
+constexpr const char *kPasses = "native_passes_v1";
 constexpr const char *kThreads = "threads";
 constexpr const char *kMode = "mode";
 constexpr const char *kRelief = "relief";
 constexpr const char *kGloss = "gloss";
-constexpr uint32_t kMaxWorkLongSide = 512;
+constexpr const char *kRecoveryGain = "recovery_gain";
+constexpr const char *kInformationGain = "information_gain";
+constexpr const char *kPhaseFolds = "phase_folds";
 
 struct Filter {
 	obs_source_t *source = nullptr;
@@ -45,6 +55,7 @@ struct Filter {
 	std::vector<double> projected_cartoon;
 	std::vector<double> difference;
 	std::vector<double> output;
+	std::vector<double> recursive_texture;
 	std::vector<uint32_t> work_source_x;
 	std::vector<uint32_t> work_source_y;
 	std::vector<uint32_t> frame_work_x;
@@ -56,11 +67,14 @@ struct Filter {
 	double texture_gain = 1.0;
 	double shading_gain = 0.0;
 	double shade_c = 0.02;
-	int passes = 12;
-	int threads = 4;
+	int passes = 2;
+	int threads = 6;
 	int mode = 0;
 	double relief = 1.0;
 	double gloss = 0.75;
+	double recovery_gain = 5.0;
+	double information_gain = 2.0;
+	double phase_folds = 6.0;
 
 	uint64_t frames = 0;
 	double total_ms = 0.0;
@@ -71,39 +85,37 @@ struct Filter {
 	uint64_t pass_updates = 0;
 };
 
-uint32_t floor_power_of_two(uint32_t value, uint32_t ceiling)
+bool is_power_of_two(uint32_t value)
 {
-	value = std::min(value, ceiling);
-	uint32_t result = 8;
-	while (result <= value / 2)
-		result *= 2;
-	return result;
+	return value >= 8 && (value & (value - 1)) == 0;
 }
 
-uint32_t nearest_power_of_two(uint32_t value, uint32_t ceiling)
+uint32_t next_power_of_two(uint32_t value)
 {
-	const uint32_t lo = floor_power_of_two(value, ceiling);
-	const uint32_t hi = std::min(lo * 2, ceiling);
-	return value - lo < hi - value ? lo : hi;
+	uint32_t result = 8;
+	while (result < value && result <= UINT32_MAX / 2)
+		result *= 2;
+	return result;
 }
 
 void choose_work_shape(uint32_t frame_width, uint32_t frame_height,
 		       uint32_t &work_width, uint32_t &work_height)
 {
-	if (frame_width >= frame_height) {
-		work_width =
-			nearest_power_of_two(frame_width, kMaxWorkLongSide);
-		work_height = std::max(
-			2u, static_cast<uint32_t>(std::lround(
-				    static_cast<double>(frame_height) *
-				    work_width / frame_width)));
+	work_width = frame_width;
+	work_height = frame_height;
+	if (is_power_of_two(frame_width) || is_power_of_two(frame_height))
+		return;
+
+	const uint32_t padded_width = next_power_of_two(frame_width);
+	const uint32_t padded_height = next_power_of_two(frame_height);
+	const uint64_t width_candidate =
+		static_cast<uint64_t>(padded_width) * frame_height;
+	const uint64_t height_candidate =
+		static_cast<uint64_t>(frame_width) * padded_height;
+	if (height_candidate <= width_candidate) {
+		work_height = padded_height;
 	} else {
-		work_height =
-			nearest_power_of_two(frame_height, kMaxWorkLongSide);
-		work_width = std::max(
-			2u, static_cast<uint32_t>(std::lround(
-				    static_cast<double>(frame_width) *
-				    work_height / frame_height)));
+		work_width = padded_width;
 	}
 }
 
@@ -125,30 +137,33 @@ void update_resample_maps(Filter *filter, uint32_t frame_width,
 	filter->work_source_y.resize(work_height);
 	filter->frame_work_x.resize(frame_width);
 	filter->frame_work_y.resize(frame_height);
+	const int64_t left =
+		static_cast<int64_t>(work_width - frame_width) / 2;
+	const int64_t top =
+		static_cast<int64_t>(work_height - frame_height) / 2;
+	auto reflected_index = [](int64_t coordinate, uint32_t length) {
+		if (coordinate < 0)
+			return static_cast<uint32_t>(-coordinate - 1);
+		if (coordinate >= static_cast<int64_t>(length))
+			return static_cast<uint32_t>(
+				2 * static_cast<int64_t>(length) -
+				coordinate - 1);
+		return static_cast<uint32_t>(coordinate);
+	};
 	for (uint32_t x = 0; x < work_width; ++x)
-		filter->work_source_x[x] = std::min(
-			static_cast<uint32_t>(
-				(static_cast<uint64_t>(x) * frame_width) /
-				work_width),
-			frame_width - 1);
+		filter->work_source_x[x] =
+			reflected_index(static_cast<int64_t>(x) - left,
+					frame_width);
 	for (uint32_t y = 0; y < work_height; ++y)
-		filter->work_source_y[y] = std::min(
-			static_cast<uint32_t>(
-				(static_cast<uint64_t>(y) * frame_height) /
-				work_height),
-			frame_height - 1);
+		filter->work_source_y[y] =
+			reflected_index(static_cast<int64_t>(y) - top,
+					frame_height);
 	for (uint32_t x = 0; x < frame_width; ++x)
-		filter->frame_work_x[x] = std::min(
-			static_cast<uint32_t>(
-				(static_cast<uint64_t>(x) * work_width) /
-				frame_width),
-			work_width - 1);
+		filter->frame_work_x[x] =
+			static_cast<uint32_t>(left) + x;
 	for (uint32_t y = 0; y < frame_height; ++y)
-		filter->frame_work_y[y] = std::min(
-			static_cast<uint32_t>(
-				(static_cast<uint64_t>(y) * work_height) /
-				frame_height),
-			work_height - 1);
+		filter->frame_work_y[y] =
+			static_cast<uint32_t>(top) + y;
 }
 
 bool ensure_plan(Filter *filter, uint32_t frame_width, uint32_t frame_height,
@@ -210,11 +225,12 @@ bool ensure_plan(Filter *filter, uint32_t frame_width, uint32_t frame_height,
 	filter->projected_cartoon.resize(count);
 	filter->difference.resize(count);
 	filter->output.resize(count);
+	filter->recursive_texture.resize(count);
 	update_resample_maps(filter, frame_width, frame_height, work_width,
 			     work_height);
 	blog(LOG_INFO,
-	     "[BFFT Cartoon] FACR grid %ux%u for %ux%u input, %d passes, "
-	     "%d threads",
+	     "[BFFT Cartoon] native-pitch FACR grid %ux%u for %ux%u input, "
+	     "%d passes, %d threads",
 	     work_width, work_height, frame_width, frame_height, passes,
 	     threads);
 	return true;
@@ -512,6 +528,11 @@ void filter_update(void *data, obs_data_t *settings)
 	filter->mode = static_cast<int>(obs_data_get_int(settings, kMode));
 	filter->relief = obs_data_get_double(settings, kRelief);
 	filter->gloss = obs_data_get_double(settings, kGloss);
+	filter->recovery_gain =
+		obs_data_get_double(settings, kRecoveryGain);
+	filter->information_gain =
+		obs_data_get_double(settings, kInformationGain);
+	filter->phase_folds = obs_data_get_double(settings, kPhaseFolds);
 }
 
 void filter_defaults(obs_data_t *settings)
@@ -520,11 +541,14 @@ void filter_defaults(obs_data_t *settings)
 	obs_data_set_default_double(settings, kTexture, 1.0);
 	obs_data_set_default_double(settings, kShading, 0.0);
 	obs_data_set_default_double(settings, kShadeC, 0.02);
-	obs_data_set_default_int(settings, kPasses, 12);
-	obs_data_set_default_int(settings, kThreads, 4);
+	obs_data_set_default_int(settings, kPasses, 2);
+	obs_data_set_default_int(settings, kThreads, 6);
 	obs_data_set_default_int(settings, kMode, 0);
 	obs_data_set_default_double(settings, kRelief, 1.0);
 	obs_data_set_default_double(settings, kGloss, 0.75);
+	obs_data_set_default_double(settings, kRecoveryGain, 5.0);
+	obs_data_set_default_double(settings, kInformationGain, 2.0);
+	obs_data_set_default_double(settings, kPhaseFolds, 6.0);
 }
 
 obs_properties_t *filter_properties(void *)
@@ -536,6 +560,9 @@ obs_properties_t *filter_properties(void *)
 	obs_property_list_add_int(mode, "Cartoon + texture", 0);
 	// Preserve value 3 so existing Fine chrome scenes remain selected.
 	obs_property_list_add_int(mode, "Fine chrome", 3);
+	obs_property_list_add_int(mode, "Recursive recovery", 20);
+	obs_property_list_add_int(mode, "Layer interference", 21);
+	obs_property_list_add_int(mode, "Information caustics", 22);
 	obs_properties_add_float_slider(
 		props, kCartoon, "Cartoon gain", 0.0, 2.0, 0.05);
 	obs_properties_add_float_slider(
@@ -545,13 +572,20 @@ obs_properties_t *filter_properties(void *)
 	obs_properties_add_float_slider(
 		props, kShadeC, "TV projection constant", 0.004, 0.2, 0.002);
 	obs_properties_add_int_slider(
-		props, kPasses, "Quality / passes", 4, 24, 1);
+		props, kPasses, "Native quality / passes", 1, 8, 1);
 	obs_properties_add_int_slider(
 		props, kThreads, "CPU threads", 1, 8, 1);
 	obs_properties_add_float_slider(
 		props, kRelief, "Chrome relief depth", 0.1, 4.0, 0.05);
 	obs_properties_add_float_slider(
 		props, kGloss, "Chrome gloss", 0.0, 1.0, 0.05);
+	obs_properties_add_float_slider(
+		props, kRecoveryGain, "Recovery boost", 0.0, 10.0, 0.1);
+	obs_properties_add_float_slider(
+		props, kInformationGain, "Information gain", 0.0, 6.0, 0.05);
+	obs_properties_add_float_slider(
+		props, kPhaseFolds, "Information phase folds", 1.0, 16.0,
+		0.25);
 	return props;
 }
 
@@ -585,6 +619,7 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 
 	std::lock_guard<std::mutex> processing_lock(filter->processing_mutex);
 	double cartoon_gain, texture_gain, shading_gain, shade_c, relief, gloss;
+	double recovery_gain, information_gain, phase_folds;
 	int passes, threads, mode;
 	{
 		std::lock_guard<std::mutex> lock(filter->settings_mutex);
@@ -592,11 +627,24 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 		texture_gain = filter->texture_gain;
 		shading_gain = filter->shading_gain;
 		shade_c = filter->shade_c;
-		passes = std::clamp(filter->passes, 4, 24);
+		passes = std::clamp(filter->passes, 1, 8);
 		threads = std::clamp(filter->threads, 1, 8);
-		mode = filter->mode == 3 ? 3 : 0;
+		switch (filter->mode) {
+		case 3:
+		case 20:
+		case 21:
+		case 22:
+			mode = filter->mode;
+			break;
+		default:
+			mode = 0;
+			break;
+		}
 		relief = filter->relief;
 		gloss = filter->gloss;
+		recovery_gain = filter->recovery_gain;
+		information_gain = filter->information_gain;
+		phase_folds = filter->phase_folds;
 	}
 	if (mode == 0 && std::abs(cartoon_gain - 1.0) < 1e-12 &&
 	    std::abs(texture_gain - 1.0) < 1e-12 &&
@@ -648,7 +696,7 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 				signed_detail ? 128.0 + value : value;
 		}
 		write_work_output(filter, frame, signed_detail);
-	} else {
+	} else if (mode == 3) {
 		// Fine chrome: one accurate outer-map correction,
 		// u_TGFD - ROF(f - v_TGFD, lambda).
 		for (size_t i = 0; i < count; ++i)
@@ -723,9 +771,17 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 						     0.82 * nz);
 				const double specular = std::pow(
 					light, 8.0 + gloss * 72.0);
+				double phase = 10.0 * ny + 3.0 * h;
+				phase -= std::floor(
+						 phase /
+						 effect_trig::bruun_tau) *
+					 effect_trig::bruun_tau;
+				double environment_sine, environment_cosine;
+				effect_trig::bruun_table256_poly3_sincos(
+					phase, &environment_sine,
+					&environment_cosine);
 				const double environment =
-					0.5 +
-					0.5 * std::sin(10.0 * ny + 3.0 * h);
+					0.5 + 0.5 * environment_sine;
 				const double chrome =
 					20.0 + 85.0 * light +
 					75.0 * environment +
@@ -737,6 +793,132 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 			}
 		}
 		write_work_output(filter, frame, true);
+	} else if (mode == 20) {
+		// Repeat the decomposition on the residual-bearing cartoon state
+		// g = f - v. This is the useful two-filter "recovery" behavior
+		// without an intervening quantized OBS round trip.
+		for (size_t i = 0; i < count; ++i)
+			filter->difference[i] =
+				filter->input[i] - filter->texture[i];
+		if (bfft_meyer_split(filter->plan, filter->difference.data(),
+				     filter->projected_cartoon.data(),
+				     filter->recursive_texture.data()) != BFFT_OK)
+			return frame;
+		recovery_gain = std::clamp(recovery_gain, 0.0, 10.0);
+		for (size_t i = 0; i < count; ++i)
+			filter->output[i] =
+				filter->difference[i] +
+				recovery_gain * filter->recursive_texture[i];
+		write_work_output(filter, frame, false);
+	} else if (mode == 21) {
+		// Quadrature-like cross term between the explicit texture and the
+		// model residual. It is positive where they reinforce, negative
+		// where they oppose, and zero where either channel is absent.
+		information_gain = std::clamp(information_gain, 0.0, 6.0);
+		for (size_t i = 0; i < count; ++i) {
+			const double residual =
+				filter->input[i] - filter->cartoon[i] -
+				filter->texture[i];
+			const double texture = filter->texture[i];
+			const double magnitude = std::sqrt(
+				residual * residual + texture * texture);
+			const double coupling =
+				2.0 * residual * texture /
+				std::max(magnitude, 1e-6);
+			filter->output[i] =
+				128.0 + information_gain * coupling;
+		}
+		write_work_output(filter, frame, true);
+	} else {
+		// Information caustics. The non-cartoon field supplies surface
+		// geometry; the phase between texture and residual supplies a
+		// bounded optical carrier. Quiet regions remain unchanged.
+		double energy = 0.0;
+		for (size_t i = 0; i < count; ++i) {
+			const double residual =
+				filter->input[i] - filter->cartoon[i] -
+				filter->texture[i];
+			filter->difference[i] =
+				filter->texture[i] + residual;
+			energy += filter->difference[i] *
+				  filter->difference[i];
+		}
+		const double inv_scale =
+			1.0 / std::max(
+				      3.0 * std::sqrt(
+						    energy /
+						    std::max<size_t>(count, 1)),
+				      1e-6);
+		information_gain = std::clamp(information_gain, 0.0, 6.0);
+		phase_folds = std::clamp(phase_folds, 1.0, 16.0);
+		for (uint32_t y = 0; y < wh; ++y) {
+			const uint32_t yu = y ? y - 1 : wh - 1;
+			const uint32_t yd = y + 1 < wh ? y + 1 : 0;
+			for (uint32_t x = 0; x < ww; ++x) {
+				const uint32_t xl = x ? x - 1 : ww - 1;
+				const uint32_t xr = x + 1 < ww ? x + 1 : 0;
+				const size_t i = static_cast<size_t>(y) * ww + x;
+				const double residual =
+					filter->input[i] -
+					filter->cartoon[i] -
+					filter->texture[i];
+				const double texture = filter->texture[i];
+				const double magnitude =
+					std::sqrt(residual * residual +
+						  texture * texture);
+				double phase =
+					effect_trig::bruun_phase_atan2(
+						residual, texture) *
+					phase_folds;
+				phase -= std::floor(
+						 phase /
+						 effect_trig::bruun_tau) *
+					 effect_trig::bruun_tau;
+				double carrier, carrier_cosine;
+				effect_trig::bruun_table256_poly3_sincos(
+					phase, &carrier, &carrier_cosine);
+
+				const double dx =
+					(filter->difference[
+						 static_cast<size_t>(y) * ww + xr] -
+					 filter->difference[
+						 static_cast<size_t>(y) * ww + xl]) *
+					inv_scale;
+				const double dy =
+					(filter->difference[
+						 static_cast<size_t>(yd) * ww + x] -
+					 filter->difference[
+						 static_cast<size_t>(yu) * ww + x]) *
+					inv_scale;
+				double nx = -relief * dx;
+				double ny = -relief * dy;
+				const double nlen =
+					std::sqrt(nx * nx + ny * ny + 1.0);
+				nx /= nlen;
+				ny /= nlen;
+				const int ox = static_cast<int>(
+					std::lround(nx * relief * 6.0));
+				const int oy = static_cast<int>(
+					std::lround(ny * relief * 6.0));
+				const uint32_t sx = static_cast<uint32_t>(
+					std::clamp(static_cast<int>(x) + ox,
+						   0, static_cast<int>(ww) - 1));
+				const uint32_t sy = static_cast<uint32_t>(
+					std::clamp(static_cast<int>(y) + oy,
+						   0, static_cast<int>(wh) - 1));
+				const double displaced =
+					filter->input[
+						static_cast<size_t>(sy) * ww + sx];
+				const double presence =
+					magnitude / (magnitude + 12.0);
+				filter->output[i] =
+					displaced +
+					information_gain * presence *
+						(28.0 * carrier -
+						 12.0 * nx - 10.0 * ny);
+			}
+		}
+		write_work_output(filter, frame, false);
 	}
 
 	const auto effect_done = std::chrono::steady_clock::now();

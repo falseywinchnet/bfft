@@ -800,3 +800,213 @@ not silently baked into every ROF call. This is the serious boundary:
 
 The implementation keeps the useful primitive available without converting
 a conditional numerical win into a default performance regression.
+
+## 15. Finite active-angle terms
+
+`experiments/cartoon_fourier_angle_terms.py` tests whether the remaining
+capacity coupling is a short analytical series rather than a call for an
+iterative masked solver.
+
+Let `p0` have the requested divergence `q=c(u-g)`. On the current overloaded
+set write `p0=m n`, let `N` and `T` sample normal and tangent components, and
+let
+
+    S = N P_T N*,       R = T P_T N*.
+
+For fixed-normal transverse sources, `r=S lambda` and `t=R lambda`. Exact
+unit capacity requires
+
+    m + r = sqrt(1-t^2).
+
+Introducing a formal overload scale and
+`lambda=sum_k epsilon^k lambda_k` produces genuine finite curvature terms:
+
+    S lambda_1 = 1-m
+    S lambda_2 = -t_1^2/2
+    S lambda_3 = -t_1 t_2
+    S lambda_4 = -t_1 t_3 - t_2^2/2 - t_1^4/8.
+
+These are not Runge-Kutta stages or a tolerance loop. They are the explicit
+quadratic, cubic, and quartic coefficients of the active-angle equation.
+
+### Early terms are outside their convergence radius
+
+At pass 4 and 32 squared, the exact first Schur term satisfies its normal
+equation to `3e-13--6e-13`, but its tangent response is already beyond the
+real square-root radius:
+
+| field | active pixels with `|t_1|>=1` | median `|t_1|` | max `|t_1|` |
+|---|---:|---:|---:|
+| Cameraman | 76.8% | 2.69 | 34.5 |
+| synthetic | 54.6% | 1.20 | 29.2 |
+
+The additional coefficients therefore explode. On Cameraman their norms are
+`5.1e3, 3.8e5, 6.1e7, 1.2e10`; the active capacity RMS grows from `7.1` to
+`1.9e7`. Synthetic behaves the same way. Spectrally truncating enough weak
+Schur modes to keep `max |t|<1` leaves `99.2-99.6%` relative residual in the
+normal equation. The weak modes are simultaneously what closes capacity and
+what rotates the field beyond the local series chart.
+
+### Late terms converge locally but change the mask
+
+At synthetic pass 24, the first tangent response has maximum `0.438`, so the
+series is valid. Orders one through four reduce the original active-set
+capacity RMS from `9.6e-3` to `2.3e-3`, and the coefficient norms decrease
+`17.7 -> 3.1 -> 1.0 -> 0.46`. Yet `26.5%` of all pixels remain overloaded
+and the maximum norm grows to `1.89`: satisfying the original mask births a
+different mask. At that stage every objective-checked primal proposal is
+rejected anyway; the ordinary solver is already beyond the useful Hodge
+window.
+
+### Exact angle refresh is stronger and still saturates
+
+As a bound on any truncated local expansion, the experiment also composes
+the two exact nonlinear projections a fixed number of times:
+
+    p_(k+1) = P_disk(P_div=q(p_k)).
+
+Every term refreshes all angles with the exact disk map and costs one
+additional Poisson FFT pair. At pass 4:
+
+| field/size | term-1 equivalent pass | term-8 equivalent pass | extra objective gain |
+|---|---:|---:|---:|
+| Cameraman 32 | 8 | 8 | 3.9% of first drop |
+| synthetic 32 | 7 | 7 | 6.9% of first drop |
+| Cameraman 128 | 7 | 7 | 7.3% of first drop |
+| synthetic 128 | 7 | 7 | 0.2% of first drop |
+
+No case gains another equivalent pass. Each added term has essentially the
+same transform structure as the native one-shot, already measured near two
+ordinary sweeps, so the cost/effectiveness ratio worsens immediately.
+
+### The fixed-current constraints do not intersect
+
+The decisive diagnostic solves the convex oracle
+
+    min_|p_i|<=1  1/2 ||div(p)-q||^2.
+
+Projected-gradient KKT fixed-point errors are `1e-8--6e-8`, but the minimum
+relative residual at pass 4 remains nonzero:
+
+| field/size | minimum relative divergence residual |
+|---|---:|
+| Cameraman 32 | 0.280 |
+| synthetic 32 | 0.265 |
+| Cameraman 128 | 0.253 |
+| synthetic 128 | 0.101 |
+
+Thus no active-angle formula, regardless of how many terms it contains, can
+produce a unit-disk flux with the current requested divergence. The current
+primal must move at the same time. This is why the one-shot's final
+objective-checked primal segment is essential and why “closing the remaining
+inner passes” is not a missing higher-order identity.
+
+The finite-term conclusion is therefore:
+
+1. the additional analytical terms can be written explicitly;
+2. in the useful early window they lie outside their convergence radius;
+3. once they converge, active-set births remain and the proposal has no
+   objective descent left;
+4. exact angle refreshes add only marginal progress at one FFT pair apiece;
+5. further coupled updates would be an unrolled nonlinear solver, not a
+   finite analytical closure.
+
+## 16. Hodge-motion-Hodge cycling
+
+The negative moving-frame result in §12 applied a closure on every outer
+pass indefinitely. That conflated two questions:
+
+1. can target motion restore a negative Hodge direction?
+2. should the closure continue after that restored direction becomes weak?
+
+`experiments/cartoon_hodge_motion_cycle.py` separates them. It preserves the
+native Meyer penalties and warm states,
+
+    eta_u = 2 lambda,       eta_w = 10/mu,
+
+and re-seats an accepted Hodge state exactly as the native static path does:
+`b=p_hat/eta`, `d=grad(u_hat)`. The opposite ROF step then moves the target
+before the next shot.
+
+### Motion really does restore the direction
+
+For additive cartoon-side cycles at 128 squared, a shot after outer pass 4 is
+followed by the texture-survivor update, which changes the next cartoon
+target. Consecutive shots remain accepted:
+
+- Cameraman pass-4 through pass-7 alphas:
+  `0.51, 0.78, 0.59, 0.38`;
+- synthetic pass-4 through pass-7 alphas:
+  `0.75, 1.00, 0.99, 0.90`.
+
+The later shots have nonzero measured target motion and independently lower
+their current ROF objectives. Thus the proposed cycle is not equivalent to
+repeating Hodge against a frozen target. Motion genuinely reacquires the
+longitudinal inconsistency.
+
+### The winning schedule is a finite burst
+
+Perpetual schedules still lose: alpha and objective gain collapse after the
+early window, while every attempted closure pays its transform cost.
+Cost-grid search selects:
+
+1. run two to four ordinary Meyer passes;
+2. for the next four to six passes, perform the ordinary cartoon sweep and
+   one Hodge closure before the texture motion;
+3. stop Hodge entirely and continue the ordinary alternation.
+
+Replacing the cartoon sweep with Hodge, closing only the texture-survivor,
+closing both sides, and alternating sides were all dominated. The ordinary
+cartoon sweep supplies a useful local branch update; Hodge then takes the
+larger longitudinal drop; the texture step moves the target for the next
+cycle.
+
+### Equal-cost result
+
+One ordinary Split-Bregman sweep is one cost unit and the native Hodge shot
+is charged conservatively as two. Error is the joint
+`sqrt(||u-u_ref||^2+||v-v_ref||^2)/||f||` against a 4096-outer baseline
+reference for the 128-squared grid and 2048-outer references for the scale
+sweep.
+
+At 128 squared:
+
+| sweep-equivalent budget | Cameraman cycle/baseline | synthetic cycle/baseline |
+|---:|---:|---:|
+| 32 | 0.976 | 0.929 |
+| 64 | 0.938 | 0.895 |
+| 128 | 0.907 | 0.839 |
+| 256 | 0.894 | 0.798 |
+
+The cycle pays for three to six Hodge shots by giving up the same number of
+ordinary outer passes and still finishes closer to the common target.
+
+The effect is scale- and content-dependent but persists:
+
+| size | Cameraman ratio at budget 128 / 256 | synthetic ratio at budget 128 / 256 |
+|---:|---:|---:|
+| 64 | 0.771 / 0.742 | 0.654 / 0.550 |
+| 128 | 0.907 / 0.894 | 0.839 / 0.798 |
+| 256 | 0.931 / 0.903 | 0.886 / 0.879 |
+
+It also survives a higher cost charge. With each Hodge shot priced at `2.5`
+sweeps, the 128-squared ratios at budgets 128/256 are `0.928/0.900` on
+Cameraman and `0.859/0.808` on synthetic. At price `3.0`, the short
+Cameraman budget can lose, but the longer budgets remain positive.
+
+### Precision boundary
+
+The burst does not change the fixed point. After its final shot, execution is
+the unmodified warm Meyer alternation, and the cycle/baseline state difference
+shrinks under continued passes. On Cameraman the early advantage is eventually
+consumed at extreme precision by the six outer passes displaced by Hodge; on
+synthetic the transported advantage persists much longer. This is an
+accelerated trajectory to the same split, not a new decomposition.
+
+The resulting native candidate is narrow and testable: an opt-in
+cartoon-side burst described by `(start_pass, shot_count)`, initially
+`(4,4)` for conservative budgets or `(2,6)` for aggressive ones. Native
+integration must additionally refresh `u_spec` after an accepted drop before
+the texture solve; that extra forward transform is why the `2.5`-sweep cost
+sensitivity matters. No production integration is justified for an
+unbounded cadence.

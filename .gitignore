@@ -1,6 +1,8 @@
 /build/
 /build-viewer-release/
 /build-obs*/
+/build-posy-motion/
+/build-high-vision/
 *.o
 *.a
 *.so
@@ -18,6 +20,15 @@ __pycache__/
 
 # generated reference-split caches (regenerated on demand)
 experiments/out/ref_*.npz
+
+# High Vision capture, firmware-analysis, and visual-QA artifacts.
+/high_vision/out/fuji_hdmi_bench/
+/high_vision/out/fuji_xa5_*/
+/high_vision/out/movie_quality_*/
+/high_vision/out/xa5_readonly_dump_staging_*/
+/tmp/pdfs/fujifilm_*_service_manual.pdf
+/tmp/pdfs/fujifilm_*_service_manual.txt
+/tmp/pdfs/rendered/*-jig-mode.png
 
 # never commit key material
 *.key

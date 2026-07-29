@@ -133,9 +133,14 @@ int main() {
 
     const double reduced_spectral = reduced_state_error(32, 64, 0);
     const double reduced_facr = reduced_state_error(37, 64, 1);
-    std::printf("reduced/full state errors: spectral %.3e, FACR %.3e\n",
-                reduced_spectral, reduced_facr);
-    if (std::max(reduced_spectral, reduced_facr) > 2e-12) return 8;
+    const double reduced_neumann_h = reduced_state_error(37, 64, 2);
+    const double reduced_neumann_w = reduced_state_error(64, 45, 2);
+    std::printf("reduced/full state errors: spectral %.3e, FACR %.3e, "
+                "Neumann-h %.3e, Neumann-w %.3e\n", reduced_spectral,
+                reduced_facr, reduced_neumann_h, reduced_neumann_w);
+    if (std::max({reduced_spectral, reduced_facr, reduced_neumann_h,
+                  reduced_neumann_w}) > 2e-12)
+        return 8;
 
     // Non-power-of-two swept dimensions and both sweep orientations.
     for (const auto shape : {std::pair<std::size_t, std::size_t>{37, 64},

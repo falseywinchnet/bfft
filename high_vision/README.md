@@ -58,6 +58,14 @@ radiometric value.
   evidence, while repeated unexpectedly dark samples accumulate evidence that
   releases stale support. A conservative instantaneous gate remains as a
   one-frame safety valve.
+- A fourth **Night moments** path is the landing for fast, noisy `420v`
+  capture. It transports a registered temporal mean and population variance,
+  freezes the exposure gauge unless real camera telemetry is available, and
+  promotes empirical standard deviation into the display-radiance estimate.
+  The mean remains unbiased and continues to own registration and change
+  logic; variance is no longer discarded as merely uncertainty. Its
+  wall-clock integration window is adjustable from one second to one minute
+  and is converted to evidence capacity using actual frame timestamps.
 - Highlight-safe evidence fusion. Near-black and near-clipped samples have low
   precision; a fully clipped sample cannot overwrite an earlier usable
   highlight estimate.
@@ -74,10 +82,11 @@ OBS/camera frame
     -> TGFD/Meyer carrier witness (Night in a BFFT build)
     -> global + local registration
     -> detector-fixed nuisance update
-    -> conservative transport (belief, support, variance, signed innovation)
+    -> conservative transport (mean, support, variance, signed innovation)
     -> exposure normalization
     -> reliability/change-weighted fusion
     -> optional ExperimentalStage
+    -> optional Night-moments radiance response
     -> display AGC + tone map
     -> monochrome Night / source-chroma HDR OBS frame
 ```

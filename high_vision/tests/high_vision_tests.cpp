@@ -327,6 +327,107 @@ int main()
 	}
 
 	{
+		// The fourth path must preserve information that an ordinary mean
+		// provably discards. Both halves converge to mean 0.5, but only the
+		// left half carries a temporal population. Night moments should keep
+		// the stored radiance mean unbiased while exposing that variance in
+		// the reconstructed display signal.
+		high_vision::Config config;
+		config.mode = high_vision::Mode::night_moments;
+		config.registration_radius = 0;
+		config.local_search_radius = 0;
+		config.scene_cut_threshold = 1.0f;
+		config.support_limit = 64.0f;
+		config.support_decay = 1.0f;
+		config.change_threshold = 1.0f;
+		config.sensor_pattern_correction = false;
+		config.moment_response_power = 1.0f;
+		config.moment_variance_gain = 4.0f;
+		config.moment_variance_floor = 0.0f;
+		config.moment_min_support = 4.0f;
+		config.black_percentile = 0.0f;
+		config.white_percentile = 1.0f;
+		config.tone_strength = 1.0f;
+		config.local_contrast = 0.0f;
+		high_vision::Processor processor(config);
+		std::vector<float> frame(width * height, 0.5f);
+		for (int index = 0; index < 40; ++index) {
+			const float population_sample =
+				(index & 1) ? 0.75f : 0.25f;
+			for (std::size_t y = 0; y < height; ++y)
+				for (std::size_t x = 0; x < width / 2; ++x)
+					frame[y * width + x] =
+						population_sample;
+			high_vision::FrameMetadata metadata;
+			metadata.timestamp_ns =
+				static_cast<std::uint64_t>(index) * 40'000'000u;
+			require(processor.process(
+					frame.data(), width, output.data(), width,
+					width, height, metadata),
+				"Night moments rejected a population frame");
+		}
+		double left_belief = 0.0;
+		double right_belief = 0.0;
+		double left_output = 0.0;
+		double right_output = 0.0;
+		std::size_t samples = 0;
+		for (std::size_t y = 4; y + 4 < height; ++y) {
+			for (std::size_t x = 4; x + 4 < width / 2; ++x) {
+				const std::size_t left = y * width + x;
+				const std::size_t right =
+					y * width + width / 2 + x;
+				left_belief += processor.belief()[left];
+				right_belief += processor.belief()[right];
+				left_output += output[left];
+				right_output += output[right];
+				++samples;
+			}
+		}
+		left_belief /= samples;
+		right_belief /= samples;
+		left_output /= samples;
+		right_output /= samples;
+		require(std::abs(left_belief - right_belief) < 0.02,
+			"Night moments biased the transported mean");
+		require(left_output > right_output + 0.10,
+			"Night moments discarded variance-carried signal");
+		require(processor.diagnostics().mean_temporal_sigma > 0.05f,
+			"Night moments did not accumulate temporal spread");
+		require(processor.diagnostics().mean_moment_lift > 0.05f,
+			"Night moments did not promote variance into radiance");
+		require(std::abs(
+				processor.diagnostics().moment_effective_fps -
+				25.0f) < 1.0f,
+			"Night moments ignored source timestamps");
+		require(std::abs(
+				processor.diagnostics().moment_window_frames -
+				100.0f) < 4.0f,
+			"Night moments did not convert seconds to frame support");
+
+		config.moment_integration_seconds = 60.0f;
+		processor.configure(config);
+		for (int index = 40; index < 200; ++index) {
+			const float population_sample =
+				(index & 1) ? 0.75f : 0.25f;
+			for (std::size_t y = 0; y < height; ++y)
+				for (std::size_t x = 0; x < width / 2; ++x)
+					frame[y * width + x] =
+						population_sample;
+			high_vision::FrameMetadata metadata;
+			metadata.timestamp_ns =
+				static_cast<std::uint64_t>(index) * 40'000'000u;
+			require(processor.process(
+					frame.data(), width, output.data(), width,
+					width, height, metadata),
+				"Night moments rejected a minute-window frame");
+		}
+		require(processor.diagnostics().mean_support > 180.0f,
+			"minute integration remained trapped by the old support cap");
+		require(processor.diagnostics().moment_window_frames > 1400.0f,
+			"minute integration did not provision a one-minute horizon");
+	}
+
+	{
 		// Night must honor the control surface. The original implementation
 		// silently raised every persistence setting to 0.997, making a UI
 		// value such as 0.943 look ineffective and allowing support to reach

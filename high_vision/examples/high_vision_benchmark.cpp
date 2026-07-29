@@ -38,6 +38,8 @@ int main(int argc, char **argv)
 			      ? high_vision::Mode::night_integrator
 		      : requested_mode == "likelihood"
 			      ? high_vision::Mode::night_likelihood
+		      : requested_mode == "moments"
+			      ? high_vision::Mode::night_moments
 			      : high_vision::Mode::synthetic_hdr;
 	high_vision::Processor processor(config);
 	const auto started = std::chrono::steady_clock::now();

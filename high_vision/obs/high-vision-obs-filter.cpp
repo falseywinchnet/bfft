@@ -19,6 +19,15 @@ constexpr const char *kSupport = "high_vision_support";
 constexpr const char *kDecay = "high_vision_decay";
 constexpr const char *kChangeThreshold = "high_vision_change_threshold";
 constexpr const char *kSceneCut = "high_vision_scene_cut";
+constexpr const char *kMomentPower = "high_vision_moment_power";
+constexpr const char *kMomentVarianceGain =
+	"high_vision_moment_variance_gain";
+constexpr const char *kMomentVarianceFloor =
+	"high_vision_moment_variance_floor";
+constexpr const char *kMomentMinSupport =
+	"high_vision_moment_min_support";
+constexpr const char *kMomentIntegrationSeconds =
+	"high_vision_moment_integration_seconds";
 constexpr const char *kToneStrength = "high_vision_tone_strength";
 constexpr const char *kLocalContrast = "high_vision_local_contrast";
 constexpr const char *kReset = "high_vision_reset";
@@ -52,6 +61,8 @@ const char *mode_name(high_vision::Mode mode)
 		return "night-integrator";
 	case high_vision::Mode::night_likelihood:
 		return "night-likelihood";
+	case high_vision::Mode::night_moments:
+		return "night-moments";
 	case high_vision::Mode::experimental:
 		return "experimental";
 	}
@@ -372,6 +383,11 @@ void filter_defaults(obs_data_t *settings)
 	obs_data_set_default_double(settings, kDecay, 0.985);
 	obs_data_set_default_double(settings, kChangeThreshold, 0.08);
 	obs_data_set_default_double(settings, kSceneCut, 0.24);
+	obs_data_set_default_double(settings, kMomentPower, 0.10);
+	obs_data_set_default_double(settings, kMomentVarianceGain, 6.0);
+	obs_data_set_default_double(settings, kMomentVarianceFloor, 0.002);
+	obs_data_set_default_double(settings, kMomentMinSupport, 4.0);
+	obs_data_set_default_double(settings, kMomentIntegrationSeconds, 4.0);
 	obs_data_set_default_double(settings, kToneStrength, 1.0);
 	obs_data_set_default_double(settings, kLocalContrast, 0.15);
 }
@@ -382,7 +398,7 @@ void filter_update(void *data, obs_data_t *settings)
 	std::lock_guard<std::mutex> lock(filter->settings_mutex);
 	filter->config.mode = static_cast<high_vision::Mode>(
 		std::clamp(static_cast<int>(obs_data_get_int(settings, kMode)),
-			   0, 3));
+			   0, 4));
 	filter->config.registration_radius = static_cast<int>(
 		obs_data_get_int(settings, kRegistrationRadius));
 	filter->config.tile_size =
@@ -397,6 +413,16 @@ void filter_update(void *data, obs_data_t *settings)
 		static_cast<float>(obs_data_get_double(settings, kChangeThreshold));
 	filter->config.scene_cut_threshold =
 		static_cast<float>(obs_data_get_double(settings, kSceneCut));
+	filter->config.moment_response_power =
+		static_cast<float>(obs_data_get_double(settings, kMomentPower));
+	filter->config.moment_variance_gain = static_cast<float>(
+		obs_data_get_double(settings, kMomentVarianceGain));
+	filter->config.moment_variance_floor = static_cast<float>(
+		obs_data_get_double(settings, kMomentVarianceFloor));
+	filter->config.moment_min_support = static_cast<float>(
+		obs_data_get_double(settings, kMomentMinSupport));
+	filter->config.moment_integration_seconds = static_cast<float>(
+		obs_data_get_double(settings, kMomentIntegrationSeconds));
 	filter->config.tone_strength =
 		static_cast<float>(obs_data_get_double(settings, kToneStrength));
 	filter->config.local_contrast =
@@ -424,6 +450,8 @@ obs_properties_t *filter_properties(void *data)
 	obs_property_list_add_int(mode, "Night integrator (persistent)", 2);
 	obs_property_list_add_int(
 		mode, "Night likelihood (experimental)", 3);
+	obs_property_list_add_int(
+		mode, "Night moments (420v experimental)", 4);
 	obs_properties_add_int_slider(properties, kRegistrationRadius,
 				      "Camera registration radius", 0, 16, 1);
 	obs_properties_add_int_slider(properties, kTileSize,
@@ -438,6 +466,21 @@ obs_properties_t *filter_properties(void *data)
 					"Object-change threshold", 0.01, 0.30, 0.005);
 	obs_properties_add_float_slider(properties, kSceneCut,
 					"Scene-cut threshold", 0.08, 0.80, 0.01);
+	obs_properties_add_float_slider(
+		properties, kMomentPower, "Moment response power",
+		0.02, 1.0, 0.01);
+	obs_properties_add_float_slider(
+		properties, kMomentVarianceGain, "Variance-as-signal gain",
+		0.0, 32.0, 0.25);
+	obs_properties_add_float_slider(
+		properties, kMomentVarianceFloor, "Temporal noise floor",
+		0.0, 0.05, 0.0005);
+	obs_properties_add_float_slider(
+		properties, kMomentMinSupport, "Moment bootstrap support",
+		1.0, 32.0, 1.0);
+	obs_properties_add_float_slider(
+		properties, kMomentIntegrationSeconds,
+		"Moment integration window (seconds)", 1.0, 60.0, 1.0);
 	obs_properties_add_float_slider(properties, kToneStrength,
 					"HDR tone-map strength", 0.0, 1.0, 0.01);
 	obs_properties_add_float_slider(properties, kLocalContrast,
@@ -539,7 +582,8 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 
 	const bool monochrome =
 		config.mode == high_vision::Mode::night_integrator ||
-		config.mode == high_vision::Mode::night_likelihood;
+		config.mode == high_vision::Mode::night_likelihood ||
+		config.mode == high_vision::Mode::night_moments;
 	for (std::uint32_t y = 0; y < frame->height; ++y) {
 		for (std::uint32_t x = 0; x < frame->width; ++x) {
 			const float value = filter->output[
@@ -564,7 +608,8 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 		     "motion=(%.1f, %.1f), confidence=%.2f, exposure=%.3f, "
 		     "support=%.1f, "
 		     "change=%.2f%%, resets=%llu, clipped=%.2f%%, "
-		     "tgfd=%s, fpn=%.4f/%llu",
+		     "tgfd=%s, fpn=%.4f/%llu, temporal=%.4f, lift=%.4f, "
+		     "window=%.1fs/%.0ff@%.1ffps",
 		     mode_name(config.mode),
 		     filter->total_ms / filter->frames, diagnostics.global_dx,
 		     diagnostics.global_dy, diagnostics.registration_confidence,
@@ -576,7 +621,12 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 		     diagnostics.meyer_registration_applied ? "on" : "off",
 		     diagnostics.sensor_pattern_rms,
 		     static_cast<unsigned long long>(
-			     diagnostics.sensor_pattern_updates));
+			     diagnostics.sensor_pattern_updates),
+		     diagnostics.mean_temporal_sigma,
+		     diagnostics.mean_moment_lift,
+		     config.moment_integration_seconds,
+		     diagnostics.moment_window_frames,
+		     diagnostics.moment_effective_fps);
 	}
 	return frame;
 }
