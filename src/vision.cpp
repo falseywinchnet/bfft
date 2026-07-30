@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <limits>
 #include <new>
+#include <thread>
 #include <vector>
 
 namespace {
@@ -353,6 +354,117 @@ bfft_status bfft_vision_scan_residual_ridges(
     return BFFT_OK;
 }
 
+bfft_status bfft_vision_scan_paired_offsets(
+    std::size_t pixel_count,
+    std::size_t cell_count,
+    std::size_t bin_count,
+    double span,
+    const std::int32_t* owner,
+    const double* pixel_weight,
+    const double* residual,
+    const double* projection,
+    const double* channel_weight,
+    double* score,
+    std::int32_t* best_bin) {
+    if (pixel_count == 0 || cell_count == 0 || bin_count == 0 ||
+        !std::isfinite(span) || span <= 0.0 ||
+        bin_count >
+            static_cast<std::size_t>(std::numeric_limits<std::int32_t>::max()) ||
+        owner == nullptr || pixel_weight == nullptr || residual == nullptr ||
+        projection == nullptr || channel_weight == nullptr || score == nullptr ||
+        best_bin == nullptr) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+
+    try {
+        std::vector<std::size_t> offset(cell_count + 1, 0);
+        for (std::size_t p = 0; p < pixel_count; ++p) {
+            if (!valid_cell(owner[p], cell_count) ||
+                !std::isfinite(pixel_weight[p]) ||
+                !std::isfinite(projection[p])) {
+                return BFFT_ERROR_INVALID_ARGUMENT;
+            }
+            ++offset[static_cast<std::size_t>(owner[p]) + 1];
+        }
+        for (std::size_t cell = 0; cell < cell_count; ++cell) {
+            offset[cell + 1] += offset[cell];
+        }
+        std::vector<std::size_t> cursor(offset.begin(), offset.end() - 1);
+        std::vector<std::size_t> order(pixel_count);
+        for (std::size_t p = 0; p < pixel_count; ++p) {
+            const std::size_t cell = static_cast<std::size_t>(owner[p]);
+            order[cursor[cell]++] = p;
+        }
+
+        std::size_t histogram_size = 0;
+        if (!checked_product(bin_count, std::size_t{3}, &histogram_size)) {
+            return BFFT_ERROR_INVALID_ARGUMENT;
+        }
+        std::vector<double> histogram(histogram_size, 0.0);
+        const double scale = static_cast<double>(bin_count) / (2.0 * span);
+
+        for (std::size_t cell = 0; cell < cell_count; ++cell) {
+            std::fill(histogram.begin(), histogram.end(), 0.0);
+            double mass = 0.0;
+            double total0 = 0.0;
+            double total1 = 0.0;
+            double total2 = 0.0;
+            for (std::size_t at = offset[cell]; at < offset[cell + 1]; ++at) {
+                const std::size_t p = order[at];
+                const double phi = pixel_weight[p];
+                const double r0 = phi * residual[p * 3];
+                const double r1 = phi * residual[p * 3 + 1];
+                const double r2 = phi * residual[p * 3 + 2];
+                mass += phi;
+                total0 += r0;
+                total1 += r1;
+                total2 += r2;
+                std::int64_t bin = static_cast<std::int64_t>(
+                    (projection[p] + span) * scale);
+                bin = std::max<std::int64_t>(0, bin);
+                bin = std::min<std::int64_t>(
+                    static_cast<std::int64_t>(bin_count - 1), bin);
+                const std::size_t slot = static_cast<std::size_t>(bin) * 3;
+                histogram[slot] += r0;
+                histogram[slot + 1] += r1;
+                histogram[slot + 2] += r2;
+            }
+
+            const double denominator = std::max(mass, 1e-9);
+            double run0 = 0.0;
+            double run1 = 0.0;
+            double run2 = 0.0;
+            double top = 0.0;
+            std::size_t top_bin = 0;
+            bool seen = false;
+            for (std::size_t bin = 0; bin < bin_count; ++bin) {
+                const std::size_t slot = bin * 3;
+                run0 += histogram[slot];
+                run1 += histogram[slot + 1];
+                run2 += histogram[slot + 2];
+                const double contrast0 = total0 - 2.0 * run0;
+                const double contrast1 = total1 - 2.0 * run1;
+                const double contrast2 = total2 - 2.0 * run2;
+                const double value =
+                    (channel_weight[0] * contrast0 * contrast0 +
+                     channel_weight[1] * contrast1 * contrast1 +
+                     channel_weight[2] * contrast2 * contrast2) /
+                    denominator;
+                if (!seen || value > top) {
+                    top = value;
+                    top_bin = bin;
+                    seen = true;
+                }
+            }
+            score[cell] = top;
+            best_bin[cell] = static_cast<std::int32_t>(top_bin);
+        }
+    } catch (const std::bad_alloc&) {
+        return BFFT_ERROR_ALLOCATION;
+    }
+    return BFFT_OK;
+}
+
 bfft_status bfft_vision_support_forward(
     std::size_t sample_count, std::size_t pixel_count,
     std::size_t cell_count, const std::int32_t* rows,
@@ -552,7 +664,8 @@ bfft_status bfft_vision_curvature_population_f32(
 
 bfft_status bfft_vision_soft_support_diffuse(
     std::size_t height, std::size_t width, std::size_t channels,
-    std::size_t passes, double coupling, const double* field,
+    std::size_t passes, std::size_t thread_count, double coupling,
+    const double* field,
     const double* horizontal, const double* vertical,
     const double* diagonal_down_right, const double* diagonal_down_left,
     double* output, double* scratch) {
@@ -574,74 +687,113 @@ bfft_status bfft_vision_soft_support_diffuse(
         return BFFT_OK;
     }
 
+    try {
+    const std::size_t horizontal_stride = width - 1;
+    std::vector<double> inverse_denominator(pixels);
+    for (std::size_t y = 0; y < height; ++y) {
+        for (std::size_t x = 0; x < width; ++x) {
+            double denominator = 1.0;
+            if (x > 0)
+                denominator += coupling *
+                    horizontal[y * horizontal_stride + x - 1];
+            if (x + 1 < width)
+                denominator += coupling *
+                    horizontal[y * horizontal_stride + x];
+            if (y > 0)
+                denominator += coupling * vertical[(y - 1) * width + x];
+            if (y + 1 < height)
+                denominator += coupling * vertical[y * width + x];
+            if (x > 0 && y > 0)
+                denominator += coupling * diagonal_down_right[
+                    (y - 1) * horizontal_stride + x - 1];
+            if (x + 1 < width && y + 1 < height)
+                denominator += coupling * diagonal_down_right[
+                    y * horizontal_stride + x];
+            if (x + 1 < width && y > 0)
+                denominator += coupling * diagonal_down_left[
+                    (y - 1) * horizontal_stride + x];
+            if (x > 0 && y + 1 < height)
+                denominator += coupling * diagonal_down_left[
+                    y * horizontal_stride + x - 1];
+            inverse_denominator[y * width + x] = 1.0 / denominator;
+        }
+    }
+
     double* source = output;
     double* target = scratch;
-    const std::size_t horizontal_stride = width - 1;
-    for (std::size_t pass = 0; pass < passes; ++pass) {
-        for (std::size_t y = 0; y < height; ++y) {
+    std::size_t workers = thread_count == 0 ? 1 : thread_count;
+    workers = std::min(workers, height);
+    workers = std::min<std::size_t>(workers, 64);
+    const auto process_rows = [&](std::size_t y_begin, std::size_t y_end) {
+        for (std::size_t y = y_begin; y < y_end; ++y) {
             for (std::size_t x = 0; x < width; ++x) {
                 const std::size_t p = y * width + x;
-                double weights[8] = {};
-                std::size_t neighbours[8] = {};
-                std::size_t count = 0;
-                double denominator = 1.0;
-                const auto add = [&](std::size_t neighbour, double weight) {
-                    const double exchange = coupling * weight;
-                    neighbours[count] = neighbour;
-                    weights[count] = exchange;
-                    ++count;
-                    denominator += exchange;
-                };
-
-                if (x > 0) {
-                    add(p - 1, horizontal[y * horizontal_stride + x - 1]);
-                }
-                if (x + 1 < width) {
-                    add(p + 1, horizontal[y * horizontal_stride + x]);
-                }
-                if (y > 0) {
-                    add(p - width, vertical[(y - 1) * width + x]);
-                }
-                if (y + 1 < height) {
-                    add(p + width, vertical[y * width + x]);
-                }
-                if (x > 0 && y > 0) {
-                    add(p - width - 1,
-                        diagonal_down_right[
-                            (y - 1) * horizontal_stride + x - 1]);
-                }
-                if (x + 1 < width && y + 1 < height) {
-                    add(p + width + 1,
-                        diagonal_down_right[
-                            y * horizontal_stride + x]);
-                }
-                if (x + 1 < width && y > 0) {
-                    add(p - width + 1,
-                        diagonal_down_left[
-                            (y - 1) * horizontal_stride + x]);
-                }
-                if (x > 0 && y + 1 < height) {
-                    add(p + width - 1,
-                        diagonal_down_left[
-                            y * horizontal_stride + x - 1]);
-                }
-
                 const std::size_t base = p * channels;
                 for (std::size_t channel = 0;
                      channel < channels; ++channel) {
                     double numerator = source[base + channel];
-                    for (std::size_t edge = 0; edge < count; ++edge) {
-                        numerator += weights[edge] * source[
-                            neighbours[edge] * channels + channel];
-                    }
-                    target[base + channel] = numerator / denominator;
+                    if (x > 0)
+                        numerator += coupling *
+                            horizontal[y * horizontal_stride + x - 1] *
+                            source[(p - 1) * channels + channel];
+                    if (x + 1 < width)
+                        numerator += coupling *
+                            horizontal[y * horizontal_stride + x] *
+                            source[(p + 1) * channels + channel];
+                    if (y > 0)
+                        numerator += coupling *
+                            vertical[(y - 1) * width + x] *
+                            source[(p - width) * channels + channel];
+                    if (y + 1 < height)
+                        numerator += coupling *
+                            vertical[y * width + x] *
+                            source[(p + width) * channels + channel];
+                    if (x > 0 && y > 0)
+                        numerator += coupling * diagonal_down_right[
+                            (y - 1) * horizontal_stride + x - 1] *
+                            source[(p - width - 1) * channels + channel];
+                    if (x + 1 < width && y + 1 < height)
+                        numerator += coupling * diagonal_down_right[
+                            y * horizontal_stride + x] *
+                            source[(p + width + 1) * channels + channel];
+                    if (x + 1 < width && y > 0)
+                        numerator += coupling * diagonal_down_left[
+                            (y - 1) * horizontal_stride + x] *
+                            source[(p - width + 1) * channels + channel];
+                    if (x > 0 && y + 1 < height)
+                        numerator += coupling * diagonal_down_left[
+                            y * horizontal_stride + x - 1] *
+                            source[(p + width - 1) * channels + channel];
+                    target[base + channel] =
+                        numerator * inverse_denominator[p];
                 }
+            }
+        }
+    };
+    for (std::size_t pass = 0; pass < passes; ++pass) {
+        if (workers == 1) {
+            process_rows(0, height);
+        } else {
+            std::vector<std::thread> pool;
+            pool.reserve(workers);
+            for (std::size_t worker = 0; worker < workers; ++worker) {
+                const std::size_t y_begin = height * worker / workers;
+                const std::size_t y_end = height * (worker + 1) / workers;
+                pool.emplace_back(process_rows, y_begin, y_end);
+            }
+            for (auto& worker : pool) {
+                worker.join();
             }
         }
         std::swap(source, target);
     }
     if (source != output) {
         std::copy(source, source + values, output);
+    }
+    } catch (const std::bad_alloc&) {
+        return BFFT_ERROR_ALLOCATION;
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
     }
     return BFFT_OK;
 }
@@ -688,12 +840,21 @@ bfft_status bfft_vision_fast_march_first_label(
         cardinal_costs == nullptr || inverse_offset == nullptr ||
         (inverse_count != 0 && inverse_receiver == nullptr) ||
         mxx == nullptr || mxy == nullptr || myy == nullptr ||
-        owner == nullptr || distance == nullptr || gradient_x == nullptr ||
-        gradient_y == nullptr || source_gradient_x == nullptr ||
-        source_gradient_y == nullptr || parent_first == nullptr ||
-        parent_second == nullptr || parent_fraction == nullptr ||
-        acceptance_order == nullptr || accepted_count == nullptr ||
+        owner == nullptr || distance == nullptr ||
         push_count == nullptr || maximum_heap_size == nullptr) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    const bool full_output = gradient_x != nullptr;
+    if (
+        (gradient_y != nullptr) != full_output ||
+        (source_gradient_x != nullptr) != full_output ||
+        (source_gradient_y != nullptr) != full_output ||
+        (parent_first != nullptr) != full_output ||
+        (parent_second != nullptr) != full_output ||
+        (parent_fraction != nullptr) != full_output ||
+        (acceptance_order != nullptr) != full_output ||
+        (accepted_count != nullptr) != full_output
+    ) {
         return BFFT_ERROR_INVALID_ARGUMENT;
     }
     if (inverse_offset[0] != 0 ||
@@ -802,13 +963,15 @@ bfft_status bfft_vision_fast_march_first_label(
 
         std::fill(distance, distance + pixels, infinity);
         std::fill(owner, owner + pixels, std::int32_t{-1});
-        std::fill(gradient_x, gradient_x + pixels, 0.0);
-        std::fill(gradient_y, gradient_y + pixels, 0.0);
-        std::fill(source_gradient_x, source_gradient_x + pixels, 0.0);
-        std::fill(source_gradient_y, source_gradient_y + pixels, 0.0);
-        std::fill(parent_first, parent_first + pixels, std::int32_t{-1});
-        std::fill(parent_second, parent_second + pixels, std::int32_t{-1});
-        std::fill(parent_fraction, parent_fraction + pixels, 0.0);
+        if (full_output) {
+            std::fill(gradient_x, gradient_x + pixels, 0.0);
+            std::fill(gradient_y, gradient_y + pixels, 0.0);
+            std::fill(source_gradient_x, source_gradient_x + pixels, 0.0);
+            std::fill(source_gradient_y, source_gradient_y + pixels, 0.0);
+            std::fill(parent_first, parent_first + pixels, std::int32_t{-1});
+            std::fill(parent_second, parent_second + pixels, std::int32_t{-1});
+            std::fill(parent_fraction, parent_fraction + pixels, 0.0);
+        }
 
         std::size_t heap_size = 0;
         std::size_t pushes = 0;
@@ -902,17 +1065,20 @@ bfft_status bfft_vision_fast_march_first_label(
             accepted[pixel] = 1;
             distance[pixel] = value;
             owner[pixel] = label;
-            gradient_x[pixel] = tentative_gradient_x[pixel];
-            gradient_y[pixel] = tentative_gradient_y[pixel];
-            source_gradient_x[pixel] =
-                tentative_source_gradient_x[pixel];
-            source_gradient_y[pixel] =
-                tentative_source_gradient_y[pixel];
-            parent_first[pixel] = tentative_parent_first[pixel];
-            parent_second[pixel] = tentative_parent_second[pixel];
-            parent_fraction[pixel] = tentative_parent_fraction[pixel];
-            acceptance_order[acceptance_size++] =
-                static_cast<std::int32_t>(pixel);
+            if (full_output) {
+                gradient_x[pixel] = tentative_gradient_x[pixel];
+                gradient_y[pixel] = tentative_gradient_y[pixel];
+                source_gradient_x[pixel] =
+                    tentative_source_gradient_x[pixel];
+                source_gradient_y[pixel] =
+                    tentative_source_gradient_y[pixel];
+                parent_first[pixel] = tentative_parent_first[pixel];
+                parent_second[pixel] = tentative_parent_second[pixel];
+                parent_fraction[pixel] = tentative_parent_fraction[pixel];
+                acceptance_order[acceptance_size] =
+                    static_cast<std::int32_t>(pixel);
+            }
+            ++acceptance_size;
 
             const std::size_t begin =
                 static_cast<std::size_t>(inverse_offset[pixel]);
@@ -976,10 +1142,12 @@ bfft_status bfft_vision_fast_march_first_label(
                             -(a * ux + b * uy) / local_length;
                         best_gradient_y =
                             -(b * ux + c * uy) / local_length;
-                        best_source_gradient_x =
-                            source_gradient_x[neighbour];
-                        best_source_gradient_y =
-                            source_gradient_y[neighbour];
+                        if (full_output) {
+                            best_source_gradient_x =
+                                source_gradient_x[neighbour];
+                            best_source_gradient_y =
+                                source_gradient_y[neighbour];
+                        }
                         best_parent_first =
                             static_cast<std::int32_t>(neighbour);
                         best_parent_second = -1;
@@ -1041,10 +1209,12 @@ bfft_status bfft_vision_fast_march_first_label(
                                 -(a * ux + b * uy) / local_length;
                             best_gradient_y =
                                 -(b * ux + c * uy) / local_length;
-                            best_source_gradient_x =
-                                source_gradient_x[first_pixel];
-                            best_source_gradient_y =
-                                source_gradient_y[first_pixel];
+                            if (full_output) {
+                                best_source_gradient_x =
+                                    source_gradient_x[first_pixel];
+                                best_source_gradient_y =
+                                    source_gradient_y[first_pixel];
+                            }
                             best_parent_first =
                                 static_cast<std::int32_t>(first_pixel);
                             best_parent_second = -1;
@@ -1066,10 +1236,12 @@ bfft_status bfft_vision_fast_march_first_label(
                                 -(a * vx + b * vy) / local_length;
                             best_gradient_y =
                                 -(b * vx + c * vy) / local_length;
-                            best_source_gradient_x =
-                                source_gradient_x[second_pixel];
-                            best_source_gradient_y =
-                                source_gradient_y[second_pixel];
+                            if (full_output) {
+                                best_source_gradient_x =
+                                    source_gradient_x[second_pixel];
+                                best_source_gradient_y =
+                                    source_gradient_y[second_pixel];
+                            }
                             best_parent_first =
                                 static_cast<std::int32_t>(second_pixel);
                             best_parent_second = -1;
@@ -1108,16 +1280,18 @@ bfft_status bfft_vision_fast_march_first_label(
                                 a * foot_x + b * foot_y) / local_length;
                             best_gradient_y = -(
                                 b * foot_x + c * foot_y) / local_length;
-                            best_source_gradient_x =
-                                (1.0 - fraction) *
-                                    source_gradient_x[first_pixel] +
-                                fraction *
-                                    source_gradient_x[second_pixel];
-                            best_source_gradient_y =
-                                (1.0 - fraction) *
-                                    source_gradient_y[first_pixel] +
-                                fraction *
-                                    source_gradient_y[second_pixel];
+                            if (full_output) {
+                                best_source_gradient_x =
+                                    (1.0 - fraction) *
+                                        source_gradient_x[first_pixel] +
+                                    fraction *
+                                        source_gradient_x[second_pixel];
+                                best_source_gradient_y =
+                                    (1.0 - fraction) *
+                                        source_gradient_y[first_pixel] +
+                                    fraction *
+                                        source_gradient_y[second_pixel];
+                            }
                             best_parent_first =
                                 static_cast<std::int32_t>(first_pixel);
                             best_parent_second =
@@ -1158,9 +1332,630 @@ bfft_status bfft_vision_fast_march_first_label(
             }
         }
 
-        *accepted_count = acceptance_size;
+        if (full_output) {
+            *accepted_count = acceptance_size;
+        }
         *push_count = pushes;
         *maximum_heap_size = maximum_heap;
+        return BFFT_OK;
+    } catch (const std::bad_alloc&) {
+        return BFFT_ERROR_ALLOCATION;
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+}
+
+bfft_status bfft_vision_fast_march_labels(
+    std::size_t height,
+    std::size_t width,
+    std::size_t seed_count,
+    const std::int32_t* seed_pixel,
+    const double* seed_value,
+    const std::int32_t* seed_label,
+    const double* seed_gradient_x,
+    const double* seed_gradient_y,
+    const std::int32_t* directions,
+    const double* direction_costs,
+    const std::uint8_t* direction_valid,
+    const double* cardinal_costs,
+    const std::int64_t* inverse_offset,
+    std::size_t inverse_count,
+    const std::int32_t* inverse_receiver,
+    const double* mxx,
+    const double* mxy,
+    const double* myy,
+    std::int32_t* owner,
+    double* distance,
+    std::size_t* push_count,
+    std::size_t* maximum_heap_size) {
+    std::size_t pixels = 0;
+    if (height == 0 || width == 0 ||
+        !checked_product(height, width, &pixels) ||
+        seed_pixel == nullptr || seed_value == nullptr ||
+        seed_label == nullptr || seed_gradient_x == nullptr ||
+        seed_gradient_y == nullptr || directions == nullptr ||
+        direction_costs == nullptr || direction_valid == nullptr ||
+        cardinal_costs == nullptr || inverse_offset == nullptr ||
+        (inverse_count != 0 && inverse_receiver == nullptr) ||
+        mxx == nullptr || mxy == nullptr || myy == nullptr ||
+        owner == nullptr || distance == nullptr ||
+        push_count == nullptr || maximum_heap_size == nullptr) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    if (inverse_offset[0] != 0 ||
+        inverse_offset[pixels] < 0 ||
+        static_cast<std::size_t>(inverse_offset[pixels]) != inverse_count) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    for (std::size_t seed = 0; seed < seed_count; ++seed) {
+        if (seed_pixel[seed] < 0 ||
+            static_cast<std::size_t>(seed_pixel[seed]) >= pixels ||
+            seed_label[seed] < 0) {
+            return BFFT_ERROR_INVALID_ARGUMENT;
+        }
+    }
+
+    constexpr double infinity = 1e300;
+    const auto metric_norm = [](
+        double dx, double dy, double a, double b, double c) {
+        return std::sqrt(std::max(
+            a * dx * dx + 2.0 * b * dx * dy + c * dy * dy,
+            1e-30));
+    };
+    const auto simplex_candidate = [&metric_norm](
+        double first_value,
+        double second_value,
+        double first_x,
+        double first_y,
+        double second_x,
+        double second_y,
+        double a,
+        double b,
+        double c) {
+        const double delta_value = second_value - first_value;
+        const double delta_x = second_x - first_x;
+        const double delta_y = second_y - first_y;
+        const double quadratic_a =
+            a * delta_x * delta_x +
+            2.0 * b * delta_x * delta_y +
+            c * delta_y * delta_y;
+        const double quadratic_b =
+            delta_x * (a * first_x + b * first_y) +
+            delta_y * (b * first_x + c * first_y);
+        const double quadratic_c =
+            a * first_x * first_x +
+            2.0 * b * first_x * first_y +
+            c * first_y * first_y;
+        const double first_length =
+            std::sqrt(std::max(quadratic_c, 1e-30));
+        const double derivative_first =
+            delta_value + quadratic_b / first_length;
+        if (derivative_first >= 0.0) {
+            return first_value + first_length;
+        }
+        const double second_quadratic =
+            quadratic_a + 2.0 * quadratic_b + quadratic_c;
+        const double second_length =
+            std::sqrt(std::max(second_quadratic, 1e-30));
+        const double derivative_second =
+            delta_value +
+            (quadratic_a + quadratic_b) / second_length;
+        if (derivative_second <= 0.0) {
+            return second_value + second_length;
+        }
+        const double area = std::max(
+            quadratic_a * quadratic_c - quadratic_b * quadratic_b,
+            0.0);
+        const double causal = std::max(
+            quadratic_a - delta_value * delta_value,
+            1e-30);
+        double fraction = (
+            -quadratic_b -
+            delta_value * std::sqrt(area / causal)
+        ) / std::max(quadratic_a, 1e-30);
+        fraction = std::min(std::max(fraction, 0.0), 1.0);
+        const double rx = first_x + fraction * delta_x;
+        const double ry = first_y + fraction * delta_y;
+        return (
+            first_value +
+            fraction * delta_value +
+            metric_norm(rx, ry, a, b, c));
+    };
+
+    try {
+        std::vector<double> tentative(pixels, infinity);
+        std::vector<std::int32_t> tentative_label(pixels, -1);
+        std::vector<std::uint8_t> accepted(pixels, 0);
+        std::vector<double> heap_value(pixels);
+        std::vector<std::int32_t> heap_pixel(pixels);
+        std::vector<std::int32_t> heap_position(pixels, -1);
+        std::fill(distance, distance + pixels, infinity);
+        std::fill(owner, owner + pixels, std::int32_t{-1});
+
+        std::size_t heap_size = 0;
+        std::size_t pushes = 0;
+        std::size_t maximum_heap = 0;
+        const auto bubble_up = [&] (std::size_t child) {
+            while (child > 0) {
+                const std::size_t parent = (child - 1) / 2;
+                if (heap_value[parent] <= heap_value[child]) {
+                    break;
+                }
+                std::swap(heap_value[parent], heap_value[child]);
+                std::swap(heap_pixel[parent], heap_pixel[child]);
+                heap_position[static_cast<std::size_t>(
+                    heap_pixel[parent])] = static_cast<std::int32_t>(parent);
+                heap_position[static_cast<std::size_t>(
+                    heap_pixel[child])] = static_cast<std::int32_t>(child);
+                child = parent;
+            }
+        };
+
+        for (std::size_t seed = 0; seed < seed_count; ++seed) {
+            const std::size_t pixel =
+                static_cast<std::size_t>(seed_pixel[seed]);
+            const double value = seed_value[seed];
+            if (value >= tentative[pixel]) {
+                continue;
+            }
+            tentative[pixel] = value;
+            tentative_label[pixel] = seed_label[seed];
+            std::int32_t child_position = heap_position[pixel];
+            if (child_position < 0) {
+                child_position = static_cast<std::int32_t>(heap_size);
+                heap_pixel[heap_size] = static_cast<std::int32_t>(pixel);
+                heap_position[pixel] = child_position;
+                ++heap_size;
+            }
+            const std::size_t child =
+                static_cast<std::size_t>(child_position);
+            heap_value[child] = value;
+            ++pushes;
+            maximum_heap = std::max(maximum_heap, heap_size);
+            bubble_up(child);
+        }
+
+        static constexpr int cardinal_x[4] = {1, -1, 0, 0};
+        static constexpr int cardinal_y[4] = {0, 0, 1, -1};
+        while (heap_size > 0) {
+            const double value = heap_value[0];
+            const std::size_t pixel =
+                static_cast<std::size_t>(heap_pixel[0]);
+            --heap_size;
+            heap_position[pixel] = -2;
+            if (heap_size > 0) {
+                heap_value[0] = heap_value[heap_size];
+                heap_pixel[0] = heap_pixel[heap_size];
+                heap_position[static_cast<std::size_t>(heap_pixel[0])] = 0;
+                std::size_t node = 0;
+                for (;;) {
+                    const std::size_t left = 2 * node + 1;
+                    const std::size_t right = left + 1;
+                    std::size_t smallest = node;
+                    if (left < heap_size &&
+                        heap_value[left] < heap_value[smallest]) {
+                        smallest = left;
+                    }
+                    if (right < heap_size &&
+                        heap_value[right] < heap_value[smallest]) {
+                        smallest = right;
+                    }
+                    if (smallest == node) {
+                        break;
+                    }
+                    std::swap(heap_value[node], heap_value[smallest]);
+                    std::swap(heap_pixel[node], heap_pixel[smallest]);
+                    heap_position[static_cast<std::size_t>(
+                        heap_pixel[node])] = static_cast<std::int32_t>(node);
+                    heap_position[static_cast<std::size_t>(
+                        heap_pixel[smallest])] =
+                            static_cast<std::int32_t>(smallest);
+                    node = smallest;
+                }
+            }
+
+            accepted[pixel] = 1;
+            distance[pixel] = value;
+            owner[pixel] = tentative_label[pixel];
+            const std::size_t begin =
+                static_cast<std::size_t>(inverse_offset[pixel]);
+            const std::size_t end =
+                static_cast<std::size_t>(inverse_offset[pixel + 1]);
+            for (std::size_t incidence = begin;
+                 incidence < end; ++incidence) {
+                const std::size_t receiver =
+                    static_cast<std::size_t>(inverse_receiver[incidence]);
+                if (accepted[receiver] != 0) {
+                    continue;
+                }
+                const std::size_t ry = receiver / width;
+                const std::size_t rx = receiver - ry * width;
+                const double a = mxx[receiver];
+                const double b = mxy[receiver];
+                const double c = myy[receiver];
+                double best_value = tentative[receiver];
+                std::int32_t best_label = tentative_label[receiver];
+
+                const std::size_t cardinal_base = receiver * 4;
+                for (std::size_t cardinal = 0;
+                     cardinal < 4; ++cardinal) {
+                    const int ux = cardinal_x[cardinal];
+                    const int uy = cardinal_y[cardinal];
+                    const std::int64_t nx =
+                        static_cast<std::int64_t>(rx) + ux;
+                    const std::int64_t ny =
+                        static_cast<std::int64_t>(ry) + uy;
+                    if (nx < 0 || nx >= static_cast<std::int64_t>(width) ||
+                        ny < 0 || ny >= static_cast<std::int64_t>(height)) {
+                        continue;
+                    }
+                    const std::size_t neighbour =
+                        static_cast<std::size_t>(ny) * width +
+                        static_cast<std::size_t>(nx);
+                    if (accepted[neighbour] == 0) {
+                        continue;
+                    }
+                    const double candidate =
+                        distance[neighbour] +
+                        cardinal_costs[cardinal_base + cardinal];
+                    if (candidate < best_value) {
+                        best_value = candidate;
+                        best_label = owner[neighbour];
+                    }
+                }
+
+                const std::size_t direction_base = receiver * 6;
+                for (std::size_t direction = 0;
+                     direction < 6; ++direction) {
+                    const std::size_t next = (direction + 1) % 6;
+                    const std::size_t first_vector =
+                        (direction_base + direction) * 2;
+                    const std::size_t second_vector =
+                        (direction_base + next) * 2;
+                    const int ux = directions[first_vector];
+                    const int uy = directions[first_vector + 1];
+                    const int vx = directions[second_vector];
+                    const int vy = directions[second_vector + 1];
+                    const std::int64_t first_x =
+                        static_cast<std::int64_t>(rx) + ux;
+                    const std::int64_t first_y =
+                        static_cast<std::int64_t>(ry) + uy;
+                    const std::int64_t second_x =
+                        static_cast<std::int64_t>(rx) + vx;
+                    const std::int64_t second_y =
+                        static_cast<std::int64_t>(ry) + vy;
+                    const bool first_inside =
+                        first_x >= 0 &&
+                        first_x < static_cast<std::int64_t>(width) &&
+                        first_y >= 0 &&
+                        first_y < static_cast<std::int64_t>(height);
+                    const bool second_inside =
+                        second_x >= 0 &&
+                        second_x < static_cast<std::int64_t>(width) &&
+                        second_y >= 0 &&
+                        second_y < static_cast<std::int64_t>(height);
+                    const std::size_t first_pixel = first_inside
+                        ? static_cast<std::size_t>(first_y) * width +
+                            static_cast<std::size_t>(first_x)
+                        : pixels;
+                    const std::size_t second_pixel = second_inside
+                        ? static_cast<std::size_t>(second_y) * width +
+                            static_cast<std::size_t>(second_x)
+                        : pixels;
+
+                    if (first_inside && accepted[first_pixel] != 0) {
+                        const double candidate =
+                            distance[first_pixel] +
+                            direction_costs[direction_base + direction];
+                        if (direction_valid[
+                                direction_base + direction] != 0 &&
+                            candidate < best_value) {
+                            best_value = candidate;
+                            best_label = owner[first_pixel];
+                        }
+                    }
+                    if (second_inside && accepted[second_pixel] != 0) {
+                        const double candidate =
+                            distance[second_pixel] +
+                            direction_costs[direction_base + next];
+                        if (direction_valid[
+                                direction_base + next] != 0 &&
+                            candidate < best_value) {
+                            best_value = candidate;
+                            best_label = owner[second_pixel];
+                        }
+                    }
+                    if (first_inside && second_inside &&
+                        accepted[first_pixel] != 0 &&
+                        accepted[second_pixel] != 0 &&
+                        owner[first_pixel] == owner[second_pixel] &&
+                        direction_valid[
+                            direction_base + direction] != 0 &&
+                        direction_valid[direction_base + next] != 0) {
+                        const double candidate = simplex_candidate(
+                            distance[first_pixel],
+                            distance[second_pixel],
+                            ux,
+                            uy,
+                            vx,
+                            vy,
+                            a,
+                            b,
+                            c);
+                        if (candidate < best_value) {
+                            best_value = candidate;
+                            best_label = owner[first_pixel];
+                        }
+                    }
+                }
+
+                if (best_value + 1e-12 >= tentative[receiver]) {
+                    continue;
+                }
+                tentative[receiver] = best_value;
+                tentative_label[receiver] = best_label;
+                std::int32_t child_position = heap_position[receiver];
+                if (child_position < 0) {
+                    child_position = static_cast<std::int32_t>(heap_size);
+                    heap_pixel[heap_size] =
+                        static_cast<std::int32_t>(receiver);
+                    heap_position[receiver] = child_position;
+                    ++heap_size;
+                }
+                const std::size_t child =
+                    static_cast<std::size_t>(child_position);
+                heap_value[child] = best_value;
+                ++pushes;
+                maximum_heap = std::max(maximum_heap, heap_size);
+                bubble_up(child);
+            }
+        }
+        *push_count = pushes;
+        *maximum_heap_size = maximum_heap;
+        return BFFT_OK;
+    } catch (const std::bad_alloc&) {
+        return BFFT_ERROR_ALLOCATION;
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+}
+
+bfft_status bfft_vision_metric_edge_costs_f32(
+    std::size_t height,
+    std::size_t width,
+    const float* precision_xx,
+    const float* precision_xy,
+    const float* precision_yy,
+    const float* boundary_xx,
+    const float* boundary_xy,
+    const float* boundary_yy,
+    double precision_gain,
+    double boundary_gain,
+    float* direction_costs) {
+    std::size_t pixels = 0;
+    const bool has_boundary = boundary_gain > 0.0;
+    if (height == 0 || width == 0 ||
+        !checked_product(height, width, &pixels) ||
+        precision_xx == nullptr || precision_xy == nullptr ||
+        precision_yy == nullptr || direction_costs == nullptr ||
+        !std::isfinite(precision_gain) || precision_gain < 0.0 ||
+        !std::isfinite(boundary_gain) || boundary_gain < 0.0 ||
+        (has_boundary && (
+            boundary_xx == nullptr || boundary_xy == nullptr ||
+            boundary_yy == nullptr))) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+
+    static constexpr int dx[8] = {0, 0, -1, 1, -1, 1, -1, 1};
+    static constexpr int dy[8] = {-1, 1, 0, 0, -1, -1, 1, 1};
+    const float infinity = std::numeric_limits<float>::infinity();
+    std::fill(
+        direction_costs, direction_costs + 8 * pixels, infinity);
+    const auto metric_component = [
+        precision_gain,
+        boundary_gain,
+        has_boundary
+    ](
+        const float* precision,
+        const float* boundary,
+        std::size_t pixel,
+        double identity) {
+        double value =
+            identity +
+            precision_gain * static_cast<double>(precision[pixel]);
+        if (has_boundary) {
+            value += boundary_gain *
+                static_cast<double>(boundary[pixel]);
+        }
+        return value;
+    };
+    for (std::size_t direction = 0; direction < 8; ++direction) {
+        const int step_x = dx[direction];
+        const int step_y = dy[direction];
+        const std::size_t y_begin =
+            step_y < 0 ? static_cast<std::size_t>(-step_y) : 0;
+        const std::size_t y_end =
+            step_y > 0 ? height - static_cast<std::size_t>(step_y) : height;
+        const std::size_t x_begin =
+            step_x < 0 ? static_cast<std::size_t>(-step_x) : 0;
+        const std::size_t x_end =
+            step_x > 0 ? width - static_cast<std::size_t>(step_x) : width;
+        float* output = direction_costs + direction * pixels;
+        for (std::size_t y = y_begin; y < y_end; ++y) {
+            for (std::size_t x = x_begin; x < x_end; ++x) {
+                const std::size_t source = y * width + x;
+                const std::size_t receiver =
+                    static_cast<std::size_t>(
+                        static_cast<std::int64_t>(y) + step_y) * width +
+                    static_cast<std::size_t>(
+                        static_cast<std::int64_t>(x) + step_x);
+                const double source_xx = metric_component(
+                    precision_xx, boundary_xx, source, 1.0);
+                const double source_xy = metric_component(
+                    precision_xy, boundary_xy, source, 0.0);
+                const double source_yy = metric_component(
+                    precision_yy, boundary_yy, source, 1.0);
+                const double receiver_xx = metric_component(
+                    precision_xx, boundary_xx, receiver, 1.0);
+                const double receiver_xy = metric_component(
+                    precision_xy, boundary_xy, receiver, 0.0);
+                const double receiver_yy = metric_component(
+                    precision_yy, boundary_yy, receiver, 1.0);
+                const double a = 0.5 * (source_xx + receiver_xx);
+                const double b = 0.5 * (source_xy + receiver_xy);
+                const double c = 0.5 * (source_yy + receiver_yy);
+                const double quadratic =
+                    step_x * step_x * a +
+                    2.0 * step_x * step_y * b +
+                    step_y * step_y * c;
+                output[source] = static_cast<float>(
+                    std::sqrt(std::max(quadratic, 1e-8)));
+            }
+        }
+    }
+    return BFFT_OK;
+}
+
+bfft_status bfft_vision_bucket_first_label(
+    std::size_t height,
+    std::size_t width,
+    std::size_t seed_count,
+    const std::int64_t* seed_pixel,
+    const double* reach,
+    const float* direction_costs,
+    double delta,
+    std::size_t span,
+    double shift,
+    std::int32_t* owner,
+    double* distance,
+    std::int32_t* parent,
+    std::size_t* push_count) {
+    std::size_t pixels = 0;
+    if (height == 0 || width == 0 ||
+        !checked_product(height, width, &pixels) ||
+        seed_pixel == nullptr || reach == nullptr ||
+        direction_costs == nullptr || !(delta > 0.0) ||
+        span == 0 || owner == nullptr || distance == nullptr ||
+        parent == nullptr || push_count == nullptr) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    for (std::size_t site = 0; site < seed_count; ++site) {
+        if (seed_pixel[site] < 0 ||
+            static_cast<std::size_t>(seed_pixel[site]) >= pixels) {
+            return BFFT_ERROR_INVALID_ARGUMENT;
+        }
+    }
+
+    constexpr double infinity = 1e300;
+    constexpr double tolerance = 1e-12;
+    static constexpr int dx[8] = {0, 0, -1, 1, -1, 1, -1, 1};
+    static constexpr int dy[8] = {-1, 1, 0, 0, -1, -1, 1, 1};
+    try {
+        const std::size_t bucket_count = span + 2;
+        std::vector<std::int32_t> head(bucket_count, -1);
+        std::vector<double> key;
+        std::vector<std::int32_t> entry_pixel;
+        std::vector<std::int32_t> next;
+        const std::size_t reserve =
+            std::min(
+                pixels * 2 + 256,
+                std::numeric_limits<std::size_t>::max() / 4);
+        key.reserve(reserve);
+        entry_pixel.reserve(reserve);
+        next.reserve(reserve);
+        std::fill(distance, distance + pixels, infinity);
+        std::fill(owner, owner + pixels, std::int32_t{-1});
+        std::fill(parent, parent + pixels, std::int32_t{-1});
+
+        std::size_t alive = 0;
+        const auto insert = [&](
+            double value, std::size_t pixel) {
+            const std::int64_t slot = static_cast<std::int64_t>(
+                (value + shift) / delta);
+            const std::size_t bucket = static_cast<std::size_t>(
+                slot % static_cast<std::int64_t>(bucket_count));
+            const std::int32_t index =
+                static_cast<std::int32_t>(key.size());
+            key.push_back(value);
+            entry_pixel.push_back(static_cast<std::int32_t>(pixel));
+            next.push_back(head[bucket]);
+            head[bucket] = index;
+            ++alive;
+        };
+
+        for (std::size_t site = 0; site < seed_count; ++site) {
+            const std::size_t pixel =
+                static_cast<std::size_t>(seed_pixel[site]);
+            const double value = -reach[site];
+            if (value < distance[pixel]) {
+                distance[pixel] = value;
+                owner[pixel] = static_cast<std::int32_t>(site);
+                parent[pixel] = -1;
+                insert(value, pixel);
+            }
+        }
+
+        std::size_t current = 0;
+        std::size_t guard = 0;
+        const std::size_t limit =
+            bucket_count * (pixels + 16);
+        while (alive > 0 && guard < limit) {
+            const std::size_t bucket = current % bucket_count;
+            std::int32_t entry = head[bucket];
+            if (entry < 0) {
+                ++current;
+                ++guard;
+                continue;
+            }
+            head[bucket] = -1;
+            while (entry >= 0) {
+                const std::size_t index =
+                    static_cast<std::size_t>(entry);
+                const double value = key[index];
+                const std::size_t pixel = static_cast<std::size_t>(
+                    entry_pixel[index]);
+                entry = next[index];
+                --alive;
+                if (value > distance[pixel] + tolerance) {
+                    continue;
+                }
+                const std::int32_t site = owner[pixel];
+
+                const std::size_t y = pixel / width;
+                const std::size_t x = pixel - y * width;
+                for (std::size_t direction = 0;
+                     direction < 8; ++direction) {
+                    const std::int64_t nx =
+                        static_cast<std::int64_t>(x) + dx[direction];
+                    const std::int64_t ny =
+                        static_cast<std::int64_t>(y) + dy[direction];
+                    if (
+                        nx < 0 || nx >= static_cast<std::int64_t>(width) ||
+                        ny < 0 || ny >= static_cast<std::int64_t>(height)
+                    ) {
+                        continue;
+                    }
+                    const std::size_t receiver =
+                        static_cast<std::size_t>(ny) * width +
+                        static_cast<std::size_t>(nx);
+                    const double candidate =
+                        value + static_cast<double>(
+                            direction_costs[
+                                direction * pixels + pixel]);
+                    if (candidate + tolerance >= distance[receiver]) {
+                        continue;
+                    }
+                    distance[receiver] = candidate;
+                    owner[receiver] = site;
+                    parent[receiver] =
+                        static_cast<std::int32_t>(pixel);
+                    insert(candidate, receiver);
+                }
+            }
+            ++current;
+            ++guard;
+        }
+        *push_count = key.size();
         return BFFT_OK;
     } catch (const std::bad_alloc&) {
         return BFFT_ERROR_ALLOCATION;

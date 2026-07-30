@@ -171,7 +171,7 @@ class ChannelSplit:
         return self.planes - self.cartoon - self.texture
 
 
-def _to_working(img, space):
+def _to_working(img, space, working_lab=None):
     """Native colour array -> (planes (H, W, K), names, carried)."""
     a = np.asarray(img, dtype=np.float64)
     carried = {}
@@ -188,7 +188,13 @@ def _to_working(img, space):
         a = a / 255.0
     if space == "rgb":
         return a * 255.0, ("R", "G", "B"), carried, space
-    lab = srgb_to_lab(a)
+    if working_lab is None:
+        lab = srgb_to_lab(a)
+    else:
+        lab = np.asarray(working_lab, dtype=np.float64)
+        if lab.shape != a.shape:
+            raise ValueError(
+                "precomputed OKLab field must match the RGB image")
     if space == "oklab":
         return lab, ("L", "a", "b"), carried, space
     if space == "oklab_lc":
@@ -228,8 +234,17 @@ def _from_working(planes, space, carried, was_gray):
     return out
 
 
-def meyer_channels(image, space="oklab_lc", lam=0.05, mu=40.0, passes=64,
-                   threads=0, solver=0):
+def meyer_channels(
+    image,
+    space="oklab_lc",
+    lam=0.05,
+    mu=40.0,
+    passes=64,
+    threads=0,
+    solver=0,
+    *,
+    working_lab=None,
+):
     """Decompose a colour image plane by plane.
 
     ``space`` selects what gets decomposed:
@@ -250,7 +265,8 @@ def meyer_channels(image, space="oklab_lc", lam=0.05, mu=40.0, passes=64,
     if space not in SPACES:
         raise ValueError(f"unknown space {space!r}; expected one of {SPACES}")
     was_gray = np.asarray(image).ndim == 2
-    planes, names, carried, space = _to_working(image, space)
+    planes, names, carried, space = _to_working(
+        image, space, working_lab=working_lab)
     k = planes.shape[2]
     work = np.empty_like(planes)
     offset = np.empty(k)

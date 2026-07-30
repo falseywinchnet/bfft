@@ -16,7 +16,10 @@ import math
 
 import numpy as np
 
-from bfft.vision import fast_march_first_label_native
+from bfft.vision import (
+    fast_march_first_label_native,
+    fast_march_labels_native,
+)
 
 from .metric_reduced_stencil import metric_reduced_superbase
 
@@ -735,6 +738,8 @@ def continuous_first_partition_prepared(
     centers: np.ndarray,
     prepared: dict[str, np.ndarray],
     reach: np.ndarray | None = None,
+    *,
+    compact: bool = False,
 ) -> dict[str, np.ndarray]:
     """Solve a multi-source front using a precomputed local metric mesh."""
     mxx = prepared["mxx"]
@@ -782,6 +787,24 @@ def continuous_first_partition_prepared(
     ) / seed_values[nonzero]
     seed_values -= source_reach[seed_labels]
     seed_pixels = seed_y * width + seed_x
+    if compact:
+        minimal = fast_march_labels_native(
+            np.ascontiguousarray(seed_pixels, dtype=np.int32),
+            np.ascontiguousarray(seed_values, dtype=np.float64),
+            np.ascontiguousarray(seed_labels, dtype=np.int32),
+            np.ascontiguousarray(seed_gradient_x, dtype=np.float64),
+            np.ascontiguousarray(seed_gradient_y, dtype=np.float64),
+            prepared,
+        )
+        if minimal is not None:
+            owner, distance, push_count, maximum_heap_size = minimal
+            return {
+                "labels": owner.reshape(height, width),
+                "distance": distance.reshape(height, width),
+                "front_pushes": int(push_count),
+                "front_maximum_heap": int(maximum_heap_size),
+                "compact": True,
+            }
     native = fast_march_first_label_native(
         np.ascontiguousarray(seed_pixels, dtype=np.int32),
         np.ascontiguousarray(seed_values, dtype=np.float64),

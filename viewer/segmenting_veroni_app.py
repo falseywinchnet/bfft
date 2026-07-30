@@ -18,6 +18,9 @@ for directory in (ROOT, ROOT / "viewer", ROOT / "experiments"):
 import dearpygui.dearpygui as dpg  # noqa: E402
 import gallery  # noqa: E402
 from port_needed import SegmentingConfig, build_segmenting_representation  # noqa: E402
+from port_needed.ownership_diagnostics import (  # noqa: E402
+    residual_ownership_diagnostics,
+)
 from port_needed.soft_support_diffusion import (  # noqa: E402
     conductance_field,
     diffuse_soft_support,
@@ -48,6 +51,11 @@ VIEWS = (
     "Transport glass",
     "Metric anisotropy",
     "Residual energy",
+    "Residual energy + cell boundaries",
+    "Same-owner source jump",
+    "Interface-aligned source jump",
+    "Germ injection source jump",
+    "Cell mean residual energy",
     "Reverse residual flow",
     "Refinement demand",
     "Residual pressure density",
@@ -68,6 +76,7 @@ class State:
         self.name = "(none)"
         self.rgb = None
         self.result = None
+        self.prepared_target = None
         self.busy = False
         self.status = "Choose an image, then build the representation."
         self.lock = threading.Lock()
@@ -313,6 +322,34 @@ def current_view(rgb=_CURRENT, result=_CURRENT):
             / np.maximum(trace - disc, 1e-20))))
     if view == "Residual energy":
         return colour_map(result["residual_energy"])
+    if view == "Residual energy + cell boundaries":
+        return overlay_boundaries(
+            colour_map(result["residual_energy"]), labels)
+    ownership = result.get("ownership_diagnostics")
+    if (
+        ownership is None
+        and view in (
+            "Same-owner source jump",
+            "Interface-aligned source jump",
+            "Germ injection source jump",
+            "Cell mean residual energy",
+        )
+    ):
+        ownership = residual_ownership_diagnostics(
+            rgb,
+            labels,
+            result["residual_energy"],
+            centers=result["centers"],
+        )
+        result["ownership_diagnostics"] = ownership
+    if view == "Same-owner source jump":
+        return colour_map(ownership["same_owner_source_jump"])
+    if view == "Interface-aligned source jump":
+        return colour_map(ownership["interface_source_jump"])
+    if view == "Germ injection source jump":
+        return colour_map(ownership["germ_source_jump_map"])
+    if view == "Cell mean residual energy":
+        return colour_map(ownership["cell_mean_residual_energy"][labels])
     if view == "Reverse residual flow":
         if not result["refinements"]:
             return np.zeros_like(reconstruction)
@@ -431,11 +468,62 @@ def refresh():
         f" | null retention "
         f"{100.0 * float(np.mean(result['geometry']['null_attenuation'])):.1f}%"
     )
+    ownership = result.get("ownership_diagnostics")
+    if ownership is not None:
+        refinement_text += (
+            f" | ownership {ownership['unowned_pixels']} unowned px, "
+            f"{100.0 * ownership['same_owner_jump_fraction']:.1f}% "
+            "source-jump mass inside cells"
+        )
     if "straight_implied_cells" in result["geometry"]:
         refinement_text += (
             f" | curvature population "
             f"{result['geometry']['straight_implied_cells']:.0f} → "
             f"{result['geometry']['implied_cells']:.0f}"
+        )
+    fit_detail = timing.get("fit_detail", {})
+    allocation_detail = timing.get("allocation_detail", {})
+    transport_breakdown = ""
+    if allocation_detail:
+        transport_breakdown = (
+            "transport detail: population "
+            f"{float(allocation_detail.get('population_ms', 0.0)):.0f} ms, "
+            "metric "
+            f"{float(allocation_detail.get('full_metric_ms', 0.0)):.0f} ms, "
+            "front "
+            f"{float(allocation_detail.get('full_front_ms', 0.0)):.0f} ms | "
+        )
+    fit_breakdown = ""
+    if fit_detail:
+        interface_ms = (
+            float(fit_detail.get("interface_proposal_ms", 0.0))
+            + float(fit_detail.get("interface_score_ms", 0.0))
+        )
+        soft_ms = (
+            float(fit_detail.get("soft_conductance_ms", 0.0))
+            + float(fit_detail.get("soft_diffusion_ms", 0.0))
+            + float(fit_detail.get("soft_score_ms", 0.0))
+        )
+        fit_breakdown = (
+            " | fit detail: "
+            + (
+                "target cached, "
+                if int(fit_detail.get("prepared_target_reused", 0))
+                else ""
+            )
+            + "target split "
+            f"{float(fit_detail.get('target_objective_ms', 0.0)):.0f} ms, "
+            "region/ridge "
+            f"{float(fit_detail.get('initial_region_fit_ms', 0.0)):.0f} ms, "
+            "mechanics "
+            f"{float(fit_detail.get('region_mechanics_ms', 0.0)):.0f} ms, "
+            "candidate scores "
+            f"{float(fit_detail.get('region_candidate_score_ms', 0.0)):.0f} ms, "
+            f"interface {interface_ms:.0f} ms, "
+            f"soft {soft_ms:.0f} ms, "
+            f"{int(fit_detail.get('objective_evaluations', 0))} scores / "
+            f"{int(fit_detail.get('objective_state_restores', 0))} "
+            "cached restores"
         )
     dpg.set_value(
         "segmenting_metrics",
@@ -445,7 +533,9 @@ def refresh():
         f"allocation {aw}×{ah} → readout {rgb.shape[1]}×{rgb.shape[0]} | "
         f"Meyer {timing['geometry_ms']:.0f} ms | "
         f"transport {timing['allocation_ms']:.0f} ms | "
+        f"{transport_breakdown}"
         f"fit/refine/score {timing['fit_ms']:.0f} ms"
+        f"{fit_breakdown}"
         f"{refinement_text}")
 
 
@@ -515,9 +605,13 @@ def build_worker():
             soft_support_colour_percentile=float(
                 dpg.get_value("segmenting_soft_colour")),
             queue="bucket" if dpg.get_value("segmenting_queue") == "Exact monotone bucket" else "heap")
-        result = build_segmenting_representation(rgb, config)
+        with S.lock:
+            prepared_target = S.prepared_target
+        result = build_segmenting_representation(
+            rgb, config, prepared_target=prepared_target)
         with S.lock:
             S.rgb, S.result = rgb, result
+            S.prepared_target = result["prepared_target"]
         S.status = (
             f"{S.name}: complete at {len(result['centers'])} cells. "
             "Use Site IDs + boundaries to inspect the literal partition.")
@@ -531,6 +625,7 @@ def adopt(image, name):
     S.image, S.name = np.asarray(image, dtype=np.float64), name
     with S.lock:
         S.rgb, S.result = _fit_rgb(S.image, work_side()), None
+        S.prepared_target = None
     S.status = f"{name} loaded. Press Build representation."
     push_texture(SOURCE, S.rgb)
     push_texture(RESULT, np.full_like(S.rgb, 0.08))
@@ -596,7 +691,7 @@ def build_ui(labels, default_label):
                 slider("segmenting_work_side", "otherwise longest side", 768, 128, 3840, width=330)
                 slider("segmenting_allocation_side", "allocation grid side", 512, 128, 1536, width=320)
             with dpg.group(horizontal=True):
-                slider("segmenting_tgfd_sweeps", "single Meyer sweeps", 24, 4, 64)
+                slider("segmenting_tgfd_sweeps", "single Meyer sweeps", 1, 1, 64)
                 slider("segmenting_flow_sweeps", "fixed glass sweeps", 24, 4, 64)
                 dpg.add_text("Optimized one-axis Meyer is always used.")
         with dpg.collapsing_header(label="Simultaneous transport allocation", default_open=True):
@@ -682,7 +777,7 @@ def build_ui(labels, default_label):
             with dpg.group(horizontal=True):
                 slider(
                     "segmenting_characteristic_passes",
-                    "exact front passes", 1, 0, 4)
+                    "exact front passes", 0, 0, 4)
                 slider(
                     "segmenting_characteristic_trust",
                     "interface safety", 0.5, 0.05, 0.5,

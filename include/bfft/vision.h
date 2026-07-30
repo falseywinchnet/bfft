@@ -122,6 +122,30 @@ bfft_status bfft_vision_scan_residual_ridges(
     int32_t* best_angle,
     int32_t* best_bin);
 
+/*
+   Find the best split offset along one premeasured coordinate per cell.
+
+   projection contains the normalized signed coordinate of every pixel in its
+   owner's frame. Pixels are counting-sorted by owner once; each cell then
+   reuses one bin_count x 3 histogram. This avoids the
+   cell_count x angle_count x bin_count accumulator of the free-angle control.
+
+   The score and tie rule match bfft_vision_scan_residual_ridges. score and
+   best_bin each have cell_count entries and are overwritten.
+*/
+bfft_status bfft_vision_scan_paired_offsets(
+    size_t pixel_count,
+    size_t cell_count,
+    size_t bin_count,
+    double span,
+    const int32_t* owner,
+    const double* pixel_weight,
+    const double* residual,
+    const double* projection,
+    const double* channel_weight,
+    double* score,
+    int32_t* best_bin);
+
 /* Compact multi-support affine operator used by the HD matrix-free solver.
    Each sample contributes
 
@@ -182,6 +206,7 @@ bfft_status bfft_vision_curvature_population_f32(
 */
 bfft_status bfft_vision_soft_support_diffuse(
     size_t height, size_t width, size_t channels, size_t passes,
+    size_t thread_count,
     double coupling, const double* field,
     const double* horizontal, const double* vertical,
     const double* diagonal_down_right, const double* diagonal_down_left,
@@ -216,6 +241,51 @@ bfft_status bfft_vision_fast_march_first_label(
     int32_t* parent_second, double* parent_fraction,
     int32_t* acceptance_order, size_t* accepted_count,
     size_t* push_count, size_t* maximum_heap_size);
+
+/*
+   Exact owner/distance-only form of bfft_vision_fast_march_first_label.
+   The recurrence and decrease-key acceptance order are unchanged; covector,
+   parent-simplex, and acceptance-order output streams are omitted.
+*/
+bfft_status bfft_vision_fast_march_labels(
+    size_t height, size_t width, size_t seed_count,
+    const int32_t* seed_pixel, const double* seed_value,
+    const int32_t* seed_label, const double* seed_gradient_x,
+    const double* seed_gradient_y, const int32_t* directions,
+    const double* direction_costs, const uint8_t* direction_valid,
+    const double* cardinal_costs, const int64_t* inverse_offset,
+    size_t inverse_count, const int32_t* inverse_receiver,
+    const double* mxx, const double* mxy, const double* myy,
+    int32_t* owner, double* distance,
+    size_t* push_count, size_t* maximum_heap_size);
+
+/*
+   Assemble the direction-major float32 eight-neighbour cost stack directly
+   from frozen precision and optional boundary tensors. precision_gain is the
+   already-scaled metric coefficient; boundary_gain is the squared crossing
+   action. Boundary pointers may be null exactly when boundary_gain is zero.
+*/
+bfft_status bfft_vision_metric_edge_costs_f32(
+    size_t height, size_t width,
+    const float* precision_xx, const float* precision_xy,
+    const float* precision_yy,
+    const float* boundary_xx, const float* boundary_xy,
+    const float* boundary_yy,
+    double precision_gain, double boundary_gain,
+    float* direction_costs);
+
+/*
+   Exact Dial-bucket first-owner walk for a direction-major float32
+   eight-neighbour cost stack. delta/span/shift are the input-derived queue
+   geometry; no approximate bucket width is accepted by this kernel.
+*/
+bfft_status bfft_vision_bucket_first_label(
+    size_t height, size_t width, size_t seed_count,
+    const int64_t* seed_pixel, const double* reach,
+    const float* direction_costs,
+    double delta, size_t span, double shift,
+    int32_t* owner, double* distance, int32_t* parent,
+    size_t* push_count);
 
 /*
    Fit one independent conditioned affine RGB/Lab field per hard region.

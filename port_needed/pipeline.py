@@ -27,6 +27,7 @@ from .continuous_eikonal_transport import (
 from .first_arrival_site_force import safe_characteristic_site_step
 from .fractional_interface_coverage import fractional_interface_coverage
 from .hard_region_fit import fit_regions
+from .ownership_diagnostics import residual_ownership_diagnostics
 from .residual_pressure_transport import relax_residual_pressure
 from .reverse_residual_flow import reverse_residual_refill
 from .soft_support_diffusion import (
@@ -79,29 +80,78 @@ class SegmentingConfig:
     pressure_position_relaxation: float = 0.35
     pressure_capacity_relaxation: float = 0.5
     pressure_metric_gain: float = 4.0
+    ownership_diagnostics: bool = False
     queue: str = "bucket"
     threads: int = 4
+
+
+def _prepared_signature(config: SegmentingConfig) -> tuple:
+    """Parameters that change the immutable target representation."""
+
+    return (
+        int(config.tgfd_sweeps),
+        int(config.flow_sweeps),
+        float(config.null_evidence_strength),
+        bool(config.curvature_limited_density),
+        int(config.threads),
+    )
+
+
+@dataclass
+class PreparedSegmentingTarget:
+    """Reusable state whose validity does not depend on sites or labels."""
+
+    target_rgb: np.ndarray
+    target_lab: np.ndarray
+    geometry: dict
+    objective: SingleStageDecompositionObjective
+    signature: tuple
+
+    def matches(
+        self,
+        rgb: np.ndarray,
+        config: SegmentingConfig,
+    ) -> bool:
+        value = np.asarray(rgb)
+        return (
+            self.signature == _prepared_signature(config)
+            and value.shape == self.target_rgb.shape
+            and np.array_equal(value, self.target_rgb)
+        )
 
 
 def build_segmenting_representation(
     rgb: np.ndarray,
     config: SegmentingConfig = SegmentingConfig(),
+    prepared_target: PreparedSegmentingTarget | None = None,
 ) -> dict:
+    if (
+        prepared_target is not None
+        and not prepared_target.matches(rgb, config)
+    ):
+        prepared_target = None
     started = time.perf_counter()
-    geometry = build_frozen_geometry(
-        rgb,
-        tgfd_sweeps=config.tgfd_sweeps,
-        flow_sweeps=config.flow_sweeps,
-        null_evidence_strength=config.null_evidence_strength,
-        threads=config.threads,
-    )
-    if config.curvature_limited_density:
-        geometry = curvature_limited_geometry(geometry)
+    if prepared_target is None:
+        target_lab = srgb_to_lab(rgb)
+        geometry = build_frozen_geometry(
+            rgb,
+            target_lab=target_lab,
+            tgfd_sweeps=config.tgfd_sweeps,
+            flow_sweeps=config.flow_sweeps,
+            null_evidence_strength=config.null_evidence_strength,
+            threads=config.threads,
+        )
+        if config.curvature_limited_density:
+            geometry = curvature_limited_geometry(geometry)
+    else:
+        target_lab = prepared_target.target_lab
+        geometry = prepared_target.geometry
     geometry_ms = 1000.0 * (time.perf_counter() - started)
 
     allocation_geometry = restrict_geometry(
         geometry, config.allocation_max_side)
     allocation_started = time.perf_counter()
+    allocation_detail: dict[str, float | int] = {}
     characteristic = None
     causal_allocation = config.allocation_method == "causal_density"
     if causal_allocation:
@@ -112,34 +162,50 @@ def build_segmenting_representation(
             raise ValueError(
                 "causal density allocation cannot be combined with the "
                 "legacy split or soft-pressure controls")
+        phase_started = time.perf_counter()
         centers, population = emit_density_population(
             allocation_geometry,
             safety_cells=config.safety_cells,
         )
-        allocation_metric = prepare_continuous_metric(
-            *_metric_fields(
-                allocation_geometry,
-                config.metric_strength,
-                config.boundary_jump_strength,
-            ))
-        partition = continuous_first_partition_prepared(
-            centers, allocation_metric)
+        allocation_detail["population_ms"] = 1000.0 * (
+            time.perf_counter() - phase_started)
+        emitted_centers = centers.copy()
+        allocation_metric = None
+        partition = None
         characteristic_trace = []
-        for iteration in range(
-            max(int(config.characteristic_passes), 0)
-        ):
-            centers, partition, diagnostic = safe_characteristic_site_step(
-                centers,
-                partition,
-                allocation_metric,
-                allocation_geometry["measure"],
-                trust_fraction=config.characteristic_trust_fraction,
-                core_radius_px=config.characteristic_core_radius,
-            )
-            diagnostic["iteration"] = iteration + 1
-            characteristic_trace.append(diagnostic)
-            if not diagnostic["accepted"]:
-                break
+        if int(config.characteristic_passes) > 0:
+            phase_started = time.perf_counter()
+            allocation_metric = prepare_continuous_metric(
+                *_metric_fields(
+                    allocation_geometry,
+                    config.metric_strength,
+                    config.boundary_jump_strength,
+                ))
+            allocation_detail["restricted_metric_ms"] = 1000.0 * (
+                time.perf_counter() - phase_started)
+            phase_started = time.perf_counter()
+            partition = continuous_first_partition_prepared(
+                centers, allocation_metric)
+            allocation_detail["restricted_front_ms"] = 1000.0 * (
+                time.perf_counter() - phase_started)
+            phase_started = time.perf_counter()
+            for iteration in range(
+                max(int(config.characteristic_passes), 0)
+            ):
+                centers, partition, diagnostic = safe_characteristic_site_step(
+                    centers,
+                    partition,
+                    allocation_metric,
+                    allocation_geometry["measure"],
+                    trust_fraction=config.characteristic_trust_fraction,
+                    core_radius_px=config.characteristic_core_radius,
+                )
+                diagnostic["iteration"] = iteration + 1
+                characteristic_trace.append(diagnostic)
+                if not diagnostic["accepted"]:
+                    break
+            allocation_detail["characteristic_ms"] = 1000.0 * (
+                time.perf_counter() - phase_started)
         allocation = {
             "centers": centers,
             "cells": len(centers),
@@ -151,7 +217,7 @@ def build_segmenting_representation(
         characteristic = {
             "initial_centers": (
                 characteristic_trace[0]["initial_centers"]
-                if characteristic_trace else centers.copy()
+                if characteristic_trace else emitted_centers
             ),
             "final_centers": centers.copy(),
             "trace": characteristic_trace,
@@ -161,17 +227,39 @@ def build_segmenting_representation(
         # One exact full-resolution causal refresh. Restriction emits the
         # population and relaxes its germs; it never classifies final pixels.
         if allocation_geometry["measure"].shape == geometry["measure"].shape:
-            forest = partition
-            full_metric = allocation_metric
+            if partition is None:
+                phase_started = time.perf_counter()
+                full_metric = prepare_continuous_metric(
+                    *_metric_fields(
+                        geometry,
+                        config.metric_strength,
+                        config.boundary_jump_strength,
+                    ))
+                allocation_detail["full_metric_ms"] = 1000.0 * (
+                    time.perf_counter() - phase_started)
+                phase_started = time.perf_counter()
+                forest = continuous_first_partition_prepared(
+                    centers, full_metric)
+                allocation_detail["full_front_ms"] = 1000.0 * (
+                    time.perf_counter() - phase_started)
+            else:
+                forest = partition
+                full_metric = allocation_metric
         else:
+            phase_started = time.perf_counter()
             full_metric = prepare_continuous_metric(
                 *_metric_fields(
                     geometry,
                     config.metric_strength,
                     config.boundary_jump_strength,
                 ))
+            allocation_detail["full_metric_ms"] = 1000.0 * (
+                time.perf_counter() - phase_started)
+            phase_started = time.perf_counter()
             forest = continuous_first_partition_prepared(
                 centers, full_metric)
+            allocation_detail["full_front_ms"] = 1000.0 * (
+                time.perf_counter() - phase_started)
         labels = forest["labels"]
         full_costs = None
         full_directions = None
@@ -214,27 +302,45 @@ def build_segmenting_representation(
     allocation_ms = 1000.0 * (time.perf_counter() - allocation_started)
 
     fit_started = time.perf_counter()
-    objective = SingleStageDecompositionObjective(
-        rgb,
-        passes=config.tgfd_sweeps,
-        threads=config.threads,
-        solver=1,
-    )
-    target_lab = srgb_to_lab(rgb)
+    fit_detail: dict[str, float | int] = {}
+    fit_detail["prepared_target_reused"] = int(
+        prepared_target is not None)
+    phase_started = time.perf_counter()
+    if prepared_target is None:
+        objective = SingleStageDecompositionObjective(
+            rgb,
+            passes=config.tgfd_sweeps,
+            threads=config.threads,
+            solver=1,
+            target_lab=target_lab,
+        )
+    else:
+        objective = prepared_target.objective
+        objective.evaluation_count = 0
+        objective.restore_count = 0
+    fit_detail["target_objective_ms"] = 1000.0 * (
+        time.perf_counter() - phase_started)
+    fit_detail["target_lab_ms"] = 0.0
     has_evolution = (
         int(config.refinement_iterations) > 0
         or int(config.pressure_passes) > 0
     )
     refinement_ridges = 0 if has_evolution else config.ridge_count
+    phase_started = time.perf_counter()
     record, reconstruction_lab, ridge = fit_regions(
         labels,
         centers,
         target_lab,
         objective,
         ridge_count=refinement_ridges,
+        geometry=geometry,
     )
+    fit_detail["initial_region_fit_ms"] = 1000.0 * (
+        time.perf_counter() - phase_started)
+    objective_state = objective.capture_state()
     pressure = None
     if int(config.pressure_passes) > 0:
+        pressure_started = time.perf_counter()
         initial_pressure_objective = record["objective"]
         pressure_costs, metric_pressure, metric_coherence = (
             build_residual_pressure_costs(
@@ -264,7 +370,9 @@ def build_segmenting_representation(
             target_lab,
             objective,
             ridge_count=0,
+            geometry=geometry,
         )
+        objective_state = objective.capture_state()
         pressure = {
             **pressure_fields,
             "metric_pressure": metric_pressure,
@@ -276,6 +384,8 @@ def build_segmenting_representation(
             "objective_improved": (
                 record["objective"] <= initial_pressure_objective),
         }
+        fit_detail["pressure_fit_ms"] = 1000.0 * (
+            time.perf_counter() - pressure_started)
     refinements = []
     for iteration in range(max(int(config.refinement_iterations), 0)):
         refinement_started = time.perf_counter()
@@ -285,6 +395,7 @@ def build_segmenting_representation(
         previous_record = record
         previous_reconstruction_lab = reconstruction_lab
         previous_ridge = ridge
+        previous_objective_state = objective_state
         centers, diagnostic = reverse_residual_refill(
             labels,
             centers,
@@ -320,7 +431,9 @@ def build_segmenting_representation(
             target_lab,
             objective,
             ridge_count=0,
+            geometry=geometry,
         )
+        objective_state = objective.capture_state()
         if record["objective"] > previous_record["objective"]:
             diagnostic["accepted"] = False
             diagnostic["rejected_objective"] = record["objective"]
@@ -330,7 +443,8 @@ def build_segmenting_representation(
             record = previous_record
             reconstruction_lab = previous_reconstruction_lab
             ridge = previous_ridge
-            objective.evaluate(previous_record["rgb"])
+            objective_state = previous_objective_state
+            objective.restore_state(objective_state)
             diagnostic["milliseconds"] = (
                 1000.0 * (time.perf_counter() - refinement_started))
             refinements.append(diagnostic)
@@ -340,6 +454,7 @@ def build_segmenting_representation(
             1000.0 * (time.perf_counter() - refinement_started))
         refinements.append(diagnostic)
     if has_evolution and int(config.ridge_count) > 0:
+        phase_started = time.perf_counter()
         record, reconstruction_lab, ridge = fit_regions(
             labels,
             centers,
@@ -348,13 +463,19 @@ def build_segmenting_representation(
             ridge_count=config.ridge_count,
             affine_record=record,
             affine=reconstruction_lab,
+            geometry=geometry,
         )
+        objective_state = objective.capture_state()
+        fit_detail["final_ridge_fit_ms"] = 1000.0 * (
+            time.perf_counter() - phase_started)
     hard_record = record
+    hard_objective_state = objective_state
     interface_coverage = None
     if (
         causal_allocation
         and float(config.interface_coverage_strength) > 0.0
     ):
+        phase_started = time.perf_counter()
         proposal_rgb, interface_coverage = fractional_interface_coverage(
             record["rgb"],
             labels,
@@ -363,7 +484,13 @@ def build_segmenting_representation(
             geometry["boundary_confidence"],
             strength=config.interface_coverage_strength,
         )
+        fit_detail["interface_proposal_ms"] = 1000.0 * (
+            time.perf_counter() - phase_started)
+        phase_started = time.perf_counter()
         proposal_record = objective.evaluate(proposal_rgb)
+        fit_detail["interface_score_ms"] = 1000.0 * (
+            time.perf_counter() - phase_started)
+        proposal_objective_state = objective.capture_state()
         proposal_record["rgb"] = proposal_rgb
         interface_coverage["hard_record"] = hard_record
         interface_coverage["proposal_record"] = proposal_record
@@ -371,27 +498,47 @@ def build_segmenting_representation(
             proposal_record["objective"] <= hard_record["objective"])
         if interface_coverage["accepted"]:
             record = proposal_record
-            reconstruction_lab = srgb_to_lab(proposal_rgb)
+            reconstruction_lab = objective.last_reconstruction_lab
+            objective_state = proposal_objective_state
         else:
-            objective.evaluate(hard_record["rgb"])
+            objective_state = hard_objective_state
+            objective.restore_state(objective_state)
     # Soft support, when enabled, is judged against the best accepted hard
     # readout including its geometric interface coverage.
     hard_record = record
+    hard_objective_state = objective_state
     soft_support = None
     if int(config.soft_support_passes) > 0:
+        phase_started = time.perf_counter()
         conductance = build_soft_support_conductance(
             geometry,
             rgb,
             metric_strength=config.metric_strength,
             colour_percentile=config.soft_support_colour_percentile,
+            target_lab=target_lab,
+            metric=(
+                full_metric["mxx"],
+                full_metric["mxy"],
+                full_metric["myy"],
+            ) if causal_allocation else None,
         )
+        fit_detail["soft_conductance_ms"] = 1000.0 * (
+            time.perf_counter() - phase_started)
+        phase_started = time.perf_counter()
         proposal_rgb = np.clip(diffuse_soft_support(
             record["rgb"],
             conductance,
             passes=config.soft_support_passes,
             coupling=config.soft_support_coupling,
+            threads=config.threads,
         ), 0.0, 1.0)
+        fit_detail["soft_diffusion_ms"] = 1000.0 * (
+            time.perf_counter() - phase_started)
+        phase_started = time.perf_counter()
         proposal_record = objective.evaluate(proposal_rgb)
+        fit_detail["soft_score_ms"] = 1000.0 * (
+            time.perf_counter() - phase_started)
+        proposal_objective_state = objective.capture_state()
         # SingleStageDecompositionObjective evaluates scores only.  The
         # established fit/score contract also carries the rendered RGB field,
         # which every viewer and downstream refinement reads from ``record``.
@@ -400,9 +547,11 @@ def build_segmenting_representation(
             proposal_record["objective"] <= hard_record["objective"])
         if accepted:
             record = proposal_record
-            reconstruction_lab = srgb_to_lab(proposal_rgb)
+            reconstruction_lab = objective.last_reconstruction_lab
+            objective_state = proposal_objective_state
         else:
-            objective.evaluate(hard_record["rgb"])
+            objective_state = hard_objective_state
+            objective.restore_state(objective_state)
         soft_support = {
             "conductance": conductance,
             "passes": int(config.soft_support_passes),
@@ -411,8 +560,39 @@ def build_segmenting_representation(
             "proposal_record": proposal_record,
             "accepted": accepted,
         }
+    fit_detail["objective_evaluations"] = int(
+        objective.evaluation_count)
+    fit_detail["objective_state_restores"] = int(
+        objective.restore_count)
+    fit_detail["refinement_ms"] = float(sum(
+        item.get("milliseconds", 0.0) for item in refinements))
+    fit_detail["region_mechanics_ms"] = float(
+        ridge.get("affine_solve_ms", 0.0)
+        + sum(ridge.get("ridge_measure_ms", ()))
+        + sum(ridge.get("ridge_refit_ms", ()))
+    )
+    fit_detail["region_candidate_score_ms"] = float(
+        ridge.get("affine_score_ms", 0.0)
+        + sum(ridge.get("ridge_candidate_score_ms", ()))
+    )
+    ownership_diagnostics = None
+    if config.ownership_diagnostics:
+        phase_started = time.perf_counter()
+        ownership_diagnostics = residual_ownership_diagnostics(
+            rgb, labels, objective.last_residual_energy, centers=centers)
+        fit_detail["ownership_diagnostic_ms"] = 1000.0 * (
+            time.perf_counter() - phase_started)
     fit_ms = 1000.0 * (time.perf_counter() - fit_started)
+    if prepared_target is None:
+        prepared_target = PreparedSegmentingTarget(
+            target_rgb=objective.target_rgb,
+            target_lab=target_lab,
+            geometry=geometry,
+            objective=objective,
+            signature=_prepared_signature(config),
+        )
     return {
+        "prepared_target": prepared_target,
         "geometry": geometry,
         "allocation_geometry": allocation_geometry,
         "labels": labels,
@@ -427,10 +607,13 @@ def build_segmenting_representation(
         "pressure": pressure,
         "characteristic": characteristic,
         "residual_energy": objective.last_residual_energy,
+        "ownership_diagnostics": ownership_diagnostics,
         "timing": {
             "geometry_ms": geometry_ms,
             "allocation_ms": allocation_ms,
+            "allocation_detail": allocation_detail,
             "fit_ms": fit_ms,
+            "fit_detail": fit_detail,
             "total_ms": geometry_ms + allocation_ms + fit_ms,
         },
     }

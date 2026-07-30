@@ -319,6 +319,84 @@ void test_residual_ridge_scan() {
     require(best_bin == bin_reference, "ridge threshold differs");
 }
 
+void test_paired_offset_scan() {
+    constexpr std::size_t pixels = 67;
+    constexpr std::size_t cells = 5;
+    constexpr std::size_t bins = 17;
+    constexpr double span = 2.5;
+
+    std::mt19937_64 rng(0x50414952u);
+    std::uniform_real_distribution<double> value(-1.0, 1.0);
+    std::uniform_real_distribution<double> positive(0.1, 1.0);
+    std::vector<std::int32_t> owner(pixels);
+    std::vector<double> weight(pixels);
+    std::vector<double> residual(pixels * 3);
+    std::vector<double> projection(pixels);
+    const std::vector<double> channel_weight{1.0, 1.5, 1.5};
+    for (std::size_t p = 0; p < pixels; ++p) {
+        owner[p] = static_cast<std::int32_t>((p * 11 + 3) % cells);
+        weight[p] = positive(rng);
+        projection[p] = 4.0 * value(rng);
+        for (std::size_t channel = 0; channel < 3; ++channel) {
+            residual[p * 3 + channel] = value(rng);
+        }
+    }
+
+    std::vector<double> actual_score(cells);
+    std::vector<std::int32_t> actual_bin(cells);
+    require(bfft_vision_scan_paired_offsets(
+                pixels, cells, bins, span, owner.data(), weight.data(),
+                residual.data(), projection.data(), channel_weight.data(),
+                actual_score.data(), actual_bin.data()) == BFFT_OK,
+            "paired-offset scan returned an error");
+
+    std::vector<double> expected_score(cells);
+    std::vector<std::int32_t> expected_bin(cells);
+    const double scale = static_cast<double>(bins) / (2.0 * span);
+    for (std::size_t cell = 0; cell < cells; ++cell) {
+        std::vector<double> histogram(bins * 3, 0.0);
+        double total[3] = {0.0, 0.0, 0.0};
+        double mass = 0.0;
+        for (std::size_t p = 0; p < pixels; ++p) {
+            if (static_cast<std::size_t>(owner[p]) != cell) {
+                continue;
+            }
+            mass += weight[p];
+            std::int64_t bin = static_cast<std::int64_t>(
+                (projection[p] + span) * scale);
+            bin = std::max<std::int64_t>(0, bin);
+            bin = std::min<std::int64_t>(
+                static_cast<std::int64_t>(bins - 1), bin);
+            for (std::size_t channel = 0; channel < 3; ++channel) {
+                const double weighted =
+                    weight[p] * residual[p * 3 + channel];
+                total[channel] += weighted;
+                histogram[static_cast<std::size_t>(bin) * 3 + channel] +=
+                    weighted;
+            }
+        }
+        double running[3] = {0.0, 0.0, 0.0};
+        for (std::size_t bin = 0; bin < bins; ++bin) {
+            double candidate = 0.0;
+            for (std::size_t channel = 0; channel < 3; ++channel) {
+                running[channel] += histogram[bin * 3 + channel];
+                const double contrast =
+                    total[channel] - 2.0 * running[channel];
+                candidate +=
+                    channel_weight[channel] * contrast * contrast;
+            }
+            candidate /= std::max(mass, 1e-9);
+            if (bin == 0 || candidate > expected_score[cell]) {
+                expected_score[cell] = candidate;
+                expected_bin[cell] = static_cast<std::int32_t>(bin);
+            }
+        }
+    }
+    require_close(
+        actual_score, expected_score, 2e-15, "paired-offset score");
+    require(actual_bin == expected_bin, "paired-offset threshold differs");
+}
+
 void test_curvature_population_constant_director() {
     constexpr std::size_t height = 9;
     constexpr std::size_t width = 11;
@@ -370,7 +448,7 @@ void test_soft_support_preserves_partition() {
     std::vector<double> output(field.size());
     std::vector<double> scratch(field.size());
     require(bfft_vision_soft_support_diffuse(
-                height, width, channels, 7, 0.8, field.data(),
+                height, width, channels, 7, 3, 0.8, field.data(),
                 horizontal.data(), vertical.data(), diagonal.data(),
                 diagonal.data(), output.data(), scratch.data()) == BFFT_OK,
             "soft support returned an error");
@@ -449,6 +527,7 @@ void test_hard_region_fit_kernels() {
 int main() {
     test_normal_assembly_and_render();
     test_residual_ridge_scan();
+    test_paired_offset_scan();
     test_curvature_population_constant_director();
     test_soft_support_preserves_partition();
     test_hard_region_fit_kernels();

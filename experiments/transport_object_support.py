@@ -35,6 +35,10 @@ from bfft.effects import srgb_to_lab
 from experiments.embedded_interface_topology import (
     build_embedded_interface_topology,
 )
+from experiments.embedded_contour_persistence import (
+    intrinsic_boundary_alignment,
+    maximum_bottleneck_cycle_support,
+)
 from experiments.transport_focus_forensics import (
     autofocus_cell_score,
     transport_focus_forensics,
@@ -70,6 +74,9 @@ class ObjectSupportConfig:
     material_boundary_ceiling: float = 0.08
     short_contact_scale: float = 0.0
     short_contact_prior: float = 0.5
+    contour_cycle_weight: float = 0.0
+    intrinsic_contour_weight: float = 0.0
+    finsler_contour_weight: float = 0.0
     barrier_scale: float = 1.5
     detail_weight: float = 0.35
     enclosure_weight: float = 0.15
@@ -472,6 +479,7 @@ def _edge_evidence(
     graph: dict,
     config: ObjectSupportConfig,
     focus: dict | None = None,
+    intrinsic_owner: np.ndarray | None = None,
 ) -> dict[str, np.ndarray]:
     edge = graph["edge"]
     target = np.maximum(
@@ -521,6 +529,25 @@ def _edge_evidence(
         edge["boundary"],
         edge["boundary_rms"],
     ), 0.0, 1.0)
+    finsler_completion = np.clip(np.asarray(
+        graph.get(
+            "finsler_contour_completion",
+            np.zeros_like(decisive),
+        ),
+        dtype=np.float64,
+    ), 0.0, 1.0)
+    if finsler_completion.shape != decisive.shape:
+        raise ValueError(
+            "Finsler contour completion must match canonical interfaces")
+    finsler_amount = np.clip(
+        float(config.finsler_contour_weight), 0.0, 1.0)
+    # The intrinsic lift can only complete the canonical boundary witness.
+    # It cannot lower an observed barrier or directly merge regions.
+    completed_decisive = (
+        1.0
+        - (1.0 - decisive)
+        * (1.0 - finsler_amount * finsler_completion)
+    )
     focus_jump_raw = focus_jump
     # A difference in local characteristic scale is optical depth evidence
     # only at an observed image boundary. On an arbitrary tessellation seam
@@ -547,7 +574,7 @@ def _edge_evidence(
         + max(config.focus_jump_weight, 0.0) * focus_jump
     )
     additive_evidence = (
-        max(config.boundary_weight, 0.0) * decisive
+        max(config.boundary_weight, 0.0) * completed_decisive
         + soft_evidence
     )
     # Allocation geometry is useful corroboration but is not, by itself, an
@@ -563,7 +590,7 @@ def _edge_evidence(
     )
     witness_modulation = (
         1.0
-        + max(config.boundary_weight, 0.0) * decisive
+        + max(config.boundary_weight, 0.0) * completed_decisive
         + max(config.region_colour_weight, 0.0) * region_colour
         + max(config.transport_weight, 0.0) * transport
         + max(config.support_jump_weight, 0.0) * support
@@ -604,13 +631,40 @@ def _edge_evidence(
         & (edge["region_colour_jump"] <= tolerance)
         & (edge["cartoon_jump_rms"] <= tolerance)
         & (
-            edge["boundary_rms"]
+            completed_decisive
             <= max(float(config.material_boundary_ceiling), 0.0)
         )
     )
     # Literal unchanged material is a quotient relation, not merely a high
     # affinity suggestion.  Population/metric variation inside a white panel
     # may control cell shape without manufacturing separate object identity.
+    barrier[material_join] = 0.0
+    intrinsic_amount = np.clip(
+        float(config.intrinsic_contour_weight), 0.0, 1.0)
+    if intrinsic_owner is None or intrinsic_amount <= 0.0:
+        intrinsic_alignment = np.zeros_like(barrier)
+    else:
+        intrinsic_alignment = intrinsic_boundary_alignment(
+            graph, intrinsic_owner)
+    local_contour_barrier = (
+        1.0
+        - (1.0 - np.clip(barrier, 0.0, 1.0))
+        * (1.0 - intrinsic_amount * intrinsic_alignment)
+    )
+    cycle_amount = np.clip(
+        float(config.contour_cycle_weight), 0.0, 1.0)
+    if cycle_amount > 0.0:
+        cycle_barrier = maximum_bottleneck_cycle_support(
+            graph["interface_topology"],
+            local_contour_barrier,
+            collapse_frame=True,
+        )
+        barrier = (
+            (1.0 - cycle_amount) * barrier
+            + cycle_amount * cycle_barrier
+        )
+    else:
+        cycle_barrier = barrier.copy()
     barrier[material_join] = 0.0
     affinity = np.exp(
         -max(float(config.barrier_scale), 1e-6) * barrier)
@@ -643,10 +697,15 @@ def _edge_evidence(
             1.0 - np.exp(-np.maximum(anchored_evidence, 0.0))
         ),
         "decisive_boundary": decisive,
+        "finsler_contour_completion": finsler_completion,
+        "completed_decisive_boundary": completed_decisive,
         "null_reliability": persistent,
         "material_join": material_join.astype(np.float64),
         "raw_barrier": raw_barrier,
         "contact_reliability": contact_reliability,
+        "intrinsic_boundary_alignment": intrinsic_alignment,
+        "local_contour_barrier": local_contour_barrier,
+        "cycle_barrier": cycle_barrier,
         "barrier": barrier,
         "affinity": affinity,
     }
@@ -1224,6 +1283,7 @@ def infer_object_support(
     config: ObjectSupportConfig = ObjectSupportConfig(),
     *,
     graph: dict | None = None,
+    intrinsic_owner: np.ndarray | None = None,
 ) -> dict:
     """Infer hard IDs and soft membership confidence from transport cells."""
     started = time.perf_counter()
@@ -1247,7 +1307,8 @@ def infer_object_support(
         graph["focus_forensics"] = focus
     graph_ms = 1000.0 * (time.perf_counter() - started)
     analysis_started = time.perf_counter()
-    evidence = _edge_evidence(graph, config, focus)
+    evidence = _edge_evidence(
+        graph, config, focus, intrinsic_owner)
     score, enclosure, core = _node_seed_score(graph, evidence, config)
     edge = graph["edge"]
     material_atom = _material_atoms(

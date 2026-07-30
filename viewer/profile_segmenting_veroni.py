@@ -50,10 +50,10 @@ def main():
     parser.add_argument("image", nargs="?", help="optional image file")
     parser.add_argument("--gallery", default="astronaut",
                         help="bundled gallery key when no file is supplied")
-    parser.add_argument("--max-side", type=int, default=1280)
+    parser.add_argument("--max-side", type=int, default=768)
     parser.add_argument("--full-resolution", action="store_true")
-    parser.add_argument("--passes", type=int, default=24)
-    parser.add_argument("--flow-sweeps", type=int, default=64)
+    parser.add_argument("--passes", type=int, default=1)
+    parser.add_argument("--flow-sweeps", type=int, default=24)
     parser.add_argument("--allocation-side", type=int, default=512)
     parser.add_argument("--safety-cells", type=int, default=32768)
     parser.add_argument("--characteristic-passes", type=int, default=1)
@@ -62,6 +62,13 @@ def main():
     parser.add_argument("--null-evidence", type=float, default=0.5)
     parser.add_argument("--boundary-jump", type=float, default=24.0)
     parser.add_argument("--interface-coverage", type=float, default=0.4)
+    parser.add_argument("--soft-passes", type=int, default=16)
+    parser.add_argument("--ridges", type=int, default=1)
+    parser.add_argument(
+        "--prepared-repeat",
+        action="store_true",
+        help="run a second pass reusing invariant target state",
+    )
     args = parser.parse_args()
 
     image, source = _load(args.image, args.gallery)
@@ -81,6 +88,8 @@ def main():
         null_evidence_strength=args.null_evidence,
         boundary_jump_strength=args.boundary_jump,
         interface_coverage_strength=args.interface_coverage,
+        soft_support_passes=args.soft_passes,
+        ridge_count=args.ridges,
     )
 
     print(f"source                      {source}")
@@ -94,7 +103,40 @@ def main():
     print(f"cells                       {len(result['centers']):10,d}")
     print(f"Meyer geometry              {timing['geometry_ms']:10.1f} ms")
     print(f"population/front/step       {timing['allocation_ms']:10.1f} ms")
+    allocation_detail = timing.get("allocation_detail", {})
+    for key, label in (
+        ("population_ms", "  population emission"),
+        ("restricted_metric_ms", "  restricted metric"),
+        ("restricted_front_ms", "  restricted front"),
+        ("characteristic_ms", "  characteristic proposal"),
+        ("full_metric_ms", "  full metric"),
+        ("full_front_ms", "  full front"),
+    ):
+        if key in allocation_detail:
+            print(f"{label:<28s}{float(allocation_detail[key]):10.1f} ms")
     print(f"fit/ridge/score             {timing['fit_ms']:10.1f} ms")
+    detail = timing.get("fit_detail", {})
+    for key, label in (
+        ("target_objective_ms", "  target objective split"),
+        ("target_lab_ms", "  target OKLab conversion"),
+        ("initial_region_fit_ms", "  affine + ridge readout"),
+        ("region_mechanics_ms", "    region mechanics"),
+        ("region_candidate_score_ms", "    candidate Meyer scores"),
+        ("interface_proposal_ms", "  interface proposal"),
+        ("interface_score_ms", "  interface score"),
+        ("soft_conductance_ms", "  soft conductance"),
+        ("soft_diffusion_ms", "  soft diffusion"),
+        ("soft_score_ms", "  soft score"),
+        ("refinement_ms", "  residual refinement"),
+    ):
+        if key in detail:
+            print(f"{label:<28s}{float(detail[key]):10.1f} ms")
+    print(
+        f"  objective evaluations      "
+        f"{int(detail.get('objective_evaluations', 0)):10d}")
+    print(
+        f"  cached state restores      "
+        f"{int(detail.get('objective_state_restores', 0)):10d}")
     print(f"wall total                  {total:10.1f} ms")
     print(f"PSNR                        {record['psnr']:10.3f} dB")
     print(f"cartoon / texture MSE       "
@@ -113,6 +155,27 @@ def main():
                 f"heap {100.0 * item['front_maximum_heap_after'] / pixels:.1f}%")
 
     print(f"peak resident memory         {_peak_rss_gib():10.3f} GiB")
+    if args.prepared_repeat:
+        repeated_started = time.perf_counter()
+        repeated = build_segmenting_representation(
+            rgb,
+            config,
+            prepared_target=result["prepared_target"],
+        )
+        repeated_wall = (
+            time.perf_counter() - repeated_started) * 1000.0
+        repeated_timing = repeated["timing"]
+        print("\nprepared-target repeat")
+        print(
+            f"Meyer geometry              "
+            f"{repeated_timing['geometry_ms']:10.1f} ms")
+        print(
+            f"population/front/step       "
+            f"{repeated_timing['allocation_ms']:10.1f} ms")
+        print(
+            f"fit/ridge/score             "
+            f"{repeated_timing['fit_ms']:10.1f} ms")
+        print(f"wall total                  {repeated_wall:10.1f} ms")
     return 0
 
 

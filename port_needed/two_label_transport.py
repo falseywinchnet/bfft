@@ -13,13 +13,12 @@ from pathlib import Path
 
 import numpy as np
 
+from bfft.vision import bucket_first_label_native
+
 ROOT = Path(__file__).resolve().parents[1]
 for directory in (ROOT / "viewer", ROOT / "experiments", ROOT / "experiments" / "sigma_opt"):
     if str(directory) not in sys.path:
         sys.path.insert(0, str(directory))
-
-from transport_voronoi import _dijkstra_two_best_packed  # noqa: E402
-
 
 def walk_two_labels(
     centers: np.ndarray,
@@ -56,6 +55,8 @@ def walk_two_labels(
         return result[0], result[1], result[2], result[3]
     if queue != "heap":
         raise ValueError(f"unknown exact queue {queue!r}")
+    from transport_voronoi import _dijkstra_two_best_packed
+
     return _dijkstra_two_best_packed(
         seed_x, seed_y, reach, costs, height, width)
 
@@ -112,6 +113,62 @@ def hard_partition_with_forest(
         "distance": result[2].reshape(height, width),
         "second_distance": result[3].reshape(height, width),
         "parent": result[4].reshape(height, width),
+    }
+
+
+def hard_first_partition_with_forest(
+    centers: np.ndarray,
+    costs: np.ndarray,
+    reach: np.ndarray | None = None,
+) -> dict[str, np.ndarray]:
+    """Exact first-owner partition without unused runner-up propagation."""
+    height, width = costs.shape[1:]
+    centers = np.asarray(centers, dtype=np.float64)
+    seed_x = np.clip(
+        np.rint(centers[:, 0] * width - 0.5).astype(np.int32),
+        0,
+        width - 1,
+    )
+    seed_y = np.clip(
+        np.rint(centers[:, 1] * height - 0.5).astype(np.int32),
+        0,
+        height - 1,
+    )
+    seed_pixel = seed_y.astype(np.int64) * width + seed_x.astype(np.int64)
+    reach = (
+        np.zeros(len(centers), dtype=np.float64)
+        if reach is None
+        else np.ascontiguousarray(reach, dtype=np.float64)
+    )
+    if reach.shape != (len(centers),):
+        raise ValueError("reach must have one scalar per center")
+    scale = np.ones(height * width, dtype=np.float64)
+    from experiments.sigma_opt.opt_dijkstra_bucket import (
+        _dijkstra_first_bucket,
+        queue_geometry,
+    )
+
+    delta, span, shift = queue_geometry(costs, scale, reach)
+    native = bucket_first_label_native(
+        seed_pixel, reach, costs, delta, span, shift)
+    if native is None:
+        native = _dijkstra_first_bucket(
+            seed_pixel,
+            reach,
+            costs,
+            scale,
+            height,
+            width,
+            delta,
+            span,
+            shift,
+        )
+    owner, distance, parent, used = native
+    return {
+        "labels": owner.reshape(height, width),
+        "distance": distance.reshape(height, width),
+        "parent": parent.reshape(height, width),
+        "queue_pushes": int(used),
     }
 
 

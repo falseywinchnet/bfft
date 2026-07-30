@@ -61,9 +61,14 @@ def build_soft_support_conductance(
     *,
     metric_strength: float = 1.5,
     colour_percentile: float = 60.0,
+    target_lab: np.ndarray | None = None,
+    metric: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None,
 ) -> dict:
     """Build four undirected edge families for a rotation-aware soft cover."""
-    target_lab = np.asarray(srgb_to_lab(target_rgb), dtype=np.float64)
+    target_lab = np.asarray(
+        srgb_to_lab(target_rgb) if target_lab is None else target_lab,
+        dtype=np.float64,
+    )
     horizontal_difference = (
         target_lab[:, 1:] - target_lab[:, :-1])
     vertical_difference = (
@@ -80,7 +85,8 @@ def build_soft_support_conductance(
         sample,
         np.clip(float(colour_percentile), 0.0, 100.0),
     )), 1e-8)
-    metric = _metric_fields(geometry, metric_strength)
+    if metric is None:
+        metric = _metric_fields(geometry, metric_strength)
     return {
         "horizontal": _edge_conductance(
             target_lab, metric,
@@ -118,6 +124,7 @@ def diffuse_soft_support(
     *,
     passes: int,
     coupling: float = 0.8,
+    threads: int = 0,
 ) -> np.ndarray:
     """Apply stable simultaneous heat steps to one or more fields.
 
@@ -125,7 +132,7 @@ def diffuse_soft_support(
     a constant field, and the sum-to-one invariant of implicit site weights.
     """
     native = soft_support_diffuse_native(
-        field, conductance, passes, coupling)
+        field, conductance, passes, coupling, threads)
     if native is not None:
         return native
 

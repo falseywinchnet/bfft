@@ -12,10 +12,19 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "viewer"))
 sys.path.insert(0, str(ROOT / "experiments"))
 
-from bfft._core import _vision_fast_march_first_label
+from bfft._core import (
+    _vision_bucket_first_label,
+    _vision_fast_march_first_label,
+    _vision_fast_march_labels,
+    _vision_metric_edge_costs_f32,
+)
 from bfft.vision import hard_affine_fit_native, hard_basis_refit_native
 import port_needed.continuous_eikonal_transport as continuous_transport
-from port_needed.anisotropic_edge_cost import build_edge_costs
+from port_needed.anisotropic_edge_cost import (
+    build_edge_costs,
+    build_geometry_edge_costs,
+    build_metric_edge_costs,
+)
 from port_needed.continuous_eikonal_transport import (
     _simplex_candidate_with_fraction,
     continuous_first_partition,
@@ -27,12 +36,14 @@ from port_needed.density_population import (
     curvature_limited_geometry,
     emit_density_population,
 )
+from port_needed.wide_stencil_transport import _metric_fields
 from port_needed.frozen_meyer_geometry import build_frozen_geometry
 from port_needed.hard_region_fit import (
     _eliminate_small_systems,
     _local_affine_basis,
     _reduce,
 )
+import port_needed.two_label_transport as two_label_transport
 from port_needed.first_arrival_site_force import (
     backtransport_source_force,
     safe_characteristic_site_step,
@@ -56,6 +67,7 @@ from port_needed.soft_support_diffusion import (
     diffuse_soft_support,
 )
 from port_needed.two_label_transport import (
+    hard_first_partition_with_forest,
     hard_partition_with_forest,
     local_hard_partition_with_forest,
     walk_two_labels,
@@ -148,6 +160,23 @@ def test_monotone_bucket_matches_heap_distances():
     bucket = walk_two_labels(centers, costs, queue="bucket")
     assert np.allclose(heap[2], bucket[2], atol=1e-9, rtol=0.0)
     assert np.allclose(heap[3], bucket[3], atol=1e-9, rtol=0.0)
+
+
+def test_first_only_bucket_matches_two_label_first_forest():
+    geometry = build_frozen_geometry(
+        _fixture(), tgfd_sweeps=4, flow_sweeps=4, threads=1)
+    costs = build_edge_costs(geometry, 1.5)
+    centers = np.array((
+        (0.2, 0.2),
+        (0.8, 0.25),
+        (0.5, 0.8),
+        (0.31, 0.57),
+    ))
+    two = hard_partition_with_forest(centers, costs)
+    first = hard_first_partition_with_forest(centers, costs)
+    assert np.array_equal(first["labels"], two["labels"])
+    assert np.array_equal(first["distance"], two["distance"])
+    assert np.array_equal(first["parent"], two["parent"])
 
 
 def test_local_refresh_preserves_every_parent_pixel():
@@ -252,6 +281,86 @@ def test_native_first_arrival_matches_reference_walk_field_by_field():
         assert np.allclose(native[key], reference[key], atol=3e-14, rtol=0.0)
     assert native["front_pushes"] == reference["front_pushes"]
     assert native["front_maximum_heap"] == reference["front_maximum_heap"]
+
+
+def test_compact_native_first_arrival_is_exact_owner_distance_projection():
+    assert _vision_fast_march_labels is not None
+    height, width = 31, 43
+    yy, xx = np.mgrid[:height, :width]
+    mxx = 1.0 + 2.0 * np.square(np.sin((xx + yy) / 11.0))
+    mxy = 0.2 * np.sin(xx / 9.0) * np.cos(yy / 7.0)
+    myy = 1.0 + 1.5 * np.square(np.cos((xx - yy) / 13.0))
+    prepared = prepare_continuous_metric(mxx, mxy, myy)
+    centers = np.array((
+        (0.12, 0.18),
+        (0.81, 0.16),
+        (0.48, 0.49),
+        (0.16, 0.84),
+        (0.85, 0.78),
+    ))
+    full = continuous_transport.continuous_first_partition_prepared(
+        centers, prepared)
+    compact = continuous_transport.continuous_first_partition_prepared(
+        centers, prepared, compact=True)
+    assert compact["compact"]
+    assert np.array_equal(compact["labels"], full["labels"])
+    assert np.array_equal(compact["distance"], full["distance"])
+    assert compact["front_pushes"] == full["front_pushes"]
+    assert compact["front_maximum_heap"] == full["front_maximum_heap"]
+
+
+def test_native_bucket_first_owner_matches_numba_reference_exactly():
+    assert _vision_bucket_first_label is not None
+    height, width = 41, 53
+    yy, xx = np.mgrid[:height, :width]
+    costs = build_metric_edge_costs(
+        1.0 + 2.0 * np.square(np.sin((xx + yy) / 11.0)),
+        0.15 * np.sin(xx / 7.0) * np.cos(yy / 9.0),
+        1.0 + 1.5 * np.square(np.cos((xx - yy) / 13.0)),
+    )
+    centers = np.array((
+        (0.10, 0.10),
+        (0.80, 0.15),
+        (0.45, 0.50),
+        (0.12, 0.85),
+        (0.88, 0.80),
+    ))
+    native = two_label_transport.hard_first_partition_with_forest(
+        centers, costs)
+    native_entry = two_label_transport.bucket_first_label_native
+    try:
+        two_label_transport.bucket_first_label_native = (
+            lambda *args, **kwargs: None)
+        reference = (
+            two_label_transport.hard_first_partition_with_forest(
+                centers, costs))
+    finally:
+        two_label_transport.bucket_first_label_native = native_entry
+    for key in ("labels", "distance", "parent"):
+        assert np.array_equal(native[key], reference[key])
+    assert native["queue_pushes"] == reference["queue_pushes"]
+
+
+def test_native_geometry_edge_stencil_matches_numpy_reference_bit_exactly():
+    assert _vision_metric_edge_costs_f32 is not None
+    rng = np.random.default_rng(4)
+    height, width = 17, 23
+    geometry = {
+        "precision_xx": rng.random((height, width), dtype=np.float32),
+        "precision_xy": (
+            0.2 * rng.random((height, width), dtype=np.float32)),
+        "precision_yy": rng.random((height, width), dtype=np.float32),
+        "boundary_xx": rng.random((height, width), dtype=np.float32),
+        "boundary_xy": (
+            0.2 * rng.random((height, width), dtype=np.float32)),
+        "boundary_yy": rng.random((height, width), dtype=np.float32),
+        "metric_trace_p90": 2.1,
+        "max_support_px": 5.0,
+    }
+    native = build_geometry_edge_costs(geometry, 1.5, 24.0)
+    reference = build_metric_edge_costs(
+        *_metric_fields(geometry, 1.5, 24.0))
+    assert np.array_equal(native, reference)
 
 
 def test_native_hard_region_fits_match_conditioned_reference():

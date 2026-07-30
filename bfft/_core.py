@@ -195,6 +195,11 @@ _vision_scan_residual_ridges = _decl_optional(
     [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
      ctypes.c_double, ctypes.c_double, _i32_p, _dbl_p, _dbl_p, _dbl_p,
      _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _i32_p, _i32_p])
+_vision_scan_paired_offsets = _decl_optional(
+    "bfft_vision_scan_paired_offsets", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     ctypes.c_double, _i32_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p,
+     _dbl_p, _i32_p])
 _vision_support_forward = _decl_optional(
     "bfft_vision_support_forward", ctypes.c_int,
     [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
@@ -215,6 +220,7 @@ _vision_curvature_population_f32 = _decl_optional(
 _vision_soft_support_diffuse = _decl_optional(
     "bfft_vision_soft_support_diffuse", ctypes.c_int,
     [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     ctypes.c_size_t,
      ctypes.c_double, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p,
      _dbl_p, _dbl_p])
 _vision_fast_march_first_label = _decl_optional(
@@ -227,6 +233,25 @@ _vision_fast_march_first_label = _decl_optional(
      _i32_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p,
      _i32_p, _i32_p, _dbl_p, _i32_p,
      _size_p, _size_p, _size_p])
+_vision_fast_march_labels = _decl_optional(
+    "bfft_vision_fast_march_labels", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _i32_p, _dbl_p, _i32_p, _dbl_p, _dbl_p,
+     _i32_p, _dbl_p, _u8_p, _dbl_p,
+     _i64_p, ctypes.c_size_t, _i32_p,
+     _dbl_p, _dbl_p, _dbl_p,
+     _i32_p, _dbl_p, _size_p, _size_p])
+_vision_metric_edge_costs_f32 = _decl_optional(
+    "bfft_vision_metric_edge_costs_f32", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t,
+     _flt_p, _flt_p, _flt_p, _flt_p, _flt_p, _flt_p,
+     ctypes.c_double, ctypes.c_double, _flt_p])
+_vision_bucket_first_label = _decl_optional(
+    "bfft_vision_bucket_first_label", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _i64_p, _dbl_p, _flt_p,
+     ctypes.c_double, ctypes.c_size_t, ctypes.c_double,
+     _i32_p, _dbl_p, _i32_p, _size_p])
 _vision_hard_affine_fit = _decl_optional(
     "bfft_vision_hard_affine_fit", ctypes.c_int,
     [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,

@@ -19,7 +19,22 @@ import dearpygui.dearpygui as dpg  # noqa: E402
 import gallery  # noqa: E402
 from experiments.transport_object_support import (  # noqa: E402
     ObjectSupportConfig,
+    build_cell_interface_graph,
     infer_object_support,
+)
+from experiments.sparse_finsler_elastica import (  # noqa: E402
+    SparseElasticaConfig,
+    build_sparse_elastica_graph,
+    elastica_common_surround_relations,
+    finsler_saliency_closing,
+    intrinsic_arc_speed,
+    label_intrinsic_arc_parts,
+    project_pixel_field_to_arcs,
+    render_elastica_arcs,
+)
+from experiments.contour_object_hierarchy import (  # noqa: E402
+    ContourHierarchyConfig,
+    infer_contour_object_hierarchy,
 )
 from experiments.object_hierarchy_diagnostics import (  # noqa: E402
     analyze_object_hierarchy,
@@ -60,6 +75,10 @@ from experiments.transport_focus_forensics import (  # noqa: E402
     transport_focus_interfaces,
 )
 from port_needed import SegmentingConfig, build_segmenting_representation  # noqa: E402
+from voronoi_itd import (  # noqa: E402
+    VoronoiITDConfig,
+    extract_intrinsic_voronoi_support,
+)
 from segmenting_veroni_app import (  # noqa: E402
     _fit_rgb,
     _rgb,
@@ -108,6 +127,18 @@ VIEWS = (
     "Soft object IDs + object boundaries",
     "Hard object IDs",
     "Hard object IDs + object boundaries",
+    "Intrinsic Voronoi support IDs",
+    "Intrinsic Finsler contour evidence",
+    "Finsler two-sided completion",
+    "Finsler completion lift",
+    "Finsler lift on canonical interfaces",
+    "Finsler common-surround collisions",
+    "Intrinsic boundary alignment",
+    "Closed-contour barrier",
+    "Contour-ultrametric soft IDs",
+    "Contour-ultrametric parent IDs",
+    "Contour parents over reconstruction",
+    "Contour leaf merge altitude",
     "Parent object IDs",
     "Parent IDs over reconstruction",
     "Compound assembly IDs",
@@ -193,12 +224,14 @@ class State:
         self.result = None
         self.objects = None
         self.graph = None
+        self.intrinsic_support = None
+        self.finsler_support = None
         self.busy = False
         self.status = "Choose an image, then build cells and object support."
         self.lock = threading.Lock()
         self.buffers: dict[str, np.ndarray] = {}
         self.texture_shapes: dict[str, tuple[int, int]] = {}
-        self.texture_items: dict[str, str] = {}
+        self.texture_items: dict[str, str | int] = {}
         self.texture_generation: dict[str, int] = {}
         self.anchor_part = 0
         self.anchor_cell = 0
@@ -215,7 +248,10 @@ def alloc_texture(tag: str, height: int, width: int) -> None:
         generation = 0
     else:
         generation = S.texture_generation.get(tag, 0) + 1
-        texture_item = f"{tag}__{generation}"
+        # DearPyGui can retain a deleted string alias until a later frame.
+        # A generated integer item ID has no alias lifecycle and therefore
+        # cannot collide during rapid gallery size changes.
+        texture_item = dpg.generate_uuid()
     S.buffers[tag] = np.ones(height * width * 4, dtype=np.float32)
     S.texture_shapes[tag] = (height, width)
     S.texture_items[tag] = texture_item
@@ -237,10 +273,7 @@ def alloc_texture(tag: str, height: int, width: int) -> None:
             width=max(1, int(width * scale)),
             height=max(1, int(height * scale)),
         )
-    # DearPyGui does not retire and recreate an alias synchronously. Reusing
-    # the same tag after a size change can therefore raise "Alias already
-    # exists". The replacement receives a monotone opaque tag; the old item
-    # is deleted only after the image points at the replacement.
+    # The old item is deleted only after the image points at the replacement.
     if (
         old_item is not None
         and old_item != texture_item
@@ -435,6 +468,89 @@ def current_view(
     if view == "Hard object IDs + object boundaries":
         return _blend_object_boundaries(
             objects["hard_ids"], object_labels)
+    intrinsic = objects.get("intrinsic_support")
+    if view == "Intrinsic Voronoi support IDs":
+        return (
+            np.zeros_like(reconstruction)
+            if intrinsic is None
+            else site_ids(intrinsic.owner)
+        )
+    finsler = objects.get("finsler_support")
+    if view == "Intrinsic Finsler contour evidence":
+        return (
+            np.zeros_like(reconstruction)
+            if finsler is None
+            else colour_map(finsler["saliency_map"])
+        )
+    if view == "Finsler two-sided completion":
+        return (
+            np.zeros_like(reconstruction)
+            if finsler is None
+            else colour_map(finsler["completed_map"])
+        )
+    if view == "Finsler completion lift":
+        return (
+            np.zeros_like(reconstruction)
+            if finsler is None
+            else colour_map(finsler["lift_map"])
+        )
+    if view == "Finsler common-surround collisions":
+        if finsler is None or "relations" not in finsler:
+            return np.zeros_like(reconstruction)
+        relation = finsler["relations"]
+        tau = max(float(finsler["closing"]["tau"]), 1e-12)
+        score = (
+            np.asarray(relation["strength"], dtype=np.float64)
+            * np.exp(
+                -np.asarray(relation["action"], dtype=np.float64) / tau)
+        )
+        height, width = finsler["topology"]["shape"]
+        stride = width + 1
+        vertex = np.asarray(relation["vertex"], dtype=np.int64)
+        x = vertex % stride
+        y = vertex // stride
+        collision = np.zeros((height, width), dtype=np.float64)
+        for dy, dx in (
+            (0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)
+        ):
+            py, px = y + dy, x + dx
+            valid = (
+                (py >= 0) & (py < height)
+                & (px >= 0) & (px < width)
+            )
+            np.maximum.at(
+                collision,
+                (py[valid], px[valid]),
+                score[valid],
+            )
+        return colour_map(collision)
+    if view == "Finsler lift on canonical interfaces":
+        return colour_map(
+            objects["interface_maps"]["finsler_contour_completion"])
+    if view == "Intrinsic boundary alignment":
+        return colour_map(
+            objects["interface_maps"]["intrinsic_boundary_alignment"])
+    if view == "Closed-contour barrier":
+        return colour_map(objects["interface_maps"]["cycle_barrier"])
+    contour = objects.get("contour_hierarchy")
+    if contour is not None:
+        if view == "Contour-ultrametric soft IDs":
+            return overlay_boundaries(
+                contour["soft_ids"],
+                object_labels,
+            )
+        if view == "Contour-ultrametric parent IDs":
+            return overlay_boundaries(
+                contour["parent_ids"],
+                contour["parent_labels"],
+            )
+        if view == "Contour parents over reconstruction":
+            coloured = (
+                0.58 * reconstruction + 0.42 * contour["parent_ids"])
+            return overlay_boundaries(
+                coloured, contour["parent_labels"])
+        if view == "Contour leaf merge altitude":
+            return colour_map(contour["leaf_merge_altitude"])
     parent = objects.get("parent_hierarchy")
     assembly = objects.get("scene_assembly")
     if assembly is not None:
@@ -732,6 +848,8 @@ def current_view(
         "Anchored barrier control": "anchored_barrier",
         "Cross-scale null reliability": "null_reliability",
         "Certified material joins": "material_join",
+        "Finsler lift on canonical interfaces":
+            "finsler_contour_completion",
     }
     if view in interface_views:
         return colour_map(interface[interface_views[view]])
@@ -766,6 +884,12 @@ def _object_config() -> ObjectSupportConfig:
             dpg.get_value("object_short_contact_scale")),
         short_contact_prior=float(
             dpg.get_value("object_short_contact_prior")),
+        contour_cycle_weight=float(
+            dpg.get_value("object_contour_cycle_weight")),
+        intrinsic_contour_weight=float(
+            dpg.get_value("object_intrinsic_contour_weight")),
+        finsler_contour_weight=float(
+            dpg.get_value("object_finsler_contour_weight")),
         barrier_scale=float(dpg.get_value("object_barrier_scale")),
         detail_weight=float(dpg.get_value("object_detail_weight")),
         enclosure_weight=float(dpg.get_value("object_enclosure_weight")),
@@ -773,6 +897,15 @@ def _object_config() -> ObjectSupportConfig:
         peak_prominence=float(dpg.get_value("object_peak_prominence")),
         confidence_temperature=float(
             dpg.get_value("object_confidence_temperature")),
+    )
+
+
+def _contour_hierarchy_config() -> ContourHierarchyConfig:
+    return ContourHierarchyConfig(
+        waterline=float(
+            dpg.get_value("object_contour_parent_waterline")),
+        soft_temperature=float(
+            dpg.get_value("object_contour_soft_temperature")),
     )
 
 
@@ -797,6 +930,74 @@ def _cell_config() -> SegmentingConfig:
         soft_support_coupling=float(
             dpg.get_value("object_soft_coupling")),
     )
+
+
+def _finsler_config() -> SparseElasticaConfig:
+    return SparseElasticaConfig(
+        curvature_scale=float(
+            dpg.get_value("object_finsler_curvature")),
+        speed_floor=float(
+            dpg.get_value("object_finsler_speed_floor")),
+        boundary_weight=float(
+            dpg.get_value("object_finsler_boundary")),
+        colour_weight=float(
+            dpg.get_value("object_finsler_colour")),
+        support_weight=float(
+            dpg.get_value("object_finsler_support")),
+    )
+
+
+def _attach_finsler_support(
+    result: dict,
+    rgb: np.ndarray,
+    intrinsic,
+    canonical_graph: dict,
+) -> dict:
+    """Measure and project one sparse lifted completion onto object edges."""
+
+    started = time.perf_counter()
+    topology = build_embedded_interface_topology(intrinsic.owner)
+    config = _finsler_config()
+    evidence = intrinsic_arc_speed(
+        topology,
+        intrinsic.owner,
+        rgb,
+        intrinsic.support_measure,
+        result["geometry"]["boundary_confidence"],
+        config,
+    )
+    lifted = build_sparse_elastica_graph(
+        topology, evidence["speed"], config)
+    closing = finsler_saliency_closing(
+        lifted,
+        evidence["saliency"],
+        continuation_scale=float(
+            dpg.get_value("object_finsler_continuation")),
+    )
+    saliency_map = render_elastica_arcs(
+        topology, evidence["saliency"])
+    completed_map = render_elastica_arcs(
+        topology, closing["saliency"])
+    lift_map = render_elastica_arcs(
+        topology, closing["lift"])
+    projected = project_pixel_field_to_arcs(
+        canonical_graph["interface_topology"], lift_map)
+    canonical_graph["finsler_contour_completion"] = projected
+    record = {
+        "config": config,
+        "topology": topology,
+        "evidence": evidence,
+        "graph": lifted,
+        "closing": closing,
+        "saliency_map": saliency_map,
+        "completed_map": completed_map,
+        "lift_map": lift_map,
+        "canonical_completion": projected,
+        "milliseconds": 1000.0 * (
+            time.perf_counter() - started),
+    }
+    canonical_graph["finsler_support"] = record
+    return record
 
 
 def _parent_config() -> ParentHierarchyConfig:
@@ -876,6 +1077,13 @@ def _metrics_text(result: dict, objects: dict) -> str:
         quotient_text = (
             f" | {quotient['material_count']} diagnostic basins"
         )
+    contour = objects.get("contour_hierarchy")
+    contour_text = ""
+    if contour is not None:
+        contour_text = (
+            f" | contour ultrametric {contour['leaf_count']} leaves → "
+            f"{contour['parent_count']} displayed parents"
+        )
     parent = objects.get("parent_hierarchy")
     parent_text = ""
     if parent is not None:
@@ -915,6 +1123,18 @@ def _metrics_text(result: dict, objects: dict) -> str:
                 else ""
             )
         )
+    finsler = objects.get("finsler_support")
+    finsler_text = ""
+    if finsler is not None:
+        relations = finsler.get("relations")
+        collision_count = (
+            len(relations["action"]) if relations is not None else 0)
+        finsler_text = (
+            f" | sparse Finsler "
+            f"{finsler['graph']['state_count']} states / "
+            f"{finsler['milliseconds']:.0f} ms / "
+            f"{collision_count} shared-surround collisions"
+        )
     return (
         f"{len(result['centers'])} transport cells → "
         f"{graph['cells']} connected support fragments → "
@@ -928,7 +1148,9 @@ def _metrics_text(result: dict, objects: dict) -> str:
         f"cell build {result['timing']['total_ms']:.0f} ms | "
         f"graph {objects['timing']['graph_ms']:.0f} ms | "
         f"object hierarchy {objects['timing']['analysis_ms']:.0f} ms"
+        f"{finsler_text}"
         f"{quotient_text}"
+        f"{contour_text}"
         f" | {objects['embedded_topology']['arc']['count']} arcs / "
         f"{objects['embedded_topology']['junction']['count']} junctions"
         f"{parent_text}"
@@ -953,6 +1175,19 @@ def _attach_diagnostics(
         topology = build_embedded_interface_topology(result["labels"])
     objects["embedded_topology"] = topology
     objects["embedded_arc_labels"] = render_arc_ids(topology)
+    finsler = objects.get("finsler_support")
+    if finsler is not None:
+        arc_parts = label_intrinsic_arc_parts(
+            finsler["topology"], objects["object_labels"])
+        relations = elastica_common_surround_relations(
+            finsler["graph"],
+            arc_parts,
+            finsler["evidence"]["saliency"],
+        )
+        finsler["arc_parts"] = arc_parts
+        finsler["relations"] = relations
+    objects["contour_hierarchy"] = infer_contour_object_hierarchy(
+        objects, _contour_hierarchy_config())
     parent = infer_parent_objects(objects, _parent_config())
     objects["parent_hierarchy"] = parent
     objects["border_ownership"] = infer_transport_border_ownership(
@@ -1020,15 +1255,46 @@ def build_worker() -> None:
         rgb = _fit_rgb(S.image, _work_side())
         S.status = "Building the canonical one-decomposition transport cells..."
         result = build_segmenting_representation(rgb, _cell_config())
-        S.status = "Assembling literal interfaces and the object waterline..."
+        S.status = "Measuring the intrinsic Voronoi support geometry..."
+        luminance = rgb[..., :3] @ np.array(
+            [0.2125, 0.7154, 0.0721])
+        intrinsic = extract_intrinsic_voronoi_support(
+            luminance,
+            VoronoiITDConfig(),
+            guidance=rgb,
+        )
+        object_config = _object_config()
+        graph = build_cell_interface_graph(
+            result,
+            rgb,
+            fragment_jump_threshold=(
+                object_config.fragment_jump_threshold),
+        )
+        if object_config.finsler_contour_weight > 0.0:
+            S.status = (
+                "Marching the optional sparse Finsler-elastica support...")
+            finsler = _attach_finsler_support(
+                result, rgb, intrinsic, graph)
+        else:
+            finsler = None
+        S.status = "Building the maximum-support object tree..."
         objects = infer_object_support(
-            result, rgb, _object_config())
+            result,
+            rgb,
+            object_config,
+            graph=graph,
+            intrinsic_owner=intrinsic.owner,
+        )
+        objects["intrinsic_support"] = intrinsic
+        objects["finsler_support"] = finsler
         _attach_diagnostics(result, objects, rgb)
         with S.lock:
             S.rgb = rgb
             S.result = result
             S.objects = objects
             S.graph = objects["graph"]
+            S.intrinsic_support = intrinsic
+            S.finsler_support = finsler
         S.status = (
             f"{S.name}: object-support hierarchy complete. "
             "Use the evidence views to find where it is blind."
@@ -1043,7 +1309,8 @@ def object_worker() -> None:
     if S.busy:
         return
     with S.lock:
-        rgb, result, graph = S.rgb, S.result, S.graph
+        rgb, result, graph, intrinsic = (
+            S.rgb, S.result, S.graph, S.intrinsic_support)
     if rgb is None or result is None:
         S.status = "Build the transport cells first."
         return
@@ -1058,16 +1325,35 @@ def object_worker() -> None:
                 - float(config.fragment_jump_threshold)
             ) > 1e-12
         )
+        if rebuild_graph:
+            graph = build_cell_interface_graph(
+                result,
+                rgb,
+                fragment_jump_threshold=config.fragment_jump_threshold,
+            )
+        finsler = (
+            _attach_finsler_support(result, rgb, intrinsic, graph)
+            if (
+                intrinsic is not None
+                and config.finsler_contour_weight > 0.0
+            )
+            else None
+        )
         objects = infer_object_support(
             result,
             rgb,
             config,
-            graph=None if rebuild_graph else graph,
+            graph=graph,
+            intrinsic_owner=(
+                None if intrinsic is None else intrinsic.owner),
         )
+        objects["intrinsic_support"] = intrinsic
+        objects["finsler_support"] = finsler
         _attach_diagnostics(result, objects, rgb)
         with S.lock:
             S.objects = objects
             S.graph = objects["graph"]
+            S.finsler_support = finsler
         S.status = (
             f"{S.name}: object controls updated without rebuilding "
             "the reconstruction cells."
@@ -1084,6 +1370,8 @@ def adopt(image: np.ndarray, name: str) -> None:
     rgb = _fit_rgb(S.image, _work_side())
     with S.lock:
         S.rgb, S.result, S.objects, S.graph = rgb, None, None, None
+        S.intrinsic_support = None
+        S.finsler_support = None
         S.anchor_part = 0
         S.anchor_cell = 0
         S.anchor_cell_fields = None
@@ -1287,7 +1575,7 @@ def build_ui(labels: list[str], default_label: str) -> None:
                 )
                 slider(
                     "object_tgfd_sweeps", "single Meyer sweeps",
-                    24, 4, 64)
+                    1, 1, 64)
                 slider(
                     "object_flow_sweeps", "fixed glass sweeps",
                     24, 4, 64)
@@ -1296,7 +1584,7 @@ def build_ui(labels: list[str], default_label: str) -> None:
                     1.5, 0.0, 8.0, floating=True)
                 slider(
                     "object_characteristic_passes", "front relaxation",
-                    1, 0, 4)
+                    0, 0, 4)
             with dpg.group(horizontal=True):
                 dpg.add_checkbox(
                     label="curvature-limited population",
@@ -1382,10 +1670,60 @@ def build_ui(labels: list[str], default_label: str) -> None:
                     "object_short_contact_prior",
                     "short-contact barrier prior",
                     0.5, 0.0, 1.0, floating=True)
+            with dpg.group(horizontal=True):
+                slider(
+                    "object_contour_cycle_weight",
+                    "legacy cycle projection",
+                    0.0, 0.0, 1.0, floating=True)
+                slider(
+                    "object_intrinsic_contour_weight",
+                    "legacy intrinsic alignment",
+                    0.0, 0.0, 1.0, floating=True)
             dpg.add_text(
                 "Only literal neighbours are compared. Similar face and "
                 "bridge cells cannot merge without crossing the measured "
-                "interfaces between them.")
+                "interfaces between them. The legacy cycle controls are "
+                "disabled: cell-perimeter closedness is not object evidence.")
+        with dpg.collapsing_header(
+            label="Sparse Finsler-elastica completion",
+            default_open=False,
+        ):
+            with dpg.group(horizontal=True):
+                slider(
+                    "object_finsler_contour_weight",
+                    "completed-boundary contribution",
+                    0.0, 0.0, 1.0, floating=True)
+                slider(
+                    "object_finsler_curvature",
+                    "curvature radius",
+                    10.0, 0.0, 32.0, floating=True)
+                slider(
+                    "object_finsler_continuation",
+                    "intrinsic continuation span",
+                    2.0, 0.25, 16.0, floating=True)
+                slider(
+                    "object_finsler_speed_floor",
+                    "off-contour speed floor",
+                    0.025, 0.005, 0.25, floating=True)
+            with dpg.group(horizontal=True):
+                slider(
+                    "object_finsler_boundary",
+                    "canonical border evidence",
+                    2.5, 0.0, 4.0, floating=True)
+                slider(
+                    "object_finsler_colour",
+                    "variable-distance colour evidence",
+                    0.35, 0.0, 2.0, floating=True)
+                slider(
+                    "object_finsler_support",
+                    "intrinsic support discontinuity",
+                    0.15, 0.0, 2.0, floating=True)
+            dpg.add_text(
+                "Two directed states per intrinsic interface arc replace "
+                "the dense x-y-angle grid. One min-plus march requires "
+                "coherent support from both contour directions, then projects "
+                "only the new completion lift onto canonical object edges. "
+                "Recompute objects updates this pass without rebuilding cells.")
         with dpg.collapsing_header(
             label="Highpoints and waterline",
             default_open=True,
@@ -1416,6 +1754,24 @@ def build_ui(labels: list[str], default_label: str) -> None:
                 "maximum-support forest gathers highpoints connected through "
                 "permeable cell interfaces; only topologically persistent "
                 "highpoints retain distinct IDs.")
+        with dpg.collapsing_header(
+            label="Closed-contour ultrametric",
+            default_open=True,
+        ):
+            with dpg.group(horizontal=True):
+                slider(
+                    "object_contour_parent_waterline",
+                    "displayed parent waterline",
+                    0.50, 0.0, 1.0, floating=True)
+                slider(
+                    "object_contour_soft_temperature",
+                    "soft cophenetic temperature",
+                    0.12, 0.01, 0.5, floating=True)
+            dpg.add_text(
+                "Part membership is the minimax merge altitude on the "
+                "closed-contour quotient graph. One Kruskal pass returns the "
+                "entire hierarchy; this waterline changes only its displayed "
+                "cut, not the measured cells or contours.")
         with dpg.collapsing_header(
             label="Part → parent topology",
             default_open=True,

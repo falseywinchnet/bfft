@@ -51,8 +51,8 @@ def _sk(name):
 
 
 def _local_colour(path):
-    from skimage.io import imread
-    return _colour(imread(path))
+    from PIL import Image
+    return _colour(np.asarray(Image.open(path).convert("RGB")))
 
 
 def _match_stats(a, mean=128.0, std=45.0):

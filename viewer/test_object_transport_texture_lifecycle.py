@@ -11,6 +11,7 @@ def test_reallocation_uses_a_fresh_texture_alias(monkeypatch) -> None:
     added = []
     deleted = []
     configured = []
+    generated = iter((101, 102))
 
     @contextmanager
     def registry():
@@ -23,6 +24,8 @@ def test_reallocation_uses_a_fresh_texture_alias(monkeypatch) -> None:
 
     monkeypatch.setattr(app.dpg, "texture_registry", registry)
     monkeypatch.setattr(app.dpg, "add_raw_texture", add_raw_texture)
+    monkeypatch.setattr(
+        app.dpg, "generate_uuid", lambda: next(generated))
     monkeypatch.setattr(
         app.dpg,
         "does_item_exist",
@@ -47,8 +50,7 @@ def test_reallocation_uses_a_fresh_texture_alias(monkeypatch) -> None:
     app.alloc_texture(app.RESULT, 8, 8)
     app.alloc_texture(app.RESULT, 31, 47)
 
-    assert added == [app.RESULT, f"{app.RESULT}__1"]
-    assert app.S.texture_items[app.RESULT] == f"{app.RESULT}__1"
+    assert added == [app.RESULT, 101]
+    assert app.S.texture_items[app.RESULT] == 101
     assert deleted == [app.RESULT]
-    assert configured[-1][1]["texture_tag"] == f"{app.RESULT}__1"
-
+    assert configured[-1][1]["texture_tag"] == 101

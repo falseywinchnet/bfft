@@ -31,10 +31,7 @@ import sys
 import time
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
-from scipy import ndimage as ndi
-from scipy.special import expit
 
 try:
     from numba import njit
@@ -46,19 +43,13 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "viewer"))
 sys.path.insert(0, str(ROOT / "experiments"))
 
-import gallery  # noqa: E402
 import bfft  # noqa: E402
+from bfft.effects import srgb_to_lab  # noqa: E402
 from bfft.vision import (  # noqa: E402
     SingleStageDecompositionObjective,
     measure_residual_ridges,
 )
-from dual_aperture_support import score  # noqa: E402
-from transport_measure_cells import site_id_colours  # noqa: E402
-from transport_voronoi import (  # noqa: E402
-    _dijkstra_two_best_packed,
-    _fit_rgb,
-    srgb_to_lab,
-)
+from port_needed.fast_image_ops import gaussian_filter, resize, sobel  # noqa: E402
 
 
 def _dijkstra_two_best_bucket_adapter(
@@ -153,12 +144,15 @@ def _physical_precision(
 def single_decomposition_geometry(
     rgb: np.ndarray,
     *,
+    target_lab: np.ndarray | None = None,
     lam: float = 0.05,
     mu: float = 40.0,
     tgfd_sweeps: int = 24,
     flow_sweeps: int = 24,
     max_support_fraction: float = 0.18,
     coherent_tangent_fraction: float = 0.02,
+    texture_support_weight: float = 0.65,
+    glass_support_weight: float = 0.70,
     null_evidence_strength: float = 0.0,
     threads: int = 4,
     meyer_solver: int = 1,
@@ -170,7 +164,13 @@ def single_decomposition_geometry(
     cartoon-side outer defect (the glass state) without decomposing a changed
     target.
     """
-    lab = srgb_to_lab(rgb)
+    lab = (
+        srgb_to_lab(rgb)
+        if target_lab is None
+        else np.asarray(target_lab, dtype=np.float64)
+    )
+    if lab.shape != np.asarray(rgb).shape:
+        raise ValueError("precomputed OKLab field must match the RGB image")
     light = lab[..., 0] * 255.0
     cartoon, texture = bfft.meyer_split(
         light,
@@ -180,15 +180,20 @@ def single_decomposition_geometry(
         threads=threads,
         solver=meyer_solver,
     )
-    projected = bfft.rof(
-        light - texture,
-        c=lam,
-        eta=2.0 * lam,
-        sweeps=flow_sweeps,
-        tol=0.0,
-        threads=threads,
-        solver=meyer_solver,
-    )
+    if float(glass_support_weight) > 0.0:
+        projected = bfft.rof(
+            light - texture,
+            c=lam,
+            eta=2.0 * lam,
+            sweeps=flow_sweeps,
+            tol=0.0,
+            threads=threads,
+            solver=meyer_solver,
+        )
+    else:
+        # A zero-weight glass channel cannot influence energy, tensor,
+        # population, or transport. Do not run an otherwise dead ROF solve.
+        projected = cartoon
     cartoon = cartoon / 255.0
     texture = texture / 255.0
     glass = (cartoon * 255.0 - projected) / 255.0
@@ -196,28 +201,27 @@ def single_decomposition_geometry(
     # The tensor is amplitude-normalized: it measures local inverse support
     # scale rather than merely preferring high-contrast edges.  Cartoon and
     # glass carry region topology; texture supplies fine directional demand.
-    smooth_cartoon = ndi.gaussian_filter(
-        cartoon, 3.0, mode="reflect")
+    smooth_cartoon = gaussian_filter(cartoon, 3.0)
     channels = (
         cartoon - smooth_cartoon,
-        math.sqrt(0.65) * texture,
-        math.sqrt(0.70) * glass,
+        math.sqrt(max(float(texture_support_weight), 0.0)) * texture,
+        math.sqrt(max(float(glass_support_weight), 0.0)) * glass,
     )
     energy = np.zeros_like(cartoon, dtype=np.float64)
     jxx = np.zeros_like(cartoon, dtype=np.float64)
     jxy = np.zeros_like(cartoon, dtype=np.float64)
     jyy = np.zeros_like(cartoon, dtype=np.float64)
-    for channel in channels:
+    channel_gx, channel_gy = sobel(
+        np.ascontiguousarray(np.stack(channels)))
+    for index, channel in enumerate(channels):
         energy += channel * channel
-        gx = ndi.sobel(channel, axis=1, mode="reflect") / 8.0
-        gy = ndi.sobel(channel, axis=0, mode="reflect") / 8.0
+        gx = channel_gx[index]
+        gy = channel_gy[index]
         jxx += gx * gx
         jxy += gx * gy
         jyy += gy * gy
-    energy = ndi.gaussian_filter(energy, 1.5, mode="reflect")
-    jxx = ndi.gaussian_filter(jxx, 1.5, mode="reflect")
-    jxy = ndi.gaussian_filter(jxy, 1.5, mode="reflect")
-    jyy = ndi.gaussian_filter(jyy, 1.5, mode="reflect")
+    energy, jxx, jxy, jyy = gaussian_filter(
+        np.stack((energy, jxx, jxy, jyy)), 1.5)
 
     scale = max(float(np.percentile(energy, 99.5)), 1e-20)
     transport_reliability = energy / (energy + 1e-5 * scale)
@@ -234,14 +238,30 @@ def single_decomposition_geometry(
     boundary_jxx = np.zeros_like(cartoon, dtype=np.float64)
     boundary_jxy = np.zeros_like(cartoon, dtype=np.float64)
     boundary_jyy = np.zeros_like(cartoon, dtype=np.float64)
-    for channel in np.moveaxis(lab, -1, 0):
-        local = channel - ndi.gaussian_filter(
-            channel, 1.5, mode="reflect")
-        gx = ndi.sobel(channel, axis=1, mode="reflect") / 8.0
-        gy = ndi.sobel(channel, axis=0, mode="reflect") / 8.0
-        smooth = ndi.gaussian_filter(channel, 1.0, mode="reflect")
-        smooth_gx = ndi.sobel(smooth, axis=1, mode="reflect") / 8.0
-        smooth_gy = ndi.sobel(smooth, axis=0, mode="reflect") / 8.0
+    source_rgb = np.asarray(rgb)
+    achromatic = (
+        np.array_equal(source_rgb[..., 0], source_rgb[..., 1])
+        and np.array_equal(source_rgb[..., 1], source_rgb[..., 2])
+    )
+    # OKLab conversion leaves machine-scale chroma in an exactly achromatic
+    # source. Filtering those two zero-information fields repeats twelve
+    # image passes and can only amplify roundoff, so use the literal L field.
+    source_channels = (
+        (lab[..., 0],)
+        if achromatic
+        else np.moveaxis(lab, -1, 0)
+    )
+    source_stack = np.ascontiguousarray(np.stack(source_channels))
+    local_stack = source_stack - gaussian_filter(source_stack, 1.5)
+    source_gx, source_gy = sobel(source_stack)
+    smooth_stack = gaussian_filter(source_stack, 1.0)
+    smooth_gx_stack, smooth_gy_stack = sobel(smooth_stack)
+    for index, channel in enumerate(source_channels):
+        local = local_stack[index]
+        gx = source_gx[index]
+        gy = source_gy[index]
+        smooth_gx = smooth_gx_stack[index]
+        smooth_gy = smooth_gy_stack[index]
         source_activity += local * local + 0.35 * (gx * gx + gy * gy)
         persistent_activity += np.maximum(
             gx * smooth_gx + gy * smooth_gy, 0.0)
@@ -252,12 +272,15 @@ def single_decomposition_geometry(
         boundary_jxx += gx * gx
         boundary_jxy += gx * gy
         boundary_jyy += gy * gy
-    source_activity = ndi.gaussian_filter(
-        source_activity, 1.0, mode="reflect")
-    persistent_activity = ndi.gaussian_filter(
-        persistent_activity, 1.0, mode="reflect")
-    local_null_activity = ndi.gaussian_filter(
-        local_null_activity, 1.0, mode="reflect")
+    (
+        source_activity,
+        persistent_activity,
+        local_null_activity,
+    ) = gaussian_filter(np.stack((
+        source_activity,
+        persistent_activity,
+        local_null_activity,
+    )), 1.0)
     source_scale = max(
         float(np.percentile(source_activity, 99.5)), 1e-20)
     amplitude_reliability = source_activity / (
@@ -337,12 +360,8 @@ def single_decomposition_geometry(
     # transport may optionally charge this tensor as a finite jump action.
     # Keeping the two fields separate prevents a strong boundary from
     # manufacturing extra cells merely because it should block crossing.
-    boundary_jxx = ndi.gaussian_filter(
-        boundary_jxx, 0.65, mode="reflect")
-    boundary_jxy = ndi.gaussian_filter(
-        boundary_jxy, 0.65, mode="reflect")
-    boundary_jyy = ndi.gaussian_filter(
-        boundary_jyy, 0.65, mode="reflect")
+    boundary_jxx, boundary_jxy, boundary_jyy = gaussian_filter(
+        np.stack((boundary_jxx, boundary_jxy, boundary_jyy)), 0.65)
     boundary_energy = boundary_jxx + boundary_jyy
     boundary_scale = max(
         2e-2 * float(np.percentile(boundary_energy, 99.0)),
@@ -387,6 +406,8 @@ def single_decomposition_geometry(
         "metric_trace_p90": max(
             float(np.percentile(qxx + qyy, 90.0)), 1e-12),
         "coherent_tangent_fraction": tangent_fraction,
+        "texture_support_weight": float(texture_support_weight),
+        "glass_support_weight": float(glass_support_weight),
         "target_decompositions": 1.0,
     }
 
@@ -412,12 +433,11 @@ def pyramid_geometry(geometry: dict, maximum_side: int) -> dict:
     coarse: dict = {}
     for key, value in geometry.items():
         if isinstance(value, np.ndarray) and value.ndim == 2:
-            coarse[key] = ndi.zoom(
+            coarse[key] = resize(
                 value,
-                zoom,
+                (target_height, target_width),
                 order=1,
-                mode="reflect",
-                prefilter=False,
+                anti_aliasing=False,
             )
         else:
             coarse[key] = value
@@ -532,8 +552,9 @@ def _soft_transport_moments(
     gap[valid] = second_distance[valid] - first_distance[valid]
     safe_second_distance = np.where(valid, second_distance, 0.0)
     owner_weight = np.ones_like(first_distance)
-    owner_weight[valid] = expit(np.clip(
-        gap[valid] / max(float(temperature), 1e-6), 0.0, 40.0))
+    positive = np.clip(
+        gap[valid] / max(float(temperature), 1e-6), 0.0, 40.0)
+    owner_weight[valid] = 1.0 / (1.0 + np.exp(-positive))
     runner_weight = np.where(valid, 1.0 - owner_weight, 0.0)
     runner_safe = np.where(valid, runner, owner)
 
@@ -614,11 +635,12 @@ def _balanced_branch_barycentres(
     gap[valid_runner] = (
         second_distance[valid_runner] - first_distance[valid_runner])
     owner_fraction = np.ones_like(first_distance)
-    owner_fraction[valid_runner] = expit(np.clip(
+    positive = np.clip(
         gap[valid_runner] / max(float(temperature), 1e-6),
         0.0,
         40.0,
-    ))
+    )
+    owner_fraction[valid_runner] = 1.0 / (1.0 + np.exp(-positive))
     runner_fraction = np.where(
         valid_runner, 1.0 - owner_fraction, 0.0)
     runner_safe = np.where(valid_runner, runner, owner)
@@ -1336,6 +1358,7 @@ def bifurcate_allocation(
         and stencil_radius == 1
         and transport_queue == "heap"
     ):
+        from transport_voronoi import _dijkstra_two_best_packed
         walk = _dijkstra_two_best_packed
     elif transport_model == "edge" and stencil_radius == 1:
         raise ValueError(f"unknown transport queue: {transport_queue}")
@@ -1778,6 +1801,8 @@ def fit_hard_regions(
     reconstruction = np.einsum(
         "ni,nic->nc", basis, coefficient[labels], optimize=False
     ).reshape(target_lab.shape)
+    from dual_aperture_support import score
+
     return score(
         objective, objective.target_rgb, reconstruction), reconstruction
 
@@ -1882,6 +1907,8 @@ def fit_hard_regions_with_ridge(
         ridge_nonzero.append(int(np.count_nonzero(
             ridge_score > 1e-12)))
 
+    from dual_aperture_support import score
+
     return (
         score(objective, objective.target_rgb, reconstruction),
         reconstruction,
@@ -1896,6 +1923,8 @@ def fit_hard_regions_with_ridge(
 
 
 def site_id_image(labels: np.ndarray) -> np.ndarray:
+    from transport_measure_cells import site_id_colours
+
     colours = site_id_colours(int(np.max(labels)) + 1)
     return colours[np.asarray(labels, dtype=np.intp)]
 
@@ -1908,6 +1937,8 @@ def save_panel(
     trace: list[dict],
     output: Path,
 ) -> None:
+    import matplotlib.pyplot as plt
+
     fig, axes = plt.subplots(2, 3, figsize=(12, 8), constrained_layout=True)
     axes[0, 0].imshow(rgb)
     axes[0, 0].set_title("target")
@@ -2035,12 +2066,17 @@ def main() -> int:
         "--json", type=Path,
         default=ROOT / "experiments/out/wasserstein_allocation_tree.json")
     args = parser.parse_args()
-    if args.image:
-        from skimage.io import imread
+    from transport_voronoi import _fit_rgb
 
-        source = imread(Path(args.image).expanduser())
+    if args.image:
+        from PIL import Image
+
+        source = np.asarray(Image.open(
+            Path(args.image).expanduser()).convert("RGB"))
         source_name = str(Path(args.image).expanduser())
     else:
+        import gallery
+
         source = gallery.load(args.gallery)
         source_name = f"gallery:{args.gallery}"
     rgb = _fit_rgb(source, args.side)

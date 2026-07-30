@@ -109,18 +109,31 @@ def _residual_moments(labels, residual, width, cells):
 
 
 def _principal_directions(cxx, cxy, cyy):
-    cells = len(cxx)
-    direction = np.zeros((cells, 2), dtype=np.float64)
-    major = np.zeros(cells, dtype=np.float64)
-    minor = np.zeros(cells, dtype=np.float64)
-    for cell in range(cells):
-        trace = cxx[cell] + cyy[cell]
-        disc = math.hypot(cxx[cell] - cyy[cell], 2.0 * cxy[cell])
-        major[cell] = max(0.5 * (trace + disc), 0.0)
-        minor[cell] = max(0.5 * (trace - disc), 0.0)
-        angle = 0.5 * math.atan2(
-            2.0 * cxy[cell], cxx[cell] - cyy[cell])
-        direction[cell] = (math.cos(angle), math.sin(angle))
+    cxx = np.asarray(cxx, dtype=np.float64)
+    cxy = np.asarray(cxy, dtype=np.float64)
+    cyy = np.asarray(cyy, dtype=np.float64)
+    trace = cxx + cyy
+    doubled_x = cxx - cyy
+    doubled_y = 2.0 * cxy
+    disc = np.hypot(doubled_x, doubled_y)
+    major = np.maximum(0.5 * (trace + disc), 0.0)
+    minor = np.maximum(0.5 * (trace - disc), 0.0)
+
+    # (doubled_x, doubled_y) / disc = (cos(2 theta), sin(2 theta)).
+    # Recover its covering-map half angle algebraically.  This is the same
+    # projective coordinate used by the BFFT slope/half-angle phase path, but
+    # the tensor already supplies doubled phase, so no atan2 or lookup is
+    # required here.
+    u = np.divide(
+        doubled_x, disc, out=np.ones_like(disc), where=disc > 1e-30)
+    v = np.divide(
+        doubled_y, disc, out=np.zeros_like(disc), where=disc > 1e-30)
+    direction_x = np.sqrt(np.maximum(0.5 * (1.0 + u), 0.0))
+    direction_y = np.copysign(
+        np.sqrt(np.maximum(0.5 * (1.0 - u), 0.0)),
+        np.where(np.abs(v) > 1e-30, v, 1.0),
+    )
+    direction = np.column_stack((direction_x, direction_y))
     return major, minor, direction
 
 

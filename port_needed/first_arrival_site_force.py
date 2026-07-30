@@ -382,7 +382,7 @@ def safe_characteristic_site_step(
     *,
     trust_fraction: float = 0.5,
     core_radius_px: float = 3.0,
-    maximum_trials: int = 6,
+    maximum_trials: int = 1,
     armijo_fraction: float = 1e-4,
 ) -> tuple[np.ndarray, dict[str, np.ndarray], dict]:
     """Take one topology-safe reverse-characteristic position step.
@@ -396,10 +396,10 @@ def safe_characteristic_site_step(
     2. Exact remarches accept only a complete partition with every germ alive
        and a sufficient decrease of accepted transport action.
 
-    Trial scales are the dyadic trust-region contractions used by globally
-    convergent semi-discrete transport Newton methods.  This is not image
-    reconstruction search: it tests only the causal transport energy whose
-    derivative generated the step.
+    The optional control performs at most one exact remarch. Hidden dyadic
+    line searches were disproportionately expensive at full cell populations:
+    a rejected position proposal could otherwise solve the same transport
+    problem six more times and contribute nothing to the representation.
     """
     from .continuous_eikonal_transport import (
         continuous_first_partition_prepared,

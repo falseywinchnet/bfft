@@ -21,11 +21,15 @@ from scipy import sparse
 from ._core import (
     _check,
     _vision_assemble_normal,
+    _vision_bucket_first_label,
     _vision_curvature_population_f32,
     _vision_fast_march_first_label,
+    _vision_fast_march_labels,
+    _vision_metric_edge_costs_f32,
     _vision_hard_affine_fit,
     _vision_hard_basis_refit,
     _vision_render_affine,
+    _vision_scan_paired_offsets,
     _vision_scan_residual_ridges,
     _vision_soft_support_diffuse,
     _vision_support_forward,
@@ -106,7 +110,9 @@ def curvature_population_native(
     }
 
 
-def soft_support_diffuse_native(field, conductance, passes, coupling=0.8):
+def soft_support_diffuse_native(
+    field, conductance, passes, coupling=0.8, threads=0,
+):
     """Return the native soft field, or ``None`` for an older library."""
     if _vision_soft_support_diffuse is None:
         return None
@@ -138,6 +144,7 @@ def soft_support_diffuse_native(field, conductance, passes, coupling=0.8):
         width,
         channels,
         max(int(passes), 0),
+        max(int(threads), 0),
         float(coupling),
         _ptr(value, ctypes.c_double),
         _ptr(edge["horizontal"], ctypes.c_double),
@@ -273,6 +280,192 @@ def fast_march_first_label_native(
         int(push_count.value),
         int(maximum_heap_size.value),
     )
+
+
+def fast_march_labels_native(
+    seed_pixel,
+    seed_value,
+    seed_label,
+    seed_gradient_x,
+    seed_gradient_y,
+    prepared,
+):
+    """Run the exact owner/distance-only continuous first-arrival walk."""
+    if _vision_fast_march_labels is None:
+        full = fast_march_first_label_native(
+            seed_pixel,
+            seed_value,
+            seed_label,
+            seed_gradient_x,
+            seed_gradient_y,
+            prepared,
+        )
+        if full is None:
+            return None
+        return full[0], full[1], full[10], full[11]
+
+    seeds = np.ascontiguousarray(seed_pixel, dtype=np.int32)
+    values = np.ascontiguousarray(seed_value, dtype=np.float64)
+    labels = np.ascontiguousarray(seed_label, dtype=np.int32)
+    seed_gx = np.ascontiguousarray(seed_gradient_x, dtype=np.float64)
+    seed_gy = np.ascontiguousarray(seed_gradient_y, dtype=np.float64)
+    if not (
+        seeds.ndim == values.ndim == labels.ndim ==
+        seed_gx.ndim == seed_gy.ndim == 1
+    ):
+        raise ValueError("fast-march seed arrays must be one-dimensional")
+    seed_count = seeds.size
+    if not (
+        values.size == labels.size == seed_gx.size ==
+        seed_gy.size == seed_count
+    ):
+        raise ValueError("fast-march seed arrays must have equal length")
+
+    mxx = np.ascontiguousarray(prepared["mxx"], dtype=np.float64)
+    mxy = np.ascontiguousarray(prepared["mxy"], dtype=np.float64)
+    myy = np.ascontiguousarray(prepared["myy"], dtype=np.float64)
+    height, width = mxx.shape
+    directions = np.ascontiguousarray(
+        prepared["directions"], dtype=np.int32)
+    direction_costs = np.ascontiguousarray(
+        prepared["direction_costs"], dtype=np.float64)
+    direction_valid = np.ascontiguousarray(
+        prepared["direction_valid"], dtype=np.uint8)
+    cardinal_costs = np.ascontiguousarray(
+        prepared["cardinal_costs"], dtype=np.float64)
+    inverse_offset = np.ascontiguousarray(
+        prepared["inverse_offset"], dtype=np.int64)
+    inverse_receiver = np.ascontiguousarray(
+        prepared["inverse_receiver"], dtype=np.int32)
+    pixels = height * width
+    owner = np.empty(pixels, dtype=np.int32)
+    distance = np.empty(pixels, dtype=np.float64)
+    push_count = ctypes.c_size_t()
+    maximum_heap_size = ctypes.c_size_t()
+    _check(_vision_fast_march_labels(
+        height,
+        width,
+        seed_count,
+        _ptr(seeds, ctypes.c_int32),
+        _ptr(values, ctypes.c_double),
+        _ptr(labels, ctypes.c_int32),
+        _ptr(seed_gx, ctypes.c_double),
+        _ptr(seed_gy, ctypes.c_double),
+        _ptr(directions, ctypes.c_int32),
+        _ptr(direction_costs, ctypes.c_double),
+        _ptr(direction_valid, ctypes.c_uint8),
+        _ptr(cardinal_costs, ctypes.c_double),
+        _ptr(inverse_offset, ctypes.c_int64),
+        inverse_receiver.size,
+        _ptr(inverse_receiver, ctypes.c_int32),
+        _ptr(mxx, ctypes.c_double),
+        _ptr(mxy, ctypes.c_double),
+        _ptr(myy, ctypes.c_double),
+        _ptr(owner, ctypes.c_int32),
+        _ptr(distance, ctypes.c_double),
+        ctypes.byref(push_count),
+        ctypes.byref(maximum_heap_size),
+    ), "bfft_vision_fast_march_labels")
+    return (
+        owner,
+        distance,
+        int(push_count.value),
+        int(maximum_heap_size.value),
+    )
+
+
+def metric_edge_costs_native(
+    precision_xx,
+    precision_xy,
+    precision_yy,
+    *,
+    precision_gain,
+    boundary_xx=None,
+    boundary_xy=None,
+    boundary_yy=None,
+    boundary_gain=0.0,
+):
+    """Stream a frozen tensor metric into an eight-edge float32 cost stack."""
+    if _vision_metric_edge_costs_f32 is None:
+        return None
+    qxx = np.ascontiguousarray(precision_xx, dtype=np.float32)
+    qxy = np.ascontiguousarray(precision_xy, dtype=np.float32)
+    qyy = np.ascontiguousarray(precision_yy, dtype=np.float32)
+    if not (qxx.ndim == 2 and qxx.shape == qxy.shape == qyy.shape):
+        raise ValueError("precision tensors must share one 2-D shape")
+    use_boundary = float(boundary_gain) > 0.0
+    if use_boundary:
+        bxx = np.ascontiguousarray(boundary_xx, dtype=np.float32)
+        bxy = np.ascontiguousarray(boundary_xy, dtype=np.float32)
+        byy = np.ascontiguousarray(boundary_yy, dtype=np.float32)
+        if not (bxx.shape == bxy.shape == byy.shape == qxx.shape):
+            raise ValueError("boundary tensors must match precision tensors")
+        bxx_pointer = _ptr(bxx, ctypes.c_float)
+        bxy_pointer = _ptr(bxy, ctypes.c_float)
+        byy_pointer = _ptr(byy, ctypes.c_float)
+    else:
+        bxx_pointer = None
+        bxy_pointer = None
+        byy_pointer = None
+    height, width = qxx.shape
+    costs = np.empty((8, height, width), dtype=np.float32)
+    _check(_vision_metric_edge_costs_f32(
+        height,
+        width,
+        _ptr(qxx, ctypes.c_float),
+        _ptr(qxy, ctypes.c_float),
+        _ptr(qyy, ctypes.c_float),
+        bxx_pointer,
+        bxy_pointer,
+        byy_pointer,
+        float(precision_gain),
+        float(boundary_gain),
+        _ptr(costs, ctypes.c_float),
+    ), "bfft_vision_metric_edge_costs_f32")
+    return costs
+
+
+def bucket_first_label_native(
+    seed_pixel,
+    reach,
+    costs,
+    delta,
+    span,
+    shift,
+):
+    """Run the exact native monotone-bucket first-owner graph walk."""
+    if _vision_bucket_first_label is None:
+        return None
+    seeds = np.ascontiguousarray(seed_pixel, dtype=np.int64)
+    source_reach = np.ascontiguousarray(reach, dtype=np.float64)
+    edge_costs = np.ascontiguousarray(costs, dtype=np.float32)
+    if (
+        seeds.ndim != 1 or source_reach.shape != seeds.shape or
+        edge_costs.ndim != 3 or edge_costs.shape[0] != 8
+    ):
+        raise ValueError("invalid monotone-bucket transport arrays")
+    height, width = edge_costs.shape[1:]
+    pixels = height * width
+    owner = np.empty(pixels, dtype=np.int32)
+    distance = np.empty(pixels, dtype=np.float64)
+    parent = np.empty(pixels, dtype=np.int32)
+    push_count = ctypes.c_size_t()
+    _check(_vision_bucket_first_label(
+        height,
+        width,
+        seeds.size,
+        _ptr(seeds, ctypes.c_int64),
+        _ptr(source_reach, ctypes.c_double),
+        _ptr(edge_costs, ctypes.c_float),
+        float(delta),
+        int(span),
+        float(shift),
+        _ptr(owner, ctypes.c_int32),
+        _ptr(distance, ctypes.c_double),
+        _ptr(parent, ctypes.c_int32),
+        ctypes.byref(push_count),
+    ), "bfft_vision_bucket_first_label")
+    return owner, distance, parent, int(push_count.value)
 
 
 def hard_affine_fit_native(labels, target):
@@ -437,8 +630,18 @@ class SingleStageDecompositionObjective:
     from line searches without relying on an identity/checksum cache.
     """
 
-    def __init__(self, target_rgb, *, lam=0.05, mu=40.0, passes=24,
-                 threads=4, space="oklab_lc", solver=1):
+    def __init__(
+        self,
+        target_rgb,
+        *,
+        lam=0.05,
+        mu=40.0,
+        passes=24,
+        threads=4,
+        space="oklab_lc",
+        solver=1,
+        target_lab=None,
+    ):
         from .effects import meyer_channels
 
         self.target_rgb = np.ascontiguousarray(
@@ -451,36 +654,70 @@ class SingleStageDecompositionObjective:
         self.solver = int(solver)
         split = meyer_channels(
             self.target_rgb, space=self.space, lam=self.lam, mu=self.mu,
-            passes=self.passes, threads=self.threads, solver=self.solver)
+            passes=self.passes, threads=self.threads, solver=self.solver,
+            working_lab=target_lab)
         scale = np.maximum(split.scale[None, None, :], 1e-12)
         self.target_cartoon = split.cartoon / scale
         self.target_texture = split.texture / scale
         self.last_residual_energy = None
+        self.last_reconstruction_lab = None
+        self.evaluation_count = 0
+        self.restore_count = 0
+
+    def capture_state(self):
+        """Return the immutable residual state of the latest evaluation.
+
+        Candidate selection often needs to restore a previously scored
+        reconstruction.  Its scalar record is already retained by the
+        caller; retaining this array reference avoids decomposing the same
+        reconstruction again merely to restore ``last_residual_energy``.
+        """
+
+        return (
+            self.last_residual_energy,
+            self.last_reconstruction_lab,
+        )
+
+    def restore_state(self, state):
+        """Restore a state returned by :meth:`capture_state` exactly."""
+
+        if state is None or state[0] is None:
+            raise ValueError("cannot restore an unevaluated objective state")
+        (
+            self.last_residual_energy,
+            self.last_reconstruction_lab,
+        ) = state
+        self.restore_count += 1
 
     def evaluate(self, reconstruction_rgb):
         """Return the three MSE terms and their equally weighted sum."""
-        from .effects import meyer_channels
+        from .effects import meyer_channels, srgb_to_lab
 
+        self.evaluation_count += 1
         reconstruction = np.ascontiguousarray(
             np.clip(reconstruction_rgb, 0.0, 1.0), dtype=np.float64)
         if reconstruction.shape != self.target_rgb.shape:
             raise ValueError("reconstruction shape differs from target")
+        reconstruction_lab = srgb_to_lab(reconstruction)
         split = meyer_channels(
             reconstruction, space=self.space, lam=self.lam, mu=self.mu,
-            passes=self.passes, threads=self.threads, solver=self.solver)
+            passes=self.passes, threads=self.threads, solver=self.solver,
+            working_lab=reconstruction_lab)
         scale = np.maximum(split.scale[None, None, :], 1e-12)
         cartoon = split.cartoon / scale
         texture = split.texture / scale
-        rgb_mse = float(np.mean((self.target_rgb - reconstruction) ** 2))
-        cartoon_mse = float(np.mean(
-            (self.target_cartoon - cartoon) ** 2))
-        texture_mse = float(np.mean(
-            (self.target_texture - texture) ** 2))
+        rgb_error = np.square(self.target_rgb - reconstruction)
+        cartoon_error = np.square(self.target_cartoon - cartoon)
+        texture_error = np.square(self.target_texture - texture)
+        rgb_mse = float(np.mean(rgb_error))
+        cartoon_mse = float(np.mean(cartoon_error))
+        texture_mse = float(np.mean(texture_error))
         self.last_residual_energy = (
-            np.mean((self.target_rgb - reconstruction) ** 2, axis=2)
-            + np.mean((self.target_cartoon - cartoon) ** 2, axis=2)
-            + np.mean((self.target_texture - texture) ** 2, axis=2)
+            np.mean(rgb_error, axis=2)
+            + np.mean(cartoon_error, axis=2)
+            + np.mean(texture_error, axis=2)
         )
+        self.last_reconstruction_lab = reconstruction_lab
         return {
             "rgb_mse": rgb_mse,
             "psnr": -10.0 * math.log10(max(rgb_mse, 1e-12)),
@@ -826,6 +1063,83 @@ def measure_residual_ridges(owner, weight, residual, dx, dy, spacing,
     offset = ((bin_index + 0.5) / int(bins) * (2.0 * float(span))
               - float(span))
     return score, theta[angle_index], offset
+
+
+def measure_paired_offsets(
+    owner,
+    weight,
+    residual,
+    projection,
+    cells,
+    bins=161,
+    span=2.5,
+    channel_weights=(1.0, 1.5, 1.5),
+):
+    """Measure one finite split offset along each cell's fixed coordinate."""
+
+    owner = np.ascontiguousarray(owner, dtype=np.int32).ravel()
+    weight = np.ascontiguousarray(weight, dtype=np.float64).ravel()
+    residual = np.ascontiguousarray(residual, dtype=np.float64).reshape(-1, 3)
+    projection = np.ascontiguousarray(
+        projection, dtype=np.float64).ravel()
+    channel_weights = np.ascontiguousarray(
+        channel_weights, dtype=np.float64)
+    cells = int(cells)
+    bins = int(bins)
+    if not (
+        owner.size == weight.size == residual.shape[0] == projection.size
+        and cells > 0
+        and bins > 0
+        and channel_weights.shape == (3,)
+    ):
+        raise ValueError("paired-offset arrays have inconsistent geometry")
+
+    if _vision_scan_paired_offsets is not None:
+        score = np.empty(cells, dtype=np.float64)
+        bin_index = np.empty(cells, dtype=np.int32)
+        _check(_vision_scan_paired_offsets(
+            owner.size,
+            cells,
+            bins,
+            float(span),
+            _ptr(owner, ctypes.c_int32),
+            _ptr(weight, ctypes.c_double),
+            _ptr(residual, ctypes.c_double),
+            _ptr(projection, ctypes.c_double),
+            _ptr(channel_weights, ctypes.c_double),
+            _ptr(score, ctypes.c_double),
+            _ptr(bin_index, ctypes.c_int32),
+        ), "bfft_vision_scan_paired_offsets")
+    else:
+        scale = bins / (2.0 * float(span))
+        index = np.clip(
+            ((projection + float(span)) * scale).astype(np.int64),
+            0,
+            bins - 1,
+        )
+        histogram = np.zeros((cells, bins, 3), dtype=np.float64)
+        np.add.at(
+            histogram,
+            (owner, index),
+            weight[:, None] * residual,
+        )
+        running = np.cumsum(histogram, axis=1)
+        total = running[:, -1]
+        mass = np.bincount(owner, weights=weight, minlength=cells)
+        contrast = total[:, None, :] - 2.0 * running
+        value = np.sum(
+            channel_weights[None, None, :] * contrast * contrast,
+            axis=2,
+        ) / np.maximum(mass[:, None], 1e-9)
+        bin_index = np.argmax(value, axis=1).astype(np.int32)
+        score = value[np.arange(cells), bin_index]
+    offset = (
+        (bin_index.astype(np.float64) + 0.5)
+        / bins
+        * (2.0 * float(span))
+        - float(span)
+    )
+    return score, offset
 
 
 @_compile

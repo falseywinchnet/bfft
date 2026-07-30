@@ -35,10 +35,6 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from bench_common import bench, fixture, walk_inputs  # noqa: E402
-
-from claude_trial_sigma import _dijkstra_two_best_pred  # noqa: E402
-
 try:
     from numba import njit
 except ImportError:  # pragma: no cover
@@ -229,6 +225,118 @@ def _dijkstra_bucket(seed_p, reach, base_costs, s_field, h, w,
         current += 1
         guard += 1
     return own, run, d1, d2, pr1, pr2, pl1, pl2, pd1, pd2, used
+
+
+@_compile
+def _dijkstra_first_bucket(seed_p, reach, base_costs, s_field, h, w,
+                           delta, span, shift):
+    """Monotone multi-source walk retaining only the achieving first label.
+
+    For source-independent nonnegative edge costs, a runner-up can never
+    become first after passing through a vertex: the first source at that
+    vertex can follow the identical suffix and remain no farther away.
+    Therefore first-owner geometry and its predecessor forest do not require
+    the two-label state carried by `_dijkstra_bucket`.
+    """
+    npix = h * w
+    inf = 1e300
+    distance = np.full(npix, inf)
+    owner = np.full(npix, -1, dtype=np.int32)
+    parent = np.full(npix, -1, dtype=np.int32)
+
+    buckets = span + 2
+    head = np.full(buckets, -1, dtype=np.int32)
+    cap = 2 * npix + 256
+    key = np.empty(cap, dtype=np.float64)
+    pix = np.empty(cap, dtype=np.int32)
+    site_at_entry = np.empty(cap, dtype=np.int32)
+    nxt = np.empty(cap, dtype=np.int32)
+    used = 0
+    alive = 0
+
+    for site in range(len(seed_p)):
+        p = seed_p[site]
+        value = -reach[site]
+        if value < distance[p]:
+            distance[p] = value
+            owner[p] = site
+            parent[p] = -1
+            slot = int((value + shift) / delta)
+            key[used] = value
+            pix[used] = p
+            site_at_entry[used] = site
+            nxt[used] = head[slot % buckets]
+            head[slot % buckets] = used
+            used += 1
+            alive += 1
+
+    dys = (-1, 1, 0, 0, -1, -1, 1, 1)
+    dxs = (0, 0, -1, 1, -1, 1, -1, 1)
+    tolerance = 1e-12
+    current = 0
+    guard = 0
+    limit = buckets * (npix + 16)
+    while alive > 0 and guard < limit:
+        index = current % buckets
+        entry = head[index]
+        if entry < 0:
+            current += 1
+            guard += 1
+            continue
+        head[index] = -1
+        while entry >= 0:
+            value = key[entry]
+            p = pix[entry]
+            site = site_at_entry[entry]
+            entry = nxt[entry]
+            alive -= 1
+            if owner[p] != site or value > distance[p] + tolerance:
+                continue
+
+            y = p // w
+            x = p - y * w
+            sp = s_field[p]
+            for direction in range(8):
+                ny = y + dys[direction]
+                nx = x + dxs[direction]
+                if ny < 0 or ny >= h or nx < 0 or nx >= w:
+                    continue
+                q = ny * w + nx
+                step = (
+                    base_costs[direction, y, x]
+                    * 0.5 * (sp + s_field[q])
+                )
+                candidate = value + step
+                if candidate + tolerance >= distance[q]:
+                    continue
+                distance[q] = candidate
+                owner[q] = site
+                parent[q] = p
+                if used >= cap:
+                    cap *= 2
+                    next_key = np.empty(cap, dtype=np.float64)
+                    next_pix = np.empty(cap, dtype=np.int32)
+                    next_site = np.empty(cap, dtype=np.int32)
+                    next_link = np.empty(cap, dtype=np.int32)
+                    next_key[:used] = key[:used]
+                    next_pix[:used] = pix[:used]
+                    next_site[:used] = site_at_entry[:used]
+                    next_link[:used] = nxt[:used]
+                    key = next_key
+                    pix = next_pix
+                    site_at_entry = next_site
+                    nxt = next_link
+                slot = int((candidate + shift) / delta)
+                key[used] = candidate
+                pix[used] = q
+                site_at_entry[used] = site
+                nxt[used] = head[slot % buckets]
+                head[slot % buckets] = used
+                used += 1
+                alive += 1
+        current += 1
+        guard += 1
+    return owner, distance, parent, used
 
 
 @_compile
@@ -430,11 +538,16 @@ def queue_geometry(base_costs, s_field, reach):
     bound on how far ahead of the current key an insertion can land.  Both
     follow from the modulated cost `base * (s(p) + s(q)) / 2`.
     """
-    finite = base_costs[np.isfinite(base_costs)]
+    smallest = float(np.min(base_costs))
+    widest_base = float(np.max(base_costs))
+    if not np.isfinite(smallest) or not np.isfinite(widest_base):
+        finite = base_costs[np.isfinite(base_costs)]
+        smallest = float(np.min(finite))
+        widest_base = float(np.max(finite))
     low_scale = float(np.min(s_field))
     high_scale = float(np.max(s_field))
-    delta = float(np.min(finite)) * low_scale
-    widest = float(np.max(finite)) * high_scale
+    delta = smallest * low_scale
+    widest = widest_base * high_scale
     span = int(np.ceil(widest / delta)) + 2
     shift = float(np.max(reach)) + delta
     return delta, span, shift
@@ -458,6 +571,9 @@ def run_packed(args, packed=None):
 
 
 def verify(model, scale=None, runner=run_bucket):
+    from bench_common import walk_inputs
+    from claude_trial_sigma import _dijkstra_two_best_pred
+
     args = walk_inputs(model, scale)
     reference = _dijkstra_two_best_pred(*args)
     trial = runner(args)
@@ -484,6 +600,9 @@ def verify(model, scale=None, runner=run_bucket):
 
 
 def main():
+    from bench_common import bench, fixture, walk_inputs
+    from claude_trial_sigma import _dijkstra_two_best_pred
+
     for image, side, cells in (("camera", 128, 700), ("pikachu", 256, 2400)):
         model = fixture(image, side, cells)
         print(f"\n{image} {side} px / {cells} cells "

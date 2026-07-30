@@ -6,9 +6,11 @@ vision tool and a research notebook. These are the supported starting points:
 | Goal | Run | Status |
 | --- | --- | --- |
 | Segment an image into BFFT-guided transport cells | `python viewer/segmenting_veroni_viewer.py` | **Canonical image-segmentation viewer** |
+| Play with the two-scale cartoon/texture hierarchy | `python viewer/segmenting_v3_app.py` | Version 3.0 experiment |
 | Explore emergent object IDs on the finished cell graph | `python viewer/object_transport_segmentation_viewer.py` | Experimental object-support hierarchy |
 | Explore owner-free residual-consuming cells | `python viewer/resource_transport_cells_viewer.py` | Isolated transport-cell experiment |
 | Explore cartoon/texture decomposition on still images | `python viewer/meyer_stills.py` | Canonical decomposition explorer |
+| Explore 2-D intrinsic time-scale decomposition | `python viewer/voronoi_itd_viewer.py` | Voronoi-supported ITD prototype |
 | Process or inspect decomposition on video | `python viewer/meyer_video.py` | Offline video path |
 | Apply the real-time webcam effect in OBS | See [`obs-plugin/README.md`](../obs-plugin/README.md) | Native real-time filter |
 | Inspect IQ waterfall / super-resolution work | `python viewer/iq_waterfall_app.py` | Separate signal viewer; build first below |
@@ -17,6 +19,33 @@ The files named `recursive_*`, `seeded_*`, `error_spent_*`,
 `two_population_*`, and `claude_trial_*` are retained research controls. They
 are useful for reproducing discarded or intermediate allocation ideas, but
 they are not the place to begin another segmentation implementation.
+
+## Voronoi intrinsic time-scale decomposition
+
+```sh
+.venv/bin/python viewer/voronoi_itd_viewer.py
+```
+
+This image operator replaces separable row/column ITD support with the frozen
+Meyer-density geometry already used by the canonical segmentation pipeline.
+Two C++ decomposition stages measure a bounded inverse-support tensor. Its
+reciprocal ellipse area, `sqrt(det(Q))/pi`, emits the complete germ population
+simultaneously; an analytic director-curvature correction shortens only the
+supports that cannot remain locally straight. One reduced-basis anisotropic
+fast march forms all cells. There is no extrema spacing, candidate search,
+birth loop, Lloyd motion, or support diffusion. Actual cell interfaces supply
+the intrinsic knot graph, and a convex cell-amplitude readout gives the
+baseline.
+
+The panels show the selected baseline and rotation alongside literal hard
+Voronoi ownership, extrema polarity, and a live all-level recomposition.
+Every extraction is telescoping: the rotations plus the final residual
+reconstruct the analyzed lightness plane to floating-point precision.
+`voronoi_itd.py` is the standalone operator; `voronoi_itd_app.py` is only its
+interactive shell. The production derivation and timing checkpoint are in
+[`MEYER_DENSITY_VORONOI.md`](MEYER_DENSITY_VORONOI.md). The rejected
+iterative ablation remains recorded in
+[`EIKONAL_VORONOI_ITD.md`](EIKONAL_VORONOI_ITD.md).
 
 ## Image segmentation quick start
 
@@ -121,6 +150,21 @@ controls, and `transport_voronoi_app.py` retains the previous iterative
 laboratory. The `segmenting_veroni_viewer.py` filename is the stable
 user-facing entry point. Algorithms awaiting native ports are separated under
 [`../port_needed`](../port_needed/README.md).
+
+## Segmenting version 3.0 experiment
+
+```sh
+python viewer/segmenting_v3_app.py
+```
+
+This viewer runs one lower-resolution cartoon transport, preserves its owner
+IDs while upgrading their interfaces directly on the full-resolution target.
+It then emits full-resolution texture microcells, assigns each to one cartoon
+parent, and transports only among siblings. Its controls retain the former
+parent-ridge model for A/B comparison. The panels expose cartoon parents,
+texture microcells, texture target and fit, coordinate fields, and the final
+residual. See
+[`SEGMENTING_V3.md`](SEGMENTING_V3.md) for the measured results.
 
 ## Emergent object-support experiment
 
