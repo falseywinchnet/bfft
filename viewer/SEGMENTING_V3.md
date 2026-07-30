@@ -317,3 +317,80 @@ put structural transport at about 0.59 s and nested texture transport at about
 0.54 s, with unchanged 27.3767 dB reconstruction and 78,454 final cells. The
 whole build measured about 5.56 s; frozen-geometry construction, rather than
 transport, is now the dominant phase.
+
+## Full-band graph phase
+
+The original nested readout reduced every texture cell to one normal and then
+selected independent clipped steps on that cell-centred coordinate. This
+throws away both the orthogonal split family and phase agreement across cell
+boundaries. More importantly, the central/Sobel derivative used by the tensor
+has response `sin(omega)`: a period-three texture at `omega = 2*pi/3` is
+indistinguishable in derivative magnitude from `omega = pi/3`. The finest rig
+texture was therefore folded to a period-six geometry before readout.
+
+The graph-phase experiment uses paired one-sided correlations instead:
+
+```
+C_x(i) = sum r(p) r(p + e_x) / sum (r(p)^2 + r(p + e_x)^2)/2
+|k_x(i)| = arccos(C_x(i)).
+```
+
+`arccos` is one-to-one on the complete discrete band `[0, pi]`. Horizontal,
+vertical, and the two diagonal lag families recover a signed wave covector
+for every final texture cell. Its quarter-turn supplies the symmetric second
+normal; tangent is no longer discarded merely because of its geometric name.
+
+The final cell adjacency graph is sorted once by correlation confidence. A
+deterministic maximum-confidence spanning forest then unwraps both phase
+fields by making parent and child phase agree at the midpoint proxy for their
+common interface.
+There is no frequency-component search, semantic grouping, or iterative
+relaxation. Two graph-synchronized cosine columns enter the same native
+per-cell refit before alternating normal/second-normal residual ridges.
+
+With exactly the same 522 rig cells, paired local ridges reach 36.12 dB and
+retain 31.2% of the period-three amplitude. Graph-unrolled paired phase reaches
+37.84 dB and retains 57.3%. Checkerboard improves from 30.97 to 32.32 dB.
+Pikachu improves from 35.46 to 36.33 dB with the same 1,356 cells. On the
+1365 x 2048 natural-image control it improves 28.26 to 28.95 dB with the same
+78,454 cells; the 228,357-edge graph adds approximately 0.75 s.
+
+## Nonexpansive texture-gradient envelope
+
+The graph-phase fit exposed a narrower distinction between texture amplitude
+and perceived sharpness. Per-cell least squares is an ordinary L2 projection,
+so the fitted texture cannot have more total sample energy than its exact
+`source - cartoon` target. It can nevertheless have more *gradient* energy:
+the projection may omit diffuse residual energy while concentrating what it
+retains in coherent carriers. This reproduces the appearance of excessive
+Meyer texture gain without any literal double-add or scalar gain above one.
+
+The effect localizes to the hard texture graph. On the full-resolution Golden
+Gate fence, 91.6% of local-range violations above 0.05 occur on texture-cell
+interfaces, rising to 96.7% above 0.1. Graph phase aligns the carriers, but
+their amplitudes remain independently fitted in adjacent cells.
+
+The default readout therefore measures horizontal and vertical Dirichlet
+energy for the fitted texture and its exact residual target. Cross-cell edges
+are divided equally between their incident owners. In each Lab channel, a
+cell whose incident fitted energy exceeds the measured target budget receives
+the largest admissible contraction; its fitted mean is preserved. This is a
+single fused raster pass plus coefficient scaling, not a relaxation or a
+global sparse solve. It adds about 36 ms on the 1440 x 1799 Golden Gate image.
+The viewer exposes it as `nonexpansive texture-gradient envelope` for direct
+A/B comparison.
+
+The graph construction no longer materializes a demeaned image plus four
+lag masks, products, and `bincount` reductions. One compact cell-to-pixel CSR
+index now drives fused correlation and phase sufficient statistics; the two
+cosine columns are rendered directly without first allocating two full phase
+images. The independent cell measurements and final render are parallel, but
+all reductions within a cell retain their original deterministic order.
+
+On the 1440 x 1799 Golden Gate control, steady-state graph time fell from
+approximately 640--820 ms to 218--240 ms on the same machine. The Dirichlet
+envelope is approximately 42 ms steady-state. Its first invocation after a
+source edit can still report roughly 0.44 s because Numba compiles the fused
+kernel once; the compiled specialization is cached and subsequent builds do
+not pay that cost. Golden Gate, rig, checkerboard, and Pikachu reconstructions
+are numerically unchanged by the graph optimization.

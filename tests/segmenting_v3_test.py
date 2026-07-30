@@ -1,7 +1,67 @@
 import numpy as np
 import pytest
 
-from experiments.segmenting_v3 import SegmentingV3Config, build_segmenting_v3
+from experiments.segmenting_v3 import (
+    SegmentingV3Config,
+    _graph_unrolled_texture_phases,
+    _texture_dirichlet_envelope,
+    build_segmenting_v3,
+)
+
+
+def test_graph_phase_unroll_is_deterministic_above_central_difference_fold():
+    height, width = 32, 40
+    y, x = np.mgrid[:height, :width]
+    labels = (
+        (y // 8) * (width // 8) + x // 8
+    ).astype(np.int32)
+    cells = int(np.max(labels)) + 1
+    flat = labels.ravel()
+    count = np.bincount(flat, minlength=cells)
+    centers = np.column_stack((
+        np.bincount(
+            flat, weights=(x.ravel() + 0.5), minlength=cells)
+        / count / width,
+        np.bincount(
+            flat, weights=(y.ravel() + 0.5), minlength=cells)
+        / count / height,
+    ))
+    signal = np.cos(0.4 * x + 1.8 * y)
+
+    first, diagnostic = _graph_unrolled_texture_phases(
+        labels, centers, signal)
+    second, repeated = _graph_unrolled_texture_phases(
+        labels, centers, signal)
+
+    assert diagnostic == repeated
+    assert diagnostic["full_band_one_sided"]
+    assert diagnostic["tree_edges"] == cells - 1
+    assert diagnostic["median_wave_y"] > np.pi / 2.0
+    for first_axis, second_axis in zip(first, second):
+        assert np.array_equal(first_axis, second_axis)
+        assert np.all(np.isfinite(first_axis))
+
+
+def test_texture_dirichlet_envelope_is_exactly_nonexpansive_per_cell():
+    labels = np.zeros((2, 2), dtype=np.int32)
+    target = np.zeros((2, 2, 3), dtype=np.float64)
+    target[..., 0] = [[0.0, 1.0], [0.0, 1.0]]
+    fitted = target.copy()
+    fitted[..., 0] = [[-1.0, 2.0], [-1.0, 2.0]]
+
+    bounded, diagnostic = _texture_dirichlet_envelope(
+        labels, target, fitted)
+
+    np.testing.assert_allclose(bounded, target)
+    assert diagnostic["contracted_cells"] == 1
+    assert diagnostic["contracted_pixels"] == 4
+    assert diagnostic["minimum_gain"] == pytest.approx(1.0 / 3.0)
+    assert diagnostic["after_energy"] <= diagnostic["target_energy"]
+
+    already_bounded, unchanged = _texture_dirichlet_envelope(
+        labels, target, target * 0.5)
+    assert np.array_equal(already_bounded, target * 0.5)
+    assert unchanged["contracted_cells"] == 0
 
 
 @pytest.mark.parametrize("upgrade_mode", ("boundary_band", "full_map"))

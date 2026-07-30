@@ -28,9 +28,10 @@ import time
 import numpy as np
 
 try:
-    from numba import njit
+    from numba import njit, prange
 except ImportError:  # pragma: no cover
     njit = None
+    prange = range
 
 ROOT = Path(__file__).resolve().parents[1]
 for directory in (ROOT, ROOT / "viewer", ROOT / "experiments"):
@@ -106,6 +107,8 @@ class SegmentingV3Config:
     cartoon_refit_strength: float = 0.5
     texture_model: str = "nested_population"
     nested_texture_ridges: int = 3
+    texture_graph_phase: bool = True
+    texture_dirichlet_envelope: bool = True
     texture_support_weight: float = 0.65
     texture_population_scale: float = 1.0
     texture_population_phase: float = 0.125
@@ -282,6 +285,671 @@ def _identity(function):  # pragma: no cover
 
 
 _compile = njit(cache=True, fastmath=False) if njit is not None else _identity
+_compile_parallel = (
+    njit(cache=True, fastmath=False, parallel=True)
+    if njit is not None else _identity
+)
+
+
+@_compile
+def _maximum_spanning_tree_csr(cells, pairs, order):
+    """Return a deterministic maximum-confidence spanning forest as CSR."""
+    union = np.arange(cells, dtype=np.int32)
+    rank = np.zeros(cells, dtype=np.uint8)
+    selected = np.empty((max(cells - 1, 0), 2), dtype=np.int32)
+    used = 0
+    for position in range(len(order)):
+        edge = order[position]
+        first = pairs[edge, 0]
+        while union[first] != first:
+            union[first] = union[union[first]]
+            first = union[first]
+        second = pairs[edge, 1]
+        while union[second] != second:
+            union[second] = union[union[second]]
+            second = union[second]
+        if first == second:
+            continue
+        if rank[first] < rank[second]:
+            swap = first
+            first = second
+            second = swap
+        union[second] = first
+        if rank[first] == rank[second]:
+            rank[first] += 1
+        selected[used] = pairs[edge]
+        used += 1
+
+    degree = np.zeros(cells, dtype=np.int32)
+    for edge in range(used):
+        degree[selected[edge, 0]] += 1
+        degree[selected[edge, 1]] += 1
+    offset = np.empty(cells + 1, dtype=np.int64)
+    offset[0] = 0
+    for cell in range(cells):
+        offset[cell + 1] = offset[cell] + degree[cell]
+    neighbour = np.empty(2 * used, dtype=np.int32)
+    cursor = offset[:-1].copy()
+    for edge in range(used):
+        first = selected[edge, 0]
+        second = selected[edge, 1]
+        neighbour[cursor[first]] = second
+        cursor[first] += 1
+        neighbour[cursor[second]] = first
+        cursor[second] += 1
+    return offset, neighbour, used
+
+
+@_compile
+def _unroll_phase_tree(
+    offset,
+    neighbour,
+    root_order,
+    center_x,
+    center_y,
+    wave_x,
+    wave_y,
+    local_phase,
+):
+    """Make adjacent cell phases agree at each spanning-tree interface."""
+    cells = len(center_x)
+    correction = np.zeros(cells, dtype=np.float64)
+    seen = np.zeros(cells, dtype=np.uint8)
+    queue = np.empty(cells, dtype=np.int32)
+    for root_position in range(len(root_order)):
+        root = root_order[root_position]
+        if seen[root]:
+            continue
+        seen[root] = 1
+        head = 0
+        tail = 1
+        queue[0] = root
+        while head < tail:
+            first = queue[head]
+            head += 1
+            for edge in range(offset[first], offset[first + 1]):
+                second = neighbour[edge]
+                if seen[second]:
+                    continue
+                midpoint_x = 0.5 * (
+                    center_x[first] + center_x[second])
+                midpoint_y = 0.5 * (
+                    center_y[first] + center_y[second])
+                first_phase = (
+                    local_phase[first]
+                    + correction[first]
+                    + wave_x[first] * (
+                        midpoint_x - center_x[first])
+                    + wave_y[first] * (
+                        midpoint_y - center_y[first])
+                )
+                second_phase = (
+                    local_phase[second]
+                    + wave_x[second] * (
+                        midpoint_x - center_x[second])
+                    + wave_y[second] * (
+                        midpoint_y - center_y[second])
+                )
+                difference = first_phase - second_phase
+                correction[second] = math.atan2(
+                    math.sin(difference), math.cos(difference))
+                seen[second] = 1
+                queue[tail] = second
+                tail += 1
+    return correction
+
+
+def _same_cell_lag_correlation(
+    signal: np.ndarray,
+    labels: np.ndarray,
+    cells: int,
+    dy: int,
+    dx: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Normalized paired one-sided correlation for one lattice lag."""
+    height, width = labels.shape
+    source_y = slice(max(0, -dy), min(height, height - dy))
+    source_x = slice(max(0, -dx), min(width, width - dx))
+    target_y = slice(max(0, dy), min(height, height + dy))
+    target_x = slice(max(0, dx), min(width, width + dx))
+    first = signal[source_y, source_x]
+    second = signal[target_y, target_x]
+    owner = labels[source_y, source_x]
+    same = owner == labels[target_y, target_x]
+    selected_owner = owner[same]
+    numerator = np.bincount(
+        selected_owner,
+        weights=(first * second)[same],
+        minlength=cells,
+    )
+    denominator = np.bincount(
+        selected_owner,
+        weights=(0.5 * (first * first + second * second))[same],
+        minlength=cells,
+    )
+    correlation = np.divide(
+        numerator,
+        np.maximum(denominator, 1e-30),
+    )
+    return np.clip(correlation, -1.0, 1.0), denominator
+
+
+@_compile
+def _cell_pixel_csr(flat_labels, cells):
+    """Group raster indices by immutable cell in two linear passes."""
+    count = np.zeros(cells, dtype=np.int64)
+    for pixel in range(len(flat_labels)):
+        count[flat_labels[pixel]] += 1
+    offset = np.empty(cells + 1, dtype=np.int64)
+    offset[0] = 0
+    for cell in range(cells):
+        offset[cell + 1] = offset[cell] + count[cell]
+    cursor = offset[:-1].copy()
+    pixel_order = np.empty(len(flat_labels), dtype=np.int64)
+    for pixel in range(len(flat_labels)):
+        cell = flat_labels[pixel]
+        pixel_order[cursor[cell]] = pixel
+        cursor[cell] += 1
+    return offset, pixel_order
+
+
+@_compile_parallel
+def _fused_cell_phase_measurements(
+    flat_labels,
+    pixel_offset,
+    pixel_order,
+    signal,
+    center_x,
+    center_y,
+    height,
+    width,
+):
+    """Recover both wave covectors and local phases without image temporaries."""
+    cells = len(center_x)
+    mean = np.zeros(cells, dtype=np.float64)
+    for cell in prange(cells):
+        total = 0.0
+        for position in range(pixel_offset[cell], pixel_offset[cell + 1]):
+            total += signal[pixel_order[position]]
+        mean[cell] = total / max(
+            pixel_offset[cell + 1] - pixel_offset[cell], 1)
+
+    correlation_numerator = np.zeros((cells, 4), dtype=np.float64)
+    correlation_denominator = np.zeros((cells, 4), dtype=np.float64)
+    for cell in prange(cells):
+        cell_mean = mean[cell]
+        for position in range(pixel_offset[cell], pixel_offset[cell + 1]):
+            pixel = pixel_order[position]
+            y = pixel // width
+            x = pixel - y * width
+            first = signal[pixel] - cell_mean
+            if x + 1 < width and flat_labels[pixel + 1] == cell:
+                second = signal[pixel + 1] - cell_mean
+                correlation_numerator[cell, 0] += first * second
+                correlation_denominator[cell, 0] += 0.5 * (
+                    first * first + second * second)
+            if y + 1 < height:
+                down = pixel + width
+                if flat_labels[down] == cell:
+                    second = signal[down] - cell_mean
+                    correlation_numerator[cell, 1] += first * second
+                    correlation_denominator[cell, 1] += 0.5 * (
+                        first * first + second * second)
+                if x + 1 < width and flat_labels[down + 1] == cell:
+                    second = signal[down + 1] - cell_mean
+                    correlation_numerator[cell, 2] += first * second
+                    correlation_denominator[cell, 2] += 0.5 * (
+                        first * first + second * second)
+                if x > 0 and flat_labels[down - 1] == cell:
+                    second = signal[down - 1] - cell_mean
+                    correlation_numerator[cell, 3] += first * second
+                    correlation_denominator[cell, 3] += 0.5 * (
+                        first * first + second * second)
+
+    wave_x = np.empty(cells, dtype=np.float64)
+    wave_y = np.empty(cells, dtype=np.float64)
+    confidence = np.empty(cells, dtype=np.float64)
+    for cell in prange(cells):
+        correlation = np.empty(4, dtype=np.float64)
+        for direction in range(4):
+            denominator = correlation_denominator[cell, direction]
+            if denominator > 1e-30:
+                value = (
+                    correlation_numerator[cell, direction] / denominator)
+                correlation[direction] = min(max(value, -1.0), 1.0)
+            else:
+                correlation[direction] = 0.0
+        wave_x[cell] = math.acos(correlation[0])
+        wave_y[cell] = math.acos(correlation[1])
+        if correlation[2] >= correlation[3]:
+            wave_y[cell] = -wave_y[cell]
+        confidence[cell] = math.sqrt(max(
+            correlation_denominator[cell, 0]
+            * correlation_denominator[cell, 1],
+            0.0,
+        ))
+
+    local_phase = np.empty((cells, 2), dtype=np.float64)
+    for cell in prange(cells):
+        cc0 = 0.0
+        ss0 = 0.0
+        cs0 = 0.0
+        vc0 = 0.0
+        vs0 = 0.0
+        cc1 = 0.0
+        ss1 = 0.0
+        cs1 = 0.0
+        vc1 = 0.0
+        vs1 = 0.0
+        axis_x0 = wave_x[cell]
+        axis_y0 = wave_y[cell]
+        axis_x1 = -axis_y0
+        axis_y1 = axis_x0
+        cell_mean = mean[cell]
+        for position in range(pixel_offset[cell], pixel_offset[cell + 1]):
+            pixel = pixel_order[position]
+            y = pixel // width
+            x = pixel - y * width
+            dx = x - center_x[cell]
+            dy = y - center_y[cell]
+            value = signal[pixel] - cell_mean
+            argument = axis_x0 * dx + axis_y0 * dy
+            cosine0 = math.cos(argument)
+            sine0 = math.sin(argument)
+            argument = axis_x1 * dx + axis_y1 * dy
+            cosine1 = math.cos(argument)
+            sine1 = math.sin(argument)
+            cc0 += cosine0 * cosine0
+            ss0 += sine0 * sine0
+            cs0 += cosine0 * sine0
+            vc0 += value * cosine0
+            vs0 += value * sine0
+            cc1 += cosine1 * cosine1
+            ss1 += sine1 * sine1
+            cs1 += cosine1 * sine1
+            vc1 += value * cosine1
+            vs1 += value * sine1
+
+        determinant = cc0 * ss0 - cs0 * cs0
+        if abs(determinant) < 1e-30:
+            determinant = 1e-30
+        coefficient_cosine = (vc0 * ss0 - vs0 * cs0) / determinant
+        coefficient_sine = (vs0 * cc0 - vc0 * cs0) / determinant
+        local_phase[cell, 0] = math.atan2(
+            -coefficient_sine, coefficient_cosine)
+
+        determinant = cc1 * ss1 - cs1 * cs1
+        if abs(determinant) < 1e-30:
+            determinant = 1e-30
+        coefficient_cosine = (vc1 * ss1 - vs1 * cs1) / determinant
+        coefficient_sine = (vs1 * cc1 - vc1 * cs1) / determinant
+        local_phase[cell, 1] = math.atan2(
+            -coefficient_sine, coefficient_cosine)
+
+    return wave_x, wave_y, confidence, local_phase
+
+
+@_compile_parallel
+def _render_graph_phase_fields(
+    flat_labels,
+    center_x,
+    center_y,
+    wave_x,
+    wave_y,
+    local_phase,
+    correction_normal,
+    correction_second,
+    width,
+    cosine_only,
+):
+    """Render both synchronized phase fields in one raster traversal."""
+    output = np.empty((len(flat_labels), 2), dtype=np.float64)
+    for pixel in prange(len(flat_labels)):
+        cell = flat_labels[pixel]
+        y = pixel // width
+        x = pixel - y * width
+        dx = x - center_x[cell]
+        dy = y - center_y[cell]
+        first = (
+            local_phase[cell, 0]
+            + correction_normal[cell]
+            + wave_x[cell] * dx
+            + wave_y[cell] * dy
+        )
+        second = (
+            local_phase[cell, 1]
+            + correction_second[cell]
+            - wave_y[cell] * dx
+            + wave_x[cell] * dy
+        )
+        if cosine_only:
+            output[pixel, 0] = math.cos(first)
+            output[pixel, 1] = math.cos(second)
+        else:
+            output[pixel, 0] = first
+            output[pixel, 1] = second
+    return output
+
+
+def _graph_unrolled_texture_fields(
+    labels: np.ndarray,
+    centers: np.ndarray,
+    texture_signal: np.ndarray,
+    *,
+    cosine_only: bool,
+) -> tuple[tuple[np.ndarray, np.ndarray], dict]:
+    """Shared fused construction for phase diagnostics and cosine columns."""
+    labels = np.ascontiguousarray(labels, dtype=np.int32)
+    centers = np.asarray(centers, dtype=np.float64)
+    signal = np.ascontiguousarray(
+        texture_signal, dtype=np.float64).ravel()
+    height, width = labels.shape
+    cells = len(centers)
+    flat = labels.ravel()
+    center_x = centers[:, 0] * width - 0.5
+    center_y = centers[:, 1] * height - 0.5
+    pixel_offset, pixel_order = _cell_pixel_csr(flat, cells)
+    wave_x, wave_y, confidence, local_phase = (
+        _fused_cell_phase_measurements(
+            flat,
+            pixel_offset,
+            pixel_order,
+            signal,
+            center_x,
+            center_y,
+            height,
+            width,
+        )
+    )
+
+    pairs = _adjacent_cell_pairs(labels, cells)
+    if pairs.size:
+        distance = np.hypot(
+            center_x[pairs[:, 0]] - center_x[pairs[:, 1]],
+            center_y[pairs[:, 0]] - center_y[pairs[:, 1]],
+        )
+        edge_weight = np.minimum(
+            confidence[pairs[:, 0]], confidence[pairs[:, 1]],
+        ) / np.maximum(distance, 1.0)
+        order = np.lexsort((
+            pairs[:, 1],
+            pairs[:, 0],
+            -edge_weight,
+        )).astype(np.int64)
+        tree_offset, tree_neighbour, tree_edges = (
+            _maximum_spanning_tree_csr(cells, pairs, order))
+    else:
+        tree_offset = np.zeros(cells + 1, dtype=np.int64)
+        tree_neighbour = np.empty(0, dtype=np.int32)
+        tree_edges = 0
+    root_order = np.argsort(-confidence, kind="stable").astype(np.int32)
+    correction_normal = _unroll_phase_tree(
+        tree_offset,
+        tree_neighbour,
+        root_order,
+        center_x,
+        center_y,
+        wave_x,
+        wave_y,
+        local_phase[:, 0],
+    )
+    correction_second = _unroll_phase_tree(
+        tree_offset,
+        tree_neighbour,
+        root_order,
+        center_x,
+        center_y,
+        -wave_y,
+        wave_x,
+        local_phase[:, 1],
+    )
+    fields = _render_graph_phase_fields(
+        flat,
+        center_x,
+        center_y,
+        wave_x,
+        wave_y,
+        local_phase,
+        correction_normal,
+        correction_second,
+        width,
+        cosine_only,
+    )
+    return (fields[:, 0], fields[:, 1]), {
+        "enabled": True,
+        "graph_edges": int(len(pairs)),
+        "tree_edges": int(tree_edges),
+        "median_wave_x": float(np.median(np.abs(wave_x))),
+        "median_wave_y": float(np.median(np.abs(wave_y))),
+        "confidence_cells": int(np.count_nonzero(confidence > 1e-12)),
+        "full_band_one_sided": True,
+        "fused_cell_rasters": True,
+    }
+
+
+def _graph_unrolled_texture_phases(
+    labels: np.ndarray,
+    centers: np.ndarray,
+    texture_signal: np.ndarray,
+) -> tuple[tuple[np.ndarray, np.ndarray], dict]:
+    """Build two full-band phase fields on one synchronized cell graph.
+
+    Central differences measure ``sin(omega)`` and fold frequencies above
+    pi/2. Paired one-sided correlations measure ``cos(omega)``, allowing
+    ``arccos`` to recover the complete discrete band [0, pi]. The two
+    orthogonal wave covectors are synchronized over one maximum-confidence
+    spanning forest; no carrier or object components are enumerated.
+    """
+    return _graph_unrolled_texture_fields(
+        labels,
+        centers,
+        texture_signal,
+        cosine_only=False,
+    )
+
+
+def _graph_unrolled_texture_columns(
+    labels: np.ndarray,
+    centers: np.ndarray,
+    texture_signal: np.ndarray,
+) -> tuple[tuple[np.ndarray, np.ndarray], dict]:
+    """Return graph-synchronized cosine columns without phase temporaries."""
+    return _graph_unrolled_texture_fields(
+        labels,
+        centers,
+        texture_signal,
+        cosine_only=True,
+    )
+
+
+@_compile
+def _apply_texture_dirichlet_envelope(
+    owner,
+    target,
+    fitted,
+    cells,
+):
+    """Fused sufficient statistics and channelwise coefficient contraction."""
+    height, width = owner.shape
+    count = np.zeros(cells, dtype=np.int64)
+    mean = np.zeros((cells, 3), dtype=np.float64)
+    target_energy = np.zeros((cells, 3), dtype=np.float64)
+    fitted_energy = np.zeros((cells, 3), dtype=np.float64)
+    for y in range(height):
+        for x in range(width):
+            cell = owner[y, x]
+            count[cell] += 1
+            for channel in range(3):
+                mean[cell, channel] += fitted[y, x, channel]
+            if x + 1 < width:
+                second_cell = owner[y, x + 1]
+                for channel in range(3):
+                    target_delta = (
+                        target[y, x + 1, channel]
+                        - target[y, x, channel]
+                    )
+                    fitted_delta = (
+                        fitted[y, x + 1, channel]
+                        - fitted[y, x, channel]
+                    )
+                    target_edge = target_delta * target_delta
+                    fitted_edge = fitted_delta * fitted_delta
+                    if second_cell == cell:
+                        target_energy[cell, channel] += target_edge
+                        fitted_energy[cell, channel] += fitted_edge
+                    else:
+                        target_energy[cell, channel] += 0.5 * target_edge
+                        fitted_energy[cell, channel] += 0.5 * fitted_edge
+                        target_energy[second_cell, channel] += (
+                            0.5 * target_edge)
+                        fitted_energy[second_cell, channel] += (
+                            0.5 * fitted_edge)
+            if y + 1 < height:
+                second_cell = owner[y + 1, x]
+                for channel in range(3):
+                    target_delta = (
+                        target[y + 1, x, channel]
+                        - target[y, x, channel]
+                    )
+                    fitted_delta = (
+                        fitted[y + 1, x, channel]
+                        - fitted[y, x, channel]
+                    )
+                    target_edge = target_delta * target_delta
+                    fitted_edge = fitted_delta * fitted_delta
+                    if second_cell == cell:
+                        target_energy[cell, channel] += target_edge
+                        fitted_energy[cell, channel] += fitted_edge
+                    else:
+                        target_energy[cell, channel] += 0.5 * target_edge
+                        fitted_energy[cell, channel] += 0.5 * fitted_edge
+                        target_energy[second_cell, channel] += (
+                            0.5 * target_edge)
+                        fitted_energy[second_cell, channel] += (
+                            0.5 * fitted_edge)
+    gain = np.ones((cells, 3), dtype=np.float64)
+    for cell in range(cells):
+        inverse_count = 1.0 / max(count[cell], 1)
+        for channel in range(3):
+            mean[cell, channel] *= inverse_count
+            if (
+                fitted_energy[cell, channel]
+                > target_energy[cell, channel]
+                and fitted_energy[cell, channel] > 1e-30
+            ):
+                gain[cell, channel] = math.sqrt(
+                    max(target_energy[cell, channel], 0.0)
+                    / fitted_energy[cell, channel]
+                )
+    output = np.empty_like(fitted)
+    for y in range(height):
+        for x in range(width):
+            cell = owner[y, x]
+            for channel in range(3):
+                center = mean[cell, channel]
+                output[y, x, channel] = (
+                    center
+                    + gain[cell, channel]
+                    * (fitted[y, x, channel] - center)
+                )
+    after_energy = 0.0
+    for y in range(height):
+        for x in range(width):
+            for channel in range(3):
+                if x + 1 < width:
+                    delta = (
+                        output[y, x + 1, channel]
+                        - output[y, x, channel]
+                    )
+                    after_energy += delta * delta
+                if y + 1 < height:
+                    delta = (
+                        output[y + 1, x, channel]
+                        - output[y, x, channel]
+                    )
+                    after_energy += delta * delta
+    return (
+        output,
+        gain,
+        count,
+        target_energy,
+        fitted_energy,
+        after_energy,
+    )
+
+
+def _texture_dirichlet_envelope(
+    labels: np.ndarray,
+    target: np.ndarray,
+    fitted: np.ndarray,
+) -> tuple[np.ndarray, dict]:
+    """Prevent a texture fit from increasing within-cell gradient energy.
+
+    A least-squares projection is contractive in sample-space L2, but that
+    does not make it contractive in gradient energy: it may discard a smooth
+    residual component while concentrating the retained energy in a carrier.
+    That is the precise mechanism behind a reconstruction which has less
+    total texture energy yet looks oversharpened.
+
+    For each immutable texture cell, measure the four-neighbour Dirichlet
+    energy of the exact residual target and of its fit. Cross-cell edges are
+    split equally between their incident owners, so phase-aligned but
+    independently fitted amplitudes cannot evade the measurement at cell
+    interfaces. Preserve the fitted cell mean and, in each Lab channel, apply
+    the unique largest scalar contraction indicated by that incident energy
+    budget. The operation is one-shot and can be represented by scaling only
+    the nonconstant cell coefficients; cells which already satisfy the bound
+    are bitwise unchanged.
+    """
+    owner = np.ascontiguousarray(labels, dtype=np.int32)
+    target_value = np.asarray(target, dtype=np.float64)
+    fitted_value = np.asarray(fitted, dtype=np.float64)
+    if target_value.shape != fitted_value.shape:
+        raise ValueError("texture target and fit must have equal shapes")
+    if target_value.shape[:2] != owner.shape or target_value.shape[2:] != (3,):
+        raise ValueError("texture fields must have shape HxWx3")
+
+    cells = int(np.max(owner)) + 1
+    (
+        contracted,
+        gain,
+        count,
+        target_energy,
+        fitted_energy,
+        after_energy,
+    ) = (
+        _apply_texture_dirichlet_envelope(
+            owner,
+            np.ascontiguousarray(target_value),
+            np.ascontiguousarray(fitted_value),
+            cells,
+        )
+    )
+    contracted_components = gain < 1.0
+    contracted_cells = np.any(contracted_components, axis=1)
+    if not np.any(contracted_cells):
+        return fitted_value, {
+            "enabled": True,
+            "contracted_cells": 0,
+            "contracted_pixels": 0,
+            "minimum_gain": 1.0,
+            "mean_contracted_gain": 1.0,
+            "target_energy": float(np.sum(target_energy)),
+            "before_energy": float(np.sum(fitted_energy)),
+            "after_energy": float(np.sum(fitted_energy)),
+        }
+
+    return np.ascontiguousarray(contracted), {
+        "enabled": True,
+        "contracted_cells": int(np.count_nonzero(contracted_cells)),
+        "contracted_pixels": int(np.sum(count[contracted_cells])),
+        "minimum_gain": float(np.min(gain)),
+        "mean_contracted_gain": float(np.mean(
+            gain[contracted_components])),
+        "target_energy": float(np.sum(target_energy)),
+        "before_energy": float(np.sum(fitted_energy)),
+        "after_energy": float(after_energy),
+    }
 
 
 @_compile
@@ -2024,9 +2692,12 @@ def build_segmenting_v3(
         texture_labels, texture_centers, frame_tensor)
     axes_mode = str(config.coordinate_axes).strip().lower()
     if texture_model == "nested_population":
-        straight_coordinates = (straight_normal,)
-        coordinate_names = ("normal",)
-        axes_mode = "nested_normal"
+        # In synthesis the tangent is the normal of the orthogonal feature
+        # family. Treat both coordinates symmetrically; "tangent" is only a
+        # geometric name, not a reason to discard the second split direction.
+        straight_coordinates = (straight_normal, straight_tangent)
+        coordinate_names = ("normal", "second-normal")
+        axes_mode = "nested_paired_normals"
     elif axes_mode == "paired":
         straight_coordinates = (straight_normal, straight_tangent)
         coordinate_names = ("normal", "tangent")
@@ -2073,6 +2744,41 @@ def build_segmenting_v3(
     coordinate_trace = []
     ones = np.ones(flat.size, dtype=np.float64)
     target_flat = texture_target.reshape(-1, 3)
+    phase_graph = {
+        "enabled": False,
+        "graph_edges": 0,
+        "tree_edges": 0,
+        "confidence_cells": 0,
+        "full_band_one_sided": False,
+    }
+    phase_graph_ms = 0.0
+    if (
+        texture_model == "nested_population"
+        and bool(config.texture_graph_phase)
+    ):
+        phase = time.perf_counter()
+        phase_columns, phase_graph = _graph_unrolled_texture_columns(
+            texture_labels,
+            texture_centers,
+            texture_geometry["texture"],
+        )
+        active_basis = np.column_stack((
+            active_basis,
+            *phase_columns,
+        ))
+        refit = hard_basis_refit_native(
+            flat, active_basis, target_flat, count, radius)
+        if refit is None:
+            raise RuntimeError(
+                "version 3.0 requires the native graph-phase refitter")
+        texture_fit = refit.reshape(texture_target.shape)
+        phase_graph_ms = 1000.0 * (time.perf_counter() - phase)
+        coordinate_trace.append({
+            "axis": "graph phase paired normals",
+            "milliseconds": phase_graph_ms,
+            "active_cells": int(phase_graph["confidence_cells"]),
+            "score_mean": 0.0,
+        })
     for index in range(coordinate_limit):
         phase = time.perf_counter()
         coordinate_index = index % len(coordinates)
@@ -2103,6 +2809,26 @@ def build_segmenting_v3(
             "active_cells": int(np.count_nonzero(score > 1e-12)),
             "score_mean": float(np.mean(score)),
         })
+
+    phase = time.perf_counter()
+    if bool(config.texture_dirichlet_envelope):
+        texture_fit, texture_envelope = _texture_dirichlet_envelope(
+            texture_labels,
+            texture_target,
+            texture_fit,
+        )
+    else:
+        texture_envelope = {
+            "enabled": False,
+            "contracted_cells": 0,
+            "contracted_pixels": 0,
+            "minimum_gain": 1.0,
+            "mean_contracted_gain": 1.0,
+            "target_energy": 0.0,
+            "before_energy": 0.0,
+            "after_energy": 0.0,
+        }
+    texture_envelope_ms = 1000.0 * (time.perf_counter() - phase)
 
     reconstruction_lab = cartoon_lab + texture_fit
     reconstruction_rgb = np.clip(
@@ -2151,6 +2877,8 @@ def build_segmenting_v3(
         "structural_transport_model": scaffold["transport_model"],
         "coordinate_trace": coordinate_trace,
         "coordinate_geometry": coordinate_geometry,
+        "texture_phase_graph": phase_graph,
+        "texture_dirichlet_envelope": texture_envelope,
         "owner_upgrade": owner_upgrade,
         "structural_characteristic": characteristic,
         "record": {
@@ -2173,6 +2901,8 @@ def build_segmenting_v3(
             "coordinate_geometry_ms": coordinate_geometry_ms,
             "texture_coordinate_ms": float(sum(
                 item["milliseconds"] for item in coordinate_trace)),
+            "texture_phase_graph_ms": phase_graph_ms,
+            "texture_dirichlet_envelope_ms": texture_envelope_ms,
             "total_ms": total_ms,
         },
         "model": (

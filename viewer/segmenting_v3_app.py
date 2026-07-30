@@ -321,6 +321,10 @@ def _config():
             dpg.get_value("v3_cartoon_refit_strength")),
         texture_model=texture_model,
         nested_texture_ridges=int(dpg.get_value("v3_nested_ridges")),
+        texture_graph_phase=bool(
+            dpg.get_value("v3_texture_graph_phase")),
+        texture_dirichlet_envelope=bool(
+            dpg.get_value("v3_texture_dirichlet_envelope")),
         texture_support_weight=float(
             dpg.get_value("v3_texture_support_weight")),
         texture_population_phase=float(
@@ -373,6 +377,8 @@ def build_worker(rgb, config):
         characteristic = result["structural_characteristic"]["trace"]
         accepted_characteristic = sum(
             bool(item["accepted"]) for item in characteristic)
+        phase_graph = result["texture_phase_graph"]
+        texture_envelope = result["texture_dirichlet_envelope"]
         characteristic_state = (
             f"{accepted_characteristic}/{len(characteristic)} accepted"
             if result["structural_characteristic"]["resolved_core"]
@@ -397,6 +403,13 @@ def build_worker(rgb, config):
             f"{timing['texture_population_transport_ms']:.0f} ms | "
             f"texture affine {timing['texture_affine_ms']:.0f} ms | "
             f"flat cleanup {timing['texture_cleanup_ms']:.0f} ms | "
+            f"phase graph "
+            f"{phase_graph['graph_edges']:,}→"
+            f"{phase_graph['tree_edges']:,} edges in "
+            f"{timing['texture_phase_graph_ms']:.0f} ms | "
+            f"energy envelope "
+            f"{texture_envelope['contracted_cells']:,} cells in "
+            f"{timing['texture_dirichlet_envelope_ms']:.0f} ms | "
             f"coordinates {coordinate_ms:.0f} ms | "
             f"total {timing['total_ms']:.0f} ms"
         )
@@ -697,6 +710,16 @@ def build_ui(labels, default_label):
                     width=320,
                 )
                 slider("v3_nested_ridges", "ridges per microcell", 3, 0, 4)
+                dpg.add_checkbox(
+                    label="graph-unrolled paired phase",
+                    tag="v3_texture_graph_phase",
+                    default_value=True,
+                )
+                dpg.add_checkbox(
+                    label="nonexpansive texture-gradient envelope",
+                    tag="v3_texture_dirichlet_envelope",
+                    default_value=True,
+                )
                 slider(
                     "v3_texture_support_weight",
                     "texture support weight",
