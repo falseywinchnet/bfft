@@ -1,0 +1,59 @@
+{
+  "paper": {
+    "title": "Soft Anisotropic Diagrams for Differentiable Image Representation",
+    "arxiv": "https://arxiv.org/abs/2604.21984",
+    "project": "https://luckyiyi.github.io/SAD/",
+    "code": "https://github.com/LuckyIYI/SAD"
+  },
+  "rate_accounting": {
+    "kind": "parameter-space proxy",
+    "bytes_per_site": 16,
+    "site_layout_bits": {
+      "position_xy": 30,
+      "rgb": 32,
+      "log_temperature": 16,
+      "radius": 16,
+      "anisotropy_direction": 16,
+      "log_anisotropy": 16
+    },
+    "note": "The SAD paper does not report an entropy-coded production file."
+  },
+  "protocol": {
+    "iterations": 4000,
+    "top_k": 8,
+    "loss": "MSE",
+    "metric_color_space": "linear RGB"
+  },
+  "kodak_reported": {
+    "images": 24,
+    "resolution": "768x512",
+    "sites": 50000,
+    "bpp_approx": 16.0,
+    "psnr_db": 46.0,
+    "ssim": 0.9871,
+    "lpips": 0.0032,
+    "fit_seconds": 2.2
+  },
+  "datasets": {
+    "image_gs": {
+      "images": 45,
+      "reported_rates_bpp": [0.2, 0.5],
+      "availability": "The paper says the images and textures came from Adobe Stock and Poly Haven; no complete redistributable corpus is bundled."
+    },
+    "kodak": {
+      "images": 24,
+      "resolution": "768x512",
+      "reported_setting": "50000 sites, approximately 16 BPP"
+    },
+    "div2k_validation": {
+      "images": 100,
+      "reported_rates_bpp": [0.5, 2.0],
+      "official_archive_bytes": 448993893
+    },
+    "clic_validation": {
+      "images": 41,
+      "reported_rates_bpp": [0.5, 2.0]
+    }
+  }
+}
+

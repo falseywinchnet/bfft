@@ -9,6 +9,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 for directory in (ROOT, ROOT / "viewer", ROOT / "experiments"):
@@ -52,6 +53,7 @@ class State:
         self.buffers = {}
         self.texture_shapes = {}
         self.display_key = None
+        self.resampled_display = False
 
 
 S = State()
@@ -89,7 +91,7 @@ def _fit_to_side(image, maximum_side):
 
 
 def _fit_display_to_side(image, maximum_side):
-    """Nearest display proxy that never enters Numba's parallel workqueue."""
+    """Display proxy that never enters Numba's parallel workqueue."""
     value = _rgb(image)
     height, width = value.shape[:2]
     scale = min(1.0, maximum_side / max(height, width))
@@ -97,6 +99,13 @@ def _fit_display_to_side(image, maximum_side):
     output_width = max(1, round(width * scale))
     if (output_height, output_width) == (height, width):
         return value
+    if S.resampled_display:
+        pixels = np.clip(np.rint(value * 255.0), 0.0, 255.0).astype(np.uint8)
+        resized = Image.fromarray(pixels, mode="RGB").resize(
+            (output_width, output_height),
+            resample=Image.Resampling.LANCZOS,
+        )
+        return np.asarray(resized, dtype=np.float64) / 255.0
     y = np.minimum(
         ((np.arange(output_height) + 0.5) * height / output_height).astype(
             np.intp),
@@ -248,11 +257,29 @@ def refresh():
     if result is None:
         return
     name = dpg.get_value("v3_view")
-    key = (id(result), name)
+    key = (id(result), name, S.resampled_display)
     if key == S.display_key:
         return
     _push_texture(RESULT, _view(result, name))
     S.display_key = key
+
+
+def toggle_display_sampling():
+    S.resampled_display = not S.resampled_display
+    label = (
+        "Display: Lanczos resampled view"
+        if S.resampled_display
+        else "Display: full-res point view"
+    )
+    dpg.configure_item("v3_display_sampling", label=label)
+    with S.lock:
+        rgb = S.rgb
+        result = S.result
+    if rgb is not None:
+        _push_texture(SOURCE, rgb)
+    if result is not None:
+        S.display_key = None
+        refresh()
 
 
 def _config():
@@ -582,7 +609,7 @@ def build_ui(labels, default_label):
                 dpg.add_checkbox(
                     label="process every source pixel",
                     tag="v3_full",
-                    default_value=False,
+                    default_value=True,
                 )
                 slider("v3_work_side", "otherwise longest side", 768, 128, 3840)
                 slider(
@@ -909,6 +936,11 @@ def build_ui(labels, default_label):
                 callback=lambda: refresh(),
                 width=360,
             )
+            dpg.add_button(
+                label="Display: full-res point view",
+                tag="v3_display_sampling",
+                callback=lambda: toggle_display_sampling(),
+            )
         with dpg.group(horizontal=True):
             with dpg.group():
                 dpg.add_text("Original")
@@ -921,8 +953,10 @@ def build_ui(labels, default_label):
 def main():
     keys = gallery.available()
     labels = gallery.labels(keys)
-    key = "pikachu" if "pikachu" in keys else (
+    key = "golden_gate" if "golden_gate" in keys else (
+        "pikachu" if "pikachu" in keys else (
         "coffee" if "coffee" in keys else keys[0])
+    )
     label = labels[keys.index(key)]
     dpg.create_context()
     _alloc_texture(SOURCE, 8, 8)

@@ -166,6 +166,12 @@ def _rig():
     return np.asarray(rig_scene(256)[0], dtype=np.float64)
 
 
+def _phase_geometry_rig():
+    """Analytic subpixel wires and curves for phase/geometry diagnosis."""
+    from experiments.v3_phase_alignment_rig import phase_geometry_rig
+    return phase_geometry_rig()
+
+
 # --- the catalogue -------------------------------------------------------
 #
 # (key, group, label, loader, kind) with kind in {"grey", "colour"}
@@ -183,6 +189,9 @@ ENTRIES = [
      lambda: _grey(_seg_contrast()), "grey"),
     ("rig", "segregation", "synthetic cartoon + two-texture rig",
      lambda: _grey(_rig()), "grey"),
+    ("phase_geometry", "segregation",
+     "analytic subpixel cable + fence phase rig",
+     lambda: _grey(_phase_geometry_rig()), "grey"),
 
     ("brick", "texture", "brick", lambda: _grey(_sk("brick")), "grey"),
     ("grass", "texture", "grass", lambda: _grey(_sk("grass")), "grey"),
@@ -204,6 +213,11 @@ ENTRIES = [
     ("pikachu", "colour", "Pikachu allocation control",
      lambda: _local_colour(
          "/Users/quentinkuttenkuler/Downloads/25.png"), "colour"),
+    ("golden_gate", "colour", "Golden Gate full-resolution control",
+     lambda: _local_colour(
+         "/Users/quentinkuttenkuler/Downloads/"
+         "487056612_18488677060002753_2143459132310970747_n.jpg"),
+     "colour"),
     ("chelsea", "colour", "cat (fur at several scales)",
      lambda: _colour(_sk("chelsea")), "colour"),
     ("coffee", "colour", "coffee", lambda: _colour(_sk("coffee")), "colour"),

@@ -120,7 +120,7 @@ def test_nested_texture_construction_is_parented_then_cleanup_is_flat():
         SegmentingV3Config(
             safety_cells=256,
             texture_safety_cells=1024,
-            nested_texture_ridges=1,
+            nested_texture_ridges=3,
             threads=2,
         ),
     )
@@ -145,6 +145,10 @@ def test_nested_texture_construction_is_parented_then_cleanup_is_flat():
         - cleanup["merge_count"]
     )
     assert cleanup["cross_parent_merge_count"] > 0
+    assert result["texture_phase_graph"]["signal"] == (
+        "post_cartoon_residual")
+    assert result["coordinate_trace"][-1]["axis"] == (
+        "normal + algebraic paired corner")
 
 
 def test_canonical_v2_quotient_survives_dense_texture_cleanup():

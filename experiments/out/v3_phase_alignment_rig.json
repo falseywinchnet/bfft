@@ -1,0 +1,56 @@
+{
+  "line_profiles": {
+    "cable": {
+      "normal_displacement_px": 0.0,
+      "reconstruction_amplitude_ratio": 0.95811941958773,
+      "profile_mse_after_gain": 4.7026812278575185e-05
+    },
+    "diagonal": {
+      "normal_displacement_px": -0.02499999999999991,
+      "reconstruction_amplitude_ratio": 0.9128335996080288,
+      "profile_mse_after_gain": 4.9449862106312696e-05
+    },
+    "wire": {
+      "normal_displacement_px": 0.0,
+      "reconstruction_amplitude_ratio": 0.9856118767704873,
+      "profile_mse_after_gain": 2.7578949812014873e-06
+    }
+  },
+  "lanczos_half_scale": [
+    {
+      "crop_phase": [
+        0,
+        0
+      ],
+      "rmse": 0.0034602832035508487,
+      "bias": 2.8679874727669148e-05
+    },
+    {
+      "crop_phase": [
+        0,
+        1
+      ],
+      "rmse": 0.0034986499077355234,
+      "bias": 7.233796296296643e-06
+    },
+    {
+      "crop_phase": [
+        1,
+        0
+      ],
+      "rmse": 0.0034814372146059216,
+      "bias": 1.6765386710239886e-05
+    },
+    {
+      "crop_phase": [
+        1,
+        1
+      ],
+      "rmse": 0.003489767283517556,
+      "bias": 5.531726579520922e-06
+    }
+  ],
+  "psnr_db": 43.05586957732318,
+  "texture_cells": 831,
+  "total_ms": 706.6982079995796
+}

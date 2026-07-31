@@ -348,12 +348,36 @@ There is no frequency-component search, semantic grouping, or iterative
 relaxation. Two graph-synchronized cosine columns enter the same native
 per-cell refit before alternating normal/second-normal residual ridges.
 
-With exactly the same 522 rig cells, paired local ridges reach 36.12 dB and
-retain 31.2% of the period-three amplitude. Graph-unrolled paired phase reaches
-37.84 dB and retains 57.3%. Checkerboard improves from 30.97 to 32.32 dB.
-Pikachu improves from 35.46 to 36.33 dB with the same 1,356 cells. On the
-1365 x 2048 natural-image control it improves 28.26 to 28.95 dB with the same
-78,454 cells; the 228,357-edge graph adds approximately 0.75 s.
+Phase is measured on the exact post-cartoon Lab residual that the texture
+basis subsequently fits. The frozen Meyer texture is deliberately not used:
+it predates the full-resolution cartoon refit, so its phase includes a stale
+cartoon discrepancy that is absent from the fitted quotient.
+
+The first normal and second-normal one-sided ridges also supply an algebraic
+corner coordinate:
+
+```
+q_corner = q_n q_s.
+```
+
+This is retained as an independent ninth basis column rather than mixed into
+the measured third normal. The two coefficients therefore fit straight-edge
+and corner amplitudes independently. It performs one multiply per pixel and
+enters the same final refit as the third normal; it does not measure another
+offset, scan cells, add a fitting stage, select a model, or introduce an
+image-dependent parameter.
+
+With exactly the same 522 rig cells, the corrected graph readout reaches
+38.46 dB; peak error at the lower-right rectangle corner falls from 0.160 to
+0.119. Checkerboard reaches 34.28 dB and Pikachu 37.12 dB, with the mouth,
+arm, and forearm neighborhoods all improving. Printed page and cameraman
+reach 29.03 dB and 34.06 dB.
+
+Against the corrected eight-column readout, a 24-image Kodak A/B improved
+every image by 0.45--0.65 dB, with a mean gain of 0.53 dB and unchanged cell
+populations. The 1440 x 1799 Golden Gate control improves from 30.05 to
+30.66 dB with the same 79,669 cells. Edge-pixel RMSE falls 6.1% around the
+bridge cables and 7.6% around the right-side fence.
 
 ## Nonexpansive texture-gradient envelope
 

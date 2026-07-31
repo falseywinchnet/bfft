@@ -2742,6 +2742,7 @@ def build_segmenting_v3(
     coordinate_geometry_ms = 1000.0 * (time.perf_counter() - phase)
     active_basis = basis
     coordinate_trace = []
+    paired_ridge_columns = []
     ones = np.ones(flat.size, dtype=np.float64)
     target_flat = texture_target.reshape(-1, 3)
     phase_graph = {
@@ -2760,8 +2761,13 @@ def build_segmenting_v3(
         phase_columns, phase_graph = _graph_unrolled_texture_columns(
             texture_labels,
             texture_centers,
-            texture_geometry["texture"],
+            # Phase and amplitude must describe the same quotient.  The
+            # frozen Meyer texture predates the full-resolution cartoon
+            # refit; using it here folds that stale cartoon discrepancy into
+            # the carrier measured for the exact texture target below.
+            texture_target[..., 0],
         )
+        phase_graph["signal"] = "post_cartoon_residual"
         active_basis = np.column_stack((
             active_basis,
             *phase_columns,
@@ -2793,22 +2799,42 @@ def build_segmenting_v3(
             bins=max(int(config.offset_bins), 3),
         )
         ridge = np.clip(
-            float(config.ridge_kappa) * (coordinate - offset[flat]),
+            float(config.ridge_kappa) * (
+                coordinate - offset[flat]),
             -1.0,
             1.0,
         )
-        active_basis = np.column_stack((active_basis, ridge))
+        axis_name = coordinate_names[coordinate_index]
+        appended_columns = [ridge]
+        if texture_model == "nested_population":
+            if (
+                index >= len(coordinates)
+                and len(paired_ridge_columns) >= 2
+            ):
+                # The paired ridges already contain the two incident
+                # one-sided decisions. Their product is the missing corner
+                # parity. Keep it independent of the measured third normal
+                # so straight-edge and corner amplitudes do not share a
+                # coefficient. Both columns enter this same refit: this adds
+                # no offset measurement, cell scan, or fitting stage.
+                appended_columns.append(
+                    paired_ridge_columns[0] * paired_ridge_columns[1])
+                axis_name = "normal + algebraic paired corner"
+            else:
+                paired_ridge_columns.append(ridge)
+        active_basis = np.column_stack((active_basis, *appended_columns))
         refit = hard_basis_refit_native(
             flat, active_basis, target_flat, count, radius)
         if refit is None:
             raise RuntimeError("version 3.0 requires the native basis refitter")
         texture_fit = refit.reshape(texture_target.shape)
-        coordinate_trace.append({
-            "axis": coordinate_names[coordinate_index],
+        trace_item = {
+            "axis": axis_name,
             "milliseconds": 1000.0 * (time.perf_counter() - phase),
             "active_cells": int(np.count_nonzero(score > 1e-12)),
             "score_mean": float(np.mean(score)),
-        })
+        }
+        coordinate_trace.append(trace_item)
 
     phase = time.perf_counter()
     if bool(config.texture_dirichlet_envelope):
