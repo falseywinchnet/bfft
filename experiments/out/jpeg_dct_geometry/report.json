@@ -1,0 +1,309 @@
+{
+  "source": "/Users/quentinkuttenkuler/Downloads/1500x500.jpeg",
+  "source_bytes": 69728,
+  "dimensions": [
+    1500,
+    500
+  ],
+  "progressive": true,
+  "operator": "phase_correct",
+  "sampling_factors": [
+    [
+      2,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "quantization_tables": [
+    [
+      [
+        5,
+        3,
+        3,
+        5,
+        7,
+        12,
+        15,
+        18
+      ],
+      [
+        4,
+        4,
+        4,
+        6,
+        8,
+        17,
+        18,
+        17
+      ],
+      [
+        4,
+        4,
+        5,
+        7,
+        12,
+        17,
+        21,
+        17
+      ],
+      [
+        4,
+        5,
+        7,
+        9,
+        15,
+        26,
+        24,
+        19
+      ],
+      [
+        5,
+        7,
+        11,
+        17,
+        20,
+        33,
+        31,
+        23
+      ],
+      [
+        7,
+        11,
+        17,
+        19,
+        24,
+        31,
+        34,
+        28
+      ],
+      [
+        15,
+        19,
+        23,
+        26,
+        31,
+        36,
+        36,
+        30
+      ],
+      [
+        22,
+        28,
+        29,
+        29,
+        34,
+        30,
+        31,
+        30
+      ]
+    ],
+    [
+      [
+        5,
+        5,
+        7,
+        14,
+        30,
+        30,
+        30,
+        30
+      ],
+      [
+        5,
+        6,
+        8,
+        20,
+        30,
+        30,
+        30,
+        30
+      ],
+      [
+        7,
+        8,
+        17,
+        30,
+        30,
+        30,
+        30,
+        30
+      ],
+      [
+        14,
+        20,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30
+      ],
+      [
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30
+      ],
+      [
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30
+      ],
+      [
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30
+      ],
+      [
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30
+      ]
+    ]
+  ],
+  "geometry_timing": {
+    "cache": true,
+    "total_ms": 0.0
+  },
+  "component_timing": [
+    {
+      "component": 0,
+      "block_shape": [
+        63,
+        188
+      ],
+      "milliseconds": 315.0099579943344
+    },
+    {
+      "component": 1,
+      "block_shape": [
+        32,
+        94
+      ],
+      "milliseconds": 25.80812497762963
+    },
+    {
+      "component": 2,
+      "block_shape": [
+        32,
+        94
+      ],
+      "milliseconds": 16.124916000990197
+    }
+  ],
+  "variants": [
+    {
+      "strength": 0.12,
+      "path": "/Users/quentinkuttenkuler/bfft/experiments/out/jpeg_dct_geometry/geometry_dct_s0p12.jpg",
+      "bytes": 69728,
+      "byte_delta": 0,
+      "rate_budget": {
+        "nonzero_enabled": true,
+        "byte_enabled": true,
+        "nonzero_budget": 92169,
+        "minimum_nonzero_removals": 32,
+        "total_budget_removals": 118
+      },
+      "changed_coefficients": 611,
+      "total_coefficients": 1143040,
+      "changed_fraction": 0.0005345394736842106,
+      "original_nonzero_coefficients": 92169,
+      "candidate_nonzero_coefficients": 92083,
+      "quantized_coefficient_delta_rms": 0.023120109724744185,
+      "decoded_mse_from_source": 0.08325866666666666,
+      "decoded_psnr_from_source_db": 58.92650909204803,
+      "block_boundary_mean_abs_delta": 3.347748817319303,
+      "nonboundary_mean_abs_delta": 2.7050745735154926,
+      "block_boundary_ratio": 1.2375809710002177,
+      "flat_region_laplacian_rms": 0.8688146610141556
+    },
+    {
+      "strength": 0.2,
+      "path": "/Users/quentinkuttenkuler/bfft/experiments/out/jpeg_dct_geometry/geometry_dct_s0p20.jpg",
+      "bytes": 69726,
+      "byte_delta": -2,
+      "rate_budget": {
+        "nonzero_enabled": true,
+        "byte_enabled": true,
+        "nonzero_budget": 92169,
+        "minimum_nonzero_removals": 185,
+        "total_budget_removals": 935
+      },
+      "changed_coefficients": 2819,
+      "total_coefficients": 1143040,
+      "changed_fraction": 0.0024662304031354983,
+      "original_nonzero_coefficients": 92169,
+      "candidate_nonzero_coefficients": 91419,
+      "quantized_coefficient_delta_rms": 0.051222116387033965,
+      "decoded_mse_from_source": 0.33848133333333336,
+      "decoded_psnr_from_source_db": 52.835456377843066,
+      "block_boundary_mean_abs_delta": 3.406665184348226,
+      "nonboundary_mean_abs_delta": 2.6968031227209726,
+      "block_boundary_ratio": 1.2632235388807431,
+      "flat_region_laplacian_rms": 0.8804546662451289
+    },
+    {
+      "strength": 0.35,
+      "path": "/Users/quentinkuttenkuler/bfft/experiments/out/jpeg_dct_geometry/geometry_dct_s0p35.jpg",
+      "bytes": 69728,
+      "byte_delta": 0,
+      "rate_budget": {
+        "nonzero_enabled": true,
+        "byte_enabled": true,
+        "nonzero_budget": 92169,
+        "minimum_nonzero_removals": 826,
+        "total_budget_removals": 3224
+      },
+      "changed_coefficients": 8462,
+      "total_coefficients": 1143040,
+      "changed_fraction": 0.007403065509518477,
+      "original_nonzero_coefficients": 92169,
+      "candidate_nonzero_coefficients": 89771,
+      "quantized_coefficient_delta_rms": 0.09448781153437427,
+      "decoded_mse_from_source": 1.1045822222222221,
+      "decoded_psnr_from_source_db": 47.698823117076834,
+      "block_boundary_mean_abs_delta": 3.5325977405267093,
+      "nonboundary_mean_abs_delta": 2.6801337399484426,
+      "block_boundary_ratio": 1.3180677097832683,
+      "flat_region_laplacian_rms": 0.8743475590951518
+    }
+  ],
+  "identity_control": {
+    "path": "/Users/quentinkuttenkuler/bfft/experiments/out/jpeg_dct_geometry/identity_coefficient_roundtrip.jpg",
+    "bytes": 69728,
+    "byte_delta": 0,
+    "decoded_mse_from_source": 0.0,
+    "decoded_psnr_from_source_db": 150.0,
+    "block_boundary_mean_abs_delta": 3.32738540285205,
+    "nonboundary_mean_abs_delta": 2.7081788260328876,
+    "block_boundary_ratio": 1.2286431645011475,
+    "flat_region_laplacian_rms": 0.8727744129638759
+  },
+  "elapsed_ms": 1595.3266660217196
+}

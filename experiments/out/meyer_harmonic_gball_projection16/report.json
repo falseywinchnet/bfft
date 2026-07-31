@@ -1,0 +1,125 @@
+{
+  "source": "/Users/quentinkuttenkuler/Downloads/1500x500.jpeg",
+  "parameters": {
+    "lam": 0.05,
+    "mu": 40.0,
+    "meyer_iters": 1,
+    "window_size": 16,
+    "hop": 8,
+    "diffusion": 0.55,
+    "consistency_power": 2.0,
+    "gball_sweeps": 16,
+    "jpeg_quality": 28
+  },
+  "supplied": {
+    "harmonic": {
+      "window_size": 16,
+      "hop": 8,
+      "support_grid": [
+        64,
+        189
+      ],
+      "diffusion": 0.55,
+      "consistency_power": 2.0,
+      "magnitude_weighted_consistency": 0.6123963763573566,
+      "texture_energy": 67566607.6248208,
+      "removed_energy": 377007.01257850986,
+      "removed_energy_fraction": 0.0055797830589916315,
+      "consistency_p10": 0.31177457410973125,
+      "consistency_p50": 0.5746061498742415,
+      "consistency_p90": 0.824155377681004
+    },
+    "gball_projection": {
+      "enabled": true,
+      "sweeps": 16,
+      "relative_projection_motion": 0.10042412696264645
+    },
+    "timing": {
+      "meyer_ms": 74.59645898779854,
+      "harmonic_ms": 508.83108397829346,
+      "gball_projection_ms": 255.85437499103136
+    },
+    "cartoon_conservation_max_error": 4.263256414560601e-14,
+    "residual_conservation_max_error": 3.375077994860476e-14,
+    "input_metrics": {
+      "decoded_mse_from_source": 0.0,
+      "decoded_psnr_from_source_db": 150.0,
+      "block_boundary_mean_abs_delta": 3.32738540285205,
+      "nonboundary_mean_abs_delta": 2.7081788260328876,
+      "block_boundary_ratio": 1.2286431645011475,
+      "flat_region_laplacian_rms": 0.8727744129638759
+    },
+    "pre_projection_metrics": {
+      "decoded_mse_from_source": 0.17781911111111112,
+      "decoded_psnr_from_source_db": 55.63101925920614,
+      "block_boundary_mean_abs_delta": 3.2621495073026274,
+      "nonboundary_mean_abs_delta": 2.6718750783880765,
+      "block_boundary_ratio": 1.2209214172058744,
+      "flat_region_laplacian_rms": 0.841271103021439
+    },
+    "output_metrics": {
+      "decoded_mse_from_source": 0.5666386666666666,
+      "decoded_psnr_from_source_db": 50.597741539962385,
+      "block_boundary_mean_abs_delta": 3.2350511063193603,
+      "nonboundary_mean_abs_delta": 2.6558133307537295,
+      "block_boundary_ratio": 1.2181018405390869,
+      "flat_region_laplacian_rms": 0.848104733247857
+    }
+  },
+  "synthetic": {
+    "harmonic": {
+      "window_size": 16,
+      "hop": 8,
+      "support_grid": [
+        33,
+        65
+      ],
+      "diffusion": 0.55,
+      "consistency_power": 2.0,
+      "magnitude_weighted_consistency": 0.6109101328037821,
+      "texture_energy": 30224743.876879133,
+      "removed_energy": 283329.87203852355,
+      "removed_energy_fraction": 0.009374103323841925,
+      "consistency_p10": 0.1740226950626008,
+      "consistency_p50": 0.5257695671953829,
+      "consistency_p90": 0.9088492737454211
+    },
+    "gball_projection": {
+      "enabled": true,
+      "sweeps": 16,
+      "relative_projection_motion": 0.17403912906516153
+    },
+    "timing": {
+      "meyer_ms": 7.578584016300738,
+      "harmonic_ms": 67.45720899198204,
+      "gball_projection_ms": 136.66258298326284
+    },
+    "cartoon_conservation_max_error": 2.842170943040401e-14,
+    "residual_conservation_max_error": 2.842170943040401e-14,
+    "input_metrics": {
+      "decoded_mse_from_source": 29.167564392089844,
+      "decoded_psnr_from_source_db": 33.48180195552769,
+      "block_boundary_mean_abs_delta": 6.954048599610376,
+      "nonboundary_mean_abs_delta": 4.250743264334543,
+      "block_boundary_ratio": 1.6359606231591683,
+      "flat_region_laplacian_rms": 8.964354581681475
+    },
+    "pre_projection_metrics": {
+      "decoded_mse_from_source": 27.345957438151043,
+      "decoded_psnr_from_source_db": 33.76187227349006,
+      "block_boundary_mean_abs_delta": 6.398816293242767,
+      "nonboundary_mean_abs_delta": 4.0562086661202565,
+      "block_boundary_ratio": 1.5775362709244451,
+      "flat_region_laplacian_rms": 8.42979582766987
+    },
+    "output_metrics": {
+      "decoded_mse_from_source": 29.50616200764974,
+      "decoded_psnr_from_source_db": 33.431676382300225,
+      "block_boundary_mean_abs_delta": 6.344950222314228,
+      "nonboundary_mean_abs_delta": 4.032401210239955,
+      "block_boundary_ratio": 1.573491795955656,
+      "flat_region_laplacian_rms": 8.452661029846542
+    }
+  },
+  "elapsed_ms": 1781.1220830189995
+}

@@ -1,0 +1,72 @@
+{
+  "source": "/Users/quentinkuttenkuler/Downloads/1500x500.jpeg",
+  "source_bytes": 69728,
+  "strength": 1.0,
+  "precision_divisor": 2.0,
+  "projection": {
+    "clipped_proposal_coefficients": 49484,
+    "moved_latent_coefficients": 1087990,
+    "total_coefficients": 1143040,
+    "latent_motion_rms_dct_units": 1.4843589539768158
+  },
+  "geometry_timing": {
+    "cache": true,
+    "total_ms": 0.0
+  },
+  "proposal_component_ms": [
+    303.45420801313594,
+    16.937625012360513,
+    16.656833002343774
+  ],
+  "outputs": {
+    "precision_center_control": {
+      "path": "/Users/quentinkuttenkuler/bfft/experiments/out/jpeg_dct_interval_inverse/precision_center_control.jpg",
+      "bytes": 96475,
+      "decoded_mse_from_source": 0.0,
+      "decoded_psnr_from_source_db": 150.0,
+      "block_boundary_mean_abs_delta": 3.32738540285205,
+      "nonboundary_mean_abs_delta": 2.7081788260328876,
+      "block_boundary_ratio": 1.2286431645011475,
+      "flat_region_laplacian_rms": 0.8727744129638759
+    },
+    "latent_interval_projection": {
+      "path": "/Users/quentinkuttenkuler/bfft/experiments/out/jpeg_dct_interval_inverse/latent_interval_projection.jpg",
+      "bytes": 210441,
+      "decoded_mse_from_source": 3.629458666666667,
+      "decoded_psnr_from_source_db": 42.53238505972594,
+      "block_boundary_mean_abs_delta": 3.6090739108159386,
+      "nonboundary_mean_abs_delta": 2.663894729271316,
+      "block_boundary_ratio": 1.3548110107951479,
+      "flat_region_laplacian_rms": 0.9237877901940379
+    },
+    "rate_matched_center_control": {
+      "path": "/Users/quentinkuttenkuler/bfft/experiments/out/jpeg_dct_interval_inverse/rate_matched_center_control.jpg",
+      "budget": {
+        "unconstrained_bytes": 78373,
+        "removed_coefficients": 18358,
+        "bytes": 69725
+      },
+      "decoded_mse_from_source": 1.0273088888888888,
+      "decoded_psnr_from_source_db": 48.01379314962769,
+      "block_boundary_mean_abs_delta": 3.5927087653958942,
+      "nonboundary_mean_abs_delta": 2.6572381953696214,
+      "block_boundary_ratio": 1.3520461852672372,
+      "flat_region_laplacian_rms": 0.8328999018377854
+    },
+    "rate_matched_interval_projection": {
+      "path": "/Users/quentinkuttenkuler/bfft/experiments/out/jpeg_dct_interval_inverse/rate_matched_interval_projection.jpg",
+      "budget": {
+        "unconstrained_bytes": 92593,
+        "removed_coefficients": 49153,
+        "bytes": 69727
+      },
+      "decoded_mse_from_source": 2.598014222222222,
+      "decoded_psnr_from_source_db": 43.984388366806606,
+      "block_boundary_mean_abs_delta": 3.9014656969121964,
+      "nonboundary_mean_abs_delta": 2.554026242326305,
+      "block_boundary_ratio": 1.5275746318716723,
+      "flat_region_laplacian_rms": 0.7241919882641824
+    }
+  },
+  "elapsed_ms": 1865.66695800866
+}

@@ -50,9 +50,14 @@ class State:
         self.rgb = None
         self.result = None
         self.busy = False
+        self.worker = None
         self.status = "Choose an image, then build version 3.0."
         self.metrics = ""
         self.lock = threading.Lock()
+        # Numba's default workqueue backend is parallel but not re-entrant
+        # across Python threads. The viewer build and display resampler share
+        # this gate while retaining their own internal row/cell parallelism.
+        self.numba_parallel_lock = threading.Lock()
         self.buffers = {}
         self.texture_shapes = {}
         self.display_key = None
@@ -114,7 +119,13 @@ def _display_metric(result, shape):
     return labels, tensor
 
 
-def _fit_display_to_side(image, maximum_side, result=None):
+def _fit_display_to_side(
+    image,
+    maximum_side,
+    result=None,
+    *,
+    resampled_display=None,
+):
     """Point proxy or owner-masked eikonal Lanczos display resampling."""
     value = _rgb(image)
     height, width = value.shape[:2]
@@ -123,18 +134,24 @@ def _fit_display_to_side(image, maximum_side, result=None):
     output_width = max(1, round(width * scale))
     if (output_height, output_width) == (height, width):
         return value
-    if S.resampled_display:
+    use_resampling = (
+        S.resampled_display
+        if resampled_display is None
+        else bool(resampled_display)
+    )
+    if use_resampling:
         metric = _display_metric(result, (height, width))
         if metric is not None:
             labels, tensor = metric
-            return eikonal_lanczos_resize(
-                value,
-                (output_height, output_width),
-                labels,
-                tensor,
-                anisotropy=0.5,
-                clamp_range=True,
-            )
+            with S.numba_parallel_lock:
+                return eikonal_lanczos_resize(
+                    value,
+                    (output_height, output_width),
+                    labels,
+                    tensor,
+                    anisotropy=0.5,
+                    clamp_range=True,
+                )
         pixels = np.clip(np.rint(value * 255.0), 0.0, 255.0).astype(np.uint8)
         resized = Image.fromarray(pixels, mode="RGB").resize(
             (output_width, output_height),
@@ -180,11 +197,21 @@ def _alloc_texture(tag, height, width):
         )
 
 
-def _push_texture(tag, image, result=None):
+def _push_texture(
+    tag,
+    image,
+    result=None,
+    *,
+    resampled_display=None,
+):
     value = _rgb(image).astype(np.float32)
     if max(value.shape[:2]) > PANEL:
         value = _fit_display_to_side(
-            value, PANEL, result=result).astype(np.float32)
+            value,
+            PANEL,
+            result=result,
+            resampled_display=resampled_display,
+        ).astype(np.float32)
     height, width = value.shape[:2]
     shape = (height, width)
     if S.texture_shapes.get(tag) != shape:
@@ -293,9 +320,11 @@ def refresh():
         rgb = S.rgb
     if result is None:
         return
-    source_key = (id(result), S.resampled_display)
+    # The left panel is an invariant point-sampled control. The display
+    # sampling toggle belongs exclusively to the reconstructed right panel.
+    source_key = id(rgb)
     if source_key != S.source_display_key and rgb is not None:
-        _push_texture(SOURCE, rgb, result=result)
+        _push_texture(SOURCE, rgb, resampled_display=False)
         S.source_display_key = source_key
     name = dpg.get_value("v3_view")
     key = (id(result), name, S.resampled_display)
@@ -317,17 +346,9 @@ def toggle_display_sampling():
         # The build worker owns Numba's parallel workqueue. The main-loop
         # refresh will apply this display state as soon as the build returns.
         S.display_key = None
-        S.source_display_key = None
         return
     with S.lock:
-        rgb = S.rgb
         result = S.result
-    if rgb is not None:
-        _push_texture(SOURCE, rgb, result=result)
-        S.source_display_key = (
-            (id(result), S.resampled_display)
-            if result is not None else None
-        )
     if result is not None:
         S.display_key = None
         refresh()
@@ -444,7 +465,8 @@ def _config():
 
 def build_worker(rgb, config):
     try:
-        result = build_segmenting_v3(rgb, config)
+        with S.numba_parallel_lock:
+            result = build_segmenting_v3(rgb, config)
         timing = result["timing"]
         geometry = result["coordinate_geometry"]
         coordinate_ms = (
@@ -526,8 +548,25 @@ def build_worker(rgb, config):
             S.source_display_key = None
     except Exception as exc:
         S.status = f"Build failed: {type(exc).__name__}: {exc}"
-    finally:
-        S.busy = False
+
+
+def _retire_finished_worker():
+    """Publish worker completion only after its Python thread has exited.
+
+    Numba's workqueue backend cannot be entered concurrently from two Python
+    threads.  In particular, setting ``busy`` false in ``build_worker`` left
+    a race in which the UI could launch the parallel eikonal-Lanczos display
+    kernel while the build thread was still unwinding its last parallel
+    region.  The UI owns worker retirement, so ``busy == False`` now implies
+    that no build thread exists.
+    """
+    worker = S.worker
+    if worker is None or worker.ident is None or worker.is_alive():
+        return False
+    worker.join()
+    S.worker = None
+    S.busy = False
+    return True
 
 
 def start_build():
@@ -540,11 +579,20 @@ def start_build():
     config = _config()
     S.busy = True
     S.status = f"{S.name}: building strict version 3.0..."
-    threading.Thread(
+    worker = threading.Thread(
         target=build_worker,
         args=(rgb, config),
         daemon=True,
-    ).start()
+    )
+    try:
+        worker.start()
+    except Exception:
+        S.busy = False
+        raise
+    # Publish only after Thread.start() has completed. DearPyGui callbacks and
+    # the render loop may run concurrently, so exposing the object beforehand
+    # lets the UI attempt join() while the thread is still in NEW state.
+    S.worker = worker
 
 
 def adopt(image, name):
@@ -560,7 +608,7 @@ def adopt(image, name):
         S.source_display_key = None
     S.metrics = ""
     S.status = f"{name} loaded. Press Build version 3.0."
-    _push_texture(SOURCE, rgb)
+    _push_texture(SOURCE, rgb, resampled_display=False)
     _push_texture(RESULT, np.full_like(rgb, 0.08))
 
 
@@ -1026,6 +1074,7 @@ def main():
     cb_gallery(None, label)
     last = 0.0
     while dpg.is_dearpygui_running():
+        _retire_finished_worker()
         dpg.set_value("v3_status", S.status)
         dpg.set_value("v3_metrics", S.metrics)
         dpg.configure_item("v3_build", enabled=not S.busy)

@@ -1,0 +1,136 @@
+{
+  "source": "/Users/quentinkuttenkuler/Downloads/1500x500.jpeg",
+  "parameters": {
+    "lam": 0.05,
+    "mu": 40.0,
+    "meyer_iters": 8,
+    "window_size": 16,
+    "hop": 8,
+    "diffusion": 4.0,
+    "consistency_power": 1.0,
+    "gball_sweeps": 0,
+    "jpeg_quality": 28
+  },
+  "supplied": {
+    "harmonic": {
+      "window_size": 16,
+      "hop": 8,
+      "support_grid": [
+        64,
+        189
+      ],
+      "diffusion": 4.0,
+      "interior_neighbor_fraction": 0.8,
+      "consistency_power": 1.0,
+      "magnitude_weighted_consistency": 0.6303713145356865,
+      "texture_energy": 128742674.05860429,
+      "removed_energy": 73514840.71562546,
+      "removed_energy_fraction": 0.5710215455223585,
+      "consistency_p10": 0.31510067946326253,
+      "consistency_p50": 0.5751787479456558,
+      "consistency_p90": 0.8179583506727718,
+      "horizontal_phase_coherence": 0.5411382731597201,
+      "vertical_phase_coherence": 0.5149398382202218
+    },
+    "gball_projection": {
+      "enabled": false,
+      "relative_projection_motion": 0.0
+    },
+    "timing": {
+      "meyer_ms": 9491.814083012287,
+      "harmonic_ms": 3024.539834004827,
+      "gball_projection_ms": 2.139749994967133
+    },
+    "cartoon_conservation_max_error": 5.684341886080802e-14,
+    "residual_conservation_max_error": 5.3290705182007514e-14,
+    "input_metrics": {
+      "decoded_mse_from_source": 0.0,
+      "decoded_psnr_from_source_db": 150.0,
+      "block_boundary_mean_abs_delta": 3.32738540285205,
+      "nonboundary_mean_abs_delta": 2.7081788260328876,
+      "block_boundary_ratio": 1.2286431645011475,
+      "flat_region_laplacian_rms": 0.8727744129638759
+    },
+    "pre_projection_metrics": {
+      "decoded_mse_from_source": 32.737952,
+      "decoded_psnr_from_source_db": 32.98028853260489,
+      "block_boundary_mean_abs_delta": 2.5342656828532,
+      "nonboundary_mean_abs_delta": 2.254346749039553,
+      "block_boundary_ratio": 1.1241685352676576,
+      "flat_region_laplacian_rms": 1.0120256443418199
+    },
+    "output_metrics": {
+      "decoded_mse_from_source": 32.737952,
+      "decoded_psnr_from_source_db": 32.98028853260489,
+      "block_boundary_mean_abs_delta": 2.5342656828532,
+      "nonboundary_mean_abs_delta": 2.254346749039553,
+      "block_boundary_ratio": 1.1241685352676576,
+      "flat_region_laplacian_rms": 1.0120256443418199
+    }
+  },
+  "synthetic": {
+    "harmonic": {
+      "window_size": 16,
+      "hop": 8,
+      "support_grid": [
+        33,
+        65
+      ],
+      "diffusion": 4.0,
+      "interior_neighbor_fraction": 0.8,
+      "consistency_power": 1.0,
+      "magnitude_weighted_consistency": 0.7600103233841436,
+      "texture_energy": 37585381.791004844,
+      "removed_energy": 13249069.951441463,
+      "removed_energy_fraction": 0.35250592970196487,
+      "consistency_p10": 0.23352952097086244,
+      "consistency_p50": 0.6080815794289511,
+      "consistency_p90": 0.9445255180671721,
+      "horizontal_phase_coherence": 0.878834052257076,
+      "vertical_phase_coherence": 0.7113648632108976
+    },
+    "gball_projection": {
+      "enabled": false,
+      "relative_projection_motion": 0.0
+    },
+    "timing": {
+      "meyer_ms": 102.37204199074768,
+      "harmonic_ms": 676.4395000063814,
+      "gball_projection_ms": 0.8207499922718853
+    },
+    "cartoon_conservation_max_error": 5.684341886080802e-14,
+    "residual_conservation_max_error": 4.618527782440651e-14,
+    "input_metrics": {
+      "decoded_mse_from_source": 29.167564392089844,
+      "decoded_psnr_from_source_db": 33.48180195552769,
+      "block_boundary_mean_abs_delta": 6.954048599610376,
+      "nonboundary_mean_abs_delta": 4.250743264334543,
+      "block_boundary_ratio": 1.6359606231591683,
+      "flat_region_laplacian_rms": 8.964354581681475
+    },
+    "pre_projection_metrics": {
+      "decoded_mse_from_source": 40.407641092936196,
+      "decoded_psnr_from_source_db": 32.06616862818813,
+      "block_boundary_mean_abs_delta": 5.9552104529689895,
+      "nonboundary_mean_abs_delta": 4.475529493059431,
+      "block_boundary_ratio": 1.330615843824562,
+      "flat_region_laplacian_rms": 9.877982227348815
+    },
+    "output_metrics": {
+      "decoded_mse_from_source": 40.407641092936196,
+      "decoded_psnr_from_source_db": 32.06616862818813,
+      "block_boundary_mean_abs_delta": 5.9552104529689895,
+      "nonboundary_mean_abs_delta": 4.475529493059431,
+      "block_boundary_ratio": 1.330615843824562,
+      "flat_region_laplacian_rms": 9.877982227348815
+    },
+    "carrier_amplitude": {
+      "truth": 0.04348024999999992,
+      "jpeg_input": 0.04249557417119983,
+      "relaxed_output": 0.04175609385871676,
+      "input_relative_error": 0.022646507984661775,
+      "output_relative_error": 0.039653777089210994
+    }
+  },
+  "elapsed_ms": 21989.0631250164
+}

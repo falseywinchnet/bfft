@@ -1,0 +1,323 @@
+{
+  "source": "/Users/quentinkuttenkuler/Downloads/1500x500.jpeg",
+  "source_bytes": 69728,
+  "dimensions": [
+    1500,
+    500
+  ],
+  "progressive": true,
+  "operator": "phase_correct",
+  "sampling_factors": [
+    [
+      2,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "quantization_tables": [
+    [
+      [
+        5,
+        3,
+        3,
+        5,
+        7,
+        12,
+        15,
+        18
+      ],
+      [
+        4,
+        4,
+        4,
+        6,
+        8,
+        17,
+        18,
+        17
+      ],
+      [
+        4,
+        4,
+        5,
+        7,
+        12,
+        17,
+        21,
+        17
+      ],
+      [
+        4,
+        5,
+        7,
+        9,
+        15,
+        26,
+        24,
+        19
+      ],
+      [
+        5,
+        7,
+        11,
+        17,
+        20,
+        33,
+        31,
+        23
+      ],
+      [
+        7,
+        11,
+        17,
+        19,
+        24,
+        31,
+        34,
+        28
+      ],
+      [
+        15,
+        19,
+        23,
+        26,
+        31,
+        36,
+        36,
+        30
+      ],
+      [
+        22,
+        28,
+        29,
+        29,
+        34,
+        30,
+        31,
+        30
+      ]
+    ],
+    [
+      [
+        5,
+        5,
+        7,
+        14,
+        30,
+        30,
+        30,
+        30
+      ],
+      [
+        5,
+        6,
+        8,
+        20,
+        30,
+        30,
+        30,
+        30
+      ],
+      [
+        7,
+        8,
+        17,
+        30,
+        30,
+        30,
+        30,
+        30
+      ],
+      [
+        14,
+        20,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30
+      ],
+      [
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30
+      ],
+      [
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30
+      ],
+      [
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30
+      ],
+      [
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+        30
+      ]
+    ]
+  ],
+  "geometry_timing": {
+    "cartoon_geometry_ms": 581.2071670079604,
+    "cartoon_transport_ms": 155.09612500318326,
+    "cartoon_fit_ms": 72.12679201620631,
+    "owner_upgrade_ms": 0.0,
+    "cartoon_refit_ms": 0.0,
+    "texture_tensor_ms": 20.26399999158457,
+    "texture_population_geometry_ms": 0.0,
+    "texture_population_transport_ms": 0.0,
+    "texture_affine_ms": 9.451417019590735,
+    "texture_cleanup_ms": 0.0,
+    "coordinate_geometry_ms": 0.005332985892891884,
+    "texture_coordinate_ms": 0.0,
+    "texture_phase_graph_ms": 0.0,
+    "texture_dirichlet_envelope_ms": 0.0072499969974160194,
+    "total_ms": 983.8829579821322,
+    "cache": false
+  },
+  "component_timing": [
+    {
+      "component": 0,
+      "block_shape": [
+        63,
+        188
+      ],
+      "milliseconds": 77.70920800976455
+    },
+    {
+      "component": 1,
+      "block_shape": [
+        32,
+        94
+      ],
+      "milliseconds": 15.332707989728078
+    },
+    {
+      "component": 2,
+      "block_shape": [
+        32,
+        94
+      ],
+      "milliseconds": 15.867375012021512
+    }
+  ],
+  "variants": [
+    {
+      "strength": 0.12,
+      "path": "/Users/quentinkuttenkuler/bfft/experiments/out/jpeg_dct_geometry_low/geometry_dct_s0p12.jpg",
+      "bytes": 69728,
+      "byte_delta": 0,
+      "rate_budget": {
+        "nonzero_enabled": true,
+        "byte_enabled": true,
+        "nonzero_budget": 92169,
+        "minimum_nonzero_removals": 32,
+        "total_budget_removals": 118
+      },
+      "changed_coefficients": 611,
+      "total_coefficients": 1143040,
+      "changed_fraction": 0.0005345394736842106,
+      "original_nonzero_coefficients": 92169,
+      "candidate_nonzero_coefficients": 92083,
+      "quantized_coefficient_delta_rms": 0.023120109724744185,
+      "decoded_mse_from_source": 0.08325866666666666,
+      "decoded_psnr_from_source_db": 58.92650909204803,
+      "block_boundary_mean_abs_delta": 3.347748817319303,
+      "nonboundary_mean_abs_delta": 2.7050745735154926,
+      "block_boundary_ratio": 1.2375809710002177,
+      "flat_region_laplacian_rms": 0.8688146610141556
+    },
+    {
+      "strength": 0.2,
+      "path": "/Users/quentinkuttenkuler/bfft/experiments/out/jpeg_dct_geometry_low/geometry_dct_s0p20.jpg",
+      "bytes": 69726,
+      "byte_delta": -2,
+      "rate_budget": {
+        "nonzero_enabled": true,
+        "byte_enabled": true,
+        "nonzero_budget": 92169,
+        "minimum_nonzero_removals": 185,
+        "total_budget_removals": 935
+      },
+      "changed_coefficients": 2819,
+      "total_coefficients": 1143040,
+      "changed_fraction": 0.0024662304031354983,
+      "original_nonzero_coefficients": 92169,
+      "candidate_nonzero_coefficients": 91419,
+      "quantized_coefficient_delta_rms": 0.051222116387033965,
+      "decoded_mse_from_source": 0.33848133333333336,
+      "decoded_psnr_from_source_db": 52.835456377843066,
+      "block_boundary_mean_abs_delta": 3.406665184348226,
+      "nonboundary_mean_abs_delta": 2.6968031227209726,
+      "block_boundary_ratio": 1.2632235388807431,
+      "flat_region_laplacian_rms": 0.8804546662451289
+    },
+    {
+      "strength": 0.28,
+      "path": "/Users/quentinkuttenkuler/bfft/experiments/out/jpeg_dct_geometry_low/geometry_dct_s0p28.jpg",
+      "bytes": 69728,
+      "byte_delta": 0,
+      "rate_budget": {
+        "nonzero_enabled": true,
+        "byte_enabled": true,
+        "nonzero_budget": 92169,
+        "minimum_nonzero_removals": 497,
+        "total_budget_removals": 2079
+      },
+      "changed_coefficients": 5624,
+      "total_coefficients": 1143040,
+      "changed_fraction": 0.004920212765957447,
+      "original_nonzero_coefficients": 92169,
+      "candidate_nonzero_coefficients": 90587,
+      "quantized_coefficient_delta_rms": 0.07449907369949553,
+      "decoded_mse_from_source": 0.6786373333333333,
+      "decoded_psnr_from_source_db": 49.81442613406329,
+      "block_boundary_mean_abs_delta": 3.4705796670404228,
+      "nonboundary_mean_abs_delta": 2.6881360491403647,
+      "block_boundary_ratio": 1.2910729232437006,
+      "flat_region_laplacian_rms": 0.8674466966822395
+    }
+  ],
+  "identity_control": {
+    "path": "/Users/quentinkuttenkuler/bfft/experiments/out/jpeg_dct_geometry_low/identity_coefficient_roundtrip.jpg",
+    "bytes": 69728,
+    "byte_delta": 0,
+    "decoded_mse_from_source": 0.0,
+    "decoded_psnr_from_source_db": 150.0,
+    "block_boundary_mean_abs_delta": 3.32738540285205,
+    "nonboundary_mean_abs_delta": 2.7081788260328876,
+    "block_boundary_ratio": 1.2286431645011475,
+    "flat_region_laplacian_rms": 0.8727744129638759
+  },
+  "elapsed_ms": 3116.694833996007
+}
