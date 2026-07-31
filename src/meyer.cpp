@@ -72,9 +72,64 @@ bfft_status bfft_meyer_split(bfft_meyer_plan* plan, const double* image,
                              double* cartoon, double* texture) {
     if (plan == nullptr || !plan->configured || image == nullptr ||
         cartoon == nullptr ||
-        texture == nullptr)
+        texture == nullptr || cartoon == texture)
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    if (plan->eng.solver != 2) {
+        if (!plan->eng.split_jump_measure(image, cartoon, texture, 8))
+            return BFFT_ERROR_INVALID_ARGUMENT;
+    } else {
+        plan->eng.split(image, cartoon, texture);
+    }
+    return BFFT_OK;
+}
+
+bfft_status bfft_meyer_split_legacy(
+        bfft_meyer_plan* plan, const double* image,
+        double* cartoon, double* texture) {
+    if (plan == nullptr || !plan->configured || image == nullptr ||
+        cartoon == nullptr || texture == nullptr)
         return BFFT_ERROR_INVALID_ARGUMENT;
     plan->eng.split(image, cartoon, texture);
+    return BFFT_OK;
+}
+
+bfft_status bfft_meyer_split_conditioned_first(
+        bfft_meyer_plan* plan, const double* image,
+        double* cartoon, double* texture, double strength) {
+    if (plan == nullptr || !plan->configured || image == nullptr ||
+        cartoon == nullptr || texture == nullptr || !(strength >= 0.0))
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    if (!plan->eng.split_conditioned_first(
+            image, cartoon, texture, strength))
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    return BFFT_OK;
+}
+
+bfft_status bfft_meyer_split_preconditioned(
+        bfft_meyer_plan* plan, const double* image,
+        double* cartoon, double* texture, double strength,
+        int virtual_passes, int gate_power) {
+    if (plan == nullptr || !plan->configured || image == nullptr ||
+        cartoon == nullptr || texture == nullptr || !(strength >= 0.0) ||
+        virtual_passes < 1 || virtual_passes > 64 || gate_power < 1 ||
+        gate_power > 64)
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    if (!plan->eng.split_preconditioned(
+            image, cartoon, texture, strength, virtual_passes, gate_power))
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    return BFFT_OK;
+}
+
+bfft_status bfft_meyer_split_jump_measure(
+        bfft_meyer_plan* plan, const double* image,
+        double* cartoon, double* texture, int virtual_passes) {
+    if (plan == nullptr || !plan->configured || image == nullptr ||
+        cartoon == nullptr || texture == nullptr || cartoon == texture ||
+        virtual_passes < 1 || virtual_passes > 64)
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    if (!plan->eng.split_jump_measure(
+            image, cartoon, texture, virtual_passes))
+        return BFFT_ERROR_INVALID_ARGUMENT;
     return BFFT_OK;
 }
 

@@ -1,0 +1,317 @@
+{
+  "strength": 1.5,
+  "scenes": {
+    "symmetric_support": {
+      "ordinary_pass_1": {
+        "timing": {
+          "median_ms": 0.3187289839843288,
+          "minimum_ms": 0.2695829898584634,
+          "mean_ms": 0.3730749187525362,
+          "repeats": 50
+        },
+        "conditioning_objective": 0.49722632431766833,
+        "interior_texture_gain": 0.5453141267582157,
+        "interior_texture_relative_rms_error": 0.4551318883995263,
+        "contour_excess_texture_rms": 0.617869339697576,
+        "cartoon_edge_gradient_gain": 0.3022962813650484,
+        "structure_plus_residual_edge_gradient_gain": 0.34323396064519374,
+        "model_residual_contour_rms": 0.10133052731638757,
+        "model_residual_energy_fraction": 0.0008767109030331055,
+        "texture_over_contour_allocation_auc": 0.5985333582289001,
+        "cartoon_relative_rms_error": 0.04080461098385049,
+        "texture_relative_rms_error": 0.63255092902117
+      },
+      "conditioned_f_spec_pass_1": {
+        "timing": {
+          "median_ms": 1.2759585079038516,
+          "minimum_ms": 1.1076249938923866,
+          "mean_ms": 1.4214500790694728,
+          "repeats": 50
+        },
+        "conditioning_objective": 0.2157294961997456,
+        "interior_texture_gain": 0.54837534824049,
+        "interior_texture_relative_rms_error": 0.4520967925773459,
+        "contour_excess_texture_rms": 0.1167277143306054,
+        "cartoon_edge_gradient_gain": 0.926528278011192,
+        "structure_plus_residual_edge_gradient_gain": 0.9313681288299984,
+        "model_residual_contour_rms": 0.02009821491502624,
+        "model_residual_energy_fraction": 0.0003477811468336079,
+        "texture_over_contour_allocation_auc": 0.9122733521581093,
+        "cartoon_relative_rms_error": 0.0257773091791666,
+        "texture_relative_rms_error": 0.4600637854776394
+      },
+      "finite_virtual_transverse": {
+        "timing": {
+          "median_ms": 2.156478993128985,
+          "minimum_ms": 1.871333020972088,
+          "mean_ms": 2.248987519997172,
+          "repeats": 50
+        },
+        "conditioning_objective": 0.08874213791670008,
+        "interior_texture_gain": 0.9609428514219257,
+        "interior_texture_relative_rms_error": 0.046031784749122145,
+        "contour_excess_texture_rms": 0.14467123059982226,
+        "cartoon_edge_gradient_gain": 0.980485765763634,
+        "structure_plus_residual_edge_gradient_gain": 0.980485765763634,
+        "model_residual_contour_rms": 3.6625831346244227e-16,
+        "model_residual_energy_fraction": 4.0523539255553703e-32,
+        "texture_over_contour_allocation_auc": 0.9483302267959507,
+        "cartoon_relative_rms_error": 0.01883486616278972,
+        "texture_relative_rms_error": 0.28836599052681844
+      },
+      "ordinary_pass_64": {
+        "timing": {
+          "median_ms": 23.201395495561883,
+          "minimum_ms": 20.82924998831004,
+          "mean_ms": 23.44991659920197,
+          "repeats": 10
+        },
+        "conditioning_objective": 0.3414985206582121,
+        "interior_texture_gain": 0.9997541624506828,
+        "interior_texture_relative_rms_error": 0.057648437154715335,
+        "contour_excess_texture_rms": 0.6419608068434097,
+        "cartoon_edge_gradient_gain": 0.37341440000941206,
+        "structure_plus_residual_edge_gradient_gain": 0.4021067801811333,
+        "model_residual_contour_rms": 0.08572423358555056,
+        "model_residual_energy_fraction": 0.0007052245027490558,
+        "texture_over_contour_allocation_auc": 0.7642367778080651,
+        "cartoon_relative_rms_error": 0.03506897741409786,
+        "texture_relative_rms_error": 0.48707316503845827
+      }
+    },
+    "multiscale_crossing": {
+      "ordinary_pass_1": {
+        "timing": {
+          "median_ms": 0.3206455003237352,
+          "minimum_ms": 0.2763340016826987,
+          "mean_ms": 0.3552133816992864,
+          "repeats": 50
+        },
+        "conditioning_objective": 0.8492438017758678,
+        "interior_texture_gain": 0.29032054986346345,
+        "interior_texture_relative_rms_error": 0.7556935987912338,
+        "contour_excess_texture_rms": 0.799149008309162,
+        "cartoon_edge_gradient_gain": 0.30322180880800065,
+        "structure_plus_residual_edge_gradient_gain": 0.3433467396910402,
+        "model_residual_contour_rms": 0.12034618533489838,
+        "model_residual_energy_fraction": 0.0013075215010042343,
+        "texture_over_contour_allocation_auc": 0.5072012426925546,
+        "cartoon_relative_rms_error": 0.06760486680652368,
+        "texture_relative_rms_error": 0.8276554835132555
+      },
+      "conditioned_f_spec_pass_1": {
+        "timing": {
+          "median_ms": 1.3008755049668252,
+          "minimum_ms": 1.1315410083625466,
+          "mean_ms": 1.4379224181175232,
+          "repeats": 50
+        },
+        "conditioning_objective": 0.5939915047812802,
+        "interior_texture_gain": 0.3160361601600494,
+        "interior_texture_relative_rms_error": 0.7307565690036703,
+        "contour_excess_texture_rms": 0.4456885381473741,
+        "cartoon_edge_gradient_gain": 0.9051479625484862,
+        "structure_plus_residual_edge_gradient_gain": 0.9115623494404705,
+        "model_residual_contour_rms": 0.06632246318701757,
+        "model_residual_energy_fraction": 0.0011069994414789302,
+        "texture_over_contour_allocation_auc": 0.6639262446321357,
+        "cartoon_relative_rms_error": 0.056111491495074904,
+        "texture_relative_rms_error": 0.7356517090610831
+      },
+      "finite_virtual_transverse": {
+        "timing": {
+          "median_ms": 2.1927290072198957,
+          "minimum_ms": 2.0409999997355044,
+          "mean_ms": 2.264383242581971,
+          "repeats": 50
+        },
+        "conditioning_objective": 0.1906048531584873,
+        "interior_texture_gain": 0.846062905457921,
+        "interior_texture_relative_rms_error": 0.19321363003119513,
+        "contour_excess_texture_rms": 0.4561919596606357,
+        "cartoon_edge_gradient_gain": 0.9395229584603721,
+        "structure_plus_residual_edge_gradient_gain": 0.9395229584603721,
+        "model_residual_contour_rms": 3.6817925607231715e-16,
+        "model_residual_energy_fraction": 3.113626619548161e-32,
+        "texture_over_contour_allocation_auc": 0.7605698535063504,
+        "cartoon_relative_rms_error": 0.032516834098143925,
+        "texture_relative_rms_error": 0.3708365308919394
+      },
+      "ordinary_pass_64": {
+        "timing": {
+          "median_ms": 22.907791499164887,
+          "minimum_ms": 21.563333022641018,
+          "mean_ms": 25.52211660076864,
+          "repeats": 10
+        },
+        "conditioning_objective": 0.29096226810654935,
+        "interior_texture_gain": 0.9308149253707249,
+        "interior_texture_relative_rms_error": 0.09606079822984209,
+        "contour_excess_texture_rms": 0.7159205685707936,
+        "cartoon_edge_gradient_gain": 0.3821276591188038,
+        "structure_plus_residual_edge_gradient_gain": 0.3996568303217425,
+        "model_residual_contour_rms": 0.07023580031700527,
+        "model_residual_energy_fraction": 0.0015026415925216046,
+        "texture_over_contour_allocation_auc": 0.7451891323799098,
+        "cartoon_relative_rms_error": 0.0373085357289801,
+        "texture_relative_rms_error": 0.401789467436152
+      }
+    },
+    "checker_support": {
+      "ordinary_pass_1": {
+        "timing": {
+          "median_ms": 0.3101044858340174,
+          "minimum_ms": 0.26716600405052304,
+          "mean_ms": 0.3506449586711824,
+          "repeats": 50
+        },
+        "conditioning_objective": 0.2750238854023903,
+        "interior_texture_gain": 0.7046939933587729,
+        "interior_texture_relative_rms_error": 0.31604125939900996,
+        "contour_excess_texture_rms": 0.4790901551285616,
+        "cartoon_edge_gradient_gain": 0.3022951042483795,
+        "structure_plus_residual_edge_gradient_gain": 0.3432325375134046,
+        "model_residual_contour_rms": 0.07857045801442845,
+        "model_residual_energy_fraction": 0.0007906981641899523,
+        "texture_over_contour_allocation_auc": 0.8314360136506254,
+        "cartoon_relative_rms_error": 0.039184887065150345,
+        "texture_relative_rms_error": 0.4648726555120278
+      },
+      "conditioned_f_spec_pass_1": {
+        "timing": {
+          "median_ms": 1.6831875109346583,
+          "minimum_ms": 1.2242499797139317,
+          "mean_ms": 1.74510742072016,
+          "repeats": 50
+        },
+        "conditioning_objective": 0.11561441018009319,
+        "interior_texture_gain": 0.6867713182240592,
+        "interior_texture_relative_rms_error": 0.33278565672652627,
+        "contour_excess_texture_rms": 0.07865559715730043,
+        "cartoon_edge_gradient_gain": 0.9668805608478733,
+        "structure_plus_residual_edge_gradient_gain": 0.9694757125355505,
+        "model_residual_contour_rms": 0.013534908767075183,
+        "model_residual_energy_fraction": 0.00026568962907787616,
+        "texture_over_contour_allocation_auc": 0.9999999375946689,
+        "cartoon_relative_rms_error": 0.024553945858648858,
+        "texture_relative_rms_error": 0.3368454217913921
+      },
+      "finite_virtual_transverse": {
+        "timing": {
+          "median_ms": 2.172604014049284,
+          "minimum_ms": 2.041083003859967,
+          "mean_ms": 2.3484150011790916,
+          "repeats": 50
+        },
+        "conditioning_objective": 0.050881696834955116,
+        "interior_texture_gain": 0.9823287517032671,
+        "interior_texture_relative_rms_error": 0.04710400262999279,
+        "contour_excess_texture_rms": 0.10587666734652511,
+        "cartoon_edge_gradient_gain": 0.9912023152293961,
+        "structure_plus_residual_edge_gradient_gain": 0.9912023152293961,
+        "model_residual_contour_rms": 2.84032454224651e-16,
+        "model_residual_energy_fraction": 3.934977207315284e-32,
+        "texture_over_contour_allocation_auc": 1.0,
+        "cartoon_relative_rms_error": 0.0184050880612404,
+        "texture_relative_rms_error": 0.21849595510286093
+      },
+      "ordinary_pass_64": {
+        "timing": {
+          "median_ms": 22.1030209941091,
+          "minimum_ms": 20.70720901247114,
+          "mean_ms": 23.186712499591522,
+          "repeats": 10
+        },
+        "conditioning_objective": 0.2054658066984086,
+        "interior_texture_gain": 0.9997217227148733,
+        "interior_texture_relative_rms_error": 0.04321482565949569,
+        "contour_excess_texture_rms": 0.49752533826496603,
+        "cartoon_edge_gradient_gain": 0.37389661729895574,
+        "structure_plus_residual_edge_gradient_gain": 0.40266705482051796,
+        "model_residual_contour_rms": 0.06645223017662018,
+        "model_residual_energy_fraction": 0.0006729654819554926,
+        "texture_over_contour_allocation_auc": 0.9367661757114456,
+        "cartoon_relative_rms_error": 0.03504102836477849,
+        "texture_relative_rms_error": 0.3772997051093867
+      }
+    },
+    "junction_texture": {
+      "ordinary_pass_1": {
+        "timing": {
+          "median_ms": 0.2885624853661284,
+          "minimum_ms": 0.2676250005606562,
+          "mean_ms": 0.30719230067916214,
+          "repeats": 50
+        },
+        "conditioning_objective": 1.3196538050302236,
+        "interior_texture_gain": 0.4269210804981391,
+        "interior_texture_relative_rms_error": 0.6517245620771638,
+        "contour_excess_texture_rms": 1.107474320792969,
+        "cartoon_edge_gradient_gain": 0.2863251496994291,
+        "structure_plus_residual_edge_gradient_gain": 0.3287012337225768,
+        "model_residual_contour_rms": 0.2063597913318263,
+        "model_residual_energy_fraction": 0.0032950957142024867,
+        "texture_over_contour_allocation_auc": 0.4377046978310687,
+        "cartoon_relative_rms_error": 0.06070513947410203,
+        "texture_relative_rms_error": 1.004661061387218
+      },
+      "conditioned_f_spec_pass_1": {
+        "timing": {
+          "median_ms": 1.2196875031804666,
+          "minimum_ms": 1.0449159890413284,
+          "mean_ms": 1.2746282835723832,
+          "repeats": 50
+        },
+        "conditioning_objective": 0.4573162863929414,
+        "interior_texture_gain": 0.4613580303299121,
+        "interior_texture_relative_rms_error": 0.609006019349988,
+        "contour_excess_texture_rms": 0.3755622498977392,
+        "cartoon_edge_gradient_gain": 0.8784414017709342,
+        "structure_plus_residual_edge_gradient_gain": 0.8846616382458987,
+        "model_residual_contour_rms": 0.06225553824810925,
+        "model_residual_energy_fraction": 0.0012206219824189245,
+        "texture_over_contour_allocation_auc": 0.7734286851001129,
+        "cartoon_relative_rms_error": 0.03280960967942204,
+        "texture_relative_rms_error": 0.6488282245853385
+      },
+      "finite_virtual_transverse": {
+        "timing": {
+          "median_ms": 2.3463335091946647,
+          "minimum_ms": 2.0193329837638885,
+          "mean_ms": 2.4293849169043824,
+          "repeats": 50
+        },
+        "conditioning_objective": 0.435019745256904,
+        "interior_texture_gain": 0.8930448479914913,
+        "interior_texture_relative_rms_error": 0.1704810419980786,
+        "contour_excess_texture_rms": 0.6605075777995831,
+        "cartoon_edge_gradient_gain": 0.8536237804133945,
+        "structure_plus_residual_edge_gradient_gain": 0.8536237804133945,
+        "model_residual_contour_rms": 4.762756456797404e-16,
+        "model_residual_energy_fraction": 5.338530965935467e-32,
+        "texture_over_contour_allocation_auc": 0.7322657071316601,
+        "cartoon_relative_rms_error": 0.03354941863027122,
+        "texture_relative_rms_error": 0.5699356250347988
+      },
+      "ordinary_pass_64": {
+        "timing": {
+          "median_ms": 22.32787550019566,
+          "minimum_ms": 20.475666999118403,
+          "mean_ms": 22.31688750034664,
+          "repeats": 10
+        },
+        "conditioning_objective": 1.314709796300481,
+        "interior_texture_gain": 0.9848150549766076,
+        "interior_texture_relative_rms_error": 0.0945234747454649,
+        "contour_excess_texture_rms": 1.2984322443126126,
+        "cartoon_edge_gradient_gain": 0.23394416555014874,
+        "structure_plus_residual_edge_gradient_gain": 0.31903590759426664,
+        "model_residual_contour_rms": 0.35010304006945975,
+        "model_residual_energy_fraction": 0.007691314107878821,
+        "texture_over_contour_allocation_auc": 0.5284435833891155,
+        "cartoon_relative_rms_error": 0.06661356572750016,
+        "texture_relative_rms_error": 0.9427570503018671
+      }
+    }
+  }
+}

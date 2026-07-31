@@ -148,7 +148,7 @@ def main():
         g = f - ru
         rw, st_v = rof_sb(g, 1.0 / mu, eta=10.0 / mu, sweeps=1, state=st_v)
         rv = g - rw
-    sc, sx = plan.split(f)
+    sc, sx = plan.split_legacy(f)
     e_u, e_v = rel(sc, ru, f), rel(sx, rv, f)
     # consistency with decompose: same texture, and cartoon differs by
     # exactly the ladder's coarsest survivor s0 = decompose.cartoon - u
@@ -169,7 +169,7 @@ def main():
         stage_plan = bfft.MeyerPlan(
             f.shape, lam=lam, mu=mu, passes=stage, rung_sweeps=1,
             rung_tol=0.0, threads=4)
-        stage_cartoon, stage_texture = stage_plan.split(f)
+        stage_cartoon, stage_texture = stage_plan.split_legacy(f)
         trace_exact &= np.array_equal(
             trace_cartoon[stage - 1], stage_cartoon)
         trace_exact &= np.array_equal(
@@ -205,12 +205,12 @@ def main():
           "ok" if t_c < t_py else "FAIL")
     ok &= t_c < t_py
 
-    # 5b. split-only speed: the decomposition without the ladder.
+    # 5b. fixed-cost default split speed.
     # Best of 3: a single shot here lands right after the python reference
     # run above and picks up thermal/scheduling noise.
     plan5.split(f512)
     t_s = min(_time_call(plan5.split, f512) for _ in range(3))
-    print(f"5b. split-only 512^2 (64 passes, no ladder): {t_s * 1e3:.0f} ms "
+    print(f"5b. default jump-measure split 512^2: {t_s * 1e3:.0f} ms "
           f"({t_c / t_s:.0f}x cheaper than the laddered call)",
           "ok" if t_s < t_c else "FAIL")
     ok &= t_s < t_c

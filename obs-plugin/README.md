@@ -10,10 +10,10 @@ This module registers two native OBS asynchronous-video filters:
     and boosts the newly recovered texture. This reproduces the useful
     two-filter recovery behavior without an intervening 8-bit OBS round trip.
   - **Layer interference** — a signed, neutral-gray view of the normalized
-    cross term between explicit texture and the model residual.
+    cross term between explicit texture and the cartoon-side TV defect.
   - **Information caustics** — a color-preserving refractive field whose
     displacement comes from non-cartoon geometry and whose carrier comes from
-    the local phase between texture and residual.
+    the local phase between texture and that TV defect.
 
 - **BFFT High Vision**, the continual temporal-imaging framework. Its
   **Synthetic HDR** and **Night integrator** modes transport scene-linear
@@ -31,12 +31,11 @@ High Vision instead processes the camera's native pixel lattice. Photon
 evidence, detector-fixed noise, and motion are not inferred from a resized
 surrogate. Night emits monochrome luma; Synthetic HDR retains source chroma.
 
-The main effect uses the same independent layer mixer as the Python still
-viewer:
+The fixed jump-measure split is exactly complementary. The main effect mixer
+is therefore:
 
 ```
-output = residual
-       + cartoon_gain * cartoon
+output = cartoon_gain * cartoon
        + texture_gain * texture
        + shading_gain * (cartoon - ROF(cartoon, shading_c))
 ```
@@ -50,17 +49,18 @@ starting looks from the still viewer are:
 - illumination enhancement: `cartoon=1, texture=1, shading=2`
 - smooth cartoon with illumination: `cartoon=1, texture=0, shading=2`
 
-At exactly `cartoon=0`, the remaining residual and texture are signed detail
-rather than a color image. The plugin therefore displays that field around
+At exactly `cartoon=0`, the remaining texture is signed detail rather than a
+color image. The plugin therefore displays that field around
 mid-gray and neutralizes chroma. This preserves negative detail and prevents
 low luma with retained NV12 chroma from producing false red regions.
 
-Fine chrome performs one eight-sweep TV projection of `input - texture`.
+Fine chrome performs one adjustable TV projection of `input - texture`, which
+is exactly the jump cartoon under the complementary split.
 This yields a useful local transport direction without running the full slow
 Gilles loop. Relief depth and chrome gloss are adjustable. Its environment
 carrier uses BFFT's low-error table-polynomial sine rather than a scalar
 library `sin` at every pixel. Information caustics also uses BFFT's
-slope-tree phase estimator for its residual/texture angle.
+slope-tree phase estimator for its TV-defect/texture angle.
 
 Recursive recovery uses **Recovery boost**. Layer interference and Information
 caustics use **Information gain**; caustics additionally uses **Information
@@ -93,10 +93,12 @@ cp -R build-obs/bfft-cartoon.plugin \
 ```
 
 Restart OBS, open a source's **Filters**, and add **BFFT Cartoon** or **BFFT
-High Vision**. For Cartoon, start with 2 native passes and 6 CPU threads. On
-the current backend, a `1280x1024` decomposition takes about 13 ms at one pass
-and 22 ms at two passes on the development machine. Recursive recovery performs
-a second decomposition and is correspondingly heavier. For High Vision, start
+High Vision**. For Cartoon, start with 6 CPU threads and 8 TV effect sweeps.
+The jump split itself is fixed-cost; the sweep control affects only shading,
+Fine chrome, Layer interference, and Information caustics. On the development
+machine, the native-pitch `1280x1024` periodic-FACR jump split typically takes
+about 75–90 ms. Recursive recovery performs a second split and is
+correspondingly heavier. For High Vision, start
 with Synthetic HDR; Night integrator retains evidence longer for fixed-exposure
 low-light capture.
 
@@ -165,9 +167,17 @@ frame's full/limited-range metadata before transfer decoding and is mapped
 back to the same code range afterward; limited-range black is not treated as
 physical scene light.
 
-The native engine and all frame buffers are persistent. Quality changes update
-the outer pass count in place; they do not recreate plans or image-sized
-scratch storage. A plan is rebuilt only when the padded native dimensions or
-CPU thread count changes, and the incompatible plan is released before its
-replacement is allocated. Source/padded coordinate maps are cached on
-resolution changes. Effect shading runs once per native-pitch work pixel.
+The periodic FACR engine now runs the same jump-measure/Hodge construction as
+the full two-axis spectral path, using an O(N) structural gate and a two-pole
+virtual-depth approximation. It no longer falls back to the legacy outer
+alternation on ordinary video sizes.
+
+The native engine and base frame buffers are persistent. A plan is rebuilt
+only when padded native dimensions or CPU thread count changes, and the
+incompatible plan is released before its replacement is allocated.
+Source/padded coordinate maps are cached on resolution changes. The decoded
+input plane aliases the cartoon output in place; recomposition reuses that
+plane, and effect scratch is allocated lazily. Cartoon + texture therefore
+owns two plugin image planes instead of seven. Fine chrome and Information
+caustics peak at four. Exact crop rows use pointer offsets rather than
+per-pixel coordinate-map reads.

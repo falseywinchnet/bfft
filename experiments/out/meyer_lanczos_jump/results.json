@@ -1,0 +1,337 @@
+{
+  "quality_sources": "authored analytic truth only",
+  "scenes": {
+    "symmetric_support": {
+      "direct": {
+        "scores": {
+          "interior_texture_gain": 0.8722179089145098,
+          "interior_texture_relative_rms_error": 0.13925776100604315,
+          "contour_excess_texture_rms": 0.25809736654466664,
+          "cartoon_edge_gradient_gain": 0.9543517352731358,
+          "structure_plus_residual_edge_gradient_gain": 0.9543517352731358,
+          "model_residual_contour_rms": 3.681413026140488e-16,
+          "model_residual_energy_fraction": 4.0808094648986716e-32,
+          "texture_over_contour_allocation_auc": 0.8923198819890227,
+          "cartoon_relative_rms_error": 0.02407067572532055,
+          "texture_relative_rms_error": 0.3685273995678775
+        },
+        "texture_relative_l2": 0.3685273995678775,
+        "diagnostic": {
+          "offset": 1.5,
+          "anisotropy": 0.75,
+          "localized": false,
+          "half_threshold": 5.0,
+          "selected_fraction": 0.31402587890625
+        },
+        "route": {
+          "alpha": 1.5037311292334334,
+          "slack_fraction": 0.2,
+          "initial_overload_fraction": 0.0975189208984375,
+          "routed_overload_fraction": 0.1088104248046875,
+          "overload_energy_ratio": 0.9446681414002812,
+          "divergence_change_of_route": 1.224989004121782e-12,
+          "disk_readout_loss_ratio": 0.9987407276313892,
+          "postprojection_maximum": 40.000000000000014,
+          "tangent_frame_finite": true
+        }
+      },
+      "localized": {
+        "scores": {
+          "interior_texture_gain": 0.9431320017760103,
+          "interior_texture_relative_rms_error": 0.0608065362407194,
+          "contour_excess_texture_rms": 0.344225115856696,
+          "cartoon_edge_gradient_gain": 0.8154419245624387,
+          "structure_plus_residual_edge_gradient_gain": 0.8154419245624387,
+          "model_residual_contour_rms": 3.5796035392653355e-16,
+          "model_residual_energy_fraction": 4.0233895018159074e-32,
+          "texture_over_contour_allocation_auc": 0.8218342982029594,
+          "cartoon_relative_rms_error": 0.018721935239209488,
+          "texture_relative_rms_error": 0.2866369929667689
+        },
+        "texture_relative_l2": 0.2866369929667689,
+        "diagnostic": {
+          "offset": 1.5,
+          "anisotropy": 0.75,
+          "localized": true,
+          "half_threshold": 5.0,
+          "selected_fraction": 0.31402587890625
+        },
+        "route": {
+          "alpha": 1.2116839577970675,
+          "slack_fraction": 0.2,
+          "initial_overload_fraction": 0.0082855224609375,
+          "routed_overload_fraction": 0.00762939453125,
+          "overload_energy_ratio": 0.35856814065628895,
+          "divergence_change_of_route": 9.010290150874135e-13,
+          "disk_readout_loss_ratio": 0.8213069900843002,
+          "postprojection_maximum": 40.00000000000001,
+          "tangent_frame_finite": true
+        }
+      },
+      "raw_gradient": {
+        "scores": {
+          "interior_texture_gain": 0.9510134064630348,
+          "interior_texture_relative_rms_error": 0.050991950595460675,
+          "contour_excess_texture_rms": 0.2959304829954618,
+          "cartoon_edge_gradient_gain": 0.7925009332605107,
+          "structure_plus_residual_edge_gradient_gain": 0.7925009332605107,
+          "model_residual_contour_rms": 3.575562077549063e-16,
+          "model_residual_energy_fraction": 3.995524490500631e-32,
+          "texture_over_contour_allocation_auc": 0.8402257213307412,
+          "cartoon_relative_rms_error": 0.015643846663377307,
+          "texture_relative_rms_error": 0.2395107721894368
+        },
+        "texture_relative_l2": 0.2395107721894368
+      }
+    },
+    "multiscale_crossing": {
+      "direct": {
+        "scores": {
+          "interior_texture_gain": 0.6879891056593536,
+          "interior_texture_relative_rms_error": 0.36759926974729457,
+          "contour_excess_texture_rms": 0.5474887946233453,
+          "cartoon_edge_gradient_gain": 0.9304340964877675,
+          "structure_plus_residual_edge_gradient_gain": 0.9304340964877675,
+          "model_residual_contour_rms": 3.660263123246335e-16,
+          "model_residual_energy_fraction": 3.134504095695492e-32,
+          "texture_over_contour_allocation_auc": 0.6684494262568649,
+          "cartoon_relative_rms_error": 0.04577676694991607,
+          "texture_relative_rms_error": 0.5220587404025487
+        },
+        "texture_relative_l2": 0.5220587404025487,
+        "diagnostic": {
+          "offset": 1.5,
+          "anisotropy": 0.75,
+          "localized": false,
+          "half_threshold": 5.0,
+          "selected_fraction": 0.43695068359375
+        },
+        "route": {
+          "alpha": 1.4794019979921353,
+          "slack_fraction": 0.2,
+          "initial_overload_fraction": 0.0692901611328125,
+          "routed_overload_fraction": 0.0834197998046875,
+          "overload_energy_ratio": 0.9264791886025465,
+          "divergence_change_of_route": 1.2849610470280253e-12,
+          "disk_readout_loss_ratio": 0.9901325879740053,
+          "postprojection_maximum": 40.000000000000014,
+          "tangent_frame_finite": true
+        }
+      },
+      "localized": {
+        "scores": {
+          "interior_texture_gain": 0.8193317125196011,
+          "interior_texture_relative_rms_error": 0.20302738282465196,
+          "contour_excess_texture_rms": 0.47408305486084434,
+          "cartoon_edge_gradient_gain": 0.7698729603780564,
+          "structure_plus_residual_edge_gradient_gain": 0.7698729603780564,
+          "model_residual_contour_rms": 3.6272941933700465e-16,
+          "model_residual_energy_fraction": 3.092546349820247e-32,
+          "texture_over_contour_allocation_auc": 0.7256881457120604,
+          "cartoon_relative_rms_error": 0.029015260007975833,
+          "texture_relative_rms_error": 0.33090301263060434
+        },
+        "texture_relative_l2": 0.33090301263060434,
+        "diagnostic": {
+          "offset": 1.5,
+          "anisotropy": 0.75,
+          "localized": true,
+          "half_threshold": 5.0,
+          "selected_fraction": 0.43695068359375
+        },
+        "route": {
+          "alpha": 1.4254900178283736,
+          "slack_fraction": 0.2,
+          "initial_overload_fraction": 0.0099334716796875,
+          "routed_overload_fraction": 0.0085601806640625,
+          "overload_energy_ratio": 0.489122025512898,
+          "divergence_change_of_route": 1.0503233163213864e-12,
+          "disk_readout_loss_ratio": 0.8592827345552363,
+          "postprojection_maximum": 40.00000000000001,
+          "tangent_frame_finite": true
+        }
+      },
+      "raw_gradient": {
+        "scores": {
+          "interior_texture_gain": 0.8596828517514021,
+          "interior_texture_relative_rms_error": 0.16057217822613284,
+          "contour_excess_texture_rms": 0.44428722122746234,
+          "cartoon_edge_gradient_gain": 0.7749865496289586,
+          "structure_plus_residual_edge_gradient_gain": 0.7749865496289586,
+          "model_residual_contour_rms": 3.671453506594789e-16,
+          "model_residual_energy_fraction": 3.086816207937419e-32,
+          "texture_over_contour_allocation_auc": 0.7373491493252416,
+          "cartoon_relative_rms_error": 0.025572198453710795,
+          "texture_relative_rms_error": 0.29163679751946175
+        },
+        "texture_relative_l2": 0.29163679751946175
+      }
+    },
+    "checker_support": {
+      "direct": {
+        "scores": {
+          "interior_texture_gain": 0.9821468478007329,
+          "interior_texture_relative_rms_error": 0.03573729388777639,
+          "contour_excess_texture_rms": 0.18481781328356953,
+          "cartoon_edge_gradient_gain": 0.9622246589719619,
+          "structure_plus_residual_edge_gradient_gain": 0.9622246589719619,
+          "model_residual_contour_rms": 2.8327350026064263e-16,
+          "model_residual_energy_fraction": 3.922336566600709e-32,
+          "texture_over_contour_allocation_auc": 0.994811121528641,
+          "cartoon_relative_rms_error": 0.023418615615522016,
+          "texture_relative_rms_error": 0.2780140344384426
+        },
+        "texture_relative_l2": 0.2780140344384426,
+        "diagnostic": {
+          "offset": 1.5,
+          "anisotropy": 0.75,
+          "localized": false,
+          "half_threshold": 5.0,
+          "selected_fraction": 0.2853851318359375
+        },
+        "route": {
+          "alpha": 1.4034582972312284,
+          "slack_fraction": 0.2,
+          "initial_overload_fraction": 0.1170501708984375,
+          "routed_overload_fraction": 0.1265411376953125,
+          "overload_energy_ratio": 0.9680759315319879,
+          "divergence_change_of_route": 1.2943800947225308e-12,
+          "disk_readout_loss_ratio": 1.0007473164297285,
+          "postprojection_maximum": 40.000000000000014,
+          "tangent_frame_finite": true
+        }
+      },
+      "localized": {
+        "scores": {
+          "interior_texture_gain": 0.9844434717965256,
+          "interior_texture_relative_rms_error": 0.03058103526452621,
+          "contour_excess_texture_rms": 0.24604760399534326,
+          "cartoon_edge_gradient_gain": 0.8083528936602394,
+          "structure_plus_residual_edge_gradient_gain": 0.8083528936602394,
+          "model_residual_contour_rms": 2.7636665723960737e-16,
+          "model_residual_energy_fraction": 3.888474756540048e-32,
+          "texture_over_contour_allocation_auc": 0.9969159701399644,
+          "cartoon_relative_rms_error": 0.016853342672490453,
+          "texture_relative_rms_error": 0.20007441375172816
+        },
+        "texture_relative_l2": 0.20007441375172816,
+        "diagnostic": {
+          "offset": 1.5,
+          "anisotropy": 0.75,
+          "localized": true,
+          "half_threshold": 5.0,
+          "selected_fraction": 0.2853851318359375
+        },
+        "route": {
+          "alpha": 0.9888421526319281,
+          "slack_fraction": 0.2,
+          "initial_overload_fraction": 0.0059356689453125,
+          "routed_overload_fraction": 0.0037689208984375,
+          "overload_energy_ratio": 0.28174418975423293,
+          "divergence_change_of_route": 9.261035930426926e-13,
+          "disk_readout_loss_ratio": 0.7244686944660034,
+          "postprojection_maximum": 40.00000000000001,
+          "tangent_frame_finite": true
+        }
+      },
+      "raw_gradient": {
+        "scores": {
+          "interior_texture_gain": 0.9736992257145303,
+          "interior_texture_relative_rms_error": 0.04785287002671171,
+          "contour_excess_texture_rms": 0.18355218935290082,
+          "cartoon_edge_gradient_gain": 0.8390672325583572,
+          "structure_plus_residual_edge_gradient_gain": 0.8390672325583572,
+          "model_residual_contour_rms": 2.753480442188137e-16,
+          "model_residual_energy_fraction": 3.845915766036346e-32,
+          "texture_over_contour_allocation_auc": 1.0,
+          "cartoon_relative_rms_error": 0.012839528354641836,
+          "texture_relative_rms_error": 0.15242442750522028
+        },
+        "texture_relative_l2": 0.15242442750522028
+      }
+    },
+    "junction_texture": {
+      "direct": {
+        "scores": {
+          "interior_texture_gain": 0.7257025015249577,
+          "interior_texture_relative_rms_error": 0.3764912996138841,
+          "contour_excess_texture_rms": 1.0827384544265248,
+          "cartoon_edge_gradient_gain": 0.6932745032425922,
+          "structure_plus_residual_edge_gradient_gain": 0.6932745032425922,
+          "model_residual_contour_rms": 4.867100584673858e-16,
+          "model_residual_energy_fraction": 5.417106328874405e-32,
+          "texture_over_contour_allocation_auc": 0.5935148203363844,
+          "cartoon_relative_rms_error": 0.052846645520988444,
+          "texture_relative_rms_error": 0.8977558233697925
+        },
+        "texture_relative_l2": 0.8977558233697925,
+        "diagnostic": {
+          "offset": 1.5,
+          "anisotropy": 0.75,
+          "localized": false,
+          "half_threshold": 5.0,
+          "selected_fraction": 0.3139190673828125
+        },
+        "route": {
+          "alpha": 1.4043467543597274,
+          "slack_fraction": 0.2,
+          "initial_overload_fraction": 0.0458221435546875,
+          "routed_overload_fraction": 0.0455169677734375,
+          "overload_energy_ratio": 0.9347169127440885,
+          "divergence_change_of_route": 1.1447122769530615e-12,
+          "disk_readout_loss_ratio": 0.9839678909837268,
+          "postprojection_maximum": 40.000000000000014,
+          "tangent_frame_finite": true
+        }
+      },
+      "localized": {
+        "scores": {
+          "interior_texture_gain": 0.8650905344507261,
+          "interior_texture_relative_rms_error": 0.17981658729229963,
+          "contour_excess_texture_rms": 0.8242749208120589,
+          "cartoon_edge_gradient_gain": 0.7608020426547152,
+          "structure_plus_residual_edge_gradient_gain": 0.7608020426547152,
+          "model_residual_contour_rms": 4.83646944201511e-16,
+          "model_residual_energy_fraction": 5.342767439130385e-32,
+          "texture_over_contour_allocation_auc": 0.6612023320060101,
+          "cartoon_relative_rms_error": 0.03806383070914878,
+          "texture_relative_rms_error": 0.6466262019474555
+        },
+        "texture_relative_l2": 0.6466262019474555,
+        "diagnostic": {
+          "offset": 1.5,
+          "anisotropy": 0.75,
+          "localized": true,
+          "half_threshold": 5.0,
+          "selected_fraction": 0.3139190673828125
+        },
+        "route": {
+          "alpha": 0.7841323872412143,
+          "slack_fraction": 0.2,
+          "initial_overload_fraction": 0.032318115234375,
+          "routed_overload_fraction": 0.032867431640625,
+          "overload_energy_ratio": 0.9329955564598322,
+          "divergence_change_of_route": 9.86440266571811e-13,
+          "disk_readout_loss_ratio": 0.9665776041271043,
+          "postprojection_maximum": 40.000000000000014,
+          "tangent_frame_finite": true
+        }
+      },
+      "raw_gradient": {
+        "scores": {
+          "interior_texture_gain": 0.9157968762705547,
+          "interior_texture_relative_rms_error": 0.11761324588961156,
+          "contour_excess_texture_rms": 0.6609359984441698,
+          "cartoon_edge_gradient_gain": 0.753963866577698,
+          "structure_plus_residual_edge_gradient_gain": 0.753963866577698,
+          "model_residual_contour_rms": 4.785990750005253e-16,
+          "model_residual_energy_fraction": 5.4058500431712e-32,
+          "texture_over_contour_allocation_auc": 0.6926017926727362,
+          "cartoon_relative_rms_error": 0.02992162642823388,
+          "texture_relative_rms_error": 0.5083068964135836
+        },
+        "texture_relative_l2": 0.5083068964135836
+      }
+    }
+  }
+}

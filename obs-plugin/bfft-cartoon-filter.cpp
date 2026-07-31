@@ -28,9 +28,7 @@ constexpr const char *kCartoon = "cartoon_gain_v2";
 constexpr const char *kTexture = "texture_gain_v2";
 constexpr const char *kShading = "shading_gain_v2";
 constexpr const char *kShadeC = "shading_rof_c_v2";
-// Native-pitch plans have roughly nine times the old 512x288 area. A new
-// key intentionally avoids inheriting an old 12-24-pass saved setting.
-constexpr const char *kPasses = "native_passes_v1";
+constexpr const char *kEffectSweeps = "effect_sweeps_v1";
 constexpr const char *kThreads = "threads";
 constexpr const char *kMode = "mode";
 constexpr const char *kRelief = "relief";
@@ -46,20 +44,20 @@ struct Filter {
 	uint32_t work_height = 0;
 	uint32_t frame_width = 0;
 	uint32_t frame_height = 0;
-	int plan_passes = 0;
 	int plan_threads = 0;
 
+	// bfft_meyer_split permits image==cartoon. The decoded input plane is
+	// therefore replaced in place by cartoon, leaving only texture resident.
 	std::vector<double> input;
-	std::vector<double> cartoon;
 	std::vector<double> texture;
-	std::vector<double> projected_cartoon;
-	std::vector<double> difference;
-	std::vector<double> output;
-	std::vector<double> recursive_texture;
+	// Effect scratch is allocated only by modes that consume it. No mode
+	// needs more than these two planes.
+	std::vector<double> scratch_a;
+	std::vector<double> scratch_b;
 	std::vector<uint32_t> work_source_x;
 	std::vector<uint32_t> work_source_y;
-	std::vector<uint32_t> frame_work_x;
-	std::vector<uint32_t> frame_work_y;
+	uint32_t crop_left = 0;
+	uint32_t crop_top = 0;
 
 	std::mutex settings_mutex;
 	std::mutex processing_mutex;
@@ -67,7 +65,7 @@ struct Filter {
 	double texture_gain = 1.0;
 	double shading_gain = 0.0;
 	double shade_c = 0.02;
-	int passes = 2;
+	int effect_sweeps = 8;
 	int threads = 6;
 	int mode = 0;
 	double relief = 1.0;
@@ -82,7 +80,6 @@ struct Filter {
 	double split_ms = 0.0;
 	double effect_ms = 0.0;
 	uint64_t plan_builds = 0;
-	uint64_t pass_updates = 0;
 };
 
 bool is_power_of_two(uint32_t value)
@@ -135,12 +132,12 @@ void update_resample_maps(Filter *filter, uint32_t frame_width,
 	filter->frame_height = frame_height;
 	filter->work_source_x.resize(work_width);
 	filter->work_source_y.resize(work_height);
-	filter->frame_work_x.resize(frame_width);
-	filter->frame_work_y.resize(frame_height);
 	const int64_t left =
 		static_cast<int64_t>(work_width - frame_width) / 2;
 	const int64_t top =
 		static_cast<int64_t>(work_height - frame_height) / 2;
+	filter->crop_left = static_cast<uint32_t>(left);
+	filter->crop_top = static_cast<uint32_t>(top);
 	auto reflected_index = [](int64_t coordinate, uint32_t length) {
 		if (coordinate < 0)
 			return static_cast<uint32_t>(-coordinate - 1);
@@ -158,34 +155,16 @@ void update_resample_maps(Filter *filter, uint32_t frame_width,
 		filter->work_source_y[y] =
 			reflected_index(static_cast<int64_t>(y) - top,
 					frame_height);
-	for (uint32_t x = 0; x < frame_width; ++x)
-		filter->frame_work_x[x] =
-			static_cast<uint32_t>(left) + x;
-	for (uint32_t y = 0; y < frame_height; ++y)
-		filter->frame_work_y[y] =
-			static_cast<uint32_t>(top) + y;
 }
 
 bool ensure_plan(Filter *filter, uint32_t frame_width, uint32_t frame_height,
-		 int passes, int threads)
+		 int threads)
 {
 	uint32_t work_width, work_height;
 	choose_work_shape(frame_width, frame_height, work_width, work_height);
 	if (filter->plan && filter->work_width == work_width &&
 	    filter->work_height == work_height &&
 	    filter->plan_threads == threads) {
-		if (filter->plan_passes != passes) {
-			const bfft_status status =
-				bfft_meyer_plan_set_passes(filter->plan, passes);
-			if (status != BFFT_OK) {
-				blog(LOG_ERROR,
-				     "[BFFT Cartoon] pass update failed (%d)",
-				     static_cast<int>(status));
-				return false;
-			}
-			filter->plan_passes = passes;
-			++filter->pass_updates;
-		}
 		update_resample_maps(filter, frame_width, frame_height,
 				     work_width, work_height);
 		return true;
@@ -196,10 +175,14 @@ bool ensure_plan(Filter *filter, uint32_t frame_width, uint32_t frame_height,
 	filter->plan = nullptr;
 	filter->work_width = filter->work_height = 0;
 	filter->frame_width = filter->frame_height = 0;
-	filter->plan_passes = filter->plan_threads = 0;
+	filter->plan_threads = 0;
+	std::vector<double>().swap(filter->input);
+	std::vector<double>().swap(filter->texture);
+	std::vector<double>().swap(filter->scratch_a);
+	std::vector<double>().swap(filter->scratch_b);
 
 	bfft_status status = bfft_meyer_plan_create(
-		work_height, work_width, 0.05, 40.0, passes, 32, 1e-4,
+		work_height, work_width, 0.05, 40.0, 1, 1, 0.0,
 		threads, &filter->plan);
 	if (status == BFFT_OK)
 		status = bfft_meyer_plan_set_solver(filter->plan, 1);
@@ -215,24 +198,17 @@ bool ensure_plan(Filter *filter, uint32_t frame_width, uint32_t frame_height,
 
 	filter->work_width = work_width;
 	filter->work_height = work_height;
-	filter->plan_passes = passes;
 	filter->plan_threads = threads;
 	++filter->plan_builds;
 	const size_t count = static_cast<size_t>(work_width) * work_height;
 	filter->input.resize(count);
-	filter->cartoon.resize(count);
 	filter->texture.resize(count);
-	filter->projected_cartoon.resize(count);
-	filter->difference.resize(count);
-	filter->output.resize(count);
-	filter->recursive_texture.resize(count);
 	update_resample_maps(filter, frame_width, frame_height, work_width,
 			     work_height);
 	blog(LOG_INFO,
-	     "[BFFT Cartoon] native-pitch FACR grid %ux%u for %ux%u input, "
-	     "%d passes, %d threads",
-	     work_width, work_height, frame_width, frame_height, passes,
-	     threads);
+	     "[BFFT Cartoon] native-pitch jump FACR grid %ux%u for %ux%u "
+	     "input, %d threads",
+	     work_width, work_height, frame_width, frame_height, threads);
 	return true;
 }
 
@@ -452,6 +428,7 @@ void read_work_input(Filter *filter, const obs_source_frame *frame)
 {
 	const uint32_t ww = filter->work_width;
 	const uint32_t wh = filter->work_height;
+	const bool exact_width = ww == frame->width;
 	if (is_planar_luma(frame->format)) {
 		for (uint32_t wy = 0; wy < wh; ++wy) {
 			const uint8_t *row =
@@ -461,8 +438,13 @@ void read_work_input(Filter *filter, const obs_source_frame *frame)
 					frame->linesize[0];
 			double *dst = filter->input.data() +
 				      static_cast<size_t>(wy) * ww;
-			for (uint32_t wx = 0; wx < ww; ++wx)
-				dst[wx] = row[filter->work_source_x[wx]];
+			if (exact_width) {
+				for (uint32_t wx = 0; wx < ww; ++wx)
+					dst[wx] = row[wx];
+			} else {
+				for (uint32_t wx = 0; wx < ww; ++wx)
+					dst[wx] = row[filter->work_source_x[wx]];
+			}
 		}
 		return;
 	}
@@ -471,14 +453,26 @@ void read_work_input(Filter *filter, const obs_source_frame *frame)
 		const uint32_t sy = filter->work_source_y[wy];
 		double *dst = filter->input.data() +
 			      static_cast<size_t>(wy) * ww;
-		for (uint32_t wx = 0; wx < ww; ++wx)
-			dst[wx] = read_luma(
-				frame, filter->work_source_x[wx], sy);
+		if (exact_width) {
+			for (uint32_t wx = 0; wx < ww; ++wx)
+				dst[wx] = read_luma(frame, wx, sy);
+		} else {
+			for (uint32_t wx = 0; wx < ww; ++wx)
+				dst[wx] = read_luma(
+					frame, filter->work_source_x[wx], sy);
+		}
 	}
 }
 
+double *ensure_effect_plane(std::vector<double> &plane, size_t count)
+{
+	if (plane.size() != count)
+		plane.resize(count);
+	return plane.data();
+}
+
 void write_work_output(Filter *filter, obs_source_frame *frame,
-		       bool monochrome)
+		       const double *output, bool monochrome)
 {
 	const uint32_t ww = filter->work_width;
 	if (monochrome)
@@ -489,24 +483,22 @@ void write_work_output(Filter *filter, obs_source_frame *frame,
 				frame->data[0] +
 				static_cast<size_t>(y) * frame->linesize[0];
 			const double *src =
-				filter->output.data() +
-				static_cast<size_t>(
-					filter->frame_work_y[y]) *
-					ww;
+				output +
+				static_cast<size_t>(filter->crop_top + y) * ww +
+				filter->crop_left;
 			for (uint32_t x = 0; x < frame->width; ++x)
-				row[x] =
-					clamp_byte(src[filter->frame_work_x[x]]);
+				row[x] = clamp_byte(src[x]);
 		}
 		return;
 	}
 
 	for (uint32_t y = 0; y < frame->height; ++y) {
 		const double *src =
-			filter->output.data() +
-			static_cast<size_t>(filter->frame_work_y[y]) * ww;
+			output +
+			static_cast<size_t>(filter->crop_top + y) * ww +
+			filter->crop_left;
 		for (uint32_t x = 0; x < frame->width; ++x)
-			write_luma(frame, x, y,
-				   src[filter->frame_work_x[x]], monochrome);
+			write_luma(frame, x, y, src[x], monochrome);
 	}
 }
 
@@ -523,7 +515,8 @@ void filter_update(void *data, obs_data_t *settings)
 	filter->texture_gain = obs_data_get_double(settings, kTexture);
 	filter->shading_gain = obs_data_get_double(settings, kShading);
 	filter->shade_c = obs_data_get_double(settings, kShadeC);
-	filter->passes = static_cast<int>(obs_data_get_int(settings, kPasses));
+	filter->effect_sweeps =
+		static_cast<int>(obs_data_get_int(settings, kEffectSweeps));
 	filter->threads = static_cast<int>(obs_data_get_int(settings, kThreads));
 	filter->mode = static_cast<int>(obs_data_get_int(settings, kMode));
 	filter->relief = obs_data_get_double(settings, kRelief);
@@ -541,7 +534,7 @@ void filter_defaults(obs_data_t *settings)
 	obs_data_set_default_double(settings, kTexture, 1.0);
 	obs_data_set_default_double(settings, kShading, 0.0);
 	obs_data_set_default_double(settings, kShadeC, 0.02);
-	obs_data_set_default_int(settings, kPasses, 2);
+	obs_data_set_default_int(settings, kEffectSweeps, 8);
 	obs_data_set_default_int(settings, kThreads, 6);
 	obs_data_set_default_int(settings, kMode, 0);
 	obs_data_set_default_double(settings, kRelief, 1.0);
@@ -572,7 +565,7 @@ obs_properties_t *filter_properties(void *)
 	obs_properties_add_float_slider(
 		props, kShadeC, "TV projection constant", 0.004, 0.2, 0.002);
 	obs_properties_add_int_slider(
-		props, kPasses, "Native quality / passes", 1, 8, 1);
+		props, kEffectSweeps, "TV effect sweeps", 4, 16, 1);
 	obs_properties_add_int_slider(
 		props, kThreads, "CPU threads", 1, 8, 1);
 	obs_properties_add_float_slider(
@@ -601,11 +594,9 @@ void filter_destroy(void *data)
 {
 	auto *filter = static_cast<Filter *>(data);
 	blog(LOG_INFO,
-	     "[BFFT Cartoon] destroyed after %llu frames; %llu plan build(s), "
-	     "%llu allocation-free quality update(s)",
+	     "[BFFT Cartoon] destroyed after %llu frames; %llu plan build(s)",
 	     static_cast<unsigned long long>(filter->frames),
-	     static_cast<unsigned long long>(filter->plan_builds),
-	     static_cast<unsigned long long>(filter->pass_updates));
+	     static_cast<unsigned long long>(filter->plan_builds));
 	bfft_meyer_plan_destroy(filter->plan);
 	delete filter;
 }
@@ -620,14 +611,14 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 	std::lock_guard<std::mutex> processing_lock(filter->processing_mutex);
 	double cartoon_gain, texture_gain, shading_gain, shade_c, relief, gloss;
 	double recovery_gain, information_gain, phase_folds;
-	int passes, threads, mode;
+	int effect_sweeps, threads, mode;
 	{
 		std::lock_guard<std::mutex> lock(filter->settings_mutex);
 		cartoon_gain = filter->cartoon_gain;
 		texture_gain = filter->texture_gain;
 		shading_gain = filter->shading_gain;
 		shade_c = filter->shade_c;
-		passes = std::clamp(filter->passes, 1, 8);
+		effect_sweeps = std::clamp(filter->effect_sweeps, 4, 16);
 		threads = std::clamp(filter->threads, 1, 8);
 		switch (filter->mode) {
 		case 3:
@@ -651,12 +642,7 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 	    std::abs(shading_gain) < 1e-12)
 		return frame;
 
-	const int solve_passes =
-		mode == 0 && std::abs(shading_gain) < 1e-12
-			? passes
-			: std::min(passes, 8);
-	if (!ensure_plan(filter, frame->width, frame->height, solve_passes,
-			 threads))
+	if (!ensure_plan(filter, frame->width, frame->height, threads))
 		return frame;
 
 	const auto started = std::chrono::steady_clock::now();
@@ -666,53 +652,50 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 	const auto input_done = std::chrono::steady_clock::now();
 
 	if (bfft_meyer_split(filter->plan, filter->input.data(),
-			     filter->cartoon.data(),
+			     filter->input.data(),
 			     filter->texture.data()) != BFFT_OK)
 		return frame;
 	const auto split_done = std::chrono::steady_clock::now();
 
 	if (mode == 0) {
-		if (std::abs(shading_gain) >= 1e-12 &&
-		    bfft_meyer_rof(filter->plan, filter->cartoon.data(),
-				   filter->projected_cartoon.data(), shade_c,
-				   0.0, 8, 0.0) != BFFT_OK)
-			return frame;
-		// With no cartoon carrier, the remaining fields are signed detail.
-		// Display them around neutral gray and remove source chroma; writing
-		// near-zero Y while retaining NV12 U/V is what produced red flats.
+		double *smooth = nullptr;
+		if (std::abs(shading_gain) >= 1e-12) {
+			smooth = ensure_effect_plane(filter->scratch_a, count);
+			if (bfft_meyer_rof(filter->plan, filter->input.data(), smooth,
+					   shade_c, 0.0, effect_sweeps,
+					   0.0) != BFFT_OK)
+				return frame;
+		}
+		// The jump split is complementary, so recomposition needs no model
+		// residual plane. Reuse the cartoon/input plane for the final field.
 		const bool signed_detail = std::abs(cartoon_gain) < 1e-12;
 		for (size_t i = 0; i < count; ++i) {
-			const double residual =
-				filter->input[i] - filter->cartoon[i] -
-				filter->texture[i];
-			double value =
-				residual + cartoon_gain * filter->cartoon[i] +
-				texture_gain * filter->texture[i];
+			const double cartoon = filter->input[i];
+			double value = cartoon_gain * cartoon +
+				       texture_gain * filter->texture[i];
 			if (std::abs(shading_gain) >= 1e-12)
 				value += shading_gain *
-					 (filter->cartoon[i] -
-					  filter->projected_cartoon[i]);
-			filter->output[i] =
-				signed_detail ? 128.0 + value : value;
+					 (cartoon - smooth[i]);
+			filter->input[i] = signed_detail ? 128.0 + value : value;
 		}
-		write_work_output(filter, frame, signed_detail);
+		write_work_output(filter, frame, filter->input.data(),
+				  signed_detail);
 	} else if (mode == 3) {
 		// Fine chrome: one accurate outer-map correction,
-		// u_TGFD - ROF(f - v_TGFD, lambda).
-		for (size_t i = 0; i < count; ++i)
-			filter->difference[i] =
-				filter->input[i] - filter->texture[i];
-		if (bfft_meyer_rof(filter->plan, filter->difference.data(),
-				   filter->projected_cartoon.data(), shade_c,
-				   0.0, std::clamp(passes, 8, 24),
+		// u_jump - ROF(u_jump, lambda). The complementary jump split makes
+		// f-v exactly u, so no subtraction plane is needed.
+		double *defect = ensure_effect_plane(filter->scratch_a, count);
+		double *chrome_output =
+			ensure_effect_plane(filter->scratch_b, count);
+		if (bfft_meyer_rof(filter->plan, filter->input.data(), defect,
+				   shade_c, 0.0, effect_sweeps,
 				   0.0) != BFFT_OK)
 			return frame;
 
 		double energy = 0.0;
 		for (size_t i = 0; i < count; ++i) {
-			const double d = filter->cartoon[i] -
-					 filter->projected_cartoon[i];
-			filter->difference[i] = d;
+			const double d = filter->input[i] - defect[i];
+			defect[i] = d;
 			energy += d * d;
 		}
 		const double rms =
@@ -720,29 +703,27 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 		const double inv_scale =
 			1.0 / std::max(3.0 * rms, 1e-6);
 
-		// The height field is work-grid sized. Shade it once there, then
-		// expand; the previous full-frame loop repeated identical sin/pow
-		// work for every source pixel mapped to the same work cell.
+		// Shade once on the native-pitch work lattice.
 		for (uint32_t wy = 0; wy < wh; ++wy) {
 			for (uint32_t wx = 0; wx < ww; ++wx) {
 				const size_t i = static_cast<size_t>(wy) * ww + wx;
 				const double h = std::clamp(
-					filter->difference[i] * inv_scale,
+					defect[i] * inv_scale,
 					-1.0, 1.0);
 				const uint32_t xl = wx ? wx - 1 : ww - 1;
 				const uint32_t xr = wx + 1 < ww ? wx + 1 : 0;
 				const uint32_t yu = wy ? wy - 1 : wh - 1;
 				const uint32_t yd = wy + 1 < wh ? wy + 1 : 0;
 				const double dx =
-					(filter->difference[
+					(defect[
 						 static_cast<size_t>(wy) * ww + xr] -
-					 filter->difference[
+					 defect[
 						 static_cast<size_t>(wy) * ww + xl]) *
 					inv_scale;
 				const double dy =
-					(filter->difference[
+					(defect[
 						 static_cast<size_t>(yd) * ww + wx] -
-					 filter->difference[
+					 defect[
 						 static_cast<size_t>(yu) * ww + wx]) *
 					inv_scale;
 				double nx = -relief * 2.5 * dx;
@@ -763,9 +744,11 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 				const uint32_t sy = static_cast<uint32_t>(
 					std::clamp(static_cast<int>(wy) + oy,
 						   0, static_cast<int>(wh) - 1));
+				const size_t displaced_index =
+					static_cast<size_t>(sy) * ww + sx;
 				const double displaced =
-					filter->input[
-						static_cast<size_t>(sy) * ww + sx];
+					filter->input[displaced_index] +
+					filter->texture[displaced_index];
 				const double light = std::max(
 					0.0, -0.35 * nx - 0.45 * ny +
 						     0.82 * nz);
@@ -789,59 +772,62 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 				const double output =
 					(0.35 - 0.2 * gloss) * displaced +
 					chrome;
-				filter->output[i] = output;
+				chrome_output[i] = output;
 			}
 		}
-		write_work_output(filter, frame, true);
+		write_work_output(filter, frame, chrome_output, true);
 	} else if (mode == 20) {
-		// Repeat the decomposition on the residual-bearing cartoon state
-		// g = f - v. This is the useful two-filter "recovery" behavior
-		// without an intervening quantized OBS round trip.
-		for (size_t i = 0; i < count; ++i)
-			filter->difference[i] =
-				filter->input[i] - filter->texture[i];
-		if (bfft_meyer_split(filter->plan, filter->difference.data(),
-				     filter->projected_cartoon.data(),
-				     filter->recursive_texture.data()) != BFFT_OK)
+		// Repeat the split directly on the first cartoon. Both calls use
+		// image==cartoon, so the complete two-stage path needs one extra
+		// texture plane and no state copy.
+		double *recursive_texture =
+			ensure_effect_plane(filter->scratch_a, count);
+		if (bfft_meyer_split(filter->plan, filter->input.data(),
+				     filter->input.data(),
+				     recursive_texture) != BFFT_OK)
 			return frame;
 		recovery_gain = std::clamp(recovery_gain, 0.0, 10.0);
-		for (size_t i = 0; i < count; ++i)
-			filter->output[i] =
-				filter->difference[i] +
-				recovery_gain * filter->recursive_texture[i];
-		write_work_output(filter, frame, false);
+		for (size_t i = 0; i < count; ++i) {
+			// Former stage settings cartoon=1, texture=1+boost.
+			filter->texture[i] = filter->input[i] +
+				(1.0 + recovery_gain) * recursive_texture[i];
+		}
+		write_work_output(filter, frame, filter->texture.data(), false);
 	} else if (mode == 21) {
-		// Quadrature-like cross term between the explicit texture and the
-		// model residual. It is positive where they reinforce, negative
-		// where they oppose, and zero where either channel is absent.
+		// The new split has no unassigned residual. Its informative second
+		// layer is the cartoon-side TV defect: show its signed coupling to
+		// material texture instead.
+		double *smooth = ensure_effect_plane(filter->scratch_a, count);
+		if (bfft_meyer_rof(filter->plan, filter->input.data(), smooth,
+				   shade_c, 0.0, effect_sweeps, 0.0) != BFFT_OK)
+			return frame;
 		information_gain = std::clamp(information_gain, 0.0, 6.0);
 		for (size_t i = 0; i < count; ++i) {
-			const double residual =
-				filter->input[i] - filter->cartoon[i] -
-				filter->texture[i];
+			const double defect = filter->input[i] - smooth[i];
 			const double texture = filter->texture[i];
 			const double magnitude = std::sqrt(
-				residual * residual + texture * texture);
+				defect * defect + texture * texture);
 			const double coupling =
-				2.0 * residual * texture /
+				2.0 * defect * texture /
 				std::max(magnitude, 1e-6);
-			filter->output[i] =
+			filter->input[i] =
 				128.0 + information_gain * coupling;
 		}
-		write_work_output(filter, frame, true);
+		write_work_output(filter, frame, filter->input.data(), true);
 	} else {
-		// Information caustics. The non-cartoon field supplies surface
-		// geometry; the phase between texture and residual supplies a
-		// bounded optical carrier. Quiet regions remain unchanged.
+		// Information caustics. Material texture plus the cartoon-side TV
+		// defect supplies geometry; their phase supplies the carrier.
+		double *field = ensure_effect_plane(filter->scratch_a, count);
+		double *caustic_output =
+			ensure_effect_plane(filter->scratch_b, count);
+		if (bfft_meyer_rof(filter->plan, filter->input.data(), field,
+				   shade_c, 0.0, effect_sweeps, 0.0) != BFFT_OK)
+			return frame;
 		double energy = 0.0;
 		for (size_t i = 0; i < count; ++i) {
-			const double residual =
-				filter->input[i] - filter->cartoon[i] -
-				filter->texture[i];
-			filter->difference[i] =
-				filter->texture[i] + residual;
-			energy += filter->difference[i] *
-				  filter->difference[i];
+			const double defect = filter->input[i] - field[i];
+			field[i] = filter->texture[i] + defect;
+			energy += field[i] * field[i];
 		}
 		const double inv_scale =
 			1.0 / std::max(
@@ -858,17 +844,14 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 				const uint32_t xl = x ? x - 1 : ww - 1;
 				const uint32_t xr = x + 1 < ww ? x + 1 : 0;
 				const size_t i = static_cast<size_t>(y) * ww + x;
-				const double residual =
-					filter->input[i] -
-					filter->cartoon[i] -
-					filter->texture[i];
 				const double texture = filter->texture[i];
+				const double defect = field[i] - texture;
 				const double magnitude =
-					std::sqrt(residual * residual +
+					std::sqrt(defect * defect +
 						  texture * texture);
 				double phase =
 					effect_trig::bruun_phase_atan2(
-						residual, texture) *
+						defect, texture) *
 					phase_folds;
 				phase -= std::floor(
 						 phase /
@@ -879,15 +862,15 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 					phase, &carrier, &carrier_cosine);
 
 				const double dx =
-					(filter->difference[
+					(field[
 						 static_cast<size_t>(y) * ww + xr] -
-					 filter->difference[
+					 field[
 						 static_cast<size_t>(y) * ww + xl]) *
 					inv_scale;
 				const double dy =
-					(filter->difference[
+					(field[
 						 static_cast<size_t>(yd) * ww + x] -
-					 filter->difference[
+					 field[
 						 static_cast<size_t>(yu) * ww + x]) *
 					inv_scale;
 				double nx = -relief * dx;
@@ -906,19 +889,21 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 				const uint32_t sy = static_cast<uint32_t>(
 					std::clamp(static_cast<int>(y) + oy,
 						   0, static_cast<int>(wh) - 1));
+				const size_t displaced_index =
+					static_cast<size_t>(sy) * ww + sx;
 				const double displaced =
-					filter->input[
-						static_cast<size_t>(sy) * ww + sx];
+					filter->input[displaced_index] +
+					filter->texture[displaced_index];
 				const double presence =
 					magnitude / (magnitude + 12.0);
-				filter->output[i] =
+				caustic_output[i] =
 					displaced +
 					information_gain * presence *
 						(28.0 * carrier -
 						 12.0 * nx - 10.0 * ny);
 			}
 		}
-		write_work_output(filter, frame, false);
+		write_work_output(filter, frame, caustic_output, false);
 	}
 
 	const auto effect_done = std::chrono::steady_clock::now();

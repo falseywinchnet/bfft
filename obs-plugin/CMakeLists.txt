@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(bfft-obs VERSION 0.6.0 LANGUAGES C CXX)
+project(bfft-obs VERSION 0.7.0 LANGUAGES C CXX)
 
 include(FetchContent)
 

@@ -110,8 +110,10 @@ int main() {
         bfft_meyer_plan_create(H, W, 0.05, 40.0, 5, 4, 0.0, 2,
                                &p1) != BFFT_OK ||
         bfft_meyer_plan_set_solver(p1, 1) != BFFT_OK ||
-        bfft_meyer_split(p0, image.data(), c0.data(), v0.data()) != BFFT_OK ||
-        bfft_meyer_split(p1, image.data(), c1.data(), v1.data()) != BFFT_OK)
+        bfft_meyer_split_legacy(
+            p0, image.data(), c0.data(), v0.data()) != BFFT_OK ||
+        bfft_meyer_split_legacy(
+            p1, image.data(), c1.data(), v1.data()) != BFFT_OK)
         return 1;
     const double periodic_error =
         std::max(max_error(c0, c1), max_error(v0, v1));
@@ -157,8 +159,10 @@ int main() {
                                    3, 2, 0.0, 4, &b) != BFFT_OK ||
             bfft_meyer_plan_set_solver(a, 1) != BFFT_OK ||
             bfft_meyer_plan_set_solver(b, 1) != BFFT_OK ||
-            bfft_meyer_split(a, in.data(), ca.data(), va.data()) != BFFT_OK ||
-            bfft_meyer_split(b, in.data(), cb.data(), vb.data()) != BFFT_OK)
+            bfft_meyer_split_legacy(
+                a, in.data(), ca.data(), va.data()) != BFFT_OK ||
+            bfft_meyer_split_legacy(
+                b, in.data(), cb.data(), vb.data()) != BFFT_OK)
             return 3;
         const double thread_error =
             std::max(max_error(ca, cb), max_error(va, vb));
@@ -167,13 +171,61 @@ int main() {
         if (!finite(ca) || !finite(va) || thread_error != 0.0) return 4;
     }
 
+    // The default jump-measure path is native on periodic FACR too.  It is
+    // fixed-cost (legacy pass changes do not alter it), exactly recomposes,
+    // is thread-count invariant, and permits the input/cartoon alias used by
+    // the OBS filter.
+    for (const auto shape : {std::pair<std::size_t, std::size_t>{37, 64},
+                             {64, 45}, {288, 512}}) {
+        const std::size_t n = shape.first * shape.second;
+        std::vector<double> in(n), c1(n), v1(n), c4(n), v4(n),
+            explicit_c(n), explicit_v(n), aliased(n), alias_v(n);
+        fill(in);
+        bfft_meyer_plan *one = nullptr, *four = nullptr;
+        if (bfft_meyer_plan_create(shape.first, shape.second, 0.05, 40.0,
+                                   1, 2, 0.0, 1, &one) != BFFT_OK ||
+            bfft_meyer_plan_create(shape.first, shape.second, 0.05, 40.0,
+                                   8, 2, 0.0, 4, &four) != BFFT_OK ||
+            bfft_meyer_plan_set_solver(one, 1) != BFFT_OK ||
+            bfft_meyer_plan_set_solver(four, 1) != BFFT_OK ||
+            bfft_meyer_split(one, in.data(), c1.data(), v1.data()) !=
+                BFFT_OK ||
+            bfft_meyer_split(four, in.data(), c4.data(), v4.data()) !=
+                BFFT_OK ||
+            bfft_meyer_split_jump_measure(
+                four, in.data(), explicit_c.data(), explicit_v.data(), 8) !=
+                BFFT_OK)
+            return 9;
+        aliased = in;
+        if (bfft_meyer_split(four, aliased.data(), aliased.data(),
+                             alias_v.data()) != BFFT_OK)
+            return 10;
+        double recompose_error = 0.0;
+        for (std::size_t i = 0; i < n; ++i)
+            recompose_error = std::max(
+                recompose_error, std::abs(c1[i] + v1[i] - in[i]));
+        const double default_error = std::max(
+            max_error(c1, c4), max_error(v1, v4));
+        const double explicit_error = std::max(
+            max_error(c4, explicit_c), max_error(v4, explicit_v));
+        const double alias_error = std::max(
+            max_error(c4, aliased), max_error(v4, alias_v));
+        bfft_meyer_plan_destroy(one);
+        bfft_meyer_plan_destroy(four);
+        if (!finite(c1) || !finite(v1) || recompose_error > 3e-14 ||
+            default_error != 0.0 || explicit_error != 0.0 ||
+            alias_error != 0.0)
+            return 11;
+    }
+
     // Neumann mode is a deliberate behavior change but must remain finite.
     bfft_meyer_plan* pn = nullptr;
     std::vector<double> cn(N), vn(N);
     if (bfft_meyer_plan_create(H, W, 0.05, 40.0, 3, 2, 0.0, 2,
                                &pn) != BFFT_OK ||
         bfft_meyer_plan_set_solver(pn, 2) != BFFT_OK ||
-        bfft_meyer_split(pn, image.data(), cn.data(), vn.data()) != BFFT_OK)
+        bfft_meyer_split_legacy(
+            pn, image.data(), cn.data(), vn.data()) != BFFT_OK)
         return 5;
     bfft_meyer_plan_destroy(pn);
     return finite(cn) && finite(vn) ? 0 : 6;

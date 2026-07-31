@@ -63,9 +63,11 @@
 #include <cassert>
 #include <condition_variable>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <memory>
 #include <mutex>
+#include <numeric>
 #include <thread>
 #include <type_traits>
 #include <utility>
@@ -270,7 +272,8 @@ struct engine {
     std::vector<double> s_gen;
     double gen_c = 0.0, gen_eta = 0.0;
 
-    tri_factors t_u, t_v, t_r0, t_r1, t_r2, t_gen;
+    tri_factors t_u, t_v, t_r0, t_r1, t_r2, t_gen, t_poisson, t_virtual;
+    int facr_virtual_passes = 0;
 
     // spatial planes, H*W
     std::vector<double> u, w, xit;             // xit = generic ROF iterate
@@ -280,6 +283,9 @@ struct engine {
     std::vector<double> bvx, bvy, dbvx, dbvy;
     std::vector<double> rbx, rby, rdbx, rdby;  // rung solver (reused)
     std::vector<double> vplane, prev, rhodge, rhodge_x, rhodge_y;
+    // Lazy scratch for the opt-in first-pass structural conditioner.
+    std::vector<double> condition_gate;
+    std::vector<double> jump_confidence, jump_boundary;
     int last_rof_sweeps = 0;
     bool last_rof_hodge_applied = false;
 
@@ -377,6 +383,18 @@ struct engine {
         if (vplane.empty()) vplane.assign(H * W, 0.0);
     }
 
+    void ensure_conditioning_storage() {
+        if (condition_gate.empty()) condition_gate.assign(H * W, 0.0);
+    }
+
+    void ensure_jump_measure_storage() {
+        ensure_conditioning_storage();
+        ensure_visit_storage();
+        const std::size_t n = H * W;
+        if (jump_confidence.empty()) jump_confidence.assign(n, 0.0);
+        if (jump_boundary.empty()) jump_boundary.assign(n, 0.0);
+    }
+
     void clear_spectral_storage() {
         for (auto* v : {&s_u, &s_v, &s_r0, &s_r1, &s_r2, &s_gen,
                         &reT, &imT})
@@ -394,10 +412,12 @@ struct engine {
             std::vector<double>().swap(s->a);
             std::vector<double>().swap(s->b);
         }
-        for (auto* t : {&t_u, &t_v, &t_r0, &t_r1, &t_r2, &t_gen}) {
+        for (auto* t : {&t_u, &t_v, &t_r0, &t_r1, &t_r2, &t_gen,
+                        &t_poisson, &t_virtual}) {
             std::vector<double>().swap(t->pivot);
             std::vector<double>().swap(t->diagonal);
         }
+        facr_virtual_passes = 0;
     }
 
     bool set_solver(int mode) {
@@ -431,6 +451,22 @@ struct engine {
             s->alloc(FS, FB);
         build_factors(t_u, lam, 2.0 * lam);
         build_factors(t_v, 1.0 / mu, 10.0 / mu);
+        // The periodic Poisson right-hand sides below are divergences and
+        // therefore have zero mean.  A tiny screened DC term makes the
+        // cyclic Thomas factor nonsingular; facr_poisson removes the DC
+        // component before and after the solve, so this term never enters
+        // the represented field.
+        if (solver == 1)
+            build_factors(t_poisson, 1e-8, 1.0);
+        if (solver == 1) {
+            // Default jump depth K=8 represented as two equal backward
+            // resolvents.  (1 + K*x/2)^-2 matches the exact (1+x)^-K
+            // generator at x=0 while retaining quadratic high-frequency
+            // decay.  This removes six cyclic solves from each of the two
+            // virtual observations.
+            build_factors(t_virtual, lam, 8.0 * lam);
+            facr_virtual_passes = 8;
+        }
         t_gen.pivot.clear();
         return true;
     }
@@ -568,6 +604,110 @@ struct engine {
                     L.row.inv(L.stage.data() + r * WB, x + (i0 + r) * W);
             }
         });
+    }
+
+    // Apply one directional-difference / oriented-Gaussian multiplier to
+    // the split real-2D spectrum.  f_spec stores separate real transforms
+    // of the row-spectrum real and imaginary planes.  The A +/- iB pair
+    // reconstructs the positive/negative vertical frequencies; applying
+    // both symbols and folding them back preserves that layout exactly.
+    void directional_gaussian(const spectrum& src, spectrum& out,
+                              int dy, int dx, double theta,
+                              double sigma_long = 12.0,
+                              double sigma_width = 0.75) {
+        const double tau_h = 2.0 * M_PI / double(H);
+        const double tau_w = 2.0 * M_PI / double(W);
+        const double ct = std::cos(theta), st = std::sin(theta);
+        P.run([&](int tid) {
+            for (std::size_t k = std::size_t(tid); k < WB;
+                 k += std::size_t(P.lanes())) {
+                const double wx = tau_w * double(k);
+                for (std::size_t m = 0; m < HB; ++m) {
+                    const std::size_t r = 2 * (k * HB + m);
+                    const double ar = src.a[r], ai = src.a[r + 1];
+                    const double br = src.b[r], bi = src.b[r + 1];
+                    const double wy = tau_h * double(m);
+
+                    auto symbol = [&](double signed_wy,
+                                      double& sr, double& si) {
+                        const double phase =
+                            wx * double(dx) + signed_wy * double(dy);
+                        const double along = wx * ct + signed_wy * st;
+                        const double across = -wx * st + signed_wy * ct;
+                        const double gaussian = std::exp(-0.5 * (
+                            sigma_long * along * along
+                            + sigma_width * across * across));
+                        sr = gaussian * (std::cos(phase) - 1.0);
+                        si = gaussian * std::sin(phase);
+                    };
+
+                    double spr, spi, smr, smi;
+                    symbol(wy, spr, spi);
+                    symbol(-wy, smr, smi);
+
+                    // P=A+iB and M=A-iB=conj(F(k,-m)).
+                    const double p0r = ar - bi, p0i = ai + br;
+                    const double m0r = ar + bi, m0i = ai - br;
+                    const double pr = spr * p0r - spi * p0i;
+                    const double pi = spr * p0i + spi * p0r;
+                    // M is multiplied by conj(S(k,-m)).
+                    const double mr = smr * m0r + smi * m0i;
+                    const double mi = smr * m0i - smi * m0r;
+
+                    out.a[r] = 0.5 * (pr + mr);
+                    out.a[r + 1] = 0.5 * (pi + mi);
+                    out.b[r] = 0.5 * (pi - mi);
+                    out.b[r + 1] = -0.5 * (pr - mr);
+                }
+            }
+        });
+    }
+
+    void fwd2d_conditioned_source_reflection(
+            const double* image, const std::vector<double>& gate,
+            double eta, double strength, spectrum& spec) {
+        const double threshold = 1.0 / eta;
+        P.run([&](int tid) {
+            lane& L = *lanes[tid];
+            for (std::size_t i0 = std::size_t(tid) * PANEL; i0 < H;
+                 i0 += std::size_t(P.lanes()) * PANEL) {
+                const std::size_t yp0 = (i0 == 0 ? H : i0) - 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xp = x + 1 == W ? 0 : x + 1;
+                    const std::size_t i = yp0 * W + x;
+                    double unused, ry;
+                    reflected(image[yp0 * W + xp] - image[i],
+                              image[i0 * W + x] - image[i], threshold,
+                              unused, ry);
+                    L.correction[x] = strength * gate[i] * ry;
+                }
+                for (std::size_t row = 0; row < PANEL; ++row) {
+                    const std::size_t y = i0 + row;
+                    const std::size_t yn = y + 1 == H ? 0 : y + 1;
+                    for (std::size_t x = 0; x < W; ++x) {
+                        const std::size_t xn = x + 1 == W ? 0 : x + 1;
+                        const std::size_t i = y * W + x;
+                        double rx, ry;
+                        reflected(image[y * W + xn] - image[i],
+                                  image[yn * W + x] - image[i], threshold,
+                                  rx, ry);
+                        const double scale = strength * gate[i];
+                        L.reflect_x[x] = scale * rx;
+                        L.reflect_y[x] = scale * ry;
+                    }
+                    for (std::size_t x = 0; x < W; ++x) {
+                        const std::size_t xp = (x == 0 ? W : x) - 1;
+                        L.line[x] = L.reflect_x[x] - L.reflect_x[xp]
+                            + L.reflect_y[x] - L.correction[x];
+                    }
+                    L.row.fwd(L.line.data(), L.stage.data() + row * WB);
+                    std::memcpy(L.correction.data(), L.reflect_y.data(),
+                                W * sizeof(double));
+                }
+                panel_scatter(L, i0);
+            }
+        });
+        cols_fwd(spec);
     }
 
     // rhs = div(db), computed row-by-row into the lane's line buffer and
@@ -940,6 +1080,79 @@ struct engine {
             [&](std::size_t i) { return c * g.b[i] - eta * d.b[i]; });
     }
 
+    // Mean-zero inverse of the periodic scalar Laplacian in the one-axis
+    // FACR representation.  The transformed-axis DC line is projected to
+    // zero before the screened solve and de-gauged afterward.  Every caller
+    // supplies a divergence, but doing this explicitly prevents accumulated
+    // transform roundoff from being magnified by the intentionally tiny DC
+    // screen in t_poisson.
+    void facr_poisson(const facr_spectrum& divergence,
+                      facr_spectrum& potential) {
+        double mean_a = 0.0, mean_b = 0.0;
+        for (std::size_t s = 0; s < FS; ++s) {
+            mean_a += divergence.a[s];
+            mean_b += divergence.b[s];
+        }
+        mean_a /= double(FS);
+        mean_b /= double(FS);
+        facr_solve(potential, t_poisson,
+            [&](std::size_t i) {
+                return -divergence.a[i] + (i < FS ? mean_a : 0.0);
+            },
+            [&](std::size_t i) {
+                return -divergence.b[i] + (i < FS ? mean_b : 0.0);
+            });
+        double gauge_a = 0.0, gauge_b = 0.0;
+        for (std::size_t s = 0; s < FS; ++s) {
+            gauge_a += potential.a[s];
+            gauge_b += potential.b[s];
+        }
+        gauge_a /= double(FS);
+        gauge_b /= double(FS);
+        for (std::size_t s = 0; s < FS; ++s) {
+            potential.a[s] -= gauge_a;
+            potential.b[s] -= gauge_b;
+        }
+    }
+
+    void facr_difference(const facr_spectrum& lhs,
+                         const facr_spectrum& rhs,
+                         facr_spectrum& out) {
+        const std::size_t count = FS * FB;
+        P.run([&](int tid) {
+            for (std::size_t i = std::size_t(tid); i < count;
+                 i += std::size_t(P.lanes())) {
+                out.a[i] = lhs.a[i] - rhs.a[i];
+                out.b[i] = lhs.b[i] - rhs.b[i];
+            }
+        });
+    }
+
+    // out = (I - H_u^K)(source - potential), where H_u is the first
+    // cartoon resolvent.  In full 2-D Fourier storage this is one pointwise
+    // exponent.  FACR realizes the same integer power as K cached
+    // tridiagonal solves, without returning to the image domain.
+    void build_virtual_oscillation_facr(const facr_spectrum& source,
+                                        const facr_spectrum& potential,
+                                        int virtual_passes,
+                                        facr_spectrum& out) {
+        facr_difference(source, potential, fd_spec);
+        const int poles = std::min(virtual_passes, 2);
+        if (facr_virtual_passes != virtual_passes) {
+            const double eta = 2.0 * lam * double(virtual_passes) /
+                double(poles);
+            build_factors(t_virtual, lam, eta);
+            facr_virtual_passes = virtual_passes;
+        }
+        facr_scale(fd_spec, lam, t_virtual, fu_spec);
+        const facr_spectrum* lowpass = &fu_spec;
+        if (poles == 2) {
+            facr_scale(fu_spec, lam, t_virtual, fw_spec);
+            lowpass = &fw_spec;
+        }
+        facr_difference(fd_spec, *lowpass, out);
+    }
+
     void update_reflected_dual_rows(const std::vector<double>& x,
                                     std::vector<double>& tx,
                                     std::vector<double>& ty, double eta,
@@ -1276,6 +1489,55 @@ struct engine {
                 ub[r] = un;
                 wb[r] = c_v * (fb[r] - un) * sv[r];
             }
+        });
+    }
+
+    void solve_meyer_triangle_conditioned_first(
+            const spectrum& du, double c_u, double eta_u, double c_v) {
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            const double* __restrict fa = f_spec.a.data();
+            const double* __restrict fb = f_spec.b.data();
+            const double* __restrict da = du.a.data();
+            const double* __restrict db = du.b.data();
+            const double* __restrict su = s_u.data();
+            const double* __restrict sv = s_v.data();
+            double* __restrict ua = u_spec.a.data();
+            double* __restrict ub = u_spec.b.data();
+            double* __restrict wa = w_spec.a.data();
+            double* __restrict wb = w_spec.b.data();
+            for (std::size_t r = lo; r < hi; ++r) {
+                const double un = (c_u * fa[r] - eta_u * da[r]) * su[r];
+                ua[r] = un;
+                wa[r] = c_v * (fa[r] - un) * sv[r];
+            }
+            for (std::size_t r = lo; r < hi; ++r) {
+                const double un = (c_u * fb[r] - eta_u * db[r]) * su[r];
+                ub[r] = un;
+                wb[r] = c_v * (fb[r] - un) * sv[r];
+            }
+        });
+    }
+
+    void solve_conditioned_source(const spectrum& source,
+                                  const spectrum& divergence,
+                                  double c, double eta,
+                                  spectrum& out) {
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            const double* __restrict sa = source.a.data();
+            const double* __restrict sb = source.b.data();
+            const double* __restrict da = divergence.a.data();
+            const double* __restrict db = divergence.b.data();
+            const double* __restrict symbol_u = s_u.data();
+            double* __restrict oa = out.a.data();
+            double* __restrict ob = out.b.data();
+            for (std::size_t r = lo; r < hi; ++r)
+                oa[r] = (c * sa[r] - eta * da[r]) * symbol_u[r];
+            for (std::size_t r = lo; r < hi; ++r)
+                ob[r] = (c * sb[r] - eta * db[r]) * symbol_u[r];
         });
     }
 
@@ -1896,6 +2158,947 @@ struct engine {
         run_split_reduced(image, texture);
         const std::size_t n = H * W;
         std::memcpy(cartoon, u.data(), n * sizeof(double));
+    }
+
+    static std::size_t periodic_index(std::size_t coordinate, int offset,
+                                      std::size_t length) {
+        std::int64_t value = static_cast<std::int64_t>(coordinate) + offset;
+        value %= static_cast<std::int64_t>(length);
+        if (value < 0) value += static_cast<std::int64_t>(length);
+        return static_cast<std::size_t>(value);
+    }
+
+    void directional_box_pass(const double* source, double* destination,
+                              int dy, int dx, int radius) {
+        const double inverse = 1.0 / double(2 * radius + 1);
+        const std::size_t cycles = dy == 0 ? H :
+            (dx == 0 ? W : std::gcd(H, W));
+        const std::size_t length = dy == 0 ? W :
+            (dx == 0 ? H : (H / std::gcd(H, W)) * W);
+        P.run([&](int tid) {
+            auto advance = [&](std::size_t& y, std::size_t& x) {
+                if (dy > 0) { if (++y == H) y = 0; }
+                else if (dy < 0) { y = y == 0 ? H - 1 : y - 1; }
+                if (dx > 0) { if (++x == W) x = 0; }
+                else if (dx < 0) { x = x == 0 ? W - 1 : x - 1; }
+            };
+            for (std::size_t cycle = std::size_t(tid); cycle < cycles;
+                 cycle += std::size_t(P.lanes())) {
+                const std::size_t start_y = dy == 0 ? cycle : 0;
+                const std::size_t start_x = dx == 0 ? cycle :
+                    (dy == 0 ? 0 : cycle);
+                double sum = 0.0;
+                for (int step = -radius; step <= radius; ++step) {
+                    const std::size_t sy = periodic_index(
+                        start_y, step * dy, H);
+                    const std::size_t sx = periodic_index(
+                        start_x, step * dx, W);
+                    sum += source[sy * W + sx];
+                }
+                std::size_t y = start_y, x = start_x;
+                std::size_t leave_y = periodic_index(
+                    start_y, -radius * dy, H);
+                std::size_t leave_x = periodic_index(
+                    start_x, -radius * dx, W);
+                std::size_t enter_y = periodic_index(
+                    start_y, (radius + 1) * dy, H);
+                std::size_t enter_x = periodic_index(
+                    start_x, (radius + 1) * dx, W);
+                for (std::size_t position = 0; position < length;
+                     ++position) {
+                    destination[y * W + x] = sum * inverse;
+                    sum += source[enter_y * W + enter_x] -
+                           source[leave_y * W + leave_x];
+                    advance(y, x);
+                    advance(leave_y, leave_x);
+                    advance(enter_y, enter_x);
+                }
+            }
+        });
+    }
+
+    void directional_three_pass(const double* source, double* destination,
+                                int dy, int dx, double side) {
+        const double center = 1.0 - 2.0 * side;
+        const std::size_t cycles = dy == 0 ? H :
+            (dx == 0 ? W : std::gcd(H, W));
+        const std::size_t length = dy == 0 ? W :
+            (dx == 0 ? H : (H / std::gcd(H, W)) * W);
+        P.run([&](int tid) {
+            auto advance = [&](std::size_t& y, std::size_t& x) {
+                if (dy > 0) { if (++y == H) y = 0; }
+                else if (dy < 0) { y = y == 0 ? H - 1 : y - 1; }
+                if (dx > 0) { if (++x == W) x = 0; }
+                else if (dx < 0) { x = x == 0 ? W - 1 : x - 1; }
+            };
+            for (std::size_t cycle = std::size_t(tid); cycle < cycles;
+                 cycle += std::size_t(P.lanes())) {
+                const std::size_t start_y = dy == 0 ? cycle : 0;
+                const std::size_t start_x = dx == 0 ? cycle :
+                    (dy == 0 ? 0 : cycle);
+                std::size_t y = start_y, x = start_x;
+                std::size_t ym = periodic_index(y, -dy, H);
+                std::size_t xm = periodic_index(x, -dx, W);
+                std::size_t yp = periodic_index(y, dy, H);
+                std::size_t xp = periodic_index(x, dx, W);
+                for (std::size_t position = 0; position < length;
+                     ++position) {
+                    destination[y * W + x] =
+                        side * source[ym * W + xm] +
+                        center * source[y * W + x] +
+                        side * source[yp * W + xp];
+                    advance(y, x);
+                    advance(ym, xm);
+                    advance(yp, xp);
+                }
+            }
+        });
+    }
+
+    void normalize_condition_gate() {
+        const std::size_t n = H * W;
+        double sum = 0.0;
+        for (double value : condition_gate) sum += value;
+        const double scale = std::fmax(1.6 * sum / double(n), 1e-12);
+        P.run([&](int tid) {
+            for (std::size_t i = std::size_t(tid); i < n;
+                 i += std::size_t(P.lanes())) {
+                const double ratio = condition_gate[i] / scale;
+                const double square = ratio * ratio;
+                const double base = square / (1.0 + square);
+                const double base2 = base * base;
+                condition_gate[i] = base2 * base2 * base2;
+            }
+        });
+    }
+
+    // FACR leaves one coordinate spatial, so the full two-axis spectral
+    // Gaussian is not diagonal.  Three short periodic box passes reproduce
+    // the long-axis variance (12, or 6 in diagonal lattice coordinates),
+    // while three weighted 3-tap passes reproduce the transverse variance
+    // (0.75, or 0.375 diagonally).  This keeps the four-direction symmetric
+    // statistic O(N), cache-local, and independent of which axis FACR
+    // transforms.
+    void build_condition_gate_facr(const double* image) {
+        const std::size_t n = H * W;
+        std::memset(condition_gate.data(), 0, n * sizeof(double));
+        struct direction {
+            int long_dy, long_dx;
+            int cross_dy, cross_dx;
+            int difference_dy, difference_dx;
+            int long_radius;
+            double cross_side;
+        };
+        const direction directions[4] = {
+            {0, 1, 1, 0, 1, 0, 3, 0.125},
+            {1, 0, 0, 1, 0, 1, 3, 0.125},
+            {1, 1, 1, -1, 1, 1, 2, 0.0625},
+            {1, -1, 1, 1, 1, -1, 2, 0.0625},
+        };
+        for (const direction& d : directions) {
+            directional_box_pass(image, u.data(), d.long_dy, d.long_dx,
+                                 d.long_radius);
+            directional_box_pass(u.data(), w.data(), d.long_dy, d.long_dx,
+                                 d.long_radius);
+            directional_box_pass(w.data(), u.data(), d.long_dy, d.long_dx,
+                                 d.long_radius);
+            directional_three_pass(u.data(), w.data(), d.cross_dy,
+                                   d.cross_dx, d.cross_side);
+            directional_three_pass(w.data(), u.data(), d.cross_dy,
+                                   d.cross_dx, d.cross_side);
+            directional_three_pass(u.data(), w.data(), d.cross_dy,
+                                   d.cross_dx, d.cross_side);
+            P.run([&](int tid) {
+                for (std::size_t y = std::size_t(tid); y < H;
+                     y += std::size_t(P.lanes())) {
+                    const std::size_t yn = periodic_index(
+                        y, d.difference_dy, H);
+                    for (std::size_t x = 0; x < W; ++x) {
+                        const std::size_t xn = periodic_index(
+                            x, d.difference_dx, W);
+                        const std::size_t i = y * W + x;
+                        condition_gate[i] +=
+                            std::fabs(w[yn * W + xn] - w[i]);
+                    }
+                }
+            });
+        }
+        normalize_condition_gate();
+    }
+
+    void build_condition_gate_from_source_spec() {
+        const std::size_t n = H * W;
+        std::memset(condition_gate.data(), 0, n * sizeof(double));
+        struct direction { int dy, dx; double theta; };
+        const direction directions[4] = {
+            {1, 0, 0.0},
+            {0, 1, 0.5 * M_PI},
+            {1, 1, 0.25 * M_PI},
+            {1, -1, 0.75 * M_PI},
+        };
+        for (const direction& d : directions) {
+            directional_gaussian(
+                f_spec, q_spec, d.dy, d.dx, d.theta);
+            inv2d(q_spec, u.data());
+            P.run([&](int tid) {
+                for (std::size_t i = std::size_t(tid); i < n;
+                     i += std::size_t(P.lanes()))
+                    condition_gate[i] += std::fabs(u[i]);
+            });
+        }
+
+        normalize_condition_gate();
+    }
+
+    void build_jump_confidence_from_condition_gate() {
+        constexpr int bins = 256;
+        std::size_t histogram[bins] = {};
+        const std::size_t n = H * W;
+        for (const double value : condition_gate) {
+            int bin = static_cast<int>(value * double(bins));
+            if (bin < 0) bin = 0;
+            if (bin >= bins) bin = bins - 1;
+            ++histogram[bin];
+        }
+
+        double total_moment = 0.0;
+        for (int bin = 0; bin < bins; ++bin) {
+            const double center = (double(bin) + 0.5) / double(bins);
+            total_moment += center * double(histogram[bin]);
+        }
+        std::size_t low_count = 0;
+        double low_moment = 0.0;
+        double best_variance = -1.0;
+        int split_bin = 0;
+        for (int bin = 0; bin < bins - 1; ++bin) {
+            low_count += histogram[bin];
+            low_moment += (double(bin) + 0.5) / double(bins)
+                * double(histogram[bin]);
+            const std::size_t high_count = n - low_count;
+            if (low_count == 0 || high_count == 0) continue;
+            const double numerator =
+                total_moment * double(low_count)
+                - low_moment * double(n);
+            const double variance = numerator * numerator /
+                (double(low_count) * double(high_count));
+            if (variance > best_variance) {
+                best_variance = variance;
+                split_bin = bin;
+            }
+        }
+
+        std::size_t high_count = 0;
+        double high_moment = 0.0;
+        for (int bin = split_bin + 1; bin < bins; ++bin) {
+            high_count += histogram[bin];
+            high_moment += (double(bin) + 0.5) / double(bins)
+                * double(histogram[bin]);
+        }
+        const double boundary = double(split_bin + 1) / double(bins);
+        const double high_mean = high_count > 0
+            ? high_moment / double(high_count) : boundary;
+        const double inverse_span = 1.0 /
+            std::fmax(high_mean - boundary, 1e-30);
+        P.run([&](int tid) {
+            for (std::size_t i = std::size_t(tid); i < n;
+                 i += std::size_t(P.lanes())) {
+                jump_confidence[i] = std::fmin(
+                    1.0, std::fmax(
+                        0.0, (condition_gate[i] - boundary) * inverse_span));
+            }
+        });
+    }
+
+    // q_spec <- scalar potential whose gradient is the longitudinal Hodge
+    // projection of the Otsu-supported, nonnegative-garrote jump bonds.
+    void build_jump_potential_spectrum(const double* value) {
+        const double half_threshold = 1.0 / (4.0 * lam);
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yn = y + 1 == H ? 0 : y + 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xn = x + 1 == W ? 0 : x + 1;
+                    const std::size_t i = y * W + x;
+                    const double gx = value[y * W + xn] - value[i];
+                    const double gy = value[yn * W + x] - value[i];
+                    const double magnitude2 = gx * gx + gy * gy;
+                    const double activation = std::fmax(
+                        1.0 - half_threshold * half_threshold /
+                            std::fmax(magnitude2, 1e-30),
+                        0.0);
+                    const double weight = jump_confidence[i] * activation;
+                    bux[i] = weight * gx;
+                    buy[i] = weight * gy;
+                }
+            }
+        });
+        fwd2d_div(bux, buy, d_spec);
+        const double c_u = lam, eta_u = 2.0 * lam;
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            const double* __restrict da = d_spec.a.data();
+            const double* __restrict db = d_spec.b.data();
+            const double* __restrict su = s_u.data();
+            double* __restrict qa = q_spec.a.data();
+            double* __restrict qb = q_spec.b.data();
+            for (std::size_t r = lo; r < hi; ++r) {
+                const double laplacian =
+                    (c_u - 1.0 / su[r]) / eta_u;
+                const double inverse = std::fabs(laplacian) > 1e-15
+                    ? 1.0 / laplacian : 0.0;
+                qa[r] = da[r] * inverse;
+                qb[r] = db[r] * inverse;
+            }
+        });
+    }
+
+    // fq_spec <- periodic scalar potential whose gradient is the FACR
+    // longitudinal projection of the supported jump bonds.
+    void build_jump_potential_facr(const double* value) {
+        const double half_threshold = 1.0 / (4.0 * lam);
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yn = y + 1 == H ? 0 : y + 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xn = x + 1 == W ? 0 : x + 1;
+                    const std::size_t i = y * W + x;
+                    const double gx = value[y * W + xn] - value[i];
+                    const double gy = value[yn * W + x] - value[i];
+                    const double magnitude2 = gx * gx + gy * gy;
+                    const double activation = std::fmax(
+                        1.0 - half_threshold * half_threshold /
+                            std::fmax(magnitude2, 1e-30),
+                        0.0);
+                    const double weight = jump_confidence[i] * activation;
+                    bux[i] = weight * gx;
+                    buy[i] = weight * gy;
+                }
+            }
+        });
+        facr_fwd_div(bux, buy, fd_spec);
+        facr_poisson(fd_spec, fq_spec);
+    }
+
+    // d_spec <- (I-H_u^virtual_passes) (f_spec-q_spec).
+    void build_virtual_oscillation_spectrum(int virtual_passes) {
+        const double c_u = lam;
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            const double* __restrict fa = f_spec.a.data();
+            const double* __restrict fb = f_spec.b.data();
+            const double* __restrict qa = q_spec.a.data();
+            const double* __restrict qb = q_spec.b.data();
+            const double* __restrict su = s_u.data();
+            double* __restrict da = d_spec.a.data();
+            double* __restrict db = d_spec.b.data();
+            for (std::size_t r = lo; r < hi; ++r) {
+                double base = c_u * su[r], power = 1.0;
+                int exponent = virtual_passes;
+                while (exponent > 0) {
+                    if (exponent & 1) power *= base;
+                    base *= base;
+                    exponent >>= 1;
+                }
+                const double highpass = 1.0 - power;
+                da[r] = highpass * (fa[r] - qa[r]);
+                db[r] = highpass * (fb[r] - qb[r]);
+            }
+        });
+    }
+
+    bool split_conditioned_first(const double* image, double* cartoon,
+                                 double* texture, double strength) {
+        if (facr_active || !(strength >= 0.0)) return false;
+        ensure_conditioning_storage();
+        const std::size_t n = H * W;
+        fwd2d(image, f_spec);
+        build_condition_gate_from_source_spec();
+
+        const double c_u = lam, eta_u = 2.0 * lam;
+        const double c_v = 1.0 / mu;
+        fwd2d_conditioned_source_reflection(
+            image, condition_gate, eta_u, strength, d_spec);
+        solve_meyer_triangle_conditioned_first(
+            d_spec, c_u, eta_u, c_v);
+        inv2d(u_spec, u.data());
+        inv2d(w_spec, w.data());
+        std::memcpy(cartoon, u.data(), n * sizeof(double));
+        finish_split_texture(image, texture);
+        return true;
+    }
+
+    bool split_preconditioned(const double* image, double* cartoon,
+                              double* texture, double strength,
+                              int virtual_passes, int gate_power) {
+        if (facr_active || !(strength >= 0.0) || virtual_passes < 1 ||
+            virtual_passes > 64 || gate_power < 1 || gate_power > 64)
+            return false;
+        ensure_conditioning_storage();
+        ensure_visit_storage();
+        const std::size_t n = H * W;
+        const double c_u = lam, eta_u = 2.0 * lam;
+
+        fwd2d(image, f_spec);
+        build_condition_gate_from_source_spec();
+
+        // One multiplier takes virtual_passes early linear cartoon steps.
+        // Integer exponentiation avoids both a runtime scan and libm pow in
+        // the spectral hot loop.
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            const double* __restrict fa = f_spec.a.data();
+            const double* __restrict fb = f_spec.b.data();
+            const double* __restrict su = s_u.data();
+            double* __restrict qa = q_spec.a.data();
+            double* __restrict qb = q_spec.b.data();
+            for (std::size_t r = lo; r < hi; ++r) {
+                double base = c_u * su[r], power = 1.0;
+                int exponent = virtual_passes;
+                while (exponent > 0) {
+                    if (exponent & 1) power *= base;
+                    base *= base;
+                    exponent >>= 1;
+                }
+                qa[r] = fa[r] * power;
+                qb[r] = fb[r] * power;
+            }
+        });
+        inv2d(q_spec, w.data());
+
+        // target = f - confidence * (f - H^K f).  The high-certainty gate
+        // keeps authentic fronts out of the virtual texture state.
+        P.run([&](int tid) {
+            for (std::size_t i = std::size_t(tid); i < n;
+                 i += std::size_t(P.lanes())) {
+                const double base = 1.0 - condition_gate[i];
+                double confidence = 1.0;
+                for (int p = 0; p < gate_power; ++p) confidence *= base;
+                u[i] = image[i] - confidence * (image[i] - w[i]);
+            }
+        });
+        fwd2d(u.data(), q_spec);
+        fwd2d_conditioned_source_reflection(
+            u.data(), condition_gate, eta_u, strength, d_spec);
+        solve_conditioned_source(q_spec, d_spec, c_u, eta_u, u_spec);
+        inv2d(u_spec, u.data());
+
+        // Proposed texture is then lifted through one scalar periodic
+        // Poisson solve.  Clamping grad(phi) to the radius-mu disk makes the
+        // returned divergence constructively G_mu-feasible.
+        P.run([&](int tid) {
+            for (std::size_t i = std::size_t(tid); i < n;
+                 i += std::size_t(P.lanes()))
+                vplane[i] = image[i] - u[i];
+        });
+        fwd2d(vplane.data(), q_spec);
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            const double* __restrict qa = q_spec.a.data();
+            const double* __restrict qb = q_spec.b.data();
+            const double* __restrict su = s_u.data();
+            double* __restrict da = d_spec.a.data();
+            double* __restrict db = d_spec.b.data();
+            for (std::size_t r = lo; r < hi; ++r) {
+                const double laplacian =
+                    (c_u - 1.0 / su[r]) / eta_u;
+                const double inverse = std::fabs(laplacian) > 1e-15
+                    ? 1.0 / laplacian : 0.0;
+                da[r] = qa[r] * inverse;
+                db[r] = qb[r] * inverse;
+            }
+        });
+        inv2d(d_spec, w.data());
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yn = y + 1 == H ? 0 : y + 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xn = x + 1 == W ? 0 : x + 1;
+                    const std::size_t i = y * W + x;
+                    bux[i] = w[y * W + xn] - w[i];
+                    buy[i] = w[yn * W + x] - w[i];
+                }
+            }
+        });
+
+        // The longitudinal lift is minimum-L2, not minimum-L-infinity.
+        // Use its capacity frame n=p/|p|, t=J n to take one deterministic
+        // null-space route before the disk hit.  In stream form the desired
+        // gradient is demand*t and q=-J P_L(demand*t); algebraically the
+        // cheaper equivalent is q=P_T(demand*n).  A fractional underloaded
+        // reservoir keeps P_T from merely moving overload to the nearest
+        // inactive pixel.
+        constexpr double slack_fraction = 0.20;
+        P.run([&](int tid) {
+            for (std::size_t i = std::size_t(tid); i < n;
+                 i += std::size_t(P.lanes())) {
+                const double px = bux[i], py = buy[i];
+                const double magnitude = std::sqrt(px * px + py * py);
+                const double inverse = 1.0 / std::fmax(magnitude, 1e-30);
+                const double demand = magnitude > mu
+                    ? mu - magnitude
+                    : slack_fraction * (mu - magnitude);
+                const double confidence = 1.0 - condition_gate[i];
+                bvx[i] = 2.0 * demand * px * inverse * confidence;
+                bvy[i] = 2.0 * demand * py * inverse * confidence;
+            }
+        });
+        fwd2d_div(bvx, bvy, q_spec);
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            const double* __restrict qa = q_spec.a.data();
+            const double* __restrict qb = q_spec.b.data();
+            const double* __restrict su = s_u.data();
+            double* __restrict da = d_spec.a.data();
+            double* __restrict db = d_spec.b.data();
+            for (std::size_t r = lo; r < hi; ++r) {
+                const double laplacian =
+                    (c_u - 1.0 / su[r]) / eta_u;
+                const double inverse = std::fabs(laplacian) > 1e-15
+                    ? 1.0 / laplacian : 0.0;
+                da[r] = qa[r] * inverse;
+                db[r] = qb[r] * inverse;
+            }
+        });
+        inv2d(d_spec, w.data());
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yn = y + 1 == H ? 0 : y + 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xn = x + 1 == W ? 0 : x + 1;
+                    const std::size_t i = y * W + x;
+                    bvx[i] -= w[y * W + xn] - w[i];
+                    bvy[i] -= w[yn * W + x] - w[i];
+                }
+            }
+        });
+
+        // One right-Newton coefficient for squared capacity overload.  The
+        // reductions are serial by design, preserving thread-count identity.
+        double first = 0.0, second = 0.0, old_energy = 0.0;
+        for (std::size_t i = 0; i < n; ++i) {
+            const double px = bux[i], py = buy[i];
+            const double magnitude = std::sqrt(px * px + py * py);
+            if (!(magnitude > mu)) continue;
+            const double qx = bvx[i], qy = bvy[i];
+            const double radial = (px * qx + py * qy) / magnitude;
+            const double excess = magnitude - mu;
+            const double q2 = qx * qx + qy * qy;
+            first += 2.0 * excess * radial;
+            second += 2.0 * (
+                radial * radial
+                + excess / magnitude * (q2 - radial * radial));
+            old_energy += excess * excess;
+        }
+        double route_alpha = second > 1e-30
+            ? std::fmin(2.0, std::fmax(0.0, -first / second)) : 0.0;
+        double new_energy = 0.0;
+        for (std::size_t i = 0; i < n; ++i) {
+            const double px = bux[i] + route_alpha * bvx[i];
+            const double py = buy[i] + route_alpha * bvy[i];
+            const double excess = std::fmax(
+                std::sqrt(px * px + py * py) - mu, 0.0);
+            new_energy += excess * excess;
+        }
+        if (!(new_energy < old_energy)) route_alpha = 0.0;
+
+        P.run([&](int tid) {
+            for (std::size_t i = std::size_t(tid); i < n;
+                 i += std::size_t(P.lanes())) {
+                double px = bux[i] + route_alpha * bvx[i];
+                double py = buy[i] + route_alpha * bvy[i];
+                const double magnitude = std::sqrt(px * px + py * py);
+                const double scale = std::fmin(
+                    1.0, mu / std::fmax(magnitude, 1e-30));
+                bux[i] = px * scale;
+                buy[i] = py * scale;
+            }
+        });
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yp = (y == 0 ? H : y) - 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xp = (x == 0 ? W : x) - 1;
+                    const std::size_t i = y * W + x;
+                    const double value =
+                        bux[i] - bux[y * W + xp]
+                        + buy[i] - buy[yp * W + x];
+                    texture[i] = value;
+                    cartoon[i] = image[i] - value;
+                }
+            }
+        });
+        return true;
+    }
+
+    bool split_jump_measure_facr(const double* image, double* cartoon,
+                                 double* texture, int virtual_passes) {
+        if (!facr_active || solver != 1 || virtual_passes < 1 ||
+            virtual_passes > 64)
+            return false;
+        ensure_jump_measure_storage();
+        const std::size_t n = H * W;
+
+        facr_fwd(image, ff_spec);
+        build_condition_gate_facr(image);
+        build_jump_confidence_from_condition_gate();
+
+        build_jump_potential_facr(image);
+        build_virtual_oscillation_facr(
+            ff_spec, fq_spec, virtual_passes, fd_spec);
+        facr_inv(fd_spec, w.data());
+
+        // Remove the first carrier estimate, then take the same fixed second
+        // jump observation as the full spectral operator.
+        P.run([&](int tid) {
+            for (std::size_t i = std::size_t(tid); i < n;
+                 i += std::size_t(P.lanes()))
+                u[i] = image[i] - w[i];
+        });
+        build_jump_potential_facr(u.data());
+        build_virtual_oscillation_facr(
+            ff_spec, fq_spec, virtual_passes, fd_spec);
+
+        // (I-H_u) applied to the second jump potential.  The first FACR
+        // resolvent is already factorized in t_u.
+        facr_scale(fq_spec, lam, t_u, fu_spec);
+        facr_difference(fq_spec, fu_spec, fu_spec);
+        facr_inv(fu_spec, jump_boundary.data());
+
+        // Longitudinal lift of the resident oscillation.
+        facr_poisson(fd_spec, fq_spec);
+        facr_inv(fq_spec, w.data());
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yn = y + 1 == H ? 0 : y + 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xn = x + 1 == W ? 0 : x + 1;
+                    const std::size_t i = y * W + x;
+                    bux[i] = w[y * W + xn] - w[i];
+                    buy[i] = w[yn * W + x] - w[i];
+                }
+            }
+        });
+
+        bool capacity_overload = false;
+        const double mu2 = mu * mu;
+        for (std::size_t i = 0; i < n && !capacity_overload; ++i)
+            capacity_overload =
+                bux[i] * bux[i] + buy[i] * buy[i] > mu2;
+        if (!capacity_overload) {
+            // With an already feasible lift, the transverse proposal would
+            // receive route_alpha=0 and the final disk projection would be
+            // the identity. Avoid its forward transform, Poisson solve, and
+            // inverse transform entirely.
+            P.run([&](int tid) {
+                for (std::size_t y = std::size_t(tid); y < H;
+                     y += std::size_t(P.lanes())) {
+                    const std::size_t yp = (y == 0 ? H : y) - 1;
+                    for (std::size_t x = 0; x < W; ++x) {
+                        const std::size_t xp = (x == 0 ? W : x) - 1;
+                        const std::size_t i = y * W + x;
+                        const double value =
+                            bux[i] - bux[y * W + xp] +
+                            buy[i] - buy[yp * W + x] + jump_boundary[i];
+                        cartoon[i] = image[i] - value;
+                        texture[i] = value;
+                    }
+                }
+            });
+            return true;
+        }
+
+        constexpr double slack_fraction = 0.20;
+        P.run([&](int tid) {
+            for (std::size_t i = std::size_t(tid); i < n;
+                 i += std::size_t(P.lanes())) {
+                const double px = bux[i], py = buy[i];
+                const double magnitude = std::sqrt(px * px + py * py);
+                const double inverse = 1.0 / std::fmax(magnitude, 1e-30);
+                const double demand = magnitude > mu
+                    ? mu - magnitude
+                    : slack_fraction * (mu - magnitude);
+                const double confidence = 1.0 - condition_gate[i];
+                bvx[i] = 2.0 * demand * px * inverse * confidence;
+                bvy[i] = 2.0 * demand * py * inverse * confidence;
+            }
+        });
+        facr_fwd_div(bvx, bvy, fq_spec);
+        facr_poisson(fq_spec, fu_spec);
+        facr_inv(fu_spec, w.data());
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yn = y + 1 == H ? 0 : y + 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xn = x + 1 == W ? 0 : x + 1;
+                    const std::size_t i = y * W + x;
+                    bvx[i] -= w[y * W + xn] - w[i];
+                    bvy[i] -= w[yn * W + x] - w[i];
+                }
+            }
+        });
+
+        double first = 0.0, second = 0.0, old_energy = 0.0;
+        for (std::size_t i = 0; i < n; ++i) {
+            const double px = bux[i], py = buy[i];
+            const double magnitude = std::sqrt(px * px + py * py);
+            if (!(magnitude > mu)) continue;
+            const double qx = bvx[i], qy = bvy[i];
+            const double radial = (px * qx + py * qy) / magnitude;
+            const double excess = magnitude - mu;
+            const double q2 = qx * qx + qy * qy;
+            first += 2.0 * excess * radial;
+            second += 2.0 * (
+                radial * radial +
+                excess / magnitude * (q2 - radial * radial));
+            old_energy += excess * excess;
+        }
+        double route_alpha = second > 1e-30
+            ? std::fmin(2.0, std::fmax(0.0, -first / second)) : 0.0;
+        double new_energy = 0.0;
+        for (std::size_t i = 0; i < n; ++i) {
+            const double px = bux[i] + route_alpha * bvx[i];
+            const double py = buy[i] + route_alpha * bvy[i];
+            const double excess = std::fmax(
+                std::sqrt(px * px + py * py) - mu, 0.0);
+            new_energy += excess * excess;
+        }
+        if (!(new_energy < old_energy)) route_alpha = 0.0;
+
+        P.run([&](int tid) {
+            for (std::size_t i = std::size_t(tid); i < n;
+                 i += std::size_t(P.lanes())) {
+                double px = bux[i] + route_alpha * bvx[i];
+                double py = buy[i] + route_alpha * bvy[i];
+                const double magnitude = std::sqrt(px * px + py * py);
+                const double scale = std::fmin(
+                    1.0, mu / std::fmax(magnitude, 1e-30));
+                bux[i] = px * scale;
+                buy[i] = py * scale;
+            }
+        });
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yp = (y == 0 ? H : y) - 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xp = (x == 0 ? W : x) - 1;
+                    const std::size_t i = y * W + x;
+                    const double oscillation =
+                        bux[i] - bux[y * W + xp] +
+                        buy[i] - buy[yp * W + x];
+                    const double value = oscillation + jump_boundary[i];
+                    cartoon[i] = image[i] - value;
+                    texture[i] = value;
+                }
+            }
+        });
+        return true;
+    }
+
+    bool split_jump_measure(const double* image, double* cartoon,
+                            double* texture, int virtual_passes) {
+        if (virtual_passes < 1 || virtual_passes > 64)
+            return false;
+        if (facr_active)
+            return split_jump_measure_facr(
+                image, cartoon, texture, virtual_passes);
+        ensure_jump_measure_storage();
+        const std::size_t n = H * W;
+        const double c_u = lam, eta_u = 2.0 * lam;
+
+        fwd2d(image, f_spec);
+        build_condition_gate_from_source_spec();
+        build_jump_confidence_from_condition_gate();
+
+        // First feed-forward jump observation and its virtual oscillation.
+        build_jump_potential_spectrum(image);
+        build_virtual_oscillation_spectrum(virtual_passes);
+        inv2d(d_spec, w.data());
+
+        // The initial oscillation supplies a carrier estimate. Removing it
+        // once before rebuilding the jump prevents the crossing carrier from
+        // entering the boundary measure. This is a fixed second measurement,
+        // not a convergence loop.
+        P.run([&](int tid) {
+            for (std::size_t i = std::size_t(tid); i < n;
+                 i += std::size_t(P.lanes()))
+                u[i] = image[i] - w[i];
+        });
+        build_jump_potential_spectrum(u.data());
+
+        // Keep the final material oscillation spectral. The capacity route
+        // consumes this spectrum directly, avoiding an inverse+forward round
+        // trip through vplane.
+        build_virtual_oscillation_spectrum(virtual_passes);
+
+        // Boundary texture is the exact complement of the first cartoon
+        // resolvent: (I-H_u)s_jump. The smooth H_u part remains in cartoon.
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            const double* __restrict qa = q_spec.a.data();
+            const double* __restrict qb = q_spec.b.data();
+            const double* __restrict su = s_u.data();
+            double* __restrict ua = u_spec.a.data();
+            double* __restrict ub = u_spec.b.data();
+            for (std::size_t r = lo; r < hi; ++r) {
+                const double highpass = 1.0 - c_u * su[r];
+                ua[r] = highpass * qa[r];
+                ub[r] = highpass * qb[r];
+            }
+        });
+        inv2d(u_spec, jump_boundary.data());
+
+        // Longitudinal Hodge lift of the resident oscillatory spectrum.
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            const double* __restrict da = d_spec.a.data();
+            const double* __restrict db = d_spec.b.data();
+            const double* __restrict su = s_u.data();
+            double* __restrict qa = q_spec.a.data();
+            double* __restrict qb = q_spec.b.data();
+            for (std::size_t r = lo; r < hi; ++r) {
+                const double laplacian =
+                    (c_u - 1.0 / su[r]) / eta_u;
+                const double inverse = std::fabs(laplacian) > 1e-15
+                    ? 1.0 / laplacian : 0.0;
+                qa[r] = da[r] * inverse;
+                qb[r] = db[r] * inverse;
+            }
+        });
+        inv2d(q_spec, w.data());
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yn = y + 1 == H ? 0 : y + 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xn = x + 1 == W ? 0 : x + 1;
+                    const std::size_t i = y * W + x;
+                    bux[i] = w[y * W + xn] - w[i];
+                    buy[i] = w[yn * W + x] - w[i];
+                }
+            }
+        });
+
+        // One transverse capacity route, identical to the validated native
+        // preconditioner. The structural statistic governs where reservoir
+        // capacity is available; the correction itself is divergence-free.
+        constexpr double slack_fraction = 0.20;
+        P.run([&](int tid) {
+            for (std::size_t i = std::size_t(tid); i < n;
+                 i += std::size_t(P.lanes())) {
+                const double px = bux[i], py = buy[i];
+                const double magnitude = std::sqrt(px * px + py * py);
+                const double inverse = 1.0 / std::fmax(magnitude, 1e-30);
+                const double demand = magnitude > mu
+                    ? mu - magnitude
+                    : slack_fraction * (mu - magnitude);
+                const double confidence = 1.0 - condition_gate[i];
+                bvx[i] = 2.0 * demand * px * inverse * confidence;
+                bvy[i] = 2.0 * demand * py * inverse * confidence;
+            }
+        });
+        fwd2d_div(bvx, bvy, q_spec);
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            const double* __restrict qa = q_spec.a.data();
+            const double* __restrict qb = q_spec.b.data();
+            const double* __restrict su = s_u.data();
+            double* __restrict da = d_spec.a.data();
+            double* __restrict db = d_spec.b.data();
+            for (std::size_t r = lo; r < hi; ++r) {
+                const double laplacian =
+                    (c_u - 1.0 / su[r]) / eta_u;
+                const double inverse = std::fabs(laplacian) > 1e-15
+                    ? 1.0 / laplacian : 0.0;
+                da[r] = qa[r] * inverse;
+                db[r] = qb[r] * inverse;
+            }
+        });
+        inv2d(d_spec, w.data());
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yn = y + 1 == H ? 0 : y + 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xn = x + 1 == W ? 0 : x + 1;
+                    const std::size_t i = y * W + x;
+                    bvx[i] -= w[y * W + xn] - w[i];
+                    bvy[i] -= w[yn * W + x] - w[i];
+                }
+            }
+        });
+
+        double first = 0.0, second = 0.0, old_energy = 0.0;
+        for (std::size_t i = 0; i < n; ++i) {
+            const double px = bux[i], py = buy[i];
+            const double magnitude = std::sqrt(px * px + py * py);
+            if (!(magnitude > mu)) continue;
+            const double qx = bvx[i], qy = bvy[i];
+            const double radial = (px * qx + py * qy) / magnitude;
+            const double excess = magnitude - mu;
+            const double q2 = qx * qx + qy * qy;
+            first += 2.0 * excess * radial;
+            second += 2.0 * (
+                radial * radial
+                + excess / magnitude * (q2 - radial * radial));
+            old_energy += excess * excess;
+        }
+        double route_alpha = second > 1e-30
+            ? std::fmin(2.0, std::fmax(0.0, -first / second)) : 0.0;
+        double new_energy = 0.0;
+        for (std::size_t i = 0; i < n; ++i) {
+            const double px = bux[i] + route_alpha * bvx[i];
+            const double py = buy[i] + route_alpha * bvy[i];
+            const double excess = std::fmax(
+                std::sqrt(px * px + py * py) - mu, 0.0);
+            new_energy += excess * excess;
+        }
+        if (!(new_energy < old_energy)) route_alpha = 0.0;
+
+        P.run([&](int tid) {
+            for (std::size_t i = std::size_t(tid); i < n;
+                 i += std::size_t(P.lanes())) {
+                double px = bux[i] + route_alpha * bvx[i];
+                double py = buy[i] + route_alpha * bvy[i];
+                const double magnitude = std::sqrt(px * px + py * py);
+                const double scale = std::fmin(
+                    1.0, mu / std::fmax(magnitude, 1e-30));
+                bux[i] = px * scale;
+                buy[i] = py * scale;
+            }
+        });
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yp = (y == 0 ? H : y) - 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xp = (x == 0 ? W : x) - 1;
+                    const std::size_t i = y * W + x;
+                    const double oscillation =
+                        bux[i] - bux[y * W + xp]
+                        + buy[i] - buy[yp * W + x];
+                    const double value = oscillation + jump_boundary[i];
+                    cartoon[i] = image[i] - value;
+                    texture[i] = value;
+                }
+            }
+        });
+        return true;
     }
 
     // All intermediate model states from one run.  Outputs are

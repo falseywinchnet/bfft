@@ -1,0 +1,449 @@
+{
+  "quality_sources": "authored analytic truth only",
+  "route": "one tangent-frame transverse projection",
+  "runtime_scan": false,
+  "scenes": {
+    "symmetric_support": {
+      "scores": {
+        "pass1": {
+          "interior_texture_gain": 0.5453141267582157,
+          "interior_texture_relative_rms_error": 0.4551318883995263,
+          "contour_excess_texture_rms": 0.617869339697576,
+          "cartoon_edge_gradient_gain": 0.3022962813650484,
+          "structure_plus_residual_edge_gradient_gain": 0.34323396064519374,
+          "model_residual_contour_rms": 0.10133052731638757,
+          "model_residual_energy_fraction": 0.0008767109030331055,
+          "texture_over_contour_allocation_auc": 0.5985333582289001,
+          "cartoon_relative_rms_error": 0.04080461098385049,
+          "texture_relative_rms_error": 0.63255092902117
+        },
+        "longitudinal": {
+          "interior_texture_gain": 0.9609416162839202,
+          "interior_texture_relative_rms_error": 0.04603408206543515,
+          "contour_excess_texture_rms": 0.14290992482175777,
+          "cartoon_edge_gradient_gain": 0.9797461733660071,
+          "structure_plus_residual_edge_gradient_gain": 0.9797461733660071,
+          "model_residual_contour_rms": 3.631793744604084e-16,
+          "model_residual_energy_fraction": 2.8969797687127294e-32,
+          "texture_over_contour_allocation_auc": 0.9490203777536145,
+          "cartoon_relative_rms_error": 0.01873817559729033,
+          "texture_relative_rms_error": 0.2868856364614461
+        },
+        "transverse": {
+          "interior_texture_gain": 0.9609428514219254,
+          "interior_texture_relative_rms_error": 0.04603178474912201,
+          "contour_excess_texture_rms": 0.14467123059982323,
+          "cartoon_edge_gradient_gain": 0.9804857657636338,
+          "structure_plus_residual_edge_gradient_gain": 0.9804857657636338,
+          "model_residual_contour_rms": 3.6190136686992277e-16,
+          "model_residual_energy_fraction": 2.9933801192194946e-32,
+          "texture_over_contour_allocation_auc": 0.9483302267959507,
+          "cartoon_relative_rms_error": 0.018834866162790103,
+          "texture_relative_rms_error": 0.28836599052682427
+        },
+        "jump-measure": {
+          "interior_texture_gain": 0.9994676704633596,
+          "interior_texture_relative_rms_error": 0.0006478545345302402,
+          "contour_excess_texture_rms": 0.1140983209713777,
+          "cartoon_edge_gradient_gain": 0.9798928615578646,
+          "structure_plus_residual_edge_gradient_gain": 0.9798928615578646,
+          "model_residual_contour_rms": 3.4688823571548745e-16,
+          "model_residual_energy_fraction": 3.968059185310214e-32,
+          "texture_over_contour_allocation_auc": 0.964278002769798,
+          "cartoon_relative_rms_error": 0.005897508010893287,
+          "texture_relative_rms_error": 0.09029215947182498
+        },
+        "pass64": {
+          "interior_texture_gain": 0.9997541624506828,
+          "interior_texture_relative_rms_error": 0.057648437154715335,
+          "contour_excess_texture_rms": 0.6419608068434097,
+          "cartoon_edge_gradient_gain": 0.37341440000941206,
+          "structure_plus_residual_edge_gradient_gain": 0.4021067801811333,
+          "model_residual_contour_rms": 0.08572423358555056,
+          "model_residual_energy_fraction": 0.0007052245027490558,
+          "texture_over_contour_allocation_auc": 0.7642367778080651,
+          "cartoon_relative_rms_error": 0.03506897741409786,
+          "texture_relative_rms_error": 0.48707316503845827
+        }
+      },
+      "diagnostic": {
+        "alpha": 0.4795868167725155,
+        "slack_fraction": 0.2,
+        "initial_overload_fraction": 0.1098785400390625,
+        "routed_overload_fraction": 0.1094512939453125,
+        "overload_energy_ratio": 0.9821133927588054,
+        "divergence_change_of_route": 9.308043222892517e-13,
+        "disk_readout_loss_ratio": 0.9989918186455912,
+        "postprojection_maximum": 40.000000000000014,
+        "tangent_frame_finite": true
+      },
+      "jump_diagnostic": {
+        "half_threshold": 5.0,
+        "support_partition": "Otsu between-class variance",
+        "support_histogram_bins": 256,
+        "support_class_boundary": 0.37109375,
+        "support_high_mean": 0.7200369146085741,
+        "jump_flux_active_fraction": 0.262359619140625,
+        "refined_jump_flux_active_fraction": 0.0134124755859375,
+        "feed_forward_residualizations": 1,
+        "observed_transverse_energy_fraction": 7.876787278701593e-05,
+        "jump_potential_rms": 28.884323494329546
+      },
+      "jump_route_diagnostic": {
+        "alpha": 0.0,
+        "slack_fraction": 0.2,
+        "initial_overload_fraction": 0.0,
+        "routed_overload_fraction": 0.0,
+        "overload_energy_ratio": 0.0,
+        "divergence_change_of_route": 9.558280141675182e-13,
+        "disk_readout_loss_ratio": 1.0,
+        "postprojection_maximum": 28.853621777437127,
+        "tangent_frame_finite": true
+      }
+    },
+    "multiscale_crossing": {
+      "scores": {
+        "pass1": {
+          "interior_texture_gain": 0.29032160466257545,
+          "interior_texture_relative_rms_error": 0.7556982055287637,
+          "contour_excess_texture_rms": 0.45444961319202015,
+          "cartoon_edge_gradient_gain": 0.9390861733418003,
+          "structure_plus_residual_edge_gradient_gain": 1.040368839433508,
+          "model_residual_contour_rms": 0.12034978350967422,
+          "model_residual_energy_fraction": 0.0013075215010042343,
+          "texture_over_contour_allocation_auc": 0.6077292797462074,
+          "cartoon_relative_rms_error": 0.05930040905430843,
+          "texture_relative_rms_error": 0.7114069474030538
+        },
+        "longitudinal": {
+          "interior_texture_gain": 0.8425514241649555,
+          "interior_texture_relative_rms_error": 0.20014307146578775,
+          "contour_excess_texture_rms": 0.8159444238157354,
+          "cartoon_edge_gradient_gain": 1.7673974063980338,
+          "structure_plus_residual_edge_gradient_gain": 1.7673974063980338,
+          "model_residual_contour_rms": 3.6241379683884104e-16,
+          "model_residual_energy_fraction": 3.014758632271026e-32,
+          "texture_over_contour_allocation_auc": 0.622871030089608,
+          "cartoon_relative_rms_error": 0.04348724956666397,
+          "texture_relative_rms_error": 0.4626602839327743
+        },
+        "transverse": {
+          "interior_texture_gain": 0.8461577092386993,
+          "interior_texture_relative_rms_error": 0.19283547218382768,
+          "contour_excess_texture_rms": 0.8194133920376312,
+          "cartoon_edge_gradient_gain": 1.7706065668072555,
+          "structure_plus_residual_edge_gradient_gain": 1.7706065668072555,
+          "model_residual_contour_rms": 3.668342408535894e-16,
+          "model_residual_energy_fraction": 3.064023539425266e-32,
+          "texture_over_contour_allocation_auc": 0.6300948150974114,
+          "cartoon_relative_rms_error": 0.043614565732985854,
+          "texture_relative_rms_error": 0.46401479897446285
+        },
+        "jump-measure": {
+          "interior_texture_gain": 0.8989031548967433,
+          "interior_texture_relative_rms_error": 0.1375765702565272,
+          "contour_excess_texture_rms": 0.2466065806748474,
+          "cartoon_edge_gradient_gain": 0.8737226487140174,
+          "structure_plus_residual_edge_gradient_gain": 0.8737226487140174,
+          "model_residual_contour_rms": 3.5886910077541183e-16,
+          "model_residual_energy_fraction": 3.042101885439352e-32,
+          "texture_over_contour_allocation_auc": 0.8512462577205467,
+          "cartoon_relative_rms_error": 0.016827933910238815,
+          "texture_relative_rms_error": 0.17903217054410525
+        },
+        "pass64": {
+          "interior_texture_gain": 0.9308558853979713,
+          "interior_texture_relative_rms_error": 0.0959053304625562,
+          "contour_excess_texture_rms": 0.4239418817804734,
+          "cartoon_edge_gradient_gain": 1.0426377963971016,
+          "structure_plus_residual_edge_gradient_gain": 1.0826185554075545,
+          "model_residual_contour_rms": 0.07023790026462189,
+          "model_residual_energy_fraction": 0.0015026415925216041,
+          "texture_over_contour_allocation_auc": 0.7900752518217343,
+          "cartoon_relative_rms_error": 0.02561198118655781,
+          "texture_relative_rms_error": 0.25932462282439284
+        }
+      },
+      "diagnostic": {
+        "alpha": 1.009948088301665,
+        "slack_fraction": 0.2,
+        "initial_overload_fraction": 0.067901611328125,
+        "routed_overload_fraction": 0.0589752197265625,
+        "overload_energy_ratio": 0.7954793452319616,
+        "divergence_change_of_route": 9.517829356609748e-13,
+        "disk_readout_loss_ratio": 0.9260659308900071,
+        "postprojection_maximum": 40.000000000000014,
+        "tangent_frame_finite": true
+      },
+      "jump_diagnostic": {
+        "half_threshold": 5.0,
+        "support_partition": "Otsu between-class variance",
+        "support_histogram_bins": 256,
+        "support_class_boundary": 0.34765625,
+        "support_high_mean": 0.6633174278355773,
+        "jump_flux_active_fraction": 0.354278564453125,
+        "refined_jump_flux_active_fraction": 0.0137176513671875,
+        "feed_forward_residualizations": 1,
+        "observed_transverse_energy_fraction": 0.001806749931457837,
+        "jump_potential_rms": 23.852638115704217
+      },
+      "jump_route_diagnostic": {
+        "alpha": 0.7558210202885509,
+        "slack_fraction": 0.2,
+        "initial_overload_fraction": 0.04852294921875,
+        "routed_overload_fraction": 0.0482025146484375,
+        "overload_energy_ratio": 0.7671217629133067,
+        "divergence_change_of_route": 1.0998596949768907e-12,
+        "disk_readout_loss_ratio": 0.8913207252036094,
+        "postprojection_maximum": 40.000000000000014,
+        "tangent_frame_finite": true
+      },
+      "jump_measure_audit": {
+        "definition": "D^j C=[C] n H^1 restricted to jump set",
+        "exact_jump_integration_max_error": 4.604316927725449e-12,
+        "estimated_flux_relative_l2_error": 0.11927075311862292,
+        "estimated_flux_normal_gain": 0.982731347291097,
+        "estimated_flux_off_support_energy_fraction": 0.006774889590779921,
+        "one_pass_scalar_annulus_rms": 2.804284099723455,
+        "one_sided_trace_oracle_geometry": {
+          "1": {
+            "reproduction_order": 1,
+            "exact_ridge_relative_flux_error": 0.07660819140253741,
+            "exact_ridge_fine_crossing_relative_flux_error": 0.1787207984255766
+          },
+          "2": {
+            "reproduction_order": 2,
+            "exact_ridge_relative_flux_error": 0.03945695670534502,
+            "exact_ridge_fine_crossing_relative_flux_error": 0.10562046495574194
+          },
+          "4": {
+            "reproduction_order": 4,
+            "exact_ridge_relative_flux_error": 0.016555659600173724,
+            "exact_ridge_fine_crossing_relative_flux_error": 0.04480646068392622
+          }
+        }
+      }
+    },
+    "checker_support": {
+      "scores": {
+        "pass1": {
+          "interior_texture_gain": 0.7046939933587729,
+          "interior_texture_relative_rms_error": 0.31604125939900996,
+          "contour_excess_texture_rms": 0.4790901551285616,
+          "cartoon_edge_gradient_gain": 0.3022951042483795,
+          "structure_plus_residual_edge_gradient_gain": 0.3432325375134046,
+          "model_residual_contour_rms": 0.07857045801442845,
+          "model_residual_energy_fraction": 0.0007906981641899523,
+          "texture_over_contour_allocation_auc": 0.8314360136506254,
+          "cartoon_relative_rms_error": 0.039184887065150345,
+          "texture_relative_rms_error": 0.4648726555120278
+        },
+        "longitudinal": {
+          "interior_texture_gain": 0.9819582059248388,
+          "interior_texture_relative_rms_error": 0.047844099407215346,
+          "contour_excess_texture_rms": 0.10485013978333747,
+          "cartoon_edge_gradient_gain": 0.9910117078140664,
+          "structure_plus_residual_edge_gradient_gain": 0.9910117078140664,
+          "model_residual_contour_rms": 2.7903067522751453e-16,
+          "model_residual_energy_fraction": 2.956725003062112e-32,
+          "texture_over_contour_allocation_auc": 1.0,
+          "cartoon_relative_rms_error": 0.018353013279406794,
+          "texture_relative_rms_error": 0.2178777494656128
+        },
+        "transverse": {
+          "interior_texture_gain": 0.9823287517032676,
+          "interior_texture_relative_rms_error": 0.047104002629991544,
+          "contour_excess_texture_rms": 0.10587666734652652,
+          "cartoon_edge_gradient_gain": 0.9912023152293956,
+          "structure_plus_residual_edge_gradient_gain": 0.9912023152293956,
+          "model_residual_contour_rms": 2.787503702555097e-16,
+          "model_residual_energy_fraction": 2.996489055097725e-32,
+          "texture_over_contour_allocation_auc": 1.0,
+          "cartoon_relative_rms_error": 0.018405088061240717,
+          "texture_relative_rms_error": 0.2184959551028647
+        },
+        "jump-measure": {
+          "interior_texture_gain": 0.9995762600079503,
+          "interior_texture_relative_rms_error": 0.010644321066541793,
+          "contour_excess_texture_rms": 0.08515169244031327,
+          "cartoon_edge_gradient_gain": 0.9832658357529247,
+          "structure_plus_residual_edge_gradient_gain": 0.9832658357529247,
+          "model_residual_contour_rms": 2.731668507953778e-16,
+          "model_residual_energy_fraction": 3.8326690909945874e-32,
+          "texture_over_contour_allocation_auc": 1.0,
+          "cartoon_relative_rms_error": 0.005772260560873486,
+          "texture_relative_rms_error": 0.06852537625215954
+        },
+        "pass64": {
+          "interior_texture_gain": 0.9997217227148733,
+          "interior_texture_relative_rms_error": 0.04321482565949569,
+          "contour_excess_texture_rms": 0.49752533826496603,
+          "cartoon_edge_gradient_gain": 0.37389661729895574,
+          "structure_plus_residual_edge_gradient_gain": 0.40266705482051796,
+          "model_residual_contour_rms": 0.06645223017662018,
+          "model_residual_energy_fraction": 0.0006729654819554926,
+          "texture_over_contour_allocation_auc": 0.9367661757114456,
+          "cartoon_relative_rms_error": 0.03504102836477849,
+          "texture_relative_rms_error": 0.3772997051093867
+        }
+      },
+      "diagnostic": {
+        "alpha": 0.4295504687856407,
+        "slack_fraction": 0.2,
+        "initial_overload_fraction": 0.1029815673828125,
+        "routed_overload_fraction": 0.10205078125,
+        "overload_energy_ratio": 0.9750510339372903,
+        "divergence_change_of_route": 8.5786772650153e-13,
+        "disk_readout_loss_ratio": 0.9962308819262368,
+        "postprojection_maximum": 40.000000000000014,
+        "tangent_frame_finite": true
+      },
+      "jump_diagnostic": {
+        "half_threshold": 5.0,
+        "support_partition": "Otsu between-class variance",
+        "support_histogram_bins": 256,
+        "support_class_boundary": 0.3671875,
+        "support_high_mean": 0.7204730760206476,
+        "jump_flux_active_fraction": 0.1427154541015625,
+        "refined_jump_flux_active_fraction": 0.0134124755859375,
+        "feed_forward_residualizations": 1,
+        "observed_transverse_energy_fraction": 3.7496989038529623e-07,
+        "jump_potential_rms": 28.908379114776533
+      },
+      "jump_route_diagnostic": {
+        "alpha": 0.0,
+        "slack_fraction": 0.2,
+        "initial_overload_fraction": 0.0,
+        "routed_overload_fraction": 0.0,
+        "overload_energy_ratio": 0.0,
+        "divergence_change_of_route": 9.897661242629454e-13,
+        "disk_readout_loss_ratio": 1.0,
+        "postprojection_maximum": 38.28072134687703,
+        "tangent_frame_finite": true
+      }
+    },
+    "junction_texture": {
+      "scores": {
+        "pass1": {
+          "interior_texture_gain": 0.4268879047756809,
+          "interior_texture_relative_rms_error": 0.6517794293780123,
+          "contour_excess_texture_rms": 0.3848702733819003,
+          "cartoon_edge_gradient_gain": 0.9869334591110259,
+          "structure_plus_residual_edge_gradient_gain": 1.1170890313027122,
+          "model_residual_contour_rms": 0.20636170549914898,
+          "model_residual_energy_fraction": 0.0032950957142024867,
+          "texture_over_contour_allocation_auc": 0.6693881993535677,
+          "cartoon_relative_rms_error": 0.035192949325910584,
+          "texture_relative_rms_error": 0.528438308376138
+        },
+        "longitudinal": {
+          "interior_texture_gain": 0.8879698564729641,
+          "interior_texture_relative_rms_error": 0.18256197761731136,
+          "contour_excess_texture_rms": 0.9758043212587098,
+          "cartoon_edge_gradient_gain": 2.0167828990955496,
+          "structure_plus_residual_edge_gradient_gain": 2.0167828990955496,
+          "model_residual_contour_rms": 4.319461642399385e-16,
+          "model_residual_energy_fraction": 5.706919216472238e-32,
+          "texture_over_contour_allocation_auc": 0.6073257922652903,
+          "cartoon_relative_rms_error": 0.04443009817892714,
+          "texture_relative_rms_error": 0.5758221459988082
+        },
+        "transverse": {
+          "interior_texture_gain": 0.8932928617548765,
+          "interior_texture_relative_rms_error": 0.16906472353893595,
+          "contour_excess_texture_rms": 0.9731074384550485,
+          "cartoon_edge_gradient_gain": 2.012484289657627,
+          "structure_plus_residual_edge_gradient_gain": 2.012484289657627,
+          "model_residual_contour_rms": 4.3673291437949455e-16,
+          "model_residual_energy_fraction": 5.55554147397176e-32,
+          "texture_over_contour_allocation_auc": 0.6147092434732092,
+          "cartoon_relative_rms_error": 0.04417403141514102,
+          "texture_relative_rms_error": 0.5725034742090568
+        },
+        "jump-measure": {
+          "interior_texture_gain": 0.9505006441296722,
+          "interior_texture_relative_rms_error": 0.07292664573705036,
+          "contour_excess_texture_rms": 0.19939234475650305,
+          "cartoon_edge_gradient_gain": 0.9534592938819831,
+          "structure_plus_residual_edge_gradient_gain": 0.9534592938819831,
+          "model_residual_contour_rms": 4.985342154339141e-16,
+          "model_residual_energy_fraction": 5.372896223043378e-32,
+          "texture_over_contour_allocation_auc": 0.9363756281540082,
+          "cartoon_relative_rms_error": 0.01104583679756375,
+          "texture_relative_rms_error": 0.1431560520868367
+        },
+        "pass64": {
+          "interior_texture_gain": 0.9849388779872167,
+          "interior_texture_relative_rms_error": 0.09330163678898311,
+          "contour_excess_texture_rms": 0.5065084265351005,
+          "cartoon_edge_gradient_gain": 0.7793620946092917,
+          "structure_plus_residual_edge_gradient_gain": 0.9828464953198058,
+          "model_residual_contour_rms": 0.35010628758097606,
+          "model_residual_energy_fraction": 0.00769131410787882,
+          "texture_over_contour_allocation_auc": 0.7974894635595418,
+          "cartoon_relative_rms_error": 0.031001605494133253,
+          "texture_relative_rms_error": 0.31866397391823686
+        }
+      },
+      "diagnostic": {
+        "alpha": 0.710471601509467,
+        "slack_fraction": 0.2,
+        "initial_overload_fraction": 0.0156097412109375,
+        "routed_overload_fraction": 0.0090789794921875,
+        "overload_energy_ratio": 0.28558792126889193,
+        "divergence_change_of_route": 6.73637007917861e-13,
+        "disk_readout_loss_ratio": 0.7369540762591752,
+        "postprojection_maximum": 40.00000000000001,
+        "tangent_frame_finite": true
+      },
+      "jump_diagnostic": {
+        "half_threshold": 5.0,
+        "support_partition": "Otsu between-class variance",
+        "support_histogram_bins": 256,
+        "support_class_boundary": 0.32421875,
+        "support_high_mean": 0.6239914220911503,
+        "jump_flux_active_fraction": 0.2578887939453125,
+        "refined_jump_flux_active_fraction": 0.0260467529296875,
+        "feed_forward_residualizations": 1,
+        "observed_transverse_energy_fraction": 0.0019405125154217408,
+        "jump_potential_rms": 15.820536579826321
+      },
+      "jump_route_diagnostic": {
+        "alpha": 1.3168393890066876,
+        "slack_fraction": 0.2,
+        "initial_overload_fraction": 0.0057830810546875,
+        "routed_overload_fraction": 0.0052032470703125,
+        "overload_energy_ratio": 0.4155493309939247,
+        "divergence_change_of_route": 1.052066471320256e-12,
+        "disk_readout_loss_ratio": 0.7612172073638281,
+        "postprojection_maximum": 40.00000000000001,
+        "tangent_frame_finite": true
+      },
+      "jump_measure_audit": {
+        "definition": "D^j C=[C] n H^1 restricted to jump set",
+        "exact_jump_integration_max_error": 2.3803181647963356e-12,
+        "estimated_flux_relative_l2_error": 0.1669197003805752,
+        "estimated_flux_normal_gain": 0.9613212208531935,
+        "estimated_flux_off_support_energy_fraction": 0.006146964322100294,
+        "one_pass_scalar_annulus_rms": 4.627613205797215,
+        "one_sided_trace_oracle_geometry": {
+          "1": {
+            "reproduction_order": 1,
+            "exact_ridge_relative_flux_error": 0.050153489447052675,
+            "exact_ridge_fine_crossing_relative_flux_error": 0.13882160516020842
+          },
+          "2": {
+            "reproduction_order": 2,
+            "exact_ridge_relative_flux_error": 0.050166926280956405,
+            "exact_ridge_fine_crossing_relative_flux_error": 0.0762773020472606
+          },
+          "4": {
+            "reproduction_order": 4,
+            "exact_ridge_relative_flux_error": 0.06031500306715804,
+            "exact_ridge_fine_crossing_relative_flux_error": 0.03167061977550978
+          }
+        }
+      }
+    }
+  }
+}

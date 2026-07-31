@@ -67,7 +67,9 @@ void bfft_meyer_plan_destroy(bfft_meyer_plan* plan);
 size_t bfft_meyer_plan_height(const bfft_meyer_plan* plan);
 size_t bfft_meyer_plan_width(const bfft_meyer_plan* plan);
 
-/* Change only the number of outer TGFD passes.  This does not rebuild the
+/* Change only the number of outer TGFD passes.  This controls
+   bfft_meyer_split_legacy, trace, and decomposition; the default fixed-cost
+   spectral bfft_meyer_split does not consume it.  This does not rebuild the
    transform plans, worker pool, symbols, or image-sized scratch buffers, so
    realtime callers may adjust quality without allocating.  The next split
    or decomposition uses the new value. */
@@ -84,16 +86,89 @@ bfft_status bfft_meyer_plan_set_passes(bfft_meyer_plan* plan, int passes);
 bfft_status bfft_meyer_plan_set_solver(bfft_meyer_plan* plan, int mode);
 int bfft_meyer_plan_solver(const bfft_meyer_plan* plan);
 
-/* Run the model decomposition alone: cartoon = u, texture = v, exactly
-   the pair produced by the Gilles-Osher alternation, with no ladder.
-   image and both outputs are height*width doubles, row-major,
-   non-aliasing.  Note that bfft_meyer_decompose reports a different
-   cartoon (u plus the ladder's coarsest rung survivor) so that its
-   cartoon and three bands sum to u + v. */
+/* Default two-product split. Uses the fixed-cost jump-measure construction
+   with validated virtual depth 8 on the full periodic spectral solver and
+   its one-axis periodic FACR realization.  The FACR realization uses the
+   same oriented jump/Hodge construction, an O(N) four-direction structural
+   gate, and a two-pole approximation of the virtual-depth resolvent. Neumann
+   solver mode 2 retains the legacy alternation because its boundary
+   functional is deliberately different. cartoon + texture == image up to
+   floating-point roundoff.
+
+   image may alias cartoon or texture, which lets realtime callers reuse the
+   input plane after the split. cartoon and texture must not alias each other. */
 bfft_status bfft_meyer_split(bfft_meyer_plan* plan,
                              const double* image,
                              double* cartoon,
                              double* texture);
+
+/* Explicit legacy Gilles-Osher alternation using the plan's configured pass
+   count. This is retained for traces, FACR research, and reproducibility. */
+bfft_status bfft_meyer_split_legacy(bfft_meyer_plan* plan,
+                                    const double* image,
+                                    double* cartoon,
+                                    double* texture);
+
+/* Opt-in noniterative first-pass structural conditioner.
+
+   Reuses the source spectrum to form a four-direction symmetric-variation
+   gate, predicts the first reflected Split-Bregman flux directly from the
+   source gradient, and solves
+
+       (lambda I - 2 lambda Delta) u
+         = lambda f - 2 lambda div(conditioned_flux).
+
+   The texture-side first solve is unchanged.  This always emits one pass,
+   independent of the plan's configured pass count.  strength=1.5 is the
+   validated default; strength must be nonnegative.  The method requires the
+   full periodic spectral path.  Active FACR plans return
+   BFFT_ERROR_INVALID_ARGUMENT. */
+bfft_status bfft_meyer_split_conditioned_first(
+    bfft_meyer_plan* plan, const double* image,
+    double* cartoon, double* texture, double strength);
+
+/* Opt-in finite-state Meyer preconditioner.
+
+   Takes virtual_passes linear texture-interior cartoon steps as one spectral
+   multiplier, blocks that jump at the symmetric-variation structural gate,
+   performs one conditioned cartoon solve, then Hodge-lifts the proposed
+   texture through a scalar Poisson solve.  One deterministic transverse
+   tangent-frame route redistributes longitudinal capacity overload without
+   changing divergence.  The routed field is projected pointwise onto the
+   plan's radius-mu disk before its divergence is returned, so texture is
+   constructively G_mu-feasible and
+   cartoon + texture == image up to floating-point roundoff.
+
+   virtual_passes=8 and gate_power=8 are the synthetic-truth research
+   defaults.  Both integer arguments must be in [1,64].  This is a finite
+   preconditioner, not an outer iteration count or runtime candidate scan.
+   The method requires the full periodic spectral path; active FACR plans
+   return BFFT_ERROR_INVALID_ARGUMENT. */
+bfft_status bfft_meyer_split_preconditioned(
+    bfft_meyer_plan* plan, const double* image,
+    double* cartoon, double* texture, double strength,
+    int virtual_passes, int gate_power);
+
+/* Fixed-cost jump-measure split.
+
+   Estimates discontinuities as an oriented Hodge measure, removes one
+   feed-forward carrier estimate before rebuilding that measure, and routes
+   the remaining oscillation through one transverse G_mu capacity correction.
+   The public result remains exactly two products:
+
+       texture = (I-H_u) jump_potential + routed_oscillation
+       cartoon = image - texture.
+
+   Thus cartoon retains objects with continuous first-resolvent boundaries;
+   texture owns the complementary transition and material energy. There is no
+   convergence loop or runtime candidate scan. virtual_passes is a spectral
+   integer exponent in [1,64] (the validated default is 8). Full spectral and
+   periodic FACR plans are supported; Neumann FACR plans return
+   BFFT_ERROR_INVALID_ARGUMENT. image may alias either output, but the two
+   outputs must not alias each other. */
+bfft_status bfft_meyer_split_jump_measure(
+    bfft_meyer_plan* plan, const double* image,
+    double* cartoon, double* texture, int virtual_passes);
 
 /* Run the model once and retain every intermediate outer-pass state.
    cartoon_trace and texture_trace are passes*height*width doubles in

@@ -11,13 +11,12 @@ Public functions (stateless drop-ins, with cached plans/buffers under the hood):
     bfft.fct(x)       -- Fast Correlated Transform (forward-only): (C, tau)
                          with each standard bin at its maximally correlated
                          leading-edge slice. No inverse exists.
-    bfft.meyer_split(img) -- Meyer G-norm cartoon + texture decomposition
-                         (TGFD) of an arbitrary-size grayscale image;
-                         returns (cartoon, texture).  The fast path.
-    bfft.meyer(img)   -- the same decomposition plus the 3-rung scale
-                         ladder; returns (cartoon, texture, band_coarse,
-                         band_mid, band_fine).  The ladder costs an order
-                         of magnitude more than the decomposition.
+    bfft.meyer_split(img) -- fixed-cost jump-measure Meyer cartoon + texture
+                         split of an arbitrary-size grayscale image; returns
+                         (cartoon, texture).  This is the default fast path.
+    bfft.meyer(img)   -- legacy Gilles-Osher decomposition plus the 3-rung
+                         scale ladder; returns (cartoon, texture,
+                         band_coarse, band_mid, band_fine).
     bfft.rof(img, c)  -- the plain total-variation solve the decomposition
                          is built from, on its own.
 
@@ -40,6 +39,10 @@ Planned objects (lowest per-call overhead for hot loops; one per thread):
 
 from ._core import (FctPlan, MeyerPlan, OdftPlan, Plan, STFTPlan, fct,
                     hann_window, iodft, irfft, meyer, meyer_split,
+                    meyer_split_conditioned_first,
+                    meyer_split_jump_measure,
+                    meyer_split_legacy,
+                    meyer_split_preconditioned,
                     meyer_trace, odft,
                     rfft, rof)
 from .effects import (lab_to_srgb, meyer_channels, recompose,
@@ -51,7 +54,11 @@ from .vision import (CoownershipGraph, SingleStageDecompositionObjective,
                      selected_inverse_blocks, vision_backend)
 
 __all__ = ["rfft", "irfft", "odft", "iodft", "fct", "meyer",
-           "meyer_split", "meyer_trace", "rof", "Plan", "OdftPlan",
+           "meyer_split", "meyer_split_conditioned_first", "meyer_trace",
+           "meyer_split_jump_measure",
+           "meyer_split_legacy",
+           "meyer_split_preconditioned",
+           "rof", "Plan", "OdftPlan",
            "FctPlan", "MeyerPlan",
            "STFTPlan", "hann_window", "meyer_channels", "recompose",
            "recompose_channels", "shade", "srgb_to_lab", "lab_to_srgb",

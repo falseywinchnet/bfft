@@ -156,6 +156,19 @@ _meyer_plan_solver = _decl_optional(
     "bfft_meyer_plan_solver", ctypes.c_int, [_plan_p])
 _meyer_split = _decl("bfft_meyer_split", ctypes.c_int,
                      [_plan_p, _void_p, _void_p, _void_p])
+_meyer_split_legacy = _decl_optional(
+    "bfft_meyer_split_legacy", ctypes.c_int,
+    [_plan_p, _void_p, _void_p, _void_p])
+_meyer_split_conditioned_first = _decl_optional(
+    "bfft_meyer_split_conditioned_first", ctypes.c_int,
+    [_plan_p, _void_p, _void_p, _void_p, ctypes.c_double])
+_meyer_split_preconditioned = _decl_optional(
+    "bfft_meyer_split_preconditioned", ctypes.c_int,
+    [_plan_p, _void_p, _void_p, _void_p, ctypes.c_double,
+     ctypes.c_int, ctypes.c_int])
+_meyer_split_jump_measure = _decl_optional(
+    "bfft_meyer_split_jump_measure", ctypes.c_int,
+    [_plan_p, _void_p, _void_p, _void_p, ctypes.c_int])
 _meyer_split_trace = _decl_optional(
     "bfft_meyer_split_trace", ctypes.c_int,
     [_plan_p, _void_p, _void_p, _void_p])
@@ -761,6 +774,11 @@ def fct(x):
 class MeyerPlan:
     """Planned Meyer G-norm cartoon + texture decomposer (TGFD).
 
+    :meth:`split` uses the fixed-cost jump-measure operator by default on the
+    full spectral solver and periodic FACR. :meth:`split_legacy` and
+    :meth:`decompose` retain the Gilles-Osher iteration for explicit pass
+    studies and the scale ladder.
+
     ``MeyerPlan((H, W)).decompose(image)`` runs the Gilles-Osher two-projector
     alternation as warm interleaved Split Bregman sweeps (one per subproblem
     per pass, persistent Bregman states, spectra of f/u/w maintained so each
@@ -771,7 +789,8 @@ class MeyerPlan:
     Use :func:`meyer` for automatic arbitrary-size padding.  Images are
     [0, 255]-scaled floats.
 
-    Returns ``(cartoon, texture, band_coarse, band_mid, band_fine)`` with
+    :meth:`decompose` returns
+    ``(cartoon, texture, band_coarse, band_mid, band_fine)`` with
     ``cartoon + band_coarse + band_mid + band_fine == cartoon-layer u +
     texture-layer v`` exactly (cartoon includes the coarsest rung survivor;
     ``image - cartoon - bands`` is the model residual).  Not thread-safe;
@@ -825,11 +844,14 @@ class MeyerPlan:
             _meyer_plan_destroy(plan)
 
     def split(self, image):
-        """The model decomposition alone: ``(cartoon, texture) = (u, v)``,
-        exactly the pair the Gilles-Osher alternation produces, with no
-        ladder.  Note :meth:`decompose` reports a different cartoon --
-        ``u`` plus the ladder's coarsest rung survivor -- so that its
-        cartoon and bands sum to ``u + v``."""
+        """Default fixed-cost jump-measure ``(cartoon, texture)`` split.
+
+        On the full spectral solver this uses the validated virtual depth 8,
+        independent of the legacy ``passes`` setting. Periodic FACR uses the
+        native one-axis jump-measure realization; Neumann FACR retains the
+        legacy alternation. Use :meth:`split_legacy` for explicit iterative
+        Gilles-Osher results and :meth:`trace` for their intermediate states.
+        """
         a = np.ascontiguousarray(image, dtype=np.float64)
         if a.shape != self.shape:
             raise ValueError(
@@ -839,6 +861,116 @@ class MeyerPlan:
         _check(_meyer_split(self._plan, a.ctypes.data,
                             *(o.ctypes.data for o in outs)),
                "bfft_meyer_split")
+        return outs
+
+    def split_legacy(self, image):
+        """Explicit Gilles-Osher split using the configured pass count."""
+        if _meyer_split_legacy is None:
+            raise RuntimeError(
+                "this bfft build does not provide legacy Meyer splitting")
+        a = np.ascontiguousarray(image, dtype=np.float64)
+        if a.shape != self.shape:
+            raise ValueError(
+                f"MeyerPlan{self.shape}.split_legacy expects shape "
+                f"{self.shape}")
+        outs = (np.empty(self.shape, dtype=np.float64),
+                np.empty(self.shape, dtype=np.float64))
+        _check(_meyer_split_legacy(
+            self._plan, a.ctypes.data,
+            *(o.ctypes.data for o in outs)),
+            "bfft_meyer_split_legacy")
+        return outs
+
+    def split_conditioned_first(self, image, strength=1.5):
+        """One native Meyer pass with frozen symmetric-flux conditioning.
+
+        This is an opt-in experimental path. It predicts the reflected
+        cartoon-side state from the unchanged source and reuses the source
+        spectrum; it does not run an outer iteration. Active FACR plans are
+        unsupported.
+        """
+        if _meyer_split_conditioned_first is None:
+            raise RuntimeError(
+                "this bfft build does not provide first-pass conditioning")
+        a = np.ascontiguousarray(image, dtype=np.float64)
+        if a.shape != self.shape:
+            raise ValueError(
+                f"MeyerPlan{self.shape}.split_conditioned_first expects "
+                f"shape {self.shape}")
+        strength = float(strength)
+        if strength < 0.0:
+            raise ValueError("conditioning strength must be nonnegative")
+        outs = (np.empty(self.shape, dtype=np.float64),
+                np.empty(self.shape, dtype=np.float64))
+        _check(_meyer_split_conditioned_first(
+            self._plan, a.ctypes.data,
+            *(o.ctypes.data for o in outs), strength),
+            "bfft_meyer_split_conditioned_first")
+        return outs
+
+    def split_preconditioned(self, image, strength=1.5,
+                             virtual_passes=8, gate_power=8):
+        """Finite-state, constructively G-feasible Meyer preconditioner.
+
+        The early linear texture-interior tail is taken as one spectral
+        power, authentic fronts are retained by the symmetric structural
+        gate. The proposed texture is Hodge-lifted, given one deterministic
+        transverse tangent-frame route, and projected onto the plan's
+        radius-``mu`` disk. This is an opt-in research path and requires the
+        full periodic spectral solver.
+        """
+        if _meyer_split_preconditioned is None:
+            raise RuntimeError(
+                "this bfft build does not provide Meyer preconditioning")
+        a = np.ascontiguousarray(image, dtype=np.float64)
+        if a.shape != self.shape:
+            raise ValueError(
+                f"MeyerPlan{self.shape}.split_preconditioned expects "
+                f"shape {self.shape}")
+        strength = float(strength)
+        virtual_passes = int(virtual_passes)
+        gate_power = int(gate_power)
+        if strength < 0.0:
+            raise ValueError("conditioning strength must be nonnegative")
+        if not 1 <= virtual_passes <= 64:
+            raise ValueError("virtual_passes must be in [1, 64]")
+        if not 1 <= gate_power <= 64:
+            raise ValueError("gate_power must be in [1, 64]")
+        outs = (np.empty(self.shape, dtype=np.float64),
+                np.empty(self.shape, dtype=np.float64))
+        _check(_meyer_split_preconditioned(
+            self._plan, a.ctypes.data,
+            *(o.ctypes.data for o in outs), strength,
+            virtual_passes, gate_power),
+            "bfft_meyer_split_preconditioned")
+        return outs
+
+    def split_jump_measure(self, image, virtual_passes=8):
+        """Fixed-cost jump-measure cartoon/texture split.
+
+        Discontinuities are estimated as an oriented Hodge measure. Cartoon
+        retains their smooth first-resolvent transitions; texture receives
+        the complementary boundary energy plus one routed oscillatory layer.
+        The construction has no convergence loop or runtime candidate scan
+        and requires the full periodic spectral solver.
+        """
+        if _meyer_split_jump_measure is None:
+            raise RuntimeError(
+                "this bfft build does not provide jump-measure splitting")
+        a = np.ascontiguousarray(image, dtype=np.float64)
+        if a.shape != self.shape:
+            raise ValueError(
+                f"MeyerPlan{self.shape}.split_jump_measure expects "
+                f"shape {self.shape}")
+        virtual_passes = int(virtual_passes)
+        if not 1 <= virtual_passes <= 64:
+            raise ValueError("virtual_passes must be in [1, 64]")
+        outs = (np.empty(self.shape, dtype=np.float64),
+                np.empty(self.shape, dtype=np.float64))
+        _check(_meyer_split_jump_measure(
+            self._plan, a.ctypes.data,
+            *(o.ctypes.data for o in outs), virtual_passes),
+            "bfft_meyer_split_jump_measure")
         return outs
 
     def trace(self, image):
@@ -1010,17 +1142,67 @@ def _meyer_padded(image, lam, mu, passes, rung_sweeps, rung_tol, threads,
 
 
 def meyer_split(image, lam=0.05, mu=40.0, passes=64, threads=0, solver=0):
-    """Meyer cartoon + texture decomposition of an arbitrary-size grayscale
-    image, without the scale ladder: returns ``(cartoon, texture)``, the
-    pair the Gilles-Osher alternation produces.  This is the fast path --
-    the ladder in :func:`meyer` costs an order of magnitude more than the
-    decomposition itself. ``solver=1`` enables periodic FACR and avoids
-    padding the worse-padded axis (falling back to spectral when neither
-    axis needs padding); ``solver=2`` additionally uses Neumann boundaries
-    on that swept axis."""
+    """Default fixed-cost jump-measure split for an arbitrary-size image.
+
+    Existing ``passes`` arguments are accepted for source compatibility but
+    are ignored by the full spectral and periodic-FACR defaults, whose virtual
+    depth is fixed at 8. Neumann FACR retains the legacy alternation and uses
+    ``passes``. Use a plan's :meth:`MeyerPlan.split_legacy` for explicit
+    iterative results.
+    """
     plan, padded, top, left, h, w = _meyer_padded(
         image, lam, mu, passes, 1, 0.0, threads, solver)
     outs = plan.split(padded)
+    return tuple(o[top:top + h, left:left + w].copy() for o in outs)
+
+
+def meyer_split_legacy(
+        image, lam=0.05, mu=40.0, passes=64, threads=0, solver=0):
+    """Explicit iterative Gilles-Osher split with no scale ladder."""
+    plan, padded, top, left, h, w = _meyer_padded(
+        image, lam, mu, passes, 1, 0.0, threads, solver)
+    outs = plan.split_legacy(padded)
+    return tuple(o[top:top + h, left:left + w].copy() for o in outs)
+
+
+def meyer_split_conditioned_first(
+        image, lam=0.05, mu=40.0, strength=1.5, threads=0):
+    """Opt-in conditioned one-pass Meyer split for an arbitrary-size image.
+
+    The native conditioner requires the full periodic spectral path, so this
+    front end pads both dimensions to powers of two and crops the result.
+    """
+    plan, padded, top, left, h, w = _meyer_padded(
+        image, lam, mu, 1, 1, 0.0, threads, 0)
+    outs = plan.split_conditioned_first(padded, strength=strength)
+    return tuple(o[top:top + h, left:left + w].copy() for o in outs)
+
+
+def meyer_split_preconditioned(
+        image, lam=0.05, mu=40.0, strength=1.5,
+        virtual_passes=8, gate_power=8, threads=0):
+    """Finite-state Meyer preconditioner for an arbitrary-size image.
+
+    The native method requires the full periodic spectral path, so this
+    front end pads both dimensions to powers of two and crops the result.
+    """
+    plan, padded, top, left, h, w = _meyer_padded(
+        image, lam, mu, 1, 1, 0.0, threads, 0)
+    outs = plan.split_preconditioned(
+        padded,
+        strength=strength,
+        virtual_passes=virtual_passes,
+        gate_power=gate_power,
+    )
+    return tuple(o[top:top + h, left:left + w].copy() for o in outs)
+
+
+def meyer_split_jump_measure(
+        image, lam=0.05, mu=40.0, virtual_passes=8, threads=0):
+    """Fixed-cost jump-measure split for an arbitrary-size grayscale image."""
+    plan, padded, top, left, h, w = _meyer_padded(
+        image, lam, mu, 1, 1, 0.0, threads, 0)
+    outs = plan.split_jump_measure(padded, virtual_passes=virtual_passes)
     return tuple(o[top:top + h, left:left + w].copy() for o in outs)
 
 

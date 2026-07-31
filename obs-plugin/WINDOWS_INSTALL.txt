@@ -34,11 +34,12 @@ cartoon - ROF(input - texture, shading_c), then renders that field as a
 displaced chrome surface. Cartoon + texture exposes independent cartoon,
 texture, and shading gains. Recursive recovery performs the useful two-stage
 texture recovery directly, without an intervening 8-bit OBS round trip. Layer
-interference displays the interaction between texture and the model residual.
+interference displays the interaction between texture and the cartoon-side TV
+defect.
 Information caustics turns that information into a color-preserving refractive
 field.
 
-With Cartoon set exactly to zero, signed texture and residual detail is shown
+With Cartoon set exactly to zero, signed texture detail is shown
 around neutral gray. Source chroma is removed in that view so empty regions
 do not turn red.
 
@@ -57,6 +58,11 @@ If OBS was running during installation, restart it before looking for the
 filter.
 
 Native-resolution processing is intentionally more expensive than the older
-small surrogate grid. Start with 2 Native quality passes and 6 CPU threads.
-Recursive recovery performs two decompositions per frame and is the heaviest
-of these modes.
+small surrogate grid. Start with 6 CPU threads and 8 TV effect sweeps. The
+jump split is fixed-cost; this sweep control affects the ROF-based effects.
+Recursive recovery performs two splits per frame and is the heaviest mode.
+
+The periodic FACR backend now carries the new jump-measure cartoon on ordinary
+video dimensions. Input aliases the cartoon output in place, recomposition
+reuses that plane, and effect scratch is lazy, substantially reducing the
+plugin's frame-buffer footprint.

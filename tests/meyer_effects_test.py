@@ -83,7 +83,7 @@ def main():
     mu = 40.0
     pl = bfft.MeyerPlan(f.shape, mu=mu, rung_sweeps=80, rung_tol=0.0)
     cart, tex, _, _, _ = pl.decompose(f)
-    u, v = pl.split(f)
+    u, v = pl.split_legacy(f)
     s0 = pl.rof(v, 1.0 / mu, eta=10.0 / mu, sweeps=80, tol=0.0)
     e = float(np.max(np.abs((cart - u) - s0)) / f.max())
     print(f"2. rof reproduces the coarse rung: {e:.3e}",
