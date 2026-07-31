@@ -418,3 +418,19 @@ source edit can still report roughly 0.44 s because Numba compiles the fused
 kernel once; the compiled specialization is cached and subsequent builds do
 not pay that cost. Golden Gate, rig, checkerboard, and Pikachu reconstructions
 are numerically unchanged by the graph optimization.
+
+## Eikonal Lanczos display resampling
+
+The viewer's resampled display mode uses the structural quotient as a
+resampling metric. A scale-aware Lanczos-2 kernel is evaluated in the local
+normal/tangent tensor chart, taps from other structural owners are rejected,
+the remaining weights are normalized to reproduce DC, and each channel is
+clamped to the range of its same-owner support. This affects only the source
+and result previews; the decomposition and reported reconstruction remain on
+their original lattice.
+
+The implementation is one parallel fused RGB pass. Tensor eigenvectors use
+the algebraic symmetric-2x2 solution, while Lanczos weights use a 4097-entry
+linear lookup table. On the 1799x1440 Golden Gate image, resizing to a
+720x576 panel measured 69 ms for the source and 53 ms for the reconstruction
+after compilation.

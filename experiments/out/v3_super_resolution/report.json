@@ -1,0 +1,118 @@
+{
+  "input": "/Users/quentinkuttenkuler/Downloads/487056612_18488677060002753_2143459132310970747_n.jpg",
+  "ground_truth_shape": [
+    1798,
+    1440,
+    3
+  ],
+  "observed_shape": [
+    899,
+    720,
+    3
+  ],
+  "observation": "2x Pillow Lanczos reduction",
+  "scores": {
+    "nearest": {
+      "psnr_db": 25.207209747734865,
+      "edge_psnr_db": 19.571449426422728,
+      "observation_rmse": 0.00976405690640991
+    },
+    "bilinear": {
+      "psnr_db": 25.409431100156382,
+      "edge_psnr_db": 19.989516849047483,
+      "observation_rmse": 0.02277590178927924
+    },
+    "bicubic": {
+      "psnr_db": 26.06881575708474,
+      "edge_psnr_db": 20.629590307489853,
+      "observation_rmse": 0.013788281901440224
+    },
+    "lanczos": {
+      "psnr_db": 26.34518734695937,
+      "edge_psnr_db": 20.968049830239174,
+      "observation_rmse": 0.010664477675955618
+    },
+    "lanczos + 2 fixed back-projections": {
+      "psnr_db": 26.74151100442341,
+      "edge_psnr_db": 21.39123307113049,
+      "observation_rmse": 0.002475916055511913
+    },
+    "v3 continuous basis lift": {
+      "psnr_db": 24.01054804096983,
+      "edge_psnr_db": 18.80965435941023,
+      "observation_rmse": 0.03229789236862313
+    },
+    "v3 Bayesian support posterior": {
+      "psnr_db": 26.58283311111972,
+      "edge_psnr_db": 21.228478257203687,
+      "observation_rmse": 0.0037215442279000914
+    },
+    "v3 local-eikonal Lanczos": {
+      "psnr_db": 25.160240719890904,
+      "edge_psnr_db": 19.597013446185716,
+      "observation_rmse": 0.015058475300676829
+    },
+    "v3 local-eikonal Lanczos + projection": {
+      "psnr_db": 25.593656895063198,
+      "edge_psnr_db": 20.018430698639182,
+      "observation_rmse": 0.00447701786399325
+    },
+    "v3 owner-conditioned projection": {
+      "psnr_db": 26.69964075126003,
+      "edge_psnr_db": 21.340540937410488,
+      "observation_rmse": 0.0036781931189979297
+    }
+  },
+  "v3": {
+    "v3_ms": 1572.6297920045909,
+    "super_resolution_total_ms": 4362.382666004123,
+    "texture_cells": 24068,
+    "mean_retention": 0.5173918254180336,
+    "retention_p10": 0.23685533919981072,
+    "retention_p90": 0.6740065888130321,
+    "innovation_clip_p95": 0.050780937341134064
+  },
+  "posterior_gain_ladder": {
+    "0.000": {
+      "psnr_db": 26.69964075126003,
+      "edge_psnr_db": 21.340540937410488,
+      "observation_rmse": 0.0036781931189979297
+    },
+    "0.125": {
+      "psnr_db": 26.69715995657459,
+      "edge_psnr_db": 21.33500606888213,
+      "observation_rmse": 0.0036792109766986335
+    },
+    "0.250": {
+      "psnr_db": 26.691167233571235,
+      "edge_psnr_db": 21.327013478010027,
+      "observation_rmse": 0.0036814783548418154
+    },
+    "0.500": {
+      "psnr_db": 26.668700657033597,
+      "edge_psnr_db": 21.303709561030573,
+      "observation_rmse": 0.0036897470502569264
+    },
+    "1.000": {
+      "psnr_db": 26.58283311111972,
+      "edge_psnr_db": 21.228478257203687,
+      "observation_rmse": 0.0037215442279000914
+    }
+  },
+  "analytic_oblique_edge": {
+    "Lanczos": {
+      "psnr_db": 40.69498765998874,
+      "out_of_support_halo_mean": 3.993200916738715e-05,
+      "transition_fraction": 0.00775146484375,
+      "minimum": 0.1345471739768982,
+      "maximum": 0.8604404926300049
+    },
+    "local-eikonal Lanczos": {
+      "psnr_db": 40.154163907525415,
+      "out_of_support_halo_mean": 0.0,
+      "transition_fraction": 0.00718994140625,
+      "minimum": 0.16060946881771088,
+      "maximum": 0.8396301865577698
+    }
+  }
+}

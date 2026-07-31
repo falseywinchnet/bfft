@@ -23,6 +23,9 @@ from experiments.segmenting_v3 import (  # noqa: E402
     build_segmenting_v3,
 )
 from port_needed.fast_image_ops import resize  # noqa: E402
+from port_needed.eikonal_lanczos import (  # noqa: E402
+    eikonal_lanczos_resize,
+)
 from port_needed.soft_support_diffusion import (  # noqa: E402
     build_soft_support_conductance,
     diffuse_soft_support,
@@ -53,6 +56,7 @@ class State:
         self.buffers = {}
         self.texture_shapes = {}
         self.display_key = None
+        self.source_display_key = None
         self.resampled_display = False
 
 
@@ -90,8 +94,28 @@ def _fit_to_side(image, maximum_side):
     return np.clip(value, 0.0, 1.0)
 
 
-def _fit_display_to_side(image, maximum_side):
-    """Display proxy that never enters Numba's parallel workqueue."""
+def _display_metric(result, shape):
+    if result is None:
+        return None
+    labels = np.asarray(result["labels"], dtype=np.int32)
+    if labels.shape != tuple(shape):
+        return None
+    geometry = result.get("texture_geometry")
+    if geometry is None:
+        geometry = result.get("cartoon_geometry")
+    if geometry is None:
+        return None
+    tensor = tuple(
+        np.asarray(geometry[name], dtype=np.float64)
+        for name in ("boundary_xx", "boundary_xy", "boundary_yy")
+    )
+    if any(component.shape != labels.shape for component in tensor):
+        return None
+    return labels, tensor
+
+
+def _fit_display_to_side(image, maximum_side, result=None):
+    """Point proxy or owner-masked eikonal Lanczos display resampling."""
     value = _rgb(image)
     height, width = value.shape[:2]
     scale = min(1.0, maximum_side / max(height, width))
@@ -100,6 +124,17 @@ def _fit_display_to_side(image, maximum_side):
     if (output_height, output_width) == (height, width):
         return value
     if S.resampled_display:
+        metric = _display_metric(result, (height, width))
+        if metric is not None:
+            labels, tensor = metric
+            return eikonal_lanczos_resize(
+                value,
+                (output_height, output_width),
+                labels,
+                tensor,
+                anisotropy=0.5,
+                clamp_range=True,
+            )
         pixels = np.clip(np.rint(value * 255.0), 0.0, 255.0).astype(np.uint8)
         resized = Image.fromarray(pixels, mode="RGB").resize(
             (output_width, output_height),
@@ -145,10 +180,11 @@ def _alloc_texture(tag, height, width):
         )
 
 
-def _push_texture(tag, image):
+def _push_texture(tag, image, result=None):
     value = _rgb(image).astype(np.float32)
     if max(value.shape[:2]) > PANEL:
-        value = _fit_display_to_side(value, PANEL).astype(np.float32)
+        value = _fit_display_to_side(
+            value, PANEL, result=result).astype(np.float32)
     height, width = value.shape[:2]
     shape = (height, width)
     if S.texture_shapes.get(tag) != shape:
@@ -254,29 +290,44 @@ def refresh():
         return
     with S.lock:
         result = S.result
+        rgb = S.rgb
     if result is None:
         return
+    source_key = (id(result), S.resampled_display)
+    if source_key != S.source_display_key and rgb is not None:
+        _push_texture(SOURCE, rgb, result=result)
+        S.source_display_key = source_key
     name = dpg.get_value("v3_view")
     key = (id(result), name, S.resampled_display)
     if key == S.display_key:
         return
-    _push_texture(RESULT, _view(result, name))
+    _push_texture(RESULT, _view(result, name), result=result)
     S.display_key = key
 
 
 def toggle_display_sampling():
     S.resampled_display = not S.resampled_display
     label = (
-        "Display: Lanczos resampled view"
+        "Display: eikonal Lanczos view"
         if S.resampled_display
         else "Display: full-res point view"
     )
     dpg.configure_item("v3_display_sampling", label=label)
+    if S.busy:
+        # The build worker owns Numba's parallel workqueue. The main-loop
+        # refresh will apply this display state as soon as the build returns.
+        S.display_key = None
+        S.source_display_key = None
+        return
     with S.lock:
         rgb = S.rgb
         result = S.result
     if rgb is not None:
-        _push_texture(SOURCE, rgb)
+        _push_texture(SOURCE, rgb, result=result)
+        S.source_display_key = (
+            (id(result), S.resampled_display)
+            if result is not None else None
+        )
     if result is not None:
         S.display_key = None
         refresh()
@@ -472,6 +523,7 @@ def build_worker(rgb, config):
             S.rgb = rgb
             S.result = result
             S.display_key = None
+            S.source_display_key = None
     except Exception as exc:
         S.status = f"Build failed: {type(exc).__name__}: {exc}"
     finally:
@@ -505,6 +557,7 @@ def adopt(image, name):
         S.rgb = rgb
         S.result = None
         S.display_key = None
+        S.source_display_key = None
     S.metrics = ""
     S.status = f"{name} loaded. Press Build version 3.0."
     _push_texture(SOURCE, rgb)

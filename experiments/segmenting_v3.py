@@ -139,6 +139,7 @@ class SegmentingV3Config:
     offset_bins: int = 161
     ridge_kappa: float = 16.0
     threads: int = 4
+    diagnostic_return_basis: bool = False
 
 
 def _replace_population_measure(
@@ -2643,7 +2644,7 @@ def build_segmenting_v3(
     native = hard_affine_fit_native(texture_labels, texture_target)
     if native is None:
         raise RuntimeError("version 3.0 requires the native hard affine fitter")
-    flat, basis, count, radius, _centroid, texture_fit = native
+    flat, basis, count, radius, texture_centroid, texture_fit = native
     texture_affine_ms = 1000.0 * (time.perf_counter() - phase)
     texture_initial_labels = texture_labels
     texture_initial_centers = texture_centers
@@ -2684,7 +2685,14 @@ def build_segmenting_v3(
             if native is None:
                 raise RuntimeError(
                     "version 3.0 requires the native hard affine fitter")
-            flat, basis, count, radius, _centroid, texture_fit = native
+            (
+                flat,
+                basis,
+                count,
+                radius,
+                texture_centroid,
+                texture_fit,
+            ) = native
             texture_affine_ms += 1000.0 * (
                 time.perf_counter() - phase)
 
@@ -2864,7 +2872,7 @@ def build_segmenting_v3(
     total_ms = 1000.0 * (time.perf_counter() - started)
     model_geometry = (
         "eikonal" if geometry_mode == "owner_eikonal" else "straight")
-    return {
+    result = {
         "source_rgb": rgb,
         "cartoon_lab": cartoon_lab,
         "lifted_cartoon_lab": lifted_cartoon_lab,
@@ -2941,6 +2949,13 @@ def build_segmenting_v3(
             f"{axes_mode}_local_texture"
         ),
     }
+    if bool(config.diagnostic_return_basis):
+        result["texture_active_basis"] = active_basis.reshape(
+            height, width, active_basis.shape[1])
+        result["texture_basis_count"] = count
+        result["texture_basis_radius"] = radius
+        result["texture_basis_centroid"] = texture_centroid
+    return result
 
 
 def _main() -> int:
