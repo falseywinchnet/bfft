@@ -1120,8 +1120,9 @@ struct engine {
                          facr_spectrum& out) {
         const std::size_t count = FS * FB;
         P.run([&](int tid) {
-            for (std::size_t i = std::size_t(tid); i < count;
-                 i += std::size_t(P.lanes())) {
+            std::size_t lo, hi;
+            split(tid, count, lo, hi);
+            for (std::size_t i = lo; i < hi; ++i) {
                 out.a[i] = lhs.a[i] - rhs.a[i];
                 out.b[i] = lhs.b[i] - rhs.b[i];
             }
@@ -2168,88 +2169,174 @@ struct engine {
         return static_cast<std::size_t>(value);
     }
 
-    void directional_box_pass(const double* source, double* destination,
-                              int dy, int dx, int radius) {
-        const double inverse = 1.0 / double(2 * radius + 1);
-        const std::size_t cycles = dy == 0 ? H :
-            (dx == 0 ? W : std::gcd(H, W));
-        const std::size_t length = dy == 0 ? W :
-            (dx == 0 ? H : (H / std::gcd(H, W)) * W);
+    template <int Step>
+    static inline std::size_t periodic_unit_step(
+            std::size_t coordinate, std::size_t extent) {
+        static_assert(Step >= -1 && Step <= 1,
+                      "periodic unit step must be -1, 0, or 1");
+        if constexpr (Step > 0)
+            return coordinate + 1 == extent ? 0 : coordinate + 1;
+        if constexpr (Step < 0)
+            return coordinate == 0 ? extent - 1 : coordinate - 1;
+        return coordinate;
+    }
+
+    template <int DY, int DX>
+    inline void advance_direction(std::size_t& y, std::size_t& x) const {
+        y = periodic_unit_step<DY>(y, H);
+        x = periodic_unit_step<DX>(x, W);
+    }
+
+    // The four directions are fixed by the statistic. Keeping them as
+    // template arguments matters here: the generic version left twelve
+    // runtime sign/zero tests in each sliding-window pixel on ARM64.
+    template <int DY, int DX, int Radius>
+    void directional_box_pass(const double* source, double* destination) {
+        static_assert(Radius > 0, "box radius must be positive");
+        const double inverse = 1.0 / double(2 * Radius + 1);
+        if constexpr (DY != 0 && DX == 0) {
+            // A vertical recurrence need not imply strided memory. Carry a
+            // contiguous vector of column sums down the rows so both the
+            // update and store streams remain unit-stride and vectorizable.
+            P.run([&](int tid) {
+                std::size_t xlo, xhi;
+                split(tid, W, xlo, xhi);
+                double* sums = lanes[tid]->line.data();
+                for (std::size_t x = xlo; x < xhi; ++x)
+                    sums[x] = 0.0;
+                for (int step = -Radius; step <= Radius; ++step) {
+                    const std::size_t sy = periodic_index(0, step * DY, H);
+                    const double* row = source + sy * W;
+                    for (std::size_t x = xlo; x < xhi; ++x)
+                        sums[x] += row[x];
+                }
+                std::size_t leave_y = periodic_index(
+                    0, -Radius * DY, H);
+                std::size_t enter_y = periodic_index(
+                    0, (Radius + 1) * DY, H);
+                for (std::size_t y = 0; y < H; ++y) {
+                    double* out = destination + y * W;
+                    const double* enter = source + enter_y * W;
+                    const double* leave = source + leave_y * W;
+                    for (std::size_t x = xlo; x < xhi; ++x)
+                        out[x] = sums[x] * inverse;
+                    for (std::size_t x = xlo; x < xhi; ++x)
+                        sums[x] += enter[x] - leave[x];
+                    leave_y = periodic_unit_step<DY>(leave_y, H);
+                    enter_y = periodic_unit_step<DY>(enter_y, H);
+                }
+            });
+            return;
+        }
+        const std::size_t diagonal_cycles = std::gcd(H, W);
+        const std::size_t cycles = DY == 0 ? H :
+            (DX == 0 ? W : diagonal_cycles);
+        const std::size_t length = DY == 0 ? W :
+            (DX == 0 ? H : (H / diagonal_cycles) * W);
         P.run([&](int tid) {
-            auto advance = [&](std::size_t& y, std::size_t& x) {
-                if (dy > 0) { if (++y == H) y = 0; }
-                else if (dy < 0) { y = y == 0 ? H - 1 : y - 1; }
-                if (dx > 0) { if (++x == W) x = 0; }
-                else if (dx < 0) { x = x == 0 ? W - 1 : x - 1; }
-            };
             for (std::size_t cycle = std::size_t(tid); cycle < cycles;
                  cycle += std::size_t(P.lanes())) {
-                const std::size_t start_y = dy == 0 ? cycle : 0;
-                const std::size_t start_x = dx == 0 ? cycle :
-                    (dy == 0 ? 0 : cycle);
+                const std::size_t start_y = DY == 0 ? cycle : 0;
+                const std::size_t start_x = DX == 0 ? cycle :
+                    (DY == 0 ? 0 : cycle);
                 double sum = 0.0;
-                for (int step = -radius; step <= radius; ++step) {
+                for (int step = -Radius; step <= Radius; ++step) {
                     const std::size_t sy = periodic_index(
-                        start_y, step * dy, H);
+                        start_y, step * DY, H);
                     const std::size_t sx = periodic_index(
-                        start_x, step * dx, W);
+                        start_x, step * DX, W);
                     sum += source[sy * W + sx];
                 }
                 std::size_t y = start_y, x = start_x;
                 std::size_t leave_y = periodic_index(
-                    start_y, -radius * dy, H);
+                    start_y, -Radius * DY, H);
                 std::size_t leave_x = periodic_index(
-                    start_x, -radius * dx, W);
+                    start_x, -Radius * DX, W);
                 std::size_t enter_y = periodic_index(
-                    start_y, (radius + 1) * dy, H);
+                    start_y, (Radius + 1) * DY, H);
                 std::size_t enter_x = periodic_index(
-                    start_x, (radius + 1) * dx, W);
+                    start_x, (Radius + 1) * DX, W);
                 for (std::size_t position = 0; position < length;
                      ++position) {
                     destination[y * W + x] = sum * inverse;
                     sum += source[enter_y * W + enter_x] -
                            source[leave_y * W + leave_x];
-                    advance(y, x);
-                    advance(leave_y, leave_x);
-                    advance(enter_y, enter_x);
+                    advance_direction<DY, DX>(y, x);
+                    advance_direction<DY, DX>(leave_y, leave_x);
+                    advance_direction<DY, DX>(enter_y, enter_x);
                 }
             }
         });
     }
 
+    template <int DY, int DX>
     void directional_three_pass(const double* source, double* destination,
-                                int dy, int dx, double side) {
+                                double side) {
         const double center = 1.0 - 2.0 * side;
-        const std::size_t cycles = dy == 0 ? H :
-            (dx == 0 ? W : std::gcd(H, W));
-        const std::size_t length = dy == 0 ? W :
-            (dx == 0 ? H : (H / std::gcd(H, W)) * W);
+        // Unlike the box, this stencil has no recurrence. Always traverse
+        // output rows in memory order; cycle traversal made vertical and
+        // diagonal taps needlessly cache-hostile.
         P.run([&](int tid) {
-            auto advance = [&](std::size_t& y, std::size_t& x) {
-                if (dy > 0) { if (++y == H) y = 0; }
-                else if (dy < 0) { y = y == 0 ? H - 1 : y - 1; }
-                if (dx > 0) { if (++x == W) x = 0; }
-                else if (dx < 0) { x = x == 0 ? W - 1 : x - 1; }
-            };
-            for (std::size_t cycle = std::size_t(tid); cycle < cycles;
-                 cycle += std::size_t(P.lanes())) {
-                const std::size_t start_y = dy == 0 ? cycle : 0;
-                const std::size_t start_x = dx == 0 ? cycle :
-                    (dy == 0 ? 0 : cycle);
-                std::size_t y = start_y, x = start_x;
-                std::size_t ym = periodic_index(y, -dy, H);
-                std::size_t xm = periodic_index(x, -dx, W);
-                std::size_t yp = periodic_index(y, dy, H);
-                std::size_t xp = periodic_index(x, dx, W);
-                for (std::size_t position = 0; position < length;
-                     ++position) {
-                    destination[y * W + x] =
-                        side * source[ym * W + xm] +
-                        center * source[y * W + x] +
-                        side * source[yp * W + xp];
-                    advance(y, x);
-                    advance(ym, xm);
-                    advance(yp, xp);
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t ym = periodic_unit_step<-DY>(y, H);
+                const std::size_t yp = periodic_unit_step<DY>(y, H);
+                const double* minus = source + ym * W;
+                const double* middle = source + y * W;
+                const double* plus = source + yp * W;
+                double* out = destination + y * W;
+                if constexpr (DX == 0) {
+                    for (std::size_t x = 0; x < W; ++x)
+                        out[x] = side * minus[x] + center * middle[x] +
+                                 side * plus[x];
+                } else if constexpr (DX > 0) {
+                    out[0] = side * minus[W - 1] + center * middle[0] +
+                             side * plus[1];
+                    for (std::size_t x = 1; x + 1 < W; ++x)
+                        out[x] = side * minus[x - 1] + center * middle[x] +
+                                 side * plus[x + 1];
+                    out[W - 1] = side * minus[W - 2] +
+                        center * middle[W - 1] + side * plus[0];
+                } else {
+                    out[0] = side * minus[1] + center * middle[0] +
+                             side * plus[W - 1];
+                    for (std::size_t x = 1; x + 1 < W; ++x)
+                        out[x] = side * minus[x + 1] + center * middle[x] +
+                                 side * plus[x - 1];
+                    out[W - 1] = side * minus[0] +
+                        center * middle[W - 1] + side * plus[W - 2];
+                }
+            }
+        });
+    }
+
+    template <int LongDY, int LongDX, int CrossDY, int CrossDX,
+              int DifferenceDY, int DifferenceDX, int Radius>
+    void accumulate_condition_direction(const double* image,
+                                        double cross_side) {
+        directional_box_pass<LongDY, LongDX, Radius>(
+            image, u.data());
+        directional_box_pass<LongDY, LongDX, Radius>(
+            u.data(), w.data());
+        directional_box_pass<LongDY, LongDX, Radius>(
+            w.data(), u.data());
+        directional_three_pass<CrossDY, CrossDX>(
+            u.data(), w.data(), cross_side);
+        directional_three_pass<CrossDY, CrossDX>(
+            w.data(), u.data(), cross_side);
+        directional_three_pass<CrossDY, CrossDX>(
+            u.data(), w.data(), cross_side);
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yn =
+                    periodic_unit_step<DifferenceDY>(y, H);
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xn =
+                        periodic_unit_step<DifferenceDX>(x, W);
+                    const std::size_t i = y * W + x;
+                    condition_gate[i] +=
+                        std::fabs(w[yn * W + xn] - w[i]);
                 }
             }
         });
@@ -2261,8 +2348,9 @@ struct engine {
         for (double value : condition_gate) sum += value;
         const double scale = std::fmax(1.6 * sum / double(n), 1e-12);
         P.run([&](int tid) {
-            for (std::size_t i = std::size_t(tid); i < n;
-                 i += std::size_t(P.lanes())) {
+            std::size_t lo, hi;
+            split(tid, n, lo, hi);
+            for (std::size_t i = lo; i < hi; ++i) {
                 const double ratio = condition_gate[i] / scale;
                 const double square = ratio * ratio;
                 const double base = square / (1.0 + square);
@@ -2282,47 +2370,14 @@ struct engine {
     void build_condition_gate_facr(const double* image) {
         const std::size_t n = H * W;
         std::memset(condition_gate.data(), 0, n * sizeof(double));
-        struct direction {
-            int long_dy, long_dx;
-            int cross_dy, cross_dx;
-            int difference_dy, difference_dx;
-            int long_radius;
-            double cross_side;
-        };
-        const direction directions[4] = {
-            {0, 1, 1, 0, 1, 0, 3, 0.125},
-            {1, 0, 0, 1, 0, 1, 3, 0.125},
-            {1, 1, 1, -1, 1, 1, 2, 0.0625},
-            {1, -1, 1, 1, 1, -1, 2, 0.0625},
-        };
-        for (const direction& d : directions) {
-            directional_box_pass(image, u.data(), d.long_dy, d.long_dx,
-                                 d.long_radius);
-            directional_box_pass(u.data(), w.data(), d.long_dy, d.long_dx,
-                                 d.long_radius);
-            directional_box_pass(w.data(), u.data(), d.long_dy, d.long_dx,
-                                 d.long_radius);
-            directional_three_pass(u.data(), w.data(), d.cross_dy,
-                                   d.cross_dx, d.cross_side);
-            directional_three_pass(w.data(), u.data(), d.cross_dy,
-                                   d.cross_dx, d.cross_side);
-            directional_three_pass(u.data(), w.data(), d.cross_dy,
-                                   d.cross_dx, d.cross_side);
-            P.run([&](int tid) {
-                for (std::size_t y = std::size_t(tid); y < H;
-                     y += std::size_t(P.lanes())) {
-                    const std::size_t yn = periodic_index(
-                        y, d.difference_dy, H);
-                    for (std::size_t x = 0; x < W; ++x) {
-                        const std::size_t xn = periodic_index(
-                            x, d.difference_dx, W);
-                        const std::size_t i = y * W + x;
-                        condition_gate[i] +=
-                            std::fabs(w[yn * W + xn] - w[i]);
-                    }
-                }
-            });
-        }
+        accumulate_condition_direction<0, 1, 1, 0, 1, 0, 3>(
+            image, 0.125);
+        accumulate_condition_direction<1, 0, 0, 1, 0, 1, 3>(
+            image, 0.125);
+        accumulate_condition_direction<1, 1, 1, -1, 1, 1, 2>(
+            image, 0.0625);
+        accumulate_condition_direction<1, -1, 1, 1, 1, -1, 2>(
+            image, 0.0625);
         normalize_condition_gate();
     }
 
@@ -2400,8 +2455,9 @@ struct engine {
         const double inverse_span = 1.0 /
             std::fmax(high_mean - boundary, 1e-30);
         P.run([&](int tid) {
-            for (std::size_t i = std::size_t(tid); i < n;
-                 i += std::size_t(P.lanes())) {
+            std::size_t lo, hi;
+            split(tid, n, lo, hi);
+            for (std::size_t i = lo; i < hi; ++i) {
                 jump_confidence[i] = std::fmin(
                     1.0, std::fmax(
                         0.0, (condition_gate[i] - boundary) * inverse_span));
@@ -2760,8 +2816,9 @@ struct engine {
         // Remove the first carrier estimate, then take the same fixed second
         // jump observation as the full spectral operator.
         P.run([&](int tid) {
-            for (std::size_t i = std::size_t(tid); i < n;
-                 i += std::size_t(P.lanes()))
+            std::size_t lo, hi;
+            split(tid, n, lo, hi);
+            for (std::size_t i = lo; i < hi; ++i)
                 u[i] = image[i] - w[i];
         });
         build_jump_potential_facr(u.data());
@@ -2820,8 +2877,9 @@ struct engine {
 
         constexpr double slack_fraction = 0.20;
         P.run([&](int tid) {
-            for (std::size_t i = std::size_t(tid); i < n;
-                 i += std::size_t(P.lanes())) {
+            std::size_t lo, hi;
+            split(tid, n, lo, hi);
+            for (std::size_t i = lo; i < hi; ++i) {
                 const double px = bux[i], py = buy[i];
                 const double magnitude = std::sqrt(px * px + py * py);
                 const double inverse = 1.0 / std::fmax(magnitude, 1e-30);
@@ -2877,8 +2935,9 @@ struct engine {
         if (!(new_energy < old_energy)) route_alpha = 0.0;
 
         P.run([&](int tid) {
-            for (std::size_t i = std::size_t(tid); i < n;
-                 i += std::size_t(P.lanes())) {
+            std::size_t lo, hi;
+            split(tid, n, lo, hi);
+            for (std::size_t i = lo; i < hi; ++i) {
                 double px = bux[i] + route_alpha * bvx[i];
                 double py = buy[i] + route_alpha * bvy[i];
                 const double magnitude = std::sqrt(px * px + py * py);
