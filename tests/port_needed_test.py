@@ -6,6 +6,8 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import bfft
+from bfft.effects import srgb_to_lab
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -93,6 +95,34 @@ def test_frozen_geometry_uses_one_target_decomposition():
     assert np.isclose(np.sum(geometry["measure"]), 1.0, atol=1e-6)
     assert np.isfinite(geometry["null_confidence"]).all()
     assert np.isfinite(geometry["boundary_confidence"]).all()
+
+
+def test_frozen_geometry_can_select_the_explicit_legacy_one_pass():
+    image = _fixture(23, 31)
+    geometry = build_frozen_geometry(
+        image,
+        tgfd_sweeps=12,
+        flow_sweeps=1,
+        glass_support_weight=0.0,
+        meyer_operator="legacy_one_pass",
+        threads=1,
+    )
+    light = srgb_to_lab(image)[..., 0] * 255.0
+    expected_cartoon, expected_texture = bfft.meyer_split_legacy(
+        light,
+        lam=0.05,
+        mu=40.0,
+        passes=1,
+        threads=1,
+        solver=1,
+    )
+    assert geometry["meyer_operator"] == "legacy_one_pass"
+    np.testing.assert_allclose(
+        geometry["cartoon"], expected_cartoon / 255.0,
+        rtol=2e-6, atol=2e-5)
+    np.testing.assert_allclose(
+        geometry["texture"], expected_texture / 255.0,
+        rtol=2e-6, atol=2e-5)
 
 
 def test_null_evidence_only_attenuates_weak_unpersistent_activity():

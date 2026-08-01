@@ -4,6 +4,7 @@ import pytest
 from experiments.segmenting_v3 import (
     SegmentingV3Config,
     _graph_unrolled_texture_phases,
+    _joint_leaf_collapse,
     _texture_dirichlet_envelope,
     build_segmenting_v3,
 )
@@ -62,6 +63,69 @@ def test_texture_dirichlet_envelope_is_exactly_nonexpansive_per_cell():
         labels, target, target * 0.5)
     assert np.array_equal(already_bounded, target * 0.5)
     assert unchanged["contracted_cells"] == 0
+
+
+def test_joint_leaf_collapse_unions_only_compatible_one_child_parents():
+    height, width = 8, 12
+    y, x = np.mgrid[:height, :width]
+    structural = (x >= width // 2).astype(np.int32)
+    texture = structural.copy()
+    smooth = np.stack((
+        0.1 + 0.01 * x,
+        0.2 + 0.02 * y,
+        np.full((height, width), 0.3),
+    ), axis=2)
+    zero = np.zeros_like(smooth)
+
+    collapsed_structure, collapsed_texture, diagnostic = (
+        _joint_leaf_collapse(
+            structural,
+            texture,
+            smooth,
+            smooth,
+            zero,
+            zero,
+            penalty=4.0,
+            basis_terms=6,
+        )
+    )
+    assert diagnostic["eligible_structural_cells"] == 2
+    assert diagnostic["accepted_pairs"] == 1
+    assert diagnostic["structural_cells_removed"] == 1
+    assert diagnostic["texture_cells_removed"] == 1
+    assert np.array_equal(np.unique(collapsed_structure), [0])
+    assert np.array_equal(np.unique(collapsed_texture), [0])
+
+    discontinuous = smooth + 2.0 * structural[..., None]
+    kept_structure, kept_texture, rejected = _joint_leaf_collapse(
+        structural,
+        texture,
+        discontinuous,
+        discontinuous,
+        zero,
+        zero,
+        penalty=4.0,
+        basis_terms=6,
+    )
+    assert rejected["accepted_pairs"] == 0
+    assert np.array_equal(kept_structure, structural)
+    assert np.array_equal(kept_texture, texture)
+
+    subdivided_texture = np.where(
+        structural == 0, (y >= height // 2).astype(np.int32), 2,
+    ).astype(np.int32)
+    _, _, subdivided = _joint_leaf_collapse(
+        structural,
+        subdivided_texture,
+        smooth,
+        smooth,
+        zero,
+        zero,
+        penalty=4.0,
+        basis_terms=6,
+    )
+    assert subdivided["eligible_structural_cells"] == 1
+    assert subdivided["candidate_pairs"] == 0
 
 
 @pytest.mark.parametrize("upgrade_mode", ("boundary_band", "full_map"))
@@ -189,10 +253,15 @@ def test_canonical_v2_quotient_survives_dense_texture_cleanup():
     assert result["texture_population"]["separable_population"]
     assert result["texture_population"]["missing_parent_seeds"] == 0
     assert result["texture_population"]["surplus_sites"] > 0
+    construction_centers = result["structural_initial_centers"]
     assert np.allclose(
-        result["texture_initial_centers"][:len(result["centers"])],
-        result["centers"],
+        result["texture_initial_centers"][:len(construction_centers)],
+        construction_centers,
     )
+    joint = result["joint_leaf_collapse"]
+    assert joint["enabled"]
+    assert joint["final_structural_cells"] == len(result["centers"])
+    assert joint["final_texture_cells"] == len(result["texture_centers"])
     structural_geometry = result["structural_population_geometry"]
     structural_raw = (
         np.asarray(structural_geometry["measure"], dtype=np.float64)

@@ -434,3 +434,28 @@ the algebraic symmetric-2x2 solution, while Lanczos weights use a 4097-entry
 linear lookup table. On the 1799x1440 Golden Gate image, resizing to a
 720x576 panel measured 69 ms for the source and 53 ms for the reconstruction
 after compilation.
+
+## Full versus reduced Meyer operator
+
+`process every source pixel` now makes an explicit algorithmic choice as well
+as a lattice choice. Full mode uses the fixed jump-measure Meyer operator.
+Reduced mode invokes `meyer_split_legacy` with exactly one pass. It does not
+inherit a pass count or silently route through the new default symbol. This
+keeps the fixed jump estimator where its extra work is intended and restores
+the old inexpensive preview decomposition on the reduced lattice.
+
+## Joint structural/texture leaf collapse
+
+After texture cleanup, structural parents having exactly one parent-pure
+texture child may be contracted together with that child. Candidate
+compatibility is measured by the increase in the pooled cartoon and texture
+affine objectives, accumulated in one raster traversal. Accepted graph edges
+are contracted once, after which the structural and texture affine models are
+refit on the saved quotient.
+
+The viewer reports the initial and final counts, topology eligibility,
+fit-compatible adjacency count, and selected edge count. This is important:
+the pass is intentionally almost invisible in a reconstruction because it
+only removes models judged redundant. On the Golden Gate control it removes a
+small fraction of the full texture population; it is representation economy,
+not a reconstruction enhancement.

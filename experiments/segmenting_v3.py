@@ -94,6 +94,7 @@ class SegmentingV3Config:
     structural_ridges: int = 1
     cartoon_scale: float = 0.5
     meyer_sweeps: int = 1
+    meyer_operator: str = "jump_measure"
     metric_strength: float = 1.5
     boundary_jump_strength: float = 24.0
     safety_cells: int = 32768
@@ -124,6 +125,8 @@ class SegmentingV3Config:
     texture_merge_rounds: int = 1
     texture_merge_topology: str = "best_graph"
     texture_cross_structural_merges: bool = False
+    joint_leaf_collapse: bool = True
+    joint_leaf_penalty: float = 4.0
     texture_interface_refresh: bool = False
     texture_interface_radius: int = 1
     texture_interface_sweeps: int = 1
@@ -1393,6 +1396,7 @@ def _nested_texture_partition(
             rgb,
             target_lab=target_lab,
             tgfd_sweeps=max(int(config.meyer_sweeps), 1),
+            meyer_operator=config.meyer_operator,
             flow_sweeps=1,
             texture_support_weight=max(
                 float(config.texture_support_weight), 0.0),
@@ -1866,6 +1870,293 @@ def _mutual_model_cost_merges(
     }
 
 
+@_compile
+def _joint_leaf_statistics(
+    labels,
+    cartoon_target,
+    cartoon_fit,
+    texture_target,
+    texture_fit,
+    cells,
+):
+    """Accumulate both leaf objectives in one raster traversal."""
+    height, width = labels.shape
+    count = np.zeros(cells, dtype=np.float64)
+    gram = np.zeros((cells, 3, 3), dtype=np.float64)
+    cartoon_cross = np.zeros((cells, 3, 3), dtype=np.float64)
+    texture_cross = np.zeros((cells, 3, 3), dtype=np.float64)
+    cartoon_square = np.zeros(cells, dtype=np.float64)
+    texture_square = np.zeros(cells, dtype=np.float64)
+    cartoon_independent = np.zeros(cells, dtype=np.float64)
+    texture_independent = np.zeros(cells, dtype=np.float64)
+    residual_energy = np.empty(height * width, dtype=np.float64)
+    pixel = 0
+    for y in range(height):
+        coordinate_y = (y + 0.5) / height - 0.5
+        for x in range(width):
+            coordinate_x = (x + 0.5) / width - 0.5
+            cell = labels[y, x]
+            count[cell] += 1.0
+            gram[cell, 0, 0] += 1.0
+            gram[cell, 0, 1] += coordinate_x
+            gram[cell, 0, 2] += coordinate_y
+            gram[cell, 1, 1] += coordinate_x * coordinate_x
+            gram[cell, 1, 2] += coordinate_x * coordinate_y
+            gram[cell, 2, 2] += coordinate_y * coordinate_y
+            total_error = 0.0
+            for channel in range(3):
+                cartoon_value = cartoon_target[y, x, channel]
+                texture_value = texture_target[y, x, channel]
+                cartoon_cross[cell, 0, channel] += cartoon_value
+                cartoon_cross[cell, 1, channel] += (
+                    coordinate_x * cartoon_value)
+                cartoon_cross[cell, 2, channel] += (
+                    coordinate_y * cartoon_value)
+                texture_cross[cell, 0, channel] += texture_value
+                texture_cross[cell, 1, channel] += (
+                    coordinate_x * texture_value)
+                texture_cross[cell, 2, channel] += (
+                    coordinate_y * texture_value)
+                cartoon_square[cell] += cartoon_value * cartoon_value
+                texture_square[cell] += texture_value * texture_value
+                cartoon_error = (
+                    cartoon_value - cartoon_fit[y, x, channel])
+                texture_error = (
+                    texture_value - texture_fit[y, x, channel])
+                cartoon_independent[cell] += cartoon_error * cartoon_error
+                texture_independent[cell] += texture_error * texture_error
+                total_error += (
+                    cartoon_value + texture_value
+                    - cartoon_fit[y, x, channel]
+                    - texture_fit[y, x, channel]
+                ) ** 2
+            residual_energy[pixel] = total_error / 3.0
+            pixel += 1
+    for cell in range(cells):
+        gram[cell, 1, 0] = gram[cell, 0, 1]
+        gram[cell, 2, 0] = gram[cell, 0, 2]
+        gram[cell, 2, 1] = gram[cell, 1, 2]
+    return (
+        count,
+        gram,
+        cartoon_cross,
+        texture_cross,
+        cartoon_square,
+        texture_square,
+        cartoon_independent,
+        texture_independent,
+        residual_energy,
+    )
+
+
+def _joint_leaf_collapse(
+    structural_labels: np.ndarray,
+    texture_labels: np.ndarray,
+    target_lab: np.ndarray,
+    cartoon_lab: np.ndarray,
+    texture_target: np.ndarray,
+    texture_fit: np.ndarray,
+    *,
+    penalty: float,
+    basis_terms: int,
+) -> tuple[np.ndarray, np.ndarray, dict]:
+    """Collapse compatible one-child structural and texture leaves together.
+
+    Eligibility is topological: both incident structural owners must have
+    exactly one final texture child, and that child must not cross a parent
+    boundary. Compatibility is then the increase in the *joint* pooled
+    cartoon and texture affine objectives. The accepted best-edge graph is
+    contracted once; no region descent or repeated image scan is performed.
+    """
+    structural = np.ascontiguousarray(structural_labels, dtype=np.int32)
+    texture = np.ascontiguousarray(texture_labels, dtype=np.int32)
+    structural_cells = int(np.max(structural)) + 1
+    texture_cells = int(np.max(texture)) + 1
+    flat_structural = structural.ravel()
+    flat_texture = texture.ravel()
+
+    parent_min = np.full(texture_cells, structural_cells, dtype=np.int32)
+    parent_max = np.full(texture_cells, -1, dtype=np.int32)
+    np.minimum.at(parent_min, flat_texture, flat_structural)
+    np.maximum.at(parent_max, flat_texture, flat_structural)
+    pure = parent_min == parent_max
+    pure_texture = np.flatnonzero(pure)
+    child_count = np.bincount(
+        parent_min[pure_texture], minlength=structural_cells)
+    only_child = np.full(structural_cells, -1, dtype=np.int32)
+    only_child[parent_min[pure_texture]] = pure_texture
+    eligible = child_count == 1
+
+    all_pairs = _adjacent_cell_pairs(structural, structural_cells)
+    pairs = all_pairs
+    if pairs.size:
+        pairs = pairs[eligible[pairs[:, 0]] & eligible[pairs[:, 1]]]
+
+    (
+        count,
+        gram,
+        cartoon_cross,
+        texture_cross,
+        cartoon_square,
+        texture_square,
+        cartoon_independent,
+        texture_independent,
+        residual_energy,
+    ) = _joint_leaf_statistics(
+        structural,
+        np.ascontiguousarray(target_lab, dtype=np.float64),
+        np.ascontiguousarray(cartoon_lab, dtype=np.float64),
+        np.ascontiguousarray(texture_target, dtype=np.float64),
+        np.ascontiguousarray(texture_fit, dtype=np.float64),
+        structural_cells,
+    )
+    robust_variance = float(np.median(residual_energy))
+    allowance = (
+        max(float(penalty), 0.0)
+        * max(robust_variance, 1e-30)
+        * 3.0
+        * max(int(basis_terms), 1)
+    )
+
+    if pairs.size:
+        first, second = pairs[:, 0], pairs[:, 1]
+        union_gram = gram[first] + gram[second]
+        condition = np.linalg.cond(union_gram)
+        ridge = (
+            np.finfo(np.float64).eps
+            * np.maximum(count[first] + count[second], 1.0)
+        )
+        union_gram[:, 0, 0] += ridge
+        union_gram[:, 1, 1] += ridge
+        union_gram[:, 2, 2] += ridge
+        union_cartoon_cross = cartoon_cross[first] + cartoon_cross[second]
+        union_texture_cross = texture_cross[first] + texture_cross[second]
+        cartoon_coefficients = np.linalg.solve(
+            union_gram, union_cartoon_cross)
+        texture_coefficients = np.linalg.solve(
+            union_gram, union_texture_cross)
+        pooled_cartoon = (
+            cartoon_square[first] + cartoon_square[second]
+            - np.einsum(
+                "eic,eic->e",
+                union_cartoon_cross,
+                cartoon_coefficients,
+                optimize=True,
+            )
+        )
+        pooled_texture = (
+            texture_square[first] + texture_square[second]
+            - np.einsum(
+                "eic,eic->e",
+                union_texture_cross,
+                texture_coefficients,
+                optimize=True,
+            )
+        )
+        independent = (
+            cartoon_independent[first]
+            + cartoon_independent[second]
+            + texture_independent[first]
+            + texture_independent[second]
+        )
+        increase = np.maximum(
+            pooled_cartoon + pooled_texture - independent,
+            0.0,
+        )
+        represented_energy = (
+            cartoon_square[first] + cartoon_square[second]
+            + texture_square[first] + texture_square[second]
+        )
+        numerical_allowance = (
+            128.0 * np.finfo(np.float64).eps
+            * np.maximum(condition, 1.0)
+            * np.maximum(represented_energy, 1.0)
+        )
+        score = increase / np.maximum(
+            allowance + numerical_allowance, 1e-300)
+        score[condition > 1.0 / np.sqrt(np.finfo(np.float64).eps)] = np.inf
+
+        best_score = np.full(structural_cells, np.inf)
+        best_peer = np.full(structural_cells, -1, dtype=np.int32)
+        np.minimum.at(best_score, first, score)
+        np.minimum.at(best_score, second, score)
+        largest = np.iinfo(np.int32).max
+        peer_for_first = np.where(
+            score == best_score[first], second, largest)
+        peer_for_second = np.where(
+            score == best_score[second], first, largest)
+        tie_peer = np.full(structural_cells, largest, dtype=np.int32)
+        np.minimum.at(tie_peer, first, peer_for_first)
+        np.minimum.at(tie_peer, second, peer_for_second)
+        best_peer[tie_peer != largest] = tie_peer[tie_peer != largest]
+        cell = np.arange(structural_cells, dtype=np.int32)
+        selected = (best_peer >= 0) & (best_score <= 1.0)
+        selected_pairs = np.column_stack((
+            np.minimum(cell[selected], best_peer[selected]),
+            np.maximum(cell[selected], best_peer[selected]),
+        ))
+        accepted = np.unique(selected_pairs, axis=0)
+    else:
+        score = np.empty(0, dtype=np.float64)
+        accepted = np.empty((0, 2), dtype=np.int32)
+
+    fit_compatible = int(np.count_nonzero(score <= 1.0))
+    ill_conditioned = int(np.count_nonzero(~np.isfinite(score)))
+
+    if accepted.size:
+        structural_representative = _union_components(
+            structural_cells, accepted)
+        collapsed_structural, final_structural_cells = _compact_label_image(
+            np.ascontiguousarray(
+                structural_representative[structural], dtype=np.int32))
+        texture_pairs = np.column_stack((
+            only_child[accepted[:, 0]],
+            only_child[accepted[:, 1]],
+        ))
+        texture_pairs.sort(axis=1)
+        texture_representative = _union_components(
+            texture_cells, texture_pairs)
+        collapsed_texture, final_texture_cells = _compact_label_image(
+            np.ascontiguousarray(
+                texture_representative[texture], dtype=np.int32))
+    else:
+        collapsed_structural = structural.copy()
+        collapsed_texture = texture.copy()
+        final_structural_cells = structural_cells
+        final_texture_cells = texture_cells
+
+    return collapsed_structural, collapsed_texture, {
+        "enabled": True,
+        "total_structural_cells": int(structural_cells),
+        "structural_cells_without_pure_child": int(np.count_nonzero(
+            child_count == 0)),
+        "structural_cells_with_multiple_children": int(np.count_nonzero(
+            child_count > 1)),
+        "eligible_structural_cells": int(np.count_nonzero(eligible)),
+        "pure_texture_cells": int(len(pure_texture)),
+        "cross_parent_texture_cells": int(texture_cells - len(pure_texture)),
+        "total_adjacent_pairs": int(len(all_pairs)),
+        "candidate_pairs": int(len(pairs)),
+        "fit_compatible_pairs": fit_compatible,
+        "ill_conditioned_pairs": ill_conditioned,
+        "accepted_pairs": int(len(accepted)),
+        "initial_structural_cells": int(structural_cells),
+        "final_structural_cells": int(final_structural_cells),
+        "structural_cells_removed": int(
+            structural_cells - final_structural_cells),
+        "initial_texture_cells": int(texture_cells),
+        "final_texture_cells": int(final_texture_cells),
+        "texture_cells_removed": int(texture_cells - final_texture_cells),
+        "robust_residual_variance": robust_variance,
+        "model_allowance": allowance,
+        "maximum_accepted_score": (
+            float(np.max(score[score <= 1.0]))
+            if np.any(score <= 1.0) else 0.0
+        ),
+        "accepted_pairs_array": accepted,
+    }
+
+
 def _paired_metric_split_partition(
     parent_labels: np.ndarray,
     centers: np.ndarray,
@@ -2210,6 +2501,7 @@ def _half_cartoon_scaffold(
         low_rgb,
         target_lab=low_lab,
         tgfd_sweeps=max(int(config.meyer_sweeps), 1),
+        meyer_operator=config.meyer_operator,
         flow_sweeps=1,
         texture_support_weight=0.0,
         glass_support_weight=0.0,
@@ -2324,6 +2616,55 @@ def _half_cartoon_scaffold(
     }
 
 
+def _fit_canonical_structural_model(
+    labels: np.ndarray,
+    centers: np.ndarray,
+    target_lab: np.ndarray,
+    geometry: dict,
+    config: SegmentingV3Config,
+) -> np.ndarray:
+    """Fit the canonical affine-plus-ridge model on one fixed quotient."""
+    native = hard_affine_fit_native(labels, target_lab)
+    if native is None:
+        raise RuntimeError("version 3.0 requires the native hard affine fitter")
+    flat, basis, count, radius, _centroid, cartoon_lab = native
+    active_basis = basis
+    normal, _tangent = _cell_frame(
+        labels,
+        centers,
+        (
+            np.asarray(geometry["boundary_xx"], dtype=np.float64),
+            np.asarray(geometry["boundary_xy"], dtype=np.float64),
+            np.asarray(geometry["boundary_yy"], dtype=np.float64),
+        ),
+    )
+    target_flat = target_lab.reshape(-1, 3)
+    ones = np.ones(flat.size, dtype=np.float64)
+    for _ in range(max(int(config.structural_ridges), 0)):
+        residual = target_flat - cartoon_lab.reshape(-1, 3)
+        _score, offset = measure_paired_offsets(
+            flat,
+            ones,
+            residual,
+            normal,
+            len(centers),
+            bins=max(int(config.offset_bins), 3),
+        )
+        ridge = np.clip(
+            float(config.ridge_kappa) * (normal - offset[flat]),
+            -1.0,
+            1.0,
+        )
+        active_basis = np.column_stack((active_basis, ridge))
+        refit = hard_basis_refit_native(
+            flat, active_basis, target_flat, count, radius)
+        if refit is None:
+            raise RuntimeError(
+                "version 3.0 requires the native basis refitter")
+        cartoon_lab = refit.reshape(target_lab.shape)
+    return cartoon_lab
+
+
 def _canonical_v2_scaffold(
     rgb: np.ndarray,
     target_lab: np.ndarray,
@@ -2335,6 +2676,7 @@ def _canonical_v2_scaffold(
         rgb,
         target_lab=target_lab,
         tgfd_sweeps=max(int(config.meyer_sweeps), 1),
+        meyer_operator=config.meyer_operator,
         flow_sweeps=max(int(config.structural_flow_sweeps), 1),
         texture_support_weight=max(
             float(config.texture_support_weight), 0.0),
@@ -2470,44 +2812,8 @@ def _canonical_v2_scaffold(
     transport_ms = 1000.0 * (time.perf_counter() - phase)
 
     phase = time.perf_counter()
-    native = hard_affine_fit_native(labels, target_lab)
-    if native is None:
-        raise RuntimeError("version 3.0 requires the native hard affine fitter")
-    flat, basis, count, radius, _centroid, cartoon_lab = native
-    active_basis = basis
-    normal, _tangent = _cell_frame(
-        labels,
-        centers,
-        (
-            np.asarray(geometry["boundary_xx"], dtype=np.float64),
-            np.asarray(geometry["boundary_xy"], dtype=np.float64),
-            np.asarray(geometry["boundary_yy"], dtype=np.float64),
-        ),
-    )
-    target_flat = target_lab.reshape(-1, 3)
-    ones = np.ones(flat.size, dtype=np.float64)
-    for _ in range(max(int(config.structural_ridges), 0)):
-        residual = target_flat - cartoon_lab.reshape(-1, 3)
-        _score, offset = measure_paired_offsets(
-            flat,
-            ones,
-            residual,
-            normal,
-            len(centers),
-            bins=max(int(config.offset_bins), 3),
-        )
-        ridge = np.clip(
-            float(config.ridge_kappa) * (normal - offset[flat]),
-            -1.0,
-            1.0,
-        )
-        active_basis = np.column_stack((active_basis, ridge))
-        refit = hard_basis_refit_native(
-            flat, active_basis, target_flat, count, radius)
-        if refit is None:
-            raise RuntimeError(
-                "version 3.0 requires the native basis refitter")
-        cartoon_lab = refit.reshape(target_lab.shape)
+    cartoon_lab = _fit_canonical_structural_model(
+        labels, centers, target_lab, geometry, config)
     fit_ms = 1000.0 * (time.perf_counter() - phase)
     owner_upgrade = {
         "band_pixels": 0,
@@ -2584,6 +2890,8 @@ def build_segmenting_v3(
     owner_upgrade_ms = scaffold["owner_upgrade_ms"]
     cartoon_refit_ms = scaffold["refit_ms"]
     characteristic = scaffold["characteristic"]
+    structural_initial_labels = labels
+    structural_initial_centers = centers
 
     texture_target = target_lab - cartoon_lab
 
@@ -2695,6 +3003,77 @@ def build_segmenting_v3(
             ) = native
             texture_affine_ms += 1000.0 * (
                 time.perf_counter() - phase)
+
+    joint_leaf_collapse = {
+        "enabled": False,
+        "total_structural_cells": int(len(centers)),
+        "structural_cells_without_pure_child": 0,
+        "structural_cells_with_multiple_children": 0,
+        "eligible_structural_cells": 0,
+        "pure_texture_cells": 0,
+        "cross_parent_texture_cells": 0,
+        "total_adjacent_pairs": 0,
+        "candidate_pairs": 0,
+        "fit_compatible_pairs": 0,
+        "ill_conditioned_pairs": 0,
+        "accepted_pairs": 0,
+        "initial_structural_cells": int(len(centers)),
+        "final_structural_cells": int(len(centers)),
+        "structural_cells_removed": 0,
+        "initial_texture_cells": int(len(texture_centers)),
+        "final_texture_cells": int(len(texture_centers)),
+        "texture_cells_removed": 0,
+        "model_refit_ms": 0.0,
+    }
+    joint_leaf_collapse_ms = 0.0
+    if (
+        scaffold["topology"] == "canonical_v2"
+        and texture_model == "nested_population"
+        and bool(config.joint_leaf_collapse)
+    ):
+        phase = time.perf_counter()
+        labels, texture_labels, joint_leaf_collapse = _joint_leaf_collapse(
+            labels,
+            texture_labels,
+            target_lab,
+            cartoon_lab,
+            texture_target,
+            texture_fit,
+            penalty=float(config.joint_leaf_penalty),
+            basis_terms=(
+                6
+                + max(int(config.structural_ridges), 0)
+                + max(int(config.nested_texture_ridges), 0)
+            ),
+        )
+        if joint_leaf_collapse["structural_cells_removed"]:
+            centers = _centers_from_labels(
+                labels, cartoon_geometry["measure"])
+            texture_centers = _centers_from_labels(
+                texture_labels, texture_geometry["measure"])
+            refit_started = time.perf_counter()
+            cartoon_lab = _fit_canonical_structural_model(
+                labels, centers, target_lab, cartoon_geometry, config)
+            texture_target = target_lab - cartoon_lab
+            native = hard_affine_fit_native(texture_labels, texture_target)
+            if native is None:
+                raise RuntimeError(
+                    "version 3.0 requires the native hard affine fitter")
+            (
+                flat,
+                basis,
+                count,
+                radius,
+                texture_centroid,
+                texture_fit,
+            ) = native
+            refit_ms = 1000.0 * (time.perf_counter() - refit_started)
+            joint_leaf_collapse["model_refit_ms"] = refit_ms
+            texture_affine_ms += refit_ms
+        else:
+            joint_leaf_collapse["model_refit_ms"] = 0.0
+        joint_leaf_collapse_ms = 1000.0 * (
+            time.perf_counter() - phase)
 
     straight_normal, straight_tangent = _cell_frame(
         texture_labels, texture_centers, frame_tensor)
@@ -2895,6 +3274,8 @@ def build_segmenting_v3(
         "texture_centers": texture_centers,
         "texture_initial_labels": texture_initial_labels,
         "texture_initial_centers": texture_initial_centers,
+        "structural_initial_labels": structural_initial_labels,
+        "structural_initial_centers": structural_initial_centers,
         "lifted_labels": lifted_labels,
         "low_labels": low_labels,
         "centers": centers,
@@ -2907,6 +3288,7 @@ def build_segmenting_v3(
         "texture_forest": texture_forest,
         "texture_population": texture_population,
         "texture_cleanup": texture_cleanup,
+        "joint_leaf_collapse": joint_leaf_collapse,
         "structural_topology": scaffold["topology"],
         "structural_transport_model": scaffold["transport_model"],
         "coordinate_trace": coordinate_trace,
@@ -2932,6 +3314,7 @@ def build_segmenting_v3(
                 texture_population["transport_ms"]),
             "texture_affine_ms": texture_affine_ms,
             "texture_cleanup_ms": texture_cleanup_ms,
+            "joint_leaf_collapse_ms": joint_leaf_collapse_ms,
             "coordinate_geometry_ms": coordinate_geometry_ms,
             "texture_coordinate_ms": float(sum(
                 item["milliseconds"] for item in coordinate_trace)),

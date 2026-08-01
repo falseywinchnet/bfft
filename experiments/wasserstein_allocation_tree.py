@@ -156,7 +156,8 @@ def single_decomposition_geometry(
     null_evidence_strength: float = 0.0,
     threads: int = 4,
     meyer_solver: int = 1,
-) -> dict[str, np.ndarray | float]:
+    meyer_operator: str = "jump_measure",
+) -> dict[str, np.ndarray | float | str]:
     """One frozen BFFT support measure and metric.
 
     ``tgfd_sweeps`` is the internal convergence work of the one split, not a
@@ -172,14 +173,28 @@ def single_decomposition_geometry(
     if lab.shape != np.asarray(rgb).shape:
         raise ValueError("precomputed OKLab field must match the RGB image")
     light = lab[..., 0] * 255.0
-    cartoon, texture = bfft.meyer_split(
-        light,
-        lam=lam,
-        mu=mu,
-        passes=tgfd_sweeps,
-        threads=threads,
-        solver=meyer_solver,
-    )
+    selected_operator = str(meyer_operator).strip().lower()
+    if selected_operator == "jump_measure":
+        cartoon, texture = bfft.meyer_split(
+            light,
+            lam=lam,
+            mu=mu,
+            passes=tgfd_sweeps,
+            threads=threads,
+            solver=meyer_solver,
+        )
+    elif selected_operator == "legacy_one_pass":
+        cartoon, texture = bfft.meyer_split_legacy(
+            light,
+            lam=lam,
+            mu=mu,
+            passes=1,
+            threads=threads,
+            solver=meyer_solver,
+        )
+    else:
+        raise ValueError(
+            "meyer_operator must be 'jump_measure' or 'legacy_one_pass'")
     if float(glass_support_weight) > 0.0:
         projected = bfft.rof(
             light - texture,
@@ -387,6 +402,7 @@ def single_decomposition_geometry(
         "precision_yy": qyy,
         "cartoon": cartoon,
         "texture": texture,
+        "meyer_operator": selected_operator,
         "glass": glass,
         "energy": energy,
         "source_reliability": source_reliability,

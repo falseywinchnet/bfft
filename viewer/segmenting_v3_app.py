@@ -404,7 +404,12 @@ def _config():
         structural_characteristic_passes=int(
             dpg.get_value("v3_structural_characteristic_passes")),
         cartoon_scale=float(dpg.get_value("v3_cartoon_scale")),
-        meyer_sweeps=int(dpg.get_value("v3_meyer_sweeps")),
+        meyer_sweeps=1,
+        meyer_operator=(
+            "jump_measure"
+            if bool(dpg.get_value("v3_full"))
+            else "legacy_one_pass"
+        ),
         metric_strength=float(dpg.get_value("v3_metric_strength")),
         boundary_jump_strength=float(dpg.get_value("v3_boundary_jump")),
         safety_cells=int(dpg.get_value("v3_safety")),
@@ -445,6 +450,10 @@ def _config():
             dpg.get_value("v3_texture_merge_penalty")),
         texture_cross_structural_merges=bool(
             dpg.get_value("v3_texture_cross_structural")),
+        joint_leaf_collapse=bool(
+            dpg.get_value("v3_joint_leaf_collapse")),
+        joint_leaf_penalty=float(
+            dpg.get_value("v3_joint_leaf_penalty")),
         texture_interface_refresh=bool(
             dpg.get_value("v3_texture_interface_refresh")),
         texture_interface_confidence=float(
@@ -479,16 +488,19 @@ def build_worker(rgb, config):
             bool(item["accepted"]) for item in characteristic)
         phase_graph = result["texture_phase_graph"]
         texture_envelope = result["texture_dirichlet_envelope"]
+        joint = result["joint_leaf_collapse"]
         characteristic_state = (
             f"{accepted_characteristic}/{len(characteristic)} accepted"
             if result["structural_characteristic"]["resolved_core"]
             else "skipped: core under-resolved"
         )
         S.metrics = (
-            f"{len(result['centers']):,} preserved cartoon owner IDs | "
+            f"{joint['initial_structural_cells']:,}→"
+            f"{joint['final_structural_cells']:,} cartoon owner IDs | "
             f"{int(texture_population.get('surplus_sites', 0)):,} "
             "surplus texture germs | "
-            f"{len(result['texture_centers']):,} texture microcells | "
+            f"{joint['initial_texture_cells']:,}→"
+            f"{joint['final_texture_cells']:,} texture microcells | "
             f"{result['record']['psnr']:.2f} dB | "
             f"transport {result['structural_transport_model']} | "
             f"characteristic {characteristic_state} | "
@@ -503,6 +515,7 @@ def build_worker(rgb, config):
             f"{timing['texture_population_transport_ms']:.0f} ms | "
             f"texture affine {timing['texture_affine_ms']:.0f} ms | "
             f"flat cleanup {timing['texture_cleanup_ms']:.0f} ms | "
+            f"joint leaf {timing['joint_leaf_collapse_ms']:.0f} ms | "
             f"phase graph "
             f"{phase_graph['graph_edges']:,}→"
             f"{phase_graph['tree_edges']:,} edges in "
@@ -532,6 +545,14 @@ def build_worker(rgb, config):
             f"{cleanup['split_count']:,} splits - "
             f"{cleanup['merge_count']:,} mutual merges = "
             f"{cleanup['final_cells']:,}; "
+            f"joint leaf collapse removed "
+            f"{joint['structural_cells_removed']:,} structural and "
+            f"{joint['texture_cells_removed']:,} texture IDs; "
+            f"{joint['eligible_structural_cells']:,}/"
+            f"{joint['total_structural_cells']:,} parents eligible, "
+            f"{joint['fit_compatible_pairs']:,}/"
+            f"{joint['candidate_pairs']:,} adjacent eligible pairs "
+            f"fit-compatible, {joint['accepted_pairs']:,} selected; "
             f"{cleanup['cross_parent_merge_count']:,} "
             f"{crossing_description}. "
             f"Strong hot-interface refresh moved "
@@ -722,7 +743,8 @@ def build_ui(labels, default_label):
                     floating=True,
                 )
             with dpg.group(horizontal=True):
-                slider("v3_meyer_sweeps", "Meyer sweeps", 1, 1, 16)
+                dpg.add_text(
+                    "Meyer: full = jump measure; reduced = legacy pass 1")
                 slider("v3_safety", "cell safety ceiling", 32768, 256, 65536)
                 slider(
                     "v3_structural_allocation_side",
@@ -911,6 +933,19 @@ def build_ui(labels, default_label):
                     label="share texture models across structural IDs",
                     tag="v3_texture_cross_structural",
                     default_value=False,
+                )
+                dpg.add_checkbox(
+                    label="joint structural/texture leaf collapse",
+                    tag="v3_joint_leaf_collapse",
+                    default_value=True,
+                )
+                slider(
+                    "v3_joint_leaf_penalty",
+                    "joint leaf allowance",
+                    4.0,
+                    0.0,
+                    8.0,
+                    floating=True,
                 )
                 slider(
                     "v3_texture_population_phase",
