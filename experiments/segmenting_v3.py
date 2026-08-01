@@ -117,6 +117,7 @@ class SegmentingV3Config:
     texture_safety_cells: int = 131072
     texture_cleanup: bool = True
     texture_split_error_ratio: float = 2.5
+    texture_split_peak_error_ratio: float = 9.0
     texture_split_return_extent: float = 2.0
     texture_split_minimum_pixels: int = 12
     texture_split_transport: str = "paired_metric"
@@ -605,9 +606,11 @@ def _render_graph_phase_fields(
     correction_second,
     width,
     cosine_only,
+    quadrature,
 ):
     """Render both synchronized phase fields in one raster traversal."""
-    output = np.empty((len(flat_labels), 2), dtype=np.float64)
+    columns = 4 if quadrature else 2
+    output = np.empty((len(flat_labels), columns), dtype=np.float64)
     for pixel in prange(len(flat_labels)):
         cell = flat_labels[pixel]
         y = pixel // width
@@ -626,7 +629,12 @@ def _render_graph_phase_fields(
             - wave_y[cell] * dx
             + wave_x[cell] * dy
         )
-        if cosine_only:
+        if quadrature:
+            output[pixel, 0] = math.cos(first)
+            output[pixel, 1] = math.sin(first)
+            output[pixel, 2] = math.cos(second)
+            output[pixel, 3] = math.sin(second)
+        elif cosine_only:
             output[pixel, 0] = math.cos(first)
             output[pixel, 1] = math.cos(second)
         else:
@@ -641,6 +649,7 @@ def _graph_unrolled_texture_fields(
     texture_signal: np.ndarray,
     *,
     cosine_only: bool,
+    quadrature: bool = False,
 ) -> tuple[tuple[np.ndarray, np.ndarray], dict]:
     """Shared fused construction for phase diagnostics and cosine columns."""
     labels = np.ascontiguousarray(labels, dtype=np.int32)
@@ -718,8 +727,11 @@ def _graph_unrolled_texture_fields(
         correction_second,
         width,
         cosine_only,
+        quadrature,
     )
-    return (fields[:, 0], fields[:, 1]), {
+    return tuple(
+        fields[:, index] for index in range(fields.shape[1])
+    ), {
         "enabled": True,
         "graph_edges": int(len(pairs)),
         "tree_edges": int(tree_edges),
@@ -727,6 +739,7 @@ def _graph_unrolled_texture_fields(
         "median_wave_y": float(np.median(np.abs(wave_y))),
         "confidence_cells": int(np.count_nonzero(confidence > 1e-12)),
         "full_band_one_sided": True,
+        "quadrature_complete": bool(quadrature),
         "fused_cell_rasters": True,
     }
 
@@ -756,13 +769,14 @@ def _graph_unrolled_texture_columns(
     labels: np.ndarray,
     centers: np.ndarray,
     texture_signal: np.ndarray,
-) -> tuple[tuple[np.ndarray, np.ndarray], dict]:
-    """Return graph-synchronized cosine columns without phase temporaries."""
+) -> tuple[tuple[np.ndarray, ...], dict]:
+    """Return gauge-invariant paired carrier quadratures directly."""
     return _graph_unrolled_texture_fields(
         labels,
         centers,
         texture_signal,
         cosine_only=True,
+        quadrature=True,
     )
 
 
@@ -2318,6 +2332,8 @@ def _flat_texture_cleanup(
         residual_energy,
         geometry["measure"],
         error_ratio_threshold=float(config.texture_split_error_ratio),
+        peak_error_ratio_threshold=float(
+            config.texture_split_peak_error_ratio),
         return_distance_threshold=float(config.texture_split_return_extent),
         minimum_region_pixels=int(config.texture_split_minimum_pixels),
         safety_cells=max(int(config.texture_safety_cells), 1),
@@ -3004,6 +3020,16 @@ def build_segmenting_v3(
             texture_affine_ms += 1000.0 * (
                 time.perf_counter() - phase)
 
+    # Phase synchronization belongs to the measured texture incidence graph.
+    # A later model quotient may contract compatible leaves, but quotienting
+    # first changes spanning-tree paths globally and can move the phase of an
+    # untouched remote cell. Preserve the pre-quotient graph as the gauge on
+    # which phase is measured; its pixel columns can still be fitted by the
+    # collapsed model below.
+    phase_incidence_labels = texture_labels
+    phase_incidence_centers = texture_centers
+    phase_incidence_signal = np.ascontiguousarray(texture_target[..., 0])
+
     joint_leaf_collapse = {
         "enabled": False,
         "total_structural_cells": int(len(centers)),
@@ -3132,6 +3158,13 @@ def build_segmenting_v3(
     paired_ridge_columns = []
     ones = np.ones(flat.size, dtype=np.float64)
     target_flat = texture_target.reshape(-1, 3)
+    structural_trace = np.zeros(labels.shape, dtype=np.float64)
+    structural_trace[1:] += labels[1:] != labels[:-1]
+    structural_trace[:-1] += labels[:-1] != labels[1:]
+    structural_trace[:, 1:] += labels[:, 1:] != labels[:, :-1]
+    structural_trace[:, :-1] += labels[:, :-1] != labels[:, 1:]
+    # Exact fraction of the four cardinal incidences which leave the owner.
+    structural_trace = np.minimum(0.25 * structural_trace.ravel(), 1.0)
     phase_graph = {
         "enabled": False,
         "graph_edges": 0,
@@ -3146,15 +3179,16 @@ def build_segmenting_v3(
     ):
         phase = time.perf_counter()
         phase_columns, phase_graph = _graph_unrolled_texture_columns(
-            texture_labels,
-            texture_centers,
-            # Phase and amplitude must describe the same quotient.  The
-            # frozen Meyer texture predates the full-resolution cartoon
-            # refit; using it here folds that stale cartoon discrepancy into
-            # the carrier measured for the exact texture target below.
-            texture_target[..., 0],
+            phase_incidence_labels,
+            phase_incidence_centers,
+            # Measure the exact post-cartoon residual before the compatible
+            # leaf quotient. The quotient refit may alter that residual by
+            # roundoff-scale amounts; remeasuring would allow a spanning-tree
+            # branch flip to warp an untouched remote cell.
+            phase_incidence_signal,
         )
-        phase_graph["signal"] = "post_cartoon_residual"
+        phase_graph["signal"] = "pre_joint_post_cartoon_residual"
+        phase_graph["incidence"] = "pre_joint_leaf_quotient"
         active_basis = np.column_stack((
             active_basis,
             *phase_columns,
@@ -3206,7 +3240,28 @@ def build_segmenting_v3(
                 # no offset measurement, cell scan, or fitting stage.
                 appended_columns.append(
                     paired_ridge_columns[0] * paired_ridge_columns[1])
-                axis_name = "normal + algebraic paired corner"
+                # A long cell follows the first-order tensor frame, but an
+                # authentic curved contour moves transversely as its tangent
+                # coordinate changes. The mixed and tangent-quadratic
+                # monomials are the second-order transverse correction:
+                # they model shear and curvature without measuring another
+                # offset, selecting a per-cell model, or scanning the image.
+                # They enter this existing final refit beside the corner
+                # parity, so no additional fitting stage is introduced.
+                clipped_normal = np.clip(coordinates[0], -1.0, 1.0)
+                clipped_tangent = np.clip(coordinates[1], -1.0, 1.0)
+                appended_columns.extend((
+                    clipped_normal * clipped_tangent,
+                    clipped_tangent * clipped_tangent,
+                    # Independent hard-cell fits otherwise truncate a
+                    # carrier at the structural interface with no trace
+                    # degree of freedom. Cardinal incidence and its normal
+                    # moment supply the value/slope trace in this same fit.
+                    structural_trace,
+                    structural_trace * clipped_normal,
+                ))
+                axis_name = (
+                    "normal + corner + quadratic frame + structural trace")
             else:
                 paired_ridge_columns.append(ridge)
         active_basis = np.column_stack((active_basis, *appended_columns))

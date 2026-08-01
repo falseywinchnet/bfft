@@ -80,12 +80,14 @@ def _reverse_tree_flux(parent, labels, distance, residual, cells):
 @_compile
 def _residual_moments(labels, residual, width, cells):
     mass = np.zeros(cells)
+    peak = np.zeros(cells)
     sx = np.zeros(cells)
     sy = np.zeros(cells)
     pixels = len(labels)
     for pixel in range(pixels):
         label = labels[pixel]
         value = residual[pixel]
+        peak[label] = max(peak[label], value)
         x = pixel % width + 0.5
         y = pixel // width + 0.5
         mass[label] += value
@@ -105,7 +107,7 @@ def _residual_moments(labels, residual, width, cells):
         cxy[label] += value * dx * dy
         cyy[label] += value * dy * dy
     safe = np.maximum(mass, 1e-30)
-    return mass, cx, cy, cxx / safe, cxy / safe, cyy / safe
+    return mass, peak, cx, cy, cxx / safe, cxy / safe, cyy / safe
 
 
 def _principal_directions(cxx, cxy, cyy):
@@ -255,6 +257,7 @@ def reverse_residual_refill(
     support_measure: np.ndarray,
     *,
     error_ratio_threshold: float = 1.5,
+    peak_error_ratio_threshold: float = math.inf,
     return_distance_threshold: float = 2.0,
     minimum_region_pixels: int = 12,
     detail_gain: float = 1.0,
@@ -276,22 +279,39 @@ def reverse_residual_refill(
         raise RuntimeError("transport predecessor forest is not acyclic")
 
     count = np.bincount(labels, minlength=cells)
-    mass, cx, cy, cxx, cxy, cyy = _residual_moments(
+    mass, peak_error, cx, cy, cxx, cxy, cyy = _residual_moments(
         labels, residual, width, cells)
     major, minor, direction = _principal_directions(cxx, cxy, cyy)
     mean_error = mass / np.maximum(count, 1)
-    eligible = count >= 2 * max(int(minimum_region_pixels), 1)
+    minimum_child = max(int(minimum_region_pixels), 1)
+    # A balanced split of an odd raster population necessarily gives one
+    # child one fewer sample than the other. Treat the configured floor as a
+    # nominal support size with that exact parity allowance; the former 2m
+    # test incorrectly rejected every valid (m - 1, m) split.
+    eligible = count >= 2 * minimum_child - 1
     baseline_values = mean_error[eligible & np.isfinite(mean_error)]
     baseline = (
         float(np.median(baseline_values))
         if baseline_values.size else float(np.median(mean_error)))
     error_ratio = mean_error / max(baseline, 1e-30)
+    peak_values = peak_error[eligible & np.isfinite(peak_error)]
+    peak_baseline = (
+        float(np.median(peak_values))
+        if peak_values.size else float(np.median(peak_error)))
+    peak_error_ratio = peak_error / max(peak_baseline, 1e-30)
+    sparse_peak = (
+        (error_ratio < 1.0)
+        & (peak_error_ratio >= float(peak_error_ratio_threshold))
+    )
     return_distance = work / np.maximum(mass, 1e-30)
     equivalent_radius = np.sqrt(np.maximum(count, 1) / math.pi)
     return_extent = return_distance / np.maximum(equivalent_radius, 1e-12)
     split = (
         eligible
-        & (error_ratio >= float(error_ratio_threshold))
+        & (
+            (error_ratio >= float(error_ratio_threshold))
+            | sparse_peak
+        )
         & (return_extent >= float(return_distance_threshold))
         & (mass > 1e-20)
     )
@@ -339,8 +359,16 @@ def reverse_residual_refill(
         "split_count": int(len(split_ids)),
         "parent_of_centers": parent_of_centers,
         "baseline_mean_error": baseline,
+        "baseline_peak_error": peak_baseline,
         "mean_error": mean_error,
+        "peak_error": peak_error,
         "error_ratio": error_ratio,
+        "peak_error_ratio": peak_error_ratio,
+        "peak_only_split_count": int(np.count_nonzero(
+            valid
+            & (error_ratio < float(error_ratio_threshold))
+            & sparse_peak
+        )),
         "return_distance": return_distance,
         "return_extent": return_extent,
         "return_work": work,

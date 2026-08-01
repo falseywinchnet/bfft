@@ -168,7 +168,18 @@ parent only during construction.
 
 The subsequent cleanup is deliberately not an iterative region optimizer.
 The existing predecessor forest carries affine residual energy backward once
-and emits every eligible two-child split simultaneously. For merging, each
+and emits every eligible two-child split simultaneously. Mean residual still
+selects broadly under-resolved cells. The same residual-moment traversal also
+retains each cell's maximum: a cell colder than the robust mean baseline may
+split when its peak exceeds the nine scalar degrees of freedom purchased by
+a new RGB affine child and its return work remains nonlocal. This recovers a
+thin line inside a very large otherwise-correct cell without turning ordinary
+warm regions into peak-driven splits or adding another raster traversal.
+Raster support eligibility uses `count >= 2m - 1`: a balanced split of an odd
+population necessarily produces `(m - 1, m)` children, and the former strict
+`2m` test incorrectly rejected that valid parity case. This is the exact
+failure that concealed the 23-pixel Downloads-cameraman lens-tip cell.
+For merging, each
 adjacent pair computes the increase in exact pooled affine SSE. That increase
 must fit within the robust residual-variance allowance for the coefficients
 removed. Every eligible cell contributes its best edge to one simultaneous
@@ -340,18 +351,25 @@ vertical, and the two diagonal lag families recover a signed wave covector
 for every final texture cell. Its quarter-turn supplies the symmetric second
 normal; tangent is no longer discarded merely because of its geometric name.
 
-The final cell adjacency graph is sorted once by correlation confidence. A
+The pre-quotient texture-cell adjacency graph is sorted once by correlation
+confidence. A
 deterministic maximum-confidence spanning forest then unwraps both phase
 fields by making parent and child phase agree at the midpoint proxy for their
 common interface.
 There is no frequency-component search, semantic grouping, or iterative
-relaxation. Two graph-synchronized cosine columns enter the same native
-per-cell refit before alternating normal/second-normal residual ridges.
+relaxation. Each of the two graph-synchronized carriers contributes its cosine
+and sine quadrature to the same native per-cell refit before alternating
+normal/second-normal residual ridges. A tree-gauge change is therefore only a
+2x2 rotation inside an unchanged fitted span; unrelated graph splits can no
+longer warp an otherwise identical texture cell.
 
-Phase is measured on the exact post-cartoon Lab residual that the texture
-basis subsequently fits. The frozen Meyer texture is deliberately not used:
-it predates the full-resolution cartoon refit, so its phase includes a stale
-cartoon discrepancy that is absent from the fitted quotient.
+Phase is measured on the exact post-cartoon Lab residual and incidence graph
+before the joint compatible-leaf quotient. The frozen Meyer texture is
+deliberately not used: it predates the full-resolution cartoon refit, so its
+phase includes a stale cartoon discrepancy. The measured gauge is retained
+through joint contraction. Remeasuring after contraction allowed a tiny
+cartoon-refit perturbation to select another spanning-tree branch and warp an
+untouched remote cable cell.
 
 The first normal and second-normal one-sided ridges also supply an algebraic
 corner coordinate:
@@ -360,12 +378,22 @@ corner coordinate:
 q_corner = q_n q_s.
 ```
 
-This is retained as an independent ninth basis column rather than mixed into
-the measured third normal. The two coefficients therefore fit straight-edge
+This is retained as an independent basis column rather than mixed into the
+measured third normal. The coefficients therefore fit straight-edge
 and corner amplitudes independently. It performs one multiply per pixel and
 enters the same final refit as the third normal; it does not measure another
 offset, scan cells, add a fitting stage, select a model, or introduce an
 image-dependent parameter.
+
+The same final refit now includes four fixed geometric trace columns. In the
+cell's normal/tangent frame, `q_n q_t` and `q_t^2` supply transverse shear and
+contour curvature for long cells whose first-order tensor frame cannot follow
+a curved cable. The exact fraction of four cardinal structural incidences
+which leave the owner supplies a boundary-trace value, and its product with
+`q_n` supplies the trace's normal moment. These terms repair carrier
+truncation at structural interfaces. They are algebraic pixel columns in the
+existing refit: no per-cell model selection, offset measurement, or added fit
+stage is performed.
 
 With exactly the same 522 rig cells, the corrected graph readout reaches
 38.46 dB; peak error at the lower-right rectangle corner falls from 0.160 to

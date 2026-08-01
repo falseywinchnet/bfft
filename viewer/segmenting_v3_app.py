@@ -439,6 +439,8 @@ def _config():
         texture_cleanup=bool(dpg.get_value("v3_texture_cleanup")),
         texture_split_error_ratio=float(
             dpg.get_value("v3_texture_split_ratio")),
+        texture_split_peak_error_ratio=float(
+            dpg.get_value("v3_texture_split_peak_ratio")),
         texture_split_return_extent=float(
             dpg.get_value("v3_texture_split_extent")),
         texture_split_minimum_pixels=int(
@@ -542,7 +544,8 @@ def build_worker(rgb, config):
         S.status = (
             f"{S.name}: {result['model']}. "
             f"Flat texture cleanup: {cleanup['initial_cells']:,} + "
-            f"{cleanup['split_count']:,} splits - "
+            f"{cleanup['split_count']:,} splits "
+            f"({cleanup.get('peak_only_split_count', 0):,} sparse-peak) - "
             f"{cleanup['merge_count']:,} mutual merges = "
             f"{cleanup['final_cells']:,}; "
             f"joint leaf collapse removed "
@@ -920,6 +923,14 @@ def build_ui(labels, default_label):
                     12,
                     2,
                     128,
+                )
+                slider(
+                    "v3_texture_split_peak_ratio",
+                    "cold-cell peak cost",
+                    9.0,
+                    3.0,
+                    64.0,
+                    floating=True,
                 )
                 slider(
                     "v3_texture_merge_penalty",

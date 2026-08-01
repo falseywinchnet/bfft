@@ -3,6 +3,7 @@ import pytest
 
 from experiments.segmenting_v3 import (
     SegmentingV3Config,
+    _graph_unrolled_texture_columns,
     _graph_unrolled_texture_phases,
     _joint_leaf_collapse,
     _texture_dirichlet_envelope,
@@ -41,6 +42,21 @@ def test_graph_phase_unroll_is_deterministic_above_central_difference_fold():
     for first_axis, second_axis in zip(first, second):
         assert np.array_equal(first_axis, second_axis)
         assert np.all(np.isfinite(first_axis))
+
+    columns, column_diagnostic = _graph_unrolled_texture_columns(
+        labels, centers, signal)
+    assert column_diagnostic["quadrature_complete"]
+    assert len(columns) == 4
+    np.testing.assert_allclose(
+        columns[0] * columns[0] + columns[1] * columns[1],
+        1.0,
+        atol=2e-15,
+    )
+    np.testing.assert_allclose(
+        columns[2] * columns[2] + columns[3] * columns[3],
+        1.0,
+        atol=2e-15,
+    )
 
 
 def test_texture_dirichlet_envelope_is_exactly_nonexpansive_per_cell():
@@ -185,6 +201,7 @@ def test_nested_texture_construction_is_parented_then_cleanup_is_flat():
             safety_cells=256,
             texture_safety_cells=1024,
             nested_texture_ridges=3,
+            diagnostic_return_basis=True,
             threads=2,
         ),
     )
@@ -209,10 +226,15 @@ def test_nested_texture_construction_is_parented_then_cleanup_is_flat():
         - cleanup["merge_count"]
     )
     assert cleanup["cross_parent_merge_count"] > 0
+    assert cleanup["peak_only_split_count"] >= 0
+    assert cleanup["peak_error"].shape == cleanup["mean_error"].shape
     assert result["texture_phase_graph"]["signal"] == (
-        "post_cartoon_residual")
+        "pre_joint_post_cartoon_residual")
+    assert result["texture_phase_graph"]["incidence"] == (
+        "pre_joint_leaf_quotient")
     assert result["coordinate_trace"][-1]["axis"] == (
-        "normal + algebraic paired corner")
+        "normal + corner + quadratic frame + structural trace")
+    assert result["texture_active_basis"].shape[2] == 15
 
 
 def test_canonical_v2_quotient_survives_dense_texture_cleanup():
