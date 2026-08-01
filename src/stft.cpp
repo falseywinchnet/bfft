@@ -19,6 +19,7 @@ struct bfft_stft_plan {
     bfft_stft_transform transform = BFFT_STFT_RFFT;
 
     bfft_plan* rfft = nullptr;
+    bfft_workspace* rfft_workspace = nullptr;
     bodft_plan* odft = nullptr;
     fct_plan* fct = nullptr;
 
@@ -30,11 +31,10 @@ struct bfft_stft_plan {
     std::vector<double> segment;
     std::vector<double> frame;
     std::vector<double> processed;
-    std::vector<double> work;
-    std::vector<bfft_complex> scratch;
     std::vector<bfft_complex> tmp_bins;
 
     ~bfft_stft_plan() {
+        bfft_workspace_destroy(rfft_workspace);
         bfft_plan_destroy(rfft);
         bodft_plan_destroy(odft);
         fct_plan_destroy(fct);
@@ -187,9 +187,9 @@ bfft_status bfft_stft_plan_create(size_t n, size_t n_fft, size_t hop_length, con
         if (transform == BFFT_STFT_RFFT) {
             bfft_status st = bfft_plan_create(n_fft, &p->rfft);
             if (st != BFFT_OK) return st;
+            st = bfft_workspace_create(p->rfft, &p->rfft_workspace);
+            if (st != BFFT_OK) return st;
             p->bins = bfft_plan_bins(p->rfft);
-            p->work.resize(bfft_plan_work_size(p->rfft));
-            p->scratch.resize(bfft_plan_native_scratch_size(p->rfft));
         } else if (transform == BFFT_STFT_ODFT) {
             bfft_status st = bodft_plan_create(n_fft, &p->odft);
             if (st != BFFT_OK) return st;
@@ -251,7 +251,9 @@ bfft_status bfft_stft_forward(bfft_stft_plan* plan, const double* input, bfft_co
         }
         bfft_status st;
         if (plan->transform == BFFT_STFT_RFFT) {
-            st = bfft_forward(plan->rfft, plan->segment.data(), plan->tmp_bins.data(), plan->work.data(), plan->scratch.data());
+            st = bfft_forward_workspace(plan->rfft, plan->rfft_workspace,
+                                        plan->segment.data(),
+                                        plan->tmp_bins.data());
         } else if (plan->transform == BFFT_STFT_ODFT) {
             st = bodft_forward(plan->odft, plan->segment.data(), plan->tmp_bins.data());
         } else {
@@ -273,7 +275,10 @@ bfft_status bfft_stft_inverse(bfft_stft_plan* plan, const bfft_complex* input, d
     for (size_t col = 0; col < plan->segments; ++col) {
         for (size_t bin = 0; bin < plan->bins; ++bin) plan->tmp_bins[bin] = input[bin * plan->segments + col];
         bfft_status st;
-        if (plan->transform == BFFT_STFT_RFFT) st = bfft_inverse(plan->rfft, plan->tmp_bins.data(), plan->frame.data());
+        if (plan->transform == BFFT_STFT_RFFT)
+            st = bfft_inverse_workspace(plan->rfft, plan->rfft_workspace,
+                                        plan->tmp_bins.data(),
+                                        plan->frame.data());
         else st = bodft_inverse(plan->odft, plan->tmp_bins.data(), plan->frame.data());
         if (st != BFFT_OK) return st;
         for (size_t a = 0; a < half; ++a) {

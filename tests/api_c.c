@@ -77,6 +77,25 @@ int main(void) {
         return 1;
     }
 
+    status = bfft_forward_workspace(plan, workspace, input, output);
+    if (status != BFFT_OK) {
+        fprintf(stderr, "workspace standard forward failed: %s\n",
+                bfft_status_string(status));
+        return 1;
+    }
+    status = bfft_inverse_workspace(plan, workspace, output, inverse);
+    if (status != BFFT_OK) {
+        fprintf(stderr, "workspace standard inverse failed: %s\n",
+                bfft_status_string(status));
+        return 1;
+    }
+    for (size_t i = 0; i < n; ++i) {
+        if (fabs(input[i] - inverse[i]) > 1e-9) {
+            fprintf(stderr, "workspace roundtrip error at %zu\n", i);
+            return 1;
+        }
+    }
+
     status = bfft_forward_native(plan, input, native_output, work);
     if (status != BFFT_OK) {
         fprintf(stderr, "native forward failed: %s\n", bfft_status_string(status));

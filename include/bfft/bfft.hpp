@@ -127,6 +127,13 @@ public:
         check(bfft_forward(impl_.get(), input, output, work, native_scratch));
     }
 
+    /* Standard forward transform using reusable aligned workspace scratch. */
+    void forward(const double* input, complex* output,
+                 workspace& scratch) const {
+        check(bfft_forward_workspace(
+            impl_.get(), scratch.get(), input, output));
+    }
+
     /* Convenience standard forward transform that allocates work buffers. */
     std::vector<complex> forward(const std::vector<double>& input) const {
         if (input.size() != size()) {
@@ -240,6 +247,13 @@ public:
     /* Standard FFT-order inverse transform. */
     void inverse(const complex* input, double* output) const {
         check(bfft_inverse(impl_.get(), input, output));
+    }
+
+    /* Standard inverse transform using reusable aligned workspace scratch. */
+    void inverse(const complex* input, double* output,
+                 workspace& scratch) const {
+        check(bfft_inverse_workspace(
+            impl_.get(), scratch.get(), input, output));
     }
 
     /* Single-precision standard FFT-order inverse transform. */

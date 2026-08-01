@@ -87,6 +87,13 @@ bfft_status bfft_forward(const bfft_plan* plan,
                          double* work,
                          bfft_complex* native_scratch);
 
+/* Standard FFT-order forward transform using plan-matched reusable scratch.
+   A workspace must not be shared by concurrent transform calls. */
+bfft_status bfft_forward_workspace(const bfft_plan* plan,
+                                   bfft_workspace* workspace,
+                                   const double* input,
+                                   bfft_complex* output);
+
 /* Native-order real-to-complex forward transform. Output has
    bfft_plan_bins(plan) complex values and work has bfft_plan_work_size(plan)
    doubles. */
@@ -159,6 +166,14 @@ bfft_status bfft_forward_mag_phase_f32(const bfft_plan* plan,
 bfft_status bfft_inverse(const bfft_plan* plan,
                          const bfft_complex* input,
                          double* output);
+
+/* Standard FFT-order inverse transform using plan-matched reusable scratch.
+   This keeps inverse implementations that require work storage allocation-free
+   in hot loops. A workspace must not be shared by concurrent calls. */
+bfft_status bfft_inverse_workspace(const bfft_plan* plan,
+                                   bfft_workspace* workspace,
+                                   const bfft_complex* input,
+                                   double* output);
 
 /* Single-precision standard FFT-order inverse transform. */
 bfft_status bfft_inverse_f32(const bfft_plan* plan,

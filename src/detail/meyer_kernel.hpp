@@ -59,6 +59,7 @@
 #include <bfft/bfft.h>
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <cassert>
 #include <condition_variable>
@@ -165,26 +166,26 @@ private:
 
 struct fft1 {
     bfft_plan* plan = nullptr;
+    bfft_workspace* workspace = nullptr;
     std::size_t n = 0, bins = 0;
-    std::vector<double> work;
-    std::vector<bfft_complex> scratch;
 
     bfft_status init(std::size_t size) {
         n = size;
         bfft_status st = bfft_plan_create(size, &plan);
         if (st != BFFT_OK) return st;
         bins = bfft_plan_bins(plan);
-        work.resize(bfft_plan_work_size(plan));
-        scratch.resize(bfft_plan_native_scratch_size(plan));
-        return BFFT_OK;
+        return bfft_workspace_create(plan, &workspace);
     }
-    ~fft1() { bfft_plan_destroy(plan); }
+    ~fft1() {
+        bfft_workspace_destroy(workspace);
+        bfft_plan_destroy(plan);
+    }
 
     void fwd(const double* in, bfft_complex* out) {
-        bfft_forward(plan, in, out, work.data(), scratch.data());
+        bfft_forward_workspace(plan, workspace, in, out);
     }
     void inv(const bfft_complex* in, double* out) {
-        bfft_inverse(plan, in, out);
+        bfft_inverse_workspace(plan, workspace, in, out);
     }
 };
 
@@ -222,6 +223,10 @@ struct tri_factors {
     double c = 0.0, eta = 0.0;
     std::vector<double> pivot;  // [k * swept + s]
     std::vector<double> diagonal;  // unmodified periodic diagonal per bin
+    // Optional cached cyclic Sherman-Morrison term. The fixed jump path
+    // reuses its three factor families often enough to earn this storage.
+    std::vector<double> correction;  // [k * swept + s]
+    std::vector<double> correction_inverse;  // final denominator per bin
 };
 
 // per-lane transform state: own plans, work buffers, stage, line
@@ -285,7 +290,9 @@ struct engine {
     std::vector<double> vplane, prev, rhodge, rhodge_x, rhodge_y;
     // Lazy scratch for the opt-in first-pass structural conditioner.
     std::vector<double> condition_gate;
-    std::vector<double> jump_confidence, jump_boundary;
+    std::vector<double> jump_boundary;
+    double jump_confidence_boundary = 0.0;
+    double jump_confidence_inverse_span = 0.0;
     int last_rof_sweeps = 0;
     bool last_rof_hodge_applied = false;
 
@@ -304,7 +311,11 @@ struct engine {
 
         if (threads < 1) {
             const unsigned hw = std::thread::hardware_concurrency();
-            threads = hw >= 4 ? 4 : (hw ? int(hw) : 1);
+            // Transform panels are dynamically claimed, so heterogeneous
+            // cores no longer have to finish equal fixed quotas. Use the
+            // available small-core complement too, while avoiding excessive
+            // pools on large servers unless the caller explicitly asks.
+            threads = hw ? int(std::min(hw, 8U)) : 1;
         }
         // no more lanes than transform-line panels
         const std::size_t max_lanes =
@@ -391,7 +402,6 @@ struct engine {
         ensure_conditioning_storage();
         ensure_visit_storage();
         const std::size_t n = H * W;
-        if (jump_confidence.empty()) jump_confidence.assign(n, 0.0);
         if (jump_boundary.empty()) jump_boundary.assign(n, 0.0);
     }
 
@@ -416,6 +426,8 @@ struct engine {
                         &t_poisson, &t_virtual}) {
             std::vector<double>().swap(t->pivot);
             std::vector<double>().swap(t->diagonal);
+            std::vector<double>().swap(t->correction);
+            std::vector<double>().swap(t->correction_inverse);
         }
         facr_virtual_passes = 0;
     }
@@ -449,7 +461,7 @@ struct engine {
 
         for (auto* s : {&ff_spec, &fu_spec, &fw_spec, &fd_spec, &fq_spec})
             s->alloc(FS, FB);
-        build_factors(t_u, lam, 2.0 * lam);
+        build_factors(t_u, lam, 2.0 * lam, solver == 1);
         build_factors(t_v, 1.0 / mu, 10.0 / mu);
         // The periodic Poisson right-hand sides below are divergences and
         // therefore have zero mean.  A tiny screened DC term makes the
@@ -457,25 +469,33 @@ struct engine {
         // component before and after the solve, so this term never enters
         // the represented field.
         if (solver == 1)
-            build_factors(t_poisson, 1e-8, 1.0);
+            build_factors(t_poisson, 1e-8, 1.0, true);
         if (solver == 1) {
             // Default jump depth K=8 represented as two equal backward
             // resolvents.  (1 + K*x/2)^-2 matches the exact (1+x)^-K
             // generator at x=0 while retaining quadratic high-frequency
             // decay.  This removes six cyclic solves from each of the two
             // virtual observations.
-            build_factors(t_virtual, lam, 8.0 * lam);
+            build_factors(t_virtual, lam, 8.0 * lam, true);
             facr_virtual_passes = 8;
         }
         t_gen.pivot.clear();
         return true;
     }
 
-    void build_factors(tri_factors& t, double c, double eta) {
+    void build_factors(tri_factors& t, double c, double eta,
+                       bool cache_correction = false) {
         t.c = c;
         t.eta = eta;
         t.pivot.resize(FB * FS);
         t.diagonal.resize(FB);
+        if (solver == 1 && cache_correction) {
+            t.correction.resize(FB * FS);
+            t.correction_inverse.resize(FB);
+        } else {
+            t.correction.clear();
+            t.correction_inverse.clear();
+        }
         const double tau = 2.0 * M_PI / double(FT);
         for (std::size_t k = 0; k < FB; ++k) {
             const double lt = 2.0 * std::cos(tau * double(k)) - 2.0;
@@ -499,6 +519,21 @@ struct engine {
                     const double diag = (s + 1 == FS)
                         ? d - eta * eta / gamma : d;
                     p[s] = 1.0 / (diag - eta * eta * p[s - 1]);
+                }
+                if (cache_correction && FS > 2) {
+                    double* z = t.correction.data() + k * FS;
+                    const double gamma = -d;
+                    z[0] = gamma * p[0];
+                    for (std::size_t s = 1; s < FS; ++s) {
+                        const double urhs =
+                            (s + 1 == FS) ? -eta : 0.0;
+                        z[s] = (urhs + eta * z[s - 1]) * p[s];
+                    }
+                    for (std::size_t s = FS - 1; s-- > 0;)
+                        z[s] += eta * p[s] * z[s + 1];
+                    const double q = eta / d;
+                    t.correction_inverse[k] =
+                        1.0 / (1.0 + z[0] + q * z[FS - 1]);
                 }
             }
         }
@@ -553,9 +588,13 @@ struct engine {
     }
 
     void cols_fwd(spectrum& spec) {
+        std::atomic<std::size_t> next_column{0};
         P.run([&](int tid) {
             lane& L = *lanes[tid];
-            for (std::size_t k = tid; k < WB; k += P.lanes()) {
+            for (;;) {
+                const std::size_t k =
+                    next_column.fetch_add(1, std::memory_order_relaxed);
+                if (k >= WB) break;
                 L.col.fwd(reT.data() + k * H,
                           reinterpret_cast<bfft_complex*>(
                               spec.a.data() + 2 * k * HB));
@@ -567,9 +606,13 @@ struct engine {
     }
 
     void cols_inv(const spectrum& spec) {
+        std::atomic<std::size_t> next_column{0};
         P.run([&](int tid) {
             lane& L = *lanes[tid];
-            for (std::size_t k = tid; k < WB; k += P.lanes()) {
+            for (;;) {
+                const std::size_t k =
+                    next_column.fetch_add(1, std::memory_order_relaxed);
+                if (k >= WB) break;
                 L.col.inv(reinterpret_cast<const bfft_complex*>(
                               spec.a.data() + 2 * k * HB),
                           reT.data() + k * H);
@@ -581,10 +624,13 @@ struct engine {
     }
 
     void fwd2d(const double* x, spectrum& spec) {
+        std::atomic<std::size_t> next_panel{0};
         P.run([&](int tid) {
             lane& L = *lanes[tid];
-            for (std::size_t i0 = tid * PANEL; i0 < H;
-                 i0 += P.lanes() * PANEL) {
+            for (;;) {
+                const std::size_t i0 =
+                    next_panel.fetch_add(PANEL, std::memory_order_relaxed);
+                if (i0 >= H) break;
                 for (std::size_t r = 0; r < PANEL; ++r)
                     L.row.fwd(x + (i0 + r) * W, L.stage.data() + r * WB);
                 panel_scatter(L, i0);
@@ -595,10 +641,13 @@ struct engine {
 
     void inv2d(const spectrum& spec, double* x) {
         cols_inv(spec);
+        std::atomic<std::size_t> next_panel{0};
         P.run([&](int tid) {
             lane& L = *lanes[tid];
-            for (std::size_t i0 = tid * PANEL; i0 < H;
-                 i0 += P.lanes() * PANEL) {
+            for (;;) {
+                const std::size_t i0 =
+                    next_panel.fetch_add(PANEL, std::memory_order_relaxed);
+                if (i0 >= H) break;
                 panel_gather(L, i0);
                 for (std::size_t r = 0; r < PANEL; ++r)
                     L.row.inv(L.stage.data() + r * WB, x + (i0 + r) * W);
@@ -667,10 +716,13 @@ struct engine {
             const double* image, const std::vector<double>& gate,
             double eta, double strength, spectrum& spec) {
         const double threshold = 1.0 / eta;
+        std::atomic<std::size_t> next_panel{0};
         P.run([&](int tid) {
             lane& L = *lanes[tid];
-            for (std::size_t i0 = std::size_t(tid) * PANEL; i0 < H;
-                 i0 += std::size_t(P.lanes()) * PANEL) {
+            for (;;) {
+                const std::size_t i0 =
+                    next_panel.fetch_add(PANEL, std::memory_order_relaxed);
+                if (i0 >= H) break;
                 const std::size_t yp0 = (i0 == 0 ? H : i0) - 1;
                 for (std::size_t x = 0; x < W; ++x) {
                     const std::size_t xp = x + 1 == W ? 0 : x + 1;
@@ -714,11 +766,14 @@ struct engine {
     // row-transformed: no full-plane rhs buffer exists.
     void fwd2d_div(const std::vector<double>& dbx,
                    const std::vector<double>& dby, spectrum& spec) {
+        std::atomic<std::size_t> next_panel{0};
         P.run([&](int tid) {
             lane& L = *lanes[tid];
             double* __restrict ln = L.line.data();
-            for (std::size_t i0 = tid * PANEL; i0 < H;
-                 i0 += P.lanes() * PANEL) {
+            for (;;) {
+                const std::size_t i0 =
+                    next_panel.fetch_add(PANEL, std::memory_order_relaxed);
+                if (i0 >= H) break;
                 for (std::size_t r = 0; r < PANEL; ++r) {
                     const std::size_t i = i0 + r;
                     const double* __restrict px = dbx.data() + i * W;
@@ -753,10 +808,13 @@ struct engine {
                           const std::vector<double>& ty, double eta,
                           spectrum& spec) {
         const double threshold = 1.0 / eta;
+        std::atomic<std::size_t> next_panel{0};
         P.run([&](int tid) {
             lane& L = *lanes[tid];
-            for (std::size_t i0 = std::size_t(tid) * PANEL; i0 < H;
-                 i0 += std::size_t(P.lanes()) * PANEL) {
+            for (;;) {
+                const std::size_t i0 =
+                    next_panel.fetch_add(PANEL, std::memory_order_relaxed);
+                if (i0 >= H) break;
                 const std::size_t yp0 = (i0 == 0 ? H : i0) - 1;
                 for (std::size_t x = 0; x < W; ++x) {
                     double unused;
@@ -790,11 +848,14 @@ struct engine {
     template <bool Divergence>
     void facr_fwd_impl(const double* x, const std::vector<double>* dbx,
                        const std::vector<double>* dby, facr_spectrum& spec) {
+        std::atomic<std::size_t> next_panel{0};
         P.run([&](int tid) {
             lane& L = *lanes[tid];
             fft1& F = facr_fft(L);
-            for (std::size_t s0 = std::size_t(tid) * PANEL; s0 < FS;
-                s0 += std::size_t(P.lanes()) * PANEL) {
+            for (;;) {
+                const std::size_t s0 =
+                    next_panel.fetch_add(PANEL, std::memory_order_relaxed);
+                if (s0 >= FS) break;
                 const std::size_t nr = std::min(PANEL, FS - s0);
                 for (std::size_t r = 0; r < nr; ++r) {
                     const std::size_t s = s0 + r;
@@ -839,7 +900,7 @@ struct engine {
                         }
                         input = line;
                     }
-                    F.fwd(input, L.stage.data() + r * FB);
+                        F.fwd(input, L.stage.data() + r * FB);
                 }
                 for (std::size_t k = 0; k < FB; ++k) {
                     double* ar = spec.a.data() + k * FS + s0;
@@ -867,11 +928,14 @@ struct engine {
                              const std::vector<double>& ty, double eta,
                              facr_spectrum& spec) {
         const double threshold = 1.0 / eta;
+        std::atomic<std::size_t> next_panel{0};
         P.run([&](int tid) {
             lane& L = *lanes[tid];
             fft1& F = facr_fft(L);
-            for (std::size_t s0 = std::size_t(tid) * PANEL; s0 < FS;
-                 s0 += std::size_t(P.lanes()) * PANEL) {
+            for (;;) {
+                const std::size_t s0 =
+                    next_panel.fetch_add(PANEL, std::memory_order_relaxed);
+                if (s0 >= FS) break;
                 const std::size_t nr = std::min(PANEL, FS - s0);
                 if (sweep_height) {
                     const std::size_t yp0 = (s0 == 0 ? H : s0) - 1;
@@ -934,19 +998,35 @@ struct engine {
         });
     }
 
-    void facr_inv(const facr_spectrum& spec, double* x) {
+    template <bool Subtract>
+    void facr_inv_impl(const facr_spectrum& spec,
+                       const facr_spectrum* subtract, double* x) {
+        std::atomic<std::size_t> next_panel{0};
         P.run([&](int tid) {
             lane& L = *lanes[tid];
             fft1& F = facr_fft(L);
-            for (std::size_t s0 = std::size_t(tid) * PANEL; s0 < FS;
-                 s0 += std::size_t(P.lanes()) * PANEL) {
+            for (;;) {
+                const std::size_t s0 =
+                    next_panel.fetch_add(PANEL, std::memory_order_relaxed);
+                if (s0 >= FS) break;
                 const std::size_t nr = std::min(PANEL, FS - s0);
                 for (std::size_t k = 0; k < FB; ++k) {
                     const double* ar = spec.a.data() + k * FS + s0;
                     const double* br = spec.b.data() + k * FS + s0;
-                    for (std::size_t r = 0; r < nr; ++r) {
-                        L.stage[r * FB + k].re = ar[r];
-                        L.stage[r * FB + k].im = br[r];
+                    if constexpr (Subtract) {
+                        const double* cr =
+                            subtract->a.data() + k * FS + s0;
+                        const double* dr =
+                            subtract->b.data() + k * FS + s0;
+                        for (std::size_t r = 0; r < nr; ++r) {
+                            L.stage[r * FB + k].re = ar[r] - cr[r];
+                            L.stage[r * FB + k].im = br[r] - dr[r];
+                        }
+                    } else {
+                        for (std::size_t r = 0; r < nr; ++r) {
+                            L.stage[r * FB + k].re = ar[r];
+                            L.stage[r * FB + k].im = br[r];
+                        }
                     }
                 }
                 for (std::size_t r = 0; r < nr; ++r) {
@@ -961,6 +1041,15 @@ struct engine {
                 }
             }
         });
+    }
+
+    void facr_inv(const facr_spectrum& spec, double* x) {
+        facr_inv_impl<false>(spec, nullptr, x);
+    }
+
+    void facr_inv_difference(const facr_spectrum& lhs,
+                             const facr_spectrum& rhs, double* x) {
+        facr_inv_impl<true>(lhs, &rhs, x);
     }
 
     template <typename RhsA, typename RhsB>
@@ -999,23 +1088,30 @@ struct engine {
                 }
 
                 if (solver == 1) {
-                    // Recompute the fixed correction vector in lane-local
-                    // storage.  This avoids an image-sized table per
-                    // (c,eta) while keeping its hot working set in cache.
-                    double* z = L.correction.data();
                     const double d = t.diagonal[k];
-                    const double gamma = -d;
-                    z[0] = gamma * p[0];
-                    for (std::size_t s = 1; s < FS; ++s) {
-                        const double urhs =
-                            (s + 1 == FS) ? -t.eta : 0.0;
-                        z[s] = (urhs + t.eta * z[s - 1]) * p[s];
-                    }
-                    for (std::size_t s = FS - 1; s-- > 0;)
-                        z[s] += t.eta * p[s] * z[s + 1];
                     const double q = t.eta / d;
-                    const double inv_denom =
-                        1.0 / (1.0 + z[0] + q * z[FS - 1]);
+                    const bool cached = !t.correction.empty();
+                    double* local_z = L.correction.data();
+                    const double* z = cached
+                        ? t.correction.data() + k * FS : local_z;
+                    double inv_denom;
+                    if (cached) {
+                        inv_denom = t.correction_inverse[k];
+                    } else {
+                        const double gamma = -d;
+                        local_z[0] = gamma * p[0];
+                        for (std::size_t s = 1; s < FS; ++s) {
+                            const double urhs =
+                                (s + 1 == FS) ? -t.eta : 0.0;
+                            local_z[s] =
+                                (urhs + t.eta * local_z[s - 1]) * p[s];
+                        }
+                        for (std::size_t s = FS - 1; s-- > 0;)
+                            local_z[s] +=
+                                t.eta * p[s] * local_z[s + 1];
+                        inv_denom = 1.0 /
+                            (1.0 + local_z[0] + q * local_z[FS - 1]);
+                    }
                     const double scale_a =
                         (va[0] + q * va[FS - 1]) * inv_denom;
                     const double scale_b =
@@ -1115,6 +1211,38 @@ struct engine {
         }
     }
 
+    void facr_poisson_difference(const facr_spectrum& lhs,
+                                 const facr_spectrum& rhs,
+                                 facr_spectrum& potential) {
+        double mean_a = 0.0, mean_b = 0.0;
+        for (std::size_t s = 0; s < FS; ++s) {
+            mean_a += lhs.a[s] - rhs.a[s];
+            mean_b += lhs.b[s] - rhs.b[s];
+        }
+        mean_a /= double(FS);
+        mean_b /= double(FS);
+        facr_solve(potential, t_poisson,
+            [&](std::size_t i) {
+                return -(lhs.a[i] - rhs.a[i]) +
+                    (i < FS ? mean_a : 0.0);
+            },
+            [&](std::size_t i) {
+                return -(lhs.b[i] - rhs.b[i]) +
+                    (i < FS ? mean_b : 0.0);
+            });
+        double gauge_a = 0.0, gauge_b = 0.0;
+        for (std::size_t s = 0; s < FS; ++s) {
+            gauge_a += potential.a[s];
+            gauge_b += potential.b[s];
+        }
+        gauge_a /= double(FS);
+        gauge_b /= double(FS);
+        for (std::size_t s = 0; s < FS; ++s) {
+            potential.a[s] -= gauge_a;
+            potential.b[s] -= gauge_b;
+        }
+    }
+
     void facr_difference(const facr_spectrum& lhs,
                          const facr_spectrum& rhs,
                          facr_spectrum& out) {
@@ -1129,20 +1257,18 @@ struct engine {
         });
     }
 
-    // out = (I - H_u^K)(source - potential), where H_u is the first
-    // cartoon resolvent.  In full 2-D Fourier storage this is one pointwise
-    // exponent.  FACR realizes the same integer power as K cached
-    // tridiagonal solves, without returning to the image domain.
-    void build_virtual_oscillation_facr(const facr_spectrum& source,
-                                        const facr_spectrum& potential,
-                                        int virtual_passes,
-                                        facr_spectrum& out) {
+    // Materialize source-potential once and return its lowpass. Consumers
+    // take the final difference lazily, avoiding an otherwise write-only
+    // oscillation spectrum.
+    const facr_spectrum& build_virtual_lowpass_facr(
+            const facr_spectrum& source,
+            const facr_spectrum& potential, int virtual_passes) {
         facr_difference(source, potential, fd_spec);
         const int poles = std::min(virtual_passes, 2);
         if (facr_virtual_passes != virtual_passes) {
             const double eta = 2.0 * lam * double(virtual_passes) /
                 double(poles);
-            build_factors(t_virtual, lam, eta);
+            build_factors(t_virtual, lam, eta, true);
             facr_virtual_passes = virtual_passes;
         }
         facr_scale(fd_spec, lam, t_virtual, fu_spec);
@@ -1151,7 +1277,7 @@ struct engine {
             facr_scale(fu_spec, lam, t_virtual, fw_spec);
             lowpass = &fw_spec;
         }
-        facr_difference(fd_spec, *lowpass, out);
+        return *lowpass;
     }
 
     void update_reflected_dual_rows(const std::vector<double>& x,
@@ -2187,86 +2313,123 @@ struct engine {
         x = periodic_unit_step<DX>(x, W);
     }
 
-    // The four directions are fixed by the statistic. Keeping them as
-    // template arguments matters here: the generic version left twelve
-    // runtime sign/zero tests in each sliding-window pixel on ARM64.
-    template <int DY, int DX, int Radius>
-    void directional_box_pass(const double* source, double* destination) {
-        static_assert(Radius > 0, "box radius must be positive");
+    template <int Radius>
+    static inline void cyclic_box_line(const double* source,
+                                       double* destination,
+                                       std::size_t length) {
         const double inverse = 1.0 / double(2 * Radius + 1);
-        if constexpr (DY != 0 && DX == 0) {
-            // A vertical recurrence need not imply strided memory. Carry a
-            // contiguous vector of column sums down the rows so both the
-            // update and store streams remain unit-stride and vectorizable.
+        double sum = 0.0;
+        for (int step = -Radius; step <= Radius; ++step)
+            sum += source[periodic_index(0, step, length)];
+        std::size_t leave = periodic_index(0, -Radius, length);
+        std::size_t enter = periodic_index(0, Radius + 1, length);
+        for (std::size_t position = 0; position < length; ++position) {
+            destination[position] = sum * inverse;
+            sum += source[enter] - source[leave];
+            if (++leave == length) leave = 0;
+            if (++enter == length) enter = 0;
+        }
+    }
+
+    // Fuse the three long-axis box stages while each independent row,
+    // column family, or torus cycle is owned by one worker. Diagonal cycles
+    // are packed once into u/w, processed contiguously, and unpacked once;
+    // their seed and accumulation order match the spatial traversal exactly.
+    template <int DY, int DX, int Radius>
+    void directional_box_three_pass(const double* image) {
+        static_assert(Radius > 0, "box radius must be positive");
+        if constexpr (DY == 0) {
+            P.run([&](int tid) {
+                for (std::size_t y = std::size_t(tid); y < H;
+                     y += std::size_t(P.lanes())) {
+                    const double* source = image + y * W;
+                    double* first = u.data() + y * W;
+                    double* second = w.data() + y * W;
+                    cyclic_box_line<Radius>(source, first, W);
+                    cyclic_box_line<Radius>(first, second, W);
+                    cyclic_box_line<Radius>(second, first, W);
+                }
+            });
+        } else if constexpr (DX == 0) {
+            // Carry a contiguous vector of column sums down the rows so each
+            // of the three vertical passes remains unit-stride and SIMD-able.
             P.run([&](int tid) {
                 std::size_t xlo, xhi;
                 split(tid, W, xlo, xhi);
                 double* sums = lanes[tid]->line.data();
-                for (std::size_t x = xlo; x < xhi; ++x)
-                    sums[x] = 0.0;
-                for (int step = -Radius; step <= Radius; ++step) {
-                    const std::size_t sy = periodic_index(0, step * DY, H);
-                    const double* row = source + sy * W;
+                auto pass = [&](const double* source,
+                                double* destination) {
                     for (std::size_t x = xlo; x < xhi; ++x)
-                        sums[x] += row[x];
-                }
-                std::size_t leave_y = periodic_index(
-                    0, -Radius * DY, H);
-                std::size_t enter_y = periodic_index(
-                    0, (Radius + 1) * DY, H);
-                for (std::size_t y = 0; y < H; ++y) {
-                    double* out = destination + y * W;
-                    const double* enter = source + enter_y * W;
-                    const double* leave = source + leave_y * W;
-                    for (std::size_t x = xlo; x < xhi; ++x)
-                        out[x] = sums[x] * inverse;
-                    for (std::size_t x = xlo; x < xhi; ++x)
-                        sums[x] += enter[x] - leave[x];
-                    leave_y = periodic_unit_step<DY>(leave_y, H);
-                    enter_y = periodic_unit_step<DY>(enter_y, H);
+                        sums[x] = 0.0;
+                    for (int step = -Radius; step <= Radius; ++step) {
+                        const std::size_t sy =
+                            periodic_index(0, step * DY, H);
+                        const double* row = source + sy * W;
+                        for (std::size_t x = xlo; x < xhi; ++x)
+                            sums[x] += row[x];
+                    }
+                    std::size_t leave_y = periodic_index(
+                        0, -Radius * DY, H);
+                    std::size_t enter_y = periodic_index(
+                        0, (Radius + 1) * DY, H);
+                    const double inverse =
+                        1.0 / double(2 * Radius + 1);
+                    for (std::size_t y = 0; y < H; ++y) {
+                        double* out = destination + y * W;
+                        const double* enter = source + enter_y * W;
+                        const double* leave = source + leave_y * W;
+                        for (std::size_t x = xlo; x < xhi; ++x)
+                            out[x] = sums[x] * inverse;
+                        for (std::size_t x = xlo; x < xhi; ++x)
+                            sums[x] += enter[x] - leave[x];
+                        leave_y = periodic_unit_step<DY>(leave_y, H);
+                        enter_y = periodic_unit_step<DY>(enter_y, H);
+                    }
+                };
+                pass(image, u.data());
+                pass(u.data(), w.data());
+                pass(w.data(), u.data());
+            });
+        } else {
+            const std::size_t cycles = std::gcd(H, W);
+            const std::size_t length = (H / cycles) * W;
+            P.run([&](int tid) {
+                for (std::size_t cycle = std::size_t(tid); cycle < cycles;
+                     cycle += std::size_t(P.lanes())) {
+                    const std::size_t base = cycle * length;
+                    std::size_t y = 0, x = cycle;
+                    for (std::size_t position = 0; position < length;
+                         ++position) {
+                        u[base + position] = image[y * W + x];
+                        advance_direction<DY, DX>(y, x);
+                    }
                 }
             });
-            return;
+            P.run([&](int tid) {
+                for (std::size_t cycle = std::size_t(tid); cycle < cycles;
+                     cycle += std::size_t(P.lanes())) {
+                    const std::size_t base = cycle * length;
+                    cyclic_box_line<Radius>(
+                        u.data() + base, w.data() + base, length);
+                    cyclic_box_line<Radius>(
+                        w.data() + base, u.data() + base, length);
+                    cyclic_box_line<Radius>(
+                        u.data() + base, w.data() + base, length);
+                }
+            });
+            P.run([&](int tid) {
+                for (std::size_t cycle = std::size_t(tid); cycle < cycles;
+                     cycle += std::size_t(P.lanes())) {
+                    const std::size_t base = cycle * length;
+                    std::size_t y = 0, x = cycle;
+                    for (std::size_t position = 0; position < length;
+                         ++position) {
+                        u[y * W + x] = w[base + position];
+                        advance_direction<DY, DX>(y, x);
+                    }
+                }
+            });
         }
-        const std::size_t diagonal_cycles = std::gcd(H, W);
-        const std::size_t cycles = DY == 0 ? H :
-            (DX == 0 ? W : diagonal_cycles);
-        const std::size_t length = DY == 0 ? W :
-            (DX == 0 ? H : (H / diagonal_cycles) * W);
-        P.run([&](int tid) {
-            for (std::size_t cycle = std::size_t(tid); cycle < cycles;
-                 cycle += std::size_t(P.lanes())) {
-                const std::size_t start_y = DY == 0 ? cycle : 0;
-                const std::size_t start_x = DX == 0 ? cycle :
-                    (DY == 0 ? 0 : cycle);
-                double sum = 0.0;
-                for (int step = -Radius; step <= Radius; ++step) {
-                    const std::size_t sy = periodic_index(
-                        start_y, step * DY, H);
-                    const std::size_t sx = periodic_index(
-                        start_x, step * DX, W);
-                    sum += source[sy * W + sx];
-                }
-                std::size_t y = start_y, x = start_x;
-                std::size_t leave_y = periodic_index(
-                    start_y, -Radius * DY, H);
-                std::size_t leave_x = periodic_index(
-                    start_x, -Radius * DX, W);
-                std::size_t enter_y = periodic_index(
-                    start_y, (Radius + 1) * DY, H);
-                std::size_t enter_x = periodic_index(
-                    start_x, (Radius + 1) * DX, W);
-                for (std::size_t position = 0; position < length;
-                     ++position) {
-                    destination[y * W + x] = sum * inverse;
-                    sum += source[enter_y * W + enter_x] -
-                           source[leave_y * W + leave_x];
-                    advance_direction<DY, DX>(y, x);
-                    advance_direction<DY, DX>(leave_y, leave_x);
-                    advance_direction<DY, DX>(enter_y, enter_x);
-                }
-            }
-        });
     }
 
     template <int DY, int DX>
@@ -2314,12 +2477,7 @@ struct engine {
               int DifferenceDY, int DifferenceDX, int Radius>
     void accumulate_condition_direction(const double* image,
                                         double cross_side) {
-        directional_box_pass<LongDY, LongDX, Radius>(
-            image, u.data());
-        directional_box_pass<LongDY, LongDX, Radius>(
-            u.data(), w.data());
-        directional_box_pass<LongDY, LongDX, Radius>(
-            w.data(), u.data());
+        directional_box_three_pass<LongDY, LongDX, Radius>(image);
         directional_three_pass<CrossDY, CrossDX>(
             u.data(), w.data(), cross_side);
         directional_three_pass<CrossDY, CrossDX>(
@@ -2452,17 +2610,15 @@ struct engine {
         const double boundary = double(split_bin + 1) / double(bins);
         const double high_mean = high_count > 0
             ? high_moment / double(high_count) : boundary;
-        const double inverse_span = 1.0 /
+        jump_confidence_boundary = boundary;
+        jump_confidence_inverse_span = 1.0 /
             std::fmax(high_mean - boundary, 1e-30);
-        P.run([&](int tid) {
-            std::size_t lo, hi;
-            split(tid, n, lo, hi);
-            for (std::size_t i = lo; i < hi; ++i) {
-                jump_confidence[i] = std::fmin(
-                    1.0, std::fmax(
-                        0.0, (condition_gate[i] - boundary) * inverse_span));
-            }
-        });
+    }
+
+    inline double jump_confidence_at(std::size_t i) const {
+        return std::fmin(1.0, std::fmax(
+            0.0, (condition_gate[i] - jump_confidence_boundary) *
+                jump_confidence_inverse_span));
     }
 
     // q_spec <- scalar potential whose gradient is the longitudinal Hodge
@@ -2483,7 +2639,8 @@ struct engine {
                         1.0 - half_threshold * half_threshold /
                             std::fmax(magnitude2, 1e-30),
                         0.0);
-                    const double weight = jump_confidence[i] * activation;
+                    const double weight =
+                        jump_confidence_at(i) * activation;
                     bux[i] = weight * gx;
                     buy[i] = weight * gy;
                 }
@@ -2528,7 +2685,8 @@ struct engine {
                         1.0 - half_threshold * half_threshold /
                             std::fmax(magnitude2, 1e-30),
                         0.0);
-                    const double weight = jump_confidence[i] * activation;
+                    const double weight =
+                        jump_confidence_at(i) * activation;
                     bux[i] = weight * gx;
                     buy[i] = weight * gy;
                 }
@@ -2809,9 +2967,10 @@ struct engine {
         build_jump_confidence_from_condition_gate();
 
         build_jump_potential_facr(image);
-        build_virtual_oscillation_facr(
-            ff_spec, fq_spec, virtual_passes, fd_spec);
-        facr_inv(fd_spec, w.data());
+        const facr_spectrum& first_lowpass =
+            build_virtual_lowpass_facr(
+                ff_spec, fq_spec, virtual_passes);
+        facr_inv_difference(fd_spec, first_lowpass, w.data());
 
         // Remove the first carrier estimate, then take the same fixed second
         // jump observation as the full spectral operator.
@@ -2822,17 +2981,21 @@ struct engine {
                 u[i] = image[i] - w[i];
         });
         build_jump_potential_facr(u.data());
-        build_virtual_oscillation_facr(
-            ff_spec, fq_spec, virtual_passes, fd_spec);
+        const facr_spectrum& resident_lowpass =
+            build_virtual_lowpass_facr(
+                ff_spec, fq_spec, virtual_passes);
 
         // (I-H_u) applied to the second jump potential.  The first FACR
         // resolvent is already factorized in t_u.
-        facr_scale(fq_spec, lam, t_u, fu_spec);
-        facr_difference(fq_spec, fu_spec, fu_spec);
-        facr_inv(fu_spec, jump_boundary.data());
+        facr_spectrum& boundary_lowpass =
+            &resident_lowpass == &fu_spec ? fw_spec : fu_spec;
+        facr_scale(fq_spec, lam, t_u, boundary_lowpass);
+        facr_inv_difference(
+            fq_spec, boundary_lowpass, jump_boundary.data());
 
         // Longitudinal lift of the resident oscillation.
-        facr_poisson(fd_spec, fq_spec);
+        facr_poisson_difference(
+            fd_spec, resident_lowpass, fq_spec);
         facr_inv(fq_spec, w.data());
         P.run([&](int tid) {
             for (std::size_t y = std::size_t(tid); y < H;

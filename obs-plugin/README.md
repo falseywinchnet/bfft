@@ -97,7 +97,7 @@ High Vision**. For Cartoon, start with 6 CPU threads and 8 TV effect sweeps.
 The jump split itself is fixed-cost; the sweep control affects only shading,
 Fine chrome, Layer interference, and Information caustics. On the development
 machine, the native-pitch `1280x1024` periodic-FACR jump split typically takes
-about 49–55 ms. Recursive recovery performs a second split and is
+about 35–43 ms. Recursive recovery performs a second split and is
 correspondingly heavier. For High Vision, start
 with Synthetic HDR; Night integrator retains evidence longer for fixed-exposure
 low-light capture.
