@@ -11,9 +11,10 @@ This build includes five display modes:
 
 The filter processes every source pixel at its original pitch. Its FACR
 backend accepts an arbitrary length on one axis. If neither source axis is a
-supported power-of-two length, the cheaper axis is extended with symmetric
-reflection and the exact source rectangle is cropped afterward. There is no
-work-resolution scaling or aspect distortion.
+supported power-of-two length, one axis is extended with symmetric reflection.
+The selection balances padded area against the substantially cheaper
+contiguous row-transform path, and the exact source rectangle is cropped
+afterward. There is no work-resolution scaling or aspect distortion.
 
 Install
 -------

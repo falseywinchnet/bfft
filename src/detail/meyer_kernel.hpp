@@ -59,6 +59,7 @@
 #include <bfft/bfft.h>
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <cmath>
 #include <cassert>
@@ -2295,6 +2296,18 @@ struct engine {
         return static_cast<std::size_t>(value);
     }
 
+    static inline std::size_t short_periodic_offset(
+            std::size_t coordinate, int delta, std::size_t extent) {
+        std::ptrdiff_t value =
+            static_cast<std::ptrdiff_t>(coordinate) + delta;
+        const std::ptrdiff_t period = static_cast<std::ptrdiff_t>(extent);
+        if (value < 0 || value >= period) {
+            value %= period;
+            if (value < 0) value += period;
+        }
+        return static_cast<std::size_t>(value);
+    }
+
     template <int Step>
     static inline std::size_t periodic_unit_step(
             std::size_t coordinate, std::size_t extent) {
@@ -2473,6 +2486,111 @@ struct engine {
         });
     }
 
+    template <std::size_t NA, std::size_t NB>
+    static std::array<double, NA + NB - 1> convolve_short_fir(
+            const std::array<double, NA>& a,
+            const std::array<double, NB>& b) {
+        std::array<double, NA + NB - 1> out{};
+        for (std::size_t i = 0; i < NA; ++i)
+            for (std::size_t j = 0; j < NB; ++j)
+                out[i + j] += a[i] * b[j];
+        return out;
+    }
+
+    static std::array<double, 7> cross_cube(double side) {
+        const std::array<double, 3> kernel{
+            side, 1.0 - 2.0 * side, side};
+        return convolve_short_fir(
+            convolve_short_fir(kernel, kernel), kernel);
+    }
+
+    // Apply a short directional FIR row-major. Interior pixels bypass all
+    // periodic-boundary branches, which lets the compiler vectorize axial
+    // and diagonal taps. Coefficient k addresses offset k-Origin.
+    template <int DY, int DX, int Origin, std::size_t N>
+    void directional_short_fir(
+            const double* source, double* destination,
+            const std::array<double, N>& coefficients) {
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                std::array<std::size_t, N> rows{};
+                for (std::size_t tap = 0; tap < N; ++tap) {
+                    const int offset = int(tap) - Origin;
+                    rows[tap] = short_periodic_offset(
+                        y, offset * DY, H);
+                }
+                constexpr int first_offset = -Origin * DX;
+                constexpr int last_offset =
+                    (int(N) - 1 - Origin) * DX;
+                constexpr int minimum_offset =
+                    first_offset < last_offset
+                    ? first_offset : last_offset;
+                constexpr int maximum_offset =
+                    first_offset > last_offset
+                    ? first_offset : last_offset;
+                std::size_t interior_begin = minimum_offset < 0
+                    ? std::size_t(-minimum_offset) : 0;
+                const std::size_t right_margin = maximum_offset > 0
+                    ? std::size_t(maximum_offset) : 0;
+                std::size_t interior_end = right_margin <= W
+                    ? W - right_margin : 0;
+                if (interior_begin > interior_end) {
+                    // Tiny legal dimensions can be shorter than the FIR.
+                    // Route the entire row through the fully periodic path.
+                    interior_begin = 0;
+                    interior_end = 0;
+                }
+                double* out = destination + y * W;
+
+                for (std::size_t x = 0; x < interior_begin; ++x) {
+                    double sum = 0.0;
+                    for (std::size_t tap = 0; tap < N; ++tap) {
+                        const int offset = int(tap) - Origin;
+                        const std::size_t xx = short_periodic_offset(
+                            x, offset * DX, W);
+                        sum += coefficients[tap]
+                            * source[rows[tap] * W + xx];
+                    }
+                    out[x] = sum;
+                }
+                for (std::size_t x = interior_begin;
+                     x < interior_end; ++x) {
+                    double sum = 0.0;
+                    for (std::size_t tap = 0; tap < N; ++tap) {
+                        const int offset = int(tap) - Origin;
+                        const std::size_t xx = std::size_t(
+                            std::ptrdiff_t(x) + offset * DX);
+                        sum += coefficients[tap]
+                            * source[rows[tap] * W + xx];
+                    }
+                    out[x] = sum;
+                }
+                for (std::size_t x = interior_end; x < W; ++x) {
+                    double sum = 0.0;
+                    for (std::size_t tap = 0; tap < N; ++tap) {
+                        const int offset = int(tap) - Origin;
+                        const std::size_t xx = short_periodic_offset(
+                            x, offset * DX, W);
+                        sum += coefficients[tap]
+                            * source[rows[tap] * W + xx];
+                    }
+                    out[x] = sum;
+                }
+            }
+        });
+    }
+
+    void accumulate_absolute_response(const double* response) {
+        const std::size_t n = H * W;
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n, lo, hi);
+            for (std::size_t i = lo; i < hi; ++i)
+                condition_gate[i] += std::fabs(response[i]);
+        });
+    }
+
     template <int LongDY, int LongDX, int CrossDY, int CrossDX,
               int DifferenceDY, int DifferenceDX, int Radius>
     void accumulate_condition_direction(const double* image,
@@ -2498,6 +2616,45 @@ struct engine {
                 }
             }
         });
+    }
+
+    // Exact algebraic collapse of the transverse three-pass filter. K^3 is
+    // one seven-tap FIR. For the axial responses, whose final difference is
+    // transverse too, D*K^3 is one eight-tap FIR. This preserves the staged
+    // transfer function to roundoff while removing two full image passes per
+    // direction; the long moving-box cascade remains unchanged.
+    template <int LongDY, int LongDX, int CrossDY, int CrossDX,
+              int DifferenceDY, int DifferenceDX, int Radius>
+    void accumulate_condition_direction_collapsed(
+            const double* image, double cross_side) {
+        directional_box_three_pass<LongDY, LongDX, Radius>(image);
+        const std::array<double, 7> cross3 = cross_cube(cross_side);
+        if constexpr (CrossDY == DifferenceDY &&
+                      CrossDX == DifferenceDX) {
+            const std::array<double, 2> difference{-1.0, 1.0};
+            const std::array<double, 8> fused =
+                convolve_short_fir(cross3, difference);
+            directional_short_fir<CrossDY, CrossDX, 3>(
+                u.data(), w.data(), fused);
+            accumulate_absolute_response(w.data());
+        } else {
+            directional_short_fir<CrossDY, CrossDX, 3>(
+                u.data(), w.data(), cross3);
+            P.run([&](int tid) {
+                for (std::size_t y = std::size_t(tid); y < H;
+                     y += std::size_t(P.lanes())) {
+                    const std::size_t yn =
+                        periodic_unit_step<DifferenceDY>(y, H);
+                    for (std::size_t x = 0; x < W; ++x) {
+                        const std::size_t xn =
+                            periodic_unit_step<DifferenceDX>(x, W);
+                        const std::size_t i = y * W + x;
+                        condition_gate[i] += std::fabs(
+                            w[yn * W + xn] - w[i]);
+                    }
+                }
+            });
+        }
     }
 
     void normalize_condition_gate() {
@@ -2528,13 +2685,13 @@ struct engine {
     void build_condition_gate_facr(const double* image) {
         const std::size_t n = H * W;
         std::memset(condition_gate.data(), 0, n * sizeof(double));
-        accumulate_condition_direction<0, 1, 1, 0, 1, 0, 3>(
+        accumulate_condition_direction_collapsed<0, 1, 1, 0, 1, 0, 3>(
             image, 0.125);
-        accumulate_condition_direction<1, 0, 0, 1, 0, 1, 3>(
+        accumulate_condition_direction_collapsed<1, 0, 0, 1, 0, 1, 3>(
             image, 0.125);
-        accumulate_condition_direction<1, 1, 1, -1, 1, 1, 2>(
+        accumulate_condition_direction_collapsed<1, 1, 1, -1, 1, 1, 2>(
             image, 0.0625);
-        accumulate_condition_direction<1, -1, 1, 1, 1, -1, 2>(
+        accumulate_condition_direction_collapsed<1, -1, 1, 1, 1, -1, 2>(
             image, 0.0625);
         normalize_condition_gate();
     }

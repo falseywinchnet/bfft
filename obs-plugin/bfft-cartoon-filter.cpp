@@ -109,10 +109,18 @@ void choose_work_shape(uint32_t frame_width, uint32_t frame_height,
 		static_cast<uint64_t>(padded_width) * frame_height;
 	const uint64_t height_candidate =
 		static_cast<uint64_t>(frame_width) * padded_height;
-	if (height_candidate <= width_candidate) {
-		work_height = padded_height;
-	} else {
+	const uint64_t source_area =
+		static_cast<uint64_t>(frame_width) * frame_height;
+	const bool video_sized = source_area >= 1280ULL * 720ULL;
+	// Row FFTs consume contiguous image lines. Column FFTs must gather and
+	// scatter strided lines around every transform. Above the cache crossover,
+	// prefer rows while their reflected lattice is within the measured 4/3
+	// area envelope; otherwise retain the smaller column lattice.
+	if (width_candidate <= height_candidate ||
+	    (video_sized && 3 * width_candidate <= 4 * height_candidate)) {
 		work_width = padded_width;
+	} else {
+		work_height = padded_height;
 	}
 }
 

@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <cstdio>
 #include <vector>
 
@@ -96,6 +97,31 @@ double reduced_state_error(std::size_t h, std::size_t w, int solver) {
     double error = max_error(cartoon, full.u);
     error = std::max(error, max_error(texture, full.vplane));
     return error;
+}
+
+double gate_collapse_error(std::size_t h, std::size_t w) {
+    meyer::engine e;
+    if (e.init(h, w, 0.05, 40.0, 1, 1, 0.0, 4) != BFFT_OK ||
+        !e.set_solver(1))
+        return 1.0;
+    e.ensure_jump_measure_storage();
+    std::vector<double> image(h * w), collapsed;
+    fill(image);
+    e.build_condition_gate_facr(image.data());
+    collapsed = e.condition_gate;
+
+    std::memset(e.condition_gate.data(), 0,
+                e.condition_gate.size() * sizeof(double));
+    e.accumulate_condition_direction<0, 1, 1, 0, 1, 0, 3>(
+        image.data(), 0.125);
+    e.accumulate_condition_direction<1, 0, 0, 1, 0, 1, 3>(
+        image.data(), 0.125);
+    e.accumulate_condition_direction<1, 1, 1, -1, 1, 1, 2>(
+        image.data(), 0.0625);
+    e.accumulate_condition_direction<1, -1, 1, 1, 1, -1, 2>(
+        image.data(), 0.0625);
+    e.normalize_condition_gate();
+    return max_error(collapsed, e.condition_gate);
 }
 
 }  // namespace
@@ -217,6 +243,15 @@ int main() {
             alias_error != 0.0)
             return 11;
     }
+
+    const double gate_short = gate_collapse_error(2, 8);
+    const double gate_h = gate_collapse_error(37, 64);
+    const double gate_w = gate_collapse_error(64, 45);
+    const double gate_obs = gate_collapse_error(288, 512);
+    std::printf("collapsed/staged gate max errors: %.3e %.3e %.3e %.3e\n",
+                gate_short, gate_h, gate_w, gate_obs);
+    if (std::max({gate_short, gate_h, gate_w, gate_obs}) > 2e-13)
+        return 12;
 
     // Neumann mode is a deliberate behavior change but must remain finite.
     bfft_meyer_plan* pn = nullptr;

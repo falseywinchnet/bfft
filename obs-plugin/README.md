@@ -23,10 +23,13 @@ This module registers two native OBS asynchronous-video filters:
 The Cartoon filter keeps the source color and runs its decomposition on luma.
 It no longer shrinks the image to a surrogate work resolution. Every source
 pixel enters the decomposition at its original pitch and is returned to the
-same coordinate. When neither axis is a supported power-of-two length, only
-the cheaper axis is extended by symmetric reflection and the exact source
-rectangle is cropped from the result. Examples are `1920x1080 → 2048x1080`
-and `1280x720 → 1280x1024`; these are padding operations, not resampling.
+same coordinate. When neither axis is a supported power-of-two length, one
+axis is extended by symmetric reflection and the exact source rectangle is
+cropped from the result. The shaping policy accounts for both padded area and
+row-major transform locality: at video scale it prefers contiguous row FFTs
+within a bounded padding envelope, while large area savings retain the column
+path. Examples are `1920x1080 → 2048x1080` and
+`1280x720 → 2048x720`; these are padding operations, not resampling.
 High Vision instead processes the camera's native pixel lattice. Photon
 evidence, detector-fixed noise, and motion are not inferred from a resized
 surrogate. Night emits monochrome luma; Synthetic HDR retains source chroma.

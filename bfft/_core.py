@@ -1095,6 +1095,34 @@ _MEYER_LOCK = threading.Lock()
 _MEYER_BATCH_EXECUTOR = concurrent.futures.ThreadPoolExecutor(max_workers=4)
 
 
+def _meyer_facr_work_shape(h, w):
+    """Choose the one-axis FACR extension for a row-major image.
+
+    A row FFT consumes the source plane directly.  A column FFT gathers and
+    scatters strided lines around every transform.  Once a video-sized plane
+    leaves cache, that traffic outweighs up to the measured 4/3 increase in
+    padded area.  Below that crossover, retain the minimum-area choice.
+    """
+    h, w = int(h), int(w)
+
+    def next_pow2(value):
+        result = 8
+        while result < value:
+            result *= 2
+        return result
+
+    nh, nw = next_pow2(h), next_pow2(w)
+    if nh == h or nw == w:
+        return h, w
+    row_area = h * nw       # transform contiguous rows, sweep height
+    column_area = nh * w    # transform gathered columns, sweep width
+    video_sized = h * w >= 720 * 1280
+    if row_area <= column_area or (
+            video_sized and 3 * row_area <= 4 * column_area):
+        return h, nw
+    return nh, w
+
+
 def _meyer_padded(image, lam, mu, passes, rung_sweeps, rung_tol, threads,
                   solver=0):
     """Shared arbitrary-size front end: returns (plan, padded, top, left,
@@ -1119,10 +1147,8 @@ def _meyer_padded(image, lam, mu, passes, rung_sweeps, rung_tol, threads,
     nh, nw = _next_pow2(h), _next_pow2(w)
     if solver == 0:
         ph, pw = nh, nw
-    elif h * nw <= nh * w:
-        ph, pw = h, nw       # sweep height, transform width
     else:
-        ph, pw = nh, w       # sweep width, transform height
+        ph, pw = _meyer_facr_work_shape(h, w)
     top, left = (ph - h) // 2, (pw - w) // 2
     if (ph, pw) != (h, w):
         padded = np.pad(a, ((top, ph - h - top), (left, pw - w - left)),
@@ -1246,10 +1272,8 @@ def meyer_split_batch(images, lam=0.05, mu=40.0, passes=64, threads=0,
     nh, nw = next_pow2(h), next_pow2(w)
     if solver == 0:
         ph, pw = nh, nw
-    elif h * nw <= nh * w:
-        ph, pw = h, nw
     else:
-        ph, pw = nh, w
+        ph, pw = _meyer_facr_work_shape(h, w)
     top, left = (ph - h) // 2, (pw - w) // 2
     if (ph, pw) == (h, w):
         padded = planes
