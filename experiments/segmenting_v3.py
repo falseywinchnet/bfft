@@ -3357,10 +3357,7 @@ def build_segmenting_v3(
         )
         phase_graph["signal"] = "pre_joint_post_cartoon_residual"
         phase_graph["incidence"] = "pre_joint_leaf_quotient"
-        active_basis = np.column_stack((
-            active_basis,
-            *phase_columns,
-        ))
+        active_basis = np.column_stack((active_basis, *phase_columns))
         refit = hard_basis_refit_native(
             flat, active_basis, target_flat, count, radius)
         if refit is None:
@@ -3395,6 +3392,7 @@ def build_segmenting_v3(
         )
         axis_name = coordinate_names[coordinate_index]
         appended_columns = [ridge]
+        expanded_basis = None
         if texture_model == "nested_population":
             if (
                 index >= len(coordinates)
@@ -3406,17 +3404,41 @@ def build_segmenting_v3(
                 # so straight-edge and corner amplitudes do not share a
                 # coefficient. Both columns enter this same refit: this adds
                 # no offset measurement, cell scan, or fitting stage.
-                appended_columns.append(
-                    paired_ridge_columns[0] * paired_ridge_columns[1])
+                final_width = (
+                    active_basis.shape[1] + 6 + len(phase_columns))
+                expanded_basis = np.empty(
+                    (active_basis.shape[0], final_width),
+                    dtype=np.float64,
+                )
+                old_width = active_basis.shape[1]
+                expanded_basis[:, :old_width] = active_basis
+                column = old_width
+                expanded_basis[:, column] = ridge
+                column += 1
+                np.multiply(
+                    paired_ridge_columns[0],
+                    paired_ridge_columns[1],
+                    out=expanded_basis[:, column],
+                )
+                column += 1
                 # Phase amplitude may jump across an authentic edge. The
                 # synchronized quadrature span and finite-band parity of the
                 # two measured normal traces form the smallest gauge-complete
                 # tensor product for that modulation: no phase choice or
                 # new scan.
-                appended_columns.extend(
-                    phase * paired_ridge_columns[0] * ridge
-                    for phase in phase_columns
-                )
+                phase_product = np.empty_like(ridge)
+                for phase_column in phase_columns:
+                    np.multiply(
+                        phase_column,
+                        paired_ridge_columns[0],
+                        out=phase_product,
+                    )
+                    np.multiply(
+                        phase_product,
+                        ridge,
+                        out=expanded_basis[:, column],
+                    )
+                    column += 1
                 # A long cell follows the first-order tensor frame, but an
                 # authentic curved contour moves transversely as its tangent
                 # coordinate changes. The mixed and tangent-quadratic
@@ -3427,22 +3449,40 @@ def build_segmenting_v3(
                 # parity, so no additional fitting stage is introduced.
                 clipped_normal = np.clip(coordinates[0], -1.0, 1.0)
                 clipped_tangent = np.clip(coordinates[1], -1.0, 1.0)
-                appended_columns.extend((
-                    clipped_normal * clipped_tangent,
-                    clipped_tangent * clipped_tangent,
-                    # Independent hard-cell fits otherwise truncate a
-                    # carrier at the structural interface with no trace
-                    # degree of freedom. Cardinal incidence and its normal
-                    # moment supply the value/slope trace in this same fit.
+                np.multiply(
+                    clipped_normal,
+                    clipped_tangent,
+                    out=expanded_basis[:, column],
+                )
+                column += 1
+                np.multiply(
+                    clipped_tangent,
+                    clipped_tangent,
+                    out=expanded_basis[:, column],
+                )
+                column += 1
+                # Independent hard-cell fits otherwise truncate a carrier at
+                # the structural interface with no trace degree of freedom.
+                expanded_basis[:, column] = structural_trace
+                column += 1
+                np.multiply(
                     structural_trace,
-                    structural_trace * clipped_normal,
-                ))
+                    clipped_normal,
+                    out=expanded_basis[:, column],
+                )
+                column += 1
+                if column != final_width:
+                    raise AssertionError("final coordinate basis width drift")
                 axis_name = (
                     "normal + corner + phase envelope + quadratic frame + "
                     "structural trace")
             else:
                 paired_ridge_columns.append(ridge)
-        active_basis = np.column_stack((active_basis, *appended_columns))
+        active_basis = (
+            expanded_basis
+            if expanded_basis is not None
+            else np.column_stack((active_basis, *appended_columns))
+        )
         refit = hard_basis_refit_native(
             flat, active_basis, target_flat, count, radius)
         if refit is None:

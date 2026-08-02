@@ -1,6 +1,7 @@
 #include <bfft/vision.h>
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -457,65 +458,76 @@ bfft_status bfft_vision_scan_paired_offsets(
         if (!checked_product(bin_count, std::size_t{3}, &histogram_size)) {
             return BFFT_ERROR_INVALID_ARGUMENT;
         }
-        std::vector<double> histogram(histogram_size, 0.0);
         const double scale = static_cast<double>(bin_count) / (2.0 * span);
-
-        for (std::size_t cell = 0; cell < cell_count; ++cell) {
-            std::fill(histogram.begin(), histogram.end(), 0.0);
-            double mass = 0.0;
-            double total0 = 0.0;
-            double total1 = 0.0;
-            double total2 = 0.0;
-            for (std::size_t at = offset[cell]; at < offset[cell + 1]; ++at) {
-                const std::size_t p = order[at];
-                const double phi = pixel_weight[p];
-                const double r0 = phi * residual[p * 3];
-                const double r1 = phi * residual[p * 3 + 1];
-                const double r2 = phi * residual[p * 3 + 2];
-                mass += phi;
-                total0 += r0;
-                total1 += r1;
-                total2 += r2;
-                std::int64_t bin = static_cast<std::int64_t>(
-                    (projection[p] + span) * scale);
-                bin = std::max<std::int64_t>(0, bin);
-                bin = std::min<std::int64_t>(
-                    static_cast<std::int64_t>(bin_count - 1), bin);
-                const std::size_t slot = static_cast<std::size_t>(bin) * 3;
-                histogram[slot] += r0;
-                histogram[slot + 1] += r1;
-                histogram[slot + 2] += r2;
-            }
-
-            const double denominator = std::max(mass, 1e-9);
-            double run0 = 0.0;
-            double run1 = 0.0;
-            double run2 = 0.0;
-            double top = 0.0;
-            std::size_t top_bin = 0;
-            bool seen = false;
-            for (std::size_t bin = 0; bin < bin_count; ++bin) {
-                const std::size_t slot = bin * 3;
-                run0 += histogram[slot];
-                run1 += histogram[slot + 1];
-                run2 += histogram[slot + 2];
-                const double contrast0 = total0 - 2.0 * run0;
-                const double contrast1 = total1 - 2.0 * run1;
-                const double contrast2 = total2 - 2.0 * run2;
-                const double value =
-                    (channel_weight[0] * contrast0 * contrast0 +
-                     channel_weight[1] * contrast1 * contrast1 +
-                     channel_weight[2] * contrast2 * contrast2) /
-                    denominator;
-                if (!seen || value > top) {
-                    top = value;
-                    top_bin = bin;
-                    seen = true;
+        const auto scan_cells = [&] (
+            std::size_t begin, std::size_t end) {
+            std::vector<double> histogram(histogram_size, 0.0);
+            for (std::size_t cell = begin; cell < end; ++cell) {
+                std::fill(histogram.begin(), histogram.end(), 0.0);
+                double mass = 0.0;
+                double total0 = 0.0;
+                double total1 = 0.0;
+                double total2 = 0.0;
+                for (std::size_t at = offset[cell];
+                     at < offset[cell + 1]; ++at) {
+                    const std::size_t p = order[at];
+                    const double phi = pixel_weight[p];
+                    const double r0 = phi * residual[p * 3];
+                    const double r1 = phi * residual[p * 3 + 1];
+                    const double r2 = phi * residual[p * 3 + 2];
+                    mass += phi;
+                    total0 += r0;
+                    total1 += r1;
+                    total2 += r2;
+                    std::int64_t bin = static_cast<std::int64_t>(
+                        (projection[p] + span) * scale);
+                    bin = std::max<std::int64_t>(0, bin);
+                    bin = std::min<std::int64_t>(
+                        static_cast<std::int64_t>(bin_count - 1), bin);
+                    const std::size_t slot =
+                        static_cast<std::size_t>(bin) * 3;
+                    histogram[slot] += r0;
+                    histogram[slot + 1] += r1;
+                    histogram[slot + 2] += r2;
                 }
+
+                const double denominator = std::max(mass, 1e-9);
+                double run0 = 0.0;
+                double run1 = 0.0;
+                double run2 = 0.0;
+                double top = 0.0;
+                std::size_t top_bin = 0;
+                bool seen = false;
+                for (std::size_t bin = 0; bin < bin_count; ++bin) {
+                    const std::size_t slot = bin * 3;
+                    run0 += histogram[slot];
+                    run1 += histogram[slot + 1];
+                    run2 += histogram[slot + 2];
+                    const double contrast0 = total0 - 2.0 * run0;
+                    const double contrast1 = total1 - 2.0 * run1;
+                    const double contrast2 = total2 - 2.0 * run2;
+                    const double value =
+                        (channel_weight[0] * contrast0 * contrast0 +
+                         channel_weight[1] * contrast1 * contrast1 +
+                         channel_weight[2] * contrast2 * contrast2) /
+                        denominator;
+                    if (!seen || value > top) {
+                        top = value;
+                        top_bin = bin;
+                        seen = true;
+                    }
+                }
+                score[cell] = top;
+                best_bin[cell] = static_cast<std::int32_t>(top_bin);
             }
-            score[cell] = top;
-            best_bin[cell] = static_cast<std::int32_t>(top_bin);
-        }
+        };
+        const std::size_t mean_pixels =
+            pixel_count / std::max(cell_count, std::size_t{1}) + 1;
+        parallel_ranges(
+            cell_count,
+            histogram_size + mean_pixels * 4,
+            0,
+            scan_cells);
     } catch (const std::bad_alloc&) {
         return BFFT_ERROR_ALLOCATION;
     }
@@ -2734,149 +2746,228 @@ bfft_status bfft_vision_hard_basis_refit(
         std::vector<double> normal(normal_size, 0.0);
         std::vector<double> rhs(rhs_size, 0.0);
         std::vector<double> coefficient(rhs_size, 0.0);
-        std::vector<double> factor(block_area, 0.0);
-        std::vector<double> solve_rhs(rhs_width, 0.0);
 
-        for (std::size_t pixel = 0; pixel < pixel_count; ++pixel) {
-            const std::int32_t label_value = labels[pixel];
-            if (!valid_cell(label_value, cell_count)) {
-                return BFFT_ERROR_INVALID_ARGUMENT;
+        if (basis_width >= 12 && cell_count > 1) {
+            /*
+               A stable cell CSR exposes independent reductions without
+               changing a single cell's summation order. The global raster
+               interleaves cells; within each cell it is already ascending
+               pixel order, exactly the order constructed here.
+            */
+            std::vector<std::size_t> offset(cell_count + 1, 0);
+            for (std::size_t pixel = 0; pixel < pixel_count; ++pixel) {
+                const std::int32_t label_value = labels[pixel];
+                if (!valid_cell(label_value, cell_count)) {
+                    return BFFT_ERROR_INVALID_ARGUMENT;
+                }
+                ++offset[static_cast<std::size_t>(label_value) + 1];
             }
-            const std::size_t cell =
-                static_cast<std::size_t>(label_value);
-            const double* row = design + pixel * basis_width;
-            double* block = normal.data() + cell * block_area;
-            double* cell_rhs = rhs.data() + cell * rhs_width;
-            for (std::size_t first = 0; first < basis_width; ++first) {
-                const double u = row[first];
-                for (std::size_t second = first;
-                     second < basis_width; ++second) {
-                    block[first * basis_width + second] +=
-                        u * row[second];
+            for (std::size_t cell = 0; cell < cell_count; ++cell) {
+                offset[cell + 1] += offset[cell];
+            }
+            std::vector<std::size_t> cursor(
+                offset.begin(), offset.begin() + cell_count);
+            std::vector<std::size_t> pixel_order(pixel_count);
+            for (std::size_t pixel = 0; pixel < pixel_count; ++pixel) {
+                const std::size_t cell =
+                    static_cast<std::size_t>(labels[pixel]);
+                pixel_order[cursor[cell]++] = pixel;
+            }
+            const auto accumulate_cells = [&] (
+                std::size_t begin, std::size_t end) {
+                for (std::size_t cell = begin; cell < end; ++cell) {
+                    double* block = normal.data() + cell * block_area;
+                    double* cell_rhs = rhs.data() + cell * rhs_width;
+                    for (std::size_t position = offset[cell];
+                         position < offset[cell + 1]; ++position) {
+                        const std::size_t pixel = pixel_order[position];
+                        const double* row = design + pixel * basis_width;
+                        for (std::size_t first = 0;
+                             first < basis_width; ++first) {
+                            const double u = row[first];
+                            for (std::size_t second = first;
+                                 second < basis_width; ++second) {
+                                block[first * basis_width + second] +=
+                                    u * row[second];
+                            }
+                            for (std::size_t channel = 0;
+                                 channel < 3; ++channel) {
+                                cell_rhs[first * 3 + channel] +=
+                                    u * target[pixel * 3 + channel];
+                            }
+                        }
+                    }
+                }
+            };
+            const std::size_t mean_pixels =
+                pixel_count / std::max(cell_count, std::size_t{1}) + 1;
+            parallel_ranges(
+                cell_count,
+                mean_pixels * (block_area + rhs_width),
+                0,
+                accumulate_cells);
+        } else {
+            for (std::size_t pixel = 0; pixel < pixel_count; ++pixel) {
+                const std::int32_t label_value = labels[pixel];
+                if (!valid_cell(label_value, cell_count)) {
+                    return BFFT_ERROR_INVALID_ARGUMENT;
+                }
+                const std::size_t cell =
+                    static_cast<std::size_t>(label_value);
+                const double* row = design + pixel * basis_width;
+                double* block = normal.data() + cell * block_area;
+                double* cell_rhs = rhs.data() + cell * rhs_width;
+                for (std::size_t first = 0;
+                     first < basis_width; ++first) {
+                    const double u = row[first];
+                    for (std::size_t second = first;
+                         second < basis_width; ++second) {
+                        block[first * basis_width + second] +=
+                            u * row[second];
+                    }
+                    for (std::size_t channel = 0;
+                         channel < 3; ++channel) {
+                        cell_rhs[first * 3 + channel] +=
+                            u * target[pixel * 3 + channel];
+                    }
+                }
+            }
+        }
+
+        std::atomic<int> solve_status{BFFT_OK};
+        const auto solve_cells = [&](
+            std::size_t begin, std::size_t end) {
+            std::vector<double> factor(block_area, 0.0);
+            std::vector<double> solve_rhs(rhs_width, 0.0);
+            for (std::size_t cell = begin; cell < end; ++cell) {
+                if (solve_status.load(std::memory_order_relaxed) != BFFT_OK) {
+                    return;
+                }
+                double* block = normal.data() + cell * block_area;
+                for (std::size_t row = 0; row < basis_width; ++row) {
+                    for (std::size_t column = 0; column < row; ++column) {
+                        block[row * basis_width + column] =
+                            block[column * basis_width + row];
+                    }
+                }
+                block[0] += 1e-7 * count[cell];
+                const double gradient_regularization =
+                    1e-5 * count[cell] /
+                    std::max(radius[cell] * radius[cell], 1e-30);
+                block[basis_width + 1] += gradient_regularization;
+                block[2 * basis_width + 2] += gradient_regularization;
+                for (std::size_t component = 3;
+                     component < basis_width; ++component) {
+                    block[component * basis_width + component] +=
+                        2e-5 * count[cell];
+                }
+
+                const double* cell_rhs = rhs.data() + cell * rhs_width;
+                double* cell_coefficient =
+                    coefficient.data() + cell * rhs_width;
+                std::copy(block, block + block_area, factor.begin());
+                std::copy(
+                    cell_rhs, cell_rhs + rhs_width, solve_rhs.begin());
+                for (std::size_t column = 0;
+                     column < basis_width; ++column) {
+                    std::size_t pivot = column;
+                    double pivot_size = std::abs(
+                        factor[column * basis_width + column]);
+                    for (std::size_t row = column + 1;
+                         row < basis_width; ++row) {
+                        const double candidate = std::abs(
+                            factor[row * basis_width + column]);
+                        if (candidate > pivot_size) {
+                            pivot = row;
+                            pivot_size = candidate;
+                        }
+                    }
+                    if (!(pivot_size > 0.0) ||
+                        !std::isfinite(pivot_size)) {
+                        solve_status.store(
+                            BFFT_ERROR_INTERNAL,
+                            std::memory_order_relaxed);
+                        return;
+                    }
+                    if (pivot != column) {
+                        for (std::size_t inner = 0;
+                             inner < basis_width; ++inner) {
+                            std::swap(
+                                factor[column * basis_width + inner],
+                                factor[pivot * basis_width + inner]);
+                        }
+                        for (std::size_t channel = 0;
+                             channel < 3; ++channel) {
+                            std::swap(
+                                solve_rhs[column * 3 + channel],
+                                solve_rhs[pivot * 3 + channel]);
+                        }
+                    }
+                    const double diagonal =
+                        factor[column * basis_width + column];
+                    for (std::size_t row = column + 1;
+                         row < basis_width; ++row) {
+                        const double multiplier =
+                            factor[row * basis_width + column] / diagonal;
+                        factor[row * basis_width + column] = multiplier;
+                        for (std::size_t inner = column + 1;
+                             inner < basis_width; ++inner) {
+                            factor[row * basis_width + inner] -=
+                                multiplier *
+                                factor[column * basis_width + inner];
+                        }
+                        for (std::size_t channel = 0;
+                             channel < 3; ++channel) {
+                            solve_rhs[row * 3 + channel] -=
+                                multiplier *
+                                solve_rhs[column * 3 + channel];
+                        }
+                    }
                 }
                 for (std::size_t channel = 0; channel < 3; ++channel) {
-                    cell_rhs[first * 3 + channel] +=
-                        u * target[pixel * 3 + channel];
+                    for (std::size_t reverse = basis_width;
+                         reverse-- > 0;) {
+                        double value = solve_rhs[reverse * 3 + channel];
+                        for (std::size_t inner = reverse + 1;
+                             inner < basis_width; ++inner) {
+                            value -=
+                                factor[reverse * basis_width + inner] *
+                                cell_coefficient[inner * 3 + channel];
+                        }
+                        cell_coefficient[reverse * 3 + channel] =
+                            value /
+                            factor[reverse * basis_width + reverse];
+                    }
                 }
             }
+        };
+        parallel_ranges(
+            cell_count, block_area + rhs_width, 0, solve_cells);
+        if (solve_status.load(std::memory_order_relaxed) != BFFT_OK) {
+            return static_cast<bfft_status>(
+                solve_status.load(std::memory_order_relaxed));
         }
-
-        for (std::size_t cell = 0; cell < cell_count; ++cell) {
-            double* block = normal.data() + cell * block_area;
-            for (std::size_t row = 0; row < basis_width; ++row) {
-                for (std::size_t column = 0; column < row; ++column) {
-                    block[row * basis_width + column] =
-                        block[column * basis_width + row];
+        const auto render_pixels = [&] (
+            std::size_t begin, std::size_t end) {
+            for (std::size_t pixel = begin; pixel < end; ++pixel) {
+                const std::size_t cell =
+                    static_cast<std::size_t>(labels[pixel]);
+                const double* row = design + pixel * basis_width;
+                const double* cell_coefficient =
+                    coefficient.data() + cell * rhs_width;
+                for (std::size_t channel = 0; channel < 3; ++channel) {
+                    double value = 0.0;
+                    for (std::size_t component = 0;
+                         component < basis_width; ++component) {
+                        value += row[component] *
+                            cell_coefficient[component * 3 + channel];
+                    }
+                    reconstruction[pixel * 3 + channel] = value;
                 }
             }
-            block[0] += 1e-7 * count[cell];
-            const double gradient_regularization =
-                1e-5 * count[cell] /
-                std::max(radius[cell] * radius[cell], 1e-30);
-            block[basis_width + 1] += gradient_regularization;
-            block[2 * basis_width + 2] += gradient_regularization;
-            for (std::size_t component = 3;
-                 component < basis_width; ++component) {
-                block[component * basis_width + component] +=
-                    2e-5 * count[cell];
-            }
-
-            const double* cell_rhs = rhs.data() + cell * rhs_width;
-            double* cell_coefficient =
-                coefficient.data() + cell * rhs_width;
-            std::copy(block, block + block_area, factor.begin());
-            std::copy(cell_rhs, cell_rhs + rhs_width, solve_rhs.begin());
-            /*
-               Directly eliminate the fixed, tiny per-cell system. Partial
-               pivoting retains relative accuracy in very thin, nearly
-               collinear sliver cells without calling a generic factorization
-               library or constructing a sparse solver.
-            */
-            for (std::size_t column = 0;
-                 column < basis_width; ++column) {
-                std::size_t pivot = column;
-                double pivot_size = std::abs(
-                    factor[column * basis_width + column]);
-                for (std::size_t row = column + 1;
-                     row < basis_width; ++row) {
-                    const double candidate = std::abs(
-                        factor[row * basis_width + column]);
-                    if (candidate > pivot_size) {
-                        pivot = row;
-                        pivot_size = candidate;
-                    }
-                }
-                if (!(pivot_size > 0.0) || !std::isfinite(pivot_size)) {
-                    return BFFT_ERROR_INTERNAL;
-                }
-                if (pivot != column) {
-                    for (std::size_t inner = 0;
-                         inner < basis_width; ++inner) {
-                        std::swap(
-                            factor[column * basis_width + inner],
-                            factor[pivot * basis_width + inner]);
-                    }
-                    for (std::size_t channel = 0;
-                         channel < 3; ++channel) {
-                        std::swap(
-                            solve_rhs[column * 3 + channel],
-                            solve_rhs[pivot * 3 + channel]);
-                    }
-                }
-                const double diagonal =
-                    factor[column * basis_width + column];
-                for (std::size_t row = column + 1;
-                     row < basis_width; ++row) {
-                    const double multiplier =
-                        factor[row * basis_width + column] / diagonal;
-                    factor[row * basis_width + column] = multiplier;
-                    for (std::size_t inner = column + 1;
-                         inner < basis_width; ++inner) {
-                        factor[row * basis_width + inner] -=
-                            multiplier *
-                            factor[column * basis_width + inner];
-                    }
-                    for (std::size_t channel = 0;
-                         channel < 3; ++channel) {
-                        solve_rhs[row * 3 + channel] -=
-                            multiplier *
-                            solve_rhs[column * 3 + channel];
-                    }
-                }
-            }
-            for (std::size_t channel = 0; channel < 3; ++channel) {
-                for (std::size_t reverse = basis_width;
-                     reverse-- > 0;) {
-                    double value = solve_rhs[reverse * 3 + channel];
-                    for (std::size_t inner = reverse + 1;
-                         inner < basis_width; ++inner) {
-                        value -=
-                            factor[reverse * basis_width + inner] *
-                            cell_coefficient[inner * 3 + channel];
-                    }
-                    cell_coefficient[reverse * 3 + channel] =
-                        value /
-                        factor[reverse * basis_width + reverse];
-                }
-            }
-        }
-
-        for (std::size_t pixel = 0; pixel < pixel_count; ++pixel) {
-            const std::size_t cell =
-                static_cast<std::size_t>(labels[pixel]);
-            const double* row = design + pixel * basis_width;
-            const double* cell_coefficient =
-                coefficient.data() + cell * rhs_width;
-            for (std::size_t channel = 0; channel < 3; ++channel) {
-                double value = 0.0;
-                for (std::size_t component = 0;
-                     component < basis_width; ++component) {
-                    value += row[component] *
-                        cell_coefficient[component * 3 + channel];
-                }
-                reconstruction[pixel * 3 + channel] = value;
-            }
-        }
+        };
+        parallel_ranges(
+            pixel_count, basis_width * 3, 0, render_pixels);
         return BFFT_OK;
     } catch (const std::bad_alloc&) {
         return BFFT_ERROR_ALLOCATION;
