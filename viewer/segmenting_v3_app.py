@@ -39,6 +39,7 @@ VIEWS = (
     "Reconstruction",
     "Structural soft IDs",
     "Texture micro IDs",
+    "Compound one-sided IDs",
     "Residual error",
 )
 
@@ -284,6 +285,11 @@ def _view(result, name):
         return result["reconstruction_rgb"]
     if name == "Texture micro IDs":
         return _owner_colours(result["texture_labels"])
+    if name == "Compound one-sided IDs":
+        compound = result["compound_segmentation"]
+        if not compound["enabled"]:
+            return _owner_colours(result["texture_labels"])
+        return _owner_colours(compound["labels"])
     if name == "Structural soft IDs":
         if "structural_soft_ids" not in result:
             ids = _owner_colours(result["labels"])
@@ -470,6 +476,7 @@ def _config():
         eikonal_metric_strength=float(dpg.get_value("v3_eikonal_strength")),
         offset_bins=int(dpg.get_value("v3_offset_bins")),
         ridge_kappa=float(dpg.get_value("v3_ridge_kappa")),
+        compound_segmentation=True,
         threads=int(dpg.get_value("v3_threads")),
     )
 
@@ -490,6 +497,7 @@ def build_worker(rgb, config):
             bool(item["accepted"]) for item in characteristic)
         phase_graph = result["texture_phase_graph"]
         texture_envelope = result["texture_dirichlet_envelope"]
+        compound = result["compound_segmentation"]
         joint = result["joint_leaf_collapse"]
         characteristic_state = (
             f"{accepted_characteristic}/{len(characteristic)} accepted"
@@ -525,6 +533,9 @@ def build_worker(rgb, config):
             f"energy envelope "
             f"{texture_envelope['contracted_cells']:,} cells in "
             f"{timing['texture_dirichlet_envelope_ms']:.0f} ms | "
+            f"compound IDs {compound['leaf_count']:,}→"
+            f"{compound['compound_count']:,} in "
+            f"{timing['compound_segmentation_ms']:.0f} ms | "
             f"coordinates {coordinate_ms:.0f} ms | "
             f"total {timing['total_ms']:.0f} ms"
         )
@@ -564,7 +575,12 @@ def build_worker(rgb, config):
             f"{upgrade['band_pixels']:,} boundary-band pixels; "
             f"Raster-disconnected coordinate fallbacks: {fallback:,} "
             f"across {len(fallback_fields)} "
-            f"{geometry['total_pixels']:,}-pixel fields.")
+            f"{geometry['total_pixels']:,}-pixel fields. "
+            f"Compound segmentation split "
+            f"{compound['atom_count']:,} immutable reconstruction atoms "
+            f"into {compound['leaf_count']:,} paired amplitude leaves, then "
+            f"returned {compound['compound_count']:,} same-budget IDs; it "
+            f"does not alter reconstruction.")
         with S.lock:
             S.rgb = rgb
             S.result = result

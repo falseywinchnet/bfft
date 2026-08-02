@@ -506,6 +506,56 @@ clock leaves moved untouched lower-rim sites by as much as 28 pixels and
 changed the global coordinate denominator from 299 to 264, producing a false
 outline in cells the quotient never merged.
 
+## Compound segmentation quotient
+
+Reconstruction cells are not object segments. A curved glyph may require
+several local coordinate models, while one expressive model may carry both
+sides of an authentic boundary. The experimental **Compound one-sided IDs**
+view therefore leaves every fitted atom immutable. It resolves each atom into
+two successive paired amplitude decisions, separates their disconnected
+raster supports, and builds one adjacent-leaf graph. Keeping those connected
+leaves is essential: identifying disconnected oscillatory islands as one
+primitive is faster, but visibly reintroduces speckle and weakens coherent
+regions on page, coffee, and Golden Gate. A size-conditioned Kruskal/FH pass
+merges
+compatible leaves into compound segment IDs without refitting their children.
+
+The default cut returns exactly as many compound IDs as texture atoms. This is
+a same-budget A/B: any improvement comes from moving segmentation identity,
+not spending more labels or deleting reconstruction degrees of freedom.
+Boundary confidence enters as a survival hazard, while adjacent one-sided Lab
+amplitude prototypes supply the region distance. The graph-only scale is
+calibrated to the requested count and the final ordered pass stops at that
+literal budget.
+
+The connected-leaf construction is retained in the optimized path. Atom RGB
+moments and leaf/interface statistics are each fused into one raster pass,
+and calibration probes count components without materializing a pixel map. Large
+graphs schedule independent monotone scale probes concurrently with serial
+`nogil` kernels; this does not use Numba's `parallel=True` workqueue. The
+quarter, midpoint, and three-quarter probes reproduce two literal bisection
+levels, and a regression test requires the parallel and sequential labels,
+count, and selected scale to be identical.
+
+At 256-pixel controls the quotient costs about 7--40 ms after compilation. On
+printed page, the first `n` changes from nine atom IDs (seven also containing
+paper) to eight compound IDs with no paper leakage; its largest coherent dark
+piece grows from 12 to 33 pixels. Across page, camera, coffee, the synthetic
+rig, Pikachu, and Golden Gate, same-budget compound IDs remove roughly
+40--57% of raster boundaries while the retained boundaries carry 2.5--4x the
+mean source-edge energy. Curved-boundary and two-frequency ground truths
+improve both leakage and boundary recall. Matched quadrants and orientation
+improve boundary recall but currently worsen region leakage, so the compound
+view remains a research alternative rather than the canonical ID map.
+
+On the 1799x1440 Golden Gate full control (75,819 atoms, 748,954 connected
+leaves, and 1,770,109 graph edges), the warm compound stage fell from about
+1.924 s to 1.417 s while returning the same 75,819 IDs and preserving
+37.036 dB reconstruction PSNR. Warm end-to-end time in the same run moved
+from about 9.431 s to 9.028 s. Compilation and cache loading are reported
+separately in practice because a new dtype signature can dominate a first
+timed build.
+
 The viewer reports the initial and final counts, topology eligibility,
 fit-compatible adjacency count, and selected edge count. This is important:
 the pass is intentionally almost invisible in a reconstruction because it
