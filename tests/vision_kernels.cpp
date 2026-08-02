@@ -522,6 +522,64 @@ void test_hard_region_fit_kernels() {
     require_close(refit, affine, 2e-15, "hard augmented-basis refit");
 }
 
+void test_image_primitives() {
+    constexpr std::size_t channels = 2;
+    constexpr std::size_t height = 7;
+    constexpr std::size_t width = 9;
+    constexpr std::size_t values = channels * height * width;
+    std::vector<double> field(values, 3.25);
+    const std::vector<double> kernel = {0.25, 0.5, 0.25};
+    std::vector<double> scratch(values);
+    std::vector<double> filtered(values);
+    require(bfft_vision_separable_filter_f64(
+                channels, height, width, kernel.size(), kernel.size(),
+                0, 3, field.data(), kernel.data(), kernel.data(),
+                scratch.data(), filtered.data()) == BFFT_OK,
+            "separable filter returned an error");
+    require_close(filtered, field, 1e-15, "separable constant field");
+
+    constexpr std::size_t output_height = 11;
+    constexpr std::size_t output_width = 5;
+    std::vector<double> resized(
+        channels * output_height * output_width);
+    require(bfft_vision_resize_bilinear_f64(
+                channels, height, width, output_height, output_width, 3,
+                field.data(), resized.data()) == BFFT_OK,
+            "bilinear resize returned an error");
+    require_close(
+        resized,
+        std::vector<double>(resized.size(), 3.25),
+        1e-15,
+        "bilinear constant field");
+
+    std::vector<double> gradient_x(values);
+    std::vector<double> gradient_y(values);
+    require(bfft_vision_sobel_f64(
+                channels, height, width, 3, field.data(),
+                gradient_x.data(), gradient_y.data()) == BFFT_OK,
+            "Sobel returned an error");
+    require_close(
+        gradient_x, std::vector<double>(values, 0.0), 0.0,
+        "Sobel x constant field");
+    require_close(
+        gradient_y, std::vector<double>(values, 0.0), 0.0,
+        "Sobel y constant field");
+
+    std::vector<std::uint8_t> mask(height * width, 0);
+    mask[3 * width + 4] = 1;
+    std::vector<std::uint8_t> mask_scratch(mask.size());
+    std::vector<std::uint8_t> dilated(mask.size());
+    require(bfft_vision_binary_dilation_cross_u8(
+                height, width, 2, 3, mask.data(), mask_scratch.data(),
+                dilated.data()) == BFFT_OK,
+            "cross dilation returned an error");
+    std::size_t population = 0;
+    for (std::uint8_t value : dilated) {
+        population += value != 0;
+    }
+    require(population == 13, "cross dilation has the wrong radius-2 area");
+}
+
 }  // namespace
 
 int main() {
@@ -531,6 +589,7 @@ int main() {
     test_curvature_population_constant_director();
     test_soft_support_preserves_partition();
     test_hard_region_fit_kernels();
+    test_image_primitives();
     std::cout << "vision kernels: scalar-reference agreement passed\n";
     return 0;
 }

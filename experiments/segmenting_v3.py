@@ -142,6 +142,12 @@ class SegmentingV3Config:
     eikonal_metric_strength: float = 2.0
     offset_bins: int = 161
     ridge_kappa: float = 16.0
+    compound_segmentation: bool = False
+    compound_segment_ratio: float = 1.0
+    region_posterization: bool = False
+    region_posterization_depth: int = 6
+    region_posterization_histogram_side: int = 32
+    region_family_fusion: bool = False
     threads: int = 4
     diagnostic_return_basis: bool = False
 
@@ -238,6 +244,8 @@ def _cell_frame(
     labels: np.ndarray,
     centers: np.ndarray,
     tensor: tuple[np.ndarray, np.ndarray, np.ndarray],
+    *,
+    normalization_cells: int | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     flat = labels.ravel()
     cells = len(centers)
@@ -275,7 +283,10 @@ def _cell_frame(
     y, x = np.mgrid[:height, :width]
     dx = x.ravel() - (centers[:, 0] * width - 0.5)[flat]
     dy = y.ravel() - (centers[:, 1] * height - 0.5)[flat]
-    scale = max(math.sqrt(height * width / max(cells, 1)), 1e-30)
+    scale_cells = (
+        cells if normalization_cells is None else int(normalization_cells))
+    scale = max(
+        math.sqrt(height * width / max(scale_cells, 1)), 1e-30)
     normal = (
         dx * normal_x[flat] + dy * normal_y[flat]
     ) / scale
@@ -1604,6 +1615,47 @@ def _centers_from_labels(
     ))
 
 
+def _centers_after_collapse(
+    previous_labels: np.ndarray,
+    collapsed_labels: np.ndarray,
+    previous_centers: np.ndarray,
+    measure: np.ndarray,
+) -> np.ndarray:
+    """Retain the transport gauge of every uncontracted model.
+
+    A quotient changes the support center only for components containing more
+    than one previous cell. Replacing every surviving site's center by its
+    raster centroid moves untouched anisotropic cells, thereby rotating their
+    normal frame and changing a ridge model which the quotient never merged.
+    """
+    previous = np.asarray(previous_labels, dtype=np.int32)
+    collapsed = np.asarray(collapsed_labels, dtype=np.int32)
+    centers = np.asarray(previous_centers, dtype=np.float64)
+    if previous.shape != collapsed.shape:
+        raise ValueError("collapse label maps must have identical shapes")
+    if centers.ndim != 2 or centers.shape[1] != 2:
+        raise ValueError("previous centers must have shape (cells, 2)")
+
+    pooled = _centers_from_labels(collapsed, measure)
+    previous_flat = previous.ravel()
+    if previous_flat.size and int(np.max(previous_flat)) >= len(centers):
+        raise ValueError("collapse labels exceed the previous center table")
+    # A first-arrival population may contain a duplicate seed which owns no
+    # raster pixel.  Such a dead site remains in the canonical center table so
+    # that the coordinate gauge is unchanged, but it is not a collapse cell
+    # and must not prevent the represented quotient from being constructed.
+    represented = np.unique(previous_flat)
+    remap = np.full(len(centers), -1, dtype=np.int32)
+    remap[previous_flat] = collapsed.ravel()
+    if not np.array_equal(remap[previous.ravel()], collapsed.ravel()):
+        raise ValueError("a previous cell cannot split during contraction")
+    group_size = np.bincount(remap[represented], minlength=len(pooled))
+    singleton = group_size[remap[represented]] == 1
+    singleton_cell = represented[singleton]
+    pooled[remap[singleton_cell]] = centers[singleton_cell]
+    return np.ascontiguousarray(pooled)
+
+
 @_compile
 def _adjacent_cell_pairs(labels, cells):
     """Hash the undirected four-neighbour cell graph in one raster pass."""
@@ -2105,11 +2157,18 @@ def _joint_leaf_collapse(
         best_peer[tie_peer != largest] = tie_peer[tie_peer != largest]
         cell = np.arange(structural_cells, dtype=np.int32)
         selected = (best_peer >= 0) & (best_score <= 1.0)
-        selected_pairs = np.column_stack((
-            np.minimum(cell[selected], best_peer[selected]),
-            np.maximum(cell[selected], best_peer[selected]),
-        ))
-        accepted = np.unique(selected_pairs, axis=0)
+        # Pairwise compatibility is not transitive. A best-edge forest can
+        # join dozens of acceptable pairs into one uncertified model (the
+        # coffee-cup penumbra previously formed a 32-leaf component). Keep
+        # only reciprocal best edges. Every resulting component is therefore
+        # exactly the two-cell model measured above, with no extra raster
+        # scan, iterative merge, or unmeasured transitive closure.
+        peer = np.where(selected, best_peer, cell)
+        mutual = selected & selected[peer] & (best_peer[peer] == cell)
+        accepted = np.unique(np.column_stack((
+            np.minimum(cell[mutual], best_peer[mutual]),
+            np.maximum(cell[mutual], best_peer[mutual]),
+        )), axis=0)
     else:
         score = np.empty(0, dtype=np.float64)
         accepted = np.empty((0, 2), dtype=np.int32)
@@ -2167,6 +2226,7 @@ def _joint_leaf_collapse(
             float(np.max(score[score <= 1.0]))
             if np.any(score <= 1.0) else 0.0
         ),
+        "collapse_topology": "mutual_best_edge",
         "accepted_pairs_array": accepted,
     }
 
@@ -2177,13 +2237,25 @@ def _paired_metric_split_partition(
     parent_of_centers: np.ndarray,
     geometry: dict,
     metric_strength: float,
+    *,
+    freeze_pair_metric: bool = False,
 ) -> np.ndarray:
-    """Assign all two-child splits by their closed-form metric bisectors.
+    """Assign all two-child splits by closed-form metric bisectors.
 
-    For two sites a,b and one frozen positive metric M, equality of
-    ``(x-a)'M(x-a)`` and ``(x-b)'M(x-b)`` is a half-space.  Evaluating the
-    local BFFT metric at each incident pixel preserves its directional edge
-    response while eliminating the constrained shortest-path queue.
+    For two sites ``a,b`` and one frozen positive metric ``M``, equality of
+    ``(x-a)'M(x-a)`` and ``(x-b)'M(x-b)`` is a half-space.  Reduced Meyer's
+    first resolvent can leave a coherent transverse tail beside a thin
+    structure.  Letting ``M`` vary at every incident pixel then bends this
+    nominal bisector toward that tail and may leave almost all unexplained
+    energy in one child.
+
+    ``freeze_pair_metric`` integrates the BFFT tensor along the literal site
+    chord with two-point Gauss--Legendre quadrature and uses that one tensor
+    for the pair.  This is the deterministic geodesic-line approximation: it
+    preserves anisotropy, restores one affine bisector, and needs two tensor
+    samples per split rather than one tensor fetch per incident pixel.  The
+    full jump-measure path retains the spatially varying control, whose
+    established quotient is intentionally unchanged.
     """
     labels = np.asarray(parent_labels, dtype=np.int32)
     flat = labels.ravel()
@@ -2224,9 +2296,43 @@ def _paired_metric_split_partition(
         * float(geometry["max_support_px"]) ** 2
         / max(trace_scale, 1e-30)
     )
-    qxx = np.asarray(geometry["precision_xx"], dtype=np.float64).ravel()[pixel]
-    qxy = np.asarray(geometry["precision_xy"], dtype=np.float64).ravel()[pixel]
-    qyy = np.asarray(geometry["precision_yy"], dtype=np.float64).ravel()[pixel]
+    if freeze_pair_metric:
+        parent_site = np.flatnonzero(child_site >= 0)
+        child_for_parent = child_site[parent_site]
+        half_inverse_sqrt_three = 0.5 / math.sqrt(3.0)
+        quadrature = np.array((
+            0.5 - half_inverse_sqrt_three,
+            0.5 + half_inverse_sqrt_three,
+        ))[:, None]
+        parent_x = center[parent_site, 0] * width
+        parent_y = center[parent_site, 1] * height
+        chord_x = center[child_for_parent, 0] * width - parent_x
+        chord_y = center[child_for_parent, 1] * height - parent_y
+        pair_x = parent_x + quadrature * chord_x
+        pair_y = parent_y + quadrature * chord_y
+        sample_x = np.clip(pair_x.astype(np.int64), 0, width - 1)
+        sample_y = np.clip(pair_y.astype(np.int64), 0, height - 1)
+
+        def chord_average(name):
+            field = np.asarray(geometry[name], dtype=np.float64)
+            return 0.5 * np.sum(field[sample_y, sample_x], axis=0)
+
+        pair_qxx = np.zeros(initial_cells, dtype=np.float64)
+        pair_qxy = np.zeros(initial_cells, dtype=np.float64)
+        pair_qyy = np.zeros(initial_cells, dtype=np.float64)
+        pair_qxx[parent_site] = chord_average("precision_xx")
+        pair_qxy[parent_site] = chord_average("precision_xy")
+        pair_qyy[parent_site] = chord_average("precision_yy")
+        qxx = pair_qxx[parent]
+        qxy = pair_qxy[parent]
+        qyy = pair_qyy[parent]
+    else:
+        qxx = np.asarray(
+            geometry["precision_xx"], dtype=np.float64).ravel()[pixel]
+        qxy = np.asarray(
+            geometry["precision_xy"], dtype=np.float64).ravel()[pixel]
+        qyy = np.asarray(
+            geometry["precision_yy"], dtype=np.float64).ravel()[pixel]
     mxx = 1.0 + strength * qxx
     mxy = strength * qxy
     myy = 1.0 + strength * qyy
@@ -2346,6 +2452,10 @@ def _flat_texture_cleanup(
             split["parent_of_centers"],
             geometry,
             config.texture_split_metric_strength,
+            freeze_pair_metric=(
+                str(config.meyer_operator).strip().lower()
+                == "legacy_one_pass"
+            ),
         )
     elif split["split_count"] and split_transport == "local_eikonal":
         proposed_centers, split_forest = local_hard_partition_with_forest(
@@ -2638,6 +2748,8 @@ def _fit_canonical_structural_model(
     target_lab: np.ndarray,
     geometry: dict,
     config: SegmentingV3Config,
+    *,
+    frame_cells: int | None = None,
 ) -> np.ndarray:
     """Fit the canonical affine-plus-ridge model on one fixed quotient."""
     native = hard_affine_fit_native(labels, target_lab)
@@ -2653,6 +2765,7 @@ def _fit_canonical_structural_model(
             np.asarray(geometry["boundary_xy"], dtype=np.float64),
             np.asarray(geometry["boundary_yy"], dtype=np.float64),
         ),
+        normalization_cells=frame_cells,
     )
     target_flat = target_lab.reshape(-1, 3)
     ones = np.ones(flat.size, dtype=np.float64)
@@ -3058,6 +3171,10 @@ def build_segmenting_v3(
         and bool(config.joint_leaf_collapse)
     ):
         phase = time.perf_counter()
+        pre_collapse_labels = labels
+        pre_collapse_texture_labels = texture_labels
+        pre_collapse_centers = centers
+        pre_collapse_texture_centers = texture_centers
         labels, texture_labels, joint_leaf_collapse = _joint_leaf_collapse(
             labels,
             texture_labels,
@@ -3073,13 +3190,27 @@ def build_segmenting_v3(
             ),
         )
         if joint_leaf_collapse["structural_cells_removed"]:
-            centers = _centers_from_labels(
-                labels, cartoon_geometry["measure"])
-            texture_centers = _centers_from_labels(
-                texture_labels, texture_geometry["measure"])
+            centers = _centers_after_collapse(
+                pre_collapse_labels,
+                labels,
+                pre_collapse_centers,
+                cartoon_geometry["measure"],
+            )
+            texture_centers = _centers_after_collapse(
+                pre_collapse_texture_labels,
+                texture_labels,
+                pre_collapse_texture_centers,
+                texture_geometry["measure"],
+            )
             refit_started = time.perf_counter()
             cartoon_lab = _fit_canonical_structural_model(
-                labels, centers, target_lab, cartoon_geometry, config)
+                labels,
+                centers,
+                target_lab,
+                cartoon_geometry,
+                config,
+                frame_cells=len(pre_collapse_centers),
+            )
             texture_target = target_lab - cartoon_lab
             native = hard_affine_fit_native(texture_labels, texture_target)
             if native is None:
@@ -3102,7 +3233,11 @@ def build_segmenting_v3(
             time.perf_counter() - phase)
 
     straight_normal, straight_tangent = _cell_frame(
-        texture_labels, texture_centers, frame_tensor)
+        texture_labels,
+        texture_centers,
+        frame_tensor,
+        normalization_cells=len(phase_incidence_centers),
+    )
     axes_mode = str(config.coordinate_axes).strip().lower()
     if texture_model == "nested_population":
         # In synthesis the tangent is the normal of the orthogonal feature
@@ -3173,6 +3308,7 @@ def build_segmenting_v3(
         "full_band_one_sided": False,
     }
     phase_graph_ms = 0.0
+    phase_columns = ()
     if (
         texture_model == "nested_population"
         and bool(config.texture_graph_phase)
@@ -3240,6 +3376,15 @@ def build_segmenting_v3(
                 # no offset measurement, cell scan, or fitting stage.
                 appended_columns.append(
                     paired_ridge_columns[0] * paired_ridge_columns[1])
+                # Phase amplitude may jump across an authentic edge. The
+                # synchronized quadrature span and finite-band parity of the
+                # two measured normal traces form the smallest gauge-complete
+                # tensor product for that modulation: no phase choice or
+                # new scan.
+                appended_columns.extend(
+                    phase * paired_ridge_columns[0] * ridge
+                    for phase in phase_columns
+                )
                 # A long cell follows the first-order tensor frame, but an
                 # authentic curved contour moves transversely as its tangent
                 # coordinate changes. The mixed and tangent-quadratic
@@ -3261,7 +3406,8 @@ def build_segmenting_v3(
                     structural_trace * clipped_normal,
                 ))
                 axis_name = (
-                    "normal + corner + quadratic frame + structural trace")
+                    "normal + corner + phase envelope + quadratic frame + "
+                    "structural trace")
             else:
                 paired_ridge_columns.append(ridge)
         active_basis = np.column_stack((active_basis, *appended_columns))
@@ -3303,6 +3449,65 @@ def build_segmenting_v3(
         lab_to_srgb(reconstruction_lab), 0.0, 1.0)
     rgb_error = np.mean(np.square(rgb - reconstruction_rgb), axis=2)
     rgb_mse = float(np.mean(rgb_error))
+    compound_segmentation = {
+        "enabled": False,
+        "atom_count": int(len(texture_centers)),
+        "leaf_count": int(len(texture_centers)),
+        "compound_count": int(len(texture_centers)),
+        "milliseconds": 0.0,
+        "reconstruction_changed": False,
+    }
+    if bool(config.compound_segmentation):
+        from experiments.compound_segment_quotient import (
+            build_compound_segment_quotient,
+        )
+
+        compound_segmentation = build_compound_segment_quotient(
+            texture_labels,
+            target_lab,
+            reconstruction_lab,
+            boundary_confidence=(
+                None if texture_geometry is None
+                else texture_geometry["boundary_confidence"]
+            ),
+            target_ratio=float(config.compound_segment_ratio),
+        )
+    region_posterization = {
+        "enabled": False,
+        "region_count": int(compound_segmentation["compound_count"]),
+        "milliseconds": 0.0,
+    }
+    if (
+        (bool(config.region_posterization) or bool(config.region_family_fusion))
+        and bool(compound_segmentation["enabled"])
+    ):
+        from experiments.region_posterization import (
+            build_region_posterization,
+        )
+
+        region_posterization = build_region_posterization(
+            rgb,
+            compound_segmentation["labels"],
+            max_depth=int(config.region_posterization_depth),
+            histogram_side=int(
+                config.region_posterization_histogram_side),
+            labels_are_compact=True,
+            source_lab=target_lab,
+        )
+        region_posterization["enabled"] = True
+    region_family_fusion = {
+        "enabled": False,
+        "input_regions": int(compound_segmentation["compound_count"]),
+        "family_count": int(compound_segmentation["compound_count"]),
+        "milliseconds": 0.0,
+    }
+    if bool(config.region_family_fusion) and bool(region_posterization["enabled"]):
+        from experiments.region_family_fusion import (
+            build_region_family_fusion,
+        )
+
+        region_family_fusion = build_region_family_fusion(
+            region_posterization)
     total_ms = 1000.0 * (time.perf_counter() - started)
     model_geometry = (
         "eikonal" if geometry_mode == "owner_eikonal" else "straight")
@@ -3350,6 +3555,9 @@ def build_segmenting_v3(
         "coordinate_geometry": coordinate_geometry,
         "texture_phase_graph": phase_graph,
         "texture_dirichlet_envelope": texture_envelope,
+        "compound_segmentation": compound_segmentation,
+        "region_posterization": region_posterization,
+        "region_family_fusion": region_family_fusion,
         "owner_upgrade": owner_upgrade,
         "structural_characteristic": characteristic,
         "record": {
@@ -3375,6 +3583,12 @@ def build_segmenting_v3(
                 item["milliseconds"] for item in coordinate_trace)),
             "texture_phase_graph_ms": phase_graph_ms,
             "texture_dirichlet_envelope_ms": texture_envelope_ms,
+            "compound_segmentation_ms": float(
+                compound_segmentation["milliseconds"]),
+            "region_posterization_ms": float(
+                region_posterization["milliseconds"]),
+            "region_family_fusion_ms": float(
+                region_family_fusion["milliseconds"]),
             "total_ms": total_ms,
         },
         "model": (

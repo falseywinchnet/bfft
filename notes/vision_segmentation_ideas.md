@@ -104,8 +104,7 @@ content and randomize phase in-place (one forward and one inverse transform —
 we own the fast path), which preserves the second-order statistics exactly.
 
 **Payoff.** The budget stops flowing to content nobody can localize. This is the
-principled version of the "allocation pressure vs raw error" hack already in
-`transport_voronoi_app.py`.
+principled replacement for allocation driven directly by raw residual error.
 
 **Test.** At fixed cell count, compare pixel-PSNR (will drop) against a
 statistics-distance score and against `meyer_segregation.py`-style scoring

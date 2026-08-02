@@ -3,12 +3,211 @@ import pytest
 
 from experiments.segmenting_v3 import (
     SegmentingV3Config,
+    _cell_frame,
+    _centers_after_collapse,
     _graph_unrolled_texture_columns,
     _graph_unrolled_texture_phases,
     _joint_leaf_collapse,
+    _paired_metric_split_partition,
     _texture_dirichlet_envelope,
     build_segmenting_v3,
 )
+from experiments.compound_segment_quotient import (
+    _adaptive_labels_at_count,
+    build_compound_segment_quotient,
+    labels_at_ratio,
+)
+
+
+def test_joint_collapse_preserves_unmerged_transport_centers():
+    previous = np.array([
+        [0, 0, 1, 1],
+        [0, 0, 2, 2],
+    ], dtype=np.int32)
+    collapsed = np.array([
+        [0, 0, 0, 0],
+        [0, 0, 1, 1],
+    ], dtype=np.int32)
+    old_centers = np.array([
+        [0.125, 0.25],
+        [0.875, 0.25],
+        [0.91, 0.83],
+    ])
+    centers = _centers_after_collapse(
+        previous,
+        collapsed,
+        old_centers,
+        np.ones(previous.shape),
+    )
+
+    # Cells 0 and 1 were genuinely pooled, so their new center follows their
+    # six-pixel union. Cell 2 was only renumbered and must retain its exact
+    # canonical site instead of moving to its two-pixel raster centroid.
+    np.testing.assert_allclose(centers[0], [5.0 / 12.0, 5.0 / 12.0])
+    np.testing.assert_array_equal(centers[1], old_centers[2])
+
+
+def test_joint_collapse_ignores_unrepresented_transport_sites():
+    previous = np.array([
+        [0, 0, 2, 2],
+        [0, 0, 3, 3],
+    ], dtype=np.int32)
+    collapsed = np.array([
+        [0, 0, 0, 0],
+        [0, 0, 1, 1],
+    ], dtype=np.int32)
+    old_centers = np.array([
+        [0.125, 0.25],
+        [0.50, 0.50],  # Duplicate transport seed with no owned raster pixel.
+        [0.875, 0.25],
+        [0.91, 0.83],
+    ])
+    centers = _centers_after_collapse(
+        previous,
+        collapsed,
+        old_centers,
+        np.ones(previous.shape),
+    )
+
+    # The dead site is not part of either quotient component. Cells 0 and 2
+    # pool, while represented singleton 3 keeps its canonical transport site.
+    np.testing.assert_allclose(centers[0], [5.0 / 12.0, 5.0 / 12.0])
+    np.testing.assert_array_equal(centers[1], old_centers[3])
+
+
+def test_compound_segments_split_atom_sides_and_merge_across_atoms():
+    height, width = 24, 36
+    atom_labels = np.repeat(
+        np.arange(3, dtype=np.int32), width // 3,
+    )[None, :].repeat(height, axis=0)
+    target = np.empty((height, width, 3), dtype=np.float64)
+    target[: height // 2] = (0.12, 0.18, 0.24)
+    target[height // 2 :] = (0.82, 0.76, 0.68)
+    quotient = build_compound_segment_quotient(
+        atom_labels,
+        target,
+        target,
+        boundary_confidence=np.zeros((height, width)),
+        target_ratio=2.0 / 3.0,
+    )
+
+    labels = quotient["labels"]
+    assert quotient["atom_count"] == 3
+    assert quotient["compound_count"] == 2
+    assert np.unique(labels[: height // 2]).size == 1
+    assert np.unique(labels[height // 2 :]).size == 1
+    assert labels[0, 0] != labels[-1, 0]
+    # Every vertical reconstruction atom contributes pixels to both compound
+    # segments, while each compound spans all three immutable fit atoms.
+    for atom in range(3):
+        assert np.unique(labels[atom_labels == atom]).size == 2
+    for compound in range(2):
+        assert np.unique(atom_labels[labels == compound]).size == 3
+    assert not quotient["reconstruction_changed"]
+    np.testing.assert_array_equal(
+        labels_at_ratio(quotient, 2.0 / 3.0), labels)
+
+
+def test_parallel_compound_calibration_is_exactly_sequential():
+    height, width = 40, 52
+    y, x = np.mgrid[:height, :width]
+    atoms = ((x // 4) + 13 * (y // 4)).astype(np.int32)
+    target = np.stack((
+        0.4 + 0.3 * np.sin((x + y) / 3.0),
+        0.5 + 0.2 * np.cos((2.0 * x - y) / 5.0),
+        0.2 + 0.6 * (x >= width // 2),
+    ), axis=2)
+    quotient = build_compound_segment_quotient(
+        atoms,
+        target,
+        target,
+        boundary_confidence=np.zeros((height, width)),
+    )
+    arguments = (
+        quotient["leaf_labels"],
+        quotient["leaf_count"],
+        quotient["graph_pairs"],
+        quotient["graph_order"],
+        quotient["graph_barrier"],
+        quotient["leaf_population"],
+        quotient["requested_count"],
+    )
+    sequential = _adaptive_labels_at_count(
+        *arguments, parallel_calibration=False)
+    parallel = _adaptive_labels_at_count(
+        *arguments, parallel_calibration=True)
+
+    np.testing.assert_array_equal(parallel[0], sequential[0])
+    assert parallel[1:] == sequential[1:]
+
+
+def test_cell_frame_can_retain_pre_collapse_coordinate_unit():
+    previous = np.array([
+        [0, 0, 1, 1],
+        [0, 0, 2, 2],
+    ], dtype=np.int32)
+    collapsed = np.array([
+        [0, 0, 0, 0],
+        [0, 0, 1, 1],
+    ], dtype=np.int32)
+    old_centers = np.array([
+        [0.125, 0.25],
+        [0.875, 0.25],
+        [0.91, 0.83],
+    ])
+    new_centers = _centers_after_collapse(
+        previous, collapsed, old_centers, np.ones(previous.shape))
+    tensor = (
+        np.ones(previous.shape),
+        np.zeros(previous.shape),
+        np.zeros(previous.shape),
+    )
+    old_normal, _ = _cell_frame(previous, old_centers, tensor)
+    new_normal, _ = _cell_frame(
+        collapsed,
+        new_centers,
+        tensor,
+        normalization_cells=len(old_centers),
+    )
+
+    singleton = previous == 2
+    np.testing.assert_array_equal(
+        new_normal.reshape(previous.shape)[singleton],
+        old_normal.reshape(previous.shape)[singleton],
+    )
+
+
+def test_frozen_pair_metric_is_the_gauss_chord_bisector():
+    labels = np.zeros((9, 9), dtype=np.int32)
+    centers = np.array(((0.25, 0.5), (0.75, 0.5)))
+    parent = np.array((0, 0), dtype=np.int32)
+    # Wild off-chord tensors would curve a pointwise-metric boundary.  The
+    # chord itself has an isotropic tensor, so its exact frozen bisector is
+    # the vertical half-space between the two sites.
+    qxx = np.full(labels.shape, 50.0)
+    qxy = np.full(labels.shape, 30.0)
+    qyy = np.full(labels.shape, 20.0)
+    qxx[4, (3, 5)] = 1.0
+    qxy[4, (3, 5)] = 0.0
+    qyy[4, (3, 5)] = 1.0
+    geometry = {
+        "precision_xx": qxx,
+        "precision_xy": qxy,
+        "precision_yy": qyy,
+        "metric_trace_p90": 2.0,
+        "max_support_px": 9.0,
+    }
+    split = _paired_metric_split_partition(
+        labels,
+        centers,
+        parent,
+        geometry,
+        0.25,
+        freeze_pair_metric=True,
+    )
+
+    np.testing.assert_array_equal(split[:, :5], 0)
+    np.testing.assert_array_equal(split[:, 5:], 1)
 
 
 def test_graph_phase_unroll_is_deterministic_above_central_difference_fold():
@@ -144,6 +343,41 @@ def test_joint_leaf_collapse_unions_only_compatible_one_child_parents():
     assert subdivided["candidate_pairs"] == 0
 
 
+def test_joint_leaf_collapse_does_not_take_transitive_pair_closure():
+    height, width = 8, 18
+    y, x = np.mgrid[:height, :width]
+    structural = np.minimum(x // 6, 2).astype(np.int32)
+    texture = structural.copy()
+    smooth = np.stack((
+        0.1 + 0.01 * x,
+        0.2 + 0.02 * y,
+        np.full((height, width), 0.3),
+    ), axis=2)
+    zero = np.zeros_like(smooth)
+
+    collapsed_structure, collapsed_texture, diagnostic = (
+        _joint_leaf_collapse(
+            structural,
+            texture,
+            smooth,
+            smooth,
+            zero,
+            zero,
+            penalty=4.0,
+            basis_terms=6,
+        )
+    )
+
+    # All three cells lie on one affine surface, so both adjacent pair tests
+    # pass. They still do not certify a three-cell component: only the one
+    # reciprocal best pair may be contracted in this single noniterative pass.
+    assert diagnostic["fit_compatible_pairs"] == 2
+    assert diagnostic["accepted_pairs"] == 1
+    assert diagnostic["collapse_topology"] == "mutual_best_edge"
+    assert np.unique(collapsed_structure).size == 2
+    assert np.unique(collapsed_texture).size == 2
+
+
 @pytest.mark.parametrize("upgrade_mode", ("boundary_band", "full_map"))
 def test_v3_texture_never_changes_cartoon_ownership(upgrade_mode):
     height, width = 48, 60
@@ -233,8 +467,15 @@ def test_nested_texture_construction_is_parented_then_cleanup_is_flat():
     assert result["texture_phase_graph"]["incidence"] == (
         "pre_joint_leaf_quotient")
     assert result["coordinate_trace"][-1]["axis"] == (
-        "normal + corner + quadratic frame + structural trace")
-    assert result["texture_active_basis"].shape[2] == 15
+        "normal + corner + phase envelope + quadratic frame + "
+        "structural trace")
+    assert result["texture_active_basis"].shape[2] == 19
+    active = result["texture_active_basis"]
+    np.testing.assert_allclose(
+        active[..., 11:15],
+        active[..., 3:7] * active[..., 7:8] * active[..., 9:10],
+        atol=2e-15,
+    )
 
 
 def test_canonical_v2_quotient_survives_dense_texture_cleanup():

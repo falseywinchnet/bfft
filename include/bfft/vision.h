@@ -263,7 +263,9 @@ bfft_status bfft_vision_fast_march_labels(
    Assemble the direction-major float32 eight-neighbour cost stack directly
    from frozen precision and optional boundary tensors. precision_gain is the
    already-scaled metric coefficient; boundary_gain is the squared crossing
-   action. Boundary pointers may be null exactly when boundary_gain is zero.
+   action. The assembled I + tensor metric is projected back to its analytic
+   positive-semidefinite excess cone before edge integration. Boundary
+   pointers may be null exactly when boundary_gain is zero.
 */
 bfft_status bfft_vision_metric_edge_costs_f32(
     size_t height, size_t width,
@@ -286,6 +288,20 @@ bfft_status bfft_vision_bucket_first_label(
     double delta, size_t span, double shift,
     int32_t* owner, double* distance, int32_t* parent,
     size_t* push_count);
+
+/*
+   Exact two-label Dial-bucket walk over the same direction-major float32
+   costs. This is the owner/runner form used by nested texture transport.
+   parent_first records the achieving predecessor of the winning owner.
+*/
+bfft_status bfft_vision_bucket_two_labels(
+    size_t height, size_t width, size_t seed_count,
+    const int64_t* seed_pixel, const double* reach,
+    const float* direction_costs,
+    double delta, size_t span, double shift,
+    int32_t* owner, int32_t* runner,
+    double* distance, double* second_distance,
+    int32_t* parent_first, size_t* push_count);
 
 /*
    Fit one independent conditioned affine RGB/Lab field per hard region.
@@ -314,6 +330,38 @@ bfft_status bfft_vision_hard_basis_refit(
     size_t pixel_count, size_t cell_count, size_t basis_width,
     const int32_t* labels, const double* design, const double* target,
     const double* count, const double* radius, double* reconstruction);
+
+/*
+   Separable image primitives used by the V3 support lineage.  Fields are
+   contiguous CxHxW float64 arrays.  The caller owns every output and scratch
+   buffer, so these kernels perform no image-sized allocation.
+
+   mirror_without_edge selects the two boundary conventions required by the
+   pipeline: zero gives half-sample symmetric reflection (edge samples are
+   repeated), while nonzero gives whole-sample symmetric reflection.
+*/
+bfft_status bfft_vision_separable_filter_f64(
+    size_t channels, size_t height, size_t width,
+    size_t kernel_y_size, size_t kernel_x_size,
+    uint8_t mirror_without_edge, size_t thread_count,
+    const double* fields, const double* kernel_y, const double* kernel_x,
+    double* scratch, double* output);
+
+/* Pixel-centred bilinear resize of a contiguous CxHxW float64 field. */
+bfft_status bfft_vision_resize_bilinear_f64(
+    size_t channels, size_t input_height, size_t input_width,
+    size_t output_height, size_t output_width, size_t thread_count,
+    const double* fields, double* output);
+
+/* Normalized 3x3 Sobel pair for a contiguous CxHxW float64 field. */
+bfft_status bfft_vision_sobel_f64(
+    size_t channels, size_t height, size_t width, size_t thread_count,
+    const double* fields, double* gradient_x, double* gradient_y);
+
+/* Repeated four-connected dilation of one HxW uint8 mask. */
+bfft_status bfft_vision_binary_dilation_cross_u8(
+    size_t height, size_t width, size_t iterations, size_t thread_count,
+    const uint8_t* mask, uint8_t* scratch, uint8_t* output);
 
 #ifdef __cplusplus
 }

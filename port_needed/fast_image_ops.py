@@ -9,6 +9,13 @@ from __future__ import annotations
 
 import numpy as np
 
+from bfft.vision import (
+    binary_dilation_cross_native,
+    resize_bilinear_native,
+    separable_filter_native,
+    sobel_native,
+)
+
 try:
     from numba import njit, prange
 except ImportError:  # pragma: no cover
@@ -218,10 +225,11 @@ def gaussian_filter(value: np.ndarray, sigma: float) -> np.ndarray:
     x = np.arange(-radius, radius + 1, dtype=np.float64)
     kernel = np.exp(-0.5 * np.square(x / smoothing))
     kernel /= np.sum(kernel)
-    output = _gaussian_batch(
-        np.ascontiguousarray(fields, dtype=np.float64),
-        np.ascontiguousarray(kernel),
-    )
+    fields = np.ascontiguousarray(fields, dtype=np.float64)
+    kernel = np.ascontiguousarray(kernel)
+    output = separable_filter_native(fields, kernel, kernel)
+    if output is None:
+        output = _gaussian_batch(fields, kernel)
     return output[0] if scalar else output
 
 
@@ -279,13 +287,19 @@ def resize(
             sigma_y = max((input_height / output_height - 1.0) / 2.0, 0.0)
             sigma_x = max((input_width / output_width - 1.0) / 2.0, 0.0)
             if sigma_y > 0.0 or sigma_x > 0.0:
-                fields = _gaussian_batch_xy(
-                    fields,
-                    _gaussian_kernel(sigma_y),
-                    _gaussian_kernel(sigma_x),
+                kernel_y = _gaussian_kernel(sigma_y)
+                kernel_x = _gaussian_kernel(sigma_x)
+                filtered = separable_filter_native(
+                    fields, kernel_y, kernel_x, mirror_without_edge=True)
+                fields = (
+                    filtered if filtered is not None else
+                    _gaussian_batch_xy(fields, kernel_y, kernel_x)
                 )
-        result = _resize_bilinear_batch(
-            fields, output_height, output_width)
+        result = resize_bilinear_native(
+            fields, (output_height, output_width))
+        if result is None:
+            result = _resize_bilinear_batch(
+                fields, output_height, output_width)
     else:
         raise ValueError("fast resize supports nearest or linear interpolation")
     return result[0] if scalar else np.moveaxis(result, 0, -1)
@@ -297,12 +311,15 @@ def sobel(value: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     fields = array[None] if scalar else array
     if fields.ndim != 3:
         raise ValueError("sobel expects HxW or CxHxW")
-    gx, gy = _sobel_batch(np.ascontiguousarray(fields, dtype=np.float64))
+    fields = np.ascontiguousarray(fields, dtype=np.float64)
+    result = sobel_native(fields)
+    gx, gy = result if result is not None else _sobel_batch(fields)
     return (gx[0], gy[0]) if scalar else (gx, gy)
 
 
 def binary_dilation(mask: np.ndarray, iterations: int) -> np.ndarray:
-    return _binary_dilation_cross(
-        np.ascontiguousarray(mask, dtype=np.bool_),
-        max(int(iterations), 0),
-    )
+    value = np.ascontiguousarray(mask, dtype=np.bool_)
+    count = max(int(iterations), 0)
+    output = binary_dilation_cross_native(value, count)
+    return output if output is not None else _binary_dilation_cross(
+        value, count)

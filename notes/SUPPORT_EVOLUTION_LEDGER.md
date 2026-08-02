@@ -161,7 +161,8 @@ runs are both about 4.2 s. Approximate branching is therefore opt-in.
 
 Direct timing shows the exact HD allocation consists of about 1.92 s of
 two-label transport, 1.07 s of branch quantiles, and 0.54 s of soft moments.
-The exact monotone bucket queue from `experiments/sigma_opt` reduced the walks
+The exact monotone bucket queue now retained in
+`port_needed/monotone_bucket_transport.py` reduced the walks
 to 1.56 s in an unintegrated test and reproduced distances exactly (label
 differences were tied sites). This is worthwhile, but cannot alone produce a
 sub-second solve: whole transport rounds have to disappear.

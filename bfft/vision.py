@@ -22,16 +22,21 @@ from ._core import (
     _check,
     _vision_assemble_normal,
     _vision_bucket_first_label,
+    _vision_bucket_two_labels,
     _vision_curvature_population_f32,
     _vision_fast_march_first_label,
     _vision_fast_march_labels,
     _vision_metric_edge_costs_f32,
     _vision_hard_affine_fit,
     _vision_hard_basis_refit,
+    _vision_binary_dilation_cross_u8,
     _vision_render_affine,
+    _vision_resize_bilinear_f64,
     _vision_scan_paired_offsets,
     _vision_scan_residual_ridges,
+    _vision_separable_filter_f64,
     _vision_soft_support_diffuse,
+    _vision_sobel_f64,
     _vision_support_forward,
     _vision_support_normal_apply,
     _vision_support_transpose,
@@ -62,6 +67,123 @@ def vision_backend():
         _vision_scan_residual_ridges is not None)
     return "native C++" if native else (
         "Numba" if njit is not None else "portable Python")
+
+
+def separable_filter_native(
+    fields, kernel_y, kernel_x, *, mirror_without_edge=False, threads=0,
+):
+    """Filter one contiguous CxHxW batch, or return ``None`` if unavailable."""
+    if _vision_separable_filter_f64 is None:
+        return None
+    value = np.ascontiguousarray(fields, dtype=np.float64)
+    ky = np.ascontiguousarray(kernel_y, dtype=np.float64)
+    kx = np.ascontiguousarray(kernel_x, dtype=np.float64)
+    if value.ndim != 3:
+        raise ValueError("separable filter fields must have shape CxHxW")
+    if (ky.ndim != 1 or kx.ndim != 1 or ky.size % 2 != 1 or
+            kx.size % 2 != 1 or ky.size == 0 or kx.size == 0):
+        raise ValueError("separable filter kernels must be nonempty and odd")
+    channels, height, width = value.shape
+    scratch = np.empty_like(value)
+    output = np.empty_like(value)
+    _check(_vision_separable_filter_f64(
+        channels, height, width, ky.size, kx.size,
+        int(bool(mirror_without_edge)), max(int(threads), 0),
+        _ptr(value, ctypes.c_double), _ptr(ky, ctypes.c_double),
+        _ptr(kx, ctypes.c_double), _ptr(scratch, ctypes.c_double),
+        _ptr(output, ctypes.c_double),
+    ), "bfft_vision_separable_filter_f64")
+    return output
+
+
+def resize_bilinear_native(fields, shape, *, threads=0):
+    """Resize one contiguous CxHxW batch, or return ``None`` if unavailable."""
+    if _vision_resize_bilinear_f64 is None:
+        return None
+    value = np.ascontiguousarray(fields, dtype=np.float64)
+    if value.ndim != 3:
+        raise ValueError("bilinear resize fields must have shape CxHxW")
+    output_height, output_width = map(int, shape)
+    if output_height < 1 or output_width < 1:
+        raise ValueError("bilinear resize dimensions must be positive")
+    channels, input_height, input_width = value.shape
+    output = np.empty(
+        (channels, output_height, output_width), dtype=np.float64)
+    _check(_vision_resize_bilinear_f64(
+        channels, input_height, input_width, output_height, output_width,
+        max(int(threads), 0), _ptr(value, ctypes.c_double),
+        _ptr(output, ctypes.c_double),
+    ), "bfft_vision_resize_bilinear_f64")
+    return output
+
+
+def sobel_native(fields, *, threads=0):
+    """Return normalized Sobel derivatives, or ``None`` if unavailable."""
+    if _vision_sobel_f64 is None:
+        return None
+    value = np.ascontiguousarray(fields, dtype=np.float64)
+    if value.ndim != 3:
+        raise ValueError("Sobel fields must have shape CxHxW")
+    channels, height, width = value.shape
+    gradient_x = np.empty_like(value)
+    gradient_y = np.empty_like(value)
+    _check(_vision_sobel_f64(
+        channels, height, width, max(int(threads), 0),
+        _ptr(value, ctypes.c_double), _ptr(gradient_x, ctypes.c_double),
+        _ptr(gradient_y, ctypes.c_double),
+    ), "bfft_vision_sobel_f64")
+    return gradient_x, gradient_y
+
+
+def binary_dilation_cross_native(mask, iterations, *, threads=0):
+    """Dilate one HxW mask, or return ``None`` for an older native library."""
+    if _vision_binary_dilation_cross_u8 is None:
+        return None
+    value = np.ascontiguousarray(mask, dtype=np.bool_)
+    if value.ndim != 2:
+        raise ValueError("binary dilation mask must have shape HxW")
+    height, width = value.shape
+    scratch = np.empty_like(value)
+    output = np.empty_like(value)
+    _check(_vision_binary_dilation_cross_u8(
+        height, width, max(int(iterations), 0), max(int(threads), 0),
+        _ptr(value, ctypes.c_uint8), _ptr(scratch, ctypes.c_uint8),
+        _ptr(output, ctypes.c_uint8),
+    ), "bfft_vision_binary_dilation_cross_u8")
+    return output
+
+
+def bucket_two_labels_native(
+    seed_pixel, reach, direction_costs, delta, span, shift,
+):
+    """Run the exact native two-label Dial walk, or return ``None``."""
+    if _vision_bucket_two_labels is None:
+        return None
+    seeds = np.ascontiguousarray(seed_pixel, dtype=np.int64)
+    radius = np.ascontiguousarray(reach, dtype=np.float64)
+    costs = np.ascontiguousarray(direction_costs, dtype=np.float32)
+    if costs.ndim != 3 or costs.shape[0] != 8:
+        raise ValueError("direction costs must have shape 8xHxW")
+    if seeds.ndim != 1 or radius.shape != seeds.shape:
+        raise ValueError("seed pixels and reach must be equal-length vectors")
+    height, width = costs.shape[1:]
+    pixels = height * width
+    owner = np.empty(pixels, dtype=np.int32)
+    runner = np.empty(pixels, dtype=np.int32)
+    distance = np.empty(pixels, dtype=np.float64)
+    second_distance = np.empty(pixels, dtype=np.float64)
+    parent = np.empty(pixels, dtype=np.int32)
+    pushes = ctypes.c_size_t()
+    _check(_vision_bucket_two_labels(
+        height, width, seeds.size,
+        _ptr(seeds, ctypes.c_int64), _ptr(radius, ctypes.c_double),
+        _ptr(costs, ctypes.c_float), float(delta), int(span), float(shift),
+        _ptr(owner, ctypes.c_int32), _ptr(runner, ctypes.c_int32),
+        _ptr(distance, ctypes.c_double),
+        _ptr(second_distance, ctypes.c_double),
+        _ptr(parent, ctypes.c_int32), ctypes.byref(pushes),
+    ), "bfft_vision_bucket_two_labels")
+    return owner, runner, distance, second_distance, parent, int(pushes.value)
 
 
 def curvature_population_native(
@@ -1140,125 +1262,3 @@ def measure_paired_offsets(
         - float(span)
     )
     return score, offset
-
-
-@_compile
-def _takahashi(indptr, indices, lower, diagonal_inverse,
-                inverse_values, positions, accumulator):
-    n = indptr.size - 1
-    for j in range(n - 1, -1, -1):
-        start = indptr[j]
-        end = indptr[j + 1]
-        base = start + 1
-        count = end - base
-        for a in range(count):
-            accumulator[a] = 0.0
-        for a in range(count):
-            column = indices[base + a]
-            la = lower[base + a]
-            lo = indptr[column]
-            hi = indptr[column + 1]
-            for t in range(lo, hi):
-                positions[indices[t]] = t
-            for b in range(a, count):
-                t = positions[indices[base + b]]
-                if t < 0:
-                    for u in range(lo, hi):
-                        positions[indices[u]] = -1
-                    return 1
-                value = inverse_values[t]
-                accumulator[a] += lower[base + b] * value
-                if b != a:
-                    accumulator[b] += la * value
-            for t in range(lo, hi):
-                positions[indices[t]] = -1
-        value = diagonal_inverse[j]
-        for a in range(count):
-            inverse_values[base + a] = -accumulator[a]
-            value -= lower[base + a] * inverse_values[base + a]
-        inverse_values[start] = value
-    return 0
-
-
-@_compile
-def _gather_diagonal_blocks(indptr, indices, inverse_values, permutation,
-                            cells, width, out):
-    for cell in range(cells):
-        for a in range(width):
-            original_a = permutation[width * cell + a]
-            for b in range(a, width):
-                original_b = permutation[width * cell + b]
-                row = max(original_a, original_b)
-                column = min(original_a, original_b)
-                lo = indptr[column]
-                hi = indptr[column + 1]
-                found = -1
-                while lo < hi:
-                    mid = (lo + hi) // 2
-                    if indices[mid] == row:
-                        found = mid
-                        break
-                    if indices[mid] < row:
-                        lo = mid + 1
-                    else:
-                        hi = mid
-                if found < 0:
-                    return 1
-                out[cell, a, b] = inverse_values[found]
-                out[cell, b, a] = inverse_values[found]
-    return 0
-
-
-def selected_inverse_blocks(lu, cells, width, verify=True):
-    """Return every exact diagonal cell block of ``G^-1`` without solves.
-
-    SuperLU's symmetric factor assumptions are checked.  Callers can catch
-    ``RuntimeError`` and fall back to batched solves on unusual pivoting.
-    """
-    lower = lu.L.tocsc(copy=True)
-    lower.sort_indices()
-    n = lower.shape[0]
-    if not np.array_equal(lu.perm_r, lu.perm_c):
-        raise RuntimeError("SuperLU used asymmetric permutations")
-    if not np.all(lower.indices[lower.indptr[:-1]] == np.arange(n)):
-        raise RuntimeError("SuperLU L is not diagonal-first")
-    if verify:
-        relation = (
-            lu.U -
-            sparse.diags(lu.U.diagonal(), format="csc") @ lower.T).tocsc()
-        scale = max(float(abs(lu.U).max()), 1e-30)
-        if relation.nnz and float(np.max(np.abs(relation.data))) > 1e-9 * scale:
-            raise RuntimeError("SuperLU factors are not symmetric LDL^T")
-
-    indptr = np.ascontiguousarray(lower.indptr, dtype=np.int64)
-    indices = np.ascontiguousarray(lower.indices, dtype=np.int64)
-    values = np.ascontiguousarray(lower.data, dtype=np.float64)
-    inverse_values = np.zeros_like(values)
-    positions = np.full(n, -1, dtype=np.int64)
-    accumulator = np.zeros(n, dtype=np.float64)
-    status = _takahashi(
-        indptr, indices, values, 1.0 / lu.U.diagonal(),
-        inverse_values, positions, accumulator)
-    if status:
-        raise RuntimeError("selected inversion left the factor sparsity pattern")
-    out = np.zeros((int(cells), int(width), int(width)), dtype=np.float64)
-    permutation = np.ascontiguousarray(lu.perm_r, dtype=np.int64)
-    if _gather_diagonal_blocks(
-            indptr, indices, inverse_values, permutation,
-            int(cells), int(width), out):
-        raise RuntimeError("cell block was absent from the inverse subset")
-    return out
-
-
-def deletion_prices(lu, coefficients, channel_weights=(1.0, 1.5, 1.5)):
-    """Exact regularized-objective price of deleting each current cell."""
-    coefficients = np.asarray(coefficients, dtype=np.float64)
-    cells, width, channels = coefficients.shape
-    weights = np.asarray(channel_weights, dtype=np.float64)
-    if weights.shape != (channels,):
-        raise ValueError("one channel weight is required per coefficient channel")
-    blocks = selected_inverse_blocks(lu, cells, width)
-    schur = np.linalg.pinv(blocks)
-    prices = np.einsum(
-        "c,ikc,ikl,ilc->i", weights, coefficients, schur, coefficients)
-    return prices, blocks

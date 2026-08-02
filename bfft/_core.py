@@ -30,15 +30,16 @@ def _candidate_paths():
     env = os.environ.get("BFFT_LIBRARY")
     if env:
         yield env
-    # 2. Library bundled inside this package (the pip-install path).
-    for pat in ("_libbfft.so", "_libbfft.dylib", "_libbfft.dll"):
-        for hit in glob.glob(str(_PKG_DIR / pat)):
-            yield hit
-    # 3. A build tree next to a source checkout (editable / dev use).
+    # 2. A build tree next to a source checkout (editable / dev use). Prefer
+    # it to an older in-package artifact left by a prior local installation.
     for rel in ("../build/libbfft.so", "../build/libbfft.dylib"):
         p = _PKG_DIR / rel
         if p.exists():
             yield str(p)
+    # 3. Library bundled inside this package (the pip-install path).
+    for pat in ("_libbfft.so", "_libbfft.dylib", "_libbfft.dll"):
+        for hit in glob.glob(str(_PKG_DIR / pat)):
+            yield hit
     # 4. A system install from `make install`.
     found = ctypes.util.find_library("bfft")
     if found:
@@ -49,7 +50,12 @@ def _candidate_paths():
 
 
 def _has_required_symbols(lib: ctypes.CDLL) -> bool:
-    for name in ("bfft_plan_create", "bodft_plan_create", "bfft_stft_plan_create"):
+    for name in (
+        "bfft_plan_create",
+        "bodft_plan_create",
+        "bfft_stft_plan_create",
+        "bfft_meyer_plan_create",
+    ):
         try:
             getattr(lib, name)
         except AttributeError:
@@ -68,7 +74,8 @@ def _load_library() -> ctypes.CDLL:
         if _has_required_symbols(lib):
             return lib
         last_err = OSError(
-            f"{path} is an older BFFT library without the STFT symbols; "
+            f"{path} is an incomplete BFFT library without the core "
+            "Meyer/STFT ABI; "
             "rebuild/install the native library or set BFFT_LIBRARY to the new one"
         )
     raise OSError(
@@ -265,6 +272,12 @@ _vision_bucket_first_label = _decl_optional(
      _i64_p, _dbl_p, _flt_p,
      ctypes.c_double, ctypes.c_size_t, ctypes.c_double,
      _i32_p, _dbl_p, _i32_p, _size_p])
+_vision_bucket_two_labels = _decl_optional(
+    "bfft_vision_bucket_two_labels", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _i64_p, _dbl_p, _flt_p,
+     ctypes.c_double, ctypes.c_size_t, ctypes.c_double,
+     _i32_p, _i32_p, _dbl_p, _dbl_p, _i32_p, _size_p])
 _vision_hard_affine_fit = _decl_optional(
     "bfft_vision_hard_affine_fit", ctypes.c_int,
     [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
@@ -273,6 +286,24 @@ _vision_hard_basis_refit = _decl_optional(
     "bfft_vision_hard_basis_refit", ctypes.c_int,
     [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
      _i32_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p])
+_vision_separable_filter_f64 = _decl_optional(
+    "bfft_vision_separable_filter_f64", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     ctypes.c_size_t, ctypes.c_size_t, ctypes.c_uint8, ctypes.c_size_t,
+     _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p])
+_vision_resize_bilinear_f64 = _decl_optional(
+    "bfft_vision_resize_bilinear_f64", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _dbl_p, _dbl_p])
+_vision_sobel_f64 = _decl_optional(
+    "bfft_vision_sobel_f64", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _dbl_p, _dbl_p, _dbl_p])
+_vision_binary_dilation_cross_u8 = _decl_optional(
+    "bfft_vision_binary_dilation_cross_u8", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _u8_p, _u8_p, _u8_p])
 
 _OK = 0
 

@@ -70,6 +70,21 @@ def _metric_fields(
             geometry["boundary_xy"], dtype=np.float64)
         myy = myy + jump_squared * np.asarray(
             geometry["boundary_yy"], dtype=np.float64)
+
+    # This metric is constructed as I plus two positive-semidefinite tensor
+    # fields, so its eigenvalues are analytically at least one.  The frozen
+    # geometry is stored as float32, however, and a nearly rank-one weave can
+    # round its cross term just outside the PSD cone before the fields are
+    # promoted back to float64.  Enforce the construction's exact invariant:
+    # for M = I + [[a,b],[b,c]], a,c >= 0 and |b| <= sqrt(a*c).  Clipping only
+    # the impossible excess cross term is the nearest fixed-diagonal repair;
+    # unlike a generic eigenvalue jitter it has an objective floor of I.
+    excess_xx = np.maximum(mxx - 1.0, 0.0)
+    excess_yy = np.maximum(myy - 1.0, 0.0)
+    cross_limit = np.sqrt(excess_xx * excess_yy)
+    mxx = 1.0 + excess_xx
+    mxy = np.clip(mxy, -cross_limit, cross_limit)
+    myy = 1.0 + excess_yy
     return mxx, mxy, myy
 
 

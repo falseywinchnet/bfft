@@ -16,6 +16,7 @@ sys.path.insert(0, str(ROOT / "experiments"))
 
 from bfft._core import (
     _vision_bucket_first_label,
+    _vision_bucket_two_labels,
     _vision_fast_march_first_label,
     _vision_fast_march_labels,
     _vision_metric_edge_costs_f32,
@@ -157,6 +158,27 @@ def test_boundary_jump_adds_only_normal_crossing_action():
     assert np.allclose(mxx, 10.0)
     assert np.allclose(mxy, 0.0)
     assert np.allclose(myy, 1.0)
+
+
+def test_metric_fields_restore_the_analytic_identity_plus_psd_invariant():
+    # A nearly rank-one float32 tensor can round its cross term outside the
+    # PSD cone even though the unrounded construction is PSD. The transport
+    # metric is analytically I + Q and must remain SPD after storage.
+    one = np.ones((3, 4), dtype=np.float32)
+    geometry = {
+        "precision_xx": one,
+        "precision_xy": np.nextafter(one, np.float32(np.inf)),
+        "precision_yy": one,
+        "metric_trace_p90": 2.0,
+        "max_support_px": 1.0,
+    }
+    mxx, mxy, myy = _metric_fields(
+        geometry, metric_strength=8.0, boundary_jump_strength=0.0)
+    determinant = mxx * myy - mxy * mxy
+    assert np.all(mxx >= 1.0)
+    assert np.all(myy >= 1.0)
+    assert np.all(determinant > 0.0)
+    metric_reduced_superbase(mxx, mxy, myy)
 
 
 def test_fractional_interface_uses_local_collision_geometry():
@@ -369,6 +391,38 @@ def test_native_bucket_first_owner_matches_numba_reference_exactly():
     for key in ("labels", "distance", "parent"):
         assert np.array_equal(native[key], reference[key])
     assert native["queue_pushes"] == reference["queue_pushes"]
+
+
+def test_native_bucket_two_labels_matches_numba_reference_exactly():
+    assert _vision_bucket_two_labels is not None
+    height, width = 37, 49
+    yy, xx = np.mgrid[:height, :width]
+    costs = build_metric_edge_costs(
+        1.0 + 1.7 * np.square(np.sin((2 * xx + yy) / 13.0)),
+        0.12 * np.sin(xx / 5.0) * np.cos(yy / 8.0),
+        1.0 + 1.3 * np.square(np.cos((xx - 2 * yy) / 17.0)),
+    )
+    centers = np.array((
+        (0.08, 0.12),
+        (0.76, 0.11),
+        (0.48, 0.44),
+        (0.16, 0.83),
+        (0.91, 0.77),
+        (0.64, 0.68),
+    ))
+    native = two_label_transport.hard_partition_with_forest(centers, costs)
+    native_entry = two_label_transport.bucket_two_labels_native
+    try:
+        two_label_transport.bucket_two_labels_native = (
+            lambda *args, **kwargs: None)
+        reference = two_label_transport.hard_partition_with_forest(
+            centers, costs)
+    finally:
+        two_label_transport.bucket_two_labels_native = native_entry
+    for key in (
+        "labels", "runner", "distance", "second_distance", "parent",
+    ):
+        assert np.array_equal(native[key], reference[key])
 
 
 def test_native_geometry_edge_stencil_matches_numpy_reference_bit_exactly():

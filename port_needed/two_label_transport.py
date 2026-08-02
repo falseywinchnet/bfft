@@ -13,12 +13,26 @@ from pathlib import Path
 
 import numpy as np
 
-from bfft.vision import bucket_first_label_native
+from bfft.vision import bucket_first_label_native, bucket_two_labels_native
 
 ROOT = Path(__file__).resolve().parents[1]
-for directory in (ROOT / "viewer", ROOT / "experiments", ROOT / "experiments" / "sigma_opt"):
+for directory in (ROOT / "viewer", ROOT / "experiments"):
     if str(directory) not in sys.path:
         sys.path.insert(0, str(directory))
+
+
+def _queue_geometry(costs, reach):
+    """Input-forced exact Dial bucket width, span, and origin."""
+    finite = np.asarray(costs)[np.isfinite(costs)]
+    if finite.size == 0:
+        raise ValueError("transport costs contain no finite edge")
+    delta = float(np.min(finite))
+    widest = float(np.max(finite))
+    if not (delta > 0.0 and np.isfinite(widest)):
+        raise ValueError("transport costs must have positive finite edges")
+    span = int(np.ceil(widest / delta)) + 2
+    shift = float(np.max(reach)) + delta
+    return delta, span, shift
 
 def walk_two_labels(
     centers: np.ndarray,
@@ -40,14 +54,15 @@ def walk_two_labels(
     )
     reach = np.zeros(len(centers), dtype=np.float64)
     if queue == "bucket":
-        from experiments.sigma_opt.opt_dijkstra_bucket import (
-            _dijkstra_bucket,
-            queue_geometry,
-        )
-
         seed_pixel = seed_y.astype(np.int64) * width + seed_x.astype(np.int64)
+        delta, span, shift = _queue_geometry(costs, reach)
+        result = bucket_two_labels_native(
+            seed_pixel, reach, costs, delta, span, shift)
+        if result is not None:
+            return result[0], result[1], result[2], result[3]
+        from port_needed.monotone_bucket_transport import _dijkstra_bucket
+
         scale = np.ones(height * width, dtype=np.float64)
-        delta, span, shift = queue_geometry(costs, scale, reach)
         result = _dijkstra_bucket(
             seed_pixel, reach, costs, scale, height, width,
             delta, span, shift,
@@ -97,16 +112,16 @@ def hard_partition_with_forest(
     )
     if reach.shape != (len(centers),):
         raise ValueError("reach must have one scalar per center")
-    scale = np.ones(height * width, dtype=np.float64)
-    from experiments.sigma_opt.opt_dijkstra_bucket import (
-        _dijkstra_bucket,
-        queue_geometry,
-    )
+    delta, span, shift = _queue_geometry(costs, reach)
+    result = bucket_two_labels_native(
+        seed_pixel, reach, costs, delta, span, shift)
+    if result is None:
+        from port_needed.monotone_bucket_transport import _dijkstra_bucket
 
-    delta, span, shift = queue_geometry(costs, scale, reach)
-    result = _dijkstra_bucket(
-        seed_pixel, reach, costs, scale, height, width,
-        delta, span, shift)
+        scale = np.ones(height * width, dtype=np.float64)
+        result = _dijkstra_bucket(
+            seed_pixel, reach, costs, scale, height, width,
+            delta, span, shift)
     return {
         "labels": result[0].reshape(height, width),
         "runner": result[1].reshape(height, width),
@@ -142,16 +157,15 @@ def hard_first_partition_with_forest(
     )
     if reach.shape != (len(centers),):
         raise ValueError("reach must have one scalar per center")
-    scale = np.ones(height * width, dtype=np.float64)
-    from experiments.sigma_opt.opt_dijkstra_bucket import (
-        _dijkstra_first_bucket,
-        queue_geometry,
-    )
-
-    delta, span, shift = queue_geometry(costs, scale, reach)
+    delta, span, shift = _queue_geometry(costs, reach)
     native = bucket_first_label_native(
         seed_pixel, reach, costs, delta, span, shift)
     if native is None:
+        from port_needed.monotone_bucket_transport import (
+            _dijkstra_first_bucket,
+        )
+
+        scale = np.ones(height * width, dtype=np.float64)
         native = _dijkstra_first_bucket(
             seed_pixel,
             reach,

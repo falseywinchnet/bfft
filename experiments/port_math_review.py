@@ -378,7 +378,7 @@ def _dijkstra_bucket_pruned(seed_p, reach, base_costs, h, w,
 
 
 def port03(geometry, cell_counts=(64, 256, 1024)):
-    from experiments.sigma_opt.opt_dijkstra_bucket import (
+    from port_needed.monotone_bucket_transport import (
         _dijkstra_bucket, queue_geometry,
     )
     from scipy.special import expit
@@ -471,7 +471,7 @@ def port04(geometry, cells=512):
     from experiments.wasserstein_allocation_tree import (
         _soft_transport_moments, _edge_cost_stack, _bincount,
     )
-    from experiments.sigma_opt.opt_dijkstra_bucket import (
+    from port_needed.monotone_bucket_transport import (
         _dijkstra_bucket, queue_geometry,
     )
     from scipy.special import expit

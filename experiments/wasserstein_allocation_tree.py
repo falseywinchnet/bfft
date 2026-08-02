@@ -65,7 +65,7 @@ def _dijkstra_two_best_bucket_adapter(
     The study kernel also returns predecessor metadata used by receiver
     gradients.  Allocation needs only the first two labels and distances.
     """
-    from experiments.sigma_opt.opt_dijkstra_bucket import (
+    from port_needed.monotone_bucket_transport import (
         _dijkstra_bucket,
         queue_geometry,
     )

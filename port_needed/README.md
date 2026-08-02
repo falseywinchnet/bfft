@@ -6,6 +6,11 @@ by a C++ implementation.
 
 The canonical causal-density path is:
 
+0. `fast_image_ops.py` — Gaussian tensor smoothing, axis-specific resize
+   prefiltering, pixel-centred bilinear resize, Sobel derivatives, and cross
+   dilation. These bounded-support DSP kernels are native C++ through the
+   `bfft_vision_*_f64` image ABI; the Numba implementations are compatibility
+   references for older installed libraries.
 1. `frozen_meyer_geometry.py` — one optimized Meyer/ROF support measurement.
 2. `density_population.py` — curvature-limited tensor population and local
    parallel quantization, with no population search. The curvature kernel is
@@ -42,7 +47,10 @@ The following remain supported experimental controls:
 
 - `anisotropic_edge_cost.py`, `two_label_transport.py`,
   `soft_transport_moments.py`, `metric_instability.py`, and
-  `balanced_refill.py` implement the older simultaneous bifurcation path.
+  `balanced_refill.py` implement the older simultaneous bifurcation path. The
+  exact first-owner and owner/runner Dial walks in `two_label_transport.py`
+  are native C++; their Numba implementations remain reference fallbacks in
+  `monotone_bucket_transport.py`.
 - `reverse_residual_flow.py` implements predecessor-tree residual refill.
 - `residual_pressure_transport.py` implements conserved-population soft power
   transport under decomposition-residual pressure.

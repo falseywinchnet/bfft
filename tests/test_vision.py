@@ -2,8 +2,7 @@ import numpy as np
 from scipy.sparse.linalg import splu
 
 from bfft.vision import (assemble_normal, compact_support_operators,
-                         coownership_graph, deletion_prices,
-                         render_partition)
+                         coownership_graph, render_partition)
 
 
 def test_fused_partition_matches_explicit_design():
@@ -47,13 +46,6 @@ def test_fused_partition_matches_explicit_design():
     np.testing.assert_allclose(
         field, design @ coefficients.reshape(cells * width, 3),
         atol=2e-14, rtol=0)
-
-    prices, inverse_blocks = deletion_prices(lu, coefficients)
-    assert prices.shape == (cells,)
-    assert inverse_blocks.shape == (cells, width, width)
-    assert np.all(np.isfinite(prices))
-    assert np.all(prices >= 0.0)
-
 
 def test_compact_support_operator_matches_dense_design():
     rng = np.random.default_rng(20260727)

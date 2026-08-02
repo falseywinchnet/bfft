@@ -49,9 +49,8 @@ from .effects import (lab_to_srgb, meyer_channels, recompose,
                       recompose_channels, shade, srgb_to_lab)
 from .vision import (CoownershipGraph, SingleStageDecompositionObjective,
                      assemble_normal, compact_support_operators,
-                     coownership_graph, deletion_prices,
-                     measure_residual_ridges, render_partition,
-                     selected_inverse_blocks, vision_backend)
+                     coownership_graph, measure_residual_ridges,
+                     render_partition, vision_backend)
 
 __all__ = ["rfft", "irfft", "odft", "iodft", "fct", "meyer",
            "meyer_split", "meyer_split_conditioned_first", "meyer_trace",
@@ -65,6 +64,5 @@ __all__ = ["rfft", "irfft", "odft", "iodft", "fct", "meyer",
            "CoownershipGraph", "coownership_graph", "assemble_normal",
            "compact_support_operators",
            "render_partition", "measure_residual_ridges",
-           "selected_inverse_blocks", "deletion_prices",
            "SingleStageDecompositionObjective", "vision_backend"]
 __version__ = "1.0"

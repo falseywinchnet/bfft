@@ -27,6 +27,63 @@ bool valid_slot(std::int64_t index, std::size_t block_count) {
     return index >= 0 && static_cast<std::size_t>(index) < block_count;
 }
 
+template <typename Function>
+void parallel_ranges(
+    std::size_t tasks,
+    std::size_t work_per_task,
+    std::size_t requested_threads,
+    const Function& function) {
+    if (tasks == 0) {
+        return;
+    }
+    std::size_t workers = requested_threads;
+    if (workers == 0) {
+        workers = std::max(
+            std::size_t{1},
+            static_cast<std::size_t>(std::thread::hardware_concurrency()));
+    }
+    workers = std::min(workers, tasks);
+    workers = std::min<std::size_t>(workers, 16);
+    std::size_t work = 0;
+    if (!checked_product(tasks, work_per_task, &work) || work < 65536) {
+        workers = 1;
+    }
+    if (workers == 1) {
+        function(0, tasks);
+        return;
+    }
+    std::vector<std::thread> pool;
+    pool.reserve(workers);
+    for (std::size_t worker = 0; worker < workers; ++worker) {
+        const std::size_t begin = tasks * worker / workers;
+        const std::size_t end = tasks * (worker + 1) / workers;
+        pool.emplace_back(function, begin, end);
+    }
+    for (auto& worker : pool) {
+        worker.join();
+    }
+}
+
+std::size_t reflected_index(
+    std::ptrdiff_t index,
+    std::size_t size,
+    bool mirror_without_edge) {
+    if (size <= 1) {
+        return 0;
+    }
+    const std::ptrdiff_t extent = static_cast<std::ptrdiff_t>(size);
+    while (index < 0 || index >= extent) {
+        if (index < 0) {
+            index = mirror_without_edge ? -index : -index - 1;
+        } else {
+            index = mirror_without_edge
+                ? 2 * extent - index - 2
+                : 2 * extent - index - 1;
+        }
+    }
+    return static_cast<std::size_t>(index);
+}
+
 }  // namespace
 
 extern "C" {
@@ -1769,6 +1826,32 @@ bfft_status bfft_vision_metric_edge_costs_f32(
         }
         return value;
     };
+    const auto metric_at = [
+        &metric_component,
+        precision_xx,
+        precision_xy,
+        precision_yy
+    ](
+        std::size_t pixel,
+        const float* boundary_xx_values,
+        const float* boundary_xy_values,
+        const float* boundary_yy_values,
+        double* xx,
+        double* xy,
+        double* yy) {
+        const double raw_xx = metric_component(
+            precision_xx, boundary_xx_values, pixel, 1.0);
+        const double raw_xy = metric_component(
+            precision_xy, boundary_xy_values, pixel, 0.0);
+        const double raw_yy = metric_component(
+            precision_yy, boundary_yy_values, pixel, 1.0);
+        const double excess_xx = std::max(raw_xx - 1.0, 0.0);
+        const double excess_yy = std::max(raw_yy - 1.0, 0.0);
+        const double cross_limit = std::sqrt(excess_xx * excess_yy);
+        *xx = 1.0 + excess_xx;
+        *xy = std::max(-cross_limit, std::min(raw_xy, cross_limit));
+        *yy = 1.0 + excess_yy;
+    };
     for (std::size_t direction = 0; direction < 8; ++direction) {
         const int step_x = dx[direction];
         const int step_y = dy[direction];
@@ -1789,18 +1872,28 @@ bfft_status bfft_vision_metric_edge_costs_f32(
                         static_cast<std::int64_t>(y) + step_y) * width +
                     static_cast<std::size_t>(
                         static_cast<std::int64_t>(x) + step_x);
-                const double source_xx = metric_component(
-                    precision_xx, boundary_xx, source, 1.0);
-                const double source_xy = metric_component(
-                    precision_xy, boundary_xy, source, 0.0);
-                const double source_yy = metric_component(
-                    precision_yy, boundary_yy, source, 1.0);
-                const double receiver_xx = metric_component(
-                    precision_xx, boundary_xx, receiver, 1.0);
-                const double receiver_xy = metric_component(
-                    precision_xy, boundary_xy, receiver, 0.0);
-                const double receiver_yy = metric_component(
-                    precision_yy, boundary_yy, receiver, 1.0);
+                double source_xx = 0.0;
+                double source_xy = 0.0;
+                double source_yy = 0.0;
+                double receiver_xx = 0.0;
+                double receiver_xy = 0.0;
+                double receiver_yy = 0.0;
+                metric_at(
+                    source,
+                    boundary_xx,
+                    boundary_xy,
+                    boundary_yy,
+                    &source_xx,
+                    &source_xy,
+                    &source_yy);
+                metric_at(
+                    receiver,
+                    boundary_xx,
+                    boundary_xy,
+                    boundary_yy,
+                    &receiver_xx,
+                    &receiver_xy,
+                    &receiver_yy);
                 const double a = 0.5 * (source_xx + receiver_xx);
                 const double b = 0.5 * (source_xy + receiver_xy);
                 const double c = 0.5 * (source_yy + receiver_yy);
@@ -1950,6 +2043,221 @@ bfft_status bfft_vision_bucket_first_label(
                     parent[receiver] =
                         static_cast<std::int32_t>(pixel);
                     insert(candidate, receiver);
+                }
+            }
+            ++current;
+            ++guard;
+        }
+        *push_count = key.size();
+        return BFFT_OK;
+    } catch (const std::bad_alloc&) {
+        return BFFT_ERROR_ALLOCATION;
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+}
+
+bfft_status bfft_vision_bucket_two_labels(
+    std::size_t height,
+    std::size_t width,
+    std::size_t seed_count,
+    const std::int64_t* seed_pixel,
+    const double* reach,
+    const float* direction_costs,
+    double delta,
+    std::size_t span,
+    double shift,
+    std::int32_t* owner,
+    std::int32_t* runner,
+    double* distance,
+    double* second_distance,
+    std::int32_t* parent_first,
+    std::size_t* push_count) {
+    std::size_t pixels = 0;
+    if (height == 0 || width == 0 || seed_count == 0 ||
+        seed_count > static_cast<std::size_t>(
+            std::numeric_limits<std::int32_t>::max()) ||
+        !checked_product(height, width, &pixels) ||
+        pixels > static_cast<std::size_t>(
+            std::numeric_limits<std::int32_t>::max()) ||
+        seed_pixel == nullptr || reach == nullptr ||
+        direction_costs == nullptr || !(delta > 0.0) || span == 0 ||
+        owner == nullptr || runner == nullptr || distance == nullptr ||
+        second_distance == nullptr || parent_first == nullptr ||
+        push_count == nullptr) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    for (std::size_t site = 0; site < seed_count; ++site) {
+        if (seed_pixel[site] < 0 ||
+            static_cast<std::size_t>(seed_pixel[site]) >= pixels ||
+            !std::isfinite(reach[site])) {
+            return BFFT_ERROR_INVALID_ARGUMENT;
+        }
+    }
+
+    constexpr double infinity = 1e300;
+    constexpr double tolerance = 1e-12;
+    static constexpr int dx[8] = {0, 0, -1, 1, -1, 1, -1, 1};
+    static constexpr int dy[8] = {-1, 1, 0, 0, -1, -1, 1, 1};
+    try {
+        const std::size_t bucket_count = span + 2;
+        std::vector<std::int32_t> head(bucket_count, -1);
+        std::vector<double> key;
+        std::vector<std::int32_t> entry_pixel;
+        std::vector<std::int32_t> entry_site;
+        std::vector<std::int32_t> next;
+        std::vector<std::int32_t> parent_second(pixels, -1);
+        const std::size_t reserve = std::min(
+            pixels * 4 + 256,
+            static_cast<std::size_t>(
+                std::numeric_limits<std::int32_t>::max()));
+        key.reserve(reserve);
+        entry_pixel.reserve(reserve);
+        entry_site.reserve(reserve);
+        next.reserve(reserve);
+        std::fill(distance, distance + pixels, infinity);
+        std::fill(second_distance, second_distance + pixels, infinity);
+        std::fill(owner, owner + pixels, std::int32_t{-1});
+        std::fill(runner, runner + pixels, std::int32_t{-1});
+        std::fill(parent_first, parent_first + pixels, std::int32_t{-1});
+
+        std::size_t alive = 0;
+        const auto insert = [&] (
+            double value, std::size_t pixel, std::int32_t site) -> bool {
+            if (key.size() >= static_cast<std::size_t>(
+                    std::numeric_limits<std::int32_t>::max())) {
+                return false;
+            }
+            const std::int64_t slot = static_cast<std::int64_t>(
+                (value + shift) / delta);
+            const std::size_t bucket = static_cast<std::size_t>(
+                slot % static_cast<std::int64_t>(bucket_count));
+            const std::int32_t index =
+                static_cast<std::int32_t>(key.size());
+            key.push_back(value);
+            entry_pixel.push_back(static_cast<std::int32_t>(pixel));
+            entry_site.push_back(site);
+            next.push_back(head[bucket]);
+            head[bucket] = index;
+            ++alive;
+            return true;
+        };
+
+        for (std::size_t site_index = 0;
+             site_index < seed_count; ++site_index) {
+            const std::size_t pixel =
+                static_cast<std::size_t>(seed_pixel[site_index]);
+            const std::int32_t site =
+                static_cast<std::int32_t>(site_index);
+            const double value = -reach[site_index];
+            if (value < distance[pixel]) {
+                second_distance[pixel] = distance[pixel];
+                runner[pixel] = owner[pixel];
+                parent_second[pixel] = parent_first[pixel];
+                distance[pixel] = value;
+                owner[pixel] = site;
+                parent_first[pixel] = -1;
+            } else if (site != owner[pixel] &&
+                       value < second_distance[pixel]) {
+                second_distance[pixel] = value;
+                runner[pixel] = site;
+                parent_second[pixel] = -1;
+            }
+            if (!insert(value, pixel, site)) {
+                return BFFT_ERROR_ALLOCATION;
+            }
+        }
+
+        std::size_t current = 0;
+        std::size_t guard = 0;
+        const std::size_t limit = bucket_count * (pixels + 16);
+        while (alive > 0 && guard < limit) {
+            const std::size_t bucket = current % bucket_count;
+            std::int32_t entry = head[bucket];
+            if (entry < 0) {
+                ++current;
+                ++guard;
+                continue;
+            }
+            head[bucket] = -1;
+            while (entry >= 0) {
+                const std::size_t index =
+                    static_cast<std::size_t>(entry);
+                const double value = key[index];
+                const std::size_t pixel = static_cast<std::size_t>(
+                    entry_pixel[index]);
+                const std::int32_t site = entry_site[index];
+                entry = next[index];
+                --alive;
+                if (!(
+                    (owner[pixel] == site &&
+                     value <= distance[pixel] + tolerance) ||
+                    (runner[pixel] == site &&
+                     value <= second_distance[pixel] + tolerance))) {
+                    continue;
+                }
+
+                const std::size_t y = pixel / width;
+                const std::size_t x = pixel - y * width;
+                for (std::size_t direction = 0;
+                     direction < 8; ++direction) {
+                    const std::int64_t nx =
+                        static_cast<std::int64_t>(x) + dx[direction];
+                    const std::int64_t ny =
+                        static_cast<std::int64_t>(y) + dy[direction];
+                    if (nx < 0 || nx >= static_cast<std::int64_t>(width) ||
+                        ny < 0 || ny >= static_cast<std::int64_t>(height)) {
+                        continue;
+                    }
+                    const std::size_t receiver =
+                        static_cast<std::size_t>(ny) * width +
+                        static_cast<std::size_t>(nx);
+                    const double candidate = value + static_cast<double>(
+                        direction_costs[direction * pixels + pixel]);
+                    bool touched = false;
+                    if (owner[receiver] == site) {
+                        if (candidate + tolerance < distance[receiver]) {
+                            distance[receiver] = candidate;
+                            parent_first[receiver] =
+                                static_cast<std::int32_t>(pixel);
+                            touched = true;
+                        }
+                    } else if (runner[receiver] == site) {
+                        if (candidate + tolerance < second_distance[receiver]) {
+                            second_distance[receiver] = candidate;
+                            parent_second[receiver] =
+                                static_cast<std::int32_t>(pixel);
+                            if (second_distance[receiver] < distance[receiver]) {
+                                std::swap(
+                                    distance[receiver],
+                                    second_distance[receiver]);
+                                std::swap(owner[receiver], runner[receiver]);
+                                std::swap(
+                                    parent_first[receiver],
+                                    parent_second[receiver]);
+                            }
+                            touched = true;
+                        }
+                    } else if (candidate + tolerance < distance[receiver]) {
+                        second_distance[receiver] = distance[receiver];
+                        runner[receiver] = owner[receiver];
+                        parent_second[receiver] = parent_first[receiver];
+                        distance[receiver] = candidate;
+                        owner[receiver] = site;
+                        parent_first[receiver] =
+                            static_cast<std::int32_t>(pixel);
+                        touched = true;
+                    } else if (
+                        candidate + tolerance < second_distance[receiver]) {
+                        second_distance[receiver] = candidate;
+                        runner[receiver] = site;
+                        parent_second[receiver] =
+                            static_cast<std::int32_t>(pixel);
+                        touched = true;
+                    }
+                    if (touched && !insert(candidate, receiver, site)) {
+                        return BFFT_ERROR_ALLOCATION;
+                    }
                 }
             }
             ++current;
@@ -2300,6 +2608,296 @@ bfft_status bfft_vision_hard_basis_refit(
     } catch (...) {
         return BFFT_ERROR_INTERNAL;
     }
+}
+
+bfft_status bfft_vision_separable_filter_f64(
+    std::size_t channels,
+    std::size_t height,
+    std::size_t width,
+    std::size_t kernel_y_size,
+    std::size_t kernel_x_size,
+    std::uint8_t mirror_without_edge,
+    std::size_t thread_count,
+    const double* fields,
+    const double* kernel_y,
+    const double* kernel_x,
+    double* scratch,
+    double* output) {
+    if (channels == 0 || height == 0 || width == 0 ||
+        kernel_y_size == 0 || kernel_x_size == 0 ||
+        kernel_y_size % 2 == 0 || kernel_x_size % 2 == 0 ||
+        height > static_cast<std::size_t>(
+            std::numeric_limits<std::ptrdiff_t>::max()) ||
+        width > static_cast<std::size_t>(
+            std::numeric_limits<std::ptrdiff_t>::max()) ||
+        fields == nullptr || kernel_y == nullptr || kernel_x == nullptr ||
+        scratch == nullptr || output == nullptr || fields == scratch ||
+        fields == output || scratch == output) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    std::size_t row_tasks = 0;
+    std::size_t column_tasks = 0;
+    std::size_t values = 0;
+    if (!checked_product(channels, height, &row_tasks) ||
+        !checked_product(channels, width, &column_tasks) ||
+        !checked_product(row_tasks, width, &values)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    (void)values;
+    const std::ptrdiff_t radius_x =
+        static_cast<std::ptrdiff_t>(kernel_x_size / 2);
+    const std::ptrdiff_t radius_y =
+        static_cast<std::ptrdiff_t>(kernel_y_size / 2);
+    const bool whole_sample = mirror_without_edge != 0;
+    try {
+        parallel_ranges(
+            row_tasks, width, thread_count,
+            [&](std::size_t begin, std::size_t end) {
+                for (std::size_t row = begin; row < end; ++row) {
+                    const std::size_t channel = row / height;
+                    const std::size_t y = row - channel * height;
+                    const std::size_t base = (channel * height + y) * width;
+                    for (std::size_t x = 0; x < width; ++x) {
+                        double value = 0.0;
+                        for (std::ptrdiff_t offset = -radius_x;
+                             offset <= radius_x; ++offset) {
+                            const std::size_t source_x = reflected_index(
+                                static_cast<std::ptrdiff_t>(x) + offset,
+                                width, whole_sample);
+                            value += kernel_x[
+                                static_cast<std::size_t>(offset + radius_x)] *
+                                fields[base + source_x];
+                        }
+                        scratch[base + x] = value;
+                    }
+                }
+            });
+        parallel_ranges(
+            column_tasks, height, thread_count,
+            [&](std::size_t begin, std::size_t end) {
+                for (std::size_t column = begin; column < end; ++column) {
+                    const std::size_t channel = column / width;
+                    const std::size_t x = column - channel * width;
+                    for (std::size_t y = 0; y < height; ++y) {
+                        double value = 0.0;
+                        for (std::ptrdiff_t offset = -radius_y;
+                             offset <= radius_y; ++offset) {
+                            const std::size_t source_y = reflected_index(
+                                static_cast<std::ptrdiff_t>(y) + offset,
+                                height, whole_sample);
+                            value += kernel_y[
+                                static_cast<std::size_t>(offset + radius_y)] *
+                                scratch[
+                                    (channel * height + source_y) * width + x];
+                        }
+                        output[(channel * height + y) * width + x] = value;
+                    }
+                }
+            });
+    } catch (const std::bad_alloc&) {
+        return BFFT_ERROR_ALLOCATION;
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
+bfft_status bfft_vision_resize_bilinear_f64(
+    std::size_t channels,
+    std::size_t input_height,
+    std::size_t input_width,
+    std::size_t output_height,
+    std::size_t output_width,
+    std::size_t thread_count,
+    const double* fields,
+    double* output) {
+    if (channels == 0 || input_height == 0 || input_width == 0 ||
+        output_height == 0 || output_width == 0 ||
+        input_height > static_cast<std::size_t>(
+            std::numeric_limits<std::ptrdiff_t>::max()) ||
+        input_width > static_cast<std::size_t>(
+            std::numeric_limits<std::ptrdiff_t>::max()) ||
+        fields == nullptr || output == nullptr || fields == output) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    std::size_t input_planes = 0;
+    std::size_t output_planes = 0;
+    std::size_t input_values = 0;
+    std::size_t output_values = 0;
+    std::size_t row_tasks = 0;
+    if (!checked_product(input_height, input_width, &input_planes) ||
+        !checked_product(output_height, output_width, &output_planes) ||
+        !checked_product(channels, input_planes, &input_values) ||
+        !checked_product(channels, output_planes, &output_values) ||
+        !checked_product(channels, output_height, &row_tasks)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    (void)input_values;
+    (void)output_values;
+    const double scale_y =
+        static_cast<double>(input_height) / output_height;
+    const double scale_x =
+        static_cast<double>(input_width) / output_width;
+    try {
+        parallel_ranges(
+            row_tasks, output_width, thread_count,
+            [&](std::size_t begin, std::size_t end) {
+                for (std::size_t row = begin; row < end; ++row) {
+                    const std::size_t channel = row / output_height;
+                    const std::size_t y = row - channel * output_height;
+                    const double source_y = (y + 0.5) * scale_y - 0.5;
+                    const auto raw_y0 = static_cast<std::ptrdiff_t>(
+                        std::floor(source_y));
+                    const double fraction_y = source_y - raw_y0;
+                    const std::size_t y0 = reflected_index(
+                        raw_y0, input_height, true);
+                    const std::size_t y1 = reflected_index(
+                        raw_y0 + 1, input_height, true);
+                    const double* plane = fields + channel * input_planes;
+                    double* target = output + channel * output_planes +
+                        y * output_width;
+                    for (std::size_t x = 0; x < output_width; ++x) {
+                        const double source_x =
+                            (x + 0.5) * scale_x - 0.5;
+                        const auto raw_x0 = static_cast<std::ptrdiff_t>(
+                            std::floor(source_x));
+                        const double fraction_x = source_x - raw_x0;
+                        const std::size_t x0 = reflected_index(
+                            raw_x0, input_width, true);
+                        const std::size_t x1 = reflected_index(
+                            raw_x0 + 1, input_width, true);
+                        const double top =
+                            (1.0 - fraction_x) * plane[y0 * input_width + x0] +
+                            fraction_x * plane[y0 * input_width + x1];
+                        const double bottom =
+                            (1.0 - fraction_x) * plane[y1 * input_width + x0] +
+                            fraction_x * plane[y1 * input_width + x1];
+                        target[x] =
+                            (1.0 - fraction_y) * top + fraction_y * bottom;
+                    }
+                }
+            });
+    } catch (const std::bad_alloc&) {
+        return BFFT_ERROR_ALLOCATION;
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
+bfft_status bfft_vision_sobel_f64(
+    std::size_t channels,
+    std::size_t height,
+    std::size_t width,
+    std::size_t thread_count,
+    const double* fields,
+    double* gradient_x,
+    double* gradient_y) {
+    if (channels == 0 || height == 0 || width == 0 || fields == nullptr ||
+        gradient_x == nullptr || gradient_y == nullptr ||
+        fields == gradient_x || fields == gradient_y ||
+        gradient_x == gradient_y) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    std::size_t plane = 0;
+    std::size_t values = 0;
+    std::size_t row_tasks = 0;
+    if (!checked_product(height, width, &plane) ||
+        !checked_product(channels, plane, &values) ||
+        !checked_product(channels, height, &row_tasks)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    (void)values;
+    try {
+        parallel_ranges(
+            row_tasks, width, thread_count,
+            [&](std::size_t begin, std::size_t end) {
+                for (std::size_t row = begin; row < end; ++row) {
+                    const std::size_t channel = row / height;
+                    const std::size_t y = row - channel * height;
+                    const std::size_t above = y == 0 ? 0 : y - 1;
+                    const std::size_t below =
+                        std::min(y + 1, height - 1);
+                    const double* source = fields + channel * plane;
+                    double* gx = gradient_x + channel * plane + y * width;
+                    double* gy = gradient_y + channel * plane + y * width;
+                    for (std::size_t x = 0; x < width; ++x) {
+                        const std::size_t left = x == 0 ? 0 : x - 1;
+                        const std::size_t right =
+                            std::min(x + 1, width - 1);
+                        gx[x] = (
+                            source[above * width + right] +
+                            2.0 * source[y * width + right] +
+                            source[below * width + right] -
+                            source[above * width + left] -
+                            2.0 * source[y * width + left] -
+                            source[below * width + left]) / 8.0;
+                        gy[x] = (
+                            source[below * width + left] +
+                            2.0 * source[below * width + x] +
+                            source[below * width + right] -
+                            source[above * width + left] -
+                            2.0 * source[above * width + x] -
+                            source[above * width + right]) / 8.0;
+                    }
+                }
+            });
+    } catch (const std::bad_alloc&) {
+        return BFFT_ERROR_ALLOCATION;
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
+bfft_status bfft_vision_binary_dilation_cross_u8(
+    std::size_t height,
+    std::size_t width,
+    std::size_t iterations,
+    std::size_t thread_count,
+    const std::uint8_t* mask,
+    std::uint8_t* scratch,
+    std::uint8_t* output) {
+    if (height == 0 || width == 0 || mask == nullptr || scratch == nullptr ||
+        output == nullptr || mask == scratch || mask == output ||
+        scratch == output) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    std::size_t pixels = 0;
+    if (!checked_product(height, width, &pixels)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    std::copy(mask, mask + pixels, output);
+    std::uint8_t* source = output;
+    std::uint8_t* target = scratch;
+    try {
+        for (std::size_t iteration = 0; iteration < iterations; ++iteration) {
+            parallel_ranges(
+                height, width, thread_count,
+                [&](std::size_t begin, std::size_t end) {
+                    for (std::size_t y = begin; y < end; ++y) {
+                        for (std::size_t x = 0; x < width; ++x) {
+                            const std::size_t p = y * width + x;
+                            target[p] = static_cast<std::uint8_t>(
+                                source[p] != 0 ||
+                                (y > 0 && source[p - width] != 0) ||
+                                (y + 1 < height && source[p + width] != 0) ||
+                                (x > 0 && source[p - 1] != 0) ||
+                                (x + 1 < width && source[p + 1] != 0));
+                        }
+                    }
+                });
+            std::swap(source, target);
+        }
+        if (source != output) {
+            std::copy(source, source + pixels, output);
+        }
+    } catch (const std::bad_alloc&) {
+        return BFFT_ERROR_ALLOCATION;
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
 }
 
 }  // extern "C"
