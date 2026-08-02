@@ -138,7 +138,6 @@ python viewer/profile_segmenting_veroni.py /path/to/image.png \
 
 The model and performance rationale are documented in
 [`TRANSPORT_CELL_MATH.md`](TRANSPORT_CELL_MATH.md),
-[`TRANSPORT_VORONOI.md`](TRANSPORT_VORONOI.md), and
 [`../notes/FLOW_VOLUME_NUCLEATION.md`](../notes/FLOW_VOLUME_NUCLEATION.md),
 [`../notes/CURVATURE_AND_SOFT_SUPPORT.md`](../notes/CURVATURE_AND_SOFT_SUPPORT.md),
 [`../notes/NATIVE_SEGMENTING_VIEWER_ROUND.md`](../notes/NATIVE_SEGMENTING_VIEWER_ROUND.md),
@@ -146,9 +145,8 @@ The model and performance rationale are documented in
 [`../notes/HD_SEGMENTATION_PERFORMANCE.md`](../notes/HD_SEGMENTATION_PERFORMANCE.md).
 `segmenting_veroni_app.py` is the current implementation module.
 `transport_measure_app.py` retains the canopy/static-overlap research
-controls, and `transport_voronoi_app.py` retains the previous iterative
-laboratory. The `segmenting_veroni_viewer.py` filename is the stable
-user-facing entry point. Algorithms awaiting native ports are separated under
+controls. The `segmenting_veroni_viewer.py` filename is the stable user-facing
+entry point. Algorithms awaiting native ports are separated under
 [`../port_needed`](../port_needed/README.md).
 
 ## Segmenting version 3.0 experiment

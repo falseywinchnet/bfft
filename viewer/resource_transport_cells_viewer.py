@@ -4,8 +4,8 @@
 Run:
     .venv/bin/python viewer/resource_transport_cells_viewer.py
 
-This viewer is intentionally separate from ``transport_voronoi_app.py``.
-It exposes the validated experiment without changing the canonical viewer.
+This viewer exposes the validated experiment without changing the canonical
+viewer.
 """
 
 from __future__ import annotations

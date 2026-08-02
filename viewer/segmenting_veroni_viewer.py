@@ -2,8 +2,8 @@
 """Canonical BFFT image-segmentation viewer.
 
 This deliberately preserves the requested ``veroni`` filename.  The former
-canopy and iterative laboratories remain directly runnable as
-``viewer/transport_measure_app.py`` and ``viewer/transport_voronoi_app.py``.
+canopy laboratory remains directly runnable as
+``viewer/transport_measure_app.py``.
 
 Run from the repository root:
 

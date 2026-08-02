@@ -208,9 +208,14 @@ runner-up field:
    exactly; only the unused runner and second distance are omitted.
 2. A residual split has exactly two children inside one established texture
    cell. Their squared-distance difference under a frozen 2-D metric is a
-   linear half-space test. The default evaluates that paired metric directly
-   at each incident pixel instead of launching a constrained Dijkstra. The
-   former local-eikonal remarch remains in the viewer as a quality control.
+   linear half-space test. Full jump-measure mode retains the spatially
+   varying paired-metric control. In reduced legacy-one-pass mode, the tensor
+   is instead integrated along the literal child-site chord by two-point
+   Gauss--Legendre quadrature and frozen for that pair. This prevents the
+   first resolvent's transverse tail from bending the supposed bisector while
+   retaining the symmetric Gauss chord measure. It needs two tensor lookups
+   per split pair rather than a tensor fetch per incident pixel. The former
+   local-eikonal remarch remains in the viewer as a quality control.
 3. Best-neighbour merge nominations use scatter reductions and one union-find
    edge scan rather than a Python adjacency loop or iterative region descent.
 4. Nested mode reuses its already-computed boundary tensor for the cell frame
@@ -226,6 +231,15 @@ including the stronger affine component merge and interface correction.
 The viewer exposes split metric strength and the legacy remarch so the small
 speed/geometry trade remains measurable.
 
+The motivating 256 x 256 Downloads-cameraman failure was the inner face of
+the right tripod leg immediately above the brace. Its parent was already
+correctly selected at 371 times the robust mean-error baseline, but the
+pointwise metric produced 37/102-pixel children and left the larger child at
+`1.08e-2` mean RGB error. The frozen chord produces an 81/58 division, lowers
+the two child errors to `3.62e-3` and `6.21e-3`, and raises fast reconstruction
+from 36.80 to 37.35 dB. Inner/outer flank peak errors fall from approximately
+0.180/0.102 to 0.115/0.074. Full mode is byte-for-byte unchanged.
+
 After split/merge, a single one-pixel interface band is refreshed only where
 both full-resolution boundary confidence and incident residual ratio are
 high. This addresses contours such as dark hair against a fine striped wall:
@@ -237,10 +251,20 @@ unioning immutable pieces.
 
 Version 3 no longer calls or eagerly loads `scipy.ndimage`, `skimage`, or the
 legacy SciPy-backed transport viewer. Gaussian smoothing, Sobel derivatives,
-cross dilation, and anti-aliased linear resize use cached compiled kernels in
-`port_needed/fast_image_ops.py`. The resize agrees with the former
-`skimage.transform.resize` result to floating-point roundoff, including its
-whole-sample reflected boundary.
+cross dilation, and anti-aliased linear resize are native C++ vision kernels,
+dispatched by `port_needed/fast_image_ops.py`. Older installed libraries retain
+the former cached Numba references as fallbacks. The resize agrees with the
+former `skimage.transform.resize` result to floating-point roundoff, including
+its whole-sample reflected boundary; ordinary Gaussian smoothing retains its
+distinct half-sample boundary convention.
+
+On a cold 3x256x320 synthetic batch, import plus the first Gaussian, Sobel,
+half-size resize, and four-pass dilation took about 0.44 s through the native
+path versus 2.44 s when an older library forced all five Numba specializations.
+The native calls leave every fallback signature uncompiled. A source checkout
+also rejects stale build libraries missing the Meyer ABI before selecting a
+candidate, so a partial local artifact cannot silently shadow the working
+package.
 
 These Gaussian supports are only 7--25 taps wide. A direct batched separable
 pass moves less data than padding every row and column to a power of two,
@@ -308,6 +332,15 @@ same first-owner shortest paths, predecessor forest, input-derived queue
 geometry, and deterministic insertion order as its Numba reference. The
 native first-owner kernel is bit-exact with that reference and omits the
 runner-up state that the v3 hierarchy never consumes.
+
+The retained nested/control path that does consume runner-up distance now
+uses a second native Dial kernel. It returns owner, runner, both distances,
+and the winning predecessor in one walk and is bit-exact with the former
+Numba reference. Consequently a normal native V3 build no longer imports the
+old sigma optimization module merely to compile its queue.
+On a cold 128x160, 600-site synthetic walk, import plus the first native
+owner/runner solve took about 0.52 s versus 1.85 s when the Numba reference
+was forced with an empty cache.
 
 A characteristic site's circular core is also required to fit inside its
 average allocation cell. When
