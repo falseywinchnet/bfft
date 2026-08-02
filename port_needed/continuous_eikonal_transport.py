@@ -19,6 +19,7 @@ import numpy as np
 from bfft.vision import (
     fast_march_first_label_native,
     fast_march_labels_native,
+    prepare_continuous_metric_native,
 )
 
 from .metric_reduced_stencil import metric_reduced_superbase
@@ -710,16 +711,33 @@ def prepare_continuous_metric(
     mxy = np.ascontiguousarray(mxy, dtype=np.float64)
     myy = np.ascontiguousarray(myy, dtype=np.float64)
     superbase = metric_reduced_superbase(mxx, mxy, myy)
-    directions = ordered_local_directions(superbase)
-    inverse_offset, inverse_receiver = inverse_incidence(directions)
-    direction_costs, direction_valid = _integrated_segment_geometry(
-        directions,
+    native = prepare_continuous_metric_native(
+        superbase,
         mxx,
         mxy,
         myy,
-        max(float(consistency_limit), 1.0),
+        consistency_limit=max(float(consistency_limit), 1.0),
     )
-    cardinal_costs = _cardinal_segment_costs(mxx, mxy, myy)
+    if native is None:
+        directions = ordered_local_directions(superbase)
+        inverse_offset, inverse_receiver = inverse_incidence(directions)
+        direction_costs, direction_valid = _integrated_segment_geometry(
+            directions,
+            mxx,
+            mxy,
+            myy,
+            max(float(consistency_limit), 1.0),
+        )
+        cardinal_costs = _cardinal_segment_costs(mxx, mxy, myy)
+    else:
+        (
+            directions,
+            direction_costs,
+            direction_valid,
+            cardinal_costs,
+            inverse_offset,
+            inverse_receiver,
+        ) = native
     return {
         "mxx": mxx,
         "mxy": mxy,
@@ -740,6 +758,7 @@ def continuous_first_partition_prepared(
     reach: np.ndarray | None = None,
     *,
     compact: bool = False,
+    source_gradients: bool = True,
 ) -> dict[str, np.ndarray]:
     """Solve a multi-source front using a precomputed local metric mesh."""
     mxx = prepared["mxx"]
@@ -812,6 +831,7 @@ def continuous_first_partition_prepared(
         np.ascontiguousarray(seed_gradient_x, dtype=np.float64),
         np.ascontiguousarray(seed_gradient_y, dtype=np.float64),
         prepared,
+        source_gradients=source_gradients,
     )
     if native is None:
         native = _fast_march_first_label(
@@ -844,13 +864,11 @@ def continuous_first_partition_prepared(
         push_count,
         maximum_heap_size,
     ) = native
-    return {
+    result = {
         "labels": owner.reshape(height, width),
         "distance": distance.reshape(height, width),
         "gradient_x": gradient_x.reshape(height, width),
         "gradient_y": gradient_y.reshape(height, width),
-        "source_gradient_x": source_gradient_x.reshape(height, width),
-        "source_gradient_y": source_gradient_y.reshape(height, width),
         "parent_first": parent_first.reshape(height, width),
         "parent_second": parent_second.reshape(height, width),
         "parent_fraction": parent_fraction.reshape(height, width),
@@ -860,6 +878,12 @@ def continuous_first_partition_prepared(
         "superbase": prepared["superbase"],
         "directions": prepared["directions"],
     }
+    if source_gradient_x is not None:
+        result["source_gradient_x"] = source_gradient_x.reshape(
+            height, width)
+        result["source_gradient_y"] = source_gradient_y.reshape(
+            height, width)
+    return result
 
 
 def continuous_first_partition(

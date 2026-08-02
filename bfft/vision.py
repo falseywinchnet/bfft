@@ -27,6 +27,7 @@ from ._core import (
     _vision_fast_march_first_label,
     _vision_fast_march_labels,
     _vision_metric_edge_costs_f32,
+    _vision_prepare_continuous_metric,
     _vision_hard_affine_fit,
     _vision_hard_basis_refit,
     _vision_binary_dilation_cross_u8,
@@ -279,6 +280,56 @@ def soft_support_diffuse_native(
     return output[..., 0] if scalar else output
 
 
+def prepare_continuous_metric_native(
+    superbase, mxx, mxy, myy, *, consistency_limit=1.75,
+):
+    """Prepare one continuous-march stencil/CSR bundle natively."""
+    if _vision_prepare_continuous_metric is None:
+        return None
+    vectors = np.ascontiguousarray(superbase, dtype=np.int32)
+    a = np.ascontiguousarray(mxx, dtype=np.float64)
+    b = np.ascontiguousarray(mxy, dtype=np.float64)
+    c = np.ascontiguousarray(myy, dtype=np.float64)
+    if not (a.ndim == 2 and a.shape == b.shape == c.shape):
+        raise ValueError("continuous metric fields must share one 2-D shape")
+    height, width = a.shape
+    if vectors.shape != (height, width, 3, 2):
+        raise ValueError("continuous superbases must have shape HxWx3x2")
+    pixels = height * width
+    directions = np.empty((height, width, 6, 2), dtype=np.int32)
+    direction_costs = np.empty((height, width, 6), dtype=np.float64)
+    direction_valid = np.empty((height, width, 6), dtype=np.bool_)
+    cardinal_costs = np.empty((height, width, 4), dtype=np.float64)
+    inverse_offset = np.empty(pixels + 1, dtype=np.int64)
+    inverse_receiver = np.empty(10 * pixels, dtype=np.int32)
+    inverse_count = ctypes.c_size_t()
+    _check(_vision_prepare_continuous_metric(
+        height,
+        width,
+        max(float(consistency_limit), 1.0),
+        _ptr(vectors, ctypes.c_int32),
+        _ptr(a, ctypes.c_double),
+        _ptr(b, ctypes.c_double),
+        _ptr(c, ctypes.c_double),
+        _ptr(directions, ctypes.c_int32),
+        _ptr(direction_costs, ctypes.c_double),
+        _ptr(direction_valid, ctypes.c_uint8),
+        _ptr(cardinal_costs, ctypes.c_double),
+        _ptr(inverse_offset, ctypes.c_int64),
+        inverse_receiver.size,
+        _ptr(inverse_receiver, ctypes.c_int32),
+        ctypes.byref(inverse_count),
+    ), "bfft_vision_prepare_continuous_metric")
+    return (
+        directions,
+        direction_costs,
+        direction_valid,
+        cardinal_costs,
+        inverse_offset,
+        inverse_receiver[:inverse_count.value],
+    )
+
+
 def fast_march_first_label_native(
     seed_pixel,
     seed_value,
@@ -286,6 +337,8 @@ def fast_march_first_label_native(
     seed_gradient_x,
     seed_gradient_y,
     prepared,
+    *,
+    source_gradients=True,
 ):
     """Run the exact native continuous first-arrival walk when available.
 
@@ -346,8 +399,10 @@ def fast_march_first_label_native(
     distance = np.empty(pixels, dtype=np.float64)
     gradient_x = np.empty(pixels, dtype=np.float64)
     gradient_y = np.empty(pixels, dtype=np.float64)
-    source_gradient_x = np.empty(pixels, dtype=np.float64)
-    source_gradient_y = np.empty(pixels, dtype=np.float64)
+    source_gradient_x = (
+        np.empty(pixels, dtype=np.float64) if source_gradients else None)
+    source_gradient_y = (
+        np.empty(pixels, dtype=np.float64) if source_gradients else None)
     parent_first = np.empty(pixels, dtype=np.int32)
     parent_second = np.empty(pixels, dtype=np.int32)
     parent_fraction = np.empty(pixels, dtype=np.float64)
@@ -378,8 +433,14 @@ def fast_march_first_label_native(
         _ptr(distance, ctypes.c_double),
         _ptr(gradient_x, ctypes.c_double),
         _ptr(gradient_y, ctypes.c_double),
-        _ptr(source_gradient_x, ctypes.c_double),
-        _ptr(source_gradient_y, ctypes.c_double),
+        (
+            _ptr(source_gradient_x, ctypes.c_double)
+            if source_gradient_x is not None else None
+        ),
+        (
+            _ptr(source_gradient_y, ctypes.c_double)
+            if source_gradient_y is not None else None
+        ),
         _ptr(parent_first, ctypes.c_int32),
         _ptr(parent_second, ctypes.c_int32),
         _ptr(parent_fraction, ctypes.c_double),

@@ -213,6 +213,22 @@ bfft_status bfft_vision_soft_support_diffuse(
     double* output, double* scratch);
 
 /*
+   Prepare the fixed receiver-local data for one continuous FM-LBR march.
+   superbase is HxWx3x2. The routine emits cyclic HxWx6x2 directions,
+   integrated direction costs/validity, HxWx4 cardinal costs, and the exact
+   accepted-vertex-to-receiver CSR used by the marcher. inverse_receiver has
+   inverse_capacity entries; 10*H*W is always sufficient.
+*/
+bfft_status bfft_vision_prepare_continuous_metric(
+    size_t height, size_t width, double consistency_limit,
+    const int32_t* superbase,
+    const double* mxx, const double* mxy, const double* myy,
+    int32_t* directions, double* direction_costs,
+    uint8_t* direction_valid, double* cardinal_costs,
+    int64_t* inverse_offset, size_t inverse_capacity,
+    int32_t* inverse_receiver, size_t* inverse_count);
+
+/*
    Exact one-label anisotropic fast march used by the continuous transport
    partition. The receiver-local stencil has six cyclic directions and four
    cardinal connectivity edges. inverse_offset/inverse_receiver is the CSR

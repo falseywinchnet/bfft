@@ -289,14 +289,15 @@ def _view(result, name):
     if name == "Texture micro IDs":
         return _owner_colours(result["texture_labels"])
     if name == "Compound one-sided IDs":
-        compound = result["compound_segmentation"]
+        compound = _ensure_compound_segmentation(result)
         if not compound["enabled"]:
             return _owner_colours(result["texture_labels"])
         return _owner_colours(compound["labels"])
     if name in ("Posterized family average", "Posterized family dither"):
+        compound = _ensure_compound_segmentation(result)
         poster = result["region_posterization"]
         if not poster["enabled"]:
-            return _owner_colours(result["compound_segmentation"]["labels"])
+            return _owner_colours(compound["labels"])
         from experiments.region_posterization import (
             render_posterization_level,
         )
@@ -307,9 +308,10 @@ def _view(result, name):
             hard=name == "Posterized family dither",
         )
     if name == "Third-order family IDs":
+        compound = _ensure_compound_segmentation(result)
         fusion = result["region_family_fusion"]
         if not fusion["enabled"]:
-            return _owner_colours(result["compound_segmentation"]["labels"])
+            return _owner_colours(compound["labels"])
         return _owner_colours(fusion["labels"])
     if name == "Structural soft IDs":
         if "structural_soft_ids" not in result:
@@ -337,6 +339,30 @@ def _view(result, name):
     if name == "Residual error":
         return _scalar_map(result["residual_energy"])
     raise ValueError(f"unknown v3 view {name!r}")
+
+
+def _ensure_compound_segmentation(result):
+    """Materialize the display-only compound quotient on first demand."""
+    compound = result["compound_segmentation"]
+    if compound["enabled"]:
+        return compound
+    from experiments.compound_segment_quotient import (
+        build_compound_segment_quotient,
+    )
+
+    geometry = result.get("texture_geometry")
+    compound = build_compound_segment_quotient(
+        result["texture_labels"],
+        result["target_lab"],
+        result["reconstruction_lab"],
+        boundary_confidence=(
+            None if geometry is None else geometry["boundary_confidence"]
+        ),
+    )
+    result["compound_segmentation"] = compound
+    result["timing"]["compound_segmentation_ms"] = float(
+        compound["milliseconds"])
+    return compound
 
 
 def refresh():
@@ -424,6 +450,15 @@ def _config():
         "Continuous control": "continuous",
         "Full bucket graph": "bucket_graph",
     }[dpg.get_value("v3_structural_transport")]
+    posterization = bool(dpg.get_value("v3_region_posterization"))
+    family_fusion = bool(dpg.get_value("v3_region_family_fusion"))
+    selected_view = dpg.get_value("v3_view")
+    compound_view = selected_view in (
+        "Compound one-sided IDs",
+        "Posterized family average",
+        "Posterized family dither",
+        "Third-order family IDs",
+    )
     return SegmentingV3Config(
         structural_topology=structural_topology,
         structural_full_transport=structural_transport,
@@ -501,15 +536,14 @@ def _config():
         eikonal_metric_strength=float(dpg.get_value("v3_eikonal_strength")),
         offset_bins=int(dpg.get_value("v3_offset_bins")),
         ridge_kappa=float(dpg.get_value("v3_ridge_kappa")),
-        compound_segmentation=True,
-        region_posterization=bool(
-            dpg.get_value("v3_region_posterization")),
+        compound_segmentation=(
+            bool(compound_view) or posterization or family_fusion),
+        region_posterization=posterization,
         region_posterization_depth=int(
             dpg.get_value("v3_posterization_depth")),
         region_posterization_histogram_side=int(
             dpg.get_value("v3_posterization_histogram_side")),
-        region_family_fusion=bool(
-            dpg.get_value("v3_region_family_fusion")),
+        region_family_fusion=family_fusion,
         threads=int(dpg.get_value("v3_threads")),
     )
 

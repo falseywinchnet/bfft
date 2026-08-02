@@ -1593,26 +1593,44 @@ def _nested_texture_partition(
     return labels, centers, geometry, forest, diagnostic
 
 
+@_compile
+def _centers_from_labels_kernel(
+    labels: np.ndarray,
+    measure: np.ndarray,
+    cells: int,
+) -> np.ndarray:
+    """Fuse weighted mass and both moments into one row-major traversal."""
+    height, width = labels.shape
+    mass = np.zeros(cells, dtype=np.float64)
+    center_x = np.zeros(cells, dtype=np.float64)
+    center_y = np.zeros(cells, dtype=np.float64)
+    for y in range(height):
+        for x in range(width):
+            cell = labels[y, x]
+            weight = max(measure[y, x], 0.0) + 1e-12
+            mass[cell] += weight
+            center_x[cell] += weight * (x + 0.5)
+            center_y[cell] += weight * (y + 0.5)
+    output = np.empty((cells, 2), dtype=np.float64)
+    for cell in range(cells):
+        denominator = max(mass[cell], 1e-30)
+        output[cell, 0] = center_x[cell] / denominator / width
+        output[cell, 1] = center_y[cell] / denominator / height
+    return output
+
+
 def _centers_from_labels(
     labels: np.ndarray,
     measure: np.ndarray,
 ) -> np.ndarray:
     """Return one support-weighted, normalized center for every compact ID."""
-    flat = np.asarray(labels, dtype=np.int32).ravel()
-    cells = int(np.max(flat)) + 1
-    height, width = labels.shape
-    y, x = np.mgrid[:height, :width]
-    weight = np.maximum(
-        np.asarray(measure, dtype=np.float64).ravel(), 0.0) + 1e-12
-    mass = np.bincount(flat, weights=weight, minlength=cells)
-    center_x = np.bincount(
-        flat, weights=weight * (x.ravel() + 0.5), minlength=cells)
-    center_y = np.bincount(
-        flat, weights=weight * (y.ravel() + 0.5), minlength=cells)
-    return np.column_stack((
-        center_x / np.maximum(mass, 1e-30) / width,
-        center_y / np.maximum(mass, 1e-30) / height,
-    ))
+    label_field = np.ascontiguousarray(labels, dtype=np.int32)
+    cells = int(np.max(label_field)) + 1
+    return _centers_from_labels_kernel(
+        label_field,
+        np.ascontiguousarray(measure, dtype=np.float64),
+        cells,
+    )
 
 
 def _centers_after_collapse(
@@ -2087,7 +2105,16 @@ def _joint_leaf_collapse(
     if pairs.size:
         first, second = pairs[:, 0], pairs[:, 1]
         union_gram = gram[first] + gram[second]
-        condition = np.linalg.cond(union_gram)
+        # These are symmetric positive-semidefinite Gram blocks. A general
+        # batched SVD computes two unused singular-vector matrices for every
+        # candidate edge. Their absolute eigenvalues are the same singular
+        # values, so the Hermitian route is the identical 2-norm condition
+        # number without that cubic baggage.
+        eigenvalue = np.abs(np.linalg.eigvalsh(union_gram))
+        condition = (
+            np.max(eigenvalue, axis=1)
+            / np.maximum(np.min(eigenvalue, axis=1), 1e-300)
+        )
         ridge = (
             np.finfo(np.float64).eps
             * np.maximum(count[first] + count[second], 1.0)
@@ -2896,7 +2923,11 @@ def _canonical_v2_scaffold(
             config.boundary_jump_strength,
         ))
         allocation_forest = continuous_first_partition_prepared(
-            centers, allocation_metric)
+            centers,
+            allocation_metric,
+            compact=(effective_passes == 0),
+            source_gradients=False,
+        )
 
     characteristic_trace = []
     for iteration in range(effective_passes):
@@ -2910,6 +2941,7 @@ def _canonical_v2_scaffold(
                     config.structural_characteristic_trust_fraction),
                 core_radius_px=(
                     config.structural_characteristic_core_radius),
+                compact_result=(iteration + 1 >= effective_passes),
             )
         )
         diagnostic["iteration"] = iteration + 1
@@ -3513,6 +3545,7 @@ def build_segmenting_v3(
         "eikonal" if geometry_mode == "owner_eikonal" else "straight")
     result = {
         "source_rgb": rgb,
+        "target_lab": target_lab,
         "cartoon_lab": cartoon_lab,
         "lifted_cartoon_lab": lifted_cartoon_lab,
         "reconstruction_rgb": reconstruction_rgb,

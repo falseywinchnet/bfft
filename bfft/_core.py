@@ -243,6 +243,12 @@ _vision_soft_support_diffuse = _decl_optional(
      ctypes.c_size_t,
      ctypes.c_double, _dbl_p, _dbl_p, _dbl_p, _dbl_p, _dbl_p,
      _dbl_p, _dbl_p])
+_vision_prepare_continuous_metric = _decl_optional(
+    "bfft_vision_prepare_continuous_metric", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_double,
+     _i32_p, _dbl_p, _dbl_p, _dbl_p,
+     _i32_p, _dbl_p, _u8_p, _dbl_p,
+     _i64_p, ctypes.c_size_t, _i32_p, _size_p])
 _vision_fast_march_first_label = _decl_optional(
     "bfft_vision_fast_march_first_label", ctypes.c_int,
     [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,

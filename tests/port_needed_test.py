@@ -335,6 +335,33 @@ def test_native_first_arrival_matches_reference_walk_field_by_field():
     assert native["front_maximum_heap"] == reference["front_maximum_heap"]
 
 
+def test_native_continuous_metric_preparation_matches_reference_exactly():
+    height, width = 37, 49
+    yy, xx = np.mgrid[:height, :width]
+    mxx = 1.0 + 7.0 * np.square(np.sin((xx + yy) / 13.0))
+    mxy = 0.42 * np.sin(xx / 7.0) * np.cos(yy / 9.0)
+    myy = 1.0 + 6.0 * np.square(np.cos((xx - yy) / 15.0))
+    native_entry = continuous_transport.prepare_continuous_metric_native
+    assert native_entry is not None
+    try:
+        continuous_transport.prepare_continuous_metric_native = (
+            lambda *args, **kwargs: None)
+        reference = prepare_continuous_metric(mxx, mxy, myy)
+    finally:
+        continuous_transport.prepare_continuous_metric_native = native_entry
+    native = prepare_continuous_metric(mxx, mxy, myy)
+    for key in (
+        "superbase",
+        "directions",
+        "direction_costs",
+        "direction_valid",
+        "cardinal_costs",
+        "inverse_offset",
+        "inverse_receiver",
+    ):
+        assert np.array_equal(native[key], reference[key])
+
+
 def test_compact_native_first_arrival_is_exact_owner_distance_projection():
     assert _vision_fast_march_labels is not None
     height, width = 31, 43
@@ -359,6 +386,37 @@ def test_compact_native_first_arrival_is_exact_owner_distance_projection():
     assert np.array_equal(compact["distance"], full["distance"])
     assert compact["front_pushes"] == full["front_pushes"]
     assert compact["front_maximum_heap"] == full["front_maximum_heap"]
+
+
+def test_native_first_arrival_can_omit_unused_source_gradients_exactly():
+    assert _vision_fast_march_first_label is not None
+    height, width = 27, 39
+    yy, xx = np.mgrid[:height, :width]
+    prepared = prepare_continuous_metric(
+        1.0 + 1.7 * np.square(np.sin((xx + yy) / 10.0)),
+        0.16 * np.sin(xx / 8.0) * np.cos(yy / 6.0),
+        1.0 + 1.3 * np.square(np.cos((xx - yy) / 12.0)),
+    )
+    centers = np.array(((0.14, 0.17), (0.79, 0.20), (0.51, 0.74)))
+    full = continuous_transport.continuous_first_partition_prepared(
+        centers, prepared)
+    projected = continuous_transport.continuous_first_partition_prepared(
+        centers, prepared, source_gradients=False)
+    assert "source_gradient_x" not in projected
+    assert "source_gradient_y" not in projected
+    for key in (
+        "labels",
+        "distance",
+        "gradient_x",
+        "gradient_y",
+        "parent_first",
+        "parent_second",
+        "parent_fraction",
+        "acceptance_order",
+    ):
+        assert np.array_equal(projected[key], full[key])
+    assert projected["front_pushes"] == full["front_pushes"]
+    assert projected["front_maximum_heap"] == full["front_maximum_heap"]
 
 
 def test_native_bucket_first_owner_matches_numba_reference_exactly():

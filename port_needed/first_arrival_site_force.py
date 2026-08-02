@@ -384,6 +384,7 @@ def safe_characteristic_site_step(
     core_radius_px: float = 3.0,
     maximum_trials: int = 1,
     armijo_fraction: float = 1e-4,
+    compact_result: bool = False,
 ) -> tuple[np.ndarray, dict[str, np.ndarray], dict]:
     """Take one topology-safe reverse-characteristic position step.
 
@@ -487,7 +488,10 @@ def safe_characteristic_site_step(
         proposed[:, 1] = np.clip(
             proposed[:, 1], 0.5 / height, 1.0 - 0.5 / height)
         marched = continuous_first_partition_prepared(
-            proposed, prepared_metric)
+            proposed,
+            prepared_metric,
+            compact=bool(compact_result),
+        )
         alive = np.bincount(
             marched["labels"].ravel(), minlength=cells) > 0
         value = float(np.sum(
