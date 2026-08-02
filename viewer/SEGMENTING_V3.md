@@ -395,6 +395,22 @@ truncation at structural interfaces. They are algebraic pixel columns in the
 existing refit: no per-cell model selection, offset measurement, or added fit
 stage is performed.
 
+The two measured normal traces also define a finite-band parity
+
+```
+q_band = q_n,first q_n,second.
+```
+
+All four synchronized phase quadratures are multiplied by `q_band` and enter
+the same final refit. This is the gauge-complete phase-envelope term: a phase
+rotation remains a rotation inside the fitted span, while oscillatory
+amplitude may now differ across either of the two one-sided traces. It adds
+four pixelwise products but no offset measurement, cell choice, raster scan,
+or iterative stage. On `skimage.data.clock`, whose blurred lower rim is a
+narrow band rather than a single step, bottom-band peak error falls from
+`5.02e-3` to `4.10e-3` and PSNR rises from 47.85 to 48.14 dB without changing
+the 955-cell texture quotient.
+
 With exactly the same 522 rig cells, the corrected graph readout reaches
 38.46 dB; peak error at the lower-right rectangle corner falls from 0.160 to
 0.119. Checkerboard reaches 34.28 dB and Pikachu 37.12 dB, with the mouth,
@@ -480,6 +496,15 @@ compatibility is measured by the increase in the pooled cartoon and texture
 affine objectives, accumulated in one raster traversal. Accepted graph edges
 are contracted once, after which the structural and texture affine models are
 refit on the saved quotient.
+
+Contraction preserves two gauges for every untouched model. A singleton keeps
+its original canonical transport site instead of being moved to its raster
+centroid; only a genuinely pooled component receives a new support-weighted
+center. The normal/tangent coordinate unit remains normalized by the
+pre-collapse population. Without those invariants, removing 35 unrelated
+clock leaves moved untouched lower-rim sites by as much as 28 pixels and
+changed the global coordinate denominator from 299 to 264, producing a false
+outline in cells the quotient never merged.
 
 The viewer reports the initial and final counts, topology eligibility,
 fit-compatible adjacency count, and selected edge count. This is important:
