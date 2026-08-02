@@ -40,6 +40,9 @@ VIEWS = (
     "Structural soft IDs",
     "Texture micro IDs",
     "Compound one-sided IDs",
+    "Posterized family average",
+    "Posterized family dither",
+    "Third-order family IDs",
     "Residual error",
 )
 
@@ -290,6 +293,24 @@ def _view(result, name):
         if not compound["enabled"]:
             return _owner_colours(result["texture_labels"])
         return _owner_colours(compound["labels"])
+    if name in ("Posterized family average", "Posterized family dither"):
+        poster = result["region_posterization"]
+        if not poster["enabled"]:
+            return _owner_colours(result["compound_segmentation"]["labels"])
+        from experiments.region_posterization import (
+            render_posterization_level,
+        )
+
+        return render_posterization_level(
+            poster,
+            int(dpg.get_value("v3_posterization_view_depth")),
+            hard=name == "Posterized family dither",
+        )
+    if name == "Third-order family IDs":
+        fusion = result["region_family_fusion"]
+        if not fusion["enabled"]:
+            return _owner_colours(result["compound_segmentation"]["labels"])
+        return _owner_colours(fusion["labels"])
     if name == "Structural soft IDs":
         if "structural_soft_ids" not in result:
             ids = _owner_colours(result["labels"])
@@ -333,7 +354,11 @@ def refresh():
         _push_texture(SOURCE, rgb, resampled_display=False)
         S.source_display_key = source_key
     name = dpg.get_value("v3_view")
-    key = (id(result), name, S.resampled_display)
+    poster_depth = (
+        int(dpg.get_value("v3_posterization_view_depth"))
+        if name.startswith("Posterized family") else -1
+    )
+    key = (id(result), name, poster_depth, S.resampled_display)
     if key == S.display_key:
         return
     _push_texture(RESULT, _view(result, name), result=result)
@@ -477,6 +502,14 @@ def _config():
         offset_bins=int(dpg.get_value("v3_offset_bins")),
         ridge_kappa=float(dpg.get_value("v3_ridge_kappa")),
         compound_segmentation=True,
+        region_posterization=bool(
+            dpg.get_value("v3_region_posterization")),
+        region_posterization_depth=int(
+            dpg.get_value("v3_posterization_depth")),
+        region_posterization_histogram_side=int(
+            dpg.get_value("v3_posterization_histogram_side")),
+        region_family_fusion=bool(
+            dpg.get_value("v3_region_family_fusion")),
         threads=int(dpg.get_value("v3_threads")),
     )
 
@@ -498,6 +531,8 @@ def build_worker(rgb, config):
         phase_graph = result["texture_phase_graph"]
         texture_envelope = result["texture_dirichlet_envelope"]
         compound = result["compound_segmentation"]
+        poster = result["region_posterization"]
+        family = result["region_family_fusion"]
         joint = result["joint_leaf_collapse"]
         characteristic_state = (
             f"{accepted_characteristic}/{len(characteristic)} accepted"
@@ -536,6 +571,12 @@ def build_worker(rgb, config):
             f"compound IDs {compound['leaf_count']:,}→"
             f"{compound['compound_count']:,} in "
             f"{timing['compound_segmentation_ms']:.0f} ms | "
+            f"poster families "
+            f"{(poster['levels'][-1]['family_count'] if poster['enabled'] else 0):,} "
+            f"in {timing['region_posterization_ms']:.0f} ms | "
+            f"third-order IDs "
+            f"{family['input_regions']:,}→{family['family_count']:,} in "
+            f"{timing['region_family_fusion_ms']:.0f} ms | "
             f"coordinates {coordinate_ms:.0f} ms | "
             f"total {timing['total_ms']:.0f} ms"
         )
@@ -674,7 +715,10 @@ def cb_file(sender, app_data):
         S.status = f"Image load failed: {type(exc).__name__}: {exc}"
 
 
-def slider(tag, label, default, low, high, *, floating=False, width=270):
+def slider(
+    tag, label, default, low, high, *, floating=False, width=270,
+    callback=None,
+):
     function = dpg.add_slider_float if floating else dpg.add_slider_int
     function(
         label=label,
@@ -683,6 +727,7 @@ def slider(tag, label, default, low, high, *, floating=False, width=270):
         min_value=low,
         max_value=high,
         width=width,
+        callback=callback,
     )
 
 
@@ -1089,6 +1134,50 @@ def build_ui(labels, default_label):
                 "Eikonal mode bends the same paired normal/tangent basis "
                 "inside each immutable owner using fixed causal sweeps. It "
                 "never launches a per-cell heap and never crosses an owner.")
+
+        with dpg.collapsing_header(
+            label="5. Posterized region-family afterpass",
+            default_open=True,
+        ):
+            with dpg.group(horizontal=True):
+                dpg.add_checkbox(
+                    label="build nested region-balanced palette",
+                    tag="v3_region_posterization",
+                    default_value=False,
+                )
+                dpg.add_checkbox(
+                    label="fuse third-order region families",
+                    tag="v3_region_family_fusion",
+                    default_value=False,
+                )
+                slider(
+                    "v3_posterization_depth",
+                    "built palette depth",
+                    6,
+                    2,
+                    8,
+                )
+                slider(
+                    "v3_posterization_histogram_side",
+                    "Lab histogram side",
+                    32,
+                    8,
+                    48,
+                )
+                slider(
+                    "v3_posterization_view_depth",
+                    "displayed palette depth",
+                    4,
+                    0,
+                    8,
+                    callback=lambda: refresh(),
+                )
+            dpg.add_text(
+                "Optional third-order product: each immutable compound region "
+                "is represented by its mixture over one nested palette tree. "
+                "Fusion combines multiscale color siblings and conservative "
+                "geometric host relationships. Neither mode alters the "
+                "reconstruction or level-two IDs.")
 
         with dpg.group(horizontal=True):
             dpg.add_text("Right panel")

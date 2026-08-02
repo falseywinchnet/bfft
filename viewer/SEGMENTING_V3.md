@@ -562,3 +562,55 @@ the pass is intentionally almost invisible in a reconstruction because it
 only removes models judged redundant. On the Golden Gate control it removes a
 small fraction of the full texture population; it is representation economy,
 not a reconstruction enhancement.
+
+## Posterized region families and third-order fusion
+
+The compound quotient supplies the missing primitive for posterization: a
+palette observation is accumulated per coherent region, rather than per
+pixel. Literal error-diffusion dots are therefore unnecessary. Each region's
+histogram over the finest palette leaves is the analytic average of every
+dither realization having that mixture.
+
+The optional posterization afterpass builds one nested palette tree. Every
+region contributes the square root of its area to palette selection, so a sky
+retains real support without monopolizing the basis. Each tree node is split
+along its weighted principal color direction at the exact minimum one-
+dimensional SSE cut. Coarser mixtures are aggregated from the finest leaves;
+they are not rediscovered by unrelated k-means runs. The viewer can render
+either the regional mixture average or the literal finest-family assignment.
+
+This is the deterministic, region-native counterpart of spatial color
+quantization. Puzicha et al. jointly optimized quantization and halftoning
+under a spatial perceptual cost, while Tan, Echevarria, and Gingold used
+deterministic RGBXY convex geometry for palette decomposition. The present
+experiment borrows the central insight--palette membership is spatial
+evidence--but avoids their iterative annealing or per-pixel layer solve
+because compound regions already supply the support.
+
+The optional **Third-order family IDs** view then forms a second immutable
+quotient:
+
+1. Histogram intersection across every retained palette depth measures color
+   family affinity. Geometric-mean area balance suppresses accidental unions
+   between a tiny part and a vast similarly colored field.
+2. One-pixel-thickness transition regions remain visible IDs but become
+   transparent to relationship discovery. This recovers ear-tip/body
+   adjacency hidden by the measured antialiased interface.
+3. Mutual-best color siblings may unite. Two or more terminal siblings may
+   then vote for one common, larger geometric host.
+4. A border-touching region is an unbounded exterior component. It can mediate
+   sibling discovery but cannot adopt an enclosed sibling group. This exact
+   planar restriction prevents coin faces from collapsing into their ground.
+
+No reconstruction model, level-two ID, or pixel value changes. Pikachu's
+body, luminance-shifted tail, and both dark ear tips become one family while
+the background stays distinct. On coffee, cup and saucer cohere while the
+spoon remains separate; that is an honest limit of the available geometric
+evidence rather than a forced semantic rule.
+
+At 384 pixels the palette and fusion cost about 11 + 11 ms on Pikachu and
+roughly 20--30 ms combined on the natural controls after compilation. Golden
+Gate at a 768-pixel longest side uses 14,546 compound regions: palette
+construction costs about 28 ms and third-order fusion about 85 ms. The full
+1799x1440 control uses 78,139 regions and costs about 183 + 637 ms. Both
+options are disabled by default and remain research views.
