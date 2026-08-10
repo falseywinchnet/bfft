@@ -17,8 +17,12 @@ support.
 
 - `unrelaxation.py` contains the reusable rank-prefix phase evaluator and
   identity-preserving support-CDF inverse.
+- `basin_walk.py` contains fixed spherical initial-chart walks and a weighted
+  low-rank far-field projection used for initializer diagnostics.
 - `check_unrelaxation.py` checks identity, directed transport, and rank-prefix
   phase semantics.
+- `check_basin_walk.py` checks spherical endpoints, axis controls, and the
+  chart projection.
 - `example.py` is a minimal synthetic transport.
 - `DESIGN.md` records the representation and scaling argument.
 - `RESULTS.md` separates best raw WB quality from the best transferable law.
@@ -34,6 +38,7 @@ From the BFFT repository root:
 
 ```sh
 python3 -m relaxed_chip_design.check_unrelaxation
+python3 -m relaxed_chip_design.check_basin_walk
 python3 -m relaxed_chip_design.example
 ```
 

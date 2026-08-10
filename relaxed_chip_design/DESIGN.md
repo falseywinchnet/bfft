@@ -37,6 +37,29 @@ new site-wise HPWL pressure field did not continue descent. That rebuild loses
 the coupled measure. A genuine next iteration must evolve or re-relax the
 existing coupling while preserving its identity coordinate.
 
+## Initial chart and far-field continuation
+
+The fixed support is a local chart even when its center comes from a global
+quotient.  A weak initial DEF can therefore choose the wrong integral row
+basin before the identity-preserving inverse begins.  The current conditioner
+uses two pre-readout witnesses—the unrestricted capacity displacement and the
+exact HPWL subgradient—and admits only their common circular phase.  Net-graph
+transport propagates confidence, while every cell stays on its own capacity
+orbit.  Reapplying the quotient continues that same soft measure until its
+support residual is small; emitted DEF quality is never a stop signal.
+
+A spherical initial-chart walk and x/y axis ablation show that the remaining
+high-density gap is almost entirely row phase.  This is not a smooth global
+low mode: a rank-eight physical fit explains less WB displacement than GCD,
+and a four-pass capacity/HPWL graph Krylov fit also fails on WB.  The hard row
+assignment is cell-specific competitive information.  A row marginal loses
+ownership; a monotone occupancy pass loses identity.
+
+Accordingly, the next representation should retain a compact achieving
+structure for global row competition—analogous to the predecessor/transport
+records used by the image algorithms—then carry identity backward through
+that structure.  It should not append a candidate-row search to the decoder.
+
 ## Representation and cost
 
 Use these symbols:
@@ -66,3 +89,5 @@ changes should alter the CDF law.
 - The same inverse law is used at low and high utilization.
 - Legalization enforces capacity but does not search for a better objective.
 - Wall-clock completion time is reported alongside quality and memory.
+- Continuation stops on soft transported-support residual, never final HPWL.
+- Oracle basin walks are diagnostics and are never reported as algorithms.

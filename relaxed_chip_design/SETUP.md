@@ -10,6 +10,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r relaxed_chip_design/requirements.txt
 python -m relaxed_chip_design.check_unrelaxation
+python -m relaxed_chip_design.check_basin_walk
 python -m relaxed_chip_design.example
 ```
 
@@ -31,6 +32,10 @@ That repository contains:
 
 - `research/support_sparse_transport.py` — full forward transport, inverse,
   legal emission, metrics, and timing;
+- `research/initial_def_far_field.py` — fixed spherical basin walk and axis
+  controls;
+- `research/transport_krylov_basin_probe.py` — capacity/HPWL/net-graph
+  low-rank displacement probe;
 - `research/check_transport_unrelaxation.py` — production-kernel checks;
 - `native/dimension_sparse_transport.cpp` — native sparse transport kernels;
 - `datasets/replace-gcd/` and `datasets/replace-wb/` — frozen inputs and
@@ -64,7 +69,10 @@ python3 research/support_sparse_transport.py \
   --output-json results/gcd_quantile.json \
   --output-def results/gcd_quantile.def \
   --native-support-sparse \
-  --quantile-unrelaxation
+  --quantile-unrelaxation \
+  --orbit-conditioner \
+  --orbit-conditioner-far-field \
+  --orbit-conditioner-retransport
 ```
 
 Run the identical law on `wb_dma_top`:
@@ -77,7 +85,10 @@ python3 research/support_sparse_transport.py \
   --output-json results/wb_quantile.json \
   --output-def results/wb_quantile.def \
   --native-support-sparse \
-  --quantile-unrelaxation
+  --quantile-unrelaxation \
+  --orbit-conditioner \
+  --orbit-conditioner-far-field \
+  --orbit-conditioner-retransport
 ```
 
 Do not tune a density switch between these runs. Record direct HPWL, move and
