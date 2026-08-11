@@ -60,6 +60,21 @@ structure for global row competition—analogous to the predecessor/transport
 records used by the image algorithms—then carry identity backward through
 that structure.  It should not append a candidate-row search to the decoder.
 
+An input-space heat erosion provides a useful negative result.  Multiplying
+net forces by `1 - exp(-span^2 / (4 sigma^2))` preserved long nets and
+attenuated short nets before global placement, but doubled WB's mean distance
+from the exact target row chart and worsened final HPWL by 19.75%.  Thus the
+far field is not independently recoverable after local support is discarded.
+The short constraints are the phase boundary through which global ownership
+is learned.
+
+The corresponding constructive rule is multiscale but support-preserving:
+coarsen or diffuse messages and gauges, never the incidence measure.  A future
+DEF conditioner should keep every local net at unit physical authority while
+transporting a separate coarse residual or dual correction through a
+hierarchy.  Retaining the achieving path through that hierarchy would let the
+inverse carry cell identity back down without evaluating alternative rows.
+
 ## Representation and cost
 
 Use these symbols:

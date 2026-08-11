@@ -78,7 +78,41 @@ conjugation converged to 41,068.6125, and using only the old monotone
 quotient's row assignment reached 40,648.0200 on WB while collapsing `gcd` to
 8,940.3400.  Marginal row mass and monotone occupancy both lose identity.
 
+## Diffusive initializer falsification
+
+A paired WB experiment tested whether short physical net support was deceptive
+input to the RePlAce initializer.  The control command regenerated the frozen
+baseline DEF byte-for-byte.  The experimental command changed only per-net
+wirelength weight, using the heat high-pass survival
+
+```text
+w(span, sigma) = 1 - exp(-span^2 / (4 sigma^2)).
+```
+
+The scale was derived from the transport rather than tuned: the median
+nonzero vertical initializer-to-support displacement was 2.119803 um, or
+1.239651 rows.  RePlAce accepted 2,075 custom weights; 59.17% of included nets
+received less than half weight.
+
+| WB measurement | Exact control | Short-support eroded | Change |
+| --- | ---: | ---: | ---: |
+| RePlAce reported HPWL (um) | 21,859.1191 | 28,584.1523 | +30.77% |
+| Common-legal initial HPWL (um) | 45,353.1100 | 52,429.3400 | +15.60% |
+| Final support-sparse HPWL (um) | **40,907.2600** | **48,986.4300** | **+19.75%** |
+| Mean row distance from exact chart | 2.1582 | 4.9311 | +128.48% |
+| Within two rows of exact chart | 68.19% | 37.03% | -31.16 points |
+| RePlAce + support guarded wall | 1.15 s | 1.08 s | -0.07 s |
+| Sequential peak RSS | 134,212 KiB | 134,380 KiB | +168 KiB |
+
+This falsifies the proposed erosion.  It does more than worsen local
+wirelength: it moves the initializer away from the exact row chart, halving
+the exact-row fraction from 17.06% to 8.83%.  The far field is therefore not
+the subset of long nets left after local detail is removed.  It is the
+coherent phase learned through the connected hierarchy of short constraints.
+Local support is a boundary condition for global row ownership.
+
 Relative to native exact all-pairs, the current transferable result remains
 57.8550 um behind on `gcd` and 8,220.2775 um behind on `wb_dma_top`. The next
-useful work is to encode competitive row ownership in the transported state,
-not to enumerate alternative destinations after decoding.
+useful work is to encode multiscale competitive row ownership in the
+transported state while retaining local support at every scale, not to erase
+short nets or enumerate alternative destinations after decoding.
