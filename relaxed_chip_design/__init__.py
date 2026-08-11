@@ -10,6 +10,11 @@ from .basin_walk import (
     fit_chart_displacement,
     spherical_chart_walk,
 )
+from .preimage import (
+    TransportSecant,
+    project_transport_residual,
+    pullback_residual,
+)
 
 __all__ = [
     "QuantileUnrelaxation",
@@ -18,4 +23,7 @@ __all__ = [
     "FarFieldFit",
     "fit_chart_displacement",
     "spherical_chart_walk",
+    "TransportSecant",
+    "project_transport_residual",
+    "pullback_residual",
 ]

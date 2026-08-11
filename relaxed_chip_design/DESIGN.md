@@ -75,6 +75,46 @@ transporting a separate coarse residual or dual correction through a
 hierarchy.  Retaining the achieving path through that hierarchy would let the
 inverse carry cell identity back down without evaluating alternative rows.
 
+## Transport image and pre-image
+
+A fixed-target secant probe now distinguishes three representational layers:
+
+- The soft transport carries continuous row innovation.  A sub-row pullback
+  moved its exact-target row recovery from 91.77% to 97.36%.
+- The anchor-CDF quantile inverse did not carry that improvement into its hard
+  row: its corresponding recovery stayed near 83.8%.  The information loss was
+  therefore in unrelaxation, not the forward relaxed map.
+- Horizontal position is not row transport, but it is retained as a source
+  gauge.  Its backward secants affect no row assignments and initially expose
+  78.7% of the fixed horizontal residual.
+
+For fixed target representation `z`, initial chart `x`, and relaxed/hard map
+`F`, one trial displacement `d` supplies the response
+
+```text
+j = F(x + d) - F(x).
+```
+
+The objective-free scalar pullback is the residual projection
+
+```text
+r     = z - F(x)
+alpha = dot(r, j) / dot(j, j)
+x'    = x + alpha d.
+```
+
+`r - alpha j` is the measured orthogonal remainder: information not reachable
+along that transport tangent.  No decoded HPWL values enter this update.  On
+WB, the final packing tail became increasingly orthogonal while the visible
+gauge residual contracted, giving a representation-native stopping signal.
+
+The resulting oracle-target diagnostic reaches 31,427.9000 um from a
+32,801.9025 um initializer.  That establishes reachability, not a deployable
+initializer: the row target was supplied by the exact path.  The open problem
+has narrowed to constructing that competitive row chart from a multiscale
+support-preserving transport.  The backward pre-image and direct innovation
+endpoint can then remain unchanged.
+
 ## Representation and cost
 
 Use these symbols:

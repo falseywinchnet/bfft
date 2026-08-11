@@ -19,6 +19,8 @@ support.
   identity-preserving support-CDF inverse.
 - `basin_walk.py` contains fixed spherical initial-chart walks and a weighted
   low-rank far-field projection used for initializer diagnostics.
+- `preimage.py` contains objective-free transport secant projection and
+  bounded residual pullback for initializer pre-image diagnostics.
 - `check_unrelaxation.py` checks identity, directed transport, and rank-prefix
   phase semantics.
 - `check_basin_walk.py` checks spherical endpoints, axis controls, and the
@@ -39,6 +41,7 @@ From the BFFT repository root:
 ```sh
 python3 -m relaxed_chip_design.check_unrelaxation
 python3 -m relaxed_chip_design.check_basin_walk
+python3 -m relaxed_chip_design.check_preimage
 python3 -m relaxed_chip_design.example
 ```
 

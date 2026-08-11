@@ -11,6 +11,7 @@ source .venv/bin/activate
 python -m pip install -r relaxed_chip_design/requirements.txt
 python -m relaxed_chip_design.check_unrelaxation
 python -m relaxed_chip_design.check_basin_walk
+python -m relaxed_chip_design.check_preimage
 python -m relaxed_chip_design.example
 ```
 

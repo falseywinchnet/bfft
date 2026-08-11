@@ -111,6 +111,53 @@ the subset of long nets left after local detail is removed.  It is the
 coherent phase learned through the connected hierarchy of short constraints.
 Local support is a boundary condition for global row ownership.
 
+## Backward transport pre-image
+
+The exact-row/original-x oracle chart was then fixed as a representational
+target.  No HPWL value was consulted during the backward walk.  Each step
+measured one transport secant, projected the fixed coordinate residual onto
+that response, and used the least-squares secant coefficient.  Final HPWL was
+read only after the predetermined residual step was emitted.
+
+The first row probe separated forward transport from unrelaxation.  Along the
+natural row pullback, 67.97% of the target residual energy was visible in the
+soft innovation map, but only 36.10% was visible after anchor-CDF quantile
+emission.  A transport-derived step of 0.358580 improved the innovation's
+target-row fraction from 91.77% to 97.36% and its common-legal HPWL from
+33,551.4500 to 32,305.3950.  The quantile result did not inherit that gain: it
+changed from 32,724.5075 to 32,753.0900.
+
+Reading the already-computed innovation row directly fixed the interface.  It
+emits one nearest active segment per cell and propagates capacity only along
+that fixed edge; it does not score destinations.  The result was 32,017.0850
+with 1,857 of 1,858 cells on the fixed target row.
+
+The horizontal coordinate behaved differently.  It is a largely decoupled
+source gauge: the first x secant exposed 78.72% of its residual energy and
+caused zero row response.  Three response-calibrated gauge pullbacks reduced
+the fixed-target horizontal residual to 0.668 sites mean and two sites at p90.
+
+| WB chart/readout | Initial HPWL (um) | Emitted HPWL (um) | Interpretation |
+| --- | ---: | ---: | --- |
+| Exact all-pairs reference | -- | 32,686.9825 | Previous exact-path reference |
+| Exact-row chart + quantile inverse | 31,344.9300 | 32,724.5075 | Oracle axis diagnostic |
+| Row pre-image + innovation endpoint | 31,344.9300 | 32,017.0850 | Soft row phase crosses readout |
+| Row + calibrated x pre-image | 32,801.9025 | **31,427.9000** | Best backward-transport diagnostic |
+
+The final run takes 0.904 seconds internally, 1.03 seconds guarded, and
+134,564 KiB peak RSS.  Independent DEF re-parsing confirms 31,427.9000.  It is
+1,259.0825 um, or 3.85%, below exact all-pairs and descends 1,374.0025 um from
+its own common-legal initializer.  Only one cell remains one row from the
+fixed target; the readout moves one cell and leaves one fixed edge blocked.
+
+This is not deployable quality evidence because the fixed row target came from
+the exact-path oracle.  It is stronger representational evidence: a better
+hard placement than the previous exact reference already exists in the
+support-sparse transport's reachable image.  The missing operation is learning
+the global row chart without an oracle.  Once that chart is supplied, backward
+transport can precondition both row phase and horizontal gauge without a
+candidate-placement search.
+
 Relative to native exact all-pairs, the current transferable result remains
 57.8550 um behind on `gcd` and 8,220.2775 um behind on `wb_dma_top`. The next
 useful work is to encode multiscale competitive row ownership in the
