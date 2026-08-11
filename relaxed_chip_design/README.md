@@ -1,0 +1,61 @@
+# Relaxed Chip Design
+
+This is the BFFT-side research capsule for treating standard-cell placement as
+a two-way relaxation problem:
+
+1. relax cells and legal capacity into a low-rank transported measure;
+2. preserve each cell's identity as a phase in the reference measure;
+3. carry that phase through the transported measure;
+4. unrelax directly to a physical support target, then legalize capacity.
+
+The information about *what goes where* is in the transport itself. The
+decoder therefore does not enumerate candidate placements or evaluate local
+alternatives. Its core operation is CDF conjugation on a bounded active
+support.
+
+## What is here
+
+- `unrelaxation.py` contains the reusable rank-prefix phase evaluator and
+  identity-preserving support-CDF inverse.
+- `basin_walk.py` contains fixed spherical initial-chart walks and a weighted
+  low-rank far-field projection used for initializer diagnostics.
+- `preimage.py` contains objective-free transport secant projection and
+  bounded residual pullback, plus the residual gate and row/x graft used by
+  non-oracle self-distillation.
+- `vector_diffusion.py` contains the selected connection-valued orientation
+  diffusion kernel; it transports net phase while retaining local orbit radius.
+- `interval_connection.py` decomposes supported HPWL boundary orientation into
+  separate even/common and odd/face-normal channels for late synthesis.
+- `check_unrelaxation.py` checks identity, directed transport, and rank-prefix
+  phase semantics.
+- `check_basin_walk.py` checks spherical endpoints, axis controls, and the
+  chart projection.
+- `example.py` is a minimal synthetic transport.
+- `DESIGN.md` records the representation and scaling argument.
+- `RESULTS.md` separates best raw WB quality from the best transferable law.
+- `RESEARCH_SYNTHESIS.md` derives the next connection-lifted, reversible
+  transport experiment from the BFFT vision methods and the literature.
+- `papers/` is a checked local corpus with an admission/rejection table and
+  source manifest.
+- `SETUP.md` covers this standalone capsule and the full circuit harness.
+
+The production experiment remains in `HypersphericalCircuitLab`, where DEF
+emission, legal capacity, native sparse kernels, and frozen datasets live. This
+folder intentionally contains no benchmark inputs or generated DEF files.
+
+## Quick check
+
+From the BFFT repository root:
+
+```sh
+python3 -m relaxed_chip_design.check_unrelaxation
+python3 -m relaxed_chip_design.check_basin_walk
+python3 -m relaxed_chip_design.check_preimage
+python3 -m relaxed_chip_design.check_vector_diffusion
+python3 -m relaxed_chip_design.check_interval_connection
+python3 -m relaxed_chip_design.example
+```
+
+See [RESULTS.md](RESULTS.md) before comparing individual HPWL figures: the
+lowest WB-only number and the best cross-density transport law are different
+results answering different questions.

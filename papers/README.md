@@ -30,6 +30,22 @@ graph-structured systems), `merigot2011_multiscale_optimal_transport.pdf` and
 power-diagram weights), `chazal2011_persistence_clustering_tomato.pdf` and
 `bauer2019_ripser_persistence.pdf`.
 
+## Corpus integrity note (2026-08-11)
+
+Two of the older filenames above do not contain the named papers and must not
+be cited as such:
+
+- `merigot2011_multiscale_optimal_transport.pdf` contains *Nonequilibrium
+  density matrix for thermal transport in quantum field theory*
+  (`arXiv:1212.1077`).
+- `chazal2011_persistence_clustering_tomato.pdf` contains *Connected Quandles
+  of Size pq and 4p* (`arXiv:1907.07716`).
+
+Validated replacements are kept without overwriting the historical files at
+`../relaxed_chip_design/papers/merigot_multiscale_optimal_transport.pdf` and
+`../relaxed_chip_design/papers/chazal_guibas_oudot_skraba_persistence_clustering.pdf`.
+Their sources and SHA-256 hashes are recorded in that directory.
+
 ## Cited, not downloaded
 
 These are the load-bearing ones for what the sigma round actually implements.
