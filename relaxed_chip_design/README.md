@@ -29,6 +29,10 @@ support.
 - `example.py` is a minimal synthetic transport.
 - `DESIGN.md` records the representation and scaling argument.
 - `RESULTS.md` separates best raw WB quality from the best transferable law.
+- `RESEARCH_SYNTHESIS.md` derives the next connection-lifted, reversible
+  transport experiment from the BFFT vision methods and the literature.
+- `papers/` is a checked local corpus with an admission/rejection table and
+  source manifest.
 - `SETUP.md` covers this standalone capsule and the full circuit harness.
 
 The production experiment remains in `HypersphericalCircuitLab`, where DEF
