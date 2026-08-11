@@ -202,6 +202,50 @@ bytes of achieving-path state.  The hierarchy improved row-occupancy error but
 still assigned the wrong identities; full net-cost ALS was noncontractive.
 These are retained falsifications, not selected variants.
 
+## Phase-boundary microscope
+
+An internal transport trace recorded 18 states across both WB passes: the
+lifted chart, unrestricted capacity prediction, every conditioner/retransport
+step, local support coupling, and hard readout.  The soft support fixed point
+contracts rapidly (0.2329 to 0.0265 to 0.0035 um on pass one, then 0.1698 to
+0.0170 um on pass two), while exact row identity stays near 17--20%.  The solve
+is converging; it is converging in a phase-blurred identity chart.
+
+When signed support gain/loss is aggregated after sorting cells by the exact
+all-pairs target row, it forms a striking two-sided band with a phase reversal
+near the middle row.  A per-cell audit shows why that image must not be treated
+as a decoder.  The exact result is used only as the post-run diagnostic axis:
+
+| Local-coupling information audit | Pass 1 | Pass 2 |
+| --- | ---: | ---: |
+| Exact row inside active support | 69.27% | 69.05% |
+| Signed moment / required row displacement correlation | 0.0026 | -0.0851 |
+| Correct moment direction when target is inside support and nonzero | 62.72% | 63.08% |
+| Exact row has positive gain when it is inside support | 51.90% | 51.68% |
+| Exact row is the strongest transported/reference ratio | 20.67% | 20.19% |
+| CDF inverse reaches exact row | 16.74% | 17.55% |
+
+Thus the band is a collective conditional statistic revealed by oracle
+ordering, not an absolute phase stored in each local transport row.  It carries
+a weak direction bit but neither competitive identity nor displacement
+magnitude.
+
+Three direct, score-free phase inverses falsified simpler recoveries.  Carrying
+the first circular support moment reached 45,889.3400.  Pulling back the
+continuous innovation row reached 44,349.2575.  Carrying the exact within-bin
+CDF residual through the capacity-safe row pullback reached 41,680.5250.
+Finally, a fine global site-CDF inverse used rank-prefix sums and binary
+inversion, required no `cells x sites` state and chose exactly one target, but
+destroyed locality: it moved 92.47% of first-pass cells by 4.99 rows on average
+and reached 65,340.2125.  That run took 3.03 s guarded and peaked at 148,619 KiB.
+
+These results narrow the recovery requirement.  Local support is the boundary
+condition that keeps an identity meaningful, but local transport does not yet
+contain the missing global ownership coordinate.  The next representation
+must transport a multiscale competitive identity path into the local chart;
+post-hoc sharpening, a single global phase, or a new physical ordering cannot
+manufacture it after the coupling has been compressed.
+
 Relative to native exact all-pairs, the current transferable result remains
 57.8550 um behind on `gcd` and 7,724.0400 um behind on `wb_dma_top`. The next
 useful work is to encode multiscale competitive row ownership in the
