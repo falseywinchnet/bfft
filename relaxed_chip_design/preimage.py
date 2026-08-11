@@ -23,6 +23,29 @@ class TransportSecant:
     orthogonal_energy_fraction: float
 
 
+def requires_row_self_distillation(soft_continuation_steps: int) -> bool:
+    """Return whether a learned row chart contains multi-pass history."""
+
+    return int(soft_continuation_steps) > 1
+
+
+def graft_transported_rows(
+    source_chart: np.ndarray,
+    transported_chart: np.ndarray,
+) -> np.ndarray:
+    """Attach transported row phase to the source horizontal gauge once."""
+
+    source = np.asarray(source_chart, dtype=np.float64)
+    transported = np.asarray(transported_chart, dtype=np.float64)
+    if source.shape != transported.shape:
+        raise ValueError("source and transported charts must have equal shapes")
+    if source.ndim != 2 or source.shape[1] != 2:
+        raise ValueError("physical charts must be points x 2 matrices")
+    result = source.copy()
+    result[:, 1] = transported[:, 1]
+    return result
+
+
 def project_transport_residual(
     target: np.ndarray,
     base_output: np.ndarray,

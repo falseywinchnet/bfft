@@ -2,7 +2,12 @@
 
 import numpy as np
 
-from .preimage import project_transport_residual, pullback_residual
+from .preimage import (
+    graft_transported_rows,
+    project_transport_residual,
+    pullback_residual,
+    requires_row_self_distillation,
+)
 
 
 def main() -> int:
@@ -28,6 +33,12 @@ def main() -> int:
         maximum_step=np.asarray([10.0, 2.0]),
     )
     np.testing.assert_allclose(pulled, [[1.0, 3.0], [3.0, 2.5]])
+
+    assert not requires_row_self_distillation(1)
+    assert requires_row_self_distillation(2)
+    grafted = graft_transported_rows(initial, fixed)
+    np.testing.assert_allclose(grafted[:, 0], initial[:, 0])
+    np.testing.assert_allclose(grafted[:, 1], fixed[:, 1])
     print("transport preimage checks passed")
     return 0
 

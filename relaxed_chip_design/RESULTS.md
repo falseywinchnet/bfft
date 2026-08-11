@@ -12,7 +12,8 @@ of a valid inverse if the same law fails the other density regime.
 | Raw global occupied-marginal quotient | 10,367.0250 | **40,800.8575** | Real WB result; loses cell identity |
 | Global quotient with x gauge/support projection | 9,147.7100 | **40,432.3000** | Best WB-only aggregate control; still fails GCD |
 | Identity-preserving CDF conjugation | **7,280.1875** | **41,716.6300** | Selected transferable support-sparse law |
-| Far-field conditioner at support fixed point | **7,280.1875** | **40,907.2600** | Current transferable law; no candidate DEF selection |
+| Far-field conditioner at support fixed point | **7,280.1875** | **40,907.2600** | Transferable first-pass law; no candidate DEF selection |
+| Residual-gated row self-distillation | **7,280.1875** | **40,411.0225** | Current transferable law; one score-free pullback after multi-pass soft continuation |
 | Exact-row oracle initializer + current law | -- | **32,724.5075** | Diagnostic only; proves initial row chart dominates |
 
 So `40,800.8575` was not disregarded as a bad measurement. A later variant
@@ -24,9 +25,10 @@ GCD regressions.
 
 `41,716.63` is therefore not the best WB number. It was the first result from
 one cell-identity-preserving, support-sparse inverse that improved both density
-regimes.  The far-field conditioner now preserves the same 7,280.1875 `gcd`
-result and reaches 40,907.2600 on `wb_dma_top`, a 9.80% improvement over the
-common baseline, without a utilization branch.
+regimes.  The far-field conditioner preserves the same 7,280.1875 `gcd`
+result and its first pass reaches 40,907.2600 on `wb_dma_top`. Residual-gated
+row self-distillation retains GCD byte-for-byte and reaches 40,411.0225 on WB,
+a 10.90% improvement over the common baseline, without a utilization branch.
 
 The conditioner uses the unrestricted capacity displacement and exact HPWL
 subgradient as two circular witnesses, propagates scalar confidence over the
@@ -42,7 +44,7 @@ but the selected stopping rule never compares hard outputs.
 | `gcd` | <= 6 | 27 | 0.274 s | 0.54 s | 152.4 MiB | 13.60 MiB |
 | `wb_dma_top` | <= 6 | 323 | 0.216 s | 0.73 s | 129.4 MiB | 8.52 MiB |
 
-The current far-field fixed-point run is:
+The first far-field fixed-point pass is:
 
 | Design | Soft passes | Direct HPWL | Transport + readout | Guarded wall | Peak RSS |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -158,8 +160,50 @@ the global row chart without an oracle.  Once that chart is supplied, backward
 transport can precondition both row phase and horizontal gauge without a
 candidate-placement search.
 
+## Residual-gated row self-distillation
+
+The deployable row target now comes from the first transport itself.  After
+the ordinary soft continuation reaches its residual stop, the algorithm reads
+only the number of continuation passes.  A one-pass chart is emitted
+unchanged.  A genuinely multi-pass chart is pulled backward exactly once: its
+hard rows are attached to the original RePlAce continuous x gauge, then the
+unchanged support-CDF transport runs once more.
+
+The gate never reads HPWL, utilization, a circuit label, or alternative hard
+placements:
+
+```text
+self_distill = first_soft_continuation_steps > 1
+```
+
+| Design | First soft passes | Pullback | Previous HPWL (um) | Final HPWL (um) | Guarded wall | Peak RSS |
+| --- | ---: | --- | ---: | ---: | ---: | ---: |
+| `gcd` | 1 | skipped | 7,280.1875 | **7,280.1875** | 0.77 s | 155,644 KiB |
+| `wb_dma_top` | 3 | applied once | 40,907.2600 | **40,411.0225** | 1.93 s | 131,652 KiB |
+
+The GCD output DEF is byte-identical to the prior selected result.  WB improves
+496.2375 um, or 1.21%, over the former transferable law and 4,942.0875 um over
+the common legal baseline.  Its two transport passes take 1.797 seconds
+internally, including 22 ms to graft the transported rows into the original x
+gauge.
+
+Repeating the row self-map is not continuation.  Its mean row change contracts
+from 0.0856 through 0.0560, 0.0474, and 0.0431 rows, but it progressively
+replaces the original far-field evidence with decoded state and worsens hard
+quality.  The production operation is therefore one backward preconditioning
+step, conditionally enabled by the first solve's continuation history, not a
+fixed-point loop.
+
+A separate dyadic row hierarchy located the remaining error.  Absolute child
+affinity lost identity and returned 65,437.7725.  Carrying hard reference phase
+through the transported tree recovered 43,867.6600.  Reinforcing only
+transport/net phases that agree circularly reached 41,573.9400 with 16,722
+bytes of achieving-path state.  The hierarchy improved row-occupancy error but
+still assigned the wrong identities; full net-cost ALS was noncontractive.
+These are retained falsifications, not selected variants.
+
 Relative to native exact all-pairs, the current transferable result remains
-57.8550 um behind on `gcd` and 8,220.2775 um behind on `wb_dma_top`. The next
+57.8550 um behind on `gcd` and 7,724.0400 um behind on `wb_dma_top`. The next
 useful work is to encode multiscale competitive row ownership in the
 transported state while retaining local support at every scale, not to erase
 short nets or enumerate alternative destinations after decoding.

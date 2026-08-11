@@ -115,6 +115,28 @@ has narrowed to constructing that competitive row chart from a multiscale
 support-preserving transport.  The backward pre-image and direct innovation
 endpoint can then remain unchanged.
 
+### Non-oracle self-distillation
+
+The first hard row chart is itself transport state.  When its soft precursor
+needed multiple continuation passes, that chart contains far-field information
+which was absent from the original DEF.  One backward operation preserves it:
+
+```text
+source_2.x = original_continuous_DEF.x
+source_2.y = first_transport_DEF.y
+```
+
+The normal quantile transport then runs once from `source_2`.  If the first
+soft solve converged in one pass, the operation is the identity and no second
+solve runs.  This residual gate preserves sparse GCD byte-for-byte while
+improving dense WB to 40,411.0225 um.  It is not a utilization branch; it asks
+whether the relaxed chart actually accumulated continuation history.
+
+This is a preconditioner, not an iteration.  Repeatedly feeding decoded rows
+back eventually discards the original continuous far field even while row
+change contracts.  The transported row chart is pulled back once, just as a
+coarse dual is prolonged once before the fine solve.
+
 ## Representation and cost
 
 Use these symbols:

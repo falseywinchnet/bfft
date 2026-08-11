@@ -20,7 +20,8 @@ support.
 - `basin_walk.py` contains fixed spherical initial-chart walks and a weighted
   low-rank far-field projection used for initializer diagnostics.
 - `preimage.py` contains objective-free transport secant projection and
-  bounded residual pullback for initializer pre-image diagnostics.
+  bounded residual pullback, plus the residual gate and row/x graft used by
+  non-oracle self-distillation.
 - `check_unrelaxation.py` checks identity, directed transport, and rank-prefix
   phase semantics.
 - `check_basin_walk.py` checks spherical endpoints, axis controls, and the

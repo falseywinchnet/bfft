@@ -12,8 +12,10 @@ from .basin_walk import (
 )
 from .preimage import (
     TransportSecant,
+    graft_transported_rows,
     project_transport_residual,
     pullback_residual,
+    requires_row_self_distillation,
 )
 
 __all__ = [
@@ -24,6 +26,8 @@ __all__ = [
     "fit_chart_displacement",
     "spherical_chart_walk",
     "TransportSecant",
+    "graft_transported_rows",
     "project_transport_residual",
     "pullback_residual",
+    "requires_row_self_distillation",
 ]
