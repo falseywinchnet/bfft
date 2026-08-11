@@ -100,6 +100,42 @@ transporting a separate coarse residual or dual correction through a
 hierarchy.  Retaining the achieving path through that hierarchy would let the
 inverse carry cell identity back down without evaluating alternative rows.
 
+## Connection-valued far field
+
+The first successful paper-derived change identifies what the conditioner had
+compressed incorrectly.  Its net diffusion formerly transported only a scalar
+confidence and then projected that confidence onto each cell's original
+capacity direction.  A neighbor could say *how certain* a cell should be, but
+could not transport *which way* its local chart pointed.
+
+The selected vector connection law transports a unit displacement orientation
+over each net.  Every receiving cell retains its own bounded capacity-orbit
+radius, so no neighbor supplies a destination or magnitude:
+
+```text
+local radius_i = bounded norm(capacity_i - source_i)
+net phase      = unit(sum_j confidence_j * unit(direction_j))
+state_i        = local radius_i * propagated confidence_i * diffused phase_i
+```
+
+This is vector diffusion rather than scalar heat.  The unchanged soft residual
+controls continuation, and the unchanged residual-gated row graft performs one
+backward pass.  It preserves GCD byte-for-byte and lowers WB to 39,932.2000 um.
+
+Two boundaries are now explicit.  First, normalizing a weak, nearly cancelling
+net resultant is useful: multiplying confidence by its resultant length loses
+the gain.  The cancellation is phase information, not merely noise.  Second,
+an aggregate circular row cut is a real mass correction but cannot be imposed
+after vector diffusion without suppressing useful vertical connection state.
+Mass circulation and relative orientation are separate channels.
+
+An invertible cell-to-one-net-center connection is also the wrong sheaf.  It
+turns HPWL into quadratic wirelength and destroys row ownership.  The next
+stalk must retain an oriented interval boundary--lower support, upper support,
+normal, and signed activity--so an interior pin can restrict differently from
+an achieving boundary pin.  That is the circuit analogue of the oriented BV
+bond measure in Meyer preconditioning.
+
 ## Transport image and pre-image
 
 A fixed-target secant probe now distinguishes three representational layers:

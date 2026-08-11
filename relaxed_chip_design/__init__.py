@@ -17,6 +17,7 @@ from .preimage import (
     pullback_residual,
     requires_row_self_distillation,
 )
+from .vector_diffusion import diffuse_connection_orientations
 
 __all__ = [
     "QuantileUnrelaxation",
@@ -30,4 +31,5 @@ __all__ = [
     "project_transport_residual",
     "pullback_residual",
     "requires_row_self_distillation",
+    "diffuse_connection_orientations",
 ]

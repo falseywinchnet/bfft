@@ -13,7 +13,8 @@ of a valid inverse if the same law fails the other density regime.
 | Global quotient with x gauge/support projection | 9,147.7100 | **40,432.3000** | Best WB-only aggregate control; still fails GCD |
 | Identity-preserving CDF conjugation | **7,280.1875** | **41,716.6300** | Selected transferable support-sparse law |
 | Far-field conditioner at support fixed point | **7,280.1875** | **40,907.2600** | Transferable first-pass law; no candidate DEF selection |
-| Residual-gated row self-distillation | **7,280.1875** | **40,411.0225** | Current transferable law; one score-free pullback after multi-pass soft continuation |
+| Residual-gated row self-distillation | **7,280.1875** | **40,411.0225** | Former selected law; one score-free pullback after multi-pass soft continuation |
+| Vector connection diffusion + residual pullback | **7,280.1875** | **39,932.2000** | New selected law; transports net-graph orientation while retaining each cell's capacity-orbit radius |
 | Exact-row oracle initializer + current law | -- | **32,724.5075** | Diagnostic only; proves initial row chart dominates |
 
 So `40,800.8575` was not disregarded as a bad measurement. A later variant
@@ -27,8 +28,10 @@ GCD regressions.
 one cell-identity-preserving, support-sparse inverse that improved both density
 regimes.  The far-field conditioner preserves the same 7,280.1875 `gcd`
 result and its first pass reaches 40,907.2600 on `wb_dma_top`. Residual-gated
-row self-distillation retains GCD byte-for-byte and reaches 40,411.0225 on WB,
-a 10.90% improvement over the common baseline, without a utilization branch.
+row self-distillation retains GCD byte-for-byte and reaches 40,411.0225 on WB.
+Replacing its scalar confidence diffusion by a connection-valued orientation
+diffusion retains the same GCD DEF and reaches **39,932.2000** on WB, an 11.95%
+improvement over the common baseline, without a utilization branch.
 
 The conditioner uses the unrestricted capacity displacement and exact HPWL
 subgradient as two circular witnesses, propagates scalar confidence over the
@@ -202,6 +205,52 @@ bytes of achieving-path state.  The hierarchy improved row-occupancy error but
 still assigned the wrong identities; full net-cost ALS was noncontractive.
 These are retained falsifications, not selected variants.
 
+## Vector connection diffusion
+
+The literature round tested whether the initial conditioner was diffusing the
+wrong object.  The previous law transported a scalar confidence through the
+net graph, then projected it back onto each cell's original capacity direction.
+The new law transports the `U(1)` displacement orientation itself:
+
+1. the unrestricted capacity displacement and exact HPWL subgradient produce
+   the same circular cross-supported gain;
+2. each net averages admitted **unit directions**, not destinations;
+3. one vector diffusion transports that orientation to ambiguous cells; and
+4. every cell applies the result with its own bounded capacity-orbit radius.
+
+No row, site, or DEF alternative is evaluated.  The existing soft residual
+still determines continuation, and the existing one-time backward row graft
+still determines whether a second transport runs.
+
+| Design | First-pass HPWL (um) | Final HPWL (um) | Guarded wall | Peak RSS | Added conditioner workspace |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `gcd` | 7,280.1875 | **7,280.1875** | 0.79 s | 154,244 KiB | 47,592 bytes |
+| `wb_dma_top` | 40,994.1250 | **39,932.2000** | 2.01 s | 130,640 KiB | 298,992 bytes |
+
+On WB, 82.78% of cells receive a redirected orientation, 62.16% gain graph
+confidence, and the mean cosine to the former local direction is 0.6574.  The
+new result improves the former transferable record by 478.8225 um, or 1.18%.
+GCD's output is byte-identical to the former selected DEF.
+
+A repeated WB run produced an identical DEF with SHA-256
+`352957bb9853d93bc55d122c8b796a579a3799dab85a755dbe18c70b47edcf04`.
+Independent DEF parsing confirms 39,932.2000 um.
+
+The fixed paper-derived ablations explain the gain:
+
+| Ablation | GCD HPWL (um) | WB HPWL (um) | Finding |
+| --- | ---: | ---: | --- |
+| Exact circular cut on both passes | 7,280.1875 | 40,436.6275 | A real secondary cut ambiguity, not the ownership recovery |
+| Deterministic degree-2 far field | 7,279.4150 | 41,174.0400 | Better kernel approximation does not imply a better row chart |
+| Cell-net rotation sheaf | audit only | audit only | Collapses HPWL's interval boundary to quadratic wirelength; WB exact-row fraction falls to 9.04% |
+| Vector diffusion + circular cut | 7,280.1875 | 40,598.6650 | Absolute row phase suppresses useful vertical connection transport |
+| Vector diffusion + conductance gate | 7,280.1875 | 40,438.4950 | Weak cancelling resultants still contain useful orientation |
+
+The selected operation is therefore the un-gated vector connection field.
+It confirms the original intuition precisely: the information about direction
+lives in the transport relation, and scalar confidence diffusion had erased
+it before unrelaxation.
+
 ## Phase-boundary microscope
 
 An internal transport trace recorded 18 states across both WB passes: the
@@ -247,7 +296,9 @@ post-hoc sharpening, a single global phase, or a new physical ordering cannot
 manufacture it after the coupling has been compressed.
 
 Relative to native exact all-pairs, the current transferable result remains
-57.8550 um behind on `gcd` and 7,724.0400 um behind on `wb_dma_top`. The next
-useful work is to encode multiscale competitive row ownership in the
-transported state while retaining local support at every scale, not to erase
-short nets or enumerate alternative destinations after decoding.
+57.8550 um behind on `gcd` and 7,245.2175 um behind on `wb_dma_top`. Vector
+diffusion recovers part of the missing global relation by transporting
+orientation instead of scalar confidence. The next useful work is to extend
+that connection state with an oriented HPWL interval/achieving-boundary record,
+while retaining local support at every scale--not to erase short nets,
+collapse a net to one center, or enumerate destinations after decoding.

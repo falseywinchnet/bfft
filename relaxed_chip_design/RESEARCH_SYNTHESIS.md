@@ -21,6 +21,47 @@ identity charts correspond.  The detail record makes coarsening invertible.
 None of the three can reconstruct either of the other two after it has been
 discarded.
 
+## Experiment outcome: orientation was the missing transported component
+
+The first implementation round tested the proposed channels independently on
+both frozen circuits.  The decisive result came from vector diffusion maps,
+not from an absolute synchronized row chart.
+
+The former conditioner diffused scalar confidence over the net graph and then
+projected it onto each cell's original capacity direction.  The successful
+law diffuses the admitted `U(1)` direction itself, while every cell retains its
+own bounded capacity-orbit radius.  It therefore transports orientation but
+never a neighbor's destination or step length.  The existing residual-gated
+backward row graft and support-CDF inverse are unchanged.
+
+| Design | Former selected HPWL (um) | Vector connection HPWL (um) | Guarded wall | Peak RSS |
+| --- | ---: | ---: | ---: | ---: |
+| `gcd` | 7,280.1875 | **7,280.1875** | 0.79 s | 154,244 KiB |
+| `wb_dma_top` | 40,411.0225 | **39,932.2000** | 2.01 s | 130,640 KiB |
+
+WB improves by 478.8225 um and GCD is byte-identical.  A second WB run is also
+byte-identical, and independent DEF parsing confirms 39,932.2000 um.  On WB,
+82.78% of cells receive a redirected orientation and 62.16% gain confidence
+from the graph; added working state is 298,992 bytes.
+
+The falsifications refine the original architecture:
+
+- exact aggregate circular transport is real and raises WB within-two-row
+  coverage from 68.19% to 70.29%, but its best complete result is 40,436.6275;
+- a perfectly reconstructing dyadic parity lift loses phase quality, proving
+  that row parity is not the fine ownership detail;
+- deterministic degree-2 and degree-4 far-field features greatly reduce
+  kernel error but do not improve the complete WB law;
+- a cell-to-one-net-center connection has excellent relative consistency yet
+  halves exact-row recovery, because HPWL is an interval rather than a meeting
+  point;
+- connection-resultant conductance gating removes a weak direction that the
+  successful vector law needs.
+
+The next sheaf stalk should consequently add an **oriented HPWL interval
+boundary** to the successful vector state.  It should not replace the vector
+state with an absolute row phase or an invertible net-center rotation.
+
 ## The exact part of the observed phase reversal
 
 For two equal-mass histograms on an ordered cycle, let

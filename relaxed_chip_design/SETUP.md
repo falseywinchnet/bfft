@@ -12,6 +12,7 @@ python -m pip install -r relaxed_chip_design/requirements.txt
 python -m relaxed_chip_design.check_unrelaxation
 python -m relaxed_chip_design.check_basin_walk
 python -m relaxed_chip_design.check_preimage
+python -m relaxed_chip_design.check_vector_diffusion
 python -m relaxed_chip_design.example
 ```
 
@@ -91,6 +92,28 @@ python3 research/support_sparse_transport.py \
   --orbit-conditioner-far-field \
   --orbit-conditioner-retransport
 ```
+
+### Selected vector-connection wrapper
+
+The literature round's selected law is the residual-gated two-pass wrapper
+with connection-valued direction diffusion.  In `HypersphericalCircuitLab`,
+run it under that repository's guarded guest workflow:
+
+```sh
+python3 research/vector_diffusion_phase_transport.py \
+  --lef datasets/replace-wb/source/contest.lef \
+  --def datasets/replace-wb/source/wb_dma_top.def \
+  --baseline-def datasets/replace-wb/baseline/replace.def \
+  --work-dir results/raw/vector_diffusion_phase/wb_work \
+  --output-json results/raw/vector_diffusion_phase/wb.json \
+  --output-def results/raw/vector_diffusion_phase/defs/wb.def
+```
+
+Use the corresponding GCD LEF/DEF/baseline paths without changing the law.
+`research/connection_lifted_phase.py` contains the checked circular, sparse
+connection, deterministic feature, and lifting primitives.  The adjacent
+`probe_*` and circular/conductance wrappers are retained falsifications; do
+not choose among their DEFs at runtime.
 
 Do not tune a density switch between these runs. Record direct HPWL, move and
 blocked counts, transport-plus-readout time, total guarded wall time, peak RSS,
