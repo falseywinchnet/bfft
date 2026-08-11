@@ -129,12 +129,28 @@ an aggregate circular row cut is a real mass correction but cannot be imposed
 after vector diffusion without suppressing useful vertical connection state.
 Mass circulation and relative orientation are separate channels.
 
-An invertible cell-to-one-net-center connection is also the wrong sheaf.  It
-turns HPWL into quadratic wirelength and destroys row ownership.  The next
-stalk must retain an oriented interval boundary--lower support, upper support,
-normal, and signed activity--so an interior pin can restrict differently from
-an achieving boundary pin.  That is the circuit analogue of the oriented BV
-bond measure in Meyer preconditioning.
+An invertible cell-to-one-net-center connection is also the wrong sheaf. It
+turns HPWL into quadratic wirelength and destroys row ownership. Direct
+interval experiments confirm that lower/upper orientation is real but cannot
+replace the ordinary resultant. A full reflection lowers WB relative to the
+former scalar law but loses to vector diffusion; a dimension-sparse normal
+replacement loses more. The reason is representational: common far-field
+orientation is an even mode, while signed boundary activity is an odd mode.
+
+The next stalk therefore retains both:
+
+```text
+even[a] = mean(weight * direction[a])
+odd[a]  = (mean_lower(direction[a]) - mean_upper(direction[a])) / 2
+```
+
+The odd coordinate exists only when positive-confidence movable witnesses
+attain both faces. This exact support rule reduces admitted WB boundary nets
+from about 61% to 10%; it is not a tunable confidence threshold. Immediate
+`even +/- odd` synthesis restores GCD but still worsens WB, so the four
+components must survive the sparse coupling and be restricted to physical
+direction only during unrelaxation. That late detail record is the circuit
+analogue of the oriented BV bond measure in Meyer preconditioning.
 
 ## Transport image and pre-image
 

@@ -251,6 +251,44 @@ It confirms the original intuition precisely: the information about direction
 lives in the transport relation, and scalar confidence diffusion had erased
 it before unrelaxation.
 
+## Oriented interval boundary round
+
+HPWL is an oriented interval, not a net center. The next round reflected
+upper-face normals into a common boundary chart and transported the result
+back through the inverse reflection. A deterministic endpoint test recovers
+opposing inward normals that ordinary averaging cancels. Every circuit probe
+remained a single pin-linear law with no destination or DEF alternatives.
+
+| Connection | Design | First-pass HPWL (um) | Final HPWL (um) | Wall | Peak RSS |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Selected ordinary vector | `gcd` | 7,280.1875 | **7,280.1875** | 0.79 s | 154,244 KiB |
+| Full oriented boundary | `gcd` | 7,280.9625 | 7,280.9625 | 0.78 s | 153,360 KiB |
+| Dimension-sparse normal | `gcd` | 7,280.9625 | 7,280.9625 | 0.80 s | 155,496 KiB |
+| Paired even/odd synthesis | `gcd` | 7,280.1875 | **7,280.1875** | 0.78 s | 153,320 KiB |
+| Selected ordinary vector | `wb_dma_top` | 40,994.1250 | **39,932.2000** | 2.01 s | 130,640 KiB |
+| Full oriented boundary | `wb_dma_top` | 41,004.3575 | 40,307.6325 | 2.02 s | 130,604 KiB |
+| Dimension-sparse normal | `wb_dma_top` | 41,806.2800 | 41,521.4525 | 2.16 s | 129,960 KiB |
+| Paired even/odd synthesis | `wb_dma_top` | 41,317.9925 | 40,331.0075 | 2.31 s | 130,224 KiB |
+
+The full chart beats the former scalar connection by 103.3900 um on WB, so
+the boundary phase is real, but it loses 375.4325 um to the selected vector
+law. Replacing supported coordinates is worse still because nets expose 1.88
+axes on average. Both forms reflect one-sided evidence too freely: only 1.26
+confident boundary contributors support an active WB net on average.
+
+Requiring positive-confidence movable witnesses on both faces reduces active
+boundary nets from about 61% to 10%, restores GCD exactly, and raises WB mean
+direction cosine from 0.2584 to 0.6612. Yet immediate `even +/- odd` synthesis
+still returns 40,331.0075 um. The representation has found a valid odd phase
+but projects it back to two dimensions too early.
+
+The selected result remains 39,932.2000 um. The next implementation must carry
+`(even_x, even_y, odd_x, odd_y)` as a genuine four-component stalk through
+sparse transport and local support, then synthesize during unrelaxation.
+`interval_connection.py` exposes that decomposition without an implicit early
+projection or mixing coefficient. Independent LEF/DEF parsing reproduced all
+new HPWL values with zero overlap and zero out-of-core cells.
+
 ## Phase-boundary microscope
 
 An internal transport trace recorded 18 states across both WB passes: the
@@ -298,7 +336,8 @@ manufacture it after the coupling has been compressed.
 Relative to native exact all-pairs, the current transferable result remains
 57.8550 um behind on `gcd` and 7,245.2175 um behind on `wb_dma_top`. Vector
 diffusion recovers part of the missing global relation by transporting
-orientation instead of scalar confidence. The next useful work is to extend
-that connection state with an oriented HPWL interval/achieving-boundary record,
-while retaining local support at every scale--not to erase short nets,
-collapse a net to one center, or enumerate destinations after decoding.
+orientation instead of scalar confidence. The oriented boundary record is now
+known to be lifting detail, not a replacement direction. The next useful work
+is to preserve its separate even/odd channels through transport and local
+support at every scale--not to erase short nets, collapse a net to one center,
+enumerate destinations after decoding, or tune an early projection.

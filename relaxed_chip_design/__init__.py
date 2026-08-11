@@ -18,6 +18,10 @@ from .preimage import (
     requires_row_self_distillation,
 )
 from .vector_diffusion import diffuse_connection_orientations
+from .interval_connection import (
+    decompose_interval_stalk,
+    synthesize_interval_stalk,
+)
 
 __all__ = [
     "QuantileUnrelaxation",
@@ -32,4 +36,6 @@ __all__ = [
     "pullback_residual",
     "requires_row_self_distillation",
     "diffuse_connection_orientations",
+    "decompose_interval_stalk",
+    "synthesize_interval_stalk",
 ]

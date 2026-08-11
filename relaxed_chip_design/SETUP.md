@@ -13,6 +13,7 @@ python -m relaxed_chip_design.check_unrelaxation
 python -m relaxed_chip_design.check_basin_walk
 python -m relaxed_chip_design.check_preimage
 python -m relaxed_chip_design.check_vector_diffusion
+python -m relaxed_chip_design.check_interval_connection
 python -m relaxed_chip_design.example
 ```
 

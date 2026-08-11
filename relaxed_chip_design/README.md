@@ -24,6 +24,8 @@ support.
   non-oracle self-distillation.
 - `vector_diffusion.py` contains the selected connection-valued orientation
   diffusion kernel; it transports net phase while retaining local orbit radius.
+- `interval_connection.py` decomposes supported HPWL boundary orientation into
+  separate even/common and odd/face-normal channels for late synthesis.
 - `check_unrelaxation.py` checks identity, directed transport, and rank-prefix
   phase semantics.
 - `check_basin_walk.py` checks spherical endpoints, axis controls, and the
@@ -50,6 +52,7 @@ python3 -m relaxed_chip_design.check_unrelaxation
 python3 -m relaxed_chip_design.check_basin_walk
 python3 -m relaxed_chip_design.check_preimage
 python3 -m relaxed_chip_design.check_vector_diffusion
+python3 -m relaxed_chip_design.check_interval_connection
 python3 -m relaxed_chip_design.example
 ```
 

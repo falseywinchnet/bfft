@@ -58,9 +58,24 @@ The falsifications refine the original architecture:
 - connection-resultant conductance gating removes a weak direction that the
   successful vector law needs.
 
-The next sheaf stalk should consequently add an **oriented HPWL interval
-boundary** to the successful vector state.  It should not replace the vector
-state with an absolute row phase or an invertible net-center rotation.
+The next implementation round added the **oriented HPWL interval boundary** to
+the successful vector state. Full reflection changed about 61% of nets and
+destroyed too much common orientation. Requiring positive-confidence movable
+witnesses on both lower and upper faces admits only about 10% of nets, restores
+GCD exactly, and exposes a stable odd normal channel on WB. Projecting that
+channel immediately back into a two-vector still loses 398.8075 um against the
+selected law.
+
+Thus `phase + signed boundary moment` must be a true four-component stalk:
+
+```text
+(even_x, even_y, odd_x, odd_y)
+```
+
+Carry those components through graph accumulation and the local support
+quotient. Apply the incidence restriction `even + face_sign * odd` only during
+unrelaxation. This is now the fixed interpretation of experiment C below; an
+early conditioner projection or a tuned even/odd blend is disqualified.
 
 ## The exact part of the observed phase reversal
 
