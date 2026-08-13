@@ -72,10 +72,25 @@ Thus `phase + signed boundary moment` must be a true four-component stalk:
 (even_x, even_y, odd_x, odd_y)
 ```
 
-Carry those components through graph accumulation and the local support
-quotient. Apply the incidence restriction `even + face_sign * odd` only during
-unrelaxation. This is now the fixed interpretation of experiment C below; an
-early conditioner projection or a tuned even/odd blend is disqualified.
+The completed late-synthesis round shows that carrying four components is
+necessary but not sufficient. Applying odd incidence independently per cell
+moves three WB identities toward the exact row phase, yet violates aggregate
+segment capacity and loses through horizontal repacking. The winning
+restriction acts on `log(T/R)` and KL-projects the result onto the original
+cell and segment marginals before the CDF inverse. It reaches 39,904.3975 um
+on WB while preserving GCD byte-for-byte.
+
+Thus a sheaf stalk must enter the coupling as a **conservative tangent**:
+
+```text
+sum_s delta(i,s) = 0
+sum_i mass_i delta(i,s) = 0
+```
+
+This is now the fixed interpretation of experiment C below. A future
+multiscale lift must restrict and prolong both connection state and its
+zero-marginal constraint; early projection, an unbalanced late correction, or
+a tuned even/odd blend is disqualified.
 
 ## The exact part of the observed phase reversal
 

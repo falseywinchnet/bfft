@@ -22,10 +22,11 @@ support.
 - `preimage.py` contains objective-free transport secant projection and
   bounded residual pullback, plus the residual gate and row/x graft used by
   non-oracle self-distillation.
-- `vector_diffusion.py` contains the selected connection-valued orientation
-  diffusion kernel; it transports net phase while retaining local orbit radius.
+- `vector_diffusion.py` contains the selected even/common orientation kernel;
+  it transports net phase while retaining each cell's local orbit radius.
 - `interval_connection.py` decomposes supported HPWL boundary orientation into
-  separate even/common and odd/face-normal channels for late synthesis.
+  separate even/common and odd/face-normal channels and KL-projects the odd
+  transport-ratio tangent onto unchanged cell and segment marginals.
 - `check_unrelaxation.py` checks identity, directed transport, and rank-prefix
   phase semantics.
 - `check_basin_walk.py` checks spherical endpoints, axis controls, and the

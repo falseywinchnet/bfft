@@ -20,6 +20,7 @@ from .preimage import (
 from .vector_diffusion import diffuse_connection_orientations
 from .interval_connection import (
     decompose_interval_stalk,
+    parallel_transport_interval_detail,
     synthesize_interval_stalk,
 )
 
@@ -37,5 +38,6 @@ __all__ = [
     "requires_row_self_distillation",
     "diffuse_connection_orientations",
     "decompose_interval_stalk",
+    "parallel_transport_interval_detail",
     "synthesize_interval_stalk",
 ]
