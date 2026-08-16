@@ -24,6 +24,10 @@ Fourier basis, periodic feature map, unseen-support label, or GELU activation.
   nested-selection check on radial stripes and multiscale 1-D.
 - [`TRANSPORT_STUDY.md`](TRANSPORT_STUDY.md): differential diagnosis and
   parameter-matched eikonal-ray transport experiments.
+- [`RADIAL_DOGFOOD.md`](RADIAL_DOGFOOD.md): topology-first 500-step radial
+  dogfood and the continuous full-space frame-flow result.
+- [`radial_dogfood.html`](radial_dogfood.html): truth, fitted fields, radial
+  profiles, and learning curves for the decisive mechanism sequence.
 - [`transport_study.html`](transport_study.html): 11-task deltas, acquisition,
   chart-observation efficiency, mechanism ablations, and fitted probes.
 - [`nested_chart_check.html`](nested_chart_check.html): graphical learning,
@@ -97,6 +101,23 @@ Curvature-state confirmation:
   --steps 500 --batch 256 --eval-every 25 \
   --tasks spiral,checkerboard,nd_spiral_low_rank,nd_spiral_high_rank,radial_stripes,swiss_cheese,ripple,multiscale_1d,chirp_1d,localized_steps_1d,fourier_mix_1d \
   --variants ordinary_mlp,self_context,self_context_jet_factor,self_context_jet_curvature_context,self_context_nested
+```
+
+Radial-only dogfood winner:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  PYTHONPATH=/Users/joshuahkuttenkuler/Library/Python/3.9/lib/python/site-packages \
+  python3 -m ML_experiment.run_radial_dogfood \
+  --out /tmp/radial_dogfood_stiefel_flow.json \
+  --variants self_context_stiefel_flow_curvature \
+  --width 24 --seed 0 --steps 500 --grid 81
+```
+
+Rebuild its visualization fragment after copying the JSON result back:
+
+```sh
+python3 -m ML_experiment.build_radial_dogfood
 ```
 
 The corresponding compact visual is regenerated locally with:

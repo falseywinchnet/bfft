@@ -23,7 +23,8 @@ class SoftEikonalLinear(nn.Module):
                  temperature: float = 1.0, self_context_strength: float = 0.0,
                  context_steps: int = 1, uncertainty_context: bool = False,
                  jet_mode: str = "none", nested_self_context: bool = False,
-                 transport_mode: str = "none"):
+                 transport_mode: str = "none", value_mode: str = "transported",
+                 primitive_mode: str = "random", allocation_smoothing: float = 0.0):
         super().__init__()
         self.directions, self.rank = directions, rank
         self.temperature = float(temperature)
@@ -32,8 +33,12 @@ class SoftEikonalLinear(nn.Module):
         self.uncertainty_context = bool(uncertainty_context)
         self.nested_self_context = bool(nested_self_context)
         if jet_mode not in {"none", "laplacian", "factor", "richardson",
+                            "shell_mean", "shell_midpoint", "shell_mean_orthogonal",
                             "curvature_context", "curvature_context_bounded",
                             "curvature_context_geometric", "curvature_context_detached",
+                            "curvature_context_parallel", "curvature_chart_parallel",
+                            "curvature_context_orthogonal",
+                            "allocation_shell_mixture", "allocation_shell_geodesic",
                             "nested_chart"}:
             raise ValueError(jet_mode)
         self.jet_mode = jet_mode
@@ -41,11 +46,67 @@ class SoftEikonalLinear(nn.Module):
                                   "basis_ray_odd"}:
             raise ValueError(transport_mode)
         self.transport_mode = transport_mode
+        if value_mode not in {"transported", "authentic", "midpoint",
+                              "ray_energy", "transported_plus_energy"}:
+            raise ValueError(value_mode)
+        self.value_mode = value_mode
+        self.allocation_smoothing = float(allocation_smoothing)
+        if not 0 <= self.allocation_smoothing <= 1:
+            raise ValueError(allocation_smoothing)
         self.base = nn.Linear(n_in, n_out)
         self.metric = nn.Linear(n_in, rank * rank)
         generator = torch.Generator().manual_seed(9157 + n_in + n_out)
-        primitive = torch.randn(directions, rank, n_in, generator=generator)
-        self.register_buffer("primitive", F.normalize(primitive, dim=-1))
+        if primitive_mode == "random":
+            primitive = F.normalize(
+                torch.randn(directions, rank, n_in, generator=generator), dim=-1
+            )
+        elif primitive_mode == "tight":
+            # A union of orthonormal bases has a scalar frame operator: the
+            # atlas begins without privileged aggregate directions while its
+            # ray count and all trainable degrees of freedom remain unchanged.
+            ray_count = directions * rank
+            bases = []
+            while sum(len(basis) for basis in bases) < ray_count:
+                matrix = torch.randn(n_in, n_in, generator=generator)
+                basis, _ = torch.linalg.qr(matrix)
+                bases.append(basis.transpose(0, 1))
+            primitive = torch.cat(bases, dim=0)[:ray_count].reshape(directions, rank, n_in)
+        elif primitive_mode == "stiefel_cycle":
+            if n_in < 2 * rank:
+                raise ValueError("stiefel_cycle requires n_in >= 2 * rank")
+            seed_matrix = torch.randn(n_in, 2 * rank, generator=generator)
+            bundle, _ = torch.linalg.qr(seed_matrix)
+            origin = bundle[:, :rank].transpose(0, 1)
+            tangent = bundle[:, rank:2 * rank].transpose(0, 1)
+            angle = torch.arange(directions) * (2 * math.pi / directions)
+            primitive = (torch.cos(angle)[:, None, None] * origin[None]
+                         + torch.sin(angle)[:, None, None] * tangent[None])
+        elif primitive_mode == "stiefel_flow":
+            if n_in % 2:
+                raise ValueError("stiefel_flow requires an even input width")
+            base_matrix = torch.randn(n_in, rank, generator=generator)
+            base, _ = torch.linalg.qr(base_matrix)
+            mixing_matrix = torch.randn(n_in, n_in, generator=generator)
+            mixing, _ = torch.linalg.qr(mixing_matrix)
+            canonical = torch.zeros(n_in, n_in)
+            # Keep the geometric flow fixed when its discrete sampling is
+            # refined; extra views resolve the connection rather than adding
+            # higher-frequency rotations.
+            maximum_frequency = max(1, min(5, (directions - 1) // 2))
+            for plane in range(n_in // 2):
+                frequency = 1 + plane % maximum_frequency
+                canonical[2 * plane, 2 * plane + 1] = -frequency
+                canonical[2 * plane + 1, 2 * plane] = frequency
+            generator_matrix = mixing @ canonical @ mixing.transpose(0, 1)
+            frames = []
+            for direction in range(directions):
+                angle = 2 * math.pi * direction / directions
+                rotation = torch.matrix_exp(angle * generator_matrix)
+                frames.append((rotation @ base).transpose(0, 1))
+            primitive = torch.stack(frames)
+        else:
+            raise ValueError(primitive_mode)
+        self.register_buffer("primitive", primitive)
         self.shared = nn.Parameter(torch.randn(rank, n_out) / math.sqrt(rank))
         self.response = nn.Sequential(nn.Linear(4, 12), LELU(), nn.Linear(12, 1))
         self.scale = nn.Parameter(torch.tensor(-1.5))
@@ -70,6 +131,10 @@ class SoftEikonalLinear(nn.Module):
         response = self.response(stats).squeeze(-1)
         logits = response - cost / (cost.mean(1, keepdim=True) + 1e-5)
         weight = torch.softmax(logits / self.temperature, 1)
+        if self.allocation_smoothing:
+            neighbor = .5 * (torch.roll(weight, 1, 1) + torch.roll(weight, -1, 1))
+            weight = ((1 - self.allocation_smoothing) * weight
+                      + self.allocation_smoothing * neighbor)
         return metric, projected, weight
 
     def _lift_context(self, projected, weight):
@@ -87,7 +152,7 @@ class SoftEikonalLinear(nn.Module):
         bounded = state * (reference_rms / (reference_rms + state_rms + 1e-6))
         return bounded, state_rms
 
-    def _shell_curvature(self, x, pooled, weight, radius_scale=1.0):
+    def _shell_curvature(self, x, pooled, weight, radius_scale=1.0, orthogonal=False):
         """Return directional even shell differences in the learned chart.
 
         The external model still receives one activation. These symmetric
@@ -98,6 +163,11 @@ class SoftEikonalLinear(nn.Module):
         batch = len(x)
         frame = torch.einsum("bd,dri->bri", weight, self.primitive)
         frame = F.normalize(frame, dim=-1)
+        if orthogonal:
+            gram = frame @ frame.transpose(1, 2)
+            identity = torch.eye(self.rank, device=x.device, dtype=x.dtype)[None]
+            cholesky = torch.linalg.cholesky(gram + 1e-3 * identity)
+            frame = torch.linalg.solve_triangular(cholesky, frame, upper=False)
         # The shell is one self-context step from the authentic chart point.
         # Euclidean norm makes the radius invariant to hidden width.
         radius = (self.self_context_strength * radius_scale
@@ -111,12 +181,20 @@ class SoftEikonalLinear(nn.Module):
         plus, minus = probe_pooled[:, :self.rank], probe_pooled[:, self.rank:]
         return plus + minus - 2 * pooled[:, None, :]
 
-    def _shell_context_curvature(self, x, projected, weight):
+    def _shell_context_curvature(self, x, projected, weight, orthogonal=False):
         """Lift the even shell response back into activation coordinates."""
         batch = len(x)
         center = torch.einsum("bd,bdr,dri->bi", weight, projected, self.primitive) / self.rank
         frame = torch.einsum("bd,dri->bri", weight, self.primitive)
         frame = F.normalize(frame, dim=-1)
+        if orthogonal:
+            # An Eikonal shell represents the learned tangent subspace, not
+            # the arbitrary skew among the rays used to span it.  Whitening
+            # makes the summed even difference invariant to that skew.
+            gram = frame @ frame.transpose(1, 2)
+            identity = torch.eye(self.rank, device=x.device, dtype=x.dtype)[None]
+            cholesky = torch.linalg.cholesky(gram + 1e-3 * identity)
+            frame = torch.linalg.solve_triangular(cholesky, frame, upper=False)
         radius = (self.self_context_strength
                   * x.norm(dim=1, keepdim=True).detach().clamp_min(1e-3))
         displacement = radius[:, None, :] * frame
@@ -130,9 +208,30 @@ class SoftEikonalLinear(nn.Module):
         plus, minus = probe_context[:, :self.rank], probe_context[:, self.rank:]
         return (plus + minus - 2 * center[:, None, :]).mean(dim=1)
 
+    def _shell_allocation(self, x, weight):
+        """Symmetric mean allocation on the learned rank-r Eikonal shell."""
+        batch = len(x)
+        frame = torch.einsum("bd,dri->bri", weight, self.primitive)
+        frame = F.normalize(frame, dim=-1)
+        radius = (self.self_context_strength
+                  * x.norm(dim=1, keepdim=True).detach().clamp_min(1e-3))
+        displacement = radius[:, None, :] * frame
+        shell = torch.cat((x[:, None, :] + displacement,
+                           x[:, None, :] - displacement), dim=1)
+        _, _, shell_weight = self._allocate(shell.flatten(0, 1))
+        return shell_weight.view(batch, 2 * self.rank, self.directions).mean(1)
+
     def _jet_state(self, x, pooled, weight):
-        curvature = self._shell_curvature(x, pooled, weight)
+        curvature = self._shell_curvature(
+            x, pooled, weight, orthogonal=self.jet_mode == "shell_mean_orthogonal"
+        )
         laplacian = curvature.mean(dim=1)
+        if self.jet_mode in {"shell_mean", "shell_mean_orthogonal"}:
+            # Each curvature factor is p+ + p- - 2p.  Half its mean moves p
+            # exactly to the mean response over the symmetric shell.
+            return .5 * laplacian
+        if self.jet_mode == "shell_midpoint":
+            return .25 * laplacian
         if self.jet_mode == "laplacian":
             return laplacian
         if self.jet_mode == "richardson":
@@ -158,6 +257,7 @@ class SoftEikonalLinear(nn.Module):
         extra_diagnostics = {}
         chart_points = 1
         metric, projected, weight = self._allocate(x)
+        authentic_projected = projected
         initial_weight = weight
         if self.transport_mode != "none" and self.self_context_strength:
             # Treat self-context as a vector field and retain how the field
@@ -266,8 +366,13 @@ class SoftEikonalLinear(nn.Module):
             metric, projected, weight = self._allocate(chart_input)
             chart_points += 2
         if self.jet_mode in {"curvature_context", "curvature_context_bounded",
-                             "curvature_context_geometric", "curvature_context_detached"}:
-            curvature_context = self._shell_context_curvature(chart_input, projected, weight)
+                             "curvature_context_geometric", "curvature_context_detached",
+                             "curvature_context_parallel", "curvature_chart_parallel",
+                             "curvature_context_orthogonal"}:
+            curvature_context = self._shell_context_curvature(
+                chart_input, projected, weight,
+                orthogonal=self.jet_mode == "curvature_context_orthogonal",
+            )
             curvature_rms = curvature_context.square().mean(1, keepdim=True).sqrt().clamp_min(1e-6)
             chart_rms = chart_input.square().mean(1, keepdim=True).sqrt().detach().clamp_min(1e-6)
             chart_points += 2 * self.rank
@@ -285,6 +390,23 @@ class SoftEikonalLinear(nn.Module):
                 # still capped at the chart scale.
                 authority = (curvature_rms / (chart_rms + curvature_rms)).sqrt()
                 injected = curvature_context * (chart_rms / curvature_rms) * authority
+            elif self.jet_mode in {"curvature_context_parallel", "curvature_chart_parallel"}:
+                # Curvature found the missing radial transitions, but its
+                # component transverse to the established chart flow tore
+                # otherwise closed level sets.  Keep the full signed second
+                # difference while allowing it to change only distance along
+                # an already acquired direction.
+                full_scale = curvature_context * (chart_rms / curvature_rms)
+                reference = (normalized_context
+                             if self.jet_mode == "curvature_context_parallel"
+                             else chart_input)
+                coefficient = ((full_scale * reference).sum(1, keepdim=True)
+                               / reference.square().sum(1, keepdim=True).clamp_min(1e-6))
+                injected = coefficient * reference
+                authority = injected.square().mean(1, keepdim=True).sqrt() / chart_rms
+                extra_diagnostics["curvature_parallel_cosine"] = F.cosine_similarity(
+                    curvature_context, reference, dim=1
+                ).abs().unsqueeze(1)
             else:
                 injected = curvature_context * (chart_rms / curvature_rms)
                 authority = torch.ones_like(curvature_rms)
@@ -295,6 +417,23 @@ class SoftEikonalLinear(nn.Module):
                 "curvature_raw_ratio": curvature_rms / chart_rms,
                 "curvature_authority": authority,
             })
+        if self.jet_mode in {"allocation_shell_mixture", "allocation_shell_geodesic"}:
+            shell_weight = self._shell_allocation(chart_input, weight)
+            chart_points += 2 * self.rank
+            shell_midpoint = .5 * (weight + shell_weight)
+            shell_js = .5 * (
+                (weight * (torch.log(weight + 1e-9) - torch.log(shell_midpoint + 1e-9))).sum(1)
+                + (shell_weight * (torch.log(shell_weight + 1e-9) - torch.log(shell_midpoint + 1e-9))).sum(1)
+            )
+            if self.jet_mode == "allocation_shell_mixture":
+                weight = (1 - self.self_context_strength) * weight + self.self_context_strength * shell_weight
+            else:
+                center_log = torch.log(weight + 1e-9)
+                shell_log = torch.log(shell_weight + 1e-9)
+                weight = torch.softmax(
+                    center_log + self.self_context_strength * (shell_log - center_log), dim=1
+                )
+            extra_diagnostics["shell_allocation_js"] = shell_js.unsqueeze(1)
         if self.jet_mode == "nested_chart":
             # The first chart transition is a tangent displacement on the
             # allocation simplex. Lift that transition into activation space,
@@ -323,9 +462,22 @@ class SoftEikonalLinear(nn.Module):
             weight = torch.roll(weight, 1, 0)
         elif self.diagnostic_mode == "uniform":
             weight = torch.full_like(weight, 1 / self.directions)
-        pooled = torch.einsum("bd,bdr->br", weight, projected)
+        if self.value_mode == "authentic":
+            output_projected = authentic_projected
+        elif self.value_mode == "midpoint":
+            output_projected = .5 * (authentic_projected + projected)
+        elif self.value_mode == "ray_energy":
+            output_projected = projected * torch.tanh(projected)
+        elif self.value_mode == "transported_plus_energy":
+            output_projected = projected + projected * torch.tanh(projected)
+        else:
+            output_projected = projected
+        pooled = torch.einsum("bd,bdr->br", weight, output_projected)
         if self.jet_mode not in {"none", "curvature_context", "curvature_context_bounded",
                                 "curvature_context_geometric", "curvature_context_detached",
+                                "curvature_context_parallel", "curvature_chart_parallel",
+                                "curvature_context_orthogonal",
+                                "allocation_shell_mixture", "allocation_shell_geodesic",
                                 "nested_chart"}:
             pooled = pooled + self._jet_state(chart_input, pooled, weight)
         correction = F.softplus(self.scale) * (pooled @ self.shared)
@@ -355,19 +507,27 @@ class SoftEikonalNet(nn.Module):
                  temperature: float = 1.0, self_context_strength: float = 0.0,
                  context_steps: int = 1, uncertainty_context: bool = False,
                  jet_mode: str = "none", nested_self_context: bool = False,
-                 transport_mode: str = "none"):
+                 transport_mode: str = "none", value_mode: str = "transported",
+                 primitive_mode: str = "random", directions: int = 12,
+                 rank: int = 4, allocation_smoothing: float = 0.0):
         super().__init__()
         self.embed = nn.Linear(input_dim, width)
-        self.up = SoftEikonalLinear(width, 2 * width, temperature=temperature,
+        self.up = SoftEikonalLinear(width, 2 * width, directions=directions, rank=rank,
+                                    temperature=temperature,
                                     self_context_strength=self_context_strength,
                                     context_steps=context_steps, uncertainty_context=uncertainty_context,
                                     jet_mode=jet_mode, nested_self_context=nested_self_context,
-                                    transport_mode=transport_mode)
-        self.down = SoftEikonalLinear(2 * width, width, temperature=temperature,
+                                    transport_mode=transport_mode, value_mode=value_mode,
+                                    primitive_mode=primitive_mode,
+                                    allocation_smoothing=allocation_smoothing)
+        self.down = SoftEikonalLinear(2 * width, width, directions=directions, rank=rank,
+                                      temperature=temperature,
                                       self_context_strength=self_context_strength,
                                       context_steps=context_steps, uncertainty_context=uncertainty_context,
                                       jet_mode=jet_mode, nested_self_context=nested_self_context,
-                                      transport_mode=transport_mode)
+                                      transport_mode=transport_mode, value_mode=value_mode,
+                                      primitive_mode=primitive_mode,
+                                      allocation_smoothing=allocation_smoothing)
         self.activation = LELU()
         self.output = nn.Linear(width, output_dim)
 

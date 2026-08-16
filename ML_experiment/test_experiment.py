@@ -12,7 +12,7 @@ if str(ROOT) not in sys.path: sys.path.insert(0, str(ROOT))
 from ML_experiment.models import parameter_count
 from ML_experiment.run_benchmark import chart_loss, secant_loss
 from ML_experiment.tasks import TASK_BUILDERS
-from ML_experiment.variants import JET_VARIANTS, TRANSPORT_VARIANTS, VARIANTS, make_variant
+from ML_experiment.variants import JET_VARIANTS, RADIAL_ENERGY_VARIANTS, RADIAL_FRAME_VARIANTS, RADIAL_INTEGRAL_VARIANTS, RADIAL_LAB_VARIANTS, RADIAL_PARALLEL_VARIANTS, RADIAL_SHELL_VARIANTS, TRANSPORT_VARIANTS, VARIANTS, make_variant
 
 
 class SupersetTests(unittest.TestCase):
@@ -81,6 +81,70 @@ class SupersetTests(unittest.TestCase):
         for layer in model.diagnostics().values():
             authority = layer["curvature_authority"]
             self.assertTrue(((authority >= 0) & (authority <= 1)).all())
+
+    def test_radial_lab_variants_separate_selection_from_values_without_parameters(self):
+        x = torch.randn(17, 3)
+        counts = set()
+        outputs = []
+        for name in RADIAL_LAB_VARIANTS:
+            torch.manual_seed(31); model = make_variant(name, 3, 2, 16)
+            outputs.append(model(x)); counts.add(parameter_count(model))
+        self.assertEqual(len(counts), 1)
+        self.assertFalse(torch.allclose(outputs[0], outputs[1]))
+        self.assertFalse(torch.allclose(outputs[2], outputs[3]))
+
+    def test_eikonal_shell_consensus_stays_on_the_simplex(self):
+        x = torch.randn(23, 3)
+        baseline = make_variant("self_context", 3, 2, 16)
+        for name in RADIAL_SHELL_VARIANTS:
+            model = make_variant(name, 3, 2, 16)
+            output = model(x)
+            self.assertEqual(parameter_count(model), parameter_count(baseline))
+            self.assertTrue(torch.isfinite(output).all())
+            for weight in model.allocation_weights():
+                self.assertTrue(torch.allclose(weight.sum(1), torch.ones(len(x)), atol=1e-5))
+
+    def test_parallel_curvature_is_parameter_matched_and_finite(self):
+        x = torch.randn(23, 3)
+        baseline = make_variant("self_context", 3, 2, 16)
+        for name in RADIAL_PARALLEL_VARIANTS:
+            model = make_variant(name, 3, 2, 16)
+            output = model(x)
+            self.assertEqual(parameter_count(model), parameter_count(baseline))
+            self.assertTrue(torch.isfinite(output).all())
+            output.square().mean().backward()
+            self.assertTrue(all(p.grad is None or torch.isfinite(p.grad).all()
+                                for p in model.parameters()))
+
+    def test_orthogonal_eikonal_frame_is_parameter_matched_and_finite(self):
+        x = torch.randn(23, 3)
+        baseline = make_variant("self_context", 3, 2, 16)
+        for name in RADIAL_FRAME_VARIANTS:
+            model = make_variant(name, 3, 2, 16)
+            output = model(x)
+            self.assertEqual(parameter_count(model), parameter_count(baseline))
+            self.assertTrue(torch.isfinite(output).all())
+            output.square().mean().backward()
+            self.assertTrue(all(p.grad is None or torch.isfinite(p.grad).all()
+                                for p in model.parameters()))
+
+    def test_eikonal_energy_values_are_parameter_matched_and_finite(self):
+        x = torch.randn(23, 3)
+        baseline = make_variant("self_context", 3, 2, 16)
+        for name in RADIAL_ENERGY_VARIANTS:
+            model = make_variant(name, 3, 2, 16)
+            output = model(x)
+            self.assertEqual(parameter_count(model), parameter_count(baseline))
+            self.assertTrue(torch.isfinite(output).all())
+
+    def test_eikonal_integral_is_parameter_matched_and_finite(self):
+        x = torch.randn(23, 3)
+        baseline = make_variant("self_context", 3, 2, 16)
+        for name in RADIAL_INTEGRAL_VARIANTS:
+            model = make_variant(name, 3, 2, 16)
+            output = model(x)
+            self.assertEqual(parameter_count(model), parameter_count(baseline))
+            self.assertTrue(torch.isfinite(output).all())
 
     def test_nd_tasks_have_inner_and_outer_support(self):
         for name in ("nd_spiral_low_rank", "nd_spiral_high_rank", "hypercube_checker"):

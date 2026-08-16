@@ -61,6 +61,7 @@ def state_snapshot(model, sample):
         for key in ("allocation_js", "chart_points", "context_raw_ratio",
                     "innovation_rms_ratio", "context_cosine", "turn_fraction",
                     "basis_coordinate_rms",
+                    "shell_allocation_js",
                     "curvature_raw_ratio", "curvature_authority"):
             if key in state:
                 values[f"{layer}_{key}"] = float(state[key].float().mean())

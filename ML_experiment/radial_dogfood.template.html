@@ -1,0 +1,62 @@
+<section id="radial-dogfood-viz" aria-label="Radial self-context dogfood results">
+  <style>
+    #radial-dogfood-viz{color:var(--foreground);font-family:inherit;max-width:100%;overflow:hidden;position:relative}
+    #radial-dogfood-viz h2,#radial-dogfood-viz h3{font-weight:500;margin:0}
+    #radial-dogfood-viz h2{margin-bottom:.25rem}
+    #radial-dogfood-viz .lede{color:var(--muted-foreground);margin:.1rem 0 1.15rem}
+    #radial-dogfood-viz .fields{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1rem}
+    #radial-dogfood-viz .field{min-width:0;text-align:center}
+    #radial-dogfood-viz .field h3{font-size:13px;min-height:2.2rem;margin-bottom:.35rem}
+    #radial-dogfood-viz .field svg{width:100%;height:auto;display:block}
+    #radial-dogfood-viz .plots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5rem;margin-top:1.6rem}
+    #radial-dogfood-viz .plot{min-width:0}
+    #radial-dogfood-viz .plot>h3{margin-bottom:.45rem}
+    #radial-dogfood-viz svg text{fill:var(--foreground);font-size:12px;font-family:inherit}
+    #radial-dogfood-viz svg .axis path,#radial-dogfood-viz svg .axis line{stroke:var(--border)}
+    #radial-dogfood-viz svg [data-chart-frame]{fill:none;stroke:var(--border)}
+    #radial-dogfood-viz .legend{display:flex;flex-wrap:wrap;gap:.35rem 1rem;margin:.55rem 0 .25rem}
+    #radial-dogfood-viz .legend button{appearance:none;background:transparent;border:0;color:var(--foreground);font:inherit;padding:.1rem 0;cursor:pointer}
+    #radial-dogfood-viz .legend button[aria-pressed="false"]{color:var(--muted-foreground);text-decoration:line-through}
+    #radial-dogfood-viz .swatch{display:inline-block;width:.65rem;height:.65rem;margin-right:.35rem}
+    #radial-dogfood-viz .tooltip{position:absolute;pointer-events:none;background:var(--popover);color:var(--popover-foreground);border:1px solid var(--border);padding:.4rem .55rem;opacity:0;z-index:5}
+    @media(max-width:800px){#radial-dogfood-viz .fields{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(max-width:620px){#radial-dogfood-viz .plots{grid-template-columns:1fr}}
+    @media(max-width:420px){#radial-dogfood-viz .fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}}
+  </style>
+  <h2>Radial dogfood: from chart seams to four rings</h2>
+  <p class="lede">One task · seed 0 · 500 optimizer steps · width 24 · identical trainable parameter count · M4 CPU</p>
+  <div class="fields" id="rdf-fields"></div>
+  <div class="legend" id="rdf-legend" aria-label="Toggle plotted models"></div>
+  <div class="plots">
+    <div class="plot"><h3>Angular-mean radial probability</h3><svg id="rdf-profile" role="img" aria-label="Class one probability by radius"></svg></div>
+    <div class="plot"><h3>Acquisition over 500 steps</h3><svg id="rdf-learning" role="img" aria-label="Validation accuracy by training step"></svg></div>
+  </div>
+  <div class="tooltip" role="tooltip"></div>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script>
+  (()=>{
+    const root=document.getElementById('radial-dogfood-viz'),data=__DATA__;
+    const labels={truth:'Truth',self_context:'Self-context',raw_curvature:'Raw curvature',tight_curvature:'Tight frame + curvature',continuous_flow:'Continuous frame flow'};
+    const colors={self_context:'var(--viz-series-1)',raw_curvature:'var(--viz-series-4)',tight_curvature:'var(--viz-series-3)',continuous_flow:'var(--viz-series-2)'};
+    const active=new Set(data.models.map(d=>d.key)),tooltip=d3.select(root).select('.tooltip');
+    const fields=[{key:'truth',field:data.truth},...data.models];
+    const cells=d3.select(root).select('#rdf-fields').selectAll('.field').data(fields).join('div').attr('class','field');
+    cells.html(d=>`<h3>${labels[d.key]}</h3><svg role="img" aria-label="${labels[d.key]} radial decision field"></svg>`);
+    cells.each(function(row){
+      const n=data.size,w=Math.max(120,this.getBoundingClientRect().width),cell=w/n,values=row.field,svg=d3.select(this).select('svg').attr('viewBox',`0 0 ${w} ${w}`);
+      svg.selectAll('rect').data(values).join('rect').attr('x',(d,i)=>(i%n)*cell).attr('y',(d,i)=>w-(Math.floor(i/n)+1)*cell).attr('width',cell+.3).attr('height',cell+.3).attr('fill',d=>d?'var(--viz-series-2)':'var(--viz-series-1)');
+      if(row.key!=='truth') svg.append('title').text(`${(row.score*100).toFixed(1)}% validation · ${row.radial_transitions}/6 crossings · ${(row.angular_consistency*100).toFixed(1)}% angular agreement`);
+    });
+    d3.select(root).select('#rdf-legend').selectAll('button').data(data.models).join('button').attr('type','button').attr('aria-pressed','true').html(d=>`<span class="swatch" style="background:${colors[d.key]}"></span>${labels[d.key]}`).on('click',function(event,d){active.has(d.key)?active.delete(d.key):active.add(d.key);d3.select(this).attr('aria-pressed',active.has(d.key));drawPlots();});
+    function frame(svg,w,h,m,xTitle,yTitle){svg.selectAll('*').remove();svg.append('rect').attr('data-chart-frame','').attr('x',m.l).attr('y',m.t).attr('width',w-m.l-m.r).attr('height',h-m.t-m.b);svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('x',(m.l+w-m.r)/2).attr('y',h-5).attr('text-anchor','middle').text(xTitle);svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('transform',`translate(13 ${(m.t+h-m.b)/2}) rotate(-90)`).attr('text-anchor','middle').text(yTitle);}
+    function lineChart(id,rows,xValues,yValues,xTitle,yTitle,yDomain){
+      const host=root.querySelector(id),w=Math.max(290,host.parentElement.getBoundingClientRect().width),h=310,m={t:15,r:18,b:43,l:66},svg=d3.select(host).attr('viewBox',`0 0 ${w} ${h}`).attr('height',h),x=d3.scaleLinear(d3.extent(xValues),[m.l,w-m.r]),all=rows.flatMap(yValues),extent=yDomain||d3.extent(all),pad=(extent[1]-extent[0]||1)*.06,y=d3.scaleLinear([extent[0]-pad,extent[1]+pad],[h-m.b,m.t]);frame(svg,w,h,m,xTitle,yTitle);svg.append('g').attr('class','axis').attr('transform',`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(w<420?4:6));svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));const line=d3.line().x((v,i)=>x(xValues[i])).y(v=>y(v));svg.append('g').selectAll('path').data(rows).join('path').attr('fill','none').attr('stroke',d=>colors[d.key]).attr('stroke-width',d=>d.key==='continuous_flow'?2.7:1.8).attr('opacity',d=>active.has(d.key)?1:0).attr('d',d=>line(yValues(d)));const overlay=svg.append('rect').attr('data-chart-hit','').attr('data-chart-hover-overlay','cross-series').attr('x',m.l).attr('y',m.t).attr('width',w-m.l-m.r).attr('height',h-m.t-m.b).attr('fill','transparent');const guide=svg.append('line').attr('data-chart-hover-guide','').attr('y1',m.t).attr('y2',h-m.b).attr('stroke','var(--border)').attr('opacity',0);overlay.on('pointermove',event=>{const [px]=d3.pointer(event),xv=x.invert(px),i=d3.bisector(v=>v).center(xValues,xv),shown=rows.filter(d=>active.has(d.key));guide.attr('x1',px).attr('x2',px).attr('opacity',1);tooltip.style('opacity',1).style('left',`${event.offsetX+12}px`).style('top',`${event.offsetY+12}px`).html(shown.map(d=>`${labels[d.key]}: ${yValues(d)[i].toFixed(3)}`).join('<br>'));}).on('pointerleave',()=>{guide.attr('opacity',0);tooltip.style('opacity',0)});
+    }
+    function drawPlots(){
+      lineChart('#rdf-profile',data.models,data.radii,d=>d.profile,'Radius','Class 1 probability',[0,1]);
+      const visible=data.models,steps=visible[0].history.map(d=>d.step);lineChart('#rdf-learning',visible,steps,d=>d.history.map(p=>p.score),'Training step','Validation accuracy',[.45,.95]);
+    }
+    let timer;new ResizeObserver(()=>{clearTimeout(timer);timer=setTimeout(()=>{cells.each(function(row){const n=data.size,w=Math.max(120,this.getBoundingClientRect().width),cell=w/n,svg=d3.select(this).select('svg').attr('viewBox',`0 0 ${w} ${w}`);svg.selectAll('rect').attr('x',(d,i)=>(i%n)*cell).attr('y',(d,i)=>w-(Math.floor(i/n)+1)*cell).attr('width',cell+.3).attr('height',cell+.3)});drawPlots();},80)}).observe(root);drawPlots();
+  })();
+  </script>
+</section>
