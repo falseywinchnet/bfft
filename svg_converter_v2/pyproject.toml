@@ -17,6 +17,7 @@ dependencies = [
 [project.scripts]
 tlvector-v2 = "tlvector_v2.cli:main"
 tlvector-v2-affine = "tlvector_v2.cli:affine_main"
+tlvector-v2-gui = "tlvector_v2.web_gui:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

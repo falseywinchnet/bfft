@@ -1,15 +1,19 @@
 from __future__ import annotations
 
 import gzip
+import base64
+from io import BytesIO
 import unittest
 import xml.etree.ElementTree as ET
 
 import numpy as np
+from PIL import Image
 
 from tlvector_v2.affine import affine_gradient_svg, fit_rank1_affine_cells
 from tlvector_v2.core import V2Config, vectorize_array_v2
 from tlvector_v2.lattice import compact_lattice_loop, deterministic_svgz
 from tlvector_v2.merge import merge_error_per_byte
+from tlvector_v2.web_gui import convert_request
 
 
 class ConverterV2Tests(unittest.TestCase):
@@ -88,6 +92,25 @@ class ConverterV2Tests(unittest.TestCase):
         self.assertEqual(gzip.decompress(result.svgz).decode(), result.svg)
         self.assertLessEqual(result.diagnostics["final_mse"], 1.0)
         self.assertEqual(result.diagnostics["target_met"], 1)
+
+    def test_browser_gui_returns_svg_svgz_and_source_size(self):
+        source = np.zeros((12, 16, 4), dtype=np.uint8)
+        source[..., :3] = (30, 80, 140)
+        source[..., 3] = 255
+        source[3:9, 4:12, :3] = (190, 110, 40)
+        encoded = BytesIO()
+        Image.fromarray(source, "RGBA").save(encoded, format="PNG")
+        data = encoded.getvalue()
+        payload = convert_request(
+            data,
+            "colors=2&budget=2&split_target=1&final_target=1&area=2&rounds=1"
+            "&coarse=16&minimum=1&name=web-control.png",
+        )
+        ET.fromstring(payload["svg"])
+        compressed = base64.b64decode(payload["svgz"])
+        self.assertEqual(gzip.decompress(compressed).decode(), payload["svg"])
+        self.assertEqual(payload["diagnostics"]["source_bytes"], len(data))
+        self.assertEqual(payload["diagnostics"]["target_met"], 1)
 
 
 if __name__ == "__main__":
