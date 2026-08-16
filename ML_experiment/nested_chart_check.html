@@ -1,0 +1,1217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Nested_Chart_Check.Fragment</title>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+</head>
+<body>
+<iframe sandbox="allow-scripts" referrerpolicy="no-referrer" title="Nested_Chart_Check.Fragment" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;Nested_Chart_Check.Fragment&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, var(--background));
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 14px);
+  --blue: light-dark(rgb(51 156 255), rgb(51 156 255));
+  --orange: light-dark(rgb(226 85 7), rgb(251 106 34));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --red: light-dark(rgb(224 46 42), rgb(255 103 100));
+  --purple: light-dark(rgb(146 79 247), rgb(173 123 249));
+  --yellow: light-dark(rgb(255 195 0), rgb(255 210 64));
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, &quot;Segoe UI&quot;, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --radius: var(--border-radius-lg, 12.5px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: 5px;
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium, 500);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: superellipse(1.5);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget &gt; :not(.card, .progress) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress {
+  display: flex;
+  height: 6px;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+}
+
+.progress-bar {
+  height: 100%;
+  flex-shrink: 0;
+  border: 0;
+  background: var(--viz-series-1);
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: superellipse(1.5);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+  [aria-pressed=&quot;true&quot;],
+  [aria-selected=&quot;true&quot;],
+  .is-selected
+) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+/* Model-authored chart rules can otherwise stretch icons after these styles load. */
+svg.lucide {
+  display: block;
+  width: 16px !important;
+  height: 16px !important;
+  flex: none;
+  margin: 0 !important;
+  stroke-width: 1.6;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;nested-chart-check-viz&quot;&gt;
+  &lt;style&gt;
+    #nested-chart-check-viz{color:var(--foreground);font-size:var(--font-size-base);width:100%}
+    #nested-chart-check-viz *{box-sizing:border-box}
+    #nested-chart-check-viz h2,#nested-chart-check-viz h3,#nested-chart-check-viz p{margin-top:0}
+    #nested-chart-check-viz h2,#nested-chart-check-viz h3{font-weight:500}
+    #nested-chart-check-viz .lede{color:var(--muted-foreground);margin-bottom:14px}
+    #nested-chart-check-viz .controls{display:flex;flex-wrap:wrap;gap:6px 15px;margin:5px 0 14px}
+    #nested-chart-check-viz .controls button{appearance:none;background:transparent;border:0;color:var(--foreground);padding:3px 0;cursor:pointer;font:inherit}
+    #nested-chart-check-viz .controls button[aria-pressed=&quot;false&quot;]{color:var(--muted-foreground);text-decoration:line-through}
+    #nested-chart-check-viz .swatch{display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:50%;background:var(--swatch)}
+    #nested-chart-check-viz .section{margin:24px 0}
+    #nested-chart-check-viz .two-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    #nested-chart-check-viz .panel{min-width:0}
+    #nested-chart-check-viz .panel h3{margin-bottom:4px}
+    #nested-chart-check-viz .radial-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+    #nested-chart-check-viz .radial-item{min-width:0;text-align:center}
+    #nested-chart-check-viz .radial-item h3{margin-bottom:4px}
+    #nested-chart-check-viz svg{display:block;width:100%;overflow:visible}
+    #nested-chart-check-viz svg text{fill:var(--foreground);font-size:12px}
+    #nested-chart-check-viz svg .frame{fill:none;stroke:var(--border)}
+    #nested-chart-check-viz svg .axis path,#nested-chart-check-viz svg .axis line{stroke:var(--border)}
+    #nested-chart-check-viz svg .grid line{stroke:var(--border);opacity:.42}
+    @media(max-width:760px){#nested-chart-check-viz .two-grid{grid-template-columns:1fr}#nested-chart-check-viz .radial-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:420px){#nested-chart-check-viz .radial-grid{grid-template-columns:1fr}}
+  &lt;/style&gt;
+  &lt;h2&gt;Nested charts: scratch versus staged&lt;/h2&gt;
+  &lt;p class=&quot;lede&quot;&gt;Radial stripes and multiscale 1-D · two paired seeds · 300 total steps · identical parameters · M4 CPU&lt;/p&gt;
+  &lt;div class=&quot;controls&quot; id=&quot;ncc-controls&quot; aria-label=&quot;Toggle model series&quot;&gt;&lt;/div&gt;
+  &lt;section class=&quot;section&quot;&gt;
+    &lt;h3&gt;Endpoint, tail, and acquisition&lt;/h3&gt;
+    &lt;div class=&quot;two-grid&quot; id=&quot;ncc-metric-grid&quot;&gt;&lt;/div&gt;
+  &lt;/section&gt;
+  &lt;section class=&quot;section&quot;&gt;
+    &lt;h3&gt;Learning inside the observed region&lt;/h3&gt;
+    &lt;div class=&quot;two-grid&quot; id=&quot;ncc-learning-grid&quot;&gt;&lt;/div&gt;
+  &lt;/section&gt;
+  &lt;section class=&quot;section&quot;&gt;
+    &lt;h3&gt;Radial decision fields · seed 0&lt;/h3&gt;
+    &lt;div class=&quot;radial-grid&quot; id=&quot;ncc-radial-grid&quot;&gt;&lt;/div&gt;
+  &lt;/section&gt;
+  &lt;section class=&quot;section&quot;&gt;
+    &lt;h3&gt;Multiscale continuation · seed 0&lt;/h3&gt;
+    &lt;div class=&quot;panel&quot; id=&quot;ncc-multiscale&quot;&gt;&lt;svg role=&quot;img&quot; aria-label=&quot;Multiscale target and four model predictions&quot;&gt;&lt;title&gt;Multiscale target and model continuation outside the observed interval&lt;/title&gt;&lt;/svg&gt;&lt;/div&gt;
+  &lt;/section&gt;
+  &lt;script src=&quot;https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js&quot;&gt;&lt;/script&gt;
+  &lt;script&gt;
+  (()=&gt;{
+    const root=document.getElementById(&#x27;nested-chart-check-viz&#x27;);
+    const data={&quot;configurations&quot;:[&quot;self_context&quot;,&quot;curvature_context&quot;,&quot;nested_chart_scratch&quot;,&quot;nested_chart_staged&quot;],&quot;summary&quot;:[{&quot;task&quot;:&quot;radial_stripes&quot;,&quot;configuration&quot;:&quot;self_context&quot;,&quot;validation_score&quot;:0.5426401756703854,&quot;score&quot;:0.5426401756703854,&quot;tail_score&quot;:0.5426401756703854,&quot;learning_auc&quot;:0.49838191672849164,&quot;seconds&quot;:2.4133948539999985},{&quot;task&quot;:&quot;radial_stripes&quot;,&quot;configuration&quot;:&quot;curvature_context&quot;,&quot;validation_score&quot;:0.5974079892039299,&quot;score&quot;:0.5974079892039299,&quot;tail_score&quot;:0.5974079892039299,&quot;learning_auc&quot;:0.5150622284474472,&quot;seconds&quot;:7.571971625,&quot;validation_score_delta&quot;:0.05476781353354454,&quot;score_delta&quot;:0.05476781353354454,&quot;tail_score_delta&quot;:0.05476781353354454,&quot;learning_auc_delta&quot;:0.016680311718955565},{&quot;task&quot;:&quot;radial_stripes&quot;,&quot;configuration&quot;:&quot;nested_chart_scratch&quot;,&quot;validation_score&quot;:0.5468400791287422,&quot;score&quot;:0.5468400791287422,&quot;tail_score&quot;:0.5468400791287422,&quot;learning_auc&quot;:0.49923081032621364,&quot;seconds&quot;:4.035408708000001,&quot;validation_score_delta&quot;:0.004199903458356857,&quot;score_delta&quot;:0.004199903458356857,&quot;tail_score_delta&quot;:0.004199903458356857,&quot;learning_auc_delta&quot;:0.0008488935977220002},{&quot;task&quot;:&quot;radial_stripes&quot;,&quot;configuration&quot;:&quot;nested_chart_staged&quot;,&quot;validation_score&quot;:0.5392238236963749,&quot;score&quot;:0.5392238236963749,&quot;tail_score&quot;:0.5392238236963749,&quot;learning_auc&quot;:0.49755141385830937,&quot;seconds&quot;:3.2240641670000016,&quot;validation_score_delta&quot;:-0.0034163519740104675,&quot;score_delta&quot;:-0.0034163519740104675,&quot;tail_score_delta&quot;:-0.0034163519740104675,&quot;learning_auc_delta&quot;:-0.0008305028701822703},{&quot;task&quot;:&quot;multiscale_1d&quot;,&quot;configuration&quot;:&quot;self_context&quot;,&quot;validation_score&quot;:0.9553810148333736,&quot;score&quot;:0.3324682856862031,&quot;tail_score&quot;:0.33441102934634714,&quot;learning_auc&quot;:0.863248257428542,&quot;seconds&quot;:2.393841021},{&quot;task&quot;:&quot;multiscale_1d&quot;,&quot;configuration&quot;:&quot;curvature_context&quot;,&quot;validation_score&quot;:0.9699296143523326,&quot;score&quot;:0.2692158307128135,&quot;tail_score&quot;:0.34949236574932907,&quot;learning_auc&quot;:0.8798093793605413,&quot;seconds&quot;:7.868483020999999,&quot;validation_score_delta&quot;:0.014548599518959038,&quot;score_delta&quot;:-0.0632524549733896,&quot;tail_score_delta&quot;:0.015081336402981926,&quot;learning_auc_delta&quot;:0.016561121931999212},{&quot;task&quot;:&quot;multiscale_1d&quot;,&quot;configuration&quot;:&quot;nested_chart_scratch&quot;,&quot;validation_score&quot;:0.9549701448419471,&quot;score&quot;:0.32470881967926624,&quot;tail_score&quot;:0.33218833860956803,&quot;learning_auc&quot;:0.8630298841040163,&quot;seconds&quot;:4.331224645499997,&quot;validation_score_delta&quot;:-0.00041086999142647684,&quot;score_delta&quot;:-0.007759466006936888,&quot;tail_score_delta&quot;:-0.0022226907367791093,&quot;learning_auc_delta&quot;:-0.00021837332452578906},{&quot;task&quot;:&quot;multiscale_1d&quot;,&quot;configuration&quot;:&quot;nested_chart_staged&quot;,&quot;validation_score&quot;:0.9544404831921739,&quot;score&quot;:0.31909239922167254,&quot;tail_score&quot;:0.3310271705392973,&quot;learning_auc&quot;:0.8632687454957684,&quot;seconds&quot;:3.5085068335000003,&quot;validation_score_delta&quot;:-0.0009405316411996711,&quot;score_delta&quot;:-0.013375886464530584,&quot;tail_score_delta&quot;:-0.0033838588070498332,&quot;learning_auc_delta&quot;:2.0488067226320794e-05}],&quot;learning&quot;:{&quot;radial_stripes&quot;:{&quot;self_context&quot;:{&quot;step&quot;:[1,25,50,75,100,125,150,175,200,225,250,275,300],&quot;score&quot;:[0.50332,0.50378,0.49849,0.4968,0.49227,0.50263,0.48499,0.49646,0.49106,0.50601,0.50288,0.50238,0.54264]},&quot;curvature_context&quot;:{&quot;step&quot;:[1,25,50,75,100,125,150,175,200,225,250,275,300],&quot;score&quot;:[0.50191,0.50196,0.50174,0.50186,0.48917,0.50428,0.48892,0.50761,0.50033,0.54126,0.55388,0.56015,0.59741]},&quot;nested_chart_scratch&quot;:{&quot;step&quot;:[1,25,50,75,100,125,150,175,200,225,250,275,300],&quot;score&quot;:[0.50332,0.50347,0.49821,0.49679,0.492,0.50263,0.48355,0.49646,0.49279,0.50514,0.51009,0.50469,0.54684]},&quot;nested_chart_staged&quot;:{&quot;step&quot;:[1,25,50,75,100,125,150,175,200,225,250,275,300],&quot;score&quot;:[0.50332,0.50378,0.49849,0.4968,0.49227,0.50263,0.48499,0.49646,0.49076,0.50515,0.49845,0.49971,0.53922]}},&quot;multiscale_1d&quot;:{&quot;self_context&quot;:{&quot;step&quot;:[1,25,50,75,100,125,150,175,200,225,250,275,300],&quot;score&quot;:[0.49399,0.63009,0.82044,0.84278,0.86375,0.88255,0.90235,0.92518,0.93367,0.94953,0.95236,0.95429,0.95498]},&quot;curvature_context&quot;:{&quot;step&quot;:[1,25,50,75,100,125,150,175,200,225,250,275,300],&quot;score&quot;:[0.49412,0.62816,0.82643,0.87049,0.88934,0.91784,0.93395,0.94678,0.95331,0.95738,0.95983,0.96462,0.96993]},&quot;nested_chart_scratch&quot;:{&quot;step&quot;:[1,25,50,75,100,125,150,175,200,225,250,275,300],&quot;score&quot;:[0.49401,0.63125,0.8215,0.84859,0.86253,0.88468,0.9075,0.92057,0.93517,0.94121,0.94913,0.95225,0.95497]},&quot;nested_chart_staged&quot;:{&quot;step&quot;:[1,25,50,75,100,125,150,175,200,225,250,275,300],&quot;score&quot;:[0.49399,0.63009,0.82044,0.84278,0.86375,0.88255,0.90235,0.9256,0.93871,0.94739,0.95152,0.9527,0.95367]}}},&quot;radial&quot;:{&quot;size&quot;:31,&quot;truth&quot;:[0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,0,1,1,1,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,0,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,0,0,0,0,0,0,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,0,0,0,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,1,1,0,0,0,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,0,0,0,0,1,1,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,0,1,1,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,0,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,0,0,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,0,0,0,0,0,0,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,0,0,0,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1,1,0,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0],&quot;predictions&quot;:{&quot;self_context&quot;:[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],&quot;curvature_context&quot;:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],&quot;nested_chart_scratch&quot;:[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],&quot;nested_chart_staged&quot;:[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]}},&quot;multiscale&quot;:{&quot;x&quot;:[-5.0,-4.96,-4.9166,-4.8766,-4.8333,-4.7933,-4.7499,-4.7099,-4.6666,-4.6265,-4.5832,-4.5432,-4.4998,-4.4598,-4.4165,-4.3765,-4.3331,-4.2931,-4.2498,-4.2097,-4.1664,-4.1264,-4.083,-4.043,-3.9997,-3.9597,-3.9163,-3.8763,-3.8329,-3.7929,-3.7496,-3.7096,-3.6662,-3.6262,-3.5829,-3.5428,-3.4995,-3.4595,-3.4161,-3.3761,-3.3328,-3.2928,-3.2494,-3.2094,-3.1661,-3.126,-3.0827,-3.0427,-2.9993,-2.9593,-2.916,-2.876,-2.8326,-2.7926,-2.7492,-2.7092,-2.6659,-2.6259,-2.5825,-2.5425,-2.4992,-2.4592,-2.4158,-2.3758,-2.3324,-2.2924,-2.2491,-2.2091,-2.1657,-2.1257,-2.0824,-2.0423,-1.999,-1.959,-1.9156,-1.8756,-1.8323,-1.7923,-1.7489,-1.7089,-1.6656,-1.6255,-1.5822,-1.5422,-1.4988,-1.4588,-1.4155,-1.3755,-1.3321,-1.2921,-1.2487,-1.2087,-1.1654,-1.1254,-1.082,-1.042,-0.9987,-0.9587,-0.9153,-0.8753,-0.8319,-0.7919,-0.7486,-0.7086,-0.6652,-0.6252,-0.5819,-0.5418,-0.4985,-0.4585,-0.4151,-0.3751,-0.3318,-0.2918,-0.2484,-0.2084,-0.1651,-0.125,-0.0817,-0.0417,0.0017,0.0417,0.0817,0.125,0.1651,0.2084,0.2484,0.2918,0.3318,0.3751,0.4151,0.4585,0.4985,0.5418,0.5819,0.6252,0.6652,0.7086,0.7486,0.7919,0.8319,0.8753,0.9153,0.9587,0.9987,1.042,1.082,1.1254,1.1654,1.2087,1.2487,1.2921,1.3321,1.3755,1.4155,1.4588,1.4988,1.5422,1.5822,1.6255,1.6656,1.7089,1.7489,1.7923,1.8323,1.8756,1.9156,1.959,1.999,2.0423,2.0824,2.1257,2.1657,2.2091,2.2491,2.2924,2.3324,2.3758,2.4158,2.4592,2.4992,2.5425,2.5825,2.6259,2.6659,2.7092,2.7492,2.7926,2.8326,2.876,2.916,2.9593,2.9993,3.0427,3.0827,3.126,3.1661,3.2094,3.2494,3.2928,3.3328,3.3761,3.4161,3.4595,3.4995,3.5428,3.5829,3.6262,3.6662,3.7096,3.7496,3.7929,3.8329,3.8763,3.9163,3.9597,3.9997,4.043,4.083,4.1264,4.1664,4.2097,4.2498,4.2931,4.3331,4.3765,4.4165,4.4598,4.4998,4.5432,4.5832,4.6265,4.6666,4.7099,4.7499,4.7933,4.8333,4.8766,4.9166,4.96,5.0],&quot;truth&quot;:[-0.3682,-0.3586,-0.3473,-0.3362,-0.3233,-0.3107,-0.2962,-0.2819,-0.2656,-0.2498,-0.2319,-0.2144,-0.1941,-0.1738,-0.1499,-0.1262,-0.0989,-0.0727,-0.0435,-0.0158,0.0153,0.045,0.0778,0.1077,0.1383,0.1639,0.1885,0.2089,0.2292,0.2467,0.2637,0.2764,0.2858,0.2902,0.2924,0.2946,0.2998,0.3079,0.3189,0.3285,0.3365,0.3424,0.3507,0.3637,0.3853,0.4096,0.4341,0.4489,0.4535,0.4498,0.4438,0.4416,0.4424,0.4395,0.4218,0.3862,0.3296,0.2716,0.2175,0.1834,0.1599,0.1382,0.1006,0.0502,-0.0094,-0.049,-0.0574,-0.0323,0.0114,0.0416,0.0434,0.0185,-0.0136,-0.0213,0.0073,0.0537,0.0867,0.0649,-0.0328,-0.1766,-0.3495,-0.487,-0.5905,-0.6501,-0.7002,-0.7527,-0.8155,-0.8543,-0.8385,-0.7556,-0.6163,-0.4949,-0.4288,-0.4433,-0.5004,-0.524,-0.4585,-0.3123,-0.1236,-0.0025,0.011,-0.0766,-0.205,-0.2722,-0.2431,-0.1495,-0.064,-0.0783,-0.2191,-0.412,-0.5815,-0.6218,-0.5272,-0.3765,-0.252,-0.237,-0.3164,-0.3977,-0.3892,-0.2472,0.0107,0.2472,0.3892,0.3977,0.3164,0.237,0.252,0.3765,0.5272,0.6218,0.5815,0.412,0.2191,0.0783,0.064,0.1495,0.2431,0.2722,0.205,0.0766,-0.011,0.0025,0.1236,0.3123,0.4585,0.5239,0.5,0.4419,0.4243,0.4814,0.5843,0.6846,0.7089,0.6392,0.515,0.3791,0.3006,0.2786,0.2884,0.283,0.2368,0.154,0.0898,0.0864,0.1665,0.3221,0.477,0.5917,0.6135,0.5501,0.4461,0.3319,0.2518,0.194,0.1506,0.0951,0.0312,-0.0415,-0.0973,-0.1371,-0.1595,-0.1833,-0.2175,-0.2716,-0.3296,-0.3862,-0.4218,-0.4395,-0.4424,-0.4416,-0.4438,-0.4498,-0.4535,-0.4489,-0.4341,-0.4096,-0.3853,-0.3637,-0.3507,-0.3424,-0.3365,-0.3285,-0.3189,-0.3079,-0.2998,-0.2946,-0.2924,-0.2902,-0.2858,-0.2764,-0.2637,-0.2467,-0.2292,-0.2089,-0.1885,-0.1639,-0.1383,-0.1077,-0.0778,-0.045,-0.0153,0.0158,0.0435,0.0727,0.0989,0.1262,0.1499,0.1738,0.1941,0.2144,0.2319,0.2498,0.2656,0.2819,0.2962,0.3107,0.3233,0.3362,0.3473,0.3586,0.3682],&quot;predictions&quot;:{&quot;self_context&quot;:[1.1088,1.0931,1.0759,1.0602,1.0428,1.0265,1.0087,0.992,0.9737,0.9567,0.9382,0.9211,0.9026,0.8854,0.8669,0.8497,0.8312,0.8142,0.7959,0.7791,0.7608,0.7441,0.7264,0.7104,0.6936,0.6785,0.6629,0.649,0.6347,0.6222,0.6096,0.5989,0.5882,0.5792,0.5704,0.5632,0.5564,0.5508,0.5456,0.5413,0.5372,0.5336,0.5297,0.5258,0.5211,0.5159,0.5091,0.5016,0.4915,0.4806,0.4674,0.4538,0.4372,0.4192,0.3952,0.3679,0.3319,0.2937,0.2496,0.2089,0.1677,0.1336,0.1016,0.0765,0.0539,0.037,0.0229,0.0138,0.0084,0.008,0.0128,0.0224,0.0382,0.0563,0.0762,0.0891,0.0864,0.0564,-0.0195,-0.1353,-0.2986,-0.4566,-0.6035,-0.7023,-0.7694,-0.7996,-0.8038,-0.7853,-0.7464,-0.6993,-0.6448,-0.5969,-0.5507,-0.5119,-0.4725,-0.4344,-0.3812,-0.2984,-0.1135,0.0513,0.0291,-0.1149,-0.2035,-0.2201,-0.2033,-0.1502,-0.0952,-0.1302,-0.2603,-0.3965,-0.4886,-0.5178,-0.5035,-0.4579,-0.3926,-0.3419,-0.3214,-0.3445,-0.3523,-0.2387,-0.0228,0.1474,0.2559,0.3272,0.3677,0.3956,0.4098,0.414,0.4078,0.3905,0.3653,0.3298,0.2919,0.2493,0.2123,0.1785,0.1551,0.1393,0.1336,0.1367,0.1479,0.169,0.1973,0.2387,0.2872,0.3508,0.417,0.4916,0.551,0.5966,0.6186,0.6219,0.6083,0.5784,0.5382,0.4828,0.4234,0.3548,0.2933,0.2326,0.1839,0.1421,0.1202,0.1293,0.1908,0.3295,0.48,0.589,0.6164,0.5819,0.5128,0.4202,0.3327,0.2443,0.1713,0.1016,0.0444,-0.0115,-0.0588,-0.1065,-0.1477,-0.1899,-0.2268,-0.2646,-0.2978,-0.3319,-0.3617,-0.3923,-0.419,-0.4462,-0.4699,-0.4941,-0.5152,-0.5368,-0.5555,-0.5746,-0.5912,-0.6081,-0.6226,-0.6374,-0.6495,-0.6611,-0.6708,-0.6801,-0.6876,-0.6946,-0.6997,-0.7035,-0.7052,-0.705,-0.7027,-0.698,-0.6919,-0.683,-0.6732,-0.661,-0.6487,-0.6347,-0.622,-0.6094,-0.5996,-0.5915,-0.5868,-0.5854,-0.5878,-0.5943,-0.6038,-0.618,-0.6345,-0.656,-0.679,-0.7074,-0.7366,-0.7712,-0.8055,-0.845,-0.8833,-0.9263,-0.9669,-1.0113,-1.0521],&quot;curvature_context&quot;:[1.5537,1.5338,1.5121,1.492,1.47,1.4496,1.4273,1.4065,1.3838,1.3626,1.3394,1.3177,1.2939,1.2717,1.2472,1.2242,1.1987,1.1746,1.148,1.1232,1.096,1.0707,1.0433,1.0181,0.991,0.9664,0.9403,0.9172,0.8931,0.872,0.8505,0.8319,0.8129,0.7961,0.7788,0.7639,0.7498,0.7395,0.7316,0.7284,0.7264,0.7204,0.7034,0.6784,0.6443,0.611,0.5769,0.5488,0.5211,0.4961,0.4689,0.4431,0.4143,0.3869,0.356,0.3258,0.2905,0.2538,0.2082,0.1637,0.1166,0.0791,0.0471,0.0227,-0.001,-0.0204,-0.0381,-0.0504,-0.059,-0.0623,-0.0617,-0.0557,-0.0418,-0.0206,0.0119,0.0412,0.0441,-0.0011,-0.0723,-0.1943,-0.3784,-0.4946,-0.5838,-0.655,-0.7298,-0.7947,-0.8496,-0.8725,-0.8429,-0.7561,-0.636,-0.5495,-0.495,-0.4752,-0.4722,-0.4725,-0.4456,-0.3044,-0.0934,-0.06,-0.0886,-0.1303,-0.1667,-0.178,-0.1819,-0.2022,-0.2407,-0.2868,-0.3504,-0.4165,-0.4787,-0.5105,-0.5151,-0.497,-0.4633,-0.4256,-0.3797,-0.3309,-0.2647,-0.1765,-0.0417,0.1116,0.2467,0.3191,0.3336,0.3341,0.3441,0.3747,0.4229,0.4907,0.5443,0.4732,0.2771,0.1701,0.1372,0.1255,0.1239,0.1266,0.1324,0.1414,0.1531,0.1736,0.2111,0.2954,0.3959,0.4352,0.4214,0.4075,0.4155,0.4607,0.5319,0.6328,0.7053,0.6688,0.5688,0.443,0.3416,0.2613,0.2123,0.1781,0.1566,0.1388,0.1249,0.1226,0.18,0.3711,0.5233,0.5767,0.5579,0.4976,0.4209,0.3301,0.2525,0.1728,0.1013,0.0262,-0.036,-0.0921,-0.1328,-0.1675,-0.1944,-0.2239,-0.2572,-0.3033,-0.3524,-0.4046,-0.4454,-0.4787,-0.5002,-0.5166,-0.5278,-0.5377,-0.5458,-0.5542,-0.5622,-0.5712,-0.5801,-0.5904,-0.6004,-0.6118,-0.6229,-0.6353,-0.6472,-0.6604,-0.6731,-0.6872,-0.7005,-0.7152,-0.729,-0.7441,-0.7583,-0.7738,-0.7883,-0.8041,-0.8188,-0.8349,-0.8499,-0.8662,-0.8814,-0.8979,-0.9133,-0.93,-0.9455,-0.9623,-0.978,-0.9949,-1.0107,-1.0277,-1.0436,-1.0607,-1.0766,-1.0939,-1.1099,-1.1272,-1.1432,-1.1606,-1.1766,-1.194,-1.21,-1.2274,-1.2435],&quot;nested_chart_scratch&quot;:[1.5327,1.52,1.5061,1.4931,1.4788,1.4653,1.4504,1.4364,1.4209,1.4063,1.3902,1.3749,1.358,1.3421,1.3244,1.3077,1.2891,1.2715,1.2519,1.2333,1.2121,1.1919,1.1695,1.1484,1.1248,1.1025,1.0778,1.0544,1.0284,1.004,0.977,0.9516,0.9237,0.8978,0.8695,0.8433,0.815,0.7892,0.7616,0.7365,0.7097,0.6857,0.6605,0.638,0.6144,0.5933,0.5709,0.5504,0.5279,0.5067,0.4825,0.4586,0.4304,0.4022,0.3691,0.3366,0.2999,0.2654,0.2281,0.1941,0.1581,0.1262,0.0935,0.0654,0.0376,0.0153,-0.0046,-0.0182,-0.0269,-0.0285,-0.023,-0.0117,0.0051,0.0215,0.0355,0.0403,0.0291,-0.0066,-0.0854,-0.204,-0.3718,-0.527,-0.6627,-0.7413,-0.787,-0.8053,-0.8045,-0.7859,-0.7472,-0.702,-0.6521,-0.6092,-0.5669,-0.5308,-0.4913,-0.4458,-0.3635,-0.2305,-0.0729,-0.011,-0.0347,-0.1344,-0.2323,-0.2497,-0.2088,-0.1715,-0.1665,-0.2005,-0.2699,-0.3793,-0.4957,-0.5356,-0.5454,-0.5335,-0.5016,-0.4599,-0.4077,-0.3629,-0.305,-0.1948,-0.0534,0.0697,0.1712,0.2539,0.3114,0.3579,0.3889,0.4103,0.4179,0.4116,0.3918,0.3565,0.3146,0.2651,0.2217,0.1824,0.1556,0.1371,0.129,0.1289,0.1359,0.151,0.1724,0.205,0.245,0.3006,0.3671,0.4475,0.5189,0.5806,0.6141,0.6214,0.6026,0.5588,0.5026,0.434,0.3708,0.3075,0.2551,0.2042,0.1625,0.1254,0.1074,0.131,0.2258,0.3851,0.5115,0.5776,0.5763,0.5295,0.4619,0.3763,0.2947,0.2098,0.1377,0.0672,0.0091,-0.0479,-0.0962,-0.1446,-0.1852,-0.2238,-0.2551,-0.2854,-0.3111,-0.3371,-0.3597,-0.383,-0.4036,-0.4253,-0.4445,-0.4647,-0.4828,-0.5018,-0.5189,-0.5369,-0.5531,-0.5701,-0.5852,-0.6012,-0.6156,-0.6308,-0.6445,-0.6589,-0.6718,-0.6854,-0.6975,-0.7095,-0.7202,-0.7314,-0.7414,-0.7518,-0.761,-0.7706,-0.779,-0.7878,-0.7957,-0.8038,-0.8111,-0.8187,-0.8255,-0.8326,-0.839,-0.8457,-0.8518,-0.8582,-0.864,-0.8703,-0.8758,-0.8816,-0.887,-0.8927,-0.8979,-0.9035,-0.9088,-0.9147,-0.9204,-0.9267,-0.9328,-0.9397,-0.9464],&quot;nested_chart_staged&quot;:[1.5805,1.5626,1.5426,1.5239,1.503,1.4831,1.4612,1.4405,1.4176,1.396,1.3722,1.3499,1.3253,1.3023,1.2768,1.2526,1.226,1.2013,1.1744,1.1495,1.1223,1.098,1.0716,1.0473,1.0211,0.997,0.9705,0.9461,0.9199,0.8959,0.8702,0.8469,0.8223,0.8003,0.7771,0.7562,0.7345,0.7152,0.6952,0.6776,0.6594,0.6432,0.6265,0.6115,0.5958,0.5816,0.5663,0.5521,0.5362,0.5211,0.5034,0.4856,0.4643,0.4424,0.4161,0.3891,0.3566,0.3233,0.2844,0.2473,0.2079,0.1738,0.1399,0.1119,0.0856,0.0657,0.0492,0.0391,0.034,0.0353,0.0431,0.0554,0.0727,0.0897,0.1052,0.1114,0.1026,0.0712,-0.0001,-0.109,-0.2723,-0.439,-0.5813,-0.6761,-0.7409,-0.7706,-0.7758,-0.7604,-0.7275,-0.6874,-0.6383,-0.5914,-0.5417,-0.4969,-0.4497,-0.4065,-0.3544,-0.2843,-0.1059,0.0327,0.0131,-0.1433,-0.2258,-0.2325,-0.2177,-0.1642,-0.0785,-0.1061,-0.2438,-0.3649,-0.4541,-0.4878,-0.4787,-0.4407,-0.3865,-0.3438,-0.3286,-0.3462,-0.3407,-0.2132,0.0024,0.1653,0.2658,0.3304,0.3676,0.3941,0.4085,0.4138,0.4088,0.3923,0.3672,0.3311,0.2922,0.248,0.2098,0.1755,0.1523,0.1368,0.1306,0.1327,0.1431,0.1644,0.1938,0.2368,0.2869,0.3519,0.4203,0.4935,0.5502,0.5928,0.6121,0.6113,0.5923,0.5546,0.5073,0.4461,0.3851,0.3191,0.2614,0.2048,0.1607,0.1274,0.1184,0.1478,0.2301,0.3756,0.5121,0.5847,0.5721,0.5114,0.4371,0.3499,0.2697,0.1882,0.1195,0.0526,-0.0025,-0.0562,-0.1012,-0.1459,-0.1841,-0.2229,-0.2566,-0.2913,-0.3218,-0.3533,-0.3813,-0.4102,-0.4357,-0.4622,-0.4857,-0.51,-0.5315,-0.5539,-0.5735,-0.5936,-0.611,-0.6285,-0.6431,-0.6574,-0.6689,-0.6789,-0.6861,-0.6919,-0.6951,-0.6965,-0.6957,-0.6925,-0.6876,-0.6801,-0.6715,-0.6608,-0.6501,-0.6375,-0.6252,-0.612,-0.6004,-0.5871,-0.5743,-0.5603,-0.548,-0.5367,-0.5297,-0.5269,-0.5288,-0.5362,-0.5472,-0.5633,-0.5814,-0.6045,-0.6286,-0.6576,-0.6869,-0.7216,-0.7561,-0.7956,-0.8338,-0.8763,-0.9161,-0.959,-0.998]},&quot;train_limits&quot;:[-3,3]}};
+    const configs=data.configurations;
+    const labels={self_context:&#x27;Self-context&#x27;,curvature_context:&#x27;Curvature&#x27;,nested_chart_scratch:&#x27;Nested scratch&#x27;,nested_chart_staged:&#x27;Nested staged&#x27;};
+    const style=getComputedStyle(root),colors=Object.fromEntries(configs.map((d,i)=&gt;[d,style.getPropertyValue(`--viz-series-${i+1}`).trim()]));
+    const visible=new Set(configs),controls=d3.select(root).select(&#x27;#ncc-controls&#x27;);
+    controls.selectAll(&#x27;button&#x27;).data(configs).join(&#x27;button&#x27;).attr(&#x27;type&#x27;,&#x27;button&#x27;).attr(&#x27;aria-pressed&#x27;,&#x27;true&#x27;).html(d=&gt;`&lt;span class=&quot;swatch&quot; style=&quot;--swatch:${colors[d]}&quot;&gt;&lt;/span&gt;${labels[d]}`).on(&#x27;click&#x27;,function(e,d){if(visible.has(d)&amp;&amp;visible.size===1)return;visible.has(d)?visible.delete(d):visible.add(d);d3.select(this).attr(&#x27;aria-pressed&#x27;,visible.has(d));drawCharts()});
+    function frame(svg,w,h,m,xLabel,yLabel){svg.append(&#x27;rect&#x27;).attr(&#x27;class&#x27;,&#x27;frame&#x27;).attr(&#x27;data-chart-frame&#x27;,&#x27;&#x27;).attr(&#x27;x&#x27;,m.l).attr(&#x27;y&#x27;,m.t).attr(&#x27;width&#x27;,w-m.l-m.r).attr(&#x27;height&#x27;,h-m.t-m.b);svg.append(&#x27;text&#x27;).attr(&#x27;class&#x27;,&#x27;axis-title&#x27;).attr(&#x27;data-axis&#x27;,&#x27;x&#x27;).attr(&#x27;x&#x27;,(m.l+w-m.r)/2).attr(&#x27;y&#x27;,h-6).attr(&#x27;text-anchor&#x27;,&#x27;middle&#x27;).text(xLabel);svg.append(&#x27;text&#x27;).attr(&#x27;class&#x27;,&#x27;axis-title&#x27;).attr(&#x27;data-axis&#x27;,&#x27;y&#x27;).attr(&#x27;transform&#x27;,`translate(15,${(m.t+h-m.b)/2}) rotate(-90)`).attr(&#x27;text-anchor&#x27;,&#x27;middle&#x27;).text(yLabel)}
+    const metricNames=[[&#x27;validation_score&#x27;,&#x27;Validation&#x27;],[&#x27;score&#x27;,&#x27;Held-out&#x27;],[&#x27;tail_score&#x27;,&#x27;Tail&#x27;],[&#x27;learning_auc&#x27;,&#x27;Learning AUC&#x27;]];
+    function drawMetrics(){const tasks=[&#x27;radial_stripes&#x27;,&#x27;multiscale_1d&#x27;],grid=d3.select(root).select(&#x27;#ncc-metric-grid&#x27;),panels=grid.selectAll(&#x27;.panel&#x27;).data(tasks).join(&#x27;div&#x27;).attr(&#x27;class&#x27;,&#x27;panel&#x27;);panels.html(task=&gt;`&lt;h3&gt;${task===&#x27;radial_stripes&#x27;?&#x27;Radial stripes&#x27;:&#x27;Multiscale 1-D&#x27;}&lt;/h3&gt;&lt;svg role=&quot;img&quot; aria-label=&quot;${task} metric comparison&quot;&gt;&lt;title&gt;${task} validation, held-out, tail, and learning AUC&lt;/title&gt;&lt;/svg&gt;`);panels.each(function(task){const w=Math.max(290,this.getBoundingClientRect().width),h=275,m={t:10,r:12,b:50,l:62},rows=data.summary.filter(d=&gt;d.task===task&amp;&amp;visible.has(d.configuration)),points=rows.flatMap(r=&gt;metricNames.map(([key,label])=&gt;({configuration:r.configuration,metric:label,value:r[key]}))),x=d3.scalePoint(metricNames.map(d=&gt;d[1]),[m.l,w-m.r]).padding(.45),extent=d3.extent(points,d=&gt;d.value),pad=Math.max(.01,(extent[1]-extent[0])*.12),y=d3.scaleLinear([extent[0]-pad,extent[1]+pad],[h-m.b,m.t]),svg=d3.select(this).select(&#x27;svg&#x27;).attr(&#x27;viewBox&#x27;,`0 0 ${w} ${h}`).attr(&#x27;height&#x27;,h);frame(svg,w,h,m,&#x27;Metric&#x27;,&#x27;Score&#x27;);svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(0,${h-m.b})`).call(d3.axisBottom(x));svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));const line=d3.line().x(d=&gt;x(d.metric)).y(d=&gt;y(d.value));svg.append(&#x27;g&#x27;).selectAll(&#x27;path.series&#x27;).data(rows).join(&#x27;path&#x27;).attr(&#x27;class&#x27;,&#x27;series&#x27;).attr(&#x27;fill&#x27;,&#x27;none&#x27;).attr(&#x27;stroke&#x27;,d=&gt;colors[d.configuration]).attr(&#x27;stroke-width&#x27;,2).attr(&#x27;d&#x27;,r=&gt;line(points.filter(p=&gt;p.configuration===r.configuration)));svg.append(&#x27;g&#x27;).selectAll(&#x27;circle&#x27;).data(points).join(&#x27;circle&#x27;).attr(&#x27;cx&#x27;,d=&gt;x(d.metric)).attr(&#x27;cy&#x27;,d=&gt;y(d.value)).attr(&#x27;r&#x27;,3.5).attr(&#x27;fill&#x27;,d=&gt;colors[d.configuration])})}
+    function drawLearning(){const tasks=[&#x27;radial_stripes&#x27;,&#x27;multiscale_1d&#x27;],grid=d3.select(root).select(&#x27;#ncc-learning-grid&#x27;),panels=grid.selectAll(&#x27;.panel&#x27;).data(tasks).join(&#x27;div&#x27;).attr(&#x27;class&#x27;,&#x27;panel&#x27;);panels.html(task=&gt;`&lt;h3&gt;${task===&#x27;radial_stripes&#x27;?&#x27;Radial stripes&#x27;:&#x27;Multiscale 1-D&#x27;}&lt;/h3&gt;&lt;svg role=&quot;img&quot; aria-label=&quot;${task} paired mean validation learning curve&quot;&gt;&lt;title&gt;${task} paired mean validation score by training step&lt;/title&gt;&lt;/svg&gt;`);panels.each(function(task){const w=Math.max(290,this.getBoundingClientRect().width),h=275,m={t:10,r:12,b:42,l:62},series=configs.filter(c=&gt;visible.has(c)).map(c=&gt;({configuration:c,...data.learning[task][c]})),all=series.flatMap(s=&gt;s.score),xe=d3.extent(series[0]?.step||[0,300]),ye=d3.extent(all),pad=Math.max(.01,(ye[1]-ye[0])*.08),x=d3.scaleLinear(xe,[m.l,w-m.r]),y=d3.scaleLinear([ye[0]-pad,ye[1]+pad],[h-m.b,m.t]),svg=d3.select(this).select(&#x27;svg&#x27;).attr(&#x27;viewBox&#x27;,`0 0 ${w} ${h}`).attr(&#x27;height&#x27;,h);frame(svg,w,h,m,&#x27;Training step&#x27;,&#x27;Validation score&#x27;);svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(w&lt;400?4:6));svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));const line=d3.line().x((d,i)=&gt;x(series[0].step[i])).y(d=&gt;y(d));svg.append(&#x27;g&#x27;).selectAll(&#x27;path&#x27;).data(series).join(&#x27;path&#x27;).attr(&#x27;fill&#x27;,&#x27;none&#x27;).attr(&#x27;stroke&#x27;,d=&gt;colors[d.configuration]).attr(&#x27;stroke-width&#x27;,2).attr(&#x27;d&#x27;,d=&gt;line(d.score))})}
+    function drawRadial(){const names=[&#x27;truth&#x27;,...configs],titles=[&#x27;Truth&#x27;,...configs.map(c=&gt;labels[c])],grid=d3.select(root).select(&#x27;#ncc-radial-grid&#x27;),cells=grid.selectAll(&#x27;.radial-item&#x27;).data(names).join(&#x27;div&#x27;).attr(&#x27;class&#x27;,&#x27;radial-item&#x27;);cells.html((d,i)=&gt;`&lt;h3&gt;${titles[i]}&lt;/h3&gt;&lt;svg role=&quot;img&quot; aria-label=&quot;${titles[i]} radial decision field&quot;&gt;&lt;title&gt;${titles[i]} radial decision field&lt;/title&gt;&lt;/svg&gt;`);cells.each(function(name){const values=name===&#x27;truth&#x27;?data.radial.truth:data.radial.predictions[name],n=data.radial.size,w=Math.max(150,this.getBoundingClientRect().width),m=7,cell=(w-2*m)/n,svg=d3.select(this).select(&#x27;svg&#x27;).attr(&#x27;viewBox&#x27;,`0 0 ${w} ${w}`);svg.selectAll(&#x27;rect&#x27;).data(values).join(&#x27;rect&#x27;).attr(&#x27;x&#x27;,(d,i)=&gt;m+(i%n)*cell).attr(&#x27;y&#x27;,(d,i)=&gt;w-m-(Math.floor(i/n)+1)*cell).attr(&#x27;width&#x27;,cell+.25).attr(&#x27;height&#x27;,cell+.25).attr(&#x27;fill&#x27;,d=&gt;d?&#x27;var(--viz-series-2)&#x27;:&#x27;var(--viz-series-1)&#x27;)})}
+    function drawMultiscale(){const host=root.querySelector(&#x27;#ncc-multiscale&#x27;),w=Math.max(300,host.getBoundingClientRect().width),h=330,m={t:10,r:14,b:44,l:64},active=configs.filter(c=&gt;visible.has(c)),all=data.multiscale.truth.concat(active.flatMap(c=&gt;data.multiscale.predictions[c])),x=d3.scaleLinear(d3.extent(data.multiscale.x),[m.l,w-m.r]),y=d3.scaleLinear(d3.extent(all),[h-m.b,m.t]).nice(),svg=d3.select(host).select(&#x27;svg&#x27;).attr(&#x27;viewBox&#x27;,`0 0 ${w} ${h}`).attr(&#x27;height&#x27;,h);svg.selectAll(&#x27;*:not(title)&#x27;).remove();svg.append(&#x27;rect&#x27;).attr(&#x27;x&#x27;,x(data.multiscale.train_limits[0])).attr(&#x27;y&#x27;,m.t).attr(&#x27;width&#x27;,x(data.multiscale.train_limits[1])-x(data.multiscale.train_limits[0])).attr(&#x27;height&#x27;,h-m.t-m.b).attr(&#x27;fill&#x27;,&#x27;var(--muted)&#x27;).attr(&#x27;opacity&#x27;,.42);frame(svg,w,h,m,&#x27;x (observed interval shaded)&#x27;,&#x27;Target / prediction&#x27;);svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(w&lt;430?4:7));svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));const line=d3.line().x((d,i)=&gt;x(data.multiscale.x[i])).y(d=&gt;y(d));svg.append(&#x27;path&#x27;).datum(data.multiscale.truth).attr(&#x27;fill&#x27;,&#x27;none&#x27;).attr(&#x27;stroke&#x27;,&#x27;var(--foreground)&#x27;).attr(&#x27;stroke-width&#x27;,2.5).attr(&#x27;d&#x27;,line);svg.append(&#x27;g&#x27;).selectAll(&#x27;path&#x27;).data(active).join(&#x27;path&#x27;).attr(&#x27;fill&#x27;,&#x27;none&#x27;).attr(&#x27;stroke&#x27;,c=&gt;colors[c]).attr(&#x27;stroke-width&#x27;,1.8).attr(&#x27;d&#x27;,c=&gt;line(data.multiscale.predictions[c]))}
+    function drawCharts(){d3.select(root).select(&#x27;#ncc-metric-grid&#x27;).html(&#x27;&#x27;);d3.select(root).select(&#x27;#ncc-learning-grid&#x27;).html(&#x27;&#x27;);drawMetrics();drawLearning();drawMultiscale()}
+    drawRadial();let timer;new ResizeObserver(()=&gt;{clearTimeout(timer);timer=setTimeout(()=&gt;{drawRadial();drawCharts()},90)}).observe(root);drawCharts();
+  })();
+  &lt;/script&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+
+  const getTrigger = (target) =&gt;
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest(&quot;[data-tooltip]&quot;)
+      : null;
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handleLeave = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    document.removeEventListener(&quot;pointerover&quot;, handlePointerOpen);
+    document.removeEventListener(&quot;pointerout&quot;, handleLeave);
+    document.removeEventListener(&quot;focusin&quot;, handleFocusIn);
+    document.removeEventListener(&quot;focusout&quot;, handleLeave);
+    document.removeEventListener(&quot;keydown&quot;, handleKeyDown);
+    document.removeEventListener(&quot;contextmenu&quot;, handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener(&quot;pointerover&quot;, handlePointerOpen);
+  document.addEventListener(&quot;pointerout&quot;, handleLeave);
+  document.addEventListener(&quot;focusin&quot;, handleFocusIn);
+  document.addEventListener(&quot;focusout&quot;, handleLeave);
+  document.addEventListener(&quot;keydown&quot;, handleKeyDown);
+  document.addEventListener(&quot;contextmenu&quot;, handleContextMenu);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</body>
+</html>

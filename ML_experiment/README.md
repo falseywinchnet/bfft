@@ -22,6 +22,8 @@ Fourier basis, periodic feature map, unseen-support label, or GELU activation.
   self-context versus curvature-self-context comparison on all 22 problems.
 - [`NESTED_CHART_CHECK.md`](NESTED_CHART_CHECK.md): rapid scratch-versus-staged
   nested-selection check on radial stripes and multiscale 1-D.
+- [`nested_chart_check.html`](nested_chart_check.html): graphical learning,
+  endpoint, radial-field, and multiscale-continuation results for that check.
 - [`visualization.html`](visualization.html): the complete 22-problem atlas,
   with truth, MLP, self-context, hard-gate, and chart-curvature fits.
 - [`summary_visualization.html`](summary_visualization.html): aggregate score,

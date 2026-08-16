@@ -58,3 +58,6 @@ held-out continuation.
 This is a deliberately short, underconverged diagnostic. It establishes that
 warm staging is not the missing ingredient; it does not establish that nested
 charts have no value at longer horizons or in higher-rank problems.
+
+The paired learning curves, radial decision fields, and multiscale continuation
+fits are in `nested_chart_check.html`.

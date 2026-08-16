@@ -46,7 +46,8 @@ def area_under_history(history, steps):
     ) / steps)
 
 
-def train(configuration, task, width, seed, steps, switch_step, batch, lr, eval_every):
+def train(configuration, task, width, seed, steps, switch_step, batch, lr, eval_every,
+          return_model=False):
     torch.manual_seed(10000 + seed)
     model = make_variant(CONFIGURATIONS[configuration], task.input_dim, task.output_dim, width)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
@@ -78,7 +79,7 @@ def train(configuration, task, width, seed, steps, switch_step, batch, lr, eval_
     test = evaluate(model, task)
     tails = tail_metrics(model, task)
     tails.setdefault("tail_score", test["score"])
-    return {
+    result = {
         "configuration": configuration,
         "parameters": parameter_count(model),
         "seconds": time.perf_counter() - started,
@@ -89,6 +90,7 @@ def train(configuration, task, width, seed, steps, switch_step, batch, lr, eval_
         **tails,
         "history": history,
     }
+    return (result, model) if return_model else result
 
 
 def summarize(runs):
