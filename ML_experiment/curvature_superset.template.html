@@ -1,0 +1,95 @@
+<div id="curvature-superset-viz">
+  <style>
+    #curvature-superset-viz{color:var(--foreground);font-size:var(--font-size-base);width:100%;position:relative}
+    #curvature-superset-viz *{box-sizing:border-box}
+    #curvature-superset-viz h2,#curvature-superset-viz h3,#curvature-superset-viz p{margin-top:0}
+    #curvature-superset-viz h2,#curvature-superset-viz h3{font-weight:500}
+    #curvature-superset-viz .lede{color:var(--muted-foreground);margin-bottom:16px}
+    #curvature-superset-viz .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:5px 0 10px}
+    #curvature-superset-viz .key{display:inline-flex;align-items:center;gap:6px}
+    #curvature-superset-viz .dot{width:9px;height:9px;background:var(--key);display:inline-block;border-radius:50%}
+    #curvature-superset-viz .square{border-radius:0}
+    #curvature-superset-viz .diamond{transform:rotate(45deg);border-radius:0}
+    #curvature-superset-viz .chart-block{margin:24px 0}
+    #curvature-superset-viz .svg-host{position:relative;width:100%}
+    #curvature-superset-viz .learning-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    #curvature-superset-viz .learning-panel{min-width:0}
+    #curvature-superset-viz .learning-panel h3{margin-bottom:4px}
+    #curvature-superset-viz .task{margin:30px 0}
+    #curvature-superset-viz .task-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+    #curvature-superset-viz .task-heading h3{margin-bottom:0}
+    #curvature-superset-viz .task-description{color:var(--muted-foreground)}
+    #curvature-superset-viz .panels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    #curvature-superset-viz .panel{min-width:0}
+    #curvature-superset-viz .panel-title{text-align:center;margin-bottom:4px;font-weight:500}
+    #curvature-superset-viz .panel-score{color:var(--muted-foreground);font-weight:400}
+    #curvature-superset-viz svg{display:block;width:100%;overflow:visible}
+    #curvature-superset-viz svg text{fill:var(--foreground);font-size:12px}
+    #curvature-superset-viz svg .frame{fill:none;stroke:var(--border)}
+    #curvature-superset-viz svg .axis path,#curvature-superset-viz svg .axis line{stroke:var(--border)}
+    #curvature-superset-viz svg .grid line{stroke:var(--border);opacity:.42}
+    #curvature-superset-viz svg .reference{fill:none;stroke:var(--muted-foreground);stroke-width:1}
+    #curvature-superset-viz .tooltip{position:absolute;display:none;pointer-events:none;background:var(--popover);color:var(--popover-foreground);padding:7px 9px;border-radius:6px;z-index:3}
+    @media(max-width:760px){#curvature-superset-viz .learning-grid{grid-template-columns:1fr}#curvature-superset-viz .panels{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:420px){#curvature-superset-viz .panels{grid-template-columns:1fr}}
+  </style>
+  <h2>Self-context versus curvature self-context</h2>
+  <p class="lede">Complete 22-problem suite · identical parameters · two paired seeds · width 24 · 500 steps · M4 CPU</p>
+  <section class="chart-block">
+    <h3>Where curvature changes acquisition, endpoint, and tails</h3>
+    <div class="legend" aria-label="Metric legend">
+      <span class="key"><span class="dot" style="--key:var(--viz-series-1)"></span>Learning AUC</span>
+      <span class="key"><span class="dot square" style="--key:var(--viz-series-2)"></span>Held-out endpoint</span>
+      <span class="key"><span class="dot diamond" style="--key:var(--viz-series-3)"></span>Tail retention</span>
+    </div>
+    <div class="svg-host" id="csx-delta-host"><svg role="img" aria-label="Curvature self-context metric differences versus self-context for 22 tasks"><title>Task-level metric differences between curvature self-context and self-context</title></svg></div>
+  </section>
+  <section class="chart-block">
+    <h3>Acquisition inside the observed region</h3>
+    <div class="legend"><span class="key"><span class="dot" style="--key:var(--viz-series-1)"></span>Self-context</span><span class="key"><span class="dot" style="--key:var(--viz-series-2)"></span>Curvature self-context</span></div>
+    <div class="learning-grid" id="csx-learning-grid"></div>
+  </section>
+  <section class="chart-block">
+    <h3>Matched fitted-function atlas</h3>
+    <div id="csx-atlas-tasks"></div>
+  </section>
+  <div class="tooltip" role="tooltip"></div>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script>
+  (()=>{
+    const root=document.getElementById('curvature-superset-viz');
+    const data=__DATA__;
+    const names={self_context:'Self-context',self_context_jet_curvature_context:'Curvature self-context'};
+    const variants=data.variants;
+    const token=i=>`var(--viz-series-${i%6+1})`;
+    const tooltip=d3.select(root).select('.tooltip');
+    const showTip=(event,html)=>{const box=root.getBoundingClientRect();tooltip.style('display','block').style('left',`${event.clientX-box.left+10}px`).style('top',`${event.clientY-box.top+10}px`).html(html)};
+    const hideTip=()=>tooltip.style('display','none');
+    const pretty=s=>s.replaceAll('_',' ').replace('nd spiral','N-D spiral').replace('1d','1-D');
+    function drawDelta(){
+      const host=root.querySelector('#csx-delta-host'),w=Math.max(300,host.getBoundingClientRect().width),mobile=w<460,rows=data.tasks,rowH=mobile?30:26,h=rows.length*rowH+72,m={t:10,r:28,b:42,l:mobile?126:180},iw=w-m.l-m.r,svg=d3.select(host).select('svg').attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);svg.selectAll('*:not(title)').remove();
+      const metrics=[['learning_auc','Learning AUC',1,'circle'],['score','Held-out',2,'square'],['tail','Tail',3,'diamond']],values=rows.flatMap(r=>metrics.map(([key,label,color,shape])=>({task:r.task,key,label,color,shape,value:r.deltas[key]}))),extent=d3.max(values,d=>Math.abs(d.value))||.01,x=d3.scaleLinear([-extent*1.1,extent*1.1],[m.l,m.l+iw]),y=d3.scaleBand(rows.map(r=>r.task),[m.t,m.t+rows.length*rowH]).padding(.28),offset=d3.scalePoint(metrics.map(d=>d[0]),[-y.bandwidth()*.34,y.bandwidth()*.34]);
+      svg.append('rect').attr('class','frame').attr('data-chart-frame','').attr('x',m.l).attr('y',m.t).attr('width',iw).attr('height',rows.length*rowH);svg.append('line').attr('x1',x(0)).attr('x2',x(0)).attr('y1',m.t).attr('y2',m.t+rows.length*rowH).attr('stroke','var(--foreground)').attr('opacity',.5);svg.append('g').attr('class','axis').attr('transform',`translate(0,${m.t+rows.length*rowH})`).call(d3.axisBottom(x).ticks(mobile?4:7).tickFormat(d3.format('+.2f')));svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).tickFormat(pretty).tickSize(0)).call(g=>g.select('.domain').remove());svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('x',m.l+iw/2).attr('y',h-6).attr('text-anchor','middle').text('Curvature self-context − self-context');
+      const marks=svg.append('g').selectAll('path').data(values).join('path').attr('transform',d=>`translate(${x(d.value)},${y(d.task)+y.bandwidth()/2+offset(d.key)})`).attr('d',d=>d3.symbol().type(d.shape==='circle'?d3.symbolCircle:d.shape==='square'?d3.symbolSquare:d3.symbolDiamond).size(48)()).attr('fill',d=>`var(--viz-series-${d.color})`).attr('data-chart-hit','').on('pointermove',(e,d)=>showTip(e,`${pretty(d.task)}<br>${d.label}: ${d3.format('+.4f')(d.value)}`)).on('pointerleave',hideTip);
+    }
+    function drawLearning(){
+      const tasks=Object.keys(data.learning),grid=d3.select(root).select('#csx-learning-grid'),panels=grid.selectAll('.learning-panel').data(tasks).join('div').attr('class','learning-panel');panels.html(task=>`<h3>${pretty(task)}</h3><svg role="img" aria-label="${pretty(task)} validation learning curve"><title>${pretty(task)} mean validation score by training step</title></svg>`);panels.each(function(task){const w=Math.max(280,this.getBoundingClientRect().width),h=245,m={t:9,r:12,b:38,l:60},iw=w-m.l-m.r,ih=h-m.t-m.b,series=variants.map(v=>({variant:v,...data.learning[task][v]})),all=series.flatMap(s=>s.score),xe=d3.extent(series[0].step),ye=d3.extent(all),ypad=Math.max(.01,(ye[1]-ye[0])*.08),x=d3.scaleLinear(xe,[m.l,m.l+iw]),y=d3.scaleLinear([ye[0]-ypad,ye[1]+ypad],[m.t+ih,m.t]),svg=d3.select(this).select('svg').attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);svg.append('rect').attr('class','frame').attr('data-chart-frame','').attr('x',m.l).attr('y',m.t).attr('width',iw).attr('height',ih);svg.append('g').attr('class','axis').attr('transform',`translate(0,${m.t+ih})`).call(d3.axisBottom(x).ticks(w<400?4:6));svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('x',m.l+iw/2).attr('y',h-5).attr('text-anchor','middle').text('Training step');svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('transform',`translate(14,${m.t+ih/2}) rotate(-90)`).attr('text-anchor','middle').text('Validation score');const line=d3.line().x((d,i)=>x(series[0].step[i])).y(d=>y(d));svg.append('g').selectAll('path.learning').data(series).join('path').attr('class','learning').attr('fill','none').attr('stroke',(d,i)=>`var(--viz-series-${i+1})`).attr('stroke-width',2).attr('d',d=>line(d.score));});
+    }
+    const tasks=d3.select(root).select('#csx-atlas-tasks').selectAll('section').data(data.tasks).join('section').attr('class','task');tasks.append('div').attr('class','task-heading').html(d=>`<h3>${pretty(d.task)}</h3><span class="task-description">${d.description}</span>`);tasks.append('div').attr('class','panels');
+    function panelData(){return[{variant:'truth',title:'Truth'},...variants.map(variant=>({variant,title:names[variant]}))]}
+    function dims(svg,square=false){const w=Math.max(175,svg.parentElement.getBoundingClientRect().width),h=square?w:Math.max(180,Math.min(245,w*.72));return{w,h,m:{t:8,r:7,b:28,l:34}}}
+    function frame(svg,w,h,m,xLabel,yLabel){svg.append('rect').attr('class','frame').attr('data-chart-frame','').attr('x',m.l).attr('y',m.t).attr('width',w-m.l-m.r).attr('height',h-m.t-m.b);svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('x',(m.l+w-m.r)/2).attr('y',h-5).attr('text-anchor','middle').text(xLabel);svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('transform',`translate(12,${(m.t+h-m.b)/2}) rotate(-90)`).attr('text-anchor','middle').text(yLabel)}
+    function regressionFill(value,domain){const t=Math.max(0,Math.min(1,(value-domain[0])/(domain[1]-domain[0]||1)));return`color-mix(in oklab,var(--viz-series-1) ${(1-t)*100}%,var(--viz-series-2))`}
+    function renderField(node,task,variant){const {w,h,m}=dims(node,true),svg=d3.select(node).attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);frame(svg,w,h,m,'x₁','x₂');const values=variant==='truth'?task.truth:task.predictions[variant],n=task.size,iw=w-m.l-m.r,ih=h-m.t-m.b,cw=iw/n,ch=ih/n,all=task.kind==='regression'?task.truth.concat(...Object.values(task.predictions)):null,domain=all?d3.extent(all):null;svg.append('g').selectAll('rect').data(values).join('rect').attr('x',(d,i)=>m.l+(i%n)*cw).attr('y',(d,i)=>h-m.b-(Math.floor(i/n)+1)*ch).attr('width',cw+.25).attr('height',ch+.25).attr('fill',d=>task.kind==='classification'?token(Number(d)):regressionFill(d,domain)).on('pointermove',(e,d)=>showTip(e,`${pretty(task.task)}<br>${variant==='truth'?'truth':names[variant]}: ${Number(d).toFixed(task.kind==='classification'?0:3)}`)).on('pointerleave',hideTip);if(task.task==='spiral')svg.append('circle').attr('cx',m.l+iw/2).attr('cy',m.t+ih/2).attr('r',iw*.235).attr('fill','none').attr('stroke','var(--foreground)').attr('stroke-width',1).attr('stroke-dasharray','3 3')}
+    function renderScatter(node,task,variant){const {w,h,m}=dims(node,true),svg=d3.select(node).attr('viewBox',`0 0 ${w} ${h}`).attr('height',h),xe=d3.extent(task.xy,d=>d[0]),ye=d3.extent(task.xy,d=>d[1]),x=d3.scaleLinear(xe,[m.l,w-m.r]),y=d3.scaleLinear(ye,[h-m.b,m.t]),labels=variant==='truth'?task.truth:task.predictions[variant];frame(svg,w,h,m,'PCA₁','PCA₂');svg.append('g').selectAll('circle').data(task.xy.map((xy,i)=>({xy,label:labels[i]}))).join('circle').attr('cx',d=>x(d.xy[0])).attr('cy',d=>y(d.xy[1])).attr('r',1.7).attr('fill',d=>token(d.label)).attr('opacity',.78)}
+    function lineScales(task,w,h,m){const vectors=[task.truth,...Object.values(task.predictions)],flat=task.type==='curve3d'?vectors.flat(2):vectors.flat();return{x:d3.scaleLinear(d3.extent(task.x),[m.l,w-m.r]),y:d3.scaleLinear(d3.extent(flat),[h-m.b,m.t]).nice()}}
+    function renderCurve(node,task,variant){const {w,h,m}=dims(node),svg=d3.select(node).attr('viewBox',`0 0 ${w} ${h}`).attr('height',h),{x,y}=lineScales(task,w,h,m);frame(svg,w,h,m,'x','target');if(task.train_limits){const a=Math.max(task.train_limits[0],x.domain()[0]),b=Math.min(task.train_limits[1],x.domain()[1]);svg.append('rect').attr('x',x(a)).attr('y',m.t).attr('width',Math.max(0,x(b)-x(a))).attr('height',h-m.t-m.b).attr('fill','var(--muted)').attr('opacity',.45)}const line=d3.line().x((d,i)=>x(task.x[i])).y(d=>y(d));svg.append('path').datum(task.truth).attr('fill','none').attr('stroke','var(--foreground)').attr('stroke-width',variant==='truth'?2.2:1).attr('opacity',variant==='truth'?1:.34).attr('d',line);if(variant!=='truth')svg.append('path').datum(task.predictions[variant]).attr('fill','none').attr('stroke',variant===variants[0]?'var(--viz-series-1)':'var(--viz-series-2)').attr('stroke-width',2).attr('d',line)}
+    function renderCurve3d(node,task,variant){const {w,h,m}=dims(node),svg=d3.select(node).attr('viewBox',`0 0 ${w} ${h}`).attr('height',h),{x,y}=lineScales(task,w,h,m);frame(svg,w,h,m,'t','coordinate');for(let dim=0;dim<3;dim++){const line=d3.line().x((d,i)=>x(task.x[i])).y(d=>y(d[dim]));svg.append('path').datum(task.truth).attr('fill','none').attr('stroke',token(dim)).attr('stroke-width',variant==='truth'?1.8:1).attr('opacity',variant==='truth'?1:.25).attr('d',line);if(variant!=='truth')svg.append('path').datum(task.predictions[variant]).attr('fill','none').attr('stroke',token(dim)).attr('stroke-width',1.8).attr('d',line)}}
+    function renderParity(node,task,variant){const {w,h,m}=dims(node,true),svg=d3.select(node).attr('viewBox',`0 0 ${w} ${h}`).attr('height',h),prediction=variant==='truth'?task.truth:task.predictions[variant],domain=d3.extent(task.truth.concat(prediction)),pad=(domain[1]-domain[0])*.04,x=d3.scaleLinear([domain[0]-pad,domain[1]+pad],[m.l,w-m.r]),y=d3.scaleLinear([domain[0]-pad,domain[1]+pad],[h-m.b,m.t]);frame(svg,w,h,m,'target','prediction');svg.append('line').attr('class','reference').attr('x1',x(domain[0])).attr('x2',x(domain[1])).attr('y1',y(domain[0])).attr('y2',y(domain[1]));svg.append('g').selectAll('circle').data(task.truth.map((truth,i)=>({truth,prediction:prediction[i]}))).join('circle').attr('cx',d=>x(d.truth)).attr('cy',d=>y(d.prediction)).attr('r',1.7).attr('fill','var(--viz-series-1)').attr('opacity',.65)}
+    function render(node,task,variant){if(task.type==='field')renderField(node,task,variant);else if(task.type==='scatter')renderScatter(node,task,variant);else if(task.type==='parity')renderParity(node,task,variant);else if(task.type==='curve3d')renderCurve3d(node,task,variant);else renderCurve(node,task,variant)}
+    function drawAtlas(){tasks.each(function(task){const section=d3.select(this),panels=section.select('.panels');panels.html('');const p=panels.selectAll('.panel').data(panelData()).join('div').attr('class','panel');p.append('div').attr('class','panel-title').html(d=>d.variant==='truth'?d.title:`${d.title} <span class="panel-score">${task.scores[d.variant].toFixed(3)}</span>`);p.append('svg').attr('role','img').attr('aria-label',d=>`${pretty(task.task)} ${d.title} fitted geometry`).each(function(panel){render(this,task,panel.variant)})})}
+    function draw(){drawDelta();d3.select(root).select('#csx-learning-grid').html('');drawLearning();drawAtlas()}
+    let timer;new ResizeObserver(()=>{clearTimeout(timer);timer=setTimeout(draw,100)}).observe(root);draw();
+  })();
+  </script>
+</div>

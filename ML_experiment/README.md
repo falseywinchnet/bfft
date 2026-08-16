@@ -18,12 +18,16 @@ Fourier basis, periodic feature map, unseen-support label, or GELU activation.
 - [`CURVATURE_STATE_REPORT.md`](CURVATURE_STATE_REPORT.md): parameter-free
   curvature-state and nested-self-context follow-up (194 benchmark fits plus
   30 matched visual-probe fits).
+- [`CURVATURE_SUPERSET_REPORT.md`](CURVATURE_SUPERSET_REPORT.md): direct
+  self-context versus curvature-self-context comparison on all 22 problems.
 - [`visualization.html`](visualization.html): the complete 22-problem atlas,
   with truth, MLP, self-context, hard-gate, and chart-curvature fits.
 - [`summary_visualization.html`](summary_visualization.html): aggregate score,
   tail-tradeoff, spiral, and multiscale summary plots.
 - [`curvature_state.html`](curvature_state.html): matched confirmation metrics
   and by-eye fits for the curvature-state follow-up.
+- [`curvature_superset.html`](curvature_superset.html): acquisition, endpoint,
+  tail, and fitted-function differences across the complete suite.
 - `results_confirm/`: 308 confirmation fits, paired-seed summary, and 88 fitted
   probes covering all 22 tasks and four representative models.
 - `results_screen/`: 154 preliminary fits.
