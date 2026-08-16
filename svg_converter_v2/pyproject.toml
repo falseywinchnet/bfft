@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "transport-locked-vectorizer-v2"
+version = "0.1.0"
+description = "Rate-distortion and affine-cell experimental PNG to SVG converter"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.24",
+  "scipy>=1.10",
+  "Pillow>=10",
+  "transport-locked-vectorizer>=0.2.0",
+]
+
+[project.scripts]
+tlvector-v2 = "tlvector_v2.cli:main"
+tlvector-v2-affine = "tlvector_v2.cli:affine_main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
