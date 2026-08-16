@@ -34,6 +34,36 @@ def _fixture() -> np.ndarray:
 
 
 class VectorizerTests(unittest.TestCase):
+    def test_adaptive_quality_mode_meets_bound_and_preserves_owner_lineage(self):
+        colors = np.array([
+            [15, 25, 35], [45, 70, 90], [80, 30, 140], [130, 90, 30],
+            [180, 140, 50], [220, 190, 130], [30, 160, 120], [190, 40, 80],
+        ], dtype=np.uint8)
+        yy, xx = np.indices((32, 40))
+        source = np.empty((32, 40, 4), dtype=np.uint8)
+        source[..., :3] = colors[((xx // 5) + 3 * (yy // 4)) % len(colors)]
+        source[..., 3] = 255
+        result = vectorize_array(source, VectorizerConfig(
+            colors=2, detail_colors=8, target_mse=30.0,
+            coarse_side=32, minimum_region=1,
+        ))
+        repeated = vectorize_array(source, VectorizerConfig(
+            colors=2, detail_colors=8, target_mse=30.0,
+            coarse_side=32, minimum_region=1,
+        ))
+        self.assertEqual(result.svg, repeated.svg)
+        self.assertLessEqual(result.diagnostics["rgba_mse"], 30.0)
+        self.assertEqual(result.diagnostics["quality_target_met"], 1)
+        self.assertLess(result.diagnostics["detail_colors"], 8)
+        self.assertIn('shape-rendering="crispEdges"', result.svg)
+        self.assertNotIn('stroke-width=', result.svg)
+        for child in range(2, len(result.parent_of)):
+            pixels = result.labels == child
+            self.assertTrue(np.any(pixels))
+            self.assertTrue(np.all(
+                result.structural_labels[pixels] == result.parent_of[child]
+            ))
+
     def test_chunked_regularization_matches_dense_reference(self):
         rng = np.random.default_rng(731)
         features = rng.normal(size=(13, 17, 4))

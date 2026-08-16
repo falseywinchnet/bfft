@@ -21,6 +21,8 @@ Useful controls:
 
 - `--colors`: structural palette/owner budget.
 - `--detail-colors`: parent-locked residual child budget.
+- `--target-mse`: activate adaptive quality mode and require the reported RGBA
+  reconstruction MSE to be no greater than this value.
 - `--coarse-side`: maximum dimension of the structural solve.
 - `--minimum-region`: minimum residual island area.
 - `--simplify`: maximum contour simplification distance in pixels.
@@ -32,6 +34,29 @@ Useful controls:
   genuinely translucent regions. Auto is appropriate for most logos.
 
 The CLI prints JSON diagnostics. `--diagnostics report.json` saves them.
+When a requested quality target is missed because the residual budget is too
+small, the SVG and report are still written and the CLI exits with status 2.
+
+## Quality-constrained conversion
+
+For dense illustrations and photographs, request a measured error bound:
+
+```sh
+tlvector input.png output.svg --colors 128 --detail-colors 32 \
+  --target-mse 30 --diagnostics output-report.json
+```
+
+Quality mode first performs bounded-memory full-resolution occupation of the
+structural palette. It then repeatedly splits the color cell offering the
+largest exact RGBA squared-error reduction, without letting a child escape its
+structural owner. `--detail-colors` is the maximum split budget; the solver
+stops early when it reaches the target.
+
+Because independently fitted curves can open cracks between one-pixel detail
+regions, quality mode compiles exact shared lattice edges, requests crisp-edge
+rasterization, and disables seam strokes, contour simplification, subpixel
+relaxation, and curve rounding. This is a deliberate fidelity/complexity
+tradeoff: detailed artwork can produce large SVGs with many subpaths.
 
 ## Run the web GUI
 
@@ -52,8 +77,9 @@ Start the local web application:
 
 It opens the interface in the default browser and prints its local URL in the
 terminal. Choose a PNG, set the structural palette to as many as 128 colors,
-select **Convert**, inspect the rendered SVG, and select **Export SVG**. Press
-`Ctrl-C` in the terminal to stop the server.
+optionally enter a target MSE and residual split budget, select **Convert**,
+inspect the rendered SVG, and select **Export SVG**. Press `Ctrl-C` in the
+terminal to stop the server.
 
 To use a predictable port without automatically opening a browser:
 
