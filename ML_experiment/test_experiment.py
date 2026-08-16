@@ -12,7 +12,7 @@ if str(ROOT) not in sys.path: sys.path.insert(0, str(ROOT))
 from ML_experiment.models import parameter_count
 from ML_experiment.run_benchmark import chart_loss, secant_loss
 from ML_experiment.tasks import TASK_BUILDERS
-from ML_experiment.variants import JET_VARIANTS, VARIANTS, make_variant
+from ML_experiment.variants import JET_VARIANTS, TRANSPORT_VARIANTS, VARIANTS, make_variant
 
 
 class SupersetTests(unittest.TestCase):
@@ -52,6 +52,35 @@ class SupersetTests(unittest.TestCase):
             self.assertEqual(parameter_count(baseline), parameter_count(model))
             self.assertFalse(torch.allclose(baseline(x), output))
             self.assertTrue(all(p.grad is None or torch.isfinite(p.grad).all() for p in model.parameters()))
+
+    def test_transport_variants_are_parameter_matched_and_finite(self):
+        x = torch.randn(13, 3)
+        torch.manual_seed(23); baseline = make_variant("self_context", 3, 2, 16)
+        for name in TRANSPORT_VARIANTS:
+            torch.manual_seed(23); model = make_variant(name, 3, 2, 16)
+            output = model(x); output.square().mean().backward()
+            self.assertEqual(parameter_count(baseline), parameter_count(model))
+            self.assertTrue(torch.isfinite(output).all())
+            self.assertTrue(all(p.grad is None or torch.isfinite(p.grad).all() for p in model.parameters()))
+
+    def test_detached_curvature_preserves_forward_state_but_changes_backward_route(self):
+        x = torch.randn(17, 3); target = torch.randn(17, 2)
+        torch.manual_seed(29); full = make_variant("self_context_jet_curvature_context", 3, 2, 16)
+        torch.manual_seed(29); detached = make_variant("self_context_jet_curvature_detached", 3, 2, 16)
+        full_output, detached_output = full(x), detached(x)
+        self.assertTrue(torch.allclose(full_output, detached_output, atol=1e-6, rtol=1e-5))
+        (full_output - target).square().mean().backward()
+        (detached_output - target).square().mean().backward()
+        full_gradient = full.up.metric.weight.grad
+        detached_gradient = detached.up.metric.weight.grad
+        self.assertFalse(torch.allclose(full_gradient, detached_gradient))
+
+    def test_bounded_curvature_reports_subunit_authority(self):
+        model = make_variant("self_context_jet_curvature_bounded", 3, 2, 16)
+        _ = model(torch.randn(19, 3))
+        for layer in model.diagnostics().values():
+            authority = layer["curvature_authority"]
+            self.assertTrue(((authority >= 0) & (authority <= 1)).all())
 
     def test_nd_tasks_have_inner_and_outer_support(self):
         for name in ("nd_spiral_low_rank", "nd_spiral_high_rank", "hypercube_checker"):

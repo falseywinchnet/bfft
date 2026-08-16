@@ -22,7 +22,8 @@ class SoftEikonalLinear(nn.Module):
     def __init__(self, n_in: int, n_out: int, directions: int = 12, rank: int = 4,
                  temperature: float = 1.0, self_context_strength: float = 0.0,
                  context_steps: int = 1, uncertainty_context: bool = False,
-                 jet_mode: str = "none", nested_self_context: bool = False):
+                 jet_mode: str = "none", nested_self_context: bool = False,
+                 transport_mode: str = "none"):
         super().__init__()
         self.directions, self.rank = directions, rank
         self.temperature = float(temperature)
@@ -31,9 +32,15 @@ class SoftEikonalLinear(nn.Module):
         self.uncertainty_context = bool(uncertainty_context)
         self.nested_self_context = bool(nested_self_context)
         if jet_mode not in {"none", "laplacian", "factor", "richardson",
-                            "curvature_context", "nested_chart"}:
+                            "curvature_context", "curvature_context_bounded",
+                            "curvature_context_geometric", "curvature_context_detached",
+                            "nested_chart"}:
             raise ValueError(jet_mode)
         self.jet_mode = jet_mode
+        if transport_mode not in {"none", "heun", "turn", "self_ray_odd", "self_ray_even",
+                                  "basis_ray_odd"}:
+            raise ValueError(transport_mode)
+        self.transport_mode = transport_mode
         self.base = nn.Linear(n_in, n_out)
         self.metric = nn.Linear(n_in, rank * rank)
         generator = torch.Generator().manual_seed(9157 + n_in + n_out)
@@ -64,6 +71,21 @@ class SoftEikonalLinear(nn.Module):
         logits = response - cost / (cost.mean(1, keepdim=True) + 1e-5)
         weight = torch.softmax(logits / self.temperature, 1)
         return metric, projected, weight
+
+    def _lift_context(self, projected, weight):
+        return torch.einsum("bd,bdr,dri->bi", weight, projected, self.primitive) / self.rank
+
+    @staticmethod
+    def _normalize_like(state, reference):
+        state_rms = state.square().mean(1, keepdim=True).sqrt().clamp_min(1e-6)
+        reference_rms = reference.square().mean(1, keepdim=True).sqrt().detach().clamp_min(1e-6)
+        return state * (reference_rms / state_rms), state_rms, reference_rms
+
+    @staticmethod
+    def _bound_like(state, reference_rms):
+        state_rms = state.square().mean(1, keepdim=True).sqrt()
+        bounded = state * (reference_rms / (reference_rms + state_rms + 1e-6))
+        return bounded, state_rms
 
     def _shell_curvature(self, x, pooled, weight, radius_scale=1.0):
         """Return directional even shell differences in the learned chart.
@@ -133,22 +155,104 @@ class SoftEikonalLinear(nn.Module):
         batch = len(x)
         chart_input = x
         normalized_context = None
+        extra_diagnostics = {}
+        chart_points = 1
         metric, projected, weight = self._allocate(x)
         initial_weight = weight
-        for _ in range(self.context_steps if self.self_context_strength else 0):
-            context = torch.einsum("bd,bdr,dri->bi", weight, projected, self.primitive) / self.rank
-            context_rms = context.square().mean(1, keepdim=True).sqrt().clamp_min(1e-6)
-            input_rms = x.square().mean(1, keepdim=True).sqrt().detach().clamp_min(1e-6)
+        if self.transport_mode != "none" and self.self_context_strength:
+            # Treat self-context as a vector field and retain how the field
+            # changes along its own proposed flow.  These are parameter-free
+            # predictor/corrector constructions, not an imposed shell atlas.
+            context0 = self._lift_context(projected, weight)
+            v0, context0_rms, input_rms = self._normalize_like(context0, x)
             gain = self.self_context_strength
-            if self.uncertainty_context:
-                entropy = -(weight * torch.log(weight + 1e-9)).sum(1, keepdim=True) / math.log(self.directions)
-                gain = gain * entropy
-            normalized_context = context * (input_rms / context_rms)
-            # Anchor every iteration to the authentic activation. Repeated
-            # context steps refine the chart rather than accumulating drift.
-            augmented = x + gain * normalized_context
-            chart_input = augmented
-            metric, projected, weight = self._allocate(augmented)
+            z_plus = x + gain * v0
+            _, projected_plus, weight_plus = self._allocate(z_plus)
+            chart_points += 1
+            context_plus = self._lift_context(projected_plus, weight_plus)
+            v_plus, _, _ = self._normalize_like(context_plus, x)
+            innovation = v_plus - v0
+
+            if self.transport_mode == "heun":
+                flow = v0 + .5 * innovation
+            elif self.transport_mode == "turn":
+                coefficient = ((innovation * v0).sum(1, keepdim=True)
+                               / v0.square().sum(1, keepdim=True).clamp_min(1e-6))
+                turn = innovation - coefficient * v0
+                bounded_turn, turn_rms = self._bound_like(turn, input_rms)
+                flow = v0 + .5 * bounded_turn
+                innovation_rms = innovation.square().mean(1, keepdim=True).sqrt().clamp_min(1e-6)
+                extra_diagnostics["turn_fraction"] = turn_rms / innovation_rms
+            elif self.transport_mode == "basis_ray_odd":
+                # Resolve the local differential along the allocator's own
+                # rank-r eikonal basis rays.  Odd probe responses are
+                # contracted covariantly back along the selected transport
+                # direction; unlike the even shell, orientation is retained.
+                frame = torch.einsum("bd,dri->bri", weight_plus, self.primitive)
+                frame = F.normalize(frame, dim=-1)
+                radius = (gain * z_plus.norm(dim=1, keepdim=True).detach().clamp_min(1e-3))
+                displacement = radius[:, None, :] * frame
+                probes = torch.cat((z_plus[:, None, :] + displacement,
+                                    z_plus[:, None, :] - displacement), dim=1)
+                _, probe_projected, probe_weight = self._allocate(probes.flatten(0, 1))
+                chart_points += 2 * self.rank
+                probe_context = self._lift_context(probe_projected, probe_weight)
+                reference = z_plus[:, None, :].expand(-1, 2 * self.rank, -1).flatten(0, 1)
+                probe_context, _, _ = self._normalize_like(probe_context, reference)
+                probe_context = probe_context.view(batch, 2 * self.rank, x.shape[1])
+                plus, minus = probe_context[:, :self.rank], probe_context[:, self.rank:]
+                odd_factors = .5 * (plus - minus)
+
+                gram = frame @ frame.transpose(1, 2)
+                identity = torch.eye(self.rank, device=x.device, dtype=x.dtype)[None]
+                direction = F.normalize(v_plus, dim=1)
+                coordinates = torch.linalg.solve(
+                    gram + 1e-3 * identity,
+                    torch.einsum("bri,bi->br", frame, direction).unsqueeze(-1),
+                ).squeeze(-1)
+                ray_state = torch.einsum("br,bri->bi", coordinates, odd_factors)
+                bounded_ray, _ = self._bound_like(ray_state, input_rms)
+                flow = v0 + .5 * bounded_ray
+                extra_diagnostics["basis_coordinate_rms"] = coordinates.square().mean(1, keepdim=True).sqrt()
+            else:
+                z_minus = x - gain * v0
+                _, projected_minus, weight_minus = self._allocate(z_minus)
+                chart_points += 1
+                context_minus = self._lift_context(projected_minus, weight_minus)
+                v_minus, _, _ = self._normalize_like(context_minus, x)
+                if self.transport_mode == "self_ray_odd":
+                    ray_state = .5 * (v_plus - v_minus)
+                else:
+                    ray_state = .5 * (v_plus + v_minus) - v0
+                bounded_ray, _ = self._bound_like(ray_state, input_rms)
+                flow = v0 + .5 * bounded_ray
+
+            chart_input = x + gain * flow
+            metric, projected, weight = self._allocate(chart_input)
+            chart_points += 1
+            normalized_context = v0
+            innovation_rms = innovation.square().mean(1, keepdim=True).sqrt()
+            extra_diagnostics.update({
+                "context_raw_ratio": context0_rms / input_rms,
+                "innovation_rms_ratio": innovation_rms / input_rms,
+                "context_cosine": F.cosine_similarity(v0, v_plus, dim=1).unsqueeze(1),
+            })
+        else:
+            for _ in range(self.context_steps if self.self_context_strength else 0):
+                context = self._lift_context(projected, weight)
+                normalized_context, context_rms, input_rms = self._normalize_like(context, x)
+                gain = self.self_context_strength
+                if self.uncertainty_context:
+                    entropy = -(weight * torch.log(weight + 1e-9)).sum(1, keepdim=True) / math.log(self.directions)
+                    gain = gain * entropy
+                # Anchor every iteration to the authentic activation. Repeated
+                # context steps refine the chart rather than accumulating drift.
+                augmented = x + gain * normalized_context
+                chart_input = augmented
+                metric, projected, weight = self._allocate(augmented)
+                chart_points += 1
+            if normalized_context is not None:
+                extra_diagnostics["context_raw_ratio"] = context_rms / input_rms
         if self.nested_self_context and normalized_context is not None:
             _, outer_projected, outer_weight = self._allocate(normalized_context)
             outer_context = torch.einsum(
@@ -160,12 +264,37 @@ class SoftEikonalLinear(nn.Module):
             nested_proposal = normalized_context + self.self_context_strength * outer_context
             chart_input = x + self.self_context_strength * nested_proposal
             metric, projected, weight = self._allocate(chart_input)
-        if self.jet_mode == "curvature_context":
+            chart_points += 2
+        if self.jet_mode in {"curvature_context", "curvature_context_bounded",
+                             "curvature_context_geometric", "curvature_context_detached"}:
             curvature_context = self._shell_context_curvature(chart_input, projected, weight)
             curvature_rms = curvature_context.square().mean(1, keepdim=True).sqrt().clamp_min(1e-6)
             chart_rms = chart_input.square().mean(1, keepdim=True).sqrt().detach().clamp_min(1e-6)
-            chart_input = chart_input + self.self_context_strength * curvature_context * (chart_rms / curvature_rms)
+            chart_points += 2 * self.rank
+            if self.jet_mode == "curvature_context_detached":
+                curvature_context = curvature_context.detach()
+                injected = curvature_context * (chart_rms / curvature_rms.detach())
+                authority = torch.ones_like(curvature_rms)
+            elif self.jet_mode == "curvature_context_bounded":
+                injected, _ = self._bound_like(curvature_context, chart_rms)
+                authority = curvature_rms / (chart_rms + curvature_rms)
+            elif self.jet_mode == "curvature_context_geometric":
+                # The geometric mean between the raw shell magnitude and the
+                # old full-strength normalization.  Weak evidence remains weak
+                # without becoming numerically invisible; strong evidence is
+                # still capped at the chart scale.
+                authority = (curvature_rms / (chart_rms + curvature_rms)).sqrt()
+                injected = curvature_context * (chart_rms / curvature_rms) * authority
+            else:
+                injected = curvature_context * (chart_rms / curvature_rms)
+                authority = torch.ones_like(curvature_rms)
+            chart_input = chart_input + self.self_context_strength * injected
             metric, projected, weight = self._allocate(chart_input)
+            chart_points += 1
+            extra_diagnostics.update({
+                "curvature_raw_ratio": curvature_rms / chart_rms,
+                "curvature_authority": authority,
+            })
         if self.jet_mode == "nested_chart":
             # The first chart transition is a tangent displacement on the
             # allocation simplex. Lift that transition into activation space,
@@ -195,18 +324,28 @@ class SoftEikonalLinear(nn.Module):
         elif self.diagnostic_mode == "uniform":
             weight = torch.full_like(weight, 1 / self.directions)
         pooled = torch.einsum("bd,bdr->br", weight, projected)
-        if self.jet_mode not in {"none", "curvature_context", "nested_chart"}:
+        if self.jet_mode not in {"none", "curvature_context", "curvature_context_bounded",
+                                "curvature_context_geometric", "curvature_context_detached",
+                                "nested_chart"}:
             pooled = pooled + self._jet_state(chart_input, pooled, weight)
         correction = F.softplus(self.scale) * (pooled @ self.shared)
         if self.diagnostic_mode == "base_only":
             correction = torch.zeros_like(correction)
         eigenvalues = torch.linalg.eigvalsh(metric.detach()).clamp_min(1e-8)
+        midpoint = .5 * (initial_weight + matched_weight)
+        allocation_js = .5 * (
+            (initial_weight * (torch.log(initial_weight + 1e-9) - torch.log(midpoint + 1e-9))).sum(1)
+            + (matched_weight * (torch.log(matched_weight + 1e-9) - torch.log(midpoint + 1e-9))).sum(1)
+        )
         self.last_diagnostics = {
             "weight": matched_weight.detach(),
             "entropy": (-(matched_weight * torch.log(matched_weight + 1e-9)).sum(1) / math.log(self.directions)).detach(),
             "condition": (eigenvalues[:, -1] / eigenvalues[:, 0]).detach(),
             "base_norm": self.base(x).detach().norm(dim=1),
             "correction_norm": correction.detach().norm(dim=1),
+            "allocation_js": allocation_js.detach(),
+            "chart_points": torch.full((batch,), chart_points, device=x.device),
+            **{key: value.detach().squeeze(-1) for key, value in extra_diagnostics.items()},
         }
         return self.base(x) + correction
 
@@ -215,17 +354,20 @@ class SoftEikonalNet(nn.Module):
     def __init__(self, input_dim: int, output_dim: int, width: int,
                  temperature: float = 1.0, self_context_strength: float = 0.0,
                  context_steps: int = 1, uncertainty_context: bool = False,
-                 jet_mode: str = "none", nested_self_context: bool = False):
+                 jet_mode: str = "none", nested_self_context: bool = False,
+                 transport_mode: str = "none"):
         super().__init__()
         self.embed = nn.Linear(input_dim, width)
         self.up = SoftEikonalLinear(width, 2 * width, temperature=temperature,
                                     self_context_strength=self_context_strength,
                                     context_steps=context_steps, uncertainty_context=uncertainty_context,
-                                    jet_mode=jet_mode, nested_self_context=nested_self_context)
+                                    jet_mode=jet_mode, nested_self_context=nested_self_context,
+                                    transport_mode=transport_mode)
         self.down = SoftEikonalLinear(2 * width, width, temperature=temperature,
                                       self_context_strength=self_context_strength,
                                       context_steps=context_steps, uncertainty_context=uncertainty_context,
-                                      jet_mode=jet_mode, nested_self_context=nested_self_context)
+                                      jet_mode=jet_mode, nested_self_context=nested_self_context,
+                                      transport_mode=transport_mode)
         self.activation = LELU()
         self.output = nn.Linear(width, output_dim)
 

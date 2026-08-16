@@ -24,6 +24,20 @@ JET_VARIANTS = (
     "self_context_nested_chart",
 )
 
+TRANSPORT_VARIANTS = (
+    "self_context",
+    "self_context_iterated",
+    "self_context_transport_heun",
+    "self_context_transport_turn",
+    "self_context_transport_self_ray_odd",
+    "self_context_transport_self_ray_even",
+    "self_context_transport_basis_ray_odd",
+    "self_context_jet_curvature_context",
+    "self_context_jet_curvature_bounded",
+    "self_context_jet_curvature_geometric",
+    "self_context_jet_curvature_detached",
+)
+
 
 def make_variant(name: str, input_dim: int, output_dim: int, width: int):
     reference = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25)
@@ -43,6 +57,11 @@ def make_variant(name: str, input_dim: int, output_dim: int, width: int):
         model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25)
     elif name.startswith("self_context_jet_"):
         mode = name.removeprefix("self_context_jet_")
+        mode = {
+            "curvature_bounded": "curvature_context_bounded",
+            "curvature_geometric": "curvature_context_geometric",
+            "curvature_detached": "curvature_context_detached",
+        }.get(mode, mode)
         model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25,
                                jet_mode=mode)
     elif name == "self_context_nested":
@@ -51,6 +70,10 @@ def make_variant(name: str, input_dim: int, output_dim: int, width: int):
     elif name == "self_context_nested_chart":
         model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25,
                                jet_mode="nested_chart")
+    elif name.startswith("self_context_transport_"):
+        mode = name.removeprefix("self_context_transport_")
+        model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25,
+                               transport_mode=mode)
     else:
         raise KeyError(name)
     assert parameter_count(model) == budget
