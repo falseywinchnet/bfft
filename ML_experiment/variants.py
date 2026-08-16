@@ -13,6 +13,16 @@ VARIANTS = (
     "self_context_chart",
 )
 
+JET_VARIANTS = (
+    "ordinary_mlp",
+    "self_context",
+    "self_context_jet_laplacian",
+    "self_context_jet_factor",
+    "self_context_jet_richardson",
+    "self_context_jet_curvature_context",
+    "self_context_nested",
+)
+
 
 def make_variant(name: str, input_dim: int, output_dim: int, width: int):
     reference = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25)
@@ -30,6 +40,13 @@ def make_variant(name: str, input_dim: int, output_dim: int, width: int):
                                uncertainty_context=True)
     elif name in {"self_context", "self_context_secant", "self_context_chart"}:
         model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25)
+    elif name.startswith("self_context_jet_"):
+        mode = name.removeprefix("self_context_jet_")
+        model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25,
+                               jet_mode=mode)
+    elif name == "self_context_nested":
+        model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25,
+                               nested_self_context=True)
     else:
         raise KeyError(name)
     assert parameter_count(model) == budget

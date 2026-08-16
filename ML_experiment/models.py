@@ -21,13 +21,18 @@ class SoftEikonalLinear(nn.Module):
 
     def __init__(self, n_in: int, n_out: int, directions: int = 12, rank: int = 4,
                  temperature: float = 1.0, self_context_strength: float = 0.0,
-                 context_steps: int = 1, uncertainty_context: bool = False):
+                 context_steps: int = 1, uncertainty_context: bool = False,
+                 jet_mode: str = "none", nested_self_context: bool = False):
         super().__init__()
         self.directions, self.rank = directions, rank
         self.temperature = float(temperature)
         self.self_context_strength = float(self_context_strength)
         self.context_steps = int(context_steps)
         self.uncertainty_context = bool(uncertainty_context)
+        self.nested_self_context = bool(nested_self_context)
+        if jet_mode not in {"none", "laplacian", "factor", "richardson", "curvature_context"}:
+            raise ValueError(jet_mode)
+        self.jet_mode = jet_mode
         self.base = nn.Linear(n_in, n_out)
         self.metric = nn.Linear(n_in, rank * rank)
         generator = torch.Generator().manual_seed(9157 + n_in + n_out)
@@ -59,8 +64,74 @@ class SoftEikonalLinear(nn.Module):
         weight = torch.softmax(logits / self.temperature, 1)
         return metric, projected, weight
 
+    def _shell_curvature(self, x, pooled, weight, radius_scale=1.0):
+        """Return directional even shell differences in the learned chart.
+
+        The external model still receives one activation. These symmetric
+        probes query the layer's own allocation field along the low-rank frame
+        already selected by that activation. No labels or neighboring samples
+        enter the construction and no full Jacobian is materialized.
+        """
+        batch = len(x)
+        frame = torch.einsum("bd,dri->bri", weight, self.primitive)
+        frame = F.normalize(frame, dim=-1)
+        # The shell is one self-context step from the authentic chart point.
+        # Euclidean norm makes the radius invariant to hidden width.
+        radius = (self.self_context_strength * radius_scale
+                  * x.norm(dim=1, keepdim=True).detach().clamp_min(1e-3))
+        displacement = radius[:, None, :] * frame
+        probes = torch.cat((x[:, None, :] + displacement,
+                            x[:, None, :] - displacement), dim=1)
+        _, probe_projected, probe_weight = self._allocate(probes.flatten(0, 1))
+        probe_pooled = torch.einsum("bd,bdr->br", probe_weight, probe_projected)
+        probe_pooled = probe_pooled.view(batch, 2 * self.rank, self.rank)
+        plus, minus = probe_pooled[:, :self.rank], probe_pooled[:, self.rank:]
+        return plus + minus - 2 * pooled[:, None, :]
+
+    def _shell_context_curvature(self, x, projected, weight):
+        """Lift the even shell response back into activation coordinates."""
+        batch = len(x)
+        center = torch.einsum("bd,bdr,dri->bi", weight, projected, self.primitive) / self.rank
+        frame = torch.einsum("bd,dri->bri", weight, self.primitive)
+        frame = F.normalize(frame, dim=-1)
+        radius = (self.self_context_strength
+                  * x.norm(dim=1, keepdim=True).detach().clamp_min(1e-3))
+        displacement = radius[:, None, :] * frame
+        probes = torch.cat((x[:, None, :] + displacement,
+                            x[:, None, :] - displacement), dim=1)
+        _, probe_projected, probe_weight = self._allocate(probes.flatten(0, 1))
+        probe_context = torch.einsum(
+            "bd,bdr,dri->bi", probe_weight, probe_projected, self.primitive
+        ) / self.rank
+        probe_context = probe_context.view(batch, 2 * self.rank, x.shape[1])
+        plus, minus = probe_context[:, :self.rank], probe_context[:, self.rank:]
+        return (plus + minus - 2 * center[:, None, :]).mean(dim=1)
+
+    def _jet_state(self, x, pooled, weight):
+        curvature = self._shell_curvature(x, pooled, weight)
+        laplacian = curvature.mean(dim=1)
+        if self.jet_mode == "laplacian":
+            return laplacian
+        if self.jet_mode == "richardson":
+            outer = self._shell_curvature(x, pooled, weight, radius_scale=2.0).mean(dim=1)
+            # Cancel the leading fourth-order shell error while preserving a
+            # curvature state with the same units as the pooled response.
+            return (4 * laplacian - .25 * outer) / 3
+        if self.jet_mode == "factor":
+            # K^T K is invariant to reordering/rotation of the sampled tangent
+            # factors. Acting on the current response retains focal curvature
+            # energy instead of flattening it.
+            gram = curvature.transpose(1, 2) @ curvature / self.rank
+            factored = torch.einsum("brs,bs->br", gram, pooled)
+            target_rms = curvature.square().mean((1, 2), keepdim=False).sqrt().unsqueeze(1)
+            factor_rms = factored.square().mean(1, keepdim=True).sqrt().clamp_min(1e-6)
+            return factored * (target_rms / factor_rms)
+        return torch.zeros_like(pooled)
+
     def forward(self, x):
         batch = len(x)
+        chart_input = x
+        normalized_context = None
         metric, projected, weight = self._allocate(x)
         for _ in range(self.context_steps if self.self_context_strength else 0):
             context = torch.einsum("bd,bdr,dri->bi", weight, projected, self.primitive) / self.rank
@@ -70,10 +141,29 @@ class SoftEikonalLinear(nn.Module):
             if self.uncertainty_context:
                 entropy = -(weight * torch.log(weight + 1e-9)).sum(1, keepdim=True) / math.log(self.directions)
                 gain = gain * entropy
+            normalized_context = context * (input_rms / context_rms)
             # Anchor every iteration to the authentic activation. Repeated
             # context steps refine the chart rather than accumulating drift.
-            augmented = x + gain * context * (input_rms / context_rms)
+            augmented = x + gain * normalized_context
+            chart_input = augmented
             metric, projected, weight = self._allocate(augmented)
+        if self.nested_self_context and normalized_context is not None:
+            _, outer_projected, outer_weight = self._allocate(normalized_context)
+            outer_context = torch.einsum(
+                "bd,bdr,dri->bi", outer_weight, outer_projected, self.primitive
+            ) / self.rank
+            outer_rms = outer_context.square().mean(1, keepdim=True).sqrt().clamp_min(1e-6)
+            input_rms = x.square().mean(1, keepdim=True).sqrt().detach().clamp_min(1e-6)
+            outer_context = outer_context * (input_rms / outer_rms)
+            nested_proposal = normalized_context + self.self_context_strength * outer_context
+            chart_input = x + self.self_context_strength * nested_proposal
+            metric, projected, weight = self._allocate(chart_input)
+        if self.jet_mode == "curvature_context":
+            curvature_context = self._shell_context_curvature(chart_input, projected, weight)
+            curvature_rms = curvature_context.square().mean(1, keepdim=True).sqrt().clamp_min(1e-6)
+            chart_rms = chart_input.square().mean(1, keepdim=True).sqrt().detach().clamp_min(1e-6)
+            chart_input = chart_input + self.self_context_strength * curvature_context * (chart_rms / curvature_rms)
+            metric, projected, weight = self._allocate(chart_input)
         matched_weight = weight
         self.last_weight = matched_weight
         if self.diagnostic_mode == "mismatched" and batch > 1:
@@ -81,6 +171,8 @@ class SoftEikonalLinear(nn.Module):
         elif self.diagnostic_mode == "uniform":
             weight = torch.full_like(weight, 1 / self.directions)
         pooled = torch.einsum("bd,bdr->br", weight, projected)
+        if self.jet_mode not in {"none", "curvature_context"}:
+            pooled = pooled + self._jet_state(chart_input, pooled, weight)
         correction = F.softplus(self.scale) * (pooled @ self.shared)
         if self.diagnostic_mode == "base_only":
             correction = torch.zeros_like(correction)
@@ -98,15 +190,18 @@ class SoftEikonalLinear(nn.Module):
 class SoftEikonalNet(nn.Module):
     def __init__(self, input_dim: int, output_dim: int, width: int,
                  temperature: float = 1.0, self_context_strength: float = 0.0,
-                 context_steps: int = 1, uncertainty_context: bool = False):
+                 context_steps: int = 1, uncertainty_context: bool = False,
+                 jet_mode: str = "none", nested_self_context: bool = False):
         super().__init__()
         self.embed = nn.Linear(input_dim, width)
         self.up = SoftEikonalLinear(width, 2 * width, temperature=temperature,
                                     self_context_strength=self_context_strength,
-                                    context_steps=context_steps, uncertainty_context=uncertainty_context)
+                                    context_steps=context_steps, uncertainty_context=uncertainty_context,
+                                    jet_mode=jet_mode, nested_self_context=nested_self_context)
         self.down = SoftEikonalLinear(2 * width, width, temperature=temperature,
                                       self_context_strength=self_context_strength,
-                                      context_steps=context_steps, uncertainty_context=uncertainty_context)
+                                      context_steps=context_steps, uncertainty_context=uncertainty_context,
+                                      jet_mode=jet_mode, nested_self_context=nested_self_context)
         self.activation = LELU()
         self.output = nn.Linear(width, output_dim)
 

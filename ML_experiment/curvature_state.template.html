@@ -1,0 +1,124 @@
+<div id="curvature-state-viz">
+  <style>
+    #curvature-state-viz{color:var(--foreground);font-size:var(--font-size-base);width:100%}
+    #curvature-state-viz *{box-sizing:border-box}
+    #curvature-state-viz h2,#curvature-state-viz h3,#curvature-state-viz p{margin-top:0}
+    #curvature-state-viz h2,#curvature-state-viz h3{font-weight:500}
+    #curvature-state-viz h2{margin-bottom:6px}
+    #curvature-state-viz h3{margin-bottom:8px}
+    #curvature-state-viz .lede{color:var(--muted-foreground);margin-bottom:16px}
+    #curvature-state-viz .summary{margin-bottom:18px}
+    #curvature-state-viz .viz-stat-value{font-weight:500}
+    #curvature-state-viz .chart-block{margin:22px 0}
+    #curvature-state-viz .series-controls{display:flex;flex-wrap:wrap;gap:6px 14px;margin:5px 0 10px}
+    #curvature-state-viz .series-controls button{appearance:none;background:transparent;border:0;color:var(--foreground);padding:3px 0;cursor:pointer;font:inherit}
+    #curvature-state-viz .series-controls button[aria-pressed="false"]{color:var(--muted-foreground);text-decoration:line-through}
+    #curvature-state-viz .swatch{display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:50%;background:var(--swatch)}
+    #curvature-state-viz .svg-host{width:100%;min-height:280px;position:relative}
+    #curvature-state-viz svg{display:block;width:100%;overflow:visible}
+    #curvature-state-viz svg text{fill:var(--foreground);font-size:12px}
+    #curvature-state-viz svg .axis path,#curvature-state-viz svg .axis line{stroke:var(--border)}
+    #curvature-state-viz svg .grid line{stroke:var(--border);opacity:.45}
+    #curvature-state-viz svg .frame{fill:none;stroke:var(--border)}
+    #curvature-state-viz .geometry-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+    #curvature-state-viz .geometry-item{min-width:0}
+    #curvature-state-viz .geometry-item h3{text-align:center;margin-bottom:4px}
+    #curvature-state-viz .geometry-item svg{aspect-ratio:1/1}
+    #curvature-state-viz .tooltip{position:absolute;pointer-events:none;display:none;background:var(--popover);color:var(--popover-foreground);padding:7px 9px;border-radius:6px;z-index:2}
+    @media(max-width:820px){#curvature-state-viz .geometry-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(max-width:480px){#curvature-state-viz .geometry-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#curvature-state-viz .svg-host{min-height:250px}}
+  </style>
+  <h2>Curvature as state: the honest result</h2>
+  <p class="lede">Parameter-identical LELU models · 11 diagnostic problems · two paired seeds · 110 M4 CPU fits</p>
+  <div class="viz-grid summary">
+    <div class="card viz-stat"><div class="text-muted">General baseline</div><div class="viz-stat-value">Self-context</div><div class="text-small">best mean held-out score</div></div>
+    <div class="card viz-stat"><div class="text-muted">Factor curvature</div><div class="viz-stat-value">+.233</div><div class="text-small">high-rank N-D spiral score</div></div>
+    <div class="card viz-stat"><div class="text-muted">Curvature self-context</div><div class="viz-stat-value">9 / 11</div><div class="text-small">learning-AUC wins</div></div>
+  </div>
+  <div class="series-controls" id="cs-series-controls" aria-label="Toggle model series"></div>
+  <section class="chart-block">
+    <h3>Aggregate change relative to ordinary self-context</h3>
+    <div class="svg-host" id="cs-overall-host"><svg role="img" aria-label="Aggregate held-out, tail, and learning speed differences"><title>Aggregate metric differences versus self-context</title></svg><div class="tooltip" role="tooltip"></div></div>
+  </section>
+  <section class="chart-block">
+    <h3>Curvature helps different structures in different ways</h3>
+    <div class="svg-host" id="cs-task-host"><svg role="img" aria-label="Held-out score differences by task for three curvature-state variants"><title>Task-level held-out score differences versus self-context</title></svg><div class="tooltip" role="tooltip"></div></div>
+  </section>
+  <section class="chart-block">
+    <h3>Radial stripes: factor curvature loses focal geometry</h3>
+    <div class="geometry-grid" id="cs-radial-grid"></div>
+  </section>
+  <section class="chart-block">
+    <h3>High-rank N-D spiral: distributed curvature becomes useful</h3>
+    <div class="geometry-grid" id="cs-highrank-grid"></div>
+  </section>
+  <section class="chart-block">
+    <h3>One-dimensional continuation</h3>
+    <div class="svg-host" id="cs-multiscale-host"><svg role="img" aria-label="Multiscale target and model continuation"><title>Multiscale one-dimensional continuation</title></svg><div class="tooltip" role="tooltip"></div></div>
+    <div class="svg-host" id="cs-localized-host"><svg role="img" aria-label="Localized step target and model continuation"><title>Localized step one-dimensional continuation</title></svg><div class="tooltip" role="tooltip"></div></div>
+    <div class="svg-host" id="cs-fourier-host"><svg role="img" aria-label="Fourier mixture target and model continuation"><title>Fourier mixture one-dimensional continuation</title></svg><div class="tooltip" role="tooltip"></div></div>
+  </section>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script>
+  (()=>{
+    const root=document.getElementById('curvature-state-viz');
+    const data=__DATA__;
+    const variants=data.variants;
+    const labels={ordinary_mlp:'Ordinary MLP',self_context:'Self-context',self_context_jet_factor:'Factor curvature',self_context_jet_curvature_context:'Curvature self-context',self_context_nested:'Nested self-context'};
+    const tokens=['--viz-series-1','--viz-series-2','--viz-series-3','--viz-series-4','--viz-series-5'];
+    const style=getComputedStyle(root);
+    const colors=Object.fromEntries(variants.map((v,i)=>[v,style.getPropertyValue(tokens[i]).trim()]));
+    const visible=new Set(variants);
+    const controls=d3.select(root).select('#cs-series-controls');
+    controls.selectAll('button').data(variants).join('button').attr('type','button').attr('aria-pressed','true').html(d=>`<span class="swatch" style="--swatch:${colors[d]}"></span>${labels[d]}`).on('click',function(e,d){
+      if(d==='self_context')return;
+      visible.has(d)?visible.delete(d):visible.add(d);
+      d3.select(this).attr('aria-pressed',visible.has(d));
+      draw();
+    });
+    function dims(host,minHeight){const w=Math.max(300,host.getBoundingClientRect().width);return{w,h:Math.max(minHeight,w<430?290:minHeight),mobile:w<430}}
+    function tip(host){return d3.select(host).select('.tooltip')}
+    function showTip(t,e,html){const r=root.getBoundingClientRect();t.style('display','block').style('left',(e.clientX-r.left+10)+'px').style('top',(e.clientY-r.top+10)+'px').html(html)}
+    function clear(svg){svg.selectAll('*:not(title)').remove()}
+    function drawOverall(){
+      const host=root.querySelector('#cs-overall-host'),{w,h,mobile}=dims(host,300),svg=d3.select(host).select('svg').attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);clear(svg);
+      const metrics=[['score_delta','Held-out'],['tail_score_delta','Tail'],['learning_auc_delta','Learning AUC']],m={t:12,r:18,b:48,l:64},iw=w-m.l-m.r,ih=h-m.t-m.b;
+      const rows=data.overall.filter(d=>visible.has(d.variant)&&d.variant!=='self_context'),points=rows.flatMap(r=>metrics.map(([key,label])=>({variant:r.variant,metric:label,value:r[key]})));
+      const extent=d3.max(points,d=>Math.abs(d.value))||.01,x=d3.scalePoint(metrics.map(d=>d[1]),[m.l,m.l+iw]).padding(.5),y=d3.scaleLinear([-extent*1.12,extent*1.12],[m.t+ih,m.t]);
+      svg.append('rect').attr('class','frame').attr('data-chart-frame','').attr('x',m.l).attr('y',m.t).attr('width',iw).attr('height',ih);
+      svg.append('g').attr('class','grid').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickSize(-iw).tickFormat(d3.format('+.2f'))).call(g=>g.select('.domain').remove());
+      svg.append('g').attr('class','axis').attr('transform',`translate(0,${m.t+ih})`).call(d3.axisBottom(x));
+      svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('x',m.l+iw/2).attr('y',h-8).attr('text-anchor','middle').text('Metric');
+      svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('transform',`translate(15,${m.t+ih/2}) rotate(-90)`).attr('text-anchor','middle').text('Mean delta vs self-context');
+      const line=d3.line().x(d=>x(d.metric)).y(d=>y(d.value));
+      svg.append('g').selectAll('path').data(rows).join('path').attr('fill','none').attr('stroke',d=>colors[d.variant]).attr('stroke-width',2).attr('d',r=>line(points.filter(p=>p.variant===r.variant)));
+      const t=tip(host);svg.append('g').selectAll('circle').data(points).join('circle').attr('cx',d=>x(d.metric)).attr('cy',d=>y(d.value)).attr('r',4).attr('fill',d=>colors[d.variant]).attr('data-chart-hit','').on('pointermove',(e,d)=>showTip(t,e,`${labels[d.variant]}<br>${d.metric}: ${d3.format('+.3f')(d.value)}`)).on('pointerleave',()=>t.style('display','none'));
+    }
+    function drawTasks(){
+      const host=root.querySelector('#cs-task-host'),chosen=['self_context_jet_factor','self_context_jet_curvature_context','self_context_nested'].filter(v=>visible.has(v)),rows=data.tasks.filter(d=>chosen.includes(d.variant)),order=[...new Map(rows.map(d=>[d.task,d.label])).entries()],{w,mobile}=dims(host,520),rowH=mobile?34:30,h=order.length*rowH+76,svg=d3.select(host).select('svg').attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);clear(svg);
+      const m={t:12,r:28,b:44,l:mobile?132:185},iw=w-m.l-m.r,extent=d3.max(rows,d=>Math.abs(d.score_delta))||.01,x=d3.scaleLinear([-extent*1.12,extent*1.12],[m.l,m.l+iw]),y=d3.scaleBand(order.map(d=>d[0]),[m.t,m.t+order.length*rowH]).padding(.25),offset=d3.scalePoint(chosen,[-y.bandwidth()*.28,y.bandwidth()*.28]);
+      svg.append('rect').attr('class','frame').attr('data-chart-frame','').attr('x',m.l).attr('y',m.t).attr('width',iw).attr('height',order.length*rowH);
+      svg.append('line').attr('x1',x(0)).attr('x2',x(0)).attr('y1',m.t).attr('y2',m.t+order.length*rowH).attr('stroke','var(--border)');
+      svg.append('g').attr('class','axis').attr('transform',`translate(0,${m.t+order.length*rowH})`).call(d3.axisBottom(x).ticks(mobile?4:7).tickFormat(d3.format('+.2f')));
+      svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).tickFormat(d=>new Map(order).get(d)).tickSize(0)).call(g=>g.select('.domain').remove());
+      svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('x',m.l+iw/2).attr('y',h-6).attr('text-anchor','middle').text('Held-out score delta vs self-context');
+      const t=tip(host);svg.append('g').selectAll('circle').data(rows).join('circle').attr('cx',d=>x(d.score_delta)).attr('cy',d=>y(d.task)+y.bandwidth()/2+offset(d.variant)).attr('r',4).attr('fill',d=>colors[d.variant]).attr('data-chart-hit','').on('pointermove',(e,d)=>showTip(t,e,`${d.label}<br>${labels[d.variant]}: ${d3.format('+.3f')(d.score_delta)}`)).on('pointerleave',()=>t.style('display','none'));
+    }
+    function drawGeometry(task,selector){
+      const g=data.geometry[task],names=['truth',...variants.filter(v=>visible.has(v))],titles=['Truth',...variants.filter(v=>visible.has(v)).map(v=>labels[v])],grid=d3.select(root).select(selector),cells=grid.selectAll('.geometry-item').data(names,d=>d).join('div').attr('class','geometry-item');
+      cells.html((d,i)=>`<h3>${titles[i]}</h3><svg role="img" aria-label="${titles[i]} ${task}"><title>${titles[i]} ${task}</title></svg>`);
+      if(g.type==='field')cells.each(function(name){const values=name==='truth'?g.truth:g.predictions[name],n=g.size,w=Math.max(150,this.getBoundingClientRect().width),m=8,cell=(w-2*m)/n,svg=d3.select(this).select('svg').attr('viewBox',`0 0 ${w} ${w}`);svg.selectAll('rect').data(values).join('rect').attr('x',(d,i)=>m+(i%n)*cell).attr('y',(d,i)=>w-m-(Math.floor(i/n)+1)*cell).attr('width',cell+.25).attr('height',cell+.25).attr('fill',d=>d?'var(--viz-series-2)':'var(--viz-series-1)')});
+      else cells.each(function(name){const values=name==='truth'?g.truth:g.predictions[name],w=Math.max(150,this.getBoundingClientRect().width),m=9,svg=d3.select(this).select('svg').attr('viewBox',`0 0 ${w} ${w}`),xe=d3.extent(g.xy,d=>d[0]),ye=d3.extent(g.xy,d=>d[1]),x=d3.scaleLinear(xe,[m,w-m]),y=d3.scaleLinear(ye,[w-m,m]);svg.selectAll('circle').data(g.xy.map((p,i)=>({p,c:values[i]}))).join('circle').attr('cx',d=>x(d.p[0])).attr('cy',d=>y(d.p[1])).attr('r',1.7).attr('fill',d=>d.c?'var(--viz-series-2)':'var(--viz-series-1)').attr('opacity',.82)});
+    }
+    function drawCurve(task,selector,title){
+      const host=root.querySelector(selector),{w,h,mobile}=dims(host,315),svg=d3.select(host).select('svg').attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);clear(svg);const g=data.geometry[task],active=variants.filter(v=>visible.has(v)),m={t:16,r:18,b:45,l:64},iw=w-m.l-m.r,ih=h-m.t-m.b,allValues=g.truth.concat(active.flatMap(v=>g.predictions[v])),x=d3.scaleLinear(d3.extent(g.x),[m.l,m.l+iw]),y=d3.scaleLinear(d3.extent(allValues),[m.t+ih,m.t]).nice();
+      if(g.train_limits)svg.append('rect').attr('x',x(g.train_limits[0])).attr('y',m.t).attr('width',x(g.train_limits[1])-x(g.train_limits[0])).attr('height',ih).attr('fill','var(--muted)').attr('opacity',.45);
+      svg.append('rect').attr('class','frame').attr('data-chart-frame','').attr('x',m.l).attr('y',m.t).attr('width',iw).attr('height',ih);svg.append('g').attr('class','axis').attr('transform',`translate(0,${m.t+ih})`).call(d3.axisBottom(x).ticks(mobile?4:7));svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));
+      svg.append('text').attr('x',m.l+5).attr('y',m.t+16).text(title);svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('x',m.l+iw/2).attr('y',h-8).attr('text-anchor','middle').text('x (observed interval shaded)');svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('transform',`translate(15,${m.t+ih/2}) rotate(-90)`).attr('text-anchor','middle').text('Target / prediction');
+      const line=d3.line().x((d,i)=>x(g.x[i])).y(d=>y(d));svg.append('path').datum(g.truth).attr('fill','none').attr('stroke','var(--foreground)').attr('stroke-width',2.5).attr('d',line);svg.append('g').selectAll('path').data(active).join('path').attr('fill','none').attr('stroke',v=>colors[v]).attr('stroke-width',1.7).attr('d',v=>line(g.predictions[v]));
+    }
+    function draw(){drawOverall();drawTasks();drawGeometry('radial_stripes','#cs-radial-grid');drawGeometry('nd_spiral_high_rank','#cs-highrank-grid');drawCurve('multiscale_1d','#cs-multiscale-host','Multiscale');drawCurve('localized_steps_1d','#cs-localized-host','Localized steps');drawCurve('fourier_mix_1d','#cs-fourier-host','Fourier mixture')}
+    let timer;new ResizeObserver(()=>{clearTimeout(timer);timer=setTimeout(draw,80)}).observe(root);draw();
+  })();
+  </script>
+</div>
