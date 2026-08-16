@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "transport-locked-vectorizer"
+version = "0.1.0"
+description = "Standalone topology-first PNG to SVG converter"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24", "scipy>=1.10", "Pillow>=10"]
+
+[project.scripts]
+tlvector = "tlvector.cli:main"
+tlvector-gui = "tlvector.web_gui:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
