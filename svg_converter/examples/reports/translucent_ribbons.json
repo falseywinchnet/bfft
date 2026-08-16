@@ -1,0 +1,15 @@
+{
+  "crop_x": 0,
+  "crop_y": 0,
+  "detail_colors": 6,
+  "height": 256,
+  "interface_pixels": 24432,
+  "loops": 54,
+  "original_height": 256,
+  "original_width": 384,
+  "paths": 20,
+  "rgba_mse": 136.64886474609375,
+  "structural_colors": 14,
+  "svg_bytes": 26794,
+  "width": 384
+}
