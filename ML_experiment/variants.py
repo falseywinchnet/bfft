@@ -21,6 +21,7 @@ JET_VARIANTS = (
     "self_context_jet_richardson",
     "self_context_jet_curvature_context",
     "self_context_nested",
+    "self_context_nested_chart",
 )
 
 
@@ -47,6 +48,9 @@ def make_variant(name: str, input_dim: int, output_dim: int, width: int):
     elif name == "self_context_nested":
         model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25,
                                nested_self_context=True)
+    elif name == "self_context_nested_chart":
+        model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25,
+                               jet_mode="nested_chart")
     else:
         raise KeyError(name)
     assert parameter_count(model) == budget

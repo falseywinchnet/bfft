@@ -30,7 +30,8 @@ class SoftEikonalLinear(nn.Module):
         self.context_steps = int(context_steps)
         self.uncertainty_context = bool(uncertainty_context)
         self.nested_self_context = bool(nested_self_context)
-        if jet_mode not in {"none", "laplacian", "factor", "richardson", "curvature_context"}:
+        if jet_mode not in {"none", "laplacian", "factor", "richardson",
+                            "curvature_context", "nested_chart"}:
             raise ValueError(jet_mode)
         self.jet_mode = jet_mode
         self.base = nn.Linear(n_in, n_out)
@@ -133,6 +134,7 @@ class SoftEikonalLinear(nn.Module):
         chart_input = x
         normalized_context = None
         metric, projected, weight = self._allocate(x)
+        initial_weight = weight
         for _ in range(self.context_steps if self.self_context_strength else 0):
             context = torch.einsum("bd,bdr,dri->bi", weight, projected, self.primitive) / self.rank
             context_rms = context.square().mean(1, keepdim=True).sqrt().clamp_min(1e-6)
@@ -164,6 +166,28 @@ class SoftEikonalLinear(nn.Module):
             chart_rms = chart_input.square().mean(1, keepdim=True).sqrt().detach().clamp_min(1e-6)
             chart_input = chart_input + self.self_context_strength * curvature_context * (chart_rms / curvature_rms)
             metric, projected, weight = self._allocate(chart_input)
+        if self.jet_mode == "nested_chart":
+            # The first chart transition is a tangent displacement on the
+            # allocation simplex. Lift that transition into activation space,
+            # let the same continuous atlas interpret it, then allow the outer
+            # chart to modify selection rather than position.
+            transition_log = torch.log(weight + 1e-9) - torch.log(initial_weight + 1e-9)
+            transition_log = transition_log - transition_log.mean(1, keepdim=True)
+            view_context = torch.einsum("bdr,dri->bdi", projected, self.primitive) / self.rank
+            transition = torch.einsum("bd,bdi->bi", transition_log, view_context)
+            transition_rms = transition.square().mean(1, keepdim=True).sqrt()
+            input_rms = x.square().mean(1, keepdim=True).sqrt().detach().clamp_min(1e-6)
+            # Preserve infinitesimal transitions and bound only large ones.
+            bounded_transition = transition * (input_rms / (input_rms + transition_rms + 1e-6))
+            _, _, outer_weight = self._allocate(bounded_transition)
+            outer_log = torch.log(outer_weight + 1e-9)
+            outer_log = outer_log - outer_log.mean(1, keepdim=True)
+            transition_strength = transition_rms / (input_rms + transition_rms + 1e-6)
+            weight = torch.softmax(
+                torch.log(weight + 1e-9)
+                + self.self_context_strength * transition_strength * outer_log,
+                dim=1,
+            )
         matched_weight = weight
         self.last_weight = matched_weight
         if self.diagnostic_mode == "mismatched" and batch > 1:
@@ -171,7 +195,7 @@ class SoftEikonalLinear(nn.Module):
         elif self.diagnostic_mode == "uniform":
             weight = torch.full_like(weight, 1 / self.directions)
         pooled = torch.einsum("bd,bdr->br", weight, projected)
-        if self.jet_mode not in {"none", "curvature_context"}:
+        if self.jet_mode not in {"none", "curvature_context", "nested_chart"}:
             pooled = pooled + self._jet_state(chart_input, pooled, weight)
         correction = F.softplus(self.scale) * (pooled @ self.shared)
         if self.diagnostic_mode == "base_only":
