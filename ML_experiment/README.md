@@ -26,6 +26,10 @@ Fourier basis, periodic feature map, unseen-support label, or GELU activation.
   parameter-matched eikonal-ray transport experiments.
 - [`RADIAL_DOGFOOD.md`](RADIAL_DOGFOOD.md): topology-first 500-step radial
   dogfood and the continuous full-space frame-flow result.
+- [`CONTINUOUS_FRAME_FULL.md`](CONTINUOUS_FRAME_FULL.md): full 22-task matched
+  comparison and the transport lessons from segmentation and Meyer splitting.
+- [`continuous_frame_full.html`](continuous_frame_full.html): complete truth,
+  vanilla MLP, self-context, and continuous-frame-flow fitted-function atlas.
 - [`radial_dogfood.html`](radial_dogfood.html): truth, fitted fields, radial
   profiles, and learning curves for the decisive mechanism sequence.
 - [`transport_study.html`](transport_study.html): 11-task deltas, acquisition,
@@ -118,6 +122,26 @@ Rebuild its visualization fragment after copying the JSON result back:
 
 ```sh
 python3 -m ML_experiment.build_radial_dogfood
+```
+
+Full continuous-frame-flow benchmark:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  PYTHONPATH=/Users/joshuahkuttenkuler/Library/Python/3.9/lib/python/site-packages \
+  python3 -m ML_experiment.run_benchmark \
+  --out /tmp/continuous_frame_full --widths 24 --seeds 2 \
+  --steps 500 --batch 256 --eval-every 25 \
+  --variants ordinary_mlp,self_context,self_context_stiefel_flow_curvature
+```
+
+After copying its results and probes back, rebuild the complete report with:
+
+```sh
+python3 -m ML_experiment.analyze \
+  ML_experiment/results_continuous_frame_full/results.json \
+  --out ML_experiment/results_continuous_frame_full/summary.json
+python3 -m ML_experiment.build_continuous_frame_full
 ```
 
 The corresponding compact visual is regenerated locally with:
