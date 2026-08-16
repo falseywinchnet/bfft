@@ -41,7 +41,8 @@ button:disabled,.download.disabled{opacity:.4;pointer-events:none}.secondary{bac
 <main><aside>
 <input id="file" type="file" accept="image/png">
 <label>Structural colors <input id="colors" type="number" min="1" max="256" value="12"></label>
-<label>Residual colors <input id="details" type="number" min="0" max="32" value="6"></label>
+<label>Residual colors <input id="details" type="number" min="0" max="2048" value="6"></label>
+<label>Target MSE <input id="target" type="number" min="0" step="0.1" placeholder="off"></label>
 <label>Coarse side <input id="coarse" type="number" min="16" max="1024" value="160"></label>
 <label>Minimum island <input id="minimum" type="number" min="1" value="10"></label>
 <label>Simplification <input id="simplify" type="number" min="0" step="0.05" value="0.85"></label>
@@ -53,7 +54,7 @@ button:disabled,.download.disabled{opacity:.4;pointer-events:none}.secondary{bac
 <div class="actions"><button id="convert" disabled>Convert</button><a id="download" class="download disabled">Export SVG</a></div>
 <button id="clear" class="secondary" style="width:100%;margin-top:8px">Clear</button>
 <div id="status">Choose a PNG. All processing stays on this machine.</div>
-<div class="note">Seam overlap closes white antialiasing pinholes. Subpixel passes smooth raster stairs while persistent corners stay pinned.</div>
+<div class="note">Target MSE activates exact-edge quality mode; residual colors become its maximum split budget. Seam overlap closes renderer antialiasing pinholes.</div>
 </aside><section class="stage">
 <div class="pane"><h2>Source PNG</h2><div class="canvas" id="source"><div class="empty">No image loaded</div></div></div>
 <div class="pane"><h2>Rendered SVG</h2><div class="canvas" id="result"><div class="empty">Conversion preview</div></div></div>
@@ -61,8 +62,8 @@ button:disabled,.download.disabled{opacity:.4;pointer-events:none}.secondary{bac
 <script>
 const $=id=>document.getElementById(id);let file=null,sourceURL=null,svgURL=null;
 $('file').onchange=()=>{file=$('file').files[0]||null;$('convert').disabled=!file;if(sourceURL)URL.revokeObjectURL(sourceURL);if(file){sourceURL=URL.createObjectURL(file);$('source').innerHTML='';let i=new Image;i.src=sourceURL;$('source').append(i);$('status').textContent=`Loaded ${file.name} — ready to convert.`}};
-$('convert').onclick=async()=>{if(!file)return;$('convert').disabled=true;$('status').textContent='Converting…';let q=new URLSearchParams({colors:$('colors').value,details:$('details').value,coarse:$('coarse').value,minimum:$('minimum').value,simplify:$('simplify').value,curve:$('curve').value,smoothing:$('smoothing').value,seam:$('seam').value,trim:$('trim').checked?'1':'0',name:file.name});
-q.set('alpha',$('alpha').value);try{let r=await fetch('/convert?'+q,{method:'POST',headers:{'Content-Type':'image/png'},body:file});let data=await r.json();if(!r.ok)throw Error(data.error||'Conversion failed');if(svgURL)URL.revokeObjectURL(svgURL);svgURL=URL.createObjectURL(new Blob([data.svg],{type:'image/svg+xml'}));$('result').innerHTML='';let o=document.createElement('object');o.type='image/svg+xml';o.data=svgURL;$('result').append(o);$('download').href=svgURL;$('download').download=file.name.replace(/\.png$/i,'')+'.svg';$('download').classList.remove('disabled');let d=data.diagnostics;$('status').textContent=`Ready — ${d.paths} paths, ${d.loops} loops, ${d.alpha_mode} alpha, ${(d.svg_bytes/1024).toFixed(1)} KiB, ${(d.total_ms/1000).toFixed(2)} s.`}catch(e){$('status').textContent=e.message}finally{$('convert').disabled=false}};
+$('convert').onclick=async()=>{if(!file)return;$('convert').disabled=true;$('status').textContent='Converting…';let q=new URLSearchParams({colors:$('colors').value,details:$('details').value,target:$('target').value,coarse:$('coarse').value,minimum:$('minimum').value,simplify:$('simplify').value,curve:$('curve').value,smoothing:$('smoothing').value,seam:$('seam').value,trim:$('trim').checked?'1':'0',name:file.name});
+q.set('alpha',$('alpha').value);try{let r=await fetch('/convert?'+q,{method:'POST',headers:{'Content-Type':'image/png'},body:file});let data=await r.json();if(!r.ok)throw Error(data.error||'Conversion failed');if(svgURL)URL.revokeObjectURL(svgURL);svgURL=URL.createObjectURL(new Blob([data.svg],{type:'image/svg+xml'}));$('result').innerHTML='';let o=document.createElement('object');o.type='image/svg+xml';o.data=svgURL;$('result').append(o);$('download').href=svgURL;$('download').download=file.name.replace(/\.png$/i,'')+'.svg';$('download').classList.remove('disabled');let d=data.diagnostics;let target=d.quality_target_met?`MSE ${d.rgba_mse.toFixed(2)}`:`MSE ${d.rgba_mse.toFixed(2)} (target missed)`;$('status').textContent=`Ready — ${target}, ${d.paths} paths, ${d.loops} loops, ${(d.svg_bytes/1024).toFixed(1)} KiB, ${(d.total_ms/1000).toFixed(2)} s.`}catch(e){$('status').textContent=e.message}finally{$('convert').disabled=false}};
 $('clear').onclick=()=>{location.reload()};
 </script></body></html>"""
 
@@ -70,8 +71,10 @@ $('clear').onclick=()=>{location.reload()};
 def convert_request(data: bytes, query: str) -> dict:
     values = parse_qs(query)
     get = lambda key, default: values.get(key, [str(default)])[0]
+    target = get("target", "").strip()
     config = VectorizerConfig(
         colors=int(get("colors", 12)), detail_colors=int(get("details", 6)),
+        target_mse=float(target) if target else None,
         coarse_side=int(get("coarse", 160)), minimum_region=int(get("minimum", 10)),
         simplify=float(get("simplify", 0.85)), curve_tolerance=float(get("curve", 0.65)),
         subpixel_smoothing=int(get("smoothing", 4)), seam_overlap=float(get("seam", 0.65)),

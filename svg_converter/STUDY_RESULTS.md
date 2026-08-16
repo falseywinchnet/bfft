@@ -58,3 +58,25 @@ On the supplied portrait, the optimized 128 + 6 run takes 1.29–1.35 seconds at
 fell from 11.41 seconds to 1.59 seconds (7.2× overall; 8.4× inside the core
 conversion). The generated SVGs remained byte-identical across the
 optimization passes.
+
+## Error-bounded dense-illustration study
+
+The 1714×823 city illustration exposed a representation failure rather than a
+parameter failure. The topology route at 128 + 6 colors measured 353.83 RGBA
+MSE. Assigning the same 128-color basis at full resolution reduced that to
+35.99, showing that the coarse-owner lift—not palette capacity—dominated the
+error. For comparison, a conventional unconstrained 256-color median-cut
+quantizer measured 43.75 RGB MSE (32.82 when averaged as RGBA with exact
+alpha), so palette tuning alone could not reliably satisfy an RGBA target of
+30.
+
+Adaptive quality occupation reached 29.8358 RGBA MSE with 128 structural
+colors and 18 accepted residual splits; the configured split budget was 32.
+The final complete conversion took 20.11 seconds, of which 18.94 seconds was
+exact SVG contour compilation. The result contains 146 emitted color paths,
+179,415 closed subpaths, and 19,816,417 bytes. Browser raster inspection
+confirmed that crisp exact-edge compilation removed the white pinholes seen
+when micro-contours were independently relaxed and curved. The browser tool's
+JPEG-80 capture was pixel-identical to putting the 29.8358-MSE region model
+through the same JPEG encoder, establishing that the pre-compression browser
+render and measured model agree at native resolution.

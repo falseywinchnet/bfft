@@ -6,8 +6,8 @@ method references, then reduced to the following independent design rules.
 
 ## Inputs studied
 
-- `../segmenting_v3.py` and `../../viewer/SEGMENTING_V3.md`
-- `../../../PortsmouthProject.zip`, inspected from an isolated temporary
+- `../experiments/segmenting_v3.py` and `../viewer/SEGMENTING_V3.md`
+- `../PortsmouthProject.zip`, inspected from an isolated temporary
   extraction, especially `boundary_trace.py`, `makima_quadratic.py`,
   `medial_transport.py`, and `shock_graph.py`
 
@@ -71,10 +71,39 @@ pixels cannot globally reshuffle the coarse topology, and detail colors are
 conditional residual explanations rather than peer clusters competing across
 the whole image.
 
+## Adaptive quality mode
+
+The topology-first route is intentionally conservative and can underfit dense
+artwork: interiors inherit the lifted coarse owner even when their local color
+evidence changes at full resolution. Supplying `target_mse` selects a second,
+quality-constrained occupation regime. It retains the deterministic coarse
+palette but assigns every full-resolution pixel in bounded chunks. This
+removes the dominant lift error without constructing a height × width × color
+volume.
+
+Refinement is then an error-priority quotient tree. Within each structural
+owner, a color cell is proposed for a deterministic principal-axis two-means
+split. Proposals from all owners compete by their exact reduction in source
+RGBA sum-squared error. The best proposal is accepted, its children are
+re-proposed, and the process stops when either the measured target or the
+configured split budget is reached. Children retain the root structural owner
+as explicit lineage even after several recursive splits.
+
+Quality mode also changes compilation policy. Independent simplification and
+quadratic fitting can move the two sides of a micro-interface differently,
+creating visible page-colored pinholes. Therefore its contours retain exact
+shared pixel-lattice edges and request crisp-edge rasterization. Seam strokes
+are disabled in this regime because they overwrite neighboring micro-regions
+and invalidate the measured error bound. Loop starts are sorted once before
+tracing; this replaces the former repeated minimum-edge scan, which was
+quadratic in heavily fragmented images.
+
 ## Limits
 
-- It intentionally produces flat filled shapes; gradients and strokes are not
-  inferred.
+- It intentionally produces flat filled shapes; gradients and semantic
+  strokes are not inferred.
+- Quality mode can generate hundreds of thousands of closed subpaths and
+  multi-megabyte SVGs on texture-rich source images.
 - Photographs become posterized illustrations rather than semantically
   editable scenes.
 - Exact preservation of diagonal one-point contacts depends on SVG even-odd

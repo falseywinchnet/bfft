@@ -41,6 +41,7 @@ class VectorizerApp:
         self.values = {
             "colors": tk.StringVar(value="12"),
             "detail_colors": tk.StringVar(value="6"),
+            "target_mse": tk.StringVar(value=""),
             "coarse_side": tk.StringVar(value="160"),
             "minimum_region": tk.StringVar(value="10"),
             "simplify": tk.StringVar(value="0.85"),
@@ -79,6 +80,7 @@ class VectorizerApp:
         fields = [
             ("Structural colors", "colors"),
             ("Residual colors", "detail_colors"),
+            ("Target MSE (blank = off)", "target_mse"),
             ("Coarse side", "coarse_side"),
             ("Minimum island", "minimum_region"),
             ("Simplification", "simplify"),
@@ -124,9 +126,11 @@ class VectorizerApp:
         ttk.Label(shell, textvariable=self.status, anchor="w").pack(fill="x", pady=(10, 0))
 
     def _config(self) -> VectorizerConfig:
+        target = self.values["target_mse"].get().strip()
         return VectorizerConfig(
             colors=int(self.values["colors"].get()),
             detail_colors=int(self.values["detail_colors"].get()),
+            target_mse=float(target) if target else None,
             coarse_side=int(self.values["coarse_side"].get()),
             minimum_region=int(self.values["minimum_region"].get()),
             simplify=float(self.values["simplify"].get()),
@@ -214,6 +218,7 @@ class VectorizerApp:
             self.status.set(
                 f"Ready — {self.result.diagnostics['paths']} paths, "
                 f"{self.result.diagnostics['loops']} loops, "
+                f"MSE {self.result.diagnostics['rgba_mse']:.2f}, "
                 f"{self.result.diagnostics['svg_bytes'] / 1024:.1f} KiB, "
                 f"{self.result.diagnostics['total_ms'] / 1000:.2f} s"
             )

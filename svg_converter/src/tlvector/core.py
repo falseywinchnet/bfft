@@ -9,8 +9,9 @@ curve only after measuring its geometric error.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
+import heapq
 import html
 import math
 from time import perf_counter
@@ -25,6 +26,7 @@ from scipy import ndimage
 class VectorizerConfig:
     colors: int = 12
     detail_colors: int = 6
+    target_mse: float | None = None
     coarse_side: int = 160
     interface_radius: int = 3
     interface_sweeps: int = 3
@@ -200,6 +202,19 @@ def _regularized_assign(
     return result
 
 
+def _nearest_assign(features: np.ndarray, palette: np.ndarray) -> np.ndarray:
+    """Assign a full-resolution image without a pixel x color volume."""
+    flat = features.reshape(-1, features.shape[-1])
+    labels = np.empty(len(flat), dtype=np.int32)
+    chunk_size = 16384
+    for start in range(0, len(flat), chunk_size):
+        stop = min(start + chunk_size, len(flat))
+        labels[start:stop] = np.argmin(
+            _oklab_distance2(flat[start:stop], palette), axis=1
+        )
+    return labels.reshape(features.shape[:2])
+
+
 def _interface_mask(labels: np.ndarray, radius: int) -> np.ndarray:
     edge = np.zeros(labels.shape, dtype=bool)
     edge[1:] |= labels[1:] != labels[:-1]
@@ -314,6 +329,133 @@ def _nested_residual_children(
     return labels, np.asarray(palettes), np.asarray(parents, dtype=np.int32)
 
 
+def _adaptive_quality_children(
+    source: np.ndarray,
+    structural: np.ndarray,
+    palette: np.ndarray,
+    config: VectorizerConfig,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Split the worst color cell until the requested raster error is met.
+
+    The full-resolution structural assignment remains the immutable ownership
+    scaffold. Each split is a deterministic two-means refinement inside one
+    owner, chosen globally by exact RGBA squared-error reduction. Unlike the
+    older hot-tail child proposal, this can allocate several siblings to a
+    difficult owner and has a measurable stopping condition.
+    """
+    labels = structural.ravel().copy()
+    flat_source = source.reshape(-1, 4).astype(np.float64)
+    structural_count = len(palette)
+    order = np.argsort(labels, kind="stable")
+    population = np.bincount(labels, minlength=structural_count)
+    offsets = np.concatenate(([0], np.cumsum(population)))
+    clusters = {
+        label: order[offsets[label]:offsets[label + 1]]
+        for label in range(structural_count)
+        if population[label] > 0
+    }
+    root_of = {label: label for label in clusters}
+    parents = list(range(structural_count))
+    feature_palettes = [row.copy() for row in palette]
+
+    def proposal(indices: np.ndarray) -> tuple[float, float, np.ndarray] | None:
+        if len(indices) < max(4, 2 * config.minimum_region):
+            return None
+        values = flat_source[indices]
+        mean = np.mean(values, axis=0)
+        centered = values - mean
+        old_sse = float(np.sum(centered * centered))
+        if old_sse <= 1e-9:
+            return None
+        covariance = centered.T @ centered / len(values)
+        _eigenvalues, eigenvectors = np.linalg.eigh(covariance)
+        projection = centered @ eigenvectors[:, -1]
+        side = projection > np.median(projection)
+        if np.all(side) or not np.any(side):
+            split = len(values) // 2
+            ranked = np.argsort(projection, kind="stable")
+            side = np.zeros(len(values), dtype=bool)
+            side[ranked[split:]] = True
+        centers = np.stack((
+            np.mean(values[~side], axis=0),
+            np.mean(values[side], axis=0),
+        ))
+        for _ in range(8):
+            first = np.sum((values - centers[0]) ** 2, axis=1)
+            second = np.sum((values - centers[1]) ** 2, axis=1)
+            updated_side = second < first
+            if np.all(updated_side) or not np.any(updated_side):
+                break
+            updated_centers = np.stack((
+                np.mean(values[~updated_side], axis=0),
+                np.mean(values[updated_side], axis=0),
+            ))
+            side = updated_side
+            if np.max(np.abs(updated_centers - centers)) < 1e-6:
+                centers = updated_centers
+                break
+            centers = updated_centers
+        new_sse = float(np.sum((values - centers[side.astype(np.int8)]) ** 2))
+        gain = old_sse - new_sse
+        if gain <= 1e-9:
+            return None
+        return old_sse, gain, side
+
+    heap: list[tuple[float, int, int, np.ndarray]] = []
+    total_sse = 0.0
+    serial = 0
+    for label, indices in clusters.items():
+        item = proposal(indices)
+        if item is None:
+            values = flat_source[indices]
+            total_sse += float(np.sum((values - np.mean(values, axis=0)) ** 2))
+            continue
+        old_sse, gain, side = item
+        total_sse += old_sse
+        heapq.heappush(heap, (-gain, serial, label, side))
+        serial += 1
+
+    # Rounded uint8 means add at most a small fraction of one MSE unit. The
+    # margin makes the externally reported metric satisfy the requested bound.
+    target = max(0.0, float(config.target_mse or 0.0) - 0.125)
+    target_sse = target * source.size
+    for _ in range(max(0, config.detail_colors)):
+        if total_sse <= target_sse or not heap:
+            break
+        negative_gain, _old_serial, label, side = heapq.heappop(heap)
+        indices = clusters[label]
+        first_indices = indices[~side]
+        second_indices = indices[side]
+        child = len(feature_palettes)
+        clusters[label] = first_indices
+        clusters[child] = second_indices
+        labels[second_indices] = child
+        root = root_of[label]
+        root_of[child] = root
+        parents.append(root)
+        # This palette is only a length/lineage carrier; final display colors
+        # are exact sRGB means computed by _feature_to_rgba.
+        feature_palettes.append(palette[root].copy())
+        total_sse += negative_gain
+        for candidate_label, candidate_indices in (
+            (label, first_indices), (child, second_indices)
+        ):
+            item = proposal(candidate_indices)
+            if item is None:
+                continue
+            _old_sse, gain, candidate_side = item
+            heapq.heappush(
+                heap, (-gain, serial, candidate_label, candidate_side)
+            )
+            serial += 1
+
+    return (
+        labels.reshape(structural.shape),
+        np.asarray(feature_palettes),
+        np.asarray(parents, dtype=np.int32),
+    )
+
+
 def _feature_to_rgba(feature: np.ndarray, source: np.ndarray, labels: np.ndarray) -> np.ndarray:
     # Means in source sRGB avoid a lossy inverse Oklab conversion.
     count = int(np.max(labels)) + 1
@@ -360,8 +502,11 @@ def _boundary_loops(mask: np.ndarray) -> list[np.ndarray]:
     for start, end in edges:
         outgoing.setdefault(start, []).append(end)
     loops: list[np.ndarray] = []
-    while edges:
-        first = min(edges)
+    # Sorting once is equivalent to repeatedly taking min(edges), but avoids
+    # an O(component_count * edge_count) rescan on fragmented artwork.
+    for first in sorted(edges):
+        if first not in edges:
+            continue
         start, current = first
         previous = start
         points = [start]
@@ -468,7 +613,7 @@ def _loop_path(points: np.ndarray, config: VectorizerConfig) -> str:
     if len(points) < 3:
         return ""
     turns = _turn_degrees(points)
-    smooth = turns < config.corner_degrees
+    smooth = (turns < config.corner_degrees) & (config.curve_tolerance > 0.0)
     previous = np.roll(points, 1, axis=0)
     following = np.roll(points, -1, axis=0)
     bend = np.linalg.norm(previous + following - 2.0 * points, axis=1)
@@ -552,12 +697,24 @@ def _svg_document(
     title: str,
 ) -> tuple[str, int, int]:
     height, width = labels.shape
+    rendering = ' shape-rendering="crispEdges"' if config.target_mse is not None else ""
     parts = [
         '<?xml version="1.0" encoding="UTF-8"?>',
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}"{rendering}>',
         f"<title>{html.escape(title)}</title>",
         "<desc>Transport-locked residual contour vectorization</desc>",
     ]
+    contour_config = config
+    seam_overlap = config.seam_overlap
+    if config.target_mse is not None:
+        # Independent curve fitting is attractive on broad regions but can
+        # pull opposite sides of a one-pixel micro-boundary apart. Fidelity
+        # mode keeps the exact shared lattice edges; the seam stroke then has
+        # only ordinary renderer antialiasing to close.
+        contour_config = replace(
+            config, simplify=0.0, curve_tolerance=0.0, subpixel_smoothing=0
+        )
+        seam_overlap = 0.0
     path_count = loop_count = 0
     objects = ndimage.find_objects(labels + 1, max_label=len(palette))
     for index in range(len(palette)):
@@ -571,7 +728,7 @@ def _svg_document(
         mask = labels[region] == index
         offset = np.array([x_slice.start, y_slice.start], dtype=np.float64)
         paths = [
-            _loop_path(loop + offset, config) for loop in _boundary_loops(mask)
+            _loop_path(loop + offset, contour_config) for loop in _boundary_loops(mask)
         ]
         paths = [path for path in paths if path]
         if not paths:
@@ -579,17 +736,17 @@ def _svg_document(
         opacity = color[3] / 255.0
         hex_color = f"#{color[0]:02x}{color[1]:02x}{color[2]:02x}"
         attributes = f'fill="{hex_color}" fill-rule="evenodd"'
-        if config.seam_overlap > 0.0:
+        if seam_overlap > 0.0:
             # Adjacent independently fitted paths can expose subpixel slivers
             # under antialiasing. A small same-color under-stroke makes the
             # cover closed without materially moving the visible interface.
             attributes += (
-                f' stroke="{hex_color}" stroke-width="{_format_number(config.seam_overlap)}"'
+                f' stroke="{hex_color}" stroke-width="{_format_number(seam_overlap)}"'
                 ' stroke-linejoin="round" stroke-linecap="round" paint-order="stroke fill"'
             )
         if opacity < 0.999:
             attributes += f' fill-opacity="{_format_number(opacity)}"'
-            if config.seam_overlap > 0.0:
+            if seam_overlap > 0.0:
                 attributes += f' stroke-opacity="{_format_number(opacity)}"'
         parts.append(f'<path {attributes} d="{"".join(paths)}"/>')
         path_count += 1
@@ -608,6 +765,8 @@ def vectorize_array(
     source = np.asarray(rgba, dtype=np.uint8)
     if source.ndim != 3 or source.shape[2] != 4:
         raise ValueError("expected an H x W x 4 uint8 RGBA array")
+    if config.target_mse is not None and config.target_mse < 0.0:
+        raise ValueError("target_mse must be nonnegative")
     original_height, original_width = source.shape[:2]
     source, alpha_mode = _normalize_alpha(source, config)
     source, crop = _trim_transparent(source, config)
@@ -623,16 +782,27 @@ def vectorize_array(
     )
     coarse_done = perf_counter()
     features = _rgba_features(source)
-    structural = _lift_labels(coarse_labels, source.shape[:2])
-    active = _interface_mask(structural, config.interface_radius)
-    structural = _regularized_assign(
-        features, palette, structural, active, config.smoothness,
-        config.interface_sweeps,
-    )
+    if config.target_mse is None:
+        structural = _lift_labels(coarse_labels, source.shape[:2])
+        active = _interface_mask(structural, config.interface_radius)
+        structural = _regularized_assign(
+            features, palette, structural, active, config.smoothness,
+            config.interface_sweeps,
+        )
+    else:
+        # Quality-constrained occupation is allowed to create new components
+        # throughout an owner, rather than refining only the lifted interface.
+        structural = _nearest_assign(features, palette)
+        active = np.ones(structural.shape, dtype=bool)
     interface_done = perf_counter()
-    labels, feature_palette, parents = _nested_residual_children(
-        features, structural, palette, config
-    )
+    if config.target_mse is None:
+        labels, feature_palette, parents = _nested_residual_children(
+            features, structural, palette, config
+        )
+    else:
+        labels, feature_palette, parents = _adaptive_quality_children(
+            source, structural, palette, config
+        )
     detail_done = perf_counter()
     rgba_palette = _feature_to_rgba(feature_palette, source, labels)
     color_done = perf_counter()
@@ -654,6 +824,13 @@ def vectorize_array(
         "loops": int(loop_count),
         "interface_pixels": int(np.count_nonzero(active)),
         "rgba_mse": mse,
+        "quality_mode": "adaptive" if config.target_mse is not None else "topology",
+        "quality_target_mse": (
+            float(config.target_mse) if config.target_mse is not None else "disabled"
+        ),
+        "quality_target_met": int(
+            config.target_mse is None or mse <= config.target_mse
+        ),
         "svg_bytes": int(len(svg.encode("utf-8"))),
         "preprocessing_ms": 1000.0 * (preprocessing_done - started),
         "palette_ms": 1000.0 * (palette_done - preprocessing_done),

@@ -13,6 +13,13 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("output", type=Path, nargs="?")
     parser.add_argument("--colors", type=int, default=12)
     parser.add_argument("--detail-colors", type=int, default=6)
+    parser.add_argument(
+        "--target-mse", type=float,
+        help=(
+            "activate full-resolution adaptive occupation and stop once RGBA "
+            "MSE is at or below this value (detail-colors is the split budget)"
+        ),
+    )
     parser.add_argument("--coarse-side", type=int, default=160)
     parser.add_argument("--minimum-region", type=int, default=10)
     parser.add_argument("--simplify", type=float, default=0.85)
@@ -36,6 +43,7 @@ def main(argv: list[str] | None = None) -> int:
     config = VectorizerConfig(
         colors=args.colors,
         detail_colors=args.detail_colors,
+        target_mse=args.target_mse,
         coarse_side=args.coarse_side,
         minimum_region=args.minimum_region,
         simplify=args.simplify,
@@ -49,4 +57,4 @@ def main(argv: list[str] | None = None) -> int:
     print(payload)
     if args.diagnostics:
         args.diagnostics.write_text(payload + "\n", encoding="utf-8")
-    return 0
+    return 0 if result.diagnostics["quality_target_met"] else 2
