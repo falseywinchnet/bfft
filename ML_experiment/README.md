@@ -15,10 +15,12 @@ Fourier basis, periodic feature map, unseen-support label, or GELU activation.
 - [`IDEAS.md`](IDEAS.md): hypothesis, epistemic constraints, and the five
   experiments.
 - [`REPORT.md`](REPORT.md): results and interpretation from 462 M4 CPU fits.
-- [`visualization.html`](visualization.html): standalone interactive result
-  plots, including the ordinary spiral fields.
-- `results_confirm/`: 308 confirmation fits, paired-seed summary, and visual
-  probes.
+- [`visualization.html`](visualization.html): the complete 22-problem atlas,
+  with truth, MLP, self-context, hard-gate, and chart-curvature fits.
+- [`summary_visualization.html`](summary_visualization.html): aggregate score,
+  tail-tradeoff, spiral, and multiscale summary plots.
+- `results_confirm/`: 308 confirmation fits, paired-seed summary, and 88 fitted
+  probes covering all 22 tasks and four representative models.
 - `results_screen/`: 154 preliminary fits.
 
 ## Models
@@ -35,7 +37,8 @@ Seven parameter-identical variants are compared:
 
 `models.py` contains LELU, the soft Eikonal layer, and the exact-budget MLP.
 `variants.py` constructs the seven matched models. `tasks.py` contains the full
-22-problem suite.
+22-problem suite. `build_problem_atlas.py` compacts the fitted probes into the
+responsive all-problem visualization.
 
 ## Reproduce on the M4 Mini CPU
 
@@ -77,6 +80,7 @@ python3 -m ML_experiment.analyze \
   ML_experiment/results_confirm/results.json \
   --out ML_experiment/results_confirm/summary.json
 python3 -m ML_experiment.write_report
+python3 -m ML_experiment.build_problem_atlas
 ```
 
 The benchmark uses CPU Torch, AdamW, paired seeds, explicit held-out support,

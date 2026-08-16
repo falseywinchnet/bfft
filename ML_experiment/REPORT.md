@@ -159,6 +159,9 @@ contains a coherent transport direction.
 - `results_confirm/results.json`: all 308 confirmation runs and learning curves.
 - `results_confirm/summary.json`: paired-seed aggregates and deltas.
 - `results_screen/results.json`: 154-run preliminary screen.
-- `results_confirm/probes.json`: fitted fields, tails, and N-D projections.
+- `results_confirm/probes.json`: 88 fitted fields, curves, parity plots, and N-D
+  projections covering all 22 problems.
+- `visualization.html`: complete truth/MLP/self-context/hard-gate/chart-curvature
+  problem atlas.
 - `run_benchmark.py`, `run_probes.py`, and `test_experiment.py`: reproducible M4
   CPU entry points.

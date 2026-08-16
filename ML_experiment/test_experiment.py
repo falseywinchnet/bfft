@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import unittest
 import sys
+import json
 from pathlib import Path
 import torch
 
@@ -44,6 +45,15 @@ class SupersetTests(unittest.TestCase):
         for name in ("nd_spiral_low_rank", "nd_spiral_high_rank", "hypercube_checker"):
             task = TASK_BUILDERS[name](0); self.assertEqual(task.input_dim, 16); self.assertEqual(len(task.tail_x), 10)
             self.assertEqual(task.output_dim, 2); self.assertGreater(len(task.x_test), 1000)
+
+    def test_stored_probe_atlas_is_the_full_product(self):
+        stored = json.loads((Path(__file__).parent / "results_confirm/probes.json").read_text())["probes"]
+        expected_variants = {"ordinary_mlp", "self_context", "self_context_hard", "self_context_chart"}
+        self.assertEqual(len(stored), len(TASK_BUILDERS) * len(expected_variants))
+        self.assertEqual(
+            {(task, variant) for task in TASK_BUILDERS for variant in expected_variants},
+            {(row["task"], row["variant"]) for row in stored},
+        )
 
 
 if __name__ == "__main__": unittest.main()
