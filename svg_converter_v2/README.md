@@ -37,6 +37,37 @@ headroom on absorbing small connected components, choosing candidates by
 error increase per estimated path byte eliminated. It refuses any merge that
 would cross the final target. An `.svgz` output may also be named directly.
 
+## Run the web GUI
+
+After performing the installation above, start the local browser application:
+
+```sh
+cd svg_converter
+.venv/bin/tlvector-v2-gui
+```
+
+It opens a V2-specific interface with source and rendered-SVG previews. The
+controls expose the structural palette, split headroom, final hard MSE limit,
+and error-per-byte merge policy. Both SVG and deterministic SVGZ downloads are
+available, and the result reports whether the SVGZ is smaller than the source
+PNG. Press `Ctrl-C` in the terminal to stop it.
+
+To use a fixed port without opening a browser automatically:
+
+```sh
+.venv/bin/tlvector-v2-gui --port 8766 --no-browser
+```
+
+Then visit `http://127.0.0.1:8766/`. The server binds only to localhost and
+does not upload the image. On macOS, `svg_converter_v2/launch_gui.command` can
+also be double-clicked. A no-install source launch from the repository root
+is:
+
+```sh
+PYTHONPATH=svg_converter_v2/src:svg_converter/src \
+python3 -m tlvector_v2.web_gui
+```
+
 ## Segmenting-v3 affine-gradient prototype
 
 This optional path requires the enclosing BFFT repository and its native
