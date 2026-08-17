@@ -22,6 +22,7 @@ __pycache__/
 *.aux
 *.toc
 *.log
+*.out
 /paper/**/*.pdf
 
 # generated reference-split caches (regenerated on demand)

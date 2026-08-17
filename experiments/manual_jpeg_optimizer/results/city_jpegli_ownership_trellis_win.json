@@ -1,0 +1,55 @@
+{
+  "edge_psnr_db": 28.231653987728276,
+  "encoder_stderr": "Read 1714x823 image, 2224759 bytes.\nEncoding [YUV420 d2.620 AQ p2 OPT]\nCompressed to 217054 bytes (1.231 bpp).\n1714 x 823, 0.597 MP/s, 1 threads.\nTrellis: 33377 blocks, nonzeros 238643 -> 291514, estimated bits 1760559 -> 1828589, objective 173497.565.\n",
+  "field": {
+    "edge_protection": 2.0,
+    "maximum_threshold": 0.24998952448368073,
+    "mean_ac_threshold": 0.06759589910507202,
+    "strength": 0.25
+  },
+  "output": "experiments/manual_jpeg_optimizer/results/city_jpegli_ownership_trellis_win.jpg",
+  "output_bytes": 217054,
+  "psnr_db": 38.421758937912756,
+  "quality": 72,
+  "quantization_tilt": {
+    "chroma": 0.0,
+    "luma": -0.5
+  },
+  "regions": {
+    "block_size_cv": 0.14036060240658738,
+    "config": {
+      "angular_candidates": 12,
+      "demand_strength": 0.35,
+      "even_depth": true,
+      "minimum_blocks": 24,
+      "target_regions": 256
+    },
+    "mass_cv": 0.10253529562662589,
+    "maximum_blocks": 150,
+    "maximum_depth": 8,
+    "median_blocks": 85.0,
+    "minimum_blocks": 50,
+    "proof_boundary": "Each accepted split is the best exact feature-SSE reduction among all current leaf proposals, and each proposal uses a mass-balanced boundary. This is not a global optimum over all possible planar partitions.",
+    "regions": 256,
+    "tree_nodes": 511
+  },
+  "source": "city_image.jpg",
+  "spatial_frequency_transport": null,
+  "ssim": 0.9659279213773486,
+  "target_bytes": 0,
+  "trellis": {
+    "blocks": 33377,
+    "estimated_bits_after": 1828589.0,
+    "estimated_bits_before": 1760559.0,
+    "nonzeros_after": 291514,
+    "nonzeros_before": 238643,
+    "terminal_objective": 173497.565
+  },
+  "trellis_config": {
+    "chroma_weight": 1.0,
+    "edge_weight": 1.0,
+    "luma_weight": 1.0,
+    "ownership_weight": 0.05,
+    "rate_lambda": 0.0695
+  }
+}

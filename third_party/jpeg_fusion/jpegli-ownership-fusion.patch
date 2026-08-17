@@ -1,0 +1,1027 @@
+diff --git a/lib/extras/enc/jpegli.cc b/lib/extras/enc/jpegli.cc
+index 280b866..807c47f 100644
+--- a/lib/extras/enc/jpegli.cc
++++ b/lib/extras/enc/jpegli.cc
+@@ -41,6 +41,42 @@ namespace extras {
+ 
+ namespace {
+ 
++struct DeadZoneProviderContext {
++  const JpegDeadZoneField* field;
++  const jpeg_compress_struct* cinfo;
++};
++
++void OwnershipDeadZoneProvider(void* opaque, int component,
++                               JDIMENSION block_x, JDIMENSION block_y,
++                               float* thresholds) {
++  const auto* context = static_cast<const DeadZoneProviderContext*>(opaque);
++  const JpegDeadZoneField& field = *context->field;
++  const jpeg_compress_struct& cinfo = *context->cinfo;
++  if (component < 0 || component >= 3 || field.xsize_blocks == 0 ||
++      field.ysize_blocks == 0) {
++    return;
++  }
++  const jpeg_component_info& comp = cinfo.comp_info[component];
++  const size_t scale_x = cinfo.max_h_samp_factor / comp.h_samp_factor;
++  const size_t scale_y = cinfo.max_v_samp_factor / comp.v_samp_factor;
++  const size_t x0 = std::min<size_t>(block_x * scale_x, field.xsize_blocks);
++  const size_t y0 = std::min<size_t>(block_y * scale_y, field.ysize_blocks);
++  const size_t x1 = std::min(x0 + scale_x, field.xsize_blocks);
++  const size_t y1 = std::min(y0 + scale_y, field.ysize_blocks);
++  if (x0 == x1 || y0 == y1) return;
++  const size_t plane = field.xsize_blocks * field.ysize_blocks * DCTSIZE2;
++  const float scale = 1.0f / ((x1 - x0) * (y1 - y0));
++  for (size_t y = y0; y < y1; ++y) {
++    for (size_t x = x0; x < x1; ++x) {
++      const size_t offset = component * plane +
++                            (y * field.xsize_blocks + x) * DCTSIZE2;
++      for (size_t k = 0; k < DCTSIZE2; ++k) {
++        thresholds[k] += field.thresholds[offset + k] * scale;
++      }
++    }
++  }
++}
++
+ void MyErrorExit(j_common_ptr cinfo) {
+   jmp_buf* env = static_cast<jmp_buf*>(cinfo->client_data);
+   (*cinfo->err->output_message)(cinfo);
+@@ -380,6 +416,8 @@ Status EncodeJpeg(const PackedPixelFile& ppf, const JpegSettings& jpeg_settings,
+   ComputePremulAbsorb(255.0f, premul_absorb.get());
+ 
+   jpeg_compress_struct cinfo;
++  DeadZoneProviderContext dead_zone_context = {
++      jpeg_settings.dead_zone_field.get(), &cinfo};
+   const auto try_catch_block = [&]() -> bool {
+     jpeg_error_mgr jerr;
+     jmp_buf env;
+@@ -441,6 +479,24 @@ Status EncodeJpeg(const PackedPixelFile& ppf, const JpegSettings& jpeg_settings,
+     }
+     jpegli_enable_adaptive_quantization(
+         &cinfo, TO_JPEGLI_BOOL(jpeg_settings.use_adaptive_quantization));
++    if (jpeg_settings.dead_zone_field) {
++      const JpegDeadZoneField& field = *jpeg_settings.dead_zone_field;
++      const size_t expected = 3 * field.xsize_blocks * field.ysize_blocks *
++                              DCTSIZE2;
++      if (field.xsize_blocks == 0 || field.ysize_blocks == 0 ||
++          field.thresholds.size() != expected) {
++        return false;
++      }
++      jpegli_set_dead_zone_provider(&cinfo, OwnershipDeadZoneProvider,
++                                    &dead_zone_context);
++    }
++    jpegli_set_ownership_trellis(
++        &cinfo, jpeg_settings.trellis_rate_lambda,
++        jpeg_settings.trellis_ownership_weight,
++        jpeg_settings.trellis_edge_weight, jpeg_settings.trellis_luma_weight,
++        jpeg_settings.trellis_chroma_weight);
++    jpegli_set_quantization_tilt(&cinfo, jpeg_settings.quant_luma_tilt,
++                                 jpeg_settings.quant_chroma_tilt);
+     if (jpeg_settings.psnr_target > 0.0) {
+       jpegli_set_psnr(&cinfo, jpeg_settings.psnr_target,
+                       jpeg_settings.search_tolerance,
+@@ -536,6 +592,19 @@ Status EncodeJpeg(const PackedPixelFile& ppf, const JpegSettings& jpeg_settings,
+       }
+     }
+     jpegli_finish_compress(&cinfo);
++    if (jpeg_settings.trellis_stats != nullptr) {
++      jpegli_ownership_trellis_stats stats{};
++      jpegli_get_ownership_trellis_stats(&cinfo, &stats);
++      jpeg_settings.trellis_stats->blocks = stats.blocks;
++      jpeg_settings.trellis_stats->nonzeros_before = stats.nonzeros_before;
++      jpeg_settings.trellis_stats->nonzeros_after = stats.nonzeros_after;
++      jpeg_settings.trellis_stats->estimated_bits_before =
++          stats.estimated_bits_before;
++      jpeg_settings.trellis_stats->estimated_bits_after =
++          stats.estimated_bits_after;
++      jpeg_settings.trellis_stats->terminal_objective =
++          stats.terminal_objective;
++    }
+     compressed->resize(output_size);
+     std::copy_n(output_buffer, output_size, compressed->data());
+     return true;
+diff --git a/lib/extras/enc/jpegli.h b/lib/extras/enc/jpegli.h
+index d58a1f0..9583abe 100644
+--- a/lib/extras/enc/jpegli.h
++++ b/lib/extras/enc/jpegli.h
+@@ -11,6 +11,7 @@
+ 
+ #include <cstddef>
+ #include <cstdint>
++#include <memory>
+ #include <string>
+ #include <vector>
+ 
+@@ -22,6 +23,24 @@ namespace extras {
+ 
+ class PackedPixelFile;
+ 
++// A luma-block-resolution ownership field. Values are laid out as
++// [component][block_y][block_x][natural_dct_position]. Chroma blocks sample
++// the mean of the luma-block footprint they own.
++struct JpegDeadZoneField {
++  size_t xsize_blocks = 0;
++  size_t ysize_blocks = 0;
++  std::vector<float> thresholds;
++};
++
++struct JpegOwnershipTrellisStats {
++  size_t blocks = 0;
++  size_t nonzeros_before = 0;
++  size_t nonzeros_after = 0;
++  double estimated_bits_before = 0.0;
++  double estimated_bits_after = 0.0;
++  double terminal_objective = 0.0;
++};
++
+ struct JpegSettings {
+   bool xyb = false;
+   size_t target_size = 0;
+@@ -34,6 +53,15 @@ struct JpegSettings {
+   std::string chroma_subsampling;
+   int libjpeg_quality = 0;
+   std::string libjpeg_chroma_subsampling;
++  std::shared_ptr<const JpegDeadZoneField> dead_zone_field;
++  float trellis_rate_lambda = 0.0f;
++  float trellis_ownership_weight = 0.0f;
++  float trellis_edge_weight = 0.0f;
++  float trellis_luma_weight = 1.0f;
++  float trellis_chroma_weight = 1.0f;
++  float quant_luma_tilt = 0.0f;
++  float quant_chroma_tilt = 0.0f;
++  JpegOwnershipTrellisStats* trellis_stats = nullptr;
+   // Parameters for selecting distance based on PSNR target.
+   float psnr_target = 0.0f;
+   float search_tolerance = 0.01;
+diff --git a/lib/jpegli/dct-inl.h b/lib/jpegli/dct-inl.h
+index 6f63723..b3186a9 100644
+--- a/lib/jpegli/dct-inl.h
++++ b/lib/jpegli/dct-inl.h
+@@ -223,7 +223,7 @@ JPEGLI_INLINE JPEGLI_MAYBE_UNUSED void StoreQuantizedValue(
+ template <typename T>
+ void QuantizeBlock(const float* dct, const float* qmc, float aq_strength,
+                    const float* zero_bias_offset, const float* zero_bias_mul,
+-                   T* block) {
++                   const float* external_dead_zone, T* block) {
+   const HWY_FULL(float) d;
+   const HWY_FULL(int32_t) di;
+ 
+@@ -234,7 +234,8 @@ void QuantizeBlock(const float* dct, const float* qmc, float aq_strength,
+     const auto qval = Mul(val, q);
+     const auto zb_offset = Load(d, zero_bias_offset + k);
+     const auto zb_mul = Load(d, zero_bias_mul + k);
+-    const auto threshold = Add(zb_offset, Mul(zb_mul, aq_mul));
++    const auto external = Load(d, external_dead_zone + k);
++    const auto threshold = Add(Add(zb_offset, Mul(zb_mul, aq_mul)), external);
+     const auto nzero_mask = Ge(Abs(qval), threshold);
+     const auto ival = ConvertTo(di, IfThenElseZero(nzero_mask, Round(qval)));
+     StoreQuantizedValue(ival, block + k);
+@@ -247,15 +248,18 @@ void ComputeCoefficientBlock(const float* JPEGLI_RESTRICT pixels, size_t stride,
+                              int16_t last_dc_coeff, float aq_strength,
+                              const float* zero_bias_offset,
+                              const float* zero_bias_mul,
++                             const float* external_dead_zone,
+                              float* JPEGLI_RESTRICT tmp, T* block) {
+   float* JPEGLI_RESTRICT dct = tmp;
+   float* JPEGLI_RESTRICT scratch_space = tmp + DCTSIZE2;
+   TransformFromPixels(pixels, stride, dct, scratch_space);
+-  QuantizeBlock(dct, qmc, aq_strength, zero_bias_offset, zero_bias_mul, block);
++  QuantizeBlock(dct, qmc, aq_strength, zero_bias_offset, zero_bias_mul,
++                external_dead_zone, block);
+   // Center DC values around zero.
+   static constexpr float kDCBias = 128.0f;
+   const float dc = (dct[0] - kDCBias) * qmc[0];
+-  float dc_threshold = zero_bias_offset[0] + aq_strength * zero_bias_mul[0];
++  float dc_threshold = zero_bias_offset[0] + aq_strength * zero_bias_mul[0] +
++                       external_dead_zone[0];
+   if (std::abs(dc - last_dc_coeff) < dc_threshold) {
+     block[0] = last_dc_coeff;
+   } else {
+diff --git a/lib/jpegli/encode.cc b/lib/jpegli/encode.cc
+index 5a5e320..f87ee5a 100644
+--- a/lib/jpegli/encode.cc
++++ b/lib/jpegli/encode.cc
+@@ -28,6 +28,7 @@
+ #include "lib/jpegli/huffman.h"
+ #include "lib/jpegli/input.h"
+ #include "lib/jpegli/memory_manager.h"
++#include "lib/jpegli/ownership_trellis.h"
+ #include "lib/jpegli/quant.h"
+ #include "lib/jpegli/simd.h"
+ #include "lib/jpegli/types.h"
+@@ -401,6 +402,9 @@ bool IsStreamingSupported(j_compress_ptr cinfo) {
+   if (cinfo->master->psnr_target > 0) {
+     return false;
+   }
++  if (cinfo->master->trellis_rate_lambda > 0.0f) {
++    return false;
++  }
+   return true;
+ }
+ 
+@@ -451,6 +455,14 @@ void AllocateBuffers(j_compress_ptr cinfo) {
+     m->quant_mul[c] = Allocate<float>(cinfo, DCTSIZE2, JPOOL_IMAGE_ALIGNED);
+   }
+   m->dct_buffer = Allocate<float>(cinfo, 2 * DCTSIZE2, JPOOL_IMAGE_ALIGNED);
++  if (m->trellis_rate_lambda > 0.0f) {
++    for (int c = 0; c < cinfo->num_components; ++c) {
++      const jpeg_component_info* comp = &cinfo->comp_info[c];
++      const size_t count = static_cast<size_t>(comp->width_in_blocks) *
++                           comp->height_in_blocks * DCTSIZE2;
++      m->trellis_qcoeff[c] = Allocate<float>(cinfo, count, JPOOL_IMAGE);
++    }
++  }
+   m->block_tmp = Allocate<int32_t>(cinfo, DCTSIZE2 * 4, JPOOL_IMAGE_ALIGNED);
+   if (!IsStreamingSupported(cinfo)) {
+     m->coeff_buffers =
+@@ -928,6 +940,45 @@ void jpegli_enable_adaptive_quantization(j_compress_ptr cinfo, boolean value) {
+   cinfo->master->use_adaptive_quantization = FROM_JPEGLI_BOOL(value);
+ }
+ 
++void jpegli_set_dead_zone_provider(j_compress_ptr cinfo,
++                                   jpegli_dead_zone_provider provider,
++                                   void* opaque) {
++  CheckState(cinfo, jpegli::kEncStart);
++  cinfo->master->dead_zone_provider = provider;
++  cinfo->master->dead_zone_opaque = opaque;
++}
++
++void jpegli_set_ownership_trellis(j_compress_ptr cinfo, float rate_lambda,
++                                  float ownership_weight, float edge_weight,
++                                  float luma_weight, float chroma_weight) {
++  CheckState(cinfo, jpegli::kEncStart);
++  cinfo->master->trellis_rate_lambda = std::max(0.0f, rate_lambda);
++  cinfo->master->trellis_ownership_weight =
++      std::max(0.0f, ownership_weight);
++  cinfo->master->trellis_edge_weight = std::max(0.0f, edge_weight);
++  cinfo->master->trellis_luma_weight = std::max(0.0f, luma_weight);
++  cinfo->master->trellis_chroma_weight = std::max(0.0f, chroma_weight);
++}
++
++void jpegli_set_quantization_tilt(j_compress_ptr cinfo, float luma_tilt,
++                                  float chroma_tilt) {
++  CheckState(cinfo, jpegli::kEncStart);
++  cinfo->master->quant_luma_tilt = luma_tilt;
++  cinfo->master->quant_chroma_tilt = chroma_tilt;
++}
++
++void jpegli_get_ownership_trellis_stats(
++    j_compress_ptr cinfo, jpegli_ownership_trellis_stats* stats) {
++  if (stats == nullptr) return;
++  const jpeg_comp_master* m = cinfo->master;
++  stats->blocks = m->trellis_blocks;
++  stats->nonzeros_before = m->trellis_nonzeros_before;
++  stats->nonzeros_after = m->trellis_nonzeros_after;
++  stats->estimated_bits_before = m->trellis_bits_before;
++  stats->estimated_bits_after = m->trellis_bits_after;
++  stats->terminal_objective = m->trellis_objective;
++}
++
+ void jpegli_simple_progression(j_compress_ptr cinfo) {
+   CheckState(cinfo, jpegli::kEncStart);
+   jpegli_set_progressive_level(cinfo, 2);
+@@ -1248,6 +1299,15 @@ void jpegli_finish_compress(j_compress_ptr cinfo) {
+       tokens_done && !FROM_JPEGLI_BOOL(cinfo->optimize_coding);
+ 
+   if (!tokens_done) {
++    if (m->trellis_rate_lambda > 0.0f) {
++      // First pass supplies image-specific Huffman depths to the terminal
++      // coefficient optimizer. Its tokens are then discarded because the
++      // trellis may change run, EOB, and magnitude-category decisions.
++      jpegli::TokenizeJpeg(cinfo);
++      jpegli::OptimizeHuffmanCodes(cinfo);
++      jpegli::ApplyOwnershipTrellis(cinfo);
++      jpegli::ResetTokenization(cinfo);
++    }
+     jpegli::TokenizeJpeg(cinfo);
+   }
+ 
+diff --git a/lib/jpegli/encode.h b/lib/jpegli/encode.h
+index 63d79df..101af28 100644
+--- a/lib/jpegli/encode.h
++++ b/lib/jpegli/encode.h
+@@ -145,6 +145,43 @@ void jpegli_set_input_format(j_compress_ptr cinfo, JpegliDataType data_type,
+ // Enabled by default.
+ void jpegli_enable_adaptive_quantization(j_compress_ptr cinfo, boolean value);
+ 
++// Supplies an additional nonnegative dead-zone threshold for every natural
++// DCT position of a block. The provider writes 64 values in quantized-
++// coefficient units. It is called for Y/Cb/Cr after Jpegli's own adaptive
++// quantization field has been computed; DC should normally remain zero.
++typedef void (*jpegli_dead_zone_provider)(void* opaque, int component,
++                                          JDIMENSION block_x,
++                                          JDIMENSION block_y,
++                                          float* thresholds);
++void jpegli_set_dead_zone_provider(j_compress_ptr cinfo,
++                                   jpegli_dead_zone_provider provider,
++                                   void* opaque);
++
++// Enables the terminal AC run/EOB trellis. The trellis globally minimizes
++// rate plus coefficient distortion within each block for a fixed JPEG symbol
++// cost model. ownership_weight charges zero transitions for constituents that
++// the ownership field marks as stable. A rate_lambda of zero disables it.
++void jpegli_set_ownership_trellis(j_compress_ptr cinfo, float rate_lambda,
++                                  float ownership_weight, float edge_weight,
++                                  float luma_weight, float chroma_weight);
++
++// Redistributes quantization precision across DCT radius while approximately
++// preserving log quantizer volume. Positive values make high frequencies
++// finer and low frequencies coarser; luma and chroma are independent.
++void jpegli_set_quantization_tilt(j_compress_ptr cinfo, float luma_tilt,
++                                  float chroma_tilt);
++
++typedef struct {
++  size_t blocks;
++  size_t nonzeros_before;
++  size_t nonzeros_after;
++  double estimated_bits_before;
++  double estimated_bits_after;
++  double terminal_objective;
++} jpegli_ownership_trellis_stats;
++void jpegli_get_ownership_trellis_stats(
++    j_compress_ptr cinfo, jpegli_ownership_trellis_stats* stats);
++
+ // Sets the default progression parameters, where level 0 is sequential, and
+ // greater level value means more progression steps. Default is 2.
+ void jpegli_set_progressive_level(j_compress_ptr cinfo, int level);
+diff --git a/lib/jpegli/encode_finish.cc b/lib/jpegli/encode_finish.cc
+index 17c9a11..5e543cd 100644
+--- a/lib/jpegli/encode_finish.cc
++++ b/lib/jpegli/encode_finish.cc
+@@ -38,7 +38,8 @@ using DI16 = Rebind<int16_t, HWY_FULL(int32_t)>;
+ 
+ void ReQuantizeBlock(int16_t* block, const float* qmc, float aq_strength,
+                      const float* zero_bias_offset,
+-                     const float* zero_bias_mul) {
++                     const float* zero_bias_mul,
++                     const float* external_dead_zone) {
+   D d;
+   DI di;
+   DI16 di16;
+@@ -50,7 +51,8 @@ void ReQuantizeBlock(int16_t* block, const float* qmc, float aq_strength,
+     const auto qval = Mul(val, q);
+     const auto zb_offset = Load(d, zero_bias_offset + k);
+     const auto zb_mul = Load(d, zero_bias_mul + k);
+-    const auto threshold = Add(zb_offset, Mul(zb_mul, aq_mul));
++    const auto external = Load(d, external_dead_zone + k);
++    const auto threshold = Add(Add(zb_offset, Mul(zb_mul, aq_mul)), external);
+     const auto nzero_mask = Ge(Abs(qval), threshold);
+     const auto iqval = IfThenElseZero(nzero_mask, Round(qval));
+     Store(DemoteTo(di16, ConvertTo(di, iqval)), di16, block + k);
+@@ -59,7 +61,8 @@ void ReQuantizeBlock(int16_t* block, const float* qmc, float aq_strength,
+ 
+ float BlockError(const int16_t* block, const float* qmc, const float* iqmc,
+                  const float aq_strength, const float* zero_bias_offset,
+-                 const float* zero_bias_mul) {
++                 const float* zero_bias_mul,
++                 const float* external_dead_zone) {
+   D d;
+   DI di;
+   DI16 di16;
+@@ -73,7 +76,8 @@ float BlockError(const int16_t* block, const float* qmc, const float* iqmc,
+     const auto qval = Mul(val, q);
+     const auto zb_offset = Load(d, zero_bias_offset + k);
+     const auto zb_mul = Load(d, zero_bias_mul + k);
+-    const auto threshold = Add(zb_offset, Mul(zb_mul, aq_mul));
++    const auto external = Load(d, external_dead_zone + k);
++    const auto threshold = Add(Add(zb_offset, Mul(zb_mul, aq_mul)), external);
+     const auto nzero_mask = Ge(Abs(qval), threshold);
+     const auto iqval = IfThenElseZero(nzero_mask, Round(qval));
+     const auto invq = Load(d, iqmc + k);
+@@ -108,8 +112,17 @@ float ComputePSNR(j_compress_ptr cinfo, int sampling) {
+       JBLOCKARRAY blocks = GetBlockRow(cinfo, c, by);
+       const float* qf = m->quant_field.Row(by * v_factor);
+       for (JDIMENSION bx = 0; bx < comp->width_in_blocks; bx += sampling) {
++        HWY_ALIGN float external_dead_zone[DCTSIZE2] = {};
++        if (m->dead_zone_provider != nullptr) {
++          m->dead_zone_provider(m->dead_zone_opaque, c, bx, by,
++                                external_dead_zone);
++          for (float& value : external_dead_zone) {
++            value = std::max(0.0f, value);
++          }
++        }
+         error += BlockError(&blocks[0][bx][0], qmc, iqmc, qf[bx * h_factor],
+-                            zero_bias_offset, zero_bias_mul);
++                            zero_bias_offset, zero_bias_mul,
++                            external_dead_zone);
+         num += DCTSIZE2;
+       }
+     }
+@@ -131,8 +144,17 @@ void ReQuantizeCoeffs(j_compress_ptr cinfo) {
+       JBLOCKARRAY block = GetBlockRow(cinfo, c, by);
+       const float* qf = m->quant_field.Row(by * v_factor);
+       for (JDIMENSION bx = 0; bx < comp->width_in_blocks; ++bx) {
++        HWY_ALIGN float external_dead_zone[DCTSIZE2] = {};
++        if (m->dead_zone_provider != nullptr) {
++          m->dead_zone_provider(m->dead_zone_opaque, c, bx, by,
++                                external_dead_zone);
++          for (float& value : external_dead_zone) {
++            value = std::max(0.0f, value);
++          }
++        }
+         ReQuantizeBlock(&block[0][bx][0], qmc, qf[bx * h_factor],
+-                        zero_bias_offset, zero_bias_mul);
++                        zero_bias_offset, zero_bias_mul,
++                        external_dead_zone);
+       }
+     }
+   }
+diff --git a/lib/jpegli/encode_internal.h b/lib/jpegli/encode_internal.h
+index f5811fa..a168018 100644
+--- a/lib/jpegli/encode_internal.h
++++ b/lib/jpegli/encode_internal.h
+@@ -75,6 +75,23 @@ struct jpeg_comp_master {
+   uint8_t cicp_transfer_function;
+   bool use_std_tables;
+   bool use_adaptive_quantization;
++  void (*dead_zone_provider)(void* opaque, int component,
++                             JDIMENSION block_x, JDIMENSION block_y,
++                             float* thresholds);
++  void* dead_zone_opaque;
++  float trellis_rate_lambda;
++  float trellis_ownership_weight;
++  float trellis_edge_weight;
++  float trellis_luma_weight;
++  float trellis_chroma_weight;
++  float quant_luma_tilt;
++  float quant_chroma_tilt;
++  size_t trellis_blocks;
++  size_t trellis_nonzeros_before;
++  size_t trellis_nonzeros_after;
++  double trellis_bits_before;
++  double trellis_bits_after;
++  double trellis_objective;
+   int progressive_level;
+   size_t xsize_blocks;
+   size_t ysize_blocks;
+@@ -126,6 +143,7 @@ struct jpeg_comp_master {
+   JCOEF last_dc_coeff[MAX_COMPS_IN_SCAN];
+   jpegli::JpegBitWriter bw;
+   float* dct_buffer;
++  float* trellis_qcoeff[jpegli::kMaxComponents];
+   int32_t* block_tmp;
+   jpegli::TokenArray* token_arrays;
+   size_t cur_token_array;
+diff --git a/lib/jpegli/encode_streaming.cc b/lib/jpegli/encode_streaming.cc
+index b018688..8a67c22 100644
+--- a/lib/jpegli/encode_streaming.cc
++++ b/lib/jpegli/encode_streaming.cc
+@@ -191,14 +191,32 @@ void ProcessiMCURow(j_compress_ptr cinfo) {
+             aq_strength = qf[iy * qf_stride + bx * h_factor];
+           }
+           const float* pixels = imcu_start[c] + (iy * stride + bx) * DCTSIZE;
++          HWY_ALIGN float external_dead_zone[DCTSIZE2] = {};
++          if (m->dead_zone_provider != nullptr) {
++            m->dead_zone_provider(m->dead_zone_opaque, c, bx, by,
++                                  external_dead_zone);
++            for (float& value : external_dead_zone) {
++              value = std::max(0.0f, value);
++            }
++          }
+           ComputeCoefficientBlock(pixels, stride, qmc, last_dc_coeff[c],
+                                   aq_strength, zero_bias_offset, zero_bias_mul,
+-                                  m->dct_buffer, block);
++                                  external_dead_zone, m->dct_buffer, block);
+           if (kMode == kStreamingModeCoefficients) {
+             JCOEF* cblock = &blocks[c][iy][bx][0];
+             for (int k = 0; k < DCTSIZE2; ++k) {
+               cblock[k] = block[kJPEGNaturalOrder[k]];
+             }
++            if (m->trellis_qcoeff[c] != nullptr) {
++              float* qblock = m->trellis_qcoeff[c] +
++                  (by * comp->width_in_blocks + bx) * DCTSIZE2;
++              for (int k = 0; k < DCTSIZE2; ++k) {
++                const int natural = kJPEGNaturalOrder[k];
++                float dct = m->dct_buffer[natural];
++                if (natural == 0) dct -= 128.0f;
++                qblock[k] = dct * qmc[natural];
++              }
++            }
+           }
+           block[0] -= last_dc_coeff[c];
+           last_dc_coeff[c] += block[0];
+diff --git a/lib/jpegli/entropy_coding.cc b/lib/jpegli/entropy_coding.cc
+index fddaf45..8e20b94 100644
+--- a/lib/jpegli/entropy_coding.cc
++++ b/lib/jpegli/entropy_coding.cc
+@@ -515,6 +515,30 @@ void TokenizeJpeg(j_compress_ptr cinfo) {
+   }
+ }
+ 
++void ResetTokenization(j_compress_ptr cinfo) {
++  jpeg_comp_master* m = cinfo->master;
++  const int ysize_blocks = DivCeil(cinfo->image_height, DCTSIZE);
++  const int num_arrays = cinfo->num_scans * ysize_blocks;
++  m->token_arrays = Allocate<TokenArray>(cinfo, num_arrays, JPOOL_IMAGE);
++  memset(m->token_arrays, 0, num_arrays * sizeof(TokenArray));
++  m->cur_token_array = 0;
++  m->next_token = nullptr;
++  m->num_tokens = 0;
++  m->total_num_tokens = 0;
++  m->next_refinement_token = nullptr;
++  m->next_refinement_bit = nullptr;
++  for (int i = 0; i < cinfo->num_scans; ++i) {
++    ScanTokenInfo* sti = &m->scan_token_info[i];
++    sti->tokens = nullptr;
++    sti->num_tokens = 0;
++    sti->refbits = nullptr;
++    sti->eobruns = nullptr;
++    sti->num_nonzeros = 0;
++    sti->num_future_nonzeros = 0;
++    sti->token_offset = 0;
++  }
++}
++
+ namespace {
+ 
+ struct Histogram {
+diff --git a/lib/jpegli/entropy_coding.h b/lib/jpegli/entropy_coding.h
+index 2d99bbe..a5fcc76 100644
+--- a/lib/jpegli/entropy_coding.h
++++ b/lib/jpegli/entropy_coding.h
+@@ -20,6 +20,10 @@ size_t EstimateNumTokens(j_compress_ptr cinfo, size_t mcu_y, size_t ysize_mcus,
+ 
+ void TokenizeJpeg(j_compress_ptr cinfo);
+ 
++// Discards tokenization storage and scan counters while preserving the scan
++// topology. Used after a coefficient-domain terminal optimization.
++void ResetTokenization(j_compress_ptr cinfo);
++
+ void CopyHuffmanTables(j_compress_ptr cinfo);
+ 
+ void OptimizeHuffmanCodes(j_compress_ptr cinfo);
+diff --git a/lib/jpegli/quant.cc b/lib/jpegli/quant.cc
+index e83d11e..5c51fa6 100644
+--- a/lib/jpegli/quant.cc
++++ b/lib/jpegli/quant.cc
+@@ -697,6 +697,14 @@ void SetQuantMatrices(j_compress_ptr cinfo, float distances[NUM_QUANT_TBLS],
+       } else {
+         scale *= DistanceToLinearQuality(distances[quant_idx]);
+       }
++      const int u = k / DCTSIZE;
++      const int v = k % DCTSIZE;
++      constexpr float kMeanRadiusSquared = 35.0f;
++      const float centered_radius =
++          (u * u + v * v - kMeanRadiusSquared) / 98.0f;
++      const float tilt = quant_idx == 0 ? m->quant_luma_tilt
++                                        : m->quant_chroma_tilt;
++      scale *= std::exp(-tilt * centered_radius);
+       int qval = std::round(scale * base_qm[k]);
+       (*qtable)->quantval[k] = std::max(1, std::min(qval, quant_max));
+     }
+diff --git a/lib/jpegli_lists.bzl b/lib/jpegli_lists.bzl
+index 039dd0f..9a8f3c3 100644
+--- a/lib/jpegli_lists.bzl
++++ b/lib/jpegli_lists.bzl
+@@ -197,6 +197,8 @@ libjpegli_jpegli_sources = [
+     "jpegli/idct.h",
+     "jpegli/input.cc",
+     "jpegli/input.h",
++    "jpegli/ownership_trellis.cc",
++    "jpegli/ownership_trellis.h",
+     "jpegli/memory_manager.cc",
+     "jpegli/memory_manager.h",
+     "jpegli/quant.cc",
+diff --git a/lib/jpegli_lists.cmake b/lib/jpegli_lists.cmake
+index 9535e26..096122e 100644
+--- a/lib/jpegli_lists.cmake
++++ b/lib/jpegli_lists.cmake
+@@ -192,6 +192,8 @@ set(JPEGLI_INTERNAL_JPEGLI_SOURCES
+   jpegli/idct.h
+   jpegli/input.cc
+   jpegli/input.h
++  jpegli/ownership_trellis.cc
++  jpegli/ownership_trellis.h
+   jpegli/memory_manager.cc
+   jpegli/memory_manager.h
+   jpegli/quant.cc
+diff --git a/lib/lib.gni b/lib/lib.gni
+index 4b17bac..046dc3c 100644
+--- a/lib/lib.gni
++++ b/lib/lib.gni
+@@ -195,6 +195,8 @@ libjpegli_jpegli_sources = [
+     "jpegli/idct.h",
+     "jpegli/input.cc",
+     "jpegli/input.h",
++    "jpegli/ownership_trellis.cc",
++    "jpegli/ownership_trellis.h",
+     "jpegli/memory_manager.cc",
+     "jpegli/memory_manager.h",
+     "jpegli/quant.cc",
+diff --git a/tools/cjpegli.cc b/tools/cjpegli.cc
+index 844ae4f..7ea1377 100644
+--- a/tools/cjpegli.cc
++++ b/tools/cjpegli.cc
+@@ -8,6 +8,8 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ 
++#include <cstring>
++#include <memory>
+ #include <string>
+ #include <vector>
+ 
+@@ -85,6 +87,40 @@ struct Args {
+         '\0', "noadaptive_quantization", "Disable adaptive quantization.",
+         &settings.use_adaptive_quantization, &SetBooleanFalse, 1);
+ 
++    cmdline->AddOptionValue(
++        '\0', "dead_zone_field", "FILE",
++        "Experimental ownership dead-zone field (JLDZ binary format).",
++        &dead_zone_field_path, &ParseString);
++
++    cmdline->AddOptionValue(
++        '\0', "trellis_lambda", "N",
++        "Terminal AC run/EOB trellis rate multiplier (0 disables).",
++        &settings.trellis_rate_lambda, &ParseFloat);
++    cmdline->AddOptionValue(
++        '\0', "ownership_weight", "N",
++        "Trellis cost for surrendering phase-stable constituents.",
++        &settings.trellis_ownership_weight, &ParseFloat);
++    cmdline->AddOptionValue(
++        '\0', "trellis_edge_weight", "N",
++        "Extra terminal distortion weight for edge-bearing frequencies.",
++        &settings.trellis_edge_weight, &ParseFloat);
++    cmdline->AddOptionValue(
++        '\0', "trellis_luma_weight", "N",
++        "Terminal distortion weight for luma coefficients.",
++        &settings.trellis_luma_weight, &ParseFloat);
++    cmdline->AddOptionValue(
++        '\0', "trellis_chroma_weight", "N",
++        "Terminal distortion weight for chroma coefficients.",
++        &settings.trellis_chroma_weight, &ParseFloat);
++    cmdline->AddOptionValue(
++        '\0', "quant_luma_tilt", "N",
++        "Log-volume-preserving luma quantization frequency tilt.",
++        &settings.quant_luma_tilt, &ParseFloat);
++    cmdline->AddOptionValue(
++        '\0', "quant_chroma_tilt", "N",
++        "Log-volume-preserving chroma quantization frequency tilt.",
++        &settings.quant_chroma_tilt, &ParseFloat);
++
+     cmdline->AddOptionFlag(
+         '\0', "fixed_code",
+         "Disable Huffman code optimization. Must be used together with -p 0.",
+@@ -116,6 +152,7 @@ struct Args {
+   ColorHintsProxy color_hints_proxy;
+   jpegli::extras::JpegSettings settings;
+   int quality = 90;
++  std::string dead_zone_field_path;
+   size_t num_reps = 1;
+   bool quiet = false;
+   bool verbose = false;
+@@ -124,6 +161,42 @@ struct Args {
+   CommandLineParser::OptionId opt_quality_id = -1;
+ };
+ 
++uint32_t LoadLE32(const uint8_t* p) {
++  return static_cast<uint32_t>(p[0]) |
++         (static_cast<uint32_t>(p[1]) << 8) |
++         (static_cast<uint32_t>(p[2]) << 16) |
++         (static_cast<uint32_t>(p[3]) << 24);
++}
++
++bool LoadDeadZoneField(const std::string& path,
++                       jpegli::extras::JpegSettings* settings) {
++  if (path.empty()) return true;
++  std::vector<uint8_t> bytes;
++  if (!ReadFile(path.c_str(), &bytes) || bytes.size() < 16 ||
++      memcmp(bytes.data(), "JLDZ", 4) != 0) {
++    fprintf(stderr, "Invalid dead-zone field %s\n", path.c_str());
++    return false;
++  }
++  const uint32_t version = LoadLE32(bytes.data() + 4);
++  const uint32_t xsize = LoadLE32(bytes.data() + 8);
++  const uint32_t ysize = LoadLE32(bytes.data() + 12);
++  const size_t count = static_cast<size_t>(3) * xsize * ysize * DCTSIZE2;
++  if (version != 1 || xsize == 0 || ysize == 0 ||
++      count > (bytes.size() - 16) / sizeof(float) ||
++      bytes.size() != 16 + count * sizeof(float)) {
++    fprintf(stderr, "Malformed dead-zone field %s\n", path.c_str());
++    return false;
++  }
++  auto field = std::make_shared<jpegli::extras::JpegDeadZoneField>();
++  field->xsize_blocks = xsize;
++  field->ysize_blocks = ysize;
++  field->thresholds.resize(count);
++  memcpy(field->thresholds.data(), bytes.data() + 16,
++         count * sizeof(float));
++  settings->dead_zone_field = std::move(field);
++  return true;
++}
++
+ bool ValidateArgs(const Args& args) {
+   const jpegli::extras::JpegSettings& settings = args.settings;
+   if (settings.distance < 0.0 || settings.distance > 25.0) {
+@@ -147,6 +220,14 @@ bool ValidateArgs(const Args& args) {
+     fprintf(stderr, "--fixed_code must be used together with -p 0\n");
+     return false;
+   }
++  if (settings.trellis_rate_lambda < 0.0f ||
++      settings.trellis_ownership_weight < 0.0f ||
++      settings.trellis_edge_weight < 0.0f ||
++      settings.trellis_luma_weight < 0.0f ||
++      settings.trellis_chroma_weight < 0.0f) {
++    fprintf(stderr, "Trellis parameters must be nonnegative\n");
++    return false;
++  }
+   return true;
+ }
+ 
+@@ -213,7 +294,8 @@ int CJpegliMain(int argc, const char* argv[]) {
+             ppf.info.ysize, input_bytes.size());
+   }
+ 
+-  if (!ValidateArgs(args) || !SetDistance(args, cmdline, &args.settings)) {
++  if (!ValidateArgs(args) || !SetDistance(args, cmdline, &args.settings) ||
++      !LoadDeadZoneField(args.dead_zone_field_path, &args.settings)) {
+     return EXIT_FAILURE;
+   }
+ 
+@@ -231,6 +313,8 @@ int CJpegliMain(int argc, const char* argv[]) {
+   }
+ 
+   jpegli_tools::SpeedStats stats;
++  jpegli::extras::JpegOwnershipTrellisStats trellis_stats;
++  args.settings.trellis_stats = &trellis_stats;
+   std::vector<uint8_t> jpeg_bytes;
+   for (size_t num_rep = 0; num_rep < args.num_reps; ++num_rep) {
+     const double t0 = jpegli::Now();
+@@ -258,6 +342,15 @@ int CJpegliMain(int argc, const char* argv[]) {
+         num_pixels;
+     fprintf(stderr, "(%.3f bpp).\n", bpp);
+     stats.Print(1);
++    if (args.settings.trellis_rate_lambda > 0.0f) {
++      fprintf(stderr,
++              "Trellis: %" PRIuS " blocks, nonzeros %" PRIuS " -> %" PRIuS
++              ", estimated bits %.0f -> %.0f, objective %.3f.\n",
++              trellis_stats.blocks, trellis_stats.nonzeros_before,
++              trellis_stats.nonzeros_after, trellis_stats.estimated_bits_before,
++              trellis_stats.estimated_bits_after,
++              trellis_stats.terminal_objective);
++    }
+   }
+   return EXIT_SUCCESS;
+ }
+diff --git a/lib/jpegli/ownership_trellis.cc b/lib/jpegli/ownership_trellis.cc
+new file mode 100644
+index 0000000..a5e0166
+--- /dev/null
++++ b/lib/jpegli/ownership_trellis.cc
+@@ -0,0 +1,233 @@
++// Copyright (c) the JPEG XL Project Authors.
++//
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "lib/jpegli/ownership_trellis.h"
++
++#include <algorithm>
++#include <array>
++#include <cmath>
++#include <cstddef>
++#include <cstdint>
++#include <limits>
++#include <vector>
++
++#include "lib/jpegli/common_internal.h"
++#include "lib/jpegli/encode_internal.h"
++#include "lib/jpegli/memory_manager.h"
++
++namespace jpegli {
++namespace {
++
++using DepthTable = std::array<int, 256>;
++
++DepthTable SymbolDepths(const JHUFF_TBL* table) {
++  DepthTable depth;
++  depth.fill(0);
++  if (table != nullptr) {
++    size_t offset = 0;
++    for (int bits = 1; bits <= 16; ++bits) {
++      for (int i = 0; i < table->bits[bits]; ++i) {
++        depth[table->huffval[offset++]] = bits;
++      }
++    }
++  }
++  // Defensive fixed costs make the experimental path usable if an embedding
++  // application has not installed default Huffman tables yet.
++  if (depth[0] == 0) depth[0] = 4;
++  if (depth[0xf0] == 0) depth[0xf0] = 11;
++  for (int run = 0; run < 16; ++run) {
++    for (int category = 1; category < 16; ++category) {
++      const int symbol = 16 * run + category;
++      if (depth[symbol] == 0) depth[symbol] = 8 + run / 4;
++    }
++  }
++  return depth;
++}
++
++DepthTable ComponentDepths(j_compress_ptr cinfo, int component) {
++  jpeg_comp_master* m = cinfo->master;
++  const JHUFF_TBL* table = nullptr;
++  int best_span = -1;
++  if (m->huffman_tables != nullptr && m->context_map != nullptr) {
++    for (int scan = 0; scan < cinfo->num_scans; ++scan) {
++      const jpeg_scan_info& si = cinfo->scan_info[scan];
++      if (si.Ah != 0 || si.Ss == 0) continue;
++      for (int j = 0; j < si.comps_in_scan; ++j) {
++        if (si.component_index[j] != component) continue;
++        const int span = si.Se - si.Ss + 1;
++        if (span > best_span) {
++          const int context = m->ac_ctx_offset[scan] + j;
++          table = &m->huffman_tables[m->context_map[context]];
++          best_span = span;
++        }
++      }
++    }
++  }
++  if (table == nullptr) {
++    const jpeg_component_info& comp = cinfo->comp_info[component];
++    table = cinfo->ac_huff_tbl_ptrs[comp.ac_tbl_no];
++  }
++  return SymbolDepths(table);
++}
++
++int Category(int value) {
++  unsigned magnitude = static_cast<unsigned>(std::abs(value));
++  int result = 0;
++  while (magnitude != 0) {
++    ++result;
++    magnitude >>= 1;
++  }
++  return result;
++}
++
++double BlockBits(const JCOEF* block, const DepthTable& depth) {
++  int last = 63;
++  while (last > 0 && block[last] == 0) --last;
++  double bits = 0.0;
++  int run = 0;
++  for (int k = 1; k <= last; ++k) {
++    if (block[k] == 0) {
++      ++run;
++      continue;
++    }
++    while (run >= 16) {
++      bits += depth[0xf0];
++      run -= 16;
++    }
++    const int category = Category(block[k]);
++    bits += depth[16 * run + category] + category;
++    run = 0;
++  }
++  if (last < 63) bits += depth[0];
++  return bits;
++}
++
++double OptimizeBlock(const float* qcoeff, const float* permission,
++                     const DepthTable& depth, float rate_lambda,
++                     float ownership_weight, float edge_weight,
++                     float channel_weight, JCOEF* block) {
++  constexpr int kPositions = 64;
++  constexpr double kInfinity = std::numeric_limits<double>::infinity();
++  std::array<double, kPositions> cost;
++  std::array<double, kPositions> next;
++  std::vector<std::array<int8_t, kPositions>> back_run(kPositions);
++  std::vector<std::array<JCOEF, kPositions>> back_value(kPositions);
++  cost.fill(kInfinity);
++  cost[0] = 0.0;
++
++  for (int position = 1; position < kPositions; ++position) {
++    next.fill(kInfinity);
++    const double source = qcoeff[position];
++    const int natural = kJPEGNaturalOrder[position];
++    const int u = natural / DCTSIZE;
++    const int v = natural % DCTSIZE;
++    const double edge_scale = channel_weight *
++        (1.0 + edge_weight * (u * u + v * v) / 98.0);
++    const double stable = std::exp(-4.0 * permission[position]);
++    const double zero_distortion = edge_scale * source * source *
++        (1.0 + ownership_weight * stable);
++    for (int run = 0; run < position; ++run) {
++      if (!std::isfinite(cost[run])) continue;
++      if (cost[run] + zero_distortion < next[run + 1]) {
++        next[run + 1] = cost[run] + zero_distortion;
++        back_run[position][run + 1] = run;
++        back_value[position][run + 1] = 0;
++      }
++
++      const int sign = source < 0.0 ? -1 : 1;
++      const double magnitude = std::abs(source);
++      int zrl_run = run;
++      double run_rate = 0.0;
++      while (zrl_run >= 16) {
++        run_rate += depth[0xf0];
++        zrl_run -= 16;
++      }
++      for (int category = 1; category < 16; ++category) {
++        const int low = 1 << (category - 1);
++        const int high = (1 << category) - 1;
++        const int candidate_magnitude = std::clamp(
++            static_cast<int>(std::lround(magnitude)), low, high);
++        const int candidate = sign * candidate_magnitude;
++        const int symbol = 16 * zrl_run + category;
++        const double rate = run_rate + depth[symbol] + category;
++        const double delta = source - candidate;
++        const double candidate_cost = cost[run] +
++            edge_scale * delta * delta + rate_lambda * rate;
++        if (candidate_cost < next[0]) {
++          next[0] = candidate_cost;
++          back_run[position][0] = run;
++          back_value[position][0] = static_cast<JCOEF>(candidate);
++        }
++      }
++    }
++    cost = next;
++  }
++
++  int best_run = 0;
++  double best_cost = cost[0];
++  for (int run = 1; run < kPositions; ++run) {
++    const double terminal = cost[run] + rate_lambda * depth[0];
++    if (terminal < best_cost) {
++      best_cost = terminal;
++      best_run = run;
++    }
++  }
++  for (int position = kPositions - 1; position >= 1; --position) {
++    block[position] = back_value[position][best_run];
++    best_run = back_run[position][best_run];
++  }
++  return best_cost;
++}
++
++}  // namespace
++
++void ApplyOwnershipTrellis(j_compress_ptr cinfo) {
++  jpeg_comp_master* m = cinfo->master;
++  if (m->trellis_rate_lambda <= 0.0f || m->coeff_buffers == nullptr) return;
++  m->trellis_blocks = 0;
++  m->trellis_nonzeros_before = 0;
++  m->trellis_nonzeros_after = 0;
++  m->trellis_bits_before = 0.0;
++  m->trellis_bits_after = 0.0;
++  m->trellis_objective = 0.0;
++  for (int c = 0; c < cinfo->num_components; ++c) {
++    jpeg_component_info* comp = &cinfo->comp_info[c];
++    const DepthTable depth = ComponentDepths(cinfo, c);
++    for (JDIMENSION by = 0; by < comp->height_in_blocks; ++by) {
++      JBLOCKARRAY blocks = GetBlockRow(cinfo, c, by);
++      for (JDIMENSION bx = 0; bx < comp->width_in_blocks; ++bx) {
++        JCOEF* block = &blocks[0][bx][0];
++        const float* qcoeff = m->trellis_qcoeff[c] +
++            (by * comp->width_in_blocks + bx) * DCTSIZE2;
++        std::array<float, DCTSIZE2> natural_permission{};
++        std::array<float, DCTSIZE2> permission{};
++        if (m->dead_zone_provider != nullptr) {
++          m->dead_zone_provider(m->dead_zone_opaque, c, bx, by,
++                                natural_permission.data());
++          for (int k = 0; k < DCTSIZE2; ++k) {
++            permission[k] = std::max(
++                0.0f, natural_permission[kJPEGNaturalOrder[k]]);
++          }
++        }
++        m->trellis_bits_before += BlockBits(block, depth);
++        for (int k = 1; k < DCTSIZE2; ++k) {
++          if (block[k] != 0) ++m->trellis_nonzeros_before;
++        }
++        m->trellis_objective += OptimizeBlock(
++            qcoeff, permission.data(), depth, m->trellis_rate_lambda,
++            m->trellis_ownership_weight, m->trellis_edge_weight,
++            c == 0 ? m->trellis_luma_weight : m->trellis_chroma_weight,
++            block);
++        m->trellis_bits_after += BlockBits(block, depth);
++        for (int k = 1; k < DCTSIZE2; ++k) {
++          if (block[k] != 0) ++m->trellis_nonzeros_after;
++        }
++        ++m->trellis_blocks;
++      }
++    }
++  }
++}
++
++}  // namespace jpegli
+diff --git a/lib/jpegli/ownership_trellis.h b/lib/jpegli/ownership_trellis.h
+new file mode 100644
+index 0000000..97742ff
+--- /dev/null
++++ b/lib/jpegli/ownership_trellis.h
+@@ -0,0 +1,18 @@
++// Copyright (c) the JPEG XL Project Authors.
++//
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef JPEGLI_LIB_JPEGLI_OWNERSHIP_TRELLIS_H_
++#define JPEGLI_LIB_JPEGLI_OWNERSHIP_TRELLIS_H_
++
++#include "lib/jpegli/common.h"
++
++namespace jpegli {
++
++void ApplyOwnershipTrellis(j_compress_ptr cinfo);
++
++}  // namespace jpegli
++
++#endif  // JPEGLI_LIB_JPEGLI_OWNERSHIP_TRELLIS_H_
++

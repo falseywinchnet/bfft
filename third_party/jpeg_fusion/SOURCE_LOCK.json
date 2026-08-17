@@ -1,0 +1,18 @@
+{
+  "jpegli": {
+    "repository": "https://github.com/google/jpegli.git",
+    "commit": "031a0077f5799a6041004267fc12b956c1f52a20",
+    "submodules": {
+      "third_party/highway": "271a9a0ed9de1232d9117f1572c3fe28f8542ec1",
+      "third_party/lcms": "5176347635785e53ee5cee92328f76fda766ecc6",
+      "third_party/libjpeg-turbo": "8ecba3647edb6dd940463fedf38ca33a8e2a73d1",
+      "third_party/libpng": "872555f4ba910252783af1507f9e7fe1653be252",
+      "third_party/zlib": "51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf"
+    }
+  },
+  "mozjpeg": {
+    "repository": "https://github.com/mozilla/mozjpeg.git",
+    "commit": "08265790774cd0714832c9e675522acbe5581437"
+  }
+}
+

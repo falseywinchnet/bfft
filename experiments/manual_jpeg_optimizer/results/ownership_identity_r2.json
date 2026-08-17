@@ -1,0 +1,40 @@
+{
+  "edge_psnr_db": 26.938753667102382,
+  "jpeg": {
+    "quality": 70,
+    "subsampling": 1
+  },
+  "output": "experiments/manual_jpeg_optimizer/results/ownership_identity_r2.jpg",
+  "output_bytes": 23581,
+  "ownership_bifurcation": {
+    "changed_quantized_coefficients": 9330,
+    "channel_energy_fraction": [
+      0.3449072960591185,
+      0.30237408045711234,
+      0.3527186234837692
+    ],
+    "config": {
+      "branch_penalty": 0.0,
+      "cross_region_weight": 0.05,
+      "maximum_condition": 12.0,
+      "maximum_depth": 8,
+      "minimum_atoms": 128,
+      "rate_lambda": 2.0
+    },
+    "leaf_count": 6,
+    "maximum_depth": 3,
+    "objective": 170682.32781851018,
+    "objective_gain": 12312.302073031693,
+    "ownership_hash": "1f0a1ef2e2ccf19f932cd8057c015d7c1554d497b3b47e73583d048dd1414fa0",
+    "phase_forest_hash": "7bdd403ecb6f6f116aa95b271cac5872e3c5468ecd140d9d5d92fa01b7911574",
+    "prequantization_max_composition_error": 2.842170943040401e-14,
+    "proof": "Bellman recursion exactly minimizes identity versus composition-preserving constituent transport and every pruning of the stored causal bifurcation tree.",
+    "stop_control_cost": 182994.62989154187,
+    "tree_nodes": 67
+  },
+  "proof_boundary": "Phase transport, atom ownership, and inverse paths are exact. The Bellman value is the global optimum over every pruning of the generated Courant--Fischer/weighted-median causal tree.",
+  "psnr_db": 36.797652112654646,
+  "source": "experiments/manual_jpeg_optimizer/assets/istockphoto-508030340-612x612.jpg",
+  "source_bytes": 32530,
+  "ssim": 0.963648919066744
+}

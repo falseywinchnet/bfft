@@ -3216,6 +3216,179 @@ bfft_status bfft_vision_sobel_f64(
     return BFFT_OK;
 }
 
+bfft_status bfft_vision_image_metrics_f64(
+    std::size_t height,
+    std::size_t width,
+    std::size_t kernel_size,
+    std::size_t thread_count,
+    const double* reference,
+    const double* candidate,
+    const double* reference_mean,
+    const double* reference_variance,
+    const double* reference_edge,
+    const double* kernel,
+    double* scratch,
+    double* metrics) {
+    if (height == 0 || width == 0 || kernel_size == 0 ||
+        kernel_size % 2 == 0 || reference == nullptr ||
+        candidate == nullptr || reference_mean == nullptr ||
+        reference_variance == nullptr || reference_edge == nullptr ||
+        kernel == nullptr || scratch == nullptr || metrics == nullptr) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    std::size_t pixels = 0;
+    std::size_t scratch_size = 0;
+    if (!checked_product(height, width, &pixels) ||
+        !checked_product(pixels, std::size_t{9}, &scratch_size)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    (void)scratch_size;
+    const std::ptrdiff_t radius =
+        static_cast<std::ptrdiff_t>(kernel_size / 2);
+    try {
+        // One branch per output pixel selects the boundary or branch-free
+        // interior path; the kernel tap loop itself has no conditionals.
+        parallel_ranges(
+            height, width, thread_count,
+            [&](std::size_t begin, std::size_t end) {
+                for (std::size_t y = begin; y < end; ++y) {
+                    for (std::size_t x = 0; x < width; ++x) {
+                        const bool interior =
+                            x >= static_cast<std::size_t>(radius) &&
+                            x + static_cast<std::size_t>(radius) < width;
+                        double* destination = scratch + (y * width + x) * 9;
+                        for (std::size_t channel = 0; channel < 3; ++channel) {
+                            double mean = 0.0;
+                            double square = 0.0;
+                            double product = 0.0;
+                            for (std::ptrdiff_t offset = -radius;
+                                 offset <= radius; ++offset) {
+                                const std::size_t source_x = interior
+                                    ? static_cast<std::size_t>(
+                                        static_cast<std::ptrdiff_t>(x) + offset)
+                                    : reflected_index(
+                                        static_cast<std::ptrdiff_t>(x) + offset,
+                                        width, false);
+                                const std::size_t source =
+                                    (y * width + source_x) * 3 + channel;
+                                const double weight = kernel[
+                                    static_cast<std::size_t>(offset + radius)];
+                                const double value = candidate[source];
+                                mean += weight * value;
+                                square += weight * value * value;
+                                product += weight * reference[source] * value;
+                            }
+                            destination[channel * 3] = mean;
+                            destination[channel * 3 + 1] = square;
+                            destination[channel * 3 + 2] = product;
+                        }
+                    }
+                }
+            });
+
+        std::vector<double> row_mse(height, 0.0);
+        std::vector<double> row_ssim(height, 0.0);
+        std::vector<double> row_edge(height, 0.0);
+        constexpr double c1 = 6.5025;
+        constexpr double c2 = 58.5225;
+        auto luma = [&](std::size_t y, std::size_t x) {
+            const double* rgb = candidate + (y * width + x) * 3;
+            return 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
+        };
+        parallel_ranges(
+            height, width, thread_count,
+            [&](std::size_t begin, std::size_t end) {
+                for (std::size_t y = begin; y < end; ++y) {
+                    double mse_sum = 0.0;
+                    double ssim_sum = 0.0;
+                    double edge_sum = 0.0;
+                    const bool interior_y =
+                        y >= static_cast<std::size_t>(radius) &&
+                        y + static_cast<std::size_t>(radius) < height;
+                    const std::size_t above = y == 0 ? 0 : y - 1;
+                    const std::size_t below = std::min(y + 1, height - 1);
+                    for (std::size_t x = 0; x < width; ++x) {
+                        const std::size_t pixel = y * width + x;
+                        for (std::size_t channel = 0; channel < 3; ++channel) {
+                            double mean = 0.0;
+                            double square = 0.0;
+                            double product = 0.0;
+                            for (std::ptrdiff_t offset = -radius;
+                                 offset <= radius; ++offset) {
+                                const std::size_t source_y = interior_y
+                                    ? static_cast<std::size_t>(
+                                        static_cast<std::ptrdiff_t>(y) + offset)
+                                    : reflected_index(
+                                        static_cast<std::ptrdiff_t>(y) + offset,
+                                        height, false);
+                                const double* source = scratch +
+                                    (source_y * width + x) * 9 + channel * 3;
+                                const double weight = kernel[
+                                    static_cast<std::size_t>(offset + radius)];
+                                mean += weight * source[0];
+                                square += weight * source[1];
+                                product += weight * source[2];
+                            }
+                            const std::size_t rgb_index = pixel * 3 + channel;
+                            const double source_mean = reference_mean[rgb_index];
+                            const double source_variance =
+                                reference_variance[rgb_index];
+                            const double candidate_variance = std::max(
+                                square - mean * mean, 0.0);
+                            const double covariance =
+                                product - source_mean * mean;
+                            const double numerator =
+                                (2.0 * source_mean * mean + c1) *
+                                (2.0 * covariance + c2);
+                            const double denominator =
+                                (source_mean * source_mean + mean * mean + c1) *
+                                (source_variance + candidate_variance + c2) +
+                                1e-20;
+                            ssim_sum += numerator / denominator;
+                            const double difference =
+                                reference[rgb_index] - candidate[rgb_index];
+                            mse_sum += difference * difference;
+                        }
+                        const std::size_t left = x == 0 ? 0 : x - 1;
+                        const std::size_t right = std::min(x + 1, width - 1);
+                        const double axis0 =
+                            luma(below, left) + 2.0 * luma(below, x) +
+                            luma(below, right) - luma(above, left) -
+                            2.0 * luma(above, x) - luma(above, right);
+                        const double axis1 =
+                            luma(above, right) + 2.0 * luma(y, right) +
+                            luma(below, right) - luma(above, left) -
+                            2.0 * luma(y, left) - luma(below, left);
+                        const double edge0 =
+                            reference_edge[pixel * 2] - axis0;
+                        const double edge1 =
+                            reference_edge[pixel * 2 + 1] - axis1;
+                        edge_sum += edge0 * edge0 + edge1 * edge1;
+                    }
+                    row_mse[y] = mse_sum;
+                    row_ssim[y] = ssim_sum;
+                    row_edge[y] = edge_sum;
+                }
+            });
+        double mse_sum = 0.0;
+        double ssim_sum = 0.0;
+        double edge_sum = 0.0;
+        for (std::size_t y = 0; y < height; ++y) {
+            mse_sum += row_mse[y];
+            ssim_sum += row_ssim[y];
+            edge_sum += row_edge[y];
+        }
+        metrics[0] = mse_sum / static_cast<double>(pixels * 3);
+        metrics[1] = ssim_sum / static_cast<double>(pixels * 3);
+        metrics[2] = edge_sum / static_cast<double>(pixels * 2);
+        return BFFT_OK;
+    } catch (const std::bad_alloc&) {
+        return BFFT_ERROR_ALLOCATION;
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+}
+
 bfft_status bfft_vision_binary_dilation_cross_u8(
     std::size_t height,
     std::size_t width,

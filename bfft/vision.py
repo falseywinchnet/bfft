@@ -30,6 +30,7 @@ from ._core import (
     _vision_prepare_continuous_metric,
     _vision_hard_affine_fit,
     _vision_hard_basis_refit,
+    _vision_image_metrics_f64,
     _vision_binary_dilation_cross_u8,
     _vision_render_affine,
     _vision_resize_bilinear_f64,
@@ -134,6 +135,43 @@ def sobel_native(fields, *, threads=0):
         _ptr(gradient_y, ctypes.c_double),
     ), "bfft_vision_sobel_f64")
     return gradient_x, gradient_y
+
+
+def image_metrics_native(
+    reference, candidate, reference_mean, reference_variance,
+    reference_edge, kernel, *, threads=0,
+):
+    """Return fused exact JPEG terminal metrics, or ``None`` if unavailable."""
+    if _vision_image_metrics_f64 is None:
+        return None
+    arrays = [
+        np.ascontiguousarray(value, dtype=np.float64)
+        for value in (
+            reference, candidate, reference_mean, reference_variance,
+            reference_edge,
+        )
+    ]
+    ref, cand, mean, variance, edge = arrays
+    weights = np.ascontiguousarray(kernel, dtype=np.float64)
+    if ref.ndim != 3 or ref.shape[2] != 3 or cand.shape != ref.shape:
+        raise ValueError("reference and candidate must have matching HxWx3 shape")
+    if mean.shape != ref.shape or variance.shape != ref.shape:
+        raise ValueError("reference moments must match the RGB shape")
+    if edge.shape != (*ref.shape[:2], 2):
+        raise ValueError("reference edge must have shape HxWx2")
+    if weights.ndim != 1 or weights.size == 0 or weights.size % 2 != 1:
+        raise ValueError("metric kernel must be nonempty and odd")
+    height, width = ref.shape[:2]
+    scratch = np.empty((height, width, 9), dtype=np.float64)
+    metrics = np.empty(3, dtype=np.float64)
+    _check(_vision_image_metrics_f64(
+        height, width, weights.size, max(int(threads), 0),
+        _ptr(ref, ctypes.c_double), _ptr(cand, ctypes.c_double),
+        _ptr(mean, ctypes.c_double), _ptr(variance, ctypes.c_double),
+        _ptr(edge, ctypes.c_double), _ptr(weights, ctypes.c_double),
+        _ptr(scratch, ctypes.c_double), _ptr(metrics, ctypes.c_double),
+    ), "bfft_vision_image_metrics_f64")
+    return tuple(map(float, metrics))
 
 
 def binary_dilation_cross_native(mask, iterations, *, threads=0):

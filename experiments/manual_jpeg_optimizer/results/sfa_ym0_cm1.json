@@ -1,0 +1,52 @@
+{
+  "edge_psnr_db": 48.672503858972085,
+  "jpeg": {
+    "quality": 70,
+    "subsampling": 1
+  },
+  "output": "experiments/manual_jpeg_optimizer/results/sfa_ym0_cm1.jpg",
+  "output_bytes": 27133,
+  "preprocess": {
+    "chroma_projection": 0.35,
+    "phase_degrees": 0.0
+  },
+  "proof_boundary": "Global optimality covers the continuous signed-mass redistribution on the fixed spatial/frequency ownership graph. JPEG quantization is the measured projection.",
+  "psnr_db": 41.36136490522432,
+  "source": "experiments/manual_jpeg_optimizer/assets/istockphoto-508030340-612x612.jpg",
+  "source_bytes": 32530,
+  "spatial_frequency_dct_transport": {
+    "config": {
+      "cb_mobility": 1.0,
+      "cr_mobility": 1.0,
+      "cross_region_weight": 0.05,
+      "frequency_weight": 0.3,
+      "luma_mobility": 0.0,
+      "maximum_iterations": 500,
+      "tolerance": 1e-11,
+      "transport_lambda": 0.009
+    },
+    "edge_count": 744625,
+    "fidelity_energy": 3.605965282463514,
+    "flow_divergence_residual": 1.4132248366341416e-10,
+    "flow_hash": "173f26c09147b56195f718b90d63ce7e16d5291da0d579f6ef058e8a1e2651dc",
+    "frequency_edges": 248248,
+    "iterations": [
+      1,
+      7,
+      6,
+      1,
+      7,
+      6
+    ],
+    "kkt_residual": 1.413224814950098e-10,
+    "minimum_transported_mass": -1.7540759732827871e-15,
+    "negative_mass_error": 5.9117155615240335e-12,
+    "objective": 144.21438067062462,
+    "positive_mass_error": 1.3642420526593924e-11,
+    "proof": "Each signed constituent field is the unique global minimizer of a strictly convex block-graph transport relaxation. The reported edge-flow divergence reconstructs every ownership change, while positive and negative mass remain separately conserved.",
+    "rms_coefficient_displacement": 0.003539765480648241,
+    "smoothness_energy": 140.60841538816112,
+    "spatial_edges": 496377
+  },
+  "ssim": 0.9871085582646427
+}

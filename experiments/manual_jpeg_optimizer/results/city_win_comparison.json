@@ -1,0 +1,30 @@
+{
+  "candidate": {
+    "bytes": 217112,
+    "edge_psnr_db": 28.23479745971891,
+    "path": "experiments/manual_jpeg_optimizer/results/city_full_transport_win.jpg",
+    "psnr_db": 38.4263098662641,
+    "ssim": 0.9659688126256966
+  },
+  "checks": {
+    "higher_edge_psnr": true,
+    "higher_psnr": true,
+    "higher_ssim": true,
+    "smaller": true
+  },
+  "control": {
+    "bytes": 217219,
+    "edge_psnr_db": 27.891224471294258,
+    "path": "tinypng.jpg",
+    "psnr_db": 35.665052733766224,
+    "ssim": 0.953066229708983
+  },
+  "margin": {
+    "bytes": 107,
+    "edge_psnr_db": 0.34357298842465056,
+    "psnr_db": 2.7612571324978745,
+    "ssim": 0.012902582916713534
+  },
+  "reference": "city_image.jpg",
+  "strictly_dominates": true
+}
