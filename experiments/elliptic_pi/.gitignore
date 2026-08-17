@@ -1,0 +1,4 @@
+__pycache__/
+*.py[cod]
+/bfft_paired_convolution
+/elliptic_pi_cpp

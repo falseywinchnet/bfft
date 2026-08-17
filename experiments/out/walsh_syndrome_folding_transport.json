@@ -1,0 +1,199 @@
+{
+  "experiment": "cold_gaussian_syndrome_folding",
+  "source_width_before_exact_combine": 0.46294,
+  "target_width_after_exact_combine": 0.2367585779899883,
+  "dimensions": [
+    {
+      "dimension": 4,
+      "h": 2,
+      "chi_realized": 0.5,
+      "cutoff": 3,
+      "representative_cutoff": 2,
+      "target_width": 0.2367585779899883,
+      "required_action_budget_per_dimension": 0.026482844020023377,
+      "representative_norm2": [
+        0.0,
+        0.9689358763961,
+        1.5832228408400149,
+        1.0220755424464492
+      ],
+      "summary": {
+        "minimum_action": 0.027992059013493626,
+        "mean_action": 0.5301148108141588,
+        "maximum_action": 0.8317070284637884,
+        "maximum_minus_budget": 0.8052241844437651,
+        "maximum_target_boundary_mass": 2.439390925018766e-10,
+        "maximum_proposal_boundary_mass": 7.373627760172548e-06
+      },
+      "cosets": [
+        {
+          "j": 0,
+          "points": 441,
+          "log2_renyi2_mass_per_dimension": 0.027992059013493626,
+          "target_boundary_mass": 4.776988237906133e-13,
+          "proposal_boundary_mass": 7.059584264748035e-13
+        },
+        {
+          "j": 1,
+          "points": 588,
+          "log2_renyi2_mass_per_dimension": 0.49896094612697145,
+          "target_boundary_mass": 2.26798590803853e-11,
+          "proposal_boundary_mass": 4.980536750838491e-06
+        },
+        {
+          "j": 2,
+          "points": 784,
+          "log2_renyi2_mass_per_dimension": 0.8317070284637884,
+          "target_boundary_mass": 2.439390925018766e-10,
+          "proposal_boundary_mass": 7.373627760172548e-06
+        },
+        {
+          "j": 3,
+          "points": 588,
+          "log2_renyi2_mass_per_dimension": 0.7617992096523815,
+          "target_boundary_mass": 4.093745736275834e-12,
+          "proposal_boundary_mass": 2.3941078820449017e-06
+        }
+      ]
+    },
+    {
+      "dimension": 5,
+      "h": 2,
+      "chi_realized": 0.4,
+      "cutoff": 3,
+      "representative_cutoff": 2,
+      "target_width": 0.2367585779899883,
+      "required_action_budget_per_dimension": 0.026482844020023377,
+      "representative_norm2": [
+        0.0,
+        1.3633417147377584,
+        2.0247495390208825,
+        0.784103961416814
+      ],
+      "summary": {
+        "minimum_action": 0.10201581027965206,
+        "mean_action": 0.2651885200028576,
+        "maximum_action": 0.45984778920594815,
+        "maximum_minus_budget": 0.4333649451859248,
+        "maximum_target_boundary_mass": 3.854048483831068e-07,
+        "maximum_proposal_boundary_mass": 0.0004057756335748911
+      },
+      "cosets": [
+        {
+          "j": 0,
+          "points": 3591,
+          "log2_renyi2_mass_per_dimension": 0.10201581027965206,
+          "target_boundary_mass": 7.525946487388044e-08,
+          "proposal_boundary_mass": 0.00017197058611646067
+        },
+        {
+          "j": 1,
+          "points": 4788,
+          "log2_renyi2_mass_per_dimension": 0.309050357569466,
+          "target_boundary_mass": 1.31936231609113e-07,
+          "proposal_boundary_mass": 0.0001768493383446582
+        },
+        {
+          "j": 2,
+          "points": 4816,
+          "log2_renyi2_mass_per_dimension": 0.45984778920594815,
+          "target_boundary_mass": 3.854048483831068e-07,
+          "proposal_boundary_mass": 0.0004057756335748911
+        },
+        {
+          "j": 3,
+          "points": 3612,
+          "log2_renyi2_mass_per_dimension": 0.1898401229563641,
+          "target_boundary_mass": 2.6007229684878243e-07,
+          "proposal_boundary_mass": 0.00040089943054968165
+        }
+      ]
+    },
+    {
+      "dimension": 6,
+      "h": 3,
+      "chi_realized": 0.5,
+      "cutoff": 3,
+      "representative_cutoff": 2,
+      "target_width": 0.2367585779899883,
+      "required_action_budget_per_dimension": 0.026482844020023377,
+      "representative_norm2": [
+        0.0,
+        0.910139024735522,
+        3.2284930187832344,
+        2.393179676563324,
+        2.1257763135893732,
+        1.235499543286115,
+        1.3751729700471977,
+        2.190624057834844
+      ],
+      "summary": {
+        "minimum_action": 0.0716915510082457,
+        "mean_action": 0.37304817918301736,
+        "maximum_action": 0.7005409561776278,
+        "maximum_minus_budget": 0.6740581121576044,
+        "maximum_target_boundary_mass": 1.0009027594596721e-05,
+        "maximum_proposal_boundary_mass": 0.0009379956739483916
+      },
+      "cosets": [
+        {
+          "j": 0,
+          "points": 9261,
+          "log2_renyi2_mass_per_dimension": 0.0716915510082457,
+          "target_boundary_mass": 2.3180263919104213e-06,
+          "proposal_boundary_mass": 2.9575868255640416e-06
+        },
+        {
+          "j": 1,
+          "points": 12348,
+          "log2_renyi2_mass_per_dimension": 0.21957231509824746,
+          "target_boundary_mass": 3.724372517146018e-06,
+          "proposal_boundary_mass": 0.0008161069438237826
+        },
+        {
+          "j": 2,
+          "points": 21952,
+          "log2_renyi2_mass_per_dimension": 0.7005409561776278,
+          "target_boundary_mass": 1.0009027594596721e-05,
+          "proposal_boundary_mass": 0.0009379956739483916
+        },
+        {
+          "j": 3,
+          "points": 16464,
+          "log2_renyi2_mass_per_dimension": 0.4980606613839459,
+          "target_boundary_mass": 7.539268402023941e-06,
+          "proposal_boundary_mass": 0.00012497390046704762
+        },
+        {
+          "j": 4,
+          "points": 16464,
+          "log2_renyi2_mass_per_dimension": 0.49056098218182603,
+          "target_boundary_mass": 4.179352340013474e-06,
+          "proposal_boundary_mass": 0.0009010443638900564
+        },
+        {
+          "j": 5,
+          "points": 12348,
+          "log2_renyi2_mass_per_dimension": 0.31547962801298957,
+          "target_boundary_mass": 2.7303889578416295e-06,
+          "proposal_boundary_mass": 8.798291269661269e-05
+        },
+        {
+          "j": 6,
+          "points": 12348,
+          "log2_renyi2_mass_per_dimension": 0.25403464708977597,
+          "target_boundary_mass": 5.554171517323759e-06,
+          "proposal_boundary_mass": 3.996380621081429e-05
+        },
+        {
+          "j": 7,
+          "points": 16464,
+          "log2_renyi2_mass_per_dimension": 0.4344446925114803,
+          "target_boundary_mass": 7.922304472636038e-06,
+          "proposal_boundary_mass": 0.0008530404886793625
+        }
+      ]
+    }
+  ],
+  "interpretation": "An action below 1/2-2r would make exact cooling followed by syndrome folding compatible with a 2^(n/2+o(n)) recovery."
+}

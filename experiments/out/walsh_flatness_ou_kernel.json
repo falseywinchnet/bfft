@@ -1,0 +1,57 @@
+{
+  "experiment": "walsh_flatness_ou_kernel",
+  "frontier": {
+    "target_width": 0.23675858,
+    "gap_budget": 0.026482840000000007,
+    "cold_dgs_dual_mass_exponent": 0.47942769,
+    "target_scale_flatness_slack": 0.020399830000000008,
+    "cold_points_from_one_superlattice_batch_exponent": 0.02057231,
+    "required_effective_samples_exponent": 0.47351716,
+    "superlattice_batch_shortfall_exponent": 0.45294485
+  },
+  "cases": [
+    {
+      "dimension": 2,
+      "states": 40,
+      "cutoff": 4,
+      "s": 1.7,
+      "alpha": 0.35,
+      "proposal_width_ratio": 0.9367496997597597,
+      "maximum_quadratic_identity_error": 7.105427357601002e-15,
+      "row_stochastic_error": 2.220446049250313e-16,
+      "detailed_balance_error": 2.0816681711721685e-17,
+      "normalizer_relative_spread": 0.15898709548992618,
+      "minimum_off_diagonal_acceptance": 0.8628223764452534,
+      "absolute_spectral_gap": 0.5121718723395523
+    },
+    {
+      "dimension": 2,
+      "states": 40,
+      "cutoff": 4,
+      "s": 1.7,
+      "alpha": 0.7,
+      "proposal_width_ratio": 0.714142842854285,
+      "maximum_quadratic_identity_error": 1.4210854715202004e-14,
+      "row_stochastic_error": 0.0,
+      "detailed_balance_error": 6.938893903907228e-18,
+      "normalizer_relative_spread": 1.1545594425631203,
+      "minimum_off_diagonal_acceptance": 0.4641320077994106,
+      "absolute_spectral_gap": 0.052367014756271146
+    },
+    {
+      "dimension": 3,
+      "states": 62,
+      "cutoff": 2,
+      "s": 1.9,
+      "alpha": 0.5,
+      "proposal_width_ratio": 0.8660254037844386,
+      "maximum_quadratic_identity_error": 3.552713678800501e-15,
+      "row_stochastic_error": 2.220446049250313e-16,
+      "detailed_balance_error": 5.204170427930421e-18,
+      "normalizer_relative_spread": 0.01421290613262527,
+      "minimum_off_diagonal_acceptance": 0.9859862697006868,
+      "absolute_spectral_gap": 0.47462873312835396
+    }
+  ],
+  "interpretation": "The lattice OU Metropolis ratio is controlled solely by shifted theta normalizers and has healthy finite gaps when its proposal is available.  Its proposal width is strictly below the target width, so existing above-smoothing DGS does not implement the kernel."
+}

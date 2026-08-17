@@ -1,0 +1,1667 @@
+{
+  "experiment": "walsh_periodic_hessian_adversarial_search",
+  "dimension": 5,
+  "candidate_count": 24,
+  "probe_count": 64,
+  "smooth_t": 0.1,
+  "target_t": 0.23675858,
+  "observed_inheritance_failure_count": 2,
+  "rows": [
+    {
+      "candidate": 4,
+      "basis": [
+        [
+          0.12035295175870163,
+          -0.5341046640806434,
+          0.3506823189478522,
+          -0.2452808691062549,
+          0.8835919265355725
+        ],
+        [
+          0.281749372367945,
+          0.14611006720662395,
+          -0.6110574042394182,
+          1.1986204217038796,
+          1.226723888958455
+        ],
+        [
+          -0.33185588250491693,
+          0.87067444862542,
+          -0.26395122074422045,
+          -0.32772719324802957,
+          -0.05212409299614017
+        ],
+        [
+          -0.8631295505990363,
+          -0.12833104931290296,
+          0.5084385830669906,
+          -0.23036793705732245,
+          -0.5225117002839027
+        ],
+        [
+          -0.22585727861378563,
+          0.08900497834369177,
+          -1.1346494185664049,
+          0.09855849322107153,
+          0.14668717593482736
+        ]
+      ],
+      "basis_condition_number": 2.9121298071150274,
+      "shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "smooth_branch_count": 8,
+      "smooth_shortest_present": false,
+      "smooth_shortest_basin_fraction": 0.0,
+      "smooth_target_parity_present": false,
+      "smooth_target_parity_probe_fraction": 0.0,
+      "maximum_smooth_half_grid_error": 7.292386387948853e-08,
+      "target_branch_count": 15,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.015625,
+      "target_best_shortest_score_rank": 3,
+      "target_shortest_carried_from_smooth": false,
+      "transported_branch_count": 8,
+      "transported_shortest_present": false,
+      "observed_inheritance_failure": true,
+      "field_gradient_evaluations": 2987,
+      "adversarial_order_key": [
+        1,
+        1,
+        -0.015625,
+        3
+      ]
+    },
+    {
+      "candidate": 21,
+      "basis": [
+        [
+          -0.4355385827796465,
+          -0.9054315728048333,
+          0.42628261462069816,
+          -0.651998008014785,
+          0.061308901316145706
+        ],
+        [
+          -0.5776577840197833,
+          -0.8834345404312041,
+          -0.9328919337623783,
+          0.006162059258162216,
+          -0.07160034122872036
+        ],
+        [
+          -0.3385564962705336,
+          -0.14176973564424167,
+          0.5729923587439031,
+          1.591500706958255,
+          -0.7900632011663881
+        ],
+        [
+          -0.011365887938504616,
+          -0.5676595403343055,
+          -0.2820512024100991,
+          0.24171039665352953,
+          0.8429740487654637
+        ],
+        [
+          0.6015546050825643,
+          -0.7393493087519932,
+          0.073101863599506,
+          0.07102834857582202,
+          -0.16746816768943343
+        ]
+      ],
+      "basis_condition_number": 2.6380873948322203,
+      "shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "smooth_branch_count": 5,
+      "smooth_shortest_present": false,
+      "smooth_shortest_basin_fraction": 0.0,
+      "smooth_target_parity_present": false,
+      "smooth_target_parity_probe_fraction": 0.0,
+      "maximum_smooth_half_grid_error": 1.890874837289911e-07,
+      "target_branch_count": 8,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.046875,
+      "target_best_shortest_score_rank": 1,
+      "target_shortest_carried_from_smooth": false,
+      "transported_branch_count": 5,
+      "transported_shortest_present": false,
+      "observed_inheritance_failure": true,
+      "field_gradient_evaluations": 3496,
+      "adversarial_order_key": [
+        1,
+        1,
+        -0.046875,
+        1
+      ]
+    },
+    {
+      "candidate": 6,
+      "basis": [
+        [
+          -0.2041568884125767,
+          -0.4982637386814904,
+          -0.44988832847361926,
+          -0.9772259549076906,
+          0.2210190064437639
+        ],
+        [
+          -0.5896491955526111,
+          0.7647661350154344,
+          -1.0627293746449813,
+          -0.9451933321831975,
+          -0.4388423940193446
+        ],
+        [
+          0.05529042987558628,
+          -0.3730780469709986,
+          -0.1641688752034713,
+          1.4164371972816971,
+          0.5300590883866911
+        ],
+        [
+          -0.2491529208881576,
+          -0.4626607645292903,
+          -0.5095806276114756,
+          -0.21646920404867592,
+          -0.8256565073531423
+        ],
+        [
+          -0.7468295419249983,
+          0.13033528660838045,
+          0.0276549488819563,
+          -0.26829319314482764,
+          0.17488466450467202
+        ]
+      ],
+      "basis_condition_number": 3.93190604171172,
+      "shortest_coefficients": [
+        1,
+        0,
+        -1,
+        0,
+        0
+      ],
+      "smooth_branch_count": 7,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.0625,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.0625,
+      "maximum_smooth_half_grid_error": 7.418579585578572e-08,
+      "target_branch_count": 9,
+      "target_shortest_present": false,
+      "target_shortest_basin_fraction": 0.0,
+      "target_best_shortest_score_rank": null,
+      "target_shortest_carried_from_smooth": false,
+      "transported_branch_count": 7,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 3707,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.0,
+        10
+      ]
+    },
+    {
+      "candidate": 12,
+      "basis": [
+        [
+          -0.19252887400123697,
+          -0.23866817656435516,
+          0.26850408843131685,
+          -0.8811328405609656,
+          -0.3618116718976149
+        ],
+        [
+          -0.37498504738995553,
+          1.0474977021461302,
+          -0.304711968421731,
+          0.1961900436316803,
+          0.8725985172923106
+        ],
+        [
+          0.8011435803341449,
+          -0.1727628933684136,
+          -0.176482242158926,
+          -0.19607823410498684,
+          0.4239456303305666
+        ],
+        [
+          0.4938769839079352,
+          0.7297212923688097,
+          -0.1647383353959034,
+          -0.382400265894146,
+          -0.3007004408011648
+        ],
+        [
+          -0.07458815734099072,
+          -0.030657927661009967,
+          -0.8813463960610304,
+          0.4127423441561525,
+          -0.13396483810135185
+        ]
+      ],
+      "basis_condition_number": 3.067488982046665,
+      "shortest_coefficients": [
+        0,
+        0,
+        -1,
+        0,
+        0
+      ],
+      "smooth_branch_count": 7,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.03125,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.03125,
+      "maximum_smooth_half_grid_error": 3.651282576703605e-08,
+      "target_branch_count": 13,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.03125,
+      "target_best_shortest_score_rank": 5,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 7,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 3480,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.03125,
+        5
+      ]
+    },
+    {
+      "candidate": 23,
+      "basis": [
+        [
+          0.10974105923507739,
+          -0.13712702104302588,
+          -0.8965940651193294,
+          0.3539946610360173,
+          0.1299612231228485
+        ],
+        [
+          -0.5454508286833462,
+          -0.476593406769253,
+          0.11520079331386103,
+          0.33313354005821577,
+          -0.5897813782489811
+        ],
+        [
+          0.505625719012687,
+          0.7456501687796836,
+          0.6292325487187126,
+          0.27468473835330875,
+          -0.9845982659464861
+        ],
+        [
+          -0.652765848100554,
+          0.29642641340369075,
+          -0.2647567049594623,
+          0.600322672550874,
+          -0.46799288549497037
+        ],
+        [
+          0.09316476390289159,
+          0.5541290446194558,
+          0.09211473844665244,
+          -0.6799197311795583,
+          -1.1114559070217975
+        ]
+      ],
+      "basis_condition_number": 3.9994664187427507,
+      "shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "smooth_branch_count": 7,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.0625,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.0625,
+      "maximum_smooth_half_grid_error": 1.8258899301775164e-07,
+      "target_branch_count": 14,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.046875,
+      "target_best_shortest_score_rank": 10,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 7,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 3116,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.046875,
+        10
+      ]
+    },
+    {
+      "candidate": 14,
+      "basis": [
+        [
+          -0.3282868582902953,
+          0.3520217791187572,
+          -0.6058246412658185,
+          -0.4352708642138815,
+          -0.48696077279860744
+        ],
+        [
+          0.06878711314161677,
+          1.0075994767034597,
+          -0.009089860514760588,
+          -0.08370439488173126,
+          0.7295529905444756
+        ],
+        [
+          -0.5315835063600104,
+          -0.650291317764134,
+          0.11898751486023394,
+          -0.6295456074538636,
+          0.3731255781469231
+        ],
+        [
+          -0.20403383020217397,
+          0.004743878988965009,
+          0.9996112790887622,
+          0.21316125142046388,
+          -0.7015157915772894
+        ],
+        [
+          0.9127257783165654,
+          0.17909985363499378,
+          0.22830087436077434,
+          -0.6014710783341055,
+          -0.4857130676336408
+        ]
+      ],
+      "basis_condition_number": 1.8430961902225727,
+      "shortest_coefficients": [
+        0,
+        0,
+        0,
+        -1,
+        0
+      ],
+      "smooth_branch_count": 9,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.046875,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.046875,
+      "maximum_smooth_half_grid_error": 1.829866822773834e-07,
+      "target_branch_count": 10,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.046875,
+      "target_best_shortest_score_rank": 3,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 8,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 2675,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.046875,
+        3
+      ]
+    },
+    {
+      "candidate": 10,
+      "basis": [
+        [
+          0.31414101689285046,
+          -0.45173295001502456,
+          0.029643583741171108,
+          0.5611410541068869,
+          1.2394295078843114
+        ],
+        [
+          0.6092672284880796,
+          0.7166284625501649,
+          -0.7501748732261471,
+          -0.3227058705804441,
+          -0.40844876874033903
+        ],
+        [
+          0.19499848111557164,
+          -0.8791423625643521,
+          0.9160141689358859,
+          -0.72380200564641,
+          0.6814303346062918
+        ],
+        [
+          -0.4804229083653517,
+          1.0396729999829624,
+          -0.1875646784139953,
+          -0.38056438845234447,
+          0.18157409907741848
+        ],
+        [
+          -0.5111538782757857,
+          -0.1389378838969157,
+          -0.995875416236811,
+          -0.37066296238033364,
+          -0.12269147309060881
+        ]
+      ],
+      "basis_condition_number": 2.4861262167823575,
+      "shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "smooth_branch_count": 8,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.015625,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.015625,
+      "maximum_smooth_half_grid_error": 2.3571841634166864e-08,
+      "target_branch_count": 9,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.046875,
+      "target_best_shortest_score_rank": 2,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 8,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 2808,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.046875,
+        2
+      ]
+    },
+    {
+      "candidate": 22,
+      "basis": [
+        [
+          0.8329877676969056,
+          -0.03822673113668187,
+          0.6327752986127716,
+          0.08670965629730733,
+          0.7881046619371929
+        ],
+        [
+          -1.0472179557685313,
+          -0.7560135703040419,
+          0.0298919343494458,
+          -1.020248797191918,
+          0.2518512412576209
+        ],
+        [
+          -0.43642041508593793,
+          -0.2724267752391195,
+          -0.01611675623652174,
+          0.5100132212506624,
+          0.23824392970888586
+        ],
+        [
+          0.35239244356610816,
+          -0.8988862594856573,
+          0.2655278806694232,
+          -0.05684198397167926,
+          -0.11759325539628167
+        ],
+        [
+          -0.3933409130881535,
+          0.8916503251422015,
+          0.7265927941302358,
+          -0.32138433684132917,
+          -1.4827597576955134
+        ]
+      ],
+      "basis_condition_number": 3.504374903366842,
+      "shortest_coefficients": [
+        0,
+        0,
+        -1,
+        0,
+        0
+      ],
+      "smooth_branch_count": 7,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.03125,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.03125,
+      "maximum_smooth_half_grid_error": 3.7974501089236996e-08,
+      "target_branch_count": 11,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.046875,
+      "target_best_shortest_score_rank": 2,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 7,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 3608,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.046875,
+        2
+      ]
+    },
+    {
+      "candidate": 15,
+      "basis": [
+        [
+          0.21627037972954,
+          -0.04988383243815752,
+          -0.7606254664667129,
+          1.2582991885981423,
+          -0.2707529701073913
+        ],
+        [
+          0.4313472559587758,
+          -0.3639379658302835,
+          -0.8427327599484786,
+          -0.19971391766770025,
+          0.2605289028651126
+        ],
+        [
+          0.4553487808499368,
+          -0.3697574818140742,
+          0.12117338548216257,
+          0.3227677948420132,
+          0.6120734854351677
+        ],
+        [
+          -0.8657216398585199,
+          -0.8980628517937391,
+          0.3621196568042156,
+          -0.5228767891044523,
+          -0.24025141073465872
+        ],
+        [
+          0.3767594886601093,
+          -0.1936005955492757,
+          0.09849143558971395,
+          -0.5597085011680434,
+          -0.6530412146389987
+        ]
+      ],
+      "basis_condition_number": 3.081812952388186,
+      "shortest_coefficients": [
+        0,
+        0,
+        0,
+        0,
+        -1
+      ],
+      "smooth_branch_count": 7,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.078125,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.078125,
+      "maximum_smooth_half_grid_error": 8.501472429561503e-08,
+      "target_branch_count": 13,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.046875,
+      "target_best_shortest_score_rank": 1,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 7,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 3029,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.046875,
+        1
+      ]
+    },
+    {
+      "candidate": 0,
+      "basis": [
+        [
+          -1.1204881689785482,
+          -0.652486113700137,
+          0.4047497287443146,
+          -0.08832776655110855,
+          0.295221984951851
+        ],
+        [
+          0.13874344904095903,
+          0.5967589051124359,
+          0.8122987816172109,
+          0.06592109566703046,
+          -1.0906253506655967
+        ],
+        [
+          -1.0270883854023019,
+          0.378083134688857,
+          0.01195896994850425,
+          -0.16390109569759,
+          0.3661954071175202
+        ],
+        [
+          -0.6046339792567084,
+          -0.5687126451239757,
+          -0.9384693633760459,
+          -0.6055304656090551,
+          0.46716071932394876
+        ],
+        [
+          -0.39800553069786504,
+          -0.21942731810845512,
+          -0.5132228437534436,
+          0.9025322320205122,
+          -0.03393987558341487
+        ]
+      ],
+      "basis_condition_number": 3.700760779702246,
+      "shortest_coefficients": [
+        0,
+        -1,
+        0,
+        0,
+        -1
+      ],
+      "smooth_branch_count": 6,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.03125,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.03125,
+      "maximum_smooth_half_grid_error": 6.262335855650003e-08,
+      "target_branch_count": 12,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.0625,
+      "target_best_shortest_score_rank": 4,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 6,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 3799,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.0625,
+        4
+      ]
+    },
+    {
+      "candidate": 2,
+      "basis": [
+        [
+          0.6986250808534962,
+          -0.2541453242556144,
+          0.3046917562348307,
+          -0.1676836512300684,
+          -0.8057082151928816
+        ],
+        [
+          -0.304047932757601,
+          -0.6300505462640411,
+          -0.4439470598051815,
+          -0.60707929744769,
+          0.029014529397569454
+        ],
+        [
+          -0.09403303572224397,
+          -0.024431929751852318,
+          -0.7806693058783647,
+          0.623734014102777,
+          -0.5063567286237013
+        ],
+        [
+          0.42749516480179006,
+          -0.7869227863317182,
+          -0.10066255336890498,
+          0.3389234539652674,
+          0.9071950384642958
+        ],
+        [
+          0.47737147301888994,
+          0.4777699450505138,
+          -0.8161993118196317,
+          -0.3435109290225175,
+          0.26409700255974955
+        ]
+      ],
+      "basis_condition_number": 1.4807036881574027,
+      "shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "smooth_branch_count": 5,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.0625,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.0625,
+      "maximum_smooth_half_grid_error": 2.6447687318133302e-08,
+      "target_branch_count": 6,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.0625,
+      "target_best_shortest_score_rank": 4,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 5,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 2729,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.0625,
+        4
+      ]
+    },
+    {
+      "candidate": 7,
+      "basis": [
+        [
+          -0.1470964489892369,
+          0.45002109083225844,
+          -0.25525853356419315,
+          0.5553154768360768,
+          0.8778877775497399
+        ],
+        [
+          -0.2753006192269532,
+          0.12638374780496803,
+          -0.567364053541902,
+          -0.7040607070366184,
+          1.136044294142327
+        ],
+        [
+          -0.14340083240010387,
+          0.8808346669531866,
+          0.44769730677522784,
+          -0.5154065256202897,
+          -0.15222203613112406
+        ],
+        [
+          -1.0720288649090666,
+          0.06051471264492686,
+          -0.6058195510477538,
+          -0.16194077546159086,
+          -0.09812562075229837
+        ],
+        [
+          -0.4191142411571711,
+          -0.04445700331652214,
+          0.618643347724744,
+          0.005075997943313078,
+          0.4565634623147509
+        ]
+      ],
+      "basis_condition_number": 2.3566200369179517,
+      "shortest_coefficients": [
+        0,
+        -1,
+        0,
+        0,
+        0
+      ],
+      "smooth_branch_count": 7,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.03125,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.03125,
+      "maximum_smooth_half_grid_error": 1.0635574767245787e-07,
+      "target_branch_count": 10,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.0625,
+      "target_best_shortest_score_rank": 4,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 7,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 3358,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.0625,
+        4
+      ]
+    },
+    {
+      "candidate": 11,
+      "basis": [
+        [
+          0.4815051125193521,
+          -0.6273451468363744,
+          0.5661056784841125,
+          0.018360403637549195,
+          -0.4946775853116494
+        ],
+        [
+          1.0933362447569968,
+          0.948227147691413,
+          0.10124546456353803,
+          -0.1391637909628326,
+          0.4721805706785759
+        ],
+        [
+          0.3348686257696419,
+          -0.31466529666413695,
+          -1.094404810541158,
+          -0.00637487431417888,
+          -0.47100216446889587
+        ],
+        [
+          -0.13823929360906195,
+          0.2756985092089255,
+          0.1628101033209136,
+          0.7487451297657115,
+          -0.5181775019085841
+        ],
+        [
+          0.05300870724286903,
+          0.5464185111221388,
+          0.2055688739522549,
+          -0.6477935060593966,
+          -0.8395673966661918
+        ]
+      ],
+      "basis_condition_number": 1.7383243612015382,
+      "shortest_coefficients": [
+        0,
+        0,
+        0,
+        -1,
+        0
+      ],
+      "smooth_branch_count": 6,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.03125,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.03125,
+      "maximum_smooth_half_grid_error": 2.6328151518016615e-08,
+      "target_branch_count": 6,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.0625,
+      "target_best_shortest_score_rank": 3,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 6,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 2839,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.0625,
+        3
+      ]
+    },
+    {
+      "candidate": 13,
+      "basis": [
+        [
+          0.4787483871461727,
+          0.4024129852745868,
+          -0.43589964986824753,
+          0.07090187218188378,
+          0.11965903220294079
+        ],
+        [
+          0.03885614097656233,
+          -0.5973283621251907,
+          -0.7753950623415662,
+          -0.3707661144110822,
+          -0.306477627552532
+        ],
+        [
+          -0.08255120355589773,
+          0.09979799084882195,
+          -0.2625299542496534,
+          0.7136243372544543,
+          -1.2609780366965349
+        ],
+        [
+          1.0208392231880719,
+          -0.7053769621363202,
+          0.2172954696549908,
+          0.19900223660401042,
+          0.5513734291103761
+        ],
+        [
+          -0.7708931465322056,
+          -0.3028997826087781,
+          -0.3043266247474082,
+          0.7771946107023784,
+          0.35744940757448557
+        ]
+      ],
+      "basis_condition_number": 2.4073222363002738,
+      "shortest_coefficients": [
+        0,
+        0,
+        -1,
+        0,
+        0
+      ],
+      "smooth_branch_count": 6,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.015625,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.015625,
+      "maximum_smooth_half_grid_error": 2.1602148309785836e-07,
+      "target_branch_count": 8,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.0625,
+      "target_best_shortest_score_rank": 3,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 6,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 3227,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.0625,
+        3
+      ]
+    },
+    {
+      "candidate": 16,
+      "basis": [
+        [
+          -1.1179383270540069,
+          0.6062240584276796,
+          1.0659563068035307,
+          0.0751045999157638,
+          0.3939259636680963
+        ],
+        [
+          -0.44695597849492974,
+          -0.017072500616868224,
+          0.0747758825634591,
+          -0.522444460186813,
+          -0.3460649145776895
+        ],
+        [
+          0.4024783408861721,
+          -0.6736780171780831,
+          -0.37281252106064017,
+          0.5055125733050475,
+          -0.6181429447562884
+        ],
+        [
+          -0.30674446457176263,
+          -0.12133510575719424,
+          0.7939668473742431,
+          -0.6071200324684423,
+          0.6145005554973377
+        ],
+        [
+          0.07036736808503427,
+          0.7890264858882982,
+          0.8862554043117314,
+          -0.3118868216158372,
+          0.014011706403129067
+        ]
+      ],
+      "basis_condition_number": 4.115442735793514,
+      "shortest_coefficients": [
+        0,
+        0,
+        0,
+        -1,
+        0
+      ],
+      "smooth_branch_count": 5,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.046875,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.046875,
+      "maximum_smooth_half_grid_error": 8.065924286549086e-07,
+      "target_branch_count": 17,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.078125,
+      "target_best_shortest_score_rank": 4,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 5,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 3222,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.078125,
+        4
+      ]
+    },
+    {
+      "candidate": 1,
+      "basis": [
+        [
+          0.276025052609296,
+          -0.7861719230537105,
+          0.3638065476564296,
+          -0.2734837260375965,
+          0.6507500473771209
+        ],
+        [
+          0.9772635037614189,
+          0.15128612581382672,
+          0.8272694347874636,
+          -0.47231087366390423,
+          0.1629527812652234
+        ],
+        [
+          0.22718223324677936,
+          -0.2557972768986654,
+          0.04522333827440289,
+          0.8039167273212525,
+          -0.09968393130021488
+        ],
+        [
+          0.4110657344414116,
+          -0.8690980962082164,
+          -0.06240928768211958,
+          0.0316268866387255,
+          -0.7989704914416597
+        ],
+        [
+          0.9251335910762056,
+          0.07034239059831798,
+          -1.1288203720213597,
+          0.2341937782821323,
+          -0.4575826143126246
+        ]
+      ],
+      "basis_condition_number": 2.3599398356723458,
+      "shortest_coefficients": [
+        0,
+        0,
+        0,
+        -1,
+        0
+      ],
+      "smooth_branch_count": 8,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.03125,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.03125,
+      "maximum_smooth_half_grid_error": 3.1818321335720276e-07,
+      "target_branch_count": 9,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.078125,
+      "target_best_shortest_score_rank": 2,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 8,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 3331,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.078125,
+        2
+      ]
+    },
+    {
+      "candidate": 17,
+      "basis": [
+        [
+          0.022359066171423324,
+          -0.5694533749739917,
+          -0.2098196812162353,
+          -0.9644761530627547,
+          1.374207489779415
+        ],
+        [
+          0.7876619533564686,
+          0.9350174006109033,
+          -0.376522766873163,
+          -0.29551154749723,
+          -0.3228191897908686
+        ],
+        [
+          0.0565654010305212,
+          -0.5099761825469387,
+          -0.2624932318038457,
+          0.555961660928268,
+          0.550053859379354
+        ],
+        [
+          0.4607110687922413,
+          -0.2767784080914474,
+          -0.6586074679146335,
+          -1.1014169174864508,
+          -0.7510207590199308
+        ],
+        [
+          -0.40451747291455925,
+          0.6491176015689225,
+          -0.7794390897628425,
+          -0.5441685860533767,
+          0.4480237004993354
+        ]
+      ],
+      "basis_condition_number": 2.919154750526199,
+      "shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "smooth_branch_count": 7,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.0625,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.0625,
+      "maximum_smooth_half_grid_error": 5.209499177813267e-08,
+      "target_branch_count": 9,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.109375,
+      "target_best_shortest_score_rank": 3,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 7,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 3236,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.109375,
+        3
+      ]
+    },
+    {
+      "candidate": 9,
+      "basis": [
+        [
+          0.21906953676208854,
+          -0.6069920026853963,
+          0.13344667209298977,
+          1.0050123905759387,
+          0.35827094601163356
+        ],
+        [
+          -0.5555220135489594,
+          -0.5305194979696375,
+          -0.6355539031452568,
+          0.4477893010962919,
+          -0.06464608430824081
+        ],
+        [
+          -0.04821109666065447,
+          0.5039859150933788,
+          0.21093298360925983,
+          0.29313850159448906,
+          -0.8218523795204766
+        ],
+        [
+          0.44121423058245307,
+          0.533785852363796,
+          -0.6480125125613352,
+          0.13230497669294186,
+          0.07663268777753265
+        ],
+        [
+          0.9517951050781553,
+          0.21561480032483446,
+          -0.3374170740993652,
+          -0.9192705595805227,
+          -0.8645405581185223
+        ]
+      ],
+      "basis_condition_number": 2.561254591014912,
+      "shortest_coefficients": [
+        0,
+        0,
+        -1,
+        0,
+        0
+      ],
+      "smooth_branch_count": 8,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.109375,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.109375,
+      "maximum_smooth_half_grid_error": 9.265816798771542e-08,
+      "target_branch_count": 11,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.140625,
+      "target_best_shortest_score_rank": 1,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 8,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 2660,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.140625,
+        1
+      ]
+    },
+    {
+      "candidate": 5,
+      "basis": [
+        [
+          -0.4931983306746159,
+          0.12036413615497037,
+          1.2851675624611658,
+          -0.572181806102435,
+          0.03420188558252852
+        ],
+        [
+          -1.4869779729100705,
+          0.3034226811294096,
+          -0.34103856288405515,
+          0.05448349070702716,
+          0.3246325423807971
+        ],
+        [
+          -0.23923967802459595,
+          0.20260446670717563,
+          -0.2905433635595807,
+          -0.2280909778328041,
+          -0.9909650303599683
+        ],
+        [
+          -0.4786441445575597,
+          -0.5850044673409324,
+          -0.7579154777260596,
+          -1.239001052197042,
+          0.502845167534282
+        ],
+        [
+          0.3265730782776125,
+          0.7142607049007815,
+          0.3669324239589285,
+          -0.4256961860423239,
+          0.7188409671193869
+        ]
+      ],
+      "basis_condition_number": 2.500329058020727,
+      "shortest_coefficients": [
+        0,
+        -1,
+        0,
+        0,
+        0
+      ],
+      "smooth_branch_count": 8,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.0625,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.0625,
+      "maximum_smooth_half_grid_error": 2.3386962814726274e-08,
+      "target_branch_count": 7,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.15625,
+      "target_best_shortest_score_rank": 1,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 8,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 3096,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.15625,
+        1
+      ]
+    },
+    {
+      "candidate": 8,
+      "basis": [
+        [
+          -0.635461404037318,
+          0.24253524681223027,
+          1.0848460991364983,
+          0.7891103122388594,
+          -0.03534162163786628
+        ],
+        [
+          0.0007002365526353791,
+          0.02126024694475017,
+          -0.032978038331311764,
+          0.09340502163453869,
+          0.9904454076911884
+        ],
+        [
+          1.0313047348974693,
+          -0.7564963277816158,
+          -0.3335381754267184,
+          -0.1679564499555497,
+          -0.2130134761247596
+        ],
+        [
+          0.18578860711423778,
+          -0.5572679162338452,
+          1.6785059778756877,
+          -0.5310507555572238,
+          -0.4440050212822344
+        ],
+        [
+          -1.0744893521124679,
+          -0.9206675090588791,
+          -0.602455217762137,
+          -0.24157016163461056,
+          -0.11866417035230467
+        ]
+      ],
+      "basis_condition_number": 3.4357127342952403,
+      "shortest_coefficients": [
+        0,
+        0,
+        0,
+        -1,
+        0
+      ],
+      "smooth_branch_count": 5,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.03125,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.03125,
+      "maximum_smooth_half_grid_error": 2.602408382415456e-07,
+      "target_branch_count": 10,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.1875,
+      "target_best_shortest_score_rank": 3,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 4,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 4366,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.1875,
+        3
+      ]
+    },
+    {
+      "candidate": 3,
+      "basis": [
+        [
+          0.09456738710335788,
+          -0.10206361433415151,
+          0.4990739666288074,
+          0.409707870468043,
+          -0.5150993886835307
+        ],
+        [
+          0.6272061277852683,
+          0.007855153390506256,
+          0.9382482668005425,
+          -0.6321792839300164,
+          0.16996003437063661
+        ],
+        [
+          -0.17025671015072924,
+          -0.15478586604769806,
+          0.19832352785363655,
+          -0.9989322595467786,
+          -0.6210229169500785
+        ],
+        [
+          -0.741474036936251,
+          -0.034216137848983384,
+          0.08856774441850182,
+          -0.47055955081203366,
+          0.403671839366524
+        ],
+        [
+          0.8023591185851546,
+          -1.087039888631068,
+          1.0853279221375172,
+          -0.31351160724114374,
+          0.39644140704503644
+        ]
+      ],
+      "basis_condition_number": 3.9309389961822663,
+      "shortest_coefficients": [
+        0,
+        0,
+        0,
+        0,
+        -1
+      ],
+      "smooth_branch_count": 7,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.109375,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.109375,
+      "maximum_smooth_half_grid_error": 2.2770099138226407e-08,
+      "target_branch_count": 13,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.21875,
+      "target_best_shortest_score_rank": 2,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 7,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 3082,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.21875,
+        2
+      ]
+    },
+    {
+      "candidate": 20,
+      "basis": [
+        [
+          0.2993629619205704,
+          0.4306877872400737,
+          -0.8333694432980637,
+          0.3411946953710358,
+          -0.9192821391969555
+        ],
+        [
+          -0.6222993279688858,
+          0.5533520972139501,
+          1.2374777869914324,
+          0.5578021360860637,
+          0.0877116629444088
+        ],
+        [
+          0.6257276623124101,
+          0.2227609334821695,
+          0.7360268700539817,
+          -0.40824503800483064,
+          -1.0173887429869415
+        ],
+        [
+          0.5904623247999745,
+          0.6445634927262583,
+          -0.47748136750931747,
+          0.6731124664574426,
+          0.41595478303441696
+        ],
+        [
+          -0.04289960658593092,
+          0.20790612494549363,
+          0.07659700532479058,
+          -1.5000676537991608,
+          0.4265198278278169
+        ]
+      ],
+      "basis_condition_number": 3.0228631865655307,
+      "shortest_coefficients": [
+        0,
+        -1,
+        0,
+        0,
+        0
+      ],
+      "smooth_branch_count": 7,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.046875,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.046875,
+      "maximum_smooth_half_grid_error": 9.64435388874628e-08,
+      "target_branch_count": 9,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.34375,
+      "target_best_shortest_score_rank": 2,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 6,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 3681,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.34375,
+        2
+      ]
+    },
+    {
+      "candidate": 18,
+      "basis": [
+        [
+          0.6448823616256572,
+          0.8996524900835811,
+          -0.15065528573464737,
+          -0.054593695373500034,
+          -0.08958358706981666
+        ],
+        [
+          0.4657602231133987,
+          0.046789960249983935,
+          -0.9429522831952577,
+          1.0820826162640598,
+          -0.7765803117038352
+        ],
+        [
+          -0.14323971585776674,
+          -0.4414046471567661,
+          0.06698740432701038,
+          -1.1195620543245983,
+          1.73284194937773
+        ],
+        [
+          0.40612167641865665,
+          0.942742894868076,
+          -0.26145293503917094,
+          0.7195434993543628,
+          1.5354099409274653
+        ],
+        [
+          1.2906832864798086,
+          0.5110062044953726,
+          0.12368923525511444,
+          0.8801894035367029,
+          0.6069860806030578
+        ]
+      ],
+      "basis_condition_number": 3.9083837082546173,
+      "shortest_coefficients": [
+        0,
+        0,
+        -1,
+        0,
+        0
+      ],
+      "smooth_branch_count": 5,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.046875,
+      "smooth_target_parity_present": true,
+      "smooth_target_parity_probe_fraction": 0.046875,
+      "maximum_smooth_half_grid_error": 7.471541742566296e-08,
+      "target_branch_count": 11,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.390625,
+      "target_best_shortest_score_rank": 2,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 5,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 3884,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.390625,
+        2
+      ]
+    },
+    {
+      "candidate": 19,
+      "basis": [
+        [
+          -1.391877808814632,
+          0.8216493249643237,
+          0.35051481575394344,
+          -1.0751138046877906,
+          0.0417536653856177
+        ],
+        [
+          0.41229302604968865,
+          -0.7934720917238454,
+          -0.6332446016269017,
+          -1.2830799604675638,
+          -0.10715637709342142
+        ],
+        [
+          0.7521171746371745,
+          0.4231290293933259,
+          0.032548670601545156,
+          0.21324633720073985,
+          -0.8927842661068506
+        ],
+        [
+          2.1370707614752495,
+          0.5836602841495914,
+          -0.12939724688492338,
+          -0.07001325649614758,
+          0.0838174712320034
+        ],
+        [
+          0.13320315519522571,
+          0.5536082597097852,
+          -2.4977843954704047,
+          -0.6649277898010765,
+          0.42741669127843246
+        ]
+      ],
+      "basis_condition_number": 3.464202351986434,
+      "shortest_coefficients": [
+        0,
+        0,
+        0,
+        0,
+        -1
+      ],
+      "smooth_branch_count": 7,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.140625,
+      "smooth_target_parity_present": false,
+      "smooth_target_parity_probe_fraction": 0.0,
+      "maximum_smooth_half_grid_error": 0.23888020604116647,
+      "target_branch_count": 9,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.78125,
+      "target_best_shortest_score_rank": 1,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 7,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 4083,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.78125,
+        1
+      ]
+    }
+  ]
+}

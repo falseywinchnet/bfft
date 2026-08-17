@@ -1,0 +1,2045 @@
+\documentclass[10pt]{article}
+
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\setlength{\emergencystretch}{1em}
+\hypersetup{
+  pdftitle={Solving the Shortest Vector Problem in half-exponential Time via Mid-point Hessian: Exact transport escapes and a response-floor obstruction},
+  pdfauthor={Anonymous author}
+}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{hypothesis}[theorem]{Hypothesis}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prb}{\mathop{\rm Pr}}
+\newcommand{\tr}{\mathop{\rm tr}}
+\newcommand{\op}{\mathrm{op}}
+\newcommand{\poly}{\mathrm{poly}}
+\newcommand{\negl}{\mathrm{negl}}
+\newcommand{\SVP}{\textnormal{\textsc{SVP}}}
+\newcommand{\BDD}{\textnormal{\textsc{BDD}}}
+\newcommand{\DGS}{\textnormal{\textsc{DGS}}}
+\newcommand{\CVP}{\textnormal{\textsc{CVP}}}
+\newcommand{\Haar}{\mathrm{Haar}}
+\newcommand{\Torus}{\R^n/L}
+\newcommand{\ip}[2]{\langle #1,#2\rangle}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\abs}[1]{\lvert #1\rvert}
+\newcommand{\rhoo}{\rho}
+\newcommand{\what}{\widehat}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cG}{\mathcal{G}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\cE}{\mathcal{E}}
+
+\title{Solving the Shortest Vector Problem in
+$2^{0.5n+o(n)}$ Time\\via Mid-point Hessian\\
+\large Exact transport escapes and a response-floor obstruction}
+\author{Anonymous author\\[2mm]
+\small Draft response to Hhan's mid-point Hessian algorithm}
+\date{August 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Hhan recently gave a randomized algorithm for exact shortest vector problem
+running in time $2^{0.6039n+o(n)}$ and space $2^{0.5n+o(n)}$.  Its endpoint is
+a geometric fact about the Hessian of the periodic Gaussian: at the midpoint
+of a shortest vector, an extreme eigenvector points toward that shortest
+vector and can be completed by preprocessing bounded distance decoding.
+
+We study the information available before the Walsh--Hadamard search over the
+$2^n$ parity midpoints.  A single panel of full-dual discrete Gaussian
+samples gives the traceless periodic Hessian, and its first two derivatives,
+at every point of the continuous torus.  We prove an exact half-grid
+stationarity and snapping lemma, a bounded narrowing-importance identity,
+and a uniform empirical derivative theorem using
+$2^{(0.4002+o(1))n}$ samples at a rigorously controlled smooth scale.  A
+log-trace-exponential objective removes every eigengap assumption from the
+ascent vector field.  These results give a black-box reduction: any robust,
+samplable ascent law reaching a shortest-vector parity with probability
+$2^{-o(n)}$ yields a half-exponential algorithm.
+
+We then resolve the proposed universal Haar-seeded law negatively.  For the
+rectangular family
+$L_n=\operatorname{diag}(1,2^n,\ldots,2^n)\Z^n$, the correct single scale is
+$\Theta(n^{-1/2})$.  Outside exponentially small coordinate slabs, every
+third derivative driving soft-Hessian ascent is
+$\exp(-\Omega(n4^n))$.  Hence any polynomial-step schedule of polynomial bit
+complexity leaves almost every Haar seed in its initial parity cell.  The
+shortest parity is reached with probability at most $2^{-n+1}$, and the
+robust basin is no larger.  This disproves the manuscript's former
+Conjecture~13.1.  We then give exact lattice-adapted repairs.  Short dual
+vectors impose syndrome-zero equations on every shortest parity; the
+coefficient ellipsoid gives Hamming and spectral-tube covers; bounded
+coefficient energy admits exact generalized-distributive-law elimination;
+and an obtuse superbase reduces \(\SVP\) to one global minimum cut.  The last
+clause shows that the all-ones cancellation fan is submodular, rather than a
+genuine hard core.
+
+For the surviving geometry we prove a causal transport formula.  An
+infinitesimal isotropic displacement of a uniform point modulo the lattice
+crosses a facet of parity \(\theta\) at rate proportional to that facet's
+area.  The associated cone-volume weights form an exact isotropic frame, and
+every shortest facet retains a constant-area robust core with explicit
+inverse-polynomial reach and energy margin.  A separate gap theorem gives a
+direct spherical winner cap.  These statements reduce the unresolved case
+to a joint core in which every known cover, factor elimination, and
+submodular escape is expensive; the remaining geometric obligation is a
+lower bound on shortest direct mass plus shortest cone-volume mass.
+
+We then prove that this geometric obligation would still not complete the
+proposed empirical line scan.  Hhan's weighted shell estimate suppresses the
+non-colliding theta tail on a homothetic facet core only when the retained
+area is exponentially smaller than required.  More decisively, at every
+tail-suppressed point whose theta response lies above the sampling noise
+floor, the tangential displacement from the midpoint is confined to an
+explicit Euclidean ball.  Even if all \(2^{n/2+o(n)}\) samples are spent on
+one query, that ball contains at most \(2^{-(1.0289+o(1))n}\) of a shortest
+facet.  Retaining \(2^{-(0.0264828+o(1))n}\) would require sample exponent at
+least \(0.61169\ldots\).  Thus polynomial weighted-tail suppression and a
+sufficient empirical theta-response floor cannot coexist on enough of the
+robust facet core within the half-exponential budget.
+
+Independently of that hypothesis, we transfer the moving-stabilizer
+spherical-code bound of \cite{OpenAI26} through Hhan's shell estimates.  Its
+one-row subfamily gives exponent $0.602470$, subject to the cited theorem and
+a one-dimensional numerical enclosure.  Thus the note contains both a
+checkable update of Hhan's parameter ledger and a conditional route to the
+half exponent.
+
+Conditioned on a replacement shortest-parity basin hypothesis for an
+adapted law with directly observable endpoints, we obtain a randomized
+classical algorithm for search-$\SVP$ in expected time and worst-case space
+$2^{0.5n+o(n)}$, up to polynomial factors in the input length.  More
+generally, an attraction probability $2^{-(\delta+o(1))n}$ suffices for every
+$\delta<0.02648$.  Thus the note does not prove an unconditional
+half-exponent algorithm: it proves the analytic reduction, refutes the first
+universal candidate, and proves that the natural log-theta line detector
+cannot repair that candidate at the desired exponent.  The surviving target
+must control response-weighted shortest collisions or use a different
+nonlocal estimator; direct-plus-cone mass alone is insufficient.
+\end{abstract}
+
+\medskip
+\noindent\textbf{AI use disclosure.}
+The technical route, finite experiments, and initial manuscript draft were
+developed with substantial assistance from OpenAI Codex.  Every theorem
+whose proof is complete is separated from the explicitly labeled geometric
+hypothesis.  The human author of any circulated version is responsible for
+checking the arguments, replacing the author placeholder, and deciding which
+claims are suitable for dissemination.
+
+\tableofcontents
+
+\section{Introduction}
+
+Let $L=L(B)\subset\R^n$ be a full-rank lattice.  The search shortest vector
+problem asks for a nonzero $v\in L$ of norm $\lambda_1(L)$.  The best
+previously proved general classical algorithm ran in $2^{n+o(n)}$ time and
+space through discrete Gaussian sampling \cite{ADRS15}.  Hhan's recent
+mid-point Hessian algorithm \cite{Hhan26} reduces the classical running time
+to $2^{0.6039n+o(n)}$ while using $2^{n/2+o(n)}$ space.
+
+The central observation of \cite{Hhan26} is local.  If $v$ is shortest and
+$s=\Theta(\lambda_1(L)/\sqrt n)$ is chosen correctly, the Hessian of the
+periodic Gaussian at $v/2$ is, up to a scalar identity matrix and small
+operator error, a positive multiple of $vv^T$.  Its leading eigenvector is
+therefore inverse-polynomially close to $v/\norm v$.  The preprocessing
+$\BDD$ oracle of Aggarwal, Chen, Kumar, and Shen \cite{ACKS25} then recovers
+$v$ in subexponential query time.
+
+The expensive part is finding the parity class of $v$ in $L/2L$.  Hhan uses
+matrix-valued Walsh--Hadamard transforms, random affine sublattice cosets, and
+importance sampling.  The present note asks what can be obtained from the
+same samples without first committing to the discrete set $L/2L$.
+Hhan's Remark 1.2 already anticipates that the new code and packing bounds of
+\cite{OpenAI26} lower his constant.  Section~\ref{sec:spherical-transfer}
+gives a conservative, reproducible transfer using only the explicit one-row
+spherical subfamily; the continuous route begins after that direct update.
+
+\subsection{Technical overview}
+
+For $s>0$, put $\rho_s(x)=\exp(-\pi\norm{x}^2/s^2)$ and
+\[
+ F_s(z)=\frac{\rho_s(L+z)}{\rho_s(L)}
+      =\E_{X\sim D_{L^*,1/s}}\!\left[e^{2\pi i\ip Xz}\right].
+\]
+Differentiation gives the dual representation
+\[
+ \nabla^2 F_s(z)
+   =-4\pi^2\E\left[XX^T\cos(2\pi\ip Xz)\right].
+\]
+The radial identity component is irrelevant to the eigenvectors.  We remove
+it at the sample level and work with
+\[
+ \cT_s(z):=\nabla^2F_s(z)-\frac{\tr(\nabla^2F_s(z))}{n}I_n
+ =-4\pi^2\E\left[Q(X)\cos(2\pi\ip Xz)\right],
+ \quad
+ Q(X):=XX^T-\frac{\norm X^2}{n}I_n.                 \tag{1}
+\]
+Every target sample can be reused at an arbitrary $z\in\Torus$, and
+differentiating (1) supplies continuous gradients and Hessians of the matrix
+field.
+
+There are two exact structural facts.  First, every half-grid point
+$B\theta/2$, $\theta\in\F_2^n$, is stationary for every entry of $\cT_s$ at
+every scale.  Second, if $\theta$ is the coefficient parity of a shortest
+vector $v$, then $B\theta/2=v/2\bmod L$.  Hence a continuous method need not
+transport a critical point between scales.  It only needs to enter the
+rounding cell of the correct parity; it can then snap to the exact midpoint
+and invoke Hhan's target-scale recovery theorem.
+
+To obtain a smooth vector field even at eigenvalue collisions, define
+\[
+ \Psi_{t,d,\gamma}(z)
+ :=\frac{\sigma_{t,d}}{\gamma}
+   \log\tr\exp\!\left(\frac{\gamma\cT_t(z)}{\sigma_{t,d}}\right),       \tag{2}
+\]
+where $\gamma=\poly(n)$ and $\sigma_{t,d}$ is an explicit midpoint signal
+scale.  The gradient of (2) is analytic everywhere.  Haar initialization on
+the torus followed by a fixed discretization of this gradient flow and exact
+half-grid snapping is our seed law.
+
+The scale used for ascent is below the direct sampling threshold.  We draw
+samples at a target parameter $r>t_0$ and narrow them to $t<r$ using weights
+bounded by one.  For
+\[
+ r=0.23675858,\qquad t=0.16,
+\]
+the auxiliary second-moment parameter and importance exponent are
+\[
+ q=\frac{tr}{2r-t}=0.1208271\ldots>\frac{t_0}{2},\qquad
+ \iota(t,r)=\frac12\log_2\frac{r^2}{t(2r-t)}=0.0801086\ldots.          \tag{3}
+\]
+Thus the uniformly accurate smooth oracle uses
+\[
+ 2^{(2t+\iota(t,r)+o(1))n}=2^{(0.4001086+o(1))n}                     \tag{4}
+\]
+samples.  The target midpoint estimator uses
+$2^{(2r+o(1))n}=2^{(0.4735172+o(1))n}$ samples.  Both fit below the
+$2^{n/2+o(n)}$ discrete-Gaussian and preprocessing-$\BDD$ cost.
+
+\subsection{Contributions and logical status}
+
+The following components are proved in this note.
+\begin{enumerate}[leftmargin=2em]
+\item The moving-stabilizer spherical-code bound substitutes monotonically
+into Hhan's shell argument; its one-row specialization gives exponent below
+$0.602470$ after the displayed numerical enclosure.
+\item The full-torus traceless Hessian and all fixed-order physical
+derivatives are expectations of explicit matrix trigonometric polynomials.
+\item Every half-grid point is stationary at every scale, and rounding an
+endpoint to the correct parity produces exactly the shortest midpoint modulo
+$L$.
+\item Narrowing from $r$ to $t$ uses weights in $[0,1]$.  Its exact relative
+second moment has exponent $\iota(t,r)$ whenever the auxiliary parameter
+$q=tr/(2r-t)$ lies above $t_0/2$.
+\item One importance-weighted sample panel uniformly estimates $\cT_t$ and
+its first two derivatives over the entire torus.  The uniform event permits
+adaptive queries without a pathwise union bound.
+\item Log-trace-exponential smoothing transfers the matrix estimates to a
+gap-free scalar ascent field.
+\item A robust shortest-parity basin lower bound implies a
+$2^{n/2+o(n)}$-time and space algorithm by exact snapping, target-scale
+midpoint estimation, preprocessing $\BDD$, and verification.
+\item The universal Haar-seeded soft-Hessian law does not have the required
+basin mass.  An anisotropic rectangular family gives success probability at
+most $2^{-n+1}$ for every polynomial-step, polynomial-description schedule.
+\item Short-dual syndrome equations, a coefficient Hamming bound, and a
+stable spectral-tube lifting decomposition give unconditional
+lattice-adapted parity covers.  Whenever their displayed entropy is $o(n)$,
+they instantiate the half-exponential reduction without an ascent
+hypothesis.
+\item Bounded coefficient energy has an exact weighted-junction-width
+factorization.  A displayed elimination order of width below the query
+allowance solves that input by min--sum elimination and backward preimage.
+\item If a basis extends to an obtuse superbase, a discrete coarea identity
+reduces exact $\SVP$ to a global minimum cut.  In particular the previously
+used simplex-cancellation family is polynomial-time solvable.
+\item Infinitesimal causal transport through the Voronoi tiling has an exact
+facet-area law.  Its cone-volume weights obey an isotropic matrix
+conservation identity, and shortest facets have explicit robust cores.
+\item The centered Hessian of the log theta function is exactly a lattice-site
+posterior covariance.  At a two-site facet collision it exposes $vv^T/4$
+independently of tangential position, reducing line detection to explicit
+tail and relative-response estimates.
+\item Those two estimates obey an incompatible exponent ledger.  Weighted
+shell suppression on a homothetic core forces exponential area loss, while
+the empirical response floor confines accessible points to a ball occupying
+at most $2^{-(1.0289+o(1))n}$ of a shortest facet at the full
+$2^{n/2+o(n)}$ sample budget.  Retaining exponent $0.0264828$ would require
+sample exponent at least $0.61169\ldots$.
+\item A noncollinear length gap gives an explicit winner cap.  The query
+ledger closes from this clause alone once the gap ratio exceeds
+$5.2670066\ldots$.
+\end{enumerate}
+
+The counterexample separates the proved reduction from its failed first
+instantiation.  Hypothesis~\ref{hyp:basin} records the condition needed by
+the reduction for the stated law; Theorem~\ref{thm:obstruction} proves that
+condition false.  The lattice-adapted covers and exact factor transports
+below remove this obstruction on a broad solvable class.  A universal
+half-exponential algorithm therefore requires more than a direct-plus-cone
+mass theorem on the residual joint core: it needs response-weighted collision
+mass or a different observable whose empirical error is not divided by the
+local theta value.
+
+\section{Preliminaries}
+
+We follow the notation and normalization of \cite{Hhan26}.  All logarithms
+are natural unless a base is shown.  The dimension tends to infinity, and
+$o(1)$ terms are uniform over fixed parameters in the stated ranges.  The
+input basis is rational and has polynomial bit length.
+
+\subsection{Lattices, Gaussian parameters, and decoding}
+
+For a nonsingular $B\in\R^{n\times n}$, let $L=B\Z^n$ and
+$L^*=B^{-T}\Z^n$.  Write $\lambda=\lambda_1(L)$.  As in
+\cite{Hhan26}, LLL reduction and a polynomial scale grid permit us to assume
+that a value $d$ is available with
+\[
+ \lambda\le d\le(1+1/n)\lambda.                                    \tag{5}
+\]
+Let $\beta_0=2^{0.4014\ldots}$ be the lattice-point counting constant used in
+\cite{Hhan26}, and define
+\[
+ \xi_a(d):=\sqrt{\frac{4na\ln2}{\pi d^2}},
+ \qquad
+ t_0:=\frac{\beta_0^2}{4e\ln2}=0.23147\ldots.                       \tag{6}
+\]
+We use two black-box results exactly as in Hhan's algorithm.
+
+\begin{theorem}[Above-smoothing DGS, \cite{ADRS15,Hhan26}]
+If $a>t_0$ is fixed, one call at parameter $\xi_a(d)$ outputs up to
+$2^{n/2}$ samples jointly negligibly close to independent samples from
+$D_{L^*,\xi_a(d)}$ in time and space $2^{n/2+o(n)}$.
+\end{theorem}
+
+\begin{theorem}[Preprocessing BDD, \cite{ACKS25,Hhan26}]
+There is randomized preprocessing using time and space $2^{n/2+o(n)}$ such
+that, after successful preprocessing, inverse-polynomial $\BDD$ queries take
+$2^{o(n)}$ time.  Outputs on targets outside the decoding promise may be
+arbitrary, but exact lattice membership and norm can be verified.
+\end{theorem}
+
+The last verification clause is useful: every wrong parity or unstable
+ascent path is harmless except for its running time.
+
+\subsection{The target midpoint recovery lemma}
+
+For $a>0$, abbreviate
+\[
+ F_a(z):=F_{1/\xi_a(d)}(z),\qquad H_a(z):=\nabla^2F_a(z).
+\]
+For $\theta\in\F_2^n$, choose its lift in $\{0,1\}^n$.  Hhan defines
+$G_{a,d}(\theta)=H_a(B\theta/2)$ and adds a scalar identity to obtain a
+positive semidefinite matrix $A_{a,d}(\theta)$.  The following packages
+Lemmas 3.4--3.6 of \cite{Hhan26} in the form used here.
+
+\begin{theorem}[Midpoint recovery, \cite{Hhan26}]                  \label{thm:hhan-endpoint}
+Fix $t_0<r<1/4$ and suppose (5) holds.  Let $v$ be shortest and
+$v\in B\theta+2L$.  There is an explicit
+\[
+ \mu_{r,d}=\xi_r^4\lambda^2\,2^{-rn+O(1)}                        \tag{7}
+\]
+such that, after addition of a scalar identity,
+\[
+ H_r(B\theta/2)=\mu_{r,d}\frac{vv^T}{\lambda^2}+E+aI_n,
+ \qquad \norm E_{\op}\le \mu_{r,d}2^{-\Omega(n)}.                 \tag{8}
+\]
+If an estimator of $H_r(B\theta/2)$ has operator error
+$O(\mu_{r,d}/n)$, then a leading eigenvector is
+$O(n^{-1/2})$-close, up to sign, to $v/\lambda$.  A preprocessing $\BDD$
+query at the corresponding scaled direction returns $\pm v$ for all
+sufficiently large $n$.
+\end{theorem}
+
+Because adding or subtracting a scalar identity does not change eigenspaces,
+Theorem~\ref{thm:hhan-endpoint} remains valid for the traceless Hessian used
+below.
+
+\section{A direct spherical-bound improvement}                   \label{sec:spherical-transfer}
+
+Hhan's lattice-point estimates use the cap-optimized
+Kabatianskii--Levenshtein spherical-code exponent in two places: the global
+constant $\log_2\beta$ and the shell function $K_2$.  The binary-code theorem
+of \cite{OpenAI26} does not itself apply to these Euclidean directions, but
+the spherical theorem in the same work does.  We record the substitution
+because it yields a lower constant without the geometric hypothesis used
+later.
+
+For $u\ge0$, put
+\[
+ H_{\rm sph}(u)=(1+u)\log_2(1+u)-u\log_2u,
+ \qquad H_{\rm sph}(0)=0,
+\]
+and for $a>b\ge0$ put
+\[
+ \Gamma_{\rm row}(a,b)
+ =\frac{(a-b)(1+a+b)}{(1+2a)\sqrt{a(1+a)}}.                       \tag{S1}
+\]
+The moving one-row theorem of \cite[Chapter 2]{OpenAI26} gives the valid
+whole-sphere exponent
+\[
+ B_{\rm row}^{\rm dir}(s)
+ :=\inf_{\substack{a>b\ge0\\2\Gamma_{\rm row}(a,b)\ge s}}
+     \bigl(H_{\rm sph}(a)-H_{\rm sph}(b)\bigr),                  \tag{S2}
+\]
+and its cap optimization can only decrease this value.  Define
+\begin{align}
+ b_{\rm row}&:=B_{\rm row}^{\rm dir}(1/2),
+ &t_{0,{\rm row}}&:=\frac{2^{2b_{\rm row}}}{4e\ln2},             \tag{S3}\\
+ K_{\rm row}(x)&:=
+ \begin{cases}
+ 0,&1\le x\le\sqrt2,\\
+ B_{\rm row}^{\rm dir}(1-2/x^2),&x>\sqrt2,
+ \end{cases}                                                     \tag{S4}\\
+ g_{2,{\rm row}}(R)&:=1-\sup_{x\ge1}
+ \left(\min\{b_{\rm row}+\log_2x,1+K_{\rm row}(x)\}
+       -\frac{Rx^2}{2}\right).                                  \tag{S5}
+\end{align}
+For $g_{\rm row}(r)=\tfrac12\log_2(r/t_{0,{\rm row}})$ and
+$\iota(r,R)=\tfrac12\log_2(R^2/[r(2R-r)])$, Hhan's classical exponent
+ledger becomes
+\begin{align}
+ \chi(r,R)&=\min\{g_{2,{\rm row}}(R),\tfrac12+g_{\rm row}(r),
+ 1+\min(g_{\rm row}(r),2g_{\rm row}(r))-2r,\tfrac12\},          \tag{S6}\\
+ c(r,R)&=\max\{\tfrac12,2r+\iota(r,R),1-\chi(r,R)\}.            \tag{S7}
+\end{align}
+
+\begin{theorem}[Moving-row transfer, numerical form]              \label{thm:moving-row}
+Assume the spherical-code theorem of \cite[Chapter 2]{OpenAI26} and the
+numerical enclosure (S8).  Hhan's
+classical mid-point Hessian algorithm has time complexity
+\[
+ 2^{0.602470n+o(n)}
+\]
+and space complexity $2^{n/2+o(n)}$.  More precisely, direct substitution of
+\[
+ r=0.22189254,\qquad R=0.39935521
+\]
+in (S2)--(S7) gives
+\[
+ b_{\rm row}=0.39730560\ldots,\quad
+ t_{0,{\rm row}}=0.23015577\ldots,\quad
+ \chi=0.39753095\ldots,
+\]
+\[
+ 2r+\iota(r,R)=0.60246910\ldots,
+ \qquad 1-\chi=0.60246905\ldots.                                \tag{S8}
+\]
+\end{theorem}
+
+\begin{proof}
+Replace the spherical-code exponent in the shell count underlying Hhan's
+Lemma 2.1 by (S2).  This changes $\log_2\beta$ to $b_{\rm row}$ and therefore
+changes the Gaussian threshold to (S3).  In Hhan's refined shell bound,
+replace the occurrence of the classical exponent at angle $1-2/x^2$ by
+(S4).  Both replacements are pointwise upper bounds, so every subsequent
+Gaussian-mass, affine-coset, importance-sampling, and concentration inequality
+is unchanged except for the scalar functions in (S3)--(S7).  The original
+optimization proof therefore gives exponent $c(r,R)$.
+
+The two variational problems in (S2) and (S5) are one-dimensional after
+solving $2\Gamma_{\rm row}(a,b)=s$ for $a$.  Evaluating them at the displayed
+parameters gives (S8); the gap to $0.602470$ is more than $9\cdot10^{-7}$.
+The nested formulas are evaluated directly rather than replaced by the
+binary-code exponent.  Hence $c(r,R)<0.602470$.  Hhan's space argument is
+unaffected and remains $2^{n/2+o(n)}$.
+\end{proof}
+
+\begin{remark}
+Theorem~\ref{thm:moving-row} is logically independent of the continuous
+basin hypothesis below.  It is a direct improvement of Hhan's proved
+algorithm if the cited spherical-code theorem and the numerical enclosure in
+(S8) are accepted.  The full stabilizer hierarchy of \cite{OpenAI26} is
+pointwise no worse than the one-row family, but no additional numerical
+improvement from that hierarchy is claimed here.
+\end{remark}
+
+\section{The continuous periodic-Hessian oracle}
+
+\subsection{Traceless Fourier representation}
+
+For $X\in\R^n$, define the traceless quadratic matrix
+\[
+ Q(X):=XX^T-\frac{\norm X^2}{n}I_n.                                \tag{9}
+\]
+For a scale $a>0$, define
+\[
+ \cT_a(z):=H_a(z)-\frac{\tr H_a(z)}{n}I_n.                         \tag{10}
+\]
+
+\begin{lemma}[Full-torus oracle]                                  \label{lem:full-torus}
+For every $z\in\R^n$,
+\[
+ \cT_a(z)=-4\pi^2\E_{X\sim D_{L^*,\xi_a}}
+       \left[Q(X)\cos(2\pi\ip Xz)\right].                        \tag{11}
+\]
+For every fixed integer $j\ge0$ and directions
+$h_1,\ldots,h_j\in\R^n$,
+\begin{align}
+ D^j\cT_a(z)[h_1,\ldots,h_j]
+ ={}&-4\pi^2(2\pi)^j\E\left[
+ Q(X)\prod_{m=1}^j\ip X{h_m}
+ \cos\!\left(2\pi\ip Xz+\frac{j\pi}{2}\right)
+ \right].                                                        \tag{12}
+\end{align}
+In particular, one sample panel gives unbiased estimators at arbitrary,
+adaptively selected torus points.
+\end{lemma}
+
+\begin{proof}
+Poisson summation gives
+$F_a(z)=\E[e^{2\pi i\ip Xz}]$.  The distribution is symmetric under
+$X\mapsto-X$, so the imaginary part vanishes.  Differentiating twice and
+subtracting the normalized trace gives (11).  Further directional
+differentiation uses
+$d^j\cos u/du^j=\cos(u+j\pi/2)$ and proves (12).  The final statement follows
+because $z$ appears only in the trigonometric factor; the sample distribution
+does not depend on the query.
+\end{proof}
+
+The traceless projection is not cosmetic.  It removes the radial identity
+fluctuation from every individual sample while preserving every eigenvector
+and eigengap of $H_a(z)$.
+
+\subsection{Half-grid stationarity and exact parity snapping}
+
+The next fact does not require a Gaussian estimate or a spectral gap.
+
+\begin{lemma}[Scale-uniform half-grid stationarity]                \label{lem:stationary}
+For every $a>0$ and $\theta\in\Z^n$,
+\[
+ D\cT_a(B\theta/2)=0.                                             \tag{13}
+\]
+Consequently, every differentiable spectral function of $\cT_a$, including
+the soft maximum in Section~\ref{sec:soft}, is stationary at
+$B\theta/2$.
+\end{lemma}
+
+\begin{proof}
+Write $X=B^{-T}k$ with $k\in\Z^n$.  At $z=B\theta/2$,
+$2\pi\ip Xz=\pi k^T\theta$, and every sine factor in the first derivative of
+(11) vanishes.  The chain rule proves the second claim.
+\end{proof}
+
+\begin{lemma}[Parity snapping]                                    \label{lem:snap}
+Let $c\in\R^n$ and suppose there is a $\theta\in\Z^n$ with
+\[
+ \norm{2c-\theta}_\infty<\frac12.                                 \tag{14}
+\]
+Then coordinate rounding of $2c$ recovers $\theta\bmod2$.  If a shortest
+vector $v$ satisfies $v=B\theta+2w$ for some $w\in L$, then
+\[
+ B\theta/2=v/2\pmod L.                                            \tag{15}
+\]
+Therefore $\cT_r(B\theta/2)=\cT_r(v/2)$.
+\end{lemma}
+
+\begin{proof}
+Condition (14) gives unique coordinate rounding.  From
+$v=B\theta+2w$, divide by two to obtain $B\theta/2=v/2-w$.  Periodicity of
+$F_r$ and its derivatives gives the last claim.
+\end{proof}
+
+Thus a smooth-scale critical point is not transported to the target scale.
+Its parity is transported algebraically by one exact rounding operation.
+
+\section{Narrowing importance sampling}
+
+Fix a source parameter $r>t_0$ and a smaller ascent parameter $t<r$.  Put
+$\xi_a=\xi_a(d)$ and let $P_a$ denote $D_{L^*,\xi_a}$.  Since
+$\xi_t<\xi_r$, define
+\[
+ u_t(x):=\frac{\rho_{\xi_t}(x)}{\rho_{\xi_r}(x)}
+ =\exp\!\left[-\pi\norm x^2
+       \left(\frac1{\xi_t^2}-\frac1{\xi_r^2}\right)\right].       \tag{16}
+\]
+The elementary but useful point is
+\[
+ 0<u_t(x)\le1.                                                     \tag{17}
+\]
+There is no upper-tail problem in the importance weight; the loss comes from
+its small normalizing mean.
+
+\begin{lemma}[Exact narrowing identity]                            \label{lem:importance}
+For every integrable matrix-valued $A$,
+\[
+ \E_t[A(X)]
+ =\frac{\E_r[u_t(X)A(X)]}{\E_r[u_t(X)]}.                           \tag{18}
+\]
+Let
+\[
+ q=q(t,r):=\frac{tr}{2r-t},\qquad
+ \iota(t,r):=\frac12\log_2\frac{r^2}{t(2r-t)}.                    \tag{19}
+\]
+Then
+\[
+ \frac{\E_r[u_t(X)^2]}{\E_r[u_t(X)]^2}
+ =2^{\iota(t,r)n}
+ \frac{\rho_{1/\xi_q}(L)\rho_{1/\xi_r}(L)}
+      {\rho_{1/\xi_t}(L)^2}.                                     \tag{20}
+\]
+If $q>t_0/2$, the final theta-mass ratio is $1+2^{-\Omega(n)}$ and
+the relative second moment is $2^{(\iota(t,r)+o(1))n}$.
+\end{lemma}
+
+\begin{proof}
+Expanding both expectations in (18) cancels $\rho_{\xi_r}$ and gives the
+$P_t$ expectation after division by the mass ratio.  Moreover,
+\[
+ \frac{\rho_{\xi_t}(x)^2}{\rho_{\xi_r}(x)}=\rho_{\xi_q}(x)
+\]
+because $1/q=2/t-1/r$.  It follows that the left side of (20) is
+\[
+ \frac{\rho_{\xi_q}(L^*)\rho_{\xi_r}(L^*)}
+      {\rho_{\xi_t}(L^*)^2}.
+\]
+Poisson summation changes the power-of-scale factor into
+$(qr/t^2)^{n/2}=2^{\iota(t,r)n}$ and leaves the displayed primal theta-mass
+ratio.  Hhan's Gaussian mass bound implies
+$\rho_{1/\xi_a}(L)=1+2^{-\Omega(n)}$ for every fixed $a>t_0/2$.
+Since $q<t<r$, the assumption on $q$ proves the last claim.
+\end{proof}
+
+\section{A uniform empirical derivative oracle}
+
+We now show that adaptivity does not require fresh samples.  All derivatives
+below are physical derivatives on $\R^n$, not coefficient derivatives; this
+avoids introducing the condition number of the input basis into the random
+summands.
+
+Let
+\[
+ \overline\mu_{t,d}:=\xi_t^4d^2\,2^{-tn}.                         \tag{21}
+\]
+For the correct length guess, this is the coefficient scale of the
+shortest-pair contribution, up to polynomial and constant factors.  It does
+not assert that this rank-one contribution dominates the full Hessian when
+$t<t_0$; that geometric issue is precisely what the basin hypothesis below
+must control.
+
+Given independent $X_1,\ldots,X_M\sim P_r$, define the ratio estimator
+\[
+ \what\cT_t(z):=
+ -4\pi^2\frac{\sum_{i=1}^M u_t(X_i)Q(X_i)
+                    \cos(2\pi\ip{X_i}{z})\mathbf1_{\cG_i}}
+                   {\sum_{i=1}^M u_t(X_i)\mathbf1_{\cG_i}},        \tag{22}
+\]
+where $\cG_i$ is the event
+$\norm{X_i}\le C\xi_r n$ for a sufficiently large fixed $C$.
+Its derivative estimators are obtained by differentiating the
+trigonometric factor in (22).
+
+\begin{theorem}[Uniform narrowing oracle]                          \label{thm:uniform}
+Fix constants $r,t$ with
+\[
+ t_0<r<1/4,\qquad 0<t<r,\qquad q(t,r)>t_0/2.                       \tag{23}
+\]
+For every fixed $A>0$, there is a fixed $C_A$ such that, with
+\[
+ M=(n+\mathrm{size}(B))^{C_A}\,2^{(2t+\iota(t,r))n},              \tag{24}
+\]
+the following holds with probability at least
+$1-\exp(-n^2)$: simultaneously for every $z\in\Torus$ and
+$j\in\{0,1,2\}$,
+\[
+ \sup_{\norm{h_1},\ldots,\norm{h_j}\le1}
+ \norm{D^j\what\cT_t(z)[h_1,\ldots,h_j]
+      -D^j\cT_t(z)[h_1,\ldots,h_j]}_{\op}
+ \le \frac{\overline\mu_{t,d}\xi_t^j}{n^A}.                     \tag{25}
+\]
+The same sample panel supports an arbitrary adaptive sequence of queries.
+For ideal independent samples the failure probability is at most
+$\exp(-n^2)$.  For the actual DGS output it is at most $2^{-\Omega(n)}$ after
+the statistical-distance loss.
+\end{theorem}
+
+\begin{proof}
+We expose the exponent calculation and then account for uniformity.
+For a fixed $z$, directions $h_m$, and matrix entry, the numerator summand
+for the $j$th derivative is bounded on $\cG_i$ by
+\[
+ (C'\xi_r n)^{2+j}.                                               \tag{26}
+\]
+The omitted Gaussian tail contributes at most
+$\overline\mu_{t,d}\xi_t^j/n^{A+2}$ after increasing $C$; this is the
+standard discrete-Gaussian tail integration used in \cite{Hhan26}.
+
+Let $m_t=\E_r[u_t(X)]$.  By Lemma~\ref{lem:importance},
+\[
+ \frac{\E_r[u_t^2]}{m_t^2}=2^{(\iota(t,r)+o(1))n}.                 \tag{27}
+\]
+Scalar Bernstein concentration applied to the bounded denominator gives
+$\sum_i u_t(X_i)=(1+o(1))Mm_t$.  Matrix Bernstein applied to the centered
+weighted numerator, together with (27), has the same variance as
+$M2^{-(\iota+o(1))n}$ target samples.  The target signal scale is
+$2^{-tn}$ up to polynomial factors, so inverse-polynomial relative accuracy
+requires $2^{(2t+\iota)n}$ samples.  The polynomial $n^{C_A}$ makes the
+failure probability at a fixed query smaller than
+$\exp(-n^{C'})$ for an arbitrarily large fixed $C'$.
+
+It remains to make the event uniform.  On $\cG_i$, (12) bounds the next
+physical derivative of every summand by a number whose logarithm is
+polynomial in $n$ and the input bit length.  A rational fundamental
+parallelepiped of $L$ has diameter at most exponential in that bit length.
+Consequently it has a net fine enough for (25) whose logarithmic cardinality
+is polynomial in $n$ and the input bit length.  Apply the fixed-query bound
+to the net, to a fixed operator-norm net on the unit sphere, and to
+$j=0,1,2$; choose $C'$ above the resulting polynomial; and use the next
+derivative bound to extend from the net to the whole torus.  This proves
+(25).  Since the event already quantifies over every $z$, adaptively chosen
+queries require no additional union bound.  The statistical distance in the
+DGS theorem adds at most $2^{-\Omega(n)}$ to the ideal-sample failure
+probability.
+\end{proof}
+
+\begin{remark}
+The theorem is a statement about oracle accuracy, not automatic trajectory
+shadowing.  Near a separatrix, an arbitrarily small perturbation can change
+the terminal basin.  The robust basin hypothesis in Section~\ref{sec:basin}
+quantifies the dynamical margin that is additionally required.
+\end{remark}
+
+\section{A gap-free soft Hessian objective}                        \label{sec:soft}
+
+The map $T\mapsto\lambda_{\max}(T)$ is not differentiable when the leading
+eigenvalue is multiple.  This is inconvenient precisely at symmetric
+lattices.  For $\gamma>0$ and $\sigma=\overline\mu_{t,d}$, define
+\[
+ \psi_{\gamma,\sigma}(T)
+ :=\frac{\sigma}{\gamma}\log\tr e^{\gamma T/\sigma},
+ \qquad
+ \Psi_{t,d,\gamma}(z):=\psi_{\gamma,\sigma}(\cT_t(z)).             \tag{28}
+\]
+
+\begin{lemma}[Soft spectral calculus]                              \label{lem:soft}
+For every symmetric $T$,
+\[
+ \lambda_{\max}(T)
+ \le\psi_{\gamma,\sigma}(T)
+ \le\lambda_{\max}(T)+\frac{\sigma\log n}{\gamma}.              \tag{29}
+\]
+If
+\[
+ P_T:=\frac{e^{\gamma T/\sigma}}{\tr e^{\gamma T/\sigma}},
+\]
+then
+\[
+ D\psi_{\gamma,\sigma}(T)[E]=\tr(P_TE).                           \tag{30}
+\]
+Every derivative of $\psi$ is analytic for every symmetric $T$, and the
+operator norm of its second Fr\'echet derivative is at most
+$O(\gamma/\sigma)$.  Therefore Theorem~\ref{thm:uniform}, with a larger
+polynomial factor, uniformly estimates $\Psi$ and $\nabla\Psi$ to
+inverse-polynomial absolute error without any eigengap assumption.
+\end{lemma}
+
+\begin{proof}
+If $\lambda_1\ge\cdots\ge\lambda_n$ are the eigenvalues, then
+$e^{\gamma\lambda_1/\sigma}\le\sum_i e^{\gamma\lambda_i/\sigma}
+\le ne^{\gamma\lambda_1/\sigma}$, proving (29).  The Fr\'echet derivative of
+$\log\tr e^T$ gives (30).  Matrix exponentiation and trace are analytic, and
+the trace exponential is strictly positive.  The derivative in (30) has
+operator norm at most one, while the covariance formula for its derivative
+is bounded by $O(\gamma/\sigma)$.  The physical first derivatives of
+$\cT_t$ have polynomial norm by (12) and the Gaussian moment bounds.
+Consequently an error $\sigma/n^A$ in $\cT_t$ and its first derivative
+induces inverse-polynomial absolute error in $\Psi$ and its gradient after
+increasing $A$.  This is exactly the uniform event of
+Theorem~\ref{thm:uniform}.
+\end{proof}
+
+When a polynomial eigengap is present and $\gamma=\poly(n)$ is sufficiently
+large, $P_T$ is exponentially close to the projector onto the leading
+eigenvector.  When no gap is present, (30) remains a canonical convex mixture
+of the tied eigenspaces rather than an undefined branch choice.
+
+\section{The samplable seed law}
+
+Fix $t=0.16$, $\gamma=n^2$, a polynomial step count $S=n^{C_0}$, and a
+deterministic step schedule $\eta_0,\ldots,\eta_{S-1}$ of polynomial bit
+complexity.  Let $\what\Psi$ be the empirical soft objective from the sample
+panel in Theorem~\ref{thm:uniform}.  Define a bounded vector field
+\[
+ \what V(z):=
+ \frac{d^4\nabla\what\Psi(z)}
+      {1+d^3\norm{\nabla\what\Psi(z)}}.                            \tag{31}
+\]
+The normalization is globally Lipschitz and keeps the step bounded; any fixed
+smooth normalization with polynomial Lipschitz bounds could be used instead.
+The powers of $d$ make the field scale-equivariant: replacing $L$ by
+$\alpha L$ replaces $V$ by $\alpha V$.
+
+\medskip
+\noindent\textbf{Soft-Hessian seed law $\widehat\nu_{L,d}$.}
+\begin{enumerate}[leftmargin=2.2em,label=\arabic*.]
+\item Draw $U\sim\mathrm{Unif}([0,1)^n)$ and put $Z_0=BU\bmod L$.
+\item For $s=0,\ldots,S-1$, set
+\[
+ Z_{s+1}=Z_s+\eta_s\what V(Z_s)\pmod L.
+\]
+\item Compute $c=B^{-1}Z_S$ modulo $\Z^n$, set
+$\theta=\operatorname{round}(2c)\bmod2$, and output $B\theta/2\bmod L$.
+\end{enumerate}
+
+This is a samplable probability law using one target DGS panel.  It does not
+presuppose the shortest vector or its parity.  Its exact counterpart
+$\nu_{L,d}$ replaces $\what\Psi$ by $\Psi$.  All transcendental evaluations
+are performed to inverse-polynomial precision; the robustness margin below
+absorbs that deterministic approximation.
+
+\section{The geometric existence clause}                          \label{sec:basin}
+
+Let $\Theta_{\min}\subseteq\F_2^n$ be the set of parities represented by
+shortest vectors.  We need robustness because uniform oracle accuracy cannot
+stabilize a point lying exactly on a basin boundary.
+
+\begin{definition}[Robust shortest-parity basin]
+For $\varepsilon>0$, let $\cS_{L,d}(\varepsilon)$ be the set of Haar seeds
+$Z_0$ with the following property: every vector field $\widetilde V$ whose
+value is uniformly within $\varepsilon d$ of the exact normalized soft field
+$V$ produces, under the fixed $S$-step schedule, a
+terminal point satisfying (14) with a parity in $\Theta_{\min}$ and with
+rounding margin at least $\varepsilon$.
+Set
+\[
+ p_{L,d}(\varepsilon)
+ :=\Haar_{\Torus}(\cS_{L,d}(\varepsilon)).                          \tag{32}
+\]
+\end{definition}
+
+\begin{hypothesis}[Robust shortest-parity basin]                   \label{hyp:basin}
+There is a universal computable function $\kappa(n)=o(n)$ such that, for every
+full-rank lattice $L$, at one scale guess $d$ satisfying (5), there is an
+inverse-polynomial $\varepsilon=n^{-C_1}$ for which
+\[
+ p_{L,d}(\varepsilon)\ge2^{-\kappa(n)}.                           \tag{33}
+\]
+The step count, smoothing parameter, and constants $C_0,C_1$ are universal.
+\end{hypothesis}
+
+Hypothesis~\ref{hyp:basin} is exactly the additional statement used by the
+$2^{n/2+o(n)}$ reduction for this candidate law.  A stronger
+uniform-attraction theorem would not be needed, nor would a bound on the
+total number of local maxima.  However, Theorem~\ref{thm:obstruction} below
+shows that the hypothesis itself is false for the universal Haar-seeded,
+single-scale law.
+
+\begin{proposition}[Empirical preservation of robust mass]        \label{prop:preserve}
+Assume Hypothesis~\ref{hyp:basin}.  Increase the polynomial factor in
+Theorem~\ref{thm:uniform} so that the normalized empirical vector field is
+within $\varepsilon d$.  Then a sample from
+$\what\nu_{L,d}$ snaps to $\Theta_{\min}$ with probability
+$2^{-\kappa(n)}-2^{-\Omega(n)}$.
+\end{proposition}
+
+\begin{proof}
+On the uniform event of Theorem~\ref{thm:uniform}, Lemma~\ref{lem:soft} and
+the normalization in (31) put $\what V$ in the perturbation class quantified
+in the preceding definition.  Every seed in
+$\cS_{L,d}(\varepsilon)$ therefore snaps to
+a shortest parity.  The exceptional oracle event for the actual DGS panel has
+probability at most $2^{-\Omega(n)}$.
+\end{proof}
+
+\section{The conditional \texorpdfstring{$2^{n/2+o(n)}$}{half-exponential}
+algorithm}
+
+We can now state the algorithm in the same verified-output model used by
+Hhan.
+
+\medskip
+\noindent\textbf{Algorithm 1: Continuous mid-point Hessian $\SVP$.}
+\begin{enumerate}[leftmargin=2.2em,label=\arabic*.]
+\item Apply LLL, construct the polynomial grid of guesses $d$, and construct
+the preprocessing $n^{-1/3}$-$\BDD$ data.
+\item Fix $r=0.23675858$ and $t=0.16$.  At each $d$, call above-smoothing
+$\DGS$ on $L^*$ at $\xi_r(d)$ and retain enough samples for the smooth oracle
+and target midpoint estimators.  Abort a scale returning too few samples.
+\item Using the same panel and the weights (16), draw
+$K=\Theta(2^{\kappa(n)})=2^{o(n)}$ independent outputs of the soft-Hessian
+seed law $\what\nu_{L,d}$.
+\item For every snapped parity $\theta$, estimate the target traceless
+Hessian $\cT_r(B\theta/2)$ from $n^{C}2^{2rn}$ unweighted source samples.
+Compute a leading eigenvector $q$ and query $\BDD$ at $dq$ and $-dq$.
+\item Verify every output, and return the shortest verified nonzero lattice
+vector over all guesses and starts.
+\end{enumerate}
+
+\begin{theorem}[Conditional main theorem]                          \label{thm:main}
+Assume Hypothesis~\ref{hyp:basin}.  Algorithm 1 solves search-$\SVP$ with
+probability at least $2/3$ in expected time and worst-case space
+\[
+ 2^{n/2+o(n)},
+\]
+up to factors polynomial in the input length.
+\end{theorem}
+
+\begin{proof}
+Choose the correct length guess $d$.  By
+Proposition~\ref{prop:preserve}, one start snaps to a shortest parity with
+probability at least $2^{-\kappa(n)}-2^{-\Omega(n)}$.  Taking
+$K=\Theta(2^{\kappa(n)})=2^{o(n)}$ independent Haar starts gives constant
+probability of at least one correct snap.  Condition on this event and call
+its parity $\theta$.  By
+Lemma~\ref{lem:snap}, the target point is exactly $v/2\bmod L$ for a shortest
+vector $v$.  The target estimator with $n^C2^{2rn}$ samples has operator
+error $O(\mu_{r,d}/n)$ by the same concentration argument as Hhan's Lemma
+3.5.  Theorem~\ref{thm:hhan-endpoint} makes one of the $\BDD$ queries return
+$\pm v$.  Exact verification prevents any false candidate from affecting
+the output.  Standard independent repetitions raise the success probability
+to $2/3$.
+
+The $\BDD$ preprocessing and one above-smoothing DGS call cost
+$2^{n/2+o(n)}$ time and space.  A smooth field/gradient query costs
+\[
+ 2^{(2t+\iota(t,r)+o(1))n}=2^{(0.4001086+o(1))n}.
+\]
+There are $S K=2^{o(n)}$ such queries.  Each target midpoint query costs
+\[
+ 2^{(2r+o(1))n}=2^{(0.4735172+o(1))n},
+\]
+and there are $K=2^{o(n)}$ of them.  All remaining linear algebra, wrapping,
+rounding, verification, and $\BDD$ query work has a subexponential
+multiplicative overhead.  Thus preprocessing dominates at exponent $1/2$.
+The sample panel and $\BDD$ preprocessing data fit in
+$2^{n/2+o(n)}$ space.
+\end{proof}
+
+The exponent ledger also gives a quantitatively weaker sufficient basin
+bound.
+
+\begin{corollary}[Exponential basin allowance]                     \label{cor:delta}
+Suppose (33) is replaced by
+\[
+ p_{L,d}(n^{-C_1})\ge2^{-(\delta+o(1))n}.
+\]
+Algorithm 1 still runs in $2^{n/2+o(n)}$ time whenever
+\[
+ \delta<\min\left\{
+ \frac12-(2t+\iota(t,r)),\frac12-2r
+ \right\}=0.0264828\ldots.                                       \tag{34}
+\]
+\end{corollary}
+
+\begin{proof}
+Use $K=2^{(\delta+o(1))n}$ starts.  The smooth and target work exponents
+become $2t+\iota+\delta$ and $2r+\delta$, respectively.  Both remain below
+$1/2$ under (34).
+\end{proof}
+
+\section{Foundational consequences}
+
+We collect several consequences that are implicit in the Fourier
+representation but are not needed in Hhan's discrete Walsh formulation.
+
+\subsection{Information lives on the whole torus}
+
+The samples used for one parity Hessian are not tied to that parity.  They
+encode the entire trigonometric matrix field (11).  Evaluating at a new point
+does not require new randomness; it requires only another deterministic pass
+over the same samples.  The same is true for every fixed derivative order.
+This converts parity search from a sample-access problem into a geometric
+query problem.
+
+\subsection{Scale transport is needed only for the observable}
+
+The narrowing identity transports the Hessian observable from $r$ to $t$.
+It does not transport particles between affine cosets, nor does it move a
+midpoint branch.  Lemma~\ref{lem:stationary} shows that the parity half-grid
+is fixed at all temperatures, and Lemma~\ref{lem:snap} transfers the discrete
+address exactly.  The final rank-one certificate is always evaluated at the
+original target scale $r>t_0$.
+
+\subsection{No eigengap is needed during search}
+
+The target midpoint needs a leading eigendirection, and Hhan proves the
+required gap there.  The search trajectory need not have one.  The soft
+spectral density $P_T$ in (30) supplies a canonical direction through
+collisions.  Thus the geometric hypothesis concerns basin mass and dynamical
+margin, not a uniform eigengap over the torus.
+
+\subsection{All false candidates are one-sided errors}
+
+The algorithm never trusts the value of the soft objective or the output of
+an out-of-promise $\BDD$ query as a certificate.  It verifies lattice
+membership exactly and returns the shortest verified nonzero vector.  The
+only role of the basin hypothesis is to guarantee that at least one query is
+correct; it is not used to exclude incorrect queries.
+
+\section{Finite evidence}
+
+The experiments in this section are included only as checks of the formulas
+and as evidence for the geometric target.  They are not used in any proof.
+
+\subsection{Soft ascent on a cancellation family}
+
+Consider a basis with Gram matrix having diagonal one and a common negative
+off-diagonal chosen so that the all-ones coefficient vector has length
+$0.97$.  In the tested dimensions it is the unique shortest pair, while each
+basis column has length one.  At the rigorously controlled scale
+$t=0.159919\ldots$, $\gamma=16$, Fourier cutoff two, and 256 scrambled Sobol
+starts, the soft law gave the following results.
+
+\begin{center}
+\begin{tabular}{rrrrr}
+\toprule
+$n$ & shortest hits & hit fraction & distinct parities & median evaluations\\
+\midrule
+3 & 65 & 0.253906 & 7  & 14\\
+4 & 40 & 0.156250 & 15 & 16\\
+5 & 30 & 0.117188 & 31 & 18\\
+6 & 25 & 0.097656 & 50 & 19\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The maximum half-grid error among terminal points was below $2.9\cdot10^{-6}$.
+The number of discovered parity maxima is already large, but the shortest
+parity retains visible basin mass on this small, well-conditioned family.
+Theorem~\ref{thm:obstruction} shows why such evidence cannot be extrapolated
+uniformly to anisotropic lattices.
+
+\subsection{Finite-population oracle checks}
+
+On explicitly enumerated dual cubes, the population identity (18) held to
+floating-point precision, and every narrowing weight was at most one as
+predicted by (17).  Independent-source experiments showed decreasing value
+and gradient error with sample size.  No finite-dimensional measurement is
+used to infer an asymptotic basin lower bound.
+
+\section{Resolution of the universal-basin conjecture}
+
+The universal Haar-seeded law has a product-lattice obstruction.  It is not
+merely that the preceding estimates fail to prove a large basin: the basin
+claimed in the former Conjecture~13.1 can be exponentially small.
+
+\begin{theorem}[Anisotropic product obstruction]                  \label{thm:obstruction}
+Fix $t=0.16$, $\gamma=n^2$, any polynomial step count, and any deterministic
+step schedule of polynomial bit complexity as in the soft-Hessian seed law.
+For all sufficiently large $n$, let
+\[
+ M=2^n,
+ \qquad
+ L_n=\operatorname{diag}(1,M,\ldots,M)\Z^n.                      \tag{35}
+\]
+For every correct guess $1\le d\le1+1/n$, the exact soft-Hessian seed law
+reaches a shortest-vector parity with probability at most
+\[
+ 2^{-n}+2^{-2n+2}+4n2^{-4n}\le2^{-n+1}.                          \tag{36}
+\]
+Consequently, for every $\varepsilon>0$,
+\[
+ p_{L_n,d}(\varepsilon)\le2^{-n+1}.                              \tag{37}
+\]
+Hypothesis~\ref{hyp:basin}, and hence the former universal-basin
+Conjecture~13.1, is false.
+\end{theorem}
+
+\begin{proof}
+Write $B=\operatorname{diag}(1,M,\ldots,M)$ and use coefficient coordinates
+$z=Bu$ on the torus.  The only shortest vectors of $L_n$ are
+$\pm e_1$, so the unique shortest parity is
+$\theta_*=e_1\bmod2$.
+
+Let $s=1/\xi_t(d)$.  Since $t$ is fixed and $d\in[1,1+1/n]$, there are
+absolute constants $c_0,c_1>0$ such that
+\[
+ c_0n^{-1/2}\le s\le c_1n^{-1/2}.                               \tag{38}
+\]
+For $h>0$, define the one-dimensional periodic Gaussian
+\[
+ g_{h,s}(x):=\sum_{m\in\Z}e^{-\pi(x+mh)^2/s^2},
+ \qquad f_{h,s}(x):=\frac{g_{h,s}(x)}{g_{h,s}(0)}.
+\]
+Separation of the lattice sum gives
+\[
+ F_t(z)=f_{1,s}(z_1)\prod_{j=2}^n f_{M,s}(z_j).                  \tag{39}
+\]
+
+We use the following elementary localization estimate.  For fixed
+$a\in(0,1/4)$ and $0\le k\le3$, differentiation of each Gaussian summand
+shows, uniformly for $0<s\le h$,
+\[
+ \left|f_{h,s}^{(k)}(x)\right|
+ \le P_{k,a}(h+s^{-1})
+ \exp\!\left(-c_a h^2/s^2\right)                                \tag{40}
+\]
+whenever $\operatorname{dist}(x,h\Z)\ge ah$.  Without the distance
+assumption the same derivative is at most $P_k(h+s^{-1})$.  Here the $P$'s
+are fixed polynomials and $c_a>0$.  Indeed, the $k$th derivative of
+$e^{-\pi y^2/s^2}$ is a degree-$k$ polynomial in $y/s^2$ times the same
+Gaussian.  Split the sum at a nearest translate of $h\Z$; the nearest term
+has $|y|\ge ah$, and the two remaining tails are bounded by geometric
+Gaussian tails.  Division is harmless because $g_{h,s}(0)\ge1$.  Finally,
+$0<f_{h,s}\le1$: Poisson summation expresses its numerator as a Fourier
+series with nonnegative coefficients, whose absolute value is at most its
+value at zero.
+
+Apply (40) with the constant $a/2$.  Suppose some long coordinate satisfies
+\[
+ \operatorname{dist}(u_j,\Z)\ge a/2,
+ \qquad j\ge2.                                                   \tag{41}
+\]
+Then $\operatorname{dist}(z_j,M\Z)\ge aM/2$.  Every third partial derivative
+of the product (39) contains either $f_{M,s}(z_j)$ or one of its first three
+derivatives.  The other undifferentiated factors are at most one, and at most
+three other factors are differentiated.  Equations (38)--(40) therefore
+give a fixed polynomial $P$ and a constant $c>0$ such that
+\[
+ \max_{|\alpha|=3}|\partial^\alpha F_t(z)|
+ \le P(n,M)e^{-cnM^2}.                                          \tag{42}
+\]
+The derivative of the traceless Hessian is a linear combination of these
+third derivatives.  Moreover, by (30),
+\[
+ |\partial_j\Psi(z)|
+ =|\tr(P_{\cT_t(z)}\,\partial_j\cT_t(z))|
+ \le\norm{\partial_j\cT_t(z)}_{\op},                            \tag{43}
+\]
+because $P_{\cT_t(z)}$ is positive semidefinite with trace one.  Thus no
+factor involving $1/\sigma_{t,d}$ is lost.  From (31), (42), and (43), after
+enlarging $P$,
+\[
+ \norm{V(z)}\le P(n,M)e^{-cnM^2}                                \tag{44}
+\]
+whenever (41) holds.
+
+Let $E_n=\sum_{s=0}^{S-1}|\eta_s|$.  On the input (35), polynomially many
+step sizes of polynomial bit complexity satisfy
+$E_n\le2^{q(n)}$ for some fixed polynomial $q$.  Since $M=2^n$, (44) implies
+for all sufficiently large $n$ that
+\[
+ E_nP(n,M)e^{-cnM^2}<\tau_n,
+ \qquad \tau_n:=2^{-4n}.                                       \tag{45}
+\]
+
+Set $a=1/8$ and define the exceptional active slabs
+\[
+ A:=\{u\in[0,1)^n:
+       \operatorname{dist}(u_j,\Z)<a\text{ for every }j\ge2\}.
+\]
+Their Haar measure is
+\[
+ \Haar(A)=(2a)^{n-1}=2^{-2n+2}.                                 \tag{46}
+\]
+If $u_0\notin A$, choose a long coordinate satisfying (41).  The coefficient
+displacement in one step is
+$B^{-1}\eta_sV(Bu_s)$, whose norm is at most
+$|\eta_s|\norm{V(Bu_s)}$ because $\norm{B^{-1}}_{\op}=1$.
+Equations (44)--(45), applied inductively, show that the total coefficient
+displacement is below $\tau_n<a/2$.  The witness coordinate therefore stays
+at distance at least $a/2$ from $\Z$, so the localization estimate remains
+valid at every step.
+
+The coordinate rounding map $u\mapsto\operatorname{round}(2u)\bmod2$ changes
+only across $1/4$ and $3/4$ in each circle coordinate.  Let $C$ be the set
+of coefficient points within $\tau_n$ of one of these boundaries in at least
+one coordinate.  A union bound gives
+\[
+ \Haar(C)\le4n\tau_n.                                           \tag{47}
+\]
+Outside $A\cup C$, the final parity equals the initial parity.  The initial
+parity of a Haar point is uniform on $\F_2^n$.  Hence
+\[
+ \Prb[\text{final parity}=\theta_*]
+ \le\Prb[\text{initial parity}=\theta_*]+\Haar(A)+\Haar(C),
+\]
+which is (36).
+
+Finally, every seed in the robust set $\cS_{L_n,d}(\varepsilon)$ must
+succeed for the exact vector field itself, since that field is one of the
+allowed perturbations.  The robust set is therefore contained in the exact
+success set.  This proves (37).  Since $n-1$ is not $o(n)$, no universal
+$\kappa(n)=o(n)$ can satisfy (33).
+\end{proof}
+
+\subsection{An exact lattice-adapted parity sieve}
+
+The product obstruction contains parity information that a Haar law ignores.
+Let $v=Bz$ be shortest and put $\theta=z\bmod2$.  For
+$k\in\Z^n$, write $y_k=B^{-T}k\in L^*$.
+
+\begin{proposition}[Dual-syndrome and Hamming sieve]              \label{prop:sieve}
+Suppose (5) holds.  If $d\norm{y_k}<1$, then
+\[
+ k^Tz=0,
+ \qquad k^T\theta=0\pmod2.                                    \tag{48}
+\]
+Moreover, with
+\[
+ q(B,d):=\min\{n,\lfloor d^2\norm{B^{-1}}_{\op}^2\rfloor\},     \tag{49}
+\]
+every shortest parity is nonzero and has Hamming weight at most $q(B,d)$.
+Consequently, for any matrix $K$ of verified rows satisfying (48), every
+shortest parity lies in the explicitly defined set
+\[
+ \cP_{B,d,K}:=\{\theta\in\F_2^n\setminus\{0\}:
+ K\theta=0,\ \operatorname{wt}(\theta)\le q(B,d)\},             \tag{50}
+\]
+whose cardinality is at most
+\[
+ Q_q:=\sum_{j=1}^{q(B,d)}\binom nj.                             \tag{51}
+\]
+It can be enumerated by filtering either the Hamming ball or the binary
+kernel, in time polynomial in
+\[
+ E_{q,K}:=\min\{Q_q,2^{n-\operatorname{rank}_{\F_2}K}\}.         \tag{51a}
+\]
+\end{proposition}
+
+\begin{proof}
+The integer $k^Tz=\ip{y_k}{v}$ has absolute value at most
+$d\norm{y_k}<1$, proving (48).  Also
+\[
+ \norm z\le\norm{B^{-1}}_{\op}\norm v
+ \le d\norm{B^{-1}}_{\op}.
+\]
+Every odd coordinate of $z$ contributes at least one to $\norm z^2$, which
+proves (49)--(51).  Finally, a shortest parity cannot be zero: if $z=2w$,
+then the nonzero lattice vector $Bw=v/2$ is shorter.
+\end{proof}
+
+\begin{corollary}[Sparse-parity solvable class]                  \label{cor:sieve}
+If $E_{q,K}=2^{o(n)}$, enumerating (50), applying the target midpoint
+estimator and BDD endpoint to every retained parity, and verifying the
+outputs solves $\SVP$ in $2^{n/2+o(n)}$ time and space.  More generally it
+suffices that $E_{q,K}\le2^{(1/2+o(1))n}$ and
+\[
+ \frac1n\log_2|\cP_{B,d,K}|<0.0264828\ldots.                    \tag{52}
+\]
+In particular, $q=o(n)$ suffices.  If $q/n\to\rho$, it suffices that
+$H_2(\rho)<0.0264828\ldots$, where
+$H_2(\rho)=-\rho\log_2\rho-(1-\rho)\log_2(1-\rho)$, equivalently
+$\rho<0.00264782\ldots$.
+\end{corollary}
+
+\begin{proof}
+Every candidate midpoint query costs $2^{(2r+o(1))n}$ operations using the
+common target sample panel, while the filtering work is polynomial in
+$E_{q,K}$.  Combine this with (34); (51) has exponent
+$H_2(\rho)+o(1)$ when $q/n\to\rho$.
+\end{proof}
+
+For the lattice (35), the rows $k=e_2,\ldots,e_n$ have
+$\norm{y_k}=2^{-n}$.  They force every long parity bit to zero.  The only
+remaining nonzero parity is $e_1$, so the counterexample to universal Haar
+ascent is solved deterministically by the input geometry.
+
+\subsection{A spectral support-chain cover}
+
+The sieve can be vacuous when a shortest vector is a dense coefficient
+cancellation.  The support-chain remedy is to transport the low-energy
+coarse response and store only its sparse rounding detail.  Put $G=B^TB$.
+Let $U\subset\R^n$ have dimension $k$ and orthogonal projector $P_U$, and
+suppose every point of the coefficient ellipsoid
+\[
+ \cE_d:=\{z\in\R^n:z^TGz\le d^2\}                              \tag{53}
+\]
+satisfies
+\[
+ \norm z\le R,
+ \qquad \norm{(I-P_U)z}\le C.                                 \tag{54}
+\]
+For the first $k$ Gram eigendirections one may take
+$R=d/\sqrt{\lambda_1(G)}$ and
+$C=d/\sqrt{\lambda_{k+1}(G)}$.
+
+\begin{theorem}[Spectral-tube parity cover]                      \label{thm:tube}
+Let $N=n(2\lceil R\rceil+2)$ and
+$s=\min\{n,\lfloor4C^2\rfloor\}$, $m=\lceil C+1/2\rceil$.
+Every shortest parity is contained in an explicitly enumerable cover of
+cardinality at most
+\[
+ 2^k\left(\sum_{j=0}^k\binom Nj\right)
+ \left(\sum_{i=0}^s\binom ni(2m)^i\right).                     \tag{55}
+\]
+In particular the cover has size $2^{o(n)}$ whenever, uniformly in the
+input model,
+\[
+ k\log(n(R+1))+C^2\log(n(C+1))=o(n),                            \tag{56}
+\]
+and the displayed catalog has only a polynomial factor in the input length.
+\end{theorem}
+
+\begin{proof}
+The coordinate half-integer hyperplanes meeting the radius-$R$ ball in $U$
+number at most $N$.  Their $k$-dimensional arrangement, including all tie
+faces, has at most $2^k\sum_{j=0}^k\binom Nj$ rounding labels.
+
+For an integer $z\in\cE_d$, put $x=P_Uz$, $u=\operatorname{round}(x)$, and
+$w=z-u$.  If $w_i\ne0$, then $z_i$ is not the nearest integer to $x_i$, so
+$|z_i-x_i|\ge1/2$.  Equation (54) implies
+\[
+ \operatorname{wt}(w)\le4C^2,
+ \qquad |w_i|\le C+1/2.
+\]
+Thus $z\bmod2$ is obtained from one arrangement label by adding one of the
+integer details counted by the second factor in (55).  This proves the cover
+and (56).  Rational spectral projectors may be certified by enlarging $R,C$;
+enumeration is output-sensitive, so an enormous $R$ is not treated as
+polynomial in $\log R$.
+\end{proof}
+
+The simplex-cancellation family from Section~12 has a one-dimensional
+minimum Gram eigenspace, $R=\Theta(\sqrt n)$, and $C<1$.  Hence (55) is
+polynomial even though its shortest parity is the all-ones word and the
+Hamming sieve is vacuous.  The rectangular family also has $k=1$ with
+$R=O(1)$ and $C=2^{-\Omega(n)}$.  The same stable lifting construction thus
+handles both known obstructions.
+
+\subsection{Exact factor transports}
+
+The size of the parity catalog is not the only exact complexity measure.
+The coefficient energy itself may have a narrow factorization.  Let
+$G=B^TB$ and, for the length guess $d\geq\lambda$, put
+\[
+ R_i:=\left\lfloor d\,\norm{\operatorname{row}_i(B^{-1})}_2\right\rfloor,
+ \qquad D_i:=\{-R_i,\ldots,R_i\}.                              \tag{57}
+\]
+Join $i$ and $j$ when $G_{ij}\ne0$.  For an elimination order $\pi$, let
+$K_i(\pi)$ contain the variable eliminated at step $i$ and its remaining
+neighbors, including earlier fill edges, and define
+\[
+ W_\pi(B,d):=\max_i\sum_{j\in K_i(\pi)}\log_2(2R_j+1).          \tag{58}
+\]
+
+\begin{theorem}[Weighted Gram--GDL elimination]                 \label{thm:gdl}
+For every explicitly supplied order $\pi$, exact search-$\SVP$ is solvable
+in space
+\[
+ 2^{W_\pi(B,d)}\poly(n,\operatorname{size}(B),\log(d+1))
+\]
+and at most $n$ times this quantity in time.  The algorithm returns a
+minimizing coefficient vector by a backward-preimage pass.
+\end{theorem}
+
+\begin{proof}
+If $v=Bz$ and $\norm v\le d$, then
+\[
+ |z_i|=|\ip{\operatorname{row}_i(B^{-1})}{v}|
+ \le d\norm{\operatorname{row}_i(B^{-1})}_2,
+\]
+so every shortest coefficient vector lies in $\prod_iD_i$.  On this finite
+product,
+\[
+ \norm{Bz}^2=\sum_iG_{ii}z_i^2+
+              \sum_{i<j}2G_{ij}z_iz_j                         \tag{59}
+\]
+is a unary-and-pairwise factor graph with exactly the displayed Gram
+interactions.  Exact min--sum elimination in order $\pi$ forms a table only
+on the current bag $K_i(\pi)$, hence at most $2^{W_\pi(B,d)}$ entries.
+Store an attaining value of the eliminated variable at every table entry;
+the reverse pass recovers a global minimizer.  Exact rational arithmetic has
+polynomial bit growth in these operations.
+
+To exclude zero, run the elimination once for each $p\in[n]$ with the domain
+$D_p\setminus\{0\}$ and take the best answer.  Every nonzero assignment
+appears in at least one run, and a shortest assignment lies in the bounded
+product.  This proves the claim.
+\end{proof}
+
+The same proof applies to auxiliary exact factorizations.  Suppose finite
+variables $x$ have domains $E_x$, local energy factors and zero--infinity
+constraint factors represent (59), and projection of the finite-objective
+assignments onto $z$ is exactly $\prod_iD_i$.  A tree decomposition
+$\mathcal D$ has weighted junction width
+\[
+ J(\mathcal D):=\max_{A\in\mathcal D}
+                 \sum_{x\in A}\log_2|E_x|.                    \tag{60}
+\]
+Min--sum and backward preimage then cost $2^{J(\mathcal D)}\poly$ up to the
+same $n$ zero-exclusion runs.  For example, after clearing denominators, a
+row $(Bz)_k=\sum_iB_{ki}z_i$ can be represented by a binary tree of exact
+partial sums and one unary square factor.  A sum over $S$ needs only the
+integer interval
+\[
+ \left[-\sum_{i\in S}|B_{ki}|R_i,
+        \sum_{i\in S}|B_{ki}|R_i\right].                       \tag{61}
+\]
+Thus a dense Gram graph need not imply a wide exact computation.  Conversely
+the state intervals in (61) can be expensive; the certified quantity is the
+weighted junction width, not unweighted treewidth.
+
+\begin{corollary}[Exact-factor escape]                           \label{cor:gdl}
+If an efficiently constructed order or auxiliary decomposition has width at
+most $(1/2+o(1))n$, it gives an unconditional half-exponential algorithm on
+that input.  In particular, width below
+$(0.0264828-\varepsilon)n$ disposes of the input well inside the later
+parity-query allowance.  No optimization over undisplayed bases or
+decompositions is assumed.
+\end{corollary}
+
+There is also an exact dense-factor escape.  It is classical in the language
+of lattices of Voronoi's first kind \cite{McKilliamGrant12}; the short proof
+is included because its coarea form is the relevant transport principle.
+
+\begin{theorem}[Obtuse-superbase minimum cut]                   \label{thm:mincut}
+Let $b_1,\ldots,b_{n+1}$ be a superbase: $b_1,\ldots,b_n$ is a
+lattice basis, $\sum_i b_i=0$, and
+$\ip{b_i}{b_j}\le0$ for $i\ne j$.  Put
+$w_{ij}=-\ip{b_i}{b_j}\ge0$.  A global minimum nontrivial cut of the graph
+with weights $w_{ij}$ returns a globally shortest lattice vector.
+\end{theorem}
+
+\begin{proof}
+Coefficients $c_i\in\Z$ are defined modulo addition of a common integer, and
+the graph-Laplacian identity gives
+\[
+ \norm{\sum_i c_ib_i}^2
+   =\sum_{i<j}w_{ij}(c_i-c_j)^2.                               \tag{62}
+\]
+For a nonzero vector normalize $\min_i c_i=0$ and put
+$S_t=\{i:c_i\ge t\}$ for $1\le t\le\max_i c_i$.  Since an integer $a$
+satisfies $a^2\ge|a|$,
+\[
+ \norm{\sum_i c_ib_i}^2
+ \ge\sum_t\sum_{i<j}w_{ij}
+       |\mathbf1_{i\in S_t}-\mathbf1_{j\in S_t}|.             \tag{63}
+\]
+Every summand in $t$ is a nontrivial cut capacity, so (63) is at least the
+global minimum cut.  Conversely, the subset vector $\sum_{i\in S}b_i$ has
+squared norm exactly the capacity of the cut $S$.  The two minima are equal,
+and a minimum cut supplies the desired vector.
+\end{proof}
+
+Obtuseness of a displayed rational superbase is exactly checkable and a
+global minimum cut is polynomial-time computable.  In particular the
+simplex-cancellation family used above has an obtuse displayed superbase:
+its exponential subset fan is submodular and is not part of the remaining
+hard core.
+
+\subsection{A direct gap escape}
+
+Fix an oriented shortest vector $v$, write $a=v/\lambda$, and let
+\[
+ \gamma(v):=\min\{\norm w/\lambda:w\in L,\ w\notin\R v\}.       \tag{64}
+\]
+Positive multiples of $v$ cannot win the first-exit competition before $v$.
+Define
+\[
+ a_\gamma:=
+ \begin{cases}
+  \sqrt{1-\gamma^2/4},&1\le\gamma\le\sqrt2,\\
+  1/\gamma,&\gamma\ge\sqrt2.
+ \end{cases}                                                    \tag{65}
+\]
+
+\begin{lemma}[Gap-dependent winner cap]                         \label{lem:gap-cap}
+If $u\in S^{n-1}$ satisfies $\ip{u}{a}\ge a_\gamma$, the first facet met by
+the ray $\R_{ge0}u$ is $F_v$.  Consequently the two winner caps for
+$\pm v$ have total mass
+\[
+ 2^{-(\delta_{\rm gap}(\gamma)+o(1))n},\qquad
+ \delta_{\rm gap}(\gamma)
+   =-\tfrac12\log_2(1-a_\gamma^2).                             \tag{66}
+\]
+\end{lemma}
+
+\begin{proof}
+Write a noncollinear competitor as $w=q\lambda b$, with $\norm b=1$ and
+$q\ge\gamma$.  Minimality of $v-w$ implies $\ip{a}{b}\le q/2$.
+Put $s=\ip{u}{a}$.  For $q\le\sqrt2$, maximizing $\ip{u}{b}$ under this constraint
+shows that $\ip{u}{b}/q\le s$ once
+$s\ge\sqrt{1-q^2/4}$.  For $q\ge\sqrt2$, the bound
+$\ip{u}{b}\le1$ gives the sufficient condition $s\ge1/q$.  Both thresholds
+decrease in $q$, yielding (65).  The fixed-height spherical-cap asymptotic is
+$(1-a_\gamma^2)^{n/2}$ up to subexponential factors.
+\end{proof}
+
+At the query allowance in (34), this lemma closes the ledger whenever
+\[
+ \gamma>(1-2^{-2(0.0264828\ldots)})^{-1/2}
+       =5.2670066\ldots.                                      \tag{67}
+\]
+The second branch in (65) is essential; continuing the first branch beyond
+$\sqrt2$ would give an invalid constant.
+
+\subsection{Causal transport through the Voronoi tiling}
+
+Let $V$ be the origin Voronoi cell and let $Q$ be nearest-lattice decoding
+away from its measure-zero ties.  For an oriented Voronoi-relevant vector
+$w$, write
+\[
+ F_w:=V\cap\{x:\ip{x}{w}=\norm w^2/2\},\qquad
+ A_w:=\mathcal H^{n-1}(F_w).                                  \tag{68}
+\]
+For a parity $\theta$, let $A_\theta$ sum these areas over the facets whose
+coefficient vectors have parity $\theta$.  Draw $X$ uniformly from $V$ and
+$U$ uniformly from $S^{n-1}$, independently, and set
+\[
+ C_\eta:=Q(X+\eta\lambda U)-Q(X).                              \tag{69}
+\]
+
+\begin{theorem}[Causal tiling kernel and transport conservation]
+                                                                    \label{thm:causal}
+For every nonzero parity $\theta$,
+\[
+ \lim_{\eta\to0+}
+ \frac{\Prb[C_\eta\bmod2L=\theta]}{\eta}
+ =d_n\frac{\lambda A_\theta}{\det L},\qquad
+ d_n:=\frac{\Gamma(n/2)}{2\sqrt\pi\,\Gamma((n+1)/2)}
+     =\Theta(n^{-1/2}).                                       \tag{70}
+\]
+Moreover, with
+\[
+ q_w:=\frac{\norm w A_w}{2n\det L},                            \tag{71}
+\]
+where both orientations are included,
+\[
+ \sum_wq_w=1,\qquad
+ \frac1{2\det L}\sum_w A_w\frac{ww^T}{\norm w}=I_n,\qquad
+ \sum_wq_w\frac{ww^T}{\norm w^2}=\frac1nI_n.                 \tag{72}
+\]
+\end{theorem}
+
+\begin{proof}
+Outside a tube of volume $O(\eta^2)$ around the codimension-two faces, a
+segment of length $\eta\lambda$ crosses at most one facet.  At a regular
+point of $F_w$, the starting points in $V$ which cross outward have normal
+thickness
+\[
+ \eta\lambda\left(\ip{U}{w/\norm w}\right)_++O(\eta^2).
+\]
+Integrate over $F_w$, average over $U$, divide by $\operatorname{vol}V=\det
+L$, and use $\E(U_1)_+=d_n$.  Summing the facets of parity $\theta$ proves
+(70).
+
+The pyramids $\operatorname{conv}(0,F_w)$ partition $V$ up to measure zero;
+their volumes are $\norm wA_w/(2n)$.  This proves the first identity in
+(72).  For the matrix identity, put $R(x)=x-Q(x)$.  Haar translation
+invariance on $\R^n/L$ gives
+\[
+ \E[Q(X+h)-Q(X)]=h-\E[R(X+h)-R(X)]=h.                          \tag{73}
+\]
+Differentiate at $h=0$.  Crossing $F_w$ has one-sided rate
+$A_w(\ip{h}{w/\norm w})_+/\det L$ and transports the label by $w$.
+Pairing $w$ and $-w$ converts the positive parts into the middle identity of
+(72).  Multiplying each summand by the definition (71) gives the last
+identity; taking the trace also recovers $\sum_wq_w=1$.
+\end{proof}
+
+This realizes the principle that information lives in transport: the label
+differences across actual first-arrival cells form an exact isotropic frame.
+If $q_{\min}$ is the sum of (71) over the oriented shortest facets, (70)
+gives total shortest-parity derivative at least
+\[
+ 2nd_nq_{\min}=\Theta(\sqrt n)q_{\min}.                         \tag{74}
+\]
+One may draw $X$ uniformly in any fundamental parallelepiped and subtract
+the nearest labels before and after the step; translation covariance gives
+the same law.  This is a geometric representation, not an available $\CVP$
+oracle.
+
+The isotropic identity by itself cannot lower-bound $q_{\min}$.
+
+\begin{proposition}[Isotropy alone has no atom bound]           \label{prop:isotropy-limit}
+For every $n\ge2$ and every $0<\varepsilon<1/n$, there is a finite centrally
+symmetric probability frame on $S^{n-1}$ with covariance $I_n/n$ but with
+total weight exactly $\varepsilon$ on a designated antipodal pair.
+\end{proposition}
+
+\begin{proof}
+Fix a unit vector $u$, an orthonormal basis $e_2,\ldots,e_n$ of $u^\perp$,
+and put
+\[
+ \alpha=\frac{1/n-\varepsilon}{1-\varepsilon}.
+\]
+Give $\pm u$ total weight $\varepsilon$.  Distribute the remaining weight
+uniformly over the centrally symmetric vectors
+\[
+ \pm\bigl(\sqrt\alpha\,u\pm\sqrt{1-\alpha}\,e_j\bigr),
+ \qquad 2\le j\le n.
+\]
+The cross terms cancel.  The covariance in the $u$ direction is
+$\varepsilon+(1-\varepsilon)\alpha=1/n$ and that on $u^\perp$ is
+$(1-\varepsilon)(1-\alpha)/(n-1)=1/n$.
+\end{proof}
+
+Thus a proof of the remaining theorem must use the fact that (72) is the
+cone-volume measure of a lattice Voronoi parallelohedron, or must combine it
+with the exact escapes above; frame conservation alone cannot suffice.
+
+There is a second obstruction to any proof that uses only local shortest
+geometry.  Let $p_w$ be the spherical measure of rays exiting $V$ through
+$F_w$, and let $p_{\min}$ sum these weights over the oriented shortest
+facets.
+
+\begin{proposition}[Kissing perturbation stress test]           \label{prop:kissing-stress}
+Suppose a lattice $L$ has $K$ oriented shortest vectors.  For every
+$\zeta>0$ there is an arbitrarily small linear perturbation $L'$ for which
+one antipodal pair is uniquely shortest and
+\[
+ p_{\min}(L')+q_{\min}(L')\le\frac{4+\zeta}{K}.
+\]
+If $L$ is rational, the perturbation may be chosen rational.
+\end{proposition}
+
+\begin{proof}
+Group the $K$ oriented shortest vectors into $K/2$ antipodal pairs.  Their
+total direct-exit mass is at most one and their total cone-volume mass is at
+most one.  Some pair $\{\pm v\}$ therefore has combined $p$- and $q$-weight
+at most $4/K$.
+
+Fix a shortest vector $v$, put $a=v/\lambda$, and apply
+$T_\tau=I-\tau aa^T$ for sufficiently small $\tau>0$.  Among the old
+shortest vectors, $\pm v$ shrink strictly more than every other pair, by the
+strict case of Cauchy--Schwarz.  Lattice discreteness gives a positive gap to
+the next length shell, so for small enough $\tau$ no longer vector overtakes
+them.  Thus $\pm T_\tau v$ are uniquely shortest.
+
+Every shortest facet contains the inball proved below, hence persists under
+a sufficiently small perturbation.  Its solid angle, area, support distance,
+and the Voronoi-cell volume vary continuously.  The two oriented weights of
+the new shortest pair therefore converge to their two old weights as
+$\tau\to0$, giving the stated bound.  When $L$ is rational,
+$aa^T=vv^T/\lambda^2$ is rational, so rational $\tau$ preserves rationality.
+\end{proof}
+
+Consequently any exponential kissing family with exponent $\kappa$ would
+rule out a universal cone-volume bound with $\delta<\kappa$, unless its small
+perturbations are removed by one of the exact joint-core escapes.  This is
+why code-derived high-kissing configurations are a necessary stress test for
+the remaining theorem; a spherical-code bound alone does not decide whether
+the corresponding lattice inputs survive those escapes.
+
+\subsection{A log-theta collision kernel}
+
+The causal crossing need not occur near the center $v/2$ of its facet.  This
+prevents direct use of the raw theta Hessian: its two nearest terms retain a
+tangential rank-one component.  The logarithmic Hessian cancels that
+component exactly.  Put
+\[
+ Z_s(x):=\rho_s(L+x)=\sum_{w\in L}e^{-\pi\norm{x-w}^2/s^2}
+\]
+and define the posterior on lattice sites
+\[
+ \Prb_x[W=w]:=\frac{e^{-\pi\norm{x-w}^2/s^2}}{Z_s(x)}.          \tag{75}
+\]
+
+\begin{theorem}[Log-theta covariance and two-site stability]
+                                                                    \label{thm:log-collision}
+For every $x\in\R^n$,
+\[
+ \mathcal C_s(x):=
+ \frac{s^4}{4\pi^2}\left(\nabla^2\log Z_s(x)+\frac{2\pi}{s^2}I_n\right)
+ =\operatorname{Cov}_x(W).                                    \tag{76}
+\]
+Let $x\in F_v$ for a shortest vector $v$, set
+$a=e^{-\pi\norm x^2/s^2}=e^{-\pi\norm{x-v}^2/s^2}$, and define
+\[
+ \epsilon_0(x):=\frac1{2a}
+   \sum_{w\notin\{0,v\}}e^{-\pi\norm{x-w}^2/s^2},\qquad
+ \epsilon_2(x):=\frac1{2a\lambda^2}
+   \sum_{w\notin\{0,v\}}\norm w^2e^{-\pi\norm{x-w}^2/s^2}.      \tag{77}
+\]
+If $\epsilon_0(x),\epsilon_2(x)\le\epsilon\le1$, then
+\[
+ \norm{\mathcal C_s(x)-\tfrac14vv^T}_{\op}
+ \le6\epsilon\lambda^2.                                       \tag{78}
+\]
+Consequently, when $\epsilon=o(1)$ the leading eigendirection of
+$\mathcal C_s(x)$ is $o(1)$-close to $\R v$.
+\end{theorem}
+
+\begin{proof}
+Differentiating the log partition function gives
+\[
+ \nabla\log Z_s(x)=-\frac{2\pi}{s^2}(x-\E_xW)
+\]
+and a second differentiation gives (76).
+
+For (78), divide all lattice sites by $\lambda$ and put $u=v/\lambda$.
+Relative to the total weight $2a$ of $\{0,v\}$, let $r_1$ and $r_2$ be the
+first and second raw moments of the remaining sites.  Cauchy--Schwarz gives
+$\norm{r_1}\le\sqrt{\epsilon_0\epsilon_2}$ and
+$\norm{r_2}_{\op}\le\epsilon_2$.  If $m=\E_x(W/\lambda)$, then
+\[
+ \norm{m-u/2}\le\sqrt{\epsilon_0\epsilon_2}+\epsilon_0/2
+ \le3\epsilon/2,
+\]
+while the normalized second raw moment differs from $uu^T/2$ by at most
+$\epsilon_2+\epsilon_0/2$.  Subtracting the two outer products bounds the
+covariance error by
+\[
+ \epsilon_2+\epsilon_0/2+3\epsilon/2+(3\epsilon/2)^2
+ \le6\epsilon.
+\]
+Rescaling by $\lambda^2$ proves (78).  Standard eigenvector perturbation
+then proves the last assertion.
+\end{proof}
+
+There is an exact line-scan interpretation.  Suppose
+$x(t)=x_0+t\xi$ crosses $F_v$ at $t=t_0$.  Ignoring the remainder in (77),
+the posterior probability of the site $v$ is
+\[
+ p(t)=\left(1+
+ \exp\!\left[-\frac{2\pi\ip{\xi}{v}(t-t_0)}{s^2}\right]\right)^{-1},
+                                                                    \tag{79}
+\]
+and
+\[
+ \mathcal C_s(x(t))=p(t)(1-p(t))vv^T.                           \tag{80}
+\]
+Thus its leading eigenvalue has a logistic ridge centered exactly at the
+facet, of physical width $s^2/|\ip{\xi}{v}|$.  The proof above, with the two
+distinguished weights no longer assumed equal, shows that (80) has
+operator error at most $10\epsilon\lambda^2$ whenever the analogues of
+$\epsilon_0,\epsilon_2$ relative to their combined weight are at most
+$\epsilon$.  If the crossing angle and $\epsilon^{-1}$ are polynomial and
+$s^2/\lambda^2=1/\poly(n)$, a polynomial grid resolves this ridge and its
+eigendirection.
+
+The quantity $\mathcal C_s$ is algebraically obtainable from
+$Z_s,\nabla Z_s,\nabla^2Z_s$, all encoded by the common DGS Fourier panel.
+However, this normalization converts the existing absolute empirical error
+into relative error.  The analytic part of the remaining theorem is
+therefore reduced to two explicit estimates on a robust shortest-facet core:
+\[
+ \epsilon_0+\epsilon_2\le n^{-\Omega(1)}
+ \quad\hbox{and}\quad
+ Z_s(x)\ \hbox{is above the empirical relative-error floor}.   \tag{81}
+\]
+Neither estimate follows from nearest-pair geometry alone.
+
+\subsection{Robust shortest-facet cores}
+
+\begin{lemma}[Shortest-facet robust core]                       \label{lem:facet-core}
+Every shortest facet $F_v$ contains, in its affine hyperplane, the ball of
+radius $\lambda/(2\sqrt3)$ centered at $v/2$.  For $0<\varepsilon<1$, the
+homothetic core
+\[
+ F_v(\varepsilon):=(1-\varepsilon)F_v+\varepsilon(v/2)          \tag{82}
+\]
+has area $(1-\varepsilon)^{n-1}A_v$, is at tangential distance at least
+$\varepsilon\lambda/(2\sqrt3)$ from every ridge, and every $x$ in the core
+satisfies
+\[
+ \norm{x-w}^2-\norm x^2\ge\varepsilon\lambda^2/2               \tag{83}
+\]
+for all $w\in L\setminus\{0,v\}$.
+\end{lemma}
+
+\begin{proof}
+On the hyperplane of $F_v$, the distance from $v/2$ to the constraint
+induced by $w$ is
+\[
+ \frac{\norm w^2-\ip{v}{w}}{2\norm{P_{v^\perp}w}}.             \tag{84}
+\]
+Scale $\lambda=1$, set $A=\norm w^2$ and $b=\ip{v}{w}$.  Minimality and
+Cauchy--Schwarz give $A\ge1$, $b\le A/2$, and $b^2\le A$.  On this domain
+\[
+ 3(A-b)^2\ge A-b^2.                                            \tag{85}
+\]
+Indeed, for $1\le A\le4$ the difference is minimized at $b=A/2$,
+where it equals $A(A-1)$; for $A\ge4$ it is minimized at $b=\sqrt A$.
+Equations (84)--(85) give the inball.
+
+Every defining slack of $F_v$ is affine and nonnegative on $F_v$.  At $v/2$
+the slack belonging to $w\ne0,v$ is
+$\norm w^2-\ip{v}{w}\ge\norm w^2/2\ge\lambda^2/2$.  The convex
+combination (82) therefore gives (83), while applying it to the inball gives
+the ridge distance.  Homothety scales $(n-1)$-area by
+$(1-\varepsilon)^{n-1}$.
+\end{proof}
+
+Taking $\varepsilon=1/n$ retains a constant fraction of every shortest-facet
+area and gives inverse-polynomial positional reach and energy margin.  Thus
+robustification costs no exponential factor.  The inball also yields the
+following unconditional, though generally weak, density escape.  If
+$N_{\min}$ counts oriented shortest facets and $\kappa_m$ is the volume of
+the unit $m$-ball, then
+\[
+ q_{\min}\ge
+ \frac{N_{\min}\kappa_{n-1}\lambda^n}
+      {2n(2\sqrt3)^{n-1}\det L}.                               \tag{86}
+\]
+
+\subsection{Tail suppression and the response-floor barrier}
+
+The robust core gives a clean weighted-tail estimate, but its parameter
+tradeoff is incompatible with the desired mass.  We state the obstruction
+for Hhan's normalization (6).
+
+\begin{lemma}[Homothetic weighted-tail bound]                  \label{lem:tail-bound}
+Fix $t>0$ and a constant $0<\eta\le1$, put $s=1/\xi_t(d)$, and
+let $x\in F_v(\eta)$.  The tail quantities in (77) satisfy
+\[
+ \epsilon_0(x)+\epsilon_2(x)
+ \le 2^{(\frac12\log_2(t_0/(\eta t))+o(1))n}.                 \tag{87}
+\]
+Consequently the universal shell estimate certifies polynomial (indeed,
+exponential) suppression for fixed parameters when $\eta t>t_0$.  Since the
+available target scale has $t<1/4$, this forces $\eta>4t_0=0.9258\ldots$ and
+retains at most
+\[
+ (1-4t_0+o(1))^{n-1}A_v
+   =2^{-(3.7540+o(1))n}A_v.                                   \tag{88}
+\]
+\end{lemma}
+
+\begin{proof}
+For $w\in L$, write
+\[
+ D_w(z):=\norm{z-w}^2-\norm z^2=\norm w^2-2\ip zw.
+\]
+This is affine in $z$.  It is nonnegative on $F_v$ for every
+$w\notin\{0,v\}$, while at the midpoint
+\[
+ D_w(v/2)=\norm w^2-\ip vw
+ =\frac{\norm w^2+\norm{w-v}^2-\lambda^2}{2}
+ \ge\frac{\norm w^2}{2}.
+\]
+The homothetic definition therefore gives
+$D_w(x)\ge\eta\norm w^2/2$.  Dividing every non-colliding term by the two-site
+weight $2a$ in (77) yields
+\[
+ \epsilon_0(x)+\epsilon_2(x)
+ \le\frac12\sum_{w\ne0}
+ \left(1+\frac{\norm w^2}{\lambda^2}\right)
+ \exp\left(-\frac{\pi\eta\norm w^2}{2s^2}\right).
+\]
+Apply Corollary~3.2 of \cite{Hhan26} with Gaussian dilation
+$a_\eta=\sqrt{2/\eta}$ and moment degree two.  Its exponent is
+$\frac12\log_2(a_\eta^2t_0/(2t))=\frac12\log_2(t_0/(\eta t))$,
+which proves (87).  The area formula in Lemma~\ref{lem:facet-core} and
+$t<1/4$ prove (88).
+\end{proof}
+
+The preceding loss concerns one convenient core.  The next bound applies
+to an arbitrary subset of a shortest facet and exposes the underlying
+conflict.  A normalized theta response estimated from
+$M=2^{(m+o(1))n}$ bounded Fourier samples has the usual absolute scale
+$M^{-1/2}=2^{-(m/2+o(1))n}$.  In fact, for
+$X\sim D_{L^*,1/s}$ the direct empirical Fourier summand obeys
+\[
+ \operatorname{Var}\bigl(\cos(2\pi\ip Xx)\bigr)
+ =\frac{1+F_s(2x)}2-F_s(x)^2.
+\]
+Thus its variance is bounded below by a constant whenever $F_s(x)=o(1)$;
+the $M^{-1/2}$ scale is present rather than merely an artifact of a uniform
+upper bound.  We deliberately allow arbitrary polynomial slack around it.
+
+\begin{theorem}[Empirical response-floor barrier]              \label{thm:response-barrier}
+Fix $t>0$, let $M=2^{(m+o(1))n}$, and put $\alpha=m/2$ and
+$s=1/\xi_t(d)$.  For a shortest facet $F_v$, let $E_v\subseteq F_v$ be any
+set on which, for fixed $c,C>0$,
+\[
+ \epsilon_0(x)\le n^{-c},\qquad
+ F_s(x)\ge n^{-C}2^{-\alpha n}.                               \tag{89}
+\]
+Writing $x=v/2+y$ with $y\perp v$, every $x\in E_v$ satisfies
+\[
+ \frac{\norm{y}^2}{\lambda^2}
+ \le\frac14\left(\frac{\alpha}{t}-1\right)
+       +O\left(\frac{\log n}{n}\right).                       \tag{90}
+\]
+If the leading term on the right lies in $(0,1/12)$, then
+\[
+ \frac{\mathcal H^{n-1}(E_v)}{A_v}
+ \le
+ \left(\sqrt{3(\alpha/t-1)+O(\log n/n)}\right)^{n-1}.          \tag{91}
+\]
+If $\alpha\le t$, the fraction is instead at most
+$2^{-\frac12n\log_2 n+O(n\log\log n)}$ (and can be empty).
+\end{theorem}
+
+\begin{proof}
+On $F_v$, orthogonality gives equal distinguished weights
+\[
+ a=\exp\left[-\pi\xi_t(d)^2
+       \left(\frac{\lambda^2}{4}+\norm{y}^2\right)\right].
+\]
+The first condition in (89) implies $Z_s(x)=2a(1+\epsilon_0(x))\le3a$ for
+large $n$.  Since $\rho_s(L)\ge1$, one has $F_s(x)=Z_s(x)/\rho_s(L)\le3a$.
+Combining this with the response floor in (89), taking base-two logarithms,
+and using $\xi_t(d)^2=4nt\ln2/(\pi d^2)$ gives
+\[
+ t\left(\frac{\lambda^2}{d^2}
+       +\frac{4\norm{y}^2}{d^2}\right)
+ \le\alpha+O(\log n/n).
+\]
+Because $\lambda\le d\le(1+1/n)\lambda$, this is (90).
+
+Thus $E_v$ lies in an $(n-1)$-ball about $v/2$ of the radius in (90).
+Lemma~\ref{lem:facet-core} lower-bounds $A_v$ by the volume of the
+$(n-1)$-ball of radius $\lambda/(2\sqrt3)$.  Dividing the two ball volumes
+proves (91).  When $\alpha\le t$, (90) gives radius
+$O(\lambda\sqrt{\log n/n})$; the same volume comparison gives the stated
+superexponential bound.
+\end{proof}
+
+Even granting the entire $2^{n/2+o(n)}$ sample panel to one query gives
+$m=1/2$ and $\alpha=1/4$.  Tail suppression from Lemma~\ref{lem:tail-bound}
+requires $t>t_0$ even at $\eta=1$.  Letting $t\downarrow t_0$ in (91) shows
+that the accessible fraction of a shortest facet is at most
+$2^{-(1.0289+o(1))n}$.  Conversely, retaining fraction
+$2^{-(\delta+o(1))n}$ in (91) requires
+\[
+ m\ge2t_0\left(1+\frac{2^{-2\delta}}{3}\right)
+   =0.61169\ldots\qquad(\delta=0.0264828),                     \tag{92}
+\]
+strictly above the half-exponential budget.  The actual multi-query ledger
+is smaller still.  Therefore the two estimates in (81) cannot hold on
+enough cone-volume mass for the proposed empirical log-theta line scan.
+
+\subsection{The remaining joint-core theorem}
+
+Let $p_{\min}$ denote the spherical measure of directions whose first
+Voronoi exit has a shortest parity.  At allowance
+$\delta<0.0264828\ldots$, fix an explicit enumerable catalogue of
+certificates and call an input a \emph{joint core relative to that catalogue}
+after every certified short-dual quotient and basis preprocessing step if:
+all Hamming, spectral-tube, and affine parity covers have exponent exceeding
+$\delta$; every efficiently displayed exact factor decomposition has cost
+exceeding the half-exponential budget in Corollary~\ref{cor:gdl}; and no
+certified obtuse-superbase representation applies.
+
+This qualification is essential.  Without a fixed certificate catalogue,
+``joint core'' is not an intrinsic class of lattices and the proposed
+inequality is not a well-posed universal assertion.  Even after fixing the
+catalogue, Proposition~\ref{prop:kissing-stress} shows that neither isotropy
+nor local shortest-facet geometry can prove the desired exponent.
+
+The surviving geometric statement is now the following, and is deliberately
+recorded as a conjecture rather than a theorem.
+
+\begin{conjecture}[Joint-core cone-volume bound]                 \label{conj:joint-core}
+For some universal $\delta<0.0264828\ldots$, every joint core satisfies
+\[
+ p_{\min}+q_{\min}\ge2^{-(\delta+o(1))n}.                      \tag{93}
+\]
+\end{conjecture}
+
+Theorem~\ref{thm:causal} and Lemma~\ref{lem:facet-core} settle the geometric
+conversion from $q_{\min}$ to a robust causal crossing set, losing only a
+polynomial factor.  Proposition~\ref{prop:isotropy-limit} shows why the
+matrix conservation law does not prove (93) on its own.
+Theorem~\ref{thm:log-collision} supplies the exact line observable and removes
+all tangential-location dependence.  Theorem~\ref{thm:response-barrier},
+however, proves that even (93) would not instantiate the empirical line scan:
+the tail and response-floor estimates (81) cannot coexist on the required
+mass under the stated sample budget.  The genuinely viable target is
+therefore a lower bound on \emph{response-weighted} shortest-collision mass,
+together with an estimator exploiting its variance, or a different nonlocal
+observable that avoids division by the exponentially small local theta
+response.  Direct-plus-cone mass alone is no longer a sufficient theorem.
+
+\section{Conclusion}
+
+Hhan's midpoint-Hessian theorem already supplies the exact recovery endpoint.
+The Fourier samples used there contain a larger continuous object: a
+traceless matrix field and its derivatives on the whole torus.  Bounded
+narrowing importance sampling exposes this field at a rigorously controlled
+smooth scale with exponent $0.4002$, log-trace-exponential smoothing makes
+its gradient gap-free, and half-grid stationarity turns a successful
+continuous endpoint into an exact target midpoint without branch transport.
+
+These facts prove a black-box reduction from robust shortest-parity basin
+mass to exact $\SVP$ in $2^{n/2+o(n)}$ time and space.  They do not prove that
+the universal soft-Hessian flow supplies that mass.  On the contrary, the
+anisotropic product family proves an essentially $2^{-n}$ upper bound for
+the proposed Haar-seeded law and resolves the former Conjecture~13.1
+negatively.
+
+That counterexample does not obstruct every lattice-adapted seed.  Exact
+short-dual equations remove irrelevant parity bits, the coefficient norm
+gives a sparse Hamming law, and the spectral-tube theorem carries a
+low-dimensional coarse response together with only a sparse lifting detail.
+Weighted min--sum elimination gives a different exact escape whenever the
+coefficient energy has a narrow displayed factorization.  An obtuse
+superbase gives a polynomial minimum-cut algorithm, so the
+simplex-cancellation family is solved for a stronger reason than its
+spectral cover.
+
+For inputs surviving those reductions, causal Voronoi transport supplies an
+exact geometric kernel.  Its facet labels carry the crossing parities, its
+cone-volume weights form an isotropic transport frame, and shortest facets
+retain robust constant-area cores.  A sufficiently large noncollinear gap is
+also solved by an explicit direct winner cap.  What remains is not the former
+dense spectral core but a response-weighted version of the joint core.
+Conjecture~\ref{conj:joint-core} remains a geometric question only after its
+certificate catalogue is fixed; in any case, it is no longer sufficient for
+the algorithm.  The response-floor barrier proves that the exact log-theta
+covariance detector cannot combine polynomial tail suppression with the
+required facet mass in $2^{n/2+o(n)}$ samples.  The lower constant in the
+title is therefore conditional on a different observable or a variance-aware
+response-weighted collision theorem.  The present paper proves the
+surrounding reduction, exact escapes, and this obstruction, but not that
+replacement clause.
+
+\begin{thebibliography}{9}
+\raggedright
+
+\bibitem{ACKS25}
+Divesh Aggarwal, Yanlin Chen, Rajendra Kumar, and Yixin Shen.
+\newblock Improved classical and quantum algorithms for the shortest vector
+problem via bounded distance decoding.
+\newblock \emph{SIAM Journal on Computing}, 54(2):233--278, 2025.
+
+\bibitem{ADRS15}
+Divesh Aggarwal, Daniel Dadush, Oded Regev, and Noah
+Stephens-Davidowitz.
+\newblock Solving the shortest vector problem in $2^n$ time using discrete
+Gaussian sampling.
+\newblock In \emph{Proceedings of STOC 2015}, pages 733--742, 2015.
+
+\bibitem{DRS14}
+Daniel Dadush, Oded Regev, and Noah Stephens-Davidowitz.
+\newblock On the closest vector problem with a distance guarantee.
+\newblock In \emph{Proceedings of CCC 2014}, pages 98--109, 2014.
+
+\bibitem{Hhan26}
+Minki Hhan.
+Solving the shortest vector problem in $2^{0.6039n}$ time via
+mid-point Hessian.
+arXiv:2608.02478v2, August 2026.
+
+\bibitem{MR04}
+Daniele Micciancio and Oded Regev.
+\newblock Worst-case to average-case reductions based on Gaussian measures.
+\newblock In \emph{Proceedings of FOCS 2004}, pages 372--381, 2004.
+
+\bibitem{OpenAI26}
+OpenAI.
+\newblock Binary and spherical codes.
+\newblock Chapter 2 of \emph{Ten Advances in Mathematics and Theoretical
+Computer Science}, August 2026.
+\newblock \url{https://cdn.openai.com/pdf/ten-proofs-oai.pdf}.
+
+\bibitem{McKilliamGrant12}
+Robert G. McKilliam and Alex Grant.
+\newblock Finding short vectors in a lattice of Voronoi's first kind.
+\newblock \emph{SIAM Journal on Discrete Mathematics},
+28(3):1292--1302, 2014.
+\newblock arXiv:1201.5154.
+
+\bibitem{RSD17}
+Oded Regev and Noah Stephens-Davidowitz.
+\newblock An inequality for Gaussians on lattices.
+\newblock \emph{SIAM Journal on Discrete Mathematics}, 31(2):749--757, 2017.
+
+\end{thebibliography}
+
+\end{document}

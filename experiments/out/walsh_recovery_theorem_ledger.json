@@ -1,0 +1,53 @@
+{
+  "experiment": "walsh_recovery_theorem_exponent_ledger",
+  "t0": 0.23147,
+  "epsilon": 0.001,
+  "candidates": [
+    {
+      "name": "paper_parameters_with_ordinary_GL",
+      "r": 0.2222355,
+      "R": 0.400613,
+      "chi": 0.3961331,
+      "domain_exponent": 0.6038669,
+      "sample_exponent": 0.6038657533754043,
+      "attenuation_exponent": 0.6472954729275946,
+      "population_energy_exponent": 0.5032069311513114,
+      "gl_exponent_with_occupancy": 1.2945932391043806,
+      "isolation_exponent": -0.1006599688486885,
+      "overall_exponent": 1.2945932391043806,
+      "conjectural": false
+    },
+    {
+      "name": "h0_sparse_histogram_with_ordinary_GL",
+      "r": 0.22407354148,
+      "R": 0.23147023146999998,
+      "chi": 0.0,
+      "domain_exponent": 1.0,
+      "sample_exponent": 0.4488840548397726,
+      "attenuation_exponent": 0.24750072134506398,
+      "population_energy_exponent": 0.4949999999958088,
+      "gl_exponent_with_occupancy": 1.5972333330105828,
+      "isolation_exponent": -0.5050000000041912,
+      "overall_exponent": 1.5972333330105828,
+      "conjectural": false
+    },
+    {
+      "name": "direct_random_half_coset_transport",
+      "r": 0.23247,
+      "R": 0.23247,
+      "chi": 0.499,
+      "domain_exponent": 0.501,
+      "sample_exponent": 0.46494,
+      "attenuation_exponent": 0.23247,
+      "population_energy_exponent": 0.46183033651951916,
+      "gl_exponent_with_occupancy": 0.53706,
+      "isolation_exponent": -0.03916966348048079,
+      "overall_exponent": 0.501,
+      "conjectural": true
+    }
+  ],
+  "interpretation": {
+    "ordinary_gl": "Fails to lower the exponent after normalized Fourier and histogram-occupancy factors are included.",
+    "transport_implication": "Conditional on target-width sampling or an equivalent uniform Walsh-moment estimator in one random half coset, the existing full WHT has exponent 1/2+epsilon."
+  }
+}

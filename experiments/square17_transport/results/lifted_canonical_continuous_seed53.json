@@ -1,0 +1,2242 @@
+{
+  "status": "floating_point_lifted_equilibrium_not_global_proof",
+  "method": "night_vision_entropy_x_v3_first_arrival_x_bruun_dip_basis",
+  "config": {
+    "lanes": 64,
+    "sweeps": 2000,
+    "start_side": 5.0,
+    "target_side": 4.675530093604551,
+    "shrink_fraction": 0.35,
+    "cool_start_fraction": 0.35,
+    "start_axis_temperature": 0.3,
+    "end_axis_temperature": 0.0001,
+    "target_clearance": 2e-05,
+    "activation_clearance": 0.12,
+    "activation_temperature": 0.025,
+    "absolute_smoothing": 2e-05,
+    "metric_ridge": 0.0002,
+    "translation_trust": 0.028,
+    "phase_trust": 0.018,
+    "momentum": 0.72,
+    "dual_cap": 0.12,
+    "posterior_interval": 20,
+    "mutation_interval": 20,
+    "effective_lane_fraction": 0.68,
+    "mutation_translation": 0.035,
+    "mutation_phase": 0.05,
+    "finite_dimension": 6.0,
+    "emit_lanes": 8,
+    "terminal_measurement": false,
+    "seed": 53
+  },
+  "target_side": 4.675530093604551,
+  "feasible_emissions": 0,
+  "best": {
+    "lane": 29,
+    "sector": "continuous",
+    "posterior_probability": 0.04284110278473537,
+    "minimum_clearance": -0.0878032998274959,
+    "overlap_residual": 0.15233123937371107,
+    "feasible": false,
+    "polish_audit": {
+      "success": false,
+      "message": "terminal measurement explicitly skipped"
+    },
+    "poses": [
+      [
+        1.6285609689027924,
+        3.161444094324553,
+        0.0073936626515613835
+      ],
+      [
+        4.215486704588352,
+        1.0773101146733972,
+        0.004373370373529029
+      ],
+      [
+        0.46084113716557196,
+        0.4599487342552421,
+        0.0029287792496980325
+      ],
+      [
+        4.10031090961073,
+        4.096307503161041,
+        -0.10744315491037648
+      ],
+      [
+        2.3662980884585534,
+        1.0590467503474534,
+        0.0014857919909773143
+      ],
+      [
+        4.173752073850555,
+        3.043679870597944,
+        -0.005008919417757829
+      ],
+      [
+        0.6155754307401684,
+        4.162258761353721,
+        0.0230581784348165
+      ],
+      [
+        0.5059265196356323,
+        2.078618777716404,
+        -0.009774328931921428
+      ],
+      [
+        2.657038633585168,
+        4.137234206323329,
+        0.07078907030289738
+      ],
+      [
+        2.583448243012697,
+        2.129837381523962,
+        -0.1266442302531987
+      ],
+      [
+        1.4250359418206726,
+        1.0671847205821274,
+        0.0019357263599582009
+      ],
+      [
+        3.301921970047083,
+        1.045597499417062,
+        0.0013728876970611203
+      ],
+      [
+        3.1393624612355344,
+        3.0971941095843323,
+        -0.06511720529510312
+      ],
+      [
+        1.6250405195840574,
+        4.158825075496297,
+        0.0033597057419969545
+      ],
+      [
+        0.5851460079639813,
+        3.11172366256306,
+        -0.07792915928735722
+      ],
+      [
+        4.182857709384917,
+        2.0411227604713864,
+        0.0017015990118934843
+      ],
+      [
+        1.560154455450698,
+        2.110768029706039,
+        -0.09880236597677516
+      ]
+    ]
+  },
+  "emissions": [
+    {
+      "lane": 29,
+      "sector": "continuous",
+      "posterior_probability": 0.04284110278473537,
+      "minimum_clearance": -0.0878032998274959,
+      "overlap_residual": 0.15233123937371107,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "message": "terminal measurement explicitly skipped"
+      },
+      "poses": [
+        [
+          1.6285609689027924,
+          3.161444094324553,
+          0.0073936626515613835
+        ],
+        [
+          4.215486704588352,
+          1.0773101146733972,
+          0.004373370373529029
+        ],
+        [
+          0.46084113716557196,
+          0.4599487342552421,
+          0.0029287792496980325
+        ],
+        [
+          4.10031090961073,
+          4.096307503161041,
+          -0.10744315491037648
+        ],
+        [
+          2.3662980884585534,
+          1.0590467503474534,
+          0.0014857919909773143
+        ],
+        [
+          4.173752073850555,
+          3.043679870597944,
+          -0.005008919417757829
+        ],
+        [
+          0.6155754307401684,
+          4.162258761353721,
+          0.0230581784348165
+        ],
+        [
+          0.5059265196356323,
+          2.078618777716404,
+          -0.009774328931921428
+        ],
+        [
+          2.657038633585168,
+          4.137234206323329,
+          0.07078907030289738
+        ],
+        [
+          2.583448243012697,
+          2.129837381523962,
+          -0.1266442302531987
+        ],
+        [
+          1.4250359418206726,
+          1.0671847205821274,
+          0.0019357263599582009
+        ],
+        [
+          3.301921970047083,
+          1.045597499417062,
+          0.0013728876970611203
+        ],
+        [
+          3.1393624612355344,
+          3.0971941095843323,
+          -0.06511720529510312
+        ],
+        [
+          1.6250405195840574,
+          4.158825075496297,
+          0.0033597057419969545
+        ],
+        [
+          0.5851460079639813,
+          3.11172366256306,
+          -0.07792915928735722
+        ],
+        [
+          4.182857709384917,
+          2.0411227604713864,
+          0.0017015990118934843
+        ],
+        [
+          1.560154455450698,
+          2.110768029706039,
+          -0.09880236597677516
+        ]
+      ]
+    },
+    {
+      "lane": 8,
+      "sector": 8,
+      "posterior_probability": 0.04240783944148667,
+      "minimum_clearance": -0.08900154564380702,
+      "overlap_residual": 0.15447674014030097,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "message": "terminal measurement explicitly skipped"
+      },
+      "poses": [
+        [
+          0.5469962904668197,
+          0.5412354441510223,
+          -0.05996368762735527
+        ],
+        [
+          0.517065053385625,
+          1.7333269487704488,
+          0.03213157602360239
+        ],
+        [
+          0.520873374069294,
+          2.8474838252742942,
+          0.038230810187067976
+        ],
+        [
+          0.6486664592870112,
+          4.015296920161983,
+          -0.3117760158478353
+        ],
+        [
+          1.7928874419143146,
+          4.195822260798333,
+          2.5977521247444457e-05
+        ],
+        [
+          1.9195846890660522,
+          2.8632091696437363,
+          -0.48335031273140455
+        ],
+        [
+          2.0910403729496707,
+          1.5452529010432692,
+          0.08497378191155003
+        ],
+        [
+          2.128721092960172,
+          0.5190446907502815,
+          0.038969027471295825
+        ],
+        [
+          3.147552194676619,
+          0.48518578273046126,
+          4.367047206077501e-06
+        ],
+        [
+          3.1458041949607396,
+          1.4421328289490984,
+          -0.0002933939846040401
+        ],
+        [
+          3.1710582021318063,
+          2.392431182839503,
+          -0.0024878054530956817
+        ],
+        [
+          3.191089590473342,
+          3.3366133104415616,
+          5.297862115116736e-05
+        ],
+        [
+          2.7577816471374685,
+          4.264511386011503,
+          4.0507294140623706e-05
+        ],
+        [
+          4.1818438212809665,
+          4.18201084420582,
+          0.00963250609706856
+        ],
+        [
+          4.176410032306992,
+          3.2041149526157335,
+          0.005898103652372866
+        ],
+        [
+          4.162945867741475,
+          1.559799309245336,
+          -0.024483820263176526
+        ],
+        [
+          4.163991730950625,
+          0.5363390812743596,
+          0.0223180187241111
+        ]
+      ]
+    },
+    {
+      "lane": 3,
+      "sector": 3,
+      "posterior_probability": 0.03898011967478801,
+      "minimum_clearance": -0.07705027272198295,
+      "overlap_residual": 0.1712338413761744,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "message": "terminal measurement explicitly skipped"
+      },
+      "poses": [
+        [
+          0.6117777778957727,
+          0.6236931262659899,
+          0.18723677161339836
+        ],
+        [
+          1.9095508063884015,
+          0.6946460604403167,
+          -0.20975549412816974
+        ],
+        [
+          3.098225136034322,
+          0.6337554698597326,
+          -0.15055156914172918
+        ],
+        [
+          4.138957441085436,
+          0.5460957674936683,
+          -0.06426494455354304
+        ],
+        [
+          3.966936882336622,
+          1.7356693311007405,
+          0.3462010563249587
+        ],
+        [
+          2.8422669140588805,
+          1.9018811592556142,
+          0.17543830596515697
+        ],
+        [
+          1.7897976913952622,
+          1.943345944726084,
+          0.11518199516505834
+        ],
+        [
+          0.5150627734170498,
+          1.7518979668547274,
+          -0.026580768587948556
+        ],
+        [
+          0.5358772988674184,
+          3.2179567256042856,
+          -0.05344687091500422
+        ],
+        [
+          1.8170055799394695,
+          3.028210516252373,
+          0.2639385309517568
+        ],
+        [
+          3.0358894921851807,
+          3.109858514979684,
+          -0.2363918990963758
+        ],
+        [
+          4.16586333069297,
+          3.192144763635283,
+          -0.0006629711267053251
+        ],
+        [
+          0.4248901417507454,
+          4.2525732436302555,
+          1.4245494024511807e-05
+        ],
+        [
+          1.3499813594187875,
+          4.204745952068055,
+          2.8328526405996257e-05
+        ],
+        [
+          2.3035958334207476,
+          4.216542489998283,
+          2.5600565790817598e-05
+        ],
+        [
+          3.258360670877389,
+          4.194358051570177,
+          0.00027723793668588126
+        ],
+        [
+          4.214605904670734,
+          4.2151458818892955,
+          6.120673198606319e-06
+        ]
+      ]
+    },
+    {
+      "lane": 51,
+      "sector": "continuous",
+      "posterior_probability": 0.03882932652166059,
+      "minimum_clearance": -0.08584411162222544,
+      "overlap_residual": 0.17196520340591503,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "message": "terminal measurement explicitly skipped"
+      },
+      "poses": [
+        [
+          0.47840936951491714,
+          1.3744360223335295,
+          0.0008306107136147878
+        ],
+        [
+          4.18338457806379,
+          4.182126051656079,
+          0.00015773126411267047
+        ],
+        [
+          4.126902897611686,
+          0.9039404459637141,
+          0.04550254703118228
+        ],
+        [
+          0.4767071431134914,
+          4.19878104432158,
+          0.00025779788556457017
+        ],
+        [
+          2.4850845644056405,
+          2.8159209531994653,
+          -0.09860443892209081
+        ],
+        [
+          2.056737697811551,
+          0.48458971805368817,
+          0.002038790858649775
+        ],
+        [
+          2.657606577456775,
+          4.012741798220759,
+          -0.41837759236832495
+        ],
+        [
+          1.4860821789686909,
+          2.9573514793354834,
+          -0.0837684444133937
+        ],
+        [
+          4.13288707500107,
+          2.0652814395082113,
+          -0.08377464188873296
+        ],
+        [
+          2.9759970193596916,
+          1.7337901990315545,
+          0.3505433049220057
+        ],
+        [
+          1.7241139958424219,
+          1.6984368373339105,
+          0.7739959306479163
+        ],
+        [
+          3.5638371336031893,
+          3.0941992562670775,
+          0.13203945469995793
+        ],
+        [
+          1.5040540200857344,
+          3.943861450588172,
+          -0.0876192876441777
+        ],
+        [
+          0.4347071188977851,
+          2.3176005754425324,
+          2.8921521305513842e-05
+        ],
+        [
+          1.0929600002874242,
+          0.41424534026328935,
+          -0.000178919778127673
+        ],
+        [
+          0.456251701097278,
+          3.2433563507918155,
+          0.00020805864134143537
+        ],
+        [
+          3.1186193639588256,
+          0.5927987983489594,
+          -0.0006104288785778733
+        ]
+      ]
+    },
+    {
+      "lane": 11,
+      "sector": 11,
+      "posterior_probability": 0.037863537742718556,
+      "minimum_clearance": -0.11998042148517829,
+      "overlap_residual": 0.17664406144887146,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "message": "terminal measurement explicitly skipped"
+      },
+      "poses": [
+        [
+          0.6499853977383779,
+          0.6395601012405147,
+          0.20141048847013154
+        ],
+        [
+          0.5921610721246454,
+          1.6651187655348194,
+          0.15876238677646726
+        ],
+        [
+          0.6107224288749856,
+          2.683280411863007,
+          0.1483301576534507
+        ],
+        [
+          0.7584806139416123,
+          3.939577290321371,
+          0.5582728456515187
+        ],
+        [
+          2.0235331470743683,
+          4.073239399384228,
+          -0.21758440285921488
+        ],
+        [
+          1.683793455136875,
+          2.9618498584768926,
+          0.009979649503450871
+        ],
+        [
+          2.0011757590991817,
+          1.7578036285225807,
+          -0.3282365256837266
+        ],
+        [
+          1.7130597410148962,
+          0.594529270248065,
+          0.1235377970227316
+        ],
+        [
+          3.183467404572058,
+          0.5528844255759688,
+          0.062488095552610146
+        ],
+        [
+          3.1728634513225793,
+          1.6386352581618797,
+          0.0003269493852596783
+        ],
+        [
+          2.958373629644306,
+          3.0022696387622525,
+          -0.743694422191558
+        ],
+        [
+          3.193504702706633,
+          4.226682015764677,
+          0.0017568763560775746
+        ],
+        [
+          4.220777715656566,
+          0.4574101912196156,
+          -0.0017282985883699808
+        ],
+        [
+          4.178658575913845,
+          1.430553079370847,
+          0.010018279123431673
+        ],
+        [
+          4.186274762568258,
+          2.357073465507373,
+          0.009523429516334447
+        ],
+        [
+          4.161625082998377,
+          3.236905461747278,
+          0.009508898469775096
+        ],
+        [
+          4.183306816401224,
+          4.185339799623447,
+          0.009063418803603951
+        ]
+      ]
+    },
+    {
+      "lane": 9,
+      "sector": 9,
+      "posterior_probability": 0.03781230119441607,
+      "minimum_clearance": -0.10203201656114946,
+      "overlap_residual": 0.1768920990276774,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "message": "terminal measurement explicitly skipped"
+      },
+      "poses": [
+        [
+          0.43597912206114753,
+          0.43588716834912816,
+          0.00017103123730055625
+        ],
+        [
+          0.4463634648689468,
+          1.3339486999754213,
+          0.0003545660919446192
+        ],
+        [
+          0.4880614321051319,
+          2.278876440308848,
+          0.0011899753483000097
+        ],
+        [
+          0.4901451249398937,
+          3.2591719745738335,
+          0.0014285537193723385
+        ],
+        [
+          0.4515271874968876,
+          4.224089675943279,
+          -0.0001905053840979276
+        ],
+        [
+          1.5593021812332337,
+          4.06356734942948,
+          0.22380672626916498
+        ],
+        [
+          1.7660757246157888,
+          2.9075538099452696,
+          -0.08758060655542543
+        ],
+        [
+          1.506000927507666,
+          1.9241299554222526,
+          -0.09629678511595219
+        ],
+        [
+          1.8607029419361447,
+          0.5778735924500407,
+          -0.12238196852105354
+        ],
+        [
+          2.9443502516410267,
+          0.5214776907570492,
+          0.017413940288422247
+        ],
+        [
+          2.858878549968021,
+          1.8405903688327259,
+          0.17199033650335271
+        ],
+        [
+          3.014705387154177,
+          2.9411004662848983,
+          -0.0003192205439155327
+        ],
+        [
+          2.6162080024246706,
+          4.086400461071079,
+          0.11599232510349577
+        ],
+        [
+          4.15672928520025,
+          4.1601569931449704,
+          0.01773304180816604
+        ],
+        [
+          4.078819458606197,
+          2.90907056263024,
+          -0.1346323858482903
+        ],
+        [
+          4.124162488151092,
+          1.8000038060752053,
+          0.10092369696554693
+        ],
+        [
+          4.062406940570073,
+          0.6383769669772864,
+          -0.25719934548924017
+        ]
+      ]
+    },
+    {
+      "lane": 44,
+      "sector": "continuous",
+      "posterior_probability": 0.035935176611742295,
+      "minimum_clearance": -0.09627131229886021,
+      "overlap_residual": 0.18597900415946647,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "message": "terminal measurement explicitly skipped"
+      },
+      "poses": [
+        [
+          2.4932190532855207,
+          3.0459939806899423,
+          0.08576540682297218
+        ],
+        [
+          0.4705238695904675,
+          0.4694373207988684,
+          -0.0030598198086492223
+        ],
+        [
+          3.9613752566846903,
+          0.7550323455119554,
+          0.3922442384967233
+        ],
+        [
+          0.41970081807239723,
+          4.254224989237083,
+          2.4011136348756068e-05
+        ],
+        [
+          4.132557066536783,
+          4.145979584099994,
+          0.05741467671952394
+        ],
+        [
+          2.516307893058903,
+          0.9188551312910118,
+          0.028734735262294975
+        ],
+        [
+          0.4765698861388283,
+          2.3991436523008716,
+          -0.0002334536877192095
+        ],
+        [
+          4.088319495701433,
+          1.9361148000995752,
+          0.12107987665976783
+        ],
+        [
+          2.0323832030350064,
+          4.117842969121999,
+          -0.11405898103999978
+        ],
+        [
+          1.7368703732430888,
+          1.8436983815113606,
+          0.517869356937503
+        ],
+        [
+          1.4640247227295209,
+          3.0921733701278273,
+          0.06715547811502354
+        ],
+        [
+          2.970852473951288,
+          1.959659451737611,
+          -0.10730624804383748
+        ],
+        [
+          3.097183636622692,
+          4.164019549486817,
+          -0.011826745386222748
+        ],
+        [
+          1.4890417088294585,
+          0.6283449884669161,
+          -0.03802280777213718
+        ],
+        [
+          4.106466626053387,
+          3.0542809788610454,
+          -0.11261013088347871
+        ],
+        [
+          0.48342645194063205,
+          1.4325613740387853,
+          -0.005044391400478521
+        ],
+        [
+          0.4316468515496151,
+          3.3504798579792734,
+          -9.449691447560582e-06
+        ]
+      ]
+    },
+    {
+      "lane": 0,
+      "sector": 0,
+      "posterior_probability": 0.03593158488178675,
+      "minimum_clearance": -0.1161475841444673,
+      "overlap_residual": 0.1859964057926164,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "message": "terminal measurement explicitly skipped"
+      },
+      "poses": [
+        [
+          0.6662755129525166,
+          0.6790471612167984,
+          -0.19143638199624424
+        ],
+        [
+          1.8033152654234996,
+          0.610770528824337,
+          -0.09689703966083929
+        ],
+        [
+          2.8809542003200557,
+          0.6829175274474171,
+          -0.22934190289332235
+        ],
+        [
+          4.158039264713675,
+          0.5178321564528877,
+          0.03487844154357156
+        ],
+        [
+          4.067965125601514,
+          1.97878515608637,
+          -0.1544950770555633
+        ],
+        [
+          2.8777847977403637,
+          2.0851000648168774,
+          0.06879220560692478
+        ],
+        [
+          1.7973859125343927,
+          1.9588733872748878,
+          0.2587044220946355
+        ],
+        [
+          0.6663066633022627,
+          1.8748522906084328,
+          0.21495414654560374
+        ],
+        [
+          0.38386608057304356,
+          3.062134799335895,
+          2.732980848441091e-05
+        ],
+        [
+          1.2704880531159046,
+          2.9741282278443446,
+          8.826026941544107e-05
+        ],
+        [
+          2.1835538190689663,
+          3.083939019709825,
+          0.00013604454565085966
+        ],
+        [
+          3.160897686901153,
+          3.128688227795978,
+          -0.006866561099548973
+        ],
+        [
+          4.163110072879,
+          3.1421229515972606,
+          -0.00971831625528996
+        ],
+        [
+          4.151857356231748,
+          4.154129372196654,
+          -0.024343497586790885
+        ],
+        [
+          3.032218651718362,
+          4.151513989136562,
+          0.03854959350146214
+        ],
+        [
+          1.9865993269353803,
+          4.116733475398798,
+          -0.05124163641160617
+        ],
+        [
+          0.6547266288615042,
+          4.099278038849785,
+          -0.12477444195504095
+        ]
+      ]
+    }
+  ],
+  "trace": [
+    {
+      "sweep": 1,
+      "side": 5.0,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.258057822315215,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 64.0,
+      "best_lane": 2,
+      "best_minimum_clearance": -1.948902662562979e-05,
+      "best_overlap_residual": 2.4912450389154667e-05,
+      "median_overlap_residual": 0.8483790401445457,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 20,
+      "side": 4.99929513399473,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2571253020685162,
+      "mean_accepted_action": 0.61334228515625,
+      "effective_configuration_lanes": 43.52000000015515,
+      "best_lane": 3,
+      "best_minimum_clearance": -0.0002344049644280588,
+      "best_overlap_residual": 0.00037595975828180576,
+      "median_overlap_residual": 0.750783906500915,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 40,
+      "side": 4.9970878302188915,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2539996702922385,
+      "mean_accepted_action": 0.62890625,
+      "effective_configuration_lanes": 43.51999999992066,
+      "best_lane": 10,
+      "best_minimum_clearance": -0.024950327598764033,
+      "best_overlap_residual": 0.03124553049228159,
+      "median_overlap_residual": 0.7276229973518014,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 60,
+      "side": 4.9934670483308725,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2502095065680603,
+      "mean_accepted_action": 0.78125,
+      "effective_configuration_lanes": 43.520000000005695,
+      "best_lane": 10,
+      "best_minimum_clearance": -0.028101578272299754,
+      "best_overlap_residual": 0.04627197868958876,
+      "median_overlap_residual": 0.7133204170180325,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 80,
+      "side": 4.9885237384223435,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.244939353655497,
+      "mean_accepted_action": 0.828125,
+      "effective_configuration_lanes": 43.52000000010253,
+      "best_lane": 10,
+      "best_minimum_clearance": -0.04096813282021339,
+      "best_overlap_residual": 0.06419053380427663,
+      "median_overlap_residual": 0.7178758921317194,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 100,
+      "side": 4.982348850584977,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.244618664199339,
+      "mean_accepted_action": 0.890625,
+      "effective_configuration_lanes": 43.51999999990964,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.07996131924152894,
+      "best_overlap_residual": 0.09106799535985349,
+      "median_overlap_residual": 0.7186213494162849,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 120,
+      "side": 4.975033334910442,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2445436649311725,
+      "mean_accepted_action": 0.890625,
+      "effective_configuration_lanes": 43.520000000009176,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.08385387054154869,
+      "best_overlap_residual": 0.11144299779573602,
+      "median_overlap_residual": 0.7148987245148142,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 140,
+      "side": 4.966668141490411,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.24455952615959,
+      "mean_accepted_action": 0.9375,
+      "effective_configuration_lanes": 43.520000000151306,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.08624942343376085,
+      "best_overlap_residual": 0.11870239048554523,
+      "median_overlap_residual": 0.7173952462158274,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 160,
+      "side": 4.957344220416554,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.242325474426999,
+      "mean_accepted_action": 0.953125,
+      "effective_configuration_lanes": 43.519999999779884,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.08621306890234215,
+      "best_overlap_residual": 0.1204197053830644,
+      "median_overlap_residual": 0.7052607897358862,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 180,
+      "side": 4.947152521780542,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2413196963758963,
+      "mean_accepted_action": 0.96875,
+      "effective_configuration_lanes": 43.519999999844394,
+      "best_lane": 9,
+      "best_minimum_clearance": -0.08210590499424308,
+      "best_overlap_residual": 0.1296843552263769,
+      "median_overlap_residual": 0.7072153088538635,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 200,
+      "side": 4.936183995674046,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.240813003958985,
+      "mean_accepted_action": 0.984375,
+      "effective_configuration_lanes": 43.52000000007854,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.09644503047890418,
+      "best_overlap_residual": 0.14785654044474317,
+      "median_overlap_residual": 0.7024705464530987,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 220,
+      "side": 4.924529592188737,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.241169751241628,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.520000000194116,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.12944871195679897,
+      "best_overlap_residual": 0.1792177787155874,
+      "median_overlap_residual": 0.6866683229936714,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 240,
+      "side": 4.912280261416286,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.242826439402812,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.520000000151576,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.13241574490683228,
+      "best_overlap_residual": 0.18677467471805514,
+      "median_overlap_residual": 0.6738082855735905,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 260,
+      "side": 4.899526953448363,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.24473223472958,
+      "mean_accepted_action": 0.98828125,
+      "effective_configuration_lanes": 43.52000000006957,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.12265527288131772,
+      "best_overlap_residual": 0.18447882089739742,
+      "median_overlap_residual": 0.6773211003887398,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 280,
+      "side": 4.88636061837664,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.246207080158312,
+      "mean_accepted_action": 0.98828125,
+      "effective_configuration_lanes": 43.519999999885506,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.10489913116636063,
+      "best_overlap_residual": 0.18736774316363988,
+      "median_overlap_residual": 0.6835562216941828,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 300,
+      "side": 4.872872206292787,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.248015583118618,
+      "mean_accepted_action": 0.974609375,
+      "effective_configuration_lanes": 43.52000000000628,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.12256187079680081,
+      "best_overlap_residual": 0.19920478070776454,
+      "median_overlap_residual": 0.6963076080288969,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 320,
+      "side": 4.859152667288476,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.25140533937247,
+      "mean_accepted_action": 0.9921875,
+      "effective_configuration_lanes": 43.52000000038035,
+      "best_lane": 3,
+      "best_minimum_clearance": -0.15003963022407885,
+      "best_overlap_residual": 0.23141225194579446,
+      "median_overlap_residual": 0.6944772481278652,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 340,
+      "side": 4.845292951455377,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2533568048933335,
+      "mean_accepted_action": 0.9775390625,
+      "effective_configuration_lanes": 43.51999999984575,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.19799684212798363,
+      "best_overlap_residual": 0.2601384241688409,
+      "median_overlap_residual": 0.6910445577680926,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 360,
+      "side": 4.831384008885161,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2552041096955353,
+      "mean_accepted_action": 0.978515625,
+      "effective_configuration_lanes": 43.52000000026827,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.19922453893300762,
+      "best_overlap_residual": 0.25410521930879393,
+      "median_overlap_residual": 0.6950135543525525,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 380,
+      "side": 4.817516789669499,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.25736421914334,
+      "mean_accepted_action": 0.98828125,
+      "effective_configuration_lanes": 43.520000000181355,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.20083685241154936,
+      "best_overlap_residual": 0.2560358980266971,
+      "median_overlap_residual": 0.6986218689925333,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 400,
+      "side": 4.803782243900062,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.258339534552813,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.520000000105576,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.19941334681382494,
+      "best_overlap_residual": 0.25176957022983515,
+      "median_overlap_residual": 0.6900617263638731,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 420,
+      "side": 4.790271321668521,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2605099679168066,
+      "mean_accepted_action": 0.96875,
+      "effective_configuration_lanes": 43.519999999868226,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.20092407141123436,
+      "best_overlap_residual": 0.2541363068299803,
+      "median_overlap_residual": 0.7008590035342082,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 440,
+      "side": 4.777074973066547,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2640703835407208,
+      "mean_accepted_action": 0.9921875,
+      "effective_configuration_lanes": 43.51999999961746,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.19298136806179345,
+      "best_overlap_residual": 0.24862113200201888,
+      "median_overlap_residual": 0.706547005245822,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 460,
+      "side": 4.76428414818581,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2665547602967546,
+      "mean_accepted_action": 0.9775390625,
+      "effective_configuration_lanes": 43.51999999970414,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.18759806059684114,
+      "best_overlap_residual": 0.26380744648805654,
+      "median_overlap_residual": 0.7140448128714361,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 480,
+      "side": 4.751989797117981,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.270015015445612,
+      "mean_accepted_action": 0.984375,
+      "effective_configuration_lanes": 43.519999999947096,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.18108664751988823,
+      "best_overlap_residual": 0.27693959555828307,
+      "median_overlap_residual": 0.7170012219933121,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 500,
+      "side": 4.740282869954733,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.269765728323228,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.519999999969365,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.18042774639593018,
+      "best_overlap_residual": 0.2825358852054267,
+      "median_overlap_residual": 0.717080963240899,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 520,
+      "side": 4.729254316787734,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2726489443502014,
+      "mean_accepted_action": 0.98828125,
+      "effective_configuration_lanes": 43.520000000299504,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.1756396396318941,
+      "best_overlap_residual": 0.28697269926480645,
+      "median_overlap_residual": 0.7239821717494864,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 540,
+      "side": 4.718995087708656,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2721935458921827,
+      "mean_accepted_action": 0.9765625,
+      "effective_configuration_lanes": 43.519999999924565,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.17631454450882322,
+      "best_overlap_residual": 0.2821534118237486,
+      "median_overlap_residual": 0.736513619200003,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 560,
+      "side": 4.709596132809171,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2744623666775894,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.51999999979739,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.17960417451406507,
+      "best_overlap_residual": 0.2667050439340115,
+      "median_overlap_residual": 0.7362785023419494,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 580,
+      "side": 4.701148402180948,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.274728236719268,
+      "mean_accepted_action": 0.95947265625,
+      "effective_configuration_lanes": 43.520000000161914,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.17819972318374722,
+      "best_overlap_residual": 0.2699542298066169,
+      "median_overlap_residual": 0.7390838308733243,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 600,
+      "side": 4.69374284591566,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2766483539855784,
+      "mean_accepted_action": 0.970703125,
+      "effective_configuration_lanes": 43.51999999962537,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.1868705514522967,
+      "best_overlap_residual": 0.2785708289907719,
+      "median_overlap_residual": 0.739741873941428,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 620,
+      "side": 4.6874704141049754,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2786780485131493,
+      "mean_accepted_action": 0.978515625,
+      "effective_configuration_lanes": 43.519999999840934,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.17755240710369202,
+      "best_overlap_residual": 0.2989610192281068,
+      "median_overlap_residual": 0.752887435434593,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 640,
+      "side": 4.682422056840567,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2792979928616792,
+      "mean_accepted_action": 0.935546875,
+      "effective_configuration_lanes": 43.51999999988616,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.1766958551348775,
+      "best_overlap_residual": 0.3089876586080013,
+      "median_overlap_residual": 0.7584184597814112,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 660,
+      "side": 4.678688724214105,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2804081791776842,
+      "mean_accepted_action": 0.9775390625,
+      "effective_configuration_lanes": 43.52000000004605,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.17718591513920046,
+      "best_overlap_residual": 0.3156661446059064,
+      "median_overlap_residual": 0.7697420329241147,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 680,
+      "side": 4.676361366317261,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.2815300883072913,
+      "mean_accepted_action": 0.86962890625,
+      "effective_configuration_lanes": 43.51999999994016,
+      "best_lane": 11,
+      "best_minimum_clearance": -0.18249550272884074,
+      "best_overlap_residual": 0.3455432276717409,
+      "median_overlap_residual": 0.7556565941117515,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 700,
+      "side": 4.6755309332417045,
+      "axis_temperature": 0.3,
+      "mean_effective_axes": 2.281474287727315,
+      "mean_accepted_action": 0.60400390625,
+      "effective_configuration_lanes": 43.519999999942364,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.21696144811529627,
+      "best_overlap_residual": 0.33867587465307447,
+      "median_overlap_residual": 0.7699238863830433,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 720,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.2662807377011633,
+      "mean_effective_axes": 2.191765564895669,
+      "mean_accepted_action": 0.923828125,
+      "effective_configuration_lanes": 43.519999999844245,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.19670393200994396,
+      "best_overlap_residual": 0.3247008978380552,
+      "median_overlap_residual": 0.7366884042261297,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 740,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.23540669920052162,
+      "mean_effective_axes": 2.1091485532905576,
+      "mean_accepted_action": 0.7843017578125,
+      "effective_configuration_lanes": 43.519999999813145,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.16974602578509257,
+      "best_overlap_residual": 0.3177531170700714,
+      "median_overlap_residual": 0.6816715168252794,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 760,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.20811236481805323,
+      "mean_effective_axes": 2.0340716200812436,
+      "mean_accepted_action": 0.7666015625,
+      "effective_configuration_lanes": 43.51999999996494,
+      "best_lane": 3,
+      "best_minimum_clearance": -0.14766158804814467,
+      "best_overlap_residual": 0.3215033700796405,
+      "median_overlap_residual": 0.6457646651033186,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 780,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.18398268416851624,
+      "mean_effective_axes": 1.9682104834443783,
+      "mean_accepted_action": 0.75,
+      "effective_configuration_lanes": 43.5200000002944,
+      "best_lane": 3,
+      "best_minimum_clearance": -0.12899448684158654,
+      "best_overlap_residual": 0.2980803635152397,
+      "median_overlap_residual": 0.5939749506696927,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 800,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.16265073006808495,
+      "mean_effective_axes": 1.9062629355419785,
+      "mean_accepted_action": 0.72650146484375,
+      "effective_configuration_lanes": 43.520000000192915,
+      "best_lane": 0,
+      "best_minimum_clearance": -0.1258407740981199,
+      "best_overlap_residual": 0.28750607636754383,
+      "median_overlap_residual": 0.5557596704939238,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 820,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.14379211886836987,
+      "mean_effective_axes": 1.852051755682351,
+      "mean_accepted_action": 0.643829345703125,
+      "effective_configuration_lanes": 43.519999999704275,
+      "best_lane": 0,
+      "best_minimum_clearance": -0.10576027979521718,
+      "best_overlap_residual": 0.25459481007386764,
+      "median_overlap_residual": 0.50736166098613,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 840,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.12712007772729,
+      "mean_effective_axes": 1.798882271036724,
+      "mean_accepted_action": 0.54827880859375,
+      "effective_configuration_lanes": 43.51999999992261,
+      "best_lane": 0,
+      "best_minimum_clearance": -0.09917370092191002,
+      "best_overlap_residual": 0.23293865761100643,
+      "median_overlap_residual": 0.4900062334121664,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 860,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.1123810838074163,
+      "mean_effective_axes": 1.7537385878708842,
+      "mean_accepted_action": 0.6162261962890625,
+      "effective_configuration_lanes": 43.51999999982001,
+      "best_lane": 0,
+      "best_minimum_clearance": -0.08223326486833704,
+      "best_overlap_residual": 0.20328012896265008,
+      "median_overlap_residual": 0.45774657055454954,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 880,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.09935100908940236,
+      "mean_effective_axes": 1.714996955144623,
+      "mean_accepted_action": 0.41961669921875,
+      "effective_configuration_lanes": 43.52000000018992,
+      "best_lane": 0,
+      "best_minimum_clearance": -0.08374096797998054,
+      "best_overlap_residual": 0.20183649454288788,
+      "median_overlap_residual": 0.4178714455748137,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 900,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.08783171217673491,
+      "mean_effective_axes": 1.6804985351357107,
+      "mean_accepted_action": 0.420623779296875,
+      "effective_configuration_lanes": 43.51999999990338,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.08320511078600823,
+      "best_overlap_residual": 0.204173122916173,
+      "median_overlap_residual": 0.39677402795519884,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 920,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.07764802526519772,
+      "mean_effective_axes": 1.647359519239092,
+      "mean_accepted_action": 0.3097991943359375,
+      "effective_configuration_lanes": 43.51999999995413,
+      "best_lane": 9,
+      "best_minimum_clearance": -0.0922496024788737,
+      "best_overlap_residual": 0.2012489415666438,
+      "median_overlap_residual": 0.3819529651073471,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 940,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.06864509045950058,
+      "mean_effective_axes": 1.6139351393321775,
+      "mean_accepted_action": 0.4341888427734375,
+      "effective_configuration_lanes": 43.51999999985247,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.0876918755402043,
+      "best_overlap_residual": 0.1919542807842163,
+      "median_overlap_residual": 0.3590642777353157,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 960,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.060686004931860466,
+      "mean_effective_axes": 1.5778206587332286,
+      "mean_accepted_action": 0.4331512451171875,
+      "effective_configuration_lanes": 43.52000000010612,
+      "best_lane": 9,
+      "best_minimum_clearance": -0.11290232918084186,
+      "best_overlap_residual": 0.18260710614172773,
+      "median_overlap_residual": 0.3589264070508288,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 980,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.05364973911371822,
+      "mean_effective_axes": 1.55188849737196,
+      "mean_accepted_action": 0.42113494873046875,
+      "effective_configuration_lanes": 43.520000000082774,
+      "best_lane": 9,
+      "best_minimum_clearance": -0.08574931383790096,
+      "best_overlap_residual": 0.17505392805079237,
+      "median_overlap_residual": 0.3540452964820001,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1000,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.04742929626364161,
+      "mean_effective_axes": 1.526594811105804,
+      "mean_accepted_action": 0.29697418212890625,
+      "effective_configuration_lanes": 43.519999999912,
+      "best_lane": 9,
+      "best_minimum_clearance": -0.0861116696051315,
+      "best_overlap_residual": 0.173536030533042,
+      "median_overlap_residual": 0.3441851081375946,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1020,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.04193008542494631,
+      "mean_effective_axes": 1.4968978815193803,
+      "mean_accepted_action": 0.44913482666015625,
+      "effective_configuration_lanes": 43.519999999902765,
+      "best_lane": 9,
+      "best_minimum_clearance": -0.07897596971868603,
+      "best_overlap_residual": 0.1653834458593128,
+      "median_overlap_residual": 0.3429524249896187,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1040,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0370684830314686,
+      "mean_effective_axes": 1.466180512040657,
+      "mean_accepted_action": 0.33602142333984375,
+      "effective_configuration_lanes": 43.519999999874955,
+      "best_lane": 2,
+      "best_minimum_clearance": -0.07094498370286184,
+      "best_overlap_residual": 0.1715572658400469,
+      "median_overlap_residual": 0.34067687305279093,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1060,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.032770561288596116,
+      "mean_effective_axes": 1.4417337361419627,
+      "mean_accepted_action": 0.4761962890625,
+      "effective_configuration_lanes": 43.520000000110315,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.07289413374644482,
+      "best_overlap_residual": 0.17032928655219798,
+      "median_overlap_residual": 0.34389360163099536,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1080,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.028970963992725557,
+      "mean_effective_axes": 1.4212839564164672,
+      "mean_accepted_action": 0.36771392822265625,
+      "effective_configuration_lanes": 43.52000000004365,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.07755038140993376,
+      "best_overlap_residual": 0.1643217349083508,
+      "median_overlap_residual": 0.3412856544546137,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1100,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.025611912694332658,
+      "mean_effective_axes": 1.4035619244372468,
+      "mean_accepted_action": 0.3629913330078125,
+      "effective_configuration_lanes": 43.52000000007856,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.08140107846153599,
+      "best_overlap_residual": 0.17168447635405976,
+      "median_overlap_residual": 0.33307010520798486,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1120,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.022642328091907048,
+      "mean_effective_axes": 1.3813791446953079,
+      "mean_accepted_action": 0.2951507568359375,
+      "effective_configuration_lanes": 43.51999999991181,
+      "best_lane": 29,
+      "best_minimum_clearance": -0.09247795599187136,
+      "best_overlap_residual": 0.1660765101436888,
+      "median_overlap_residual": 0.3430438366257381,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1140,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.020017053296258,
+      "mean_effective_axes": 1.3527893105861648,
+      "mean_accepted_action": 0.35153961181640625,
+      "effective_configuration_lanes": 43.51999999997106,
+      "best_lane": 0,
+      "best_minimum_clearance": -0.10221650570736585,
+      "best_overlap_residual": 0.16022847071680807,
+      "median_overlap_residual": 0.34865783536862605,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1160,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0176961671537852,
+      "mean_effective_axes": 1.333634390026731,
+      "mean_accepted_action": 0.34513092041015625,
+      "effective_configuration_lanes": 43.52000000015996,
+      "best_lane": 0,
+      "best_minimum_clearance": -0.08930564847108546,
+      "best_overlap_residual": 0.15270813489476925,
+      "median_overlap_residual": 0.34092039069807845,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1180,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.015644377186788374,
+      "mean_effective_axes": 1.3144250588944466,
+      "mean_accepted_action": 0.31256866455078125,
+      "effective_configuration_lanes": 43.51999999986337,
+      "best_lane": 0,
+      "best_minimum_clearance": -0.08063419627691104,
+      "best_overlap_residual": 0.1532090644652568,
+      "median_overlap_residual": 0.3384114533988141,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1200,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.013830482919582601,
+      "mean_effective_axes": 1.298938745483428,
+      "mean_accepted_action": 0.2952117919921875,
+      "effective_configuration_lanes": 43.51999999997014,
+      "best_lane": 0,
+      "best_minimum_clearance": -0.07685612234724648,
+      "best_overlap_residual": 0.14701162400838938,
+      "median_overlap_residual": 0.34069299382553564,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1220,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.012226901429505489,
+      "mean_effective_axes": 1.2804728192007788,
+      "mean_accepted_action": 0.293975830078125,
+      "effective_configuration_lanes": 43.52000000000776,
+      "best_lane": 0,
+      "best_minimum_clearance": -0.08651897185627222,
+      "best_overlap_residual": 0.15319162391867264,
+      "median_overlap_residual": 0.34177972076956886,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1240,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.010809247908124044,
+      "mean_effective_axes": 1.2649303087613086,
+      "mean_accepted_action": 0.27498626708984375,
+      "effective_configuration_lanes": 43.51999999989608,
+      "best_lane": 0,
+      "best_minimum_clearance": -0.10073732219954667,
+      "best_overlap_residual": 0.16010593167136783,
+      "median_overlap_residual": 0.34265418865650993,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1260,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.009555964854458596,
+      "mean_effective_axes": 1.2538364920284062,
+      "mean_accepted_action": 0.357666015625,
+      "effective_configuration_lanes": 43.51999999999124,
+      "best_lane": 0,
+      "best_minimum_clearance": -0.09495505805541826,
+      "best_overlap_residual": 0.160476352030912,
+      "median_overlap_residual": 0.35057074914314823,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1280,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00844799426156337,
+      "mean_effective_axes": 1.2374573069321337,
+      "mean_accepted_action": 0.26647186279296875,
+      "effective_configuration_lanes": 43.52000000002066,
+      "best_lane": 29,
+      "best_minimum_clearance": -0.06929806811367833,
+      "best_overlap_residual": 0.1496658953339246,
+      "median_overlap_residual": 0.3366998746563787,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1300,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0074684878115796665,
+      "mean_effective_axes": 1.230272181876778,
+      "mean_accepted_action": 0.31868743896484375,
+      "effective_configuration_lanes": 43.519999999912734,
+      "best_lane": 29,
+      "best_minimum_clearance": -0.08250981740373076,
+      "best_overlap_residual": 0.15016245192844319,
+      "median_overlap_residual": 0.33450869401887723,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1320,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.006602550672352345,
+      "mean_effective_axes": 1.2214597490071604,
+      "mean_accepted_action": 0.27059173583984375,
+      "effective_configuration_lanes": 43.519999999845304,
+      "best_lane": 29,
+      "best_minimum_clearance": -0.07092058713911098,
+      "best_overlap_residual": 0.14533688388115354,
+      "median_overlap_residual": 0.3368154577905579,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1340,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.005837014999661616,
+      "mean_effective_axes": 1.2098075010076372,
+      "mean_accepted_action": 0.302337646484375,
+      "effective_configuration_lanes": 43.51999999990885,
+      "best_lane": 29,
+      "best_minimum_clearance": -0.08859593645222963,
+      "best_overlap_residual": 0.15400992029243357,
+      "median_overlap_residual": 0.33640991722238467,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1360,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.005160239700839135,
+      "mean_effective_axes": 1.194717608295168,
+      "mean_accepted_action": 0.209930419921875,
+      "effective_configuration_lanes": 43.520000000012075,
+      "best_lane": 29,
+      "best_minimum_clearance": -0.09586443597008687,
+      "best_overlap_residual": 0.15725705549016963,
+      "median_overlap_residual": 0.33711570488061066,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1380,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.004561933414880724,
+      "mean_effective_axes": 1.1905160090885705,
+      "mean_accepted_action": 0.30269622802734375,
+      "effective_configuration_lanes": 43.52000000008791,
+      "best_lane": 29,
+      "best_minimum_clearance": -0.08212881758400492,
+      "best_overlap_residual": 0.1505239395555143,
+      "median_overlap_residual": 0.3424343850856971,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1400,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0040329980172085994,
+      "mean_effective_axes": 1.1759368049695502,
+      "mean_accepted_action": 0.19928741455078125,
+      "effective_configuration_lanes": 43.52000000011027,
+      "best_lane": 29,
+      "best_minimum_clearance": -0.08182281033969496,
+      "best_overlap_residual": 0.15245047390164077,
+      "median_overlap_residual": 0.3335400816091355,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1420,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.003565390269343452,
+      "mean_effective_axes": 1.1669575879591436,
+      "mean_accepted_action": 0.18402862548828125,
+      "effective_configuration_lanes": 43.52000000008648,
+      "best_lane": 29,
+      "best_minimum_clearance": -0.09100021338907016,
+      "best_overlap_residual": 0.14967703330971358,
+      "median_overlap_residual": 0.33577295089591636,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1440,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.003151999509666878,
+      "mean_effective_axes": 1.163574903098388,
+      "mean_accepted_action": 0.25240325927734375,
+      "effective_configuration_lanes": 43.5200000001101,
+      "best_lane": 29,
+      "best_minimum_clearance": -0.08843848354936812,
+      "best_overlap_residual": 0.15264681732400529,
+      "median_overlap_residual": 0.32781119938168246,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1460,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0027865395253826525,
+      "mean_effective_axes": 1.1542448336155555,
+      "mean_accepted_action": 0.185028076171875,
+      "effective_configuration_lanes": 43.5199999998907,
+      "best_lane": 29,
+      "best_minimum_clearance": -0.0878561492093256,
+      "best_overlap_residual": 0.15829724441482898,
+      "median_overlap_residual": 0.3307893553211829,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1480,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0024634529614315837,
+      "mean_effective_axes": 1.1451533343327638,
+      "mean_accepted_action": 0.2659149169921875,
+      "effective_configuration_lanes": 43.51999999988647,
+      "best_lane": 29,
+      "best_minimum_clearance": -0.09314144458175966,
+      "best_overlap_residual": 0.16195496856030664,
+      "median_overlap_residual": 0.33515449977511413,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1500,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.002177826812757196,
+      "mean_effective_axes": 1.1475979571684165,
+      "mean_accepted_action": 0.28842926025390625,
+      "effective_configuration_lanes": 43.51999999997468,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.08721057752552275,
+      "best_overlap_residual": 0.1645059910579755,
+      "median_overlap_residual": 0.34046331357649484,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1520,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0019253177148582145,
+      "mean_effective_axes": 1.1384823342624923,
+      "mean_accepted_action": 0.20421600341796875,
+      "effective_configuration_lanes": 43.52000000008629,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.09774960263320998,
+      "best_overlap_residual": 0.15966859026262084,
+      "median_overlap_residual": 0.33739781016844317,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1540,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0017020858965612036,
+      "mean_effective_axes": 1.1368061686115838,
+      "mean_accepted_action": 0.15000152587890625,
+      "effective_configuration_lanes": 43.52000000017024,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.08610784756179846,
+      "best_overlap_residual": 0.15735267064604525,
+      "median_overlap_residual": 0.3326198058299165,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1560,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0015047367906682915,
+      "mean_effective_axes": 1.129534621577676,
+      "mean_accepted_action": 0.11515045166015625,
+      "effective_configuration_lanes": 43.51999999988745,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.10223331762352528,
+      "best_overlap_residual": 0.16323484710169955,
+      "median_overlap_residual": 0.3352222399461266,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1580,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0013302694145843235,
+      "mean_effective_axes": 1.1243519073330823,
+      "mean_accepted_action": 0.21901702880859375,
+      "effective_configuration_lanes": 43.520000000028524,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.1023259599225862,
+      "best_overlap_residual": 0.16344440327985724,
+      "median_overlap_residual": 0.34301974832090887,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1600,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.001176030735975153,
+      "mean_effective_axes": 1.1179593671650767,
+      "mean_accepted_action": 0.15643310546875,
+      "effective_configuration_lanes": 43.5200000001021,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.09869063023162727,
+      "best_overlap_residual": 0.16950568277894446,
+      "median_overlap_residual": 0.33559898684460765,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1620,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0010396753295199436,
+      "mean_effective_axes": 1.1146700292468312,
+      "mean_accepted_action": 0.177520751953125,
+      "effective_configuration_lanes": 43.51999999999764,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.06761790819869284,
+      "best_overlap_residual": 0.17030583878801295,
+      "median_overlap_residual": 0.3367571372992947,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1640,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0009191297112792821,
+      "mean_effective_axes": 1.1065355209816292,
+      "mean_accepted_action": 0.1945648193359375,
+      "effective_configuration_lanes": 43.51999999986318,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.07717477696560138,
+      "best_overlap_residual": 0.1705233382864822,
+      "median_overlap_residual": 0.33164960677765987,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1660,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0008125608083308202,
+      "mean_effective_axes": 1.1055383177831086,
+      "mean_accepted_action": 0.190826416015625,
+      "effective_configuration_lanes": 43.520000000050494,
+      "best_lane": 9,
+      "best_minimum_clearance": -0.100191477373059,
+      "best_overlap_residual": 0.17357209466122092,
+      "median_overlap_residual": 0.3305200111366354,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1680,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0007183480842070319,
+      "mean_effective_axes": 1.1045107362468118,
+      "mean_accepted_action": 0.1280975341796875,
+      "effective_configuration_lanes": 43.52000000017232,
+      "best_lane": 29,
+      "best_minimum_clearance": -0.0886402532160987,
+      "best_overlap_residual": 0.16035067307775877,
+      "median_overlap_residual": 0.3308793832782349,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1700,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0006350588962614885,
+      "mean_effective_axes": 1.0988561557369578,
+      "mean_accepted_action": 0.1417236328125,
+      "effective_configuration_lanes": 43.519999999960646,
+      "best_lane": 29,
+      "best_minimum_clearance": -0.08768959761717976,
+      "best_overlap_residual": 0.16737691291726317,
+      "median_overlap_residual": 0.3325899599001145,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1720,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0005614267102362413,
+      "mean_effective_axes": 1.0979690134406248,
+      "mean_accepted_action": 0.15833282470703125,
+      "effective_configuration_lanes": 43.520000000124824,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.09390346199332633,
+      "best_overlap_residual": 0.16412960861693052,
+      "median_overlap_residual": 0.33464088016351545,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1740,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0004963318407508817,
+      "mean_effective_axes": 1.0926358273060286,
+      "mean_accepted_action": 0.165771484375,
+      "effective_configuration_lanes": 43.519999999836664,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.08416006580709456,
+      "best_overlap_residual": 0.15528116376015352,
+      "median_overlap_residual": 0.3361732725142796,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1760,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00043878442484416154,
+      "mean_effective_axes": 1.0895153898577972,
+      "mean_accepted_action": 0.1075592041015625,
+      "effective_configuration_lanes": 43.52000000014672,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.09235863118786602,
+      "best_overlap_residual": 0.1538055830129233,
+      "median_overlap_residual": 0.3352159445867826,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1780,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00038790936965588866,
+      "mean_effective_axes": 1.087005347131095,
+      "mean_accepted_action": 0.18042755126953125,
+      "effective_configuration_lanes": 43.520000000105426,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.08532994602411237,
+      "best_overlap_residual": 0.15417949354471874,
+      "median_overlap_residual": 0.3314064498276902,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1800,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00034293304535654655,
+      "mean_effective_axes": 1.0819833607021216,
+      "mean_accepted_action": 0.13225555419921875,
+      "effective_configuration_lanes": 43.51999999998193,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.08832004338836075,
+      "best_overlap_residual": 0.15626069273465212,
+      "median_overlap_residual": 0.33345375700341373,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1820,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0003031715209710971,
+      "mean_effective_axes": 1.0812305956968604,
+      "mean_accepted_action": 0.06197357177734375,
+      "effective_configuration_lanes": 43.52000000007821,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.08442206064767899,
+      "best_overlap_residual": 0.1557226475041994,
+      "median_overlap_residual": 0.3322753751579821,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1840,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0002680201642054254,
+      "mean_effective_axes": 1.0799392872486813,
+      "mean_accepted_action": 0.1422271728515625,
+      "effective_configuration_lanes": 43.519999999857966,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.08397808850989097,
+      "best_overlap_residual": 0.15682072281539142,
+      "median_overlap_residual": 0.3345861464315303,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1860,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0002369444471255321,
+      "mean_effective_axes": 1.076652702582032,
+      "mean_accepted_action": 0.0814971923828125,
+      "effective_configuration_lanes": 43.5200000001577,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.08681144558355836,
+      "best_overlap_residual": 0.1583803810299257,
+      "median_overlap_residual": 0.33471763849146297,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1880,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0002094718178763341,
+      "mean_effective_axes": 1.0736803823122587,
+      "mean_accepted_action": 0.11480712890625,
+      "effective_configuration_lanes": 43.52000000003577,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.08830023086819316,
+      "best_overlap_residual": 0.15792302235534622,
+      "median_overlap_residual": 0.3378028187197619,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1900,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00018518451483764696,
+      "mean_effective_axes": 1.068909102731554,
+      "mean_accepted_action": 0.1174774169921875,
+      "effective_configuration_lanes": 43.51999999985978,
+      "best_lane": 29,
+      "best_minimum_clearance": -0.09284181321878715,
+      "best_overlap_residual": 0.1541386245229625,
+      "median_overlap_residual": 0.33641723210650476,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1920,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00016371321394604213,
+      "mean_effective_axes": 1.071743612362788,
+      "mean_accepted_action": 0.1453704833984375,
+      "effective_configuration_lanes": 43.52000000001237,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.0858580518808495,
+      "best_overlap_residual": 0.15409771975420117,
+      "median_overlap_residual": 0.33517343215816015,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1940,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0001447314125807988,
+      "mean_effective_axes": 1.0664818224340586,
+      "mean_accepted_action": 0.08438873291015625,
+      "effective_configuration_lanes": 43.520000000133834,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.08287752232403034,
+      "best_overlap_residual": 0.14898473251860764,
+      "median_overlap_residual": 0.3338763004845162,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1960,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00012795046461269388,
+      "mean_effective_axes": 1.0652878404964823,
+      "mean_accepted_action": 0.1070709228515625,
+      "effective_configuration_lanes": 43.519999999980264,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.08890121428591047,
+      "best_overlap_residual": 0.15285318572809095,
+      "median_overlap_residual": 0.33617031135270237,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1980,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00011311519111626598,
+      "mean_effective_axes": 1.0613290244634084,
+      "mean_accepted_action": 0.10782623291015625,
+      "effective_configuration_lanes": 43.51999999993925,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.08793357899398313,
+      "best_overlap_residual": 0.1534151739502134,
+      "median_overlap_residual": 0.33647891345542685,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 2000,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0001,
+      "mean_effective_axes": 1.0598867815308304,
+      "mean_accepted_action": 0.11968231201171875,
+      "effective_configuration_lanes": 43.51999999986235,
+      "best_lane": 29,
+      "best_minimum_clearance": -0.0878032998274959,
+      "best_overlap_residual": 0.15233123937371107,
+      "median_overlap_residual": 0.33483848274055,
+      "feasible_lanes": 0
+    }
+  ]
+}

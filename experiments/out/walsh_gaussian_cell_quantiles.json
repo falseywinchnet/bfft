@@ -1,0 +1,703 @@
+{
+  "experiment": "walsh_gaussian_basis_cell_quantile_sweep",
+  "interpretation": "Cold rejection can amplify a shortest parity only when that parity is adjacent to the central basis parallelepiped.  Dense cancellation parities require simultaneous facet crossings.",
+  "samples_per_scale_and_law_audit": 200000,
+  "central_cell_probabilities": [
+    0.99,
+    0.9,
+    0.5,
+    0.1
+  ],
+  "rows": [
+    {
+      "family": "rectangular",
+      "dimension": 3,
+      "shortest_length": 1.0,
+      "shortest_coefficients": [
+        -1,
+        0,
+        0
+      ],
+      "shortest_parity": [
+        1,
+        0,
+        0
+      ],
+      "levels": [
+        {
+          "requested_central_cell_probability": 0.99,
+          "scale": 0.19330073140272946,
+          "empirical_central_cell_probability": 0.990175,
+          "empirical_zero_parity_probability": 0.990175,
+          "nonzero_parity_acceptance_probability": 0.009825,
+          "cheap_trials_per_accepted_parity": 101.78117048346056,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 1.0
+        },
+        {
+          "requested_central_cell_probability": 0.9,
+          "scale": 0.30365946285916734,
+          "empirical_central_cell_probability": 0.900045,
+          "empirical_zero_parity_probability": 0.900045,
+          "nonzero_parity_acceptance_probability": 0.099955,
+          "cheap_trials_per_accepted_parity": 10.00450202591166,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 1.0
+        },
+        {
+          "requested_central_cell_probability": 0.5,
+          "scale": 0.7403048703622384,
+          "empirical_central_cell_probability": 0.49891,
+          "empirical_zero_parity_probability": 0.54089,
+          "nonzero_parity_acceptance_probability": 0.45911,
+          "cheap_trials_per_accepted_parity": 2.1781272461937227,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 1.0
+        },
+        {
+          "requested_central_cell_probability": 0.1,
+          "scale": 2.82069858686482,
+          "empirical_central_cell_probability": 0.09971,
+          "empirical_zero_parity_probability": 0.355435,
+          "nonzero_parity_acceptance_probability": 0.644565,
+          "cheap_trials_per_accepted_parity": 1.5514339127938996,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.551891585798174
+        }
+      ]
+    },
+    {
+      "family": "simplex_cancellation",
+      "dimension": 3,
+      "shortest_length": 0.9700000000000001,
+      "shortest_coefficients": [
+        -1,
+        -1,
+        -1
+      ],
+      "shortest_parity": [
+        1,
+        1,
+        1
+      ],
+      "levels": [
+        {
+          "requested_central_cell_probability": 0.99,
+          "scale": 0.13731660953826766,
+          "empirical_central_cell_probability": 0.989745,
+          "empirical_zero_parity_probability": 0.989745,
+          "nonzero_parity_acceptance_probability": 0.010255,
+          "cheap_trials_per_accepted_parity": 97.51340809361287,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.005850804485616773
+        },
+        {
+          "requested_central_cell_probability": 0.9,
+          "scale": 0.19462332918322506,
+          "empirical_central_cell_probability": 0.89969,
+          "empirical_zero_parity_probability": 0.89969,
+          "nonzero_parity_acceptance_probability": 0.10031,
+          "cheap_trials_per_accepted_parity": 9.969095803010667,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.02507227594457183
+        },
+        {
+          "requested_central_cell_probability": 0.5,
+          "scale": 0.3418805340001297,
+          "empirical_central_cell_probability": 0.500175,
+          "empirical_zero_parity_probability": 0.500245,
+          "nonzero_parity_acceptance_probability": 0.499755,
+          "cheap_trials_per_accepted_parity": 2.0009804804354134,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.09063441086132205
+        },
+        {
+          "requested_central_cell_probability": 0.1,
+          "scale": 0.7205668637456182,
+          "empirical_central_cell_probability": 0.101385,
+          "empirical_zero_parity_probability": 0.140275,
+          "nonzero_parity_acceptance_probability": 0.859725,
+          "cheap_trials_per_accepted_parity": 1.1631626392160284,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.14150455087382593
+        }
+      ]
+    },
+    {
+      "family": "needle_D_shell",
+      "dimension": 3,
+      "shortest_length": 1.0,
+      "shortest_coefficients": [
+        -1,
+        0,
+        0
+      ],
+      "shortest_parity": [
+        1,
+        0,
+        0
+      ],
+      "levels": [
+        {
+          "requested_central_cell_probability": 0.99,
+          "scale": 0.17328757499673111,
+          "empirical_central_cell_probability": 0.989955,
+          "empirical_zero_parity_probability": 0.989955,
+          "nonzero_parity_acceptance_probability": 0.010045,
+          "cheap_trials_per_accepted_parity": 99.55201592832255,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.39372822299651566
+        },
+        {
+          "requested_central_cell_probability": 0.9,
+          "scale": 0.2411508022764997,
+          "empirical_central_cell_probability": 0.89924,
+          "empirical_zero_parity_probability": 0.89924,
+          "nonzero_parity_acceptance_probability": 0.10076,
+          "cheap_trials_per_accepted_parity": 9.924573243350535,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.3536125446605796
+        },
+        {
+          "requested_central_cell_probability": 0.5,
+          "scale": 0.40307677969786065,
+          "empirical_central_cell_probability": 0.50074,
+          "empirical_zero_parity_probability": 0.50104,
+          "nonzero_parity_acceptance_probability": 0.49896,
+          "cheap_trials_per_accepted_parity": 2.0041686708353375,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.2746412538079205
+        },
+        {
+          "requested_central_cell_probability": 0.1,
+          "scale": 0.8196939271386346,
+          "empirical_central_cell_probability": 0.10076,
+          "empirical_zero_parity_probability": 0.144695,
+          "nonzero_parity_acceptance_probability": 0.855305,
+          "cheap_trials_per_accepted_parity": 1.1691735696622843,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.15704339387703803
+        }
+      ]
+    },
+    {
+      "family": "rectangular",
+      "dimension": 4,
+      "shortest_length": 1.0,
+      "shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0
+      ],
+      "shortest_parity": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "levels": [
+        {
+          "requested_central_cell_probability": 0.99,
+          "scale": 0.19330073140272946,
+          "empirical_central_cell_probability": 0.990175,
+          "empirical_zero_parity_probability": 0.990175,
+          "nonzero_parity_acceptance_probability": 0.009825,
+          "cheap_trials_per_accepted_parity": 101.78117048346056,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 1.0
+        },
+        {
+          "requested_central_cell_probability": 0.9,
+          "scale": 0.30365946285916734,
+          "empirical_central_cell_probability": 0.900045,
+          "empirical_zero_parity_probability": 0.900045,
+          "nonzero_parity_acceptance_probability": 0.099955,
+          "cheap_trials_per_accepted_parity": 10.00450202591166,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 1.0
+        },
+        {
+          "requested_central_cell_probability": 0.5,
+          "scale": 0.7403048703622384,
+          "empirical_central_cell_probability": 0.49891,
+          "empirical_zero_parity_probability": 0.54089,
+          "nonzero_parity_acceptance_probability": 0.45911,
+          "cheap_trials_per_accepted_parity": 2.1781272461937227,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 1.0
+        },
+        {
+          "requested_central_cell_probability": 0.1,
+          "scale": 3.6435765970523524,
+          "empirical_central_cell_probability": 0.100305,
+          "empirical_zero_parity_probability": 0.45767,
+          "nonzero_parity_acceptance_probability": 0.54233,
+          "cheap_trials_per_accepted_parity": 1.8438957830103444,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.8488743016244722
+        }
+      ]
+    },
+    {
+      "family": "simplex_cancellation",
+      "dimension": 4,
+      "shortest_length": 0.97,
+      "shortest_coefficients": [
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "shortest_parity": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "levels": [
+        {
+          "requested_central_cell_probability": 0.99,
+          "scale": 0.1296234137087105,
+          "empirical_central_cell_probability": 0.990065,
+          "empirical_zero_parity_probability": 0.990065,
+          "nonzero_parity_acceptance_probability": 0.009935,
+          "cheap_trials_per_accepted_parity": 100.65425264217414,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.0005032712632108706
+        },
+        {
+          "requested_central_cell_probability": 0.9,
+          "scale": 0.17999115153763684,
+          "empirical_central_cell_probability": 0.90086,
+          "empirical_zero_parity_probability": 0.90086,
+          "nonzero_parity_acceptance_probability": 0.09914,
+          "cheap_trials_per_accepted_parity": 10.086746015735324,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.00731289086140811
+        },
+        {
+          "requested_central_cell_probability": 0.5,
+          "scale": 0.3007846512611625,
+          "empirical_central_cell_probability": 0.502995,
+          "empirical_zero_parity_probability": 0.503005,
+          "nonzero_parity_acceptance_probability": 0.496995,
+          "cheap_trials_per_accepted_parity": 2.012092676988702,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.03839072827694444
+        },
+        {
+          "requested_central_cell_probability": 0.1,
+          "scale": 0.5703298958598172,
+          "empirical_central_cell_probability": 0.102135,
+          "empirical_zero_parity_probability": 0.11142,
+          "nonzero_parity_acceptance_probability": 0.88858,
+          "cheap_trials_per_accepted_parity": 1.1253910733980057,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.07015687951563168
+        }
+      ]
+    },
+    {
+      "family": "needle_D_shell",
+      "dimension": 4,
+      "shortest_length": 1.0,
+      "shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0
+      ],
+      "shortest_parity": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "levels": [
+        {
+          "requested_central_cell_probability": 0.99,
+          "scale": 0.1347613603628654,
+          "empirical_central_cell_probability": 0.989685,
+          "empirical_zero_parity_probability": 0.989685,
+          "nonzero_parity_acceptance_probability": 0.010315,
+          "cheap_trials_per_accepted_parity": 96.94619486185168,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.015996122152205527
+        },
+        {
+          "requested_central_cell_probability": 0.9,
+          "scale": 0.18996021566609547,
+          "empirical_central_cell_probability": 0.900205,
+          "empirical_zero_parity_probability": 0.900205,
+          "nonzero_parity_acceptance_probability": 0.099795,
+          "cheap_trials_per_accepted_parity": 10.020542111328224,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.0764066335988777
+        },
+        {
+          "requested_central_cell_probability": 0.5,
+          "scale": 0.3148614190514874,
+          "empirical_central_cell_probability": 0.504095,
+          "empirical_zero_parity_probability": 0.504115,
+          "nonzero_parity_acceptance_probability": 0.495885,
+          "cheap_trials_per_accepted_parity": 2.0165965899351663,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.1272875767567077
+        },
+        {
+          "requested_central_cell_probability": 0.1,
+          "scale": 0.5908063056577291,
+          "empirical_central_cell_probability": 0.101115,
+          "empirical_zero_parity_probability": 0.112355,
+          "nonzero_parity_acceptance_probability": 0.887645,
+          "cheap_trials_per_accepted_parity": 1.126576502993877,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.08122616586585854
+        }
+      ]
+    },
+    {
+      "family": "rectangular",
+      "dimension": 6,
+      "shortest_length": 1.0,
+      "shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "shortest_parity": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "levels": [
+        {
+          "requested_central_cell_probability": 0.99,
+          "scale": 0.19330073140272946,
+          "empirical_central_cell_probability": 0.990175,
+          "empirical_zero_parity_probability": 0.990175,
+          "nonzero_parity_acceptance_probability": 0.009825,
+          "cheap_trials_per_accepted_parity": 101.78117048346056,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 1.0
+        },
+        {
+          "requested_central_cell_probability": 0.9,
+          "scale": 0.30365946285916734,
+          "empirical_central_cell_probability": 0.900045,
+          "empirical_zero_parity_probability": 0.900045,
+          "nonzero_parity_acceptance_probability": 0.099955,
+          "cheap_trials_per_accepted_parity": 10.00450202591166,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 1.0
+        },
+        {
+          "requested_central_cell_probability": 0.5,
+          "scale": 0.7403048703622384,
+          "empirical_central_cell_probability": 0.49891,
+          "empirical_zero_parity_probability": 0.54089,
+          "nonzero_parity_acceptance_probability": 0.45911,
+          "cheap_trials_per_accepted_parity": 2.1781272461937227,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 1.0
+        },
+        {
+          "requested_central_cell_probability": 0.1,
+          "scale": 3.985076347121812,
+          "empirical_central_cell_probability": 0.100095,
+          "empirical_zero_parity_probability": 0.498385,
+          "nonzero_parity_acceptance_probability": 0.501615,
+          "cheap_trials_per_accepted_parity": 1.9935607986204558,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 1.0
+        }
+      ]
+    },
+    {
+      "family": "simplex_cancellation",
+      "dimension": 6,
+      "shortest_length": 0.9700000000000003,
+      "shortest_coefficients": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "shortest_parity": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "levels": [
+        {
+          "requested_central_cell_probability": 0.99,
+          "scale": 0.12055180849996382,
+          "empirical_central_cell_probability": 0.990005,
+          "empirical_zero_parity_probability": 0.990005,
+          "nonzero_parity_acceptance_probability": 0.009995,
+          "cheap_trials_per_accepted_parity": 100.05002501250625,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.0
+        },
+        {
+          "requested_central_cell_probability": 0.9,
+          "scale": 0.16416293124008327,
+          "empirical_central_cell_probability": 0.8997,
+          "empirical_zero_parity_probability": 0.8997,
+          "nonzero_parity_acceptance_probability": 0.1003,
+          "cheap_trials_per_accepted_parity": 9.970089730807578,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.001694915254237288
+        },
+        {
+          "requested_central_cell_probability": 0.5,
+          "scale": 0.26016910847085495,
+          "empirical_central_cell_probability": 0.501255,
+          "empirical_zero_parity_probability": 0.501255,
+          "nonzero_parity_acceptance_probability": 0.498745,
+          "cheap_trials_per_accepted_parity": 2.0050326319060843,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.010646723275421308
+        },
+        {
+          "requested_central_cell_probability": 0.1,
+          "scale": 0.44142519670598823,
+          "empirical_central_cell_probability": 0.101695,
+          "empirical_zero_parity_probability": 0.10259,
+          "nonzero_parity_acceptance_probability": 0.89741,
+          "cheap_trials_per_accepted_parity": 1.1143178703156862,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.025161297511728197
+        }
+      ]
+    },
+    {
+      "family": "needle_D_shell",
+      "dimension": 6,
+      "shortest_length": 1.0,
+      "shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "shortest_parity": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "levels": [
+        {
+          "requested_central_cell_probability": 0.99,
+          "scale": 0.08092606750660922,
+          "empirical_central_cell_probability": 0.9899,
+          "empirical_zero_parity_probability": 0.9899,
+          "nonzero_parity_acceptance_probability": 0.0101,
+          "cheap_trials_per_accepted_parity": 99.00990099009901,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.0
+        },
+        {
+          "requested_central_cell_probability": 0.9,
+          "scale": 0.12178067559762293,
+          "empirical_central_cell_probability": 0.90102,
+          "empirical_zero_parity_probability": 0.90102,
+          "nonzero_parity_acceptance_probability": 0.09898,
+          "cheap_trials_per_accepted_parity": 10.103051121438675,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.00020206102242877348
+        },
+        {
+          "requested_central_cell_probability": 0.5,
+          "scale": 0.2211391494200276,
+          "empirical_central_cell_probability": 0.503515,
+          "empirical_zero_parity_probability": 0.503515,
+          "nonzero_parity_acceptance_probability": 0.496485,
+          "cheap_trials_per_accepted_parity": 2.014159541577288,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.025096427888053014
+        },
+        {
+          "requested_central_cell_probability": 0.1,
+          "scale": 0.40183632932807345,
+          "empirical_central_cell_probability": 0.10112,
+          "empirical_zero_parity_probability": 0.101845,
+          "nonzero_parity_acceptance_probability": 0.898155,
+          "cheap_trials_per_accepted_parity": 1.1133935679253582,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.030629457053626602
+        }
+      ]
+    },
+    {
+      "family": "rectangular",
+      "dimension": 8,
+      "shortest_length": 1.0,
+      "shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "shortest_parity": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "levels": [
+        {
+          "requested_central_cell_probability": 0.99,
+          "scale": 0.19330073140272946,
+          "empirical_central_cell_probability": 0.990175,
+          "empirical_zero_parity_probability": 0.990175,
+          "nonzero_parity_acceptance_probability": 0.009825,
+          "cheap_trials_per_accepted_parity": 101.78117048346056,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 1.0
+        },
+        {
+          "requested_central_cell_probability": 0.9,
+          "scale": 0.30365946285916734,
+          "empirical_central_cell_probability": 0.900045,
+          "empirical_zero_parity_probability": 0.900045,
+          "nonzero_parity_acceptance_probability": 0.099955,
+          "cheap_trials_per_accepted_parity": 10.00450202591166,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 1.0
+        },
+        {
+          "requested_central_cell_probability": 0.5,
+          "scale": 0.7403048703622384,
+          "empirical_central_cell_probability": 0.49891,
+          "empirical_zero_parity_probability": 0.54089,
+          "nonzero_parity_acceptance_probability": 0.45911,
+          "cheap_trials_per_accepted_parity": 2.1781272461937227,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 1.0
+        },
+        {
+          "requested_central_cell_probability": 0.1,
+          "scale": 3.985076347121812,
+          "empirical_central_cell_probability": 0.100095,
+          "empirical_zero_parity_probability": 0.498385,
+          "nonzero_parity_acceptance_probability": 0.501615,
+          "cheap_trials_per_accepted_parity": 1.9935607986204558,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 1.0
+        }
+      ]
+    },
+    {
+      "family": "simplex_cancellation",
+      "dimension": 8,
+      "shortest_length": 0.9699999999999999,
+      "shortest_coefficients": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "shortest_parity": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "levels": [
+        {
+          "requested_central_cell_probability": 0.99,
+          "scale": 0.11582655402443692,
+          "empirical_central_cell_probability": 0.989895,
+          "empirical_zero_parity_probability": 0.989895,
+          "nonzero_parity_acceptance_probability": 0.010105,
+          "cheap_trials_per_accepted_parity": 98.96091044037605,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.0
+        },
+        {
+          "requested_central_cell_probability": 0.9,
+          "scale": 0.15510745206205306,
+          "empirical_central_cell_probability": 0.9009,
+          "empirical_zero_parity_probability": 0.9009,
+          "nonzero_parity_acceptance_probability": 0.0991,
+          "cheap_trials_per_accepted_parity": 10.090817356205854,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.0003027245206861756
+        },
+        {
+          "requested_central_cell_probability": 0.5,
+          "scale": 0.23874812227845998,
+          "empirical_central_cell_probability": 0.50364,
+          "empirical_zero_parity_probability": 0.50364,
+          "nonzero_parity_acceptance_probability": 0.49636,
+          "cheap_trials_per_accepted_parity": 2.014666774115561,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.004412120235313079
+        },
+        {
+          "requested_central_cell_probability": 0.1,
+          "scale": 0.38251735334080267,
+          "empirical_central_cell_probability": 0.10088,
+          "empirical_zero_parity_probability": 0.101035,
+          "nonzero_parity_acceptance_probability": 0.898965,
+          "cheap_trials_per_accepted_parity": 1.11239036002514,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.012102807117073523
+        }
+      ]
+    },
+    {
+      "family": "needle_D_shell",
+      "dimension": 8,
+      "shortest_length": 1.0,
+      "shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "shortest_parity": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "levels": [
+        {
+          "requested_central_cell_probability": 0.99,
+          "scale": 0.06237101442736205,
+          "empirical_central_cell_probability": 0.99006,
+          "empirical_zero_parity_probability": 0.99006,
+          "nonzero_parity_acceptance_probability": 0.00994,
+          "cheap_trials_per_accepted_parity": 100.6036217303823,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.0
+        },
+        {
+          "requested_central_cell_probability": 0.9,
+          "scale": 0.0929658242072194,
+          "empirical_central_cell_probability": 0.89919,
+          "empirical_zero_parity_probability": 0.89919,
+          "nonzero_parity_acceptance_probability": 0.10081,
+          "cheap_trials_per_accepted_parity": 9.919650828290845,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.0
+        },
+        {
+          "requested_central_cell_probability": 0.5,
+          "scale": 0.1727144097303358,
+          "empirical_central_cell_probability": 0.501285,
+          "empirical_zero_parity_probability": 0.501285,
+          "nonzero_parity_acceptance_probability": 0.498715,
+          "cheap_trials_per_accepted_parity": 2.00515324383666,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.003910048825481487
+        },
+        {
+          "requested_central_cell_probability": 0.1,
+          "scale": 0.3147456551944563,
+          "empirical_central_cell_probability": 0.10138,
+          "empirical_zero_parity_probability": 0.101415,
+          "nonzero_parity_acceptance_probability": 0.898585,
+          "cheap_trials_per_accepted_parity": 1.1128607755526745,
+          "chosen_shortest_parity_mass_after_zero_parity_rejection": 0.01455065464035122
+        }
+      ]
+    }
+  ]
+}

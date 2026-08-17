@@ -1,0 +1,3951 @@
+{
+  "status": "floating_point_lifted_equilibrium_not_global_proof",
+  "method": "night_vision_entropy_x_v3_first_arrival_x_bruun_dip_basis",
+  "config": {
+    "lanes": 64,
+    "sweeps": 2000,
+    "start_side": 5.0,
+    "target_side": 4.675530093604551,
+    "shrink_fraction": 0.35,
+    "cool_start_fraction": 0.35,
+    "start_axis_temperature": 0.18,
+    "end_axis_temperature": 0.0002,
+    "target_clearance": 2e-05,
+    "activation_clearance": 0.12,
+    "activation_temperature": 0.025,
+    "absolute_smoothing": 2e-05,
+    "metric_ridge": 0.0002,
+    "translation_trust": 0.028,
+    "phase_trust": 0.018,
+    "momentum": 0.72,
+    "dual_cap": 0.12,
+    "posterior_interval": 20,
+    "mutation_interval": 20,
+    "effective_lane_fraction": 0.68,
+    "mutation_translation": 0.025,
+    "mutation_phase": 0.03,
+    "finite_dimension": 6.0,
+    "emit_lanes": 16,
+    "seed": 37
+  },
+  "target_side": 4.675530093604551,
+  "feasible_emissions": 0,
+  "best": {
+    "lane": 51,
+    "sector": 3,
+    "posterior_probability": 0.025599075674567047,
+    "minimum_clearance": -0.05408678699421654,
+    "overlap_residual": 0.13248501474193042,
+    "feasible": false,
+    "polish_audit": {
+      "success": false,
+      "solver_success": false,
+      "status": 4,
+      "message": "Inequality constraints incompatible",
+      "iterations": 143,
+      "minimum_clearance": -1.2071067806189943,
+      "overlap_residual": 5.502053367835737,
+      "anchor_distance": 14.962123451700098,
+      "measured_axis": {
+        "success": false,
+        "minimum_clearance": -0.6160635250037321,
+        "overlap_residual": 1.5792624861031301,
+        "anchor_distance": 12.109154798623015,
+        "rounds": [
+          {
+            "measurement": 1,
+            "solver_success": false,
+            "status": 4,
+            "message": "Inequality constraints incompatible",
+            "iterations": 31,
+            "minimum_clearance": -1.0859764817290443,
+            "overlap_residual": 2.4741133520467313,
+            "owner_changes": 95
+          },
+          {
+            "measurement": 2,
+            "solver_success": false,
+            "status": 4,
+            "message": "Inequality constraints incompatible",
+            "iterations": 36,
+            "minimum_clearance": -1.0776932990746373,
+            "overlap_residual": 2.8168707438656875,
+            "owner_changes": 103
+          },
+          {
+            "measurement": 3,
+            "solver_success": false,
+            "status": 3,
+            "message": "More than 3*n iterations in LSQ subproblem",
+            "iterations": 14,
+            "minimum_clearance": -1.2071067811865475,
+            "overlap_residual": 7.056275972363272,
+            "owner_changes": 103
+          },
+          {
+            "measurement": 4,
+            "solver_success": false,
+            "status": 8,
+            "message": "Positive directional derivative for linesearch",
+            "iterations": 58,
+            "minimum_clearance": -0.6160635250037321,
+            "overlap_residual": 1.5792624861031301,
+            "owner_changes": 80
+          }
+        ]
+      }
+    },
+    "poses": [
+      [
+        0.5593436208694142,
+        0.5593431061364423,
+        -0.12709475001558634
+      ],
+      [
+        1.7047748148961823,
+        0.5212688860125124,
+        0.028537570011722635
+      ],
+      [
+        2.858377774145795,
+        0.5563462561156467,
+        0.10977880323864986
+      ],
+      [
+        4.095105233051692,
+        0.5804233406370329,
+        -0.17749084266995452
+      ],
+      [
+        3.8915133371275763,
+        1.7058278904878992,
+        0.1810907203057992
+      ],
+      [
+        2.8270918208418876,
+        1.6728436287686017,
+        0.2935585120850952
+      ],
+      [
+        1.6655072826303938,
+        1.5732717889110044,
+        0.12620707712475365
+      ],
+      [
+        0.6328060848594216,
+        1.6765616281223557,
+        0.14945153458708715
+      ],
+      [
+        0.5469575389147693,
+        2.756633014565928,
+        -0.029011127426199268
+      ],
+      [
+        1.6764775544222694,
+        2.6887755417403962,
+        -0.12412841175815859
+      ],
+      [
+        2.956959459271399,
+        3.1072595467084745,
+        0.14023525332185238
+      ],
+      [
+        4.01822547837529,
+        2.7758302950526885,
+        0.04496672565998361
+      ],
+      [
+        0.4459233696389976,
+        4.175520021198626,
+        2.0275998271590545e-05
+      ],
+      [
+        1.3918469574465298,
+        3.7468330304348703,
+        -3.059715521724904e-06
+      ],
+      [
+        2.3377624916039683,
+        4.175524445535444,
+        1.1096199776905458e-05
+      ],
+      [
+        3.2836992623925254,
+        4.175514532263465,
+        -3.6020076300213866e-05
+      ],
+      [
+        4.229612499884192,
+        3.797801163929638,
+        -8.761431596449043e-06
+      ]
+    ]
+  },
+  "emissions": [
+    {
+      "lane": 51,
+      "sector": 3,
+      "posterior_probability": 0.025599075674567047,
+      "minimum_clearance": -0.05408678699421654,
+      "overlap_residual": 0.13248501474193042,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "solver_success": false,
+        "status": 4,
+        "message": "Inequality constraints incompatible",
+        "iterations": 143,
+        "minimum_clearance": -1.2071067806189943,
+        "overlap_residual": 5.502053367835737,
+        "anchor_distance": 14.962123451700098,
+        "measured_axis": {
+          "success": false,
+          "minimum_clearance": -0.6160635250037321,
+          "overlap_residual": 1.5792624861031301,
+          "anchor_distance": 12.109154798623015,
+          "rounds": [
+            {
+              "measurement": 1,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 31,
+              "minimum_clearance": -1.0859764817290443,
+              "overlap_residual": 2.4741133520467313,
+              "owner_changes": 95
+            },
+            {
+              "measurement": 2,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 36,
+              "minimum_clearance": -1.0776932990746373,
+              "overlap_residual": 2.8168707438656875,
+              "owner_changes": 103
+            },
+            {
+              "measurement": 3,
+              "solver_success": false,
+              "status": 3,
+              "message": "More than 3*n iterations in LSQ subproblem",
+              "iterations": 14,
+              "minimum_clearance": -1.2071067811865475,
+              "overlap_residual": 7.056275972363272,
+              "owner_changes": 103
+            },
+            {
+              "measurement": 4,
+              "solver_success": false,
+              "status": 8,
+              "message": "Positive directional derivative for linesearch",
+              "iterations": 58,
+              "minimum_clearance": -0.6160635250037321,
+              "overlap_residual": 1.5792624861031301,
+              "owner_changes": 80
+            }
+          ]
+        }
+      },
+      "poses": [
+        [
+          0.5593436208694142,
+          0.5593431061364423,
+          -0.12709475001558634
+        ],
+        [
+          1.7047748148961823,
+          0.5212688860125124,
+          0.028537570011722635
+        ],
+        [
+          2.858377774145795,
+          0.5563462561156467,
+          0.10977880323864986
+        ],
+        [
+          4.095105233051692,
+          0.5804233406370329,
+          -0.17749084266995452
+        ],
+        [
+          3.8915133371275763,
+          1.7058278904878992,
+          0.1810907203057992
+        ],
+        [
+          2.8270918208418876,
+          1.6728436287686017,
+          0.2935585120850952
+        ],
+        [
+          1.6655072826303938,
+          1.5732717889110044,
+          0.12620707712475365
+        ],
+        [
+          0.6328060848594216,
+          1.6765616281223557,
+          0.14945153458708715
+        ],
+        [
+          0.5469575389147693,
+          2.756633014565928,
+          -0.029011127426199268
+        ],
+        [
+          1.6764775544222694,
+          2.6887755417403962,
+          -0.12412841175815859
+        ],
+        [
+          2.956959459271399,
+          3.1072595467084745,
+          0.14023525332185238
+        ],
+        [
+          4.01822547837529,
+          2.7758302950526885,
+          0.04496672565998361
+        ],
+        [
+          0.4459233696389976,
+          4.175520021198626,
+          2.0275998271590545e-05
+        ],
+        [
+          1.3918469574465298,
+          3.7468330304348703,
+          -3.059715521724904e-06
+        ],
+        [
+          2.3377624916039683,
+          4.175524445535444,
+          1.1096199776905458e-05
+        ],
+        [
+          3.2836992623925254,
+          4.175514532263465,
+          -3.6020076300213866e-05
+        ],
+        [
+          4.229612499884192,
+          3.797801163929638,
+          -8.761431596449043e-06
+        ]
+      ]
+    },
+    {
+      "lane": 25,
+      "sector": 9,
+      "posterior_probability": 0.02851600458621744,
+      "minimum_clearance": -0.05411077314363011,
+      "overlap_residual": 0.13252926700225676,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "solver_success": false,
+        "status": 4,
+        "message": "Inequality constraints incompatible",
+        "iterations": 26,
+        "minimum_clearance": -1.044161044434434,
+        "overlap_residual": 2.5921043352171993,
+        "anchor_distance": 7.5778827226136976,
+        "measured_axis": {
+          "success": false,
+          "minimum_clearance": -0.7344187638647086,
+          "overlap_residual": 1.9716887717238956,
+          "anchor_distance": 7.473854715881956,
+          "rounds": [
+            {
+              "measurement": 1,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 45,
+              "minimum_clearance": -0.7226022870529079,
+              "overlap_residual": 0.9762306844249169,
+              "owner_changes": 73
+            },
+            {
+              "measurement": 2,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 69,
+              "minimum_clearance": -1.1926476839207871,
+              "overlap_residual": 6.146964928207337,
+              "owner_changes": 106
+            },
+            {
+              "measurement": 3,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 44,
+              "minimum_clearance": -0.702954331629169,
+              "overlap_residual": 1.8539243864410533,
+              "owner_changes": 61
+            },
+            {
+              "measurement": 4,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 18,
+              "minimum_clearance": -0.7344187638647086,
+              "overlap_residual": 1.9716887717238956,
+              "owner_changes": 23
+            }
+          ]
+        }
+      },
+      "poses": [
+        [
+          0.843453687649316,
+          0.44591932514642324,
+          4.87905998501903e-05
+        ],
+        [
+          0.499999918320639,
+          1.3918115429075508,
+          9.295631276828864e-06
+        ],
+        [
+          0.8434524823951709,
+          2.3377206377654884,
+          -4.0474760303221835e-05
+        ],
+        [
+          0.5000094928802318,
+          3.283637844523601,
+          1.8785806708221386e-05
+        ],
+        [
+          0.5000521982060468,
+          4.229579273549483,
+          0.00010623476945781363
+        ],
+        [
+          1.597265028563029,
+          4.078266741049364,
+          -0.22052740631346468
+        ],
+        [
+          1.8463217161681076,
+          2.7874523171072916,
+          0.04611628629090392
+        ],
+        [
+          1.8997476951782803,
+          1.6605490018904956,
+          0.12077017139841462
+        ],
+        [
+          1.9810778531424984,
+          0.6342449281222624,
+          0.17206659007158942
+        ],
+        [
+          3.1634484309429483,
+          0.5010048278142001,
+          0.002011480010053801
+        ],
+        [
+          3.004621824312288,
+          1.8589355837099415,
+          -0.16521116345463582
+        ],
+        [
+          3.0894710650577544,
+          3.0902050643021055,
+          -0.03286131760082467
+        ],
+        [
+          3.1054254083972697,
+          4.135743525152399,
+          0.05557382904833952
+        ],
+        [
+          4.146816188698847,
+          4.142524258682948,
+          -0.010500946581410098
+        ],
+        [
+          4.128997101970999,
+          3.1099082309989416,
+          0.0472387971329592
+        ],
+        [
+          4.018788602594121,
+          1.6560819689066446,
+          -0.23515447785841292
+        ],
+        [
+          4.168987396833358,
+          0.5071375468728272,
+          0.013172328323653337
+        ]
+      ]
+    },
+    {
+      "lane": 58,
+      "sector": 10,
+      "posterior_probability": 0.039104312834498965,
+      "minimum_clearance": -0.05419069225577944,
+      "overlap_residual": 0.13279710248325532,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "solver_success": false,
+        "status": 4,
+        "message": "Inequality constraints incompatible",
+        "iterations": 78,
+        "minimum_clearance": -1.1441204940672125,
+        "overlap_residual": 2.6751861089008235,
+        "anchor_distance": 9.719592479503296,
+        "measured_axis": {
+          "success": false,
+          "minimum_clearance": -0.4312065544299537,
+          "overlap_residual": 0.7316328479673757,
+          "anchor_distance": 3.999452163907178,
+          "rounds": [
+            {
+              "measurement": 1,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 83,
+              "minimum_clearance": -0.317948210139432,
+              "overlap_residual": 0.707972054865175,
+              "owner_changes": 71
+            },
+            {
+              "measurement": 2,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 88,
+              "minimum_clearance": -0.6552975783627915,
+              "overlap_residual": 0.9262877687376281,
+              "owner_changes": 53
+            },
+            {
+              "measurement": 3,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 52,
+              "minimum_clearance": -0.19202149841628624,
+              "overlap_residual": 0.5741787299669048,
+              "owner_changes": 37
+            },
+            {
+              "measurement": 4,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 111,
+              "minimum_clearance": -0.4312065544299537,
+              "overlap_residual": 0.7316328479673757,
+              "owner_changes": 71
+            }
+          ]
+        }
+      },
+      "poses": [
+        [
+          0.5145417712498365,
+          0.6571165653976552,
+          -0.029625135159649263
+        ],
+        [
+          0.5252369360781655,
+          1.8196373880714043,
+          -0.05328674283054713
+        ],
+        [
+          0.5252992072971062,
+          2.870092740727304,
+          0.050507652153299776
+        ],
+        [
+          0.5619145280196343,
+          4.119257480661836,
+          -0.06076110407980628
+        ],
+        [
+          1.5191841431277617,
+          0.44628447066465793,
+          -0.0009507779734653221
+        ],
+        [
+          1.5292330141411359,
+          1.3922421256916933,
+          -0.0012627697859424192
+        ],
+        [
+          1.5505232894769383,
+          2.338047429755456,
+          -0.001307065381614514
+        ],
+        [
+          1.8845609337949878,
+          3.2834250924826436,
+          -0.0013266057350925786
+        ],
+        [
+          2.0195219799452615,
+          4.229057205700217,
+          -0.0013263572601414086
+        ],
+        [
+          3.1177449536798925,
+          0.5500423000557402,
+          0.050608819548812245
+        ],
+        [
+          3.0806970010209804,
+          1.6813346205270872,
+          0.062497100957217167
+        ],
+        [
+          2.9020055639268647,
+          3.173988823352971,
+          -0.0029173476038983903
+        ],
+        [
+          3.019493022644971,
+          4.1733166523166565,
+          -0.0010945632476219158
+        ],
+        [
+          4.097673000610468,
+          4.060603973957167,
+          0.1713371832865127
+        ],
+        [
+          4.089945000971688,
+          2.975062449360699,
+          0.15767580356699118
+        ],
+        [
+          4.136777661682132,
+          1.7415354169930621,
+          -0.053538976097946334
+        ],
+        [
+          4.155286413560069,
+          0.5196068851827731,
+          0.021253712088437182
+        ]
+      ]
+    },
+    {
+      "lane": 24,
+      "sector": 8,
+      "posterior_probability": 0.0465964142493515,
+      "minimum_clearance": -0.06250069167777539,
+      "overlap_residual": 0.13337045054116609,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "solver_success": false,
+        "status": 4,
+        "message": "Inequality constraints incompatible",
+        "iterations": 94,
+        "minimum_clearance": -0.4146378094282409,
+        "overlap_residual": 0.6950401759055884,
+        "anchor_distance": 2.8918499061848464,
+        "measured_axis": {
+          "success": false,
+          "minimum_clearance": -0.7749297299914735,
+          "overlap_residual": 1.3269192867795214,
+          "anchor_distance": 3.329913237383258,
+          "rounds": [
+            {
+              "measurement": 1,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 35,
+              "minimum_clearance": -0.41267632246830166,
+              "overlap_residual": 0.6939420620015334,
+              "owner_changes": 2
+            },
+            {
+              "measurement": 2,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 80,
+              "minimum_clearance": -0.4079592516115611,
+              "overlap_residual": 0.6901654123016221,
+              "owner_changes": 6
+            },
+            {
+              "measurement": 3,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 42,
+              "minimum_clearance": -0.4902983941385015,
+              "overlap_residual": 0.8422588906849672,
+              "owner_changes": 25
+            },
+            {
+              "measurement": 4,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 114,
+              "minimum_clearance": -0.7749297299914735,
+              "overlap_residual": 1.3269192867795214,
+              "owner_changes": 59
+            }
+          ]
+        }
+      },
+      "poses": [
+        [
+          0.5831033923977452,
+          0.5899654104364893,
+          -0.12734315828325793
+        ],
+        [
+          0.5308990821819688,
+          1.8501797873684787,
+          0.0666244743851594
+        ],
+        [
+          0.6278006330914052,
+          3.043480546311172,
+          -0.12995728595683587
+        ],
+        [
+          0.5936032550002205,
+          4.139862057494747,
+          0.03320220621837533
+        ],
+        [
+          1.7827240313610448,
+          4.086075147193065,
+          0.13598698992749414
+        ],
+        [
+          1.7048371535464029,
+          2.6340217266752926,
+          -0.12037782787794526
+        ],
+        [
+          1.7601745090857277,
+          1.6179049301681483,
+          -0.12427805410279436
+        ],
+        [
+          1.60747490593207,
+          0.6105315196347226,
+          -0.09401420465628518
+        ],
+        [
+          2.877277380776929,
+          0.437521900828147,
+          4.518603274905608e-05
+        ],
+        [
+          2.84183212570221,
+          1.3842323144324438,
+          6.302388797896352e-05
+        ],
+        [
+          3.025015685806939,
+          2.327373076722757,
+          0.00015868137577446095
+        ],
+        [
+          2.892172113065027,
+          3.2841905290662825,
+          0.00019714398371284414
+        ],
+        [
+          2.863203315076054,
+          4.226520302548557,
+          0.00018363096748352792
+        ],
+        [
+          4.070829410405951,
+          4.053792995842393,
+          0.21258249718837718
+        ],
+        [
+          4.15517698989431,
+          2.855457980843672,
+          0.03784916069594735
+        ],
+        [
+          4.157188014801865,
+          1.8536598238972126,
+          0.03544264070052228
+        ],
+        [
+          4.059709182031148,
+          0.6276989743973113,
+          -0.19869499984950134
+        ]
+      ]
+    },
+    {
+      "lane": 1,
+      "sector": 1,
+      "posterior_probability": 0.025733954017870396,
+      "minimum_clearance": -0.055678663069266165,
+      "overlap_residual": 0.13413050214332808,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "solver_success": false,
+        "status": 4,
+        "message": "Inequality constraints incompatible",
+        "iterations": 243,
+        "minimum_clearance": -0.7866718863843967,
+        "overlap_residual": 2.380859834789836,
+        "anchor_distance": 10.288968616095476,
+        "measured_axis": {
+          "success": false,
+          "minimum_clearance": -0.7918539620547881,
+          "overlap_residual": 2.191046903915573,
+          "anchor_distance": 8.375155803935115,
+          "rounds": [
+            {
+              "measurement": 1,
+              "solver_success": false,
+              "status": 8,
+              "message": "Positive directional derivative for linesearch",
+              "iterations": 294,
+              "minimum_clearance": -1.2071067811865475,
+              "overlap_residual": 6.820477069090642,
+              "owner_changes": 106
+            },
+            {
+              "measurement": 2,
+              "solver_success": false,
+              "status": 8,
+              "message": "Positive directional derivative for linesearch",
+              "iterations": 52,
+              "minimum_clearance": -1.1515085672549321,
+              "overlap_residual": 3.1932174748880393,
+              "owner_changes": 100
+            },
+            {
+              "measurement": 3,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 19,
+              "minimum_clearance": -0.9986986118786891,
+              "overlap_residual": 2.663229703292802,
+              "owner_changes": 103
+            },
+            {
+              "measurement": 4,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 26,
+              "minimum_clearance": -0.7918539620547881,
+              "overlap_residual": 2.191046903915573,
+              "owner_changes": 73
+            }
+          ]
+        }
+      },
+      "poses": [
+        [
+          0.4456464786140767,
+          0.49983618251535145,
+          -8.06672777743378e-05
+        ],
+        [
+          1.3925178636056923,
+          0.5031716067048208,
+          0.003754437300696134
+        ],
+        [
+          2.338700794307522,
+          0.5000120038876662,
+          2.4439680805787845e-05
+        ],
+        [
+          3.2843635429528413,
+          0.5009264369869072,
+          1.232629034009225e-05
+        ],
+        [
+          4.230217968067397,
+          0.498652539363035,
+          5.134794491823413e-06
+        ],
+        [
+          4.015230887430747,
+          1.6081326976142079,
+          -0.26776722755272586
+        ],
+        [
+          2.877694303574224,
+          1.791606681324459,
+          -0.1089941064048705
+        ],
+        [
+          1.720751628751206,
+          1.5571026662705312,
+          -0.12191460037600732
+        ],
+        [
+          0.5419710339912129,
+          1.7009987326824603,
+          0.02969249319135836
+        ],
+        [
+          0.5904592921578878,
+          2.9451188766945324,
+          -0.13536899084784415
+        ],
+        [
+          1.7450868247023779,
+          2.9835273381436243,
+          -0.06953189354006517
+        ],
+        [
+          2.98200245095661,
+          3.046860987651503,
+          0.08955625142826196
+        ],
+        [
+          4.138413792605719,
+          2.9122025741264324,
+          -0.0723205796127806
+        ],
+        [
+          4.069537278071429,
+          4.074912745695409,
+          -0.21428138878934788
+        ],
+        [
+          2.928025161371645,
+          4.1259719481409,
+          -0.08592885410467288
+        ],
+        [
+          1.7562749680853413,
+          4.116909020373871,
+          0.08871532291275219
+        ],
+        [
+          0.5057936037857286,
+          4.168402205837611,
+          0.011655192436598183
+        ]
+      ]
+    },
+    {
+      "lane": 34,
+      "sector": 2,
+      "posterior_probability": 0.043994407325748115,
+      "minimum_clearance": -0.0665042487943382,
+      "overlap_residual": 0.1362158502664085,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "solver_success": false,
+        "status": 4,
+        "message": "Inequality constraints incompatible",
+        "iterations": 40,
+        "minimum_clearance": -1.0504451638876173,
+        "overlap_residual": 3.314245478470377,
+        "anchor_distance": 9.197653502155019,
+        "measured_axis": {
+          "success": false,
+          "minimum_clearance": -0.700677874041438,
+          "overlap_residual": 1.5340234850874068,
+          "anchor_distance": 7.817459012931662,
+          "rounds": [
+            {
+              "measurement": 1,
+              "solver_success": false,
+              "status": 8,
+              "message": "Positive directional derivative for linesearch",
+              "iterations": 58,
+              "minimum_clearance": -1.050422227519295,
+              "overlap_residual": 2.448948514805126,
+              "owner_changes": 97
+            },
+            {
+              "measurement": 2,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 46,
+              "minimum_clearance": -0.1486232949679155,
+              "overlap_residual": 0.4023973453857141,
+              "owner_changes": 62
+            },
+            {
+              "measurement": 3,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 112,
+              "minimum_clearance": -1.022967559153911,
+              "overlap_residual": 2.085048606651856,
+              "owner_changes": 92
+            },
+            {
+              "measurement": 4,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 83,
+              "minimum_clearance": -0.700677874041438,
+              "overlap_residual": 1.5340234850874068,
+              "owner_changes": 84
+            }
+          ]
+        }
+      },
+      "poses": [
+        [
+          0.5413370172687512,
+          0.5412895459123049,
+          -0.06567594396806187
+        ],
+        [
+          1.6101271196169864,
+          0.5433208379076567,
+          0.05726419543983141
+        ],
+        [
+          3.061195753788511,
+          0.5350436873226221,
+          -0.02228494759911326
+        ],
+        [
+          4.121440327852904,
+          0.554945234410849,
+          0.09018508999102104
+        ],
+        [
+          0.43363767323994945,
+          2.0220934518512106,
+          -0.0002838843675551095
+        ],
+        [
+          1.3803777568416387,
+          1.6616955229453614,
+          -0.000324517887656528
+        ],
+        [
+          2.324131355390226,
+          1.6952479814310175,
+          -0.0003183517840052996
+        ],
+        [
+          3.268562348900407,
+          2.1250406959239077,
+          -0.00030879462479593833
+        ],
+        [
+          4.210207218342286,
+          1.5851027201253491,
+          -0.00030297767191977965
+        ],
+        [
+          0.5182388265041433,
+          3.0230325824651505,
+          0.035149215105624965
+        ],
+        [
+          2.0401173096816345,
+          2.875801768264407,
+          -0.12036590794978341
+        ],
+        [
+          3.1563101819892654,
+          3.1398861121542585,
+          0.031017388133737334
+        ],
+        [
+          4.169824746453031,
+          3.130056045435429,
+          0.01048929731675352
+        ],
+        [
+          4.14764885183374,
+          4.149647303260281,
+          0.04713132978214796
+        ],
+        [
+          3.114491010517222,
+          4.164065238679865,
+          -0.017523052184013066
+        ],
+        [
+          1.5976061996593658,
+          4.091435669834179,
+          -0.09400801569420836
+        ],
+        [
+          0.5743364094537361,
+          4.102717618127314,
+          -0.13288155768279997
+        ]
+      ]
+    },
+    {
+      "lane": 59,
+      "sector": 11,
+      "posterior_probability": 0.028669683012150383,
+      "minimum_clearance": -0.05852847313967291,
+      "overlap_residual": 0.1415941489215956,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "solver_success": false,
+        "status": 4,
+        "message": "Inequality constraints incompatible",
+        "iterations": 61,
+        "minimum_clearance": -0.8569845827348568,
+        "overlap_residual": 2.417148752978419,
+        "anchor_distance": 6.88594703173726,
+        "measured_axis": {
+          "success": false,
+          "minimum_clearance": -0.4840424007418852,
+          "overlap_residual": 0.964462923768645,
+          "anchor_distance": 9.27134186242892,
+          "rounds": [
+            {
+              "measurement": 1,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 60,
+              "minimum_clearance": -0.8563799413858993,
+              "overlap_residual": 1.4762692727091178,
+              "owner_changes": 71
+            },
+            {
+              "measurement": 2,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 82,
+              "minimum_clearance": -1.0115774060714695,
+              "overlap_residual": 2.287720240679604,
+              "owner_changes": 103
+            },
+            {
+              "measurement": 3,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 71,
+              "minimum_clearance": -0.5263292710382179,
+              "overlap_residual": 1.0329023734196912,
+              "owner_changes": 67
+            },
+            {
+              "measurement": 4,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 25,
+              "minimum_clearance": -0.4840424007418852,
+              "overlap_residual": 0.964462923768645,
+              "owner_changes": 36
+            }
+          ]
+        }
+      },
+      "poses": [
+        [
+          0.7137001073829149,
+          0.7036591753801291,
+          -0.30019621270856406
+        ],
+        [
+          0.5377144792497579,
+          1.9918414677825893,
+          -0.07859680060081453
+        ],
+        [
+          0.5513331010668123,
+          3.005303138165198,
+          -0.10166931219858877
+        ],
+        [
+          0.5870483577601379,
+          4.095127069953991,
+          -0.14460118469168248
+        ],
+        [
+          1.764321025684219,
+          4.04726974109976,
+          -0.2606286399437985
+        ],
+        [
+          1.7876014870701427,
+          3.000719317052095,
+          -0.23667556983947402
+        ],
+        [
+          2.0104879922030334,
+          1.7886065746312507,
+          -0.10420739359468201
+        ],
+        [
+          2.0058413889299147,
+          0.5419683514722644,
+          0.06162125936757101
+        ],
+        [
+          3.1684008598280746,
+          0.5271487454501229,
+          0.04001962686865779
+        ],
+        [
+          3.179128933944101,
+          1.5566456379315416,
+          -0.05334332775769801
+        ],
+        [
+          3.144134032341253,
+          2.979516054172094,
+          0.1280801497060695
+        ],
+        [
+          2.979664634078677,
+          4.074151274542809,
+          0.08126616653998087
+        ],
+        [
+          4.18006303171019,
+          0.44737854152482553,
+          -0.0008821942557118989
+        ],
+        [
+          4.178931141563226,
+          1.3946416120459866,
+          -0.0005480060239454465
+        ],
+        [
+          4.178194546439319,
+          2.33612943435423,
+          -0.0005164265153030367
+        ],
+        [
+          4.157736823601291,
+          3.283613822870458,
+          -0.0005633491884429187
+        ],
+        [
+          4.176799270916419,
+          4.22821271330832,
+          -0.0007332322082533871
+        ]
+      ]
+    },
+    {
+      "lane": 16,
+      "sector": 0,
+      "posterior_probability": 0.033383316862101976,
+      "minimum_clearance": -0.09844256970046006,
+      "overlap_residual": 0.14366531664107635,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "solver_success": false,
+        "status": 4,
+        "message": "Inequality constraints incompatible",
+        "iterations": 30,
+        "minimum_clearance": -0.31504267603830527,
+        "overlap_residual": 0.8942801590592484,
+        "anchor_distance": 2.7301135591818424,
+        "measured_axis": {
+          "success": false,
+          "minimum_clearance": -0.68503776169061,
+          "overlap_residual": 1.618657856107873,
+          "anchor_distance": 11.610516852130539,
+          "rounds": [
+            {
+              "measurement": 1,
+              "solver_success": false,
+              "status": 8,
+              "message": "Positive directional derivative for linesearch",
+              "iterations": 141,
+              "minimum_clearance": -1.2071067811865475,
+              "overlap_residual": 9.194652280556488,
+              "owner_changes": 101
+            },
+            {
+              "measurement": 2,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 71,
+              "minimum_clearance": -1.2071067811865475,
+              "overlap_residual": 9.140111080306552,
+              "owner_changes": 61
+            },
+            {
+              "measurement": 3,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 19,
+              "minimum_clearance": -0.8326732406036166,
+              "overlap_residual": 2.345370305787147,
+              "owner_changes": 82
+            },
+            {
+              "measurement": 4,
+              "solver_success": false,
+              "status": 8,
+              "message": "Positive directional derivative for linesearch",
+              "iterations": 44,
+              "minimum_clearance": -0.68503776169061,
+              "overlap_residual": 1.618657856107873,
+              "owner_changes": 95
+            }
+          ]
+        }
+      },
+      "poses": [
+        [
+          0.5379286256591483,
+          0.5165315116655618,
+          0.015321525991491614
+        ],
+        [
+          1.7243025318651226,
+          0.6385989266841897,
+          -0.19550668943639893
+        ],
+        [
+          2.9605571287098327,
+          0.5613390003021247,
+          -0.042897259239855545
+        ],
+        [
+          4.035163615236001,
+          0.6368476479228933,
+          -0.1821290583718309
+        ],
+        [
+          4.174313492750318,
+          1.9445596759553012,
+          0.001775363230607785
+        ],
+        [
+          2.893480125816189,
+          1.8053279217060578,
+          0.14707951611064352
+        ],
+        [
+          1.8056530188161481,
+          1.9254984051149269,
+          -0.027706415779119364
+        ],
+        [
+          0.5724301185515535,
+          1.550944913707253,
+          0.071327246022856
+        ],
+        [
+          0.43632333484777286,
+          3.1256378873920236,
+          -8.142590498672053e-05
+        ],
+        [
+          1.337980114849362,
+          2.9379820670003154,
+          0.0001478538975585586
+        ],
+        [
+          2.2944192435800175,
+          2.9691423654164697,
+          1.0909154054106196e-05
+        ],
+        [
+          3.260983480457183,
+          2.9390750497862297,
+          0.00010816180526151964
+        ],
+        [
+          4.22163316000124,
+          2.9358581080424364,
+          -0.00043398383407267094
+        ],
+        [
+          4.099351677950305,
+          4.097311600857155,
+          -0.13629224737093915
+        ],
+        [
+          2.95754539047917,
+          4.16539981737908,
+          -0.018287363722185646
+        ],
+        [
+          1.802052891580234,
+          4.132631512697686,
+          0.07766039222165
+        ],
+        [
+          0.5408147945464177,
+          4.14650521197187,
+          -0.06344929686650458
+        ]
+      ]
+    },
+    {
+      "lane": 21,
+      "sector": 5,
+      "posterior_probability": 0.006631105739034283,
+      "minimum_clearance": -0.05412247693456884,
+      "overlap_residual": 0.18740572748760945,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "solver_success": false,
+        "status": 4,
+        "message": "Inequality constraints incompatible",
+        "iterations": 90,
+        "minimum_clearance": -1.0423171870489758,
+        "overlap_residual": 2.6080529292752916,
+        "anchor_distance": 8.36739281875933,
+        "measured_axis": {
+          "success": false,
+          "minimum_clearance": -0.2780358690546221,
+          "overlap_residual": 0.5026326080358822,
+          "anchor_distance": 7.825082060878231,
+          "rounds": [
+            {
+              "measurement": 1,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 113,
+              "minimum_clearance": -1.207104988463331,
+              "overlap_residual": 9.515329855668318,
+              "owner_changes": 107
+            },
+            {
+              "measurement": 2,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 44,
+              "minimum_clearance": -1.0101366598400698,
+              "overlap_residual": 2.737489024347207,
+              "owner_changes": 97
+            },
+            {
+              "measurement": 3,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 22,
+              "minimum_clearance": -0.7127491152142575,
+              "overlap_residual": 1.580468660629712,
+              "owner_changes": 83
+            },
+            {
+              "measurement": 4,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 82,
+              "minimum_clearance": -0.2780358690546221,
+              "overlap_residual": 0.5026326080358822,
+              "owner_changes": 69
+            }
+          ]
+        }
+      },
+      "poses": [
+        [
+          0.8077774274192142,
+          0.44594392056495047,
+          8.85912947051759e-05
+        ],
+        [
+          1.8135088382584044,
+          0.5060548532408987,
+          0.01305983000717803
+        ],
+        [
+          2.8363201328083623,
+          0.5823832921099606,
+          0.06573923445080265
+        ],
+        [
+          3.8677523980891015,
+          0.4459427249698121,
+          -8.2238690648051e-05
+        ],
+        [
+          4.175450164059811,
+          1.3918083879772163,
+          -0.00015210206057647557
+        ],
+        [
+          2.6239772139582938,
+          1.572890071788566,
+          0.0611469281182887
+        ],
+        [
+          0.8069773881414114,
+          1.3918591032403285,
+          0.00013489903888053156
+        ],
+        [
+          0.5000533270736508,
+          2.3377143512125285,
+          0.00012369150529645268
+        ],
+        [
+          2.1044816782904543,
+          2.5442762529824505,
+          0.0585105874559676
+        ],
+        [
+          3.1365363389352403,
+          2.6095985976838145,
+          0.04796720662729903
+        ],
+        [
+          4.175453247272204,
+          2.3377229861054247,
+          -0.0001657949530332603
+        ],
+        [
+          4.175512876527522,
+          3.2836943629896935,
+          -3.851352517647566e-05
+        ],
+        [
+          2.887776019114858,
+          3.606651467666706,
+          0.061243742339148866
+        ],
+        [
+          0.8427432870424707,
+          3.2836945388909164,
+          -2.4371672719958326e-05
+        ],
+        [
+          0.5000138789483014,
+          4.229603922447845,
+          3.090123083837604e-05
+        ],
+        [
+          1.8565280153115142,
+          4.16870576390978,
+          0.01306004265125027
+        ],
+        [
+          4.131876948510004,
+          4.229621833889169,
+          1.0357716850872833e-06
+        ]
+      ]
+    },
+    {
+      "lane": 4,
+      "sector": 4,
+      "posterior_probability": 0.007623296012905236,
+      "minimum_clearance": -0.05412491042034262,
+      "overlap_residual": 0.1874067419375252,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "solver_success": false,
+        "status": 4,
+        "message": "Inequality constraints incompatible",
+        "iterations": 54,
+        "minimum_clearance": -0.45658695726842247,
+        "overlap_residual": 0.8049965392690057,
+        "anchor_distance": 2.670733594324207,
+        "measured_axis": {
+          "success": false,
+          "minimum_clearance": -0.9999999998817735,
+          "overlap_residual": 2.9622052403024686,
+          "anchor_distance": 8.248630914987896,
+          "rounds": [
+            {
+              "measurement": 1,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 80,
+              "minimum_clearance": -0.18486665764469656,
+              "overlap_residual": 0.4589677915127937,
+              "owner_changes": 45
+            },
+            {
+              "measurement": 2,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 33,
+              "minimum_clearance": -0.1866846807570755,
+              "overlap_residual": 0.4639388024100923,
+              "owner_changes": 5
+            },
+            {
+              "measurement": 3,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 70,
+              "minimum_clearance": -1.2071024467734501,
+              "overlap_residual": 9.825544644560576,
+              "owner_changes": 107
+            },
+            {
+              "measurement": 4,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 2,
+              "minimum_clearance": -0.9999999998817735,
+              "overlap_residual": 2.9622052403024686,
+              "owner_changes": 102
+            }
+          ]
+        }
+      },
+      "poses": [
+        [
+          1.0635154433807499,
+          0.4459093972949681,
+          1.4061279156041273e-05
+        ],
+        [
+          2.761309305267829,
+          0.5008031389119595,
+          -8.987889426825824e-06
+        ],
+        [
+          4.1755268401431325,
+          0.4459151718040272,
+          7.071972054517595e-06
+        ],
+        [
+          4.175521568307389,
+          1.3918436330593076,
+          -2.6579454844521955e-05
+        ],
+        [
+          3.1240081534889375,
+          1.5624515988808505,
+          0.10922984337314523
+        ],
+        [
+          2.0869427878658775,
+          1.4967535741152396,
+          0.02881281540854541
+        ],
+        [
+          1.0754393696738447,
+          1.3918715825189796,
+          0.00015561792644180894
+        ],
+        [
+          0.5000277851418318,
+          2.3377104888520903,
+          6.515989116440135e-05
+        ],
+        [
+          2.134738527456865,
+          2.4985664949261164,
+          0.028965745085802408
+        ],
+        [
+          4.1755180825212825,
+          2.337780468433785,
+          2.3820296293441956e-05
+        ],
+        [
+          4.175456547319229,
+          3.283761106157419,
+          0.000161835709204472
+        ],
+        [
+          3.1528423532395022,
+          3.145982143609321,
+          -0.04620214642466369
+        ],
+        [
+          1.6266260043555132,
+          3.5230070486326803,
+          0.303673119896851
+        ],
+        [
+          0.5000733738134864,
+          3.2836537480522034,
+          0.00015064295006383954
+        ],
+        [
+          0.5000123232375434,
+          4.229615871624985,
+          2.741490814295311e-05
+        ],
+        [
+          2.6073567191887124,
+          4.170950610241119,
+          -0.009205838361597385
+        ],
+        [
+          3.611971973923677,
+          4.229580454097025,
+          9.095739881626042e-05
+        ]
+      ]
+    },
+    {
+      "lane": 12,
+      "sector": 12,
+      "posterior_probability": 0.007228226401953579,
+      "minimum_clearance": -0.05438644638778889,
+      "overlap_residual": 0.18797576580329722,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "solver_success": false,
+        "status": 4,
+        "message": "Inequality constraints incompatible",
+        "iterations": 121,
+        "minimum_clearance": -0.9057105645497892,
+        "overlap_residual": 1.9758536989396682,
+        "anchor_distance": 9.488898228228848,
+        "measured_axis": {
+          "success": false,
+          "minimum_clearance": -0.13691754645420307,
+          "overlap_residual": 0.2386533233656845,
+          "anchor_distance": 2.6718963029659633,
+          "rounds": [
+            {
+              "measurement": 1,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 74,
+              "minimum_clearance": -0.1314360031639097,
+              "overlap_residual": 0.317586550739299,
+              "owner_changes": 71
+            },
+            {
+              "measurement": 2,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 79,
+              "minimum_clearance": -0.08749219862330049,
+              "overlap_residual": 0.19087812216501002,
+              "owner_changes": 47
+            },
+            {
+              "measurement": 3,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 79,
+              "minimum_clearance": -0.12366760062388427,
+              "overlap_residual": 0.18593773799321978,
+              "owner_changes": 30
+            },
+            {
+              "measurement": 4,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 60,
+              "minimum_clearance": -0.13691754645420307,
+              "overlap_residual": 0.2386533233656845,
+              "owner_changes": 29
+            }
+          ]
+        }
+      },
+      "poses": [
+        [
+          0.4460015232889701,
+          0.6258173676843164,
+          -3.440000709331592e-05
+        ],
+        [
+          0.5862184249616833,
+          2.18580198009324,
+          -0.09615214802691385
+        ],
+        [
+          0.44593706917192955,
+          4.049693514712454,
+          7.47911458299777e-05
+        ],
+        [
+          1.3918423587412916,
+          4.1755253346888885,
+          1.572447976139202e-05
+        ],
+        [
+          1.5208832989275178,
+          3.0751448886171753,
+          -0.22880642382077754
+        ],
+        [
+          1.6631596329493006,
+          1.6898469458336773,
+          0.1436047947391209
+        ],
+        [
+          1.3919612740605167,
+          0.6258440384059321,
+          -8.602971757465383e-05
+        ],
+        [
+          2.3378077101401993,
+          0.6610960507199813,
+          -0.0005458279342822614
+        ],
+        [
+          2.529878922926713,
+          2.7159122362222594,
+          -0.09573422910164031
+        ],
+        [
+          2.337778187730654,
+          4.014678889242328,
+          9.887255836493747e-05
+        ],
+        [
+          3.2836315542186267,
+          4.1754677338334965,
+          0.00012452713683230865
+        ],
+        [
+          3.57680508925847,
+          3.1286590193756565,
+          -0.09859476128130462
+        ],
+        [
+          3.14696689509018,
+          1.63229457927523,
+          -0.05302231053272044
+        ],
+        [
+          3.283620888631776,
+          0.4999953310215459,
+          -4.4653697081953325e-05
+        ],
+        [
+          4.22956432926823,
+          0.500027034225619,
+          -5.869846076933527e-05
+        ],
+        [
+          4.174065144557849,
+          2.0823043729311244,
+          0.0029340064968911284
+        ],
+        [
+          4.229549698590519,
+          4.175462575151762,
+          0.00014832021254507222
+        ]
+      ]
+    },
+    {
+      "lane": 45,
+      "sector": 13,
+      "posterior_probability": 0.006944677128021303,
+      "minimum_clearance": -0.05425922739624489,
+      "overlap_residual": 0.18913102793737704,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "solver_success": false,
+        "status": 4,
+        "message": "Inequality constraints incompatible",
+        "iterations": 46,
+        "minimum_clearance": -0.7370825340316992,
+        "overlap_residual": 1.884284623653446,
+        "anchor_distance": 5.121579482489653,
+        "measured_axis": {
+          "success": false,
+          "minimum_clearance": -0.2512270541039132,
+          "overlap_residual": 0.6370305299816561,
+          "anchor_distance": 4.350706058689108,
+          "rounds": [
+            {
+              "measurement": 1,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 54,
+              "minimum_clearance": -0.43516940094411627,
+              "overlap_residual": 0.8937511153364932,
+              "owner_changes": 63
+            },
+            {
+              "measurement": 2,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 420,
+              "minimum_clearance": -0.23743708027475152,
+              "overlap_residual": 0.40778956101212943,
+              "owner_changes": 46
+            },
+            {
+              "measurement": 3,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 73,
+              "minimum_clearance": -0.5888321032678603,
+              "overlap_residual": 1.3880320113092883,
+              "owner_changes": 81
+            },
+            {
+              "measurement": 4,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 36,
+              "minimum_clearance": -0.2512270541039132,
+              "overlap_residual": 0.6370305299816561,
+              "owner_changes": 57
+            }
+          ]
+        }
+      },
+      "poses": [
+        [
+          0.44592222983807667,
+          0.5000053126284578,
+          1.1689780274548589e-05
+        ],
+        [
+          0.6364563539293869,
+          1.6472594716486195,
+          0.17215998022432744
+        ],
+        [
+          0.5641455227282225,
+          3.1135942160342323,
+          -0.11726667482806052
+        ],
+        [
+          0.445966828130763,
+          4.1687042199336295,
+          0.00014097042577598806
+        ],
+        [
+          1.3918702212146261,
+          4.17548264422599,
+          9.54719413436278e-05
+        ],
+        [
+          1.6436691829619223,
+          2.052208186229714,
+          0.04444841097639629
+        ],
+        [
+          1.3918738749069834,
+          0.5768182445131295,
+          -0.00012129193993748455
+        ],
+        [
+          2.337750124669183,
+          0.5000267321100408,
+          -6.162711809942767e-05
+        ],
+        [
+          2.7237853410664603,
+          2.0548479153949435,
+          -0.12201880053341685
+        ],
+        [
+          2.2090255713347062,
+          3.108309643006757,
+          0.10639737562889706
+        ],
+        [
+          2.3378061071355107,
+          4.133683159687108,
+          0.0001832856841006425
+        ],
+        [
+          3.283553592736912,
+          4.098676952924158,
+          0.0001826812023187907
+        ],
+        [
+          3.253118411271852,
+          3.075883142117359,
+          0.04920473911554546
+        ],
+        [
+          3.283675326513052,
+          0.5000220209182025,
+          -4.399462641357932e-05
+        ],
+        [
+          4.229592413818443,
+          0.5000190915783194,
+          -4.259102934811576e-05
+        ],
+        [
+          4.13776195271121,
+          2.046982441553906,
+          -0.05429468120081182
+        ],
+        [
+          4.229439911871275,
+          4.175354206739216,
+          0.00039432276463935434
+        ]
+      ]
+    },
+    {
+      "lane": 14,
+      "sector": 14,
+      "posterior_probability": 0.007148176599781501,
+      "minimum_clearance": -0.05607406878919474,
+      "overlap_residual": 0.1899631672064301,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "solver_success": false,
+        "status": 4,
+        "message": "Inequality constraints incompatible",
+        "iterations": 53,
+        "minimum_clearance": -0.7412463490069948,
+        "overlap_residual": 2.142930039392042,
+        "anchor_distance": 11.159958024202599,
+        "measured_axis": {
+          "success": false,
+          "minimum_clearance": -0.16870603979210763,
+          "overlap_residual": 0.3399688718729441,
+          "anchor_distance": 2.807075036908467,
+          "rounds": [
+            {
+              "measurement": 1,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 75,
+              "minimum_clearance": -0.6434933053364573,
+              "overlap_residual": 0.9792964074836491,
+              "owner_changes": 70
+            },
+            {
+              "measurement": 2,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 153,
+              "minimum_clearance": -0.2905065235321138,
+              "overlap_residual": 0.5825642214688416,
+              "owner_changes": 46
+            },
+            {
+              "measurement": 3,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 79,
+              "minimum_clearance": -0.12300269162830657,
+              "overlap_residual": 0.3192272780783279,
+              "owner_changes": 43
+            },
+            {
+              "measurement": 4,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 100,
+              "minimum_clearance": -0.16870603979210763,
+              "overlap_residual": 0.3399688718729441,
+              "owner_changes": 24
+            }
+          ]
+        }
+      },
+      "poses": [
+        [
+          0.4466625062524747,
+          0.5001699769050956,
+          0.0003805682322620685
+        ],
+        [
+          0.5831586800898969,
+          2.2239829669759175,
+          0.06217359171653036
+        ],
+        [
+          0.44574311761574287,
+          4.175537001094113,
+          2.3101463295649438e-05
+        ],
+        [
+          1.3916571650221445,
+          4.175325918129185,
+          -0.0003419677272442634
+        ],
+        [
+          1.5665376139656262,
+          2.5521035335304374,
+          0.063472694412114
+        ],
+        [
+          1.39160580131922,
+          0.5787896580829249,
+          -3.436679328250314e-05
+        ],
+        [
+          2.337999013141513,
+          0.5796259390655425,
+          -0.001584558575939643
+        ],
+        [
+          2.123854092487241,
+          1.5942861214990738,
+          0.06374555909469792
+        ],
+        [
+          2.573169615635459,
+          3.1536961617555375,
+          0.04446997169486089
+        ],
+        [
+          2.337689979232807,
+          4.164024209527963,
+          0.00026834330236713555
+        ],
+        [
+          3.283686539103154,
+          4.175365822368279,
+          -0.0002648599475748581
+        ],
+        [
+          3.138484593554069,
+          2.120285603292763,
+          -0.07435171240037408
+        ],
+        [
+          3.2819093412411946,
+          0.5006106874210753,
+          -0.0013677027927992969
+        ],
+        [
+          4.228949103500174,
+          0.5001002486537287,
+          -0.00022467367709400055
+        ],
+        [
+          4.109036468724037,
+          1.5454878499340756,
+          -0.09563926584088067
+        ],
+        [
+          4.141980578226045,
+          3.141963470193376,
+          0.06957425977739062
+        ],
+        [
+          4.229674512586812,
+          4.175420764697346,
+          0.00024508831257818997
+        ]
+      ]
+    },
+    {
+      "lane": 22,
+      "sector": 6,
+      "posterior_probability": 0.008098173840725562,
+      "minimum_clearance": -0.05459855125755786,
+      "overlap_residual": 0.19293363019280163,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "solver_success": false,
+        "status": 8,
+        "message": "Positive directional derivative for linesearch",
+        "iterations": 86,
+        "minimum_clearance": -0.7849982455014909,
+        "overlap_residual": 1.1268552605975075,
+        "anchor_distance": 3.1379740434290686,
+        "measured_axis": {
+          "success": false,
+          "minimum_clearance": -0.75066673191716,
+          "overlap_residual": 1.0575550031132956,
+          "anchor_distance": 1.4471643163311299,
+          "rounds": [
+            {
+              "measurement": 1,
+              "solver_success": false,
+              "status": 8,
+              "message": "Positive directional derivative for linesearch",
+              "iterations": 27,
+              "minimum_clearance": -0.7849936865831219,
+              "overlap_residual": 1.1268281825903061,
+              "owner_changes": 4
+            },
+            {
+              "measurement": 2,
+              "solver_success": false,
+              "status": 8,
+              "message": "Positive directional derivative for linesearch",
+              "iterations": 57,
+              "minimum_clearance": -0.7506532406025687,
+              "overlap_residual": 1.0582408972177488,
+              "owner_changes": 6
+            },
+            {
+              "measurement": 3,
+              "solver_success": false,
+              "status": 8,
+              "message": "Positive directional derivative for linesearch",
+              "iterations": 19,
+              "minimum_clearance": -0.7506693835210598,
+              "overlap_residual": 1.057515351332633,
+              "owner_changes": 14
+            },
+            {
+              "measurement": 4,
+              "solver_success": false,
+              "status": 8,
+              "message": "Positive directional derivative for linesearch",
+              "iterations": 87,
+              "minimum_clearance": -0.75066673191716,
+              "overlap_residual": 1.0575550031132956,
+              "owner_changes": 10
+            }
+          ]
+        }
+      },
+      "poses": [
+        [
+          0.5001046121563445,
+          0.44603782053690294,
+          -0.00023453886385138567
+        ],
+        [
+          2.5558682226264864,
+          0.521774365107501,
+          0.028398511194944298
+        ],
+        [
+          4.175446131663478,
+          0.4460373850282182,
+          0.0002659826470051696
+        ],
+        [
+          4.182518985270949,
+          1.3919260542598768,
+          0.0012370658481444252
+        ],
+        [
+          2.6932273528380453,
+          1.5327478923861624,
+          0.021536123564273035
+        ],
+        [
+          0.5481646650772615,
+          1.3918307631503333,
+          -6.0767703803810136e-05
+        ],
+        [
+          0.5481517400130552,
+          2.337669252474431,
+          -2.045517151483267e-05
+        ],
+        [
+          1.619050046639325,
+          1.902505941964613,
+          0.15837051464245167
+        ],
+        [
+          3.1238253826197324,
+          2.5344793604861158,
+          -0.05682404028318311
+        ],
+        [
+          4.1273079755452455,
+          2.33800806077069,
+          6.711202332787547e-05
+        ],
+        [
+          4.12705297838725,
+          3.283942528377616,
+          0.0007020123606753526
+        ],
+        [
+          2.1244982818631377,
+          3.1160563851474516,
+          0.058802152328939594
+        ],
+        [
+          0.5001228597234666,
+          3.2834027371468437,
+          0.0002455605251426851
+        ],
+        [
+          0.5000678446897181,
+          4.229527804201776,
+          -0.00016353632545462737
+        ],
+        [
+          1.5608025780327748,
+          4.088467016570275,
+          0.15303293476072866
+        ],
+        [
+          2.639199671032215,
+          4.151696247791893,
+          -0.04636627189235054
+        ],
+        [
+          4.162382270215666,
+          4.229847747645798,
+          4.139513857959187e-05
+        ]
+      ]
+    },
+    {
+      "lane": 55,
+      "sector": 7,
+      "posterior_probability": 0.0014822704896502573,
+      "minimum_clearance": -0.06553565954009333,
+      "overlap_residual": 0.24653427894590993,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "solver_success": false,
+        "status": 4,
+        "message": "Inequality constraints incompatible",
+        "iterations": 27,
+        "minimum_clearance": -1.176708958026618,
+        "overlap_residual": 4.306318620329421,
+        "anchor_distance": 15.170544182290318,
+        "measured_axis": {
+          "success": false,
+          "minimum_clearance": -1.176708958026618,
+          "overlap_residual": 4.306318620329421,
+          "anchor_distance": 0.0,
+          "rounds": [
+            {
+              "measurement": 1,
+              "solver_success": false,
+              "status": 8,
+              "message": "Positive directional derivative for linesearch",
+              "iterations": 5,
+              "minimum_clearance": -1.176708958026618,
+              "overlap_residual": 4.306318620329421,
+              "owner_changes": 0
+            },
+            {
+              "measurement": 2,
+              "solver_success": false,
+              "status": 8,
+              "message": "Positive directional derivative for linesearch",
+              "iterations": 5,
+              "minimum_clearance": -1.176708958026618,
+              "overlap_residual": 4.306318620329421,
+              "owner_changes": 0
+            },
+            {
+              "measurement": 3,
+              "solver_success": false,
+              "status": 8,
+              "message": "Positive directional derivative for linesearch",
+              "iterations": 5,
+              "minimum_clearance": -1.176708958026618,
+              "overlap_residual": 4.306318620329421,
+              "owner_changes": 0
+            },
+            {
+              "measurement": 4,
+              "solver_success": false,
+              "status": 8,
+              "message": "Positive directional derivative for linesearch",
+              "iterations": 5,
+              "minimum_clearance": -1.176708958026618,
+              "overlap_residual": 4.306318620329421,
+              "owner_changes": 0
+            }
+          ]
+        }
+      },
+      "poses": [
+        [
+          0.446322547563622,
+          0.467386738109141,
+          0.0016993753713170356
+        ],
+        [
+          1.392252319267664,
+          0.46829655351515503,
+          0.0006720427429520726
+        ],
+        [
+          2.3376229236184183,
+          0.5004141254122109,
+          0.0008283940676002688
+        ],
+        [
+          3.283187448506053,
+          0.4686286959123387,
+          0.0012667964994349523
+        ],
+        [
+          4.229661864026241,
+          0.46689190379805784,
+          -0.0007556953793256271
+        ],
+        [
+          4.173279496807731,
+          1.4353915116355072,
+          -0.004565606898411789
+        ],
+        [
+          2.4301667832009777,
+          1.5824817914974838,
+          0.18220623029143257
+        ],
+        [
+          0.501453648825046,
+          1.4347365411309854,
+          0.003060924642799834
+        ],
+        [
+          0.5006842948077458,
+          2.3701962696322822,
+          0.0012264366422563011
+        ],
+        [
+          2.5885299478013715,
+          2.6545078295737454,
+          0.044421216531896235
+        ],
+        [
+          4.174472643113926,
+          2.3710329178186487,
+          -0.002207986626328262
+        ],
+        [
+          4.1747731261399,
+          3.305844391985027,
+          -0.0015148829436585354
+        ],
+        [
+          2.0149031427315145,
+          3.6917235601681893,
+          -0.08805924081131367
+        ],
+        [
+          0.5011111766905059,
+          3.3052858123599815,
+          0.0023165301041969677
+        ],
+        [
+          0.5002286166870685,
+          4.240723528785277,
+          0.0005260368014734507
+        ],
+        [
+          3.0649258168216558,
+          4.10064560169078,
+          -0.09993887428524684
+        ],
+        [
+          4.175584097230724,
+          4.241020418182484,
+          -9.035450628291919e-05
+        ]
+      ]
+    },
+    {
+      "lane": 15,
+      "sector": 15,
+      "posterior_probability": 0.00031769161858729493,
+      "minimum_clearance": -0.13223588566939104,
+      "overlap_residual": 0.2985770158226492,
+      "feasible": false,
+      "polish_audit": {
+        "success": false,
+        "solver_success": false,
+        "status": 4,
+        "message": "Inequality constraints incompatible",
+        "iterations": 121,
+        "minimum_clearance": -0.8240191731813428,
+        "overlap_residual": 1.1638104333426098,
+        "anchor_distance": 14.38686505940193,
+        "measured_axis": {
+          "success": false,
+          "minimum_clearance": -0.6880135110544205,
+          "overlap_residual": 1.609943874271523,
+          "anchor_distance": 2.172740124905449,
+          "rounds": [
+            {
+              "measurement": 1,
+              "solver_success": false,
+              "status": 8,
+              "message": "Positive directional derivative for linesearch",
+              "iterations": 45,
+              "minimum_clearance": -0.4869553679135462,
+              "overlap_residual": 0.8498875462966837,
+              "owner_changes": 54
+            },
+            {
+              "measurement": 2,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 44,
+              "minimum_clearance": -0.5769187902411732,
+              "overlap_residual": 0.9287746379905429,
+              "owner_changes": 46
+            },
+            {
+              "measurement": 3,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 26,
+              "minimum_clearance": -0.9600797028855703,
+              "overlap_residual": 1.129984287425656,
+              "owner_changes": 38
+            },
+            {
+              "measurement": 4,
+              "solver_success": false,
+              "status": 4,
+              "message": "Inequality constraints incompatible",
+              "iterations": 18,
+              "minimum_clearance": -0.6880135110544205,
+              "overlap_residual": 1.609943874271523,
+              "owner_changes": 56
+            }
+          ]
+        }
+      },
+      "poses": [
+        [
+          0.467459335967274,
+          0.44577765836258226,
+          -6.677509398900217e-05
+        ],
+        [
+          0.4673924898082501,
+          1.3915387319050545,
+          -2.8588724207190275e-05
+        ],
+        [
+          0.47437542360991836,
+          2.335764040908588,
+          0.0006660288423725458
+        ],
+        [
+          0.46738411709821553,
+          3.2823577946376856,
+          0.0006691440772277346
+        ],
+        [
+          0.46806186781045367,
+          4.229580059184831,
+          -0.0004289556966521335
+        ],
+        [
+          1.4351692687559359,
+          4.165910231300513,
+          0.0016064360364269614
+        ],
+        [
+          1.4949111418881718,
+          2.2282857535295153,
+          0.0773207990241499
+        ],
+        [
+          1.434733503690647,
+          0.5095747825950948,
+          -0.0013944014263564952
+        ],
+        [
+          2.369591022568293,
+          0.5013618985953562,
+          -0.0026857530214551284
+        ],
+        [
+          2.4176522546267116,
+          2.2906971373969296,
+          0.07691132867046169
+        ],
+        [
+          2.3692444089528273,
+          4.17475297703885,
+          0.0015599698051333988
+        ],
+        [
+          3.2971727734363445,
+          4.178133151218568,
+          0.0010915671310011144
+        ],
+        [
+          3.2723081672531245,
+          2.4968737351821018,
+          0.07649737152033298
+        ],
+        [
+          3.302126266673108,
+          0.4965655646868844,
+          -4.825886567028093e-06
+        ],
+        [
+          4.234519717030975,
+          0.4929207962511168,
+          -0.000298939309394175
+        ],
+        [
+          4.165389365049131,
+          3.164869316017835,
+          0.07672027840230222
+        ],
+        [
+          4.232421418963865,
+          4.18209723665359,
+          0.0007233940025933583
+        ]
+      ]
+    }
+  ],
+  "trace": [
+    {
+      "sweep": 1,
+      "side": 5.0,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.2592607407169965,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 64.0,
+      "best_lane": 11,
+      "best_minimum_clearance": -1.0843469441579323e-05,
+      "best_overlap_residual": 1.5268139250247035e-05,
+      "median_overlap_residual": 4.699673014251009e-05,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 20,
+      "side": 4.99929513399473,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.259332458640384,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.51999999993021,
+      "best_lane": 2,
+      "best_minimum_clearance": -0.00021326160178303244,
+      "best_overlap_residual": 0.0003827831779148441,
+      "median_overlap_residual": 0.0006320648065762156,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 40,
+      "side": 4.9970878302188915,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.2434848258111915,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.51999999987292,
+      "best_lane": 51,
+      "best_minimum_clearance": -0.009888945516404402,
+      "best_overlap_residual": 0.011769553921106108,
+      "median_overlap_residual": 0.0634307768370052,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 60,
+      "side": 4.9934670483308725,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.222717940756211,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.519999999980264,
+      "best_lane": 48,
+      "best_minimum_clearance": -0.029240588927519462,
+      "best_overlap_residual": 0.032362430243015376,
+      "median_overlap_residual": 0.09457274226026566,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 80,
+      "side": 4.9885237384223435,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.2054343134700627,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.52000000019378,
+      "best_lane": 9,
+      "best_minimum_clearance": -0.03127512737855964,
+      "best_overlap_residual": 0.046869954705499685,
+      "median_overlap_residual": 0.11934319775304406,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 100,
+      "side": 4.982348850584977,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.191487981040459,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.51999999998811,
+      "best_lane": 9,
+      "best_minimum_clearance": -0.031314851729605686,
+      "best_overlap_residual": 0.047906299353492894,
+      "median_overlap_residual": 0.13544100753674274,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 120,
+      "side": 4.975033334910442,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.1817167254739243,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.520000000012885,
+      "best_lane": 9,
+      "best_minimum_clearance": -0.0369300989616872,
+      "best_overlap_residual": 0.04999474454152333,
+      "median_overlap_residual": 0.1367822499696667,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 140,
+      "side": 4.966668141490411,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.1737827938389827,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.519999999964746,
+      "best_lane": 41,
+      "best_minimum_clearance": -0.06224817359937984,
+      "best_overlap_residual": 0.06465924984175127,
+      "median_overlap_residual": 0.1536235385400453,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 160,
+      "side": 4.957344220416554,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.167954886989303,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.520000000158994,
+      "best_lane": 41,
+      "best_minimum_clearance": -0.0708428082894701,
+      "best_overlap_residual": 0.07308276959645865,
+      "median_overlap_residual": 0.16693580051828136,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 180,
+      "side": 4.947152521780542,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.162632720047661,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.52000000004557,
+      "best_lane": 41,
+      "best_minimum_clearance": -0.06342730362699223,
+      "best_overlap_residual": 0.07876111619189102,
+      "median_overlap_residual": 0.17887707371194556,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 200,
+      "side": 4.936183995674046,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.155934743417451,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.52000000018116,
+      "best_lane": 41,
+      "best_minimum_clearance": -0.06129350629017438,
+      "best_overlap_residual": 0.07780712890418913,
+      "median_overlap_residual": 0.18410182503269507,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 220,
+      "side": 4.924529592188737,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.1546409674465763,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.519999999959545,
+      "best_lane": 41,
+      "best_minimum_clearance": -0.07685729920958861,
+      "best_overlap_residual": 0.09219283927775591,
+      "median_overlap_residual": 0.19818787233195767,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 240,
+      "side": 4.912280261416286,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.1526447177608823,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.51999999992004,
+      "best_lane": 41,
+      "best_minimum_clearance": -0.0758840505198618,
+      "best_overlap_residual": 0.1007602009001579,
+      "median_overlap_residual": 0.2006413775735909,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 260,
+      "side": 4.899526953448363,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.1518324668210504,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.52000000010925,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.07890753812336815,
+      "best_overlap_residual": 0.11193846866510815,
+      "median_overlap_residual": 0.20635015892191627,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 280,
+      "side": 4.88636061837664,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.150139923475834,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.519999999980186,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.07833869724477183,
+      "best_overlap_residual": 0.11423470397985531,
+      "median_overlap_residual": 0.21319682122689154,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 300,
+      "side": 4.872872206292787,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.1504653567439584,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.519999999882565,
+      "best_lane": 3,
+      "best_minimum_clearance": -0.06974243175674844,
+      "best_overlap_residual": 0.10371728877382744,
+      "median_overlap_residual": 0.22251398183565987,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 320,
+      "side": 4.859152667288476,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.149369505662334,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.519999999986815,
+      "best_lane": 3,
+      "best_minimum_clearance": -0.06874799334610504,
+      "best_overlap_residual": 0.10663239579306945,
+      "median_overlap_residual": 0.22561411871393333,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 340,
+      "side": 4.845292951455377,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.153286291289101,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.52000000012993,
+      "best_lane": 3,
+      "best_minimum_clearance": -0.06671138470378823,
+      "best_overlap_residual": 0.1124273619677408,
+      "median_overlap_residual": 0.23129274517744652,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 360,
+      "side": 4.831384008885161,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.154203109513697,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.52000000006273,
+      "best_lane": 3,
+      "best_minimum_clearance": -0.08790568400914511,
+      "best_overlap_residual": 0.1293002941606106,
+      "median_overlap_residual": 0.23820255557071046,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 380,
+      "side": 4.817516789669499,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.155219533162085,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.519999999854406,
+      "best_lane": 59,
+      "best_minimum_clearance": -0.08997301395218371,
+      "best_overlap_residual": 0.14153143668262375,
+      "median_overlap_residual": 0.23684807407274455,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 400,
+      "side": 4.803782243900062,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.1561852373874024,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.519999999944005,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.0890023997664412,
+      "best_overlap_residual": 0.1395035004564827,
+      "median_overlap_residual": 0.25095031567254844,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 420,
+      "side": 4.790271321668521,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.1589376185047557,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.51999999994204,
+      "best_lane": 8,
+      "best_minimum_clearance": -0.08880068721376067,
+      "best_overlap_residual": 0.14647375012594913,
+      "median_overlap_residual": 0.2538604634554773,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 440,
+      "side": 4.777074973066547,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.160998512071365,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.52000000003059,
+      "best_lane": 32,
+      "best_minimum_clearance": -0.11772192498245992,
+      "best_overlap_residual": 0.1454029028401206,
+      "median_overlap_residual": 0.2639031948806117,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 460,
+      "side": 4.76428414818581,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.165520736839326,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.520000000099124,
+      "best_lane": 32,
+      "best_minimum_clearance": -0.1197953098687633,
+      "best_overlap_residual": 0.1492834775273864,
+      "median_overlap_residual": 0.27191320964375193,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 480,
+      "side": 4.751989797117981,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.1684660102805386,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.52000000006635,
+      "best_lane": 32,
+      "best_minimum_clearance": -0.12382176385848442,
+      "best_overlap_residual": 0.15363047123587176,
+      "median_overlap_residual": 0.2739063977166899,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 500,
+      "side": 4.740282869954733,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.171554541853822,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.51999999988647,
+      "best_lane": 32,
+      "best_minimum_clearance": -0.12909800588293818,
+      "best_overlap_residual": 0.16101209305028072,
+      "median_overlap_residual": 0.2786365148924226,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 520,
+      "side": 4.729254316787734,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.173569182466139,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.5200000001394,
+      "best_lane": 26,
+      "best_minimum_clearance": -0.10855314943603567,
+      "best_overlap_residual": 0.17132434327521262,
+      "median_overlap_residual": 0.2812396072713209,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 540,
+      "side": 4.718995087708656,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.17575838929708,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.51999999988135,
+      "best_lane": 32,
+      "best_minimum_clearance": -0.12394121575238792,
+      "best_overlap_residual": 0.17398267719054622,
+      "median_overlap_residual": 0.27950872755645084,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 560,
+      "side": 4.709596132809171,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.177545369418695,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.520000000148094,
+      "best_lane": 59,
+      "best_minimum_clearance": -0.11887092007255295,
+      "best_overlap_residual": 0.17933027155685935,
+      "median_overlap_residual": 0.29409805143918344,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 580,
+      "side": 4.701148402180948,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.1781738424018844,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.51999999998301,
+      "best_lane": 59,
+      "best_minimum_clearance": -0.12003590553197718,
+      "best_overlap_residual": 0.19131174169867524,
+      "median_overlap_residual": 0.29145502433642845,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 600,
+      "side": 4.69374284591566,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.1781801687892433,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.51999999996411,
+      "best_lane": 59,
+      "best_minimum_clearance": -0.12393291200791778,
+      "best_overlap_residual": 0.19289614458966975,
+      "median_overlap_residual": 0.2846316486079453,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 620,
+      "side": 4.6874704141049754,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.1777269964280013,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.52000000010525,
+      "best_lane": 59,
+      "best_minimum_clearance": -0.12435162541169198,
+      "best_overlap_residual": 0.19444209090954448,
+      "median_overlap_residual": 0.28155410725716046,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 640,
+      "side": 4.682422056840567,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.176541505377269,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.51999999999615,
+      "best_lane": 41,
+      "best_minimum_clearance": -0.11694517615380384,
+      "best_overlap_residual": 0.19406940306547238,
+      "median_overlap_residual": 0.28957981896426915,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 660,
+      "side": 4.678688724214105,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.178000173509859,
+      "mean_accepted_action": 1.0,
+      "effective_configuration_lanes": 43.51999999999151,
+      "best_lane": 41,
+      "best_minimum_clearance": -0.11715738494945038,
+      "best_overlap_residual": 0.1952124709698577,
+      "median_overlap_residual": 0.29914839360515527,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 680,
+      "side": 4.676361366317261,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.174598195378985,
+      "mean_accepted_action": 0.96875,
+      "effective_configuration_lanes": 43.520000000049606,
+      "best_lane": 59,
+      "best_minimum_clearance": -0.12444139542970378,
+      "best_overlap_residual": 0.2115685577902473,
+      "median_overlap_residual": 0.308689665572298,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 700,
+      "side": 4.6755309332417045,
+      "axis_temperature": 0.18,
+      "mean_effective_axes": 2.1722752674017034,
+      "mean_accepted_action": 0.609375,
+      "effective_configuration_lanes": 43.520000000133294,
+      "best_lane": 59,
+      "best_minimum_clearance": -0.12326998136539313,
+      "best_overlap_residual": 0.20865494215304303,
+      "median_overlap_residual": 0.3069942726688691,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 720,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.1626588674942464,
+      "mean_effective_axes": 2.1377937636857105,
+      "mean_accepted_action": 0.951171875,
+      "effective_configuration_lanes": 43.52000000012436,
+      "best_lane": 59,
+      "best_minimum_clearance": -0.11348915019328298,
+      "best_overlap_residual": 0.20405972787773216,
+      "median_overlap_residual": 0.3011571337751915,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 740,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.14648903670603045,
+      "mean_effective_axes": 2.106084400115641,
+      "mean_accepted_action": 0.9033203125,
+      "effective_configuration_lanes": 43.520000000018065,
+      "best_lane": 1,
+      "best_minimum_clearance": -0.10284133720210686,
+      "best_overlap_residual": 0.1918802590154544,
+      "median_overlap_residual": 0.2796885220626768,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 760,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.1319266401250444,
+      "mean_effective_axes": 2.0751615824063547,
+      "mean_accepted_action": 0.72296142578125,
+      "effective_configuration_lanes": 43.520000000131745,
+      "best_lane": 56,
+      "best_minimum_clearance": -0.09163628072064545,
+      "best_overlap_residual": 0.18965199443268563,
+      "median_overlap_residual": 0.26835198218210915,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 780,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.11881188357876943,
+      "mean_effective_axes": 2.0414129249957593,
+      "mean_accepted_action": 0.565032958984375,
+      "effective_configuration_lanes": 43.52000000001915,
+      "best_lane": 19,
+      "best_minimum_clearance": -0.08481457607559295,
+      "best_overlap_residual": 0.16943522012292248,
+      "median_overlap_residual": 0.2615413046766084,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 800,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.10700085794768367,
+      "mean_effective_axes": 2.0080000378534004,
+      "mean_accepted_action": 0.28365325927734375,
+      "effective_configuration_lanes": 43.5199999997571,
+      "best_lane": 19,
+      "best_minimum_clearance": -0.08772900722880805,
+      "best_overlap_residual": 0.16248533134588444,
+      "median_overlap_residual": 0.2534612844517933,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 820,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.09636396004066249,
+      "mean_effective_axes": 1.973185197253318,
+      "mean_accepted_action": 0.18404388427734375,
+      "effective_configuration_lanes": 43.519999999831256,
+      "best_lane": 19,
+      "best_minimum_clearance": -0.08253988630831,
+      "best_overlap_residual": 0.15612312059709943,
+      "median_overlap_residual": 0.244576817476853,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 840,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0867844704503084,
+      "mean_effective_axes": 1.938566402924085,
+      "mean_accepted_action": 0.1745147705078125,
+      "effective_configuration_lanes": 43.52000000009539,
+      "best_lane": 19,
+      "best_minimum_clearance": -0.07966472103128941,
+      "best_overlap_residual": 0.15434593271646,
+      "median_overlap_residual": 0.2438900785370169,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 860,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.07815727278291988,
+      "mean_effective_axes": 1.9100338896654232,
+      "mean_accepted_action": 0.22487640380859375,
+      "effective_configuration_lanes": 43.52000000020341,
+      "best_lane": 19,
+      "best_minimum_clearance": -0.07833244304091835,
+      "best_overlap_residual": 0.15269217095752693,
+      "median_overlap_residual": 0.23901199304095455,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 880,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.07038770020912238,
+      "mean_effective_axes": 1.8783436638359605,
+      "mean_accepted_action": 0.29402923583984375,
+      "effective_configuration_lanes": 43.519999999893734,
+      "best_lane": 19,
+      "best_minimum_clearance": -0.09724426934339903,
+      "best_overlap_residual": 0.15662373606114696,
+      "median_overlap_residual": 0.23207062067030138,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 900,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.06339049667828232,
+      "mean_effective_axes": 1.8453454641099705,
+      "mean_accepted_action": 0.2628021240234375,
+      "effective_configuration_lanes": 43.51999999997468,
+      "best_lane": 33,
+      "best_minimum_clearance": -0.0763235923398966,
+      "best_overlap_residual": 0.1527275764877512,
+      "median_overlap_residual": 0.22944613347937287,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 920,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.05708888139803914,
+      "mean_effective_axes": 1.8161798373820495,
+      "mean_accepted_action": 0.26833343505859375,
+      "effective_configuration_lanes": 43.52000000010736,
+      "best_lane": 19,
+      "best_minimum_clearance": -0.08188621515990702,
+      "best_overlap_residual": 0.1505548063790957,
+      "median_overlap_residual": 0.22191601726021273,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 940,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.05141370631342546,
+      "mean_effective_axes": 1.785352753524215,
+      "mean_accepted_action": 0.2685394287109375,
+      "effective_configuration_lanes": 43.519999999863046,
+      "best_lane": 33,
+      "best_minimum_clearance": -0.0754004664569975,
+      "best_overlap_residual": 0.15084695298435938,
+      "median_overlap_residual": 0.21968955676979174,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 960,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.04630269734053605,
+      "mean_effective_axes": 1.7571830037430556,
+      "mean_accepted_action": 0.30255126953125,
+      "effective_configuration_lanes": 43.519999999799445,
+      "best_lane": 33,
+      "best_minimum_clearance": -0.07468341101335418,
+      "best_overlap_residual": 0.15133257515085763,
+      "median_overlap_residual": 0.21240847327899867,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 980,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.04169977102875085,
+      "mean_effective_axes": 1.7280544999920142,
+      "mean_accepted_action": 0.27280426025390625,
+      "effective_configuration_lanes": 43.51999999991308,
+      "best_lane": 33,
+      "best_minimum_clearance": -0.07822825468857975,
+      "best_overlap_residual": 0.15456634460791904,
+      "median_overlap_residual": 0.20664851914851784,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1000,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.037554419153199986,
+      "mean_effective_axes": 1.7024164988275667,
+      "mean_accepted_action": 0.27573394775390625,
+      "effective_configuration_lanes": 43.520000000001446,
+      "best_lane": 26,
+      "best_minimum_clearance": -0.08999211034269416,
+      "best_overlap_residual": 0.15513101312778593,
+      "median_overlap_residual": 0.21801159382834873,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1020,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.03382115448456172,
+      "mean_effective_axes": 1.6793650011567929,
+      "mean_accepted_action": 0.31421661376953125,
+      "effective_configuration_lanes": 43.519999999912926,
+      "best_lane": 48,
+      "best_minimum_clearance": -0.09047568847604304,
+      "best_overlap_residual": 0.15186582666862444,
+      "median_overlap_residual": 0.2081976834926681,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1040,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.030459011654587708,
+      "mean_effective_axes": 1.6539245431907421,
+      "mean_accepted_action": 0.21918487548828125,
+      "effective_configuration_lanes": 43.51999999992333,
+      "best_lane": 10,
+      "best_minimum_clearance": -0.08456496535244595,
+      "best_overlap_residual": 0.1537986527558995,
+      "median_overlap_residual": 0.210049832342556,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1060,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.027431097640318505,
+      "mean_effective_axes": 1.6267045558900102,
+      "mean_accepted_action": 0.2409210205078125,
+      "effective_configuration_lanes": 43.519999999917104,
+      "best_lane": 10,
+      "best_minimum_clearance": -0.08920034799150245,
+      "best_overlap_residual": 0.1477016622813471,
+      "median_overlap_residual": 0.21256202166180652,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1080,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.02470418693442249,
+      "mean_effective_axes": 1.602177840541286,
+      "mean_accepted_action": 0.2254791259765625,
+      "effective_configuration_lanes": 43.520000000127666,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06724658273049,
+      "best_overlap_residual": 0.1494651130217251,
+      "median_overlap_residual": 0.2124290482311128,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1100,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.022248356959433904,
+      "mean_effective_axes": 1.579422350953369,
+      "mean_accepted_action": 0.26470184326171875,
+      "effective_configuration_lanes": 43.51999999998235,
+      "best_lane": 34,
+      "best_minimum_clearance": -0.09144501245747072,
+      "best_overlap_residual": 0.1461304793661699,
+      "median_overlap_residual": 0.2046997086193229,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1120,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.020036659725266196,
+      "mean_effective_axes": 1.5548771454410892,
+      "mean_accepted_action": 0.16436767578125,
+      "effective_configuration_lanes": 43.5199999998621,
+      "best_lane": 16,
+      "best_minimum_clearance": -0.08443297426117446,
+      "best_overlap_residual": 0.14532422545048868,
+      "median_overlap_residual": 0.2069843535570721,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1140,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.018044826127075947,
+      "mean_effective_axes": 1.5339141635605023,
+      "mean_accepted_action": 0.2120819091796875,
+      "effective_configuration_lanes": 43.52000000015913,
+      "best_lane": 16,
+      "best_minimum_clearance": -0.0804961142832048,
+      "best_overlap_residual": 0.1448578060497045,
+      "median_overlap_residual": 0.21599339785796268,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1160,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.016250999638717314,
+      "mean_effective_axes": 1.4986571569876008,
+      "mean_accepted_action": 0.17609405517578125,
+      "effective_configuration_lanes": 43.519999999867046,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.07492671573181742,
+      "best_overlap_residual": 0.14251921206359094,
+      "median_overlap_residual": 0.20998418760269746,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1180,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.014635496479587578,
+      "mean_effective_axes": 1.4798514111814045,
+      "mean_accepted_action": 0.1916961669921875,
+      "effective_configuration_lanes": 43.51999999984845,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.07393116340810146,
+      "best_overlap_residual": 0.14146440070996857,
+      "median_overlap_residual": 0.20633336337333238,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1200,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.013180589623157928,
+      "mean_effective_axes": 1.4675392213081295,
+      "mean_accepted_action": 0.22949981689453125,
+      "effective_configuration_lanes": 43.519999999967936,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.07116589813519358,
+      "best_overlap_residual": 0.139783273121738,
+      "median_overlap_residual": 0.20825186875752816,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1220,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.011870314277100204,
+      "mean_effective_axes": 1.4443053062358955,
+      "mean_accepted_action": 0.25772857666015625,
+      "effective_configuration_lanes": 43.519999999934576,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.0629041345107797,
+      "best_overlap_residual": 0.1374222231163227,
+      "median_overlap_residual": 0.21348917689870495,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1240,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.010690292700530186,
+      "mean_effective_axes": 1.4266573980712338,
+      "mean_accepted_action": 0.1967010498046875,
+      "effective_configuration_lanes": 43.51999999991189,
+      "best_lane": 10,
+      "best_minimum_clearance": -0.0711243796958343,
+      "best_overlap_residual": 0.1354896484859014,
+      "median_overlap_residual": 0.2132001731819943,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1260,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00962757643607453,
+      "mean_effective_axes": 1.410589529838128,
+      "mean_accepted_action": 0.1788177490234375,
+      "effective_configuration_lanes": 43.520000000058,
+      "best_lane": 10,
+      "best_minimum_clearance": -0.06894779143703633,
+      "best_overlap_residual": 0.13419147536528814,
+      "median_overlap_residual": 0.2122569256544094,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1280,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.008670504225563482,
+      "mean_effective_axes": 1.3921436620653216,
+      "mean_accepted_action": 0.2088775634765625,
+      "effective_configuration_lanes": 43.519999999908,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.07305765735996617,
+      "best_overlap_residual": 0.13510742060622125,
+      "median_overlap_residual": 0.21251135100185936,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1300,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00780857405024837,
+      "mean_effective_axes": 1.3773749245226572,
+      "mean_accepted_action": 0.1822662353515625,
+      "effective_configuration_lanes": 43.52000000009953,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.07665922944860748,
+      "best_overlap_residual": 0.13607806213650273,
+      "median_overlap_residual": 0.21909655535982916,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1320,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.007032327891432358,
+      "mean_effective_axes": 1.3664238754892792,
+      "mean_accepted_action": 0.184661865234375,
+      "effective_configuration_lanes": 43.52000000006901,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.07904262195349754,
+      "best_overlap_residual": 0.1388714447138448,
+      "median_overlap_residual": 0.21609457950270056,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1340,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.006333247946985216,
+      "mean_effective_axes": 1.350687669736588,
+      "mean_accepted_action": 0.22064971923828125,
+      "effective_configuration_lanes": 43.519999999851876,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.0797666603749605,
+      "best_overlap_residual": 0.14044492594039487,
+      "median_overlap_residual": 0.21912027980418652,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1360,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.005703663164918604,
+      "mean_effective_axes": 1.335522483167915,
+      "mean_accepted_action": 0.1772003173828125,
+      "effective_configuration_lanes": 43.520000000020445,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.07107771522806927,
+      "best_overlap_residual": 0.13695859660644819,
+      "median_overlap_residual": 0.2215083574969126,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1380,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.005136665068408574,
+      "mean_effective_axes": 1.3298446888377988,
+      "mean_accepted_action": 0.18157958984375,
+      "effective_configuration_lanes": 43.52000000005962,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.07046328655585987,
+      "best_overlap_residual": 0.13569508197716199,
+      "median_overlap_residual": 0.2182897393071562,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1400,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.004626031948607438,
+      "mean_effective_axes": 1.3149962753562208,
+      "mean_accepted_action": 0.13129425048828125,
+      "effective_configuration_lanes": 43.520000000065785,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.066729655773059,
+      "best_overlap_residual": 0.1359702288162211,
+      "median_overlap_residual": 0.21942971311891418,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1420,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0041661605934075144,
+      "mean_effective_axes": 1.2938160826738352,
+      "mean_accepted_action": 0.17232513427734375,
+      "effective_configuration_lanes": 43.519999999934114,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.07085434317065398,
+      "best_overlap_residual": 0.1361327736984182,
+      "median_overlap_residual": 0.2100742660068164,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1440,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0037520048030119154,
+      "mean_effective_axes": 1.3046879949723578,
+      "mean_accepted_action": 0.21234130859375,
+      "effective_configuration_lanes": 43.52000000017117,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.07014047323875039,
+      "best_overlap_residual": 0.13609078531470975,
+      "median_overlap_residual": 0.20861326569233735,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1460,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.003379020017639409,
+      "mean_effective_axes": 1.2873123115937786,
+      "mean_accepted_action": 0.16255950927734375,
+      "effective_configuration_lanes": 43.519999999814594,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06479221974707794,
+      "best_overlap_residual": 0.13500760188261496,
+      "median_overlap_residual": 0.21297172198710645,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1480,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.003043113449759506,
+      "mean_effective_axes": 1.2846433614533153,
+      "mean_accepted_action": 0.136016845703125,
+      "effective_configuration_lanes": 43.51999999991016,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06513657836445597,
+      "best_overlap_residual": 0.1352259972672766,
+      "median_overlap_residual": 0.2116192165065472,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1500,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00274059917365528,
+      "mean_effective_axes": 1.2754161812668685,
+      "mean_accepted_action": 0.13800048828125,
+      "effective_configuration_lanes": 43.520000000176935,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06787095006462729,
+      "best_overlap_residual": 0.13520916440356626,
+      "median_overlap_residual": 0.21286943779121884,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1520,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0024681576795086524,
+      "mean_effective_axes": 1.2700836484695464,
+      "mean_accepted_action": 0.1455230712890625,
+      "effective_configuration_lanes": 43.519999999898396,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06922955779155482,
+      "best_overlap_residual": 0.1365007756325876,
+      "median_overlap_residual": 0.21834502932196365,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1540,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0022227994481924134,
+      "mean_effective_axes": 1.2609569937221834,
+      "mean_accepted_action": 0.1661529541015625,
+      "effective_configuration_lanes": 43.52000000010498,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.0763605366138761,
+      "best_overlap_residual": 0.137432882975633,
+      "median_overlap_residual": 0.2248164644919899,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1560,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.002001832147072588,
+      "mean_effective_axes": 1.2513700515150743,
+      "mean_accepted_action": 0.12335205078125,
+      "effective_configuration_lanes": 43.52000000009661,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06936266960684978,
+      "best_overlap_residual": 0.13506921768504712,
+      "median_overlap_residual": 0.22409666503267145,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1580,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0018028310868585169,
+      "mean_effective_axes": 1.2439425252436034,
+      "mean_accepted_action": 0.1435546875,
+      "effective_configuration_lanes": 43.51999999990609,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06970294354862427,
+      "best_overlap_residual": 0.13935019594112247,
+      "median_overlap_residual": 0.22522108301604707,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1600,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.001623612615321643,
+      "mean_effective_axes": 1.2326303599318835,
+      "mean_accepted_action": 0.1492462158203125,
+      "effective_configuration_lanes": 43.52000000016725,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.08233187783163598,
+      "best_overlap_residual": 0.13816559386300512,
+      "median_overlap_residual": 0.22450829736587077,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1620,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0014622101559304103,
+      "mean_effective_axes": 1.2254711724160137,
+      "mean_accepted_action": 0.090606689453125,
+      "effective_configuration_lanes": 43.52000000012481,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.08255058215514033,
+      "best_overlap_residual": 0.13787207753477299,
+      "median_overlap_residual": 0.2255055064601281,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1640,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0013168526284716505,
+      "mean_effective_axes": 1.2212817751255989,
+      "mean_accepted_action": 0.1005859375,
+      "effective_configuration_lanes": 43.51999999984855,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06413630005541071,
+      "best_overlap_residual": 0.1378091067354551,
+      "median_overlap_residual": 0.2257790119794866,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1660,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0011859450148664033,
+      "mean_effective_axes": 1.2289134950921066,
+      "mean_accepted_action": 0.11519622802734375,
+      "effective_configuration_lanes": 43.5200000000171,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.0627552943907207,
+      "best_overlap_residual": 0.13604770529866284,
+      "median_overlap_residual": 0.2236717432026761,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1680,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0010680508569275717,
+      "mean_effective_axes": 1.2182480698937566,
+      "mean_accepted_action": 0.13085174560546875,
+      "effective_configuration_lanes": 43.52000000002321,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.0597671052178681,
+      "best_overlap_residual": 0.1345112698385618,
+      "median_overlap_residual": 0.22447614007633765,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1700,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0009618764940061107,
+      "mean_effective_axes": 1.2081385990238882,
+      "mean_accepted_action": 0.0939788818359375,
+      "effective_configuration_lanes": 43.51999999997712,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06314876259771018,
+      "best_overlap_residual": 0.1345180332115857,
+      "median_overlap_residual": 0.22357690317367174,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1720,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0008662568675643409,
+      "mean_effective_axes": 1.1955110842045895,
+      "mean_accepted_action": 0.1198272705078125,
+      "effective_configuration_lanes": 43.520000000131496,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06413197500575174,
+      "best_overlap_residual": 0.13495271243781023,
+      "median_overlap_residual": 0.22359988654745633,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1740,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0007801427369090233,
+      "mean_effective_axes": 1.1933594321035588,
+      "mean_accepted_action": 0.100006103515625,
+      "effective_configuration_lanes": 43.52000000017384,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06570585018336728,
+      "best_overlap_residual": 0.1346441775504889,
+      "median_overlap_residual": 0.22631152876220212,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1760,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0007025891658015592,
+      "mean_effective_axes": 1.192265518258238,
+      "mean_accepted_action": 0.10301971435546875,
+      "effective_configuration_lanes": 43.5199999998609,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.05987234540215791,
+      "best_overlap_residual": 0.13409032837686125,
+      "median_overlap_residual": 0.22465924303378146,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1780,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0006327451536080833,
+      "mean_effective_axes": 1.1884234897843444,
+      "mean_accepted_action": 0.07335662841796875,
+      "effective_configuration_lanes": 43.519999999934264,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06026094890350242,
+      "best_overlap_residual": 0.13369947550984246,
+      "median_overlap_residual": 0.2246763220671836,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1800,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.000569844297211377,
+      "mean_effective_axes": 1.1867638234822913,
+      "mean_accepted_action": 0.0542449951171875,
+      "effective_configuration_lanes": 43.51999999990083,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06377481850308198,
+      "best_overlap_residual": 0.13463447277560145,
+      "median_overlap_residual": 0.22569763061205494,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1820,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0005131963812171034,
+      "mean_effective_axes": 1.1798357846660719,
+      "mean_accepted_action": 0.0601806640625,
+      "effective_configuration_lanes": 43.52000000013737,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.062290719934907035,
+      "best_overlap_residual": 0.13394741871389063,
+      "median_overlap_residual": 0.22674445048368574,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1840,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00046217980417313163,
+      "mean_effective_axes": 1.1802838214979792,
+      "mean_accepted_action": 0.08126068115234375,
+      "effective_configuration_lanes": 43.51999999996032,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06829395792319848,
+      "best_overlap_residual": 0.13513622635084185,
+      "median_overlap_residual": 0.2251866742478798,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1860,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00041623475769434257,
+      "mean_effective_axes": 1.18290781727409,
+      "mean_accepted_action": 0.05550384521484375,
+      "effective_configuration_lanes": 43.519999999857845,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.07186230617651646,
+      "best_overlap_residual": 0.1344064536990388,
+      "median_overlap_residual": 0.22584998596658148,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1880,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0003748570836469702,
+      "mean_effective_axes": 1.1698923205608365,
+      "mean_accepted_action": 0.06375885009765625,
+      "effective_configuration_lanes": 43.51999999988583,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06903551265180269,
+      "best_overlap_residual": 0.13401420377028808,
+      "median_overlap_residual": 0.22618823818832834,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1900,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.000337592741986962,
+      "mean_effective_axes": 1.1656888681764341,
+      "mean_accepted_action": 0.0723724365234375,
+      "effective_configuration_lanes": 43.520000000098044,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06247306998700053,
+      "best_overlap_residual": 0.1343086085956652,
+      "median_overlap_residual": 0.22437680182699132,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1920,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00030403282854755406,
+      "mean_effective_axes": 1.1605459721217222,
+      "mean_accepted_action": 0.06430816650390625,
+      "effective_configuration_lanes": 43.51999999983945,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06323794795295579,
+      "best_overlap_residual": 0.1337908046447709,
+      "median_overlap_residual": 0.2237514719392965,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1940,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00027380908810591744,
+      "mean_effective_axes": 1.160776787187547,
+      "mean_accepted_action": 0.06008148193359375,
+      "effective_configuration_lanes": 43.519999999943735,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06119596623884471,
+      "best_overlap_residual": 0.13339303022736454,
+      "median_overlap_residual": 0.2229787072107934,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1960,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00024658987349344025,
+      "mean_effective_axes": 1.1559699520012174,
+      "mean_accepted_action": 0.0518798828125,
+      "effective_configuration_lanes": 43.519999999905544,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.0590184521322602,
+      "best_overlap_residual": 0.1335692050046002,
+      "median_overlap_residual": 0.2234535039006681,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 1980,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.0002220765064086879,
+      "mean_effective_axes": 1.1524365705992579,
+      "mean_accepted_action": 0.0529632568359375,
+      "effective_configuration_lanes": 43.51999999984055,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.062463825759897174,
+      "best_overlap_residual": 0.1333373231179913,
+      "median_overlap_residual": 0.22325177982769495,
+      "feasible_lanes": 0
+    },
+    {
+      "sweep": 2000,
+      "side": 4.675530093604551,
+      "axis_temperature": 0.00019999999999999998,
+      "mean_effective_axes": 1.1437306283724222,
+      "mean_accepted_action": 0.0587005615234375,
+      "effective_configuration_lanes": 43.519999999985444,
+      "best_lane": 24,
+      "best_minimum_clearance": -0.06250069167777539,
+      "best_overlap_residual": 0.13337045054116609,
+      "median_overlap_residual": 0.22331120353522016,
+      "feasible_lanes": 0
+    }
+  ]
+}

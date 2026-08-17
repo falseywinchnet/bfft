@@ -1,0 +1,188 @@
+{
+  "experiment": "walsh_progressive_coset_transport",
+  "rows": [
+    {
+      "dimension": 3,
+      "states": 216,
+      "half_width": 3,
+      "h": 1,
+      "target_prefix": [
+        1
+      ],
+      "target_width": 0.2367585779899883,
+      "required_action_budget_per_dimension": 0.026482844020023377,
+      "full_gaussian_boundary_mass": 8.03258411340889e-06,
+      "transports": [
+        {
+          "mode": "renyi",
+          "steps": [
+            {
+              "bit": 0,
+              "active_states": 108,
+              "renyi2_log2": 2.1955775269189117,
+              "renyi2_bits_per_dimension": 0.7318591756396372,
+              "incoming_probability": 0.8555297650706013,
+              "incoming_weighted_squared_displacement": 0.7337804980678989,
+              "maximum_squared_displacement": 79.59912462588838
+            }
+          ],
+          "final_renyi2_log2": 2.1955775269189117,
+          "final_renyi2_bits_per_dimension": 0.7318591756396372,
+          "total_incoming_weighted_squared_displacement": 0.7337804980678989
+        },
+        {
+          "mode": "geometric",
+          "steps": [
+            {
+              "bit": 0,
+              "active_states": 108,
+              "renyi2_log2": 2.252319459980428,
+              "renyi2_bits_per_dimension": 0.7507731533268093,
+              "incoming_probability": 0.8555297650706013,
+              "incoming_weighted_squared_displacement": 0.6992884219379176,
+              "maximum_squared_displacement": 0.8173747430987517
+            }
+          ],
+          "final_renyi2_log2": 2.252319459980428,
+          "final_renyi2_bits_per_dimension": 0.7507731533268093,
+          "total_incoming_weighted_squared_displacement": 0.6992884219379176
+        }
+      ]
+    },
+    {
+      "dimension": 4,
+      "states": 256,
+      "half_width": 2,
+      "h": 2,
+      "target_prefix": [
+        1,
+        1
+      ],
+      "target_width": 0.2367585779899883,
+      "required_action_budget_per_dimension": 0.026482844020023377,
+      "full_gaussian_boundary_mass": 0.1371960203332205,
+      "transports": [
+        {
+          "mode": "renyi",
+          "steps": [
+            {
+              "bit": 0,
+              "active_states": 128,
+              "renyi2_log2": 1.4559505182509211,
+              "renyi2_bits_per_dimension": 0.3639876295627303,
+              "incoming_probability": 0.8853051010879655,
+              "incoming_weighted_squared_displacement": 1.0022663574307207,
+              "maximum_squared_displacement": 27.4466607993113
+            },
+            {
+              "bit": 1,
+              "active_states": 64,
+              "renyi2_log2": 1.2490910776201265,
+              "renyi2_bits_per_dimension": 0.3122727694050316,
+              "incoming_probability": 0.10127551727188944,
+              "incoming_weighted_squared_displacement": 0.3810236070550222,
+              "maximum_squared_displacement": 23.13760550517935
+            }
+          ],
+          "final_renyi2_log2": 1.2490910776201265,
+          "final_renyi2_bits_per_dimension": 0.3122727694050316,
+          "total_incoming_weighted_squared_displacement": 1.3832899644857428
+        },
+        {
+          "mode": "geometric",
+          "steps": [
+            {
+              "bit": 0,
+              "active_states": 128,
+              "renyi2_log2": 2.232617423784751,
+              "renyi2_bits_per_dimension": 0.5581543559461878,
+              "incoming_probability": 0.8853051010879655,
+              "incoming_weighted_squared_displacement": 0.7679239624634664,
+              "maximum_squared_displacement": 0.8674116544903594
+            },
+            {
+              "bit": 1,
+              "active_states": 64,
+              "renyi2_log2": 2.3724108228179306,
+              "renyi2_bits_per_dimension": 0.5931027057044826,
+              "incoming_probability": 0.11370348096341487,
+              "incoming_weighted_squared_displacement": 0.11344340831669524,
+              "maximum_squared_displacement": 0.9977127116556506
+            }
+          ],
+          "final_renyi2_log2": 2.3724108228179306,
+          "final_renyi2_bits_per_dimension": 0.5931027057044826,
+          "total_incoming_weighted_squared_displacement": 0.8813673707801616
+        }
+      ]
+    },
+    {
+      "dimension": 5,
+      "states": 1024,
+      "half_width": 2,
+      "h": 2,
+      "target_prefix": [
+        1,
+        1
+      ],
+      "target_width": 0.2367585779899883,
+      "required_action_budget_per_dimension": 0.026482844020023377,
+      "full_gaussian_boundary_mass": 0.30155703858923777,
+      "transports": [
+        {
+          "mode": "renyi",
+          "steps": [
+            {
+              "bit": 0,
+              "active_states": 512,
+              "renyi2_log2": 0.7338110338287185,
+              "renyi2_bits_per_dimension": 0.1467622067657437,
+              "incoming_probability": 0.6471996324833776,
+              "incoming_weighted_squared_displacement": 0.873355988330003,
+              "maximum_squared_displacement": 31.83610725656731
+            },
+            {
+              "bit": 1,
+              "active_states": 256,
+              "renyi2_log2": 0.5451867544833163,
+              "renyi2_bits_per_dimension": 0.10903735089666326,
+              "incoming_probability": 0.19745026001878532,
+              "incoming_weighted_squared_displacement": 0.5518594341780734,
+              "maximum_squared_displacement": 38.73464592351704
+            }
+          ],
+          "final_renyi2_log2": 0.5451867544833163,
+          "final_renyi2_bits_per_dimension": 0.10903735089666326,
+          "total_incoming_weighted_squared_displacement": 1.4252154225080764
+        },
+        {
+          "mode": "geometric",
+          "steps": [
+            {
+              "bit": 0,
+              "active_states": 512,
+              "renyi2_log2": 1.0761401997933147,
+              "renyi2_bits_per_dimension": 0.21522803995866294,
+              "incoming_probability": 0.6471996324833776,
+              "incoming_weighted_squared_displacement": 0.5346864621132874,
+              "maximum_squared_displacement": 0.8261538407579678
+            },
+            {
+              "bit": 1,
+              "active_states": 256,
+              "renyi2_log2": 1.5448460530287471,
+              "renyi2_bits_per_dimension": 0.30896921060574944,
+              "incoming_probability": 0.25490408460457975,
+              "incoming_weighted_squared_displacement": 0.27460472708726846,
+              "maximum_squared_displacement": 1.0772864919495095
+            }
+          ],
+          "final_renyi2_log2": 1.5448460530287471,
+          "final_renyi2_bits_per_dimension": 0.30896921060574944,
+          "total_incoming_weighted_squared_displacement": 0.8092911892005559
+        }
+      ]
+    }
+  ],
+  "interpretation": "The Renyi assignment is the best next-step deterministic matching inside the finite support-chain architecture.  A gap between it and geometric matching measures the price of locality."
+}

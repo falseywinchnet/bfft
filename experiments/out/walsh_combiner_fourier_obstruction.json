@@ -1,0 +1,66 @@
+{
+  "experiment": "walsh_combiner_fourier_obstruction",
+  "rows": [
+    {
+      "address_bits": 2,
+      "address_dimension": 4,
+      "sketch_rank": 2,
+      "mean_retained_target_energy": 0.4999999999999999,
+      "rank_over_dimension": 0.5,
+      "maximum_retained_target_energy": 0.9726723280939735,
+      "amplification_needed_for_unit_mean_energy": 1.4142135623730951,
+      "noise_variance_amplification": 2.0
+    },
+    {
+      "address_bits": 4,
+      "address_dimension": 16,
+      "sketch_rank": 4,
+      "mean_retained_target_energy": 0.25,
+      "rank_over_dimension": 0.25,
+      "maximum_retained_target_energy": 0.49044324205833534,
+      "amplification_needed_for_unit_mean_energy": 2.0,
+      "noise_variance_amplification": 4.0
+    },
+    {
+      "address_bits": 6,
+      "address_dimension": 64,
+      "sketch_rank": 8,
+      "mean_retained_target_energy": 0.125,
+      "rank_over_dimension": 0.125,
+      "maximum_retained_target_energy": 0.3156003611508391,
+      "amplification_needed_for_unit_mean_energy": 2.8284271247461903,
+      "noise_variance_amplification": 8.0
+    },
+    {
+      "address_bits": 8,
+      "address_dimension": 256,
+      "sketch_rank": 16,
+      "mean_retained_target_energy": 0.0625,
+      "rank_over_dimension": 0.0625,
+      "maximum_retained_target_energy": 0.16549899615925828,
+      "amplification_needed_for_unit_mean_energy": 4.0,
+      "noise_variance_amplification": 16.0
+    },
+    {
+      "address_bits": 10,
+      "address_dimension": 1024,
+      "sketch_rank": 32,
+      "mean_retained_target_energy": 0.03125,
+      "rank_over_dimension": 0.03125,
+      "maximum_retained_target_energy": 0.0564411875534796,
+      "amplification_needed_for_unit_mean_energy": 5.656854249492381,
+      "noise_variance_amplification": 32.0
+    },
+    {
+      "address_bits": 12,
+      "address_dimension": 4096,
+      "sketch_rank": 64,
+      "mean_retained_target_energy": 0.015625,
+      "rank_over_dimension": 0.015625,
+      "maximum_retained_target_energy": 0.028717938544930363,
+      "amplification_needed_for_unit_mean_energy": 8.0,
+      "noise_variance_amplification": 64.0
+    }
+  ],
+  "conclusion": "An oblivious rank-d sketch retains d/N energy from a uniformly random missing prefix. Amplifying the signal back to constant size multiplies noise variance by N/d, cancelling the rank gain."
+}

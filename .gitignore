@@ -14,9 +14,15 @@
 /documentation/_build/
 /.venv-docs/
 /.venv/
+/.venv-jpeg/
 __pycache__/
 *.egg-info/
 /dist/
+/tmp/
+*.aux
+*.toc
+*.log
+/paper/**/*.pdf
 
 # generated reference-split caches (regenerated on demand)
 experiments/out/ref_*.npz

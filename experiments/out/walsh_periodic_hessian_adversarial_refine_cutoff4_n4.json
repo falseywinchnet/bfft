@@ -1,0 +1,65 @@
+{
+  "experiment": "walsh_periodic_hessian_adversarial_search",
+  "dimension": 4,
+  "candidate_count": 1,
+  "probe_count": 512,
+  "smooth_t": 0.1,
+  "target_t": 0.23675858,
+  "observed_inheritance_failure_count": 0,
+  "rows": [
+    {
+      "candidate": 29,
+      "basis": [
+        [
+          0.5561735050382878,
+          -0.9878128003759421,
+          -0.26080395249110966,
+          0.22120117776938314
+        ],
+        [
+          0.3641721445323462,
+          0.5946479973166444,
+          0.04764096146553279,
+          1.1084391560295321
+        ],
+        [
+          -0.12369614379018365,
+          -0.09463814995101953,
+          -0.7267710676736385,
+          0.14161776989710523
+        ],
+        [
+          0.8848499523718489,
+          0.4177262933758123,
+          -0.7438807522556188,
+          -0.3954806109016284
+        ]
+      ],
+      "basis_condition_number": 2.0758525660932534,
+      "shortest_coefficients": [
+        -1,
+        0,
+        -1,
+        0
+      ],
+      "smooth_branch_count": 6,
+      "smooth_shortest_present": true,
+      "smooth_shortest_basin_fraction": 0.091796875,
+      "target_branch_count": 6,
+      "target_shortest_present": true,
+      "target_shortest_basin_fraction": 0.083984375,
+      "target_best_shortest_score_rank": 5,
+      "target_shortest_carried_from_smooth": true,
+      "transported_branch_count": 5,
+      "transported_shortest_present": true,
+      "observed_inheritance_failure": false,
+      "field_gradient_evaluations": 22706,
+      "adversarial_order_key": [
+        0,
+        0,
+        -0.083984375,
+        5
+      ]
+    }
+  ]
+}

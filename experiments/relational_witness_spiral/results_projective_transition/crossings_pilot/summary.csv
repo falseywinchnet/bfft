@@ -1,0 +1,5 @@
+model,train_fraction,parameters,val_mean,first_bin_mean,frontier5_mean,frontier5_std,tail_mean,survival_mean,survival_max,transition_entropy,transition_self_loop
+direct_projective,0.5,631,0.9984375,0.134,0.0268,0.0,0.48230000000000006,0.0,0,1.3675630121122726,0.0
+anchor_identity,0.5,631,0.9984375,0.292,0.058399999999999994,0.0,0.4822,0.0,0,1.1844845242086999,0.0
+transition_shuffled,0.5,631,0.996875,0.24,0.048,0.0,0.48550000000000004,0.0,0,1.462553258754002,0.0
+transition,0.5,631,0.996875,0.14,0.028000000000000004,0.0,0.4843,0.0,0,1.3002878938667273,0.0

@@ -1,0 +1,53 @@
+{
+  "experiment": "walsh_stationary_seed_reduction",
+  "target_width": 0.23675858,
+  "gap_budget_bits_per_dimension": 0.026482840000000007,
+  "improved_spherical_g2_at_target_width": 0.02057231,
+  "improved_spherical_g2_at_twice_target_width": 0.52039983,
+  "uniform_gram_schmidt_ratio_sufficient_for_budget": 0.8191659614689206,
+  "rows": [
+    {
+      "dimension": 2,
+      "hash_bits": 1,
+      "cutoff": 8,
+      "s": 1.45,
+      "parity_collision": 0.28620909894109686,
+      "theta_collision_ratio": 0.28620909894109675,
+      "collision_identity_absolute_error": 1.1102230246251565e-16,
+      "full_rank_hash_count": 3,
+      "mean_hash_chi_square": 0.0482787985881293,
+      "predicted_mean_hash_chi_square": 0.048278798588129224,
+      "hash_expectation_absolute_error": 7.632783294297951e-17,
+      "maximum_hash_total_variation": 0.15501105853777908
+    },
+    {
+      "dimension": 3,
+      "hash_bits": 1,
+      "cutoff": 7,
+      "s": 1.55,
+      "parity_collision": 0.15354908749415072,
+      "theta_collision_ratio": 0.15354908749415078,
+      "collision_identity_absolute_error": 5.551115123125783e-17,
+      "full_rank_hash_count": 7,
+      "mean_hash_chi_square": 0.03262752856474381,
+      "predicted_mean_hash_chi_square": 0.03262752856474371,
+      "hash_expectation_absolute_error": 9.71445146547012e-17,
+      "maximum_hash_total_variation": 0.18201926460267434
+    },
+    {
+      "dimension": 4,
+      "hash_bits": 2,
+      "cutoff": 6,
+      "s": 1.65,
+      "parity_collision": 0.08327889727627619,
+      "theta_collision_ratio": 0.08327889727627616,
+      "collision_identity_absolute_error": 2.7755575615628914e-17,
+      "full_rank_hash_count": 210,
+      "mean_hash_chi_square": 0.06649247128408366,
+      "predicted_mean_hash_chi_square": 0.06649247128408398,
+      "hash_expectation_absolute_error": 3.191891195797325e-16,
+      "maximum_hash_total_variation": 0.21060800112630046
+    }
+  ],
+  "interpretation": "The parity collision and full-rank hash identities are exact up to theta-tail truncation.  They certify the seed/address reduction, not the still-missing basis-independent coset-walk spectral gap."
+}

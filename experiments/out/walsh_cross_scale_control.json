@@ -1,0 +1,1949 @@
+{
+  "experiment": "midpoint_hessian_cross_scale_control",
+  "guardrail": "The exponent gain is log2 of a finite-n variance ratio divided by n; it is a diagnostic, not an asymptotic claim.",
+  "summaries": [
+    {
+      "dimension": 6,
+      "walsh_outputs": 16,
+      "maximum_boundary_mass_fraction": 0.00031007466775549215,
+      "median_variance_reduction": 1.2866092262434066,
+      "median_finite_n_equivalent_exponent_gain": 0.05991207322242645,
+      "median_oracle_variance_reduction": 1.1308621316186613,
+      "median_control_l1": 10093.241366107737,
+      "median_target_direction_to_false_ratio": 2.0785319906844126,
+      "median_effective_fraction": 0.4315093180750648
+    },
+    {
+      "dimension": 7,
+      "walsh_outputs": 32,
+      "maximum_boundary_mass_fraction": 0.0009632933181807517,
+      "median_variance_reduction": 1.2779815384236795,
+      "median_finite_n_equivalent_exponent_gain": 0.04912378966823813,
+      "median_oracle_variance_reduction": 1.1977466108160324,
+      "median_control_l1": 4326.843881429702,
+      "median_target_direction_to_false_ratio": 2.288203530113555,
+      "median_effective_fraction": 0.44128138545663564
+    },
+    {
+      "dimension": 8,
+      "walsh_outputs": 32,
+      "maximum_boundary_mass_fraction": 0.0031945162899597412,
+      "median_variance_reduction": 1.5250787622229447,
+      "median_finite_n_equivalent_exponent_gain": 0.07605997395709146,
+      "median_oracle_variance_reduction": 1.1140704670783574,
+      "median_control_l1": 10190.465928065052,
+      "median_target_direction_to_false_ratio": 2.1940618297424654,
+      "median_effective_fraction": 0.24987233926692426
+    }
+  ],
+  "reports": [
+    {
+      "dimension": 6,
+      "cutoff": 3,
+      "enumerated_dual_points": 117649,
+      "elapsed_seconds": 0.09532866700465092,
+      "widths": [
+        0.18,
+        0.19,
+        0.205,
+        0.2222355,
+        0.24
+      ],
+      "source_width": 0.400613,
+      "signal_scale_proxy": [
+        0.3045629815505719,
+        0.3828430741849591,
+        0.5259317575810117,
+        0.7329879723195563,
+        1.0
+      ],
+      "baseline_width_index": 3,
+      "h": 2,
+      "ell": 4,
+      "walsh_outputs": 16,
+      "theta_star": 7,
+      "affine_reports": [
+        {
+          "j": 0,
+          "truncation_boundary_mass_fraction": 0.00026932074180149526,
+          "integrated_noise_correlation": [
+            [
+              1.0,
+              0.9961569443772285,
+              0.9757017157909412,
+              0.9327041488924608,
+              0.8732938867667559
+            ],
+            [
+              0.9961569443772285,
+              1.0,
+              0.9910961494250562,
+              0.9603611913612241,
+              0.9115172908111723
+            ],
+            [
+              0.9757017157909412,
+              0.9910961494250562,
+              1.0,
+              0.9888132106116625,
+              0.9574901202518536
+            ],
+            [
+              0.9327041488924608,
+              0.9603611913612241,
+              0.9888132106116625,
+              1.0,
+              0.9896731269591066
+            ],
+            [
+              0.8732938867667559,
+              0.9115172908111723,
+              0.9574901202518536,
+              0.9896731269591066,
+              1.0
+            ]
+          ],
+          "baseline": {
+            "covariance_effective_dimension": 4.063767647392329,
+            "covariance_effective_fraction": 0.2539854779620206,
+            "covariance_off_diagonal_fraction": 0.8636661999026172,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.7671025785003291,
+            "kernel_support_90_percent": 11,
+            "mean_coefficient_variance": 0.06187718835057508,
+            "maximum_coefficient_variance": 0.06394391046374419,
+            "coefficients": [
+              0.0,
+              0.0,
+              0.0,
+              1.364278866453263,
+              0.0
+            ],
+            "coefficient_l1": 1.364278866453263,
+            "integrated_variance": 0.06187718835057508,
+            "target_operator_norm": 0.057724184888414916,
+            "target_to_false_operator_ratio": 0.7382814354282373,
+            "target_direction_amplitude": 0.04793188241639944,
+            "target_direction_to_false_ratio": 1.9259835373168943
+          },
+          "proxy_preserving_control": {
+            "covariance_effective_dimension": 3.6461274032001816,
+            "covariance_effective_fraction": 0.22788296270001135,
+            "covariance_off_diagonal_fraction": 0.8786595704420577,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.7717607769424794,
+            "kernel_support_90_percent": 9,
+            "mean_coefficient_variance": 0.05200941867579288,
+            "maximum_coefficient_variance": 0.053661055650063114,
+            "coefficients": [
+              -1656.8593748026933,
+              3319.9029318405514,
+              -2440.1673397807267,
+              894.0164475491227,
+              -137.32561852827587
+            ],
+            "coefficient_l1": 8448.271712501368,
+            "integrated_variance": 0.05200941864639219,
+            "target_operator_norm": 0.03928281294026881,
+            "target_to_false_operator_ratio": 0.7020078368974085,
+            "target_direction_amplitude": 0.041562783658184436,
+            "target_direction_to_false_ratio": 1.5318822864457362
+          },
+          "oracle_direction_control_diagnostic_only": {
+            "covariance_effective_dimension": 9.85242690412722,
+            "covariance_effective_fraction": 0.6157766815079513,
+            "covariance_off_diagonal_fraction": 0.6196991151000487,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.4014968302400114,
+            "kernel_support_90_percent": 8,
+            "mean_coefficient_variance": 0.05861966946382098,
+            "maximum_coefficient_variance": 0.060134648164128716,
+            "coefficients": [
+              -25.105995102519593,
+              47.371599917779506,
+              -31.415956526084766,
+              7.849219581164931,
+              1.212889296874029
+            ],
+            "coefficient_l1": 112.95566042442283,
+            "integrated_variance": 0.05861966946382302,
+            "target_operator_norm": 0.04609801595588413,
+            "target_to_false_operator_ratio": 0.8133246998884016,
+            "target_direction_amplitude": 0.05020041781313612,
+            "target_direction_to_false_ratio": 2.9708714222864914
+          },
+          "variance_reduction": 1.1897304365440624,
+          "finite_n_equivalent_exponent_gain": 0.04177245526463009,
+          "oracle_variance_reduction": 1.0555704069393026,
+          "oracle_finite_n_equivalent_exponent_gain": 0.013003801698503242
+        },
+        {
+          "j": 1,
+          "truncation_boundary_mass_fraction": 0.00029546271229855464,
+          "integrated_noise_correlation": [
+            [
+              1.0,
+              0.997855491599691,
+              0.9864884537006907,
+              0.9615551324074195,
+              0.9236315770459208
+            ],
+            [
+              0.997855491599691,
+              1.0,
+              0.9950654180442128,
+              0.9772279244407608,
+              0.9459434377103167
+            ],
+            [
+              0.9864884537006907,
+              0.9950654180442128,
+              1.0,
+              0.9933798273046093,
+              0.9729600005292116
+            ],
+            [
+              0.9615551324074195,
+              0.9772279244407608,
+              0.9933798273046093,
+              1.0,
+              0.9929496875731363
+            ],
+            [
+              0.9236315770459208,
+              0.9459434377103167,
+              0.9729600005292116,
+              0.9929496875731363,
+              1.0
+            ]
+          ],
+          "baseline": {
+            "covariance_effective_dimension": 5.861571728823968,
+            "covariance_effective_fraction": 0.366348233051498,
+            "covariance_off_diagonal_fraction": 0.7955648876114061,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.6515724696210419,
+            "kernel_support_90_percent": 6,
+            "mean_coefficient_variance": 0.11041827907272227,
+            "maximum_coefficient_variance": 0.11549705309910549,
+            "coefficients": [
+              0.0,
+              0.0,
+              0.0,
+              1.364278866453263,
+              0.0
+            ],
+            "coefficient_l1": 1.364278866453263,
+            "integrated_variance": 0.11041827907272228,
+            "target_operator_norm": 0.06379166580141664,
+            "target_to_false_operator_ratio": 0.5806235039929023,
+            "target_direction_amplitude": 0.06904445493794431,
+            "target_direction_to_false_ratio": 1.9569105305407368
+          },
+          "proxy_preserving_control": {
+            "covariance_effective_dimension": 9.884176960850295,
+            "covariance_effective_fraction": 0.6177610600531435,
+            "covariance_off_diagonal_fraction": 0.6177831294255669,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.3817717651854975,
+            "kernel_support_90_percent": 4,
+            "mean_coefficient_variance": 0.07981151835164269,
+            "maximum_coefficient_variance": 0.08253679771045082,
+            "coefficients": [
+              2072.764792409217,
+              -4411.010359498926,
+              3553.348455534986,
+              -1449.213098902046,
+              251.87431336892948
+            ],
+            "coefficient_l1": 11738.211019714105,
+            "integrated_variance": 0.07981151827866029,
+            "target_operator_norm": 0.05592211187595236,
+            "target_to_false_operator_ratio": 0.7418929811560637,
+            "target_direction_amplitude": 0.06065289957862603,
+            "target_direction_to_false_ratio": 2.2384750942514553
+          },
+          "oracle_direction_control_diagnostic_only": {
+            "covariance_effective_dimension": 11.220134621253607,
+            "covariance_effective_fraction": 0.7012584138283504,
+            "covariance_off_diagonal_fraction": 0.5457823133023454,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.3214122348914688,
+            "kernel_support_90_percent": 5,
+            "mean_coefficient_variance": 0.09160700250200567,
+            "maximum_coefficient_variance": 0.09514675395459692,
+            "coefficients": [
+              175.26024283523466,
+              -340.5152581679557,
+              241.54299846031444,
+              -89.85421875907716,
+              16.83120749422787
+            ],
+            "coefficient_l1": 864.0039257168099,
+            "integrated_variance": 0.09160700250219378,
+            "target_operator_norm": 0.06277653682327647,
+            "target_to_false_operator_ratio": 0.7224140158126365,
+            "target_direction_amplitude": 0.06837413116082144,
+            "target_direction_to_false_ratio": 3.375417647332144
+          },
+          "variance_reduction": 1.3834880159427505,
+          "finite_n_equivalent_exponent_gain": 0.0780516911802228,
+          "oracle_variance_reduction": 1.2053475832273632,
+          "oracle_finite_n_equivalent_exponent_gain": 0.044908205500428365
+        },
+        {
+          "j": 2,
+          "truncation_boundary_mass_fraction": 0.00031007466775549215,
+          "integrated_noise_correlation": [
+            [
+              1.0,
+              0.9970981614107108,
+              0.9834982445654398,
+              0.9579597737641515,
+              0.9244606192906673
+            ],
+            [
+              0.9970981614107108,
+              1.0,
+              0.9943847458727835,
+              0.9767888466426138,
+              0.9500736617699992
+            ],
+            [
+              0.9834982445654398,
+              0.9943847458727835,
+              1.0,
+              0.9939003056903238,
+              0.9773321404388725
+            ],
+            [
+              0.9579597737641515,
+              0.9767888466426138,
+              0.9939003056903238,
+              1.0,
+              0.9946350895202514
+            ],
+            [
+              0.9244606192906673,
+              0.9500736617699992,
+              0.9773321404388725,
+              0.9946350895202514,
+              1.0
+            ]
+          ],
+          "baseline": {
+            "covariance_effective_dimension": 7.034245668640321,
+            "covariance_effective_fraction": 0.4396403542900201,
+            "covariance_off_diagonal_fraction": 0.7482316276891878,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.5833760695454513,
+            "kernel_support_90_percent": 7,
+            "mean_coefficient_variance": 0.09636364091089229,
+            "maximum_coefficient_variance": 0.0998644696253347,
+            "coefficients": [
+              0.0,
+              0.0,
+              0.0,
+              1.364278866453263,
+              0.0
+            ],
+            "coefficient_l1": 1.364278866453263,
+            "integrated_variance": 0.09636364091089229,
+            "target_operator_norm": 0.06592166161141583,
+            "target_to_false_operator_ratio": 0.6469013844172952,
+            "target_direction_amplitude": 0.07189521526364206,
+            "target_direction_to_false_ratio": 2.324760913079508
+          },
+          "proxy_preserving_control": {
+            "covariance_effective_dimension": 3.9246482963153633,
+            "covariance_effective_fraction": 0.2452905185197102,
+            "covariance_off_diagonal_fraction": 0.8686718740037064,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.7774137118149268,
+            "kernel_support_90_percent": 13,
+            "mean_coefficient_variance": 0.0619451823166606,
+            "maximum_coefficient_variance": 0.06344226020049559,
+            "coefficients": [
+              3093.3161573467746,
+              -6419.8367585168335,
+              5019.0495447746935,
+              -1993.5987110895485,
+              338.2867770269733
+            ],
+            "coefficient_l1": 16864.087948754823,
+            "integrated_variance": 0.061945182277924005,
+            "target_operator_norm": 0.06510685438044882,
+            "target_to_false_operator_ratio": 0.7781595634544964,
+            "target_direction_amplitude": 0.04902635716546007,
+            "target_direction_to_false_ratio": 2.11395987204353
+          },
+          "oracle_direction_control_diagnostic_only": {
+            "covariance_effective_dimension": 12.092930298379232,
+            "covariance_effective_fraction": 0.755808143648702,
+            "covariance_off_diagonal_fraction": 0.49350831622604713,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.24992586006098796,
+            "kernel_support_90_percent": 3,
+            "mean_coefficient_variance": 0.09122090892325584,
+            "maximum_coefficient_variance": 0.09393615949044737,
+            "coefficients": [
+              529.9535007459978,
+              -1097.3514961414953,
+              851.7459236756463,
+              -336.6695302680731,
+              58.4945188342728
+            ],
+            "coefficient_l1": 2874.214969665485,
+            "integrated_variance": 0.09122090891857226,
+            "target_operator_norm": 0.06801112389729998,
+            "target_to_false_operator_ratio": 0.8294706096948117,
+            "target_direction_amplitude": 0.07436197265302495,
+            "target_direction_to_false_ratio": 2.6377955694342705
+          },
+          "variance_reduction": 1.5556276915700404,
+          "finite_n_equivalent_exponent_gain": 0.10624947023012808,
+          "oracle_variance_reduction": 1.0563766800099597,
+          "oracle_finite_n_equivalent_exponent_gain": 0.013187393137944496
+        },
+        {
+          "j": 3,
+          "truncation_boundary_mass_fraction": 0.0002995119911631832,
+          "integrated_noise_correlation": [
+            [
+              1.0,
+              0.9973894539868711,
+              0.9840711605413685,
+              0.956376911919029,
+              0.9166018815738239
+            ],
+            [
+              0.9973894539868711,
+              1.0,
+              0.9943037868023515,
+              0.9747102120941679,
+              0.9422221378546083
+            ],
+            [
+              0.9840711605413685,
+              0.9943037868023515,
+              1.0,
+              0.9928910575276266,
+              0.9720384235391482
+            ],
+            [
+              0.956376911919029,
+              0.9747102120941679,
+              0.9928910575276266,
+              1.0,
+              0.9929726155730428
+            ],
+            [
+              0.9166018815738239,
+              0.9422221378546083,
+              0.9720384235391482,
+              0.9929726155730428,
+              1.0
+            ]
+          ],
+          "baseline": {
+            "covariance_effective_dimension": 6.06276972814097,
+            "covariance_effective_fraction": 0.3789231080088106,
+            "covariance_off_diagonal_fraction": 0.787681363290778,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.643343984219191,
+            "kernel_support_90_percent": 6,
+            "mean_coefficient_variance": 0.10431980692988506,
+            "maximum_coefficient_variance": 0.10866552486434393,
+            "coefficients": [
+              0.0,
+              0.0,
+              0.0,
+              1.364278866453263,
+              0.0
+            ],
+            "coefficient_l1": 1.364278866453263,
+            "integrated_variance": 0.10431980692988507,
+            "target_operator_norm": 0.09337835744901501,
+            "target_to_false_operator_ratio": 0.8390614506002556,
+            "target_direction_amplitude": 0.10137637913298594,
+            "target_direction_to_false_ratio": 1.4295703676976836
+          },
+          "proxy_preserving_control": {
+            "covariance_effective_dimension": 9.883649882086711,
+            "covariance_effective_fraction": 0.6177281176304195,
+            "covariance_off_diagonal_fraction": 0.6177075471126399,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.4094469603389532,
+            "kernel_support_90_percent": 6,
+            "mean_coefficient_variance": 0.08998614790857237,
+            "maximum_coefficient_variance": 0.09324911196259777,
+            "coefficients": [
+              911.70564273511,
+              -1938.0606204805795,
+              1564.343945570407,
+              -643.7624748541983,
+              114.43328739744807
+            ],
+            "coefficient_l1": 5172.305971037743,
+            "integrated_variance": 0.0899861479573758,
+            "target_operator_norm": 0.07558837521764991,
+            "target_to_false_operator_ratio": 0.8305895706676215,
+            "target_direction_amplitude": 0.08251086400044264,
+            "target_direction_to_false_ratio": 2.043104109325295
+          },
+          "oracle_direction_control_diagnostic_only": {
+            "covariance_effective_dimension": 4.731600817604706,
+            "covariance_effective_fraction": 0.2957250511002941,
+            "covariance_off_diagonal_fraction": 0.8390153370994881,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.7126572642484896,
+            "kernel_support_90_percent": 8,
+            "mean_coefficient_variance": 0.08353854000924986,
+            "maximum_coefficient_variance": 0.08660314788321231,
+            "coefficients": [
+              -1777.1175155945884,
+              3749.851951745358,
+              -2980.201726120377,
+              1193.4244927208563,
+              -200.9610999409407
+            ],
+            "coefficient_l1": 9901.55678612212,
+            "integrated_variance": 0.08353854016257856,
+            "target_operator_norm": 0.09045030060540718,
+            "target_to_false_operator_ratio": 1.102469252634437,
+            "target_direction_amplitude": 0.09787757357915379,
+            "target_direction_to_false_ratio": 1.347167388156586
+          },
+          "variance_reduction": 1.1592873936475063,
+          "finite_n_equivalent_exponent_gain": 0.03553971043794744,
+          "oracle_variance_reduction": 1.2487626277268318,
+          "oracle_finite_n_equivalent_exponent_gain": 0.053416544483331434
+        }
+      ]
+    },
+    {
+      "dimension": 7,
+      "cutoff": 3,
+      "enumerated_dual_points": 823543,
+      "elapsed_seconds": 0.8222571669975878,
+      "widths": [
+        0.18,
+        0.19,
+        0.205,
+        0.2222355,
+        0.24
+      ],
+      "source_width": 0.400613,
+      "signal_scale_proxy": [
+        0.2749600175399573,
+        0.35264966393375613,
+        0.4980084999738706,
+        0.7140778996500156,
+        1.0
+      ],
+      "baseline_width_index": 3,
+      "h": 2,
+      "ell": 5,
+      "walsh_outputs": 32,
+      "theta_star": 3,
+      "affine_reports": [
+        {
+          "j": 0,
+          "truncation_boundary_mass_fraction": 0.0008084540703131188,
+          "integrated_noise_correlation": [
+            [
+              1.0,
+              0.9964983592017583,
+              0.9787565352232032,
+              0.9426020769083054,
+              0.8923828580903881
+            ],
+            [
+              0.9964983592017583,
+              1.0,
+              0.9924173812437574,
+              0.9668215329201244,
+              0.9257318542304527
+            ],
+            [
+              0.9787565352232032,
+              0.9924173812437574,
+              1.0,
+              0.9907627038834517,
+              0.9644443821589614
+            ],
+            [
+              0.9426020769083054,
+              0.9668215329201244,
+              0.9907627038834517,
+              1.0,
+              0.9912259490674775
+            ],
+            [
+              0.8923828580903881,
+              0.9257318542304527,
+              0.9644443821589614,
+              0.9912259490674775,
+              1.0
+            ]
+          ],
+          "baseline": {
+            "covariance_effective_dimension": 10.455978892264687,
+            "covariance_effective_fraction": 0.32674934038327147,
+            "covariance_off_diagonal_fraction": 0.820467030295563,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.6813939554605982,
+            "kernel_support_90_percent": 19,
+            "mean_coefficient_variance": 0.10598338344553218,
+            "maximum_coefficient_variance": 0.10842423826383026,
+            "coefficients": [
+              0.0,
+              0.0,
+              0.0,
+              1.4004074352253737,
+              0.0
+            ],
+            "coefficient_l1": 1.4004074352253737,
+            "integrated_variance": 0.1059833834455322,
+            "target_operator_norm": 0.04414848215229416,
+            "target_to_false_operator_ratio": 0.6260480990415336,
+            "target_direction_amplitude": 0.04766349737988758,
+            "target_direction_to_false_ratio": 1.7286789399670621
+          },
+          "proxy_preserving_control": {
+            "covariance_effective_dimension": 16.58176851769135,
+            "covariance_effective_fraction": 0.5181802661778547,
+            "covariance_off_diagonal_fraction": 0.6940567656103409,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.48523670086563514,
+            "kernel_support_90_percent": 11,
+            "mean_coefficient_variance": 0.09395463316214364,
+            "maximum_coefficient_variance": 0.09536669056490302,
+            "coefficients": [
+              -437.8847807314331,
+              902.9388995089068,
+              -693.0023249066968,
+              264.7028630377403,
+              -40.917708638282775
+            ],
+            "coefficient_l1": 2339.44657682306,
+            "integrated_variance": 0.0939546331702843,
+            "target_operator_norm": 0.04423586142485496,
+            "target_to_false_operator_ratio": 0.7569442828427408,
+            "target_direction_amplitude": 0.04777295410286352,
+            "target_direction_to_false_ratio": 2.275482534895069
+          },
+          "oracle_direction_control_diagnostic_only": {
+            "covariance_effective_dimension": 22.999194486962264,
+            "covariance_effective_fraction": 0.7187248277175707,
+            "covariance_off_diagonal_fraction": 0.5302239930487795,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.29017167089718837,
+            "kernel_support_90_percent": 5,
+            "mean_coefficient_variance": 0.0900165674465525,
+            "maximum_coefficient_variance": 0.0912288690882235,
+            "coefficients": [
+              -4.754357046127611,
+              57.9089323405168,
+              -98.45340849315329,
+              57.97587037917852,
+              -10.533422002040705
+            ],
+            "coefficient_l1": 229.6259902610169,
+            "integrated_variance": 0.09001656744664022,
+            "target_operator_norm": 0.044646321585422026,
+            "target_to_false_operator_ratio": 0.785101806489538,
+            "target_direction_amplitude": 0.04820291278342356,
+            "target_direction_to_false_ratio": 2.8001818837967334
+          },
+          "variance_reduction": 1.128027217704601,
+          "finite_n_equivalent_exponent_gain": 0.024828839764529688,
+          "oracle_variance_reduction": 1.1773764147178434,
+          "oracle_finite_n_equivalent_exponent_gain": 0.033653661841478305
+        },
+        {
+          "j": 1,
+          "truncation_boundary_mass_fraction": 0.0009632933181807517,
+          "integrated_noise_correlation": [
+            [
+              1.0,
+              0.9970721022971161,
+              0.9826314216938059,
+              0.9537814686967585,
+              0.913872374890368
+            ],
+            [
+              0.9970721022971161,
+              1.0,
+              0.9939020886450606,
+              0.9736660909757145,
+              0.9413045813576861
+            ],
+            [
+              0.9826314216938059,
+              0.9939020886450606,
+              1.0,
+              0.9927753810805319,
+              0.972244565208235
+            ],
+            [
+              0.9537814686967585,
+              0.9736660909757145,
+              0.9927753810805319,
+              1.0,
+              0.9931890106065567
+            ],
+            [
+              0.913872374890368,
+              0.9413045813576861,
+              0.972244565208235,
+              0.9931890106065567,
+              1.0
+            ]
+          ],
+          "baseline": {
+            "covariance_effective_dimension": 12.673946683486268,
+            "covariance_effective_fraction": 0.39606083385894586,
+            "covariance_off_diagonal_fraction": 0.7770533581934325,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.6102485160004628,
+            "kernel_support_90_percent": 10,
+            "mean_coefficient_variance": 0.10218998517633368,
+            "maximum_coefficient_variance": 0.10394733840374493,
+            "coefficients": [
+              0.0,
+              0.0,
+              0.0,
+              1.4004074352253737,
+              0.0
+            ],
+            "coefficient_l1": 1.4004074352253737,
+            "integrated_variance": 0.1021899851763337,
+            "target_operator_norm": 0.07583844737255069,
+            "target_to_false_operator_ratio": 1.5557584336612584,
+            "target_direction_amplitude": 0.08156620440535228,
+            "target_direction_to_false_ratio": 1.670565221635364
+          },
+          "proxy_preserving_control": {
+            "covariance_effective_dimension": 4.419973901532008,
+            "covariance_effective_fraction": 0.13812418442287525,
+            "covariance_off_diagonal_fraction": 0.9283612976662916,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.8671732469209879,
+            "kernel_support_90_percent": 26,
+            "mean_coefficient_variance": 0.06820174182860209,
+            "maximum_coefficient_variance": 0.06906334768175777,
+            "coefficients": [
+              2470.767474376319,
+              -5032.55350240733,
+              3841.069542752165,
+              -1490.9703769005232,
+              248.14974715711432
+            ],
+            "coefficient_l1": 13083.51064359345,
+            "integrated_variance": 0.06820174208786511,
+            "target_operator_norm": 0.0651120551495181,
+            "target_to_false_operator_ratio": 1.4220113429554817,
+            "target_direction_amplitude": 0.06893590874637101,
+            "target_direction_to_false_ratio": 1.52047113190879
+          },
+          "oracle_direction_control_diagnostic_only": {
+            "covariance_effective_dimension": 4.710825810262035,
+            "covariance_effective_fraction": 0.1472133065706886,
+            "covariance_off_diagonal_fraction": 0.9234454708628801,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.8577762908322005,
+            "kernel_support_90_percent": 25,
+            "mean_coefficient_variance": 0.08389177833202817,
+            "maximum_coefficient_variance": 0.08509497437765087,
+            "coefficients": [
+              912.9795704157168,
+              -1781.0074266559802,
+              1285.0002486827304,
+              -473.682892753935,
+              76.39498766277059
+            ],
+            "coefficient_l1": 4529.065126171134,
+            "integrated_variance": 0.08389177835515227,
+            "target_operator_norm": 0.07588804920882522,
+            "target_to_false_operator_ratio": 1.4519930197383804,
+            "target_direction_amplitude": 0.08069672536191294,
+            "target_direction_to_false_ratio": 1.5200099505104252
+          },
+          "variance_reduction": 1.4983486058857722,
+          "finite_n_equivalent_exponent_gain": 0.08333904576763294,
+          "oracle_variance_reduction": 1.2181168069142216,
+          "oracle_finite_n_equivalent_exponent_gain": 0.04066464027298483
+        },
+        {
+          "j": 2,
+          "truncation_boundary_mass_fraction": 0.0008195401051531598,
+          "integrated_noise_correlation": [
+            [
+              1.0,
+              0.9972281836762582,
+              0.983121885834863,
+              0.9536577304408127,
+              0.9106463993804932
+            ],
+            [
+              0.9972281836762582,
+              1.0,
+              0.9939637997169398,
+              0.9730496636236552,
+              0.9376901678942394
+            ],
+            [
+              0.983121885834863,
+              0.9939637997169398,
+              1.0,
+              0.9923551451755143,
+              0.9694072371216975
+            ],
+            [
+              0.9536577304408127,
+              0.9730496636236552,
+              0.9923551451755143,
+              1.0,
+              0.9921346695654468
+            ],
+            [
+              0.9106463993804932,
+              0.9376901678942394,
+              0.9694072371216975,
+              0.9921346695654468,
+              1.0
+            ]
+          ],
+          "baseline": {
+            "covariance_effective_dimension": 11.761080053173314,
+            "covariance_effective_fraction": 0.3675337516616661,
+            "covariance_off_diagonal_fraction": 0.7951536918527395,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.6404833816156533,
+            "kernel_support_90_percent": 9,
+            "mean_coefficient_variance": 0.13873748821368287,
+            "maximum_coefficient_variance": 0.1425053893940483,
+            "coefficients": [
+              0.0,
+              0.0,
+              0.0,
+              1.4004074352253737,
+              0.0
+            ],
+            "coefficient_l1": 1.4004074352253737,
+            "integrated_variance": 0.13873748821368287,
+            "target_operator_norm": 0.05531842846900585,
+            "target_to_false_operator_ratio": 0.6551439070526591,
+            "target_direction_amplitude": 0.05956726909190528,
+            "target_direction_to_false_ratio": 1.7786902021514834
+          },
+          "proxy_preserving_control": {
+            "covariance_effective_dimension": 21.943489249513995,
+            "covariance_effective_fraction": 0.6857340390473123,
+            "covariance_off_diagonal_fraction": 0.5604483013617075,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.3139151529532542,
+            "kernel_support_90_percent": 7,
+            "mean_coefficient_variance": 0.09715946786051924,
+            "maximum_coefficient_variance": 0.09838650456644854,
+            "coefficients": [
+              -64.12213073308406,
+              190.05325190138763,
+              -222.9875044817057,
+              122.0793265419437,
+              -24.515669689382158
+            ],
+            "coefficient_l1": 623.7578833475034,
+            "integrated_variance": 0.09715946786081275,
+            "target_operator_norm": 0.0487216403777255,
+            "target_to_false_operator_ratio": 0.866311619541636,
+            "target_direction_amplitude": 0.052559658578526125,
+            "target_direction_to_false_ratio": 3.348604558609062
+          },
+          "oracle_direction_control_diagnostic_only": {
+            "covariance_effective_dimension": 21.733369176445603,
+            "covariance_effective_fraction": 0.6791677867639251,
+            "covariance_off_diagonal_fraction": 0.5662164128363291,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.3286223010275832,
+            "kernel_support_90_percent": 4,
+            "mean_coefficient_variance": 0.11161407512044588,
+            "maximum_coefficient_variance": 0.11361604542258967,
+            "coefficients": [
+              66.64358518180276,
+              -103.1791655724957,
+              39.8883908033682,
+              -1.124196103118729,
+              0.04292011826444265
+            ],
+            "coefficient_l1": 210.87825777904982,
+            "integrated_variance": 0.11161407512039734,
+            "target_operator_norm": 0.05365049565411183,
+            "target_to_false_operator_ratio": 0.7811493587931715,
+            "target_direction_amplitude": 0.05788216930301311,
+            "target_direction_to_false_ratio": 2.6481469945187643
+          },
+          "variance_reduction": 1.4279358591427582,
+          "finite_n_equivalent_exponent_gain": 0.07341873957194657,
+          "oracle_variance_reduction": 1.2430106871738864,
+          "oracle_finite_n_equivalent_exponent_gain": 0.04483410006663021
+        },
+        {
+          "j": 3,
+          "truncation_boundary_mass_fraction": 0.0009578303782798923,
+          "integrated_noise_correlation": [
+            [
+              1.0,
+              0.995635783436535,
+              0.975144703667765,
+              0.937044309540153,
+              0.8882094965685007
+            ],
+            [
+              0.995635783436535,
+              1.0,
+              0.9914970594858326,
+              0.9650567767344281,
+              0.9257332995387965
+            ],
+            [
+              0.975144703667765,
+              0.9914970594858326,
+              1.0,
+              0.9908038106807934,
+              0.9662407560383409
+            ],
+            [
+              0.937044309540153,
+              0.9650567767344281,
+              0.9908038106807934,
+              1.0,
+              0.9920625160281428
+            ],
+            [
+              0.8882094965685007,
+              0.9257332995387965,
+              0.9662407560383409,
+              0.9920625160281428,
+              1.0
+            ]
+          ],
+          "baseline": {
+            "covariance_effective_dimension": 11.942196016347074,
+            "covariance_effective_fraction": 0.37319362551084606,
+            "covariance_off_diagonal_fraction": 0.7916212775997615,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.6387171686502808,
+            "kernel_support_90_percent": 12,
+            "mean_coefficient_variance": 0.09978162137357151,
+            "maximum_coefficient_variance": 0.10174133280911844,
+            "coefficients": [
+              0.0,
+              0.0,
+              0.0,
+              1.4004074352253737,
+              0.0
+            ],
+            "coefficient_l1": 1.4004074352253737,
+            "integrated_variance": 0.09978162137357152,
+            "target_operator_norm": 0.08003242951150041,
+            "target_to_false_operator_ratio": 1.4661424553864917,
+            "target_direction_amplitude": 0.06748871335660088,
+            "target_direction_to_false_ratio": 2.1594328575077193
+          },
+          "proxy_preserving_control": {
+            "covariance_effective_dimension": 11.660240151533332,
+            "covariance_effective_fraction": 0.3643825047354166,
+            "covariance_off_diagonal_fraction": 0.7971768003979861,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.6444863461879088,
+            "kernel_support_90_percent": 13,
+            "mean_coefficient_variance": 0.09284308682323539,
+            "maximum_coefficient_variance": 0.09453563420992449,
+            "coefficients": [
+              -1151.9522685989461,
+              2413.741965934173,
+              -1889.2532192396854,
+              738.994077909882,
+              -120.29965435365693
+            ],
+            "coefficient_l1": 6314.2411860363445,
+            "integrated_variance": 0.09284308680790332,
+            "target_operator_norm": 0.07543557321886148,
+            "target_to_false_operator_ratio": 1.4914190887832048,
+            "target_direction_amplitude": 0.06415719358609637,
+            "target_direction_to_false_ratio": 2.3009245253320416
+          },
+          "oracle_direction_control_diagnostic_only": {
+            "covariance_effective_dimension": 19.180614792621228,
+            "covariance_effective_fraction": 0.5993942122694134,
+            "covariance_off_diagonal_fraction": 0.6328063560394831,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.40373339849618745,
+            "kernel_support_90_percent": 8,
+            "mean_coefficient_variance": 0.09663547881951143,
+            "maximum_coefficient_variance": 0.09792707046734046,
+            "coefficients": [
+              -183.19288327519848,
+              355.1059264702202,
+              -248.44204266548041,
+              84.45174863124936,
+              -10.475241798745508
+            ],
+            "coefficient_l1": 881.667842840894,
+            "integrated_variance": 0.09663547881949519,
+            "target_operator_norm": 0.0645487749863411,
+            "target_to_false_operator_ratio": 1.314518737131809,
+            "target_direction_amplitude": 0.06949450428662765,
+            "target_direction_to_false_ratio": 2.6168605294867042
+          },
+          "variance_reduction": 1.0747339926345227,
+          "finite_n_equivalent_exponent_gain": 0.014854231801276391,
+          "oracle_variance_reduction": 1.0325568061803987,
+          "oracle_finite_n_equivalent_exponent_gain": 0.006603021970049613
+        }
+      ]
+    },
+    {
+      "dimension": 8,
+      "cutoff": 3,
+      "enumerated_dual_points": 5764801,
+      "elapsed_seconds": 7.829899041003955,
+      "widths": [
+        0.18,
+        0.19,
+        0.205,
+        0.2222355,
+        0.24
+      ],
+      "source_width": 0.400613,
+      "signal_scale_proxy": [
+        0.24823440741441527,
+        0.324837495721575,
+        0.47156776990790844,
+        0.6956556806177395,
+        1.0
+      ],
+      "baseline_width_index": 3,
+      "h": 3,
+      "ell": 5,
+      "walsh_outputs": 32,
+      "theta_star": 10,
+      "affine_reports": [
+        {
+          "j": 0,
+          "truncation_boundary_mass_fraction": 0.0029863937604589687,
+          "integrated_noise_correlation": [
+            [
+              1.0,
+              0.9973989119525026,
+              0.9839258609962948,
+              0.9554492637219139,
+              0.9140236889944177
+            ],
+            [
+              0.9973989119525026,
+              1.0,
+              0.9942026804740062,
+              0.9739703853599068,
+              0.9400102412602924
+            ],
+            [
+              0.9839258609962948,
+              0.9942026804740062,
+              1.0,
+              0.9926088775527971,
+              0.9706992592242406
+            ],
+            [
+              0.9554492637219139,
+              0.9739703853599068,
+              0.9926088775527971,
+              1.0,
+              0.9925733175815649
+            ],
+            [
+              0.9140236889944177,
+              0.9400102412602924,
+              0.9706992592242406,
+              0.9925733175815649,
+              1.0
+            ]
+          ],
+          "baseline": {
+            "covariance_effective_dimension": 11.4199194867284,
+            "covariance_effective_fraction": 0.3568724839602625,
+            "covariance_off_diagonal_fraction": 0.8019353702583373,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.6464937727738171,
+            "kernel_support_90_percent": 16,
+            "mean_coefficient_variance": 0.10693770370078977,
+            "maximum_coefficient_variance": 0.10810700942566454,
+            "coefficients": [
+              0.0,
+              0.0,
+              0.0,
+              1.4374927537600266,
+              0.0
+            ],
+            "coefficient_l1": 1.4374927537600266,
+            "integrated_variance": 0.10693770370078978,
+            "target_operator_norm": 0.04602296078758883,
+            "target_to_false_operator_ratio": 0.9038601693799482,
+            "target_direction_amplitude": 0.04888678706430608,
+            "target_direction_to_false_ratio": 1.7618698763359366
+          },
+          "proxy_preserving_control": {
+            "covariance_effective_dimension": 6.053907800035662,
+            "covariance_effective_fraction": 0.18918461875111445,
+            "covariance_off_diagonal_fraction": 0.9004513817561586,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.8148401187715192,
+            "kernel_support_90_percent": 23,
+            "mean_coefficient_variance": 0.048053020236160364,
+            "maximum_coefficient_variance": 0.04827293173658292,
+            "coefficients": [
+              3541.772742562638,
+              -7012.742493746045,
+              5142.44195467845,
+              -1912.0106448334946,
+              304.903033893599
+            ],
+            "coefficient_l1": 17913.870869714225,
+            "integrated_variance": 0.04805302021119928,
+            "target_operator_norm": 0.021282073420888135,
+            "target_to_false_operator_ratio": 0.7194716869836586,
+            "target_direction_amplitude": 0.02061073927576536,
+            "target_direction_to_false_ratio": 2.2724540462354623
+          },
+          "oracle_direction_control_diagnostic_only": {
+            "covariance_effective_dimension": 20.787558004410677,
+            "covariance_effective_fraction": 0.6496111876378337,
+            "covariance_off_diagonal_fraction": 0.5918958404607535,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.35354598107738516,
+            "kernel_support_90_percent": 8,
+            "mean_coefficient_variance": 0.10020339223828893,
+            "maximum_coefficient_variance": 0.10103391375817786,
+            "coefficients": [
+              -697.5427443247335,
+              1394.179086072553,
+              -1037.8824974292195,
+              390.99014725636204,
+              -61.42838677502386
+            ],
+            "coefficient_l1": 3582.0228618578917,
+            "integrated_variance": 0.10020339223465413,
+            "target_operator_norm": 0.04677880898704606,
+            "target_to_false_operator_ratio": 0.9834709858569657,
+            "target_direction_amplitude": 0.04987145366494064,
+            "target_direction_to_false_ratio": 2.2813958978909605
+          },
+          "variance_reduction": 2.2254106657767743,
+          "finite_n_equivalent_exponent_gain": 0.14425894851611507,
+          "oracle_variance_reduction": 1.0672064220177835,
+          "oracle_finite_n_equivalent_exponent_gain": 0.011729906652261623
+        },
+        {
+          "j": 1,
+          "truncation_boundary_mass_fraction": 0.0031881659245293317,
+          "integrated_noise_correlation": [
+            [
+              1.0,
+              0.9935530038981584,
+              0.9638614153024996,
+              0.9119397820864807,
+              0.850799662817084
+            ],
+            [
+              0.9935530038981584,
+              1.0,
+              0.987761049376584,
+              0.9519463785641503,
+              0.90293780805625
+            ],
+            [
+              0.9638614153024996,
+              0.987761049376584,
+              1.0,
+              0.9878623921738716,
+              0.9577420403384623
+            ],
+            [
+              0.9119397820864807,
+              0.9519463785641503,
+              0.9878623921738716,
+              1.0,
+              0.9905632188388306
+            ],
+            [
+              0.850799662817084,
+              0.90293780805625,
+              0.9577420403384623,
+              0.9905632188388306,
+              1.0
+            ]
+          ],
+          "baseline": {
+            "covariance_effective_dimension": 11.946375605891792,
+            "covariance_effective_fraction": 0.3733242376841185,
+            "covariance_off_diagonal_fraction": 0.79159882390998,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.6378765464383817,
+            "kernel_support_90_percent": 12,
+            "mean_coefficient_variance": 0.10913084400102756,
+            "maximum_coefficient_variance": 0.11032900601860511,
+            "coefficients": [
+              0.0,
+              0.0,
+              0.0,
+              1.4374927537600266,
+              0.0
+            ],
+            "coefficient_l1": 1.4374927537600266,
+            "integrated_variance": 0.10913084400102756,
+            "target_operator_norm": 0.04387298315820799,
+            "target_to_false_operator_ratio": 0.646103865904595,
+            "target_direction_amplitude": 0.04679260501729421,
+            "target_direction_to_false_ratio": 2.396509751635565
+          },
+          "proxy_preserving_control": {
+            "covariance_effective_dimension": 4.9537105952158695,
+            "covariance_effective_fraction": 0.15480345610049592,
+            "covariance_off_diagonal_fraction": 0.9193420912993007,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.8467468633401478,
+            "kernel_support_90_percent": 25,
+            "mean_coefficient_variance": 0.06990351391833743,
+            "maximum_coefficient_variance": 0.07034431299307127,
+            "coefficients": [
+              -2004.3343014683057,
+              4195.815525185554,
+              -3284.5164381368413,
+              1290.1420971570028,
+              -213.036056858905
+            ],
+            "coefficient_l1": 10987.84441880661,
+            "integrated_variance": 0.06990351390763294,
+            "target_operator_norm": 0.028679132975341474,
+            "target_to_false_operator_ratio": 0.7828330010627856,
+            "target_direction_amplitude": 0.03033716280772286,
+            "target_direction_to_false_ratio": 2.7145375451471443
+          },
+          "oracle_direction_control_diagnostic_only": {
+            "covariance_effective_dimension": 24.01871729455063,
+            "covariance_effective_fraction": 0.7505849154547072,
+            "covariance_off_diagonal_fraction": 0.4993417493824995,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.2539063983623465,
+            "kernel_support_90_percent": 4,
+            "mean_coefficient_variance": 0.10202457012200952,
+            "maximum_coefficient_variance": 0.10285422635619369,
+            "coefficients": [
+              53.89642867872184,
+              -86.79273928215554,
+              38.57660661884517,
+              -5.014012725635373,
+              1.0270707045850045
+            ],
+            "coefficient_l1": 185.30685800994294,
+            "integrated_variance": 0.10202457012200927,
+            "target_operator_norm": 0.04524560663528488,
+            "target_to_false_operator_ratio": 0.8537878201940068,
+            "target_direction_amplitude": 0.04833976868416258,
+            "target_direction_to_false_ratio": 3.290819760838217
+          },
+          "variance_reduction": 1.5611639229642686,
+          "finite_n_equivalent_exponent_gain": 0.08032775361798326,
+          "oracle_variance_reduction": 1.0696525735959488,
+          "oracle_finite_n_equivalent_exponent_gain": 0.012142785122466701
+        },
+        {
+          "j": 2,
+          "truncation_boundary_mass_fraction": 0.00301096325306008,
+          "integrated_noise_correlation": [
+            [
+              1.0,
+              0.9972513098484439,
+              0.9836963863777738,
+              0.955578031782115,
+              0.9137652897617575
+            ],
+            [
+              0.9972513098484439,
+              1.0,
+              0.9942477954149226,
+              0.9742866056099909,
+              0.939777191719651
+            ],
+            [
+              0.9836963863777738,
+              0.9942477954149226,
+              1.0,
+              0.9926622771321816,
+              0.9700853539646433
+            ],
+            [
+              0.955578031782115,
+              0.9742866056099909,
+              0.9926622771321816,
+              1.0,
+              0.9921571564205636
+            ],
+            [
+              0.9137652897617575,
+              0.939777191719651,
+              0.9700853539646433,
+              0.9921571564205636,
+              1.0
+            ]
+          ],
+          "baseline": {
+            "covariance_effective_dimension": 12.322332128938005,
+            "covariance_effective_fraction": 0.38507287902931264,
+            "covariance_off_diagonal_fraction": 0.7841387658444122,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.6192366222124759,
+            "kernel_support_90_percent": 11,
+            "mean_coefficient_variance": 0.14321198923970713,
+            "maximum_coefficient_variance": 0.14520581861198276,
+            "coefficients": [
+              0.0,
+              0.0,
+              0.0,
+              1.4374927537600266,
+              0.0
+            ],
+            "coefficient_l1": 1.4374927537600266,
+            "integrated_variance": 0.14321198923970715,
+            "target_operator_norm": 0.06089932432338946,
+            "target_to_false_operator_ratio": 0.8775224721513261,
+            "target_direction_amplitude": 0.06480000201100064,
+            "target_direction_to_false_ratio": 1.5365921956653146
+          },
+          "proxy_preserving_control": {
+            "covariance_effective_dimension": 20.45179836168032,
+            "covariance_effective_fraction": 0.63911869880251,
+            "covariance_off_diagonal_fraction": 0.600678284274378,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.36184092063266177,
+            "kernel_support_90_percent": 5,
+            "mean_coefficient_variance": 0.10591842066265617,
+            "maximum_coefficient_variance": 0.10689384925321549,
+            "coefficients": [
+              620.4795779688362,
+              -1256.9380329129701,
+              932.5011033532738,
+              -343.96971888744395,
+              54.82324569838128
+            ],
+            "coefficient_l1": 3208.7116788209055,
+            "integrated_variance": 0.10591842065920787,
+            "target_operator_norm": 0.04945053169431302,
+            "target_to_false_operator_ratio": 0.9219149664991053,
+            "target_direction_amplitude": 0.05283723593448382,
+            "target_direction_to_false_ratio": 2.1659028935949745
+          },
+          "oracle_direction_control_diagnostic_only": {
+            "covariance_effective_dimension": 16.13028198075824,
+            "covariance_effective_fraction": 0.504071311898695,
+            "covariance_off_diagonal_fraction": 0.7041778534555798,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.49867539728434845,
+            "kernel_support_90_percent": 8,
+            "mean_coefficient_variance": 0.12448839147113822,
+            "maximum_coefficient_variance": 0.12603105661721786,
+            "coefficients": [
+              -326.294024143214,
+              666.757294406054,
+              -505.9127493664255,
+              191.30531073487018,
+              -29.111363231118094
+            ],
+            "coefficient_l1": 1719.3807418816816,
+            "integrated_variance": 0.12448839147107549,
+            "target_operator_norm": 0.05892456386572234,
+            "target_to_false_operator_ratio": 1.0141838018626064,
+            "target_direction_amplitude": 0.06276088696296282,
+            "target_direction_to_false_ratio": 1.7620604151827857
+          },
+          "variance_reduction": 1.3520970983932172,
+          "finite_n_equivalent_exponent_gain": 0.05439984498249886,
+          "oracle_variance_reduction": 1.1504043674062736,
+          "oracle_finite_n_equivalent_exponent_gain": 0.025267632245207516
+        },
+        {
+          "j": 3,
+          "truncation_boundary_mass_fraction": 0.0031863684446412376,
+          "integrated_noise_correlation": [
+            [
+              1.0,
+              0.9945374746191586,
+              0.9693898365697531,
+              0.9245714414434335,
+              0.8699308266482385
+            ],
+            [
+              0.9945374746191586,
+              1.0,
+              0.9896440482323059,
+              0.9587280108007858,
+              0.9149113703620534
+            ],
+            [
+              0.9693898365697531,
+              0.9896440482323059,
+              1.0,
+              0.9894342397510659,
+              0.9623369369509772
+            ],
+            [
+              0.9245714414434335,
+              0.9587280108007858,
+              0.9894342397510659,
+              1.0,
+              0.9913798974906107
+            ],
+            [
+              0.8699308266482385,
+              0.9149113703620534,
+              0.9623369369509772,
+              0.9913798974906107,
+              1.0
+            ]
+          ],
+          "baseline": {
+            "covariance_effective_dimension": 12.143299598178821,
+            "covariance_effective_fraction": 0.37947811244308816,
+            "covariance_off_diagonal_fraction": 0.7877047690725247,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.6292522222801167,
+            "kernel_support_90_percent": 12,
+            "mean_coefficient_variance": 0.11175636886161389,
+            "maximum_coefficient_variance": 0.11291972265857692,
+            "coefficients": [
+              0.0,
+              0.0,
+              0.0,
+              1.4374927537600266,
+              0.0
+            ],
+            "coefficient_l1": 1.4374927537600266,
+            "integrated_variance": 0.11175636886161389,
+            "target_operator_norm": 0.044582328510996826,
+            "target_to_false_operator_ratio": 0.6654135893058236,
+            "target_direction_amplitude": 0.047625403668226526,
+            "target_direction_to_false_ratio": 2.404734533707064
+          },
+          "proxy_preserving_control": {
+            "covariance_effective_dimension": 6.829072454683428,
+            "covariance_effective_fraction": 0.21340851420885712,
+            "covariance_off_diagonal_fraction": 0.8868924453625607,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.7885995100673099,
+            "kernel_support_90_percent": 23,
+            "mean_coefficient_variance": 0.08832404570631378,
+            "maximum_coefficient_variance": 0.08890636470774385,
+            "coefficients": [
+              -1724.5508410080179,
+              3594.2664628452303,
+              -2799.985946276608,
+              1094.6843018881768,
+              -179.5998853054611
+            ],
+            "coefficient_l1": 9393.087437323493,
+            "integrated_variance": 0.08832404575690589,
+            "target_operator_norm": 0.03590306040463712,
+            "target_to_false_operator_ratio": 0.776442893924105,
+            "target_direction_amplitude": 0.03833982361027222,
+            "target_direction_to_false_ratio": 2.7233308850239535
+          },
+          "oracle_direction_control_diagnostic_only": {
+            "covariance_effective_dimension": 23.86546086026325,
+            "covariance_effective_fraction": 0.7457956518832266,
+            "covariance_off_diagonal_fraction": 0.5041177371470658,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.2569728412338142,
+            "kernel_support_90_percent": 4,
+            "mean_coefficient_variance": 0.10372678948236744,
+            "maximum_coefficient_variance": 0.10456479419882758,
+            "coefficients": [
+              143.44084586103145,
+              -275.27726980749475,
+              187.29579361423265,
+              -63.838974893676884,
+              10.81562512253159
+            ],
+            "coefficient_l1": 680.6685092989674,
+            "integrated_variance": 0.10372678948298031,
+            "target_operator_norm": 0.046055741229654994,
+            "target_to_false_operator_ratio": 0.8549233059649524,
+            "target_direction_amplitude": 0.04921265040871818,
+            "target_direction_to_false_ratio": 3.332025352421783
+          },
+          "variance_reduction": 1.2652994765344054,
+          "finite_n_equivalent_exponent_gain": 0.04243486107709195,
+          "oracle_variance_reduction": 1.0774108542128462,
+          "oracle_finite_n_equivalent_exponent_gain": 0.013446063072005722
+        },
+        {
+          "j": 4,
+          "truncation_boundary_mass_fraction": 0.003009876043984501,
+          "integrated_noise_correlation": [
+            [
+              1.0,
+              0.9964523866084689,
+              0.9788590614539636,
+              0.9435930763549687,
+              0.8945540347614983
+            ],
+            [
+              0.9964523866084689,
+              1.0,
+              0.9925399223920978,
+              0.9676591650199998,
+              0.9275249177300557
+            ],
+            [
+              0.9788590614539636,
+              0.9925399223920978,
+              1.0,
+              0.9910467475186107,
+              0.9652601923079521
+            ],
+            [
+              0.9435930763549687,
+              0.9676591650199998,
+              0.9910467475186107,
+              1.0,
+              0.9913164202991873
+            ],
+            [
+              0.8945540347614983,
+              0.9275249177300557,
+              0.9652601923079521,
+              0.9913164202991873,
+              1.0
+            ]
+          ],
+          "baseline": {
+            "covariance_effective_dimension": 12.221676523171398,
+            "covariance_effective_fraction": 0.3819273913491062,
+            "covariance_off_diagonal_fraction": 0.7861416423324795,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.6239749099992268,
+            "kernel_support_90_percent": 10,
+            "mean_coefficient_variance": 0.1389055570895753,
+            "maximum_coefficient_variance": 0.14074482409755687,
+            "coefficients": [
+              0.0,
+              0.0,
+              0.0,
+              1.4374927537600266,
+              0.0
+            ],
+            "coefficient_l1": 1.4374927537600266,
+            "integrated_variance": 0.13890555708957533,
+            "target_operator_norm": 0.06655665725117442,
+            "target_to_false_operator_ratio": 0.9600193551143047,
+            "target_direction_amplitude": 0.0706289448122439,
+            "target_direction_to_false_ratio": 1.474437731390423
+          },
+          "proxy_preserving_control": {
+            "covariance_effective_dimension": 22.969304757435488,
+            "covariance_effective_fraction": 0.717790773669859,
+            "covariance_off_diagonal_fraction": 0.5311627246956512,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.2847936268074143,
+            "kernel_support_90_percent": 4,
+            "mean_coefficient_variance": 0.11178350469048294,
+            "maximum_coefficient_variance": 0.11285041962445545,
+            "coefficients": [
+              -485.68393753604664,
+              1065.9607951017201,
+              -898.0259394249325,
+              380.9251298354458,
+              -66.21321167926922
+            ],
+            "coefficient_l1": 2896.809013577414,
+            "integrated_variance": 0.11178350467844211,
+            "target_operator_norm": 0.05450554461705783,
+            "target_to_false_operator_ratio": 1.0561738581261704,
+            "target_direction_amplitude": 0.05818486550283271,
+            "target_direction_to_false_ratio": 2.096603245025854
+          },
+          "oracle_direction_control_diagnostic_only": {
+            "covariance_effective_dimension": 8.476050454351686,
+            "covariance_effective_fraction": 0.2648765766984902,
+            "covariance_off_diagonal_fraction": 0.8573770438283795,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.7430572117475682,
+            "kernel_support_90_percent": 15,
+            "mean_coefficient_variance": 0.11176911712844884,
+            "maximum_coefficient_variance": 0.11317249923724407,
+            "coefficients": [
+              -319.66542599428954,
+              749.974754555365,
+              -670.5804980432997,
+              294.60491576778304,
+              -52.11386459019247
+            ],
+            "coefficient_l1": 2086.9394589509297,
+            "integrated_variance": 0.1117691171232238,
+            "target_operator_norm": 0.06289452144030847,
+            "target_to_false_operator_ratio": 0.9245620794613861,
+            "target_direction_amplitude": 0.06660012166884588,
+            "target_direction_to_false_ratio": 1.5106084378744806
+          },
+          "variance_reduction": 1.2426301849199743,
+          "finite_n_equivalent_exponent_gain": 0.03917462556798367,
+          "oracle_variance_reduction": 1.242790143331221,
+          "oracle_finite_n_equivalent_exponent_gain": 0.03919783806089176
+        },
+        {
+          "j": 5,
+          "truncation_boundary_mass_fraction": 0.0031890231580700185,
+          "integrated_noise_correlation": [
+            [
+              1.0,
+              0.9977546465448421,
+              0.9856994750140674,
+              0.9590315219503965,
+              0.9185980960434151
+            ],
+            [
+              0.9977546465448421,
+              1.0,
+              0.994740737863465,
+              0.9756154550146735,
+              0.9422366602823391
+            ],
+            [
+              0.9856994750140674,
+              0.994740737863465,
+              1.0,
+              0.9928893622724345,
+              0.9711206454271796
+            ],
+            [
+              0.9590315219503965,
+              0.9756154550146735,
+              0.9928893622724345,
+              1.0,
+              0.9925205336654835
+            ],
+            [
+              0.9185980960434151,
+              0.9422366602823391,
+              0.9711206454271796,
+              0.9925205336654835,
+              1.0
+            ]
+          ],
+          "baseline": {
+            "covariance_effective_dimension": 11.74109094557366,
+            "covariance_effective_fraction": 0.3669090920491769,
+            "covariance_off_diagonal_fraction": 0.7956481023055031,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.6358980475795666,
+            "kernel_support_90_percent": 11,
+            "mean_coefficient_variance": 0.12013975069580463,
+            "maximum_coefficient_variance": 0.12152411351136345,
+            "coefficients": [
+              0.0,
+              0.0,
+              0.0,
+              1.4374927537600266,
+              0.0
+            ],
+            "coefficient_l1": 1.4374927537600266,
+            "integrated_variance": 0.12013975069580464,
+            "target_operator_norm": 0.047500394501951745,
+            "target_to_false_operator_ratio": 0.7898744128513612,
+            "target_direction_amplitude": 0.05071165642756595,
+            "target_direction_to_false_ratio": 2.0958123265636153
+          },
+          "proxy_preserving_control": {
+            "covariance_effective_dimension": 9.162757258399726,
+            "covariance_effective_fraction": 0.2863361643249914,
+            "covariance_off_diagonal_fraction": 0.8447830991598129,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.7184795275283518,
+            "kernel_support_90_percent": 14,
+            "mean_coefficient_variance": 0.04410591720901338,
+            "maximum_coefficient_variance": 0.044335679163798006,
+            "coefficients": [
+              3673.4544279053384,
+              -7275.9982371505,
+              5337.108384908425,
+              -1983.876963201838,
+              315.9262434255849
+            ],
+            "coefficient_l1": 18586.364256591685,
+            "integrated_variance": 0.04410591743814507,
+            "target_operator_norm": 0.01817198395907773,
+            "target_to_false_operator_ratio": 0.6110316333821857,
+            "target_direction_amplitude": 0.01721809393617123,
+            "target_direction_to_false_ratio": 1.772519326683491
+          },
+          "oracle_direction_control_diagnostic_only": {
+            "covariance_effective_dimension": 21.14679296807609,
+            "covariance_effective_fraction": 0.6608372802523779,
+            "covariance_off_diagonal_fraction": 0.5823262274992953,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.3427055461794545,
+            "kernel_support_90_percent": 5,
+            "mean_coefficient_variance": 0.10905964482060429,
+            "maximum_coefficient_variance": 0.10999730168683598,
+            "coefficients": [
+              -940.1815673195283,
+              1896.3032495688135,
+              -1428.1032778792828,
+              543.8667909986433,
+              -86.6757856930821
+            ],
+            "coefficient_l1": 4895.13067145935,
+            "integrated_variance": 0.10905964483559671,
+            "target_operator_norm": 0.04826156874259596,
+            "target_to_false_operator_ratio": 0.9259348497211213,
+            "target_direction_amplitude": 0.051554247474473056,
+            "target_direction_to_false_ratio": 2.846435359602573
+          },
+          "variance_reduction": 2.723891887393359,
+          "finite_n_equivalent_exponent_gain": 0.18070868040145954,
+          "oracle_variance_reduction": 1.1015967535646276,
+          "oracle_finite_n_equivalent_exponent_gain": 0.017449526616318236
+        },
+        {
+          "j": 6,
+          "truncation_boundary_mass_fraction": 0.002996654660941477,
+          "integrated_noise_correlation": [
+            [
+              1.0,
+              0.9958076722913426,
+              0.9724863417831423,
+              0.9210040366515932,
+              0.8474696090091064
+            ],
+            [
+              0.9958076722913426,
+              1.0,
+              0.9896453911791251,
+              0.9522317775604854,
+              0.8907600588070113
+            ],
+            [
+              0.9724863417831423,
+              0.9896453911791251,
+              1.0,
+              0.9860248075541072,
+              0.9457003868506711
+            ],
+            [
+              0.9210040366515932,
+              0.9522317775604854,
+              0.9860248075541072,
+              1.0,
+              0.9864143648551388
+            ],
+            [
+              0.8474696090091064,
+              0.8907600588070113,
+              0.9457003868506711,
+              0.9864143648551388,
+              1.0
+            ]
+          ],
+          "baseline": {
+            "covariance_effective_dimension": 10.327476656684848,
+            "covariance_effective_fraction": 0.3227336455214015,
+            "covariance_off_diagonal_fraction": 0.822951380436852,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.6861335587912821,
+            "kernel_support_90_percent": 10,
+            "mean_coefficient_variance": 0.12706352482091093,
+            "maximum_coefficient_variance": 0.12921043755671982,
+            "coefficients": [
+              0.0,
+              0.0,
+              0.0,
+              1.4374927537600266,
+              0.0
+            ],
+            "coefficient_l1": 1.4374927537600266,
+            "integrated_variance": 0.12706352482091093,
+            "target_operator_norm": 0.05144992062016645,
+            "target_to_false_operator_ratio": 0.781938753393574,
+            "target_direction_amplitude": 0.054711927509813664,
+            "target_direction_to_false_ratio": 1.6890818272434573
+          },
+          "proxy_preserving_control": {
+            "covariance_effective_dimension": 12.454090882389803,
+            "covariance_effective_fraction": 0.38919034007468134,
+            "covariance_off_diagonal_fraction": 0.7815239155123732,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.612008302989845,
+            "kernel_support_90_percent": 13,
+            "mean_coefficient_variance": 0.08533517181924019,
+            "maximum_coefficient_variance": 0.08627616435996595,
+            "coefficients": [
+              -289.5329827741603,
+              535.8169256506287,
+              -342.44932873074555,
+              102.41764741812804,
+              -10.940731853619397
+            ],
+            "coefficient_l1": 1281.157616427282,
+            "integrated_variance": 0.08533517181972883,
+            "target_operator_norm": 0.04266719531369369,
+            "target_to_false_operator_ratio": 0.9749731122608163,
+            "target_direction_amplitude": 0.045244656894038615,
+            "target_direction_to_false_ratio": 2.039663587860806
+          },
+          "oracle_direction_control_diagnostic_only": {
+            "covariance_effective_dimension": 19.277131317863837,
+            "covariance_effective_fraction": 0.6024103536832449,
+            "covariance_off_diagonal_fraction": 0.6305093874711056,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.40137189922389876,
+            "kernel_support_90_percent": 8,
+            "mean_coefficient_variance": 0.10593998773440622,
+            "maximum_coefficient_variance": 0.10713736194776183,
+            "coefficients": [
+              9.678654707426086,
+              -35.285031115212384,
+              42.859077511451176,
+              -23.57034841227059,
+              6.290433243626535
+            ],
+            "coefficient_l1": 117.68354498998677,
+            "integrated_variance": 0.10593998773442781,
+            "target_operator_norm": 0.05041486219174983,
+            "target_to_false_operator_ratio": 0.9253320876867663,
+            "target_direction_amplitude": 0.05373921193643514,
+            "target_direction_to_false_ratio": 2.1525417713868493
+          },
+          "variance_reduction": 1.4889936014816207,
+          "finite_n_equivalent_exponent_gain": 0.07179219429619967,
+          "oracle_variance_reduction": 1.1993915379661546,
+          "oracle_finite_n_equivalent_exponent_gain": 0.03278783741824257
+        },
+        {
+          "j": 7,
+          "truncation_boundary_mass_fraction": 0.0031945162899597412,
+          "integrated_noise_correlation": [
+            [
+              1.0,
+              0.997691842442525,
+              0.9853030641012577,
+              0.9578356328137615,
+              0.916057539254238
+            ],
+            [
+              0.997691842442525,
+              1.0,
+              0.9945918128669694,
+              0.9748678546624122,
+              0.9403211333101846
+            ],
+            [
+              0.9853030641012577,
+              0.9945918128669694,
+              1.0,
+              0.992650013787392,
+              0.9700669072124334
+            ],
+            [
+              0.9578356328137615,
+              0.9748678546624122,
+              0.992650013787392,
+              1.0,
+              0.9922218712834509
+            ],
+            [
+              0.916057539254238,
+              0.9403211333101846,
+              0.9700669072124334,
+              0.9922218712834509,
+              1.0
+            ]
+          ],
+          "baseline": {
+            "covariance_effective_dimension": 10.977671884025,
+            "covariance_effective_fraction": 0.34305224637578124,
+            "covariance_off_diagonal_fraction": 0.8105033211095667,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.6601510679629956,
+            "kernel_support_90_percent": 12,
+            "mean_coefficient_variance": 0.12166315273755146,
+            "maximum_coefficient_variance": 0.12306753361099415,
+            "coefficients": [
+              0.0,
+              0.0,
+              0.0,
+              1.4374927537600266,
+              0.0
+            ],
+            "coefficient_l1": 1.4374927537600266,
+            "integrated_variance": 0.12166315273755146,
+            "target_operator_norm": 0.046487862863093615,
+            "target_to_false_operator_ratio": 0.7858844840078776,
+            "target_direction_amplitude": 0.04959302760292072,
+            "target_direction_to_false_ratio": 2.1582054293221646
+          },
+          "proxy_preserving_control": {
+            "covariance_effective_dimension": 5.950162261248963,
+            "covariance_effective_fraction": 0.18594257066403008,
+            "covariance_off_diagonal_fraction": 0.9022487159820275,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.8177840499039379,
+            "kernel_support_90_percent": 25,
+            "mean_coefficient_variance": 0.06181169810755571,
+            "maximum_coefficient_variance": 0.062088513576882345,
+            "coefficients": [
+              3323.5025930661627,
+              -6639.710978111721,
+              4924.351447582001,
+              -1849.8210892271143,
+              297.4925081831202
+            ],
+            "coefficient_l1": 17034.878616170117,
+            "integrated_variance": 0.06181169840058942,
+            "target_operator_norm": 0.024381177743464356,
+            "target_to_false_operator_ratio": 0.7088608433311354,
+            "target_direction_amplitude": 0.02576594394337925,
+            "target_direction_to_false_ratio": 2.222220765889957
+          },
+          "oracle_direction_control_diagnostic_only": {
+            "covariance_effective_dimension": 22.65881014903905,
+            "covariance_effective_fraction": 0.7080878171574703,
+            "covariance_off_diagonal_fraction": 0.5402314913439937,
+            "covariance_negative_eigenvalue_fraction": -0.0,
+            "kernel_off_origin_energy_fraction": 0.29507221958771335,
+            "kernel_support_90_percent": 5,
+            "mean_coefficient_variance": 0.10799678772250627,
+            "maximum_coefficient_variance": 0.10889615523822971,
+            "coefficients": [
+              -523.0904683315754,
+              1061.8065869515945,
+              -809.1242607779175,
+              312.02041534169416,
+              -49.67634382542652
+            ],
+            "coefficient_l1": 2755.7180752282084,
+            "integrated_variance": 0.10799678772794152,
+            "target_operator_norm": 0.047292403648274556,
+            "target_to_false_operator_ratio": 0.9743086254641866,
+            "target_direction_amplitude": 0.05051951273576587,
+            "target_direction_to_false_ratio": 2.9389422897945225
+          },
+          "variance_reduction": 1.9682868435207292,
+          "finite_n_equivalent_exponent_gain": 0.12211756045871112,
+          "oracle_variance_reduction": 1.1265441805920873,
+          "oracle_finite_n_equivalent_exponent_gain": 0.021487986752286484
+        }
+      ]
+    }
+  ]
+}

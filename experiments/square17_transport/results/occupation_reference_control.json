@@ -1,0 +1,195 @@
+{
+  "config": {
+    "alphabet": "reference_control",
+    "discount": 0.82,
+    "inverse_actions": [
+      1.0,
+      8.0,
+      64.0
+    ],
+    "iterations_per_action": 40,
+    "pose_count": 22,
+    "resolvent_iterations": 80,
+    "seed": 0,
+    "side": 4.675530093604551,
+    "tolerance": 1e-12
+  },
+  "distinct_basis_distance": 1.4142135623730951,
+  "eigenbasis_states": 26334,
+  "johnson_degree": 85,
+  "measured_area_energy": 7.549516567451064e-15,
+  "measured_matches_global_discrete_minimum": true,
+  "measured_state": 0,
+  "method": "exact_symmetry_quotiented_17_body_transport",
+  "minimum_discrete_area_energy": 7.549516567451064e-15,
+  "minimum_discrete_state": 0,
+  "observed_projective_ratio": 0.24541017738906798,
+  "particles": 17,
+  "physical_area_energy": 7.993605777301127e-15,
+  "physical_overlap_area": 7.993605777301127e-15,
+  "physical_wall_area": 0.0,
+  "pose_modes": 22,
+  "poses": [
+    [
+      0.5,
+      0.5,
+      0.0
+    ],
+    [
+      1.5,
+      0.5,
+      0.0
+    ],
+    [
+      0.5,
+      1.5,
+      0.0
+    ],
+    [
+      0.5,
+      4.175530093604551,
+      0.0
+    ],
+    [
+      4.175530093604551,
+      0.5,
+      0.0
+    ],
+    [
+      3.175530093604551,
+      0.5,
+      0.0
+    ],
+    [
+      4.175530093604551,
+      1.5,
+      0.0
+    ],
+    [
+      4.175530093604551,
+      4.175530093604551,
+      0.0
+    ],
+    [
+      0.7042021556575175,
+      2.7042021556575175,
+      0.694727592818231
+    ],
+    [
+      1.4360434939982247,
+      3.388043433263363,
+      0.694727592818231
+    ],
+    [
+      1.556737163170879,
+      2.112935871840352,
+      0.694727592818231
+    ],
+    [
+      2.2885785015115867,
+      2.7967771494461973,
+      0.694727592818231
+    ],
+    [
+      2.2952864461815237,
+      1.4266835476667392,
+      0.694727592818231
+    ],
+    [
+      3.0271277845222304,
+      2.110524825272585,
+      0.694727592818231
+    ],
+    [
+      2.347324826510285,
+      4.175530093604551,
+      0.0
+    ],
+    [
+      3.245073712656966,
+      3.3724938614938536,
+      -0.6392056569382095
+    ],
+    [
+      4.175530093604551,
+      2.613460132512564,
+      0.0
+    ]
+  ],
+  "projective_distance_after": 0.5358113473328583,
+  "projective_distance_before": 2.1833297748014524,
+  "selected_pose_modes": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+  ],
+  "stages": [
+    {
+      "effective_state_count": 774.4766541178855,
+      "global_minimum_probability": 0.02543715926126698,
+      "inverse_action": 1.0,
+      "iterations": 40,
+      "l1_fixed_point_residual": 0.0008365809824445019,
+      "maximum_probability": 0.02543715926126698,
+      "measured_area_energy": 7.549516567451064e-15,
+      "measured_state": 0,
+      "resolvent": {
+        "banach_factor": 0.82,
+        "fixed_point_residual_linf": 1.8738947026031294e-12,
+        "iterations": 80,
+        "last_iterate_difference_linf": 2.2852355858332674e-12
+      }
+    },
+    {
+      "effective_state_count": 1.3929549475293397,
+      "global_minimum_probability": 0.8440660208532886,
+      "inverse_action": 8.0,
+      "iterations": 40,
+      "l1_fixed_point_residual": 0.00032390941674708356,
+      "maximum_probability": 0.8440660208532886,
+      "measured_area_energy": 7.549516567451064e-15,
+      "measured_state": 0,
+      "resolvent": {
+        "banach_factor": 0.82,
+        "fixed_point_residual_linf": 3.705737106063367e-12,
+        "iterations": 80,
+        "last_iterate_difference_linf": 4.51913680088456e-12
+      }
+    },
+    {
+      "effective_state_count": 1.0234792670493154,
+      "global_minimum_probability": 0.9884153922789833,
+      "inverse_action": 64.0,
+      "iterations": 22,
+      "l1_fixed_point_residual": 5.804287227300641e-13,
+      "maximum_probability": 0.9884153922789833,
+      "measured_area_energy": 7.549516567451064e-15,
+      "measured_state": 0,
+      "resolvent": {
+        "banach_factor": 0.82,
+        "fixed_point_residual_linf": 3.9422042019676695e-12,
+        "iterations": 80,
+        "last_iterate_difference_linf": 4.807543252383084e-12
+      }
+    }
+  ],
+  "terminal_sat_audit": {
+    "minimum_clearance": -4.440892098500626e-16,
+    "overlap_residual": 6.377745716588144e-16,
+    "worst_penetration": 4.440892098500626e-16
+  }
+}

@@ -1,0 +1,617 @@
+{
+  "experiment": "walsh_displayed_obtuse_superbase_min_cut_sieve",
+  "warning": "The theorem uses exact rational inner-product signs.  The fixture audit recognizes the displayed superbase with floating arithmetic and compares against finite-cube shortest-vector enumeration.",
+  "rows": [
+    {
+      "family": "rectangular",
+      "dimension": 3,
+      "displayed_superbase_is_obtuse": true,
+      "enumerated_shortest_length": 1.0,
+      "enumerated_shortest_coefficients": [
+        -1,
+        0,
+        0
+      ],
+      "minimum_cut": {
+        "minimum_cut_weight": 1.0,
+        "cut_vertices": [
+          1,
+          2,
+          3
+        ],
+        "shortest_coefficients": [
+          -1,
+          0,
+          0
+        ],
+        "shortest_parity": [
+          1,
+          0,
+          0
+        ],
+        "returned_squared_norm": 1.0
+      },
+      "minimum_cut_matches_enumerated_length": true
+    },
+    {
+      "family": "simplex_cancellation",
+      "dimension": 3,
+      "displayed_superbase_is_obtuse": true,
+      "enumerated_shortest_length": 0.9700000000000001,
+      "enumerated_shortest_coefficients": [
+        -1,
+        -1,
+        -1
+      ],
+      "minimum_cut": {
+        "minimum_cut_weight": 0.9409000000000001,
+        "cut_vertices": [
+          3
+        ],
+        "shortest_coefficients": [
+          -1,
+          -1,
+          -1
+        ],
+        "shortest_parity": [
+          1,
+          1,
+          1
+        ],
+        "returned_squared_norm": 0.9409000000000001
+      },
+      "minimum_cut_matches_enumerated_length": true
+    },
+    {
+      "family": "generic_0",
+      "dimension": 3,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 0.9440152064362496,
+      "enumerated_shortest_coefficients": [
+        -1,
+        0,
+        0
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "generic_1",
+      "dimension": 3,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 0.8260994797670496,
+      "enumerated_shortest_coefficients": [
+        -1,
+        0,
+        0
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "adversarial_0",
+      "dimension": 3,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 0.80668712286666,
+      "enumerated_shortest_coefficients": [
+        0,
+        1,
+        -1
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "adversarial_1",
+      "dimension": 3,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 1.017522922497238,
+      "enumerated_shortest_coefficients": [
+        -1,
+        -1,
+        -1
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "needle_D_shell",
+      "dimension": 3,
+      "displayed_superbase_is_obtuse": true,
+      "enumerated_shortest_length": 1.0,
+      "enumerated_shortest_coefficients": [
+        -1,
+        0,
+        0
+      ],
+      "minimum_cut": {
+        "minimum_cut_weight": 1.0,
+        "cut_vertices": [
+          1,
+          2,
+          3
+        ],
+        "shortest_coefficients": [
+          -1,
+          0,
+          0
+        ],
+        "shortest_parity": [
+          1,
+          0,
+          0
+        ],
+        "returned_squared_norm": 1.0
+      },
+      "minimum_cut_matches_enumerated_length": true
+    },
+    {
+      "family": "rectangular",
+      "dimension": 4,
+      "displayed_superbase_is_obtuse": true,
+      "enumerated_shortest_length": 1.0,
+      "enumerated_shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0
+      ],
+      "minimum_cut": {
+        "minimum_cut_weight": 1.0,
+        "cut_vertices": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "shortest_coefficients": [
+          -1,
+          0,
+          0,
+          0
+        ],
+        "shortest_parity": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "returned_squared_norm": 1.0
+      },
+      "minimum_cut_matches_enumerated_length": true
+    },
+    {
+      "family": "simplex_cancellation",
+      "dimension": 4,
+      "displayed_superbase_is_obtuse": true,
+      "enumerated_shortest_length": 0.97,
+      "enumerated_shortest_coefficients": [
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "minimum_cut": {
+        "minimum_cut_weight": 0.9409,
+        "cut_vertices": [
+          4
+        ],
+        "shortest_coefficients": [
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "shortest_parity": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "returned_squared_norm": 0.9408999999999998
+      },
+      "minimum_cut_matches_enumerated_length": true
+    },
+    {
+      "family": "generic_0",
+      "dimension": 4,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 0.8761263148218741,
+      "enumerated_shortest_coefficients": [
+        0,
+        -1,
+        0,
+        0
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "generic_1",
+      "dimension": 4,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 0.9521161485159914,
+      "enumerated_shortest_coefficients": [
+        0,
+        0,
+        0,
+        -1
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "adversarial_0",
+      "dimension": 4,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 0.6464947151954172,
+      "enumerated_shortest_coefficients": [
+        0,
+        0,
+        0,
+        -1
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "adversarial_1",
+      "dimension": 4,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 0.8750654275998362,
+      "enumerated_shortest_coefficients": [
+        0,
+        0,
+        -1,
+        -1
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "needle_D_shell",
+      "dimension": 4,
+      "displayed_superbase_is_obtuse": true,
+      "enumerated_shortest_length": 1.0,
+      "enumerated_shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0
+      ],
+      "minimum_cut": {
+        "minimum_cut_weight": 1.0,
+        "cut_vertices": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "shortest_coefficients": [
+          -1,
+          0,
+          0,
+          0
+        ],
+        "shortest_parity": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "returned_squared_norm": 1.0
+      },
+      "minimum_cut_matches_enumerated_length": true
+    },
+    {
+      "family": "rectangular",
+      "dimension": 5,
+      "displayed_superbase_is_obtuse": true,
+      "enumerated_shortest_length": 1.0,
+      "enumerated_shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "minimum_cut": {
+        "minimum_cut_weight": 1.0,
+        "cut_vertices": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "shortest_coefficients": [
+          -1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "shortest_parity": [
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "returned_squared_norm": 1.0
+      },
+      "minimum_cut_matches_enumerated_length": true
+    },
+    {
+      "family": "simplex_cancellation",
+      "dimension": 5,
+      "displayed_superbase_is_obtuse": true,
+      "enumerated_shortest_length": 0.97,
+      "enumerated_shortest_coefficients": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "minimum_cut": {
+        "minimum_cut_weight": 0.9409,
+        "cut_vertices": [
+          5
+        ],
+        "shortest_coefficients": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "shortest_parity": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "returned_squared_norm": 0.9408999999999998
+      },
+      "minimum_cut_matches_enumerated_length": true
+    },
+    {
+      "family": "generic_0",
+      "dimension": 5,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 0.9352276977025012,
+      "enumerated_shortest_coefficients": [
+        0,
+        0,
+        0,
+        -1,
+        0
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "generic_1",
+      "dimension": 5,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 0.930174373361589,
+      "enumerated_shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "adversarial_0",
+      "dimension": 5,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 0.9648330670742163,
+      "enumerated_shortest_coefficients": [
+        1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "adversarial_1",
+      "dimension": 5,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 0.9950978832161523,
+      "enumerated_shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        -1
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "needle_D_shell",
+      "dimension": 5,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 1.0,
+      "enumerated_shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "rectangular",
+      "dimension": 6,
+      "displayed_superbase_is_obtuse": true,
+      "enumerated_shortest_length": 1.0,
+      "enumerated_shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "minimum_cut": {
+        "minimum_cut_weight": 1.0,
+        "cut_vertices": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "shortest_coefficients": [
+          -1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "shortest_parity": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "returned_squared_norm": 1.0
+      },
+      "minimum_cut_matches_enumerated_length": true
+    },
+    {
+      "family": "simplex_cancellation",
+      "dimension": 6,
+      "displayed_superbase_is_obtuse": true,
+      "enumerated_shortest_length": 0.9700000000000003,
+      "enumerated_shortest_coefficients": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "minimum_cut": {
+        "minimum_cut_weight": 0.9409000000000005,
+        "cut_vertices": [
+          6
+        ],
+        "shortest_coefficients": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "shortest_parity": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "returned_squared_norm": 0.9409000000000004
+      },
+      "minimum_cut_matches_enumerated_length": true
+    },
+    {
+      "family": "generic_0",
+      "dimension": 6,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 0.9444349127728826,
+      "enumerated_shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "generic_1",
+      "dimension": 6,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 0.8503867914858912,
+      "enumerated_shortest_coefficients": [
+        0,
+        -1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "adversarial_0",
+      "dimension": 6,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 0.958078599239209,
+      "enumerated_shortest_coefficients": [
+        0,
+        0,
+        0,
+        2,
+        -1,
+        0
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "adversarial_1",
+      "dimension": 6,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 0.8976955878894918,
+      "enumerated_shortest_coefficients": [
+        1,
+        -1,
+        -1,
+        0,
+        0,
+        -1
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    },
+    {
+      "family": "needle_D_shell",
+      "dimension": 6,
+      "displayed_superbase_is_obtuse": false,
+      "enumerated_shortest_length": 1.0,
+      "enumerated_shortest_coefficients": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "minimum_cut": null,
+      "minimum_cut_matches_enumerated_length": false
+    }
+  ]
+}

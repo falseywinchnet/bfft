@@ -1,0 +1,1303 @@
+{
+  "experiment": "projected_affine_coset_gaussian_contraction",
+  "source_width": 0.46294,
+  "target_width": 0.2367585779899883,
+  "asymptotic_ledger": {
+    "radial_total_sample_exponent": 0.6702549277415175,
+    "radial_renyi2_action_exponent": 0.1967377717615409,
+    "maximum_action_for_half_exponent": 0.026482844020023377,
+    "required_action_saving": 0.17025492774151751
+  },
+  "dimensions": [
+    {
+      "dimension": 4,
+      "cutoff": 2,
+      "enumerated_points": 625,
+      "h": 2,
+      "cosets": 4,
+      "source_width": 0.46294,
+      "target_width": 0.2367585779899883,
+      "contraction": 0.7151390739454605,
+      "summary": {
+        "target_boundary_mass": {
+          "minimum": 3.307605585439439e-06,
+          "mean": 1.27106358072921e-05,
+          "maximum": 2.4655487626253002e-05
+        },
+        "source_boundary_mass": {
+          "minimum": 0.0030094447980644565,
+          "mean": 0.004560702802166302,
+          "maximum": 0.006257059855748466
+        },
+        "hard_transport_image_fraction": {
+          "minimum": 0.47692307692307695,
+          "mean": 0.5563034188034188,
+          "maximum": 0.6444444444444445
+        },
+        "soft_transport_image_fraction": {
+          "minimum": 1.0,
+          "mean": 1.0,
+          "maximum": 1.0
+        },
+        "optimal_bandwidth_factor": {
+          "minimum": 0.19036539387158788,
+          "mean": 0.19036539387158788,
+          "maximum": 0.19036539387158788
+        },
+        "optimal_source_mixture": {
+          "minimum": 0.0,
+          "mean": 0.0,
+          "maximum": 0.0
+        },
+        "hard_transport_log2_renyi2_mass_per_dimension": {
+          "minimum": 0.07172903294080404,
+          "mean": 0.0951651519728346,
+          "maximum": 0.10601351835263749
+        },
+        "baseline_log2_renyi2_mass_per_dimension": {
+          "minimum": 0.07174782938565448,
+          "mean": 0.09518198075892018,
+          "maximum": 0.10603112479508613
+        },
+        "transport_log2_renyi2_mass_per_dimension": {
+          "minimum": 0.06547777233294128,
+          "mean": 0.08854821710760594,
+          "maximum": 0.09954995107156275
+        },
+        "finite_n_action_saved_per_dimension": {
+          "minimum": 0.0062700570527132,
+          "mean": 0.006633763651314227,
+          "maximum": 0.006948964334715236
+        }
+      },
+      "coset_reports": [
+        {
+          "j": 0,
+          "points": 195,
+          "target_boundary_mass": 3.307605585439439e-06,
+          "source_boundary_mass": 0.004012632578123397,
+          "hard_transport_image_fraction": 0.48717948717948717,
+          "soft_transport_image_fraction": 1.0,
+          "optimal_bandwidth_factor": 0.19036539387158788,
+          "optimal_source_mixture": 0.0,
+          "hard_transport_log2_renyi2_mass_per_dimension": 0.09907097939577995,
+          "baseline_log2_renyi2_mass_per_dimension": 0.09908084036947318,
+          "transport_log2_renyi2_mass_per_dimension": 0.09213187603475795,
+          "finite_n_action_saved_per_dimension": 0.006948964334715236,
+          "ladder_reports": [
+            {
+              "steps": 1,
+              "log2_renyi2_mass_per_dimension": 0.09213187603475795,
+              "action_saved_per_dimension": 0.006948964334715236,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.19036539387158788,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 2,
+              "log2_renyi2_mass_per_dimension": 0.09869312098060294,
+              "action_saved_per_dimension": 0.00038771938887024126,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.14770051261777126,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 4,
+              "log2_renyi2_mass_per_dimension": 0.09908081723778617,
+              "action_saved_per_dimension": 2.3131687010462608e-08,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.08891397050194613,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 8,
+              "log2_renyi2_mass_per_dimension": 0.09908084036915311,
+              "action_saved_per_dimension": 3.20062350562408e-13,
+              "source_mixture": 3.683377097021505e-06,
+              "mean_bandwidth_factor": 0.06898648307306074,
+              "image_fraction": 1.0
+            }
+          ]
+        },
+        {
+          "j": 1,
+          "points": 120,
+          "target_boundary_mass": 2.4655487626253002e-05,
+          "source_boundary_mass": 0.0049636739767288905,
+          "hard_transport_image_fraction": 0.6166666666666667,
+          "soft_transport_image_fraction": 1.0,
+          "optimal_bandwidth_factor": 0.19036539387158788,
+          "optimal_source_mixture": 0.0,
+          "hard_transport_log2_renyi2_mass_per_dimension": 0.10601351835263749,
+          "baseline_log2_renyi2_mass_per_dimension": 0.10603112479508613,
+          "transport_log2_renyi2_mass_per_dimension": 0.09954995107156275,
+          "finite_n_action_saved_per_dimension": 0.006481173723523374,
+          "ladder_reports": [
+            {
+              "steps": 1,
+              "log2_renyi2_mass_per_dimension": 0.09954995107156275,
+              "action_saved_per_dimension": 0.006481173723523374,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.19036539387158788,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 2,
+              "log2_renyi2_mass_per_dimension": 0.10564437333693986,
+              "action_saved_per_dimension": 0.0003867514581462549,
+              "source_mixture": 1.4481287673596003e-15,
+              "mean_bandwidth_factor": 0.14770051261777126,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 4,
+              "log2_renyi2_mass_per_dimension": 0.10603069154191698,
+              "action_saved_per_dimension": 4.332531691406077e-07,
+              "source_mixture": 1.3571945750560795e-11,
+              "mean_bandwidth_factor": 0.11459772694961642,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 8,
+              "log2_renyi2_mass_per_dimension": 0.10603112479492645,
+              "action_saved_per_dimension": 1.596707897995248e-13,
+              "source_mixture": 3.493418160152619e-05,
+              "mean_bandwidth_factor": 0.06898648307306074,
+              "image_fraction": 1.0
+            }
+          ]
+        },
+        {
+          "j": 2,
+          "points": 130,
+          "target_boundary_mass": 3.844048802447228e-06,
+          "source_boundary_mass": 0.0030094447980644565,
+          "hard_transport_image_fraction": 0.47692307692307695,
+          "soft_transport_image_fraction": 1.0,
+          "optimal_bandwidth_factor": 0.19036539387158788,
+          "optimal_source_mixture": 0.0,
+          "hard_transport_log2_renyi2_mass_per_dimension": 0.10384707720211686,
+          "baseline_log2_renyi2_mass_per_dimension": 0.10386812848546688,
+          "transport_log2_renyi2_mass_per_dimension": 0.09703326899116178,
+          "finite_n_action_saved_per_dimension": 0.0068348594943051,
+          "ladder_reports": [
+            {
+              "steps": 1,
+              "log2_renyi2_mass_per_dimension": 0.09703326899116178,
+              "action_saved_per_dimension": 0.0068348594943051,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.19036539387158788,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 2,
+              "log2_renyi2_mass_per_dimension": 0.10347551498483386,
+              "action_saved_per_dimension": 0.00039261350063302266,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.14770051261777126,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 4,
+              "log2_renyi2_mass_per_dimension": 0.10386809718140831,
+              "action_saved_per_dimension": 3.1304058562216576e-08,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.08891397050194613,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 8,
+              "log2_renyi2_mass_per_dimension": 0.10386812848510804,
+              "action_saved_per_dimension": 3.588438326742173e-13,
+              "source_mixture": 1.5937924062536352e-05,
+              "mean_bandwidth_factor": 0.06898648307306074,
+              "image_fraction": 1.0
+            }
+          ]
+        },
+        {
+          "j": 3,
+          "points": 180,
+          "target_boundary_mass": 1.9035401215028733e-05,
+          "source_boundary_mass": 0.006257059855748466,
+          "hard_transport_image_fraction": 0.6444444444444445,
+          "soft_transport_image_fraction": 1.0,
+          "optimal_bandwidth_factor": 0.19036539387158788,
+          "optimal_source_mixture": 0.0,
+          "hard_transport_log2_renyi2_mass_per_dimension": 0.07172903294080404,
+          "baseline_log2_renyi2_mass_per_dimension": 0.07174782938565448,
+          "transport_log2_renyi2_mass_per_dimension": 0.06547777233294128,
+          "finite_n_action_saved_per_dimension": 0.0062700570527132,
+          "ladder_reports": [
+            {
+              "steps": 1,
+              "log2_renyi2_mass_per_dimension": 0.06547777233294128,
+              "action_saved_per_dimension": 0.0062700570527132,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.19036539387158788,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 2,
+              "log2_renyi2_mass_per_dimension": 0.07137897967769469,
+              "action_saved_per_dimension": 0.00036884970795978615,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.14770051261777126,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 4,
+              "log2_renyi2_mass_per_dimension": 0.07174725532794393,
+              "action_saved_per_dimension": 5.740577105510396e-07,
+              "source_mixture": 5.193975596415811e-12,
+              "mean_bandwidth_factor": 0.11459772694961642,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 8,
+              "log2_renyi2_mass_per_dimension": 0.07174782938549722,
+              "action_saved_per_dimension": 1.5726821992166363e-13,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.06898648307306074,
+              "image_fraction": 1.0
+            }
+          ]
+        }
+      ],
+      "ladder_summary": {
+        "1": {
+          "log2_renyi2_mass_per_dimension": {
+            "minimum": 0.06547777233294128,
+            "mean": 0.08854821710760594,
+            "maximum": 0.09954995107156275
+          },
+          "action_saved_per_dimension": {
+            "minimum": 0.0062700570527132,
+            "mean": 0.006633763651314227,
+            "maximum": 0.006948964334715236
+          },
+          "source_mixture": {
+            "minimum": 0.0,
+            "mean": 0.0,
+            "maximum": 0.0
+          },
+          "mean_bandwidth_factor": {
+            "minimum": 0.19036539387158788,
+            "mean": 0.19036539387158788,
+            "maximum": 0.19036539387158788
+          },
+          "image_fraction": {
+            "minimum": 1.0,
+            "mean": 1.0,
+            "maximum": 1.0
+          }
+        },
+        "2": {
+          "log2_renyi2_mass_per_dimension": {
+            "minimum": 0.07137897967769469,
+            "mean": 0.09479799724501783,
+            "maximum": 0.10564437333693986
+          },
+          "action_saved_per_dimension": {
+            "minimum": 0.00036884970795978615,
+            "mean": 0.00038398351390232625,
+            "maximum": 0.00039261350063302266
+          },
+          "source_mixture": {
+            "minimum": 0.0,
+            "mean": 3.6203219183990007e-16,
+            "maximum": 1.4481287673596003e-15
+          },
+          "mean_bandwidth_factor": {
+            "minimum": 0.14770051261777126,
+            "mean": 0.14770051261777126,
+            "maximum": 0.14770051261777126
+          },
+          "image_fraction": {
+            "minimum": 1.0,
+            "mean": 1.0,
+            "maximum": 1.0
+          }
+        },
+        "4": {
+          "log2_renyi2_mass_per_dimension": {
+            "minimum": 0.07174725532794393,
+            "mean": 0.09518171532226385,
+            "maximum": 0.10603069154191698
+          },
+          "action_saved_per_dimension": {
+            "minimum": 2.3131687010462608e-08,
+            "mean": 2.654366563160816e-07,
+            "maximum": 5.740577105510396e-07
+          },
+          "source_mixture": {
+            "minimum": 0.0,
+            "mean": 4.6914803367441515e-12,
+            "maximum": 1.3571945750560795e-11
+          },
+          "mean_bandwidth_factor": {
+            "minimum": 0.08891397050194613,
+            "mean": 0.10175584872578128,
+            "maximum": 0.11459772694961642
+          },
+          "image_fraction": {
+            "minimum": 1.0,
+            "mean": 1.0,
+            "maximum": 1.0
+          }
+        },
+        "8": {
+          "log2_renyi2_mass_per_dimension": {
+            "minimum": 0.07174782938549722,
+            "mean": 0.09518198075867121,
+            "maximum": 0.10603112479492645
+          },
+          "action_saved_per_dimension": {
+            "minimum": 1.5726821992166363e-13,
+            "mean": 2.4896129823945343e-13,
+            "maximum": 3.588438326742173e-13
+          },
+          "source_mixture": {
+            "minimum": 0.0,
+            "mean": 1.3638870690271012e-05,
+            "maximum": 3.493418160152619e-05
+          },
+          "mean_bandwidth_factor": {
+            "minimum": 0.06898648307306074,
+            "mean": 0.06898648307306074,
+            "maximum": 0.06898648307306074
+          },
+          "image_fraction": {
+            "minimum": 1.0,
+            "mean": 1.0,
+            "maximum": 1.0
+          }
+        }
+      }
+    },
+    {
+      "dimension": 5,
+      "cutoff": 2,
+      "enumerated_points": 3125,
+      "h": 2,
+      "cosets": 4,
+      "source_width": 0.46294,
+      "target_width": 0.2367585779899883,
+      "contraction": 0.7151390739454605,
+      "summary": {
+        "target_boundary_mass": {
+          "minimum": 0.002517456704903647,
+          "mean": 0.003198517818989139,
+          "maximum": 0.0038017001353228665
+        },
+        "source_boundary_mass": {
+          "minimum": 0.06742974195500143,
+          "mean": 0.0852891943853468,
+          "maximum": 0.10204894228093665
+        },
+        "hard_transport_image_fraction": {
+          "minimum": 0.38064516129032255,
+          "mean": 0.3998719918074757,
+          "maximum": 0.4222222222222222
+        },
+        "soft_transport_image_fraction": {
+          "minimum": 1.0,
+          "mean": 1.0,
+          "maximum": 1.0
+        },
+        "optimal_bandwidth_factor": {
+          "minimum": 0.24535448483964523,
+          "mean": 0.2630728051339434,
+          "maximum": 0.31622776601683794
+        },
+        "optimal_source_mixture": {
+          "minimum": 0.0,
+          "mean": 0.0,
+          "maximum": 0.0
+        },
+        "hard_transport_log2_renyi2_mass_per_dimension": {
+          "minimum": 0.11798148710242566,
+          "mean": 0.17404273226160769,
+          "maximum": 0.23234136554985838
+        },
+        "baseline_log2_renyi2_mass_per_dimension": {
+          "minimum": 0.11859014742020095,
+          "mean": 0.17463519727258742,
+          "maximum": 0.2329195307451057
+        },
+        "transport_log2_renyi2_mass_per_dimension": {
+          "minimum": 0.09831633994746233,
+          "mean": 0.1528672534410008,
+          "maximum": 0.2089393990096626
+        },
+        "finite_n_action_saved_per_dimension": {
+          "minimum": 0.0197554317846928,
+          "mean": 0.021767943831586638,
+          "maximum": 0.023980131735443114
+        }
+      },
+      "coset_reports": [
+        {
+          "j": 0,
+          "points": 945,
+          "target_boundary_mass": 0.0032030997846577837,
+          "source_boundary_mass": 0.10204894228093665,
+          "hard_transport_image_fraction": 0.4222222222222222,
+          "soft_transport_image_fraction": 1.0,
+          "optimal_bandwidth_factor": 0.24535448483964523,
+          "optimal_source_mixture": 0.0,
+          "hard_transport_log2_renyi2_mass_per_dimension": 0.23234136554985838,
+          "baseline_log2_renyi2_mass_per_dimension": 0.2329195307451057,
+          "transport_log2_renyi2_mass_per_dimension": 0.2089393990096626,
+          "finite_n_action_saved_per_dimension": 0.023980131735443114,
+          "ladder_reports": [
+            {
+              "steps": 1,
+              "log2_renyi2_mass_per_dimension": 0.2089393990096626,
+              "action_saved_per_dimension": 0.023980131735443114,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.24535448483964523,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 2,
+              "log2_renyi2_mass_per_dimension": 0.23015867064439677,
+              "action_saved_per_dimension": 0.002760860100708968,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.24535448483964523,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 4,
+              "log2_renyi2_mass_per_dimension": 0.23288894235935578,
+              "action_saved_per_dimension": 3.0588385749949736e-05,
+              "source_mixture": 3.554725097847516e-15,
+              "mean_bandwidth_factor": 0.14770051261777126,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 8,
+              "log2_renyi2_mass_per_dimension": 0.23291950200242362,
+              "action_saved_per_dimension": 2.8742682094936646e-08,
+              "source_mixture": 2.1959330035752884e-11,
+              "mean_bandwidth_factor": 0.11459772694961642,
+              "image_fraction": 1.0
+            }
+          ]
+        },
+        {
+          "j": 1,
+          "points": 620,
+          "target_boundary_mass": 0.002517456704903647,
+          "source_boundary_mass": 0.06742974195500143,
+          "hard_transport_image_fraction": 0.38064516129032255,
+          "soft_transport_image_fraction": 1.0,
+          "optimal_bandwidth_factor": 0.24535448483964523,
+          "optimal_source_mixture": 0.0,
+          "hard_transport_log2_renyi2_mass_per_dimension": 0.12667245516715106,
+          "baseline_log2_renyi2_mass_per_dimension": 0.12727036312686926,
+          "transport_log2_renyi2_mass_per_dimension": 0.10751493134217645,
+          "finite_n_action_saved_per_dimension": 0.0197554317846928,
+          "ladder_reports": [
+            {
+              "steps": 1,
+              "log2_renyi2_mass_per_dimension": 0.10751493134217645,
+              "action_saved_per_dimension": 0.0197554317846928,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.24535448483964523,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 2,
+              "log2_renyi2_mass_per_dimension": 0.12469087965082998,
+              "action_saved_per_dimension": 0.002579483476039272,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.24535448483964523,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 4,
+              "log2_renyi2_mass_per_dimension": 0.1272414668218521,
+              "action_saved_per_dimension": 2.8896305017152665e-05,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.14770051261777126,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 8,
+              "log2_renyi2_mass_per_dimension": 0.1272703361818275,
+              "action_saved_per_dimension": 2.6945041736128016e-08,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.11459772694961642,
+              "image_fraction": 1.0
+            }
+          ]
+        },
+        {
+          "j": 2,
+          "points": 630,
+          "target_boundary_mass": 0.0038017001353228665,
+          "source_boundary_mass": 0.07145883967723707,
+          "hard_transport_image_fraction": 0.4095238095238095,
+          "soft_transport_image_fraction": 1.0,
+          "optimal_bandwidth_factor": 0.31622776601683794,
+          "optimal_source_mixture": 0.0,
+          "hard_transport_log2_renyi2_mass_per_dimension": 0.21917562122699566,
+          "baseline_log2_renyi2_mass_per_dimension": 0.21976074779817384,
+          "transport_log2_renyi2_mass_per_dimension": 0.1966983434647018,
+          "finite_n_action_saved_per_dimension": 0.023062404333472012,
+          "ladder_reports": [
+            {
+              "steps": 1,
+              "log2_renyi2_mass_per_dimension": 0.1966983434647018,
+              "action_saved_per_dimension": 0.023062404333472012,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.31622776601683794,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 2,
+              "log2_renyi2_mass_per_dimension": 0.2167642305743408,
+              "action_saved_per_dimension": 0.002996517223833027,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.24535448483964523,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 4,
+              "log2_renyi2_mass_per_dimension": 0.21973123927324473,
+              "action_saved_per_dimension": 2.9508524929095884e-05,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.14770051261777126,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 8,
+              "log2_renyi2_mass_per_dimension": 0.21976071937847708,
+              "action_saved_per_dimension": 2.8419696745826567e-08,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.11459772694961642,
+              "image_fraction": 1.0
+            }
+          ]
+        },
+        {
+          "j": 3,
+          "points": 930,
+          "target_boundary_mass": 0.00327181465107226,
+          "source_boundary_mass": 0.10021925362821205,
+          "hard_transport_image_fraction": 0.3870967741935484,
+          "soft_transport_image_fraction": 1.0,
+          "optimal_bandwidth_factor": 0.24535448483964523,
+          "optimal_source_mixture": 0.0,
+          "hard_transport_log2_renyi2_mass_per_dimension": 0.11798148710242566,
+          "baseline_log2_renyi2_mass_per_dimension": 0.11859014742020095,
+          "transport_log2_renyi2_mass_per_dimension": 0.09831633994746233,
+          "finite_n_action_saved_per_dimension": 0.020273807472738627,
+          "ladder_reports": [
+            {
+              "steps": 1,
+              "log2_renyi2_mass_per_dimension": 0.09831633994746233,
+              "action_saved_per_dimension": 0.020273807472738627,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.24535448483964523,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 2,
+              "log2_renyi2_mass_per_dimension": 0.11625726902869185,
+              "action_saved_per_dimension": 0.0023328783915090977,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.24535448483964523,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 4,
+              "log2_renyi2_mass_per_dimension": 0.11856041791077411,
+              "action_saved_per_dimension": 2.972950942683977e-05,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.14770051261777126,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 8,
+              "log2_renyi2_mass_per_dimension": 0.11859011993886233,
+              "action_saved_per_dimension": 2.748133862717583e-08,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.11459772694961642,
+              "image_fraction": 1.0
+            }
+          ]
+        }
+      ],
+      "ladder_summary": {
+        "1": {
+          "log2_renyi2_mass_per_dimension": {
+            "minimum": 0.09831633994746233,
+            "mean": 0.1528672534410008,
+            "maximum": 0.2089393990096626
+          },
+          "action_saved_per_dimension": {
+            "minimum": 0.0197554317846928,
+            "mean": 0.021767943831586638,
+            "maximum": 0.023980131735443114
+          },
+          "source_mixture": {
+            "minimum": 0.0,
+            "mean": 0.0,
+            "maximum": 0.0
+          },
+          "mean_bandwidth_factor": {
+            "minimum": 0.24535448483964523,
+            "mean": 0.2630728051339434,
+            "maximum": 0.31622776601683794
+          },
+          "image_fraction": {
+            "minimum": 1.0,
+            "mean": 1.0,
+            "maximum": 1.0
+          }
+        },
+        "2": {
+          "log2_renyi2_mass_per_dimension": {
+            "minimum": 0.11625726902869185,
+            "mean": 0.17196776247456486,
+            "maximum": 0.23015867064439677
+          },
+          "action_saved_per_dimension": {
+            "minimum": 0.0023328783915090977,
+            "mean": 0.0026674347980225914,
+            "maximum": 0.002996517223833027
+          },
+          "source_mixture": {
+            "minimum": 0.0,
+            "mean": 0.0,
+            "maximum": 0.0
+          },
+          "mean_bandwidth_factor": {
+            "minimum": 0.24535448483964523,
+            "mean": 0.24535448483964523,
+            "maximum": 0.24535448483964523
+          },
+          "image_fraction": {
+            "minimum": 1.0,
+            "mean": 1.0,
+            "maximum": 1.0
+          }
+        },
+        "4": {
+          "log2_renyi2_mass_per_dimension": {
+            "minimum": 0.11856041791077411,
+            "mean": 0.17460551659130666,
+            "maximum": 0.23288894235935578
+          },
+          "action_saved_per_dimension": {
+            "minimum": 2.8896305017152665e-05,
+            "mean": 2.9680681280759513e-05,
+            "maximum": 3.0588385749949736e-05
+          },
+          "source_mixture": {
+            "minimum": 0.0,
+            "mean": 8.88681274461879e-16,
+            "maximum": 3.554725097847516e-15
+          },
+          "mean_bandwidth_factor": {
+            "minimum": 0.14770051261777126,
+            "mean": 0.14770051261777126,
+            "maximum": 0.14770051261777126
+          },
+          "image_fraction": {
+            "minimum": 1.0,
+            "mean": 1.0,
+            "maximum": 1.0
+          }
+        },
+        "8": {
+          "log2_renyi2_mass_per_dimension": {
+            "minimum": 0.11859011993886233,
+            "mean": 0.17463516937539764,
+            "maximum": 0.23291950200242362
+          },
+          "action_saved_per_dimension": {
+            "minimum": 2.6945041736128016e-08,
+            "mean": 2.7897189801016766e-08,
+            "maximum": 2.8742682094936646e-08
+          },
+          "source_mixture": {
+            "minimum": 0.0,
+            "mean": 5.489832508938221e-12,
+            "maximum": 2.1959330035752884e-11
+          },
+          "mean_bandwidth_factor": {
+            "minimum": 0.11459772694961642,
+            "mean": 0.11459772694961642,
+            "maximum": 0.11459772694961642
+          },
+          "image_fraction": {
+            "minimum": 1.0,
+            "mean": 1.0,
+            "maximum": 1.0
+          }
+        }
+      }
+    },
+    {
+      "dimension": 6,
+      "cutoff": 2,
+      "enumerated_points": 15625,
+      "h": 3,
+      "cosets": 8,
+      "source_width": 0.46294,
+      "target_width": 0.2367585779899883,
+      "contraction": 0.7151390739454605,
+      "summary": {
+        "target_boundary_mass": {
+          "minimum": 0.003710167001550197,
+          "mean": 0.004171859991078029,
+          "maximum": 0.004926297022819414
+        },
+        "source_boundary_mass": {
+          "minimum": 0.09493327783420266,
+          "mean": 0.11441816904969282,
+          "maximum": 0.1330603466713906
+        },
+        "hard_transport_image_fraction": {
+          "minimum": 0.5601731601731602,
+          "mean": 0.5718405415339377,
+          "maximum": 0.5836477987421383
+        },
+        "soft_transport_image_fraction": {
+          "minimum": 1.0,
+          "mean": 1.0,
+          "maximum": 1.0
+        },
+        "optimal_bandwidth_factor": {
+          "minimum": 0.31622776601683794,
+          "mean": 0.31622776601683794,
+          "maximum": 0.31622776601683794
+        },
+        "optimal_source_mixture": {
+          "minimum": 0.0,
+          "mean": 0.0,
+          "maximum": 0.0
+        },
+        "hard_transport_log2_renyi2_mass_per_dimension": {
+          "minimum": 0.11194338453043771,
+          "mean": 0.1611832810603624,
+          "maximum": 0.24955201568657992
+        },
+        "baseline_log2_renyi2_mass_per_dimension": {
+          "minimum": 0.11195764735899491,
+          "mean": 0.16119297244085695,
+          "maximum": 0.24955965123704996
+        },
+        "transport_log2_renyi2_mass_per_dimension": {
+          "minimum": 0.0988643511296921,
+          "mean": 0.14665768607554522,
+          "maximum": 0.23264495202290797
+        },
+        "finite_n_action_saved_per_dimension": {
+          "minimum": 0.012799756910544033,
+          "mean": 0.014535286365311748,
+          "maximum": 0.01805451364278219
+        }
+      },
+      "coset_reports": [
+        {
+          "j": 0,
+          "points": 2385,
+          "target_boundary_mass": 0.0038704698965097615,
+          "source_boundary_mass": 0.1330603466713906,
+          "hard_transport_image_fraction": 0.5748427672955975,
+          "soft_transport_image_fraction": 1.0,
+          "optimal_bandwidth_factor": 0.31622776601683794,
+          "optimal_source_mixture": 0.0,
+          "hard_transport_log2_renyi2_mass_per_dimension": 0.24955201568657992,
+          "baseline_log2_renyi2_mass_per_dimension": 0.24955965123704996,
+          "transport_log2_renyi2_mass_per_dimension": 0.23264495202290797,
+          "finite_n_action_saved_per_dimension": 0.01691469921414199,
+          "ladder_reports": [
+            {
+              "steps": 1,
+              "log2_renyi2_mass_per_dimension": 0.23264495202290797,
+              "action_saved_per_dimension": 0.01691469921414199,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.31622776601683794,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 2,
+              "log2_renyi2_mass_per_dimension": 0.24902562999978628,
+              "action_saved_per_dimension": 0.0005340212372636901,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.24535448483964523,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 4,
+              "log2_renyi2_mass_per_dimension": 0.2495595741202528,
+              "action_saved_per_dimension": 7.71167971734586e-08,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.14770051261777126,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 8,
+              "log2_renyi2_mass_per_dimension": 0.24955965123630325,
+              "action_saved_per_dimension": 7.467187180392574e-13,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.11459772694961642,
+              "image_fraction": 1.0
+            }
+          ]
+        },
+        {
+          "j": 1,
+          "points": 2340,
+          "target_boundary_mass": 0.003915077900188859,
+          "source_boundary_mass": 0.13058754166546171,
+          "hard_transport_image_fraction": 0.5709401709401709,
+          "soft_transport_image_fraction": 1.0,
+          "optimal_bandwidth_factor": 0.31622776601683794,
+          "optimal_source_mixture": 0.0,
+          "hard_transport_log2_renyi2_mass_per_dimension": 0.13733433470722164,
+          "baseline_log2_renyi2_mass_per_dimension": 0.137337331031481,
+          "transport_log2_renyi2_mass_per_dimension": 0.12452587018986809,
+          "finite_n_action_saved_per_dimension": 0.012811460841612898,
+          "ladder_reports": [
+            {
+              "steps": 1,
+              "log2_renyi2_mass_per_dimension": 0.12452587018986809,
+              "action_saved_per_dimension": 0.012811460841612898,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.31622776601683794,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 2,
+              "log2_renyi2_mass_per_dimension": 0.13693361211872218,
+              "action_saved_per_dimension": 0.0004037189127587982,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.24535448483964523,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 4,
+              "log2_renyi2_mass_per_dimension": 0.13733728906997572,
+              "action_saved_per_dimension": 4.196150526252968e-08,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.14770051261777126,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 8,
+              "log2_renyi2_mass_per_dimension": 0.13733733103113954,
+              "action_saved_per_dimension": 3.4143187486494e-13,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.11459772694961642,
+              "image_fraction": 1.0
+            }
+          ]
+        },
+        {
+          "j": 2,
+          "points": 2310,
+          "target_boundary_mass": 0.004648630787169542,
+          "source_boundary_mass": 0.131013479873532,
+          "hard_transport_image_fraction": 0.5601731601731602,
+          "soft_transport_image_fraction": 1.0,
+          "optimal_bandwidth_factor": 0.31622776601683794,
+          "optimal_source_mixture": 0.0,
+          "hard_transport_log2_renyi2_mass_per_dimension": 0.12054866570686817,
+          "baseline_log2_renyi2_mass_per_dimension": 0.12055528447509,
+          "transport_log2_renyi2_mass_per_dimension": 0.10775552756454596,
+          "finite_n_action_saved_per_dimension": 0.012799756910544033,
+          "ladder_reports": [
+            {
+              "steps": 1,
+              "log2_renyi2_mass_per_dimension": 0.10775552756454596,
+              "action_saved_per_dimension": 0.012799756910544033,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.31622776601683794,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 2,
+              "log2_renyi2_mass_per_dimension": 0.12010765159641322,
+              "action_saved_per_dimension": 0.0004476328786767753,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.24535448483964523,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 4,
+              "log2_renyi2_mass_per_dimension": 0.12055522415592099,
+              "action_saved_per_dimension": 6.031916900728852e-08,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.14770051261777126,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 8,
+              "log2_renyi2_mass_per_dimension": 0.1205552844745528,
+              "action_saved_per_dimension": 5.371879294688966e-13,
+              "source_mixture": 1.7472622736375007e-05,
+              "mean_bandwidth_factor": 0.11459772694961642,
+              "image_fraction": 1.0
+            }
+          ]
+        },
+        {
+          "j": 3,
+          "points": 2340,
+          "target_boundary_mass": 0.0044518095782299615,
+          "source_boundary_mass": 0.13251264315542216,
+          "hard_transport_image_fraction": 0.564957264957265,
+          "soft_transport_image_fraction": 1.0,
+          "optimal_bandwidth_factor": 0.31622776601683794,
+          "optimal_source_mixture": 0.0,
+          "hard_transport_log2_renyi2_mass_per_dimension": 0.14324642970863224,
+          "baseline_log2_renyi2_mass_per_dimension": 0.14325313875073764,
+          "transport_log2_renyi2_mass_per_dimension": 0.12942863593769002,
+          "finite_n_action_saved_per_dimension": 0.013824502813047607,
+          "ladder_reports": [
+            {
+              "steps": 1,
+              "log2_renyi2_mass_per_dimension": 0.12942863593769002,
+              "action_saved_per_dimension": 0.013824502813047607,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.31622776601683794,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 2,
+              "log2_renyi2_mass_per_dimension": 0.1428064125047376,
+              "action_saved_per_dimension": 0.00044672624600002064,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.24535448483964523,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 4,
+              "log2_renyi2_mass_per_dimension": 0.14325307474854823,
+              "action_saved_per_dimension": 6.400218940919335e-08,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.14770051261777126,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 8,
+              "log2_renyi2_mass_per_dimension": 0.14325313875012086,
+              "action_saved_per_dimension": 6.167663828678322e-13,
+              "source_mixture": 3.654061372381735e-06,
+              "mean_bandwidth_factor": 0.11459772694961642,
+              "image_fraction": 1.0
+            }
+          ]
+        },
+        {
+          "j": 4,
+          "points": 1590,
+          "target_boundary_mass": 0.004926297022819414,
+          "source_boundary_mass": 0.09979987328778639,
+          "hard_transport_image_fraction": 0.5836477987421383,
+          "soft_transport_image_fraction": 1.0,
+          "optimal_bandwidth_factor": 0.31622776601683794,
+          "optimal_source_mixture": 0.0,
+          "hard_transport_log2_renyi2_mass_per_dimension": 0.23405053874073325,
+          "baseline_log2_renyi2_mass_per_dimension": 0.23406855091868475,
+          "transport_log2_renyi2_mass_per_dimension": 0.21601403727590257,
+          "finite_n_action_saved_per_dimension": 0.01805451364278219,
+          "ladder_reports": [
+            {
+              "steps": 1,
+              "log2_renyi2_mass_per_dimension": 0.21601403727590257,
+              "action_saved_per_dimension": 0.01805451364278219,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.31622776601683794,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 2,
+              "log2_renyi2_mass_per_dimension": 0.23349471251172482,
+              "action_saved_per_dimension": 0.0005738384069599437,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.24535448483964523,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 4,
+              "log2_renyi2_mass_per_dimension": 0.23406848064713506,
+              "action_saved_per_dimension": 7.027154969617576e-08,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.14770051261777126,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 8,
+              "log2_renyi2_mass_per_dimension": 0.2340685509179735,
+              "action_saved_per_dimension": 7.112674647303723e-13,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.11459772694961642,
+              "image_fraction": 1.0
+            }
+          ]
+        },
+        {
+          "j": 5,
+          "points": 1560,
+          "target_boundary_mass": 0.0039398996907002454,
+          "source_boundary_mass": 0.09681582709016723,
+          "hard_transport_image_fraction": 0.5756410256410256,
+          "soft_transport_image_fraction": 1.0,
+          "optimal_bandwidth_factor": 0.31622776601683794,
+          "optimal_source_mixture": 0.0,
+          "hard_transport_log2_renyi2_mass_per_dimension": 0.14284416922573875,
+          "baseline_log2_renyi2_mass_per_dimension": 0.14284973728400588,
+          "transport_log2_renyi2_mass_per_dimension": 0.12886045675002178,
+          "finite_n_action_saved_per_dimension": 0.013989280533984082,
+          "ladder_reports": [
+            {
+              "steps": 1,
+              "log2_renyi2_mass_per_dimension": 0.12886045675002178,
+              "action_saved_per_dimension": 0.013989280533984082,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.31622776601683794,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 2,
+              "log2_renyi2_mass_per_dimension": 0.14239907104572802,
+              "action_saved_per_dimension": 0.00045066623827785595,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.24535448483964523,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 4,
+              "log2_renyi2_mass_per_dimension": 0.14284969391091495,
+              "action_saved_per_dimension": 4.3373090906895614e-08,
+              "source_mixture": 2.0721243612981635e-11,
+              "mean_bandwidth_factor": 0.14770051261777126,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 8,
+              "log2_renyi2_mass_per_dimension": 0.14284973728363445,
+              "action_saved_per_dimension": 3.714106078964746e-13,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.11459772694961642,
+              "image_fraction": 1.0
+            }
+          ]
+        },
+        {
+          "j": 6,
+          "points": 1540,
+          "target_boundary_mass": 0.003912528051456251,
+          "source_boundary_mass": 0.09493327783420266,
+          "hard_transport_image_fraction": 0.5727272727272728,
+          "soft_transport_image_fraction": 1.0,
+          "optimal_bandwidth_factor": 0.31622776601683794,
+          "optimal_source_mixture": 0.0,
+          "hard_transport_log2_renyi2_mass_per_dimension": 0.11194338453043771,
+          "baseline_log2_renyi2_mass_per_dimension": 0.11195764735899491,
+          "transport_log2_renyi2_mass_per_dimension": 0.0988643511296921,
+          "finite_n_action_saved_per_dimension": 0.013093296229302817,
+          "ladder_reports": [
+            {
+              "steps": 1,
+              "log2_renyi2_mass_per_dimension": 0.0988643511296921,
+              "action_saved_per_dimension": 0.013093296229302817,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.31622776601683794,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 2,
+              "log2_renyi2_mass_per_dimension": 0.1114975393428058,
+              "action_saved_per_dimension": 0.0004601080161890988,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.24535448483964523,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 4,
+              "log2_renyi2_mass_per_dimension": 0.1119575937035624,
+              "action_saved_per_dimension": 5.365543250754681e-08,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.14770051261777126,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 8,
+              "log2_renyi2_mass_per_dimension": 0.11195764735850787,
+              "action_saved_per_dimension": 4.870409570737606e-13,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.11459772694961642,
+              "image_fraction": 1.0
+            }
+          ]
+        },
+        {
+          "j": 7,
+          "points": 1560,
+          "target_boundary_mass": 0.003710167001550197,
+          "source_boundary_mass": 0.09662236281957973,
+          "hard_transport_image_fraction": 0.5717948717948718,
+          "soft_transport_image_fraction": 1.0,
+          "optimal_bandwidth_factor": 0.31622776601683794,
+          "optimal_source_mixture": 0.0,
+          "hard_transport_log2_renyi2_mass_per_dimension": 0.1499467101766875,
+          "baseline_log2_renyi2_mass_per_dimension": 0.14996243847081156,
+          "transport_log2_renyi2_mass_per_dimension": 0.13516765773373318,
+          "finite_n_action_saved_per_dimension": 0.014794780737078355,
+          "ladder_reports": [
+            {
+              "steps": 1,
+              "log2_renyi2_mass_per_dimension": 0.13516765773373318,
+              "action_saved_per_dimension": 0.014794780737078355,
+              "source_mixture": 0.0,
+              "mean_bandwidth_factor": 0.31622776601683794,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 2,
+              "log2_renyi2_mass_per_dimension": 0.14946953412978328,
+              "action_saved_per_dimension": 0.0004929043410282787,
+              "source_mixture": 5.5795550847309286e-15,
+              "mean_bandwidth_factor": 0.24535448483964523,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 4,
+              "log2_renyi2_mass_per_dimension": 0.1499623784020747,
+              "action_saved_per_dimension": 6.006873686911745e-08,
+              "source_mixture": 7.920475043981796e-12,
+              "mean_bandwidth_factor": 0.14770051261777126,
+              "image_fraction": 1.0
+            },
+            {
+              "steps": 8,
+              "log2_renyi2_mass_per_dimension": 0.14996243847021118,
+              "action_saved_per_dimension": 6.003755172566459e-13,
+              "source_mixture": 3.4362854729911114e-07,
+              "mean_bandwidth_factor": 0.11459772694961642,
+              "image_fraction": 1.0
+            }
+          ]
+        }
+      ],
+      "ladder_summary": {
+        "1": {
+          "log2_renyi2_mass_per_dimension": {
+            "minimum": 0.0988643511296921,
+            "mean": 0.14665768607554522,
+            "maximum": 0.23264495202290797
+          },
+          "action_saved_per_dimension": {
+            "minimum": 0.012799756910544033,
+            "mean": 0.014535286365311748,
+            "maximum": 0.01805451364278219
+          },
+          "source_mixture": {
+            "minimum": 0.0,
+            "mean": 0.0,
+            "maximum": 0.0
+          },
+          "mean_bandwidth_factor": {
+            "minimum": 0.31622776601683794,
+            "mean": 0.31622776601683794,
+            "maximum": 0.31622776601683794
+          },
+          "image_fraction": {
+            "minimum": 1.0,
+            "mean": 1.0,
+            "maximum": 1.0
+          }
+        },
+        "2": {
+          "log2_renyi2_mass_per_dimension": {
+            "minimum": 0.1114975393428058,
+            "mean": 0.16071677040621263,
+            "maximum": 0.24902562999978628
+          },
+          "action_saved_per_dimension": {
+            "minimum": 0.0004037189127587982,
+            "mean": 0.0004762020346443077,
+            "maximum": 0.0005738384069599437
+          },
+          "source_mixture": {
+            "minimum": 0.0,
+            "mean": 6.974443855913661e-16,
+            "maximum": 5.5795550847309286e-15
+          },
+          "mean_bandwidth_factor": {
+            "minimum": 0.24535448483964523,
+            "mean": 0.24535448483964523,
+            "maximum": 0.24535448483964523
+          },
+          "image_fraction": {
+            "minimum": 1.0,
+            "mean": 1.0,
+            "maximum": 1.0
+          }
+        },
+        "4": {
+          "log2_renyi2_mass_per_dimension": {
+            "minimum": 0.1119575937035624,
+            "mean": 0.1611929135947981,
+            "maximum": 0.2495595741202528
+          },
+          "action_saved_per_dimension": {
+            "minimum": 4.196150526252968e-08,
+            "mean": 5.884605885402573e-08,
+            "maximum": 7.71167971734586e-08
+          },
+          "source_mixture": {
+            "minimum": 0.0,
+            "mean": 3.580214832120429e-12,
+            "maximum": 2.0721243612981635e-11
+          },
+          "mean_bandwidth_factor": {
+            "minimum": 0.14770051261777126,
+            "mean": 0.14770051261777126,
+            "maximum": 0.14770051261777126
+          },
+          "image_fraction": {
+            "minimum": 1.0,
+            "mean": 1.0,
+            "maximum": 1.0
+          }
+        },
+        "8": {
+          "log2_renyi2_mass_per_dimension": {
+            "minimum": 0.11195764735850787,
+            "mean": 0.16119297244030542,
+            "maximum": 0.24955965123630325
+          },
+          "action_saved_per_dimension": {
+            "minimum": 3.4143187486494e-13,
+            "mean": 5.515249315247725e-13,
+            "maximum": 7.467187180392574e-13
+          },
+          "source_mixture": {
+            "minimum": 0.0,
+            "mean": 2.6837890820069817e-06,
+            "maximum": 1.7472622736375007e-05
+          },
+          "mean_bandwidth_factor": {
+            "minimum": 0.11459772694961642,
+            "mean": 0.11459772694961642,
+            "maximum": 0.11459772694961642
+          },
+          "image_fraction": {
+            "minimum": 1.0,
+            "mean": 1.0,
+            "maximum": 1.0
+          }
+        }
+      }
+    }
+  ]
+}

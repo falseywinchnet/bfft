@@ -1,0 +1,1613 @@
+{
+  "runtime_seconds": 22.009377002716064,
+  "config": {
+    "out": "experiments/fourier_eikonal_transport/results",
+    "seeds": 40,
+    "radii": 24,
+    "angles": 96,
+    "views": 5,
+    "noise": 0.1
+  },
+  "runs": [
+    {
+      "seed": 0,
+      "model": "direct_fusion",
+      "nmse": 0.0850331421922833,
+      "missing_nmse": 0.9999999999999052,
+      "complex_correlation": 0.9565416565640296,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 0,
+      "model": "radial_fill",
+      "nmse": 0.22798354121455666,
+      "missing_nmse": 2.7254357950831314,
+      "complex_correlation": 0.88695046889212,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 0,
+      "model": "isotropic_atlas",
+      "nmse": 0.012454910383767743,
+      "missing_nmse": 0.08144571275551948,
+      "complex_correlation": 0.9937824374867049,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 0,
+      "model": "shuffled_metric",
+      "nmse": 0.017767102471029493,
+      "missing_nmse": 0.17163622902870954,
+      "complex_correlation": 0.9911700669592269,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 0,
+      "model": "eikonal_atlas",
+      "nmse": 0.010468686533556135,
+      "missing_nmse": 0.0895173162234054,
+      "complex_correlation": 0.9947658432644111,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 1,
+      "model": "direct_fusion",
+      "nmse": 0.009384179164430266,
+      "missing_nmse": 0.999999999998275,
+      "complex_correlation": 0.995300149932895,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 1,
+      "model": "radial_fill",
+      "nmse": 0.12895572035717992,
+      "missing_nmse": 17.798486340403475,
+      "complex_correlation": 0.9400989802963008,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 1,
+      "model": "isotropic_atlas",
+      "nmse": 0.024682002340520804,
+      "missing_nmse": 0.8661550193116031,
+      "complex_correlation": 0.9875836018389028,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 1,
+      "model": "shuffled_metric",
+      "nmse": 0.009289213338367892,
+      "missing_nmse": 0.8369403088161037,
+      "complex_correlation": 0.9953447976476394,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 1,
+      "model": "eikonal_atlas",
+      "nmse": 0.007484168799537372,
+      "missing_nmse": 0.6288490736153268,
+      "complex_correlation": 0.9962682499084331,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 2,
+      "model": "direct_fusion",
+      "nmse": 0.004840126037993231,
+      "missing_nmse": 0.9999999999967685,
+      "complex_correlation": 0.9975825749208701,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 2,
+      "model": "radial_fill",
+      "nmse": 0.11859394523230063,
+      "missing_nmse": 42.824654597617126,
+      "complex_correlation": 0.9448319466806074,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 2,
+      "model": "isotropic_atlas",
+      "nmse": 0.05640764157369698,
+      "missing_nmse": 1.138409846372912,
+      "complex_correlation": 0.9726990860276247,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 2,
+      "model": "shuffled_metric",
+      "nmse": 0.010639588186675146,
+      "missing_nmse": 0.9597922923598697,
+      "complex_correlation": 0.9946817829729667,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 2,
+      "model": "eikonal_atlas",
+      "nmse": 0.005149027793499278,
+      "missing_nmse": 1.0357392686239117,
+      "complex_correlation": 0.9974287029982112,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 3,
+      "model": "direct_fusion",
+      "nmse": 0.1590197502354444,
+      "missing_nmse": 0.999999999999917,
+      "complex_correlation": 0.9170537766332184,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 3,
+      "model": "radial_fill",
+      "nmse": 0.40894566289137013,
+      "missing_nmse": 2.5929229149582533,
+      "complex_correlation": 0.791599523850983,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 3,
+      "model": "isotropic_atlas",
+      "nmse": 0.02521516983588069,
+      "missing_nmse": 0.12166227878462266,
+      "complex_correlation": 0.9873269375628102,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 3,
+      "model": "shuffled_metric",
+      "nmse": 0.0388168071215721,
+      "missing_nmse": 0.2131680168482648,
+      "complex_correlation": 0.9807814086092074,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 3,
+      "model": "eikonal_atlas",
+      "nmse": 0.021719401065192805,
+      "missing_nmse": 0.12100544001155644,
+      "complex_correlation": 0.9893181768046536,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 4,
+      "model": "direct_fusion",
+      "nmse": 0.17127911228980872,
+      "missing_nmse": 0.9999999999999295,
+      "complex_correlation": 0.9103440952166302,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 4,
+      "model": "radial_fill",
+      "nmse": 0.22303608373668557,
+      "missing_nmse": 1.3060591393185768,
+      "complex_correlation": 0.883597882759237,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 4,
+      "model": "isotropic_atlas",
+      "nmse": 0.04045174498622716,
+      "missing_nmse": 0.16231517819740676,
+      "complex_correlation": 0.9813140425230465,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 4,
+      "model": "shuffled_metric",
+      "nmse": 0.05128557194609605,
+      "missing_nmse": 0.25271362946880577,
+      "complex_correlation": 0.9741327631697629,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 4,
+      "model": "eikonal_atlas",
+      "nmse": 0.03103281386621277,
+      "missing_nmse": 0.15279681209553383,
+      "complex_correlation": 0.984362966598193,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 5,
+      "model": "direct_fusion",
+      "nmse": 0.03753085600170033,
+      "missing_nmse": 0.999999999999671,
+      "complex_correlation": 0.9810597724859599,
+      "missing_fraction": 0.10503472222222222
+    },
+    {
+      "seed": 5,
+      "model": "radial_fill",
+      "nmse": 0.11090129419182751,
+      "missing_nmse": 3.0773425206104843,
+      "complex_correlation": 0.9459096040400954,
+      "missing_fraction": 0.10503472222222222
+    },
+    {
+      "seed": 5,
+      "model": "isotropic_atlas",
+      "nmse": 0.8603647204639588,
+      "missing_nmse": 1.1593956631738587,
+      "complex_correlation": 0.7491874616496346,
+      "missing_fraction": 0.10503472222222222
+    },
+    {
+      "seed": 5,
+      "model": "shuffled_metric",
+      "nmse": 0.31147842012320365,
+      "missing_nmse": 2.9481458084449894,
+      "complex_correlation": 0.8718283806984668,
+      "missing_fraction": 0.10503472222222222
+    },
+    {
+      "seed": 5,
+      "model": "eikonal_atlas",
+      "nmse": 0.025024813762578254,
+      "missing_nmse": 0.6229220875026754,
+      "complex_correlation": 0.987611810422943,
+      "missing_fraction": 0.10503472222222222
+    },
+    {
+      "seed": 6,
+      "model": "direct_fusion",
+      "nmse": 0.012456346153814364,
+      "missing_nmse": 0.9999999999995478,
+      "complex_correlation": 0.9937586710352478,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 6,
+      "model": "radial_fill",
+      "nmse": 0.08732070454236225,
+      "missing_nmse": 8.313733668510077,
+      "complex_correlation": 0.9584049066956776,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 6,
+      "model": "isotropic_atlas",
+      "nmse": 0.0159125906025903,
+      "missing_nmse": 0.6476231402600565,
+      "complex_correlation": 0.9929603713195235,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 6,
+      "model": "shuffled_metric",
+      "nmse": 0.018322998696609763,
+      "missing_nmse": 1.2197531985428733,
+      "complex_correlation": 0.990802570029579,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 6,
+      "model": "eikonal_atlas",
+      "nmse": 0.008400478210349711,
+      "missing_nmse": 0.5743957754400426,
+      "complex_correlation": 0.9958079711172759,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 7,
+      "model": "direct_fusion",
+      "nmse": 0.20020122138370222,
+      "missing_nmse": 0.9999999999999459,
+      "complex_correlation": 0.8943218252456646,
+      "missing_fraction": 0.0842013888888889
+    },
+    {
+      "seed": 7,
+      "model": "radial_fill",
+      "nmse": 0.380950133148745,
+      "missing_nmse": 1.9131473404632144,
+      "complex_correlation": 0.7980632757084044,
+      "missing_fraction": 0.0842013888888889
+    },
+    {
+      "seed": 7,
+      "model": "isotropic_atlas",
+      "nmse": 0.019210765837987552,
+      "missing_nmse": 0.0625702383371242,
+      "complex_correlation": 0.9903529208632683,
+      "missing_fraction": 0.0842013888888889
+    },
+    {
+      "seed": 7,
+      "model": "shuffled_metric",
+      "nmse": 0.030534776149129417,
+      "missing_nmse": 0.12325978751960372,
+      "complex_correlation": 0.985094607303267,
+      "missing_fraction": 0.0842013888888889
+    },
+    {
+      "seed": 7,
+      "model": "eikonal_atlas",
+      "nmse": 0.013318835076683532,
+      "missing_nmse": 0.050487161214151165,
+      "complex_correlation": 0.9933343964751291,
+      "missing_fraction": 0.0842013888888889
+    },
+    {
+      "seed": 8,
+      "model": "direct_fusion",
+      "nmse": 0.015769127484698393,
+      "missing_nmse": 0.9999999999992539,
+      "complex_correlation": 0.9920857996308983,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 8,
+      "model": "radial_fill",
+      "nmse": 0.14238267851054198,
+      "missing_nmse": 10.34827716427079,
+      "complex_correlation": 0.9329290875255273,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 8,
+      "model": "isotropic_atlas",
+      "nmse": 0.023786962259588713,
+      "missing_nmse": 0.37082418724720956,
+      "complex_correlation": 0.98803648393724,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 8,
+      "model": "shuffled_metric",
+      "nmse": 0.020675149970982788,
+      "missing_nmse": 0.8065060786067548,
+      "complex_correlation": 0.9897049990463752,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 8,
+      "model": "eikonal_atlas",
+      "nmse": 0.006537618865855822,
+      "missing_nmse": 0.26176618941562757,
+      "complex_correlation": 0.9967258312671209,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 9,
+      "model": "direct_fusion",
+      "nmse": 0.10513378822773767,
+      "missing_nmse": 0.9999999999999484,
+      "complex_correlation": 0.9459776865316524,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 9,
+      "model": "radial_fill",
+      "nmse": 0.2671139387898121,
+      "missing_nmse": 2.575118848201682,
+      "complex_correlation": 0.8664098663798014,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 9,
+      "model": "isotropic_atlas",
+      "nmse": 0.01644482135342516,
+      "missing_nmse": 0.09237871638722951,
+      "complex_correlation": 0.9918352230849066,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 9,
+      "model": "shuffled_metric",
+      "nmse": 0.03128135088342683,
+      "missing_nmse": 0.26701793300685356,
+      "complex_correlation": 0.9844708036525542,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 9,
+      "model": "eikonal_atlas",
+      "nmse": 0.012371990482686694,
+      "missing_nmse": 0.08951590774097405,
+      "complex_correlation": 0.9937989031207903,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 10,
+      "model": "direct_fusion",
+      "nmse": 0.19923782008466007,
+      "missing_nmse": 0.9999999999999474,
+      "complex_correlation": 0.89485582211099,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 10,
+      "model": "radial_fill",
+      "nmse": 0.19271776339297517,
+      "missing_nmse": 0.9669058170232778,
+      "complex_correlation": 0.8990241729909646,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 10,
+      "model": "isotropic_atlas",
+      "nmse": 0.0234760811725724,
+      "missing_nmse": 0.08689964850905313,
+      "complex_correlation": 0.988211927406485,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 10,
+      "model": "shuffled_metric",
+      "nmse": 0.028776408413949295,
+      "missing_nmse": 0.12567829946116865,
+      "complex_correlation": 0.9857672786574111,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 10,
+      "model": "eikonal_atlas",
+      "nmse": 0.057248935609474416,
+      "missing_nmse": 0.27492196152472936,
+      "complex_correlation": 0.9712946113110458,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 11,
+      "model": "direct_fusion",
+      "nmse": 0.26776645246069763,
+      "missing_nmse": 0.9999999999999589,
+      "complex_correlation": 0.8557119019165063,
+      "missing_fraction": 0.1501736111111111
+    },
+    {
+      "seed": 11,
+      "model": "radial_fill",
+      "nmse": 0.4643190925439709,
+      "missing_nmse": 1.7408050942412334,
+      "complex_correlation": 0.7484295825420456,
+      "missing_fraction": 0.1501736111111111
+    },
+    {
+      "seed": 11,
+      "model": "isotropic_atlas",
+      "nmse": 0.05164519851545632,
+      "missing_nmse": 0.15074187207755008,
+      "complex_correlation": 0.9738351222634806,
+      "missing_fraction": 0.1501736111111111
+    },
+    {
+      "seed": 11,
+      "model": "shuffled_metric",
+      "nmse": 0.07036988212478199,
+      "missing_nmse": 0.2241848917777743,
+      "complex_correlation": 0.9660527806601109,
+      "missing_fraction": 0.1501736111111111
+    },
+    {
+      "seed": 11,
+      "model": "eikonal_atlas",
+      "nmse": 0.09475751336563958,
+      "missing_nmse": 0.33990710549073055,
+      "complex_correlation": 0.9527567470240409,
+      "missing_fraction": 0.1501736111111111
+    },
+    {
+      "seed": 12,
+      "model": "direct_fusion",
+      "nmse": 0.11979605114032009,
+      "missing_nmse": 0.9999999999999344,
+      "complex_correlation": 0.9382023025020654,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 12,
+      "model": "radial_fill",
+      "nmse": 0.08955551185638962,
+      "missing_nmse": 0.7425818462140739,
+      "complex_correlation": 0.9542474381736737,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 12,
+      "model": "isotropic_atlas",
+      "nmse": 0.026641501480753352,
+      "missing_nmse": 0.0970643174223128,
+      "complex_correlation": 0.9890814048207489,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 12,
+      "model": "shuffled_metric",
+      "nmse": 0.0266237574988042,
+      "missing_nmse": 0.18315091400825995,
+      "complex_correlation": 0.9866019915983382,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 12,
+      "model": "eikonal_atlas",
+      "nmse": 0.0322769362808431,
+      "missing_nmse": 0.23984045911685373,
+      "complex_correlation": 0.9840990937135622,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 13,
+      "model": "direct_fusion",
+      "nmse": 0.0030995911748052047,
+      "missing_nmse": 0.999999999992247,
+      "complex_correlation": 0.9984490346592788,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 13,
+      "model": "radial_fill",
+      "nmse": 0.08098487828737047,
+      "missing_nmse": 88.4961660419207,
+      "complex_correlation": 0.9615314765141836,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 13,
+      "model": "isotropic_atlas",
+      "nmse": 0.0452247923693337,
+      "missing_nmse": 3.0553530529794615,
+      "complex_correlation": 0.9792088116191633,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 13,
+      "model": "shuffled_metric",
+      "nmse": 0.013981514781051385,
+      "missing_nmse": 2.900484796424052,
+      "complex_correlation": 0.9931241764349322,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 13,
+      "model": "eikonal_atlas",
+      "nmse": 0.012605923737899961,
+      "missing_nmse": 2.204106478842076,
+      "complex_correlation": 0.9945822835837891,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 14,
+      "model": "direct_fusion",
+      "nmse": 0.004592345473549993,
+      "missing_nmse": 0.9999999999975543,
+      "complex_correlation": 0.9977030682710335,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 14,
+      "model": "radial_fill",
+      "nmse": 0.1244901801999794,
+      "missing_nmse": 50.7686004833038,
+      "complex_correlation": 0.9428954881765325,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 14,
+      "model": "isotropic_atlas",
+      "nmse": 0.10080775655871561,
+      "missing_nmse": 6.250012754251737,
+      "complex_correlation": 0.9483620184132593,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 14,
+      "model": "shuffled_metric",
+      "nmse": 0.041687594978379025,
+      "missing_nmse": 4.227458170620594,
+      "complex_correlation": 0.9791723963264796,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 14,
+      "model": "eikonal_atlas",
+      "nmse": 0.010905191773143199,
+      "missing_nmse": 2.545449357902346,
+      "complex_correlation": 0.994654007035428,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 15,
+      "model": "direct_fusion",
+      "nmse": 0.05452597246336163,
+      "missing_nmse": 0.9999999999998022,
+      "complex_correlation": 0.9723575642458216,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 15,
+      "model": "radial_fill",
+      "nmse": 0.17946919005772788,
+      "missing_nmse": 3.3892091356548963,
+      "complex_correlation": 0.9123282328606217,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 15,
+      "model": "isotropic_atlas",
+      "nmse": 0.006467157720916564,
+      "missing_nmse": 0.04281141701803121,
+      "complex_correlation": 0.9967611765994834,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 15,
+      "model": "shuffled_metric",
+      "nmse": 0.00708186253585506,
+      "missing_nmse": 0.0830466119978005,
+      "complex_correlation": 0.9964642910426372,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 15,
+      "model": "eikonal_atlas",
+      "nmse": 0.004564024366919522,
+      "missing_nmse": 0.03590769287234545,
+      "complex_correlation": 0.9977163079239819,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 16,
+      "model": "direct_fusion",
+      "nmse": 0.12012349448959295,
+      "missing_nmse": 0.9999999999999385,
+      "complex_correlation": 0.9380210542660884,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 16,
+      "model": "radial_fill",
+      "nmse": 0.11150972039620857,
+      "missing_nmse": 0.9269699204128945,
+      "complex_correlation": 0.943478752414122,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 16,
+      "model": "isotropic_atlas",
+      "nmse": 0.11102930374729869,
+      "missing_nmse": 0.7783284619829847,
+      "complex_correlation": 0.9477092799649863,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 16,
+      "model": "shuffled_metric",
+      "nmse": 0.11467935729774892,
+      "missing_nmse": 0.8374179567636406,
+      "complex_correlation": 0.9468351344017072,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 16,
+      "model": "eikonal_atlas",
+      "nmse": 0.2631839472450629,
+      "missing_nmse": 1.9432694185136878,
+      "complex_correlation": 0.8876790874926362,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 17,
+      "model": "direct_fusion",
+      "nmse": 0.1098852766081322,
+      "missing_nmse": 0.9999999999999035,
+      "complex_correlation": 0.9434642875628317,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 17,
+      "model": "radial_fill",
+      "nmse": 0.2784850071164729,
+      "missing_nmse": 2.5655662001681367,
+      "complex_correlation": 0.8595877868171364,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 17,
+      "model": "isotropic_atlas",
+      "nmse": 0.017004562321135737,
+      "missing_nmse": 0.08817217934874289,
+      "complex_correlation": 0.9917118333858861,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 17,
+      "model": "shuffled_metric",
+      "nmse": 0.0257938228860214,
+      "missing_nmse": 0.1794094765891174,
+      "complex_correlation": 0.9870272224248285,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 17,
+      "model": "eikonal_atlas",
+      "nmse": 0.00732284743154367,
+      "missing_nmse": 0.04290687102618193,
+      "complex_correlation": 0.9963319216721715,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 18,
+      "model": "direct_fusion",
+      "nmse": 0.14688433337070744,
+      "missing_nmse": 0.999999999999951,
+      "complex_correlation": 0.9236455331161426,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 18,
+      "model": "radial_fill",
+      "nmse": 0.33928822784289947,
+      "missing_nmse": 2.329567768327756,
+      "complex_correlation": 0.8251799230914372,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 18,
+      "model": "isotropic_atlas",
+      "nmse": 0.011520108641720048,
+      "missing_nmse": 0.03954860911043468,
+      "complex_correlation": 0.9942490941540443,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 18,
+      "model": "shuffled_metric",
+      "nmse": 0.02298014406127091,
+      "missing_nmse": 0.10576390271215542,
+      "complex_correlation": 0.9884764280025996,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 18,
+      "model": "eikonal_atlas",
+      "nmse": 0.010248796513374306,
+      "missing_nmse": 0.05176781173730208,
+      "complex_correlation": 0.9948662324740695,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 19,
+      "model": "direct_fusion",
+      "nmse": 0.006844681824937221,
+      "missing_nmse": 0.9999999999981015,
+      "complex_correlation": 0.9965777819387257,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 19,
+      "model": "radial_fill",
+      "nmse": 0.13795486116285108,
+      "missing_nmse": 29.47570939746349,
+      "complex_correlation": 0.9364167490874639,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 19,
+      "model": "isotropic_atlas",
+      "nmse": 0.058122775585628186,
+      "missing_nmse": 0.8764825631071433,
+      "complex_correlation": 0.9705285552291465,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 19,
+      "model": "shuffled_metric",
+      "nmse": 0.022900726864211834,
+      "missing_nmse": 1.270414544608915,
+      "complex_correlation": 0.9884834009089346,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 19,
+      "model": "eikonal_atlas",
+      "nmse": 0.0045481737693456375,
+      "missing_nmse": 0.4425793634151269,
+      "complex_correlation": 0.99773286573906,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 20,
+      "model": "direct_fusion",
+      "nmse": 0.1376111249628662,
+      "missing_nmse": 0.9999999999999362,
+      "complex_correlation": 0.9286531180252354,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 20,
+      "model": "radial_fill",
+      "nmse": 0.12288396572414423,
+      "missing_nmse": 0.8912752314671759,
+      "complex_correlation": 0.9376083969332201,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 20,
+      "model": "isotropic_atlas",
+      "nmse": 0.048139336969616225,
+      "missing_nmse": 0.3168159421571246,
+      "complex_correlation": 0.9758924327935649,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 20,
+      "model": "shuffled_metric",
+      "nmse": 0.04332477153695787,
+      "missing_nmse": 0.24031256272441667,
+      "complex_correlation": 0.9781691823773992,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 20,
+      "model": "eikonal_atlas",
+      "nmse": 0.16451486332558063,
+      "missing_nmse": 1.1932258468388937,
+      "complex_correlation": 0.9200009028867341,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 21,
+      "model": "direct_fusion",
+      "nmse": 0.02762823146833661,
+      "missing_nmse": 0.9999999999997344,
+      "complex_correlation": 0.9860906241647145,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 21,
+      "model": "radial_fill",
+      "nmse": 0.08215967624285835,
+      "missing_nmse": 3.146039480608974,
+      "complex_correlation": 0.9601766158694275,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 21,
+      "model": "isotropic_atlas",
+      "nmse": 0.025163007834971992,
+      "missing_nmse": 0.3452933042468295,
+      "complex_correlation": 0.9873903147487496,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 21,
+      "model": "shuffled_metric",
+      "nmse": 0.01852466236947434,
+      "missing_nmse": 0.5610766783966924,
+      "complex_correlation": 0.9907012041585783,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 21,
+      "model": "eikonal_atlas",
+      "nmse": 0.009378042025279828,
+      "missing_nmse": 0.2515820445061606,
+      "complex_correlation": 0.9953094226663411,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 22,
+      "model": "direct_fusion",
+      "nmse": 0.07491105065239181,
+      "missing_nmse": 0.9999999999999044,
+      "complex_correlation": 0.9618219717880249,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 22,
+      "model": "radial_fill",
+      "nmse": 0.22865634153704686,
+      "missing_nmse": 3.1100673856768077,
+      "complex_correlation": 0.8878678477118818,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 22,
+      "model": "isotropic_atlas",
+      "nmse": 0.010571135536036502,
+      "missing_nmse": 0.1024369678359275,
+      "complex_correlation": 0.9947842519696007,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 22,
+      "model": "shuffled_metric",
+      "nmse": 0.019741922259416657,
+      "missing_nmse": 0.23956346358329314,
+      "complex_correlation": 0.9901343437140476,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 22,
+      "model": "eikonal_atlas",
+      "nmse": 0.00895921288832815,
+      "missing_nmse": 0.09392949001857305,
+      "complex_correlation": 0.9955119692654769,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 23,
+      "model": "direct_fusion",
+      "nmse": 0.3225055653066911,
+      "missing_nmse": 0.9999999999999706,
+      "complex_correlation": 0.8231065636441736,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 23,
+      "model": "radial_fill",
+      "nmse": 0.5126740054996272,
+      "missing_nmse": 1.5941206507650412,
+      "complex_correlation": 0.714098619549174,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 23,
+      "model": "isotropic_atlas",
+      "nmse": 0.057426217770642135,
+      "missing_nmse": 0.15109798635099356,
+      "complex_correlation": 0.9711132663858926,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 23,
+      "model": "shuffled_metric",
+      "nmse": 0.06503583439898274,
+      "missing_nmse": 0.17091940292200922,
+      "complex_correlation": 0.96695492109677,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 23,
+      "model": "eikonal_atlas",
+      "nmse": 0.07888200685912536,
+      "missing_nmse": 0.22199177235221174,
+      "complex_correlation": 0.9597490362236387,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 24,
+      "model": "direct_fusion",
+      "nmse": 0.0028181080389834932,
+      "missing_nmse": 0.999999999991039,
+      "complex_correlation": 0.9985945616166498,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 24,
+      "model": "radial_fill",
+      "nmse": 0.08518953515297245,
+      "missing_nmse": 133.1320205691779,
+      "complex_correlation": 0.9601514144203148,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 24,
+      "model": "isotropic_atlas",
+      "nmse": 0.2101413817250684,
+      "missing_nmse": 22.51278769514165,
+      "complex_correlation": 0.8988505194891727,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 24,
+      "model": "shuffled_metric",
+      "nmse": 0.018860781131098278,
+      "missing_nmse": 10.931299434681943,
+      "complex_correlation": 0.9906086968617857,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 24,
+      "model": "eikonal_atlas",
+      "nmse": 0.2368390967978011,
+      "missing_nmse": 375.5909767421399,
+      "complex_correlation": 0.8974708124089752,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 25,
+      "model": "direct_fusion",
+      "nmse": 0.008318083027102522,
+      "missing_nmse": 0.9999999999988111,
+      "complex_correlation": 0.9958336407990943,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 25,
+      "model": "radial_fill",
+      "nmse": 0.12407030558609206,
+      "missing_nmse": 19.304888340582508,
+      "complex_correlation": 0.9420349252200158,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 25,
+      "model": "isotropic_atlas",
+      "nmse": 0.0671249817276624,
+      "missing_nmse": 5.353919919526608,
+      "complex_correlation": 0.9679912647829584,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 25,
+      "model": "shuffled_metric",
+      "nmse": 0.31302618738916804,
+      "missing_nmse": 29.95856717720812,
+      "complex_correlation": 0.8724049924607333,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 25,
+      "model": "eikonal_atlas",
+      "nmse": 0.052748297341852074,
+      "missing_nmse": 8.022357672152449,
+      "complex_correlation": 0.974647114985103,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 26,
+      "model": "direct_fusion",
+      "nmse": 0.0029320595668256328,
+      "missing_nmse": 0.9999999999886822,
+      "complex_correlation": 0.998534429187193,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 26,
+      "model": "radial_fill",
+      "nmse": 0.09672422234295897,
+      "missing_nmse": 130.87040545577494,
+      "complex_correlation": 0.9551087979617338,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 26,
+      "model": "isotropic_atlas",
+      "nmse": 28.623863592103497,
+      "missing_nmse": 3834.461359451939,
+      "complex_correlation": 0.2934978030417247,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 26,
+      "model": "shuffled_metric",
+      "nmse": 22.679395756959416,
+      "missing_nmse": 1711.1329139665002,
+      "complex_correlation": 0.26437229837077564,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 26,
+      "model": "eikonal_atlas",
+      "nmse": 0.10789091218363607,
+      "missing_nmse": 129.3921491275875,
+      "complex_correlation": 0.9501954029000199,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 27,
+      "model": "direct_fusion",
+      "nmse": 0.2461151294799015,
+      "missing_nmse": 0.9999999999999607,
+      "complex_correlation": 0.8682666674904852,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 27,
+      "model": "radial_fill",
+      "nmse": 0.28250721359348535,
+      "missing_nmse": 1.149158273756269,
+      "complex_correlation": 0.8491687158558832,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 27,
+      "model": "isotropic_atlas",
+      "nmse": 0.039569838443650834,
+      "missing_nmse": 0.12371173504294627,
+      "complex_correlation": 0.9800523095852196,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 27,
+      "model": "shuffled_metric",
+      "nmse": 0.0528298425893518,
+      "missing_nmse": 0.18989953187754538,
+      "complex_correlation": 0.9741488520910719,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 27,
+      "model": "eikonal_atlas",
+      "nmse": 0.027776284449568478,
+      "missing_nmse": 0.10305939814617032,
+      "complex_correlation": 0.9861088771563415,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 28,
+      "model": "direct_fusion",
+      "nmse": 0.02110792795736243,
+      "missing_nmse": 0.999999999999588,
+      "complex_correlation": 0.9893908098086783,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 28,
+      "model": "radial_fill",
+      "nmse": 0.10909099131790506,
+      "missing_nmse": 5.65423875712777,
+      "complex_correlation": 0.9483145178530417,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 28,
+      "model": "isotropic_atlas",
+      "nmse": 0.1269934766939136,
+      "missing_nmse": 3.7938029911720705,
+      "complex_correlation": 0.9375562000901575,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 28,
+      "model": "shuffled_metric",
+      "nmse": 0.0343374013616323,
+      "missing_nmse": 1.5140237043460065,
+      "complex_correlation": 0.9828846882632813,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 28,
+      "model": "eikonal_atlas",
+      "nmse": 0.13074008617767774,
+      "missing_nmse": 6.767441486662943,
+      "complex_correlation": 0.9386340429360134,
+      "missing_fraction": 0.14583333333333334
+    },
+    {
+      "seed": 29,
+      "model": "direct_fusion",
+      "nmse": 0.18716582074376142,
+      "missing_nmse": 0.9999999999999343,
+      "complex_correlation": 0.9015838202601906,
+      "missing_fraction": 0.16666666666666666
+    },
+    {
+      "seed": 29,
+      "model": "radial_fill",
+      "nmse": 0.18450672137780383,
+      "missing_nmse": 0.985635215405662,
+      "complex_correlation": 0.9046328894113792,
+      "missing_fraction": 0.16666666666666666
+    },
+    {
+      "seed": 29,
+      "model": "isotropic_atlas",
+      "nmse": 0.38957276814119784,
+      "missing_nmse": 1.246126203459936,
+      "complex_correlation": 0.8192975117462568,
+      "missing_fraction": 0.16666666666666666
+    },
+    {
+      "seed": 29,
+      "model": "shuffled_metric",
+      "nmse": 1.978073537990695,
+      "missing_nmse": 2.0710513739295844,
+      "complex_correlation": 0.4800905901013816,
+      "missing_fraction": 0.16666666666666666
+    },
+    {
+      "seed": 29,
+      "model": "eikonal_atlas",
+      "nmse": 0.171874076257763,
+      "missing_nmse": 0.9165183234893254,
+      "complex_correlation": 0.9108253989472659,
+      "missing_fraction": 0.16666666666666666
+    },
+    {
+      "seed": 30,
+      "model": "direct_fusion",
+      "nmse": 0.23169215318320285,
+      "missing_nmse": 0.9999999999999714,
+      "complex_correlation": 0.8765370711045651,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 30,
+      "model": "radial_fill",
+      "nmse": 0.28000945810203764,
+      "missing_nmse": 1.2104964424289386,
+      "complex_correlation": 0.8513331840388457,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 30,
+      "model": "isotropic_atlas",
+      "nmse": 0.03181473104050004,
+      "missing_nmse": 0.09002416558561996,
+      "complex_correlation": 0.9842439632605388,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 30,
+      "model": "shuffled_metric",
+      "nmse": 0.027889103090197456,
+      "missing_nmse": 0.09893582539981499,
+      "complex_correlation": 0.9860412555272353,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 30,
+      "model": "eikonal_atlas",
+      "nmse": 0.06515582282583351,
+      "missing_nmse": 0.2694567998698637,
+      "complex_correlation": 0.9672197893858983,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 31,
+      "model": "direct_fusion",
+      "nmse": 0.14491261254239035,
+      "missing_nmse": 0.999999999999885,
+      "complex_correlation": 0.9247095427586322,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 31,
+      "model": "radial_fill",
+      "nmse": 0.13553687769009912,
+      "missing_nmse": 0.9342839142797577,
+      "complex_correlation": 0.9307756879176083,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 31,
+      "model": "isotropic_atlas",
+      "nmse": 0.18874414518718294,
+      "missing_nmse": 1.1085142727186397,
+      "complex_correlation": 0.9133709615448607,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 31,
+      "model": "shuffled_metric",
+      "nmse": 0.1878498165940372,
+      "missing_nmse": 1.183566657686698,
+      "complex_correlation": 0.9180061233794927,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 31,
+      "model": "eikonal_atlas",
+      "nmse": 0.09791222031382518,
+      "missing_nmse": 0.6628988638766058,
+      "complex_correlation": 0.9526314659926447,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 32,
+      "model": "direct_fusion",
+      "nmse": 0.007840359823902356,
+      "missing_nmse": 0.9999999999992271,
+      "complex_correlation": 0.996075353556866,
+      "missing_fraction": 0.10503472222222222
+    },
+    {
+      "seed": 32,
+      "model": "radial_fill",
+      "nmse": 0.08373242841020134,
+      "missing_nmse": 14.866869236553397,
+      "complex_correlation": 0.9606086192189343,
+      "missing_fraction": 0.10503472222222222
+    },
+    {
+      "seed": 32,
+      "model": "isotropic_atlas",
+      "nmse": 0.012090749227837748,
+      "missing_nmse": 0.9018607409848067,
+      "complex_correlation": 0.9939362467145195,
+      "missing_fraction": 0.10503472222222222
+    },
+    {
+      "seed": 32,
+      "model": "shuffled_metric",
+      "nmse": 0.01333232515537942,
+      "missing_nmse": 1.592250454063007,
+      "complex_correlation": 0.9933723354566991,
+      "missing_fraction": 0.10503472222222222
+    },
+    {
+      "seed": 32,
+      "model": "eikonal_atlas",
+      "nmse": 0.007836480863582998,
+      "missing_nmse": 0.9540689717154178,
+      "complex_correlation": 0.9960885791683318,
+      "missing_fraction": 0.10503472222222222
+    },
+    {
+      "seed": 33,
+      "model": "direct_fusion",
+      "nmse": 0.03016571229805681,
+      "missing_nmse": 0.9999999999996642,
+      "complex_correlation": 0.9848045859237142,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 33,
+      "model": "radial_fill",
+      "nmse": 0.1597690766968437,
+      "missing_nmse": 5.638651630307324,
+      "complex_correlation": 0.9244063914284043,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 33,
+      "model": "isotropic_atlas",
+      "nmse": 0.037106717310911454,
+      "missing_nmse": 0.8019972856465177,
+      "complex_correlation": 0.9819343489259316,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 33,
+      "model": "shuffled_metric",
+      "nmse": 0.03534353224248525,
+      "missing_nmse": 0.7156788194380643,
+      "complex_correlation": 0.9823507400777325,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 33,
+      "model": "eikonal_atlas",
+      "nmse": 0.017661695110208316,
+      "missing_nmse": 0.5328988919209011,
+      "complex_correlation": 0.9912886965732745,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 34,
+      "model": "direct_fusion",
+      "nmse": 0.11277754917355932,
+      "missing_nmse": 0.9999999999999227,
+      "complex_correlation": 0.9419283235386824,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 34,
+      "model": "radial_fill",
+      "nmse": 0.3361501192406122,
+      "missing_nmse": 3.01898428868191,
+      "complex_correlation": 0.8328474677000934,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 34,
+      "model": "isotropic_atlas",
+      "nmse": 0.01114152458834721,
+      "missing_nmse": 0.06385362611957475,
+      "complex_correlation": 0.9944164471162549,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 34,
+      "model": "shuffled_metric",
+      "nmse": 0.015932833008902508,
+      "missing_nmse": 0.11531086567338844,
+      "complex_correlation": 0.9920990788351551,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 34,
+      "model": "eikonal_atlas",
+      "nmse": 0.009420319621131868,
+      "missing_nmse": 0.06450426001467392,
+      "complex_correlation": 0.995282724069315,
+      "missing_fraction": 0.125
+    },
+    {
+      "seed": 35,
+      "model": "direct_fusion",
+      "nmse": 0.09381659507062107,
+      "missing_nmse": 0.9999999999998723,
+      "complex_correlation": 0.9519381139765164,
+      "missing_fraction": 0.1267361111111111
+    },
+    {
+      "seed": 35,
+      "model": "radial_fill",
+      "nmse": 0.15806739095146582,
+      "missing_nmse": 1.7021383254708211,
+      "complex_correlation": 0.920460859187761,
+      "missing_fraction": 0.1267361111111111
+    },
+    {
+      "seed": 35,
+      "model": "isotropic_atlas",
+      "nmse": 0.06383988318680754,
+      "missing_nmse": 0.3626384991291337,
+      "complex_correlation": 0.9711088415162284,
+      "missing_fraction": 0.1267361111111111
+    },
+    {
+      "seed": 35,
+      "model": "shuffled_metric",
+      "nmse": 0.1908160351980193,
+      "missing_nmse": 0.5731145213105355,
+      "complex_correlation": 0.9021672940400493,
+      "missing_fraction": 0.1267361111111111
+    },
+    {
+      "seed": 35,
+      "model": "eikonal_atlas",
+      "nmse": 0.04558473331206465,
+      "missing_nmse": 0.434205459045249,
+      "complex_correlation": 0.9770576922779849,
+      "missing_fraction": 0.1267361111111111
+    },
+    {
+      "seed": 36,
+      "model": "direct_fusion",
+      "nmse": 0.05381925931606026,
+      "missing_nmse": 0.9999999999998721,
+      "complex_correlation": 0.9727206761511605,
+      "missing_fraction": 0.10503472222222222
+    },
+    {
+      "seed": 36,
+      "model": "radial_fill",
+      "nmse": 0.09354208888615859,
+      "missing_nmse": 1.772286641678665,
+      "complex_correlation": 0.9541076758040065,
+      "missing_fraction": 0.10503472222222222
+    },
+    {
+      "seed": 36,
+      "model": "isotropic_atlas",
+      "nmse": 0.010696789702165537,
+      "missing_nmse": 0.09059457820578688,
+      "complex_correlation": 0.9946589280513048,
+      "missing_fraction": 0.10503472222222222
+    },
+    {
+      "seed": 36,
+      "model": "shuffled_metric",
+      "nmse": 0.01529475937882817,
+      "missing_nmse": 0.1504386616054363,
+      "complex_correlation": 0.9923564806610422,
+      "missing_fraction": 0.10503472222222222
+    },
+    {
+      "seed": 36,
+      "model": "eikonal_atlas",
+      "nmse": 0.00662957094257054,
+      "missing_nmse": 0.07064460325620714,
+      "complex_correlation": 0.9966894710349842,
+      "missing_fraction": 0.10503472222222222
+    },
+    {
+      "seed": 37,
+      "model": "direct_fusion",
+      "nmse": 0.014986348757956972,
+      "missing_nmse": 0.9999999999993234,
+      "complex_correlation": 0.9924838673075198,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 37,
+      "model": "radial_fill",
+      "nmse": 0.09564284030100334,
+      "missing_nmse": 7.358944017103983,
+      "complex_correlation": 0.9539056068171764,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 37,
+      "model": "isotropic_atlas",
+      "nmse": 0.03694396600869119,
+      "missing_nmse": 0.5327787496231033,
+      "complex_correlation": 0.9828057094725191,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 37,
+      "model": "shuffled_metric",
+      "nmse": 0.025071147019966707,
+      "missing_nmse": 0.7594971715132011,
+      "complex_correlation": 0.9875494753171682,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 37,
+      "model": "eikonal_atlas",
+      "nmse": 0.011146602343205221,
+      "missing_nmse": 0.37589312912667794,
+      "complex_correlation": 0.9946918003847814,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 38,
+      "model": "direct_fusion",
+      "nmse": 0.051349294273070695,
+      "missing_nmse": 0.9999999999998791,
+      "complex_correlation": 0.9739891092767773,
+      "missing_fraction": 0.1467013888888889
+    },
+    {
+      "seed": 38,
+      "model": "radial_fill",
+      "nmse": 0.17099332225243774,
+      "missing_nmse": 3.4355352484983146,
+      "complex_correlation": 0.9176032887988739,
+      "missing_fraction": 0.1467013888888889
+    },
+    {
+      "seed": 38,
+      "model": "isotropic_atlas",
+      "nmse": 0.02875926549895995,
+      "missing_nmse": 0.31543817968668436,
+      "complex_correlation": 0.9867369217731554,
+      "missing_fraction": 0.1467013888888889
+    },
+    {
+      "seed": 38,
+      "model": "shuffled_metric",
+      "nmse": 0.02036019166782024,
+      "missing_nmse": 0.32493424495995876,
+      "complex_correlation": 0.9897919007865065,
+      "missing_fraction": 0.1467013888888889
+    },
+    {
+      "seed": 38,
+      "model": "eikonal_atlas",
+      "nmse": 0.014869990665003153,
+      "missing_nmse": 0.2507472415450273,
+      "complex_correlation": 0.9925387008893585,
+      "missing_fraction": 0.1467013888888889
+    },
+    {
+      "seed": 39,
+      "model": "direct_fusion",
+      "nmse": 0.013078790321305466,
+      "missing_nmse": 0.999999999999226,
+      "complex_correlation": 0.9934433554004442,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 39,
+      "model": "radial_fill",
+      "nmse": 0.07811616680268636,
+      "missing_nmse": 7.025916321093806,
+      "complex_correlation": 0.962965476446107,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 39,
+      "model": "isotropic_atlas",
+      "nmse": 0.019632128962269377,
+      "missing_nmse": 0.9243153699526216,
+      "complex_correlation": 0.990489605342397,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 39,
+      "model": "shuffled_metric",
+      "nmse": 0.02238570195513009,
+      "missing_nmse": 1.5516989343583294,
+      "complex_correlation": 0.988762739414698,
+      "missing_fraction": 0.10416666666666667
+    },
+    {
+      "seed": 39,
+      "model": "eikonal_atlas",
+      "nmse": 0.010699908099067628,
+      "missing_nmse": 0.7401314033030809,
+      "complex_correlation": 0.9946361745749156,
+      "missing_fraction": 0.10416666666666667
+    }
+  ]
+}
