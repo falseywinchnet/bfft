@@ -95,13 +95,13 @@ def transformed_template():
     new_3d = """function renderCurve3d(node,task,variant){
       const {w,h,m}=dims(node,true),svg=d3.select(node).attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);
       frame(svg,w,h,m,'x / y','z');
-      const vectors=[task.truth,...Object.values(task.predictions)],all=vectors.flat(),center=[0,1,2].map(j=>d3.mean(all,d=>d[j])),span=d3.max([0,1,2],j=>d3.extent(all,d=>d[j])[1]-d3.extent(all,d=>d[j])[0]);
+      const values=variant==='truth'?task.truth:task.predictions[variant],all=values,center=[0,1,2].map(j=>d3.mean(all,d=>d[j])),ranges=[0,1,2].map(j=>{const e=d3.extent(all,d=>d[j]);return e[1]-e[0]});
       const az=45*Math.PI/180,el=22*Math.PI/180;
-      const project=p=>{const x=(p[0]-center[0])/span,y=(p[1]-center[1])/span,z=(p[2]-center[2])/span,ca=Math.cos(az),sa=Math.sin(az),ce=Math.cos(el),se=Math.sin(el),u=ca*x-sa*y,v=sa*x+ca*y;return[u,ce*z-se*v,se*z+ce*v]};
+      const project=p=>{const x=(p[0]-center[0])/ranges[0],y=(p[1]-center[1])/ranges[1],z=(p[2]-center[2])/ranges[2],ca=Math.cos(az),sa=Math.sin(az),ce=Math.cos(el),se=Math.sin(el),u=ca*x-sa*y,v=sa*x+ca*y;return[u,ce*z-se*v,se*z+ce*v]};
       const projected=all.map(project),xe=d3.extent(projected,d=>d[0]),ye=d3.extent(projected,d=>d[1]),xp=d3.scaleLinear(xe,[m.l,w-m.r]),yp=d3.scaleLinear(ye,[h-m.b,m.t]);
-      const values=variant==='truth'?task.truth:task.predictions[variant],points=values.map((point,index)=>({point,index,q:project(point)})).sort((a,b)=>a.q[2]-b.q[2]);
+      const points=values.map((point,index)=>({point,index,q:project(point)})).sort((a,b)=>a.q[2]-b.q[2]);
       svg.append('g').selectAll('circle').data(points).join('circle').attr('cx',d=>xp(d.q[0])).attr('cy',d=>yp(d.q[1])).attr('r',d=>1.4+Math.max(0,d.q[2])*.9).attr('fill',d=>d3.interpolateTurbo((task.x[d.index]+1)/2)).attr('opacity',d=>.58+Math.max(0,Math.min(.4,d.q[2]+.2)));
-      const origin=project(center),axis=[[center[0]+span*.32,center[1],center[2],'x'],[center[0],center[1]+span*.32,center[2],'y'],[center[0],center[1],center[2]+span*.32,'z']];
+      const origin=project(center),axis=[[center[0]+ranges[0]*.32,center[1],center[2],'x'],[center[0],center[1]+ranges[1]*.32,center[2],'y'],[center[0],center[1],center[2]+ranges[2]*.32,'z']];
       for(const endpoint of axis){const q=project(endpoint);svg.append('line').attr('x1',xp(origin[0])).attr('y1',yp(origin[1])).attr('x2',xp(q[0])).attr('y2',yp(q[1])).attr('stroke','var(--foreground)').attr('opacity',.7);svg.append('text').attr('x',xp(q[0])+3).attr('y',yp(q[1])-3).text(endpoint[3])}
     }"""
     if old_3d not in source:

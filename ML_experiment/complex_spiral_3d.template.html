@@ -1,68 +1,12 @@
 <div id="complex-spiral-3d-viz">
   <style>
     #complex-spiral-3d-viz{color:var(--foreground);font-size:var(--font-size-base);width:100%}
-    #complex-spiral-3d-viz *{box-sizing:border-box}
     #complex-spiral-3d-viz h2,#complex-spiral-3d-viz p{margin-top:0}
     #complex-spiral-3d-viz h2{font-weight:500}
-    #complex-spiral-3d-viz .lede{color:var(--muted-foreground);margin-bottom:12px}
-    #complex-spiral-3d-viz .viz-controls{margin-bottom:12px}
-    #complex-spiral-3d-viz .plots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px 12px}
-    #complex-spiral-3d-viz .plot{min-width:0}
-    #complex-spiral-3d-viz .plot-title{text-align:center;font-weight:500;margin-bottom:3px}
-    #complex-spiral-3d-viz .score{color:var(--muted-foreground);font-weight:400}
-    #complex-spiral-3d-viz canvas.plot-canvas{display:block;width:100%;aspect-ratio:1.18/1;border:1px solid var(--border)}
-    #complex-spiral-3d-viz .parameter{display:flex;align-items:center;gap:9px;margin-top:12px;color:var(--muted-foreground)}
-    #complex-spiral-3d-viz .colorbar{height:10px;flex:1;background:linear-gradient(90deg,#30123b,#4669e8,#28bbec,#32f298,#a4fc3c,#f9ba38,#e64a19,#7a0403)}
-    #complex-spiral-3d-viz .boundary{color:var(--foreground)}
-    @media(max-width:820px){#complex-spiral-3d-viz .plots{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:430px){#complex-spiral-3d-viz .plots{grid-template-columns:1fr}}
+    #complex-spiral-3d-viz p{color:var(--muted-foreground)}
+    #complex-spiral-3d-viz img{display:block;width:100%;height:auto}
   </style>
   <h2>Complex 3-D spiral: spatial fits</h2>
-  <p class="lede">Actual x/y/z scatter · Turbo color by t · initial camera elev 22°, azim 45° · drag any panel to rotate all panels</p>
-  <div class="viz-controls">
-    <label class="form-label">Azimuth <span id="cs3-az-value">45°</span><input id="cs3-az" class="form-range" type="range" min="-180" max="180" value="45"></label>
-    <label class="form-label">Elevation <span id="cs3-el-value">22°</span><input id="cs3-el" class="form-range" type="range" min="-80" max="80" value="22"></label>
-  </div>
-  <div class="plots" id="cs3-plots"></div>
-  <div class="parameter"><span>t/T 0</span><span class="colorbar" aria-hidden="true"></span><span>1</span><span class="boundary">observed ≤ 0.5 · continuation &gt; 0.5</span></div>
-  <script>
-  (()=>{
-    const root=document.getElementById('complex-spiral-3d-viz');
-    const data=__DATA__;
-    const host=root.querySelector('#cs3-plots');
-    const azInput=root.querySelector('#cs3-az'),elInput=root.querySelector('#cs3-el');
-    const azValue=root.querySelector('#cs3-az-value'),elValue=root.querySelector('#cs3-el-value');
-    const css=name=>getComputedStyle(root).getPropertyValue(name).trim();
-    const panels=data.series.map(series=>{
-      const container=document.createElement('section');container.className='plot';
-      const title=document.createElement('div');title.className='plot-title';
-      title.innerHTML=series.score===null?series.name:`${series.name} <span class="score">${series.score.toFixed(3)}</span>`;
-      const canvas=document.createElement('canvas');canvas.className='plot-canvas';canvas.setAttribute('role','img');
-      canvas.setAttribute('aria-label',`${series.name} complex spiral in three spatial dimensions`);
-      container.append(title,canvas);host.append(container);return{canvas,series};
-    });
-    const stops=[[.00,[48,18,59]],[.14,[70,105,232]],[.28,[40,187,236]],[.42,[50,242,152]],[.57,[164,252,60]],[.72,[249,186,56]],[.86,[230,74,25]],[1,[122,4,3]]];
-    function turbo(t){t=Math.max(0,Math.min(1,t));let i=1;while(i<stops.length&&stops[i][0]<t)i++;const a=stops[i-1],b=stops[Math.min(i,stops.length-1)],u=(t-a[0])/(b[0]-a[0]||1);return a[1].map((v,j)=>Math.round(v+(b[1][j]-v)*u))}
-    function rotate(p,azimuth,elevation,center,span){const x=(p[0]-center[0])/span,y=(p[1]-center[1])/span,z=(p[2]-center[2])/span,ca=Math.cos(azimuth),sa=Math.sin(azimuth),ce=Math.cos(elevation),se=Math.sin(elevation),u=ca*x-sa*y,v=sa*x+ca*y;return[u,ce*z-se*v,se*z+ce*v]}
-    function projected(p,az,el,w,h,center,span){const q=rotate(p,az,el,center,span),perspective=1/(2.35-q[2]);return{x:w/2+q[0]*w*1.55*perspective,y:h/2-q[1]*w*1.55*perspective,z:q[2]}}
-    function drawAxis(ctx,origin,end,label,color){ctx.beginPath();ctx.moveTo(origin.x,origin.y);ctx.lineTo(end.x,end.y);ctx.strokeStyle=color;ctx.globalAlpha=.72;ctx.lineWidth=1;ctx.stroke();ctx.globalAlpha=1;ctx.fillStyle=color;ctx.font='12px sans-serif';ctx.fillText(label,end.x+3,end.y-3)}
-    function renderPanel(panel,az,el){
-      const canvas=panel.canvas,rect=canvas.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1),w=Math.max(210,Math.round(rect.width)),h=Math.max(178,Math.round(w/1.18));
-      if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr)}
-      const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
-      ctx.fillStyle=css('--background');ctx.fillRect(0,0,w,h);
-      const bounds=panel.series.bounds,center=bounds.map(value=>(value[0]+value[1])/2),span=Math.max(...bounds.map(value=>value[1]-value[0])),origin=projected(center,az,el,w,h,center,span),half=span*.37;
-      drawAxis(ctx,origin,projected([center[0]+half,center[1],center[2]],az,el,w,h,center,span),'x',css('--foreground'));
-      drawAxis(ctx,origin,projected([center[0],center[1]+half,center[2]],az,el,w,h,center,span),'y',css('--foreground'));
-      drawAxis(ctx,origin,projected([center[0],center[1],center[2]+half],az,el,w,h,center,span),'z',css('--foreground'));
-      const points=panel.series.points.map((p,index)=>({...projected(p,az,el,w,h,center,span),t:data.parameter[index]})).sort((a,b)=>a.z-b.z);
-      for(const point of points){const rgb=turbo(point.t),depth=.48+.5*(point.z+.6)/1.2;ctx.beginPath();ctx.arc(point.x,point.y,Math.max(1.15,2.05*depth),0,Math.PI*2);ctx.fillStyle=`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${Math.max(.42,Math.min(.96,depth))})`;ctx.fill()}
-      ctx.strokeStyle=css('--border');ctx.strokeRect(.5,.5,w-1,h-1);
-    }
-    function drawAll(){const az=Number(azInput.value)*Math.PI/180,el=Number(elInput.value)*Math.PI/180;azValue.textContent=`${azInput.value}°`;elValue.textContent=`${elInput.value}°`;for(const panel of panels)renderPanel(panel,az,el)}
-    azInput.addEventListener('input',drawAll);elInput.addEventListener('input',drawAll);
-    let drag=null;for(const {canvas} of panels){canvas.addEventListener('pointerdown',event=>{drag={x:event.clientX,y:event.clientY,az:Number(azInput.value),el:Number(elInput.value)};canvas.setPointerCapture(event.pointerId)});canvas.addEventListener('pointermove',event=>{if(!drag)return;azInput.value=Math.max(-180,Math.min(180,drag.az+(event.clientX-drag.x)*.7));elInput.value=Math.max(-80,Math.min(80,drag.el-(event.clientY-drag.y)*.7));drawAll()});canvas.addEventListener('pointerup',()=>{drag=null});canvas.addEventListener('pointercancel',()=>{drag=null})}
-    let timer;new ResizeObserver(()=>{clearTimeout(timer);timer=setTimeout(drawAll,80)}).observe(root);drawAll();
-  })();
-  </script>
+  <p>Matplotlib Axes3D scatter · Turbo color by t · depthshade · elev 22° · azim 45° · independent x/y/z subplot scaling</p>
+  <img src="data:image/png;base64,__IMAGE__" alt="Ground truth and six learned complex spiral trajectories plotted as genuine three-dimensional x y z scatter panels">
 </div>

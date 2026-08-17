@@ -33,8 +33,8 @@ Fourier basis, periodic feature map, unseen-support label, or GELU activation.
   3-D spiral.
 - [`frame_refinement.html`](frame_refinement.html): paired acquisition deltas
   and fitted geometry with an explicit observed/extrapolated boundary.
-- [`complex_spiral_3d.html`](complex_spiral_3d.html): genuine rotatable x/y/z
-  scatter comparison following the supplied Turbo/depth/camera plot setup.
+- [`complex_spiral_3d.html`](complex_spiral_3d.html): the supplied Matplotlib
+  Axes3D/Turbo/depth/camera plot applied to truth and retained model fits.
 - [`continuous_frame_flow.py`](continuous_frame_flow.py): standalone PyTorch
   reference/fast layer and hybrid CPU Muon helper.
 - [`continuous_frame_full.html`](continuous_frame_full.html): complete truth,
