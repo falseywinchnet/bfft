@@ -116,6 +116,26 @@ connection, deterministic feature, and lifting primitives.  The adjacent
 `probe_*` and circular/conductance wrappers are retained falsifications; do
 not choose among their DEFs at runtime.
 
+### Selected conservative even/odd wrapper
+
+The current selected extension retains the vector conditioner and carries
+paired HPWL boundary detail to a marginal-preserving sparse KL projection at
+unrelaxation:
+
+```sh
+python3 research/late_even_odd_balanced_transport.py \
+  --lef datasets/replace-wb/source/contest.lef \
+  --def datasets/replace-wb/source/wb_dma_top.def \
+  --baseline-def datasets/replace-wb/baseline/replace.def \
+  --work-dir results/raw/late_even_odd_balanced_v3/wb_work \
+  --output-json results/raw/late_even_odd_balanced_v3/wb.json \
+  --output-def results/raw/late_even_odd_balanced_v3/defs/wb.def
+```
+
+Run `research/check_late_even_odd_stalk.py` before the guarded circuit runs.
+It checks paired-face identifiability, nonnegativity, identity, zero-detail
+recovery, and conservation of both sparse marginals.
+
 Do not tune a density switch between these runs. Record direct HPWL, move and
 blocked counts, transport-plus-readout time, total guarded wall time, peak RSS,
 and explicit state bytes. Keep generated datasets, DEF outputs, and profiles in

@@ -4,6 +4,7 @@ import numpy as np
 
 from .interval_connection import (
     decompose_interval_stalk,
+    parallel_transport_interval_detail,
     synthesize_interval_stalk,
 )
 
@@ -32,6 +33,54 @@ def main() -> None:
     )
     assert np.allclose(one_sided_odd, 0.0)
     assert one_sided["paired_axis_count"] == 0
+
+    active = np.asarray(((0, 1, 2), (0, 1, 2)))
+    anchors = np.asarray((1, 1))
+    segment_centers = np.asarray(((0.0, 0.0), (0.0, 1.0), (0.0, 2.0)))
+    reference = np.asarray(((0.2, 0.6, 0.2), (0.3, 0.4, 0.3)))
+    transported = np.asarray(((0.1, 0.6, 0.3), (0.3, 0.4, 0.3)))
+    cell_odd = np.asarray(((0.0, 0.75), (0.0, -0.5)))
+    masses = np.asarray((2.0, 3.0))
+    lifted, balance = parallel_transport_interval_detail(
+        transported,
+        reference,
+        active,
+        anchors,
+        segment_centers,
+        cell_odd,
+        masses,
+    )
+    assert balance["converged"]
+    assert balance["row_mass_max_error"] < 1e-12
+    assert balance["segment_mass_max_error"] < 0.01
+    assert np.all(lifted >= 0.0)
+    assert np.allclose(np.sum(lifted, axis=1), 1.0)
+    assert np.allclose(
+        np.sum(masses[:, None] * lifted, axis=0),
+        np.sum(masses[:, None] * transported, axis=0),
+        atol=0.01,
+    )
+
+    identity, _ = parallel_transport_interval_detail(
+        reference,
+        reference,
+        active,
+        anchors,
+        segment_centers,
+        cell_odd,
+        masses,
+    )
+    assert np.allclose(identity, reference)
+    unchanged, _ = parallel_transport_interval_detail(
+        transported,
+        reference,
+        active,
+        anchors,
+        segment_centers,
+        np.zeros_like(cell_odd),
+        masses,
+    )
+    assert np.allclose(unchanged, transported)
     print("oriented interval stalk checks: PASS")
 
 

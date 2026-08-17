@@ -282,12 +282,60 @@ direction cosine from 0.2584 to 0.6612. Yet immediate `even +/- odd` synthesis
 still returns 40,331.0075 um. The representation has found a valid odd phase
 but projects it back to two dimensions too early.
 
-The selected result remains 39,932.2000 um. The next implementation must carry
-`(even_x, even_y, odd_x, odd_y)` as a genuine four-component stalk through
-sparse transport and local support, then synthesize during unrelaxation.
-`interval_connection.py` exposes that decomposition without an implicit early
-projection or mixing coefficient. Independent LEF/DEF parsing reproduced all
-new HPWL values with zero overlap and zero out-of-core cells.
+## Conservative late-stalk transport
+
+The four-component experiment retained the selected vector conditioner as the
+even channel and carried the paired boundary normal as separate odd state to
+the support-CDF inverse. Three synthesis laws locate the remaining constraint:
+
+| Late synthesis | GCD HPWL (um) | WB HPWL (um) | Finding |
+| --- | ---: | ---: | --- |
+| Same cone factor on reference and transport | 7,280.1875 | 39,960.9425 | Late projection removes most of the early-synthesis loss |
+| Odd exponent on `log(T/R)` | 7,280.1875 | 39,950.4425 | Preserving the reference chart narrows the loss further |
+| KL-balanced odd ratio tangent | **7,280.1875** | **39,904.3975** | Conserving both cell and segment marginals turns phase into a gain |
+
+The unbalanced ratio changes exactly three WB row identities in the same
+direction as the frozen exact row chart. Vertical HPWL improves by 0.7950 um,
+but their uncompensated capacity causes 81 horizontal repacks and loses
+19.0375 um horizontally. The phase sign is correct; the correction had left
+the transport polytope.
+
+For transported support `T`, reference support `R`, cell mass `m`, and odd
+incidence restriction `h`, the selected sparse kernel is
+
+```text
+K_odd(i,s) = m_i T(i,s) exp(h(i,s) log(T(i,s) / R(i,s))).
+```
+
+A single sparse KL projection restores the original cell and segment
+marginals before the unchanged CDF inverse. Zero odd state reproduces `T`;
+`T == R` remains identity; the reference phase chart and source-x gauge are
+unchanged. The solver stops when maximum segment imbalance is below 0.01 of
+one physical site, never on HPWL. It takes 2 scaling steps on GCD and 19 on WB,
+ending at 0.00291 and 0.00969 site maximum imbalance respectively.
+
+| Design | First-pass HPWL (um) | Final HPWL (um) | Guarded wall | Peak RSS |
+| --- | ---: | ---: | ---: | ---: |
+| `gcd` | 7,280.1875 | **7,280.1875** | 1.01 s | 153,544 KiB |
+| `wb_dma_top` | 40,986.0500 | **39,904.3975** | 3.58 s | 130,040 KiB |
+| `wb_dma_top` repeat | 40,986.0500 | **39,904.3975** | 3.06 s | 132,032 KiB |
+
+Compared with the former selected law, WB improves 27.8025 um: horizontal
+HPWL falls 27.6175 um and vertical HPWL falls 0.1850 um. GCD is byte-identical.
+Four of the six changed WB rows move toward the frozen exact row chart; the
+other two are compensating capacity moves supplied by the KL projection. The
+exact chart is used only for this post-run audit, never by the law.
+The repeated WB DEF is byte-identical with SHA-256
+`6c599cac86a6d68f341a401635f7a4df4762413c6b2708b1494d4a372394ca98`.
+Independent LEF/DEF parsing confirms both results, zero overlaps, and zero
+out-of-core cells.
+
+On the final WB pass, 10.23% of nets identify paired faces and 20.83% of cells
+carry nonzero odd state. The odd-state workspace is 224,672 bytes and the
+clear sparse KL workspace is 1,264,768 bytes. No cell-by-site state, target
+candidate, alternative DEF, or objective-based stopping enters the law.
+`interval_connection.py` contains the portable decomposition and conservative
+projection.
 
 ## Phase-boundary microscope
 
@@ -334,10 +382,10 @@ post-hoc sharpening, a single global phase, or a new physical ordering cannot
 manufacture it after the coupling has been compressed.
 
 Relative to native exact all-pairs, the current transferable result remains
-57.8550 um behind on `gcd` and 7,245.2175 um behind on `wb_dma_top`. Vector
-diffusion recovers part of the missing global relation by transporting
-orientation instead of scalar confidence. The oriented boundary record is now
-known to be lifting detail, not a replacement direction. The next useful work
-is to preserve its separate even/odd channels through transport and local
-support at every scale--not to erase short nets, collapse a net to one center,
-enumerate destinations after decoding, or tune an early projection.
+57.8550 um behind on `gcd` and 7,217.4150 um behind on `wb_dma_top`. Vector
+diffusion and conservative odd transport recover two components of the missing
+global relation. The decisive invariant is now explicit: any further phase
+channel must enter as a tangent with zero cell and segment marginal change.
+The next useful work is multiscale lifting of that conservative connection
+state--not short-net erasure, a net center, candidate enumeration, or an
+unbalanced post-coupling correction.

@@ -147,10 +147,26 @@ odd[a]  = (mean_lower(direction[a]) - mean_upper(direction[a])) / 2
 The odd coordinate exists only when positive-confidence movable witnesses
 attain both faces. This exact support rule reduces admitted WB boundary nets
 from about 61% to 10%; it is not a tunable confidence threshold. Immediate
-`even +/- odd` synthesis restores GCD but still worsens WB, so the four
-components must survive the sparse coupling and be restricted to physical
-direction only during unrelaxation. That late detail record is the circuit
-analogue of the oriented BV bond measure in Meyer preconditioning.
+`even +/- odd` synthesis restores GCD but worsens WB, proving that the four
+components must survive until unrelaxation.
+
+Late synthesis exposes one more invariant. An independent per-cell odd
+correction can cross the correct phase boundary while changing aggregate row
+capacity. The scalar legalizer then pays for that off-polytope signal through
+horizontal repacking. The selected law instead lifts the odd restriction on
+the log transport ratio and performs one sparse KL projection onto the
+unchanged cell and segment marginals:
+
+```text
+K_odd(i,s) = m_i T(i,s) exp(h(i,s) log(T(i,s) / R(i,s)))
+rows(K_projected) = m
+columns(K_projected) = columns(m T)
+```
+
+The reference chart, source-x gauge, and CDF inverse remain unchanged. This
+conservative late detail record is the circuit analogue of the oriented BV
+bond measure in Meyer preconditioning. It preserves GCD byte-for-byte and
+lowers WB to 39,904.3975 um.
 
 ## Transport image and pre-image
 
