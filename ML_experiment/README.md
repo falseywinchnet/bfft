@@ -31,6 +31,13 @@ Fourier basis, periodic feature map, unseen-support label, or GELU activation.
 - [`FRAME_REFINEMENT_REPORT.md`](FRAME_REFINEMENT_REPORT.md): 84-fit optimizer,
   capacity, and speed study, including polynomial drifted chirp and the spatial
   3-D spiral.
+- [`RESPONSE_ENHANCED_REPORT.md`](RESPONSE_ENHANCED_REPORT.md): 184-fit,
+  two-seed comparison of original self-context, relational SCL, baseline CFF,
+  and relational/deeper-response CFF, including CPU Pareto measurements.
+- [`response_enhanced.py`](response_enhanced.py): the new relational SCL and
+  response-enhanced CFF layers.
+- [`response_enhanced.html`](response_enhanced.html): complete timing table,
+  acquisition curves, task deltas, and four-way fitted-function atlas.
 - [`frame_refinement.html`](frame_refinement.html): paired acquisition deltas
   and fitted geometry with an explicit observed/extrapolated boundary.
 - [`complex_spiral_3d.html`](complex_spiral_3d.html): the supplied Matplotlib

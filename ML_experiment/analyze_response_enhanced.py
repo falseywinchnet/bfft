@@ -8,12 +8,10 @@ import statistics
 from collections import defaultdict
 from pathlib import Path
 
-from ML_experiment.response_enhanced import (
-    BASELINE_CFF,
-    ORIGINAL_SELF_CONTEXT,
-    RELATIONAL_CFF_DEEP,
-    RELATIONAL_SCL,
-)
+ORIGINAL_SELF_CONTEXT = "self_context"
+RELATIONAL_SCL = "relational_scl"
+BASELINE_CFF = "cff"
+RELATIONAL_CFF_DEEP = "relational_cff_deep"
 
 
 METRICS = (
