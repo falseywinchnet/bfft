@@ -16,7 +16,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-__all__ = ["LELU", "ContinuousFrameFlowLinear", "ContinuousFrameFlow"]
+__all__ = [
+    "LELU",
+    "ContinuousFrameFlowLinear",
+    "ContinuousFrameFlowMid",
+    "ContinuousFrameFlow",
+]
 
 
 class LELU(nn.Module):
@@ -192,6 +197,35 @@ class ContinuousFrameFlowLinear(nn.Module):
         pooled = torch.einsum("bd,bdr->br", weight, projected)
         correction = F.softplus(self.correction_scale) * (pooled @ self.shared)
         return self.base(x) + correction
+
+
+class ContinuousFrameFlowMid(ContinuousFrameFlowLinear):
+    """Shape-preserving CFF layer for a hidden-to-hidden middle position.
+
+    The trainable affine path starts at identity, while the frame-flow
+    correction starts active.  Thus insertion into an existing hidden stream
+    initially refines that stream instead of replacing its coordinate system.
+    Activation deliberately remains the caller's responsibility.
+    """
+
+    def __init__(
+        self,
+        dim: int,
+        *,
+        directions: int = 12,
+        rank: int = 4,
+        strength: float = 0.25,
+    ):
+        super().__init__(
+            dim,
+            dim,
+            directions=directions,
+            rank=rank,
+            strength=strength,
+        )
+        with torch.no_grad():
+            nn.init.eye_(self.base.weight)
+            nn.init.zeros_(self.base.bias)
 
 
 class ContinuousFrameFlow(nn.Module):

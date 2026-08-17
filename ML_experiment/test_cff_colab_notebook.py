@@ -11,6 +11,7 @@ os.environ.setdefault("MPLBACKEND", "Agg")
 import torch
 
 from ML_experiment.cff import ContinuousFrameFlow as StandaloneCFF
+from ML_experiment.cff import ContinuousFrameFlowMid
 from ML_experiment.continuous_frame_flow import ContinuousFrameFlow as ReferenceCFF
 
 
@@ -19,6 +20,13 @@ NOTEBOOK = HERE / "CFF_8_turn_spiral_colab.ipynb"
 
 
 class CFFColabTests(unittest.TestCase):
+    def test_mid_layer_preserves_shape_and_identity_base(self):
+        layer = ContinuousFrameFlowMid(76)
+        sample = torch.randn(9, 76)
+        self.assertEqual(layer(sample).shape, sample.shape)
+        torch.testing.assert_close(layer.base.weight, torch.eye(76))
+        torch.testing.assert_close(layer.base.bias, torch.zeros(76))
+
     def test_extracted_cff_matches_reference(self):
         torch.manual_seed(123)
         standalone = StandaloneCFF(2, 2, width=38)
