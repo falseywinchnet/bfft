@@ -83,4 +83,4 @@ struct InfoInit { InfoInit() {
 } } info_init;
 
 bool obs_module_load(void){obs_register_source(&info);rvfx_register_gpu_filter();
-    blog(LOG_INFO,"[Realtime Vector FX] CPU and GPU filters registered");return true;}
+    blog(LOG_INFO,"[Realtime Vector FX] CPU, GPU FX, and Optimal OKLCH Posterizer filters registered");return true;}

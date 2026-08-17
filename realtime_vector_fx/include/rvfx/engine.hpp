@@ -48,6 +48,13 @@ struct Config {
     std::uint32_t segments_per_frame = 2048;
     float detail_priority = 1.5f;
     float population_exponent = 0.70f;
+    float lightness_weight = 1.0f;
+    float chroma_weight = 1.0f;
+    float hue_weight = 1.0f;
+    float alpha_weight = 0.7f;
+    float node_separation = 1.0f;
+    std::uint32_t minimum_leaf = 8;
+    std::uint32_t bifurcation_refinement = 4;
     float prior_learning_rate = 0.14f;
     float trace_speed = 0.075f;
     float trace_persistence = 0.86f;
@@ -55,6 +62,7 @@ struct Config {
     std::uint32_t glyph_particles = 256;
     std::uint32_t glyph_spawn_per_frame = 6;
     bool glyph_layer = true;
+    bool posterize_only = false;
     GlyphMotion glyph_motion = GlyphMotion::Mixed;
     float frame_budget_ms = 1000.0f / 30.0f;
     EffectMode effect = EffectMode::Phosphor;

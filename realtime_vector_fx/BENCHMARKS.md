@@ -12,6 +12,9 @@ posterized compositing, and trace/glow drawing. Synthetic input generation is
 outside the timed interval, matching an OBS filter that receives an existing
 frame.
 
+The following table is the pre-bifurcation-port reference baseline for the
+combined FX engine.
+
 | Format | Scene | Resolution | Core p50 | Core p95 | Composited mean | Composited p95 | 30 fps |
 | --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | RGBA | changing | 1280×720 | 2.779 ms | 2.808 ms | 4.035 ms | 4.084 ms | pass |
@@ -27,6 +30,19 @@ The worst 1080p p95 currently consumes 17.0% of the 33.333 ms budget, leaving
 about 27.65 ms of headroom. Exact source-token reuse lowers static core p95 by
 52.8% for RGBA and 63.8% for NV12. This is an algorithmic reference benchmark, not yet an
 OBS capture-to-present latency measurement.
+
+After porting the occupied-space OKLCH bifurcation controls, current M4 Mini
+changing-RGBA measurements at 1920×1080 are:
+
+| Mode | Colors | Core p95 | Composited p95 | 30 fps |
+| --- | ---: | ---: | ---: | ---: |
+| Combined FX | 8 | 5.211 ms | 7.902 ms | pass |
+| Posterizer only | 24 | 9.211 ms | 11.612 ms | pass |
+| Posterizer only | 64 | 26.224 ms | 28.751 ms | pass |
+
+Posterizer-only mode skips topology, segment, glyph, trail-history, and overlay
+work. The 64-color row records the slower of two final 60-frame runs after 12
+warmups; the 8- and 24-color rows use 180 measured frames.
 
 The OBS 32.2.1 CPU and graphics adapters were also compiled against matching
 source headers, linked to the installed OBS framework, bundled, ad-hoc signed,

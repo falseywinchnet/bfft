@@ -15,16 +15,20 @@ int main(int argc,char** argv) {
     const std::uint32_t w=argc>1?static_cast<std::uint32_t>(std::stoul(argv[1])):1280;
     const std::uint32_t h=argc>2?static_cast<std::uint32_t>(std::stoul(argv[2])):720;
     const int frames=argc>3?std::stoi(argv[3]):180;
-    bool nv12=false,static_scene=false;
+    bool nv12=false,static_scene=false,poster_only=false;std::uint32_t poster_colors=24;
     for(int i=4;i<argc;++i){const std::string option=argv[i];
-        nv12|=option=="nv12";static_scene|=option=="static";}
+        nv12|=option=="nv12";static_scene|=option=="static";poster_only|=option=="poster";
+        if(option.rfind("colors=",0)==0)poster_colors=static_cast<std::uint32_t>(std::stoul(option.substr(7)));}
     std::vector<std::uint8_t> pixels(nv12?static_cast<std::size_t>(w)*h:
                                           static_cast<std::size_t>(w)*h*4);
     std::vector<std::uint8_t> uv(nv12?static_cast<std::size_t>(w)*((h+1)/2):0);
     rvfx::Config cfg; cfg.trace_width=480; cfg.palette_colors=8;
     cfg.palette_samples=4096; cfg.segments_per_frame=2048;
+    if(poster_only){cfg.posterize_only=true;cfg.palette_colors=std::clamp(poster_colors,2u,64u);cfg.node_separation=1.08f;
+        cfg.detail_priority=2.0f;cfg.population_exponent=.65f;cfg.glyph_layer=false;cfg.glyph_particles=0;}
     rvfx::Engine engine(cfg);
     std::vector<double> total, core;
+    double cold_core=0.0,cold_total=0.0;
     std::uint64_t reused_cells=0,changed_cells=0;
     for(int f=0;f<frames+12;++f) {
         const int scene_frame=static_scene?0:f;
@@ -58,6 +62,7 @@ int main(int argc,char** argv) {
         if(nv12){out.plane1=uv.data();out.stride1=w;}
         engine.render(in,out);
         const auto stop=std::chrono::steady_clock::now();
+        if(f==0){cold_core=stats.total_ms;cold_total=std::chrono::duration<double,std::milli>(stop-start).count();}
         if(f>=12) {
             core.push_back(stats.total_ms);
             reused_cells+=stats.reused_cells;changed_cells+=stats.changed_cells;
@@ -70,7 +75,9 @@ int main(int argc,char** argv) {
     std::cout<<std::fixed<<std::setprecision(3)
              <<"{\"resolution\":\""<<w<<"x"<<h<<"\",\"format\":\""<<(nv12?"nv12":"rgba")
              <<"\",\"scene\":\""<<(static_scene?"static":"changing")<<"\",\"frames\":"<<frames
+             <<",\"mode\":\""<<(poster_only?"poster":"fx")<<"\",\"colors\":"<<cfg.palette_colors
              <<",\"core_p50_ms\":"<<pct(core,.50)<<",\"core_p95_ms\":"<<pct(core,.95)
+             <<",\"cold_core_ms\":"<<cold_core<<",\"cold_composited_ms\":"<<cold_total
              <<",\"mean_reused_cells\":"<<(reused_cells/frames)
              <<",\"mean_changed_cells\":"<<(changed_cells/frames)
              <<",\"composited_mean_ms\":"<<mean<<",\"composited_p95_ms\":"<<pct(total,.95)

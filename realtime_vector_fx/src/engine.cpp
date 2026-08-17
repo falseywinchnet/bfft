@@ -64,7 +64,10 @@ struct Engine::Impl {
     std::vector<PaletteColor> palette;
     std::vector<Lab> sample_scratch;
     std::vector<float> sample_detail;
+    std::vector<float> sample_importance;
     std::vector<std::uint16_t> sample_owner;
+    std::vector<Lab> palette_centroids;
+    std::vector<Lab> palette_parents;
     std::vector<Lab> grid_lab;
     std::vector<std::uint64_t> grid_token;
     std::vector<std::uint16_t> labels;
@@ -99,6 +102,13 @@ struct Engine::Impl {
         c.segments_per_frame = std::max(1u, std::min(65536u, c.segments_per_frame));
         c.detail_priority = std::max(0.0f, std::min(8.0f, c.detail_priority));
         c.population_exponent = std::max(0.1f, std::min(1.0f, c.population_exponent));
+        c.lightness_weight = std::max(0.0f, std::min(4.0f, c.lightness_weight));
+        c.chroma_weight = std::max(0.0f, std::min(4.0f, c.chroma_weight));
+        c.hue_weight = std::max(0.0f, std::min(4.0f, c.hue_weight));
+        c.alpha_weight = std::max(0.0f, std::min(4.0f, c.alpha_weight));
+        c.node_separation = std::max(0.0f, std::min(2.5f, c.node_separation));
+        c.minimum_leaf = std::max(1u, std::min(256u, c.minimum_leaf));
+        c.bifurcation_refinement = std::min(12u, c.bifurcation_refinement);
         c.prior_learning_rate = std::max(0.001f, std::min(1.0f, c.prior_learning_rate));
         c.trace_speed = std::max(0.001f, std::min(1.0f, c.trace_speed));
         c.trace_persistence = std::max(0.0f, std::min(0.98f, c.trace_persistence));
@@ -164,29 +174,53 @@ struct Engine::Impl {
                 byte(128.0f+chroma*u), byte(128.0f+chroma*v)};
     }
 
-    static float distance2(const Lab& x, const PaletteColor& p) {
-        const float dl = x.l - p.l, da = x.a - p.a, db = x.b - p.b;
-        const float d_alpha = x.alpha - p.alpha;
-        return dl*dl + da*da + db*db + 0.35f*d_alpha*d_alpha;
+    float distance2(const Lab& x, const PaletteColor& p) const {
+        const float sample_c=std::hypot(x.a,x.b),center_c=std::hypot(p.a,p.b);
+        const float dl=cfg.lightness_weight*(x.l-p.l);
+        const float dc=cfg.chroma_weight*(sample_c-center_c);
+        float hue_term=0.0f;
+        if(sample_c>1e-8f&&center_c>1e-8f){
+            const float cosine=std::clamp((x.a*p.a+x.b*p.b)/(sample_c*center_c),-1.0f,1.0f);
+            hue_term=2.0f*cfg.hue_weight*cfg.hue_weight*sample_c*center_c*(1.0f-cosine);
+        }
+        const float da=cfg.alpha_weight*(x.alpha-p.alpha);
+        return dl*dl+dc*dc+hue_term+da*da;
     }
 
     static PaletteColor make_color(const Lab& c) {
+        Lab mapped=c;mapped.l=clamp01(mapped.l);mapped.alpha=clamp01(mapped.alpha);
+        const auto linear_rgb=[](const Lab& value){
+            const float l_=value.l+0.3963377774f*value.a+0.2158037573f*value.b;
+            const float m_=value.l-0.1055613458f*value.a-0.0638541728f*value.b;
+            const float s_=value.l-0.0894841775f*value.a-1.2914855480f*value.b;
+            const float l=l_*l_*l_,m=m_*m_*m_,s=s_*s_*s_;
+            return std::array<float,3>{4.0767416621f*l-3.3077115913f*m+0.2309699292f*s,
+                -1.2684380046f*l+2.6097574011f*m-0.3413193965f*s,
+                -0.0041960863f*l-0.7034186147f*m+1.7076147010f*s};
+        };
+        const auto in_gamut=[](const std::array<float,3>& rgb){
+            return rgb[0]>=0.0f&&rgb[0]<=1.0f&&rgb[1]>=0.0f&&rgb[1]<=1.0f&&rgb[2]>=0.0f&&rgb[2]<=1.0f;
+        };
+        auto rgb=linear_rgb(mapped);
+        const float chroma=std::hypot(mapped.a,mapped.b);
+        if(!in_gamut(rgb)&&chroma>1e-8f){
+            const float ua=mapped.a/chroma,ub=mapped.b/chroma;float low=0.0f,high=chroma;
+            for(int iteration=0;iteration<14;++iteration){
+                const float middle=.5f*(low+high);Lab candidate=mapped;
+                candidate.a=ua*middle;candidate.b=ub*middle;
+                if(in_gamut(linear_rgb(candidate)))low=middle;else high=middle;
+            }
+            mapped.a=ua*low;mapped.b=ub*low;rgb=linear_rgb(mapped);
+        }
         PaletteColor out;
-        out.l = c.l; out.a = c.a; out.b = c.b; out.alpha = clamp01(c.alpha);
-        const float l_ = c.l + 0.3963377774f*c.a + 0.2158037573f*c.b;
-        const float m_ = c.l - 0.1055613458f*c.a - 0.0638541728f*c.b;
-        const float s_ = c.l - 0.0894841775f*c.a - 1.2914855480f*c.b;
-        const float l = l_*l_*l_, m = m_*m_*m_, s = s_*s_*s_;
-        const float r = 4.0767416621f*l - 3.3077115913f*m + 0.2309699292f*s;
-        const float g = -1.2684380046f*l + 2.6097574011f*m - 0.3413193965f*s;
-        const float b = -0.0041960863f*l - 0.7034186147f*m + 1.7076147010f*s;
+        out.l=mapped.l;out.a=mapped.a;out.b=mapped.b;out.alpha=mapped.alpha;
         const auto gamma = [](float v) {
             v = clamp01(v);
             return v <= 0.0031308f ? 12.92f*v
                                   : 1.055f*std::pow(v, 1.0f/2.4f) - 0.055f;
         };
-        out.r = byte(255.0f * gamma(r)); out.g = byte(255.0f * gamma(g));
-        out.blue = byte(255.0f * gamma(b)); out.opacity = byte(255.0f*out.alpha);
+        out.r=byte(255.0f*gamma(rgb[0]));out.g=byte(255.0f*gamma(rgb[1]));
+        out.blue=byte(255.0f*gamma(rgb[2]));out.opacity=byte(255.0f*out.alpha);
         return out;
     }
 
@@ -210,6 +244,7 @@ struct Engine::Impl {
                                                  static_cast<std::size_t>(f.width) * f.height);
         sample_scratch.resize(count);
         sample_detail.resize(count);
+        sample_importance.resize(count);
         sample_owner.resize(count);
         const std::uint64_t total = static_cast<std::uint64_t>(f.width) * f.height;
         const std::uint64_t offset = mix64(frame_number + 0x9e3779b97f4a7c15ULL) % total;
@@ -225,24 +260,159 @@ struct Engine::Impl {
                 0.5f*(std::abs(c.a-dx.a)+std::abs(c.b-dx.b)+
                       std::abs(c.a-dy.a)+std::abs(c.b-dy.b));
         }
+        std::array<std::uint32_t,16*12*24> occupied{};
+        std::vector<std::uint16_t> bins(count);
+        for(std::size_t i=0;i<count;++i){
+            const auto& c=sample_scratch[i];
+            const auto light=static_cast<std::uint32_t>(std::clamp(c.l*15.999f,0.0f,15.0f));
+            const float chroma=std::hypot(c.a,c.b);
+            const auto chroma_bin=static_cast<std::uint32_t>(std::clamp(chroma/.4f*11.999f,0.0f,11.0f));
+            std::uint32_t hue_bin=0;
+            if(chroma>=.015f){
+                constexpr float pi=3.14159265358979323846f;
+                hue_bin=static_cast<std::uint32_t>(std::clamp((std::atan2(c.b,c.a)+pi)/(2*pi)*23.999f,0.0f,23.0f));
+            }
+            bins[i]=static_cast<std::uint16_t>((light*12u+chroma_bin)*24u+hue_bin);
+            ++occupied[bins[i]];
+        }
+        auto sorted_detail=sample_detail;
+        const auto percentile=sorted_detail.empty()?0u:9u*(sorted_detail.size()-1u)/10u;
+        if(!sorted_detail.empty())std::nth_element(sorted_detail.begin(),sorted_detail.begin()+percentile,sorted_detail.end());
+        const float scale=sorted_detail.empty()?1.0f:std::max(1e-6f,sorted_detail[percentile]);
+        double total_weight=0.0;
+        for(std::size_t i=0;i<count;++i){
+            const float detail=std::clamp(sample_detail[i]/scale,0.0f,4.0f);
+            const float rarity=std::pow(static_cast<float>(std::max(1u,occupied[bins[i]])),
+                                        cfg.population_exponent-1.0f);
+            sample_importance[i]=(1.0f+cfg.detail_priority*detail)*rarity;
+            total_weight+=sample_importance[i];
+        }
+        const float normalizer=count?static_cast<float>(count/std::max(total_weight,1e-12)):1.0f;
+        for(auto& weight:sample_importance)weight=std::clamp(weight*normalizer,.03f,30.0f);
+    }
+
+    Lab weighted_center(const std::vector<std::uint32_t>& indices) const {
+        double mass=0.0,l=0.0,a=0.0,b=0.0,alpha=0.0;
+        for(const auto index:indices){const double w=sample_importance[index];const auto& c=sample_scratch[index];
+            mass+=w;l+=w*c.l;a+=w*c.a;b+=w*c.b;alpha+=w*c.alpha;}
+        const double safe=std::max(mass,1e-15);return {static_cast<float>(l/safe),static_cast<float>(a/safe),
+            static_cast<float>(b/safe),static_cast<float>(alpha/safe)};
+    }
+
+    struct SplitProposal {
+        double gain=0.0;
+        std::vector<std::uint32_t> left,right;
+    };
+
+    SplitProposal propose_split(const std::vector<std::uint32_t>& indices) const {
+        SplitProposal best;if(indices.size()<2u*cfg.minimum_leaf)return best;
+        using Coordinate=std::array<double,4>;
+        std::vector<Coordinate> coordinates(indices.size());double mass=0.0,hx=0.0,hy=0.0,mean_chroma=0.0;
+        for(const auto index:indices){const double w=sample_importance[index];const auto& c=sample_scratch[index];
+            const double chroma=std::hypot(c.a,c.b);mass+=w;hx+=w*c.a;hy+=w*c.b;mean_chroma+=w*chroma;}
+        const double center_hue=std::atan2(hy,hx);mean_chroma/=std::max(mass,1e-15);
+        Coordinate center{};
+        for(std::size_t i=0;i<indices.size();++i){const auto& c=sample_scratch[indices[i]];
+            const double chroma=std::hypot(c.a,c.b);double hue=std::atan2(c.b,c.a)-center_hue;
+            hue=std::atan2(std::sin(hue),std::cos(hue));
+            coordinates[i]={cfg.lightness_weight*c.l,cfg.chroma_weight*chroma,
+                cfg.hue_weight*std::sqrt(std::max(chroma*mean_chroma,1e-8))*hue,cfg.alpha_weight*c.alpha};
+            const double w=sample_importance[indices[i]];for(int axis=0;axis<4;++axis)center[axis]+=w*coordinates[i][axis];
+        }
+        for(auto& value:center)value/=std::max(mass,1e-15);
+        double old_sse=0.0;std::array<std::array<double,4>,4> covariance{};
+        for(std::size_t i=0;i<indices.size();++i){const double w=sample_importance[indices[i]];Coordinate delta{};
+            for(int axis=0;axis<4;++axis)delta[axis]=coordinates[i][axis]-center[axis];
+            for(int row=0;row<4;++row)for(int column=0;column<4;++column)covariance[row][column]+=w*delta[row]*delta[column];
+            for(const auto value:delta)old_sse+=w*value*value;}
+        if(old_sse<=1e-14)return best;
+        Coordinate principal{1.0,0.0,0.0,0.0};
+        for(int iteration=0;iteration<12;++iteration){Coordinate next{};double norm=0.0;
+            for(int row=0;row<4;++row)for(int column=0;column<4;++column)next[row]+=covariance[row][column]*principal[column];
+            for(const auto value:next)norm+=value*value;norm=std::sqrt(norm);if(norm<=1e-15)break;
+            for(int axis=0;axis<4;++axis)principal[axis]=next[axis]/norm;}
+        std::array<Coordinate,5> directions{};directions[0]=principal;
+        for(int axis=0;axis<4;++axis)directions[axis+1][axis]=1.0;
+        for(const auto& direction:directions){
+            std::vector<std::size_t> order(indices.size());std::iota(order.begin(),order.end(),0u);
+            std::stable_sort(order.begin(),order.end(),[&](std::size_t left,std::size_t right){
+                double lp=0.0,rp=0.0;for(int axis=0;axis<4;++axis){lp+=coordinates[left][axis]*direction[axis];rp+=coordinates[right][axis]*direction[axis];}
+                return lp<rp;});
+            double left_mass=0.0,left_norm=0.0,total_norm=0.0;Coordinate left_sum{},total_sum{};
+            for(std::size_t i=0;i<indices.size();++i){const double w=sample_importance[indices[i]];double norm=0.0;
+                for(int axis=0;axis<4;++axis){total_sum[axis]+=w*coordinates[i][axis];norm+=coordinates[i][axis]*coordinates[i][axis];}
+                total_norm+=w*norm;}
+            double candidate_sse=std::numeric_limits<double>::max();std::size_t candidate_cut=0;
+            for(std::size_t position=0;position+cfg.minimum_leaf<order.size();++position){const auto i=order[position];
+                const double w=sample_importance[indices[i]];double norm=0.0;left_mass+=w;
+                for(int axis=0;axis<4;++axis){left_sum[axis]+=w*coordinates[i][axis];norm+=coordinates[i][axis]*coordinates[i][axis];}
+                left_norm+=w*norm;const std::size_t left_count=position+1,right_count=order.size()-left_count;
+                if(left_count<cfg.minimum_leaf||right_count<cfg.minimum_leaf)continue;
+                const double right_mass=mass-left_mass;if(left_mass<=1e-15||right_mass<=1e-15)continue;
+                double left_center_norm=0.0,right_center_norm=0.0;
+                for(int axis=0;axis<4;++axis){left_center_norm+=left_sum[axis]*left_sum[axis];
+                    const double right=total_sum[axis]-left_sum[axis];right_center_norm+=right*right;}
+                const double sse=left_norm-left_center_norm/left_mass+(total_norm-left_norm)-right_center_norm/right_mass;
+                if(sse<candidate_sse){candidate_sse=sse;candidate_cut=left_count;}
+            }
+            if(candidate_sse==std::numeric_limits<double>::max())continue;
+            std::vector<bool> side(indices.size(),true);for(std::size_t i=0;i<candidate_cut;++i)side[order[i]]=false;
+            for(std::uint32_t iteration=0;iteration<cfg.bifurcation_refinement;++iteration){
+                std::array<Coordinate,2> centers{};std::array<double,2> weights{};std::array<std::size_t,2> counts{};
+                for(std::size_t i=0;i<indices.size();++i){const auto group=side[i]?1u:0u;const double w=sample_importance[indices[i]];
+                    weights[group]+=w;++counts[group];for(int axis=0;axis<4;++axis)centers[group][axis]+=w*coordinates[i][axis];}
+                for(int group=0;group<2;++group)for(auto& value:centers[group])value/=std::max(weights[group],1e-15);
+                auto updated=side;std::array<std::size_t,2> next_counts{};
+                for(std::size_t i=0;i<indices.size();++i){double d0=0.0,d1=0.0;for(int axis=0;axis<4;++axis){
+                    const double a=coordinates[i][axis]-centers[0][axis],b=coordinates[i][axis]-centers[1][axis];d0+=a*a;d1+=b*b;}
+                    updated[i]=d1<d0;++next_counts[updated[i]?1u:0u];}
+                if(next_counts[0]<cfg.minimum_leaf||next_counts[1]<cfg.minimum_leaf||updated==side)break;side.swap(updated);
+            }
+            std::array<Coordinate,2> centers{};std::array<double,2> weights{};
+            for(std::size_t i=0;i<indices.size();++i){const auto group=side[i]?1u:0u;const double w=sample_importance[indices[i]];
+                weights[group]+=w;for(int axis=0;axis<4;++axis)centers[group][axis]+=w*coordinates[i][axis];}
+            for(int group=0;group<2;++group)for(auto& value:centers[group])value/=std::max(weights[group],1e-15);
+            double new_sse=0.0;for(std::size_t i=0;i<indices.size();++i){const auto group=side[i]?1u:0u;const double w=sample_importance[indices[i]];
+                for(int axis=0;axis<4;++axis){const double delta=coordinates[i][axis]-centers[group][axis];new_sse+=w*delta*delta;}}
+            const double gain=old_sse-new_sse;if(gain<=best.gain+1e-14)continue;
+            best={};best.gain=gain;best.left.reserve(indices.size());best.right.reserve(indices.size());
+            for(std::size_t i=0;i<indices.size();++i)(side[i]?best.right:best.left).push_back(indices[i]);
+        }
+        return best;
+    }
+
+    void refresh_palette() {
+        palette.resize(palette_centroids.size());
+        for(std::size_t i=0;i<palette.size();++i){const auto& center=palette_centroids[i];const auto& parent=palette_parents[i];
+            const Lab display{parent.l+cfg.node_separation*(center.l-parent.l),
+                parent.a+cfg.node_separation*(center.a-parent.a),parent.b+cfg.node_separation*(center.b-parent.b),
+                parent.alpha+cfg.node_separation*(center.alpha-parent.alpha)};
+            palette[i]=make_color(display);}
     }
 
     void seed_palette(const std::vector<Lab>& s) {
-        palette.clear();
-        if (s.empty()) return;
-        palette.push_back(make_color(s[s.size()/2]));
-        std::vector<float> nearest(s.size(), std::numeric_limits<float>::max());
-        while (palette.size() < cfg.palette_colors) {
-            std::size_t farthest = 0;
-            float farthest_d = -1.0f;
-            const auto& latest = palette.back();
-            for (std::size_t i = 0; i < s.size(); ++i) {
-                nearest[i] = std::min(nearest[i], distance2(s[i], latest));
-                if (nearest[i] > farthest_d) { farthest_d = nearest[i]; farthest = i; }
-            }
-            palette.push_back(make_color(s[farthest]));
+        struct Leaf { std::vector<std::uint32_t> indices;Lab center,parent;SplitProposal proposal; };
+        palette.clear();palette_centroids.clear();palette_parents.clear();if(s.empty())return;
+        // Exact split searches sort several candidate projections per leaf.
+        // Bound only that cold-start tree construction; the immediately
+        // following centroid update still consumes the full sample budget.
+        const std::size_t seed_count=std::min<std::size_t>(s.size(),1536u);
+        Leaf root;root.indices.resize(seed_count);
+        for(std::size_t i=0;i<seed_count;++i)root.indices[i]=static_cast<std::uint32_t>(i*s.size()/seed_count);
+        root.center=weighted_center(root.indices);root.parent=root.center;root.proposal=propose_split(root.indices);
+        std::vector<Leaf> leaves;leaves.push_back(std::move(root));
+        while(leaves.size()<cfg.palette_colors){std::size_t choice=leaves.size();double gain=0.0;
+            for(std::size_t i=0;i<leaves.size();++i)if(leaves[i].proposal.gain>gain){gain=leaves[i].proposal.gain;choice=i;}
+            if(choice==leaves.size())break;Leaf parent=std::move(leaves[choice]);leaves.erase(leaves.begin()+choice);
+            Leaf left,right;left.indices=std::move(parent.proposal.left);right.indices=std::move(parent.proposal.right);
+            left.center=weighted_center(left.indices);right.center=weighted_center(right.indices);
+            left.parent=right.parent=parent.center;left.proposal=propose_split(left.indices);right.proposal=propose_split(right.indices);
+            leaves.push_back(std::move(left));leaves.push_back(std::move(right));
         }
-        initialized = true;
+        for(const auto& leaf:leaves){palette_centroids.push_back(leaf.center);palette_parents.push_back(leaf.parent);}
+        while(palette_centroids.size()<cfg.palette_colors){const auto source=palette_centroids.size()%leaves.size();
+            palette_centroids.push_back(palette_centroids[source]);palette_parents.push_back(palette_parents[source]);}
+        refresh_palette();initialized=true;
     }
 
     void update_palette(const FrameView& f) {
@@ -251,21 +421,17 @@ struct Engine::Impl {
         if (!initialized || palette.size() != cfg.palette_colors) seed_palette(s);
         const std::size_t k = palette.size();
         std::array<double,64> weight{}, sl{}, sa{}, sb{}, salpha{};
-        std::array<std::uint32_t,64> population{};
         for (std::size_t i = 0; i < s.size(); ++i) {
             float best = std::numeric_limits<float>::max(); std::size_t bi = 0;
             for (std::size_t j = 0; j < k; ++j) {
                 const float d = distance2(s[i], palette[j]);
                 if (d < best) { best = d; bi = j; }
             }
-            sample_owner[i] = static_cast<std::uint16_t>(bi); ++population[bi];
+            sample_owner[i] = static_cast<std::uint16_t>(bi);
         }
         for (std::size_t i = 0; i < s.size(); ++i) {
             const auto j = sample_owner[i];
-            const float detail = sample_detail[i];
-            const double temper = std::pow(std::max(1u, population[j]),
-                                            cfg.population_exponent - 1.0f);
-            const double w = temper * (1.0 + cfg.detail_priority * std::min(1.0f, 5.0f*detail));
+            const double w = sample_importance[i];
             weight[j] += w; sl[j] += w*s[i].l; sa[j] += w*s[i].a;
             sb[j] += w*s[i].b; salpha[j] += w*s[i].alpha;
         }
@@ -273,12 +439,13 @@ struct Engine::Impl {
         for (std::size_t j = 0; j < k; ++j) if (weight[j] > 0.0) {
             Lab target{static_cast<float>(sl[j]/weight[j]), static_cast<float>(sa[j]/weight[j]),
                        static_cast<float>(sb[j]/weight[j]), static_cast<float>(salpha[j]/weight[j])};
-            Lab blended{palette[j].l + lr*(target.l-palette[j].l),
-                        palette[j].a + lr*(target.a-palette[j].a),
-                        palette[j].b + lr*(target.b-palette[j].b),
-                        palette[j].alpha + lr*(target.alpha-palette[j].alpha)};
-            palette[j] = make_color(blended);
+            auto& center=palette_centroids[j];auto& parent=palette_parents[j];
+            const Lab delta{lr*(target.l-center.l),lr*(target.a-center.a),lr*(target.b-center.b),
+                            lr*(target.alpha-center.alpha)};
+            center={center.l+delta.l,center.a+delta.a,center.b+delta.b,center.alpha+delta.alpha};
+            parent={parent.l+delta.l,parent.a+delta.a,parent.b+delta.b,parent.alpha+delta.alpha};
         }
+        refresh_palette();
     }
 
     void assign_lattice(const FrameView& f) {
@@ -541,8 +708,11 @@ struct Engine::Impl {
         const auto t0 = Clock::now(); ensure_shape(f);
         update_palette(f); const auto t1 = Clock::now();
         assign_lattice(f); const auto t2 = Clock::now();
-        update_edges(); const auto t3 = Clock::now();
-        emit_effects(); const auto t4 = Clock::now();
+        if(cfg.posterize_only){segments.clear();commands.clear();stats.live_glyphs=0;}
+        else update_edges();
+        const auto t3 = Clock::now();
+        if(!cfg.posterize_only)emit_effects();
+        const auto t4 = Clock::now();
         stats.palette_ms = millis(t0,t1); stats.posterize_ms = millis(t1,t2);
         stats.trace_ms = millis(t2,t3); stats.effects_ms = millis(t3,t4);
         stats.total_ms = millis(t0,t4); stats.active_segments = static_cast<std::uint32_t>(segments.size());
@@ -710,7 +880,17 @@ Engine::Engine(Config config) : impl_(std::make_unique<Impl>(config)) {}
 Engine::~Engine() = default;
 Engine::Engine(Engine&&) noexcept = default;
 Engine& Engine::operator=(Engine&&) noexcept = default;
-void Engine::set_config(const Config& c) { impl_->cfg=Impl::sanitize(c); impl_->reserve_outputs(); }
+void Engine::set_config(const Config& c) {
+    const auto next=Impl::sanitize(c);const auto& old=impl_->cfg;
+    const bool reseed=next.palette_colors!=old.palette_colors||next.palette_samples!=old.palette_samples||
+        next.detail_priority!=old.detail_priority||next.population_exponent!=old.population_exponent||
+        next.lightness_weight!=old.lightness_weight||next.chroma_weight!=old.chroma_weight||
+        next.hue_weight!=old.hue_weight||next.alpha_weight!=old.alpha_weight||
+        next.minimum_leaf!=old.minimum_leaf||next.bifurcation_refinement!=old.bifurcation_refinement;
+    const bool reseparate=next.node_separation!=old.node_separation;
+    impl_->cfg=next;if(reseed)impl_->initialized=false;else if(reseparate&&!impl_->palette_centroids.empty())impl_->refresh_palette();
+    impl_->reserve_outputs();
+}
 const Config& Engine::config() const noexcept { return impl_->cfg; }
 void Engine::reset() { const Config c=impl_->cfg; impl_=std::make_unique<Impl>(c); }
 const FrameStats& Engine::process(const FrameView& f) { impl_->process(f); return impl_->stats; }

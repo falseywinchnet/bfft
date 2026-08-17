@@ -13,6 +13,7 @@ namespace {
 
 constexpr const char* CPU_ID="realtime_vector_fx";
 constexpr const char* GPU_ID="realtime_vector_fx_gpu";
+constexpr const char* POSTER_ID="optimal_oklch_posterizer";
 #ifndef RVFX_SMOKE_WIDTH
 #define RVFX_SMOKE_WIDTH 640
 #endif
@@ -68,12 +69,14 @@ void synthetic_destroy(void* data) {
 void synthetic_render(void* data,gs_effect_t*) {
     auto* source=static_cast<SyntheticSource*>(data);
     const auto phase=source->render_count++;
-    const std::uint8_t rgba[]={
-        static_cast<std::uint8_t>(29u*phase),
-        static_cast<std::uint8_t>(71u*phase+53u),
-        static_cast<std::uint8_t>(113u*phase+107u),255};
-    for(std::size_t q=0;q<source->pixels.size();q+=4u)
-        std::memcpy(source->pixels.data()+q,rgba,sizeof(rgba));
+    for(std::uint32_t y=0;y<HEIGHT;++y)for(std::uint32_t x=0;x<WIDTH;++x){
+        const bool cell=((((x+3u*phase)/48u)+(y/40u))&1u)!=0;
+        const auto q=4u*(static_cast<std::size_t>(y)*WIDTH+x);
+        source->pixels[q]=static_cast<std::uint8_t>(cell?150u+(3u*phase)%90u:20u+(5u*phase)%55u);
+        source->pixels[q+1]=static_cast<std::uint8_t>(cell?45u+(7u*phase)%80u:95u+(2u*phase)%80u);
+        source->pixels[q+2]=static_cast<std::uint8_t>(cell?35u+(2u*phase)%65u:145u+(5u*phase)%100u);
+        source->pixels[q+3]=255;
+    }
     gs_texture_set_image(source->texture,source->pixels.data(),WIDTH*4u,false);
     obs_source_draw(source->texture,0,0,WIDTH,HEIGHT,false);
 }
@@ -168,11 +171,12 @@ int main(int argc,char** argv) {
             std::fprintf(stderr,"module load failed: %d\n",open_result);obs_shutdown();return 4;
         }
         register_synthetic_source();
-        if(!registered(CPU_ID)||!registered(GPU_ID)){
+        if(!registered(CPU_ID)||!registered(GPU_ID)||!registered(POSTER_ID)){
             std::fprintf(stderr,"expected filter registration missing\n");obs_shutdown();return 5;
         }
         obs_source_t* cpu=obs_source_create_private(CPU_ID,"rvfx-cpu-smoke",nullptr);
         obs_source_t* gpu=obs_source_create_private(GPU_ID,"rvfx-gpu-smoke",nullptr);
+        obs_source_t* poster=obs_source_create_private(POSTER_ID,"rvfx-poster-smoke",nullptr);
         obs_source_t* source=obs_source_create_private("rvfx_smoke_source","rvfx-input-smoke",nullptr);
         double baseline_ms=0.0,filtered_ms=0.0;
         const bool baseline_warm=source&&render_filter_chain(source,12,nullptr,nullptr);
@@ -209,18 +213,39 @@ int main(int argc,char** argv) {
                 mode_capture+="-";mode_capture+=mode_names[mode];mode_capture+=".ppm";}
             modes=modes&&render_filter_chain(source,8,capture?mode_capture.c_str():nullptr,nullptr);
         }
-        if(!cpu||!gpu||!source||!baseline||!rendered||!moving||!modes||logs.errors){
-            std::fprintf(stderr,"filter creation failed: cpu=%p gpu=%p moving=%d changes=%u errors=%d\n",
-                static_cast<void*>(cpu),static_cast<void*>(gpu),moving,changed_frames,logs.errors);
-            if(source&&gpu)obs_source_filter_remove(source,gpu);
+        if(source&&gpu)obs_source_filter_remove(source,gpu);
+        if(source&&poster)obs_source_filter_add(source,poster);
+        if(poster){
+            obs_data_t* settings=obs_source_get_settings(poster);
+            obs_data_set_double(settings,"rvfx_contour_strength",.45);
+            obs_data_set_double(settings,"rvfx_interior_ink",.18);
+            obs_data_set_double(settings,"rvfx_line_reach",1.25);
+            obs_data_set_double(settings,"rvfx_look_saturation",1.18);
+            obs_data_set_double(settings,"rvfx_look_contrast",1.12);
+            obs_source_update(poster,settings);obs_data_release(settings);
+        }
+        std::uint32_t poster_changes=0;
+        double poster_ms=0.0;std::string poster_capture;
+        if(capture){poster_capture=capture;const auto dot=poster_capture.rfind('.');
+            if(dot!=std::string::npos)poster_capture.resize(dot);poster_capture+="-poster-look.ppm";}
+        const bool posterized=source&&poster&&render_filter_chain(source,24,
+            capture?poster_capture.c_str():nullptr,&poster_ms,&poster_changes)&&
+            poster_changes>=12;
+        if(!cpu||!gpu||!poster||!source||!baseline||!rendered||!moving||!modes||!posterized||logs.errors){
+            std::fprintf(stderr,"filter creation failed: cpu=%p gpu=%p poster=%p moving=%d changes=%u poster_changes=%u errors=%d\n",
+                static_cast<void*>(cpu),static_cast<void*>(gpu),static_cast<void*>(poster),moving,changed_frames,
+                poster_changes,logs.errors);
+            if(source&&poster)obs_source_filter_remove(source,poster);
             if(source)obs_source_release(source);if(cpu)obs_source_release(cpu);if(gpu)obs_source_release(gpu);
+            if(poster)obs_source_release(poster);
             obs_shutdown();return 6;
         }
-        obs_source_filter_remove(source,gpu);obs_source_release(source);
-        obs_source_release(gpu);obs_source_release(cpu);obs_shutdown();
+        obs_source_filter_remove(source,poster);obs_source_release(source);
+        obs_source_release(poster);obs_source_release(gpu);obs_source_release(cpu);obs_shutdown();
         std::printf("rvfx Metal %ux%u baseline %.3f ms, filtered %.3f ms, overhead %.3f ms\n",
             WIDTH,HEIGHT,baseline_ms,filtered_ms,filtered_ms-baseline_ms);
-        std::puts("rvfx OBS module, all GPU effects/motions, Metal shaders, and rendered filter chain passed");
+        std::printf("rvfx poster look total %.3f ms/frame\n",poster_ms);
+        std::puts("rvfx OBS module, Optimal OKLCH Posterizer, all GPU effects/motions, Metal shaders, and changing filter chains passed");
         return 0;
     }
 }

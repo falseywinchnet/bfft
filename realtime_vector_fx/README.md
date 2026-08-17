@@ -30,6 +30,30 @@ posterizer and topology-first vector tracing ideas, designed around a strict
    rendering so the OBS GPU filter can posterize the full-resolution texture
    with a shader and stream only low-resolution analysis pixels to the CPU.
 
+## Dedicated posterizer filter
+
+The OBS bundle also registers **Optimal OKLCH Posterizer**, a posterization-only
+GPU filter. It does not allocate trace-history textures or a geometry buffer,
+and the core skips edge extraction, segment scheduling, glyph simulation, and
+all overlay work. Its properties expose 2–64 colors plus the original
+posterizer's node separation, lightness/chroma/hue/alpha metric weights, detail
+priority, sublinear area exponent, minimum leaf size, split-refinement passes,
+sample budget, analysis resolution, and temporal-prior learning rate.
+
+A lightweight GPU-only finish adds optional graphic contours at palette-region
+boundaries, restrained luminance-detail ink inside those regions, line reach,
+saturation, and contrast. The defaults are intentionally subtle. Setting both
+ink sliders to zero and saturation/contrast to `1.0` restores the unadorned
+posterized appearance; this finish does not create or schedule vector segments.
+
+The cold palette seed uses the original occupied-space strategy: rarity/detail
+importance, local cylindrical OKLCH tangent coordinates, principal and
+coordinate split proposals, exact weighted SSE cut searches, deterministic
+two-means refinement, and globally gain-prioritized leaf splitting. Display
+nodes retain gamut-safe lightness and hue when separation pushes chroma beyond
+sRGB. Full-budget temporal centroid updates then keep palette identities stable
+from frame to frame.
+
 No allocations occur in the full-lattice, palette-sampling, ownership, or
 edge-update inner loops after a resolution and configuration are established.
 

@@ -141,6 +141,17 @@ int main() {
     assert(svg.find("<svg")!=std::string::npos&&svg.find("<path")!=std::string::npos);
     assert(svg.find("#82b361")!=std::string::npos&&svg.find("<text")!=std::string::npos);
 
+    // The dedicated posterizer path retains the occupied-space OKLCH palette
+    // controls while skipping all topology, trace, and glyph work.
+    rvfx::Config poster_cfg=cfg;poster_cfg.posterize_only=true;poster_cfg.palette_colors=64;
+    poster_cfg.glyph_layer=false;poster_cfg.glyph_particles=0;poster_cfg.node_separation=1.08f;
+    poster_cfg.detail_priority=2.0f;poster_cfg.population_exponent=.65f;
+    poster_cfg.lightness_weight=1.0f;poster_cfg.chroma_weight=1.0f;poster_cfg.hue_weight=1.0f;
+    rvfx::Engine posterizer(poster_cfg);const auto poster_stats=posterizer.process(view(a,w,h));
+    assert(posterizer.palette().size()==64);
+    assert(posterizer.active_segments().empty()&&posterizer.commands().empty());
+    assert(poster_stats.trace_ms<.1&&poster_stats.effects_ms<.1);
+
     cfg.glyph_layer=false; cfg.effect=rvfx::EffectMode::LiquidMetal; engine.set_config(cfg);
     engine.process(view(a,w,h));
     assert(std::all_of(engine.commands().begin(),engine.commands().end(),[](const auto& c){

@@ -18,6 +18,22 @@ constexpr const char* K_PERSISTENCE="rvfx_persistence";
 constexpr const char* K_EFFECT="rvfx_effect";
 constexpr const char* K_GLYPHS="rvfx_glyphs";
 constexpr const char* K_GLYPH_MOTION="rvfx_glyph_motion";
+constexpr const char* K_SAMPLES="rvfx_palette_samples";
+constexpr const char* K_LIGHTNESS="rvfx_lightness_weight";
+constexpr const char* K_CHROMA="rvfx_chroma_weight";
+constexpr const char* K_HUE="rvfx_hue_weight";
+constexpr const char* K_ALPHA="rvfx_alpha_weight";
+constexpr const char* K_SEPARATION="rvfx_node_separation";
+constexpr const char* K_DETAIL="rvfx_detail_priority";
+constexpr const char* K_POPULATION="rvfx_population_exponent";
+constexpr const char* K_PRIOR="rvfx_prior_learning_rate";
+constexpr const char* K_MIN_LEAF="rvfx_minimum_leaf";
+constexpr const char* K_REFINEMENT="rvfx_bifurcation_refinement";
+constexpr const char* K_CONTOUR="rvfx_contour_strength";
+constexpr const char* K_INTERIOR_INK="rvfx_interior_ink";
+constexpr const char* K_LINE_REACH="rvfx_line_reach";
+constexpr const char* K_SATURATION="rvfx_look_saturation";
+constexpr const char* K_CONTRAST="rvfx_look_contrast";
 constexpr std::size_t VERTEX_CAPACITY=262144;
 
 const char* POSTER_EFFECT=R"(
@@ -25,6 +41,14 @@ uniform float4x4 ViewProj;
 uniform texture2d image;
 uniform texture2d label_image;
 uniform texture2d palette_image;
+uniform float2 label_texel;
+uniform float2 source_texel;
+uniform float contour_strength;
+uniform float interior_ink;
+uniform float line_reach;
+uniform float look_saturation;
+uniform float look_contrast;
+uniform float look_enabled;
 
 sampler_state linear_sampler { Filter=Linear; AddressU=Clamp; AddressV=Clamp; };
 sampler_state point_sampler { Filter=Point; AddressU=Clamp; AddressV=Clamp; };
@@ -38,7 +62,30 @@ VertData VSDefault(VertData v_in) {
 float4 PSPoster(VertData v_in) : TARGET {
     float index=floor(label_image.Sample(point_sampler,v_in.uv).r*255.0+0.5);
     float4 poster=palette_image.Sample(point_sampler,float2((index+0.5)/64.0,0.5));
-    poster.a=image.Sample(linear_sampler,v_in.uv).a;
+    float4 source=image.Sample(linear_sampler,v_in.uv);
+    poster.a=source.a;
+    if (look_enabled<0.5) return poster;
+    float reach=max(line_reach,0.0);
+    float left=label_image.Sample(point_sampler,v_in.uv-float2(label_texel.x*reach,0.0)).r;
+    float right=label_image.Sample(point_sampler,v_in.uv+float2(label_texel.x*reach,0.0)).r;
+    float up=label_image.Sample(point_sampler,v_in.uv-float2(0.0,label_texel.y*reach)).r;
+    float down=label_image.Sample(point_sampler,v_in.uv+float2(0.0,label_texel.y*reach)).r;
+    float center=index/255.0;
+    float contour=max(max(step(0.5/255.0,abs(center-left)),step(0.5/255.0,abs(center-right))),
+                      max(step(0.5/255.0,abs(center-up)),step(0.5/255.0,abs(center-down))));
+    float source_left=dot(image.Sample(linear_sampler,v_in.uv-float2(source_texel.x*reach,0.0)).rgb,
+                          float3(0.2126,0.7152,0.0722));
+    float source_right=dot(image.Sample(linear_sampler,v_in.uv+float2(source_texel.x*reach,0.0)).rgb,
+                           float3(0.2126,0.7152,0.0722));
+    float source_up=dot(image.Sample(linear_sampler,v_in.uv-float2(0.0,source_texel.y*reach)).rgb,
+                        float3(0.2126,0.7152,0.0722));
+    float source_down=dot(image.Sample(linear_sampler,v_in.uv+float2(0.0,source_texel.y*reach)).rgb,
+                          float3(0.2126,0.7152,0.0722));
+    float detail=saturate(2.5*(abs(source_right-source_left)+abs(source_down-source_up)));
+    float luminance=dot(poster.rgb,float3(0.2126,0.7152,0.0722));
+    poster.rgb=lerp(float3(luminance,luminance,luminance),poster.rgb,look_saturation);
+    poster.rgb=saturate((poster.rgb-0.5)*look_contrast+0.5);
+    poster.rgb*=1.0-saturate(contour_strength*contour+interior_ink*detail);
     return poster;
 }
 technique Draw { pass { vertex_shader=VSDefault(v_in); pixel_shader=PSPoster(v_in); } }
@@ -79,6 +126,7 @@ technique Draw { pass { vertex_shader=VSDefault(v_in); pixel_shader=PSTrail(v_in
 
 struct GpuFilter {
     obs_source_t* source=nullptr;
+    bool poster_only=false;
     std::mutex settings_mutex;
     rvfx::Config pending;
     rvfx::Config active;
@@ -100,6 +148,10 @@ struct GpuFilter {
     std::array<std::uint8_t,64*4> palette_bytes{};
     std::uint32_t target_width=0,target_height=0,analysis_width=0,analysis_height=0;
     bool ready=false;
+    struct PosterLook {
+        float contour=0.0f,interior_ink=0.0f,line_reach=1.0f;
+        float saturation=1.0f,contrast=1.0f;
+    } pending_look,active_look;
 };
 
 void destroy_graphics(GpuFilter* f) {
@@ -127,28 +179,64 @@ rvfx::Config read_config(obs_data_t* settings) {
     return c;
 }
 
-void* gpu_create(obs_data_t* settings,obs_source_t* source) {
-    auto* f=new GpuFilter;f->source=source;f->pending=read_config(settings);f->active=f->pending;
+rvfx::Config read_poster_config(obs_data_t* settings) {
+    rvfx::Config c;
+    c.posterize_only=true;c.glyph_layer=false;c.glyph_particles=0;
+    c.palette_colors=static_cast<std::uint32_t>(obs_data_get_int(settings,K_COLORS));
+    c.trace_width=static_cast<std::uint32_t>(obs_data_get_int(settings,K_TRACE_WIDTH));
+    c.palette_samples=static_cast<std::uint32_t>(obs_data_get_int(settings,K_SAMPLES));
+    c.lightness_weight=static_cast<float>(obs_data_get_double(settings,K_LIGHTNESS));
+    c.chroma_weight=static_cast<float>(obs_data_get_double(settings,K_CHROMA));
+    c.hue_weight=static_cast<float>(obs_data_get_double(settings,K_HUE));
+    c.alpha_weight=static_cast<float>(obs_data_get_double(settings,K_ALPHA));
+    c.node_separation=static_cast<float>(obs_data_get_double(settings,K_SEPARATION));
+    c.detail_priority=static_cast<float>(obs_data_get_double(settings,K_DETAIL));
+    c.population_exponent=static_cast<float>(obs_data_get_double(settings,K_POPULATION));
+    c.prior_learning_rate=static_cast<float>(obs_data_get_double(settings,K_PRIOR));
+    c.minimum_leaf=static_cast<std::uint32_t>(obs_data_get_int(settings,K_MIN_LEAF));
+    c.bifurcation_refinement=static_cast<std::uint32_t>(obs_data_get_int(settings,K_REFINEMENT));
+    return c;
+}
+
+GpuFilter::PosterLook read_poster_look(obs_data_t* settings) {
+    GpuFilter::PosterLook look;
+    look.contour=static_cast<float>(obs_data_get_double(settings,K_CONTOUR));
+    look.interior_ink=static_cast<float>(obs_data_get_double(settings,K_INTERIOR_INK));
+    look.line_reach=static_cast<float>(obs_data_get_double(settings,K_LINE_REACH));
+    look.saturation=static_cast<float>(obs_data_get_double(settings,K_SATURATION));
+    look.contrast=static_cast<float>(obs_data_get_double(settings,K_CONTRAST));
+    return look;
+}
+
+void* gpu_create_impl(obs_data_t* settings,obs_source_t* source,bool poster_only) {
+    auto* f=new GpuFilter;f->source=source;f->poster_only=poster_only;
+    f->pending=poster_only?read_poster_config(settings):read_config(settings);f->active=f->pending;
+    if(poster_only)f->pending_look=f->active_look=read_poster_look(settings);
     f->engine.set_config(f->active);char* errors=nullptr;
     obs_enter_graphics();
     f->poster_effect=gs_effect_create(POSTER_EFFECT,"realtime-vector-poster.effect",&errors);
     if(errors){blog(LOG_ERROR,"[Realtime Vector FX GPU] poster shader: %s",errors);bfree(errors);errors=nullptr;}
-    f->overlay_effect=gs_effect_create(OVERLAY_EFFECT,"realtime-vector-overlay.effect",&errors);
-    if(errors){blog(LOG_ERROR,"[Realtime Vector FX GPU] overlay shader: %s",errors);bfree(errors);}
-    errors=nullptr;f->trail_effect=gs_effect_create(TRAIL_EFFECT,"realtime-vector-trail.effect",&errors);
-    if(errors){blog(LOG_ERROR,"[Realtime Vector FX GPU] trail shader: %s",errors);bfree(errors);}
-    if(f->poster_effect&&f->overlay_effect&&f->trail_effect){
-        auto* data=gs_vbdata_create();data->num=VERTEX_CAPACITY;
-        data->points=static_cast<vec3*>(bzalloc(sizeof(vec3)*VERTEX_CAPACITY));
-        data->colors=static_cast<std::uint32_t*>(bzalloc(sizeof(std::uint32_t)*VERTEX_CAPACITY));
-        f->vertices=gs_vertexbuffer_create(data,GS_DYNAMIC);
+    if(!poster_only){
+        f->overlay_effect=gs_effect_create(OVERLAY_EFFECT,"realtime-vector-overlay.effect",&errors);
+        if(errors){blog(LOG_ERROR,"[Realtime Vector FX GPU] overlay shader: %s",errors);bfree(errors);errors=nullptr;}
+        f->trail_effect=gs_effect_create(TRAIL_EFFECT,"realtime-vector-trail.effect",&errors);
+        if(errors){blog(LOG_ERROR,"[Realtime Vector FX GPU] trail shader: %s",errors);bfree(errors);errors=nullptr;}
+        if(f->poster_effect&&f->overlay_effect&&f->trail_effect){
+            auto* data=gs_vbdata_create();data->num=VERTEX_CAPACITY;
+            data->points=static_cast<vec3*>(bzalloc(sizeof(vec3)*VERTEX_CAPACITY));
+            data->colors=static_cast<std::uint32_t*>(bzalloc(sizeof(std::uint32_t)*VERTEX_CAPACITY));
+            f->vertices=gs_vertexbuffer_create(data,GS_DYNAMIC);
+        }
     }
     obs_leave_graphics();
-    if(!f->poster_effect||!f->overlay_effect||!f->trail_effect||!f->vertices){
+    if(!f->poster_effect||(!poster_only&&(!f->overlay_effect||!f->trail_effect||!f->vertices))){
         obs_enter_graphics();destroy_graphics(f);obs_leave_graphics();delete f;return nullptr;
     }
     return f;
 }
+
+void* gpu_create(obs_data_t* settings,obs_source_t* source){return gpu_create_impl(settings,source,false);}
+void* poster_create(obs_data_t* settings,obs_source_t* source){return gpu_create_impl(settings,source,true);}
 
 void gpu_destroy(void* data) {
     auto* f=static_cast<GpuFilter*>(data);obs_enter_graphics();destroy_graphics(f);obs_leave_graphics();delete f;
@@ -156,7 +244,8 @@ void gpu_destroy(void* data) {
 
 void gpu_update(void* data,obs_data_t* settings) {
     auto* f=static_cast<GpuFilter*>(data);std::lock_guard<std::mutex> lock(f->settings_mutex);
-    f->pending=read_config(settings);
+    f->pending=f->poster_only?read_poster_config(settings):read_config(settings);
+    if(f->poster_only)f->pending_look=read_poster_look(settings);
 }
 
 bool ensure_analysis(GpuFilter* f,std::uint32_t width,std::uint32_t height) {
@@ -169,7 +258,8 @@ bool ensure_analysis(GpuFilter* f,std::uint32_t width,std::uint32_t height) {
     for(auto& stage:f->stage){if(stage)gs_stagesurface_destroy(stage);stage=nullptr;}
     if(f->analysis_render)gs_texrender_destroy(f->analysis_render);
     f->analysis_render=gs_texrender_create(GS_RGBA,GS_ZS_NONE);
-    for(auto& trail:f->trail_render){if(trail)gs_texrender_destroy(trail);trail=gs_texrender_create(GS_RGBA,GS_ZS_NONE);}
+    for(auto& trail:f->trail_render){if(trail)gs_texrender_destroy(trail);trail=nullptr;
+        if(!f->poster_only)trail=gs_texrender_create(GS_RGBA,GS_ZS_NONE);}
     f->stage[0]=gs_stagesurface_create(aw,ah,GS_RGBA);
     f->stage[1]=gs_stagesurface_create(aw,ah,GS_RGBA);
     f->label_bytes.assign(static_cast<std::size_t>(aw)*ah,0);
@@ -180,7 +270,7 @@ bool ensure_analysis(GpuFilter* f,std::uint32_t width,std::uint32_t height) {
     f->target_width=width;f->target_height=height;f->analysis_width=aw;f->analysis_height=ah;
     f->written={false,false};f->stage_index=0;f->ready=false;f->trail_ready=false;
     f->trail_current=0;f->engine.reset();
-    return f->analysis_render&&f->trail_render[0]&&f->trail_render[1]&&
+    return f->analysis_render&&(f->poster_only||(f->trail_render[0]&&f->trail_render[1]))&&
         f->stage[0]&&f->stage[1]&&f->label_texture&&f->palette_texture;
 }
 
@@ -322,7 +412,7 @@ void stage_target(GpuFilter* f) {
 void gpu_render(void* data,gs_effect_t*) {
     auto* f=static_cast<GpuFilter*>(data);auto* target=obs_filter_get_target(f->source);
     if(!target){obs_source_skip_video_filter(f->source);return;}
-    {std::lock_guard<std::mutex> lock(f->settings_mutex);f->active=f->pending;}
+    {std::lock_guard<std::mutex> lock(f->settings_mutex);f->active=f->pending;f->active_look=f->pending_look;}
     f->engine.set_config(f->active);
     const auto width=obs_source_get_base_width(target),height=obs_source_get_base_height(target);
     if(!width||!height||!ensure_analysis(f,width,height)){obs_source_skip_video_filter(f->source);return;}
@@ -340,11 +430,23 @@ void gpu_render(void* data,gs_effect_t*) {
     if(!obs_source_process_filter_begin(f->source,GS_RGBA,OBS_NO_DIRECT_RENDERING))return;
     gs_effect_set_texture(gs_effect_get_param_by_name(f->poster_effect,"label_image"),f->label_texture);
     gs_effect_set_texture(gs_effect_get_param_by_name(f->poster_effect,"palette_image"),f->palette_texture);
+    vec2 label_texel,source_texel;
+    vec2_set(&label_texel,1.0f/f->analysis_width,1.0f/f->analysis_height);
+    vec2_set(&source_texel,1.0f/width,1.0f/height);
+    gs_effect_set_vec2(gs_effect_get_param_by_name(f->poster_effect,"label_texel"),&label_texel);
+    gs_effect_set_vec2(gs_effect_get_param_by_name(f->poster_effect,"source_texel"),&source_texel);
+    gs_effect_set_float(gs_effect_get_param_by_name(f->poster_effect,"contour_strength"),f->active_look.contour);
+    gs_effect_set_float(gs_effect_get_param_by_name(f->poster_effect,"interior_ink"),f->active_look.interior_ink);
+    gs_effect_set_float(gs_effect_get_param_by_name(f->poster_effect,"line_reach"),f->active_look.line_reach);
+    gs_effect_set_float(gs_effect_get_param_by_name(f->poster_effect,"look_saturation"),f->active_look.saturation);
+    gs_effect_set_float(gs_effect_get_param_by_name(f->poster_effect,"look_contrast"),f->active_look.contrast);
+    gs_effect_set_float(gs_effect_get_param_by_name(f->poster_effect,"look_enabled"),f->poster_only?1.0f:0.0f);
     obs_source_process_filter_end(f->source,f->poster_effect,width,height);
-    update_trails(f);composite_trails(f);
+    if(!f->poster_only){update_trails(f);composite_trails(f);}
 }
 
 const char* gpu_name(void*){return "Realtime Vector FX (GPU)";}
+const char* poster_name(void*){return "Optimal OKLCH Posterizer";}
 void gpu_defaults(obs_data_t* s){obs_data_set_default_int(s,K_COLORS,8);obs_data_set_default_int(s,K_TRACE_WIDTH,480);
     obs_data_set_default_int(s,K_SEGMENTS,2048);obs_data_set_default_int(s,K_EFFECT,0);
     obs_data_set_default_double(s,K_PERSISTENCE,.86);obs_data_set_default_int(s,K_GLYPHS,256);
@@ -361,12 +463,53 @@ obs_properties_t* gpu_properties(void*){auto* p=obs_properties_create();
     auto* m=obs_properties_add_list(p,K_GLYPH_MOTION,"Glyph motion",OBS_COMBO_TYPE_LIST,OBS_COMBO_FORMAT_INT);
     obs_property_list_add_int(m,"Falling",0);obs_property_list_add_int(m,"Arcing",1);obs_property_list_add_int(m,"Mixed",2);return p;}
 
+void poster_defaults(obs_data_t* s){
+    obs_data_set_default_int(s,K_COLORS,24);obs_data_set_default_int(s,K_TRACE_WIDTH,480);
+    obs_data_set_default_int(s,K_SAMPLES,4096);obs_data_set_default_double(s,K_LIGHTNESS,1.0);
+    obs_data_set_default_double(s,K_CHROMA,1.0);obs_data_set_default_double(s,K_HUE,1.0);
+    obs_data_set_default_double(s,K_ALPHA,.7);obs_data_set_default_double(s,K_SEPARATION,1.08);
+    obs_data_set_default_double(s,K_DETAIL,2.0);obs_data_set_default_double(s,K_POPULATION,.65);
+    obs_data_set_default_double(s,K_PRIOR,.14);obs_data_set_default_int(s,K_MIN_LEAF,8);
+    obs_data_set_default_int(s,K_REFINEMENT,4);
+    obs_data_set_default_double(s,K_CONTOUR,.16);obs_data_set_default_double(s,K_INTERIOR_INK,.06);
+    obs_data_set_default_double(s,K_LINE_REACH,.65);obs_data_set_default_double(s,K_SATURATION,1.06);
+    obs_data_set_default_double(s,K_CONTRAST,1.04);
+}
+
+obs_properties_t* poster_properties(void*){auto* p=obs_properties_create();
+    obs_properties_add_int_slider(p,K_COLORS,"Colors",2,64,1);
+    obs_properties_add_float_slider(p,K_CONTOUR,"Graphic contour strength",0.0,1.0,0.01);
+    obs_properties_add_float_slider(p,K_INTERIOR_INK,"Interior detail ink",0.0,0.5,0.01);
+    obs_properties_add_float_slider(p,K_LINE_REACH,"Ink line reach",0.0,2.5,0.05);
+    obs_properties_add_float_slider(p,K_SATURATION,"Look saturation",0.5,1.8,0.01);
+    obs_properties_add_float_slider(p,K_CONTRAST,"Look contrast",0.5,1.8,0.01);
+    obs_properties_add_int_slider(p,K_TRACE_WIDTH,"Analysis resolution (width)",160,960,16);
+    obs_properties_add_int_slider(p,K_SAMPLES,"Palette sample budget",512,16384,512);
+    obs_properties_add_float_slider(p,K_SEPARATION,"Node separation",0.0,2.5,0.01);
+    obs_properties_add_float_slider(p,K_LIGHTNESS,"Lightness weight",0.0,4.0,0.05);
+    obs_properties_add_float_slider(p,K_CHROMA,"Chroma weight",0.0,4.0,0.05);
+    obs_properties_add_float_slider(p,K_HUE,"Hue weight",0.0,4.0,0.05);
+    obs_properties_add_float_slider(p,K_ALPHA,"Alpha weight",0.0,4.0,0.05);
+    obs_properties_add_float_slider(p,K_DETAIL,"Detail priority",0.0,8.0,0.1);
+    obs_properties_add_float_slider(p,K_POPULATION,"Area exponent",0.1,1.0,0.01);
+    obs_properties_add_float_slider(p,K_PRIOR,"Temporal prior learning",0.01,1.0,0.01);
+    obs_properties_add_int_slider(p,K_MIN_LEAF,"Minimum bifurcation leaf",1,64,1);
+    obs_properties_add_int_slider(p,K_REFINEMENT,"Bifurcation refinement passes",0,12,1);
+    return p;
+}
+
 obs_source_info gpu_info{};
+obs_source_info poster_info{};
 struct GpuInfoInit { GpuInfoInit(){gpu_info.id="realtime_vector_fx_gpu";gpu_info.type=OBS_SOURCE_TYPE_FILTER;
     gpu_info.output_flags=OBS_SOURCE_VIDEO|OBS_SOURCE_SRGB;gpu_info.get_name=gpu_name;gpu_info.create=gpu_create;
     gpu_info.destroy=gpu_destroy;gpu_info.update=gpu_update;gpu_info.get_defaults=gpu_defaults;
-    gpu_info.get_properties=gpu_properties;gpu_info.video_render=gpu_render;} } gpu_info_init;
+    gpu_info.get_properties=gpu_properties;gpu_info.video_render=gpu_render;
+    poster_info.id="optimal_oklch_posterizer";poster_info.type=OBS_SOURCE_TYPE_FILTER;
+    poster_info.output_flags=OBS_SOURCE_VIDEO|OBS_SOURCE_SRGB;poster_info.get_name=poster_name;
+    poster_info.create=poster_create;poster_info.destroy=gpu_destroy;poster_info.update=gpu_update;
+    poster_info.get_defaults=poster_defaults;poster_info.get_properties=poster_properties;
+    poster_info.video_render=gpu_render;} } gpu_info_init;
 
 } // namespace
 
-void rvfx_register_gpu_filter(){obs_register_source(&gpu_info);}
+void rvfx_register_gpu_filter(){obs_register_source(&gpu_info);obs_register_source(&poster_info);}
