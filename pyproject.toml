@@ -24,6 +24,11 @@ jpeg-lab = [
     "Pillow>=10.0",
     "scipy>=1.10",
 ]
+png-lab = [
+    "dearpygui>=1.11",
+    "Pillow>=10.0",
+    "scipy>=1.10",
+]
 
 [project.urls]
 Homepage = "https://github.com/falseywinchnet/bfft"
