@@ -318,6 +318,21 @@ def chirp_1d(seed=0):
     return _regression_1d("chirp_1d", lambda x: .55*torch.sin(.85*x.square()+.3*x) + .2*torch.sin(13*x)/(1+.12*x.square()), 5100 + seed)
 
 
+def poly_drifted_chirp_1d(seed=0):
+    """Amplitude- and phase-drifting chirp supplied by the user.
+
+    The model observes normalized coordinates in [-1, 1], corresponding to
+    physical x in [-pi, pi], and is evaluated through [-2, 2].
+    """
+    def function(normalized_x):
+        x = math.pi * normalized_x
+        return (1 + .2*x + .05*x.square()) * torch.sin(4*x + .4*x.square())
+    return _regression_1d(
+        "poly_drifted_chirp_1d", function, 5150 + seed,
+        train_limit=1.0, test_limit=2.0,
+    )
+
+
 def localized_steps_1d(seed=0):
     def function(x):
         return .25*x + .55*torch.tanh(18*(x+1.1)) - .7*torch.tanh(24*(x-.45)) + .35*torch.exp(-45*(x-2.1).square())
@@ -337,5 +352,6 @@ TASK_BUILDERS = {
     "ripple": ripple, "ring_sdf": ring_sdf, "complex_spiral_3d": complex_spiral_3d,
     "periodic_nd": periodic_nd, "hyperchecker": hyperchecker,
     "multiscale_1d": multiscale_1d, "chirp_1d": chirp_1d,
+    "poly_drifted_chirp_1d": poly_drifted_chirp_1d,
     "localized_steps_1d": localized_steps_1d, "fourier_mix_1d": fourier_mix_1d,
 }

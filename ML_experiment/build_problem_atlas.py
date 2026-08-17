@@ -40,6 +40,7 @@ DESCRIPTIONS = {
     "hyperchecker": "10-D parity classes · PCA view",
     "multiscale_1d": "1-D smooth, local, and high-frequency structure",
     "chirp_1d": "1-D continuously changing frequency",
+    "poly_drifted_chirp_1d": "1-D polynomial amplitude and phase drift · outer bands withheld",
     "localized_steps_1d": "1-D piecewise localized steps",
     "fourier_mix_1d": "1-D mixed incommensurate frequencies",
 }

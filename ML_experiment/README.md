@@ -1,7 +1,7 @@
 # ML experiment: self-context Eikonal acquisition
 
 This folder is a self-contained checkpoint of the structure-learning study. It
-contains the model, all 22 tasks, five additions to the self-context baseline,
+contains the model, all 23 tasks, five additions to the self-context baseline,
 the exact-budget ordinary LELU MLP control, raw results, fitted probes, an
 interactive visualization, and the research interpretation.
 
@@ -28,6 +28,13 @@ Fourier basis, periodic feature map, unseen-support label, or GELU activation.
   dogfood and the continuous full-space frame-flow result.
 - [`CONTINUOUS_FRAME_FULL.md`](CONTINUOUS_FRAME_FULL.md): full 22-task matched
   comparison and the transport lessons from segmentation and Meyer splitting.
+- [`FRAME_REFINEMENT_REPORT.md`](FRAME_REFINEMENT_REPORT.md): 84-fit optimizer,
+  capacity, and speed study, including polynomial drifted chirp and the spatial
+  3-D spiral.
+- [`frame_refinement.html`](frame_refinement.html): paired acquisition deltas
+  and fitted geometry with an explicit observed/extrapolated boundary.
+- [`continuous_frame_flow.py`](continuous_frame_flow.py): standalone PyTorch
+  reference/fast layer and hybrid CPU Muon helper.
 - [`continuous_frame_full.html`](continuous_frame_full.html): complete truth,
   vanilla MLP, self-context, and continuous-frame-flow fitted-function atlas.
 - [`radial_dogfood.html`](radial_dogfood.html): truth, fitted fields, radial
@@ -62,7 +69,7 @@ Seven parameter-identical variants are compared:
 
 `models.py` contains LELU, the soft Eikonal layer, and the exact-budget MLP.
 `variants.py` constructs the seven matched models. `tasks.py` contains the full
-22-problem suite. `build_problem_atlas.py` compacts the fitted probes into the
+23-problem suite. `build_problem_atlas.py` compacts the fitted probes into the
 responsive all-problem visualization.
 
 ## Reproduce on the M4 Mini CPU
@@ -133,6 +140,24 @@ Full continuous-frame-flow benchmark:
   --out /tmp/continuous_frame_full --widths 24 --seeds 2 \
   --steps 500 --batch 256 --eval-every 25 \
   --variants ordinary_mlp,self_context,self_context_stiefel_flow_curvature
+```
+
+Optimizer/capacity/speed refinement:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  PYTHONPATH=/Users/joshuahkuttenkuler/Library/Python/3.9/lib/python/site-packages \
+  python3 -m ML_experiment.run_frame_refinement \
+  --out /tmp/frame_refinement_full --seeds 2 --steps 500
+```
+
+After copying those results back, regenerate its paired summary and report:
+
+```sh
+python3 -m ML_experiment.analyze_frame_refinement \
+  ML_experiment/results_frame_refinement/results.json \
+  --out ML_experiment/results_frame_refinement/summary.json
+python3 -m ML_experiment.build_frame_refinement
 ```
 
 After copying its results and probes back, rebuild the complete report with:

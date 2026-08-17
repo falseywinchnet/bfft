@@ -66,6 +66,13 @@ RADIAL_FRAME_VARIANTS = (
     "self_context_stiefel_cycle_curvature",
     "self_context_stiefel_flow",
     "self_context_stiefel_flow_curvature",
+    "self_context_stiefel_flow_curvature_frozen",
+    "self_context_stiefel_flow_curvature_up",
+    "self_context_stiefel_flow_curvature_down",
+    "self_context_stiefel_flow_curvature_frozen_up",
+    "self_context_stiefel_flow_curvature_frozen_down",
+    "self_context_stiefel_flow_curvature_hutch2",
+    "self_context_stiefel_flow_curvature_frozen_hutch2",
     "self_context_stiefel_flow_smooth25_curvature",
     "self_context_stiefel_flow_smooth50_curvature",
     "self_context_stiefel_flow_24_curvature",
@@ -140,6 +147,41 @@ def make_variant(name: str, input_dim: int, output_dim: int, width: int):
         model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25,
                                primitive_mode="stiefel_flow",
                                jet_mode="curvature_context_orthogonal")
+    elif name == "self_context_stiefel_flow_curvature_frozen":
+        model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25,
+                               primitive_mode="stiefel_flow",
+                               jet_mode="curvature_context_orthogonal",
+                               shell_metric_mode="frozen")
+    elif name == "self_context_stiefel_flow_curvature_up":
+        model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25,
+                               primitive_mode="stiefel_flow",
+                               jet_mode="curvature_context_orthogonal",
+                               curvature_layers="up")
+    elif name == "self_context_stiefel_flow_curvature_down":
+        model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25,
+                               primitive_mode="stiefel_flow",
+                               jet_mode="curvature_context_orthogonal",
+                               curvature_layers="down")
+    elif name == "self_context_stiefel_flow_curvature_frozen_up":
+        model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25,
+                               primitive_mode="stiefel_flow",
+                               jet_mode="curvature_context_orthogonal",
+                               shell_metric_mode="frozen", curvature_layers="up")
+    elif name == "self_context_stiefel_flow_curvature_frozen_down":
+        model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25,
+                               primitive_mode="stiefel_flow",
+                               jet_mode="curvature_context_orthogonal",
+                               shell_metric_mode="frozen", curvature_layers="down")
+    elif name == "self_context_stiefel_flow_curvature_hutch2":
+        model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25,
+                               primitive_mode="stiefel_flow",
+                               jet_mode="curvature_context_orthogonal",
+                               shell_samples=2)
+    elif name == "self_context_stiefel_flow_curvature_frozen_hutch2":
+        model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25,
+                               primitive_mode="stiefel_flow",
+                               jet_mode="curvature_context_orthogonal",
+                               shell_metric_mode="frozen", shell_samples=2)
     elif name == "self_context_stiefel_flow_smooth25_curvature":
         model = SoftEikonalNet(input_dim, output_dim, width, self_context_strength=.25,
                                primitive_mode="stiefel_flow", allocation_smoothing=.25,

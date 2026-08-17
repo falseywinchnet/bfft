@@ -63,7 +63,12 @@ def jacobian_variability(model, x, maximum=24):
 
 @torch.no_grad()
 def soft_diagnostics(model, task):
-    sample = task.x_val[:512]; model.set_diagnostic_mode("matched"); _ = model(sample); diagnostics = model.diagnostics()
+    sample = task.x_val[:512]
+    model.set_diagnostic_mode("matched")
+    model.set_diagnostics_enabled(True)
+    _ = model(sample)
+    diagnostics = model.diagnostics()
+    model.set_diagnostics_enabled(False)
     values = {}
     for layer, state in diagnostics.items():
         weight = state["weight"]

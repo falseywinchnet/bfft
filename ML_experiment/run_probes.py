@@ -34,11 +34,23 @@ def field_probe(task, model, size):
 
 
 def curve_probe(task, model):
-    x = task.x_test; output = physical(task, predict(model, x)); truth = physical(task, task.y_test)
+    x = task.x_test
+    target = task.y_test
+    if task.output_dim == 3:
+        # The spatial plot must show what was observed and what is genuinely
+        # continuation.  Join a deterministic observed subset to the ordered
+        # extrapolation curve and retain the exact boundary as metadata.
+        observed = torch.argsort(task.x_val.squeeze(1))
+        x = torch.cat((task.x_val[observed], task.x_test))
+        target = torch.cat((task.y_val[observed], task.y_test))
+    output = physical(task, predict(model, x)); truth = physical(task, target)
+    train_limits = [float(task.x_train.min()), float(task.x_train.max())]
     if output.shape[1] == 3:
-        return {"type": "curve3d", "input": x.squeeze(1).tolist(), "prediction": output.tolist(), "truth": truth.tolist()}
+        return {"type": "curve3d", "input": x.squeeze(1).tolist(),
+                "prediction": output.tolist(), "truth": truth.tolist(),
+                "train_limits": train_limits}
     return {"type": "curve", "x": x.squeeze(1).tolist(), "prediction": output.squeeze(1).tolist(),
-            "truth": truth.squeeze(1).tolist(), "train_limits": [-3, 3]}
+            "truth": truth.squeeze(1).tolist(), "train_limits": train_limits}
 
 
 def scatter_probe(task, model, maximum=1200):

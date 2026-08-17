@@ -55,6 +55,7 @@ def gradient_groups(model):
 @torch.no_grad()
 def state_snapshot(model, sample):
     model.eval()
+    model.set_diagnostics_enabled(True)
     _ = model(sample)
     values = {}
     for layer, state in model.diagnostics().items():
@@ -69,6 +70,7 @@ def state_snapshot(model, sample):
         values[f"{layer}_correction_ratio"] = float(
             (state["correction_norm"] / (state["base_norm"] + 1e-8)).mean()
         )
+    model.set_diagnostics_enabled(False)
     return values
 
 

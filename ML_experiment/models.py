@@ -24,7 +24,8 @@ class SoftEikonalLinear(nn.Module):
                  context_steps: int = 1, uncertainty_context: bool = False,
                  jet_mode: str = "none", nested_self_context: bool = False,
                  transport_mode: str = "none", value_mode: str = "transported",
-                 primitive_mode: str = "random", allocation_smoothing: float = 0.0):
+                 primitive_mode: str = "random", allocation_smoothing: float = 0.0,
+                 shell_metric_mode: str = "dynamic", shell_samples: int | None = None):
         super().__init__()
         self.directions, self.rank = directions, rank
         self.temperature = float(temperature)
@@ -50,6 +51,12 @@ class SoftEikonalLinear(nn.Module):
                               "ray_energy", "transported_plus_energy"}:
             raise ValueError(value_mode)
         self.value_mode = value_mode
+        if shell_metric_mode not in {"dynamic", "frozen"}:
+            raise ValueError(shell_metric_mode)
+        self.shell_metric_mode = shell_metric_mode
+        self.shell_samples = rank if shell_samples is None else int(shell_samples)
+        if not 1 <= self.shell_samples <= rank:
+            raise ValueError(shell_samples)
         self.allocation_smoothing = float(allocation_smoothing)
         if not 0 <= self.allocation_smoothing <= 1:
             raise ValueError(allocation_smoothing)
@@ -107,10 +114,23 @@ class SoftEikonalLinear(nn.Module):
         else:
             raise ValueError(primitive_mode)
         self.register_buffer("primitive", primitive)
+        if self.shell_samples == rank:
+            shell_mixer = torch.eye(rank)
+        else:
+            # Fixed dense directions form a deterministic Hutchinson trace
+            # estimate over the complete learned tangent subspace.  Reducing
+            # probes does not discard named rays or introduce task axes.
+            mixer_source = torch.randn(rank, rank, generator=generator)
+            shell_mixer, _ = torch.linalg.qr(mixer_source)
+            shell_mixer = shell_mixer[:, :self.shell_samples].transpose(0, 1)
+        self.register_buffer("shell_mixer", shell_mixer)
         self.shared = nn.Parameter(torch.randn(rank, n_out) / math.sqrt(rank))
         self.response = nn.Sequential(nn.Linear(4, 12), LELU(), nn.Linear(12, 1))
         self.scale = nn.Parameter(torch.tensor(-1.5))
         self.diagnostic_mode = "matched"
+        # Training does not consume the spectral/JS summaries below.  Keep
+        # them opt-in so measurement cannot tax the mechanism being measured.
+        self.capture_diagnostics = False
         self.last_diagnostics: dict[str, torch.Tensor] = {}
         self.last_weight: torch.Tensor | None = None
 
@@ -119,11 +139,10 @@ class SoftEikonalLinear(nn.Module):
             raise ValueError(mode)
         self.diagnostic_mode = mode
 
-    def _allocate(self, x):
-        batch = len(x)
-        factor = self.metric(x).view(batch, self.rank, self.rank)
-        metric = factor @ factor.transpose(1, 2) / self.rank
-        projected = torch.einsum("dri,bi->bdr", self.primitive, x)
+    def set_diagnostics_enabled(self, enabled: bool):
+        self.capture_diagnostics = enabled
+
+    def _allocation_weights(self, metric, projected):
         cost = torch.einsum("bdr,brs,bds->bd", projected, metric, projected)
         norm = projected.square().mean(-1)
         stats = torch.stack((torch.log1p(cost), torch.log1p(norm), projected.mean(-1),
@@ -135,6 +154,14 @@ class SoftEikonalLinear(nn.Module):
             neighbor = .5 * (torch.roll(weight, 1, 1) + torch.roll(weight, -1, 1))
             weight = ((1 - self.allocation_smoothing) * weight
                       + self.allocation_smoothing * neighbor)
+        return weight
+
+    def _allocate(self, x):
+        batch = len(x)
+        factor = self.metric(x).view(batch, self.rank, self.rank)
+        metric = factor @ factor.transpose(1, 2) / self.rank
+        projected = torch.einsum("dri,bi->bdr", self.primitive, x)
+        weight = self._allocation_weights(metric, projected)
         return metric, projected, weight
 
     def _lift_context(self, projected, weight):
@@ -168,6 +195,8 @@ class SoftEikonalLinear(nn.Module):
             identity = torch.eye(self.rank, device=x.device, dtype=x.dtype)[None]
             cholesky = torch.linalg.cholesky(gram + 1e-3 * identity)
             frame = torch.linalg.solve_triangular(cholesky, frame, upper=False)
+        if self.shell_samples != self.rank:
+            frame = torch.einsum("sr,bri->bsi", self.shell_mixer, frame)
         # The shell is one self-context step from the authentic chart point.
         # Euclidean norm makes the radius invariant to hidden width.
         radius = (self.self_context_strength * radius_scale
@@ -177,11 +206,12 @@ class SoftEikonalLinear(nn.Module):
                             x[:, None, :] - displacement), dim=1)
         _, probe_projected, probe_weight = self._allocate(probes.flatten(0, 1))
         probe_pooled = torch.einsum("bd,bdr->br", probe_weight, probe_projected)
-        probe_pooled = probe_pooled.view(batch, 2 * self.rank, self.rank)
-        plus, minus = probe_pooled[:, :self.rank], probe_pooled[:, self.rank:]
+        probe_pooled = probe_pooled.view(batch, 2 * self.shell_samples, self.rank)
+        plus, minus = (probe_pooled[:, :self.shell_samples],
+                       probe_pooled[:, self.shell_samples:])
         return plus + minus - 2 * pooled[:, None, :]
 
-    def _shell_context_curvature(self, x, projected, weight, orthogonal=False):
+    def _shell_context_curvature(self, x, metric, projected, weight, orthogonal=False):
         """Lift the even shell response back into activation coordinates."""
         batch = len(x)
         center = torch.einsum("bd,bdr,dri->bi", weight, projected, self.primitive) / self.rank
@@ -195,17 +225,37 @@ class SoftEikonalLinear(nn.Module):
             identity = torch.eye(self.rank, device=x.device, dtype=x.dtype)[None]
             cholesky = torch.linalg.cholesky(gram + 1e-3 * identity)
             frame = torch.linalg.solve_triangular(cholesky, frame, upper=False)
+        if self.shell_samples != self.rank:
+            frame = torch.einsum("sr,bri->bsi", self.shell_mixer, frame)
         radius = (self.self_context_strength
                   * x.norm(dim=1, keepdim=True).detach().clamp_min(1e-3))
         displacement = radius[:, None, :] * frame
-        probes = torch.cat((x[:, None, :] + displacement,
-                            x[:, None, :] - displacement), dim=1)
-        _, probe_projected, probe_weight = self._allocate(probes.flatten(0, 1))
+        if self.shell_metric_mode == "frozen":
+            # The center measures the local metric once.  Because every view
+            # projection is linear, transport shell projections exactly rather
+            # than recomputing either coordinates or geometry at each probe.
+            delta_projected = torch.einsum(
+                "dki,bsi->bsdk", self.primitive, displacement
+            )
+            center_projected = projected[:, None]
+            probe_projected = torch.cat(
+                (center_projected + delta_projected,
+                 center_projected - delta_projected), dim=1
+            ).flatten(0, 1)
+            probe_metric = metric[:, None].expand(
+                -1, 2 * self.shell_samples, -1, -1
+            ).flatten(0, 1)
+            probe_weight = self._allocation_weights(probe_metric, probe_projected)
+        else:
+            probes = torch.cat((x[:, None, :] + displacement,
+                                x[:, None, :] - displacement), dim=1)
+            _, probe_projected, probe_weight = self._allocate(probes.flatten(0, 1))
         probe_context = torch.einsum(
             "bd,bdr,dri->bi", probe_weight, probe_projected, self.primitive
         ) / self.rank
-        probe_context = probe_context.view(batch, 2 * self.rank, x.shape[1])
-        plus, minus = probe_context[:, :self.rank], probe_context[:, self.rank:]
+        probe_context = probe_context.view(batch, 2 * self.shell_samples, x.shape[1])
+        plus, minus = (probe_context[:, :self.shell_samples],
+                       probe_context[:, self.shell_samples:])
         return (plus + minus - 2 * center[:, None, :]).mean(dim=1)
 
     def _shell_allocation(self, x, weight):
@@ -370,12 +420,12 @@ class SoftEikonalLinear(nn.Module):
                              "curvature_context_parallel", "curvature_chart_parallel",
                              "curvature_context_orthogonal"}:
             curvature_context = self._shell_context_curvature(
-                chart_input, projected, weight,
+                chart_input, metric, projected, weight,
                 orthogonal=self.jet_mode == "curvature_context_orthogonal",
             )
             curvature_rms = curvature_context.square().mean(1, keepdim=True).sqrt().clamp_min(1e-6)
             chart_rms = chart_input.square().mean(1, keepdim=True).sqrt().detach().clamp_min(1e-6)
-            chart_points += 2 * self.rank
+            chart_points += 2 * self.shell_samples
             if self.jet_mode == "curvature_context_detached":
                 curvature_context = curvature_context.detach()
                 injected = curvature_context * (chart_rms / curvature_rms.detach())
@@ -483,23 +533,25 @@ class SoftEikonalLinear(nn.Module):
         correction = F.softplus(self.scale) * (pooled @ self.shared)
         if self.diagnostic_mode == "base_only":
             correction = torch.zeros_like(correction)
-        eigenvalues = torch.linalg.eigvalsh(metric.detach()).clamp_min(1e-8)
-        midpoint = .5 * (initial_weight + matched_weight)
-        allocation_js = .5 * (
-            (initial_weight * (torch.log(initial_weight + 1e-9) - torch.log(midpoint + 1e-9))).sum(1)
-            + (matched_weight * (torch.log(matched_weight + 1e-9) - torch.log(midpoint + 1e-9))).sum(1)
-        )
-        self.last_diagnostics = {
-            "weight": matched_weight.detach(),
-            "entropy": (-(matched_weight * torch.log(matched_weight + 1e-9)).sum(1) / math.log(self.directions)).detach(),
-            "condition": (eigenvalues[:, -1] / eigenvalues[:, 0]).detach(),
-            "base_norm": self.base(x).detach().norm(dim=1),
-            "correction_norm": correction.detach().norm(dim=1),
-            "allocation_js": allocation_js.detach(),
-            "chart_points": torch.full((batch,), chart_points, device=x.device),
-            **{key: value.detach().squeeze(-1) for key, value in extra_diagnostics.items()},
-        }
-        return self.base(x) + correction
+        base_output = self.base(x)
+        if self.capture_diagnostics:
+            eigenvalues = torch.linalg.eigvalsh(metric.detach()).clamp_min(1e-8)
+            midpoint = .5 * (initial_weight + matched_weight)
+            allocation_js = .5 * (
+                (initial_weight * (torch.log(initial_weight + 1e-9) - torch.log(midpoint + 1e-9))).sum(1)
+                + (matched_weight * (torch.log(matched_weight + 1e-9) - torch.log(midpoint + 1e-9))).sum(1)
+            )
+            self.last_diagnostics = {
+                "weight": matched_weight.detach(),
+                "entropy": (-(matched_weight * torch.log(matched_weight + 1e-9)).sum(1) / math.log(self.directions)).detach(),
+                "condition": (eigenvalues[:, -1] / eigenvalues[:, 0]).detach(),
+                "base_norm": base_output.detach().norm(dim=1),
+                "correction_norm": correction.detach().norm(dim=1),
+                "allocation_js": allocation_js.detach(),
+                "chart_points": torch.full((batch,), chart_points, device=x.device),
+                **{key: value.detach().squeeze(-1) for key, value in extra_diagnostics.items()},
+            }
+        return base_output + correction
 
 
 class SoftEikonalNet(nn.Module):
@@ -509,30 +561,43 @@ class SoftEikonalNet(nn.Module):
                  jet_mode: str = "none", nested_self_context: bool = False,
                  transport_mode: str = "none", value_mode: str = "transported",
                  primitive_mode: str = "random", directions: int = 12,
-                 rank: int = 4, allocation_smoothing: float = 0.0):
+                 rank: int = 4, allocation_smoothing: float = 0.0,
+                 shell_metric_mode: str = "dynamic", curvature_layers: str = "both",
+                 shell_samples: int | None = None):
         super().__init__()
+        if curvature_layers not in {"both", "up", "down"}:
+            raise ValueError(curvature_layers)
+        up_jet = jet_mode if curvature_layers in {"both", "up"} else "none"
+        down_jet = jet_mode if curvature_layers in {"both", "down"} else "none"
         self.embed = nn.Linear(input_dim, width)
         self.up = SoftEikonalLinear(width, 2 * width, directions=directions, rank=rank,
                                     temperature=temperature,
                                     self_context_strength=self_context_strength,
                                     context_steps=context_steps, uncertainty_context=uncertainty_context,
-                                    jet_mode=jet_mode, nested_self_context=nested_self_context,
+                                    jet_mode=up_jet, nested_self_context=nested_self_context,
                                     transport_mode=transport_mode, value_mode=value_mode,
                                     primitive_mode=primitive_mode,
-                                    allocation_smoothing=allocation_smoothing)
+                                    allocation_smoothing=allocation_smoothing,
+                                    shell_metric_mode=shell_metric_mode,
+                                    shell_samples=shell_samples)
         self.down = SoftEikonalLinear(2 * width, width, directions=directions, rank=rank,
                                       temperature=temperature,
                                       self_context_strength=self_context_strength,
                                       context_steps=context_steps, uncertainty_context=uncertainty_context,
-                                      jet_mode=jet_mode, nested_self_context=nested_self_context,
+                                      jet_mode=down_jet, nested_self_context=nested_self_context,
                                       transport_mode=transport_mode, value_mode=value_mode,
                                       primitive_mode=primitive_mode,
-                                      allocation_smoothing=allocation_smoothing)
+                                      allocation_smoothing=allocation_smoothing,
+                                      shell_metric_mode=shell_metric_mode,
+                                      shell_samples=shell_samples)
         self.activation = LELU()
         self.output = nn.Linear(width, output_dim)
 
     def set_diagnostic_mode(self, mode: str):
         self.up.set_diagnostic_mode(mode); self.down.set_diagnostic_mode(mode)
+
+    def set_diagnostics_enabled(self, enabled: bool):
+        self.up.set_diagnostics_enabled(enabled); self.down.set_diagnostics_enabled(enabled)
 
     def forward(self, x):
         return self.output(self.down(self.activation(self.up(self.embed(x)))))

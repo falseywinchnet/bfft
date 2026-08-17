@@ -10,6 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path: sys.path.insert(0, str(ROOT))
 
 from ML_experiment.models import parameter_count
+from ML_experiment.optimizers import MuonWithAuxAdamW, zeropower_newton_schulz5
+from ML_experiment.continuous_frame_flow import ContinuousFrameFlow
 from ML_experiment.run_benchmark import chart_loss, secant_loss
 from ML_experiment.tasks import TASK_BUILDERS
 from ML_experiment.variants import JET_VARIANTS, RADIAL_ENERGY_VARIANTS, RADIAL_FRAME_VARIANTS, RADIAL_INTEGRAL_VARIANTS, RADIAL_LAB_VARIANTS, RADIAL_PARALLEL_VARIANTS, RADIAL_SHELL_VARIANTS, TRANSPORT_VARIANTS, VARIANTS, make_variant
@@ -20,6 +22,7 @@ class SupersetTests(unittest.TestCase):
         required = {"spiral", "checkerboard", "two_moons", "pinwheel", "xor_quads", "sinusoid_bounds",
                     "radial_stripes", "swiss_cheese", "lorenz_lobes", "periodic_wells", "ripple", "ring_sdf",
                     "complex_spiral_3d", "periodic_nd", "hyperchecker", "multiscale_1d", "chirp_1d",
+                    "poly_drifted_chirp_1d",
                     "localized_steps_1d", "fourier_mix_1d", "nd_spiral_low_rank", "nd_spiral_high_rank",
                     "hypercube_checker"}
         self.assertEqual(required, set(TASK_BUILDERS))
@@ -77,6 +80,7 @@ class SupersetTests(unittest.TestCase):
 
     def test_bounded_curvature_reports_subunit_authority(self):
         model = make_variant("self_context_jet_curvature_bounded", 3, 2, 16)
+        model.set_diagnostics_enabled(True)
         _ = model(torch.randn(19, 3))
         for layer in model.diagnostics().values():
             authority = layer["curvature_authority"]
@@ -128,6 +132,59 @@ class SupersetTests(unittest.TestCase):
             self.assertTrue(all(p.grad is None or torch.isfinite(p.grad).all()
                                 for p in model.parameters()))
 
+    def test_frozen_transport_shell_and_single_scale_variants_are_finite(self):
+        names = (
+            "self_context_stiefel_flow_curvature_frozen",
+            "self_context_stiefel_flow_curvature_up",
+            "self_context_stiefel_flow_curvature_down",
+            "self_context_stiefel_flow_curvature_frozen_up",
+            "self_context_stiefel_flow_curvature_frozen_down",
+            "self_context_stiefel_flow_curvature_hutch2",
+            "self_context_stiefel_flow_curvature_frozen_hutch2",
+        )
+        baseline = make_variant("self_context_stiefel_flow_curvature", 3, 2, 16)
+        for name in names:
+            model = make_variant(name, 3, 2, 16)
+            output = model(torch.randn(23, 3))
+            self.assertEqual(parameter_count(model), parameter_count(baseline))
+            self.assertTrue(torch.isfinite(output).all())
+            output.square().mean().backward()
+            self.assertTrue(all(p.grad is None or torch.isfinite(p.grad).all()
+                                for p in model.parameters()))
+
+    def test_muon_orthogonalization_and_auxiliary_updates_are_finite(self):
+        gradient = torch.randn(12, 7)
+        update = zeropower_newton_schulz5(gradient)
+        self.assertEqual(update.shape, gradient.shape)
+        self.assertTrue(torch.isfinite(update).all())
+        model = make_variant("self_context_stiefel_flow_curvature_frozen", 3, 2, 16)
+        before = {name: parameter.detach().clone()
+                  for name, parameter in model.named_parameters()}
+        optimizer = MuonWithAuxAdamW(model, lr=3e-3)
+        loss = model(torch.randn(31, 3)).square().mean()
+        loss.backward(); optimizer.step()
+        self.assertTrue(all(torch.isfinite(parameter).all()
+                            for parameter in model.parameters()))
+        self.assertTrue(any(not torch.equal(before[name], parameter)
+                            for name, parameter in model.named_parameters()
+                            if parameter.ndim == 2))
+        self.assertTrue(any(not torch.equal(before[name], parameter)
+                            for name, parameter in model.named_parameters()
+                            if parameter.ndim == 1))
+
+    def test_standalone_frame_flow_matches_experiment_implementation(self):
+        torch.manual_seed(47)
+        experiment = make_variant("self_context_stiefel_flow_curvature", 3, 2, 16)
+        standalone = ContinuousFrameFlow(3, 2, width=16)
+        source = experiment.state_dict()
+        translated = {}
+        for name in standalone.state_dict():
+            source_name = name.replace("frame_atlas", "primitive")
+            translated[name] = source[source_name]
+        standalone.load_state_dict(translated)
+        x = torch.randn(29, 3)
+        self.assertTrue(torch.allclose(experiment(x), standalone(x), atol=1e-6, rtol=1e-5))
+
     def test_eikonal_energy_values_are_parameter_matched_and_finite(self):
         x = torch.randn(23, 3)
         baseline = make_variant("self_context", 3, 2, 16)
@@ -154,9 +211,10 @@ class SupersetTests(unittest.TestCase):
     def test_stored_probe_atlas_is_the_full_product(self):
         stored = json.loads((Path(__file__).parent / "results_confirm/probes.json").read_text())["probes"]
         expected_variants = {"ordinary_mlp", "self_context", "self_context_hard", "self_context_chart"}
-        self.assertEqual(len(stored), len(TASK_BUILDERS) * len(expected_variants))
+        stored_tasks = set(TASK_BUILDERS) - {"poly_drifted_chirp_1d"}
+        self.assertEqual(len(stored), len(stored_tasks) * len(expected_variants))
         self.assertEqual(
-            {(task, variant) for task in TASK_BUILDERS for variant in expected_variants},
+            {(task, variant) for task in stored_tasks for variant in expected_variants},
             {(row["task"], row["variant"]) for row in stored},
         )
 
