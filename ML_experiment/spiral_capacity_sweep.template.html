@@ -1,0 +1,79 @@
+<div id="spiral-capacity-sweep-viz">
+  <style>
+    #spiral-capacity-sweep-viz{font-family:var(--font-sans);color:var(--foreground);width:100%}
+    #spiral-capacity-sweep-viz *{box-sizing:border-box}
+    #spiral-capacity-sweep-viz h2{font-size:22px;line-height:1.2;margin:0 0 4px;font-weight:680}
+    #spiral-capacity-sweep-viz h3{font-size:16px;line-height:1.3;margin:0 0 10px;font-weight:650}
+    #spiral-capacity-sweep-viz .lede{margin:0;color:var(--muted-foreground);font-size:13px}
+    #spiral-capacity-sweep-viz section{margin-top:24px}
+    #spiral-capacity-sweep-viz .legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:12px}
+    #spiral-capacity-sweep-viz .legend button{appearance:none;background:transparent;border:0;color:var(--foreground);padding:0;display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:12px;cursor:pointer}
+    #spiral-capacity-sweep-viz .legend button[aria-pressed="false"]{opacity:.38}
+    #spiral-capacity-sweep-viz .swatch{width:16px;height:3px;background:var(--series);display:inline-block}
+    #spiral-capacity-sweep-viz .metric-plots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+    #spiral-capacity-sweep-viz .plot-title,#spiral-capacity-sweep-viz .row-title{font-size:13px;font-weight:620;margin-bottom:4px}
+    #spiral-capacity-sweep-viz svg{display:block;width:100%;height:auto;overflow:visible}
+    #spiral-capacity-sweep-viz text{fill:var(--foreground);font-size:12px}
+    #spiral-capacity-sweep-viz .axis path,#spiral-capacity-sweep-viz .axis line{stroke:var(--border)}
+    #spiral-capacity-sweep-viz rect[data-chart-frame]{fill:none;stroke:var(--border)}
+    #spiral-capacity-sweep-viz .atlas-row{margin-top:20px}
+    #spiral-capacity-sweep-viz .panels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    #spiral-capacity-sweep-viz .panel-title{font-size:12px;font-weight:620;min-height:46px;line-height:1.25}
+    #spiral-capacity-sweep-viz .panel-score{display:block;color:var(--muted-foreground);font-weight:450;margin-top:2px}
+    #spiral-capacity-sweep-viz .plotwrap{position:relative;width:100%;aspect-ratio:1/1}
+    #spiral-capacity-sweep-viz .plotwrap canvas,#spiral-capacity-sweep-viz .plotwrap svg{position:absolute;inset:0;width:100%;height:100%}
+    #spiral-capacity-sweep-viz .tooltip{position:absolute;display:none;pointer-events:none;background:var(--popover);color:var(--popover-foreground);border:1px solid var(--border);padding:7px 9px;font-size:12px;line-height:1.4;z-index:4;white-space:nowrap}
+    @media(max-width:800px){#spiral-capacity-sweep-viz .metric-plots{grid-template-columns:1fr}#spiral-capacity-sweep-viz .panels{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:480px){#spiral-capacity-sweep-viz .panels{grid-template-columns:1fr}}
+  </style>
+  <h2>Eight-turn spiral: capacity versus optimization</h2>
+  <p class="lede">Fixed-pitch target · exactly parameter-matched models · four paired seeds · AdamW · M4 CPU</p>
+  <div class="legend" id="scs-legend"></div>
+  <section>
+    <h3>Which resource unlocks the observed eight-turn geometry?</h3>
+    <div class="metric-plots" id="scs-metrics"></div>
+  </section>
+  <section>
+    <h3>Mean fitted decision geometry across seeds</h3>
+    <div id="scs-atlas"></div>
+  </section>
+  <div class="tooltip" id="scs-tooltip" role="tooltip"></div>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script>
+  (()=>{
+    const root=document.getElementById('spiral-capacity-sweep-viz'),data=__DATA__,variants=data.variants;
+    const names={ordinary_mlp:'Vanilla LELU MLP',self_context:'Self-context',self_context_stiefel_flow_curvature:'Continuous frame flow (AdamW)'};
+    const colors={ordinary_mlp:'var(--viz-series-3)',self_context:'var(--viz-series-4)',self_context_stiefel_flow_curvature:'var(--viz-series-5)'};
+    const active=new Map(variants.map(v=>[v,true])),tooltip=d3.select(root).select('#scs-tooltip');
+    const label=d=>`w${d.width} · ${d.steps.toLocaleString()} steps`;
+    d3.select(root).select('#scs-legend').selectAll('button').data(variants).join('button').attr('type','button').attr('aria-pressed','true').html(v=>`<span class="swatch" style="--series:${colors[v]}"></span>${names[v]}`).on('click',function(_,v){active.set(v,!active.get(v));d3.select(this).attr('aria-pressed',String(active.get(v)));drawMetrics()});
+
+    const plotDefs=[['observed','Observed-region accuracy'],['withheld','Eight-turn extrapolation']];
+    const plots=d3.select(root).select('#scs-metrics').selectAll('.metric-plot').data(plotDefs).join('div').attr('class','metric-plot');
+    plots.append('div').attr('class','plot-title').text(d=>d[1]);
+    plots.append('svg').attr('role','img').attr('aria-label',d=>`${d[1]} across capacity and optimization configurations`);
+    const allValues=plotDefs.flatMap(([key])=>data.metrics.flatMap(config=>variants.flatMap(v=>[config.values[v][key]-config.values[v][`${key}_sd`],config.values[v][key]+config.values[v][`${key}_sd`]])));
+    const extent=d3.extent(allValues),pad=Math.max(.025,(extent[1]-extent[0])*.08),sharedDomain=[Math.max(0,extent[0]-pad),Math.min(1,extent[1]+pad)];
+    function drawMetrics(){plots.each(function(def){
+      const svg=d3.select(this).select('svg'),width=Math.max(320,this.getBoundingClientRect().width),height=Math.max(390,width*.72);svg.attr('viewBox',`0 0 ${width} ${height}`);svg.selectAll('*').remove();
+      const margin={top:12,right:18,bottom:46,left:128},innerW=width-margin.left-margin.right,innerH=height-margin.top-margin.bottom,x=d3.scaleLinear().domain(sharedDomain).nice().range([margin.left,margin.left+innerW]),y=d3.scaleBand().domain(data.metrics.map(label)).range([margin.top,margin.top+innerH]).padding(.28);
+      svg.append('rect').attr('data-chart-frame','').attr('x',margin.left).attr('y',margin.top).attr('width',innerW).attr('height',innerH);
+      svg.append('g').attr('class','axis').attr('transform',`translate(0,${margin.top+innerH})`).call(d3.axisBottom(x).ticks(4).tickFormat(d3.format('.2f')));
+      svg.append('g').attr('class','axis').attr('transform',`translate(${margin.left},0)`).call(d3.axisLeft(y).tickSize(0));
+      svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('text-anchor','middle').attr('x',margin.left+innerW/2).attr('y',height-8).text('Accuracy');
+      svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('text-anchor','middle').attr('transform',`translate(15,${margin.top+innerH/2}) rotate(-90)`).text('Capacity / optimizer budget');
+      const key=def[0],offset=d3.scalePoint().domain(variants).range([-y.bandwidth()*.24,y.bandwidth()*.24]);
+      variants.filter(v=>active.get(v)).forEach(variant=>{const g=svg.append('g').attr('data-series',variant);const rows=data.metrics.map(config=>({config,mean:config.values[variant][key],sd:config.values[variant][`${key}_sd`]}));g.selectAll('line').data(rows).join('line').attr('x1',d=>x(Math.max(0,d.mean-d.sd))).attr('x2',d=>x(Math.min(1,d.mean+d.sd))).attr('y1',d=>y(label(d.config))+y.bandwidth()/2+offset(variant)).attr('y2',d=>y(label(d.config))+y.bandwidth()/2+offset(variant)).attr('stroke',colors[variant]).attr('stroke-width',1.3);g.selectAll('circle').data(rows).join('circle').attr('cx',d=>x(d.mean)).attr('cy',d=>y(label(d.config))+y.bandwidth()/2+offset(variant)).attr('r',4).attr('fill',colors[variant])});
+      svg.append('rect').attr('data-chart-hit','').attr('data-chart-hover-overlay','cross-series').attr('x',margin.left).attr('y',margin.top).attr('width',innerW).attr('height',innerH).attr('fill','transparent').on('mousemove',function(event){const [,py]=d3.pointer(event,this),config=data.metrics[Math.max(0,Math.min(data.metrics.length-1,Math.floor((py-margin.top)/innerH*data.metrics.length)))],box=root.getBoundingClientRect(),lines=variants.filter(v=>active.get(v)).map(v=>`${names[v]} ${config.values[v][key].toFixed(3)} ± ${config.values[v][`${key}_sd`].toFixed(3)}`);tooltip.style('display','block').style('left',`${event.clientX-box.left+12}px`).style('top',`${event.clientY-box.top+12}px`).html(`<strong>${label(config)}</strong><br>${lines.join('<br>')}`)}).on('mouseleave',()=>tooltip.style('display','none'));
+    })}
+
+    const atlas=d3.select(root).select('#scs-atlas'),rows=atlas.selectAll('.atlas-row').data(data.fields).join('div').attr('class','atlas-row');
+    rows.append('div').attr('class','row-title').text(d=>`${label(d)} · ${d.scores.self_context.parameters.toLocaleString()} parameters`);rows.append('div').attr('class','panels');
+    const order=['truth',...variants];rows.each(function(row){const panels=d3.select(this).select('.panels').selectAll('.panel').data(order).join('div').attr('class','panel');panels.append('div').attr('class','panel-title').html(key=>key==='truth'?'Truth':`${names[key]}<span class="panel-score">observed ${row.scores[key].observed.toFixed(3)} · extrap ${row.scores[key].withheld.toFixed(3)}</span>`);panels.append('div').attr('class','plotwrap').each(function(key){drawField(this,row,key)})});
+    function cssColor(name){const probe=document.createElement('span');probe.style.color=`var(${name})`;probe.style.display='none';root.appendChild(probe);const color=getComputedStyle(probe).color;probe.remove();return color}
+    function trajectory(branch,lo,hi,steps=420){return d3.range(steps).map(i=>{const t=lo+(hi-lo)*i/(steps-1),r=.1+.45*t,theta=.55+2*Math.PI*t+branch*Math.PI;return [r*Math.cos(theta),r*Math.sin(theta)]})}
+    function drawField(container,row,key){const wrap=d3.select(container),canvas=wrap.append('canvas').attr('role','img').attr('aria-label',`${label(row)} ${key==='truth'?'truth':names[key]} decision field`).node(),svg=wrap.append('svg').attr('role','presentation');const redraw=()=>{const width=Math.max(180,container.getBoundingClientRect().width),height=width,dpr=window.devicePixelRatio||1;canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);canvas.style.width=`${width}px`;canvas.style.height=`${height}px`;const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);const pad=28,plot=width-2*pad,size=row.size,values=key==='truth'?row.truth:row.probabilities[key],c0=cssColor('--viz-series-1'),c1=cssColor('--viz-series-2'),cell=plot/size;values.forEach((p,index)=>{const gx=index%size,gy=Math.floor(index/size),confidence=Math.abs(p-.5)*2;ctx.globalAlpha=.16+.78*confidence;ctx.fillStyle=p>=.5?c1:c0;ctx.fillRect(pad+gx*cell,pad+gy*cell,cell+1,cell+1)});ctx.globalAlpha=1;svg.attr('viewBox',`0 0 ${width} ${height}`);svg.selectAll('*').remove();const limit=row.limits[1],sx=d3.scaleLinear().domain([-limit,limit]).range([pad,width-pad]),sy=d3.scaleLinear().domain([-limit,limit]).range([height-pad,pad]);svg.append('rect').attr('data-chart-frame','').attr('x',pad).attr('y',pad).attr('width',plot).attr('height',plot);[3.7,7.3].forEach((radius,index)=>svg.append('circle').attr('cx',sx(0)).attr('cy',sy(0)).attr('r',Math.abs(sx(radius)-sx(0))).attr('fill','none').attr('stroke','var(--foreground)').attr('stroke-width',index?1:1.5).attr('stroke-dasharray',index?'3 3':'5 3').attr('opacity',index?.35:.65));[0,1].forEach(branch=>{const line=d3.line().x(d=>sx(d[0])).y(d=>sy(d[1]));svg.append('path').datum(trajectory(branch,0,8)).attr('d',line).attr('fill','none').attr('stroke',branch?'var(--viz-series-2)':'var(--viz-series-1)').attr('stroke-width',1.8);svg.append('path').datum(trajectory(branch,8,16)).attr('d',line).attr('fill','none').attr('stroke',branch?'var(--viz-series-2)':'var(--viz-series-1)').attr('stroke-width',1.5).attr('stroke-dasharray','4 3')});svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('text-anchor','middle').attr('x',width/2).attr('y',height-5).text('x₁');svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('text-anchor','middle').attr('transform',`translate(11,${height/2}) rotate(-90)`).text('x₂')};redraw();new ResizeObserver(redraw).observe(container)}
+    drawMetrics();new ResizeObserver(drawMetrics).observe(root);
+  })();
+  </script>
+</div>
