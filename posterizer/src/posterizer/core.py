@@ -1,4 +1,4 @@
-"""Posterization pipeline with inherited compact exact-lattice output."""
+"""Perceptually allocated raster posterization pipeline."""
 
 from __future__ import annotations
 
@@ -6,10 +6,10 @@ from dataclasses import dataclass
 from pathlib import Path
 import json
 from time import perf_counter
-import xml.etree.ElementTree as ET
 
 import numpy as np
 from PIL import Image
+from scipy import ndimage
 
 from tlvector.core import (
     VectorizerConfig,
@@ -22,8 +22,6 @@ from tlvector.core import (
     _srgb_to_oklab,
     _trim_transparent,
 )
-from tlvector_v2.lattice import compact_lattice_svg, deterministic_svgz
-from tlvector_v2.merge import _adjacency, _component_map
 
 from .oklch import (
     bifurcate_palette,
@@ -43,6 +41,8 @@ class PosterizerConfig:
     hue_weight: float = 1.0
     alpha_weight: float = 0.7
     node_separation: float = 1.08
+    detail_priority: float = 2.0
+    population_exponent: float = 0.65
     minimum_leaf: int = 16
     sample_limit: int = 65536
     coarse_side: int = 160
@@ -51,7 +51,6 @@ class PosterizerConfig:
     alpha_mode: str = "auto"
     alpha_cutoff: int = 128
     trim_transparent: bool = True
-    gzip_level: int = 9
 
 
 @dataclass
@@ -59,32 +58,116 @@ class PosterizerResult:
     labels: np.ndarray
     palette_rgba: np.ndarray
     posterized_rgba: np.ndarray
-    svg: str
-    svgz: bytes
     diagnostics: dict[str, float | int | str | list]
 
     def save(self, path: str | Path) -> None:
         destination = Path(path)
         suffix = destination.suffix.lower()
-        if suffix == ".svgz":
-            destination.write_bytes(self.svgz)
-        elif suffix == ".svg":
-            destination.write_text(self.svg, encoding="utf-8")
-        elif suffix == ".png":
+        if suffix == ".png":
             Image.fromarray(self.posterized_rgba, "RGBA").save(destination)
+        elif suffix in {".jpg", ".jpeg"}:
+            image = Image.fromarray(self.posterized_rgba, "RGBA")
+            background = Image.new("RGBA", image.size, (255, 255, 255, 255))
+            background.alpha_composite(image)
+            background.convert("RGB").save(
+                destination, quality=95, subsampling=0, optimize=True
+            )
         elif suffix == ".json":
             destination.write_text(
                 json.dumps(self.diagnostics, indent=2, sort_keys=True) + "\n",
                 encoding="utf-8",
             )
         else:
-            raise ValueError("posterizer output must end in .png, .svg, .svgz, or .json")
+            raise ValueError("posterizer output must end in .png, .jpg, .jpeg, or .json")
 
 
 def _rgba_to_lab_alpha(rgba: np.ndarray) -> np.ndarray:
     rgb = rgba[..., :3].astype(np.float64) / 255.0
     alpha = rgba[..., 3:4].astype(np.float64) / 255.0
     return np.concatenate((_srgb_to_oklab(rgb), alpha), axis=-1)
+
+
+def _component_map(
+    labels: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    result = np.empty(labels.shape, dtype=np.int32)
+    component_labels: list[int] = []
+    component_sizes: list[int] = []
+    offset = 0
+    structure = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=np.uint8)
+    for label in np.unique(labels):
+        local, count = ndimage.label(labels == label, structure=structure)
+        mask = local > 0
+        result[mask] = local[mask] + offset - 1
+        sizes = np.bincount(local.ravel(), minlength=count + 1)[1:]
+        component_labels.extend([int(label)] * count)
+        component_sizes.extend(sizes.astype(int).tolist())
+        offset += count
+    return (
+        result,
+        np.asarray(component_labels, dtype=np.int32),
+        np.asarray(component_sizes, dtype=np.int64),
+    )
+
+
+def _adjacency(
+    component_map: np.ndarray, count: int
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    first = np.concatenate((
+        component_map[:, :-1].ravel(), component_map[:-1].ravel()
+    ))
+    second = np.concatenate((
+        component_map[:, 1:].ravel(), component_map[1:].ravel()
+    ))
+    changed = first != second
+    low = np.minimum(first[changed], second[changed]).astype(np.int64)
+    high = np.maximum(first[changed], second[changed]).astype(np.int64)
+    keys = low * np.int64(count) + high
+    unique, shared = np.unique(keys, return_counts=True)
+    return unique // count, unique % count, shared.astype(np.int64)
+
+
+def _perceptual_importance(
+    lab_alpha: np.ndarray,
+    visible: np.ndarray,
+    config: PosterizerConfig,
+) -> np.ndarray:
+    """Balance spatial detail and color rarity against raw pixel population."""
+    lab = np.asarray(lab_alpha[..., :3], dtype=np.float64)
+    gradient2 = np.zeros(lab.shape[:2], dtype=np.float64)
+    for channel in range(3):
+        gx = ndimage.sobel(lab[..., channel], axis=1, mode="reflect") / 8.0
+        gy = ndimage.sobel(lab[..., channel], axis=0, mode="reflect") / 8.0
+        gradient2 += gx * gx + gy * gy
+    gradient = np.sqrt(gradient2)
+    blurred = ndimage.gaussian_filter(lab, sigma=(2.0, 2.0, 0.0), mode="reflect")
+    local_contrast = np.linalg.norm(lab - blurred, axis=2)
+    detail = gradient + 0.75 * local_contrast
+    active_detail = detail[visible]
+    scale = float(np.quantile(active_detail, 0.9)) if len(active_detail) else 1.0
+    detail = np.clip(detail / max(scale, 1e-9), 0.0, 4.0)
+    detail_factor = 1.0 + max(0.0, float(config.detail_priority)) * detail
+
+    lightness = np.clip((lab[..., 0] * 15.999).astype(np.int32), 0, 15)
+    chroma = np.hypot(lab[..., 1], lab[..., 2])
+    chroma_bin = np.clip((chroma / 0.4 * 11.999).astype(np.int32), 0, 11)
+    hue = (np.arctan2(lab[..., 2], lab[..., 1]) + np.pi) / (2.0 * np.pi)
+    hue_bin = np.clip((hue * 23.999).astype(np.int32), 0, 23)
+    hue_bin[chroma < 0.015] = 0
+    keys = (lightness * 12 + chroma_bin) * 24 + hue_bin
+    active_keys = keys[visible]
+    counts = np.bincount(active_keys, minlength=16 * 12 * 24).astype(np.float64)
+    exponent = float(np.clip(config.population_exponent, 0.0, 1.0))
+    rarity = np.ones(keys.shape, dtype=np.float64)
+    if len(active_keys):
+        rarity[visible] = np.maximum(counts[active_keys], 1.0) ** (exponent - 1.0)
+    importance = detail_factor * rarity
+    active = importance[visible]
+    if len(active):
+        importance /= max(float(np.mean(active)), 1e-12)
+    importance = np.clip(importance, 0.03, 30.0)
+    importance[~visible] = 0.03
+    return importance
 
 
 def _assign_oklch(
@@ -197,22 +280,27 @@ def posterize_array(
     source, alpha_mode = _normalize_alpha(source, base_config)
     source, crop = _trim_transparent(source, base_config)
     lab_alpha = _rgba_to_lab_alpha(source)
+    visible = source[..., 3] > 4
+    importance_map = _perceptual_importance(lab_alpha, visible, config)
     prepared = perf_counter()
 
     method = str(config.method).lower()
     bifurcation_gain = 0.0
     if method == "oklch":
-        visible = source[..., 3] > 4
         samples = lab_alpha[visible]
+        sample_weights = importance_map[visible]
         if not len(samples):
             samples = lab_alpha.reshape(-1, 4)
+            sample_weights = np.ones(len(samples), dtype=np.float64)
         limit = max(1, int(config.sample_limit))
         if len(samples) > limit:
             stride = int(np.ceil(len(samples) / limit))
             samples = samples[::stride]
+            sample_weights = sample_weights[::stride]
         tree = bifurcate_palette(
             samples,
             config.colors,
+            sample_weights=sample_weights,
             lightness_weight=config.lightness_weight,
             chroma_weight=config.chroma_weight,
             hue_weight=config.hue_weight,
@@ -231,7 +319,6 @@ def posterize_array(
         palette_lab_alpha = _rgba_to_lab_alpha(palette_rgba)
     else:
         raise ValueError("method must be 'oklch' or 'inherited'")
-    visible = source[..., 3] > 4
     if np.any(~visible):
         transparent_label = len(palette_rgba)
         palette_rgba = np.vstack((palette_rgba, np.zeros((1, 4), dtype=np.uint8)))
@@ -245,9 +332,6 @@ def posterize_array(
     labels, cleaned = _cleanup_components(labels, palette_lab_alpha, config)
     cleaned_at = perf_counter()
     posterized = palette_rgba[labels]
-    svg, svg_stats = compact_lattice_svg(labels, palette_rgba, title=title)
-    svg_at = perf_counter()
-    svgz = deterministic_svgz(svg, level=config.gzip_level)
     completed = perf_counter()
 
     rgba_delta = source.astype(np.float64) - posterized.astype(np.float64)
@@ -261,7 +345,12 @@ def posterize_array(
         alpha_weight=config.alpha_weight,
     )
     assigned = labels.ravel()
-    perceptual_rmse = float(np.sqrt(np.mean(perceptual[np.arange(len(assigned)), assigned])))
+    assigned_error = perceptual[np.arange(len(assigned)), assigned]
+    perceptual_rmse = float(np.sqrt(np.mean(assigned_error)))
+    flat_importance = importance_map.ravel()
+    weighted_perceptual_rmse = float(np.sqrt(
+        np.sum(flat_importance * assigned_error) / np.sum(flat_importance)
+    ))
     palette_hex = [
         f"#{color[0]:02x}{color[1]:02x}{color[2]:02x}{color[3]:02x}"
         for color in palette_rgba
@@ -278,22 +367,22 @@ def posterize_array(
         "visible_palette_colors": int(np.sum(palette_rgba[:, 3] > 4)),
         "palette": palette_hex,
         "node_separation": float(config.node_separation),
+        "detail_priority": float(config.detail_priority),
+        "population_exponent": float(config.population_exponent),
         "bifurcation_gain": float(bifurcation_gain),
         "cleaned_components": int(cleaned),
         "rgba_mse_255": mse,
         "perceptual_rmse": perceptual_rmse,
-        **svg_stats,
-        "svgz_bytes": len(svgz),
-        "svgz_ratio": len(svgz) / max(1, svg_stats["svg_bytes"]),
+        "importance_weighted_perceptual_rmse": weighted_perceptual_rmse,
+        "importance_p90": float(np.quantile(importance_map[visible], 0.9))
+        if np.any(visible) else 1.0,
         "preparation_ms": 1000.0 * (prepared - started),
         "quantization_ms": 1000.0 * (quantized - prepared),
         "cleanup_ms": 1000.0 * (cleaned_at - quantized),
-        "svg_ms": 1000.0 * (svg_at - cleaned_at),
-        "gzip_ms": 1000.0 * (completed - svg_at),
         "total_ms": 1000.0 * (completed - started),
     }
     return PosterizerResult(
-        labels, palette_rgba, posterized, svg, svgz, diagnostics
+        labels, palette_rgba, posterized, diagnostics
     )
 
 
@@ -307,6 +396,4 @@ def posterize_image(
         rgba = np.asarray(image.convert("RGBA"))
     result = posterize_array(rgba, config, title=source_path.name)
     result.save(destination)
-    if Path(destination).suffix.lower() == ".svg":
-        ET.parse(destination)
     return result

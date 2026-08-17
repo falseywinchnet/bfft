@@ -38,19 +38,21 @@ input[type=number],select{width:96px;background:#100d15;color:var(--ink);border:
 <label>Lightness weight <input id="lightness" type="number" min="0" step="0.05" value="1"></label>
 <label>Chroma weight <input id="chroma" type="number" min="0" step="0.05" value="1"></label>
 <label>Hue weight <input id="hue" type="number" min="0" step="0.05" value="1"></label>
+<label>Detail priority <input id="detail" type="number" min="0" step="0.1" value="2"></label>
+<label>Area exponent <input id="population" type="number" min="0" max="1" step="0.05" value="0.65"></label>
 <label>Minimum island <input id="island" type="number" min="0" value="6"></label>
 <label>Cleanup rounds <input id="rounds" type="number" min="0" max="8" value="1"></label>
 <label>Transparency <select id="alpha"><option value="auto">Auto</option><option value="cutout">Cutout</option><option value="preserve">Preserve</option></select></label>
 <label class="check"><input id="trim" type="checkbox" checked> Trim transparent border</label>
 <div class="actions"><button id="convert" disabled>Posterize</button><button id="clear" class="secondary">Clear</button></div>
-<div class="actions"><a id="png" class="download png disabled">PNG</a><a id="svg" class="download disabled">SVG</a></div><a id="svgz" class="download svgz disabled" style="display:block;margin-top:8px">Compressed SVGZ</a>
+<a id="download" class="download png disabled" style="display:block;margin-top:8px">Download result</a>
 <div id="palette"></div><div id="status">Choose a PNG or JPEG. Processing remains local.</div>
-<div class="note">Each leaf proposes a two-way split in a local OKLCH tangent metric. The globally largest perceptual error reduction wins. Separation moves the resulting child nodes farther from their parent after the split.</div>
+<div class="note">Detail priority gives local edges and contrast more influence. Area exponent below one prevents a large flat background from consuming the palette merely because it has more pixels. Separation moves child nodes farther from their parent.</div>
 </aside><section class="stage"><div class="pane"><h2>Original</h2><div class="canvas" id="source"><div class="empty">No image loaded</div></div></div><div class="pane"><h2>Posterized structure</h2><div class="canvas" id="result"><div class="empty">Posterized preview</div></div></div></section></main>
 <script>
-const $=id=>document.getElementById(id);let file=null,sourceURL=null,pngURL=null,svgURL=null,svgzURL=null;const human=n=>n<1024?`${n} B`:n<1048576?`${(n/1024).toFixed(1)} KiB`:`${(n/1048576).toFixed(2)} MiB`;const revoke=()=>{for(let u of [pngURL,svgURL,svgzURL])if(u)URL.revokeObjectURL(u);pngURL=svgURL=svgzURL=null};const bytes=b64=>{let raw=atob(b64),out=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);return out};
+const $=id=>document.getElementById(id);let file=null,sourceURL=null,resultURL=null;const human=n=>n<1024?`${n} B`:n<1048576?`${(n/1024).toFixed(1)} KiB`:`${(n/1048576).toFixed(2)} MiB`;const revoke=()=>{if(resultURL)URL.revokeObjectURL(resultURL);resultURL=null};const bytes=b64=>{let raw=atob(b64),out=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);return out};
 $('file').onchange=()=>{file=$('file').files[0]||null;$('convert').disabled=!file;if(sourceURL)URL.revokeObjectURL(sourceURL);revoke();if(file){sourceURL=URL.createObjectURL(file);$('source').innerHTML='';let i=new Image;i.src=sourceURL;$('source').append(i);$('status').textContent=`Loaded ${file.name} (${human(file.size)}) — ready.`}};
-$('convert').onclick=async()=>{if(!file)return;$('convert').disabled=true;$('status').textContent='Optimizing the perceptual bifurcation tree…';let q=new URLSearchParams({method:$('method').value,colors:$('colors').value,separation:$('separation').value,lightness:$('lightness').value,chroma:$('chroma').value,hue:$('hue').value,island:$('island').value,rounds:$('rounds').value,alpha:$('alpha').value,trim:$('trim').checked?'1':'0',name:file.name});try{let r=await fetch('/convert?'+q,{method:'POST',body:file});let data=await r.json();if(!r.ok)throw Error(data.error||'Posterization failed');revoke();pngURL=URL.createObjectURL(new Blob([bytes(data.png)],{type:'image/png'}));svgURL=URL.createObjectURL(new Blob([data.svg],{type:'image/svg+xml'}));svgzURL=URL.createObjectURL(new Blob([bytes(data.svgz)],{type:'image/svg+xml'}));$('result').innerHTML='';let preview=new Image;preview.src=pngURL;preview.alt='Posterized preview';$('result').append(preview);let stem=file.name.replace(/\.(png|jpe?g)$/i,'');for(let [id,url,ext] of [['png',pngURL,'.png'],['svg',svgURL,'.svg'],['svgz',svgzURL,'.svgz']]){$(id).href=url;$(id).download=stem+'-posterized'+ext;$(id).classList.remove('disabled')}$('palette').innerHTML=data.diagnostics.palette.map(c=>`<span class="swatch" title="${c}" style="background:${c.slice(0,7)}"></span>`).join('');let d=data.diagnostics;$('status').innerHTML=`<span class="metric">${d.visible_palette_colors} visible colors · perceptual RMSE ${d.perceptual_rmse.toFixed(4)} · MSE ${d.rgba_mse_255.toFixed(2)} · ${d.loops.toLocaleString()} loops · ${human(d.svgz_bytes)} SVGZ · ${(d.total_ms/1000).toFixed(2)} s</span>`}catch(e){$('status').textContent=e.message}finally{$('convert').disabled=false}};$('clear').onclick=()=>location.reload();
+$('convert').onclick=async()=>{if(!file)return;$('convert').disabled=true;$('status').textContent='Optimizing spatial and perceptual palette allocation…';let q=new URLSearchParams({method:$('method').value,colors:$('colors').value,separation:$('separation').value,lightness:$('lightness').value,chroma:$('chroma').value,hue:$('hue').value,detail:$('detail').value,population:$('population').value,island:$('island').value,rounds:$('rounds').value,alpha:$('alpha').value,trim:$('trim').checked?'1':'0',name:file.name});try{let r=await fetch('/convert?'+q,{method:'POST',body:file});let data=await r.json();if(!r.ok)throw Error(data.error||'Posterization failed');revoke();resultURL=URL.createObjectURL(new Blob([bytes(data.image)],{type:data.mime}));$('result').innerHTML='';let preview=new Image;preview.src=resultURL;preview.alt='Posterized preview';$('result').append(preview);let stem=file.name.replace(/\.(png|jpe?g)$/i,'');$('download').href=resultURL;$('download').download=stem+'-posterized'+data.extension;$('download').textContent='Download '+data.extension.slice(1).toUpperCase();$('download').classList.remove('disabled');$('palette').innerHTML=data.diagnostics.palette.map(c=>`<span class="swatch" title="${c}" style="background:${c.slice(0,7)}"></span>`).join('');let d=data.diagnostics;$('status').innerHTML=`<span class="metric">${d.visible_palette_colors} visible colors · weighted perceptual RMSE ${d.importance_weighted_perceptual_rmse.toFixed(4)} · MSE ${d.rgba_mse_255.toFixed(2)} · ${human(d.result_bytes)} · ${(d.total_ms/1000).toFixed(2)} s</span>`}catch(e){$('status').textContent=e.message}finally{$('convert').disabled=false}};$('clear').onclick=()=>location.reload();
 </script></body></html>"""
 
 
@@ -64,6 +66,8 @@ def convert_request(data: bytes, query: str) -> dict:
         chroma_weight=float(get("chroma", 1.0)),
         hue_weight=float(get("hue", 1.0)),
         node_separation=float(get("separation", 1.08)),
+        detail_priority=float(get("detail", 2.0)),
+        population_exponent=float(get("population", 0.65)),
         minimum_island=int(get("island", 6)),
         cleanup_rounds=int(get("rounds", 1)),
         alpha_mode=get("alpha", "auto"),
@@ -72,13 +76,29 @@ def convert_request(data: bytes, query: str) -> dict:
     with Image.open(BytesIO(data)) as image:
         rgba = np.asarray(image.convert("RGBA"))
     result = posterize_array(rgba, config, title=get("name", "posterized image"))
-    png = BytesIO()
-    Image.fromarray(result.posterized_rgba, "RGBA").save(png, format="PNG")
+    name = get("name", "posterized.png").lower()
+    encoded = BytesIO()
+    if name.endswith((".jpg", ".jpeg")):
+        raster = Image.fromarray(result.posterized_rgba, "RGBA")
+        background = Image.new("RGBA", raster.size, (255, 255, 255, 255))
+        background.alpha_composite(raster)
+        background.convert("RGB").save(
+            encoded, format="JPEG", quality=95, subsampling=0, optimize=True
+        )
+        mime, extension = "image/jpeg", ".jpg"
+    else:
+        Image.fromarray(result.posterized_rgba, "RGBA").save(encoded, format="PNG")
+        mime, extension = "image/png", ".png"
+    raster_bytes = encoded.getvalue()
     return {
-        "png": base64.b64encode(png.getvalue()).decode("ascii"),
-        "svg": result.svg,
-        "svgz": base64.b64encode(result.svgz).decode("ascii"),
-        "diagnostics": {**result.diagnostics, "source_bytes": len(data)},
+        "image": base64.b64encode(raster_bytes).decode("ascii"),
+        "mime": mime,
+        "extension": extension,
+        "diagnostics": {
+            **result.diagnostics,
+            "source_bytes": len(data),
+            "result_bytes": len(raster_bytes),
+        },
     }
 
 

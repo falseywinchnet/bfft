@@ -5,14 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "transport-posterizer"
 version = "0.1.0"
-description = "Perceptual OKLCH bifurcation posterizer with compact SVG output"
+description = "Saliency-balanced OKLCH raster posterizer"
 requires-python = ">=3.10"
 dependencies = [
   "numpy>=1.24",
   "scipy>=1.10",
   "Pillow>=10",
   "transport-locked-vectorizer>=0.2.0",
-  "transport-locked-vectorizer-v2>=0.1.0",
 ]
 
 [project.scripts]

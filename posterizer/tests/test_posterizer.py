@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import gzip
 import base64
 from io import BytesIO
+import tempfile
 import unittest
-import xml.etree.ElementTree as ET
 
 import numpy as np
 from PIL import Image
@@ -91,13 +90,21 @@ class PosterizerTests(unittest.TestCase):
         )
         first = posterize_array(source, config, title="control")
         second = posterize_array(source, config, title="control")
-        ET.fromstring(first.svg)
-        self.assertEqual(gzip.decompress(first.svgz).decode(), first.svg)
-        self.assertEqual(first.svg, second.svg)
-        self.assertEqual(first.svgz, second.svgz)
+        np.testing.assert_array_equal(first.labels, second.labels)
+        np.testing.assert_array_equal(first.palette_rgba, second.palette_rgba)
+        np.testing.assert_array_equal(first.posterized_rgba, second.posterized_rgba)
         self.assertEqual(first.posterized_rgba[0, 0, 3], 0)
         self.assertLessEqual(first.diagnostics["palette_colors"], 7)
-        self.assertIn("H", first.svg)
+        self.assertIn("importance_weighted_perceptual_rmse", first.diagnostics)
+        with tempfile.TemporaryDirectory() as directory:
+            png = f"{directory}/control.png"
+            jpg = f"{directory}/control.jpg"
+            first.save(png)
+            first.save(jpg)
+            with Image.open(png) as image:
+                self.assertEqual(image.mode, "RGBA")
+            with Image.open(jpg) as image:
+                self.assertEqual(image.mode, "RGB")
 
     def test_inherited_mode_remains_available(self):
         source = np.full((12, 12, 4), (70, 90, 130, 255), dtype=np.uint8)
@@ -108,25 +115,37 @@ class PosterizerTests(unittest.TestCase):
         self.assertEqual(result.diagnostics["method"], "posterizer_inherited")
         self.assertEqual(len(np.unique(result.labels)), 2)
 
-    def test_web_endpoint_returns_all_three_formats(self):
+    def test_weighted_bifurcation_moves_the_single_node(self):
+        samples = np.array([
+            [0.2, 0.0, 0.0, 1.0],
+            [0.8, 0.0, 0.0, 1.0],
+        ])
+        ordinary = bifurcate_palette(samples, 1)
+        weighted = bifurcate_palette(samples, 1, sample_weights=np.array([1.0, 5.0]))
+        self.assertAlmostEqual(ordinary.palette_lab_alpha[0, 0], 0.5)
+        self.assertGreater(weighted.palette_lab_alpha[0, 0], 0.69)
+
+    def test_web_endpoint_preserves_input_raster_format(self):
         source = np.full((16, 20, 4), (45, 70, 120, 255), dtype=np.uint8)
         source[4:12, 5:15, :3] = (220, 110, 60)
         stream = BytesIO()
         Image.fromarray(source, "RGBA").save(stream, format="PNG")
         data = stream.getvalue()
-        payload = convert_request(
+        png_payload = convert_request(
             data,
             "colors=4&method=oklch&separation=1.05&lightness=1&chroma=1"
-            "&hue=1&island=1&rounds=1&name=web.png",
+            "&hue=1&detail=2&population=.65&island=1&rounds=1&name=web.png",
         )
-        ET.fromstring(payload["svg"])
-        self.assertEqual(
-            gzip.decompress(base64.b64decode(payload["svgz"])).decode(),
-            payload["svg"],
-        )
-        with Image.open(BytesIO(base64.b64decode(payload["png"]))) as image:
+        self.assertEqual(png_payload["mime"], "image/png")
+        self.assertEqual(png_payload["extension"], ".png")
+        with Image.open(BytesIO(base64.b64decode(png_payload["image"]))) as image:
             self.assertEqual(image.size, (20, 16))
-        self.assertEqual(payload["diagnostics"]["source_bytes"], len(data))
+            self.assertEqual(image.format, "PNG")
+        jpg_payload = convert_request(data, "colors=4&name=web.jpg")
+        self.assertEqual(jpg_payload["mime"], "image/jpeg")
+        with Image.open(BytesIO(base64.b64decode(jpg_payload["image"]))) as image:
+            self.assertEqual(image.format, "JPEG")
+        self.assertEqual(png_payload["diagnostics"]["source_bytes"], len(data))
 
 
 if __name__ == "__main__":

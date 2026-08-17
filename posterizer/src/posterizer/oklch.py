@@ -138,14 +138,16 @@ def oklch_pair_distance2(
 def _tangent_coordinates(
     values: np.ndarray,
     weights: tuple[float, float, float, float],
+    sample_weights: np.ndarray,
 ) -> np.ndarray:
     lightness_weight, chroma_weight, hue_weight, alpha_weight = weights
     chroma = np.hypot(values[:, 1], values[:, 2])
     hue = np.arctan2(values[:, 2], values[:, 1])
-    vector = np.sum(chroma * np.exp(1j * hue))
+    vector = np.sum(sample_weights * chroma * np.exp(1j * hue))
     center_hue = float(np.angle(vector)) if abs(vector) > 1e-12 else 0.0
     delta_hue = np.angle(np.exp(1j * (hue - center_hue)))
-    hue_radius = np.sqrt(np.maximum(chroma * np.mean(chroma), 1e-8))
+    mean_chroma = float(np.average(chroma, weights=sample_weights))
+    hue_radius = np.sqrt(np.maximum(chroma * mean_chroma, 1e-8))
     return np.stack((
         lightness_weight * values[:, 0],
         chroma_weight * chroma,
@@ -157,16 +159,20 @@ def _tangent_coordinates(
 def _two_means_proposal(
     values: np.ndarray,
     weights: tuple[float, float, float, float],
+    sample_weights: np.ndarray,
     minimum_leaf: int,
 ) -> tuple[float, np.ndarray] | None:
     if len(values) < 2 * minimum_leaf:
         return None
-    coordinates = _tangent_coordinates(values, weights)
-    centered = coordinates - np.mean(coordinates, axis=0)
-    old_sse = float(np.sum(centered * centered))
+    mass = np.asarray(sample_weights, dtype=np.float64)
+    safe_mass = max(float(np.sum(mass)), 1e-15)
+    coordinates = _tangent_coordinates(values, weights, mass)
+    center = np.sum(coordinates * mass[:, None], axis=0) / safe_mass
+    centered = coordinates - center
+    old_sse = float(np.sum(mass[:, None] * centered * centered))
     if old_sse <= 1e-14:
         return None
-    covariance = centered.T @ centered
+    covariance = centered.T @ (centered * mass[:, None])
     _eigenvalues, eigenvectors = np.linalg.eigh(covariance)
     projections = [centered @ eigenvectors[:, -1]]
     projections.extend(centered[:, axis] for axis in range(centered.shape[1]))
@@ -174,13 +180,15 @@ def _two_means_proposal(
     best_side: np.ndarray | None = None
     for projection in projections:
         order = np.argsort(projection, kind="stable")
+        cumulative = np.cumsum(mass[order])
         for fraction in (0.35, 0.5, 0.65):
-            split = int(np.clip(round(fraction * len(values)), minimum_leaf, len(values) - minimum_leaf))
+            split = int(np.searchsorted(cumulative, fraction * safe_mass)) + 1
+            split = int(np.clip(split, minimum_leaf, len(values) - minimum_leaf))
             side = np.zeros(len(values), dtype=bool)
             side[order[split:]] = True
             centers = np.stack((
-                np.mean(coordinates[~side], axis=0),
-                np.mean(coordinates[side], axis=0),
+                np.average(coordinates[~side], axis=0, weights=mass[~side]),
+                np.average(coordinates[side], axis=0, weights=mass[side]),
             ))
             for _ in range(12):
                 costs = np.sum(
@@ -191,17 +199,20 @@ def _two_means_proposal(
                 if np.sum(updated) < minimum_leaf or np.sum(~updated) < minimum_leaf:
                     break
                 next_centers = np.stack((
-                    np.mean(coordinates[~updated], axis=0),
-                    np.mean(coordinates[updated], axis=0),
+                    np.average(
+                        coordinates[~updated], axis=0, weights=mass[~updated]
+                    ),
+                    np.average(
+                        coordinates[updated], axis=0, weights=mass[updated]
+                    ),
                 ))
                 side = updated
                 if np.max(np.abs(next_centers - centers)) < 1e-10:
                     centers = next_centers
                     break
                 centers = next_centers
-            new_sse = float(np.sum(
-                (coordinates - centers[side.astype(np.int8)]) ** 2
-            ))
+            residual = coordinates - centers[side.astype(np.int8)]
+            new_sse = float(np.sum(mass[:, None] * residual * residual))
             gain = old_sse - new_sse
             if gain > best_gain + 1e-14:
                 best_gain = gain
@@ -215,6 +226,7 @@ def bifurcate_palette(
     samples_lab_alpha: np.ndarray,
     colors: int,
     *,
+    sample_weights: np.ndarray | None = None,
     lightness_weight: float = 1.0,
     chroma_weight: float = 1.0,
     hue_weight: float = 1.0,
@@ -226,6 +238,14 @@ def bifurcate_palette(
     if not len(samples):
         raise ValueError("cannot bifurcate an empty color population")
     requested = max(1, min(int(colors), len(samples)))
+    if sample_weights is None:
+        importance = np.ones(len(samples), dtype=np.float64)
+    else:
+        importance = np.asarray(sample_weights, dtype=np.float64).reshape(-1)
+        if len(importance) != len(samples):
+            raise ValueError("sample_weights must match the sample population")
+        if np.any(~np.isfinite(importance)) or np.any(importance <= 0.0):
+            raise ValueError("sample_weights must be finite and positive")
     weights = (
         max(0.0, float(lightness_weight)),
         max(0.0, float(chroma_weight)),
@@ -233,7 +253,9 @@ def bifurcate_palette(
         max(0.0, float(alpha_weight)),
     )
     leaves: dict[int, np.ndarray] = {0: np.arange(len(samples), dtype=np.int64)}
-    centers: dict[int, np.ndarray] = {0: np.mean(samples, axis=0)}
+    centers: dict[int, np.ndarray] = {
+        0: np.average(samples, axis=0, weights=importance)
+    }
     parents: dict[int, np.ndarray] = {0: centers[0].copy()}
     heap: list[tuple[float, int, int, np.ndarray]] = []
     serial = 0
@@ -241,7 +263,10 @@ def bifurcate_palette(
     def queue(label: int) -> None:
         nonlocal serial
         proposal = _two_means_proposal(
-            samples[leaves[label]], weights, max(1, int(minimum_leaf))
+            samples[leaves[label]],
+            weights,
+            importance[leaves[label]],
+            max(1, int(minimum_leaf)),
         )
         if proposal is None:
             return
@@ -268,7 +293,11 @@ def bifurcate_palette(
             (first_label, left), (second_label, right)
         ):
             leaves[child_label] = child_indices
-            centers[child_label] = np.mean(samples[child_indices], axis=0)
+            centers[child_label] = np.average(
+                samples[child_indices],
+                axis=0,
+                weights=importance[child_indices],
+            )
             parents[child_label] = parent_center
             queue(child_label)
         total_gain += -float(negative_gain)
