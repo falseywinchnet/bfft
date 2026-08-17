@@ -26,7 +26,7 @@ Fourier basis, periodic feature map, unseen-support label, or GELU activation.
   parameter-matched eikonal-ray transport experiments.
 - [`RADIAL_DOGFOOD.md`](RADIAL_DOGFOOD.md): topology-first 500-step radial
   dogfood and the continuous full-space frame-flow result.
-- [`CONTINUOUS_FRAME_FULL.md`](CONTINUOUS_FRAME_FULL.md): full 22-task matched
+- [`CONTINUOUS_FRAME_FULL.md`](CONTINUOUS_FRAME_FULL.md): full 23-task matched
   comparison and the transport lessons from segmentation and Meyer splitting.
 - [`FRAME_REFINEMENT_REPORT.md`](FRAME_REFINEMENT_REPORT.md): 84-fit optimizer,
   capacity, and speed study, including polynomial drifted chirp and the spatial

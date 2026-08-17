@@ -97,7 +97,8 @@ def compact_parity(rows):
 
 
 def compact_curve(rows, dimensions=1):
-    chosen = indices(len(rows[0]["input"] if dimensions == 3 else rows[0]["x"]), 121)
+    maximum = 361 if dimensions == 3 else 121
+    chosen = indices(len(rows[0]["input"] if dimensions == 3 else rows[0]["x"]), maximum)
     x_key = "input" if dimensions == 3 else "x"
 
     def sample(values):

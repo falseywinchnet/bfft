@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the matched 22-task vanilla/self-context/continuous-flow report."""
+"""Build the matched 23-task vanilla/self-context/continuous-flow report."""
 from __future__ import annotations
 
 import json
@@ -59,11 +59,12 @@ def transformed_template():
     replacements = {
         "Self-context versus curvature self-context": "Continuous frame flow: full matched benchmark",
         "Where curvature changes acquisition, endpoint, and tails": "Where continuous frame flow changes acquisition, endpoint, and tails",
-        "Curvature self-context metric differences versus self-context for 22 tasks": "Continuous frame flow metric differences versus self-context for 22 tasks",
+        "Complete 22-problem suite · identical parameters · two paired seeds · width 24 · 500 steps · M4 CPU": "Complete 23-problem suite · identical parameters · two paired seeds · width 24 · 500 steps · M4 CPU",
+        "Curvature self-context metric differences versus self-context for 22 tasks": "Continuous frame flow metric differences versus self-context for 23 tasks",
         "Task-level metric differences between curvature self-context and self-context": "Task-level metric differences between continuous frame flow and self-context",
         "Curvature self-context − self-context": "Continuous frame flow − self-context",
         "<span class=\"key\"><span class=\"dot\" style=\"--key:var(--viz-series-1)\"></span>Self-context</span><span class=\"key\"><span class=\"dot\" style=\"--key:var(--viz-series-2)\"></span>Curvature self-context</span>": "<span class=\"key\"><span class=\"dot\" style=\"--key:var(--viz-series-1)\"></span>Vanilla MLP</span><span class=\"key\"><span class=\"dot\" style=\"--key:var(--viz-series-2)\"></span>Self-context</span><span class=\"key\"><span class=\"dot\" style=\"--key:var(--viz-series-3)\"></span>Continuous frame flow</span>",
-        "const names={self_context:'Self-context',self_context_jet_curvature_context:'Curvature self-context'};": "const names={ordinary_mlp:'Vanilla MLP',self_context:'Self-context',self_context_stiefel_flow_curvature:'Continuous frame flow'};",
+        "const names={self_context:'Self-context',self_context_jet_curvature_context:'Curvature self-context'};": "const names={ordinary_mlp:'Vanilla MLP',self_context:'Self-context',self_context_stiefel_flow_curvature:'Continuous frame flow (AdamW)'};",
         "grid-template-columns:repeat(3,minmax(0,1fr))": "grid-template-columns:repeat(4,minmax(0,1fr))",
         "variant===variants[0]?'var(--viz-series-1)':'var(--viz-series-2)'": "`var(--viz-series-${variants.indexOf(variant)+1})`",
     }

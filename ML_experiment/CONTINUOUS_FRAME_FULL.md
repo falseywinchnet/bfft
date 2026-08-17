@@ -3,29 +3,30 @@
 ## Experiment
 
 The radial dogfood winner is promoted without modification and compared with
-the two controls on the complete 22-problem suite:
+the two controls on the complete 23-problem suite:
 
 1. an ordinary encode-expand-LELU-contract-decode MLP;
 2. self-context;
 3. self-context with the continuous full-space Stiefel frame flow and the
    orthogonal curvature shell.
 
-Every model has 4,069 trainable parameters at width 24. Every run uses 500
+Every comparison is exactly parameter-matched within its task (4,069–4,454
+trainable parameters at width 24, depending on task I/O). Every run uses 500
 AdamW steps, batch 256, learning rate `3e-3`, two paired seeds, and CPU Torch
-on the M4 Mini. The benchmark contains 132 fits. A separate seed-0 visual pass
-retrained all 66 task/model pairs with the same budget.
+on the M4 Mini. The benchmark contains 138 fits. A separate seed-0 visual pass
+retrained all 69 task/model pairs with the same budget.
 
 ## Aggregate result
 
 | Model | Validation | Held-out score | Tail score | Learning AUC | Seconds / fit |
 |---|---:|---:|---:|---:|---:|
-| Vanilla MLP | .7851 | .5947 | .5772 | .7226 | .30 |
-| Self-context | .9152 | .6865 | .6656 | .8437 | 4.64 |
-| **Continuous frame flow** | **.9177** | **.7007** | **.6709** | **.8533** | 15.39 |
+| Vanilla MLP | .7768 | .5773 | .5607 | .7150 | .29 |
+| Self-context | .9188 | .6652 | .6461 | .8435 | 4.63 |
+| **Continuous frame flow (AdamW)** | **.9213** | **.6794** | **.6510** | **.8548** | 15.37 |
 
-Relative to self-context, continuous frame flow gains `.01423` held-out score,
-`.00525` tail score, and `.00965` learning AUC. It wins acquisition on 15 of 22
-tasks and held-out endpoint on 11 of 22, but costs 3.31 times as much wall time.
+Relative to self-context, continuous frame flow gains `.01428` held-out score,
+`.00487` tail score, and `.01126` learning AUC. It wins acquisition on 16 of 23
+tasks and held-out endpoint on 12 of 23, but costs 3.32 times as much wall time.
 The endpoint gain is concentrated rather than universal.
 
 ## Where the gain lives
@@ -35,6 +36,7 @@ The endpoint gain is concentrated rather than universal.
 | N-D spiral, high rank | **+.2260** | **+.2052** | +.0027 | decisive structure recovery |
 | Fourier mix 1-D | +.1618 | +.1356 | +.0047 | large but seed-unstable |
 | Chirp 1-D | +.0756 | +.0507 | +.0194 | reliable changing-frequency gain |
+| Polynomial drifted chirp | +.0153 | -.0035 | +.0468 | faster acquisition, seed-sensitive continuation |
 | Radial stripes | +.0259 | +.0259 | **+.0546** | topology exists, optimizer is unstable |
 | Checkerboard | +.0240 | +.0680 | +.0276 | better tails and acquisition |
 | Localized steps 1-D | **-.1816** | **-.1890** | +.0048 | faster in-field fit, worse continuation |
@@ -130,4 +132,3 @@ labels, or trainable parameters.
 The complete graphical report is `continuous_frame_full.html`. Raw benchmark,
 paired-seed summary, and full visual probes are in
 `results_continuous_frame_full/`.
-
