@@ -1,0 +1,800 @@
+{
+  "experiment": "walsh_periodic_hessian_branch_census",
+  "warning": "Each branch count is a lower bound from a finite Sobol census; an uncarried branch may be a true birth or a branch missed at the preceding scale.",
+  "rows": [
+    {
+      "dimension": 5,
+      "basis_condition_number": 1.4390243902439015,
+      "shortest_length": 0.8380891033679768,
+      "shortest_coefficients": [
+        0,
+        0,
+        0,
+        -1,
+        0
+      ],
+      "budgets": [
+        {
+          "probe_power": 8,
+          "probe_count": 256,
+          "levels": [
+            {
+              "level": 0,
+              "t": 0.1,
+              "probe_count": 256,
+              "field_gradient_evaluations": 5701,
+              "branch_count": 5,
+              "distinct_edge_count": 5,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 20,
+              "shortest_basin_fraction": 0.078125,
+              "uncarried_branch_count": 5,
+              "uncarried_shortest_branch_count": 1,
+              "best_shortest_score_rank": 5,
+              "best_shortest_basin_rank": 4,
+              "largest_branch_basin_fraction": 0.54296875,
+              "branches": [
+                {
+                  "edge": [
+                    0,
+                    1,
+                    0,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.3422717076438233,
+                  "shortest_edge": false,
+                  "probe_basin_count": 139,
+                  "probe_basin_fraction": 0.54296875,
+                  "score_rank": 1,
+                  "basin_rank": 1,
+                  "carried_from_previous_scale": false,
+                  "score": 1.2259183537848042,
+                  "eigengap": 1.1935017638794194
+                },
+                {
+                  "edge": [
+                    0,
+                    0,
+                    1,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.2582638554474619,
+                  "shortest_edge": false,
+                  "probe_basin_count": 48,
+                  "probe_basin_fraction": 0.1875,
+                  "score_rank": 2,
+                  "basin_rank": 2,
+                  "carried_from_previous_scale": false,
+                  "score": 1.0187806987891894,
+                  "eigengap": 0.8268021813202713
+                },
+                {
+                  "edge": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.2221154283946962,
+                  "shortest_edge": false,
+                  "probe_basin_count": 31,
+                  "probe_basin_fraction": 0.12109375,
+                  "score_rank": 3,
+                  "basin_rank": 3,
+                  "carried_from_previous_scale": false,
+                  "score": 0.9402641201962079,
+                  "eigengap": 0.6871765804292469
+                },
+                {
+                  "edge": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    1
+                  ],
+                  "edge_norm_over_shortest": 1.1641954649144273,
+                  "shortest_edge": false,
+                  "probe_basin_count": 18,
+                  "probe_basin_fraction": 0.0703125,
+                  "score_rank": 4,
+                  "basin_rank": 5,
+                  "carried_from_previous_scale": false,
+                  "score": 0.8590695009753223,
+                  "eigengap": 0.5302659151069464
+                },
+                {
+                  "edge": [
+                    0,
+                    0,
+                    0,
+                    1,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.0,
+                  "shortest_edge": true,
+                  "probe_basin_count": 20,
+                  "probe_basin_fraction": 0.078125,
+                  "score_rank": 5,
+                  "basin_rank": 4,
+                  "carried_from_previous_scale": false,
+                  "score": 0.6577134718966149,
+                  "eigengap": 0.5269096439014955
+                }
+              ]
+            },
+            {
+              "level": 1,
+              "t": 0.12,
+              "probe_count": 256,
+              "field_gradient_evaluations": 5410,
+              "branch_count": 7,
+              "distinct_edge_count": 7,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 13,
+              "shortest_basin_fraction": 0.05078125,
+              "uncarried_branch_count": 2,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 7,
+              "best_shortest_basin_rank": 5,
+              "largest_branch_basin_fraction": 0.48828125,
+              "branches": [
+                {
+                  "edge": [
+                    0,
+                    1,
+                    0,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.3422717076438233,
+                  "shortest_edge": false,
+                  "probe_basin_count": 125,
+                  "probe_basin_fraction": 0.48828125,
+                  "score_rank": 1,
+                  "basin_rank": 1,
+                  "carried_from_previous_scale": true,
+                  "score": 2.6768399307065858,
+                  "eigengap": 2.6434055116648243
+                },
+                {
+                  "edge": [
+                    0,
+                    0,
+                    1,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.2582638554474619,
+                  "shortest_edge": false,
+                  "probe_basin_count": 60,
+                  "probe_basin_fraction": 0.234375,
+                  "score_rank": 2,
+                  "basin_rank": 2,
+                  "carried_from_previous_scale": true,
+                  "score": 2.3583368205076978,
+                  "eigengap": 2.0434563574226274
+                },
+                {
+                  "edge": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.2221154283946962,
+                  "shortest_edge": false,
+                  "probe_basin_count": 32,
+                  "probe_basin_fraction": 0.125,
+                  "score_rank": 3,
+                  "basin_rank": 3,
+                  "carried_from_previous_scale": true,
+                  "score": 2.222476455213176,
+                  "eigengap": 1.7918350636115181
+                },
+                {
+                  "edge": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    1
+                  ],
+                  "edge_norm_over_shortest": 1.1641954649144273,
+                  "shortest_edge": false,
+                  "probe_basin_count": 18,
+                  "probe_basin_fraction": 0.0703125,
+                  "score_rank": 4,
+                  "basin_rank": 4,
+                  "carried_from_previous_scale": true,
+                  "score": 2.0681217268648244,
+                  "eigengap": 1.4700651535140898
+                },
+                {
+                  "edge": [
+                    0,
+                    1,
+                    1,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.7027850612976188,
+                  "shortest_edge": false,
+                  "probe_basin_count": 4,
+                  "probe_basin_fraction": 0.015625,
+                  "score_rank": 5,
+                  "basin_rank": 6,
+                  "carried_from_previous_scale": false,
+                  "score": 2.0342818048485203,
+                  "eigengap": 1.0270915207791573
+                },
+                {
+                  "edge": [
+                    1,
+                    0,
+                    1,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.6676444586540518,
+                  "shortest_edge": false,
+                  "probe_basin_count": 4,
+                  "probe_basin_fraction": 0.015625,
+                  "score_rank": 6,
+                  "basin_rank": 7,
+                  "carried_from_previous_scale": false,
+                  "score": 1.760649248288656,
+                  "eigengap": 0.4916577369007822
+                },
+                {
+                  "edge": [
+                    0,
+                    0,
+                    0,
+                    1,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.0,
+                  "shortest_edge": true,
+                  "probe_basin_count": 13,
+                  "probe_basin_fraction": 0.05078125,
+                  "score_rank": 7,
+                  "basin_rank": 5,
+                  "carried_from_previous_scale": true,
+                  "score": 1.6175460034324156,
+                  "eigengap": 1.4669069652882136
+                }
+              ]
+            },
+            {
+              "level": 2,
+              "t": 0.15,
+              "probe_count": 256,
+              "field_gradient_evaluations": 5000,
+              "branch_count": 8,
+              "distinct_edge_count": 8,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 13,
+              "shortest_basin_fraction": 0.05078125,
+              "uncarried_branch_count": 2,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 6,
+              "best_shortest_basin_rank": 5,
+              "largest_branch_basin_fraction": 0.4375,
+              "branches": [
+                {
+                  "edge": [
+                    0,
+                    1,
+                    0,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.3422717076438233,
+                  "shortest_edge": false,
+                  "probe_basin_count": 112,
+                  "probe_basin_fraction": 0.4375,
+                  "score_rank": 1,
+                  "basin_rank": 1,
+                  "carried_from_previous_scale": true,
+                  "score": 6.204913984853658,
+                  "eigengap": 6.380160735665351
+                },
+                {
+                  "edge": [
+                    0,
+                    0,
+                    1,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.2582638554474619,
+                  "shortest_edge": false,
+                  "probe_basin_count": 59,
+                  "probe_basin_fraction": 0.23046875,
+                  "score_rank": 2,
+                  "basin_rank": 2,
+                  "carried_from_previous_scale": true,
+                  "score": 5.812041824475976,
+                  "eigengap": 5.501914631334608
+                },
+                {
+                  "edge": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.2221154283946962,
+                  "shortest_edge": false,
+                  "probe_basin_count": 41,
+                  "probe_basin_fraction": 0.16015625,
+                  "score_rank": 3,
+                  "basin_rank": 3,
+                  "carried_from_previous_scale": true,
+                  "score": 5.610633708856883,
+                  "eigengap": 5.091857071149272
+                },
+                {
+                  "edge": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    1
+                  ],
+                  "edge_norm_over_shortest": 1.1641954649144273,
+                  "shortest_edge": false,
+                  "probe_basin_count": 23,
+                  "probe_basin_fraction": 0.08984375,
+                  "score_rank": 4,
+                  "basin_rank": 4,
+                  "carried_from_previous_scale": true,
+                  "score": 5.349076612333616,
+                  "eigengap": 4.462538546939305
+                },
+                {
+                  "edge": [
+                    0,
+                    1,
+                    1,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.7027850612976188,
+                  "shortest_edge": false,
+                  "probe_basin_count": 5,
+                  "probe_basin_fraction": 0.01953125,
+                  "score_rank": 5,
+                  "basin_rank": 6,
+                  "carried_from_previous_scale": true,
+                  "score": 4.440850186924515,
+                  "eigengap": 2.302661032070123
+                },
+                {
+                  "edge": [
+                    0,
+                    0,
+                    0,
+                    1,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.0,
+                  "shortest_edge": true,
+                  "probe_basin_count": 13,
+                  "probe_basin_fraction": 0.05078125,
+                  "score_rank": 6,
+                  "basin_rank": 5,
+                  "carried_from_previous_scale": true,
+                  "score": 4.398639690815355,
+                  "eigengap": 4.496542564345901
+                },
+                {
+                  "edge": [
+                    1,
+                    0,
+                    1,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.6676444586540518,
+                  "shortest_edge": false,
+                  "probe_basin_count": 2,
+                  "probe_basin_fraction": 0.0078125,
+                  "score_rank": 7,
+                  "basin_rank": 7,
+                  "carried_from_previous_scale": false,
+                  "score": 4.058476173842058,
+                  "eigengap": 1.2532354970042308
+                },
+                {
+                  "edge": [
+                    1,
+                    1,
+                    1,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.9206922492490575,
+                  "shortest_edge": false,
+                  "probe_basin_count": 1,
+                  "probe_basin_fraction": 0.00390625,
+                  "score_rank": 8,
+                  "basin_rank": 8,
+                  "carried_from_previous_scale": false,
+                  "score": 3.373282884829873,
+                  "eigengap": 2.4812739620323407
+                }
+              ]
+            },
+            {
+              "level": 3,
+              "t": 0.18,
+              "probe_count": 256,
+              "field_gradient_evaluations": 4898,
+              "branch_count": 7,
+              "distinct_edge_count": 7,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 10,
+              "shortest_basin_fraction": 0.0390625,
+              "uncarried_branch_count": 0,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 5,
+              "best_shortest_basin_rank": 5,
+              "largest_branch_basin_fraction": 0.38671875,
+              "branches": [
+                {
+                  "edge": [
+                    0,
+                    1,
+                    0,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.3422717076438233,
+                  "shortest_edge": false,
+                  "probe_basin_count": 99,
+                  "probe_basin_fraction": 0.38671875,
+                  "score_rank": 1,
+                  "basin_rank": 1,
+                  "carried_from_previous_scale": true,
+                  "score": 11.540041224306691,
+                  "eigengap": 12.408679041451142
+                },
+                {
+                  "edge": [
+                    0,
+                    0,
+                    1,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.2582638554474619,
+                  "shortest_edge": false,
+                  "probe_basin_count": 63,
+                  "probe_basin_fraction": 0.24609375,
+                  "score_rank": 2,
+                  "basin_rank": 2,
+                  "carried_from_previous_scale": true,
+                  "score": 11.293740402734675,
+                  "eigengap": 11.504171048085174
+                },
+                {
+                  "edge": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.2221154283946962,
+                  "shortest_edge": false,
+                  "probe_basin_count": 45,
+                  "probe_basin_fraction": 0.17578125,
+                  "score_rank": 3,
+                  "basin_rank": 3,
+                  "carried_from_previous_scale": true,
+                  "score": 11.105505665238098,
+                  "eigengap": 11.031797314924617
+                },
+                {
+                  "edge": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    1
+                  ],
+                  "edge_norm_over_shortest": 1.1641954649144273,
+                  "shortest_edge": false,
+                  "probe_basin_count": 31,
+                  "probe_basin_fraction": 0.12109375,
+                  "score_rank": 4,
+                  "basin_rank": 4,
+                  "carried_from_previous_scale": true,
+                  "score": 10.817256114492789,
+                  "eigengap": 10.150778091141841
+                },
+                {
+                  "edge": [
+                    0,
+                    0,
+                    0,
+                    1,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.0,
+                  "shortest_edge": true,
+                  "probe_basin_count": 10,
+                  "probe_basin_fraction": 0.0390625,
+                  "score_rank": 5,
+                  "basin_rank": 5,
+                  "carried_from_previous_scale": true,
+                  "score": 9.406846624278776,
+                  "eigengap": 10.360870274630475
+                },
+                {
+                  "edge": [
+                    0,
+                    1,
+                    1,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.7027850612976188,
+                  "shortest_edge": false,
+                  "probe_basin_count": 4,
+                  "probe_basin_fraction": 0.015625,
+                  "score_rank": 6,
+                  "basin_rank": 6,
+                  "carried_from_previous_scale": true,
+                  "score": 7.663126769632153,
+                  "eigengap": 4.27311294341129
+                },
+                {
+                  "edge": [
+                    1,
+                    0,
+                    1,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.6676444586540518,
+                  "shortest_edge": false,
+                  "probe_basin_count": 4,
+                  "probe_basin_fraction": 0.015625,
+                  "score_rank": 7,
+                  "basin_rank": 7,
+                  "carried_from_previous_scale": true,
+                  "score": 7.259526213929805,
+                  "eigengap": 2.5408216285395797
+                }
+              ]
+            },
+            {
+              "level": 4,
+              "t": 0.21,
+              "probe_count": 256,
+              "field_gradient_evaluations": 4864,
+              "branch_count": 5,
+              "distinct_edge_count": 5,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 15,
+              "shortest_basin_fraction": 0.05859375,
+              "uncarried_branch_count": 0,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 5,
+              "best_shortest_basin_rank": 5,
+              "largest_branch_basin_fraction": 0.3515625,
+              "branches": [
+                {
+                  "edge": [
+                    0,
+                    0,
+                    1,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.2582638554474619,
+                  "shortest_edge": false,
+                  "probe_basin_count": 59,
+                  "probe_basin_fraction": 0.23046875,
+                  "score_rank": 1,
+                  "basin_rank": 2,
+                  "carried_from_previous_scale": true,
+                  "score": 19.063587381085405,
+                  "eigengap": 20.564126137118105
+                },
+                {
+                  "edge": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.2221154283946962,
+                  "shortest_edge": false,
+                  "probe_basin_count": 50,
+                  "probe_basin_fraction": 0.1953125,
+                  "score_rank": 2,
+                  "basin_rank": 3,
+                  "carried_from_previous_scale": true,
+                  "score": 19.028275438575562,
+                  "eigengap": 20.218231209970305
+                },
+                {
+                  "edge": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    1
+                  ],
+                  "edge_norm_over_shortest": 1.1641954649144273,
+                  "shortest_edge": false,
+                  "probe_basin_count": 42,
+                  "probe_basin_fraction": 0.1640625,
+                  "score_rank": 3,
+                  "basin_rank": 4,
+                  "carried_from_previous_scale": true,
+                  "score": 18.896399939285452,
+                  "eigengap": 19.3186068600938
+                },
+                {
+                  "edge": [
+                    0,
+                    1,
+                    0,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.3422717076438233,
+                  "shortest_edge": false,
+                  "probe_basin_count": 90,
+                  "probe_basin_fraction": 0.3515625,
+                  "score_rank": 4,
+                  "basin_rank": 1,
+                  "carried_from_previous_scale": true,
+                  "score": 18.818396439012833,
+                  "eigengap": 21.048074839893378
+                },
+                {
+                  "edge": [
+                    0,
+                    0,
+                    0,
+                    1,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.0,
+                  "shortest_edge": true,
+                  "probe_basin_count": 15,
+                  "probe_basin_fraction": 0.05859375,
+                  "score_rank": 5,
+                  "basin_rank": 5,
+                  "carried_from_previous_scale": true,
+                  "score": 17.347349215726293,
+                  "eigengap": 20.03277382785569
+                }
+              ]
+            },
+            {
+              "level": 5,
+              "t": 0.23675858,
+              "probe_count": 256,
+              "field_gradient_evaluations": 4646,
+              "branch_count": 5,
+              "distinct_edge_count": 5,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 18,
+              "shortest_basin_fraction": 0.0703125,
+              "uncarried_branch_count": 0,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 4,
+              "best_shortest_basin_rank": 5,
+              "largest_branch_basin_fraction": 0.328125,
+              "branches": [
+                {
+                  "edge": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    1
+                  ],
+                  "edge_norm_over_shortest": 1.1641954649144273,
+                  "shortest_edge": false,
+                  "probe_basin_count": 46,
+                  "probe_basin_fraction": 0.1796875,
+                  "score_rank": 1,
+                  "basin_rank": 4,
+                  "carried_from_previous_scale": true,
+                  "score": 28.572809947834237,
+                  "eigengap": 30.885252255628746
+                },
+                {
+                  "edge": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.2221154283946962,
+                  "shortest_edge": false,
+                  "probe_basin_count": 49,
+                  "probe_basin_fraction": 0.19140625,
+                  "score_rank": 2,
+                  "basin_rank": 3,
+                  "carried_from_previous_scale": true,
+                  "score": 28.317823788794513,
+                  "eigengap": 31.45516841859429
+                },
+                {
+                  "edge": [
+                    0,
+                    0,
+                    1,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.2582638554474619,
+                  "shortest_edge": false,
+                  "probe_basin_count": 59,
+                  "probe_basin_fraction": 0.23046875,
+                  "score_rank": 3,
+                  "basin_rank": 2,
+                  "carried_from_previous_scale": true,
+                  "score": 28.047048110862796,
+                  "eigengap": 31.45638291472618
+                },
+                {
+                  "edge": [
+                    0,
+                    0,
+                    0,
+                    1,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.0,
+                  "shortest_edge": true,
+                  "probe_basin_count": 18,
+                  "probe_basin_fraction": 0.0703125,
+                  "score_rank": 4,
+                  "basin_rank": 5,
+                  "carried_from_previous_scale": true,
+                  "score": 27.43794025974445,
+                  "eigengap": 32.56462265956497
+                },
+                {
+                  "edge": [
+                    0,
+                    1,
+                    0,
+                    0,
+                    0
+                  ],
+                  "edge_norm_over_shortest": 1.3422717076438233,
+                  "shortest_edge": false,
+                  "probe_basin_count": 84,
+                  "probe_basin_fraction": 0.328125,
+                  "score_rank": 5,
+                  "basin_rank": 1,
+                  "carried_from_previous_scale": true,
+                  "score": 26.964451108885886,
+                  "eigengap": 31.02638196293519
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

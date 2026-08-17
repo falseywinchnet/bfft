@@ -1,0 +1,1279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Transport_Study.Fragment</title>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+</head>
+<body>
+<iframe sandbox="allow-scripts" referrerpolicy="no-referrer" title="Transport_Study.Fragment" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;Transport_Study.Fragment&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, var(--background));
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 14px);
+  --blue: light-dark(rgb(51 156 255), rgb(51 156 255));
+  --orange: light-dark(rgb(226 85 7), rgb(251 106 34));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --red: light-dark(rgb(224 46 42), rgb(255 103 100));
+  --purple: light-dark(rgb(146 79 247), rgb(173 123 249));
+  --yellow: light-dark(rgb(255 195 0), rgb(255 210 64));
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, &quot;Segoe UI&quot;, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --radius: var(--border-radius-lg, 12.5px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: 5px;
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium, 500);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: superellipse(1.5);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget &gt; :not(.card, .progress) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress {
+  display: flex;
+  height: 6px;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+}
+
+.progress-bar {
+  height: 100%;
+  flex-shrink: 0;
+  border: 0;
+  background: var(--viz-series-1);
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: superellipse(1.5);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+  [aria-pressed=&quot;true&quot;],
+  [aria-selected=&quot;true&quot;],
+  .is-selected
+) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+/* Model-authored chart rules can otherwise stretch icons after these styles load. */
+svg.lucide {
+  display: block;
+  width: 16px !important;
+  height: 16px !important;
+  flex: none;
+  margin: 0 !important;
+  stroke-width: 1.6;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;section id=&quot;transport-study-viz&quot; aria-label=&quot;Self-context transport study&quot;&gt;
+  &lt;style&gt;
+    #transport-study-viz{color:var(--foreground);font-family:inherit;max-width:100%;overflow:hidden;position:relative}
+    #transport-study-viz h2,#transport-study-viz h3{font-weight:500;margin:0}
+    #transport-study-viz h2{margin-bottom:.25rem}
+    #transport-study-viz h3{margin-bottom:.45rem}
+    #transport-study-viz .lede{color:var(--muted-foreground);margin:.1rem 0 1rem}
+    #transport-study-viz .section{margin-top:1.5rem}
+    #transport-study-viz .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5rem}
+    #transport-study-viz .plot{min-width:0}
+    #transport-study-viz .controls{display:flex;flex-wrap:wrap;gap:.35rem 1rem;margin:.6rem 0 1rem}
+    #transport-study-viz .controls button{appearance:none;background:transparent;border:0;color:var(--foreground);font:inherit;padding:.15rem 0;cursor:pointer}
+    #transport-study-viz .controls button[aria-pressed=&quot;false&quot;]{color:var(--muted-foreground);text-decoration:line-through}
+    #transport-study-viz .swatch{display:inline-block;width:.65rem;height:.65rem;margin-right:.35rem;vertical-align:baseline}
+    #transport-study-viz svg{display:block;max-width:100%;overflow:hidden}
+    #transport-study-viz svg text{fill:var(--foreground);font-size:12px;font-family:inherit}
+    #transport-study-viz svg .muted{fill:var(--muted-foreground)}
+    #transport-study-viz svg .axis path,#transport-study-viz svg .axis line{stroke:var(--border)}
+    #transport-study-viz svg [data-chart-frame]{fill:none;stroke:var(--border)}
+    #transport-study-viz .radial-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1rem}
+    #transport-study-viz .radial-item{min-width:0;text-align:center}
+    #transport-study-viz .radial-item h3{min-height:2.4em}
+    #transport-study-viz .tooltip{position:absolute;pointer-events:none;background:var(--popover);color:var(--popover-foreground);border:1px solid var(--border);padding:.45rem .6rem;opacity:0;z-index:5}
+    @media(max-width:900px){#transport-study-viz .radial-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(max-width:700px){#transport-study-viz .two{grid-template-columns:1fr}}
+    @media(max-width:520px){#transport-study-viz .radial-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:380px){#transport-study-viz .radial-grid{grid-template-columns:1fr}}
+  &lt;/style&gt;
+  &lt;h2&gt;Eikonal rays: integrated transport versus basis expansion&lt;/h2&gt;
+  &lt;p class=&quot;lede&quot;&gt;11 tasks · 500 steps · two paired seeds · matched parameters · M4 CPU&lt;/p&gt;
+
+  &lt;section class=&quot;section&quot;&gt;
+    &lt;h3&gt;Change from ordinary self-context&lt;/h3&gt;
+    &lt;div class=&quot;plot&quot; id=&quot;ts-heldout&quot;&gt;&lt;svg role=&quot;img&quot; aria-label=&quot;Held-out score change by task&quot;&gt;&lt;/svg&gt;&lt;/div&gt;
+    &lt;div class=&quot;two&quot;&gt;
+      &lt;div class=&quot;plot&quot; id=&quot;ts-tail&quot;&gt;&lt;svg role=&quot;img&quot; aria-label=&quot;Tail score change by task&quot;&gt;&lt;/svg&gt;&lt;/div&gt;
+      &lt;div class=&quot;plot&quot; id=&quot;ts-auc&quot;&gt;&lt;svg role=&quot;img&quot; aria-label=&quot;Learning AUC change by task&quot;&gt;&lt;/svg&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+
+  &lt;section class=&quot;section&quot;&gt;
+    &lt;h3&gt;Information budget and curvature mechanism&lt;/h3&gt;
+    &lt;div class=&quot;two&quot;&gt;
+      &lt;div class=&quot;plot&quot; id=&quot;ts-efficiency&quot;&gt;&lt;svg role=&quot;img&quot; aria-label=&quot;Mean held-out score by chart observations&quot;&gt;&lt;/svg&gt;&lt;/div&gt;
+      &lt;div class=&quot;plot&quot; id=&quot;ts-mechanism&quot;&gt;&lt;svg role=&quot;img&quot; aria-label=&quot;Full and detached curvature held-out score by task&quot;&gt;&lt;/svg&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+
+  &lt;section class=&quot;section&quot;&gt;
+    &lt;h3&gt;Acquisition inside the observed region&lt;/h3&gt;
+    &lt;div class=&quot;controls&quot; id=&quot;ts-controls&quot; aria-label=&quot;Toggle model curves&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;two&quot; id=&quot;ts-learning&quot;&gt;&lt;/div&gt;
+  &lt;/section&gt;
+
+  &lt;section class=&quot;section&quot;&gt;
+    &lt;h3&gt;Radial decision fields · seed 0&lt;/h3&gt;
+    &lt;div class=&quot;radial-grid&quot; id=&quot;ts-radial-grid&quot;&gt;&lt;/div&gt;
+  &lt;/section&gt;
+
+  &lt;section class=&quot;section&quot;&gt;
+    &lt;h3&gt;Multiscale continuation · seed 0&lt;/h3&gt;
+    &lt;div class=&quot;plot&quot; id=&quot;ts-multiscale&quot;&gt;&lt;svg role=&quot;img&quot; aria-label=&quot;Multiscale target and model continuation&quot;&gt;&lt;/svg&gt;&lt;/div&gt;
+  &lt;/section&gt;
+  &lt;div class=&quot;tooltip&quot; role=&quot;tooltip&quot;&gt;&lt;/div&gt;
+
+  &lt;script src=&quot;https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js&quot;&gt;&lt;/script&gt;
+  &lt;script&gt;
+  (()=&gt;{
+    const root=document.getElementById(&#x27;transport-study-viz&#x27;),data={&quot;task_rows&quot;:[{&quot;task&quot;:&quot;checkerboard&quot;,&quot;score&quot;:{&quot;self&quot;:0.4424999877810478,&quot;odd&quot;:0.445333331823349,&quot;delta&quot;:0.002833344042301178},&quot;tail_score&quot;:{&quot;self&quot;:0.31183333024382587,&quot;odd&quot;:0.3454999983310699,&quot;delta&quot;:0.033666668087244056},&quot;learning_auc&quot;:{&quot;self&quot;:0.8241366649875417,&quot;odd&quot;:0.8193058810280636,&quot;delta&quot;:-0.004830783959478113}},{&quot;task&quot;:&quot;chirp_1d&quot;,&quot;score&quot;:{&quot;self&quot;:0.3267969224184327,&quot;odd&quot;:0.26758039458780836,&quot;delta&quot;:-0.059216527830624366},&quot;tail_score&quot;:{&quot;self&quot;:0.22891574652787708,&quot;odd&quot;:0.18091655152992403,&quot;delta&quot;:-0.04799919499795305},&quot;learning_auc&quot;:{&quot;self&quot;:0.8855184617434324,&quot;odd&quot;:0.8890984986858403,&quot;delta&quot;:0.003580036942407938}},{&quot;task&quot;:&quot;fourier_mix_1d&quot;,&quot;score&quot;:{&quot;self&quot;:0.3173513210217289,&quot;odd&quot;:0.3875841484758655,&quot;delta&quot;:0.07023282745413656},&quot;tail_score&quot;:{&quot;self&quot;:0.22047897357308724,&quot;odd&quot;:0.25443813292758855,&quot;delta&quot;:0.033959159354501306},&quot;learning_auc&quot;:{&quot;self&quot;:0.922828366741721,&quot;odd&quot;:0.9124939162460473,&quot;delta&quot;:-0.01033445049567372}},{&quot;task&quot;:&quot;localized_steps_1d&quot;,&quot;score&quot;:{&quot;self&quot;:0.942011867522718,&quot;odd&quot;:0.9955127087622293,&quot;delta&quot;:0.053500841239511265},&quot;tail_score&quot;:{&quot;self&quot;:0.8931120426806292,&quot;odd&quot;:0.989379017278843,&quot;delta&quot;:0.09626697459821387},&quot;learning_auc&quot;:{&quot;self&quot;:0.9559477833653707,&quot;odd&quot;:0.9572534117773578,&quot;delta&quot;:0.0013056284119871142}},{&quot;task&quot;:&quot;multiscale_1d&quot;,&quot;score&quot;:{&quot;self&quot;:0.45965530168661356,&quot;odd&quot;:0.4489757052844282,&quot;delta&quot;:-0.010679596402185354},&quot;tail_score&quot;:{&quot;self&quot;:0.4746703559552665,&quot;odd&quot;:0.46349531585034787,&quot;delta&quot;:-0.011175040104918654},&quot;learning_auc&quot;:{&quot;self&quot;:0.9020279494350889,&quot;odd&quot;:0.9028996918886304,&quot;delta&quot;:0.0008717424535414908}},{&quot;task&quot;:&quot;nd_spiral_high_rank&quot;,&quot;score&quot;:{&quot;self&quot;:0.5929999947547913,&quot;odd&quot;:0.6047500148415565,&quot;delta&quot;:0.01175002008676529},&quot;tail_score&quot;:{&quot;self&quot;:0.534500003606081,&quot;odd&quot;:0.5361666677286849,&quot;delta&quot;:0.001666664122603967},&quot;learning_auc&quot;:{&quot;self&quot;:0.92932841995731,&quot;odd&quot;:0.9301647466607392,&quot;delta&quot;:0.0008363267034292576}},{&quot;task&quot;:&quot;nd_spiral_low_rank&quot;,&quot;score&quot;:{&quot;self&quot;:0.3895000070333481,&quot;odd&quot;:0.3954999968409538,&quot;delta&quot;:0.005999989807605743},&quot;tail_score&quot;:{&quot;self&quot;:0.3375000006519258,&quot;odd&quot;:0.3556666659191251,&quot;delta&quot;:0.01816666526719929},&quot;learning_auc&quot;:{&quot;self&quot;:0.9068920036852359,&quot;odd&quot;:0.9083624543696642,&quot;delta&quot;:0.0014704506844283038}},{&quot;task&quot;:&quot;radial_stripes&quot;,&quot;score&quot;:{&quot;self&quot;:0.7638043165206909,&quot;odd&quot;:0.7868259251117706,&quot;delta&quot;:0.023021608591079712},&quot;tail_score&quot;:{&quot;self&quot;:null,&quot;odd&quot;:null,&quot;delta&quot;:null},&quot;learning_auc&quot;:{&quot;self&quot;:0.5406236906442792,&quot;odd&quot;:0.5628335757721216,&quot;delta&quot;:0.022209885127842388}},{&quot;task&quot;:&quot;ripple&quot;,&quot;score&quot;:{&quot;self&quot;:0.9402727010395331,&quot;odd&quot;:0.9366555615389514,&quot;delta&quot;:-0.003617139500581734},&quot;tail_score&quot;:{&quot;self&quot;:null,&quot;odd&quot;:null,&quot;delta&quot;:null},&quot;learning_auc&quot;:{&quot;self&quot;:0.7407409635400937,&quot;odd&quot;:0.7177678085422432,&quot;delta&quot;:-0.022973154997850465}},{&quot;task&quot;:&quot;spiral&quot;,&quot;score&quot;:{&quot;self&quot;:0.3382500037550926,&quot;odd&quot;:0.33925000578165054,&quot;delta&quot;:0.0010000020265579224},&quot;tail_score&quot;:{&quot;self&quot;:0.35750000113621355,&quot;odd&quot;:0.3508333321660757,&quot;delta&quot;:-0.006666668970137846},&quot;learning_auc&quot;:{&quot;self&quot;:0.9041934987604618,&quot;odd&quot;:0.8985382388979197,&quot;delta&quot;:-0.005655259862542117}},{&quot;task&quot;:&quot;swiss_cheese&quot;,&quot;score&quot;:{&quot;self&quot;:0.9818887114524841,&quot;odd&quot;:0.9808254241943359,&quot;delta&quot;:-0.0010632872581481934},&quot;tail_score&quot;:{&quot;self&quot;:null,&quot;odd&quot;:null,&quot;delta&quot;:null},&quot;learning_auc&quot;:{&quot;self&quot;:0.9225809653103352,&quot;odd&quot;:0.922891045704484,&quot;delta&quot;:0.00031008039414881505}}],&quot;core_summary&quot;:[{&quot;variant&quot;:&quot;self_context&quot;,&quot;score&quot;:0.5334527334959561,&quot;learning_auc&quot;:0.8237021066945998,&quot;seconds&quot;:4.695077114750003,&quot;chart_points&quot;:2.0},{&quot;variant&quot;:&quot;self_context_iterated&quot;,&quot;score&quot;:0.5129069238118079,&quot;learning_auc&quot;:0.8219057841076776,&quot;seconds&quot;:6.438924442874995,&quot;chart_points&quot;:3.0},{&quot;variant&quot;:&quot;self_context_transport_heun&quot;,&quot;score&quot;:0.5157282483586312,&quot;learning_auc&quot;:0.8264982610629916,&quot;seconds&quot;:6.523913140750002,&quot;chart_points&quot;:3.0},{&quot;variant&quot;:&quot;self_context_transport_self_ray_odd&quot;,&quot;score&quot;:0.5570339484284053,&quot;learning_auc&quot;:0.8270979826418846,&quot;seconds&quot;:8.506766348749998,&quot;chart_points&quot;:4.0},{&quot;variant&quot;:&quot;self_context_transport_basis_ray_odd&quot;,&quot;score&quot;:0.5111650825674616,&quot;learning_auc&quot;:0.8233564648239029,&quot;seconds&quot;:16.536880036375,&quot;chart_points&quot;:11.0},{&quot;variant&quot;:&quot;self_context_transport_self_ray_even&quot;,&quot;score&quot;:0.5149351528034679,&quot;learning_auc&quot;:0.8260517475080835,&quot;seconds&quot;:8.576264317749995,&quot;chart_points&quot;:4.0},{&quot;variant&quot;:&quot;self_context_jet_curvature_context&quot;,&quot;score&quot;:0.5172032423546149,&quot;learning_auc&quot;:0.8423169717881148,&quot;seconds&quot;:14.343882770875009,&quot;chart_points&quot;:11.0},{&quot;variant&quot;:&quot;self_context_jet_curvature_bounded&quot;,&quot;score&quot;:0.5365586801674985,&quot;learning_auc&quot;:0.8288816498151185,&quot;seconds&quot;:14.268494979250008,&quot;chart_points&quot;:11.0},{&quot;variant&quot;:&quot;self_context_jet_curvature_detached&quot;,&quot;score&quot;:0.49393610703171525,&quot;learning_auc&quot;:0.784804867250845,&quot;seconds&quot;:8.95068628137501,&quot;chart_points&quot;:11.0}],&quot;learning&quot;:{&quot;radial_stripes&quot;:{&quot;self_context&quot;:{&quot;step&quot;:[1,25,50,75,100,125,150,175,200,225,250,275,300,325,350,375,400,425,450,475,500],&quot;score&quot;:[0.50332,0.50378,0.49849,0.4968,0.49227,0.50263,0.48499,0.49646,0.49106,0.50601,0.50288,0.50238,0.54264,0.51368,0.50815,0.51685,0.59045,0.63431,0.6756,0.73963,0.7638]},&quot;self_context_transport_self_ray_odd&quot;:{&quot;step&quot;:[1,25,50,75,100,125,150,175,200,225,250,275,300,325,350,375,400,425,450,475,500],&quot;score&quot;:[0.50332,0.50438,0.4999,0.49594,0.49172,0.50292,0.48473,0.49646,0.49481,0.50283,0.50752,0.50476,0.5472,0.55949,0.58137,0.59075,0.66267,0.70832,0.74272,0.75675,0.77984]},&quot;self_context_jet_curvature_context&quot;:{&quot;step&quot;:[1,25,50,75,100,125,150,175,200,225,250,275,300,325,350,375,400,425,450,475,500],&quot;score&quot;:[0.50191,0.50196,0.50174,0.50186,0.48917,0.50428,0.48892,0.50761,0.50033,0.54126,0.55388,0.56015,0.59741,0.64754,0.66046,0.7039,0.71627,0.72743,0.74252,0.75735,0.74235]},&quot;self_context_jet_curvature_detached&quot;:{&quot;step&quot;:[1,25,50,75,100,125,150,175,200,225,250,275,300,325,350,375,400,425,450,475,500],&quot;score&quot;:[0.50218,0.50099,0.50052,0.49203,0.48551,0.50373,0.47834,0.49787,0.49215,0.51059,0.49208,0.49648,0.50505,0.5027,0.49408,0.49941,0.50394,0.50626,0.53256,0.52137,0.51157]}},&quot;multiscale_1d&quot;:{&quot;self_context&quot;:{&quot;step&quot;:[1,25,50,75,100,125,150,175,200,225,250,275,300,325,350,375,400,425,450,475,500],&quot;score&quot;:[0.49399,0.63009,0.82044,0.84278,0.86375,0.88255,0.90235,0.92518,0.93367,0.94953,0.95236,0.95429,0.95498,0.95821,0.9582,0.96094,0.9592,0.96162,0.9623,0.96053,0.96619]},&quot;self_context_transport_self_ray_odd&quot;:{&quot;step&quot;:[1,25,50,75,100,125,150,175,200,225,250,275,300,325,350,375,400,425,450,475,500],&quot;score&quot;:[0.49399,0.62818,0.81856,0.84867,0.86747,0.87213,0.90422,0.92282,0.92893,0.94678,0.95347,0.95179,0.95591,0.95966,0.95849,0.96197,0.96357,0.96663,0.96289,0.97293,0.97678]},&quot;self_context_jet_curvature_context&quot;:{&quot;step&quot;:[1,25,50,75,100,125,150,175,200,225,250,275,300,325,350,375,400,425,450,475,500],&quot;score&quot;:[0.49412,0.62816,0.82643,0.87049,0.88934,0.91784,0.93395,0.94678,0.95331,0.95738,0.95983,0.96462,0.96993,0.96781,0.97513,0.97746,0.97639,0.98045,0.97817,0.98667,0.98417]},&quot;self_context_jet_curvature_detached&quot;:{&quot;step&quot;:[1,25,50,75,100,125,150,175,200,225,250,275,300,325,350,375,400,425,450,475,500],&quot;score&quot;:[0.4936,0.5972,0.77305,0.80673,0.84212,0.81474,0.84221,0.84879,0.88108,0.88385,0.89247,0.90392,0.9025,0.88893,0.90563,0.91356,0.92768,0.91447,0.94683,0.9528,0.93785]}}},&quot;mechanism&quot;:[{&quot;task&quot;:&quot;radial_stripes&quot;,&quot;variant&quot;:&quot;self_context_jet_curvature_context&quot;,&quot;score&quot;:0.7575225383043289,&quot;learning_auc&quot;:0.5903051709644496},{&quot;task&quot;:&quot;radial_stripes&quot;,&quot;variant&quot;:&quot;self_context_jet_curvature_detached&quot;,&quot;score&quot;:0.5409865081310272,&quot;learning_auc&quot;:0.5001235793717205},{&quot;task&quot;:&quot;multiscale_1d&quot;,&quot;variant&quot;:&quot;self_context_jet_curvature_context&quot;,&quot;score&quot;:0.30042448743650296,&quot;learning_auc&quot;:0.9188419042217543},{&quot;task&quot;:&quot;multiscale_1d&quot;,&quot;variant&quot;:&quot;self_context_jet_curvature_detached&quot;,&quot;score&quot;:0.2135608948126616,&quot;learning_auc&quot;:0.8566240894444133},{&quot;task&quot;:&quot;nd_spiral_high_rank&quot;,&quot;variant&quot;:&quot;self_context_jet_curvature_context&quot;,&quot;score&quot;:0.7427500188350677,&quot;learning_auc&quot;:0.9356362490691245},{&quot;task&quot;:&quot;nd_spiral_high_rank&quot;,&quot;variant&quot;:&quot;self_context_jet_curvature_detached&quot;,&quot;score&quot;:0.8439999967813492,&quot;learning_auc&quot;:0.9166243299357593},{&quot;task&quot;:&quot;fourier_mix_1d&quot;,&quot;variant&quot;:&quot;self_context_jet_curvature_context&quot;,&quot;score&quot;:0.26811592484255975,&quot;learning_auc&quot;:0.924484562897131},{&quot;task&quot;:&quot;fourier_mix_1d&quot;,&quot;variant&quot;:&quot;self_context_jet_curvature_detached&quot;,&quot;score&quot;:0.377197028401823,&quot;learning_auc&quot;:0.8658474702514867}],&quot;radial&quot;:{&quot;size&quot;:31,&quot;truth&quot;:[0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,0,1,1,1,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,0,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,0,0,0,0,0,0,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,0,0,0,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,1,1,0,0,0,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,0,0,0,0,1,1,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,0,1,1,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,0,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,0,0,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,0,0,0,0,0,0,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,0,0,0,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1,1,0,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0],&quot;predictions&quot;:{&quot;self_context&quot;:[0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,0,0,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,1,1,0,0,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,0,0,0,0,1,0,0,0,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,0,0,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,0,0,0,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,0,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,0,0,0,1,0,0,0,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,1,1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,1,1,0,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,0,0,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1],&quot;self_context_transport_self_ray_odd&quot;:[0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,0,0,0,1,1,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,0,0,0,0,1,1,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,0,0,0,1,1,0,0,1,1,0,0,0,0,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,1,1,0,0,1,1,0,0,0,0,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,0,0,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,0,0,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,0,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,0,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,0,0,0,0,0,0,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,0,0,1,0,0,0,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,1,0,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,0,0,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0],&quot;self_context_jet_curvature_context&quot;:[1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,0,1,1,1,1,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,1,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1,1,1,0,0,0,1,1,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,1,1,1,1,1,0,1,1,1,0,0,0,1,1,0,0,0,0,1,1,0,0,0,1,1,1,0,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,1,0,1,1,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,0,1,1,0,0,0,1,1,1,0,0,1,1,0,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,1,0,1,1,1,0,0,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,0,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,0,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,0,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,0,0,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,0,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0],&quot;self_context_jet_curvature_bounded&quot;:[0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,0,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,1,1,1,0,0,0,1,1,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,0,0,1,1,1,1,0,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,0,0,0,1,1,1,1,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,0,0,1,1,1,1,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,1,1,1,1,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,0,0,1,1,1,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,0,0,1,1,1,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,0,1,1,1,1,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,0,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,0,1,0,0,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,0,0,0,1,0,0,0,1,1,1,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,0,0,0,0,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,1,1,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0]}},&quot;multiscale&quot;:{&quot;x&quot;:[-5.0,-4.96,-4.9166,-4.8766,-4.8333,-4.7933,-4.7499,-4.7099,-4.6666,-4.6265,-4.5832,-4.5432,-4.4998,-4.4598,-4.4165,-4.3765,-4.3331,-4.2931,-4.2498,-4.2097,-4.1664,-4.1264,-4.083,-4.043,-3.9997,-3.9597,-3.9163,-3.8763,-3.8329,-3.7929,-3.7496,-3.7096,-3.6662,-3.6262,-3.5829,-3.5428,-3.4995,-3.4595,-3.4161,-3.3761,-3.3328,-3.2928,-3.2494,-3.2094,-3.1661,-3.126,-3.0827,-3.0427,-2.9993,-2.9593,-2.916,-2.876,-2.8326,-2.7926,-2.7492,-2.7092,-2.6659,-2.6259,-2.5825,-2.5425,-2.4992,-2.4592,-2.4158,-2.3758,-2.3324,-2.2924,-2.2491,-2.2091,-2.1657,-2.1257,-2.0824,-2.0423,-1.999,-1.959,-1.9156,-1.8756,-1.8323,-1.7923,-1.7489,-1.7089,-1.6656,-1.6255,-1.5822,-1.5422,-1.4988,-1.4588,-1.4155,-1.3755,-1.3321,-1.2921,-1.2487,-1.2087,-1.1654,-1.1254,-1.082,-1.042,-0.9987,-0.9587,-0.9153,-0.8753,-0.8319,-0.7919,-0.7486,-0.7086,-0.6652,-0.6252,-0.5819,-0.5418,-0.4985,-0.4585,-0.4151,-0.3751,-0.3318,-0.2918,-0.2484,-0.2084,-0.1651,-0.125,-0.0817,-0.0417,0.0017,0.0417,0.0817,0.125,0.1651,0.2084,0.2484,0.2918,0.3318,0.3751,0.4151,0.4585,0.4985,0.5418,0.5819,0.6252,0.6652,0.7086,0.7486,0.7919,0.8319,0.8753,0.9153,0.9587,0.9987,1.042,1.082,1.1254,1.1654,1.2087,1.2487,1.2921,1.3321,1.3755,1.4155,1.4588,1.4988,1.5422,1.5822,1.6255,1.6656,1.7089,1.7489,1.7923,1.8323,1.8756,1.9156,1.959,1.999,2.0423,2.0824,2.1257,2.1657,2.2091,2.2491,2.2924,2.3324,2.3758,2.4158,2.4592,2.4992,2.5425,2.5825,2.6259,2.6659,2.7092,2.7492,2.7926,2.8326,2.876,2.916,2.9593,2.9993,3.0427,3.0827,3.126,3.1661,3.2094,3.2494,3.2928,3.3328,3.3761,3.4161,3.4595,3.4995,3.5428,3.5829,3.6262,3.6662,3.7096,3.7496,3.7929,3.8329,3.8763,3.9163,3.9597,3.9997,4.043,4.083,4.1264,4.1664,4.2097,4.2498,4.2931,4.3331,4.3765,4.4165,4.4598,4.4998,4.5432,4.5832,4.6265,4.6666,4.7099,4.7499,4.7933,4.8333,4.8766,4.9166,4.96,5.0],&quot;truth&quot;:[-0.3682,-0.3586,-0.3473,-0.3362,-0.3233,-0.3107,-0.2962,-0.2819,-0.2656,-0.2498,-0.2319,-0.2144,-0.1941,-0.1738,-0.1499,-0.1262,-0.0989,-0.0727,-0.0435,-0.0158,0.0153,0.045,0.0778,0.1077,0.1383,0.1639,0.1885,0.2089,0.2292,0.2467,0.2637,0.2764,0.2858,0.2902,0.2924,0.2946,0.2998,0.3079,0.3189,0.3285,0.3365,0.3424,0.3507,0.3637,0.3853,0.4096,0.4341,0.4489,0.4535,0.4498,0.4438,0.4416,0.4424,0.4395,0.4218,0.3862,0.3296,0.2716,0.2175,0.1834,0.1599,0.1382,0.1006,0.0502,-0.0094,-0.049,-0.0574,-0.0323,0.0114,0.0416,0.0434,0.0185,-0.0136,-0.0213,0.0073,0.0537,0.0867,0.0649,-0.0328,-0.1766,-0.3495,-0.487,-0.5905,-0.6501,-0.7002,-0.7527,-0.8155,-0.8543,-0.8385,-0.7556,-0.6163,-0.4949,-0.4288,-0.4433,-0.5004,-0.524,-0.4585,-0.3123,-0.1236,-0.0025,0.011,-0.0766,-0.205,-0.2722,-0.2431,-0.1495,-0.064,-0.0783,-0.2191,-0.412,-0.5815,-0.6218,-0.5272,-0.3765,-0.252,-0.237,-0.3164,-0.3977,-0.3892,-0.2472,0.0107,0.2472,0.3892,0.3977,0.3164,0.237,0.252,0.3765,0.5272,0.6218,0.5815,0.412,0.2191,0.0783,0.064,0.1495,0.2431,0.2722,0.205,0.0766,-0.011,0.0025,0.1236,0.3123,0.4585,0.5239,0.5,0.4419,0.4243,0.4814,0.5843,0.6846,0.7089,0.6392,0.515,0.3791,0.3006,0.2786,0.2884,0.283,0.2368,0.154,0.0898,0.0864,0.1665,0.3221,0.477,0.5917,0.6135,0.5501,0.4461,0.3319,0.2518,0.194,0.1506,0.0951,0.0312,-0.0415,-0.0973,-0.1371,-0.1595,-0.1833,-0.2175,-0.2716,-0.3296,-0.3862,-0.4218,-0.4395,-0.4424,-0.4416,-0.4438,-0.4498,-0.4535,-0.4489,-0.4341,-0.4096,-0.3853,-0.3637,-0.3507,-0.3424,-0.3365,-0.3285,-0.3189,-0.3079,-0.2998,-0.2946,-0.2924,-0.2902,-0.2858,-0.2764,-0.2637,-0.2467,-0.2292,-0.2089,-0.1885,-0.1639,-0.1383,-0.1077,-0.0778,-0.045,-0.0153,0.0158,0.0435,0.0727,0.0989,0.1262,0.1499,0.1738,0.1941,0.2144,0.2319,0.2498,0.2656,0.2819,0.2962,0.3107,0.3233,0.3362,0.3473,0.3586,0.3682],&quot;predictions&quot;:{&quot;self_context&quot;:[0.5943,0.5841,0.5732,0.5633,0.5528,0.5433,0.5332,0.5241,0.5146,0.5061,0.4973,0.4893,0.4807,0.4728,0.4648,0.4578,0.4506,0.4446,0.4388,0.434,0.4294,0.4258,0.4227,0.4205,0.419,0.4183,0.4184,0.4195,0.4215,0.4244,0.4286,0.4336,0.4402,0.4474,0.4567,0.4665,0.4788,0.4912,0.5043,0.5171,0.5311,0.5434,0.555,0.5631,0.568,0.5676,0.5617,0.5516,0.5362,0.5193,0.501,0.4856,0.4689,0.4489,0.4166,0.3758,0.3232,0.2726,0.2195,0.1734,0.1291,0.0936,0.0613,0.0369,0.0162,0.0018,-0.0091,-0.0158,-0.0199,-0.021,-0.0192,-0.0142,-0.0043,0.0095,0.0297,0.0501,0.0642,0.0513,-0.0178,-0.1429,-0.3163,-0.4648,-0.5856,-0.6623,-0.7209,-0.7623,-0.8024,-0.8414,-0.8667,-0.8197,-0.694,-0.5914,-0.533,-0.515,-0.5168,-0.5204,-0.4782,-0.3278,-0.0974,0.0147,-0.0109,-0.1318,-0.2248,-0.246,-0.2298,-0.1582,-0.068,-0.12,-0.2831,-0.5035,-0.6232,-0.6184,-0.5407,-0.4091,-0.295,-0.2685,-0.3152,-0.3973,-0.4256,-0.3011,-0.0412,0.142,0.2377,0.2889,0.3149,0.3454,0.38,0.4181,0.446,0.4608,0.4511,0.387,0.2403,0.1212,0.1328,0.1925,0.2426,0.2579,0.2215,0.1491,0.1041,0.1149,0.1704,0.2568,0.3423,0.424,0.4796,0.5175,0.539,0.555,0.5663,0.5737,0.5722,0.5531,0.5086,0.427,0.3516,0.304,0.2779,0.2495,0.2144,0.1663,0.1238,0.1021,0.1348,0.2695,0.4654,0.6091,0.6164,0.5406,0.4496,0.3577,0.2843,0.2149,0.1575,0.0996,0.0486,-0.0062,-0.0549,-0.1055,-0.1498,-0.1949,-0.2336,-0.2723,-0.3048,-0.3369,-0.3636,-0.3894,-0.4107,-0.4312,-0.4479,-0.4637,-0.4763,-0.4877,-0.4963,-0.5034,-0.5078,-0.5098,-0.5091,-0.505,-0.4979,-0.486,-0.4703,-0.4489,-0.4253,-0.3982,-0.3722,-0.343,-0.3166,-0.2901,-0.269,-0.2505,-0.2382,-0.23,-0.227,-0.2283,-0.2334,-0.2425,-0.2539,-0.269,-0.2851,-0.3044,-0.324,-0.3466,-0.3685,-0.3932,-0.4166,-0.4425,-0.4666,-0.4929,-0.5171,-0.5432,-0.567,-0.5924,-0.6155,-0.64,-0.6622,-0.6858,-0.7071,-0.7297,-0.7502],&quot;self_context_transport_self_ray_odd&quot;:[0.8445,0.8415,0.8381,0.8349,0.8313,0.8279,0.824,0.82,0.8155,0.8113,0.8067,0.8023,0.7974,0.7928,0.7875,0.7825,0.7769,0.7716,0.7657,0.76,0.7537,0.7476,0.7407,0.7342,0.7269,0.7199,0.7121,0.7047,0.6965,0.6887,0.68,0.6718,0.6625,0.6537,0.6439,0.6349,0.625,0.6156,0.6052,0.5955,0.5847,0.5745,0.5638,0.5538,0.5426,0.5319,0.5201,0.5088,0.4963,0.4843,0.4708,0.4579,0.4429,0.4275,0.4081,0.3855,0.3547,0.3189,0.2695,0.2138,0.1543,0.1127,0.0809,0.0581,0.0374,0.0207,0.0052,-0.0062,-0.015,-0.019,-0.0181,-0.0114,0.0026,0.0217,0.046,0.0656,0.0707,0.0457,-0.0296,-0.1515,-0.3243,-0.4764,-0.5891,-0.6418,-0.6811,-0.7526,-0.8389,-0.8695,-0.8341,-0.7397,-0.6044,-0.5084,-0.466,-0.4706,-0.4947,-0.4994,-0.4474,-0.2758,-0.0609,0.0053,-0.0283,-0.1202,-0.2043,-0.2334,-0.2138,-0.1757,-0.1326,-0.1197,-0.2276,-0.4556,-0.616,-0.6074,-0.5014,-0.3654,-0.275,-0.241,-0.2982,-0.4023,-0.401,-0.2382,0.0221,0.1931,0.2818,0.3366,0.3682,0.394,0.4128,0.4282,0.4366,0.4357,0.4229,0.3936,0.3545,0.3035,0.2539,0.2039,0.1662,0.1377,0.1241,0.1241,0.1389,0.1725,0.2202,0.2855,0.3491,0.4115,0.4598,0.5027,0.5362,0.5693,0.596,0.6133,0.6098,0.5801,0.5289,0.4553,0.3838,0.3121,0.252,0.1932,0.1465,0.1084,0.0892,0.0983,0.1513,0.2832,0.4703,0.5977,0.6023,0.536,0.4442,0.3426,0.2594,0.1822,0.1204,0.0602,0.0085,-0.0454,-0.0934,-0.1431,-0.1867,-0.2316,-0.2711,-0.3114,-0.3457,-0.3791,-0.4057,-0.4299,-0.4478,-0.4622,-0.4709,-0.4754,-0.4752,-0.4708,-0.4634,-0.4525,-0.4415,-0.4356,-0.4312,-0.4275,-0.4254,-0.4254,-0.4277,-0.4326,-0.4393,-0.4489,-0.4597,-0.4732,-0.4873,-0.5038,-0.5203,-0.5385,-0.5548,-0.5713,-0.5851,-0.598,-0.6079,-0.6163,-0.6221,-0.6264,-0.6284,-0.6288,-0.6275,-0.6245,-0.6203,-0.6144,-0.6077,-0.599,-0.5899,-0.5789,-0.5677,-0.5544,-0.5413,-0.5263,-0.512,-0.4965,-0.4818,-0.4657,-0.4508,-0.4347,-0.4201],&quot;self_context_jet_curvature_context&quot;:[1.4425,1.4243,1.4044,1.3857,1.3649,1.3455,1.3241,1.3041,1.2821,1.2614,1.2386,1.2172,1.1936,1.1714,1.1468,1.1232,1.0971,1.0724,1.0451,1.0193,0.9908,0.9638,0.9339,0.9058,0.8747,0.8456,0.8132,0.7829,0.7492,0.7177,0.6835,0.6517,0.6171,0.5853,0.5508,0.5196,0.4863,0.4566,0.4259,0.3998,0.3744,0.354,0.3362,0.3246,0.3208,0.3298,0.3565,0.3924,0.4246,0.4368,0.4353,0.4298,0.4204,0.4065,0.3847,0.3589,0.3264,0.2932,0.2536,0.2127,0.1617,0.1103,0.0603,0.0247,-0.002,-0.0176,-0.0251,-0.0263,-0.0233,-0.0188,-0.0141,-0.0096,-0.0032,0.0034,0.0126,0.0276,0.0541,0.067,0.0372,-0.122,-0.3206,-0.4478,-0.5455,-0.618,-0.688,-0.7498,-0.8132,-0.852,-0.8316,-0.7337,-0.5848,-0.4823,-0.4377,-0.4434,-0.4628,-0.4497,-0.3919,-0.302,-0.1814,-0.0876,-0.0569,-0.0875,-0.1268,-0.1437,-0.1535,-0.1655,-0.1865,-0.2174,-0.2932,-0.4327,-0.5486,-0.5617,-0.4894,-0.3899,-0.3078,-0.2831,-0.2938,-0.3152,-0.302,-0.1863,0.0157,0.2577,0.416,0.3676,0.2852,0.293,0.329,0.3922,0.4833,0.6144,0.6173,0.3443,0.2133,0.1656,0.1512,0.1481,0.1497,0.1505,0.1502,0.1486,0.1464,0.1535,0.2114,0.4174,0.5312,0.4769,0.4327,0.4212,0.4406,0.5003,0.594,0.6948,0.6846,0.6024,0.5003,0.3955,0.3214,0.2652,0.23,0.2034,0.1836,0.1648,0.1497,0.1506,0.2212,0.4058,0.5515,0.6007,0.5707,0.4987,0.4217,0.3425,0.2739,0.2037,0.1402,0.0754,0.0211,-0.0308,-0.0728,-0.1134,-0.1484,-0.1859,-0.221,-0.2596,-0.2946,-0.3303,-0.3597,-0.3873,-0.4087,-0.4281,-0.4434,-0.458,-0.4703,-0.483,-0.4946,-0.5071,-0.5189,-0.532,-0.5444,-0.5582,-0.5713,-0.5858,-0.5994,-0.6145,-0.6287,-0.6442,-0.6587,-0.6746,-0.6894,-0.7055,-0.7205,-0.7368,-0.7519,-0.7683,-0.7835,-0.8,-0.8152,-0.8317,-0.847,-0.8635,-0.8788,-0.8954,-0.9107,-0.9273,-0.9426,-0.9592,-0.9745,-0.9911,-1.0065,-1.0231,-1.0384,-1.0549,-1.0702,-1.0868,-1.1021,-1.1187,-1.1341,-1.1507,-1.1661,-1.1828,-1.1982],&quot;self_context_jet_curvature_bounded&quot;:[0.505,0.4849,0.4645,0.4469,0.4291,0.4138,0.3984,0.3853,0.3721,0.3609,0.3496,0.3401,0.3305,0.3224,0.3142,0.3073,0.3004,0.2945,0.2887,0.2837,0.2788,0.2746,0.2706,0.2673,0.2641,0.2617,0.2597,0.2585,0.2577,0.2577,0.2585,0.26,0.2628,0.2665,0.2721,0.2789,0.2884,0.2993,0.3138,0.3296,0.3488,0.368,0.3888,0.4069,0.4235,0.437,0.4498,0.4597,0.4675,0.4716,0.4721,0.4683,0.4589,0.4441,0.4202,0.3904,0.3494,0.3043,0.2513,0.2068,0.1654,0.1324,0.1019,0.0782,0.0568,0.0405,0.0269,0.0179,0.0116,0.0089,0.01,0.0157,0.0277,0.0445,0.0665,0.0838,0.0854,0.0553,-0.028,-0.1546,-0.3223,-0.4731,-0.5986,-0.657,-0.6842,-0.7362,-0.8185,-0.8496,-0.8067,-0.715,-0.5961,-0.5027,-0.449,-0.44,-0.4584,-0.4763,-0.4417,-0.3188,-0.1238,-0.0062,0.0244,-0.0332,-0.1823,-0.2564,-0.2104,-0.1433,-0.0985,-0.1045,-0.1838,-0.3261,-0.5296,-0.6233,-0.5098,-0.3744,-0.3028,-0.277,-0.2787,-0.3444,-0.4234,-0.2676,-0.0054,0.1722,0.2746,0.3396,0.3785,0.4088,0.4297,0.4449,0.4509,0.4464,0.4301,0.3975,0.3549,0.301,0.2528,0.2098,0.1812,0.161,0.1511,0.1493,0.1565,0.1754,0.2052,0.2537,0.3148,0.3928,0.4578,0.5177,0.5579,0.585,0.5947,0.5901,0.5726,0.5391,0.4937,0.4289,0.3599,0.2932,0.2599,0.2444,0.2151,0.1533,0.0918,0.0873,0.1813,0.3508,0.5149,0.6241,0.6244,0.5555,0.4619,0.3562,0.269,0.189,0.1262,0.0659,0.0147,-0.0374,-0.0831,-0.1303,-0.172,-0.2152,-0.2532,-0.2922,-0.3253,-0.3571,-0.3823,-0.4054,-0.423,-0.4393,-0.4523,-0.4633,-0.4712,-0.4798,-0.4875,-0.4949,-0.5011,-0.5087,-0.5157,-0.5233,-0.53,-0.5367,-0.5421,-0.547,-0.551,-0.5546,-0.5573,-0.5597,-0.5616,-0.5638,-0.5665,-0.5705,-0.5757,-0.5833,-0.5923,-0.6043,-0.617,-0.6329,-0.6492,-0.6684,-0.6875,-0.7097,-0.7318,-0.7583,-0.7857,-0.8192,-0.8551,-0.9001,-0.9472,-1.002,-1.0507,-1.0996,-1.1399,-1.1846,-1.2381,-1.3149,-1.4016,-1.5071,-1.6023,-1.6861,-1.7441]},&quot;train_limits&quot;:[-3,3]},&quot;learning_variants&quot;:[&quot;self_context&quot;,&quot;self_context_transport_self_ray_odd&quot;,&quot;self_context_jet_curvature_context&quot;,&quot;self_context_jet_curvature_detached&quot;],&quot;probe_variants&quot;:[&quot;self_context&quot;,&quot;self_context_transport_self_ray_odd&quot;,&quot;self_context_jet_curvature_context&quot;,&quot;self_context_jet_curvature_bounded&quot;]};
+    const labels={
+      self_context:&#x27;Self-context&#x27;,self_context_iterated:&#x27;Picard ×2&#x27;,
+      self_context_transport_heun:&#x27;Heun&#x27;,self_context_transport_self_ray_odd:&#x27;Integrated ray · odd&#x27;,
+      self_context_transport_self_ray_even:&#x27;Self-ray even&#x27;,
+      self_context_transport_basis_ray_odd:&#x27;Basis rays · odd&#x27;,
+      self_context_jet_curvature_context:&#x27;Curvature&#x27;,
+      self_context_jet_curvature_bounded:&#x27;Bounded curvature&#x27;,
+      self_context_jet_curvature_detached:&#x27;Detached curvature&#x27;
+    };
+    const taskLabels={checkerboard:&#x27;Checkerboard&#x27;,chirp_1d:&#x27;Chirp&#x27;,fourier_mix_1d:&#x27;Fourier mix&#x27;,localized_steps_1d:&#x27;Localized steps&#x27;,multiscale_1d:&#x27;Multiscale&#x27;,nd_spiral_high_rank:&#x27;N-D spiral · high&#x27;,nd_spiral_low_rank:&#x27;N-D spiral · low&#x27;,radial_stripes:&#x27;Radial stripes&#x27;,ripple:&#x27;Ripple&#x27;,spiral:&#x27;Spiral&#x27;,swiss_cheese:&#x27;Swiss cheese&#x27;};
+    const series=[&#x27;var(--viz-series-1)&#x27;,&#x27;var(--viz-series-2)&#x27;,&#x27;var(--viz-series-3)&#x27;,&#x27;var(--viz-series-4)&#x27;,&#x27;var(--viz-series-5)&#x27;,&#x27;var(--viz-series-6)&#x27;];
+    const learningColors={self_context:series[0],self_context_transport_self_ray_odd:series[2],self_context_jet_curvature_context:series[1],self_context_jet_curvature_detached:series[3]};
+    const probeColors={self_context:series[0],self_context_transport_self_ray_odd:series[2],self_context_jet_curvature_context:series[1],self_context_jet_curvature_bounded:series[4]};
+    const controlVariants=[...data.learning_variants,...data.probe_variants.filter(v=&gt;!data.learning_variants.includes(v))],active=new Set(controlVariants),tooltip=d3.select(root).select(&#x27;.tooltip&#x27;);
+
+    function frame(svg,w,h,m,xTitle,yTitle){
+      svg.selectAll(&#x27;*&#x27;).remove();
+      svg.append(&#x27;rect&#x27;).attr(&#x27;data-chart-frame&#x27;,&#x27;&#x27;).attr(&#x27;x&#x27;,m.l).attr(&#x27;y&#x27;,m.t).attr(&#x27;width&#x27;,w-m.l-m.r).attr(&#x27;height&#x27;,h-m.t-m.b);
+      svg.append(&#x27;text&#x27;).attr(&#x27;class&#x27;,&#x27;axis-title&#x27;).attr(&#x27;data-axis&#x27;,&#x27;x&#x27;).attr(&#x27;x&#x27;,(m.l+w-m.r)/2).attr(&#x27;y&#x27;,h-5).attr(&#x27;text-anchor&#x27;,&#x27;middle&#x27;).text(xTitle);
+      svg.append(&#x27;text&#x27;).attr(&#x27;class&#x27;,&#x27;axis-title&#x27;).attr(&#x27;data-axis&#x27;,&#x27;y&#x27;).attr(&#x27;transform&#x27;,`translate(13 ${(m.t+h-m.b)/2}) rotate(-90)`).attr(&#x27;text-anchor&#x27;,&#x27;middle&#x27;).text(yTitle);
+    }
+    function deltaChart(id,key,title){
+      const host=root.querySelector(id),rows=data.task_rows.filter(d=&gt;d[key].delta!==null),w=Math.max(300,host.getBoundingClientRect().width),h=Math.max(230,rows.length*27+65),m={t:26,r:54,b:38,l:w&lt;430?140:150},magnitude=d3.max(rows,d=&gt;Math.abs(d[key].delta))||.01,x=d3.scaleLinear([-magnitude*1.15,magnitude*1.15],[m.l,w-m.r]),y=d3.scaleBand(rows.map(d=&gt;d.task),[m.t,h-m.b]).padding(.28),svg=d3.select(host).select(&#x27;svg&#x27;).attr(&#x27;viewBox&#x27;,`0 0 ${w} ${h}`).attr(&#x27;height&#x27;,h);
+      frame(svg,w,h,m,&#x27;Δ score&#x27;,&#x27;Task&#x27;);
+      svg.append(&#x27;text&#x27;).attr(&#x27;x&#x27;,m.l).attr(&#x27;y&#x27;,16).attr(&#x27;font-weight&#x27;,500).text(title);
+      svg.append(&#x27;line&#x27;).attr(&#x27;x1&#x27;,x(0)).attr(&#x27;x2&#x27;,x(0)).attr(&#x27;y1&#x27;,m.t).attr(&#x27;y2&#x27;,h-m.b).attr(&#x27;stroke&#x27;,&#x27;var(--border)&#x27;);
+      svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(w&lt;430?3:5).tickFormat(d3.format(&#x27;+.2f&#x27;)));
+      svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(${m.l},0)`).call(d3.axisLeft(y).tickFormat(d=&gt;taskLabels[d]));
+      svg.append(&#x27;g&#x27;).selectAll(&#x27;rect&#x27;).data(rows).join(&#x27;rect&#x27;).attr(&#x27;x&#x27;,d=&gt;Math.min(x(0),x(d[key].delta))).attr(&#x27;y&#x27;,d=&gt;y(d.task)).attr(&#x27;width&#x27;,d=&gt;Math.abs(x(d[key].delta)-x(0))).attr(&#x27;height&#x27;,y.bandwidth()).attr(&#x27;fill&#x27;,d=&gt;d[key].delta&gt;=0?&#x27;var(--viz-series-1)&#x27;:&#x27;var(--viz-series-4)&#x27;);
+      svg.append(&#x27;g&#x27;).selectAll(&#x27;text.value&#x27;).data(rows).join(&#x27;text&#x27;).attr(&#x27;class&#x27;,&#x27;value&#x27;).attr(&#x27;x&#x27;,d=&gt;{const inside=d[key].delta&lt;0&amp;&amp;Math.abs(x(d[key].delta)-x(0))&gt;42;return x(d[key].delta)+(d[key].delta&gt;=0||inside?4:-4)}).attr(&#x27;y&#x27;,d=&gt;y(d.task)+y.bandwidth()/2+4).attr(&#x27;text-anchor&#x27;,d=&gt;{const inside=d[key].delta&lt;0&amp;&amp;Math.abs(x(d[key].delta)-x(0))&gt;42;return d[key].delta&gt;=0||inside?&#x27;start&#x27;:&#x27;end&#x27;}).text(d=&gt;d3.format(&#x27;+.3f&#x27;)(d[key].delta));
+    }
+    function efficiency(){
+      const host=root.querySelector(&#x27;#ts-efficiency&#x27;),w=Math.max(300,host.getBoundingClientRect().width),h=330,m={t:18,r:28,b:48,l:66},rows=data.core_summary,x=d3.scaleLinear(d3.extent(rows,d=&gt;d.chart_points),[m.l+12,w-m.r-12]).nice(),extent=d3.extent(rows,d=&gt;d.score),y=d3.scaleLinear([extent[0]-.015,extent[1]+.015],[h-m.b,m.t]).nice(),size=d3.scaleSqrt(d3.extent(rows,d=&gt;d.seconds),[5,10]),svg=d3.select(host).select(&#x27;svg&#x27;).attr(&#x27;viewBox&#x27;,`0 0 ${w} ${h}`).attr(&#x27;height&#x27;,h);
+      frame(svg,w,h,m,&#x27;Chart observations / sample&#x27;,&#x27;Mean held-out score&#x27;);
+      svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(5));svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));
+      const marks=svg.append(&#x27;g&#x27;).selectAll(&#x27;circle&#x27;).data(rows).join(&#x27;circle&#x27;).attr(&#x27;cx&#x27;,d=&gt;x(d.chart_points)).attr(&#x27;cy&#x27;,d=&gt;y(d.score)).attr(&#x27;r&#x27;,d=&gt;size(d.seconds)).attr(&#x27;fill&#x27;,(d,i)=&gt;series[i%series.length]).attr(&#x27;stroke&#x27;,&#x27;transparent&#x27;).attr(&#x27;stroke-width&#x27;,16).attr(&#x27;opacity&#x27;,.88);
+      marks.on(&#x27;pointerenter&#x27;,(event,d)=&gt;tooltip.style(&#x27;opacity&#x27;,1).html(`${labels[d.variant]}&lt;br&gt;${d.score.toFixed(3)} mean score · ${d.seconds.toFixed(1)} s/fit`).style(&#x27;left&#x27;,`${event.offsetX+12}px`).style(&#x27;top&#x27;,`${event.offsetY+12}px`)).on(&#x27;pointerleave&#x27;,()=&gt;tooltip.style(&#x27;opacity&#x27;,0));
+      const named=new Set([&#x27;self_context&#x27;,&#x27;self_context_transport_self_ray_odd&#x27;,&#x27;self_context_transport_basis_ray_odd&#x27;,&#x27;self_context_jet_curvature_context&#x27;,&#x27;self_context_jet_curvature_bounded&#x27;]),namedRows=rows.filter(d=&gt;named.has(d.variant));
+      svg.append(&#x27;g&#x27;).selectAll(&#x27;text.label&#x27;).data(namedRows).join(&#x27;text&#x27;).attr(&#x27;class&#x27;,&#x27;label&#x27;).attr(&#x27;x&#x27;,d=&gt;x(d.chart_points)+(d.chart_points&gt;8?-12:12)).attr(&#x27;y&#x27;,d=&gt;y(d.score)+4).attr(&#x27;text-anchor&#x27;,d=&gt;d.chart_points&gt;8?&#x27;end&#x27;:&#x27;start&#x27;).text(d=&gt;labels[d.variant]);
+    }
+    function mechanism(){
+      const host=root.querySelector(&#x27;#ts-mechanism&#x27;),w=Math.max(300,host.getBoundingClientRect().width),h=330,m={t:18,r:18,b:74,l:66},tasks=data.mechanism.filter(d=&gt;d.variant.includes(&#x27;context&#x27;)&amp;&amp;!d.variant.includes(&#x27;detached&#x27;)).map(d=&gt;d.task),x=d3.scaleBand(tasks,[m.l,w-m.r]).padding(.32),extent=d3.extent(data.mechanism,d=&gt;d.score),y=d3.scaleLinear([extent[0]-.035,extent[1]+.035],[h-m.b,m.t]).nice(),svg=d3.select(host).select(&#x27;svg&#x27;).attr(&#x27;viewBox&#x27;,`0 0 ${w} ${h}`).attr(&#x27;height&#x27;,h);
+      frame(svg,w,h,m,&#x27;Task&#x27;,&#x27;Held-out score&#x27;);
+      svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(0,${h-m.b})`).call(d3.axisBottom(x).tickFormat(d=&gt;taskLabels[d]).tickSizeOuter(0)).selectAll(&#x27;text&#x27;).attr(&#x27;transform&#x27;,&#x27;rotate(-25)&#x27;).attr(&#x27;text-anchor&#x27;,&#x27;end&#x27;);
+      svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));
+      for(const task of tasks){const pair=data.mechanism.filter(d=&gt;d.task===task);svg.append(&#x27;line&#x27;).attr(&#x27;x1&#x27;,x(task)+x.bandwidth()*.32).attr(&#x27;x2&#x27;,x(task)+x.bandwidth()*.68).attr(&#x27;y1&#x27;,y(pair[0].score)).attr(&#x27;y2&#x27;,y(pair[1].score)).attr(&#x27;stroke&#x27;,&#x27;var(--border)&#x27;).attr(&#x27;stroke-width&#x27;,2);svg.selectAll(`.m-${task}`).data(pair).join(&#x27;circle&#x27;).attr(&#x27;cx&#x27;,(d,i)=&gt;x(task)+x.bandwidth()*(i ? .68 : .32)).attr(&#x27;cy&#x27;,d=&gt;y(d.score)).attr(&#x27;r&#x27;,5).attr(&#x27;fill&#x27;,(d,i)=&gt;i?&#x27;var(--viz-series-4)&#x27;:&#x27;var(--viz-series-2)&#x27;);}
+      svg.append(&#x27;circle&#x27;).attr(&#x27;cx&#x27;,m.l+8).attr(&#x27;cy&#x27;,m.t+8).attr(&#x27;r&#x27;,4).attr(&#x27;fill&#x27;,&#x27;var(--viz-series-2)&#x27;);svg.append(&#x27;text&#x27;).attr(&#x27;x&#x27;,m.l+17).attr(&#x27;y&#x27;,m.t+12).text(&#x27;Full shell gradient&#x27;);svg.append(&#x27;circle&#x27;).attr(&#x27;cx&#x27;,m.l+8).attr(&#x27;cy&#x27;,m.t+25).attr(&#x27;r&#x27;,4).attr(&#x27;fill&#x27;,&#x27;var(--viz-series-4)&#x27;);svg.append(&#x27;text&#x27;).attr(&#x27;x&#x27;,m.l+17).attr(&#x27;y&#x27;,m.t+29).text(&#x27;Detached shell state&#x27;);
+    }
+    function learning(){
+      const tasks=[&#x27;radial_stripes&#x27;,&#x27;multiscale_1d&#x27;],grid=d3.select(root).select(&#x27;#ts-learning&#x27;);grid.selectAll(&#x27;*&#x27;).remove();const hosts=grid.selectAll(&#x27;.plot&#x27;).data(tasks).join(&#x27;div&#x27;).attr(&#x27;class&#x27;,&#x27;plot&#x27;);hosts.html(task=&gt;`&lt;h3&gt;${taskLabels[task]}&lt;/h3&gt;&lt;svg role=&quot;img&quot; aria-label=&quot;${taskLabels[task]} validation learning curves&quot;&gt;&lt;/svg&gt;`);hosts.each(function(task){const w=Math.max(300,this.getBoundingClientRect().width),h=300,m={t:14,r:16,b:44,l:66},seriesRows=data.learning_variants.filter(v=&gt;active.has(v)).map(v=&gt;({variant:v,...data.learning[task][v]})),all=seriesRows.flatMap(d=&gt;d.score),x=d3.scaleLinear(d3.extent(seriesRows[0].step),[m.l,w-m.r]),e=d3.extent(all),y=d3.scaleLinear([e[0]-(e[1]-e[0])*.08,e[1]+(e[1]-e[0])*.08],[h-m.b,m.t]),svg=d3.select(this).select(&#x27;svg&#x27;).attr(&#x27;viewBox&#x27;,`0 0 ${w} ${h}`).attr(&#x27;height&#x27;,h);frame(svg,w,h,m,&#x27;Training step&#x27;,&#x27;Validation score&#x27;);svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(w&lt;430?4:6));svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));const line=d3.line().x((d,i)=&gt;x(seriesRows[0].step[i])).y(d=&gt;y(d));svg.append(&#x27;g&#x27;).selectAll(&#x27;path&#x27;).data(seriesRows).join(&#x27;path&#x27;).attr(&#x27;fill&#x27;,&#x27;none&#x27;).attr(&#x27;stroke&#x27;,d=&gt;learningColors[d.variant]).attr(&#x27;stroke-width&#x27;,2).attr(&#x27;d&#x27;,d=&gt;line(d.score));});
+    }
+    function radial(){const names=[&#x27;truth&#x27;,...data.probe_variants],titles=[&#x27;Truth&#x27;,...data.probe_variants.map(v=&gt;labels[v])],grid=d3.select(root).select(&#x27;#ts-radial-grid&#x27;),cells=grid.selectAll(&#x27;.radial-item&#x27;).data(names).join(&#x27;div&#x27;).attr(&#x27;class&#x27;,&#x27;radial-item&#x27;);cells.html((d,i)=&gt;`&lt;h3&gt;${titles[i]}&lt;/h3&gt;&lt;svg role=&quot;img&quot; aria-label=&quot;${titles[i]} radial decision field&quot;&gt;&lt;/svg&gt;`);cells.each(function(name){const values=name===&#x27;truth&#x27;?data.radial.truth:data.radial.predictions[name],n=data.radial.size,w=Math.max(140,this.getBoundingClientRect().width),pad=5,cell=(w-2*pad)/n,svg=d3.select(this).select(&#x27;svg&#x27;).attr(&#x27;viewBox&#x27;,`0 0 ${w} ${w}`);svg.selectAll(&#x27;rect&#x27;).data(values).join(&#x27;rect&#x27;).attr(&#x27;x&#x27;,(d,i)=&gt;pad+(i%n)*cell).attr(&#x27;y&#x27;,(d,i)=&gt;w-pad-(Math.floor(i/n)+1)*cell).attr(&#x27;width&#x27;,cell+.25).attr(&#x27;height&#x27;,cell+.25).attr(&#x27;fill&#x27;,d=&gt;d?&#x27;var(--viz-series-2)&#x27;:&#x27;var(--viz-series-1)&#x27;);});}
+    function multiscale(){const host=root.querySelector(&#x27;#ts-multiscale&#x27;),w=Math.max(300,host.getBoundingClientRect().width),h=340,m={t:14,r:18,b:46,l:66},variants=data.probe_variants.filter(v=&gt;active.has(v)||!data.learning_variants.includes(v)),all=data.multiscale.truth.concat(variants.flatMap(v=&gt;data.multiscale.predictions[v])),x=d3.scaleLinear(d3.extent(data.multiscale.x),[m.l,w-m.r]),y=d3.scaleLinear(d3.extent(all),[h-m.b,m.t]).nice(),svg=d3.select(host).select(&#x27;svg&#x27;).attr(&#x27;viewBox&#x27;,`0 0 ${w} ${h}`).attr(&#x27;height&#x27;,h);frame(svg,w,h,m,&#x27;x · observed interval shaded&#x27;,&#x27;Target / prediction&#x27;);svg.insert(&#x27;rect&#x27;,&#x27;text&#x27;).attr(&#x27;x&#x27;,x(data.multiscale.train_limits[0])).attr(&#x27;y&#x27;,m.t).attr(&#x27;width&#x27;,x(data.multiscale.train_limits[1])-x(data.multiscale.train_limits[0])).attr(&#x27;height&#x27;,h-m.t-m.b).attr(&#x27;fill&#x27;,&#x27;var(--muted)&#x27;).attr(&#x27;opacity&#x27;,.45);svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(w&lt;430?4:7));svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));const line=d3.line().x((d,i)=&gt;x(data.multiscale.x[i])).y(d=&gt;y(d));svg.append(&#x27;path&#x27;).datum(data.multiscale.truth).attr(&#x27;fill&#x27;,&#x27;none&#x27;).attr(&#x27;stroke&#x27;,&#x27;var(--foreground)&#x27;).attr(&#x27;stroke-width&#x27;,2.5).attr(&#x27;d&#x27;,line);svg.append(&#x27;g&#x27;).selectAll(&#x27;path&#x27;).data(variants).join(&#x27;path&#x27;).attr(&#x27;fill&#x27;,&#x27;none&#x27;).attr(&#x27;stroke&#x27;,v=&gt;probeColors[v]).attr(&#x27;stroke-width&#x27;,1.8).attr(&#x27;d&#x27;,v=&gt;line(data.multiscale.predictions[v]));}
+    const controls=d3.select(root).select(&#x27;#ts-controls&#x27;).selectAll(&#x27;button&#x27;).data(controlVariants).join(&#x27;button&#x27;).attr(&#x27;type&#x27;,&#x27;button&#x27;).attr(&#x27;aria-pressed&#x27;,&#x27;true&#x27;).html(v=&gt;`&lt;span class=&quot;swatch&quot; style=&quot;background:${learningColors[v]||probeColors[v]}&quot;&gt;&lt;/span&gt;${labels[v]}`).on(&#x27;click&#x27;,function(event,v){active.has(v)?active.delete(v):active.add(v);d3.select(this).attr(&#x27;aria-pressed&#x27;,active.has(v));learning();multiscale();});
+    function draw(){deltaChart(&#x27;#ts-heldout&#x27;,&#x27;score&#x27;,&#x27;Held-out score&#x27;);deltaChart(&#x27;#ts-tail&#x27;,&#x27;tail_score&#x27;,&#x27;Tail score&#x27;);deltaChart(&#x27;#ts-auc&#x27;,&#x27;learning_auc&#x27;,&#x27;Learning AUC&#x27;);efficiency();mechanism();learning();radial();multiscale();}
+    let timer;new ResizeObserver(()=&gt;{clearTimeout(timer);timer=setTimeout(draw,100)}).observe(root);draw();
+  })();
+  &lt;/script&gt;
+&lt;/section&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+
+  const getTrigger = (target) =&gt;
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest(&quot;[data-tooltip]&quot;)
+      : null;
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handleLeave = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    document.removeEventListener(&quot;pointerover&quot;, handlePointerOpen);
+    document.removeEventListener(&quot;pointerout&quot;, handleLeave);
+    document.removeEventListener(&quot;focusin&quot;, handleFocusIn);
+    document.removeEventListener(&quot;focusout&quot;, handleLeave);
+    document.removeEventListener(&quot;keydown&quot;, handleKeyDown);
+    document.removeEventListener(&quot;contextmenu&quot;, handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener(&quot;pointerover&quot;, handlePointerOpen);
+  document.addEventListener(&quot;pointerout&quot;, handleLeave);
+  document.addEventListener(&quot;focusin&quot;, handleFocusIn);
+  document.addEventListener(&quot;focusout&quot;, handleLeave);
+  document.addEventListener(&quot;keydown&quot;, handleKeyDown);
+  document.addEventListener(&quot;contextmenu&quot;, handleContextMenu);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</body>
+</html>

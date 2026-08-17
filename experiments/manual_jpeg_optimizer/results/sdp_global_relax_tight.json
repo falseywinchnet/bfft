@@ -1,0 +1,52 @@
+{
+  "edge_psnr_db": 47.521433474692465,
+  "fixed_frame_inner_relaxation": {
+    "absolute_gap": 0.07855086692143232,
+    "config": {
+      "cartoon_sigma": 1.2,
+      "check_interval": 25,
+      "connection_lambda": 0.5,
+      "cross_region_weight": 0.05,
+      "frame_mode": "chroma",
+      "iterations": 1000,
+      "rate_lambda": 0.5,
+      "region_threshold": 0.58,
+      "relative_gap_tolerance": 1e-07
+    },
+    "connection_residual_after": 4.38940596230779,
+    "connection_residual_before": 4.750842970322778,
+    "converged": true,
+    "dual_lower_bound": 793716.1141742732,
+    "iterations": 300,
+    "primal": 793716.1927251401,
+    "relative_gap": 9.896593724733808e-08,
+    "zero_fraction_after": 0.9395058066933067,
+    "zero_fraction_before": 0.8811527014652014
+  },
+  "global_channel_complete_sdp": {
+    "certified_gap": 1.6315555551038585e-07,
+    "dual_upper_bound": 0.7677297577048924,
+    "edge_count": 28,
+    "gram_rank": 5,
+    "maximum_diagonal_error": 2.220446049250313e-16,
+    "minimum_gram_eigenvalue": 2.2159943770359546e-09,
+    "proof": "Convex SDP optimum with X positive semidefinite and every 3x3 diagonal block fixed to identity; the dual feasible objective is a global upper bound.",
+    "region_count": 24,
+    "relaxation_value": 0.7677295945493369,
+    "rounded_value": 0.7660490214573441,
+    "rounding_gap": 0.0016805730919927653,
+    "solver": "CLARABEL",
+    "solver_status": "optimal"
+  },
+  "jpeg": {
+    "quality": 70,
+    "subsampling": 1
+  },
+  "output": "experiments/manual_jpeg_optimizer/results/sdp_global_relax_tight.jpg",
+  "output_bytes": 26972,
+  "proof_boundary": "The bloom-region Gram field is the certified global optimum of the locally channel-complete SDP relaxation. Rank-three rounding and the subsequent fixed-frame convex solve are reported separately.",
+  "psnr_db": 41.31775534099256,
+  "source": "experiments/manual_jpeg_optimizer/assets/istockphoto-508030340-612x612.jpg",
+  "source_bytes": 32530,
+  "ssim": 0.9872454758913928
+}

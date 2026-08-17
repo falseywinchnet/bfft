@@ -1,0 +1,3881 @@
+{
+  "configuration": {
+    "out": "/tmp/frame_speed_screen",
+    "tasks": "radial_stripes,nd_spiral_high_rank",
+    "variants": "self_context_stiefel_flow_curvature,self_context_stiefel_flow_curvature_frozen,self_context_stiefel_flow_curvature_up,self_context_stiefel_flow_curvature_down,self_context_stiefel_flow_curvature_frozen_up,self_context_stiefel_flow_curvature_frozen_down",
+    "widths": "24",
+    "seeds": 2,
+    "steps": 300,
+    "batch": 256,
+    "lr": 0.003,
+    "eval_every": 25,
+    "optimizers": "adamw",
+    "resume": false
+  },
+  "runs": [
+    {
+      "task": "radial_stripes",
+      "kind": "classification",
+      "input_dim": 2,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 0,
+      "variant": "self_context_stiefel_flow_curvature",
+      "optimizer": "adamw",
+      "parameters": 4118,
+      "seconds": 9.417425957999999,
+      "best_step": 300,
+      "learning_auc": 0.5488102758054932,
+      "steps_to_80": null,
+      "steps_to_90": null,
+      "validation_score": 0.742918848991394,
+      "score": 0.742918848991394,
+      "accuracy": 0.7434285879135132,
+      "min_class_recall": 0.6685845851898193,
+      "probability_mse": 0.1699511855840683,
+      "jacobian_variability": 3.2382452487945557,
+      "jacobian_change_rank": 4,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.6901097893714905,
+          "score": 0.49770960956811905,
+          "accuracy": 0.49485713243484497,
+          "min_class_recall": 0.08172531425952911,
+          "probability_mse": 0.25133898854255676
+        },
+        {
+          "step": 25,
+          "loss": 0.6923055648803711,
+          "score": 0.4853498488664627,
+          "accuracy": 0.48514285683631897,
+          "min_class_recall": 0.4551645815372467,
+          "probability_mse": 0.2503136396408081
+        },
+        {
+          "step": 50,
+          "loss": 0.6914596557617188,
+          "score": 0.49890346825122833,
+          "accuracy": 0.49942857027053833,
+          "min_class_recall": 0.4223245084285736,
+          "probability_mse": 0.25008517503738403
+        },
+        {
+          "step": 75,
+          "loss": 0.6914478540420532,
+          "score": 0.5052417069673538,
+          "accuracy": 0.5045714378356934,
+          "min_class_recall": 0.4074914753437042,
+          "probability_mse": 0.25098997354507446
+        },
+        {
+          "step": 100,
+          "loss": 0.6914545297622681,
+          "score": 0.5220255106687546,
+          "accuracy": 0.524571418762207,
+          "min_class_recall": 0.15074798464775085,
+          "probability_mse": 0.24977795779705048
+        },
+        {
+          "step": 125,
+          "loss": 0.6935259103775024,
+          "score": 0.5097153820097446,
+          "accuracy": 0.5125714540481567,
+          "min_class_recall": 0.09321058541536331,
+          "probability_mse": 0.2495923489332199
+        },
+        {
+          "step": 150,
+          "loss": 0.6886686682701111,
+          "score": 0.5426338464021683,
+          "accuracy": 0.5445713996887207,
+          "min_class_recall": 0.2600690424442291,
+          "probability_mse": 0.2492353916168213
+        },
+        {
+          "step": 175,
+          "loss": 0.6928271055221558,
+          "score": 0.5148767754435539,
+          "accuracy": 0.5120000243186951,
+          "min_class_recall": 0.09534619748592377,
+          "probability_mse": 0.24958239495754242
+        },
+        {
+          "step": 200,
+          "loss": 0.6888728737831116,
+          "score": 0.5481609553098679,
+          "accuracy": 0.5462856888771057,
+          "min_class_recall": 0.27468785643577576,
+          "probability_mse": 0.24865193665027618
+        },
+        {
+          "step": 225,
+          "loss": 0.6787119507789612,
+          "score": 0.5502070933580399,
+          "accuracy": 0.5491428375244141,
+          "min_class_recall": 0.3950056731700897,
+          "probability_mse": 0.24486149847507477
+        },
+        {
+          "step": 250,
+          "loss": 0.6523566842079163,
+          "score": 0.5960586965084076,
+          "accuracy": 0.5965714454650879,
+          "min_class_recall": 0.5212888121604919,
+          "probability_mse": 0.23587213456630707
+        },
+        {
+          "step": 275,
+          "loss": 0.5549574494361877,
+          "score": 0.7118969857692719,
+          "accuracy": 0.7114285826683044,
+          "min_class_recall": 0.6435868144035339,
+          "probability_mse": 0.20475369691848755
+        },
+        {
+          "step": 300,
+          "loss": 0.4790635406970978,
+          "score": 0.742918848991394,
+          "accuracy": 0.7434285879135132,
+          "min_class_recall": 0.6685845851898193,
+          "probability_mse": 0.1699511855840683
+        }
+      ]
+    },
+    {
+      "task": "radial_stripes",
+      "kind": "classification",
+      "input_dim": 2,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 0,
+      "variant": "self_context_stiefel_flow_curvature_frozen",
+      "optimizer": "adamw",
+      "parameters": 4118,
+      "seconds": 8.620778000000001,
+      "best_step": 300,
+      "learning_auc": 0.56233242996037,
+      "steps_to_80": null,
+      "steps_to_90": null,
+      "validation_score": 0.7736723124980927,
+      "score": 0.7736723124980927,
+      "accuracy": 0.7737143039703369,
+      "min_class_recall": 0.7675489187240601,
+      "probability_mse": 0.15523019433021545,
+      "jacobian_variability": 5.01592493057251,
+      "jacobian_change_rank": 4,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.690213143825531,
+          "score": 0.49881334602832794,
+          "accuracy": 0.4959999918937683,
+          "min_class_recall": 0.08853575587272644,
+          "probability_mse": 0.2513202428817749
+        },
+        {
+          "step": 25,
+          "loss": 0.6925116777420044,
+          "score": 0.48430098593235016,
+          "accuracy": 0.48399999737739563,
+          "min_class_recall": 0.4404086172580719,
+          "probability_mse": 0.2502964437007904
+        },
+        {
+          "step": 50,
+          "loss": 0.6910568475723267,
+          "score": 0.49503257870674133,
+          "accuracy": 0.49542856216430664,
+          "min_class_recall": 0.4372842311859131,
+          "probability_mse": 0.25019124150276184
+        },
+        {
+          "step": 75,
+          "loss": 0.6911305785179138,
+          "score": 0.5035547912120819,
+          "accuracy": 0.5028571486473083,
+          "min_class_recall": 0.40181612968444824,
+          "probability_mse": 0.25095805525779724
+        },
+        {
+          "step": 100,
+          "loss": 0.6911110281944275,
+          "score": 0.5122676715254784,
+          "accuracy": 0.5148571133613586,
+          "min_class_recall": 0.1346375197172165,
+          "probability_mse": 0.24950899183750153
+        },
+        {
+          "step": 125,
+          "loss": 0.692520260810852,
+          "score": 0.5205266922712326,
+          "accuracy": 0.522857129573822,
+          "min_class_recall": 0.1806674301624298,
+          "probability_mse": 0.24947220087051392
+        },
+        {
+          "step": 150,
+          "loss": 0.6857581734657288,
+          "score": 0.5053566545248032,
+          "accuracy": 0.50685715675354,
+          "min_class_recall": 0.28653624653816223,
+          "probability_mse": 0.24888402223587036
+        },
+        {
+          "step": 175,
+          "loss": 0.6901354789733887,
+          "score": 0.5249043628573418,
+          "accuracy": 0.5222856998443604,
+          "min_class_recall": 0.14301930367946625,
+          "probability_mse": 0.2491472214460373
+        },
+        {
+          "step": 200,
+          "loss": 0.6692514419555664,
+          "score": 0.6056702584028244,
+          "accuracy": 0.6039999723434448,
+          "min_class_recall": 0.36208853125572205,
+          "probability_mse": 0.2412857562303543
+        },
+        {
+          "step": 225,
+          "loss": 0.6361975073814392,
+          "score": 0.5877716243267059,
+          "accuracy": 0.5891428589820862,
+          "min_class_recall": 0.3878020644187927,
+          "probability_mse": 0.22803553938865662
+        },
+        {
+          "step": 250,
+          "loss": 0.6133190989494324,
+          "score": 0.6947376430034637,
+          "accuracy": 0.6942856907844543,
+          "min_class_recall": 0.6288308501243591,
+          "probability_mse": 0.19764015078544617
+        },
+        {
+          "step": 275,
+          "loss": 0.5429428815841675,
+          "score": 0.6972853541374207,
+          "accuracy": 0.6971428394317627,
+          "min_class_recall": 0.6765039563179016,
+          "probability_mse": 0.1806558519601822
+        },
+        {
+          "step": 300,
+          "loss": 0.462908536195755,
+          "score": 0.7736723124980927,
+          "accuracy": 0.7737143039703369,
+          "min_class_recall": 0.7675489187240601,
+          "probability_mse": 0.15523019433021545
+        }
+      ]
+    },
+    {
+      "task": "radial_stripes",
+      "kind": "classification",
+      "input_dim": 2,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 0,
+      "variant": "self_context_stiefel_flow_curvature_up",
+      "optimizer": "adamw",
+      "parameters": 4118,
+      "seconds": 5.863677041999999,
+      "best_step": 300,
+      "learning_auc": 0.5002626050263643,
+      "steps_to_80": null,
+      "steps_to_90": null,
+      "validation_score": 0.5350442603230476,
+      "score": 0.5350442603230476,
+      "accuracy": 0.5371428728103638,
+      "min_class_recall": 0.22899885475635529,
+      "probability_mse": 0.24863120913505554,
+      "jacobian_variability": 4.704124927520752,
+      "jacobian_change_rank": 4,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.6902673840522766,
+          "score": 0.4977174364030361,
+          "accuracy": 0.49485713243484497,
+          "min_class_recall": 0.08059024065732956,
+          "probability_mse": 0.25129544734954834
+        },
+        {
+          "step": 25,
+          "loss": 0.6925961971282959,
+          "score": 0.4895890802145004,
+          "accuracy": 0.48914286494255066,
+          "min_class_recall": 0.42451760172843933,
+          "probability_mse": 0.2503381073474884
+        },
+        {
+          "step": 50,
+          "loss": 0.6914884448051453,
+          "score": 0.49970611929893494,
+          "accuracy": 0.5,
+          "min_class_recall": 0.4568469524383545,
+          "probability_mse": 0.250197172164917
+        },
+        {
+          "step": 75,
+          "loss": 0.6914583444595337,
+          "score": 0.5012767761945724,
+          "accuracy": 0.5005714297294617,
+          "min_class_recall": 0.3984108865261078,
+          "probability_mse": 0.2509312927722931
+        },
+        {
+          "step": 100,
+          "loss": 0.6933428645133972,
+          "score": 0.5004545487463474,
+          "accuracy": 0.50342857837677,
+          "min_class_recall": 0.0667433813214302,
+          "probability_mse": 0.24993039667606354
+        },
+        {
+          "step": 125,
+          "loss": 0.6958085298538208,
+          "score": 0.5102012977004051,
+          "accuracy": 0.5125714540481567,
+          "min_class_recall": 0.16455696523189545,
+          "probability_mse": 0.2500615417957306
+        },
+        {
+          "step": 150,
+          "loss": 0.6934612393379211,
+          "score": 0.4816063195466995,
+          "accuracy": 0.4828571379184723,
+          "min_class_recall": 0.29919448494911194,
+          "probability_mse": 0.25034454464912415
+        },
+        {
+          "step": 175,
+          "loss": 0.6947510242462158,
+          "score": 0.5,
+          "accuracy": 0.49657142162323,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.2507486939430237
+        },
+        {
+          "step": 200,
+          "loss": 0.6913712620735168,
+          "score": 0.4907398074865341,
+          "accuracy": 0.490285724401474,
+          "min_class_recall": 0.42451760172843933,
+          "probability_mse": 0.2504625618457794
+        },
+        {
+          "step": 225,
+          "loss": 0.6924484372138977,
+          "score": 0.5189977735280991,
+          "accuracy": 0.5199999809265137,
+          "min_class_recall": 0.37284234166145325,
+          "probability_mse": 0.24991965293884277
+        },
+        {
+          "step": 250,
+          "loss": 0.6916713714599609,
+          "score": 0.49445395171642303,
+          "accuracy": 0.4942857027053833,
+          "min_class_recall": 0.4699205458164215,
+          "probability_mse": 0.2500004470348358
+        },
+        {
+          "step": 275,
+          "loss": 0.6944499611854553,
+          "score": 0.5194908678531647,
+          "accuracy": 0.5171428322792053,
+          "min_class_recall": 0.17707151174545288,
+          "probability_mse": 0.25023984909057617
+        },
+        {
+          "step": 300,
+          "loss": 0.6892740726470947,
+          "score": 0.5350442603230476,
+          "accuracy": 0.5371428728103638,
+          "min_class_recall": 0.22899885475635529,
+          "probability_mse": 0.24863120913505554
+        }
+      ]
+    },
+    {
+      "task": "radial_stripes",
+      "kind": "classification",
+      "input_dim": 2,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 0,
+      "variant": "self_context_stiefel_flow_curvature_down",
+      "optimizer": "adamw",
+      "parameters": 4118,
+      "seconds": 6.500831334000001,
+      "best_step": 300,
+      "learning_auc": 0.5044394497573376,
+      "steps_to_80": null,
+      "steps_to_90": null,
+      "validation_score": 0.5444416105747223,
+      "score": 0.5444416105747223,
+      "accuracy": 0.5468571186065674,
+      "min_class_recall": 0.19217491149902344,
+      "probability_mse": 0.2467590719461441,
+      "jacobian_variability": 2.2829418182373047,
+      "jacobian_change_rank": 4,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.6902631521224976,
+          "score": 0.4966137297451496,
+          "accuracy": 0.49371427297592163,
+          "min_class_recall": 0.07377979904413223,
+          "probability_mse": 0.2513056695461273
+        },
+        {
+          "step": 25,
+          "loss": 0.6924020648002625,
+          "score": 0.484112873673439,
+          "accuracy": 0.48399999737739563,
+          "min_class_recall": 0.4676503837108612,
+          "probability_mse": 0.2502978444099426
+        },
+        {
+          "step": 50,
+          "loss": 0.6912049055099487,
+          "score": 0.49597956240177155,
+          "accuracy": 0.49657142162323,
+          "min_class_recall": 0.4096662700176239,
+          "probability_mse": 0.25016161799430847
+        },
+        {
+          "step": 75,
+          "loss": 0.6916828155517578,
+          "score": 0.5039734095335007,
+          "accuracy": 0.50342857837677,
+          "min_class_recall": 0.42451760172843933,
+          "probability_mse": 0.250951886177063
+        },
+        {
+          "step": 100,
+          "loss": 0.692057192325592,
+          "score": 0.5071363300085068,
+          "accuracy": 0.5097143054008484,
+          "min_class_recall": 0.13118526339530945,
+          "probability_mse": 0.2498254030942917
+        },
+        {
+          "step": 125,
+          "loss": 0.6952092051506042,
+          "score": 0.49837248027324677,
+          "accuracy": 0.5011428594589233,
+          "min_class_recall": 0.0943613350391388,
+          "probability_mse": 0.2499338686466217
+        },
+        {
+          "step": 150,
+          "loss": 0.6908648014068604,
+          "score": 0.4980759844183922,
+          "accuracy": 0.5,
+          "min_class_recall": 0.21749137341976166,
+          "probability_mse": 0.2497514933347702
+        },
+        {
+          "step": 175,
+          "loss": 0.6917898654937744,
+          "score": 0.5199721902608871,
+          "accuracy": 0.517714262008667,
+          "min_class_recall": 0.19069239497184753,
+          "probability_mse": 0.2488390952348709
+        },
+        {
+          "step": 200,
+          "loss": 0.6945041418075562,
+          "score": 0.48727449774742126,
+          "accuracy": 0.4845714271068573,
+          "min_class_recall": 0.09307605028152466,
+          "probability_mse": 0.25136005878448486
+        },
+        {
+          "step": 225,
+          "loss": 0.694054126739502,
+          "score": 0.5125674344599247,
+          "accuracy": 0.5097143054008484,
+          "min_class_recall": 0.09648127108812332,
+          "probability_mse": 0.2507641017436981
+        },
+        {
+          "step": 250,
+          "loss": 0.6944304704666138,
+          "score": 0.5121723227202892,
+          "accuracy": 0.5091428756713867,
+          "min_class_recall": 0.07037457078695297,
+          "probability_mse": 0.25153666734695435
+        },
+        {
+          "step": 275,
+          "loss": 0.6902937889099121,
+          "score": 0.5327231734991074,
+          "accuracy": 0.5314285755157471,
+          "min_class_recall": 0.3439273536205292,
+          "probability_mse": 0.2500687837600708
+        },
+        {
+          "step": 300,
+          "loss": 0.687393069267273,
+          "score": 0.5444416105747223,
+          "accuracy": 0.5468571186065674,
+          "min_class_recall": 0.19217491149902344,
+          "probability_mse": 0.2467590719461441
+        }
+      ]
+    },
+    {
+      "task": "radial_stripes",
+      "kind": "classification",
+      "input_dim": 2,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 0,
+      "variant": "self_context_stiefel_flow_curvature_frozen_up",
+      "optimizer": "adamw",
+      "parameters": 4118,
+      "seconds": 5.609744499999998,
+      "best_step": 300,
+      "learning_auc": 0.5012199663681288,
+      "steps_to_80": null,
+      "steps_to_90": null,
+      "validation_score": 0.5256782621145248,
+      "score": 0.5256782621145248,
+      "accuracy": 0.5274285674095154,
+      "min_class_recall": 0.2704257667064667,
+      "probability_mse": 0.2489968091249466,
+      "jacobian_variability": 1.4844712018966675,
+      "jacobian_change_rank": 4,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.6903696060180664,
+          "score": 0.4971342459321022,
+          "accuracy": 0.4942857027053833,
+          "min_class_recall": 0.08172531425952911,
+          "probability_mse": 0.25125908851623535
+        },
+        {
+          "step": 25,
+          "loss": 0.6925451755523682,
+          "score": 0.4889431595802307,
+          "accuracy": 0.488571435213089,
+          "min_class_recall": 0.4347332715988159,
+          "probability_mse": 0.25034087896347046
+        },
+        {
+          "step": 50,
+          "loss": 0.6913419365882874,
+          "score": 0.4990210235118866,
+          "accuracy": 0.49942857027053833,
+          "min_class_recall": 0.43958574533462524,
+          "probability_mse": 0.25021177530288696
+        },
+        {
+          "step": 75,
+          "loss": 0.6914710402488708,
+          "score": 0.5030107647180557,
+          "accuracy": 0.5022857189178467,
+          "min_class_recall": 0.39727583527565,
+          "probability_mse": 0.2509864270687103
+        },
+        {
+          "step": 100,
+          "loss": 0.6933392882347107,
+          "score": 0.5020709428936243,
+          "accuracy": 0.505142867565155,
+          "min_class_recall": 0.054085154086351395,
+          "probability_mse": 0.24997922778129578
+        },
+        {
+          "step": 125,
+          "loss": 0.6959384679794312,
+          "score": 0.516017735004425,
+          "accuracy": 0.5182856917381287,
+          "min_class_recall": 0.18527042865753174,
+          "probability_mse": 0.2501245141029358
+        },
+        {
+          "step": 150,
+          "loss": 0.6932569742202759,
+          "score": 0.4815671294927597,
+          "accuracy": 0.4828571379184723,
+          "min_class_recall": 0.29344072937965393,
+          "probability_mse": 0.250371515750885
+        },
+        {
+          "step": 175,
+          "loss": 0.6946021318435669,
+          "score": 0.5,
+          "accuracy": 0.49657142162323,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.250790536403656
+        },
+        {
+          "step": 200,
+          "loss": 0.6910616159439087,
+          "score": 0.48630140721797943,
+          "accuracy": 0.48571428656578064,
+          "min_class_recall": 0.4006810486316681,
+          "probability_mse": 0.2505127191543579
+        },
+        {
+          "step": 225,
+          "loss": 0.6927985548973083,
+          "score": 0.5179646015167236,
+          "accuracy": 0.5188571214675903,
+          "min_class_recall": 0.3878020644187927,
+          "probability_mse": 0.2499842643737793
+        },
+        {
+          "step": 250,
+          "loss": 0.6912398934364319,
+          "score": 0.5132956355810165,
+          "accuracy": 0.5137143135070801,
+          "min_class_recall": 0.45224395394325256,
+          "probability_mse": 0.24996982514858246
+        },
+        {
+          "step": 275,
+          "loss": 0.6949996948242188,
+          "score": 0.5147624909877777,
+          "accuracy": 0.5125714540481567,
+          "min_class_recall": 0.19523268938064575,
+          "probability_mse": 0.25024086236953735
+        },
+        {
+          "step": 300,
+          "loss": 0.6919826865196228,
+          "score": 0.5256782621145248,
+          "accuracy": 0.5274285674095154,
+          "min_class_recall": 0.2704257667064667,
+          "probability_mse": 0.2489968091249466
+        }
+      ]
+    },
+    {
+      "task": "radial_stripes",
+      "kind": "classification",
+      "input_dim": 2,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 0,
+      "variant": "self_context_stiefel_flow_curvature_frozen_down",
+      "optimizer": "adamw",
+      "parameters": 4118,
+      "seconds": 6.152851875000003,
+      "best_step": 300,
+      "learning_auc": 0.5297693125282724,
+      "steps_to_80": null,
+      "steps_to_90": null,
+      "validation_score": 0.6734050512313843,
+      "score": 0.6734050512313843,
+      "accuracy": 0.673714280128479,
+      "min_class_recall": 0.6283084154129028,
+      "probability_mse": 0.20278297364711761,
+      "jacobian_variability": 52.446250915527344,
+      "jacobian_change_rank": 4,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.6902545690536499,
+          "score": 0.4960305094718933,
+          "accuracy": 0.49314284324645996,
+          "min_class_recall": 0.07491487264633179,
+          "probability_mse": 0.2513920068740845
+        },
+        {
+          "step": 25,
+          "loss": 0.6924599409103394,
+          "score": 0.4871229976415634,
+          "accuracy": 0.486857146024704,
+          "min_class_recall": 0.44835415482521057,
+          "probability_mse": 0.2502695620059967
+        },
+        {
+          "step": 50,
+          "loss": 0.6910844445228577,
+          "score": 0.4933534860610962,
+          "accuracy": 0.49371427297592163,
+          "min_class_recall": 0.44073647260665894,
+          "probability_mse": 0.2501448392868042
+        },
+        {
+          "step": 75,
+          "loss": 0.6909007430076599,
+          "score": 0.5071088969707489,
+          "accuracy": 0.5062857270240784,
+          "min_class_recall": 0.38706016540527344,
+          "probability_mse": 0.25091734528541565
+        },
+        {
+          "step": 100,
+          "loss": 0.6921078562736511,
+          "score": 0.5110072232782841,
+          "accuracy": 0.5137143135070801,
+          "min_class_recall": 0.11622554808855057,
+          "probability_mse": 0.2498134821653366
+        },
+        {
+          "step": 125,
+          "loss": 0.6946966648101807,
+          "score": 0.515222929418087,
+          "accuracy": 0.517714262008667,
+          "min_class_recall": 0.15189872682094574,
+          "probability_mse": 0.24975496530532837
+        },
+        {
+          "step": 150,
+          "loss": 0.6905421018600464,
+          "score": 0.5220457762479782,
+          "accuracy": 0.5239999890327454,
+          "min_class_recall": 0.23705407977104187,
+          "probability_mse": 0.2495138794183731
+        },
+        {
+          "step": 175,
+          "loss": 0.6892189383506775,
+          "score": 0.5481544211506844,
+          "accuracy": 0.5451428294181824,
+          "min_class_recall": 0.10896708071231842,
+          "probability_mse": 0.24828732013702393
+        },
+        {
+          "step": 200,
+          "loss": 0.6818228363990784,
+          "score": 0.4954322874546051,
+          "accuracy": 0.49542856216430664,
+          "min_class_recall": 0.4948921799659729,
+          "probability_mse": 0.2503492832183838
+        },
+        {
+          "step": 225,
+          "loss": 0.6815227270126343,
+          "score": 0.5474523603916168,
+          "accuracy": 0.545714259147644,
+          "min_class_recall": 0.2939841151237488,
+          "probability_mse": 0.2450343519449234
+        },
+        {
+          "step": 250,
+          "loss": 0.6528601050376892,
+          "score": 0.560452789068222,
+          "accuracy": 0.5605714321136475,
+          "min_class_recall": 0.5431530475616455,
+          "probability_mse": 0.23311513662338257
+        },
+        {
+          "step": 275,
+          "loss": 0.6613467335700989,
+          "score": 0.6048238724470139,
+          "accuracy": 0.6039999723434448,
+          "min_class_recall": 0.4846765100955963,
+          "probability_mse": 0.22725336253643036
+        },
+        {
+          "step": 300,
+          "loss": 0.5950759053230286,
+          "score": 0.6734050512313843,
+          "accuracy": 0.673714280128479,
+          "min_class_recall": 0.6283084154129028,
+          "probability_mse": 0.20278297364711761
+        }
+      ]
+    },
+    {
+      "task": "radial_stripes",
+      "kind": "classification",
+      "input_dim": 2,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 1,
+      "variant": "self_context_stiefel_flow_curvature",
+      "optimizer": "adamw",
+      "parameters": 4118,
+      "seconds": 9.465658500000004,
+      "best_step": 300,
+      "learning_auc": 0.5004647969578703,
+      "steps_to_80": null,
+      "steps_to_90": null,
+      "validation_score": 0.5440690368413925,
+      "score": 0.5440690368413925,
+      "accuracy": 0.545714259147644,
+      "min_class_recall": 0.42410197854042053,
+      "probability_mse": 0.2496889978647232,
+      "jacobian_variability": 4.986547470092773,
+      "jacobian_change_rank": 4,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.7052706480026245,
+          "score": 0.5,
+          "accuracy": 0.49314284324645996,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.254495769739151
+        },
+        {
+          "step": 25,
+          "loss": 0.6947005987167358,
+          "score": 0.5117475315928459,
+          "accuracy": 0.5154285430908203,
+          "min_class_recall": 0.24333719909191132,
+          "probability_mse": 0.2503323256969452
+        },
+        {
+          "step": 50,
+          "loss": 0.7051109671592712,
+          "score": 0.5107180774211884,
+          "accuracy": 0.5108571648597717,
+          "min_class_recall": 0.5005793571472168,
+          "probability_mse": 0.2508343756198883
+        },
+        {
+          "step": 75,
+          "loss": 0.6928114295005798,
+          "score": 0.5045957863330841,
+          "accuracy": 0.5045714378356934,
+          "min_class_recall": 0.5028184652328491,
+          "probability_mse": 0.2511560022830963
+        },
+        {
+          "step": 100,
+          "loss": 0.692143440246582,
+          "score": 0.4958744943141937,
+          "accuracy": 0.49542856216430664,
+          "min_class_recall": 0.46335965394973755,
+          "probability_mse": 0.2509046196937561
+        },
+        {
+          "step": 125,
+          "loss": 0.6888031363487244,
+          "score": 0.49191294610500336,
+          "accuracy": 0.49142858386039734,
+          "min_class_recall": 0.4565952718257904,
+          "probability_mse": 0.25076085329055786
+        },
+        {
+          "step": 150,
+          "loss": 0.6922162771224976,
+          "score": 0.4843438193202019,
+          "accuracy": 0.48914286494255066,
+          "min_class_recall": 0.13441483676433563,
+          "probability_mse": 0.25053322315216064
+        },
+        {
+          "step": 175,
+          "loss": 0.6864312887191772,
+          "score": 0.5023671314120293,
+          "accuracy": 0.50685715675354,
+          "min_class_recall": 0.17497102916240692,
+          "probability_mse": 0.2502540349960327
+        },
+        {
+          "step": 200,
+          "loss": 0.6951099038124084,
+          "score": 0.49764135479927063,
+          "accuracy": 0.49942857027053833,
+          "min_class_recall": 0.36732327938079834,
+          "probability_mse": 0.25287482142448425
+        },
+        {
+          "step": 225,
+          "loss": 0.6899901628494263,
+          "score": 0.5039380341768265,
+          "accuracy": 0.5040000081062317,
+          "min_class_recall": 0.4994206130504608,
+          "probability_mse": 0.25035497546195984
+        },
+        {
+          "step": 250,
+          "loss": 0.6843292117118835,
+          "score": 0.5092321038246155,
+          "accuracy": 0.5080000162124634,
+          "min_class_recall": 0.4193912148475647,
+          "probability_mse": 0.251434326171875
+        },
+        {
+          "step": 275,
+          "loss": 0.6934815645217896,
+          "score": 0.49140671640634537,
+          "accuracy": 0.49542856216430664,
+          "min_class_recall": 0.1981460005044937,
+          "probability_mse": 0.25185003876686096
+        },
+        {
+          "step": 300,
+          "loss": 0.6906834244728088,
+          "score": 0.5440690368413925,
+          "accuracy": 0.545714259147644,
+          "min_class_recall": 0.42410197854042053,
+          "probability_mse": 0.2496889978647232
+        }
+      ]
+    },
+    {
+      "task": "radial_stripes",
+      "kind": "classification",
+      "input_dim": 2,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 1,
+      "variant": "self_context_stiefel_flow_curvature_frozen",
+      "optimizer": "adamw",
+      "parameters": 4118,
+      "seconds": 8.839165625,
+      "best_step": 300,
+      "learning_auc": 0.5304612515866757,
+      "steps_to_80": null,
+      "steps_to_90": null,
+      "validation_score": 0.6956292986869812,
+      "score": 0.6956292986869812,
+      "accuracy": 0.6959999799728394,
+      "min_class_recall": 0.668597936630249,
+      "probability_mse": 0.18911129236221313,
+      "jacobian_variability": 3.0227088928222656,
+      "jacobian_change_rank": 4,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.7052637338638306,
+          "score": 0.5,
+          "accuracy": 0.49314284324645996,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.254520446062088
+        },
+        {
+          "step": 25,
+          "loss": 0.694995105266571,
+          "score": 0.4924870878458023,
+          "accuracy": 0.49657142162323,
+          "min_class_recall": 0.19466975331306458,
+          "probability_mse": 0.25035038590431213
+        },
+        {
+          "step": 50,
+          "loss": 0.7054215669631958,
+          "score": 0.5064116418361664,
+          "accuracy": 0.50685715675354,
+          "min_class_recall": 0.47392815351486206,
+          "probability_mse": 0.25084665417671204
+        },
+        {
+          "step": 75,
+          "loss": 0.6928931474685669,
+          "score": 0.4777107387781143,
+          "accuracy": 0.477142870426178,
+          "min_class_recall": 0.43630215525627136,
+          "probability_mse": 0.2512454390525818
+        },
+        {
+          "step": 100,
+          "loss": 0.6917204260826111,
+          "score": 0.4738275706768036,
+          "accuracy": 0.4731428623199463,
+          "min_class_recall": 0.4239007830619812,
+          "probability_mse": 0.25120845437049866
+        },
+        {
+          "step": 125,
+          "loss": 0.68951016664505,
+          "score": 0.4984264671802521,
+          "accuracy": 0.498285710811615,
+          "min_class_recall": 0.4881623387336731,
+          "probability_mse": 0.25068408250808716
+        },
+        {
+          "step": 150,
+          "loss": 0.6923044919967651,
+          "score": 0.501725047826767,
+          "accuracy": 0.5062857270240784,
+          "min_class_recall": 0.16917729377746582,
+          "probability_mse": 0.2506066858768463
+        },
+        {
+          "step": 175,
+          "loss": 0.6873162388801575,
+          "score": 0.49954863637685776,
+          "accuracy": 0.5040000081062317,
+          "min_class_recall": 0.17497102916240692,
+          "probability_mse": 0.2509477138519287
+        },
+        {
+          "step": 200,
+          "loss": 0.6898843050003052,
+          "score": 0.495307520031929,
+          "accuracy": 0.4977142810821533,
+          "min_class_recall": 0.3198145925998688,
+          "probability_mse": 0.2504417300224304
+        },
+        {
+          "step": 225,
+          "loss": 0.6792949438095093,
+          "score": 0.554092139005661,
+          "accuracy": 0.5542857050895691,
+          "min_class_recall": 0.5399768352508545,
+          "probability_mse": 0.24461334943771362
+        },
+        {
+          "step": 250,
+          "loss": 0.666957437992096,
+          "score": 0.6012226343154907,
+          "accuracy": 0.6028571724891663,
+          "min_class_recall": 0.4820393919944763,
+          "probability_mse": 0.23270566761493683
+        },
+        {
+          "step": 275,
+          "loss": 0.5182077288627625,
+          "score": 0.686810627579689,
+          "accuracy": 0.6897143125534058,
+          "min_class_recall": 0.47508689761161804,
+          "probability_mse": 0.19384141266345978
+        },
+        {
+          "step": 300,
+          "loss": 0.5997784733772278,
+          "score": 0.6956292986869812,
+          "accuracy": 0.6959999799728394,
+          "min_class_recall": 0.668597936630249,
+          "probability_mse": 0.18911129236221313
+        }
+      ]
+    },
+    {
+      "task": "radial_stripes",
+      "kind": "classification",
+      "input_dim": 2,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 1,
+      "variant": "self_context_stiefel_flow_curvature_up",
+      "optimizer": "adamw",
+      "parameters": 4118,
+      "seconds": 5.873007709000007,
+      "best_step": 300,
+      "learning_auc": 0.49546496545275054,
+      "steps_to_80": null,
+      "steps_to_90": null,
+      "validation_score": 0.5222141295671463,
+      "score": 0.5222141295671463,
+      "accuracy": 0.5199999809265137,
+      "min_class_recall": 0.36076661944389343,
+      "probability_mse": 0.24908122420310974,
+      "jacobian_variability": 3.3415536880493164,
+      "jacobian_change_rank": 4,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.7052207589149475,
+          "score": 0.5,
+          "accuracy": 0.49314284324645996,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.2545910179615021
+        },
+        {
+          "step": 25,
+          "loss": 0.6947270035743713,
+          "score": 0.5021483153104782,
+          "accuracy": 0.5062857270240784,
+          "min_class_recall": 0.20046350359916687,
+          "probability_mse": 0.25036463141441345
+        },
+        {
+          "step": 50,
+          "loss": 0.7052407264709473,
+          "score": 0.5098878890275955,
+          "accuracy": 0.5102857351303101,
+          "min_class_recall": 0.48088064789772034,
+          "probability_mse": 0.2508351802825928
+        },
+        {
+          "step": 75,
+          "loss": 0.6927427649497986,
+          "score": 0.4856652319431305,
+          "accuracy": 0.48514285683631897,
+          "min_class_recall": 0.447576105594635,
+          "probability_mse": 0.2512485086917877
+        },
+        {
+          "step": 100,
+          "loss": 0.6919689774513245,
+          "score": 0.4839114099740982,
+          "accuracy": 0.48342856764793396,
+          "min_class_recall": 0.44870349764823914,
+          "probability_mse": 0.25097501277923584
+        },
+        {
+          "step": 125,
+          "loss": 0.6897899508476257,
+          "score": 0.4910043478012085,
+          "accuracy": 0.49085715413093567,
+          "min_class_recall": 0.4802705645561218,
+          "probability_mse": 0.25083211064338684
+        },
+        {
+          "step": 150,
+          "loss": 0.6920665502548218,
+          "score": 0.49187568575143814,
+          "accuracy": 0.49657142162323,
+          "min_class_recall": 0.14947856962680817,
+          "probability_mse": 0.2507566511631012
+        },
+        {
+          "step": 175,
+          "loss": 0.6884031891822815,
+          "score": 0.5043247193098068,
+          "accuracy": 0.508571445941925,
+          "min_class_recall": 0.19466975331306458,
+          "probability_mse": 0.25086063146591187
+        },
+        {
+          "step": 200,
+          "loss": 0.6891350150108337,
+          "score": 0.48318900167942047,
+          "accuracy": 0.4845714271068573,
+          "min_class_recall": 0.3823870122432709,
+          "probability_mse": 0.251018226146698
+        },
+        {
+          "step": 225,
+          "loss": 0.687917172908783,
+          "score": 0.5077075734734535,
+          "accuracy": 0.5114285945892334,
+          "min_class_recall": 0.23638470470905304,
+          "probability_mse": 0.25025811791419983
+        },
+        {
+          "step": 250,
+          "loss": 0.6840884685516357,
+          "score": 0.4994460940361023,
+          "accuracy": 0.4977142810821533,
+          "min_class_recall": 0.3731679916381836,
+          "probability_mse": 0.2509200870990753
+        },
+        {
+          "step": 275,
+          "loss": 0.6865751147270203,
+          "score": 0.4953552186489105,
+          "accuracy": 0.49714285135269165,
+          "min_class_recall": 0.3650057911872864,
+          "probability_mse": 0.24982497096061707
+        },
+        {
+          "step": 300,
+          "loss": 0.6771710515022278,
+          "score": 0.5222141295671463,
+          "accuracy": 0.5199999809265137,
+          "min_class_recall": 0.36076661944389343,
+          "probability_mse": 0.24908122420310974
+        }
+      ]
+    },
+    {
+      "task": "radial_stripes",
+      "kind": "classification",
+      "input_dim": 2,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 1,
+      "variant": "self_context_stiefel_flow_curvature_down",
+      "optimizer": "adamw",
+      "parameters": 4118,
+      "seconds": 6.5287378750000045,
+      "best_step": 300,
+      "learning_auc": 0.5036489215865732,
+      "steps_to_80": null,
+      "steps_to_90": null,
+      "validation_score": 0.5409552752971649,
+      "score": 0.5409552752971649,
+      "accuracy": 0.5405714511871338,
+      "min_class_recall": 0.5129650235176086,
+      "probability_mse": 0.24816639721393585,
+      "jacobian_variability": 6.280554294586182,
+      "jacobian_change_rank": 4,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.7053062915802002,
+          "score": 0.5,
+          "accuracy": 0.49314284324645996,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.25454628467559814
+        },
+        {
+          "step": 25,
+          "loss": 0.6949973106384277,
+          "score": 0.5009431913495064,
+          "accuracy": 0.5045714378356934,
+          "min_class_recall": 0.23638470470905304,
+          "probability_mse": 0.25033995509147644
+        },
+        {
+          "step": 50,
+          "loss": 0.7052183151245117,
+          "score": 0.5131139755249023,
+          "accuracy": 0.5131428837776184,
+          "min_class_recall": 0.511008083820343,
+          "probability_mse": 0.25081464648246765
+        },
+        {
+          "step": 75,
+          "loss": 0.6927019953727722,
+          "score": 0.5105299800634384,
+          "accuracy": 0.5108571648597717,
+          "min_class_recall": 0.48667439818382263,
+          "probability_mse": 0.2511973977088928
+        },
+        {
+          "step": 100,
+          "loss": 0.6918282508850098,
+          "score": 0.47611305117607117,
+          "accuracy": 0.47600001096725464,
+          "min_class_recall": 0.46786922216415405,
+          "probability_mse": 0.2509150505065918
+        },
+        {
+          "step": 125,
+          "loss": 0.6892197728157043,
+          "score": 0.49061308801174164,
+          "accuracy": 0.490285724401474,
+          "min_class_recall": 0.4667418301105499,
+          "probability_mse": 0.2507179379463196
+        },
+        {
+          "step": 150,
+          "loss": 0.6921496391296387,
+          "score": 0.4871623143553734,
+          "accuracy": 0.492000013589859,
+          "min_class_recall": 0.13441483676433563,
+          "probability_mse": 0.2504468262195587
+        },
+        {
+          "step": 175,
+          "loss": 0.687344491481781,
+          "score": 0.502962201833725,
+          "accuracy": 0.5074285864830017,
+          "min_class_recall": 0.17728853225708008,
+          "probability_mse": 0.25029703974723816
+        },
+        {
+          "step": 200,
+          "loss": 0.6912745237350464,
+          "score": 0.5001633018255234,
+          "accuracy": 0.5011428594589233,
+          "min_class_recall": 0.42873695492744446,
+          "probability_mse": 0.2507581412792206
+        },
+        {
+          "step": 225,
+          "loss": 0.68952876329422,
+          "score": 0.5195151716470718,
+          "accuracy": 0.5222856998443604,
+          "min_class_recall": 0.3174971044063568,
+          "probability_mse": 0.25020959973335266
+        },
+        {
+          "step": 250,
+          "loss": 0.6808308959007263,
+          "score": 0.5354130119085312,
+          "accuracy": 0.5342857241630554,
+          "min_class_recall": 0.45321306586265564,
+          "probability_mse": 0.2490406036376953
+        },
+        {
+          "step": 275,
+          "loss": 0.6843289732933044,
+          "score": 0.5067989975214005,
+          "accuracy": 0.5108571648597717,
+          "min_class_recall": 0.2108922302722931,
+          "probability_mse": 0.2550946772098541
+        },
+        {
+          "step": 300,
+          "loss": 0.6855075359344482,
+          "score": 0.5409552752971649,
+          "accuracy": 0.5405714511871338,
+          "min_class_recall": 0.5129650235176086,
+          "probability_mse": 0.24816639721393585
+        }
+      ]
+    },
+    {
+      "task": "radial_stripes",
+      "kind": "classification",
+      "input_dim": 2,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 1,
+      "variant": "self_context_stiefel_flow_curvature_frozen_up",
+      "optimizer": "adamw",
+      "parameters": 4118,
+      "seconds": 5.5893367079999905,
+      "best_step": 300,
+      "learning_auc": 0.5074602843200167,
+      "steps_to_80": null,
+      "steps_to_90": null,
+      "validation_score": 0.5922850966453552,
+      "score": 0.5922850966453552,
+      "accuracy": 0.5908571481704712,
+      "min_class_recall": 0.4881623387336731,
+      "probability_mse": 0.22681085765361786,
+      "jacobian_variability": 3.71311616897583,
+      "jacobian_change_rank": 4,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.705295979976654,
+          "score": 0.5,
+          "accuracy": 0.49314284324645996,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.25461310148239136
+        },
+        {
+          "step": 25,
+          "loss": 0.6948928833007812,
+          "score": 0.501741386950016,
+          "accuracy": 0.5057142972946167,
+          "min_class_recall": 0.21205098927021027,
+          "probability_mse": 0.2503601312637329
+        },
+        {
+          "step": 50,
+          "loss": 0.7054778337478638,
+          "score": 0.5098878890275955,
+          "accuracy": 0.5102857351303101,
+          "min_class_recall": 0.48088064789772034,
+          "probability_mse": 0.25082555413246155
+        },
+        {
+          "step": 75,
+          "loss": 0.6926668286323547,
+          "score": 0.48564954102039337,
+          "accuracy": 0.48514285683631897,
+          "min_class_recall": 0.44870349764823914,
+          "probability_mse": 0.25123557448387146
+        },
+        {
+          "step": 100,
+          "loss": 0.6919307708740234,
+          "score": 0.47720976173877716,
+          "accuracy": 0.4765714406967163,
+          "min_class_recall": 0.43066516518592834,
+          "probability_mse": 0.2508786618709564
+        },
+        {
+          "step": 125,
+          "loss": 0.690336287021637,
+          "score": 0.490315243601799,
+          "accuracy": 0.490285724401474,
+          "min_class_recall": 0.4881623387336731,
+          "probability_mse": 0.2506628930568695
+        },
+        {
+          "step": 150,
+          "loss": 0.6934189200401306,
+          "score": 0.5083960369229317,
+          "accuracy": 0.5125714540481567,
+          "min_class_recall": 0.203939750790596,
+          "probability_mse": 0.2508729100227356
+        },
+        {
+          "step": 175,
+          "loss": 0.6876531839370728,
+          "score": 0.5090531408786774,
+          "accuracy": 0.5137143135070801,
+          "min_class_recall": 0.16917729377746582,
+          "probability_mse": 0.25043776631355286
+        },
+        {
+          "step": 200,
+          "loss": 0.6910297870635986,
+          "score": 0.5021646544337273,
+          "accuracy": 0.5057142972946167,
+          "min_class_recall": 0.24333719909191132,
+          "probability_mse": 0.251395583152771
+        },
+        {
+          "step": 225,
+          "loss": 0.679107666015625,
+          "score": 0.5226498246192932,
+          "accuracy": 0.522857129573822,
+          "min_class_recall": 0.5075318813323975,
+          "probability_mse": 0.24702608585357666
+        },
+        {
+          "step": 250,
+          "loss": 0.6724597215652466,
+          "score": 0.5195321589708328,
+          "accuracy": 0.521142840385437,
+          "min_class_recall": 0.4020857512950897,
+          "probability_mse": 0.24704499542713165
+        },
+        {
+          "step": 275,
+          "loss": 0.6676843166351318,
+          "score": 0.5368160530924797,
+          "accuracy": 0.5411428809165955,
+          "min_class_recall": 0.2213209718465805,
+          "probability_mse": 0.241471067070961
+        },
+        {
+          "step": 300,
+          "loss": 0.6333920955657959,
+          "score": 0.5922850966453552,
+          "accuracy": 0.5908571481704712,
+          "min_class_recall": 0.4881623387336731,
+          "probability_mse": 0.22681085765361786
+        }
+      ]
+    },
+    {
+      "task": "radial_stripes",
+      "kind": "classification",
+      "input_dim": 2,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 1,
+      "variant": "self_context_stiefel_flow_curvature_frozen_down",
+      "optimizer": "adamw",
+      "parameters": 4118,
+      "seconds": 6.141250207999988,
+      "best_step": 300,
+      "learning_auc": 0.5097384409482281,
+      "steps_to_80": null,
+      "steps_to_90": null,
+      "validation_score": 0.544244721531868,
+      "score": 0.544244721531868,
+      "accuracy": 0.5428571701049805,
+      "min_class_recall": 0.4430665075778961,
+      "probability_mse": 0.24594220519065857,
+      "jacobian_variability": 1.9974966049194336,
+      "jacobian_change_rank": 4,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.7052317261695862,
+          "score": 0.5,
+          "accuracy": 0.49314284324645996,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.25452539324760437
+        },
+        {
+          "step": 25,
+          "loss": 0.695290207862854,
+          "score": 0.4958222433924675,
+          "accuracy": 0.5,
+          "min_class_recall": 0.19119350612163544,
+          "probability_mse": 0.2503546476364136
+        },
+        {
+          "step": 50,
+          "loss": 0.705379068851471,
+          "score": 0.5082908570766449,
+          "accuracy": 0.508571445941925,
+          "min_class_recall": 0.4878331422805786,
+          "probability_mse": 0.25077730417251587
+        },
+        {
+          "step": 75,
+          "loss": 0.6929435729980469,
+          "score": 0.5028106421232224,
+          "accuracy": 0.5028571486473083,
+          "min_class_recall": 0.4994206130504608,
+          "probability_mse": 0.25115031003952026
+        },
+        {
+          "step": 100,
+          "loss": 0.6911904215812683,
+          "score": 0.4853203296661377,
+          "accuracy": 0.48514285683631897,
+          "min_class_recall": 0.47237879037857056,
+          "probability_mse": 0.2507625222206116
+        },
+        {
+          "step": 125,
+          "loss": 0.6903095245361328,
+          "score": 0.5073515772819519,
+          "accuracy": 0.5074285864830017,
+          "min_class_recall": 0.5017381310462952,
+          "probability_mse": 0.250383198261261
+        },
+        {
+          "step": 150,
+          "loss": 0.6913300156593323,
+          "score": 0.4985460266470909,
+          "accuracy": 0.50342857837677,
+          "min_class_recall": 0.1425260752439499,
+          "probability_mse": 0.25072717666625977
+        },
+        {
+          "step": 175,
+          "loss": 0.6850261688232422,
+          "score": 0.541716918349266,
+          "accuracy": 0.5462856888771057,
+          "min_class_recall": 0.20857474207878113,
+          "probability_mse": 0.2488248497247696
+        },
+        {
+          "step": 200,
+          "loss": 0.6849748492240906,
+          "score": 0.48202961683273315,
+          "accuracy": 0.48399999737739563,
+          "min_class_recall": 0.33835458755493164,
+          "probability_mse": 0.2528495788574219
+        },
+        {
+          "step": 225,
+          "loss": 0.6633729338645935,
+          "score": 0.5401910692453384,
+          "accuracy": 0.5371428728103638,
+          "min_class_recall": 0.3179256021976471,
+          "probability_mse": 0.23965278267860413
+        },
+        {
+          "step": 250,
+          "loss": 0.6846540570259094,
+          "score": 0.509227529168129,
+          "accuracy": 0.5120000243186951,
+          "min_class_recall": 0.3070683777332306,
+          "probability_mse": 0.2500787079334259
+        },
+        {
+          "step": 275,
+          "loss": 0.68376225233078,
+          "score": 0.54334856569767,
+          "accuracy": 0.5451428294181824,
+          "min_class_recall": 0.41251447796821594,
+          "probability_mse": 0.24325890839099884
+        },
+        {
+          "step": 300,
+          "loss": 0.6889913082122803,
+          "score": 0.544244721531868,
+          "accuracy": 0.5428571701049805,
+          "min_class_recall": 0.4430665075778961,
+          "probability_mse": 0.24594220519065857
+        }
+      ]
+    },
+    {
+      "task": "nd_spiral_high_rank",
+      "kind": "classification",
+      "input_dim": 16,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 0,
+      "variant": "self_context_stiefel_flow_curvature",
+      "optimizer": "adamw",
+      "parameters": 4454,
+      "seconds": 9.175948750000003,
+      "best_step": 125,
+      "learning_auc": 0.8812535730376839,
+      "steps_to_80": 100,
+      "steps_to_90": 100,
+      "validation_score": 1.0,
+      "score": 0.8510000109672546,
+      "accuracy": 0.8510000109672546,
+      "min_class_recall": 0.7549999952316284,
+      "probability_mse": 0.13267827033996582,
+      "tail_score": 0.7410000056028366,
+      "tail_survival": 0,
+      "tail_bins": [
+        {
+          "score": 0.7666666805744171,
+          "accuracy": 0.7666666507720947,
+          "min_class_recall": 0.5533333420753479,
+          "probability_mse": 0.2212730199098587
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.007713264785706997
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.00011647280189208686
+        },
+        {
+          "score": 0.9116666913032532,
+          "accuracy": 0.9116666913032532,
+          "min_class_recall": 0.8500000238418579,
+          "probability_mse": 0.055591899901628494
+        },
+        {
+          "score": 0.7300000041723251,
+          "accuracy": 0.7300000190734863,
+          "min_class_recall": 0.46000000834465027,
+          "probability_mse": 0.22029733657836914
+        },
+        {
+          "score": 0.9383333325386047,
+          "accuracy": 0.9383333325386047,
+          "min_class_recall": 0.8766666650772095,
+          "probability_mse": 0.04971453920006752
+        },
+        {
+          "score": 0.9500000178813934,
+          "accuracy": 0.949999988079071,
+          "min_class_recall": 0.9133333563804626,
+          "probability_mse": 0.025549113750457764
+        },
+        {
+          "score": 0.5799999833106995,
+          "accuracy": 0.5799999833106995,
+          "min_class_recall": 0.44999998807907104,
+          "probability_mse": 0.4065200686454773
+        },
+        {
+          "score": 0.8216666579246521,
+          "accuracy": 0.8216666579246521,
+          "min_class_recall": 0.6433333158493042,
+          "probability_mse": 0.14585167169570923
+        },
+        {
+          "score": 0.8316666781902313,
+          "accuracy": 0.8316666483879089,
+          "min_class_recall": 0.6633333563804626,
+          "probability_mse": 0.13937443494796753
+        }
+      ],
+      "jacobian_variability": 3.6074671745300293,
+      "jacobian_change_rank": 23,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.737647294998169,
+          "score": 0.5,
+          "accuracy": 0.507777750492096,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.2554512023925781
+        },
+        {
+          "step": 25,
+          "loss": 0.6867017149925232,
+          "score": 0.5329017862677574,
+          "accuracy": 0.5277777910232544,
+          "min_class_recall": 0.20350109040737152,
+          "probability_mse": 0.24728287756443024
+        },
+        {
+          "step": 50,
+          "loss": 0.6769841909408569,
+          "score": 0.6152328252792358,
+          "accuracy": 0.6144444346427917,
+          "min_class_recall": 0.5645514130592346,
+          "probability_mse": 0.23131944239139557
+        },
+        {
+          "step": 75,
+          "loss": 0.5791279673576355,
+          "score": 0.7279366254806519,
+          "accuracy": 0.7277777791023254,
+          "min_class_recall": 0.7177242636680603,
+          "probability_mse": 0.2017500400543213
+        },
+        {
+          "step": 100,
+          "loss": 0.2198745161294937,
+          "score": 0.9696296751499176,
+          "accuracy": 0.9700000286102295,
+          "min_class_recall": 0.9458239078521729,
+          "probability_mse": 0.04680759832262993
+        },
+        {
+          "step": 125,
+          "loss": 0.003998291213065386,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 4.186493606539443e-05
+        },
+        {
+          "step": 150,
+          "loss": 0.000471621286123991,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 8.889676905710076e-07
+        },
+        {
+          "step": 175,
+          "loss": 0.0002474250504747033,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 7.68673180573387e-06
+        },
+        {
+          "step": 200,
+          "loss": 0.0001992945180973038,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 5.07087179357768e-07
+        },
+        {
+          "step": 225,
+          "loss": 0.0001551074965391308,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.957536005647853e-05
+        },
+        {
+          "step": 250,
+          "loss": 0.0001127227587858215,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.2665407666645478e-05
+        },
+        {
+          "step": 275,
+          "loss": 0.0001023428631015122,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 2.831405026881839e-06
+        },
+        {
+          "step": 300,
+          "loss": 0.00010999145160894841,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 2.6847628760151565e-06
+        }
+      ]
+    },
+    {
+      "task": "nd_spiral_high_rank",
+      "kind": "classification",
+      "input_dim": 16,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 0,
+      "variant": "self_context_stiefel_flow_curvature_frozen",
+      "optimizer": "adamw",
+      "parameters": 4454,
+      "seconds": 8.570855582999997,
+      "best_step": 125,
+      "learning_auc": 0.8811254566783706,
+      "steps_to_80": 100,
+      "steps_to_90": 100,
+      "validation_score": 1.0,
+      "score": 0.8620000183582306,
+      "accuracy": 0.8619999885559082,
+      "min_class_recall": 0.828000009059906,
+      "probability_mse": 0.10238146781921387,
+      "tail_score": 0.8233333349227905,
+      "tail_survival": 0,
+      "tail_bins": [
+        {
+          "score": 0.7166666686534882,
+          "accuracy": 0.7166666388511658,
+          "min_class_recall": 0.6866666674613953,
+          "probability_mse": 0.20954836905002594
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 5.279742254060693e-05
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.068402525561396e-05
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.0003069602826144546
+        },
+        {
+          "score": 0.823333352804184,
+          "accuracy": 0.8233333230018616,
+          "min_class_recall": 0.7366666793823242,
+          "probability_mse": 0.10380634665489197
+        },
+        {
+          "score": 0.7666666805744171,
+          "accuracy": 0.7666666507720947,
+          "min_class_recall": 0.6233333349227905,
+          "probability_mse": 0.14356729388237
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.0041777328588068485
+        },
+        {
+          "score": 0.388333335518837,
+          "accuracy": 0.3883333206176758,
+          "min_class_recall": 0.3233333230018616,
+          "probability_mse": 0.5198749899864197
+        },
+        {
+          "score": 0.8666666746139526,
+          "accuracy": 0.8666666746139526,
+          "min_class_recall": 0.8633333444595337,
+          "probability_mse": 0.10801902413368225
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.0012321688700467348
+        }
+      ],
+      "jacobian_variability": 2.6889970302581787,
+      "jacobian_change_rank": 23,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.737577497959137,
+          "score": 0.5,
+          "accuracy": 0.507777750492096,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.2554358243942261
+        },
+        {
+          "step": 25,
+          "loss": 0.6867570281028748,
+          "score": 0.5291354581713676,
+          "accuracy": 0.5244444608688354,
+          "min_class_recall": 0.22757111489772797,
+          "probability_mse": 0.24724481999874115
+        },
+        {
+          "step": 50,
+          "loss": 0.6766833066940308,
+          "score": 0.6174210011959076,
+          "accuracy": 0.6166666746139526,
+          "min_class_recall": 0.5689277648925781,
+          "probability_mse": 0.23148219287395477
+        },
+        {
+          "step": 75,
+          "loss": 0.5801692008972168,
+          "score": 0.7291344404220581,
+          "accuracy": 0.7288888692855835,
+          "min_class_recall": 0.7133479118347168,
+          "probability_mse": 0.20230849087238312
+        },
+        {
+          "step": 100,
+          "loss": 0.19891276955604553,
+          "score": 0.9695259630680084,
+          "accuracy": 0.9700000286102295,
+          "min_class_recall": 0.9390519261360168,
+          "probability_mse": 0.039580706506967545
+        },
+        {
+          "step": 125,
+          "loss": 0.0043670800514519215,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 4.6591459977207705e-05
+        },
+        {
+          "step": 150,
+          "loss": 0.004031359683722258,
+          "score": 0.9988713264465332,
+          "accuracy": 0.9988889098167419,
+          "min_class_recall": 0.9977426528930664,
+          "probability_mse": 0.001419016276486218
+        },
+        {
+          "step": 175,
+          "loss": 0.0015707118436694145,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.3877196579414885e-05
+        },
+        {
+          "step": 200,
+          "loss": 0.0005715325241908431,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.9886645077349385e-06
+        },
+        {
+          "step": 225,
+          "loss": 0.00039652135455980897,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 6.479010608018143e-07
+        },
+        {
+          "step": 250,
+          "loss": 0.00026706705102697015,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 3.2053588938651956e-07
+        },
+        {
+          "step": 275,
+          "loss": 0.00023131491616368294,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.9555770336410205e-07
+        },
+        {
+          "step": 300,
+          "loss": 0.00016502929793205112,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.2927529269290972e-07
+        }
+      ]
+    },
+    {
+      "task": "nd_spiral_high_rank",
+      "kind": "classification",
+      "input_dim": 16,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 0,
+      "variant": "self_context_stiefel_flow_curvature_up",
+      "optimizer": "adamw",
+      "parameters": 4454,
+      "seconds": 5.680711375000001,
+      "best_step": 125,
+      "learning_auc": 0.8744711718335748,
+      "steps_to_80": 100,
+      "steps_to_90": 100,
+      "validation_score": 1.0,
+      "score": 0.7989999949932098,
+      "accuracy": 0.7990000247955322,
+      "min_class_recall": 0.6349999904632568,
+      "probability_mse": 0.16967645287513733,
+      "tail_score": 0.624666671641171,
+      "tail_survival": 0,
+      "tail_bins": [
+        {
+          "score": 0.6450000107288361,
+          "accuracy": 0.6449999809265137,
+          "min_class_recall": 0.31333333253860474,
+          "probability_mse": 0.31238195300102234
+        },
+        {
+          "score": 0.9883333444595337,
+          "accuracy": 0.9883333444595337,
+          "min_class_recall": 0.9766666889190674,
+          "probability_mse": 0.017199618741869926
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.0006402540602721274
+        },
+        {
+          "score": 0.9516666531562805,
+          "accuracy": 0.9516666531562805,
+          "min_class_recall": 0.903333306312561,
+          "probability_mse": 0.035568226128816605
+        },
+        {
+          "score": 0.6600000113248825,
+          "accuracy": 0.6600000262260437,
+          "min_class_recall": 0.3499999940395355,
+          "probability_mse": 0.2506914734840393
+        },
+        {
+          "score": 0.8316666781902313,
+          "accuracy": 0.8316666483879089,
+          "min_class_recall": 0.6633333563804626,
+          "probability_mse": 0.13984936475753784
+        },
+        {
+          "score": 0.9900000095367432,
+          "accuracy": 0.9900000095367432,
+          "min_class_recall": 0.9800000190734863,
+          "probability_mse": 0.007701442111283541
+        },
+        {
+          "score": 0.5083333337679505,
+          "accuracy": 0.5083333253860474,
+          "min_class_recall": 0.01666666753590107,
+          "probability_mse": 0.4530985653400421
+        },
+        {
+          "score": 0.5566666722297668,
+          "accuracy": 0.5566666722297668,
+          "min_class_recall": 0.36000001430511475,
+          "probability_mse": 0.3822821080684662
+        },
+        {
+          "score": 0.8416666686534882,
+          "accuracy": 0.8416666388511658,
+          "min_class_recall": 0.6833333373069763,
+          "probability_mse": 0.1117897555232048
+        }
+      ],
+      "jacobian_variability": 4.097659587860107,
+      "jacobian_change_rank": 23,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.737659752368927,
+          "score": 0.5,
+          "accuracy": 0.507777750492096,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.25545814633369446
+        },
+        {
+          "step": 25,
+          "loss": 0.6867735981941223,
+          "score": 0.5224671587347984,
+          "accuracy": 0.5177778005599976,
+          "min_class_recall": 0.22100655734539032,
+          "probability_mse": 0.24722082912921906
+        },
+        {
+          "step": 50,
+          "loss": 0.6788041591644287,
+          "score": 0.6118122339248657,
+          "accuracy": 0.6111111044883728,
+          "min_class_recall": 0.5667396187782288,
+          "probability_mse": 0.23205062747001648
+        },
+        {
+          "step": 75,
+          "loss": 0.5999642610549927,
+          "score": 0.7138517498970032,
+          "accuracy": 0.7133333086967468,
+          "min_class_recall": 0.6805251836776733,
+          "probability_mse": 0.21107740700244904
+        },
+        {
+          "step": 100,
+          "loss": 0.304232120513916,
+          "score": 0.9159722626209259,
+          "accuracy": 0.9166666865348816,
+          "min_class_recall": 0.8713318109512329,
+          "probability_mse": 0.07778224349021912
+        },
+        {
+          "step": 125,
+          "loss": 0.006117662880569696,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 9.019426943268627e-05
+        },
+        {
+          "step": 150,
+          "loss": 0.004955880343914032,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 9.242332453140989e-05
+        },
+        {
+          "step": 175,
+          "loss": 0.0003279043303336948,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 9.811695917960606e-07
+        },
+        {
+          "step": 200,
+          "loss": 0.00022086940589360893,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 2.4106870455398166e-07
+        },
+        {
+          "step": 225,
+          "loss": 0.0001715886319288984,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.3330274839518097e-07
+        },
+        {
+          "step": 250,
+          "loss": 0.00012911230442114174,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 8.174973231689364e-08
+        },
+        {
+          "step": 275,
+          "loss": 0.00010272401414113119,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 5.3107836350818616e-08
+        },
+        {
+          "step": 300,
+          "loss": 9.207081893691793e-05,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 4.033127964930827e-08
+        }
+      ]
+    },
+    {
+      "task": "nd_spiral_high_rank",
+      "kind": "classification",
+      "input_dim": 16,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 0,
+      "variant": "self_context_stiefel_flow_curvature_down",
+      "optimizer": "adamw",
+      "parameters": 4454,
+      "seconds": 6.326117832999998,
+      "best_step": 125,
+      "learning_auc": 0.8688104357073705,
+      "steps_to_80": 100,
+      "steps_to_90": 125,
+      "validation_score": 1.0,
+      "score": 0.8480000197887421,
+      "accuracy": 0.8479999899864197,
+      "min_class_recall": 0.8230000138282776,
+      "probability_mse": 0.12401970475912094,
+      "tail_score": 0.8163333341479302,
+      "tail_survival": 8,
+      "tail_bins": [
+        {
+          "score": 0.9683333337306976,
+          "accuracy": 0.9683333039283752,
+          "min_class_recall": 0.9399999976158142,
+          "probability_mse": 0.03964858874678612
+        },
+        {
+          "score": 0.9683333337306976,
+          "accuracy": 0.9683333039283752,
+          "min_class_recall": 0.9366666674613953,
+          "probability_mse": 0.03581882640719414
+        },
+        {
+          "score": 0.8933333456516266,
+          "accuracy": 0.8933333158493042,
+          "min_class_recall": 0.8666666746139526,
+          "probability_mse": 0.08612930029630661
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.0050159357488155365
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 7.737020496279001e-05
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.00039146491326391697
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.00034153679735027254
+        },
+        {
+          "score": 0.9483333230018616,
+          "accuracy": 0.9483333230018616,
+          "min_class_recall": 0.9366666674613953,
+          "probability_mse": 0.03955647721886635
+        },
+        {
+          "score": 0.3333333358168602,
+          "accuracy": 0.3333333432674408,
+          "min_class_recall": 0.20666666328907013,
+          "probability_mse": 0.5004584789276123
+        },
+        {
+          "score": 0.29333333671092987,
+          "accuracy": 0.2933333218097687,
+          "min_class_recall": 0.27666667103767395,
+          "probability_mse": 0.5966886281967163
+        }
+      ],
+      "jacobian_variability": 1.612519383430481,
+      "jacobian_change_rank": 23,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.7376430034637451,
+          "score": 0.5,
+          "accuracy": 0.507777750492096,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.2554631233215332
+        },
+        {
+          "step": 25,
+          "loss": 0.6871115565299988,
+          "score": 0.5272238701581955,
+          "accuracy": 0.5222222208976746,
+          "min_class_recall": 0.20568928122520447,
+          "probability_mse": 0.24739162623882294
+        },
+        {
+          "step": 50,
+          "loss": 0.6810909509658813,
+          "score": 0.6109601855278015,
+          "accuracy": 0.6100000143051147,
+          "min_class_recall": 0.54923415184021,
+          "probability_mse": 0.23415501415729523
+        },
+        {
+          "step": 75,
+          "loss": 0.6138244271278381,
+          "score": 0.7025304734706879,
+          "accuracy": 0.7022222280502319,
+          "min_class_recall": 0.6827133297920227,
+          "probability_mse": 0.21788859367370605
+        },
+        {
+          "step": 100,
+          "loss": 0.4266819655895233,
+          "score": 0.8555551767349243,
+          "accuracy": 0.855555534362793,
+          "min_class_recall": 0.8555305004119873,
+          "probability_mse": 0.12821908295154572
+        },
+        {
+          "step": 125,
+          "loss": 0.014397845603525639,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.0004020209307782352
+        },
+        {
+          "step": 150,
+          "loss": 0.000567858514841646,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.589685098224436e-06
+        },
+        {
+          "step": 175,
+          "loss": 0.000295942067168653,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 4.917869773635175e-07
+        },
+        {
+          "step": 200,
+          "loss": 0.0002607411879580468,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 2.6817764364750474e-07
+        },
+        {
+          "step": 225,
+          "loss": 0.0001878709881566465,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.8110507937763032e-07
+        },
+        {
+          "step": 250,
+          "loss": 0.00015520790475420654,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.2918570746478508e-07
+        },
+        {
+          "step": 275,
+          "loss": 0.00015336195065174252,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 8.942181040083597e-08
+        },
+        {
+          "step": 300,
+          "loss": 0.0001220817503053695,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 6.504807004148461e-08
+        }
+      ]
+    },
+    {
+      "task": "nd_spiral_high_rank",
+      "kind": "classification",
+      "input_dim": 16,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 0,
+      "variant": "self_context_stiefel_flow_curvature_frozen_up",
+      "optimizer": "adamw",
+      "parameters": 4454,
+      "seconds": 5.417377583000004,
+      "best_step": 150,
+      "learning_auc": 0.8785695755357543,
+      "steps_to_80": 100,
+      "steps_to_90": 100,
+      "validation_score": 1.0,
+      "score": 0.8664999902248383,
+      "accuracy": 0.8665000200271606,
+      "min_class_recall": 0.8029999732971191,
+      "probability_mse": 0.10895412415266037,
+      "tail_score": 0.7989999979734421,
+      "tail_survival": 0,
+      "tail_bins": [
+        {
+          "score": 0.7800000011920929,
+          "accuracy": 0.7799999713897705,
+          "min_class_recall": 0.5733333230018616,
+          "probability_mse": 0.20742110908031464
+        },
+        {
+          "score": 0.9983333349227905,
+          "accuracy": 0.9983333349227905,
+          "min_class_recall": 0.996666669845581,
+          "probability_mse": 0.007163912523537874
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 8.263381459983066e-06
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.0029883531387895346
+        },
+        {
+          "score": 0.8383333086967468,
+          "accuracy": 0.8383333086967468,
+          "min_class_recall": 0.7733333110809326,
+          "probability_mse": 0.11588650941848755
+        },
+        {
+          "score": 0.7650000154972076,
+          "accuracy": 0.7649999856948853,
+          "min_class_recall": 0.596666693687439,
+          "probability_mse": 0.17272061109542847
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.0007027134415693581
+        },
+        {
+          "score": 0.6250000149011612,
+          "accuracy": 0.625,
+          "min_class_recall": 0.4633333384990692,
+          "probability_mse": 0.3261859118938446
+        },
+        {
+          "score": 0.9133333265781403,
+          "accuracy": 0.9133333563804626,
+          "min_class_recall": 0.8266666531562805,
+          "probability_mse": 0.08083172142505646
+        },
+        {
+          "score": 0.8799999952316284,
+          "accuracy": 0.8799999952316284,
+          "min_class_recall": 0.7599999904632568,
+          "probability_mse": 0.09489967674016953
+        }
+      ],
+      "jacobian_variability": 2.555088758468628,
+      "jacobian_change_rank": 22,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.7375719547271729,
+          "score": 0.5,
+          "accuracy": 0.507777750492096,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.2554369568824768
+        },
+        {
+          "step": 25,
+          "loss": 0.6867054104804993,
+          "score": 0.5257494375109673,
+          "accuracy": 0.5211111307144165,
+          "min_class_recall": 0.22757111489772797,
+          "probability_mse": 0.24719811975955963
+        },
+        {
+          "step": 50,
+          "loss": 0.6784594058990479,
+          "score": 0.6151982545852661,
+          "accuracy": 0.6144444346427917,
+          "min_class_recall": 0.5667396187782288,
+          "probability_mse": 0.23196767270565033
+        },
+        {
+          "step": 75,
+          "loss": 0.5951705574989319,
+          "score": 0.7161090970039368,
+          "accuracy": 0.7155555486679077,
+          "min_class_recall": 0.6805251836776733,
+          "probability_mse": 0.20850126445293427
+        },
+        {
+          "step": 100,
+          "loss": 0.27466291189193726,
+          "score": 0.9573872089385986,
+          "accuracy": 0.9577777981758118,
+          "min_class_recall": 0.9322798848152161,
+          "probability_mse": 0.06608665734529495
+        },
+        {
+          "step": 125,
+          "loss": 0.013110030442476273,
+          "score": 0.9989058971405029,
+          "accuracy": 0.9988889098167419,
+          "min_class_recall": 0.9978117942810059,
+          "probability_mse": 0.0009461555164307356
+        },
+        {
+          "step": 150,
+          "loss": 0.008556284010410309,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.00040574054582975805
+        },
+        {
+          "step": 175,
+          "loss": 0.001032471307553351,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 4.386104592413176e-06
+        },
+        {
+          "step": 200,
+          "loss": 0.0004560067900456488,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.0632217026795843e-06
+        },
+        {
+          "step": 225,
+          "loss": 0.00030180037720128894,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 4.6013826704438543e-07
+        },
+        {
+          "step": 250,
+          "loss": 0.00022847033687867224,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 2.2220315543108882e-07
+        },
+        {
+          "step": 275,
+          "loss": 0.00016152113676071167,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.231219357578084e-07
+        },
+        {
+          "step": 300,
+          "loss": 0.00011197449202882126,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 6.940246777276116e-08
+        }
+      ]
+    },
+    {
+      "task": "nd_spiral_high_rank",
+      "kind": "classification",
+      "input_dim": 16,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 0,
+      "variant": "self_context_stiefel_flow_curvature_frozen_down",
+      "optimizer": "adamw",
+      "parameters": 4454,
+      "seconds": 5.975430416999998,
+      "best_step": 125,
+      "learning_auc": 0.8663377279912432,
+      "steps_to_80": 100,
+      "steps_to_90": 125,
+      "validation_score": 1.0,
+      "score": 0.8844999969005585,
+      "accuracy": 0.8845000267028809,
+      "min_class_recall": 0.8379999995231628,
+      "probability_mse": 0.07423806935548782,
+      "tail_score": 0.8106666684150696,
+      "tail_survival": 0,
+      "tail_bins": [
+        {
+          "score": 0.8300000131130219,
+          "accuracy": 0.8299999833106995,
+          "min_class_recall": 0.6600000262260437,
+          "probability_mse": 0.1035492941737175
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.015924060717225075
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.015498852357268333
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.011268055066466331
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.001315905014052987
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.002805061638355255
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.000169333114172332
+        },
+        {
+          "score": 0.8766666650772095,
+          "accuracy": 0.8766666650772095,
+          "min_class_recall": 0.7633333206176758,
+          "probability_mse": 0.10008233785629272
+        },
+        {
+          "score": 0.2916666716337204,
+          "accuracy": 0.2916666567325592,
+          "min_class_recall": 0.12333333492279053,
+          "probability_mse": 0.3843487501144409
+        },
+        {
+          "score": 0.776666671037674,
+          "accuracy": 0.7766666412353516,
+          "min_class_recall": 0.5600000023841858,
+          "probability_mse": 0.13047818839550018
+        }
+      ],
+      "jacobian_variability": 2.201528787612915,
+      "jacobian_change_rank": 23,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.7376579642295837,
+          "score": 0.5,
+          "accuracy": 0.507777750492096,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.2554681599140167
+        },
+        {
+          "step": 25,
+          "loss": 0.6871486902236938,
+          "score": 0.5303678438067436,
+          "accuracy": 0.5255555510520935,
+          "min_class_recall": 0.22100655734539032,
+          "probability_mse": 0.24736596643924713
+        },
+        {
+          "step": 50,
+          "loss": 0.6800464391708374,
+          "score": 0.6108910441398621,
+          "accuracy": 0.6100000143051147,
+          "min_class_recall": 0.5536105036735535,
+          "probability_mse": 0.23371607065200806
+        },
+        {
+          "step": 75,
+          "loss": 0.611426591873169,
+          "score": 0.6816044449806213,
+          "accuracy": 0.6811110973358154,
+          "min_class_recall": 0.6498906016349792,
+          "probability_mse": 0.217909038066864
+        },
+        {
+          "step": 100,
+          "loss": 0.4427882134914398,
+          "score": 0.8437967598438263,
+          "accuracy": 0.8433333039283752,
+          "min_class_recall": 0.8140043616294861,
+          "probability_mse": 0.13448156416416168
+        },
+        {
+          "step": 125,
+          "loss": 0.036114782094955444,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.00319073349237442
+        },
+        {
+          "step": 150,
+          "loss": 0.0018144567729905248,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 2.465878424118273e-05
+        },
+        {
+          "step": 175,
+          "loss": 0.0009575511212460697,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 5.592062279902166e-06
+        },
+        {
+          "step": 200,
+          "loss": 0.0005152808153070509,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 2.6979912490787683e-06
+        },
+        {
+          "step": 225,
+          "loss": 0.00044611154589802027,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 3.3065427942347014e-06
+        },
+        {
+          "step": 250,
+          "loss": 0.0003621065989136696,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.0130338523595128e-06
+        },
+        {
+          "step": 275,
+          "loss": 0.000222326023504138,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 5.69714529774501e-07
+        },
+        {
+          "step": 300,
+          "loss": 0.00017904932610690594,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 8.786100806901231e-07
+        }
+      ]
+    },
+    {
+      "task": "nd_spiral_high_rank",
+      "kind": "classification",
+      "input_dim": 16,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 1,
+      "variant": "self_context_stiefel_flow_curvature",
+      "optimizer": "adamw",
+      "parameters": 4454,
+      "seconds": 9.151073999999994,
+      "best_step": 125,
+      "learning_auc": 0.8920801914731662,
+      "steps_to_80": 100,
+      "steps_to_90": 100,
+      "validation_score": 1.0,
+      "score": 0.7870000004768372,
+      "accuracy": 0.7870000004768372,
+      "min_class_recall": 0.7509999871253967,
+      "probability_mse": 0.18051007390022278,
+      "tail_score": 0.7383333394303918,
+      "tail_survival": 0,
+      "tail_bins": [
+        {
+          "score": 0.7583333253860474,
+          "accuracy": 0.7583333253860474,
+          "min_class_recall": 0.7366666793823242,
+          "probability_mse": 0.16632527112960815
+        },
+        {
+          "score": 0.7633333504199982,
+          "accuracy": 0.7633333206176758,
+          "min_class_recall": 0.7300000190734863,
+          "probability_mse": 0.19259271025657654
+        },
+        {
+          "score": 0.871666669845581,
+          "accuracy": 0.871666669845581,
+          "min_class_recall": 0.7433333396911621,
+          "probability_mse": 0.11234088987112045
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.003896938869729638
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.0011730639962479472
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.000675268704071641
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 6.829085759818554e-05
+        },
+        {
+          "score": 0.621666669845581,
+          "accuracy": 0.621666669845581,
+          "min_class_recall": 0.6200000047683716,
+          "probability_mse": 0.2889782190322876
+        },
+        {
+          "score": 0.18166666198521852,
+          "accuracy": 0.18166667222976685,
+          "min_class_recall": 0.009999999776482582,
+          "probability_mse": 0.7525845170021057
+        },
+        {
+          "score": 0.6100000143051147,
+          "accuracy": 0.6100000143051147,
+          "min_class_recall": 0.5433333516120911,
+          "probability_mse": 0.32998567819595337
+        }
+      ],
+      "jacobian_variability": 1.4911584854125977,
+      "jacobian_change_rank": 23,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.6885323524475098,
+          "score": 0.5,
+          "accuracy": 0.5011110901832581,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.2517036497592926
+        },
+        {
+          "step": 25,
+          "loss": 0.674696147441864,
+          "score": 0.6220030784606934,
+          "accuracy": 0.6222222447395325,
+          "min_class_recall": 0.5233852863311768,
+          "probability_mse": 0.2411518692970276
+        },
+        {
+          "step": 50,
+          "loss": 0.6084544062614441,
+          "score": 0.5953757762908936,
+          "accuracy": 0.5955555438995361,
+          "min_class_recall": 0.5144765973091125,
+          "probability_mse": 0.22151705622673035
+        },
+        {
+          "step": 75,
+          "loss": 0.49112260341644287,
+          "score": 0.7644729018211365,
+          "accuracy": 0.7644444704055786,
+          "min_class_recall": 0.7516629695892334,
+          "probability_mse": 0.16870754957199097
+        },
+        {
+          "step": 100,
+          "loss": 0.17903141677379608,
+          "score": 0.9955506026744843,
+          "accuracy": 0.995555579662323,
+          "min_class_recall": 0.993318498134613,
+          "probability_mse": 0.03653882071375847
+        },
+        {
+          "step": 125,
+          "loss": 0.01997191645205021,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.0006521932082250714
+        },
+        {
+          "step": 150,
+          "loss": 0.009657714515924454,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.0001129053343902342
+        },
+        {
+          "step": 175,
+          "loss": 0.0032994328066706657,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 2.9402319341897964e-05
+        },
+        {
+          "step": 200,
+          "loss": 0.001026228303089738,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 3.706505594891496e-06
+        },
+        {
+          "step": 225,
+          "loss": 0.0007305718609131873,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.89980255527189e-06
+        },
+        {
+          "step": 250,
+          "loss": 0.000647268199827522,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.2103646440664306e-06
+        },
+        {
+          "step": 275,
+          "loss": 0.0005561918951570988,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 8.505312507622875e-07
+        },
+        {
+          "step": 300,
+          "loss": 0.0004308708885218948,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 5.755989604949718e-07
+        }
+      ]
+    },
+    {
+      "task": "nd_spiral_high_rank",
+      "kind": "classification",
+      "input_dim": 16,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 1,
+      "variant": "self_context_stiefel_flow_curvature_frozen",
+      "optimizer": "adamw",
+      "parameters": 4454,
+      "seconds": 8.536751584000001,
+      "best_step": 125,
+      "learning_auc": 0.888301917736729,
+      "steps_to_80": 100,
+      "steps_to_90": 100,
+      "validation_score": 1.0,
+      "score": 0.5719999969005585,
+      "accuracy": 0.5720000267028809,
+      "min_class_recall": 0.5099999904632568,
+      "probability_mse": 0.3436993956565857,
+      "tail_score": 0.5110000014305115,
+      "tail_survival": 0,
+      "tail_bins": [
+        {
+          "score": 0.39000000059604645,
+          "accuracy": 0.38999998569488525,
+          "min_class_recall": 0.3633333444595337,
+          "probability_mse": 0.4643380343914032
+        },
+        {
+          "score": 0.3166666626930237,
+          "accuracy": 0.3166666626930237,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.49294549226760864
+        },
+        {
+          "score": 0.5150000154972076,
+          "accuracy": 0.5149999856948853,
+          "min_class_recall": 0.4300000071525574,
+          "probability_mse": 0.3695337474346161
+        },
+        {
+          "score": 0.9133333265781403,
+          "accuracy": 0.9133333563804626,
+          "min_class_recall": 0.8266666531562805,
+          "probability_mse": 0.048966243863105774
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.018078045919537544
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.00022607381106354296
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 8.543385774828494e-05
+        },
+        {
+          "score": 0.5399999916553497,
+          "accuracy": 0.5400000214576721,
+          "min_class_recall": 0.49000000953674316,
+          "probability_mse": 0.4009303152561188
+        },
+        {
+          "score": 0.0,
+          "accuracy": 0.0,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.9111669659614563
+        },
+        {
+          "score": 0.023333333432674408,
+          "accuracy": 0.023333333432674408,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.7555186152458191
+        }
+      ],
+      "jacobian_variability": 1.211094856262207,
+      "jacobian_change_rank": 23,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.688519299030304,
+          "score": 0.5,
+          "accuracy": 0.5011110901832581,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.25165295600891113
+        },
+        {
+          "step": 25,
+          "loss": 0.6744815707206726,
+          "score": 0.6063634902238846,
+          "accuracy": 0.6066666841506958,
+          "min_class_recall": 0.4699331820011139,
+          "probability_mse": 0.24117587506771088
+        },
+        {
+          "step": 50,
+          "loss": 0.6016199588775635,
+          "score": 0.5864720344543457,
+          "accuracy": 0.5866666436195374,
+          "min_class_recall": 0.4988864064216614,
+          "probability_mse": 0.21967047452926636
+        },
+        {
+          "step": 75,
+          "loss": 0.4913422465324402,
+          "score": 0.7566975653171539,
+          "accuracy": 0.7566666603088379,
+          "min_class_recall": 0.7427937984466553,
+          "probability_mse": 0.17217661440372467
+        },
+        {
+          "step": 100,
+          "loss": 0.24471786618232727,
+          "score": 0.9822171926498413,
+          "accuracy": 0.9822221994400024,
+          "min_class_recall": 0.9799554347991943,
+          "probability_mse": 0.04944827780127525
+        },
+        {
+          "step": 125,
+          "loss": 0.03060823492705822,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.002569701988250017
+        },
+        {
+          "step": 150,
+          "loss": 0.0065947710536420345,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 8.828083809930831e-05
+        },
+        {
+          "step": 175,
+          "loss": 0.00228803395293653,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.6101623259601183e-05
+        },
+        {
+          "step": 200,
+          "loss": 0.001422388362698257,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 5.612792392639676e-06
+        },
+        {
+          "step": 225,
+          "loss": 0.0009987304219976068,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 2.4413664050371153e-06
+        },
+        {
+          "step": 250,
+          "loss": 0.0008189387153834105,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.6316230357915629e-06
+        },
+        {
+          "step": 275,
+          "loss": 0.0005849998560734093,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.3308799680089578e-06
+        },
+        {
+          "step": 300,
+          "loss": 0.000580898835323751,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 7.122750389498833e-07
+        }
+      ]
+    },
+    {
+      "task": "nd_spiral_high_rank",
+      "kind": "classification",
+      "input_dim": 16,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 1,
+      "variant": "self_context_stiefel_flow_curvature_up",
+      "optimizer": "adamw",
+      "parameters": 4454,
+      "seconds": 5.131716084000004,
+      "best_step": 150,
+      "learning_auc": 0.8901936622709036,
+      "steps_to_80": 75,
+      "steps_to_90": 100,
+      "validation_score": 1.0,
+      "score": 0.6389999985694885,
+      "accuracy": 0.6389999985694885,
+      "min_class_recall": 0.4819999933242798,
+      "probability_mse": 0.30669641494750977,
+      "tail_score": 0.48133333325386046,
+      "tail_survival": 0,
+      "tail_bins": [
+        {
+          "score": 0.49666666984558105,
+          "accuracy": 0.49666666984558105,
+          "min_class_recall": 0.4399999976158142,
+          "probability_mse": 0.40497180819511414
+        },
+        {
+          "score": 0.5949999913573265,
+          "accuracy": 0.5950000286102295,
+          "min_class_recall": 0.23000000417232513,
+          "probability_mse": 0.32586729526519775
+        },
+        {
+          "score": 0.5633333399891853,
+          "accuracy": 0.5633333325386047,
+          "min_class_recall": 0.13333334028720856,
+          "probability_mse": 0.30147555470466614
+        },
+        {
+          "score": 0.7249999940395355,
+          "accuracy": 0.7250000238418579,
+          "min_class_recall": 0.44999998807907104,
+          "probability_mse": 0.181480273604393
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.001343520823866129
+        },
+        {
+          "score": 0.9916666746139526,
+          "accuracy": 0.9916666746139526,
+          "min_class_recall": 0.9833333492279053,
+          "probability_mse": 0.011081762611865997
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 7.777573046041653e-06
+        },
+        {
+          "score": 0.5833333134651184,
+          "accuracy": 0.5833333134651184,
+          "min_class_recall": 0.5766666531562805,
+          "probability_mse": 0.3879789113998413
+        },
+        {
+          "score": 0.20000000298023224,
+          "accuracy": 0.20000000298023224,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.7706937193870544
+        },
+        {
+          "score": 0.22833333909511566,
+          "accuracy": 0.22833333909511566,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.6963014006614685
+        }
+      ],
+      "jacobian_variability": 1.0376802682876587,
+      "jacobian_change_rank": 23,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.688667893409729,
+          "score": 0.5,
+          "accuracy": 0.5011110901832581,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.2518211901187897
+        },
+        {
+          "step": 25,
+          "loss": 0.6739588379859924,
+          "score": 0.5908275991678238,
+          "accuracy": 0.5911111235618591,
+          "min_class_recall": 0.46325168013572693,
+          "probability_mse": 0.24106304347515106
+        },
+        {
+          "step": 50,
+          "loss": 0.5968467593193054,
+          "score": 0.5842646360397339,
+          "accuracy": 0.5844444632530212,
+          "min_class_recall": 0.5033407807350159,
+          "probability_mse": 0.21723739802837372
+        },
+        {
+          "step": 75,
+          "loss": 0.44659048318862915,
+          "score": 0.8245522081851959,
+          "accuracy": 0.8244444727897644,
+          "min_class_recall": 0.7760531902313232,
+          "probability_mse": 0.13797786831855774
+        },
+        {
+          "step": 100,
+          "loss": 0.19160057604312897,
+          "score": 0.9611528813838959,
+          "accuracy": 0.9611111283302307,
+          "min_class_recall": 0.9423503279685974,
+          "probability_mse": 0.04336383938789368
+        },
+        {
+          "step": 125,
+          "loss": 0.07114634662866592,
+          "score": 0.99334317445755,
+          "accuracy": 0.9933333396911621,
+          "min_class_recall": 0.9889135360717773,
+          "probability_mse": 0.007828472182154655
+        },
+        {
+          "step": 150,
+          "loss": 0.006956762634217739,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.00013245490845292807
+        },
+        {
+          "step": 175,
+          "loss": 0.0013641893165186048,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 6.050761385267833e-06
+        },
+        {
+          "step": 200,
+          "loss": 0.0009646271937526762,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 2.2135882318252698e-06
+        },
+        {
+          "step": 225,
+          "loss": 0.0005561845027841628,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 8.414525609623524e-07
+        },
+        {
+          "step": 250,
+          "loss": 0.000496874563395977,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 4.684660268594598e-07
+        },
+        {
+          "step": 275,
+          "loss": 0.0003928758960682899,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 2.955853517505602e-07
+        },
+        {
+          "step": 300,
+          "loss": 0.0003421104047447443,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.949096599673794e-07
+        }
+      ]
+    },
+    {
+      "task": "nd_spiral_high_rank",
+      "kind": "classification",
+      "input_dim": 16,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 1,
+      "variant": "self_context_stiefel_flow_curvature_down",
+      "optimizer": "adamw",
+      "parameters": 4454,
+      "seconds": 5.608211707999999,
+      "best_step": 150,
+      "learning_auc": 0.8900410810609659,
+      "steps_to_80": 100,
+      "steps_to_90": 100,
+      "validation_score": 1.0,
+      "score": 0.8134999871253967,
+      "accuracy": 0.8134999871253967,
+      "min_class_recall": 0.8119999766349792,
+      "probability_mse": 0.1547238826751709,
+      "tail_score": 0.7526666639372707,
+      "tail_survival": 0,
+      "tail_bins": [
+        {
+          "score": 0.6066666692495346,
+          "accuracy": 0.6066666841506958,
+          "min_class_recall": 0.46000000834465027,
+          "probability_mse": 0.29620376229286194
+        },
+        {
+          "score": 0.9116666615009308,
+          "accuracy": 0.9116666913032532,
+          "min_class_recall": 0.8999999761581421,
+          "probability_mse": 0.04692880064249039
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.010193239897489548
+        },
+        {
+          "score": 0.9983333349227905,
+          "accuracy": 0.9983333349227905,
+          "min_class_recall": 0.996666669845581,
+          "probability_mse": 0.0035887646954506636
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.0024272918235510588
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 7.394059502985328e-05
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.747234136928455e-06
+        },
+        {
+          "score": 0.6066666841506958,
+          "accuracy": 0.6066666841506958,
+          "min_class_recall": 0.54666668176651,
+          "probability_mse": 0.3730631470680237
+        },
+        {
+          "score": 0.20666666235774755,
+          "accuracy": 0.20666666328907013,
+          "min_class_recall": 0.029999999329447746,
+          "probability_mse": 0.7079244256019592
+        },
+        {
+          "score": 0.7833333313465118,
+          "accuracy": 0.7833333611488342,
+          "min_class_recall": 0.5933333039283752,
+          "probability_mse": 0.14373375475406647
+        }
+      ],
+      "jacobian_variability": 2.6289236545562744,
+      "jacobian_change_rank": 23,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.688528835773468,
+          "score": 0.5,
+          "accuracy": 0.5011110901832581,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.25172552466392517
+        },
+        {
+          "step": 25,
+          "loss": 0.6750197410583496,
+          "score": 0.6220079958438873,
+          "accuracy": 0.6222222447395325,
+          "min_class_recall": 0.525612473487854,
+          "probability_mse": 0.24131657183170319
+        },
+        {
+          "step": 50,
+          "loss": 0.6168697476387024,
+          "score": 0.5876053869724274,
+          "accuracy": 0.5877777934074402,
+          "min_class_recall": 0.5100222826004028,
+          "probability_mse": 0.22563068568706512
+        },
+        {
+          "step": 75,
+          "loss": 0.5332940220832825,
+          "score": 0.7577963471412659,
+          "accuracy": 0.757777750492096,
+          "min_class_recall": 0.7494456768035889,
+          "probability_mse": 0.1864844709634781
+        },
+        {
+          "step": 100,
+          "loss": 0.2600417137145996,
+          "score": 0.9888641536235809,
+          "accuracy": 0.9888888597488403,
+          "min_class_recall": 0.9777283072471619,
+          "probability_mse": 0.05964067205786705
+        },
+        {
+          "step": 125,
+          "loss": 0.035998061299324036,
+          "score": 0.9966592490673065,
+          "accuracy": 0.996666669845581,
+          "min_class_recall": 0.993318498134613,
+          "probability_mse": 0.002585157286375761
+        },
+        {
+          "step": 150,
+          "loss": 0.004987473599612713,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.0005089107435196638
+        },
+        {
+          "step": 175,
+          "loss": 0.0018880108837038279,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 7.960196853673551e-06
+        },
+        {
+          "step": 200,
+          "loss": 0.0009153479477390647,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 2.831011443049647e-06
+        },
+        {
+          "step": 225,
+          "loss": 0.0006402013823390007,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.1407099691496114e-06
+        },
+        {
+          "step": 250,
+          "loss": 0.0005220577586442232,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 7.580180181321339e-07
+        },
+        {
+          "step": 275,
+          "loss": 0.0004199290124233812,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 5.002016223443206e-07
+        },
+        {
+          "step": 300,
+          "loss": 0.0003927489451598376,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 3.4239667456859024e-07
+        }
+      ]
+    },
+    {
+      "task": "nd_spiral_high_rank",
+      "kind": "classification",
+      "input_dim": 16,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 1,
+      "variant": "self_context_stiefel_flow_curvature_frozen_up",
+      "optimizer": "adamw",
+      "parameters": 4454,
+      "seconds": 4.740065165999994,
+      "best_step": 150,
+      "learning_auc": 0.892127660214901,
+      "steps_to_80": 75,
+      "steps_to_90": 100,
+      "validation_score": 1.0,
+      "score": 0.6630000174045563,
+      "accuracy": 0.6629999876022339,
+      "min_class_recall": 0.6380000114440918,
+      "probability_mse": 0.2960852384567261,
+      "tail_score": 0.6206666681915521,
+      "tail_survival": 0,
+      "tail_bins": [
+        {
+          "score": 0.6116666495800018,
+          "accuracy": 0.6116666793823242,
+          "min_class_recall": 0.5066666603088379,
+          "probability_mse": 0.35311082005500793
+        },
+        {
+          "score": 0.7166666686534882,
+          "accuracy": 0.7166666388511658,
+          "min_class_recall": 0.7099999785423279,
+          "probability_mse": 0.17484712600708008
+        },
+        {
+          "score": 0.5866666734218597,
+          "accuracy": 0.5866666436195374,
+          "min_class_recall": 0.43666666746139526,
+          "probability_mse": 0.3292178809642792
+        },
+        {
+          "score": 0.996666669845581,
+          "accuracy": 0.996666669845581,
+          "min_class_recall": 0.9933333396911621,
+          "probability_mse": 0.01162082701921463
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.003950777929276228
+        },
+        {
+          "score": 0.9900000095367432,
+          "accuracy": 0.9900000095367432,
+          "min_class_recall": 0.9800000190734863,
+          "probability_mse": 0.012728123925626278
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 2.4893161025829613e-06
+        },
+        {
+          "score": 0.5783333480358124,
+          "accuracy": 0.57833331823349,
+          "min_class_recall": 0.5433333516120911,
+          "probability_mse": 0.4058886170387268
+        },
+        {
+          "score": 0.05166666582226753,
+          "accuracy": 0.05166666582226753,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.855882465839386
+        },
+        {
+          "score": 0.05499999783933163,
+          "accuracy": 0.054999999701976776,
+          "min_class_recall": 0.036666665226221085,
+          "probability_mse": 0.8473489284515381
+        }
+      ],
+      "jacobian_variability": 1.7413058280944824,
+      "jacobian_change_rank": 23,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.6886698007583618,
+          "score": 0.5,
+          "accuracy": 0.5011110901832581,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.2518066167831421
+        },
+        {
+          "step": 25,
+          "loss": 0.6743466854095459,
+          "score": 0.5930300951004028,
+          "accuracy": 0.5933333039283752,
+          "min_class_recall": 0.4565701484680176,
+          "probability_mse": 0.24125266075134277
+        },
+        {
+          "step": 50,
+          "loss": 0.5973643064498901,
+          "score": 0.5853683352470398,
+          "accuracy": 0.5855555534362793,
+          "min_class_recall": 0.5011135935783386,
+          "probability_mse": 0.21819613873958588
+        },
+        {
+          "step": 75,
+          "loss": 0.4426007866859436,
+          "score": 0.8323275744915009,
+          "accuracy": 0.8322222232818604,
+          "min_class_recall": 0.7849224209785461,
+          "probability_mse": 0.1362057477235794
+        },
+        {
+          "step": 100,
+          "loss": 0.15489399433135986,
+          "score": 0.9722146987915039,
+          "accuracy": 0.9722222089767456,
+          "min_class_recall": 0.9688196182250977,
+          "probability_mse": 0.031142091378569603
+        },
+        {
+          "step": 125,
+          "loss": 0.032786838710308075,
+          "score": 0.9944518208503723,
+          "accuracy": 0.9944444298744202,
+          "min_class_recall": 0.9911308288574219,
+          "probability_mse": 0.005808851681649685
+        },
+        {
+          "step": 150,
+          "loss": 0.012899617664515972,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.00043756788363680243
+        },
+        {
+          "step": 175,
+          "loss": 0.0017744767246767879,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 5.97796133661177e-05
+        },
+        {
+          "step": 200,
+          "loss": 0.0008864631527103484,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 5.221794344834052e-05
+        },
+        {
+          "step": 225,
+          "loss": 0.0008228077203966677,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 5.3530831792159006e-05
+        },
+        {
+          "step": 250,
+          "loss": 0.0005818258505314589,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.4603147974412423e-05
+        },
+        {
+          "step": 275,
+          "loss": 0.00040398509008809924,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 2.1694457245757803e-05
+        },
+        {
+          "step": 300,
+          "loss": 0.00032483102404512465,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 6.440070592361735e-06
+        }
+      ]
+    },
+    {
+      "task": "nd_spiral_high_rank",
+      "kind": "classification",
+      "input_dim": 16,
+      "output_dim": 2,
+      "width": 24,
+      "seed": 1,
+      "variant": "self_context_stiefel_flow_curvature_frozen_down",
+      "optimizer": "adamw",
+      "parameters": 4454,
+      "seconds": 5.243134375000011,
+      "best_step": 150,
+      "learning_auc": 0.8857991473625103,
+      "steps_to_80": 100,
+      "steps_to_90": 100,
+      "validation_score": 1.0,
+      "score": 0.7709999978542328,
+      "accuracy": 0.7710000276565552,
+      "min_class_recall": 0.7400000095367432,
+      "probability_mse": 0.19006775319576263,
+      "tail_score": 0.6983333311975002,
+      "tail_survival": 0,
+      "tail_bins": [
+        {
+          "score": 0.6299999952316284,
+          "accuracy": 0.6299999952316284,
+          "min_class_recall": 0.5766666531562805,
+          "probability_mse": 0.2417261004447937
+        },
+        {
+          "score": 0.7400000095367432,
+          "accuracy": 0.7400000095367432,
+          "min_class_recall": 0.5600000023841858,
+          "probability_mse": 0.20999912917613983
+        },
+        {
+          "score": 0.9033333361148834,
+          "accuracy": 0.903333306312561,
+          "min_class_recall": 0.8066666722297668,
+          "probability_mse": 0.05206611007452011
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.00011074061330873519
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.000682487734593451
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.9747947135329014e-06
+        },
+        {
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 8.324688849370432e-08
+        },
+        {
+          "score": 0.5699999928474426,
+          "accuracy": 0.5699999928474426,
+          "min_class_recall": 0.5199999809265137,
+          "probability_mse": 0.41119450330734253
+        },
+        {
+          "score": 0.17666667327284813,
+          "accuracy": 0.17666666209697723,
+          "min_class_recall": 0.023333333432674408,
+          "probability_mse": 0.7571862936019897
+        },
+        {
+          "score": 0.6833333373069763,
+          "accuracy": 0.6833333373069763,
+          "min_class_recall": 0.49666666984558105,
+          "probability_mse": 0.25839173793792725
+        }
+      ],
+      "jacobian_variability": 2.2400002479553223,
+      "jacobian_change_rank": 23,
+      "history": [
+        {
+          "step": 1,
+          "loss": 0.6885144710540771,
+          "score": 0.5,
+          "accuracy": 0.5011110901832581,
+          "min_class_recall": 0.0,
+          "probability_mse": 0.251682311296463
+        },
+        {
+          "step": 25,
+          "loss": 0.6750732660293579,
+          "score": 0.6086351126432419,
+          "accuracy": 0.6088888645172119,
+          "min_class_recall": 0.4944320619106293,
+          "probability_mse": 0.24145393073558807
+        },
+        {
+          "step": 50,
+          "loss": 0.6138458847999573,
+          "score": 0.5876053869724274,
+          "accuracy": 0.5877777934074402,
+          "min_class_recall": 0.5100222826004028,
+          "probability_mse": 0.224074125289917
+        },
+        {
+          "step": 75,
+          "loss": 0.5426689386367798,
+          "score": 0.7488431930541992,
+          "accuracy": 0.7488889098167419,
+          "min_class_recall": 0.7282850742340088,
+          "probability_mse": 0.187883198261261
+        },
+        {
+          "step": 100,
+          "loss": 0.30969101190567017,
+          "score": 0.9655726552009583,
+          "accuracy": 0.9655555486679077,
+          "min_class_recall": 0.9578713774681091,
+          "probability_mse": 0.0726047232747078
+        },
+        {
+          "step": 125,
+          "loss": 0.048491060733795166,
+          "score": 0.9911061227321625,
+          "accuracy": 0.9911110997200012,
+          "min_class_recall": 0.9888641238212585,
+          "probability_mse": 0.006428391207009554
+        },
+        {
+          "step": 150,
+          "loss": 0.007400475908070803,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 0.00027129510999657214
+        },
+        {
+          "step": 175,
+          "loss": 0.0017507064621895552,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.235081253980752e-05
+        },
+        {
+          "step": 200,
+          "loss": 0.001074431580491364,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 3.6137828374194214e-06
+        },
+        {
+          "step": 225,
+          "loss": 0.0006433085072785616,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.8212272152595688e-06
+        },
+        {
+          "step": 250,
+          "loss": 0.0005307981627993286,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 1.0939012327071396e-06
+        },
+        {
+          "step": 275,
+          "loss": 0.0004311080265324563,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 6.314191978162853e-07
+        },
+        {
+          "step": 300,
+          "loss": 0.00035706584458239377,
+          "score": 1.0,
+          "accuracy": 1.0,
+          "min_class_recall": 1.0,
+          "probability_mse": 4.3676590166796814e-07
+        }
+      ]
+    }
+  ]
+}

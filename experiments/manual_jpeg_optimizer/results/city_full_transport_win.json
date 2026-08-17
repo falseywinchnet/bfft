@@ -1,0 +1,88 @@
+{
+  "edge_psnr_db": 28.23479745971891,
+  "encoder_stderr": "Read 1714x823 image, 2224759 bytes.\nEncoding [YUV420 d2.620 AQ p2 OPT]\nCompressed to 217112 bytes (1.231 bpp).\n1714 x 823, 0.508 MP/s, 1 threads.\nTrellis: 33377 blocks, nonzeros 242425 -> 291721, estimated bits 1772989 -> 1829235, objective 173568.719.\n",
+  "field": {
+    "edge_protection": 2.0,
+    "maximum_threshold": 0.0917481780052185,
+    "mean_ac_threshold": 0.016907015815377235,
+    "strength": 0.25
+  },
+  "output": "/tmp/city_full_transport_win.jpg",
+  "output_bytes": 217112,
+  "psnr_db": 38.4263098662641,
+  "quality": 72,
+  "quantization_tilt": {
+    "chroma": 0.0,
+    "luma": -0.5
+  },
+  "regions": {
+    "block_size_cv": 0.14036060240658738,
+    "config": {
+      "angular_candidates": 12,
+      "demand_strength": 0.35,
+      "even_depth": true,
+      "minimum_blocks": 24,
+      "target_regions": 256
+    },
+    "mass_cv": 0.10253529562662589,
+    "maximum_blocks": 150,
+    "maximum_depth": 8,
+    "median_blocks": 85.0,
+    "minimum_blocks": 50,
+    "proof_boundary": "Each accepted split is the best exact feature-SSE reduction among all current leaf proposals, and each proposal uses a mass-balanced boundary. This is not a global optimum over all possible planar partitions.",
+    "regions": 256,
+    "tree_nodes": 511
+  },
+  "source": "city_image.jpg",
+  "spatial_frequency_transport": {
+    "config": {
+      "cb_mobility": 1.0,
+      "cr_mobility": 1.0,
+      "cross_region_weight": 0.05,
+      "frequency_weight": 0.1,
+      "luma_mobility": 1.0,
+      "maximum_iterations": 500,
+      "tolerance": 1e-11,
+      "transport_lambda": 0.002
+    },
+    "edge_count": 4143226,
+    "fidelity_energy": 161.18218441565776,
+    "flow_divergence_residual": 5.741977352575686e-11,
+    "flow_hash": "720fb07b7f26d36d8008bcc5455c4120e7e7aaec869e5e25f47ca90b5e384d59",
+    "frequency_edges": 1372990,
+    "iterations": [
+      5,
+      5,
+      5,
+      5,
+      5,
+      5
+    ],
+    "kkt_residual": 5.741977349590053e-11,
+    "minimum_transported_mass": 9.496480667509086e-15,
+    "negative_mass_error": 8.149072527885437e-10,
+    "objective": 19840.950030512206,
+    "positive_mass_error": 2.9103830456733704e-10,
+    "proof": "Each signed constituent field is the unique global minimizer of a strictly convex block-graph transport relaxation. The reported edge-flow divergence reconstructs every ownership change, while positive and negative mass remain separately conserved.",
+    "rms_coefficient_displacement": 0.010375320175438192,
+    "smoothness_energy": 19679.767846096547,
+    "spatial_edges": 2770236
+  },
+  "ssim": 0.9659688126256966,
+  "target_bytes": 0,
+  "trellis": {
+    "blocks": 33377,
+    "estimated_bits_after": 1829235.0,
+    "estimated_bits_before": 1772989.0,
+    "nonzeros_after": 291721,
+    "nonzeros_before": 242425,
+    "terminal_objective": 173568.719
+  },
+  "trellis_config": {
+    "chroma_weight": 1.0,
+    "edge_weight": 1.0,
+    "luma_weight": 1.0,
+    "ownership_weight": 0.05,
+    "rate_lambda": 0.0695
+  }
+}

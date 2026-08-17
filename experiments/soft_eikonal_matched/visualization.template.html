@@ -1,0 +1,87 @@
+<div id="soft-eikonal-mlp">
+  <style>
+    #soft-eikonal-mlp{color:var(--foreground);background:transparent;font-size:var(--font-size-base);font-weight:400}
+    #soft-eikonal-mlp h2,#soft-eikonal-mlp h3{font-weight:500;margin:0}
+    #soft-eikonal-mlp h2{margin-bottom:4px}
+    #soft-eikonal-mlp h3{margin-bottom:2px}
+    #soft-eikonal-mlp .sub,#soft-eikonal-mlp .caption{color:var(--muted-foreground)}
+    #soft-eikonal-mlp .sub{margin:0 0 16px}
+    #soft-eikonal-mlp .section{margin-top:24px}
+    #soft-eikonal-mlp .grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    #soft-eikonal-mlp .grid4{display:grid;grid-template-columns:1fr 1fr;gap:18px 24px}
+    #soft-eikonal-mlp .field-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    #soft-eikonal-mlp .field-label{text-align:center;color:var(--muted-foreground)}
+    #soft-eikonal-mlp .legend{display:flex;flex-wrap:wrap;gap:14px;margin:8px 0}
+    #soft-eikonal-mlp .legend button{appearance:none;background:transparent;border:0;color:var(--foreground);padding:2px 0;cursor:pointer;font:inherit}
+    #soft-eikonal-mlp .legend button[aria-pressed="false"]{color:var(--muted-foreground);text-decoration:line-through}
+    #soft-eikonal-mlp .swatch{display:inline-block;width:16px;height:3px;margin-right:5px;vertical-align:middle}
+    #soft-eikonal-mlp svg{display:block;width:100%;height:auto;overflow:visible}
+    #soft-eikonal-mlp svg text{fill:var(--foreground);font-size:12px}
+    #soft-eikonal-mlp .axis path,#soft-eikonal-mlp .axis line{stroke:var(--border)}
+    #soft-eikonal-mlp .grid line{stroke:var(--border);stroke-opacity:.45}
+    #soft-eikonal-mlp rect[data-chart-frame]{fill:none;stroke:var(--border)}
+    @media(max-width:900px){#soft-eikonal-mlp .grid2,#soft-eikonal-mlp .grid4{grid-template-columns:1fr}}
+    @media(max-width:500px){#soft-eikonal-mlp .field-row{grid-template-columns:1fr;gap:12px}}
+  </style>
+  <h2>Soft Eikonal vs ordinary LELU MLP</h2>
+  <p class="sub">Exact trainable-parameter equality · three seeds · 800 steps · M4 CPU</p>
+  <div class="legend" aria-label="Series controls">
+    <button type="button" data-series="mlp" aria-pressed="true"><span class="swatch" style="background:var(--viz-series-2)"></span>ordinary MLP</button>
+    <button type="button" data-series="soft" aria-pressed="true"><span class="swatch" style="background:var(--viz-series-1)"></span>soft Eikonal</button>
+  </div>
+  <section class="section">
+    <h3>Held-out fit inside the observed support</h3>
+    <div class="grid2"><div><div class="caption">Width 16</div><svg id="fit16" role="img" aria-label="Width 16 held-out fit"></svg></div><div><div class="caption">Width 36</div><svg id="fit36" role="img" aria-label="Width 36 held-out fit"></svg></div></div>
+  </section>
+  <section class="section grid2">
+    <div><h3>Continuation beyond the observed support</h3><svg id="tail" role="img" aria-label="Outer-region continuation scores"></svg></div>
+    <div><h3>Allocation mismatch cost</h3><svg id="ablation" role="img" aria-label="Validation loss after mismatching learned allocations"></svg></div>
+  </section>
+  <section class="section">
+    <h3>One-dimensional continuation</h3>
+    <p class="caption">Training support is shaded, [−3, 3]. Raw target units; width 36, seed 0.</p>
+    <div id="curves" class="grid4"></div>
+  </section>
+  <section class="section">
+    <h3>Dual spiral and checkerboard</h3>
+    <p class="caption">x increases rightward; y increases upward. Model fields are class-1 probabilities.</p>
+    <div id="fields" class="grid2"></div>
+  </section>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script>
+  (()=>{
+    const root=document.getElementById('soft-eikonal-mlp');
+    const DATA=__DATA__;
+    const state={mlp:true,soft:true};
+    const color=k=>getComputedStyle(root).getPropertyValue(k).trim();
+    const names={multiscale_1d:'user multi-scale target',chirp_1d:'chirp',localized_steps_1d:'localized steps',fourier_mix_1d:'Fourier mix'};
+    const nice=s=>s.replaceAll('_',' ');
+    function setup(svg,height,title){const width=Math.max(320,Math.round(svg.node().getBoundingClientRect().width));svg.attr('viewBox',`0 0 ${width} ${height}`).html('');svg.append('title').text(title);svg.append('desc').text(title);return width}
+    function frame(svg,m,w,h){svg.append('rect').attr('data-chart-frame','').attr('x',m.l).attr('y',m.t).attr('width',w-m.l-m.r).attr('height',h-m.t-m.b)}
+    function axisTitles(svg,m,w,h,xText,yText){svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('x',(m.l+w-m.r)/2).attr('y',h-2).attr('text-anchor','middle').text(xText);svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('transform',`translate(12 ${(m.t+h-m.b)/2}) rotate(-90)`).attr('text-anchor','middle').text(yText)}
+    function fitChart(id,widthValue){
+      const rows=DATA.comparisons.filter(d=>d.width===widthValue).sort((a,b)=>b.fit_advantage-a.fit_advantage),svg=d3.select(root).select(id),h=rows.length*25+54,m={l:132,r:15,t:8,b:38},w=setup(svg,h,`Width ${widthValue} held-out fit`),x=d3.scaleLinear([.45,1],[m.l,w-m.r]),y=d3.scaleBand(rows.map(d=>d.task),[m.t,h-m.b]).padding(.3);frame(svg,m,w,h);
+      svg.append('g').attr('class','grid').attr('transform',`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(w<420?3:6).tickSize(-(h-m.t-m.b))).call(g=>g.select('.domain').remove());svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).tickFormat(nice).tickSize(0)).call(g=>g.select('.domain').remove());
+      svg.selectAll('line.pair').data(rows).join('line').attr('class','pair').attr('x1',d=>x(d.mlp_fit)).attr('x2',d=>x(d.soft_fit)).attr('y1',d=>y(d.task)+y.bandwidth()/2).attr('y2',d=>y(d.task)+y.bandwidth()/2).attr('stroke','var(--border)').attr('stroke-width',2);
+      svg.selectAll('circle.mlp').data(rows).join('circle').attr('class','mlp').attr('cx',d=>x(d.mlp_fit)).attr('cy',d=>y(d.task)+y.bandwidth()/2).attr('r',4).attr('fill','var(--viz-series-2)').attr('data-tooltip',d=>`${nice(d.task)} · MLP ${d.mlp_fit.toFixed(3)} · ${d.parameters.toLocaleString()} params`);svg.selectAll('circle.soft').data(rows).join('circle').attr('class','soft').attr('cx',d=>x(d.soft_fit)).attr('cy',d=>y(d.task)+y.bandwidth()/2).attr('r',4).attr('fill','var(--viz-series-1)').attr('data-tooltip',d=>`${nice(d.task)} · soft ${d.soft_fit.toFixed(3)} · gain ${d.fit_advantage.toFixed(3)}`);axisTitles(svg,m,w,h,w<420?'held-out score':'balanced accuracy or 1 / (1 + normalized MSE)','task')
+    }
+    function tailChart(){
+      const rows=DATA.comparisons.filter(d=>d.width===36&&d.tail_advantage!==null),svg=d3.select(root).select('#tail'),h=rows.length*36+58,m={l:132,r:14,t:8,b:40},w=setup(svg,h,'Continuation beyond observed support'),extent=d3.extent(rows.flatMap(d=>[d.mlp_test,d.soft_test])),x=d3.scaleLinear([Math.max(0,extent[0]-.04),Math.min(1,extent[1]+.04)],[m.l,w-m.r]),y=d3.scaleBand(rows.map(d=>d.task),[m.t,h-m.b]).padding(.35);frame(svg,m,w,h);
+      svg.append('g').attr('class','axis').attr('transform',`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(w<420?3:6));svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).tickFormat(nice).tickSize(0)).call(g=>g.select('.domain').remove());svg.selectAll('line').data(rows).join('line').attr('x1',d=>x(d.mlp_test)).attr('x2',d=>x(d.soft_test)).attr('y1',d=>y(d.task)+y.bandwidth()/2).attr('y2',d=>y(d.task)+y.bandwidth()/2).attr('stroke','var(--border)').attr('stroke-width',2);svg.selectAll('circle.mlp').data(rows).join('circle').attr('class','mlp').attr('cx',d=>x(d.mlp_test)).attr('cy',d=>y(d.task)+y.bandwidth()/2).attr('r',4).attr('fill','var(--viz-series-2)').attr('data-tooltip',d=>`${nice(d.task)} · MLP ${d.mlp_test.toFixed(3)}`);svg.selectAll('circle.soft').data(rows).join('circle').attr('class','soft').attr('cx',d=>x(d.soft_test)).attr('cy',d=>y(d.task)+y.bandwidth()/2).attr('r',4).attr('fill','var(--viz-series-1)').attr('data-tooltip',d=>`${nice(d.task)} · soft ${d.soft_test.toFixed(3)}`);axisTitles(svg,m,w,h,'outer-region score','task')
+    }
+    function ablation(){
+      const keep=['ripple','swiss_cheese','radial_stripes','checkerboard','multiscale_1d','localized_steps_1d','hyperchecker'],rows=DATA.comparisons.filter(d=>d.width===36&&keep.includes(d.task)).sort((a,b)=>b.mismatched_drop-a.mismatched_drop),svg=d3.select(root).select('#ablation'),h=rows.length*36+58,m={l:132,r:14,t:8,b:40},w=setup(svg,h,'Allocation mismatch validation cost'),max=d3.max(rows,d=>d.mismatched_drop),x=d3.scaleLinear([0,max*1.08],[m.l,w-m.r]),y=d3.scaleBand(rows.map(d=>d.task),[m.t,h-m.b]).padding(.3);frame(svg,m,w,h);
+      svg.append('g').attr('class','axis').attr('transform',`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(w<420?3:6));svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).tickFormat(nice).tickSize(0)).call(g=>g.select('.domain').remove());svg.selectAll('rect.bar').data(rows).join('rect').attr('class','bar soft').attr('x',m.l).attr('y',d=>y(d.task)).attr('width',d=>x(d.mismatched_drop)-m.l).attr('height',y.bandwidth()).attr('fill','var(--viz-series-1)').attr('data-tooltip',d=>`${nice(d.task)} · score drop ${d.mismatched_drop.toFixed(3)}`);axisTitles(svg,m,w,h,'validation-score decrease','task')
+    }
+    function curveChart(host,name,d){
+      const block=host.append('div');block.append('div').attr('class','caption').text(names[name]);const svg=block.append('svg').attr('role','img').attr('aria-label',`${names[name]} continuation`),h=220,m={l:68,r:12,t:8,b:42},w=setup(svg,h,`${names[name]} continuation`),x=d3.scaleLinear(d3.extent(d.x),[m.l,w-m.r]),all=[...d.truth,...d.mlp,...d.soft],y=d3.scaleLinear(d3.extent(all),[h-m.b,m.t]).nice();frame(svg,m,w,h);svg.append('rect').attr('x',x(-3)).attr('y',m.t).attr('width',x(3)-x(-3)).attr('height',h-m.t-m.b).attr('fill','var(--viz-series-1)').attr('opacity',.07);svg.append('g').attr('class','axis').attr('transform',`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(w<420?3:6));svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));const line=d3.line().x((v,i)=>x(d.x[i])).y(v=>y(v));[['truth','var(--foreground)',1.4],['mlp','var(--viz-series-2)',1.4],['soft','var(--viz-series-1)',1.7]].forEach(([key,c,sw])=>svg.append('path').datum(d[key]).attr('class',key).attr('fill','none').attr('stroke',c).attr('stroke-width',sw).attr('d',line));axisTitles(svg,m,w,h,'x','target value')
+    }
+    function fieldSvg(host,field,key,label){
+      const block=host.append('div');block.append('div').attr('class','field-label').text(label);const svg=block.append('svg').attr('role','img').attr('aria-label',label),h=230,m={l:42,r:8,t:8,b:36},w=setup(svg,h,label),n=field.resolution,cellW=(w-m.l-m.r)/n,cellH=(h-m.t-m.b)/n,mix=d3.interpolateRgb(color('--background'),color(key==='mlp'?'--viz-series-2':'--viz-series-1'));svg.selectAll('rect.cell').data(field[key]).join('rect').attr('class',`cell ${key}`).attr('x',(d,i)=>m.l+(i%n)*cellW).attr('y',(d,i)=>h-m.b-(Math.floor(i/n)+1)*cellH).attr('width',cellW+.2).attr('height',cellH+.2).attr('fill',d=>mix(Math.max(0,Math.min(1,d))));frame(svg,m,w,h);axisTitles(svg,m,w,h,'x','y')
+    }
+    function applyVisibility(){for(const key of ['mlp','soft'])d3.select(root).selectAll('.'+key).style('display',state[key]?null:'none')}
+    function draw(){fitChart('#fit16',16);fitChart('#fit36',36);tailChart();ablation();const curves=d3.select(root).select('#curves').html('');Object.entries(DATA.curves).forEach(([n,d])=>curveChart(curves,n,d));const fields=d3.select(root).select('#fields').html('');Object.entries(DATA.fields).forEach(([name,field])=>{const b=fields.append('div');b.append('div').attr('class','caption').text(nice(name));const row=b.append('div').attr('class','field-row');fieldSvg(row,field,'truth','truth');fieldSvg(row,field,'mlp','ordinary MLP');fieldSvg(row,field,'soft','soft Eikonal')});applyVisibility()}
+    root.querySelectorAll('[data-series]').forEach(button=>button.addEventListener('click',()=>{const key=button.dataset.series;state[key]=!state[key];button.setAttribute('aria-pressed',String(state[key]));applyVisibility()}));let timer;const schedule=()=>{clearTimeout(timer);timer=setTimeout(draw,80)};new ResizeObserver(schedule).observe(root);new MutationObserver(schedule).observe(document.documentElement,{attributes:true,attributeFilter:['class','style','data-theme']});matchMedia('(prefers-color-scheme: dark)').addEventListener('change',schedule);draw();
+  })();
+  </script>
+</div>

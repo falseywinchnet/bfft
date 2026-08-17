@@ -1,0 +1,61 @@
+<div id="ml-problem-atlas">
+  <style>
+    #ml-problem-atlas{color:var(--foreground);font-size:var(--font-size-base);width:100%}
+    #ml-problem-atlas *{box-sizing:border-box}
+    #ml-problem-atlas h2,#ml-problem-atlas h3,#ml-problem-atlas p{margin-top:0}
+    #ml-problem-atlas h2,#ml-problem-atlas h3{font-weight:500}
+    #ml-problem-atlas .atlas-lede{color:var(--muted-foreground);margin-bottom:22px}
+    #ml-problem-atlas .task{margin:30px 0}
+    #ml-problem-atlas .task-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+    #ml-problem-atlas .task-heading h3{margin-bottom:0}
+    #ml-problem-atlas .task-description{color:var(--muted-foreground)}
+    #ml-problem-atlas .panels{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+    #ml-problem-atlas .panel{min-width:0}
+    #ml-problem-atlas .panel-title{text-align:center;margin-bottom:4px;font-weight:500}
+    #ml-problem-atlas .panel-score{color:var(--muted-foreground);font-weight:400}
+    #ml-problem-atlas svg{display:block;width:100%;overflow:visible}
+    #ml-problem-atlas svg text{fill:var(--foreground);font-size:12px}
+    #ml-problem-atlas svg .frame{fill:none;stroke:var(--border)}
+    #ml-problem-atlas svg .axis path,#ml-problem-atlas svg .axis line{stroke:var(--border)}
+    #ml-problem-atlas svg .reference{fill:none;stroke:var(--muted-foreground);stroke-width:1}
+    #ml-problem-atlas .tooltip{position:absolute;display:none;pointer-events:none;background:var(--popover);color:var(--popover-foreground);padding:7px 9px;border-radius:6px;z-index:3}
+    #ml-problem-atlas{position:relative}
+    @media(max-width:760px){#ml-problem-atlas .panels{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:420px){#ml-problem-atlas .panels{grid-template-columns:1fr}}
+  </style>
+  <h2>Twenty-two-problem fit atlas</h2>
+  <p class="atlas-lede">Truth · exact-budget ordinary LELU MLP · self-context · hard allocation · chart curvature</p>
+  <div id="ml-atlas-tasks"></div>
+  <div class="tooltip" role="tooltip"></div>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script>
+  (()=>{
+    const root=document.getElementById('ml-problem-atlas');
+    const data=__DATA__;
+    const names={ordinary_mlp:'MLP',self_context:'Self-context',self_context_hard:'Hard gate',self_context_chart:'Chart curvature'};
+    const variants=data.variants;
+    const token=i=>`var(--viz-series-${i%6+1})`;
+    const tooltip=d3.select(root).select('.tooltip');
+    const showTip=(event,html)=>{const box=root.getBoundingClientRect();tooltip.style('display','block').style('left',`${event.clientX-box.left+10}px`).style('top',`${event.clientY-box.top+10}px`).html(html)};
+    const hideTip=()=>tooltip.style('display','none');
+    const tasks=d3.select(root).select('#ml-atlas-tasks').selectAll('section').data(data.tasks).join('section').attr('class','task');
+    tasks.append('div').attr('class','task-heading').html(d=>`<h3>${d.task.replaceAll('_',' ')}</h3><span class="task-description">${d.description}</span>`);
+    tasks.append('div').attr('class','panels');
+
+    function panelData(task){return [{variant:'truth',title:'Truth'},...variants.map(variant=>({variant,title:names[variant]}))]}
+    function addPanels(section,task){const panels=section.select('.panels').selectAll('.panel').data(panelData(task)).join('div').attr('class','panel');panels.append('div').attr('class','panel-title').html(d=>d.variant==='truth'?d.title:`${d.title} <span class="panel-score">${task.scores[d.variant].toFixed(3)}</span>`);panels.append('svg').attr('role','img').attr('aria-label',d=>`${task.task} ${d.title} held-out geometry`).each(function(panel){render(this,task,panel.variant)});}
+    function dims(svg,square=false){const w=Math.max(175,svg.parentElement.getBoundingClientRect().width),h=square?w:Math.max(180,Math.min(230,w*.72));return{w,h,m:{t:8,r:7,b:28,l:34}}}
+    function frame(svg,w,h,m,xLabel,yLabel){svg.append('rect').attr('class','frame').attr('data-chart-frame','').attr('x',m.l).attr('y',m.t).attr('width',w-m.l-m.r).attr('height',h-m.t-m.b);svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('x',(m.l+w-m.r)/2).attr('y',h-5).attr('text-anchor','middle').text(xLabel);svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('transform',`translate(12,${(m.t+h-m.b)/2}) rotate(-90)`).attr('text-anchor','middle').text(yLabel)}
+    function regressionFill(value,domain){const t=Math.max(0,Math.min(1,(value-domain[0])/(domain[1]-domain[0]||1)));return `color-mix(in oklab, var(--viz-series-1) ${(1-t)*100}%, var(--viz-series-2))`}
+    function renderField(node,task,variant){const {w,h,m}=dims(node,true),svg=d3.select(node).attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);frame(svg,w,h,m,'x₁','x₂');const values=variant==='truth'?task.truth:task.predictions[variant],n=task.size,iw=w-m.l-m.r,ih=h-m.t-m.b,cw=iw/n,ch=ih/n,all=task.kind==='regression'?task.truth.concat(...Object.values(task.predictions)):null,domain=all?d3.extent(all):null;svg.append('g').selectAll('rect').data(values).join('rect').attr('x',(d,i)=>m.l+(i%n)*cw).attr('y',(d,i)=>h-m.b-(Math.floor(i/n)+1)*ch).attr('width',cw+.25).attr('height',ch+.25).attr('fill',d=>task.kind==='classification'?token(Number(d)):regressionFill(d,domain)).on('pointermove',(e,d)=>showTip(e,`${task.task}<br>${variant==='truth'?'truth':names[variant]}: ${Number(d).toFixed(task.kind==='classification'?0:3)}`)).on('pointerleave',hideTip);if(task.task==='spiral')svg.append('circle').attr('cx',m.l+iw/2).attr('cy',m.t+ih/2).attr('r',iw*.235).attr('fill','none').attr('stroke','var(--foreground)').attr('stroke-width',1).attr('stroke-dasharray','3 3')}
+    function renderScatter(node,task,variant){const {w,h,m}=dims(node,true),svg=d3.select(node).attr('viewBox',`0 0 ${w} ${h}`).attr('height',h),xe=d3.extent(task.xy,d=>d[0]),ye=d3.extent(task.xy,d=>d[1]),x=d3.scaleLinear(xe,[m.l,w-m.r]).nice(),y=d3.scaleLinear(ye,[h-m.b,m.t]).nice(),labels=variant==='truth'?task.truth:task.predictions[variant];frame(svg,w,h,m,'PCA₁','PCA₂');svg.append('g').selectAll('circle').data(task.xy.map((xy,i)=>({xy,label:labels[i]}))).join('circle').attr('cx',d=>x(d.xy[0])).attr('cy',d=>y(d.xy[1])).attr('r',1.65).attr('fill',d=>token(d.label)).attr('opacity',.78).on('pointermove',(e,d)=>showTip(e,`class ${d.label}`)).on('pointerleave',hideTip)}
+    function lineScales(task,w,h,m){const vectors=[task.truth,...Object.values(task.predictions)],flat=task.type==='curve3d'?vectors.flat(2):vectors.flat(),xe=d3.extent(task.x),ye=d3.extent(flat);return{x:d3.scaleLinear(xe,[m.l,w-m.r]),y:d3.scaleLinear(ye,[h-m.b,m.t]).nice()}}
+    function renderCurve(node,task,variant){const {w,h,m}=dims(node),svg=d3.select(node).attr('viewBox',`0 0 ${w} ${h}`).attr('height',h),{x,y}=lineScales(task,w,h,m);frame(svg,w,h,m,'x','target');if(task.train_limits){const a=Math.max(task.train_limits[0],x.domain()[0]),b=Math.min(task.train_limits[1],x.domain()[1]);svg.append('rect').attr('x',x(a)).attr('y',m.t).attr('width',Math.max(0,x(b)-x(a))).attr('height',h-m.t-m.b).attr('fill','var(--muted)').attr('opacity',.45)}const line=d3.line().x((d,i)=>x(task.x[i])).y(d=>y(d));svg.append('path').datum(task.truth).attr('fill','none').attr('stroke','var(--foreground)').attr('stroke-width',variant==='truth'?2.2:1).attr('opacity',variant==='truth'?1:.38).attr('d',line);if(variant!=='truth')svg.append('path').datum(task.predictions[variant]).attr('fill','none').attr('stroke','var(--viz-series-1)').attr('stroke-width',2).attr('d',line)}
+    function renderCurve3d(node,task,variant){const {w,h,m}=dims(node),svg=d3.select(node).attr('viewBox',`0 0 ${w} ${h}`).attr('height',h),{x,y}=lineScales(task,w,h,m);frame(svg,w,h,m,'t','coordinate');for(let dim=0;dim<3;dim++){const line=d3.line().x((d,i)=>x(task.x[i])).y(d=>y(d[dim]));svg.append('path').datum(task.truth).attr('fill','none').attr('stroke',token(dim)).attr('stroke-width',variant==='truth'?1.8:1).attr('opacity',variant==='truth'?1:.25).attr('d',line);if(variant!=='truth')svg.append('path').datum(task.predictions[variant]).attr('fill','none').attr('stroke',token(dim)).attr('stroke-width',1.8).attr('d',line)}}
+    function renderParity(node,task,variant){const {w,h,m}=dims(node,true),svg=d3.select(node).attr('viewBox',`0 0 ${w} ${h}`).attr('height',h),prediction=variant==='truth'?task.truth:task.predictions[variant],domain=d3.extent(task.truth.concat(prediction)),pad=(domain[1]-domain[0])*.04,x=d3.scaleLinear([domain[0]-pad,domain[1]+pad],[m.l,w-m.r]),y=d3.scaleLinear([domain[0]-pad,domain[1]+pad],[h-m.b,m.t]);frame(svg,w,h,m,'target','prediction');svg.append('line').attr('class','reference').attr('x1',x(domain[0])).attr('x2',x(domain[1])).attr('y1',y(domain[0])).attr('y2',y(domain[1]));svg.append('g').selectAll('circle').data(task.truth.map((truth,i)=>({truth,prediction:prediction[i]}))).join('circle').attr('cx',d=>x(d.truth)).attr('cy',d=>y(d.prediction)).attr('r',1.7).attr('fill','var(--viz-series-1)').attr('opacity',.65).on('pointermove',(e,d)=>showTip(e,`target ${d.truth.toFixed(3)}<br>prediction ${d.prediction.toFixed(3)}`)).on('pointerleave',hideTip)}
+    function render(node,task,variant){if(task.type==='field')renderField(node,task,variant);else if(task.type==='scatter')renderScatter(node,task,variant);else if(task.type==='parity')renderParity(node,task,variant);else if(task.type==='curve3d')renderCurve3d(node,task,variant);else renderCurve(node,task,variant)}
+    function draw(){tasks.each(function(task){const section=d3.select(this);section.select('.panels').html('');addPanels(section,task)})}
+    let timer;new ResizeObserver(()=>{clearTimeout(timer);timer=setTimeout(draw,100)}).observe(root);draw();
+  })();
+  </script>
+</div>

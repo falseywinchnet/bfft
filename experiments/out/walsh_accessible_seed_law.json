@@ -1,0 +1,50 @@
+{
+  "experiment": "walsh_accessible_seed_law",
+  "law": "Haar torus seed -> normalized soft-Hessian ascent -> half-grid snap",
+  "rows": [
+    {
+      "dimension": 3,
+      "accessible_scale": 0.09786950993742455,
+      "beta": 16.0,
+      "probe_count": 256,
+      "shortest_parity_hits": 52,
+      "shortest_parity_fraction": 0.203125,
+      "distinct_snapped_parities": 7,
+      "maximum_half_grid_error": 0.0011487994814871646,
+      "median_evaluations": 14.0
+    },
+    {
+      "dimension": 4,
+      "accessible_scale": 0.09786950993742455,
+      "beta": 16.0,
+      "probe_count": 256,
+      "shortest_parity_hits": 36,
+      "shortest_parity_fraction": 0.140625,
+      "distinct_snapped_parities": 15,
+      "maximum_half_grid_error": 1.74500841737139e-05,
+      "median_evaluations": 16.0
+    },
+    {
+      "dimension": 5,
+      "accessible_scale": 0.09786950993742455,
+      "beta": 16.0,
+      "probe_count": 256,
+      "shortest_parity_hits": 26,
+      "shortest_parity_fraction": 0.1015625,
+      "distinct_snapped_parities": 30,
+      "maximum_half_grid_error": 3.4758198085053383e-06,
+      "median_evaluations": 18.0
+    },
+    {
+      "dimension": 6,
+      "accessible_scale": 0.09786950993742455,
+      "beta": 16.0,
+      "probe_count": 256,
+      "shortest_parity_hits": 23,
+      "shortest_parity_fraction": 0.08984375,
+      "distinct_snapped_parities": 47,
+      "maximum_half_grid_error": 1.5711611423436681e-06,
+      "median_evaluations": 19.0
+    }
+  ]
+}

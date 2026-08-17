@@ -1,0 +1,38 @@
+{
+  "edge_psnr_db": 23.685399178510878,
+  "jpeg": {
+    "quality": 70,
+    "subsampling": 1
+  },
+  "output": "experiments/manual_jpeg_optimizer/results/ownership_balanced_t035.jpg",
+  "output_bytes": 20989,
+  "ownership_bifurcation": {
+    "channel_energy_fraction": [
+      0.35210727782290896,
+      0.32621889753460814,
+      0.321673824642483
+    ],
+    "config": {
+      "branch_penalty": 3.0,
+      "cross_region_weight": 0.05,
+      "maximum_condition": 24.0,
+      "maximum_depth": 8,
+      "minimum_atoms": 256,
+      "threshold": 0.35
+    },
+    "leaf_count": 10,
+    "maximum_depth": 4,
+    "objective": 365453.82982157636,
+    "objective_gain": 13685.358738808427,
+    "ownership_hash": "1b629c994976a64814b27a6350a117c796d68579ad220491f0279332a7869d52",
+    "phase_forest_hash": "7bdd403ecb6f6f116aa95b271cac5872e3c5468ecd140d9d5d92fa01b7911574",
+    "proof": "Bellman recursion exactly minimizes the additive relaxed rate-distortion-plus-branch cost over every pruning of the stored causal bifurcation tree.",
+    "stop_control_cost": 379139.1885603848,
+    "tree_nodes": 19
+  },
+  "proof_boundary": "Phase transport, atom ownership, and inverse paths are exact. The Bellman value is the global optimum over every pruning of the generated Courant--Fischer/weighted-median causal tree.",
+  "psnr_db": 34.854061854289895,
+  "source": "experiments/manual_jpeg_optimizer/assets/istockphoto-508030340-612x612.jpg",
+  "source_bytes": 32530,
+  "ssim": 0.9475376577438064
+}

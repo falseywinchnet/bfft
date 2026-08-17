@@ -1,0 +1,251 @@
+{
+  "status": "local_first_order_certificate_not_global_optimality_proof",
+  "side": 4.675530093604551,
+  "active_contacts": 39,
+  "chart_dimension": 36,
+  "operator_rank": 36,
+  "left_stress_dimension": 3,
+  "smallest_singular_value": 0.19573270115166705,
+  "stress_positive_count": 32,
+  "stress_zero_count": 7,
+  "stress_minimum": 0.0,
+  "stress_maximum": 0.46386746950444685,
+  "equilibrium_residual": 7.556659913700088e-16,
+  "shrink_work": 1.0,
+  "contacts": [
+    {
+      "kind": "boundary",
+      "square": 0,
+      "face": 0,
+      "weight": 0.2186932503917259
+    },
+    {
+      "kind": "boundary",
+      "square": 0,
+      "face": 2,
+      "weight": 0.21633530801658257
+    },
+    {
+      "kind": "boundary",
+      "square": 1,
+      "face": 2,
+      "weight": 0.1822404164908897
+    },
+    {
+      "kind": "boundary",
+      "square": 2,
+      "face": 0,
+      "weight": 0.019121252107281037
+    },
+    {
+      "kind": "boundary",
+      "square": 3,
+      "face": 0,
+      "weight": 0.0559643441973233
+    },
+    {
+      "kind": "boundary",
+      "square": 3,
+      "face": 3,
+      "weight": 0.06715867190286991
+    },
+    {
+      "kind": "boundary",
+      "square": 4,
+      "face": 1,
+      "weight": 0.0
+    },
+    {
+      "kind": "boundary",
+      "square": 4,
+      "face": 2,
+      "weight": 0.06715867190286921
+    },
+    {
+      "kind": "boundary",
+      "square": 5,
+      "face": 2,
+      "weight": 0.0
+    },
+    {
+      "kind": "boundary",
+      "square": 6,
+      "face": 1,
+      "weight": 0.055964344197323435
+    },
+    {
+      "kind": "boundary",
+      "square": 7,
+      "face": 1,
+      "weight": 0.014433789887887887
+    },
+    {
+      "kind": "boundary",
+      "square": 7,
+      "face": 3,
+      "weight": 0.01941826754317668
+    },
+    {
+      "kind": "boundary",
+      "square": 8,
+      "face": 0,
+      "weight": 0.24048675689332827
+    },
+    {
+      "kind": "boundary",
+      "square": 14,
+      "face": 3,
+      "weight": 0.3791574569642953
+    },
+    {
+      "kind": "boundary",
+      "square": 16,
+      "face": 1,
+      "weight": 0.46386746950444685
+    },
+    {
+      "kind": "pair",
+      "first": 0,
+      "second": 1,
+      "weight": 0.21869325039172594
+    },
+    {
+      "kind": "pair",
+      "first": 0,
+      "second": 2,
+      "weight": 0.21633530801658254
+    },
+    {
+      "kind": "pair",
+      "first": 1,
+      "second": 2,
+      "weight": 0.0
+    },
+    {
+      "kind": "pair",
+      "first": 1,
+      "second": 12,
+      "weight": 0.2846722802973115
+    },
+    {
+      "kind": "pair",
+      "first": 2,
+      "second": 8,
+      "weight": 0.20040127739782135
+    },
+    {
+      "kind": "pair",
+      "first": 2,
+      "second": 10,
+      "weight": 0.024890070588686822
+    },
+    {
+      "kind": "pair",
+      "first": 3,
+      "second": 9,
+      "weight": 0.08742022096285139
+    },
+    {
+      "kind": "pair",
+      "first": 4,
+      "second": 5,
+      "weight": 0.0
+    },
+    {
+      "kind": "pair",
+      "first": 4,
+      "second": 6,
+      "weight": 0.06715867190286946
+    },
+    {
+      "kind": "pair",
+      "first": 5,
+      "second": 6,
+      "weight": 0.0
+    },
+    {
+      "kind": "pair",
+      "first": 6,
+      "second": 13,
+      "weight": 0.08742022096285139
+    },
+    {
+      "kind": "pair",
+      "first": 7,
+      "second": 15,
+      "weight": 0.02419511117779981
+    },
+    {
+      "kind": "pair",
+      "first": 8,
+      "second": 9,
+      "weight": 0.3130408155875993
+    },
+    {
+      "kind": "pair",
+      "first": 8,
+      "second": 10,
+      "weight": 0.0
+    },
+    {
+      "kind": "pair",
+      "first": 9,
+      "second": 11,
+      "weight": 0.08742022096285144
+    },
+    {
+      "kind": "pair",
+      "first": 9,
+      "second": 14,
+      "weight": 0.31304081558759905
+    },
+    {
+      "kind": "pair",
+      "first": 10,
+      "second": 11,
+      "weight": 0.0248900705886865
+    },
+    {
+      "kind": "pair",
+      "first": 10,
+      "second": 12,
+      "weight": 0.0
+    },
+    {
+      "kind": "pair",
+      "first": 11,
+      "second": 13,
+      "weight": 0.08742022096285135
+    },
+    {
+      "kind": "pair",
+      "first": 11,
+      "second": 15,
+      "weight": 0.02489007058868646
+    },
+    {
+      "kind": "pair",
+      "first": 12,
+      "second": 13,
+      "weight": 0.28467228029731156
+    },
+    {
+      "kind": "pair",
+      "first": 13,
+      "second": 16,
+      "weight": 0.2846722802973117
+    },
+    {
+      "kind": "pair",
+      "first": 14,
+      "second": 15,
+      "weight": 0.29964587761935296
+    },
+    {
+      "kind": "pair",
+      "first": 15,
+      "second": 16,
+      "weight": 0.3054864434313008
+    }
+  ]
+}

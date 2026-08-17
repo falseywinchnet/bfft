@@ -1,0 +1,2588 @@
+{
+  "experiment": "walsh_voronoi_random_ray_first_exit",
+  "warning": "Voronoi labels are minimized only over the displayed finite coefficient cube; this is a falsification audit, not a worst-case completeness certificate.",
+  "directions_per_fixture": 20000,
+  "rows": [
+    {
+      "family": "rectangular",
+      "dimension": 3,
+      "coefficient_cutoff": 2,
+      "enumerated_nonzero_vectors": 124,
+      "shortest_length": 1.0,
+      "enumerated_shortest_vector_count": 2,
+      "distinct_shortest_parity_count": 1,
+      "random_ray_shortest_vector_exit_mass": 0.88755,
+      "random_ray_shortest_parity_exit_mass": 0.88755,
+      "active_voronoi_labels_in_audit": 6,
+      "median_first_boundary_radius_over_lambda_half": 2.0055950164421725,
+      "top_exit_labels": [
+        {
+          "coefficients": [
+            1,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.44415
+        },
+        {
+          "coefficients": [
+            -1,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.4434
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            -1
+          ],
+          "parity": [
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 8.0,
+          "ray_mass": 0.0298
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 8.0,
+          "ray_mass": 0.02825
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            1
+          ],
+          "parity": [
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 8.0,
+          "ray_mass": 0.0275
+        },
+        {
+          "coefficients": [
+            0,
+            1,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 8.0,
+          "ray_mass": 0.0269
+        }
+      ]
+    },
+    {
+      "family": "simplex_cancellation",
+      "dimension": 3,
+      "coefficient_cutoff": 2,
+      "enumerated_nonzero_vectors": 124,
+      "shortest_length": 0.9700000000000001,
+      "enumerated_shortest_vector_count": 2,
+      "distinct_shortest_parity_count": 1,
+      "random_ray_shortest_vector_exit_mass": 0.21325,
+      "random_ray_shortest_parity_exit_mass": 0.21325,
+      "active_voronoi_labels_in_audit": 14,
+      "median_first_boundary_radius_over_lambda_half": 1.1702627809461068,
+      "top_exit_labels": [
+        {
+          "coefficients": [
+            -1,
+            -1,
+            -1
+          ],
+          "parity": [
+            1,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.1067
+        },
+        {
+          "coefficients": [
+            1,
+            1,
+            1
+          ],
+          "parity": [
+            1,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.10655
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            -1
+          ],
+          "parity": [
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.0309278350515465,
+          "ray_mass": 0.09675
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            1
+          ],
+          "parity": [
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.0309278350515465,
+          "ray_mass": 0.09605
+        },
+        {
+          "coefficients": [
+            0,
+            1,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.0309278350515465,
+          "ray_mass": 0.09495
+        },
+        {
+          "coefficients": [
+            -1,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0309278350515463,
+          "ray_mass": 0.0947
+        },
+        {
+          "coefficients": [
+            1,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0309278350515463,
+          "ray_mass": 0.09465
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.0309278350515465,
+          "ray_mass": 0.09355
+        },
+        {
+          "coefficients": [
+            -1,
+            0,
+            -1
+          ],
+          "parity": [
+            1,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.1815860249754995,
+          "ray_mass": 0.0372
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            -1
+          ],
+          "parity": [
+            0,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.1815860249754995,
+          "ray_mass": 0.0372
+        }
+      ]
+    },
+    {
+      "family": "generic",
+      "dimension": 3,
+      "coefficient_cutoff": 2,
+      "enumerated_nonzero_vectors": 124,
+      "shortest_length": 0.9601814888438452,
+      "enumerated_shortest_vector_count": 2,
+      "distinct_shortest_parity_count": 1,
+      "random_ray_shortest_vector_exit_mass": 0.302,
+      "random_ray_shortest_parity_exit_mass": 0.302,
+      "active_voronoi_labels_in_audit": 14,
+      "median_first_boundary_radius_over_lambda_half": 1.2643771822331695,
+      "top_exit_labels": [
+        {
+          "coefficients": [
+            0,
+            1,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.1513
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.1507
+        },
+        {
+          "coefficients": [
+            -1,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.101025561749044,
+          "ray_mass": 0.13265
+        },
+        {
+          "coefficients": [
+            1,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.101025561749044,
+          "ray_mass": 0.1256
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            -1
+          ],
+          "parity": [
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.0545171961186683,
+          "ray_mass": 0.12205
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            1
+          ],
+          "parity": [
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.0545171961186683,
+          "ray_mass": 0.12
+        },
+        {
+          "coefficients": [
+            0,
+            1,
+            1
+          ],
+          "parity": [
+            0,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.2621718466588057,
+          "ray_mass": 0.0462
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            -1
+          ],
+          "parity": [
+            0,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.2621718466588057,
+          "ray_mass": 0.0459
+        },
+        {
+          "coefficients": [
+            1,
+            0,
+            -1
+          ],
+          "parity": [
+            1,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.3343275120535245,
+          "ray_mass": 0.0394
+        },
+        {
+          "coefficients": [
+            -1,
+            0,
+            1
+          ],
+          "parity": [
+            1,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.3343275120535245,
+          "ray_mass": 0.0382
+        }
+      ]
+    },
+    {
+      "family": "adversarial_rotated",
+      "dimension": 3,
+      "coefficient_cutoff": 2,
+      "enumerated_nonzero_vectors": 124,
+      "shortest_length": 0.7242449449040705,
+      "enumerated_shortest_vector_count": 2,
+      "distinct_shortest_parity_count": 1,
+      "random_ray_shortest_vector_exit_mass": 0.50555,
+      "random_ray_shortest_parity_exit_mass": 0.50555,
+      "active_voronoi_labels_in_audit": 12,
+      "median_first_boundary_radius_over_lambda_half": 1.729290271900927,
+      "top_exit_labels": [
+        {
+          "coefficients": [
+            0,
+            -1,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.25295
+        },
+        {
+          "coefficients": [
+            0,
+            1,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.2526
+        },
+        {
+          "coefficients": [
+            0,
+            -2,
+            -1
+          ],
+          "parity": [
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.6251673651859435,
+          "ray_mass": 0.0841
+        },
+        {
+          "coefficients": [
+            0,
+            2,
+            1
+          ],
+          "parity": [
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.6251673651859435,
+          "ray_mass": 0.07975
+        },
+        {
+          "coefficients": [
+            -1,
+            2,
+            1
+          ],
+          "parity": [
+            1,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.8622946963061495,
+          "ray_mass": 0.06875
+        },
+        {
+          "coefficients": [
+            1,
+            -2,
+            -1
+          ],
+          "parity": [
+            1,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.8622946963061495,
+          "ray_mass": 0.0675
+        },
+        {
+          "coefficients": [
+            0,
+            1,
+            1
+          ],
+          "parity": [
+            0,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.6938298729907857,
+          "ray_mass": 0.04785
+        },
+        {
+          "coefficients": [
+            -1,
+            1,
+            0
+          ],
+          "parity": [
+            1,
+            1,
+            0
+          ],
+          "length_over_shortest": 2.0039889646608784,
+          "ray_mass": 0.0467
+        },
+        {
+          "coefficients": [
+            1,
+            -1,
+            0
+          ],
+          "parity": [
+            1,
+            1,
+            0
+          ],
+          "length_over_shortest": 2.0039889646608784,
+          "ray_mass": 0.0461
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            -1
+          ],
+          "parity": [
+            0,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.6938298729907857,
+          "ray_mass": 0.04605
+        }
+      ]
+    },
+    {
+      "family": "needle_D_shell",
+      "dimension": 3,
+      "coefficient_cutoff": 2,
+      "enumerated_nonzero_vectors": 124,
+      "shortest_length": 1.0,
+      "enumerated_shortest_vector_count": 2,
+      "distinct_shortest_parity_count": 1,
+      "random_ray_shortest_vector_exit_mass": 0.3417,
+      "random_ray_shortest_parity_exit_mass": 0.3417,
+      "active_voronoi_labels_in_audit": 6,
+      "median_first_boundary_radius_over_lambda_half": 1.223895387254216,
+      "top_exit_labels": [
+        {
+          "coefficients": [
+            -1,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.17155
+        },
+        {
+          "coefficients": [
+            1,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.17015
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            1
+          ],
+          "parity": [
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.1668
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            -1
+          ],
+          "parity": [
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.1667
+        },
+        {
+          "coefficients": [
+            0,
+            1,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.1626
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.1622
+        }
+      ]
+    },
+    {
+      "family": "rectangular",
+      "dimension": 4,
+      "coefficient_cutoff": 2,
+      "enumerated_nonzero_vectors": 624,
+      "shortest_length": 1.0,
+      "enumerated_shortest_vector_count": 2,
+      "distinct_shortest_parity_count": 1,
+      "random_ray_shortest_vector_exit_mass": 0.9357,
+      "random_ray_shortest_parity_exit_mass": 0.9357,
+      "active_voronoi_labels_in_audit": 8,
+      "median_first_boundary_radius_over_lambda_half": 2.495260766844507,
+      "top_exit_labels": [
+        {
+          "coefficients": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.4686
+        },
+        {
+          "coefficients": [
+            -1,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.4671
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            -1,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 16.0,
+          "ray_mass": 0.0121
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            -1
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 16.0,
+          "ray_mass": 0.0112
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 16.0,
+          "ray_mass": 0.01075
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 16.0,
+          "ray_mass": 0.0103
+        },
+        {
+          "coefficients": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 16.0,
+          "ray_mass": 0.01025
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 16.0,
+          "ray_mass": 0.0097
+        }
+      ]
+    },
+    {
+      "family": "simplex_cancellation",
+      "dimension": 4,
+      "coefficient_cutoff": 2,
+      "enumerated_nonzero_vectors": 624,
+      "shortest_length": 0.97,
+      "enumerated_shortest_vector_count": 2,
+      "distinct_shortest_parity_count": 1,
+      "random_ray_shortest_vector_exit_mass": 0.15835,
+      "random_ray_shortest_parity_exit_mass": 0.15835,
+      "active_voronoi_labels_in_audit": 30,
+      "median_first_boundary_radius_over_lambda_half": 1.2652918333662857,
+      "top_exit_labels": [
+        {
+          "coefficients": [
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          "parity": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.08015
+        },
+        {
+          "coefficients": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "parity": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.0782
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            -1
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.0309278350515465,
+          "ray_mass": 0.0715
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            -1,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.0309278350515465,
+          "ray_mass": 0.07035
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.0309278350515465,
+          "ray_mass": 0.0701
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.0309278350515465,
+          "ray_mass": 0.06965
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0309278350515465,
+          "ray_mass": 0.0695
+        },
+        {
+          "coefficients": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0309278350515465,
+          "ray_mass": 0.06945
+        },
+        {
+          "coefficients": [
+            -1,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0309278350515465,
+          "ray_mass": 0.06925
+        },
+        {
+          "coefficients": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0309278350515465,
+          "ray_mass": 0.0658
+        }
+      ]
+    },
+    {
+      "family": "generic",
+      "dimension": 4,
+      "coefficient_cutoff": 2,
+      "enumerated_nonzero_vectors": 624,
+      "shortest_length": 0.8875868278447664,
+      "enumerated_shortest_vector_count": 2,
+      "distinct_shortest_parity_count": 1,
+      "random_ray_shortest_vector_exit_mass": 0.28545,
+      "random_ray_shortest_parity_exit_mass": 0.28545,
+      "active_voronoi_labels_in_audit": 28,
+      "median_first_boundary_radius_over_lambda_half": 1.4592864443133966,
+      "top_exit_labels": [
+        {
+          "coefficients": [
+            -1,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.14515
+        },
+        {
+          "coefficients": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.1403
+        },
+        {
+          "coefficients": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.1876462172894429,
+          "ray_mass": 0.10145
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.1063870794832131,
+          "ray_mass": 0.10125
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            -1,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.1063870794832131,
+          "ray_mass": 0.1001
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.1876462172894429,
+          "ray_mass": 0.0984
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.23861236244799,
+          "ray_mass": 0.08595
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            -1
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.23861236244799,
+          "ray_mass": 0.0838
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            1,
+            1
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.4604509798925518,
+          "ray_mass": 0.02595
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            -1,
+            -1
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.4604509798925518,
+          "ray_mass": 0.02505
+        }
+      ]
+    },
+    {
+      "family": "adversarial_rotated",
+      "dimension": 4,
+      "coefficient_cutoff": 2,
+      "enumerated_nonzero_vectors": 624,
+      "shortest_length": 0.7126455739562391,
+      "enumerated_shortest_vector_count": 2,
+      "distinct_shortest_parity_count": 1,
+      "random_ray_shortest_vector_exit_mass": 0.4078,
+      "random_ray_shortest_parity_exit_mass": 0.4078,
+      "active_voronoi_labels_in_audit": 26,
+      "median_first_boundary_radius_over_lambda_half": 1.898543733650713,
+      "top_exit_labels": [
+        {
+          "coefficients": [
+            0,
+            -1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.20605
+        },
+        {
+          "coefficients": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.20175
+        },
+        {
+          "coefficients": [
+            1,
+            1,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.4750029185026288,
+          "ray_mass": 0.08965
+        },
+        {
+          "coefficients": [
+            -1,
+            -1,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.4750029185026288,
+          "ray_mass": 0.08515
+        },
+        {
+          "coefficients": [
+            0,
+            2,
+            0,
+            -1
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.7836663510769573,
+          "ray_mass": 0.04395
+        },
+        {
+          "coefficients": [
+            0,
+            -2,
+            0,
+            1
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.7836663510769573,
+          "ray_mass": 0.04305
+        },
+        {
+          "coefficients": [
+            -2,
+            0,
+            -1,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.841630059393352,
+          "ray_mass": 0.0339
+        },
+        {
+          "coefficients": [
+            2,
+            0,
+            1,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.841630059393352,
+          "ray_mass": 0.0305
+        },
+        {
+          "coefficients": [
+            1,
+            -2,
+            1,
+            1
+          ],
+          "parity": [
+            1,
+            0,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.942682808764796,
+          "ray_mass": 0.02905
+        },
+        {
+          "coefficients": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "parity": [
+            0,
+            1,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.8756174013547513,
+          "ray_mass": 0.028
+        }
+      ]
+    },
+    {
+      "family": "needle_D_shell",
+      "dimension": 4,
+      "coefficient_cutoff": 2,
+      "enumerated_nonzero_vectors": 624,
+      "shortest_length": 1.0,
+      "enumerated_shortest_vector_count": 2,
+      "distinct_shortest_parity_count": 1,
+      "random_ray_shortest_vector_exit_mass": 0.22285,
+      "random_ray_shortest_parity_exit_mass": 0.22285,
+      "active_voronoi_labels_in_audit": 14,
+      "median_first_boundary_radius_over_lambda_half": 1.2151554832867437,
+      "top_exit_labels": [
+        {
+          "coefficients": [
+            -1,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.11325
+        },
+        {
+          "coefficients": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.1096
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.0671
+        },
+        {
+          "coefficients": [
+            0,
+            1,
+            1,
+            1
+          ],
+          "parity": [
+            0,
+            1,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.0659
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            -1
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.06555
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            -1,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.06545
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            -1,
+            -1
+          ],
+          "parity": [
+            0,
+            1,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.0652
+        },
+        {
+          "coefficients": [
+            0,
+            1,
+            0,
+            1
+          ],
+          "parity": [
+            0,
+            1,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.06485
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.0647
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.06455
+        }
+      ]
+    },
+    {
+      "family": "rectangular",
+      "dimension": 6,
+      "coefficient_cutoff": 2,
+      "enumerated_nonzero_vectors": 15624,
+      "shortest_length": 1.0,
+      "enumerated_shortest_vector_count": 2,
+      "distinct_shortest_parity_count": 1,
+      "random_ray_shortest_vector_exit_mass": 0.98145,
+      "random_ray_shortest_parity_exit_mass": 0.98145,
+      "active_voronoi_labels_in_audit": 12,
+      "median_first_boundary_radius_over_lambda_half": 3.256354049184674,
+      "top_exit_labels": [
+        {
+          "coefficients": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.4909
+        },
+        {
+          "coefficients": [
+            -1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.49055
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            -1,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 64.0,
+          "ray_mass": 0.00265
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 64.0,
+          "ray_mass": 0.00245
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            0,
+            -1,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 64.0,
+          "ray_mass": 0.0021
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 64.0,
+          "ray_mass": 0.00185
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 64.0,
+          "ray_mass": 0.0018
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 64.0,
+          "ray_mass": 0.00175
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 64.0,
+          "ray_mass": 0.0016
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            -1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 64.0,
+          "ray_mass": 0.00155
+        }
+      ]
+    },
+    {
+      "family": "simplex_cancellation",
+      "dimension": 6,
+      "coefficient_cutoff": 2,
+      "enumerated_nonzero_vectors": 15624,
+      "shortest_length": 0.9700000000000003,
+      "enumerated_shortest_vector_count": 2,
+      "distinct_shortest_parity_count": 1,
+      "random_ray_shortest_vector_exit_mass": 0.1085,
+      "random_ray_shortest_parity_exit_mass": 0.1085,
+      "active_voronoi_labels_in_audit": 126,
+      "median_first_boundary_radius_over_lambda_half": 1.4231626636237231,
+      "top_exit_labels": [
+        {
+          "coefficients": [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          "parity": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.0551
+        },
+        {
+          "coefficients": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "parity": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.0534
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            0,
+            -1,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.030927835051546,
+          "ray_mass": 0.05075
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.030927835051546,
+          "ray_mass": 0.04945
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            -1,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.030927835051546,
+          "ray_mass": 0.04855
+        },
+        {
+          "coefficients": [
+            -1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.030927835051546,
+          "ray_mass": 0.04765
+        },
+        {
+          "coefficients": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.030927835051546,
+          "ray_mass": 0.04755
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.030927835051546,
+          "ray_mass": 0.0473
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.030927835051546,
+          "ray_mass": 0.0472
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.030927835051546,
+          "ray_mass": 0.0471
+        }
+      ]
+    },
+    {
+      "family": "generic",
+      "dimension": 6,
+      "coefficient_cutoff": 2,
+      "enumerated_nonzero_vectors": 15624,
+      "shortest_length": 0.9067326581210656,
+      "enumerated_shortest_vector_count": 2,
+      "distinct_shortest_parity_count": 1,
+      "random_ray_shortest_vector_exit_mass": 0.17715,
+      "random_ray_shortest_parity_exit_mass": 0.17715,
+      "active_voronoi_labels_in_audit": 90,
+      "median_first_boundary_radius_over_lambda_half": 1.5861316776263434,
+      "top_exit_labels": [
+        {
+          "coefficients": [
+            -1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.08985
+        },
+        {
+          "coefficients": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.0873
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            -1,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.1244506264715972,
+          "ray_mass": 0.06695
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.1244506264715972,
+          "ray_mass": 0.0654
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            -1
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.143360408013597,
+          "ray_mass": 0.0643
+        },
+        {
+          "coefficients": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.1161684194957873,
+          "ray_mass": 0.06385
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.143360408013597,
+          "ray_mass": 0.0636
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.1428173458024875,
+          "ray_mass": 0.0628
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.1161684194957873,
+          "ray_mass": 0.0621
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            -1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.1334153380729124,
+          "ray_mass": 0.06175
+        }
+      ]
+    },
+    {
+      "family": "adversarial_rotated",
+      "dimension": 6,
+      "coefficient_cutoff": 2,
+      "enumerated_nonzero_vectors": 15624,
+      "shortest_length": 0.8726568023480968,
+      "enumerated_shortest_vector_count": 2,
+      "distinct_shortest_parity_count": 1,
+      "random_ray_shortest_vector_exit_mass": 0.1983,
+      "random_ray_shortest_parity_exit_mass": 0.1983,
+      "active_voronoi_labels_in_audit": 110,
+      "median_first_boundary_radius_over_lambda_half": 1.6987228338635527,
+      "top_exit_labels": [
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            -1
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.0994
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.0989
+        },
+        {
+          "coefficients": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.099156297814322,
+          "ray_mass": 0.0763
+        },
+        {
+          "coefficients": [
+            -1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.099156297814322,
+          "ray_mass": 0.07445
+        },
+        {
+          "coefficients": [
+            1,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.3247311692532688,
+          "ray_mass": 0.0326
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            1,
+            -1,
+            0,
+            1
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            1,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.3613694565584655,
+          "ray_mass": 0.02965
+        },
+        {
+          "coefficients": [
+            -1,
+            -1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.3247311692532688,
+          "ray_mass": 0.0291
+        },
+        {
+          "coefficients": [
+            -1,
+            -1,
+            0,
+            1,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            1,
+            0,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.3381462874903807,
+          "ray_mass": 0.02865
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            -1,
+            1,
+            0,
+            -1
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            1,
+            0,
+            1
+          ],
+          "length_over_shortest": 1.3613694565584655,
+          "ray_mass": 0.02785
+        },
+        {
+          "coefficients": [
+            1,
+            1,
+            0,
+            -1,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            1,
+            0,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.3381462874903807,
+          "ray_mass": 0.0267
+        }
+      ]
+    },
+    {
+      "family": "needle_D_shell",
+      "dimension": 6,
+      "coefficient_cutoff": 2,
+      "enumerated_nonzero_vectors": 15624,
+      "shortest_length": 1.0,
+      "enumerated_shortest_vector_count": 2,
+      "distinct_shortest_parity_count": 1,
+      "random_ray_shortest_vector_exit_mass": 0.11765,
+      "random_ray_shortest_parity_exit_mass": 0.11765,
+      "active_voronoi_labels_in_audit": 42,
+      "median_first_boundary_radius_over_lambda_half": 1.2604099433212306,
+      "top_exit_labels": [
+        {
+          "coefficients": [
+            -1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.06035
+        },
+        {
+          "coefficients": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "parity": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0,
+          "ray_mass": 0.0573
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.024
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            1,
+            1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.02375
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            -1,
+            -1,
+            -1
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.02365
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            0,
+            0,
+            -1,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.0235
+        },
+        {
+          "coefficients": [
+            0,
+            1,
+            1,
+            1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            1,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.0234
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            1,
+            1,
+            1,
+            1
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            1,
+            1,
+            1
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.02325
+        },
+        {
+          "coefficients": [
+            0,
+            0,
+            -1,
+            -1,
+            0,
+            0
+          ],
+          "parity": [
+            0,
+            0,
+            1,
+            1,
+            0,
+            0
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.02315
+        },
+        {
+          "coefficients": [
+            0,
+            -1,
+            -1,
+            -1,
+            -1,
+            0
+          ],
+          "parity": [
+            0,
+            1,
+            1,
+            1,
+            1,
+            0
+          ],
+          "length_over_shortest": 1.0299999999999998,
+          "ray_mass": 0.0231
+        }
+      ]
+    }
+  ]
+}

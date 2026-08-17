@@ -1,0 +1,87 @@
+{
+  "n": 512,
+  "packed_rows": 512,
+  "forms": {
+    "DIF": {
+      "factors": 247,
+      "group_labels": [
+        "L1",
+        "L2",
+        "L3",
+        "L4",
+        "L5",
+        "L6",
+        "L7"
+      ],
+      "group_edges": [
+        0,
+        1,
+        4,
+        11,
+        26,
+        57,
+        120,
+        247
+      ],
+      "nonzero_dependencies": 3076,
+      "dependencies_per_nontrivial_row": {
+        "min": 0,
+        "max": 7
+      }
+    },
+    "DIT": {
+      "factors": 247,
+      "group_labels": [
+        "s=8",
+        "s=16",
+        "s=32",
+        "s=64",
+        "s=128",
+        "s=256",
+        "s=512"
+      ],
+      "group_edges": [
+        0,
+        1,
+        4,
+        11,
+        26,
+        57,
+        120,
+        247
+      ],
+      "nonzero_dependencies": 3076,
+      "dependencies_per_nontrivial_row": {
+        "min": 0,
+        "max": 7
+      }
+    },
+    "DIP": {
+      "factors": 247,
+      "group_labels": [
+        "e=4",
+        "e=8",
+        "e=16",
+        "e=32",
+        "e=64",
+        "e=128",
+        "e=256"
+      ],
+      "group_edges": [
+        0,
+        1,
+        4,
+        11,
+        26,
+        57,
+        120,
+        247
+      ],
+      "nonzero_dependencies": 3076,
+      "dependencies_per_nontrivial_row": {
+        "min": 0,
+        "max": 7
+      }
+    }
+  }
+}

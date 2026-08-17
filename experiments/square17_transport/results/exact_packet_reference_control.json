@@ -1,0 +1,253 @@
+{
+  "config": {
+    "base_chart": "scaled_reference",
+    "dip_level": 2,
+    "heat_floor": 1e-09,
+    "heat_scale": 0.12,
+    "inverse_actions": [
+      1.0,
+      4.0,
+      16.0,
+      64.0
+    ],
+    "iterations_per_action": 4,
+    "packet_count": 16,
+    "phase_radius": 0.06,
+    "rank": 32,
+    "seed": 0,
+    "side": 4.675530093604551,
+    "tolerance": 1e-08,
+    "translation_radius": 0.06
+  },
+  "direct_factor_energy": 7.993605777301127e-15,
+  "elimination_order": [
+    3,
+    7,
+    0,
+    4,
+    1,
+    5,
+    14,
+    2,
+    6,
+    8,
+    10,
+    9,
+    11,
+    12,
+    13,
+    15,
+    16
+  ],
+  "elimination_trace": [
+    {
+      "fill_edges": 0,
+      "neighbor_count": 1,
+      "variable": 3
+    },
+    {
+      "fill_edges": 0,
+      "neighbor_count": 1,
+      "variable": 7
+    },
+    {
+      "fill_edges": 0,
+      "neighbor_count": 2,
+      "variable": 0
+    },
+    {
+      "fill_edges": 0,
+      "neighbor_count": 2,
+      "variable": 4
+    },
+    {
+      "fill_edges": 1,
+      "neighbor_count": 2,
+      "variable": 1
+    },
+    {
+      "fill_edges": 1,
+      "neighbor_count": 2,
+      "variable": 5
+    },
+    {
+      "fill_edges": 1,
+      "neighbor_count": 2,
+      "variable": 14
+    },
+    {
+      "fill_edges": 1,
+      "neighbor_count": 3,
+      "variable": 2
+    },
+    {
+      "fill_edges": 1,
+      "neighbor_count": 3,
+      "variable": 6
+    },
+    {
+      "fill_edges": 1,
+      "neighbor_count": 3,
+      "variable": 8
+    },
+    {
+      "fill_edges": 0,
+      "neighbor_count": 3,
+      "variable": 10
+    },
+    {
+      "fill_edges": 1,
+      "neighbor_count": 3,
+      "variable": 9
+    },
+    {
+      "fill_edges": 0,
+      "neighbor_count": 3,
+      "variable": 11
+    },
+    {
+      "fill_edges": 0,
+      "neighbor_count": 3,
+      "variable": 12
+    },
+    {
+      "fill_edges": 0,
+      "neighbor_count": 2,
+      "variable": 13
+    },
+    {
+      "fill_edges": 0,
+      "neighbor_count": 1,
+      "variable": 15
+    },
+    {
+      "fill_edges": 0,
+      "neighbor_count": 0,
+      "variable": 16
+    }
+  ],
+  "exact_global_factor_energy": 7.993605777301127e-15,
+  "factor_graph_edges": 29,
+  "implicit_equidistant_configurations": "295147905179352825856",
+  "induced_treewidth": 3,
+  "method": "exact_bruun_dip_packet_gdl_transport",
+  "physical_area_energy": 7.993605777301127e-15,
+  "physical_overlap_area": 7.993605777301127e-15,
+  "physical_wall_area": 0.0,
+  "poses": [
+    [
+      0.5,
+      0.5,
+      0.0
+    ],
+    [
+      1.5,
+      0.5,
+      0.0
+    ],
+    [
+      0.5,
+      1.5,
+      0.0
+    ],
+    [
+      0.5,
+      4.175530093604551,
+      0.0
+    ],
+    [
+      4.175530093604551,
+      0.5,
+      0.0
+    ],
+    [
+      3.175530093604551,
+      0.5,
+      0.0
+    ],
+    [
+      4.175530093604551,
+      1.5,
+      0.0
+    ],
+    [
+      4.175530093604551,
+      4.175530093604551,
+      0.0
+    ],
+    [
+      0.7042021556575175,
+      2.7042021556575175,
+      0.694727592818231
+    ],
+    [
+      1.4360434939982247,
+      3.388043433263363,
+      0.694727592818231
+    ],
+    [
+      1.556737163170879,
+      2.112935871840352,
+      0.694727592818231
+    ],
+    [
+      2.2885785015115867,
+      2.7967771494461973,
+      0.694727592818231
+    ],
+    [
+      2.2952864461815237,
+      1.4266835476667392,
+      0.694727592818231
+    ],
+    [
+      3.0271277845222304,
+      2.110524825272585,
+      0.694727592818231
+    ],
+    [
+      2.347324826510285,
+      4.175530093604551,
+      0.0
+    ],
+    [
+      3.245073712656966,
+      3.3724938614938536,
+      -0.6392056569382095
+    ],
+    [
+      4.175530093604551,
+      2.613460132512564,
+      0.0
+    ]
+  ],
+  "selected_packets": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "solve": {
+    "backward_records": 17,
+    "maximum_table_entries": 65536,
+    "total_table_entries": 484112
+  },
+  "terminal_sat_audit": {
+    "minimum_clearance": -4.440892098500626e-16,
+    "overlap_residual": 6.377745716588144e-16,
+    "worst_penetration": 4.440892098500626e-16
+  }
+}

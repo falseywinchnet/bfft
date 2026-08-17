@@ -1,0 +1,5592 @@
+{
+  "status": "floating_point_basin_frontiers_not_global_proof",
+  "method": "bfft_support_preserving_adaptive_continuation",
+  "basin_count": 4,
+  "best": {
+    "seed": 2,
+    "status": "feasible_frontier",
+    "side": 4.767773437500013,
+    "minimum_clearance": -3.310685059432217e-13,
+    "overlap_residual": 3.4338107384181564e-13,
+    "contact_signature": {
+      "boundary": [
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          7,
+          1
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          12,
+          1
+        ],
+        [
+          13,
+          0
+        ],
+        [
+          15,
+          3
+        ],
+        [
+          16,
+          1
+        ],
+        [
+          16,
+          3
+        ]
+      ],
+      "pairs": [
+        [
+          2,
+          6
+        ],
+        [
+          3,
+          7
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          6,
+          12
+        ],
+        [
+          7,
+          12
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          11,
+          12
+        ],
+        [
+          11,
+          15
+        ],
+        [
+          11,
+          16
+        ],
+        [
+          13,
+          14
+        ],
+        [
+          14,
+          15
+        ]
+      ]
+    },
+    "poses": [
+      [
+        0.5730713494762614,
+        0.5712479012745806,
+        0.0
+      ],
+      [
+        1.646532116681309,
+        0.5698110018394573,
+        0.0
+      ],
+      [
+        2.725603248240537,
+        0.5062169696428915,
+        -7.821217665626712e-06
+      ],
+      [
+        3.8035567310166987,
+        0.4999999999999991,
+        1.6653345369377348e-15
+      ],
+      [
+        0.6268088663085389,
+        1.6430893699715923,
+        1.1102230246251565e-16
+      ],
+      [
+        1.7503314821095581,
+        1.6438169155741325,
+        0.0
+      ],
+      [
+        3.255841235070988,
+        1.5121785539799417,
+        -0.00016240393081856652
+      ],
+      [
+        4.261844935727047,
+        1.4999999999999671,
+        -4.063416270128073e-14
+      ],
+      [
+        0.5054270128574445,
+        2.7158586580209305,
+        -2.2709617448213315e-05
+      ],
+      [
+        1.510224148630786,
+        2.722030952391056,
+        -2.303710632478584e-05
+      ],
+      [
+        2.71636986396558,
+        2.6517205626825295,
+        0.7332758153183829
+      ],
+      [
+        3.43754977332686,
+        3.3766151163110405,
+        0.7793417490003873
+      ],
+      [
+        4.267773437500112,
+        2.5000000000002167,
+        4.649614027130156e-13
+      ],
+      [
+        0.4999999999999977,
+        3.7950573717685634,
+        5.440092820663267e-15
+      ],
+      [
+        1.4999999999999922,
+        3.9409531890376366,
+        5.218048215738236e-15
+      ],
+      [
+        2.7070938128328836,
+        4.0606796246671175,
+        0.7793417490002212
+      ],
+      [
+        4.26167018006478,
+        4.26159641225236,
+        -9.155135079041976e-06
+      ]
+    ],
+    "trace": [
+      {
+        "attempt": 1,
+        "from_side": 5.0,
+        "trial_side": 4.975,
+        "step": 0.025,
+        "soft_minimum_clearance": -0.004228790460511167,
+        "soft_continuation_steps": 51,
+        "minimum_clearance": -0.11220512931838522,
+        "overlap_residual": 0.18784767973123775,
+        "feasible": false,
+        "polish_status": 4,
+        "polish_iterations": 195
+      },
+      {
+        "attempt": 2,
+        "from_side": 5.0,
+        "trial_side": 4.9875,
+        "step": 0.0125,
+        "soft_minimum_clearance": -0.0021366792152825997,
+        "soft_continuation_steps": 51,
+        "minimum_clearance": -0.12678968020197168,
+        "overlap_residual": 0.19389032370047782,
+        "feasible": false,
+        "polish_status": 4,
+        "polish_iterations": 82
+      },
+      {
+        "attempt": 3,
+        "from_side": 5.0,
+        "trial_side": 4.99375,
+        "step": 0.00625,
+        "soft_minimum_clearance": -0.0011047413670278727,
+        "soft_continuation_steps": 51,
+        "minimum_clearance": -0.06354733508049337,
+        "overlap_residual": 0.14470158729462176,
+        "feasible": false,
+        "polish_status": 4,
+        "polish_iterations": 106
+      },
+      {
+        "attempt": 4,
+        "from_side": 5.0,
+        "trial_side": 4.996875,
+        "step": 0.003125,
+        "soft_minimum_clearance": -0.0005970219119223463,
+        "soft_continuation_steps": 51,
+        "minimum_clearance": 9.275777912431948e-08,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 441
+      },
+      {
+        "attempt": 5,
+        "from_side": 4.996875,
+        "trial_side": 4.99375,
+        "step": 0.003125,
+        "soft_minimum_clearance": 6.770791682697563e-05,
+        "soft_continuation_steps": 3,
+        "minimum_clearance": 6.770791682697563e-05,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 6,
+        "from_side": 4.99375,
+        "trial_side": 4.9906250000000005,
+        "step": 0.003125,
+        "soft_minimum_clearance": 6.37717863685161e-05,
+        "soft_continuation_steps": 3,
+        "minimum_clearance": 6.37717863685161e-05,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 7,
+        "from_side": 4.9906250000000005,
+        "trial_side": 4.987500000000001,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0001562639235705987,
+        "soft_continuation_steps": 3,
+        "minimum_clearance": 0.0001562639235705987,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 8,
+        "from_side": 4.987500000000001,
+        "trial_side": 4.984375000000001,
+        "step": 0.003125,
+        "soft_minimum_clearance": 3.86335571602725e-05,
+        "soft_continuation_steps": 4,
+        "minimum_clearance": 3.86335571602725e-05,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 9,
+        "from_side": 4.984375000000001,
+        "trial_side": 4.981250000000001,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0008763492875762946,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0008763492875762946,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 10,
+        "from_side": 4.981250000000001,
+        "trial_side": 4.978125000000001,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0006137888249619916,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0006137888249619916,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 11,
+        "from_side": 4.978125000000001,
+        "trial_side": 4.975000000000001,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0011401571012323863,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0011401571012323863,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 12,
+        "from_side": 4.975000000000001,
+        "trial_side": 4.971875000000002,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.001377464575303744,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.001377464575303744,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 13,
+        "from_side": 4.971875000000002,
+        "trial_side": 4.968750000000002,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.00032684492521661834,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.00032684492521661834,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 14,
+        "from_side": 4.968750000000002,
+        "trial_side": 4.965625000000002,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0005855226321089813,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0005855226321089813,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 15,
+        "from_side": 4.965625000000002,
+        "trial_side": 4.962500000000002,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.00016489563770982762,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.00016489563770982762,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 16,
+        "from_side": 4.962500000000002,
+        "trial_side": 4.959375000000002,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.00045422584391596743,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.00045422584391596743,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 17,
+        "from_side": 4.959375000000002,
+        "trial_side": 4.9562500000000025,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0009354421888319031,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0009354421888319031,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 18,
+        "from_side": 4.9562500000000025,
+        "trial_side": 4.953125000000003,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0004055363373738352,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0004055363373738352,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 19,
+        "from_side": 4.953125000000003,
+        "trial_side": 4.950000000000003,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0005056654895241319,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0005056654895241319,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 20,
+        "from_side": 4.950000000000003,
+        "trial_side": 4.946875000000003,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0003448544769104611,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0003448544769104611,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 21,
+        "from_side": 4.946875000000003,
+        "trial_side": 4.943750000000003,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0010399900455326794,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0010399900455326794,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 22,
+        "from_side": 4.943750000000003,
+        "trial_side": 4.940625000000003,
+        "step": 0.003125,
+        "soft_minimum_clearance": 7.249196149095027e-05,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 7.249196149095027e-05,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 23,
+        "from_side": 4.940625000000003,
+        "trial_side": 4.9375000000000036,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0007978559604557844,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0007978559604557844,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 24,
+        "from_side": 4.9375000000000036,
+        "trial_side": 4.934375000000004,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0001678305973333849,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0001678305973333849,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 25,
+        "from_side": 4.934375000000004,
+        "trial_side": 4.931250000000004,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0011270698438186066,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0011270698438186066,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 26,
+        "from_side": 4.931250000000004,
+        "trial_side": 4.928125000000004,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.001100575410463711,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.001100575410463711,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 27,
+        "from_side": 4.928125000000004,
+        "trial_side": 4.925000000000004,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0003388300519442389,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0003388300519442389,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 28,
+        "from_side": 4.925000000000004,
+        "trial_side": 4.921875000000004,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.002092483255161204,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.002092483255161204,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 29,
+        "from_side": 4.921875000000004,
+        "trial_side": 4.918750000000005,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.001105541513099162,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.001105541513099162,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 30,
+        "from_side": 4.918750000000005,
+        "trial_side": 4.915625000000005,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0007715304639460685,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0007715304639460685,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 31,
+        "from_side": 4.915625000000005,
+        "trial_side": 4.912500000000005,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0014986193769905842,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0014986193769905842,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 32,
+        "from_side": 4.912500000000005,
+        "trial_side": 4.909375000000005,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0003096537682734102,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0003096537682734102,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 33,
+        "from_side": 4.909375000000005,
+        "trial_side": 4.906250000000005,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0008864865024038604,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0008864865024038604,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 34,
+        "from_side": 4.906250000000005,
+        "trial_side": 4.9031250000000055,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0004003089900632695,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0004003089900632695,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 35,
+        "from_side": 4.9031250000000055,
+        "trial_side": 4.900000000000006,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0017360882127059885,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0017360882127059885,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 36,
+        "from_side": 4.900000000000006,
+        "trial_side": 4.896875000000006,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0005557182551085837,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0005557182551085837,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 37,
+        "from_side": 4.896875000000006,
+        "trial_side": 4.893750000000006,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0019018153135219595,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0019018153135219595,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 38,
+        "from_side": 4.893750000000006,
+        "trial_side": 4.890625000000006,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0011645739301684443,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0011645739301684443,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 39,
+        "from_side": 4.890625000000006,
+        "trial_side": 4.887500000000006,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0016835852639411897,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0016835852639411897,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 40,
+        "from_side": 4.887500000000006,
+        "trial_side": 4.884375000000007,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0005039751070505805,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0005039751070505805,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 41,
+        "from_side": 4.884375000000007,
+        "trial_side": 4.881250000000007,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0006487441321259002,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0006487441321259002,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 42,
+        "from_side": 4.881250000000007,
+        "trial_side": 4.878125000000007,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0002657615059773466,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0002657615059773466,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 43,
+        "from_side": 4.878125000000007,
+        "trial_side": 4.875000000000007,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0019238394526988056,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0019238394526988056,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 44,
+        "from_side": 4.875000000000007,
+        "trial_side": 4.871875000000007,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.00044160405123827573,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.00044160405123827573,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 45,
+        "from_side": 4.871875000000007,
+        "trial_side": 4.8687500000000075,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0013410458457734364,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0013410458457734364,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 46,
+        "from_side": 4.8687500000000075,
+        "trial_side": 4.865625000000008,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0002991085531844906,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0002991085531844906,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 47,
+        "from_side": 4.865625000000008,
+        "trial_side": 4.862500000000008,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0014126368432640923,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0014126368432640923,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 48,
+        "from_side": 4.862500000000008,
+        "trial_side": 4.859375000000008,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.00033654429534735186,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.00033654429534735186,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 49,
+        "from_side": 4.859375000000008,
+        "trial_side": 4.856250000000008,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.001062901264186067,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.001062901264186067,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 50,
+        "from_side": 4.856250000000008,
+        "trial_side": 4.853125000000008,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0008816331816339229,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0008816331816339229,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 51,
+        "from_side": 4.853125000000008,
+        "trial_side": 4.8500000000000085,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0014160187640859245,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0014160187640859245,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 52,
+        "from_side": 4.8500000000000085,
+        "trial_side": 4.846875000000009,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0003270231138527979,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0003270231138527979,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 53,
+        "from_side": 4.846875000000009,
+        "trial_side": 4.843750000000009,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0008016265802250899,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0008016265802250899,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 54,
+        "from_side": 4.843750000000009,
+        "trial_side": 4.840625000000009,
+        "step": 0.003125,
+        "soft_minimum_clearance": 3.780891006055498e-05,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 3.780891006055498e-05,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 55,
+        "from_side": 4.840625000000009,
+        "trial_side": 4.837500000000009,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.001091903126085647,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.001091903126085647,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 56,
+        "from_side": 4.837500000000009,
+        "trial_side": 4.834375000000009,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0015563318827028771,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0015563318827028771,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 57,
+        "from_side": 4.834375000000009,
+        "trial_side": 4.83125000000001,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0009860141711202086,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0009860141711202086,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 58,
+        "from_side": 4.83125000000001,
+        "trial_side": 4.82812500000001,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0013435471321305847,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0013435471321305847,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 59,
+        "from_side": 4.82812500000001,
+        "trial_side": 4.82500000000001,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.000555426255693714,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.000555426255693714,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 60,
+        "from_side": 4.82500000000001,
+        "trial_side": 4.82187500000001,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0005755473907742559,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0005755473907742559,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 61,
+        "from_side": 4.82187500000001,
+        "trial_side": 4.81875000000001,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.00026725642370672986,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.00026725642370672986,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 62,
+        "from_side": 4.81875000000001,
+        "trial_side": 4.8156250000000105,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.00034356036119542743,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.00034356036119542743,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 63,
+        "from_side": 4.8156250000000105,
+        "trial_side": 4.812500000000011,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.00011697589421166832,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.00011697589421166832,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 64,
+        "from_side": 4.812500000000011,
+        "trial_side": 4.809375000000011,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0003421035095325653,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.0003421035095325653,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 65,
+        "from_side": 4.809375000000011,
+        "trial_side": 4.806250000000011,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.00019807784194925127,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.00019807784194925127,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 66,
+        "from_side": 4.806250000000011,
+        "trial_side": 4.803125000000011,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.00016937852028675593,
+        "soft_continuation_steps": 2,
+        "minimum_clearance": 0.00016937852028675593,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 67,
+        "from_side": 4.803125000000011,
+        "trial_side": 4.800000000000011,
+        "step": 0.003125,
+        "soft_minimum_clearance": 2.2974784589013808e-05,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 2.2974784589013808e-05,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 68,
+        "from_side": 4.800000000000011,
+        "trial_side": 4.7968750000000115,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0001269399376939706,
+        "soft_continuation_steps": 4,
+        "minimum_clearance": 0.0001269399376939706,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 69,
+        "from_side": 4.7968750000000115,
+        "trial_side": 4.793750000000012,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.00019132424280954297,
+        "soft_continuation_steps": 1,
+        "minimum_clearance": 0.00019132424280954297,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 70,
+        "from_side": 4.793750000000012,
+        "trial_side": 4.790625000000012,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.0001937800982954041,
+        "soft_continuation_steps": 8,
+        "minimum_clearance": 0.0001937800982954041,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 71,
+        "from_side": 4.790625000000012,
+        "trial_side": 4.787500000000012,
+        "step": 0.003125,
+        "soft_minimum_clearance": 4.6378708249417144e-05,
+        "soft_continuation_steps": 12,
+        "minimum_clearance": 4.6378708249417144e-05,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 72,
+        "from_side": 4.787500000000012,
+        "trial_side": 4.784375000000012,
+        "step": 0.003125,
+        "soft_minimum_clearance": 0.00013665072067947648,
+        "soft_continuation_steps": 16,
+        "minimum_clearance": 0.00013665072067947648,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 73,
+        "from_side": 4.784375000000012,
+        "trial_side": 4.781250000000012,
+        "step": 0.003125,
+        "soft_minimum_clearance": 3.7369307570589427e-06,
+        "soft_continuation_steps": 21,
+        "minimum_clearance": 3.7369307570589427e-06,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 74,
+        "from_side": 4.781250000000012,
+        "trial_side": 4.778125000000013,
+        "step": 0.003125,
+        "soft_minimum_clearance": 3.282762015155427e-05,
+        "soft_continuation_steps": 27,
+        "minimum_clearance": 3.282762015155427e-05,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 75,
+        "from_side": 4.778125000000013,
+        "trial_side": 4.775000000000013,
+        "step": 0.003125,
+        "soft_minimum_clearance": 4.33808264554969e-06,
+        "soft_continuation_steps": 34,
+        "minimum_clearance": 4.33808264554969e-06,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 76,
+        "from_side": 4.775000000000013,
+        "trial_side": 4.771875000000013,
+        "step": 0.003125,
+        "soft_minimum_clearance": 6.544773049377284e-05,
+        "soft_continuation_steps": 48,
+        "minimum_clearance": 6.544773049377284e-05,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 77,
+        "from_side": 4.771875000000013,
+        "trial_side": 4.768750000000013,
+        "step": 0.003125,
+        "soft_minimum_clearance": -0.0005769469576606401,
+        "soft_continuation_steps": 51,
+        "minimum_clearance": 6.05202865600063e-09,
+        "overlap_residual": 0.0,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 1
+      },
+      {
+        "attempt": 78,
+        "from_side": 4.768750000000013,
+        "trial_side": 4.765625000000013,
+        "step": 0.003125,
+        "soft_minimum_clearance": -0.000999847888537575,
+        "soft_continuation_steps": 51,
+        "minimum_clearance": -0.1282883351139339,
+        "overlap_residual": 0.23437791068281832,
+        "feasible": false,
+        "polish_status": 4,
+        "polish_iterations": 106
+      },
+      {
+        "attempt": 79,
+        "from_side": 4.768750000000013,
+        "trial_side": 4.767187500000013,
+        "step": 0.0015625,
+        "soft_minimum_clearance": -0.0004999189455299202,
+        "soft_continuation_steps": 51,
+        "minimum_clearance": -0.00014403934910456329,
+        "overlap_residual": 0.00035275539821542635,
+        "feasible": false,
+        "polish_status": 4,
+        "polish_iterations": 133
+      },
+      {
+        "attempt": 80,
+        "from_side": 4.768750000000013,
+        "trial_side": 4.767968750000013,
+        "step": 0.00078125,
+        "soft_minimum_clearance": -0.00024995447402664794,
+        "soft_continuation_steps": 51,
+        "minimum_clearance": -1.7119639039719914e-13,
+        "overlap_residual": 2.635773571041166e-13,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 73
+      },
+      {
+        "attempt": 81,
+        "from_side": 4.767968750000013,
+        "trial_side": 4.767187500000013,
+        "step": 0.00078125,
+        "soft_minimum_clearance": -0.0002501977765358987,
+        "soft_continuation_steps": 51,
+        "minimum_clearance": -0.4468018855359228,
+        "overlap_residual": 0.5798265766480705,
+        "feasible": false,
+        "polish_status": 4,
+        "polish_iterations": 56
+      },
+      {
+        "attempt": 82,
+        "from_side": 4.767968750000013,
+        "trial_side": 4.767578125000013,
+        "step": 0.000390625,
+        "soft_minimum_clearance": -0.00012509888826794935,
+        "soft_continuation_steps": 51,
+        "minimum_clearance": -0.6769367277757086,
+        "overlap_residual": 1.4653998740924756,
+        "feasible": false,
+        "polish_status": 4,
+        "polish_iterations": 81
+      },
+      {
+        "attempt": 83,
+        "from_side": 4.767968750000013,
+        "trial_side": 4.767773437500013,
+        "step": 0.0001953125,
+        "soft_minimum_clearance": -6.254944413375263e-05,
+        "soft_continuation_steps": 51,
+        "minimum_clearance": -3.310685059432217e-13,
+        "overlap_residual": 3.4338107384181564e-13,
+        "feasible": true,
+        "polish_status": 0,
+        "polish_iterations": 73
+      },
+      {
+        "attempt": 84,
+        "from_side": 4.767773437500013,
+        "trial_side": 4.767578125000013,
+        "step": 0.0001953125,
+        "soft_minimum_clearance": -6.257289994815451e-05,
+        "soft_continuation_steps": 51,
+        "minimum_clearance": -0.14173904231015577,
+        "overlap_residual": 0.5060401333111804,
+        "feasible": false,
+        "polish_status": 4,
+        "polish_iterations": 76
+      }
+    ]
+  },
+  "basins": [
+    {
+      "seed": 2,
+      "status": "feasible_frontier",
+      "side": 4.767773437500013,
+      "minimum_clearance": -3.310685059432217e-13,
+      "overlap_residual": 3.4338107384181564e-13,
+      "contact_signature": {
+        "boundary": [
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            8,
+            0
+          ],
+          [
+            12,
+            1
+          ],
+          [
+            13,
+            0
+          ],
+          [
+            15,
+            3
+          ],
+          [
+            16,
+            1
+          ],
+          [
+            16,
+            3
+          ]
+        ],
+        "pairs": [
+          [
+            2,
+            6
+          ],
+          [
+            3,
+            7
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            12
+          ],
+          [
+            7,
+            12
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            10
+          ],
+          [
+            10,
+            11
+          ],
+          [
+            11,
+            12
+          ],
+          [
+            11,
+            15
+          ],
+          [
+            11,
+            16
+          ],
+          [
+            13,
+            14
+          ],
+          [
+            14,
+            15
+          ]
+        ]
+      },
+      "poses": [
+        [
+          0.5730713494762614,
+          0.5712479012745806,
+          0.0
+        ],
+        [
+          1.646532116681309,
+          0.5698110018394573,
+          0.0
+        ],
+        [
+          2.725603248240537,
+          0.5062169696428915,
+          -7.821217665626712e-06
+        ],
+        [
+          3.8035567310166987,
+          0.4999999999999991,
+          1.6653345369377348e-15
+        ],
+        [
+          0.6268088663085389,
+          1.6430893699715923,
+          1.1102230246251565e-16
+        ],
+        [
+          1.7503314821095581,
+          1.6438169155741325,
+          0.0
+        ],
+        [
+          3.255841235070988,
+          1.5121785539799417,
+          -0.00016240393081856652
+        ],
+        [
+          4.261844935727047,
+          1.4999999999999671,
+          -4.063416270128073e-14
+        ],
+        [
+          0.5054270128574445,
+          2.7158586580209305,
+          -2.2709617448213315e-05
+        ],
+        [
+          1.510224148630786,
+          2.722030952391056,
+          -2.303710632478584e-05
+        ],
+        [
+          2.71636986396558,
+          2.6517205626825295,
+          0.7332758153183829
+        ],
+        [
+          3.43754977332686,
+          3.3766151163110405,
+          0.7793417490003873
+        ],
+        [
+          4.267773437500112,
+          2.5000000000002167,
+          4.649614027130156e-13
+        ],
+        [
+          0.4999999999999977,
+          3.7950573717685634,
+          5.440092820663267e-15
+        ],
+        [
+          1.4999999999999922,
+          3.9409531890376366,
+          5.218048215738236e-15
+        ],
+        [
+          2.7070938128328836,
+          4.0606796246671175,
+          0.7793417490002212
+        ],
+        [
+          4.26167018006478,
+          4.26159641225236,
+          -9.155135079041976e-06
+        ]
+      ],
+      "trace": [
+        {
+          "attempt": 1,
+          "from_side": 5.0,
+          "trial_side": 4.975,
+          "step": 0.025,
+          "soft_minimum_clearance": -0.004228790460511167,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.11220512931838522,
+          "overlap_residual": 0.18784767973123775,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 195
+        },
+        {
+          "attempt": 2,
+          "from_side": 5.0,
+          "trial_side": 4.9875,
+          "step": 0.0125,
+          "soft_minimum_clearance": -0.0021366792152825997,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.12678968020197168,
+          "overlap_residual": 0.19389032370047782,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 82
+        },
+        {
+          "attempt": 3,
+          "from_side": 5.0,
+          "trial_side": 4.99375,
+          "step": 0.00625,
+          "soft_minimum_clearance": -0.0011047413670278727,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.06354733508049337,
+          "overlap_residual": 0.14470158729462176,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 106
+        },
+        {
+          "attempt": 4,
+          "from_side": 5.0,
+          "trial_side": 4.996875,
+          "step": 0.003125,
+          "soft_minimum_clearance": -0.0005970219119223463,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": 9.275777912431948e-08,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 441
+        },
+        {
+          "attempt": 5,
+          "from_side": 4.996875,
+          "trial_side": 4.99375,
+          "step": 0.003125,
+          "soft_minimum_clearance": 6.770791682697563e-05,
+          "soft_continuation_steps": 3,
+          "minimum_clearance": 6.770791682697563e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 6,
+          "from_side": 4.99375,
+          "trial_side": 4.9906250000000005,
+          "step": 0.003125,
+          "soft_minimum_clearance": 6.37717863685161e-05,
+          "soft_continuation_steps": 3,
+          "minimum_clearance": 6.37717863685161e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 7,
+          "from_side": 4.9906250000000005,
+          "trial_side": 4.987500000000001,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0001562639235705987,
+          "soft_continuation_steps": 3,
+          "minimum_clearance": 0.0001562639235705987,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 8,
+          "from_side": 4.987500000000001,
+          "trial_side": 4.984375000000001,
+          "step": 0.003125,
+          "soft_minimum_clearance": 3.86335571602725e-05,
+          "soft_continuation_steps": 4,
+          "minimum_clearance": 3.86335571602725e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 9,
+          "from_side": 4.984375000000001,
+          "trial_side": 4.981250000000001,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0008763492875762946,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0008763492875762946,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 10,
+          "from_side": 4.981250000000001,
+          "trial_side": 4.978125000000001,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0006137888249619916,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0006137888249619916,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 11,
+          "from_side": 4.978125000000001,
+          "trial_side": 4.975000000000001,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0011401571012323863,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0011401571012323863,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 12,
+          "from_side": 4.975000000000001,
+          "trial_side": 4.971875000000002,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.001377464575303744,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.001377464575303744,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 13,
+          "from_side": 4.971875000000002,
+          "trial_side": 4.968750000000002,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.00032684492521661834,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00032684492521661834,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 14,
+          "from_side": 4.968750000000002,
+          "trial_side": 4.965625000000002,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0005855226321089813,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0005855226321089813,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 15,
+          "from_side": 4.965625000000002,
+          "trial_side": 4.962500000000002,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.00016489563770982762,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00016489563770982762,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 16,
+          "from_side": 4.962500000000002,
+          "trial_side": 4.959375000000002,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.00045422584391596743,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00045422584391596743,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 17,
+          "from_side": 4.959375000000002,
+          "trial_side": 4.9562500000000025,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0009354421888319031,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0009354421888319031,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 18,
+          "from_side": 4.9562500000000025,
+          "trial_side": 4.953125000000003,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0004055363373738352,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0004055363373738352,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 19,
+          "from_side": 4.953125000000003,
+          "trial_side": 4.950000000000003,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0005056654895241319,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0005056654895241319,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 20,
+          "from_side": 4.950000000000003,
+          "trial_side": 4.946875000000003,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0003448544769104611,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0003448544769104611,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 21,
+          "from_side": 4.946875000000003,
+          "trial_side": 4.943750000000003,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0010399900455326794,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0010399900455326794,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 22,
+          "from_side": 4.943750000000003,
+          "trial_side": 4.940625000000003,
+          "step": 0.003125,
+          "soft_minimum_clearance": 7.249196149095027e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 7.249196149095027e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 23,
+          "from_side": 4.940625000000003,
+          "trial_side": 4.9375000000000036,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0007978559604557844,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0007978559604557844,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 24,
+          "from_side": 4.9375000000000036,
+          "trial_side": 4.934375000000004,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0001678305973333849,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0001678305973333849,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 25,
+          "from_side": 4.934375000000004,
+          "trial_side": 4.931250000000004,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0011270698438186066,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0011270698438186066,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 26,
+          "from_side": 4.931250000000004,
+          "trial_side": 4.928125000000004,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.001100575410463711,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.001100575410463711,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 27,
+          "from_side": 4.928125000000004,
+          "trial_side": 4.925000000000004,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0003388300519442389,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0003388300519442389,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 28,
+          "from_side": 4.925000000000004,
+          "trial_side": 4.921875000000004,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.002092483255161204,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.002092483255161204,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 29,
+          "from_side": 4.921875000000004,
+          "trial_side": 4.918750000000005,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.001105541513099162,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.001105541513099162,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 30,
+          "from_side": 4.918750000000005,
+          "trial_side": 4.915625000000005,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0007715304639460685,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0007715304639460685,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 31,
+          "from_side": 4.915625000000005,
+          "trial_side": 4.912500000000005,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0014986193769905842,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0014986193769905842,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 32,
+          "from_side": 4.912500000000005,
+          "trial_side": 4.909375000000005,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0003096537682734102,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0003096537682734102,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 33,
+          "from_side": 4.909375000000005,
+          "trial_side": 4.906250000000005,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0008864865024038604,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0008864865024038604,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 34,
+          "from_side": 4.906250000000005,
+          "trial_side": 4.9031250000000055,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0004003089900632695,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0004003089900632695,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 35,
+          "from_side": 4.9031250000000055,
+          "trial_side": 4.900000000000006,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0017360882127059885,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0017360882127059885,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 36,
+          "from_side": 4.900000000000006,
+          "trial_side": 4.896875000000006,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0005557182551085837,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0005557182551085837,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 37,
+          "from_side": 4.896875000000006,
+          "trial_side": 4.893750000000006,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0019018153135219595,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0019018153135219595,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 38,
+          "from_side": 4.893750000000006,
+          "trial_side": 4.890625000000006,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0011645739301684443,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0011645739301684443,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 39,
+          "from_side": 4.890625000000006,
+          "trial_side": 4.887500000000006,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0016835852639411897,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0016835852639411897,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 40,
+          "from_side": 4.887500000000006,
+          "trial_side": 4.884375000000007,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0005039751070505805,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0005039751070505805,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 41,
+          "from_side": 4.884375000000007,
+          "trial_side": 4.881250000000007,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0006487441321259002,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0006487441321259002,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 42,
+          "from_side": 4.881250000000007,
+          "trial_side": 4.878125000000007,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0002657615059773466,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0002657615059773466,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 43,
+          "from_side": 4.878125000000007,
+          "trial_side": 4.875000000000007,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0019238394526988056,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0019238394526988056,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 44,
+          "from_side": 4.875000000000007,
+          "trial_side": 4.871875000000007,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.00044160405123827573,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00044160405123827573,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 45,
+          "from_side": 4.871875000000007,
+          "trial_side": 4.8687500000000075,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0013410458457734364,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0013410458457734364,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 46,
+          "from_side": 4.8687500000000075,
+          "trial_side": 4.865625000000008,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0002991085531844906,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0002991085531844906,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 47,
+          "from_side": 4.865625000000008,
+          "trial_side": 4.862500000000008,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0014126368432640923,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0014126368432640923,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 48,
+          "from_side": 4.862500000000008,
+          "trial_side": 4.859375000000008,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.00033654429534735186,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00033654429534735186,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 49,
+          "from_side": 4.859375000000008,
+          "trial_side": 4.856250000000008,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.001062901264186067,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.001062901264186067,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 50,
+          "from_side": 4.856250000000008,
+          "trial_side": 4.853125000000008,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0008816331816339229,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0008816331816339229,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 51,
+          "from_side": 4.853125000000008,
+          "trial_side": 4.8500000000000085,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0014160187640859245,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0014160187640859245,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 52,
+          "from_side": 4.8500000000000085,
+          "trial_side": 4.846875000000009,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0003270231138527979,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0003270231138527979,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 53,
+          "from_side": 4.846875000000009,
+          "trial_side": 4.843750000000009,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0008016265802250899,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0008016265802250899,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 54,
+          "from_side": 4.843750000000009,
+          "trial_side": 4.840625000000009,
+          "step": 0.003125,
+          "soft_minimum_clearance": 3.780891006055498e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 3.780891006055498e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 55,
+          "from_side": 4.840625000000009,
+          "trial_side": 4.837500000000009,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.001091903126085647,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.001091903126085647,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 56,
+          "from_side": 4.837500000000009,
+          "trial_side": 4.834375000000009,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0015563318827028771,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0015563318827028771,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 57,
+          "from_side": 4.834375000000009,
+          "trial_side": 4.83125000000001,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0009860141711202086,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0009860141711202086,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 58,
+          "from_side": 4.83125000000001,
+          "trial_side": 4.82812500000001,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0013435471321305847,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0013435471321305847,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 59,
+          "from_side": 4.82812500000001,
+          "trial_side": 4.82500000000001,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.000555426255693714,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.000555426255693714,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 60,
+          "from_side": 4.82500000000001,
+          "trial_side": 4.82187500000001,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0005755473907742559,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0005755473907742559,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 61,
+          "from_side": 4.82187500000001,
+          "trial_side": 4.81875000000001,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.00026725642370672986,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00026725642370672986,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 62,
+          "from_side": 4.81875000000001,
+          "trial_side": 4.8156250000000105,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.00034356036119542743,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00034356036119542743,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 63,
+          "from_side": 4.8156250000000105,
+          "trial_side": 4.812500000000011,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.00011697589421166832,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00011697589421166832,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 64,
+          "from_side": 4.812500000000011,
+          "trial_side": 4.809375000000011,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0003421035095325653,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0003421035095325653,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 65,
+          "from_side": 4.809375000000011,
+          "trial_side": 4.806250000000011,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.00019807784194925127,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00019807784194925127,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 66,
+          "from_side": 4.806250000000011,
+          "trial_side": 4.803125000000011,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.00016937852028675593,
+          "soft_continuation_steps": 2,
+          "minimum_clearance": 0.00016937852028675593,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 67,
+          "from_side": 4.803125000000011,
+          "trial_side": 4.800000000000011,
+          "step": 0.003125,
+          "soft_minimum_clearance": 2.2974784589013808e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 2.2974784589013808e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 68,
+          "from_side": 4.800000000000011,
+          "trial_side": 4.7968750000000115,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0001269399376939706,
+          "soft_continuation_steps": 4,
+          "minimum_clearance": 0.0001269399376939706,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 69,
+          "from_side": 4.7968750000000115,
+          "trial_side": 4.793750000000012,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.00019132424280954297,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00019132424280954297,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 70,
+          "from_side": 4.793750000000012,
+          "trial_side": 4.790625000000012,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.0001937800982954041,
+          "soft_continuation_steps": 8,
+          "minimum_clearance": 0.0001937800982954041,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 71,
+          "from_side": 4.790625000000012,
+          "trial_side": 4.787500000000012,
+          "step": 0.003125,
+          "soft_minimum_clearance": 4.6378708249417144e-05,
+          "soft_continuation_steps": 12,
+          "minimum_clearance": 4.6378708249417144e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 72,
+          "from_side": 4.787500000000012,
+          "trial_side": 4.784375000000012,
+          "step": 0.003125,
+          "soft_minimum_clearance": 0.00013665072067947648,
+          "soft_continuation_steps": 16,
+          "minimum_clearance": 0.00013665072067947648,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 73,
+          "from_side": 4.784375000000012,
+          "trial_side": 4.781250000000012,
+          "step": 0.003125,
+          "soft_minimum_clearance": 3.7369307570589427e-06,
+          "soft_continuation_steps": 21,
+          "minimum_clearance": 3.7369307570589427e-06,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 74,
+          "from_side": 4.781250000000012,
+          "trial_side": 4.778125000000013,
+          "step": 0.003125,
+          "soft_minimum_clearance": 3.282762015155427e-05,
+          "soft_continuation_steps": 27,
+          "minimum_clearance": 3.282762015155427e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 75,
+          "from_side": 4.778125000000013,
+          "trial_side": 4.775000000000013,
+          "step": 0.003125,
+          "soft_minimum_clearance": 4.33808264554969e-06,
+          "soft_continuation_steps": 34,
+          "minimum_clearance": 4.33808264554969e-06,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 76,
+          "from_side": 4.775000000000013,
+          "trial_side": 4.771875000000013,
+          "step": 0.003125,
+          "soft_minimum_clearance": 6.544773049377284e-05,
+          "soft_continuation_steps": 48,
+          "minimum_clearance": 6.544773049377284e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 77,
+          "from_side": 4.771875000000013,
+          "trial_side": 4.768750000000013,
+          "step": 0.003125,
+          "soft_minimum_clearance": -0.0005769469576606401,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": 6.05202865600063e-09,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 78,
+          "from_side": 4.768750000000013,
+          "trial_side": 4.765625000000013,
+          "step": 0.003125,
+          "soft_minimum_clearance": -0.000999847888537575,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.1282883351139339,
+          "overlap_residual": 0.23437791068281832,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 106
+        },
+        {
+          "attempt": 79,
+          "from_side": 4.768750000000013,
+          "trial_side": 4.767187500000013,
+          "step": 0.0015625,
+          "soft_minimum_clearance": -0.0004999189455299202,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.00014403934910456329,
+          "overlap_residual": 0.00035275539821542635,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 133
+        },
+        {
+          "attempt": 80,
+          "from_side": 4.768750000000013,
+          "trial_side": 4.767968750000013,
+          "step": 0.00078125,
+          "soft_minimum_clearance": -0.00024995447402664794,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -1.7119639039719914e-13,
+          "overlap_residual": 2.635773571041166e-13,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 73
+        },
+        {
+          "attempt": 81,
+          "from_side": 4.767968750000013,
+          "trial_side": 4.767187500000013,
+          "step": 0.00078125,
+          "soft_minimum_clearance": -0.0002501977765358987,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.4468018855359228,
+          "overlap_residual": 0.5798265766480705,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 56
+        },
+        {
+          "attempt": 82,
+          "from_side": 4.767968750000013,
+          "trial_side": 4.767578125000013,
+          "step": 0.000390625,
+          "soft_minimum_clearance": -0.00012509888826794935,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.6769367277757086,
+          "overlap_residual": 1.4653998740924756,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 81
+        },
+        {
+          "attempt": 83,
+          "from_side": 4.767968750000013,
+          "trial_side": 4.767773437500013,
+          "step": 0.0001953125,
+          "soft_minimum_clearance": -6.254944413375263e-05,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -3.310685059432217e-13,
+          "overlap_residual": 3.4338107384181564e-13,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 73
+        },
+        {
+          "attempt": 84,
+          "from_side": 4.767773437500013,
+          "trial_side": 4.767578125000013,
+          "step": 0.0001953125,
+          "soft_minimum_clearance": -6.257289994815451e-05,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.14173904231015577,
+          "overlap_residual": 0.5060401333111804,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 76
+        }
+      ]
+    },
+    {
+      "seed": 0,
+      "status": "feasible_frontier",
+      "side": 4.768164062500014,
+      "minimum_clearance": -3.1086244689504383e-15,
+      "overlap_residual": 3.813741331030777e-15,
+      "contact_signature": {
+        "boundary": [
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            8,
+            0
+          ],
+          [
+            12,
+            1
+          ],
+          [
+            13,
+            0
+          ],
+          [
+            13,
+            3
+          ],
+          [
+            14,
+            3
+          ],
+          [
+            15,
+            3
+          ],
+          [
+            16,
+            1
+          ],
+          [
+            16,
+            3
+          ]
+        ],
+        "pairs": [
+          [
+            1,
+            5
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            10
+          ],
+          [
+            9,
+            13
+          ],
+          [
+            9,
+            14
+          ],
+          [
+            10,
+            11
+          ],
+          [
+            11,
+            12
+          ],
+          [
+            11,
+            15
+          ],
+          [
+            11,
+            16
+          ]
+        ]
+      },
+      "poses": [
+        [
+          0.5679381518378812,
+          0.5647138642326011,
+          0.007711105621027059
+        ],
+        [
+          1.6491133206174808,
+          0.5000000000675346,
+          -1.3506917806438423e-10
+        ],
+        [
+          2.7446322078546763,
+          0.500000000684219,
+          -1.3684380295586607e-09
+        ],
+        [
+          4.064559608227393,
+          0.5245576345732839,
+          -0.0005294585357880077
+        ],
+        [
+          0.5000000000003898,
+          1.64305127527472,
+          -7.795986078917849e-13
+        ],
+        [
+          1.706325522217266,
+          1.7063255222721714,
+          -0.7383860256918289
+        ],
+        [
+          3.061838540254848,
+          1.7063255224318779,
+          -0.7383860260035036
+        ],
+        [
+          4.268164062486469,
+          1.5767473833896914,
+          2.7090218956971057e-11
+        ],
+        [
+          0.500010960129787,
+          2.719854808656859,
+          2.192049982985278e-05
+        ],
+        [
+          1.4999989413666552,
+          3.268153102051228,
+          2.192113651233729e-05
+        ],
+        [
+          2.3812530272498833,
+          2.4442137264238006,
+          -0.7383860259554011
+        ],
+        [
+          3.268168130881364,
+          3.2681491143389674,
+          -2.9896769009662982e-05
+        ],
+        [
+          4.268149114339777,
+          2.632060669626142,
+          -2.9896767386849987e-05
+        ],
+        [
+          0.5124849169253226,
+          4.267287718756959,
+          0.001754227041687706
+        ],
+        [
+          1.590627146859856,
+          4.268164062496349,
+          7.329359341667896e-12
+        ],
+        [
+          3.177647948832734,
+          4.268164062500015,
+          -2.3314683517128287e-15
+        ],
+        [
+          4.258353240956907,
+          4.266645310482892,
+          -0.0030421360187369295
+        ]
+      ],
+      "trace": [
+        {
+          "attempt": 1,
+          "from_side": 5.0,
+          "trial_side": 4.975,
+          "step": 0.025,
+          "soft_minimum_clearance": -0.004243490470891564,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -1.0,
+          "overlap_residual": 6.164414002968976,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 182
+        },
+        {
+          "attempt": 2,
+          "from_side": 5.0,
+          "trial_side": 4.9875,
+          "step": 0.0125,
+          "soft_minimum_clearance": -0.00215055036369316,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.5472313253174925,
+          "overlap_residual": 0.6663369288394032,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 303
+        },
+        {
+          "attempt": 3,
+          "from_side": 5.0,
+          "trial_side": 4.99375,
+          "step": 0.00625,
+          "soft_minimum_clearance": -0.0011002725150166537,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": 9.996956373825583e-08,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 245
+        },
+        {
+          "attempt": 4,
+          "from_side": 4.99375,
+          "trial_side": 4.987500000000001,
+          "step": 0.00625,
+          "soft_minimum_clearance": 8.87720542842585e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 8.87720542842585e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 5,
+          "from_side": 4.987500000000001,
+          "trial_side": 4.981250000000001,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.0001431183408977521,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0001431183408977521,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 6,
+          "from_side": 4.981250000000001,
+          "trial_side": 4.975000000000001,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.00020185655363058608,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00020185655363058608,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 7,
+          "from_side": 4.975000000000001,
+          "trial_side": 4.968750000000002,
+          "step": 0.00625,
+          "soft_minimum_clearance": 5.83341735000964e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 5.83341735000964e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 8,
+          "from_side": 4.968750000000002,
+          "trial_side": 4.962500000000002,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.00012626430600293226,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00012626430600293226,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 9,
+          "from_side": 4.962500000000002,
+          "trial_side": 4.9562500000000025,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.00043910709080474675,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00043910709080474675,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 10,
+          "from_side": 4.9562500000000025,
+          "trial_side": 4.950000000000003,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.0006304478810349456,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0006304478810349456,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 11,
+          "from_side": 4.950000000000003,
+          "trial_side": 4.943750000000003,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.00021728746250371245,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00021728746250371245,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 12,
+          "from_side": 4.943750000000003,
+          "trial_side": 4.9375000000000036,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.0005508413827735037,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0005508413827735037,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 13,
+          "from_side": 4.9375000000000036,
+          "trial_side": 4.931250000000004,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.00015762170208855064,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00015762170208855064,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 14,
+          "from_side": 4.931250000000004,
+          "trial_side": 4.925000000000004,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.00034689299567003395,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00034689299567003395,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 15,
+          "from_side": 4.925000000000004,
+          "trial_side": 4.918750000000005,
+          "step": 0.00625,
+          "soft_minimum_clearance": 6.631293846104391e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 6.631293846104391e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 16,
+          "from_side": 4.918750000000005,
+          "trial_side": 4.912500000000005,
+          "step": 0.00625,
+          "soft_minimum_clearance": 6.361347889149993e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 6.361347889149993e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 17,
+          "from_side": 4.912500000000005,
+          "trial_side": 4.906250000000005,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.00016957376278403657,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00016957376278403657,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 18,
+          "from_side": 4.906250000000005,
+          "trial_side": 4.900000000000006,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.000633730416899736,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.000633730416899736,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 19,
+          "from_side": 4.900000000000006,
+          "trial_side": 4.893750000000006,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.0006374935596982212,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0006374935596982212,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 20,
+          "from_side": 4.893750000000006,
+          "trial_side": 4.887500000000006,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.0003474514482694202,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0003474514482694202,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 21,
+          "from_side": 4.887500000000006,
+          "trial_side": 4.881250000000007,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.0008635246790880124,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0008635246790880124,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 22,
+          "from_side": 4.881250000000007,
+          "trial_side": 4.875000000000007,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.00048766802752286953,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00048766802752286953,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 23,
+          "from_side": 4.875000000000007,
+          "trial_side": 4.8687500000000075,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.00016642233940245,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00016642233940245,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 24,
+          "from_side": 4.8687500000000075,
+          "trial_side": 4.862500000000008,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.0003680615262384723,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0003680615262384723,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 25,
+          "from_side": 4.862500000000008,
+          "trial_side": 4.856250000000008,
+          "step": 0.00625,
+          "soft_minimum_clearance": 5.960410966066032e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 5.960410966066032e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 26,
+          "from_side": 4.856250000000008,
+          "trial_side": 4.8500000000000085,
+          "step": 0.00625,
+          "soft_minimum_clearance": 3.715122132907922e-05,
+          "soft_continuation_steps": 3,
+          "minimum_clearance": 3.715122132907922e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 27,
+          "from_side": 4.8500000000000085,
+          "trial_side": 4.843750000000009,
+          "step": 0.00625,
+          "soft_minimum_clearance": 6.752200618709292e-05,
+          "soft_continuation_steps": 5,
+          "minimum_clearance": 6.752200618709292e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 28,
+          "from_side": 4.843750000000009,
+          "trial_side": 4.837500000000009,
+          "step": 0.00625,
+          "soft_minimum_clearance": 8.953898001773375e-05,
+          "soft_continuation_steps": 8,
+          "minimum_clearance": 8.953898001773375e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 29,
+          "from_side": 4.837500000000009,
+          "trial_side": 4.83125000000001,
+          "step": 0.00625,
+          "soft_minimum_clearance": 0.00010048868790479837,
+          "soft_continuation_steps": 8,
+          "minimum_clearance": 0.00010048868790479837,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 30,
+          "from_side": 4.83125000000001,
+          "trial_side": 4.82500000000001,
+          "step": 0.00625,
+          "soft_minimum_clearance": 4.684062398285782e-05,
+          "soft_continuation_steps": 2,
+          "minimum_clearance": 4.684062398285782e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 31,
+          "from_side": 4.82500000000001,
+          "trial_side": 4.81875000000001,
+          "step": 0.00625,
+          "soft_minimum_clearance": 8.347209554382395e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 8.347209554382395e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 32,
+          "from_side": 4.81875000000001,
+          "trial_side": 4.812500000000011,
+          "step": 0.00625,
+          "soft_minimum_clearance": 1.4541835292147809e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 1.4541835292147809e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 33,
+          "from_side": 4.812500000000011,
+          "trial_side": 4.806250000000011,
+          "step": 0.00625,
+          "soft_minimum_clearance": 4.112860903382476e-05,
+          "soft_continuation_steps": 4,
+          "minimum_clearance": 4.112860903382476e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 34,
+          "from_side": 4.806250000000011,
+          "trial_side": 4.800000000000011,
+          "step": 0.00625,
+          "soft_minimum_clearance": 8.510962261842892e-06,
+          "soft_continuation_steps": 7,
+          "minimum_clearance": 8.510962261842892e-06,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 35,
+          "from_side": 4.800000000000011,
+          "trial_side": 4.793750000000012,
+          "step": 0.00625,
+          "soft_minimum_clearance": 6.9386789807168725e-06,
+          "soft_continuation_steps": 11,
+          "minimum_clearance": 6.9386789807168725e-06,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 36,
+          "from_side": 4.793750000000012,
+          "trial_side": 4.787500000000012,
+          "step": 0.00625,
+          "soft_minimum_clearance": 5.4074828724548496e-05,
+          "soft_continuation_steps": 17,
+          "minimum_clearance": 5.4074828724548496e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 37,
+          "from_side": 4.787500000000012,
+          "trial_side": 4.781250000000012,
+          "step": 0.00625,
+          "soft_minimum_clearance": 2.192953733715086e-06,
+          "soft_continuation_steps": 24,
+          "minimum_clearance": 2.192953733715086e-06,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 38,
+          "from_side": 4.781250000000012,
+          "trial_side": 4.775000000000013,
+          "step": 0.00625,
+          "soft_minimum_clearance": 3.505036904227765e-05,
+          "soft_continuation_steps": 39,
+          "minimum_clearance": 3.505036904227765e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 39,
+          "from_side": 4.775000000000013,
+          "trial_side": 4.768750000000013,
+          "step": 0.00625,
+          "soft_minimum_clearance": -0.001009616473079955,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": 7.639092691746896e-09,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 40,
+          "from_side": 4.768750000000013,
+          "trial_side": 4.7625000000000135,
+          "step": 0.00625,
+          "soft_minimum_clearance": -0.002000479808553779,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.42108730253191484,
+          "overlap_residual": 0.8716461293278518,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 611
+        },
+        {
+          "attempt": 41,
+          "from_side": 4.768750000000013,
+          "trial_side": 4.765625000000013,
+          "step": 0.003125,
+          "soft_minimum_clearance": -0.001000234905054187,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.9899165690023713,
+          "overlap_residual": 2.6402756473712716,
+          "feasible": false,
+          "polish_status": 8,
+          "polish_iterations": 513
+        },
+        {
+          "attempt": 42,
+          "from_side": 4.768750000000013,
+          "trial_side": 4.767187500000013,
+          "step": 0.0015625,
+          "soft_minimum_clearance": -0.000500112453304391,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.19808411176585528,
+          "overlap_residual": 0.2679393829614448,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 422
+        },
+        {
+          "attempt": 43,
+          "from_side": 4.768750000000013,
+          "trial_side": 4.767968750000013,
+          "step": 0.00078125,
+          "soft_minimum_clearance": -0.000250051227429271,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.000838043581013137,
+          "overlap_residual": 0.002056027258718691,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 330
+        },
+        {
+          "attempt": 44,
+          "from_side": 4.768750000000013,
+          "trial_side": 4.7683593750000135,
+          "step": 0.000390625,
+          "soft_minimum_clearance": -0.0001250206144913779,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -2.631228568361621e-14,
+          "overlap_residual": 2.8783535593193455e-14,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 123
+        },
+        {
+          "attempt": 45,
+          "from_side": 4.7683593750000135,
+          "trial_side": 4.767968750000014,
+          "step": 0.000390625,
+          "soft_minimum_clearance": -0.00012504207761399044,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -4.685833120587901e-05,
+          "overlap_residual": 0.00015641016676253952,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 117
+        },
+        {
+          "attempt": 46,
+          "from_side": 4.7683593750000135,
+          "trial_side": 4.768164062500014,
+          "step": 0.0001953125,
+          "soft_minimum_clearance": -6.252103880699522e-05,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -3.1086244689504383e-15,
+          "overlap_residual": 3.813741331030777e-15,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 223
+        },
+        {
+          "attempt": 47,
+          "from_side": 4.768164062500014,
+          "trial_side": 4.767968750000014,
+          "step": 0.0001953125,
+          "soft_minimum_clearance": -6.252662885541937e-05,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.07479464431507066,
+          "overlap_residual": 0.14824330548920817,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 110
+        }
+      ]
+    },
+    {
+      "seed": 3,
+      "status": "feasible_frontier",
+      "side": 4.82304687499996,
+      "minimum_clearance": 9.987573834635555e-08,
+      "overlap_residual": 0.0,
+      "contact_signature": {
+        "boundary": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            8,
+            0
+          ],
+          [
+            14,
+            3
+          ],
+          [
+            16,
+            3
+          ]
+        ],
+        "pairs": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            12
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            10
+          ],
+          [
+            9,
+            14
+          ],
+          [
+            12,
+            16
+          ]
+        ]
+      },
+      "poses": [
+        [
+          0.5000000998836858,
+          0.5053211800598725,
+          2.3425705819590803e-14
+        ],
+        [
+          1.5000001997683687,
+          0.500000099948037,
+          2.7755575615628914e-15
+        ],
+        [
+          3.3151305732080054,
+          0.5030736746631619,
+          3.527983055284789e-05
+        ],
+        [
+          4.318705330248649,
+          0.6293430744642876,
+          0.00014807637895575265
+        ],
+        [
+          1.1126640600122593,
+          1.5103102908016828,
+          0.00020616605501722063
+        ],
+        [
+          2.3859383282030966,
+          1.3608904116790856,
+          0.4226090899920347
+        ],
+        [
+          3.320827806939787,
+          1.7201820529649572,
+          0.42260908999205293
+        ],
+        [
+          4.323046774973206,
+          2.3225013456186634,
+          2.68558064675517e-10
+        ],
+        [
+          0.5042392125457962,
+          2.5149825272138577,
+          -4.281319524568339e-06
+        ],
+        [
+          1.4922778823695908,
+          3.157299493319824,
+          0.422157301378578
+        ],
+        [
+          2.1062753260459166,
+          2.3341708383463193,
+          0.42239654195361465
+        ],
+        [
+          3.0458228154055584,
+          2.891414807079306,
+          0.4066099474461611
+        ],
+        [
+          4.235013288269131,
+          3.3225014455748703,
+          2.9959323910588864e-10
+        ],
+        [
+          0.5702931420366557,
+          4.181557647070246,
+          3.3306690738754696e-16
+        ],
+        [
+          1.6399819247012681,
+          4.320335018190055,
+          -4.215090870984817e-05
+        ],
+        [
+          2.7115037417158154,
+          4.178796873104504,
+          0.0001640375419332818
+        ],
+        [
+          3.790316882818574,
+          4.322519629165613,
+          0.0003265087011762313
+        ]
+      ],
+      "trace": [
+        {
+          "attempt": 1,
+          "from_side": 5.0,
+          "trial_side": 4.975,
+          "step": 0.025,
+          "soft_minimum_clearance": -0.0042643543697095665,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.13892764686070525,
+          "overlap_residual": 0.2437377802420881,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 47
+        },
+        {
+          "attempt": 2,
+          "from_side": 5.0,
+          "trial_side": 4.9875,
+          "step": 0.0125,
+          "soft_minimum_clearance": -0.002159935275110547,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.4453907543339768,
+          "overlap_residual": 0.8270962987112138,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 135
+        },
+        {
+          "attempt": 3,
+          "from_side": 5.0,
+          "trial_side": 4.99375,
+          "step": 0.00625,
+          "soft_minimum_clearance": -0.0011098644815032976,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.07867517424658854,
+          "overlap_residual": 0.1666145075520113,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 116
+        },
+        {
+          "attempt": 4,
+          "from_side": 5.0,
+          "trial_side": 4.996875,
+          "step": 0.003125,
+          "soft_minimum_clearance": -0.0005946332670049292,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.4319300409529703,
+          "overlap_residual": 0.6992867571694886,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 128
+        },
+        {
+          "attempt": 5,
+          "from_side": 5.0,
+          "trial_side": 4.9984375,
+          "step": 0.0015625,
+          "soft_minimum_clearance": -0.0003349969161469124,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": 9.998472616512544e-08,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 270
+        },
+        {
+          "attempt": 6,
+          "from_side": 4.9984375,
+          "trial_side": 4.996874999999999,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 3.9409513757249215e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 3.9409513757249215e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 7,
+          "from_side": 4.996874999999999,
+          "trial_side": 4.995312499999999,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00032710553472159454,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00032710553472159454,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 8,
+          "from_side": 4.995312499999999,
+          "trial_side": 4.993749999999999,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.000819632325828934,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.000819632325828934,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 9,
+          "from_side": 4.993749999999999,
+          "trial_side": 4.992187499999998,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0004399198979532226,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0004399198979532226,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 10,
+          "from_side": 4.992187499999998,
+          "trial_side": 4.990624999999998,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0007650146878377395,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0007650146878377395,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 11,
+          "from_side": 4.990624999999998,
+          "trial_side": 4.9890624999999975,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0002433879496280822,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0002433879496280822,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 12,
+          "from_side": 4.9890624999999975,
+          "trial_side": 4.987499999999997,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.001102239013000439,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.001102239013000439,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 13,
+          "from_side": 4.987499999999997,
+          "trial_side": 4.985937499999997,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0013142471234773856,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0013142471234773856,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 14,
+          "from_side": 4.985937499999997,
+          "trial_side": 4.9843749999999964,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.001330658757702885,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.001330658757702885,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 15,
+          "from_side": 4.9843749999999964,
+          "trial_side": 4.982812499999996,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0023932750099211475,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0023932750099211475,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 16,
+          "from_side": 4.982812499999996,
+          "trial_side": 4.981249999999996,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0013682858287260569,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0013682858287260569,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 17,
+          "from_side": 4.981249999999996,
+          "trial_side": 4.979687499999995,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.002263232225316214,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.002263232225316214,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 18,
+          "from_side": 4.979687499999995,
+          "trial_side": 4.978124999999995,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.002178845372247551,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.002178845372247551,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 19,
+          "from_side": 4.978124999999995,
+          "trial_side": 4.976562499999995,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0006244609267275214,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0006244609267275214,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 20,
+          "from_side": 4.976562499999995,
+          "trial_side": 4.974999999999994,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0009716180090810767,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0009716180090810767,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 21,
+          "from_side": 4.974999999999994,
+          "trial_side": 4.973437499999994,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00035413899033365226,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00035413899033365226,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 22,
+          "from_side": 4.973437499999994,
+          "trial_side": 4.971874999999994,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0012950406227041356,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0012950406227041356,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 23,
+          "from_side": 4.971874999999994,
+          "trial_side": 4.970312499999993,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.002321928421971542,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.002321928421971542,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 24,
+          "from_side": 4.970312499999993,
+          "trial_side": 4.968749999999993,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0002068870619105212,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0002068870619105212,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 25,
+          "from_side": 4.968749999999993,
+          "trial_side": 4.9671874999999925,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.002673186742472744,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.002673186742472744,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 26,
+          "from_side": 4.9671874999999925,
+          "trial_side": 4.965624999999992,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0025234937164062554,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0025234937164062554,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 27,
+          "from_side": 4.965624999999992,
+          "trial_side": 4.964062499999992,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00184411617919511,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00184411617919511,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 28,
+          "from_side": 4.964062499999992,
+          "trial_side": 4.9624999999999915,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0009244797490205459,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0009244797490205459,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 29,
+          "from_side": 4.9624999999999915,
+          "trial_side": 4.960937499999991,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0005201646799117832,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0005201646799117832,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 30,
+          "from_side": 4.960937499999991,
+          "trial_side": 4.959374999999991,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0005849123945618206,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0005849123945618206,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 31,
+          "from_side": 4.959374999999991,
+          "trial_side": 4.95781249999999,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0004122301618862956,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0004122301618862956,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 32,
+          "from_side": 4.95781249999999,
+          "trial_side": 4.95624999999999,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0010288663133593001,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0010288663133593001,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 33,
+          "from_side": 4.95624999999999,
+          "trial_side": 4.95468749999999,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00030711555919893385,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00030711555919893385,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 34,
+          "from_side": 4.95468749999999,
+          "trial_side": 4.953124999999989,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0008429092186572618,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0008429092186572618,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 35,
+          "from_side": 4.953124999999989,
+          "trial_side": 4.951562499999989,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0033289897600157214,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0033289897600157214,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 36,
+          "from_side": 4.951562499999989,
+          "trial_side": 4.949999999999989,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0003165974936550908,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0003165974936550908,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 37,
+          "from_side": 4.949999999999989,
+          "trial_side": 4.948437499999988,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.002279926394353371,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.002279926394353371,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 38,
+          "from_side": 4.948437499999988,
+          "trial_side": 4.946874999999988,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00214511516157323,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00214511516157323,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 39,
+          "from_side": 4.946874999999988,
+          "trial_side": 4.945312499999988,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.001207247487220231,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.001207247487220231,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 40,
+          "from_side": 4.945312499999988,
+          "trial_side": 4.943749999999987,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00020920066197116505,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00020920066197116505,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 41,
+          "from_side": 4.943749999999987,
+          "trial_side": 4.942187499999987,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0022040804233467437,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0022040804233467437,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 42,
+          "from_side": 4.942187499999987,
+          "trial_side": 4.9406249999999865,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0023748627772124387,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0023748627772124387,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 43,
+          "from_side": 4.9406249999999865,
+          "trial_side": 4.939062499999986,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0033913572282249227,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0033913572282249227,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 44,
+          "from_side": 4.939062499999986,
+          "trial_side": 4.937499999999986,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0020174403558917975,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0020174403558917975,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 45,
+          "from_side": 4.937499999999986,
+          "trial_side": 4.935937499999985,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0009920675333763285,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0009920675333763285,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 46,
+          "from_side": 4.935937499999985,
+          "trial_side": 4.934374999999985,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0015774399841173015,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0015774399841173015,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 47,
+          "from_side": 4.934374999999985,
+          "trial_side": 4.932812499999985,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0023368690762766153,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0023368690762766153,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 48,
+          "from_side": 4.932812499999985,
+          "trial_side": 4.931249999999984,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0029059293611739534,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0029059293611739534,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 49,
+          "from_side": 4.931249999999984,
+          "trial_side": 4.929687499999984,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0018932720569035943,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0018932720569035943,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 50,
+          "from_side": 4.929687499999984,
+          "trial_side": 4.928124999999984,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0023424662745827884,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0023424662745827884,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 51,
+          "from_side": 4.928124999999984,
+          "trial_side": 4.926562499999983,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0008345781674854447,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0008345781674854447,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 52,
+          "from_side": 4.926562499999983,
+          "trial_side": 4.924999999999983,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.001550907087689346,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.001550907087689346,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 53,
+          "from_side": 4.924999999999983,
+          "trial_side": 4.923437499999983,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0006748109792937829,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0006748109792937829,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 54,
+          "from_side": 4.923437499999983,
+          "trial_side": 4.921874999999982,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0014084849042423908,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0014084849042423908,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 55,
+          "from_side": 4.921874999999982,
+          "trial_side": 4.920312499999982,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 1.0400254160325417e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 1.0400254160325417e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 56,
+          "from_side": 4.920312499999982,
+          "trial_side": 4.9187499999999815,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0007474128540647662,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0007474128540647662,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 57,
+          "from_side": 4.9187499999999815,
+          "trial_side": 4.917187499999981,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0006807769960028853,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0006807769960028853,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 58,
+          "from_side": 4.917187499999981,
+          "trial_side": 4.915624999999981,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.000551160747446211,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.000551160747446211,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 59,
+          "from_side": 4.915624999999981,
+          "trial_side": 4.9140624999999805,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0006229839723255193,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0006229839723255193,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 60,
+          "from_side": 4.9140624999999805,
+          "trial_side": 4.91249999999998,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00016113478334811582,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00016113478334811582,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 61,
+          "from_side": 4.91249999999998,
+          "trial_side": 4.91093749999998,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0005281266598426981,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0005281266598426981,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 62,
+          "from_side": 4.91093749999998,
+          "trial_side": 4.909374999999979,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0004400337795595899,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0004400337795595899,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 63,
+          "from_side": 4.909374999999979,
+          "trial_side": 4.907812499999979,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00045936352216491283,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00045936352216491283,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 64,
+          "from_side": 4.907812499999979,
+          "trial_side": 4.906249999999979,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0007347211042474378,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0007347211042474378,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 65,
+          "from_side": 4.906249999999979,
+          "trial_side": 4.904687499999978,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00036677752525537954,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00036677752525537954,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 66,
+          "from_side": 4.904687499999978,
+          "trial_side": 4.903124999999978,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00021991046812286363,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00021991046812286363,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 67,
+          "from_side": 4.903124999999978,
+          "trial_side": 4.901562499999978,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0006354362809011249,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0006354362809011249,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 68,
+          "from_side": 4.901562499999978,
+          "trial_side": 4.899999999999977,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00024008449256951447,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00024008449256951447,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 69,
+          "from_side": 4.899999999999977,
+          "trial_side": 4.898437499999977,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 1.976545839643684e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 1.976545839643684e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 70,
+          "from_side": 4.898437499999977,
+          "trial_side": 4.8968749999999766,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0006039560791575305,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0006039560791575305,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 71,
+          "from_side": 4.8968749999999766,
+          "trial_side": 4.895312499999976,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0006228045529806936,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0006228045529806936,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 72,
+          "from_side": 4.895312499999976,
+          "trial_side": 4.893749999999976,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 3.200962591609624e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 3.200962591609624e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 73,
+          "from_side": 4.893749999999976,
+          "trial_side": 4.8921874999999755,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 1.4000781241030325e-06,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 1.4000781241030325e-06,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 74,
+          "from_side": 4.8921874999999755,
+          "trial_side": 4.890624999999975,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00018091190440561178,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00018091190440561178,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 75,
+          "from_side": 4.890624999999975,
+          "trial_side": 4.889062499999975,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 5.1644183268306776e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 5.1644183268306776e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 76,
+          "from_side": 4.889062499999975,
+          "trial_side": 4.887499999999974,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 1.4782789706568877e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 1.4782789706568877e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 77,
+          "from_side": 4.887499999999974,
+          "trial_side": 4.885937499999974,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 4.852617863537745e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 4.852617863537745e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 78,
+          "from_side": 4.885937499999974,
+          "trial_side": 4.884374999999974,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0002012950451819595,
+          "soft_continuation_steps": 2,
+          "minimum_clearance": 0.0002012950451819595,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 79,
+          "from_side": 4.884374999999974,
+          "trial_side": 4.882812499999973,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00023001362846342133,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00023001362846342133,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 80,
+          "from_side": 4.882812499999973,
+          "trial_side": 4.881249999999973,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0002488595435485852,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0002488595435485852,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 81,
+          "from_side": 4.881249999999973,
+          "trial_side": 4.879687499999973,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0005998272049951847,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0005998272049951847,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 82,
+          "from_side": 4.879687499999973,
+          "trial_side": 4.878124999999972,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00038233222694095126,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00038233222694095126,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 83,
+          "from_side": 4.878124999999972,
+          "trial_side": 4.876562499999972,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0004987074459337215,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0004987074459337215,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 84,
+          "from_side": 4.876562499999972,
+          "trial_side": 4.874999999999972,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0013652375464007216,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0013652375464007216,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 85,
+          "from_side": 4.874999999999972,
+          "trial_side": 4.873437499999971,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00077114509951004,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00077114509951004,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 86,
+          "from_side": 4.873437499999971,
+          "trial_side": 4.871874999999971,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0009299731877332462,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0009299731877332462,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 87,
+          "from_side": 4.871874999999971,
+          "trial_side": 4.8703124999999705,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00023300794045910678,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00023300794045910678,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 88,
+          "from_side": 4.8703124999999705,
+          "trial_side": 4.86874999999997,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0005280907900656606,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0005280907900656606,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 89,
+          "from_side": 4.86874999999997,
+          "trial_side": 4.86718749999997,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0014213320324593104,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0014213320324593104,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 90,
+          "from_side": 4.86718749999997,
+          "trial_side": 4.8656249999999694,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 4.0099882510524765e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 4.0099882510524765e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 91,
+          "from_side": 4.8656249999999694,
+          "trial_side": 4.864062499999969,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0002931069247698037,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0002931069247698037,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 92,
+          "from_side": 4.864062499999969,
+          "trial_side": 4.862499999999969,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00047221717588841194,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00047221717588841194,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 93,
+          "from_side": 4.862499999999969,
+          "trial_side": 4.860937499999968,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 6.155283329745131e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 6.155283329745131e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 94,
+          "from_side": 4.860937499999968,
+          "trial_side": 4.859374999999968,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.0001626685847673226,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.0001626685847673226,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 95,
+          "from_side": 4.859374999999968,
+          "trial_side": 4.857812499999968,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00020311419846374967,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00020311419846374967,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 96,
+          "from_side": 4.857812499999968,
+          "trial_side": 4.856249999999967,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00015513404201183967,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 0.00015513404201183967,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 97,
+          "from_side": 4.856249999999967,
+          "trial_side": 4.854687499999967,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 9.634073432529533e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 9.634073432529533e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 98,
+          "from_side": 4.854687499999967,
+          "trial_side": 4.853124999999967,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 5.190841539892688e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 5.190841539892688e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 99,
+          "from_side": 4.853124999999967,
+          "trial_side": 4.851562499999966,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 8.563637019121106e-05,
+          "soft_continuation_steps": 1,
+          "minimum_clearance": 8.563637019121106e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 100,
+          "from_side": 4.851562499999966,
+          "trial_side": 4.849999999999966,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00018416448254066076,
+          "soft_continuation_steps": 2,
+          "minimum_clearance": 0.00018416448254066076,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 101,
+          "from_side": 4.849999999999966,
+          "trial_side": 4.8484374999999655,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00011164906490912507,
+          "soft_continuation_steps": 3,
+          "minimum_clearance": 0.00011164906490912507,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 102,
+          "from_side": 4.8484374999999655,
+          "trial_side": 4.846874999999965,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 3.9204584765695216e-05,
+          "soft_continuation_steps": 4,
+          "minimum_clearance": 3.9204584765695216e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 103,
+          "from_side": 4.846874999999965,
+          "trial_side": 4.845312499999965,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 1.1668339336967648e-06,
+          "soft_continuation_steps": 5,
+          "minimum_clearance": 1.1668339336967648e-06,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 104,
+          "from_side": 4.845312499999965,
+          "trial_side": 4.8437499999999645,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 4.2937454681535314e-05,
+          "soft_continuation_steps": 6,
+          "minimum_clearance": 4.2937454681535314e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 105,
+          "from_side": 4.8437499999999645,
+          "trial_side": 4.842187499999964,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 5.551406955062177e-05,
+          "soft_continuation_steps": 7,
+          "minimum_clearance": 5.551406955062177e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 106,
+          "from_side": 4.842187499999964,
+          "trial_side": 4.840624999999964,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 1.132446293028444e-05,
+          "soft_continuation_steps": 10,
+          "minimum_clearance": 1.132446293028444e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 107,
+          "from_side": 4.840624999999964,
+          "trial_side": 4.839062499999963,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 3.364195401722725e-05,
+          "soft_continuation_steps": 11,
+          "minimum_clearance": 3.364195401722725e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 108,
+          "from_side": 4.839062499999963,
+          "trial_side": 4.837499999999963,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 4.647047552874817e-05,
+          "soft_continuation_steps": 13,
+          "minimum_clearance": 4.647047552874817e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 109,
+          "from_side": 4.837499999999963,
+          "trial_side": 4.835937499999963,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 1.145554293302542e-05,
+          "soft_continuation_steps": 13,
+          "minimum_clearance": 1.145554293302542e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 110,
+          "from_side": 4.835937499999963,
+          "trial_side": 4.834374999999962,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 7.883935500885286e-06,
+          "soft_continuation_steps": 17,
+          "minimum_clearance": 7.883935500885286e-06,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 111,
+          "from_side": 4.834374999999962,
+          "trial_side": 4.832812499999962,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 0.00014437816675338944,
+          "soft_continuation_steps": 20,
+          "minimum_clearance": 0.00014437816675338944,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 112,
+          "from_side": 4.832812499999962,
+          "trial_side": 4.831249999999962,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 4.579893480971542e-05,
+          "soft_continuation_steps": 23,
+          "minimum_clearance": 4.579893480971542e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 113,
+          "from_side": 4.831249999999962,
+          "trial_side": 4.829687499999961,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 1.2311220230154518e-05,
+          "soft_continuation_steps": 28,
+          "minimum_clearance": 1.2311220230154518e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 114,
+          "from_side": 4.829687499999961,
+          "trial_side": 4.828124999999961,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 2.3673081963604403e-05,
+          "soft_continuation_steps": 34,
+          "minimum_clearance": 2.3673081963604403e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 115,
+          "from_side": 4.828124999999961,
+          "trial_side": 4.826562499999961,
+          "step": 0.0015625,
+          "soft_minimum_clearance": 4.0001294914882024e-05,
+          "soft_continuation_steps": 43,
+          "minimum_clearance": 4.0001294914882024e-05,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 116,
+          "from_side": 4.826562499999961,
+          "trial_side": 4.82499999999996,
+          "step": 0.0015625,
+          "soft_minimum_clearance": -0.00014548662075608565,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": 6.934275376124788e-10,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 1
+        },
+        {
+          "attempt": 117,
+          "from_side": 4.82499999999996,
+          "trial_side": 4.82343749999996,
+          "step": 0.0015625,
+          "soft_minimum_clearance": -0.00047425971675219003,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -7.216449660063518e-16,
+          "overlap_residual": 8.759511914735174e-16,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 59
+        },
+        {
+          "attempt": 118,
+          "from_side": 4.82343749999996,
+          "trial_side": 4.8218749999999595,
+          "step": 0.0015625,
+          "soft_minimum_clearance": -0.0004744811697570128,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.003887173598786875,
+          "overlap_residual": 0.009752534304647991,
+          "feasible": false,
+          "polish_status": 8,
+          "polish_iterations": 316
+        },
+        {
+          "attempt": 119,
+          "from_side": 4.82343749999996,
+          "trial_side": 4.82265624999996,
+          "step": 0.00078125,
+          "soft_minimum_clearance": -0.0002372405848785064,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.1818084725407889,
+          "overlap_residual": 0.3704794036924301,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 329
+        },
+        {
+          "attempt": 120,
+          "from_side": 4.82343749999996,
+          "trial_side": 4.82304687499996,
+          "step": 0.000390625,
+          "soft_minimum_clearance": -0.0001186202924392532,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": 9.987573834635555e-08,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 46
+        },
+        {
+          "attempt": 121,
+          "from_side": 4.82304687499996,
+          "trial_side": 4.822656249999961,
+          "step": 0.000390625,
+          "soft_minimum_clearance": -0.00011853522916549508,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.18069189745279501,
+          "overlap_residual": 0.44503974306019156,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 120
+        },
+        {
+          "attempt": 122,
+          "from_side": 4.82304687499996,
+          "trial_side": 4.82285156249996,
+          "step": 0.0001953125,
+          "soft_minimum_clearance": -5.921767671357436e-05,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -5.186074262253371e-06,
+          "overlap_residual": 1.283274626045008e-05,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 120
+        }
+      ]
+    },
+    {
+      "seed": 1,
+      "status": "feasible_frontier",
+      "side": 4.985546874999997,
+      "minimum_clearance": -7.039924199148118e-13,
+      "overlap_residual": 7.046141399105076e-13,
+      "contact_signature": {
+        "boundary": [
+          [
+            2,
+            2
+          ],
+          [
+            8,
+            0
+          ],
+          [
+            12,
+            1
+          ],
+          [
+            13,
+            3
+          ],
+          [
+            15,
+            3
+          ],
+          [
+            16,
+            1
+          ],
+          [
+            16,
+            3
+          ]
+        ],
+        "pairs": [
+          [
+            1,
+            5
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            8,
+            13
+          ],
+          [
+            9,
+            10
+          ],
+          [
+            10,
+            11
+          ],
+          [
+            11,
+            12
+          ],
+          [
+            11,
+            15
+          ],
+          [
+            11,
+            16
+          ]
+        ]
+      },
+      "poses": [
+        [
+          0.6734849042519864,
+          0.5694855381958901,
+          -0.00014588483947597375
+        ],
+        [
+          1.80743490481013,
+          0.564686337211151,
+          -0.004816981265632458
+        ],
+        [
+          3.169615707844593,
+          0.5000000000000002,
+          0.0
+        ],
+        [
+          4.3163460712177315,
+          0.7233932663368565,
+          0.00018796762482264917
+        ],
+        [
+          0.642794753192738,
+          1.6369069552746809,
+          -0.0001477551488382467
+        ],
+        [
+          1.9537227668826014,
+          1.5825509259501267,
+          -0.05478055351285316
+        ],
+        [
+          3.1272136613794577,
+          1.500000000000101,
+          2.2148949341271873e-13
+        ],
+        [
+          4.307041666044026,
+          1.9396510935068152,
+          -2.293016485133137e-06
+        ],
+        [
+          0.5000000000010921,
+          3.485546874999575,
+          -2.1843638009499955e-12
+        ],
+        [
+          1.440706999170491,
+          2.725983548413077,
+          -0.3201426343833854
+        ],
+        [
+          2.46305839865324,
+          2.631946245721552,
+          -0.3201426343824676
+        ],
+        [
+          3.4853482257989463,
+          3.485546875000005,
+          -4.574118861455645e-14
+        ],
+        [
+          4.48554675533678,
+          3.3510943317196915,
+          3.9443717958498326e-08
+        ],
+        [
+          0.8066359788418701,
+          4.4855468749997005,
+          -5.931921620572211e-13
+        ],
+        [
+          1.9714594882258893,
+          4.231636451781384,
+          0.0003002277609327475
+        ],
+        [
+          3.1035142332345202,
+          4.485546874999999,
+          2.55351295663786e-15
+        ],
+        [
+          4.475581712259651,
+          4.475581712259651,
+          0.02013437553404729
+        ]
+      ],
+      "trace": [
+        {
+          "attempt": 1,
+          "from_side": 5.0,
+          "trial_side": 4.975,
+          "step": 0.025,
+          "soft_minimum_clearance": -0.004226882571361057,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.16859703846233498,
+          "overlap_residual": 0.4818300849905359,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 120
+        },
+        {
+          "attempt": 2,
+          "from_side": 5.0,
+          "trial_side": 4.9875,
+          "step": 0.0125,
+          "soft_minimum_clearance": -0.0021382809434103978,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.09584384437935456,
+          "overlap_residual": 0.15919418634282817,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 140
+        },
+        {
+          "attempt": 3,
+          "from_side": 5.0,
+          "trial_side": 4.99375,
+          "step": 0.00625,
+          "soft_minimum_clearance": -0.0011014146880032882,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.04104987335480459,
+          "overlap_residual": 0.11552297012237993,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 122
+        },
+        {
+          "attempt": 4,
+          "from_side": 5.0,
+          "trial_side": 4.996875,
+          "step": 0.003125,
+          "soft_minimum_clearance": -0.0005958119262234329,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.023041297190858456,
+          "overlap_residual": 0.05522986220393018,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 317
+        },
+        {
+          "attempt": 5,
+          "from_side": 5.0,
+          "trial_side": 4.9984375,
+          "step": 0.0015625,
+          "soft_minimum_clearance": -0.00031441727718251045,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": 9.930470534769142e-08,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 298
+        },
+        {
+          "attempt": 6,
+          "from_side": 4.9984375,
+          "trial_side": 4.996874999999999,
+          "step": 0.0015625,
+          "soft_minimum_clearance": -0.00041526276757575253,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": 8.567704279371924e-08,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 117
+        },
+        {
+          "attempt": 7,
+          "from_side": 4.996874999999999,
+          "trial_side": 4.995312499999999,
+          "step": 0.0015625,
+          "soft_minimum_clearance": -0.0004168171734044712,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": 9.237481746193765e-08,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 88
+        },
+        {
+          "attempt": 8,
+          "from_side": 4.995312499999999,
+          "trial_side": 4.993749999999999,
+          "step": 0.0015625,
+          "soft_minimum_clearance": -0.00042169597697427896,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": 9.516246179952503e-08,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 93
+        },
+        {
+          "attempt": 9,
+          "from_side": 4.993749999999999,
+          "trial_side": 4.992187499999998,
+          "step": 0.0015625,
+          "soft_minimum_clearance": -0.0004255759059288433,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": 9.371966969151657e-08,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 111
+        },
+        {
+          "attempt": 10,
+          "from_side": 4.992187499999998,
+          "trial_side": 4.990624999999998,
+          "step": 0.0015625,
+          "soft_minimum_clearance": -0.0004289867779974088,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": 9.556908464602998e-08,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 105
+        },
+        {
+          "attempt": 11,
+          "from_side": 4.990624999999998,
+          "trial_side": 4.9890624999999975,
+          "step": 0.0015625,
+          "soft_minimum_clearance": -0.0004324464910125947,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": 9.663036582008289e-08,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 109
+        },
+        {
+          "attempt": 12,
+          "from_side": 4.9890624999999975,
+          "trial_side": 4.987499999999997,
+          "step": 0.0015625,
+          "soft_minimum_clearance": -0.00043533018355201847,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": 9.729688665860436e-08,
+          "overlap_residual": 0.0,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 104
+        },
+        {
+          "attempt": 13,
+          "from_side": 4.987499999999997,
+          "trial_side": 4.985937499999997,
+          "step": 0.0015625,
+          "soft_minimum_clearance": -0.00043777266377897917,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -1.5853984791647235e-13,
+          "overlap_residual": 2.1128985124123251e-13,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 104
+        },
+        {
+          "attempt": 14,
+          "from_side": 4.985937499999997,
+          "trial_side": 4.9843749999999964,
+          "step": 0.0015625,
+          "soft_minimum_clearance": -0.0004409725753637961,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -0.00024147113208972115,
+          "overlap_residual": 0.00058731707460196,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 66
+        },
+        {
+          "attempt": 15,
+          "from_side": 4.985937499999997,
+          "trial_side": 4.985156249999997,
+          "step": 0.00078125,
+          "soft_minimum_clearance": -0.00022048628768200906,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -8.834938334822962e-05,
+          "overlap_residual": 0.0002165526500896744,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 131
+        },
+        {
+          "attempt": 16,
+          "from_side": 4.985937499999997,
+          "trial_side": 4.985546874999997,
+          "step": 0.000390625,
+          "soft_minimum_clearance": -0.00011024314384089351,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -7.039924199148118e-13,
+          "overlap_residual": 7.046141399105076e-13,
+          "feasible": true,
+          "polish_status": 0,
+          "polish_iterations": 111
+        },
+        {
+          "attempt": 17,
+          "from_side": 4.985546874999997,
+          "trial_side": 4.9851562499999975,
+          "step": 0.000390625,
+          "soft_minimum_clearance": -0.00011094249198495554,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -6.878903535345593e-05,
+          "overlap_residual": 0.00016729411282532622,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 113
+        },
+        {
+          "attempt": 18,
+          "from_side": 4.985546874999997,
+          "trial_side": 4.985351562499997,
+          "step": 0.0001953125,
+          "soft_minimum_clearance": -5.547124599236675e-05,
+          "soft_continuation_steps": 51,
+          "minimum_clearance": -2.758412379827435e-05,
+          "overlap_residual": 6.756886231567682e-05,
+          "feasible": false,
+          "polish_status": 4,
+          "polish_iterations": 143
+        }
+      ]
+    }
+  ]
+}

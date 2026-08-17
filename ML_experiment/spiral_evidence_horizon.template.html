@@ -1,0 +1,142 @@
+<div id="spiral-evidence-horizon-viz">
+  <style>
+    #spiral-evidence-horizon-viz{font-family:var(--font-sans);color:var(--foreground);width:100%}
+    #spiral-evidence-horizon-viz *{box-sizing:border-box}
+    #spiral-evidence-horizon-viz h2{font-size:22px;line-height:1.2;margin:0 0 4px;font-weight:680}
+    #spiral-evidence-horizon-viz h3{font-size:16px;line-height:1.3;margin:0 0 10px;font-weight:650}
+    #spiral-evidence-horizon-viz .lede{margin:0;color:var(--muted-foreground);font-size:13px}
+    #spiral-evidence-horizon-viz section{margin-top:24px}
+    #spiral-evidence-horizon-viz .legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:12px}
+    #spiral-evidence-horizon-viz .legend button{appearance:none;background:transparent;border:0;color:var(--foreground);padding:0;display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:12px;cursor:pointer}
+    #spiral-evidence-horizon-viz .legend button[aria-pressed="false"]{opacity:.38}
+    #spiral-evidence-horizon-viz .swatch{width:16px;height:3px;background:var(--series);display:inline-block}
+    #spiral-evidence-horizon-viz .facets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+    #spiral-evidence-horizon-viz .facet-title,#spiral-evidence-horizon-viz .row-title{font-size:13px;font-weight:620;margin-bottom:4px}
+    #spiral-evidence-horizon-viz svg{display:block;width:100%;height:auto;overflow:visible}
+    #spiral-evidence-horizon-viz text{fill:var(--foreground);font-size:12px}
+    #spiral-evidence-horizon-viz .axis path,#spiral-evidence-horizon-viz .axis line{stroke:var(--border)}
+    #spiral-evidence-horizon-viz rect[data-chart-frame]{fill:none;stroke:var(--border)}
+    #spiral-evidence-horizon-viz .atlas-row{margin-top:20px}
+    #spiral-evidence-horizon-viz .panels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    #spiral-evidence-horizon-viz .panel-title{font-size:12px;font-weight:620;min-height:32px;line-height:1.25}
+    #spiral-evidence-horizon-viz .panel-score{display:block;color:var(--muted-foreground);font-weight:450;margin-top:2px}
+    #spiral-evidence-horizon-viz .plotwrap{position:relative;width:100%;aspect-ratio:1/1}
+    #spiral-evidence-horizon-viz .plotwrap canvas,#spiral-evidence-horizon-viz .plotwrap svg{position:absolute;inset:0;width:100%;height:100%}
+    #spiral-evidence-horizon-viz .tooltip{position:absolute;display:none;pointer-events:none;background:var(--popover);color:var(--popover-foreground);border:1px solid var(--border);padding:7px 9px;font-size:12px;line-height:1.4;z-index:4;white-space:nowrap}
+    #spiral-evidence-horizon-viz .tooltip strong{font-weight:650}
+    @media(max-width:800px){#spiral-evidence-horizon-viz .facets{grid-template-columns:1fr}#spiral-evidence-horizon-viz .panels{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:480px){#spiral-evidence-horizon-viz .panels{grid-template-columns:1fr}}
+  </style>
+  <h2>Dual spiral evidence horizon</h2>
+  <p class="lede">2, 4, or 8 visible turns · the same number withheld · width 38 · exactly matched parameters · four paired seeds · 500 AdamW steps · M4 CPU</p>
+  <div class="legend" id="seh-legend"></div>
+  <section>
+    <h3>Does more repeated evidence improve equal-length continuation?</h3>
+    <div class="facets" id="seh-facets"></div>
+  </section>
+  <section>
+    <h3>Mean fitted decision geometry across seeds</h3>
+    <div id="seh-atlas"></div>
+  </section>
+  <div class="tooltip" id="seh-tooltip" role="tooltip"></div>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script>
+  (()=>{
+    const root=document.getElementById('spiral-evidence-horizon-viz');
+    const data=__DATA__;
+    const variants=data.variants;
+    const names={ordinary_mlp:'Vanilla LELU MLP',self_context:'Self-context',self_context_stiefel_flow_curvature:'Continuous frame flow (AdamW)'};
+    const colors={ordinary_mlp:'var(--viz-series-3)',self_context:'var(--viz-series-4)',self_context_stiefel_flow_curvature:'var(--viz-series-5)'};
+    const active=new Map(variants.map(v=>[v,true]));
+    const tooltip=d3.select(root).select('#seh-tooltip');
+    const metrics=[['validation','Observed-region accuracy'],['test','Equal-turn extrapolation'],['final','Last withheld turn']];
+
+    d3.select(root).select('#seh-legend').selectAll('button').data(variants).join('button')
+      .attr('type','button').attr('aria-pressed','true')
+      .html(v=>`<span class="swatch" style="--series:${colors[v]}"></span>${names[v]}`)
+      .on('click',function(_,v){active.set(v,!active.get(v));d3.select(this).attr('aria-pressed',String(active.get(v)));drawFacets()});
+
+    const facetNodes=d3.select(root).select('#seh-facets').selectAll('.facet').data(metrics).join('div').attr('class','facet');
+    facetNodes.append('div').attr('class','facet-title').text(d=>d[1]);
+    facetNodes.append('svg').attr('role','img').attr('aria-label',d=>`${d[1]} by visible spiral turns`);
+
+    function metricRows(key){return data.metrics.flatMap(turn=>variants.map(variant=>({turns:turn.turns,variant,mean:turn.values[variant][key],sd:turn.values[variant][`${key}_sd`]})))}
+    const allMetricValues=metrics.flatMap(([key])=>metricRows(key).flatMap(d=>[d.mean-d.sd,d.mean+d.sd]));
+    const yExtent=d3.extent(allMetricValues),yPad=Math.max(.02,(yExtent[1]-yExtent[0])*.09);
+    const yDomain=[Math.max(0,yExtent[0]-yPad),Math.min(1,yExtent[1]+yPad)];
+
+    function drawFacets(){
+      facetNodes.each(function(metric){
+        const node=d3.select(this),svg=node.select('svg'),width=Math.max(280,this.getBoundingClientRect().width),height=Math.min(300,width*.78);
+        svg.attr('viewBox',`0 0 ${width} ${height}`);svg.selectAll('*').remove();
+        const margin={top:12,right:18,bottom:48,left:64},innerW=width-margin.left-margin.right,innerH=height-margin.top-margin.bottom;
+        const x=d3.scaleLog().base(2).domain([2,8]).range([margin.left,margin.left+innerW]);
+        const y=d3.scaleLinear().domain(yDomain).nice().range([margin.top+innerH,margin.top]);
+        svg.append('rect').attr('data-chart-frame','').attr('x',margin.left).attr('y',margin.top).attr('width',innerW).attr('height',innerH);
+        svg.append('g').attr('class','axis').attr('transform',`translate(0,${margin.top+innerH})`).call(d3.axisBottom(x).tickValues([2,4,8]).tickFormat(d3.format('d')));
+        svg.append('g').attr('class','axis').attr('transform',`translate(${margin.left},0)`).call(d3.axisLeft(y).ticks(5).tickFormat(d3.format('.2f')));
+        svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('text-anchor','middle').attr('x',margin.left+innerW/2).attr('y',height-8).text('Visible turns');
+        svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('text-anchor','middle').attr('transform',`translate(16,${margin.top+innerH/2}) rotate(-90)`).text('Accuracy');
+        const key=metric[0],rows=metricRows(key);
+        variants.filter(v=>active.get(v)).forEach(variant=>{
+          const values=rows.filter(d=>d.variant===variant);
+          const g=svg.append('g').attr('data-series',variant);
+          g.selectAll('.whisker').data(values).join('line').attr('class','whisker').attr('x1',d=>x(d.turns)).attr('x2',d=>x(d.turns)).attr('y1',d=>y(Math.min(1,d.mean+d.sd))).attr('y2',d=>y(Math.max(0,d.mean-d.sd))).attr('stroke',colors[variant]).attr('stroke-width',1.2).attr('opacity',.7);
+          g.append('path').datum(values).attr('fill','none').attr('stroke',colors[variant]).attr('stroke-width',2).attr('d',d3.line().x(d=>x(d.turns)).y(d=>y(d.mean)));
+          g.selectAll('circle').data(values).join('circle').attr('cx',d=>x(d.turns)).attr('cy',d=>y(d.mean)).attr('r',4).attr('fill',colors[variant]);
+        });
+        const guide=svg.append('line').attr('data-chart-hover-guide','').attr('y1',margin.top).attr('y2',margin.top+innerH).attr('stroke','var(--foreground)').attr('opacity',0);
+        const markers=svg.append('g');
+        svg.append('rect').attr('data-chart-hit','').attr('data-chart-hover-overlay','cross-series').attr('x',margin.left).attr('y',margin.top).attr('width',innerW).attr('height',innerH).attr('fill','transparent')
+          .on('mousemove',function(event){
+            const [px]=d3.pointer(event,this),turnValue=Math.max(2,Math.min(8,x.invert(px))),lx=Math.log2(turnValue);
+            guide.attr('x1',x(turnValue)).attr('x2',x(turnValue)).attr('opacity',.35);markers.selectAll('*').remove();
+            const lines=[];variants.filter(v=>active.get(v)).forEach(variant=>{
+              const vals=rows.filter(d=>d.variant===variant);let a=vals[0],b=vals[vals.length-1];
+              for(let i=0;i<vals.length-1;i++)if(turnValue>=vals[i].turns&&turnValue<=vals[i+1].turns){a=vals[i];b=vals[i+1]}
+              const t=a.turns===b.turns?0:(lx-Math.log2(a.turns))/(Math.log2(b.turns)-Math.log2(a.turns));const value=a.mean+t*(b.mean-a.mean);
+              markers.append('circle').attr('data-chart-hover-marker','').attr('cx',x(turnValue)).attr('cy',y(value)).attr('r',4).attr('fill',colors[variant]);lines.push(`<span style="color:${colors[variant]}">●</span> ${names[variant]} ${value.toFixed(3)}`);
+            });
+            const box=root.getBoundingClientRect();tooltip.style('display','block').style('left',`${event.clientX-box.left+12}px`).style('top',`${event.clientY-box.top+12}px`).html(`<strong>${turnValue.toFixed(1)} visible turns</strong><br>${lines.join('<br>')}`);
+          }).on('mouseleave',()=>{guide.attr('opacity',0);markers.selectAll('*').remove();tooltip.style('display','none')});
+      });
+    }
+
+    const atlas=d3.select(root).select('#seh-atlas');
+    const rows=atlas.selectAll('.atlas-row').data(data.fields).join('div').attr('class','atlas-row');
+    rows.append('div').attr('class','row-title').text(d=>`${d.turns} visible turns → ${d.turns} withheld turns`);
+    rows.append('div').attr('class','panels');
+    const panelOrder=['truth',...variants];
+    rows.each(function(row){
+      const panels=d3.select(this).select('.panels').selectAll('.panel').data(panelOrder).join('div').attr('class','panel');
+      panels.append('div').attr('class','panel-title').html(key=>key==='truth'?'Truth':`${names[key]}<span class="panel-score">extrap ${row.scores[key].test.toFixed(3)} ± ${row.scores[key].test_sd.toFixed(3)}</span>`);
+      panels.append('div').attr('class','plotwrap').each(function(key){drawField(this,row,key)});
+    });
+
+    function cssColor(name){const probe=document.createElement('span');probe.style.color=`var(${name})`;probe.style.display='none';root.appendChild(probe);const color=getComputedStyle(probe).color;probe.remove();return color}
+    function trajectory(branch,lo,hi,steps=320){return d3.range(steps).map(i=>{const t=lo+(hi-lo)*i/(steps-1),r=.1+.45*t,theta=.55+2*Math.PI*t+branch*Math.PI;return [r*Math.cos(theta),r*Math.sin(theta)]})}
+    function drawField(container,row,key){
+      const wrap=d3.select(container),canvas=wrap.append('canvas').attr('role','img').attr('aria-label',`${row.turns}-turn ${key==='truth'?'truth':names[key]} decision field`).node();
+      const svg=wrap.append('svg').attr('role','presentation');
+      const redraw=()=>{
+        const width=Math.max(180,container.getBoundingClientRect().width),height=width,dpr=window.devicePixelRatio||1;
+        canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);canvas.style.width=`${width}px`;canvas.style.height=`${height}px`;
+        const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);
+        const pad=28,plot=width-2*pad,size=row.size,values=key==='truth'?row.truth:row.probabilities[key],c0=cssColor('--viz-series-1'),c1=cssColor('--viz-series-2'),cell=plot/size;
+        values.forEach((p,index)=>{const x=index%size,y=Math.floor(index/size),confidence=Math.abs(p-.5)*2;ctx.globalAlpha=.16+.78*confidence;ctx.fillStyle=p>=.5?c1:c0;ctx.fillRect(pad+x*cell,pad+y*cell,cell+1,cell+1)});ctx.globalAlpha=1;
+        svg.attr('viewBox',`0 0 ${width} ${height}`);svg.selectAll('*').remove();const limit=row.limits[1],sx=d3.scaleLinear().domain([-limit,limit]).range([pad,width-pad]),sy=d3.scaleLinear().domain([-limit,limit]).range([height-pad,pad]);
+        svg.append('rect').attr('data-chart-frame','').attr('x',pad).attr('y',pad).attr('width',plot).attr('height',plot);
+        [.1+.45*row.turns,.1+.9*row.turns].forEach((radius,index)=>svg.append('circle').attr('cx',sx(0)).attr('cy',sy(0)).attr('r',Math.abs(sx(radius)-sx(0))).attr('fill','none').attr('stroke','var(--foreground)').attr('stroke-width',index?1:1.5).attr('stroke-dasharray',index?'3 3':'5 3').attr('opacity',index?.35:.65));
+        [0,1].forEach(branch=>{
+          const line=d3.line().x(d=>sx(d[0])).y(d=>sy(d[1]));
+          svg.append('path').datum(trajectory(branch,0,row.turns)).attr('d',line).attr('fill','none').attr('stroke',branch?'var(--viz-series-2)':'var(--viz-series-1)').attr('stroke-width',1.8);
+          svg.append('path').datum(trajectory(branch,row.turns,2*row.turns)).attr('d',line).attr('fill','none').attr('stroke',branch?'var(--viz-series-2)':'var(--viz-series-1)').attr('stroke-width',1.5).attr('stroke-dasharray','4 3');
+        });
+        svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('text-anchor','middle').attr('x',width/2).attr('y',height-5).text('x₁');
+        svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('text-anchor','middle').attr('transform',`translate(11,${height/2}) rotate(-90)`).text('x₂');
+      };redraw();new ResizeObserver(redraw).observe(container);
+    }
+    drawFacets();new ResizeObserver(drawFacets).observe(root);
+  })();
+  </script>
+</div>

@@ -1,0 +1,408 @@
+{
+  "experiment": "walsh_empirical_soft_oracle",
+  "rows": [
+    {
+      "dimension": 4,
+      "r": 0.23675858,
+      "t": 0.09786950993742455,
+      "samples": 16384,
+      "effective_sample_size": 13520.359802389781,
+      "effective_sample_fraction": 0.8252172730950794,
+      "population_importance_identity_error": 1.1102230246251565e-16,
+      "maximum_importance_weight": 1.0,
+      "normalization": 0.17347492813022528,
+      "maximum_value_error_over_normalization": 0.0005715314026970729,
+      "maximum_gradient_error_over_normalization": 0.0034653790295940084,
+      "maximum_hessian_error_over_normalization": 0.03657208887274609,
+      "rms_value_error_over_normalization": 0.00023409054366500896,
+      "rms_gradient_error_over_normalization": 0.001719887846538736,
+      "rms_hessian_error_over_normalization": 0.020832944614280344,
+      "rows": [
+        {
+          "probe": 0,
+          "value_absolute_error_over_normalization": 6.199417225543828e-05,
+          "gradient_error_over_normalization": 0.0011329648869525149,
+          "hessian_error_over_normalization": 0.02607733493079116
+        },
+        {
+          "probe": 1,
+          "value_absolute_error_over_normalization": 0.00011092114907284476,
+          "gradient_error_over_normalization": 0.0019626708665853513,
+          "hessian_error_over_normalization": 0.018967872819170225
+        },
+        {
+          "probe": 2,
+          "value_absolute_error_over_normalization": 0.0002181600605825219,
+          "gradient_error_over_normalization": 0.0021224436285397553,
+          "hessian_error_over_normalization": 0.013216997410396976
+        },
+        {
+          "probe": 3,
+          "value_absolute_error_over_normalization": 1.2559388520244288e-05,
+          "gradient_error_over_normalization": 0.0008609001614529819,
+          "hessian_error_over_normalization": 0.02735605030839494
+        },
+        {
+          "probe": 4,
+          "value_absolute_error_over_normalization": 3.953767889154382e-05,
+          "gradient_error_over_normalization": 0.0010303941133075149,
+          "hessian_error_over_normalization": 0.02638659230607108
+        },
+        {
+          "probe": 5,
+          "value_absolute_error_over_normalization": 9.445180959426205e-05,
+          "gradient_error_over_normalization": 0.0012902934305436566,
+          "hessian_error_over_normalization": 0.004085654872270832
+        },
+        {
+          "probe": 6,
+          "value_absolute_error_over_normalization": 0.00017785733251442397,
+          "gradient_error_over_normalization": 0.0006019811882743328,
+          "hessian_error_over_normalization": 0.01578611821133193
+        },
+        {
+          "probe": 7,
+          "value_absolute_error_over_normalization": 0.00012454162932352598,
+          "gradient_error_over_normalization": 0.0017679678363124443,
+          "hessian_error_over_normalization": 0.024800644189006002
+        },
+        {
+          "probe": 8,
+          "value_absolute_error_over_normalization": 0.0001753797711135661,
+          "gradient_error_over_normalization": 0.0016427861399374336,
+          "hessian_error_over_normalization": 0.005327085034673765
+        },
+        {
+          "probe": 9,
+          "value_absolute_error_over_normalization": 0.00032748671628424306,
+          "gradient_error_over_normalization": 0.0034653790295940084,
+          "hessian_error_over_normalization": 0.00724411452204952
+        },
+        {
+          "probe": 10,
+          "value_absolute_error_over_normalization": 8.406279700917206e-05,
+          "gradient_error_over_normalization": 0.0006561263761468945,
+          "hessian_error_over_normalization": 0.022511628109368576
+        },
+        {
+          "probe": 11,
+          "value_absolute_error_over_normalization": 0.0004697894565723326,
+          "gradient_error_over_normalization": 0.0013291543831926388,
+          "hessian_error_over_normalization": 0.03657208887274609
+        },
+        {
+          "probe": 12,
+          "value_absolute_error_over_normalization": 0.00017316055135130072,
+          "gradient_error_over_normalization": 0.0022328715531941216,
+          "hessian_error_over_normalization": 0.007466590752943666
+        },
+        {
+          "probe": 13,
+          "value_absolute_error_over_normalization": 7.907689571342976e-05,
+          "gradient_error_over_normalization": 0.0018434316463087526,
+          "hessian_error_over_normalization": 0.026178320039437916
+        },
+        {
+          "probe": 14,
+          "value_absolute_error_over_normalization": 7.410706659932158e-05,
+          "gradient_error_over_normalization": 0.0020841625429978217,
+          "hessian_error_over_normalization": 0.023518002568289998
+        },
+        {
+          "probe": 15,
+          "value_absolute_error_over_normalization": 0.00023610087004633418,
+          "gradient_error_over_normalization": 0.0026412610580927236,
+          "hessian_error_over_normalization": 0.015621480484597947
+        },
+        {
+          "probe": 16,
+          "value_absolute_error_over_normalization": 0.00038871307865565486,
+          "gradient_error_over_normalization": 0.0015201102844529738,
+          "hessian_error_over_normalization": 0.020478346754568257
+        },
+        {
+          "probe": 17,
+          "value_absolute_error_over_normalization": 0.0003205195259082763,
+          "gradient_error_over_normalization": 0.0007110338627251412,
+          "hessian_error_over_normalization": 0.022297181280627795
+        },
+        {
+          "probe": 18,
+          "value_absolute_error_over_normalization": 0.00025172127143019397,
+          "gradient_error_over_normalization": 0.0014366486871031047,
+          "hessian_error_over_normalization": 0.019817303100872034
+        },
+        {
+          "probe": 19,
+          "value_absolute_error_over_normalization": 4.029830953308699e-05,
+          "gradient_error_over_normalization": 0.0007116084727094341,
+          "hessian_error_over_normalization": 0.01923173102719582
+        },
+        {
+          "probe": 20,
+          "value_absolute_error_over_normalization": 0.0005715314026970729,
+          "gradient_error_over_normalization": 0.0007974551101563146,
+          "hessian_error_over_normalization": 0.036310219639481965
+        },
+        {
+          "probe": 21,
+          "value_absolute_error_over_normalization": 8.422179655807336e-05,
+          "gradient_error_over_normalization": 0.0020237879888342796,
+          "hessian_error_over_normalization": 0.014854511041814835
+        },
+        {
+          "probe": 22,
+          "value_absolute_error_over_normalization": 0.00012170985276794679,
+          "gradient_error_over_normalization": 0.001955217588389227,
+          "hessian_error_over_normalization": 0.016266319983416364
+        },
+        {
+          "probe": 23,
+          "value_absolute_error_over_normalization": 0.00017513963961984392,
+          "gradient_error_over_normalization": 0.001503846661516027,
+          "hessian_error_over_normalization": 0.005100873585555977
+        },
+        {
+          "probe": 24,
+          "value_absolute_error_over_normalization": 2.1065857006123442e-05,
+          "gradient_error_over_normalization": 0.0006986497423257703,
+          "hessian_error_over_normalization": 0.02483928083933823
+        },
+        {
+          "probe": 25,
+          "value_absolute_error_over_normalization": 0.00026015035181867967,
+          "gradient_error_over_normalization": 0.0023022302952642308,
+          "hessian_error_over_normalization": 0.012588118892592306
+        },
+        {
+          "probe": 26,
+          "value_absolute_error_over_normalization": 0.0003369470301600297,
+          "gradient_error_over_normalization": 0.0003116278754835127,
+          "hessian_error_over_normalization": 0.026975464717689825
+        },
+        {
+          "probe": 27,
+          "value_absolute_error_over_normalization": 0.00022204490410149247,
+          "gradient_error_over_normalization": 0.0028980853073404503,
+          "hessian_error_over_normalization": 0.021112968506225356
+        },
+        {
+          "probe": 28,
+          "value_absolute_error_over_normalization": 1.625527390437023e-05,
+          "gradient_error_over_normalization": 0.000825395017925899,
+          "hessian_error_over_normalization": 0.030650153967592766
+        },
+        {
+          "probe": 29,
+          "value_absolute_error_over_normalization": 0.00020049093416933846,
+          "gradient_error_over_normalization": 0.0005508841159372357,
+          "hessian_error_over_normalization": 0.023405634451687415
+        },
+        {
+          "probe": 30,
+          "value_absolute_error_over_normalization": 2.0703457670428013e-05,
+          "gradient_error_over_normalization": 0.0007732651012830306,
+          "hessian_error_over_normalization": 0.024056465003088976
+        },
+        {
+          "probe": 31,
+          "value_absolute_error_over_normalization": 7.92304237603238e-05,
+          "gradient_error_over_normalization": 0.0014448889484244922,
+          "hessian_error_over_normalization": 0.013624694701456752
+        },
+        {
+          "probe": 32,
+          "value_absolute_error_over_normalization": 0.0002956605386379782,
+          "gradient_error_over_normalization": 0.002328778571073548,
+          "hessian_error_over_normalization": 0.011384855167840834
+        },
+        {
+          "probe": 33,
+          "value_absolute_error_over_normalization": 0.00032918653621825424,
+          "gradient_error_over_normalization": 0.0025611332020334665,
+          "hessian_error_over_normalization": 0.018364340966138946
+        },
+        {
+          "probe": 34,
+          "value_absolute_error_over_normalization": 0.0002777215445898202,
+          "gradient_error_over_normalization": 0.002298703887061858,
+          "hessian_error_over_normalization": 0.009949025637853152
+        },
+        {
+          "probe": 35,
+          "value_absolute_error_over_normalization": 0.0003875014104116176,
+          "gradient_error_over_normalization": 0.0015749577372572818,
+          "hessian_error_over_normalization": 0.021417885291602864
+        },
+        {
+          "probe": 36,
+          "value_absolute_error_over_normalization": 0.00019556215195824653,
+          "gradient_error_over_normalization": 0.0016079605024967966,
+          "hessian_error_over_normalization": 0.010923434300963953
+        },
+        {
+          "probe": 37,
+          "value_absolute_error_over_normalization": 0.00031944911660314535,
+          "gradient_error_over_normalization": 0.00041509171754840695,
+          "hessian_error_over_normalization": 0.019618419201321898
+        },
+        {
+          "probe": 38,
+          "value_absolute_error_over_normalization": 0.0003360972614763024,
+          "gradient_error_over_normalization": 0.0019516858767631498,
+          "hessian_error_over_normalization": 0.0220934731529675
+        },
+        {
+          "probe": 39,
+          "value_absolute_error_over_normalization": 2.7772170315374144e-05,
+          "gradient_error_over_normalization": 0.001329905027287528,
+          "hessian_error_over_normalization": 0.031435057606873436
+        },
+        {
+          "probe": 40,
+          "value_absolute_error_over_normalization": 6.127154468997058e-06,
+          "gradient_error_over_normalization": 0.0009809161781293464,
+          "hessian_error_over_normalization": 0.01965658899464783
+        },
+        {
+          "probe": 41,
+          "value_absolute_error_over_normalization": 1.385319532440825e-05,
+          "gradient_error_over_normalization": 0.0010375950103081084,
+          "hessian_error_over_normalization": 0.03103447279858896
+        },
+        {
+          "probe": 42,
+          "value_absolute_error_over_normalization": 0.0004293683747360566,
+          "gradient_error_over_normalization": 0.0014319220385321451,
+          "hessian_error_over_normalization": 0.034208783885490146
+        },
+        {
+          "probe": 43,
+          "value_absolute_error_over_normalization": 8.062893599473518e-05,
+          "gradient_error_over_normalization": 0.001382644372769534,
+          "hessian_error_over_normalization": 0.02701341554732897
+        },
+        {
+          "probe": 44,
+          "value_absolute_error_over_normalization": 0.0002948800311170986,
+          "gradient_error_over_normalization": 0.0008821174144625553,
+          "hessian_error_over_normalization": 0.017445896976992007
+        },
+        {
+          "probe": 45,
+          "value_absolute_error_over_normalization": 3.872517357851568e-06,
+          "gradient_error_over_normalization": 0.001245910156135468,
+          "hessian_error_over_normalization": 0.019245382499299277
+        },
+        {
+          "probe": 46,
+          "value_absolute_error_over_normalization": 0.0001952937272324276,
+          "gradient_error_over_normalization": 0.0023834975437729547,
+          "hessian_error_over_normalization": 0.003834211200784101
+        },
+        {
+          "probe": 47,
+          "value_absolute_error_over_normalization": 0.00012132255048602154,
+          "gradient_error_over_normalization": 0.0018971090987077786,
+          "hessian_error_over_normalization": 0.012076785264592927
+        },
+        {
+          "probe": 48,
+          "value_absolute_error_over_normalization": 0.00026217209768835873,
+          "gradient_error_over_normalization": 0.00294321938325294,
+          "hessian_error_over_normalization": 0.007446407991246061
+        },
+        {
+          "probe": 49,
+          "value_absolute_error_over_normalization": 4.946913808436704e-05,
+          "gradient_error_over_normalization": 0.0016827064584107074,
+          "hessian_error_over_normalization": 0.015043358088569684
+        },
+        {
+          "probe": 50,
+          "value_absolute_error_over_normalization": 0.00014044463961820417,
+          "gradient_error_over_normalization": 0.002142462250681404,
+          "hessian_error_over_normalization": 0.009065761737589407
+        },
+        {
+          "probe": 51,
+          "value_absolute_error_over_normalization": 0.0001676605546509569,
+          "gradient_error_over_normalization": 0.00170317205774052,
+          "hessian_error_over_normalization": 0.017538726522308534
+        },
+        {
+          "probe": 52,
+          "value_absolute_error_over_normalization": 9.047731508013792e-05,
+          "gradient_error_over_normalization": 0.001403174057230039,
+          "hessian_error_over_normalization": 0.0031789658105254213
+        },
+        {
+          "probe": 53,
+          "value_absolute_error_over_normalization": 0.00010600487187747123,
+          "gradient_error_over_normalization": 0.0015429465320985476,
+          "hessian_error_over_normalization": 0.02069088094606132
+        },
+        {
+          "probe": 54,
+          "value_absolute_error_over_normalization": 6.201808274017172e-05,
+          "gradient_error_over_normalization": 0.0010400000331006684,
+          "hessian_error_over_normalization": 0.02694881568280445
+        },
+        {
+          "probe": 55,
+          "value_absolute_error_over_normalization": 0.00010103864235055647,
+          "gradient_error_over_normalization": 0.002212737489544324,
+          "hessian_error_over_normalization": 0.020286906818940697
+        },
+        {
+          "probe": 56,
+          "value_absolute_error_over_normalization": 0.0003368728287471919,
+          "gradient_error_over_normalization": 0.0028164195395579835,
+          "hessian_error_over_normalization": 0.009428212721794699
+        },
+        {
+          "probe": 57,
+          "value_absolute_error_over_normalization": 0.00020967736325344877,
+          "gradient_error_over_normalization": 0.0014547909261032447,
+          "hessian_error_over_normalization": 0.01651336214849896
+        },
+        {
+          "probe": 58,
+          "value_absolute_error_over_normalization": 8.016917978873693e-07,
+          "gradient_error_over_normalization": 0.0005875089397104056,
+          "hessian_error_over_normalization": 0.02864404332006087
+        },
+        {
+          "probe": 59,
+          "value_absolute_error_over_normalization": 0.0002606531331290469,
+          "gradient_error_over_normalization": 0.003052893428764515,
+          "hessian_error_over_normalization": 0.014524074656435558
+        },
+        {
+          "probe": 60,
+          "value_absolute_error_over_normalization": 0.0003827842688670305,
+          "gradient_error_over_normalization": 0.0012244527965199407,
+          "hessian_error_over_normalization": 0.021915554812663395
+        },
+        {
+          "probe": 61,
+          "value_absolute_error_over_normalization": 0.0003997607211429263,
+          "gradient_error_over_normalization": 0.0014468379445596244,
+          "hessian_error_over_normalization": 0.020905155218264068
+        },
+        {
+          "probe": 62,
+          "value_absolute_error_over_normalization": 0.0004000881555640913,
+          "gradient_error_over_normalization": 0.0016291182532455035,
+          "hessian_error_over_normalization": 0.03104976899656598
+        },
+        {
+          "probe": 63,
+          "value_absolute_error_over_normalization": 0.0003063614054563603,
+          "gradient_error_over_normalization": 0.0009916303497849138,
+          "hessian_error_over_normalization": 0.021265631600684277
+        }
+      ]
+    }
+  ]
+}

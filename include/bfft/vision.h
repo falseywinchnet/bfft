@@ -374,6 +374,20 @@ bfft_status bfft_vision_sobel_f64(
     size_t channels, size_t height, size_t width, size_t thread_count,
     const double* fields, double* gradient_x, double* gradient_y);
 
+/*
+   Fused RGB terminal quality metric used by the JPEG ownership optimizer.
+   All image arrays are contiguous HxWxC float64 fields: RGB/reference moments
+   have C=3 and reference_edge has C=2 (axis-0, axis-1 Sobel). scratch must
+   contain at least 9*height*width doubles. metrics receives MSE, color SSIM,
+   and Sobel MSE in that order.
+*/
+bfft_status bfft_vision_image_metrics_f64(
+    size_t height, size_t width, size_t kernel_size, size_t thread_count,
+    const double* reference, const double* candidate,
+    const double* reference_mean, const double* reference_variance,
+    const double* reference_edge, const double* kernel,
+    double* scratch, double* metrics);
+
 /* Repeated four-connected dilation of one HxW uint8 mask. */
 bfft_status bfft_vision_binary_dilation_cross_u8(
     size_t height, size_t width, size_t iterations, size_t thread_count,

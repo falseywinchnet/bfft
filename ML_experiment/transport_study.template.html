@@ -1,0 +1,128 @@
+<section id="transport-study-viz" aria-label="Self-context transport study">
+  <style>
+    #transport-study-viz{color:var(--foreground);font-family:inherit;max-width:100%;overflow:hidden;position:relative}
+    #transport-study-viz h2,#transport-study-viz h3{font-weight:500;margin:0}
+    #transport-study-viz h2{margin-bottom:.25rem}
+    #transport-study-viz h3{margin-bottom:.45rem}
+    #transport-study-viz .lede{color:var(--muted-foreground);margin:.1rem 0 1rem}
+    #transport-study-viz .section{margin-top:1.5rem}
+    #transport-study-viz .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5rem}
+    #transport-study-viz .plot{min-width:0}
+    #transport-study-viz .controls{display:flex;flex-wrap:wrap;gap:.35rem 1rem;margin:.6rem 0 1rem}
+    #transport-study-viz .controls button{appearance:none;background:transparent;border:0;color:var(--foreground);font:inherit;padding:.15rem 0;cursor:pointer}
+    #transport-study-viz .controls button[aria-pressed="false"]{color:var(--muted-foreground);text-decoration:line-through}
+    #transport-study-viz .swatch{display:inline-block;width:.65rem;height:.65rem;margin-right:.35rem;vertical-align:baseline}
+    #transport-study-viz svg{display:block;max-width:100%;overflow:hidden}
+    #transport-study-viz svg text{fill:var(--foreground);font-size:12px;font-family:inherit}
+    #transport-study-viz svg .muted{fill:var(--muted-foreground)}
+    #transport-study-viz svg .axis path,#transport-study-viz svg .axis line{stroke:var(--border)}
+    #transport-study-viz svg [data-chart-frame]{fill:none;stroke:var(--border)}
+    #transport-study-viz .radial-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1rem}
+    #transport-study-viz .radial-item{min-width:0;text-align:center}
+    #transport-study-viz .radial-item h3{min-height:2.4em}
+    #transport-study-viz .tooltip{position:absolute;pointer-events:none;background:var(--popover);color:var(--popover-foreground);border:1px solid var(--border);padding:.45rem .6rem;opacity:0;z-index:5}
+    @media(max-width:900px){#transport-study-viz .radial-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(max-width:700px){#transport-study-viz .two{grid-template-columns:1fr}}
+    @media(max-width:520px){#transport-study-viz .radial-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:380px){#transport-study-viz .radial-grid{grid-template-columns:1fr}}
+  </style>
+  <h2>Eikonal rays: integrated transport versus basis expansion</h2>
+  <p class="lede">11 tasks · 500 steps · two paired seeds · matched parameters · M4 CPU</p>
+
+  <section class="section">
+    <h3>Change from ordinary self-context</h3>
+    <div class="plot" id="ts-heldout"><svg role="img" aria-label="Held-out score change by task"></svg></div>
+    <div class="two">
+      <div class="plot" id="ts-tail"><svg role="img" aria-label="Tail score change by task"></svg></div>
+      <div class="plot" id="ts-auc"><svg role="img" aria-label="Learning AUC change by task"></svg></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3>Information budget and curvature mechanism</h3>
+    <div class="two">
+      <div class="plot" id="ts-efficiency"><svg role="img" aria-label="Mean held-out score by chart observations"></svg></div>
+      <div class="plot" id="ts-mechanism"><svg role="img" aria-label="Full and detached curvature held-out score by task"></svg></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3>Acquisition inside the observed region</h3>
+    <div class="controls" id="ts-controls" aria-label="Toggle model curves"></div>
+    <div class="two" id="ts-learning"></div>
+  </section>
+
+  <section class="section">
+    <h3>Radial decision fields · seed 0</h3>
+    <div class="radial-grid" id="ts-radial-grid"></div>
+  </section>
+
+  <section class="section">
+    <h3>Multiscale continuation · seed 0</h3>
+    <div class="plot" id="ts-multiscale"><svg role="img" aria-label="Multiscale target and model continuation"></svg></div>
+  </section>
+  <div class="tooltip" role="tooltip"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script>
+  (()=>{
+    const root=document.getElementById('transport-study-viz'),data=__DATA__;
+    const labels={
+      self_context:'Self-context',self_context_iterated:'Picard ×2',
+      self_context_transport_heun:'Heun',self_context_transport_self_ray_odd:'Integrated ray · odd',
+      self_context_transport_self_ray_even:'Self-ray even',
+      self_context_transport_basis_ray_odd:'Basis rays · odd',
+      self_context_jet_curvature_context:'Curvature',
+      self_context_jet_curvature_bounded:'Bounded curvature',
+      self_context_jet_curvature_detached:'Detached curvature'
+    };
+    const taskLabels={checkerboard:'Checkerboard',chirp_1d:'Chirp',fourier_mix_1d:'Fourier mix',localized_steps_1d:'Localized steps',multiscale_1d:'Multiscale',nd_spiral_high_rank:'N-D spiral · high',nd_spiral_low_rank:'N-D spiral · low',radial_stripes:'Radial stripes',ripple:'Ripple',spiral:'Spiral',swiss_cheese:'Swiss cheese'};
+    const series=['var(--viz-series-1)','var(--viz-series-2)','var(--viz-series-3)','var(--viz-series-4)','var(--viz-series-5)','var(--viz-series-6)'];
+    const learningColors={self_context:series[0],self_context_transport_self_ray_odd:series[2],self_context_jet_curvature_context:series[1],self_context_jet_curvature_detached:series[3]};
+    const probeColors={self_context:series[0],self_context_transport_self_ray_odd:series[2],self_context_jet_curvature_context:series[1],self_context_jet_curvature_bounded:series[4]};
+    const controlVariants=[...data.learning_variants,...data.probe_variants.filter(v=>!data.learning_variants.includes(v))],active=new Set(controlVariants),tooltip=d3.select(root).select('.tooltip');
+
+    function frame(svg,w,h,m,xTitle,yTitle){
+      svg.selectAll('*').remove();
+      svg.append('rect').attr('data-chart-frame','').attr('x',m.l).attr('y',m.t).attr('width',w-m.l-m.r).attr('height',h-m.t-m.b);
+      svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('x',(m.l+w-m.r)/2).attr('y',h-5).attr('text-anchor','middle').text(xTitle);
+      svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('transform',`translate(13 ${(m.t+h-m.b)/2}) rotate(-90)`).attr('text-anchor','middle').text(yTitle);
+    }
+    function deltaChart(id,key,title){
+      const host=root.querySelector(id),rows=data.task_rows.filter(d=>d[key].delta!==null),w=Math.max(300,host.getBoundingClientRect().width),h=Math.max(230,rows.length*27+65),m={t:26,r:54,b:38,l:w<430?140:150},magnitude=d3.max(rows,d=>Math.abs(d[key].delta))||.01,x=d3.scaleLinear([-magnitude*1.15,magnitude*1.15],[m.l,w-m.r]),y=d3.scaleBand(rows.map(d=>d.task),[m.t,h-m.b]).padding(.28),svg=d3.select(host).select('svg').attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);
+      frame(svg,w,h,m,'Δ score','Task');
+      svg.append('text').attr('x',m.l).attr('y',16).attr('font-weight',500).text(title);
+      svg.append('line').attr('x1',x(0)).attr('x2',x(0)).attr('y1',m.t).attr('y2',h-m.b).attr('stroke','var(--border)');
+      svg.append('g').attr('class','axis').attr('transform',`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(w<430?3:5).tickFormat(d3.format('+.2f')));
+      svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).tickFormat(d=>taskLabels[d]));
+      svg.append('g').selectAll('rect').data(rows).join('rect').attr('x',d=>Math.min(x(0),x(d[key].delta))).attr('y',d=>y(d.task)).attr('width',d=>Math.abs(x(d[key].delta)-x(0))).attr('height',y.bandwidth()).attr('fill',d=>d[key].delta>=0?'var(--viz-series-1)':'var(--viz-series-4)');
+      svg.append('g').selectAll('text.value').data(rows).join('text').attr('class','value').attr('x',d=>{const inside=d[key].delta<0&&Math.abs(x(d[key].delta)-x(0))>42;return x(d[key].delta)+(d[key].delta>=0||inside?4:-4)}).attr('y',d=>y(d.task)+y.bandwidth()/2+4).attr('text-anchor',d=>{const inside=d[key].delta<0&&Math.abs(x(d[key].delta)-x(0))>42;return d[key].delta>=0||inside?'start':'end'}).text(d=>d3.format('+.3f')(d[key].delta));
+    }
+    function efficiency(){
+      const host=root.querySelector('#ts-efficiency'),w=Math.max(300,host.getBoundingClientRect().width),h=330,m={t:18,r:28,b:48,l:66},rows=data.core_summary,x=d3.scaleLinear(d3.extent(rows,d=>d.chart_points),[m.l+12,w-m.r-12]).nice(),extent=d3.extent(rows,d=>d.score),y=d3.scaleLinear([extent[0]-.015,extent[1]+.015],[h-m.b,m.t]).nice(),size=d3.scaleSqrt(d3.extent(rows,d=>d.seconds),[5,10]),svg=d3.select(host).select('svg').attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);
+      frame(svg,w,h,m,'Chart observations / sample','Mean held-out score');
+      svg.append('g').attr('class','axis').attr('transform',`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(5));svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));
+      const marks=svg.append('g').selectAll('circle').data(rows).join('circle').attr('cx',d=>x(d.chart_points)).attr('cy',d=>y(d.score)).attr('r',d=>size(d.seconds)).attr('fill',(d,i)=>series[i%series.length]).attr('stroke','transparent').attr('stroke-width',16).attr('opacity',.88);
+      marks.on('pointerenter',(event,d)=>tooltip.style('opacity',1).html(`${labels[d.variant]}<br>${d.score.toFixed(3)} mean score · ${d.seconds.toFixed(1)} s/fit`).style('left',`${event.offsetX+12}px`).style('top',`${event.offsetY+12}px`)).on('pointerleave',()=>tooltip.style('opacity',0));
+      const named=new Set(['self_context','self_context_transport_self_ray_odd','self_context_transport_basis_ray_odd','self_context_jet_curvature_context','self_context_jet_curvature_bounded']),namedRows=rows.filter(d=>named.has(d.variant));
+      svg.append('g').selectAll('text.label').data(namedRows).join('text').attr('class','label').attr('x',d=>x(d.chart_points)+(d.chart_points>8?-12:12)).attr('y',d=>y(d.score)+4).attr('text-anchor',d=>d.chart_points>8?'end':'start').text(d=>labels[d.variant]);
+    }
+    function mechanism(){
+      const host=root.querySelector('#ts-mechanism'),w=Math.max(300,host.getBoundingClientRect().width),h=330,m={t:18,r:18,b:74,l:66},tasks=data.mechanism.filter(d=>d.variant.includes('context')&&!d.variant.includes('detached')).map(d=>d.task),x=d3.scaleBand(tasks,[m.l,w-m.r]).padding(.32),extent=d3.extent(data.mechanism,d=>d.score),y=d3.scaleLinear([extent[0]-.035,extent[1]+.035],[h-m.b,m.t]).nice(),svg=d3.select(host).select('svg').attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);
+      frame(svg,w,h,m,'Task','Held-out score');
+      svg.append('g').attr('class','axis').attr('transform',`translate(0,${h-m.b})`).call(d3.axisBottom(x).tickFormat(d=>taskLabels[d]).tickSizeOuter(0)).selectAll('text').attr('transform','rotate(-25)').attr('text-anchor','end');
+      svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));
+      for(const task of tasks){const pair=data.mechanism.filter(d=>d.task===task);svg.append('line').attr('x1',x(task)+x.bandwidth()*.32).attr('x2',x(task)+x.bandwidth()*.68).attr('y1',y(pair[0].score)).attr('y2',y(pair[1].score)).attr('stroke','var(--border)').attr('stroke-width',2);svg.selectAll(`.m-${task}`).data(pair).join('circle').attr('cx',(d,i)=>x(task)+x.bandwidth()*(i ? .68 : .32)).attr('cy',d=>y(d.score)).attr('r',5).attr('fill',(d,i)=>i?'var(--viz-series-4)':'var(--viz-series-2)');}
+      svg.append('circle').attr('cx',m.l+8).attr('cy',m.t+8).attr('r',4).attr('fill','var(--viz-series-2)');svg.append('text').attr('x',m.l+17).attr('y',m.t+12).text('Full shell gradient');svg.append('circle').attr('cx',m.l+8).attr('cy',m.t+25).attr('r',4).attr('fill','var(--viz-series-4)');svg.append('text').attr('x',m.l+17).attr('y',m.t+29).text('Detached shell state');
+    }
+    function learning(){
+      const tasks=['radial_stripes','multiscale_1d'],grid=d3.select(root).select('#ts-learning');grid.selectAll('*').remove();const hosts=grid.selectAll('.plot').data(tasks).join('div').attr('class','plot');hosts.html(task=>`<h3>${taskLabels[task]}</h3><svg role="img" aria-label="${taskLabels[task]} validation learning curves"></svg>`);hosts.each(function(task){const w=Math.max(300,this.getBoundingClientRect().width),h=300,m={t:14,r:16,b:44,l:66},seriesRows=data.learning_variants.filter(v=>active.has(v)).map(v=>({variant:v,...data.learning[task][v]})),all=seriesRows.flatMap(d=>d.score),x=d3.scaleLinear(d3.extent(seriesRows[0].step),[m.l,w-m.r]),e=d3.extent(all),y=d3.scaleLinear([e[0]-(e[1]-e[0])*.08,e[1]+(e[1]-e[0])*.08],[h-m.b,m.t]),svg=d3.select(this).select('svg').attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);frame(svg,w,h,m,'Training step','Validation score');svg.append('g').attr('class','axis').attr('transform',`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(w<430?4:6));svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));const line=d3.line().x((d,i)=>x(seriesRows[0].step[i])).y(d=>y(d));svg.append('g').selectAll('path').data(seriesRows).join('path').attr('fill','none').attr('stroke',d=>learningColors[d.variant]).attr('stroke-width',2).attr('d',d=>line(d.score));});
+    }
+    function radial(){const names=['truth',...data.probe_variants],titles=['Truth',...data.probe_variants.map(v=>labels[v])],grid=d3.select(root).select('#ts-radial-grid'),cells=grid.selectAll('.radial-item').data(names).join('div').attr('class','radial-item');cells.html((d,i)=>`<h3>${titles[i]}</h3><svg role="img" aria-label="${titles[i]} radial decision field"></svg>`);cells.each(function(name){const values=name==='truth'?data.radial.truth:data.radial.predictions[name],n=data.radial.size,w=Math.max(140,this.getBoundingClientRect().width),pad=5,cell=(w-2*pad)/n,svg=d3.select(this).select('svg').attr('viewBox',`0 0 ${w} ${w}`);svg.selectAll('rect').data(values).join('rect').attr('x',(d,i)=>pad+(i%n)*cell).attr('y',(d,i)=>w-pad-(Math.floor(i/n)+1)*cell).attr('width',cell+.25).attr('height',cell+.25).attr('fill',d=>d?'var(--viz-series-2)':'var(--viz-series-1)');});}
+    function multiscale(){const host=root.querySelector('#ts-multiscale'),w=Math.max(300,host.getBoundingClientRect().width),h=340,m={t:14,r:18,b:46,l:66},variants=data.probe_variants.filter(v=>active.has(v)||!data.learning_variants.includes(v)),all=data.multiscale.truth.concat(variants.flatMap(v=>data.multiscale.predictions[v])),x=d3.scaleLinear(d3.extent(data.multiscale.x),[m.l,w-m.r]),y=d3.scaleLinear(d3.extent(all),[h-m.b,m.t]).nice(),svg=d3.select(host).select('svg').attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);frame(svg,w,h,m,'x · observed interval shaded','Target / prediction');svg.insert('rect','text').attr('x',x(data.multiscale.train_limits[0])).attr('y',m.t).attr('width',x(data.multiscale.train_limits[1])-x(data.multiscale.train_limits[0])).attr('height',h-m.t-m.b).attr('fill','var(--muted)').attr('opacity',.45);svg.append('g').attr('class','axis').attr('transform',`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(w<430?4:7));svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));const line=d3.line().x((d,i)=>x(data.multiscale.x[i])).y(d=>y(d));svg.append('path').datum(data.multiscale.truth).attr('fill','none').attr('stroke','var(--foreground)').attr('stroke-width',2.5).attr('d',line);svg.append('g').selectAll('path').data(variants).join('path').attr('fill','none').attr('stroke',v=>probeColors[v]).attr('stroke-width',1.8).attr('d',v=>line(data.multiscale.predictions[v]));}
+    const controls=d3.select(root).select('#ts-controls').selectAll('button').data(controlVariants).join('button').attr('type','button').attr('aria-pressed','true').html(v=>`<span class="swatch" style="background:${learningColors[v]||probeColors[v]}"></span>${labels[v]}`).on('click',function(event,v){active.has(v)?active.delete(v):active.add(v);d3.select(this).attr('aria-pressed',active.has(v));learning();multiscale();});
+    function draw(){deltaChart('#ts-heldout','score','Held-out score');deltaChart('#ts-tail','tail_score','Tail score');deltaChart('#ts-auc','learning_auc','Learning AUC');efficiency();mechanism();learning();radial();multiscale();}
+    let timer;new ResizeObserver(()=>{clearTimeout(timer);timer=setTimeout(draw,100)}).observe(root);draw();
+  })();
+  </script>
+</section>

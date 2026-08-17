@@ -1,0 +1,547 @@
+{
+  "experiment": "cold_gaussian_doob_syndrome_bridge",
+  "dimensions": [
+    {
+      "dimension": 3,
+      "states": 125,
+      "h": 1,
+      "target_width": 0.2367585779899883,
+      "required_action_budget_per_dimension": 0.026482844020023377,
+      "row_stochastic_error": 2.220446049250313e-16,
+      "detailed_balance_error": 1.734723475976807e-18,
+      "horizon_summary": [
+        {
+          "steps": 4,
+          "maximum_action": 0.0004499679479053196,
+          "mean_action": 0.00022708085949835023,
+          "maximum_committor_spread": 1.0281515783461816,
+          "maximum_action_minus_budget": -0.026032876072118058
+        },
+        {
+          "steps": 8,
+          "maximum_action": 3.4327614947728486e-05,
+          "mean_action": 1.7383225188411513e-05,
+          "maximum_committor_spread": 0.8951267136868991,
+          "maximum_action_minus_budget": -0.02644851640507565
+        },
+        {
+          "steps": 16,
+          "maximum_action": 2.488037588761822e-07,
+          "mean_action": 1.256047940638561e-07,
+          "maximum_committor_spread": 0.6163732096627578,
+          "maximum_action_minus_budget": -0.0264825952162645
+        },
+        {
+          "steps": 32,
+          "maximum_action": 5.339364515645603e-12,
+          "mean_action": 2.6851120954828427e-12,
+          "maximum_committor_spread": 0.11536219557737652,
+          "maximum_action_minus_budget": -0.026482844014684013
+        },
+        {
+          "steps": 64,
+          "maximum_action": 0.0,
+          "mean_action": -8.008566259537295e-17,
+          "maximum_committor_spread": 0.0006818358376701085,
+          "maximum_action_minus_budget": -0.026482844020023377
+        },
+        {
+          "steps": 128,
+          "maximum_action": 0.0,
+          "mean_action": 0.0,
+          "maximum_committor_spread": 9.440498988669223e-09,
+          "maximum_action_minus_budget": -0.026482844020023377
+        }
+      ],
+      "cosets": [
+        {
+          "j": 0,
+          "stationary_probability": 0.9374005768480239,
+          "horizons": [
+            {
+              "steps": 4,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.999037162694684,
+              "committor_log2_max_ratio": 0.04465114902979832,
+              "committor_log2_spread": 0.999037162694684,
+              "renyi2_log_mass": 1.2581313274142552e-05,
+              "bridge_mass_error": 0.0,
+              "committor_log2_spread_per_dimension": 0.33301238756489465,
+              "renyi2_action_per_dimension": 4.19377109138085e-06
+            },
+            {
+              "steps": 8,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.6501398055990203,
+              "committor_log2_max_ratio": 0.0211295257746935,
+              "committor_log2_spread": 0.6501398055990203,
+              "renyi2_log_mass": 1.3165062872836182e-06,
+              "bridge_mass_error": 0.0,
+              "committor_log2_spread_per_dimension": 0.21671326853300676,
+              "renyi2_action_per_dimension": 4.3883542909453943e-07
+            },
+            {
+              "steps": 16,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.27546260063080324,
+              "committor_log2_max_ratio": 0.004656892530458276,
+              "committor_log2_spread": 0.27546260063080324,
+              "renyi2_log_mass": 7.2174877545900535e-09,
+              "bridge_mass_error": 2.220446049250313e-16,
+              "committor_log2_spread_per_dimension": 0.09182086687693441,
+              "renyi2_action_per_dimension": 2.4058292515300177e-09
+            },
+            {
+              "steps": 32,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.026358657107829836,
+              "committor_log2_max_ratio": 0.00022093941669623431,
+              "committor_log2_spread": 0.026358657107829836,
+              "renyi2_log_mass": 9.257902596024816e-14,
+              "bridge_mass_error": 1.5543122344752192e-15,
+              "committor_log2_spread_per_dimension": 0.00878621903594328,
+              "renyi2_action_per_dimension": 3.085967532008272e-14
+            },
+            {
+              "steps": 64,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.00013670194232455728,
+              "committor_log2_max_ratio": 4.814152235042536e-07,
+              "committor_log2_spread": 0.00013670194232455728,
+              "renyi2_log_mass": -4.805139755722377e-16,
+              "bridge_mass_error": 6.661338147750939e-16,
+              "committor_log2_spread_per_dimension": 4.5567314108185764e-05,
+              "renyi2_action_per_dimension": -1.601713251907459e-16
+            },
+            {
+              "steps": 128,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -1.8913193465672214e-09,
+              "committor_log2_max_ratio": 2.23278827315727e-12,
+              "committor_log2_spread": 1.8913193465672214e-09,
+              "renyi2_log_mass": 0.0,
+              "bridge_mass_error": 2.4424906541753444e-15,
+              "committor_log2_spread_per_dimension": 6.304397821890738e-10,
+              "renyi2_action_per_dimension": 0.0
+            }
+          ]
+        },
+        {
+          "j": 1,
+          "stationary_probability": 0.06259942315197616,
+          "horizons": [
+            {
+              "steps": 4,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.917862494840495,
+              "committor_log2_max_ratio": 3.084454735038545,
+              "committor_log2_spread": 3.084454735038545,
+              "renyi2_log_mass": 0.0013499038437159588,
+              "bridge_mass_error": 0.0,
+              "committor_log2_spread_per_dimension": 1.0281515783461816,
+              "renyi2_action_per_dimension": 0.0004499679479053196
+            },
+            {
+              "steps": 8,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.36017475273165744,
+              "committor_log2_max_ratio": 2.6853801410606972,
+              "committor_log2_spread": 2.6853801410606972,
+              "renyi2_log_mass": 0.00010298284484318545,
+              "bridge_mass_error": 1.1102230246251565e-16,
+              "committor_log2_spread_per_dimension": 0.8951267136868991,
+              "renyi2_action_per_dimension": 3.4327614947728486e-05
+            },
+            {
+              "steps": 16,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.07159518350425381,
+              "committor_log2_max_ratio": 1.8491196289882734,
+              "committor_log2_spread": 1.8491196289882734,
+              "renyi2_log_mass": 7.464112766285466e-07,
+              "bridge_mass_error": 4.440892098500626e-16,
+              "committor_log2_spread_per_dimension": 0.6163732096627578,
+              "renyi2_action_per_dimension": 2.488037588761822e-07
+            },
+            {
+              "steps": 32,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.003312530101531837,
+              "committor_log2_max_ratio": 0.34608658673212955,
+              "committor_log2_spread": 0.34608658673212955,
+              "renyi2_log_mass": 1.6018093546936808e-11,
+              "bridge_mass_error": 4.440892098500626e-16,
+              "committor_log2_spread_per_dimension": 0.11536219557737652,
+              "renyi2_action_per_dimension": 5.339364515645603e-12
+            },
+            {
+              "steps": 64,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -7.209014009205429e-06,
+              "committor_log2_max_ratio": 0.0020455075130103254,
+              "committor_log2_spread": 0.0020455075130103254,
+              "renyi2_log_mass": 0.0,
+              "bridge_mass_error": 6.661338147750939e-16,
+              "committor_log2_spread_per_dimension": 0.0006818358376701085,
+              "renyi2_action_per_dimension": 0.0
+            },
+            {
+              "steps": 128,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -3.367570077909697e-11,
+              "committor_log2_max_ratio": 2.832149696600767e-08,
+              "committor_log2_spread": 2.832149696600767e-08,
+              "renyi2_log_mass": 0.0,
+              "bridge_mass_error": 5.995204332975845e-15,
+              "committor_log2_spread_per_dimension": 9.440498988669223e-09,
+              "renyi2_action_per_dimension": 0.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dimension": 4,
+      "states": 625,
+      "h": 2,
+      "target_width": 0.2367585779899883,
+      "required_action_budget_per_dimension": 0.026482844020023377,
+      "row_stochastic_error": 2.220446049250313e-16,
+      "detailed_balance_error": 2.710505431213761e-20,
+      "horizon_summary": [
+        {
+          "steps": 4,
+          "maximum_action": 0.00402586996152876,
+          "mean_action": 0.002865934842350524,
+          "maximum_committor_spread": 0.9580221614804422,
+          "maximum_action_minus_budget": -0.022456974058494616
+        },
+        {
+          "steps": 8,
+          "maximum_action": 0.0010552165541104562,
+          "mean_action": 0.0006769243935278857,
+          "maximum_committor_spread": 0.7895440830720544,
+          "maximum_action_minus_budget": -0.02542762746591292
+        },
+        {
+          "steps": 16,
+          "maximum_action": 0.00015272245626950435,
+          "mean_action": 5.1795787354216325e-05,
+          "maximum_committor_spread": 0.6628517188031349,
+          "maximum_action_minus_budget": -0.02633012156375387
+        },
+        {
+          "steps": 32,
+          "maximum_action": 2.1883842369648652e-07,
+          "mean_action": 5.652287735769581e-08,
+          "maximum_committor_spread": 0.35504338811573927,
+          "maximum_action_minus_budget": -0.026482625181599682
+        },
+        {
+          "steps": 64,
+          "maximum_action": 1.4735761917548323e-14,
+          "mean_action": 3.874143928051092e-15,
+          "maximum_committor_spread": 0.019249714064810793,
+          "maximum_action_minus_budget": -0.026482844020008642
+        },
+        {
+          "steps": 128,
+          "maximum_action": 2.4025698778611875e-16,
+          "mean_action": 8.008566259537292e-17,
+          "maximum_committor_spread": 8.84704492297089e-06,
+          "maximum_action_minus_budget": -0.026482844020023138
+        }
+      ],
+      "cosets": [
+        {
+          "j": 0,
+          "stationary_probability": 0.8036507786238596,
+          "horizons": [
+            {
+              "steps": 4,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -2.582248096128804,
+              "committor_log2_max_ratio": 0.18372994612574456,
+              "committor_log2_spread": 2.582248096128804,
+              "renyi2_log_mass": 0.0023356391607071646,
+              "bridge_mass_error": 6.661338147750939e-16,
+              "committor_log2_spread_per_dimension": 0.645562024032201,
+              "renyi2_action_per_dimension": 0.0005839097901767912
+            },
+            {
+              "steps": 8,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -1.880702432578653,
+              "committor_log2_max_ratio": 0.10695056143344832,
+              "committor_log2_spread": 1.880702432578653,
+              "renyi2_log_mass": 0.00025273571970139063,
+              "bridge_mass_error": 4.440892098500626e-16,
+              "committor_log2_spread_per_dimension": 0.47017560814466325,
+              "renyi2_action_per_dimension": 6.318392992534766e-05
+            },
+            {
+              "steps": 16,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -1.3667682649857071,
+              "committor_log2_max_ratio": 0.03619719674853457,
+              "committor_log2_spread": 1.3667682649857071,
+              "renyi2_log_mass": 3.372913610755215e-06,
+              "bridge_mass_error": 2.220446049250313e-16,
+              "committor_log2_spread_per_dimension": 0.3416920662464268,
+              "renyi2_action_per_dimension": 8.432284026888037e-07
+            },
+            {
+              "steps": 32,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.31986565537933404,
+              "committor_log2_max_ratio": 0.004149277217066197,
+              "committor_log2_spread": 0.31986565537933404,
+              "renyi2_log_mass": 9.80777395549767e-10,
+              "bridge_mass_error": 2.220446049250313e-16,
+              "committor_log2_spread_per_dimension": 0.07996641384483351,
+              "renyi2_action_per_dimension": 2.4519434888744177e-10
+            },
+            {
+              "steps": 64,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.00889512546013795,
+              "committor_log2_max_ratio": 5.617327927711243e-05,
+              "committor_log2_spread": 0.00889512546013795,
+              "renyi2_log_mass": 0.0,
+              "bridge_mass_error": 1.5543122344752192e-15,
+              "committor_log2_spread_per_dimension": 0.0022237813650344876,
+              "renyi2_action_per_dimension": 0.0
+            },
+            {
+              "steps": 128,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -3.7256606687306144e-06,
+              "committor_log2_max_ratio": 1.1611010560915932e-08,
+              "committor_log2_spread": 3.7256606687306144e-06,
+              "renyi2_log_mass": 3.2034265038149176e-16,
+              "bridge_mass_error": 8.881784197001252e-16,
+              "committor_log2_spread_per_dimension": 9.314151671826536e-07,
+              "renyi2_action_per_dimension": 8.008566259537294e-17
+            }
+          ]
+        },
+        {
+          "j": 1,
+          "stationary_probability": 0.0380221076977891,
+          "horizons": [
+            {
+              "steps": 4,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -1.3919813577228524,
+              "committor_log2_max_ratio": 3.8320886459217687,
+              "committor_log2_spread": 3.8320886459217687,
+              "renyi2_log_mass": 0.01610347984611504,
+              "bridge_mass_error": 4.440892098500626e-16,
+              "committor_log2_spread_per_dimension": 0.9580221614804422,
+              "renyi2_action_per_dimension": 0.00402586996152876
+            },
+            {
+              "steps": 8,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.6867855323168727,
+              "committor_log2_max_ratio": 3.1581763322882175,
+              "committor_log2_spread": 3.1581763322882175,
+              "renyi2_log_mass": 0.004220866216441825,
+              "bridge_mass_error": 0.0,
+              "committor_log2_spread_per_dimension": 0.7895440830720544,
+              "renyi2_action_per_dimension": 0.0010552165541104562
+            },
+            {
+              "steps": 16,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.21865184851547775,
+              "committor_log2_max_ratio": 2.6514068752125395,
+              "committor_log2_spread": 2.6514068752125395,
+              "renyi2_log_mass": 0.0006108898250780174,
+              "bridge_mass_error": 4.440892098500626e-16,
+              "committor_log2_spread_per_dimension": 0.6628517188031349,
+              "renyi2_action_per_dimension": 0.00015272245626950435
+            },
+            {
+              "steps": 32,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.027590679093239964,
+              "committor_log2_max_ratio": 1.420173552462957,
+              "committor_log2_spread": 1.420173552462957,
+              "renyi2_log_mass": 8.753536947859461e-07,
+              "bridge_mass_error": 0.0,
+              "committor_log2_spread_per_dimension": 0.35504338811573927,
+              "renyi2_action_per_dimension": 2.1883842369648652e-07
+            },
+            {
+              "steps": 64,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.0004583752090331973,
+              "committor_log2_max_ratio": 0.07699885625924317,
+              "committor_log2_spread": 0.07699885625924317,
+              "renyi2_log_mass": 5.894304767019329e-14,
+              "bridge_mass_error": 1.3322676295501878e-15,
+              "committor_log2_spread_per_dimension": 0.019249714064810793,
+              "renyi2_action_per_dimension": 1.4735761917548323e-14
+            },
+            {
+              "steps": 128,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -1.1408576623343348e-07,
+              "committor_log2_max_ratio": 3.538817969188356e-05,
+              "committor_log2_spread": 3.538817969188356e-05,
+              "renyi2_log_mass": 3.2034265038149176e-16,
+              "bridge_mass_error": 2.220446049250313e-16,
+              "committor_log2_spread_per_dimension": 8.84704492297089e-06,
+              "renyi2_action_per_dimension": 8.008566259537294e-17
+            }
+          ]
+        },
+        {
+          "j": 2,
+          "stationary_probability": 0.09194245849190058,
+          "horizons": [
+            {
+              "steps": 4,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -1.6140682113077127,
+              "committor_log2_max_ratio": 2.6118062739960086,
+              "committor_log2_spread": 2.6118062739960086,
+              "renyi2_log_mass": 0.012283251368814023,
+              "bridge_mass_error": 4.440892098500626e-16,
+              "committor_log2_spread_per_dimension": 0.6529515684990022,
+              "renyi2_action_per_dimension": 0.0030708128422035057
+            },
+            {
+              "steps": 8,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.652848264268781,
+              "committor_log2_max_ratio": 1.9950691081631209,
+              "committor_log2_spread": 1.9950691081631209,
+              "renyi2_log_mass": 0.0033619523992837333,
+              "bridge_mass_error": 4.440892098500626e-16,
+              "committor_log2_spread_per_dimension": 0.4987672770407802,
+              "renyi2_action_per_dimension": 0.0008404880998209333
+            },
+            {
+              "steps": 16,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.16226694244474898,
+              "committor_log2_max_ratio": 1.5650180611452926,
+              "committor_log2_spread": 1.5650180611452926,
+              "renyi2_log_mass": 0.0001262341454239915,
+              "bridge_mass_error": 4.440892098500626e-16,
+              "committor_log2_spread_per_dimension": 0.39125451528632316,
+              "renyi2_action_per_dimension": 3.1558536355997876e-05
+            },
+            {
+              "steps": 32,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.013081676300102648,
+              "committor_log2_max_ratio": 0.5698511021173087,
+              "committor_log2_spread": 0.5698511021173087,
+              "renyi2_log_mass": 1.6604060063100563e-08,
+              "bridge_mass_error": 3.3306690738754696e-16,
+              "committor_log2_spread_per_dimension": 0.14246277552932718,
+              "renyi2_action_per_dimension": 4.151015015775141e-09
+            },
+            {
+              "steps": 64,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.00013199587782094951,
+              "committor_log2_max_ratio": 0.018590650014349796,
+              "committor_log2_spread": 0.018590650014349796,
+              "renyi2_log_mass": -1.6017132519074588e-16,
+              "bridge_mass_error": 4.440892098500626e-16,
+              "committor_log2_spread_per_dimension": 0.004647662503587449,
+              "renyi2_action_per_dimension": -4.004283129768647e-17
+            },
+            {
+              "steps": 128,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -1.6815752610643806e-08,
+              "committor_log2_max_ratio": 6.169377971878375e-06,
+              "committor_log2_spread": 6.169377971878375e-06,
+              "renyi2_log_mass": -3.2034265038149186e-16,
+              "bridge_mass_error": 8.881784197001252e-16,
+              "committor_log2_spread_per_dimension": 1.5423444929695938e-06,
+              "renyi2_action_per_dimension": -8.008566259537297e-17
+            }
+          ]
+        },
+        {
+          "j": 3,
+          "stationary_probability": 0.06638465518645087,
+          "horizons": [
+            {
+              "steps": 4,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -1.6913325108541932,
+              "committor_log2_max_ratio": 3.0322486330660694,
+              "committor_log2_spread": 3.0322486330660694,
+              "renyi2_log_mass": 0.015132587101972158,
+              "bridge_mass_error": 4.440892098500626e-16,
+              "committor_log2_spread_per_dimension": 0.7580621582665173,
+              "renyi2_action_per_dimension": 0.0037831467754930394
+            },
+            {
+              "steps": 8,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.7633499531074093,
+              "committor_log2_max_ratio": 2.3579419093701244,
+              "committor_log2_spread": 2.3579419093701244,
+              "renyi2_log_mass": 0.0029952359610192227,
+              "bridge_mass_error": 4.440892098500626e-16,
+              "committor_log2_spread_per_dimension": 0.5894854773425311,
+              "renyi2_action_per_dimension": 0.0007488089902548057
+            },
+            {
+              "steps": 16,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.19916821073254598,
+              "committor_log2_max_ratio": 1.8743279510206603,
+              "committor_log2_spread": 1.8743279510206603,
+              "renyi2_log_mass": 8.823571355469713e-05,
+              "bridge_mass_error": 4.440892098500626e-16,
+              "committor_log2_spread_per_dimension": 0.4685819877551651,
+              "renyi2_action_per_dimension": 2.205892838867428e-05
+            },
+            {
+              "steps": 32,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.017300637920194276,
+              "committor_log2_max_ratio": 0.8575446432448199,
+              "committor_log2_spread": 0.8575446432448199,
+              "renyi2_log_mass": 1.1427505478536603e-08,
+              "bridge_mass_error": 8.881784197001252e-16,
+              "committor_log2_spread_per_dimension": 0.21438616081120498,
+              "renyi2_action_per_dimension": 2.8568763696341508e-09
+            },
+            {
+              "steps": 64,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -0.00023476438790501797,
+              "committor_log2_max_ratio": 0.03718153983341606,
+              "committor_log2_spread": 0.03718153983341606,
+              "renyi2_log_mass": 3.2034265038149143e-15,
+              "bridge_mass_error": 1.3322676295501878e-15,
+              "committor_log2_spread_per_dimension": 0.009295384958354014,
+              "renyi2_action_per_dimension": 8.008566259537286e-16
+            },
+            {
+              "steps": 128,
+              "zero_committor_fraction": 0.0,
+              "committor_log2_min_ratio": -5.19298705694332e-08,
+              "committor_log2_max_ratio": 1.628902706245544e-05,
+              "committor_log2_spread": 1.628902706245544e-05,
+              "renyi2_log_mass": 9.61027951144475e-16,
+              "bridge_mass_error": 4.440892098500626e-16,
+              "committor_log2_spread_per_dimension": 4.07225676561386e-06,
+              "renyi2_action_per_dimension": 2.4025698778611875e-16
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

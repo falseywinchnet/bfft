@@ -1,0 +1,66 @@
+<div id="nested-chart-check-viz">
+  <style>
+    #nested-chart-check-viz{color:var(--foreground);font-size:var(--font-size-base);width:100%}
+    #nested-chart-check-viz *{box-sizing:border-box}
+    #nested-chart-check-viz h2,#nested-chart-check-viz h3,#nested-chart-check-viz p{margin-top:0}
+    #nested-chart-check-viz h2,#nested-chart-check-viz h3{font-weight:500}
+    #nested-chart-check-viz .lede{color:var(--muted-foreground);margin-bottom:14px}
+    #nested-chart-check-viz .controls{display:flex;flex-wrap:wrap;gap:6px 15px;margin:5px 0 14px}
+    #nested-chart-check-viz .controls button{appearance:none;background:transparent;border:0;color:var(--foreground);padding:3px 0;cursor:pointer;font:inherit}
+    #nested-chart-check-viz .controls button[aria-pressed="false"]{color:var(--muted-foreground);text-decoration:line-through}
+    #nested-chart-check-viz .swatch{display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:50%;background:var(--swatch)}
+    #nested-chart-check-viz .section{margin:24px 0}
+    #nested-chart-check-viz .two-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    #nested-chart-check-viz .panel{min-width:0}
+    #nested-chart-check-viz .panel h3{margin-bottom:4px}
+    #nested-chart-check-viz .radial-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+    #nested-chart-check-viz .radial-item{min-width:0;text-align:center}
+    #nested-chart-check-viz .radial-item h3{margin-bottom:4px}
+    #nested-chart-check-viz svg{display:block;width:100%;overflow:visible}
+    #nested-chart-check-viz svg text{fill:var(--foreground);font-size:12px}
+    #nested-chart-check-viz svg .frame{fill:none;stroke:var(--border)}
+    #nested-chart-check-viz svg .axis path,#nested-chart-check-viz svg .axis line{stroke:var(--border)}
+    #nested-chart-check-viz svg .grid line{stroke:var(--border);opacity:.42}
+    @media(max-width:760px){#nested-chart-check-viz .two-grid{grid-template-columns:1fr}#nested-chart-check-viz .radial-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:420px){#nested-chart-check-viz .radial-grid{grid-template-columns:1fr}}
+  </style>
+  <h2>Nested charts: scratch versus staged</h2>
+  <p class="lede">Radial stripes and multiscale 1-D · two paired seeds · 500 total steps · identical parameters · M4 CPU</p>
+  <div class="controls" id="ncc-controls" aria-label="Toggle model series"></div>
+  <section class="section">
+    <h3>Endpoint, tail, and acquisition</h3>
+    <div class="two-grid" id="ncc-metric-grid"></div>
+  </section>
+  <section class="section">
+    <h3>Learning inside the observed region</h3>
+    <div class="two-grid" id="ncc-learning-grid"></div>
+  </section>
+  <section class="section">
+    <h3>Radial decision fields · seed 0</h3>
+    <div class="radial-grid" id="ncc-radial-grid"></div>
+  </section>
+  <section class="section">
+    <h3>Multiscale continuation · seed 0</h3>
+    <div class="panel" id="ncc-multiscale"><svg role="img" aria-label="Multiscale target and four model predictions"><title>Multiscale target and model continuation outside the observed interval</title></svg></div>
+  </section>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script>
+  (()=>{
+    const root=document.getElementById('nested-chart-check-viz');
+    const data=__DATA__;
+    const configs=data.configurations;
+    const labels={self_context:'Self-context',curvature_context:'Curvature',nested_chart_scratch:'Nested scratch',nested_chart_staged:'Nested staged'};
+    const style=getComputedStyle(root),colors=Object.fromEntries(configs.map((d,i)=>[d,style.getPropertyValue(`--viz-series-${i+1}`).trim()]));
+    const visible=new Set(configs),controls=d3.select(root).select('#ncc-controls');
+    controls.selectAll('button').data(configs).join('button').attr('type','button').attr('aria-pressed','true').html(d=>`<span class="swatch" style="--swatch:${colors[d]}"></span>${labels[d]}`).on('click',function(e,d){if(visible.has(d)&&visible.size===1)return;visible.has(d)?visible.delete(d):visible.add(d);d3.select(this).attr('aria-pressed',visible.has(d));drawCharts()});
+    function frame(svg,w,h,m,xLabel,yLabel){svg.append('rect').attr('class','frame').attr('data-chart-frame','').attr('x',m.l).attr('y',m.t).attr('width',w-m.l-m.r).attr('height',h-m.t-m.b);svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('x',(m.l+w-m.r)/2).attr('y',h-6).attr('text-anchor','middle').text(xLabel);svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('transform',`translate(15,${(m.t+h-m.b)/2}) rotate(-90)`).attr('text-anchor','middle').text(yLabel)}
+    const metricNames=[['validation_score','Validation'],['score','Held-out'],['tail_score','Tail'],['learning_auc','Learning AUC']];
+    function drawMetrics(){const tasks=['radial_stripes','multiscale_1d'],grid=d3.select(root).select('#ncc-metric-grid'),panels=grid.selectAll('.panel').data(tasks).join('div').attr('class','panel');panels.html(task=>`<h3>${task==='radial_stripes'?'Radial stripes':'Multiscale 1-D'}</h3><svg role="img" aria-label="${task} metric comparison"><title>${task} validation, held-out, tail, and learning AUC</title></svg>`);panels.each(function(task){const w=Math.max(290,this.getBoundingClientRect().width),h=275,m={t:10,r:12,b:50,l:62},rows=data.summary.filter(d=>d.task===task&&visible.has(d.configuration)),points=rows.flatMap(r=>metricNames.map(([key,label])=>({configuration:r.configuration,metric:label,value:r[key]}))),x=d3.scalePoint(metricNames.map(d=>d[1]),[m.l,w-m.r]).padding(.45),extent=d3.extent(points,d=>d.value),pad=Math.max(.01,(extent[1]-extent[0])*.12),y=d3.scaleLinear([extent[0]-pad,extent[1]+pad],[h-m.b,m.t]),svg=d3.select(this).select('svg').attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);frame(svg,w,h,m,'Metric','Score');svg.append('g').attr('class','axis').attr('transform',`translate(0,${h-m.b})`).call(d3.axisBottom(x));svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));const line=d3.line().x(d=>x(d.metric)).y(d=>y(d.value));svg.append('g').selectAll('path.series').data(rows).join('path').attr('class','series').attr('fill','none').attr('stroke',d=>colors[d.configuration]).attr('stroke-width',2).attr('d',r=>line(points.filter(p=>p.configuration===r.configuration)));svg.append('g').selectAll('circle').data(points).join('circle').attr('cx',d=>x(d.metric)).attr('cy',d=>y(d.value)).attr('r',3.5).attr('fill',d=>colors[d.configuration])})}
+    function drawLearning(){const tasks=['radial_stripes','multiscale_1d'],grid=d3.select(root).select('#ncc-learning-grid'),panels=grid.selectAll('.panel').data(tasks).join('div').attr('class','panel');panels.html(task=>`<h3>${task==='radial_stripes'?'Radial stripes':'Multiscale 1-D'}</h3><svg role="img" aria-label="${task} paired mean validation learning curve"><title>${task} paired mean validation score by training step</title></svg>`);panels.each(function(task){const w=Math.max(290,this.getBoundingClientRect().width),h=275,m={t:10,r:12,b:42,l:62},series=configs.filter(c=>visible.has(c)).map(c=>({configuration:c,...data.learning[task][c]})),all=series.flatMap(s=>s.score),xe=d3.extent(series[0]?.step||[0,300]),ye=d3.extent(all),pad=Math.max(.01,(ye[1]-ye[0])*.08),x=d3.scaleLinear(xe,[m.l,w-m.r]),y=d3.scaleLinear([ye[0]-pad,ye[1]+pad],[h-m.b,m.t]),svg=d3.select(this).select('svg').attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);frame(svg,w,h,m,'Training step','Validation score');svg.append('g').attr('class','axis').attr('transform',`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(w<400?4:6));svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));const line=d3.line().x((d,i)=>x(series[0].step[i])).y(d=>y(d));svg.append('g').selectAll('path').data(series).join('path').attr('fill','none').attr('stroke',d=>colors[d.configuration]).attr('stroke-width',2).attr('d',d=>line(d.score))})}
+    function drawRadial(){const names=['truth',...configs],titles=['Truth',...configs.map(c=>labels[c])],grid=d3.select(root).select('#ncc-radial-grid'),cells=grid.selectAll('.radial-item').data(names).join('div').attr('class','radial-item');cells.html((d,i)=>`<h3>${titles[i]}</h3><svg role="img" aria-label="${titles[i]} radial decision field"><title>${titles[i]} radial decision field</title></svg>`);cells.each(function(name){const values=name==='truth'?data.radial.truth:data.radial.predictions[name],n=data.radial.size,w=Math.max(150,this.getBoundingClientRect().width),m=7,cell=(w-2*m)/n,svg=d3.select(this).select('svg').attr('viewBox',`0 0 ${w} ${w}`);svg.selectAll('rect').data(values).join('rect').attr('x',(d,i)=>m+(i%n)*cell).attr('y',(d,i)=>w-m-(Math.floor(i/n)+1)*cell).attr('width',cell+.25).attr('height',cell+.25).attr('fill',d=>d?'var(--viz-series-2)':'var(--viz-series-1)')})}
+    function drawMultiscale(){const host=root.querySelector('#ncc-multiscale'),w=Math.max(300,host.getBoundingClientRect().width),h=330,m={t:10,r:14,b:44,l:64},active=configs.filter(c=>visible.has(c)),all=data.multiscale.truth.concat(active.flatMap(c=>data.multiscale.predictions[c])),x=d3.scaleLinear(d3.extent(data.multiscale.x),[m.l,w-m.r]),y=d3.scaleLinear(d3.extent(all),[h-m.b,m.t]).nice(),svg=d3.select(host).select('svg').attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);svg.selectAll('*:not(title)').remove();svg.append('rect').attr('x',x(data.multiscale.train_limits[0])).attr('y',m.t).attr('width',x(data.multiscale.train_limits[1])-x(data.multiscale.train_limits[0])).attr('height',h-m.t-m.b).attr('fill','var(--muted)').attr('opacity',.42);frame(svg,w,h,m,'x (observed interval shaded)','Target / prediction');svg.append('g').attr('class','axis').attr('transform',`translate(0,${h-m.b})`).call(d3.axisBottom(x).ticks(w<430?4:7));svg.append('g').attr('class','axis').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));const line=d3.line().x((d,i)=>x(data.multiscale.x[i])).y(d=>y(d));svg.append('path').datum(data.multiscale.truth).attr('fill','none').attr('stroke','var(--foreground)').attr('stroke-width',2.5).attr('d',line);svg.append('g').selectAll('path').data(active).join('path').attr('fill','none').attr('stroke',c=>colors[c]).attr('stroke-width',1.8).attr('d',c=>line(data.multiscale.predictions[c]))}
+    function drawCharts(){d3.select(root).select('#ncc-metric-grid').html('');d3.select(root).select('#ncc-learning-grid').html('');drawMetrics();drawLearning();drawMultiscale()}
+    drawRadial();let timer;new ResizeObserver(()=>{clearTimeout(timer);timer=setTimeout(()=>{drawRadial();drawCharts()},90)}).observe(root);drawCharts();
+  })();
+  </script>
+</div>

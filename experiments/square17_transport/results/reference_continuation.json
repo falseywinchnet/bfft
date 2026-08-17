@@ -1,0 +1,437 @@
+{
+  "status": "floating_point_construction_not_lower_bound_proof",
+  "method": "relaxed_chip_design_support_sparse_transport",
+  "seed": 0,
+  "side": 4.675530093604551,
+  "minimum_clearance": -4.440892098500626e-16,
+  "poses": [
+    [
+      0.5,
+      0.5,
+      0.0
+    ],
+    [
+      1.5,
+      0.5,
+      0.0
+    ],
+    [
+      0.5,
+      1.5,
+      0.0
+    ],
+    [
+      0.5,
+      4.175530093604551,
+      0.0
+    ],
+    [
+      4.175530093604551,
+      0.5,
+      0.0
+    ],
+    [
+      3.175530093604551,
+      0.5,
+      0.0
+    ],
+    [
+      4.175530093604551,
+      1.5,
+      0.0
+    ],
+    [
+      4.175530093604551,
+      4.175530093604551,
+      0.0
+    ],
+    [
+      0.7042021556575175,
+      2.7042021556575175,
+      0.694727592818231
+    ],
+    [
+      1.4360434939982247,
+      3.388043433263363,
+      0.694727592818231
+    ],
+    [
+      1.556737163170879,
+      2.112935871840352,
+      0.694727592818231
+    ],
+    [
+      2.2885785015115867,
+      2.7967771494461973,
+      0.694727592818231
+    ],
+    [
+      2.2952864461815237,
+      1.4266835476667392,
+      0.694727592818231
+    ],
+    [
+      3.0271277845222304,
+      2.110524825272585,
+      0.694727592818231
+    ],
+    [
+      2.347324826510285,
+      4.175530093604551,
+      0.0
+    ],
+    [
+      3.245073712656966,
+      3.3724938614938536,
+      -0.6392056569382095
+    ],
+    [
+      4.175530093604551,
+      2.613460132512564,
+      0.0
+    ]
+  ],
+  "trace": [
+    {
+      "side": 4.6745300936,
+      "soft_minimum_clearance": -0.0003276267995286908,
+      "hard_minimum_clearance": -0.0003276267995286908,
+      "final_minimum_clearance": -0.00032176034851616464,
+      "soft_continuation_steps": 41,
+      "self_distilled": true,
+      "net_count": 28,
+      "paired_axis_count": 56,
+      "feasible": false,
+      "soft_trace": [
+        {
+          "iteration": 1,
+          "loss": 0.008677780151313184,
+          "minimum_clearance": -0.009444564002220268,
+          "overlap_residual": 0.019489815523509205,
+          "net_count": 28,
+          "paired_axis_count": 52
+        },
+        {
+          "iteration": 100,
+          "loss": 0.0060779817629468885,
+          "minimum_clearance": -0.01328493654058216,
+          "overlap_residual": 0.02218482934383096,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 200,
+          "loss": 0.005292907995982831,
+          "minimum_clearance": -0.012282916825208878,
+          "overlap_residual": 0.020443755004166588,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 300,
+          "loss": 0.004610896998130203,
+          "minimum_clearance": -0.012079245104665293,
+          "overlap_residual": 0.019649760427963178,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 400,
+          "loss": 0.004024017198094842,
+          "minimum_clearance": -0.011910965628375791,
+          "overlap_residual": 0.018978107955030993,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 500,
+          "loss": 0.0035201940164480095,
+          "minimum_clearance": -0.011175992260164525,
+          "overlap_residual": 0.018037842339546112,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 600,
+          "loss": 0.0030809176159349557,
+          "minimum_clearance": -0.010633634776019751,
+          "overlap_residual": 0.01728248053110433,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 700,
+          "loss": 0.0027001829625580313,
+          "minimum_clearance": -0.010179989379413334,
+          "overlap_residual": 0.01646498711864408,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 800,
+          "loss": 0.0023664943422796866,
+          "minimum_clearance": -0.009578273637869561,
+          "overlap_residual": 0.01597326436528766,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 900,
+          "loss": 0.0020749615855187157,
+          "minimum_clearance": -0.009307790572783303,
+          "overlap_residual": 0.014991191128194381,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 1000,
+          "loss": 0.0018322843682357364,
+          "minimum_clearance": -0.009120521622298261,
+          "overlap_residual": 0.014577431290616444,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 1100,
+          "loss": 0.0016144707117226069,
+          "minimum_clearance": -0.008552309012987092,
+          "overlap_residual": 0.013863137415241217,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 1200,
+          "loss": 0.001425364348492568,
+          "minimum_clearance": -0.007969788485974294,
+          "overlap_residual": 0.013363925505012197,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 1300,
+          "loss": 0.0012650239003798563,
+          "minimum_clearance": -0.007764882949195195,
+          "overlap_residual": 0.012661326567501161,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 1400,
+          "loss": 0.0011233211749000684,
+          "minimum_clearance": -0.0075590134989065305,
+          "overlap_residual": 0.012073560038302143,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 1500,
+          "loss": 0.0010017601455005526,
+          "minimum_clearance": -0.007142700530232915,
+          "overlap_residual": 0.011530280378749314,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 1600,
+          "loss": 0.0008933230924701224,
+          "minimum_clearance": -0.00688012904713553,
+          "overlap_residual": 0.010978001718332665,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 1700,
+          "loss": 0.000797672143582454,
+          "minimum_clearance": -0.006383306231900976,
+          "overlap_residual": 0.010414388336874395,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 1800,
+          "loss": 0.000715050995418239,
+          "minimum_clearance": -0.0058890853730830806,
+          "overlap_residual": 0.009887064775778115,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 1900,
+          "loss": 0.0006437435466800912,
+          "minimum_clearance": -0.005876866873842479,
+          "overlap_residual": 0.00945571716977532,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 2000,
+          "loss": 0.0005811763363449652,
+          "minimum_clearance": -0.005743273545659733,
+          "overlap_residual": 0.009224666115419503,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 2100,
+          "loss": 0.0005260444210894617,
+          "minimum_clearance": -0.005244908797664483,
+          "overlap_residual": 0.008659208453288046,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 2200,
+          "loss": 0.0004762134248405567,
+          "minimum_clearance": -0.005221290381598687,
+          "overlap_residual": 0.00829129087509834,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 2300,
+          "loss": 0.00043260013921041,
+          "minimum_clearance": -0.004814729916545857,
+          "overlap_residual": 0.0077636908570619745,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 2400,
+          "loss": 0.00039467384164257785,
+          "minimum_clearance": -0.004637876562739063,
+          "overlap_residual": 0.007388881072107512,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 2500,
+          "loss": 0.0003596584240143325,
+          "minimum_clearance": -0.004435839167378219,
+          "overlap_residual": 0.007026931603159286,
+          "net_count": 29,
+          "paired_axis_count": 58
+        },
+        {
+          "iteration": 2600,
+          "loss": 0.0003310421449103742,
+          "minimum_clearance": -0.004182182281519675,
+          "overlap_residual": 0.006848918732460972,
+          "net_count": 28,
+          "paired_axis_count": 56
+        },
+        {
+          "iteration": 2700,
+          "loss": 0.0003053314883385341,
+          "minimum_clearance": -0.004022208933194493,
+          "overlap_residual": 0.006451291897752158,
+          "net_count": 28,
+          "paired_axis_count": 56
+        },
+        {
+          "iteration": 2800,
+          "loss": 0.0002811121498348638,
+          "minimum_clearance": -0.003842667802089861,
+          "overlap_residual": 0.006211661418414806,
+          "net_count": 28,
+          "paired_axis_count": 56
+        },
+        {
+          "iteration": 2900,
+          "loss": 0.00026039108231892263,
+          "minimum_clearance": -0.004052687374608066,
+          "overlap_residual": 0.006157106062950967,
+          "net_count": 28,
+          "paired_axis_count": 56
+        },
+        {
+          "iteration": 3000,
+          "loss": 0.00024301718982905666,
+          "minimum_clearance": -0.0036501505491408626,
+          "overlap_residual": 0.0057683828232173015,
+          "net_count": 28,
+          "paired_axis_count": 56
+        },
+        {
+          "iteration": 3100,
+          "loss": 0.0002278460516629448,
+          "minimum_clearance": -0.0036044231518040926,
+          "overlap_residual": 0.005632795135699758,
+          "net_count": 28,
+          "paired_axis_count": 56
+        },
+        {
+          "iteration": 3200,
+          "loss": 0.00021313232281956512,
+          "minimum_clearance": -0.003447202485948875,
+          "overlap_residual": 0.005366288587190297,
+          "net_count": 28,
+          "paired_axis_count": 56
+        },
+        {
+          "iteration": 3300,
+          "loss": 0.00019971737754383539,
+          "minimum_clearance": -0.0032067340508658004,
+          "overlap_residual": 0.0051732325947130954,
+          "net_count": 28,
+          "paired_axis_count": 56
+        },
+        {
+          "iteration": 3400,
+          "loss": 0.00018943046162172772,
+          "minimum_clearance": -0.0031929815226185987,
+          "overlap_residual": 0.004947306793893081,
+          "net_count": 28,
+          "paired_axis_count": 56
+        },
+        {
+          "iteration": 3500,
+          "loss": 0.00017799584136284365,
+          "minimum_clearance": -0.0030576660561683067,
+          "overlap_residual": 0.004870826817212825,
+          "net_count": 28,
+          "paired_axis_count": 56
+        },
+        {
+          "iteration": 3600,
+          "loss": 0.00017027618892539575,
+          "minimum_clearance": -0.0030910167387756537,
+          "overlap_residual": 0.004749049837909598,
+          "net_count": 28,
+          "paired_axis_count": 56
+        },
+        {
+          "iteration": 3700,
+          "loss": 0.00016273311912501362,
+          "minimum_clearance": -0.0030184166580410343,
+          "overlap_residual": 0.004672203182612638,
+          "net_count": 28,
+          "paired_axis_count": 56
+        },
+        {
+          "iteration": 3800,
+          "loss": 0.00015527281059564402,
+          "minimum_clearance": -0.002967880597549377,
+          "overlap_residual": 0.004520673201735366,
+          "net_count": 28,
+          "paired_axis_count": 56
+        },
+        {
+          "iteration": 3900,
+          "loss": 0.00015002675904018955,
+          "minimum_clearance": -0.0028529667977730266,
+          "overlap_residual": 0.004454111997568668,
+          "net_count": 28,
+          "paired_axis_count": 56
+        },
+        {
+          "iteration": 4000,
+          "loss": 0.00014448915495290248,
+          "minimum_clearance": -0.0029565882947160116,
+          "overlap_residual": 0.004384920529296007,
+          "net_count": 28,
+          "paired_axis_count": 56
+        }
+      ]
+    }
+  ]
+}

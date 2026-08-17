@@ -1,0 +1,464 @@
+{
+  "experiment": "walsh_periodic_hessian_branch_census",
+  "warning": "Each branch count is a lower bound from a finite Sobol census; an uncarried branch may be a true birth or a branch missed at the preceding scale.",
+  "rows": [
+    {
+      "dimension": 2,
+      "basis_condition_number": 1.4390243902439026,
+      "shortest_length": 0.9928911454276347,
+      "shortest_coefficients": [
+        -1,
+        0
+      ],
+      "budgets": [
+        {
+          "probe_power": 8,
+          "probe_count": 256,
+          "levels": [
+            {
+              "level": 0,
+              "t": 0.1,
+              "probe_count": 256,
+              "field_gradient_evaluations": 2893,
+              "branch_count": 7,
+              "distinct_edge_count": 2,
+              "shortest_branch_count": 3,
+              "shortest_basin_probe_count": 129,
+              "shortest_basin_fraction": 0.50390625,
+              "uncarried_branch_count": 7,
+              "uncarried_shortest_branch_count": 3,
+              "best_shortest_score_rank": 1,
+              "best_shortest_basin_rank": 1,
+              "largest_branch_basin_fraction": 0.4765625
+            },
+            {
+              "level": 1,
+              "t": 0.12,
+              "probe_count": 256,
+              "field_gradient_evaluations": 3008,
+              "branch_count": 2,
+              "distinct_edge_count": 2,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 132,
+              "shortest_basin_fraction": 0.515625,
+              "uncarried_branch_count": 0,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 1,
+              "best_shortest_basin_rank": 1,
+              "largest_branch_basin_fraction": 0.515625
+            },
+            {
+              "level": 2,
+              "t": 0.15,
+              "probe_count": 256,
+              "field_gradient_evaluations": 2938,
+              "branch_count": 2,
+              "distinct_edge_count": 2,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 135,
+              "shortest_basin_fraction": 0.52734375,
+              "uncarried_branch_count": 0,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 1,
+              "best_shortest_basin_rank": 1,
+              "largest_branch_basin_fraction": 0.52734375
+            },
+            {
+              "level": 3,
+              "t": 0.18,
+              "probe_count": 256,
+              "field_gradient_evaluations": 2871,
+              "branch_count": 2,
+              "distinct_edge_count": 2,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 141,
+              "shortest_basin_fraction": 0.55078125,
+              "uncarried_branch_count": 0,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 1,
+              "best_shortest_basin_rank": 1,
+              "largest_branch_basin_fraction": 0.55078125
+            },
+            {
+              "level": 4,
+              "t": 0.21,
+              "probe_count": 256,
+              "field_gradient_evaluations": 2924,
+              "branch_count": 2,
+              "distinct_edge_count": 2,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 133,
+              "shortest_basin_fraction": 0.51953125,
+              "uncarried_branch_count": 0,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 1,
+              "best_shortest_basin_rank": 1,
+              "largest_branch_basin_fraction": 0.51953125
+            },
+            {
+              "level": 5,
+              "t": 0.23675858,
+              "probe_count": 256,
+              "field_gradient_evaluations": 2935,
+              "branch_count": 2,
+              "distinct_edge_count": 2,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 132,
+              "shortest_basin_fraction": 0.515625,
+              "uncarried_branch_count": 0,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 1,
+              "best_shortest_basin_rank": 1,
+              "largest_branch_basin_fraction": 0.515625
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dimension": 3,
+      "basis_condition_number": 1.4390243902439024,
+      "shortest_length": 0.966871053120022,
+      "shortest_coefficients": [
+        0,
+        0,
+        -1
+      ],
+      "budgets": [
+        {
+          "probe_power": 8,
+          "probe_count": 256,
+          "levels": [
+            {
+              "level": 0,
+              "t": 0.1,
+              "probe_count": 256,
+              "field_gradient_evaluations": 3606,
+              "branch_count": 3,
+              "distinct_edge_count": 3,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 57,
+              "shortest_basin_fraction": 0.22265625,
+              "uncarried_branch_count": 3,
+              "uncarried_shortest_branch_count": 1,
+              "best_shortest_score_rank": 3,
+              "best_shortest_basin_rank": 2,
+              "largest_branch_basin_fraction": 0.578125
+            },
+            {
+              "level": 1,
+              "t": 0.12,
+              "probe_count": 256,
+              "field_gradient_evaluations": 3699,
+              "branch_count": 3,
+              "distinct_edge_count": 3,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 42,
+              "shortest_basin_fraction": 0.1640625,
+              "uncarried_branch_count": 0,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 3,
+              "best_shortest_basin_rank": 3,
+              "largest_branch_basin_fraction": 0.6171875
+            },
+            {
+              "level": 2,
+              "t": 0.15,
+              "probe_count": 256,
+              "field_gradient_evaluations": 3629,
+              "branch_count": 3,
+              "distinct_edge_count": 3,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 38,
+              "shortest_basin_fraction": 0.1484375,
+              "uncarried_branch_count": 0,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 3,
+              "best_shortest_basin_rank": 3,
+              "largest_branch_basin_fraction": 0.6015625
+            },
+            {
+              "level": 3,
+              "t": 0.18,
+              "probe_count": 256,
+              "field_gradient_evaluations": 3626,
+              "branch_count": 3,
+              "distinct_edge_count": 3,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 43,
+              "shortest_basin_fraction": 0.16796875,
+              "uncarried_branch_count": 0,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 3,
+              "best_shortest_basin_rank": 3,
+              "largest_branch_basin_fraction": 0.53515625
+            },
+            {
+              "level": 4,
+              "t": 0.21,
+              "probe_count": 256,
+              "field_gradient_evaluations": 3576,
+              "branch_count": 5,
+              "distinct_edge_count": 5,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 44,
+              "shortest_basin_fraction": 0.171875,
+              "uncarried_branch_count": 2,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 3,
+              "best_shortest_basin_rank": 3,
+              "largest_branch_basin_fraction": 0.5078125
+            },
+            {
+              "level": 5,
+              "t": 0.23675858,
+              "probe_count": 256,
+              "field_gradient_evaluations": 3572,
+              "branch_count": 5,
+              "distinct_edge_count": 5,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 45,
+              "shortest_basin_fraction": 0.17578125,
+              "uncarried_branch_count": 1,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 3,
+              "best_shortest_basin_rank": 3,
+              "largest_branch_basin_fraction": 0.48828125
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dimension": 4,
+      "basis_condition_number": 1.4390243902439026,
+      "shortest_length": 0.9761439353308363,
+      "shortest_coefficients": [
+        0,
+        0,
+        0,
+        -1
+      ],
+      "budgets": [
+        {
+          "probe_power": 8,
+          "probe_count": 256,
+          "levels": [
+            {
+              "level": 0,
+              "t": 0.1,
+              "probe_count": 256,
+              "field_gradient_evaluations": 4144,
+              "branch_count": 4,
+              "distinct_edge_count": 4,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 22,
+              "shortest_basin_fraction": 0.0859375,
+              "uncarried_branch_count": 4,
+              "uncarried_shortest_branch_count": 1,
+              "best_shortest_score_rank": 4,
+              "best_shortest_basin_rank": 4,
+              "largest_branch_basin_fraction": 0.41015625
+            },
+            {
+              "level": 1,
+              "t": 0.12,
+              "probe_count": 256,
+              "field_gradient_evaluations": 4118,
+              "branch_count": 4,
+              "distinct_edge_count": 4,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 24,
+              "shortest_basin_fraction": 0.09375,
+              "uncarried_branch_count": 0,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 4,
+              "best_shortest_basin_rank": 4,
+              "largest_branch_basin_fraction": 0.3984375
+            },
+            {
+              "level": 2,
+              "t": 0.15,
+              "probe_count": 256,
+              "field_gradient_evaluations": 4095,
+              "branch_count": 4,
+              "distinct_edge_count": 4,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 28,
+              "shortest_basin_fraction": 0.109375,
+              "uncarried_branch_count": 0,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 4,
+              "best_shortest_basin_rank": 4,
+              "largest_branch_basin_fraction": 0.3359375
+            },
+            {
+              "level": 3,
+              "t": 0.18,
+              "probe_count": 256,
+              "field_gradient_evaluations": 4136,
+              "branch_count": 5,
+              "distinct_edge_count": 5,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 32,
+              "shortest_basin_fraction": 0.125,
+              "uncarried_branch_count": 1,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 4,
+              "best_shortest_basin_rank": 4,
+              "largest_branch_basin_fraction": 0.35546875
+            },
+            {
+              "level": 4,
+              "t": 0.21,
+              "probe_count": 256,
+              "field_gradient_evaluations": 4031,
+              "branch_count": 6,
+              "distinct_edge_count": 6,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 43,
+              "shortest_basin_fraction": 0.16796875,
+              "uncarried_branch_count": 1,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 4,
+              "best_shortest_basin_rank": 4,
+              "largest_branch_basin_fraction": 0.34765625
+            },
+            {
+              "level": 5,
+              "t": 0.23675858,
+              "probe_count": 256,
+              "field_gradient_evaluations": 3822,
+              "branch_count": 8,
+              "distinct_edge_count": 8,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 47,
+              "shortest_basin_fraction": 0.18359375,
+              "uncarried_branch_count": 2,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 4,
+              "best_shortest_basin_rank": 4,
+              "largest_branch_basin_fraction": 0.28515625
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dimension": 5,
+      "basis_condition_number": 1.4390243902439015,
+      "shortest_length": 0.8380891033679768,
+      "shortest_coefficients": [
+        0,
+        0,
+        0,
+        -1,
+        0
+      ],
+      "budgets": [
+        {
+          "probe_power": 8,
+          "probe_count": 256,
+          "levels": [
+            {
+              "level": 0,
+              "t": 0.1,
+              "probe_count": 256,
+              "field_gradient_evaluations": 5701,
+              "branch_count": 5,
+              "distinct_edge_count": 5,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 20,
+              "shortest_basin_fraction": 0.078125,
+              "uncarried_branch_count": 5,
+              "uncarried_shortest_branch_count": 1,
+              "best_shortest_score_rank": 5,
+              "best_shortest_basin_rank": 4,
+              "largest_branch_basin_fraction": 0.54296875
+            },
+            {
+              "level": 1,
+              "t": 0.12,
+              "probe_count": 256,
+              "field_gradient_evaluations": 5410,
+              "branch_count": 7,
+              "distinct_edge_count": 7,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 13,
+              "shortest_basin_fraction": 0.05078125,
+              "uncarried_branch_count": 2,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 7,
+              "best_shortest_basin_rank": 5,
+              "largest_branch_basin_fraction": 0.48828125
+            },
+            {
+              "level": 2,
+              "t": 0.15,
+              "probe_count": 256,
+              "field_gradient_evaluations": 5000,
+              "branch_count": 8,
+              "distinct_edge_count": 8,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 13,
+              "shortest_basin_fraction": 0.05078125,
+              "uncarried_branch_count": 2,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 6,
+              "best_shortest_basin_rank": 5,
+              "largest_branch_basin_fraction": 0.4375
+            },
+            {
+              "level": 3,
+              "t": 0.18,
+              "probe_count": 256,
+              "field_gradient_evaluations": 4898,
+              "branch_count": 7,
+              "distinct_edge_count": 7,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 10,
+              "shortest_basin_fraction": 0.0390625,
+              "uncarried_branch_count": 0,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 5,
+              "best_shortest_basin_rank": 5,
+              "largest_branch_basin_fraction": 0.38671875
+            },
+            {
+              "level": 4,
+              "t": 0.21,
+              "probe_count": 256,
+              "field_gradient_evaluations": 4864,
+              "branch_count": 5,
+              "distinct_edge_count": 5,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 15,
+              "shortest_basin_fraction": 0.05859375,
+              "uncarried_branch_count": 0,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 5,
+              "best_shortest_basin_rank": 5,
+              "largest_branch_basin_fraction": 0.3515625
+            },
+            {
+              "level": 5,
+              "t": 0.23675858,
+              "probe_count": 256,
+              "field_gradient_evaluations": 4646,
+              "branch_count": 5,
+              "distinct_edge_count": 5,
+              "shortest_branch_count": 1,
+              "shortest_basin_probe_count": 18,
+              "shortest_basin_fraction": 0.0703125,
+              "uncarried_branch_count": 0,
+              "uncarried_shortest_branch_count": 0,
+              "best_shortest_score_rank": 4,
+              "best_shortest_basin_rank": 5,
+              "largest_branch_basin_fraction": 0.328125
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

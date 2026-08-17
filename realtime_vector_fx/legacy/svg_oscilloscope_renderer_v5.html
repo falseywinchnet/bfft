@@ -1,0 +1,970 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SVG Oscilloscope Renderer v5</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #060908;
+    --panel: #0d1210;
+    --line: #1e2a23;
+    --text: #dce8df;
+    --muted: #829087;
+    --accent: #7dff9d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: #050706;
+    color: var(--text);
+    font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .app {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 270px 1fr;
+  }
+  aside {
+    padding: 18px;
+    border-right: 1px solid var(--line);
+    background: var(--panel);
+    overflow: auto;
+  }
+  h1 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 650;
+    letter-spacing: .04em;
+  }
+  .sub {
+    color: var(--muted);
+    margin-bottom: 18px;
+    font-size: 12px;
+  }
+  .group {
+    padding: 13px 0;
+    border-top: 1px solid var(--line);
+  }
+  label {
+    display: block;
+    color: #aebbb2;
+    margin-bottom: 5px;
+    font-size: 12px;
+  }
+  input[type="file"] { width: 100%; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  textarea {
+    width: 100%;
+    min-height: 95px;
+    resize: vertical;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: #070b09;
+    color: var(--text);
+    padding: 8px;
+    font: inherit;
+    font-size: 11px;
+  }
+  button {
+    border: 1px solid #2a3b30;
+    border-radius: 5px;
+    background: #101812;
+    color: var(--text);
+    padding: 7px 9px;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  button:hover { border-color: #4e7259; }
+  .row { display: flex; gap: 7px; flex-wrap: wrap; }
+  .range-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .value { color: var(--accent); }
+  .status {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 11px;
+    min-height: 2.8em;
+  }
+  main {
+    position: relative;
+    min-width: 0;
+    min-height: 100vh;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100vh;
+    background: var(--bg);
+  }
+  .hud {
+    position: absolute;
+    left: 14px;
+    bottom: 12px;
+    color: rgba(190,220,198,.5);
+    font-size: 10px;
+    pointer-events: none;
+    letter-spacing: .04em;
+  }
+  #svgHost {
+    position: fixed;
+    left: -10000px;
+    top: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+  @media (max-width: 720px) {
+    .app { grid-template-columns: 1fr; }
+    aside { border-right: 0; border-bottom: 1px solid var(--line); }
+    main { min-height: 62vh; }
+    canvas { height: 62vh; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <h1>VECTOR SCOPE</h1>
+    <div class="sub">SVG → true-subpath randomized phosphor trace</div>
+
+    <div class="group">
+      <label for="file">Open SVG</label>
+      <input id="file" type="file" accept=".svg,image/svg+xml" />
+      <div style="height:8px"></div>
+      <label for="svgText">or paste SVG source</label>
+      <textarea id="svgText" spellcheck="false" placeholder="<svg viewBox='0 0 100 100'>…</svg>"></textarea>
+      <div class="row" style="margin-top:7px">
+        <button id="loadText" type="button">Load pasted</button>
+        <button id="demo" type="button">Load demo</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="range-head"><label for="speed">Trace speed</label><span id="speedV" class="value"></span></div>
+      <input id="speed" type="range" min="30" max="1500" step="10" value="360" />
+
+      <div class="range-head" style="margin-top:11px"><label for="turbo">Turbo multiplier</label><span id="turboV" class="value"></span></div>
+      <input id="turbo" type="range" min="0" max="1000" step="1" value="0" />
+
+      <div class="range-head" style="margin-top:11px"><label for="persistence">Persistence</label><span id="persistenceV" class="value"></span></div>
+      <input id="persistence" type="range" min="0.25" max="10" step="0.05" value="3.6" />
+
+      <div class="range-head" style="margin-top:11px"><label for="dash">Center stroke</label><span id="dashV" class="value"></span></div>
+      <input id="dash" type="range" min="0.06" max="0.70" step="0.01" value="0.24" />
+
+      <div class="range-head" style="margin-top:11px"><label for="glow">Green phosphor accent</label><span id="glowV" class="value"></span></div>
+      <input id="glow" type="range" min="0" max="1" step="0.01" value="0.12" />
+
+      <div class="range-head" style="margin-top:11px"><label for="grain">Watercolor grain</label><span id="grainV" class="value"></span></div>
+      <input id="grain" type="range" min="0" max="1" step="0.01" value="0.22" />
+    </div>
+
+    <div class="group row">
+      <button id="pause" type="button">Pause</button>
+      <button id="reroll" type="button">Reroll lines</button>
+      <button id="clear" type="button">Clear phosphor</button>
+    </div>
+
+    <div id="status" class="status">No SVG loaded.</div>
+  </aside>
+
+  <main id="stage">
+    <canvas id="scope"></canvas>
+    <div id="hud" class="hud"></div>
+  </main>
+</div>
+
+<div id="svgHost" aria-hidden="true"></div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const canvas = $("scope");
+  const ctx = canvas.getContext("2d", { alpha: false });
+  const stage = $("stage");
+  const host = $("svgHost");
+  const status = $("status");
+  const hud = $("hud");
+
+  let cssW = 1, cssH = 1, dpr = 1;
+  let viewBox = { x: 0, y: 0, w: 100, h: 100 };
+  let viewport = { s: 1, ox: 0, oy: 0 };
+  let lines = [];
+  let lineOrder = [];
+  let orderCursor = 0;
+  let trace = null;
+  let running = true;
+  let lastT = performance.now();
+  let cycle = 0;
+
+  const settings = {
+    speed: 360,
+    turbo: 1,
+    persistence: 3.6,
+    dash: 0.24,
+    glow: 0.12,
+    grain: 0.22
+  };
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function hash(n) {
+    let x = Math.sin(n * 12.9898 + 78.233) * 43758.5453;
+    return x - Math.floor(x);
+  }
+  function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function numericAttr(el, name, fallback) {
+    const n = parseFloat(el.getAttribute(name));
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+
+  // Office/Word-like theme + standard font colors. We generate restrained tints
+  // and shades, then choose the nearest color perceptually in Lab space.
+  const WORD_BASE_COLORS = [
+    "#000000", "#44546A", "#5B9BD5", "#ED7D31", "#A5A5A5", "#FFC000",
+    "#4472C4", "#70AD47", "#0563C1", "#954F72",
+    "#C00000", "#FF0000", "#F4B183", "#FFD966", "#FFFF00", "#92D050",
+    "#00B050", "#00B0F0", "#0070C0", "#002060", "#7030A0", "#C55A11"
+  ];
+
+  function hexToRgb(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+  }
+  function mixRgb(a, b, amount) {
+    return {
+      r: Math.round(a.r + (b.r - a.r) * amount),
+      g: Math.round(a.g + (b.g - a.g) * amount),
+      b: Math.round(a.b + (b.b - a.b) * amount)
+    };
+  }
+  function srgbLinear(v) {
+    v /= 255;
+    return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  }
+  function rgbToLab(c) {
+    const r = srgbLinear(c.r), g = srgbLinear(c.g), b = srgbLinear(c.b);
+    let x = (r * 0.4124564 + g * 0.3575761 + b * 0.1804375) / 0.95047;
+    let y = (r * 0.2126729 + g * 0.7151522 + b * 0.0721750);
+    let z = (r * 0.0193339 + g * 0.1191920 + b * 0.9503041) / 1.08883;
+    const f = v => v > 0.008856 ? Math.cbrt(v) : (7.787 * v + 16 / 116);
+    x = f(x); y = f(y); z = f(z);
+    return { L: 116 * y - 16, a: 500 * (x - y), b: 200 * (y - z) };
+  }
+  function makeWordPalette() {
+    const white = {r:255,g:255,b:255}, black = {r:0,g:0,b:0};
+    const seen = new Set(), out = [];
+    for (const hex of WORD_BASE_COLORS) {
+      const base = hexToRgb(hex);
+      for (const tint of [0, 0.18, 0.36, 0.55, 0.72]) {
+        const c = mixRgb(base, white, tint);
+        const key = `${c.r},${c.g},${c.b}`;
+        if (!seen.has(key)) { seen.add(key); out.push({...c, lab: rgbToLab(c)}); }
+      }
+      for (const shade of [0.16, 0.34]) {
+        const c = mixRgb(base, black, shade);
+        const key = `${c.r},${c.g},${c.b}`;
+        if (!seen.has(key)) { seen.add(key); out.push({...c, lab: rgbToLab(c)}); }
+      }
+    }
+    return out;
+  }
+  const WORD_PALETTE = makeWordPalette();
+
+  function parseCssRgb(value) {
+    if (!value || value === "none" || value === "transparent") return null;
+    const m = value.match(/rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/i);
+    if (m) return { r: +m[1], g: +m[2], b: +m[3] };
+    if (/^#[0-9a-f]{6}$/i.test(value)) return hexToRgb(value);
+    return null;
+  }
+  function nearestWordColor(rgb) {
+    const lab = rgbToLab(rgb);
+    let best = WORD_PALETTE[0], bestD = Infinity;
+    for (const c of WORD_PALETTE) {
+      const dL = lab.L-c.lab.L, da = lab.a-c.lab.a, db = lab.b-c.lab.b;
+      const d = dL*dL + da*da + db*db;
+      if (d < bestD) { bestD = d; best = c; }
+    }
+    const base = {r:best.r,g:best.g,b:best.b};
+    return {
+      base,
+      light: mixRgb(base, {r:255,g:255,b:255}, 0.16),
+      dark: mixRgb(base, {r:0,g:0,b:0}, 0.11)
+    };
+  }
+  function colorForElement(el) {
+    const cs = getComputedStyle(el);
+    const stroke = parseCssRgb(cs.stroke);
+    const fill = parseCssRgb(cs.fill);
+    const source = stroke || fill || {r:180,g:190,b:184};
+    const opacity = clamp(parseFloat(cs.opacity) || 1, 0, 1);
+    const paintOpacity = stroke
+      ? clamp(parseFloat(cs.strokeOpacity) || 1, 0, 1)
+      : clamp(parseFloat(cs.fillOpacity) || 1, 0, 1);
+    return {...nearestWordColor(source), alpha: opacity * paintOpacity, source};
+  }
+
+  function updateViewport() {
+    const pad = 0.07;
+    const availW = cssW * (1 - 2 * pad);
+    const availH = cssH * (1 - 2 * pad);
+    const s = Math.min(availW / viewBox.w, availH / viewBox.h);
+    viewport = {
+      s,
+      ox: (cssW - viewBox.w * s) * 0.5 - viewBox.x * s,
+      oy: (cssH - viewBox.h * s) * 0.5 - viewBox.y * s
+    };
+  }
+
+  function resize() {
+    const r = stage.getBoundingClientRect();
+    cssW = Math.max(1, r.width);
+    cssH = Math.max(1, r.height);
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineCap = "round";
+    updateViewport();
+    ctx.fillStyle = "#060908";
+    ctx.fillRect(0, 0, cssW, cssH);
+  }
+
+  function mapPoint(p) {
+    return { x: viewport.ox + p.x * viewport.s, y: viewport.oy + p.y * viewport.s, s: viewport.s };
+  }
+
+  function parseViewBox(svg) {
+    const vb = (svg.getAttribute("viewBox") || "").trim().split(/[,\s]+/).map(Number);
+    if (vb.length === 4 && vb.every(Number.isFinite) && vb[2] > 0 && vb[3] > 0) {
+      return { x: vb[0], y: vb[1], w: vb[2], h: vb[3] };
+    }
+    const w = numericAttr(svg, "width", 100);
+    const h = numericAttr(svg, "height", 100);
+    return { x: 0, y: 0, w: Math.max(1, w), h: Math.max(1, h) };
+  }
+
+
+  function transformLocalPoint(x, y, ctm) {
+    if (!ctm) return { x, y };
+    return {
+      x: ctm.a * x + ctm.c * y + ctm.e,
+      y: ctm.b * x + ctm.d * y + ctm.f
+    };
+  }
+
+  function isCommandToken(t) {
+    return typeof t === "string" && /^[A-Za-z]$/.test(t);
+  }
+
+  // Exact parser for path data made only of straight-line commands.
+  // Vectorized/raster-traced SVGs commonly use this representation, sometimes
+  // putting hundreds of disconnected M...Z islands inside a single <path>.
+  //
+  // Returning each island separately is important: the scheduler should operate
+  // on visible strokes/subpaths, not on DOM <path> elements.
+  function buildLinearPathRuns(el, sourceIndex, ctm, color) {
+    const d = el.getAttribute("d") || "";
+
+    // Curved commands fall back to the browser length sampler below.
+    if (/[CcSsQqTtAa]/.test(d)) return null;
+
+    const tokens = d.match(/[MmLlHhVvZz]|[-+]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][-+]?\d+)?/g);
+    if (!tokens || !tokens.length) return [];
+
+    let i = 0;
+    let cmd = null;
+    let x = 0, y = 0;
+    let sx = 0, sy = 0;
+    let current = [];
+    let currentLength = 0;
+    let subpathIndex = 0;
+    let segmentSerial = 0;
+    const runs = [];
+
+    const flush = () => {
+      if (current.length) {
+        runs.push({
+          id: `${sourceIndex}:${subpathIndex++}`,
+          sourceIndex,
+          segments: current,
+          length: currentLength,
+          tag: el.localName,
+          color
+        });
+      }
+      current = [];
+      currentLength = 0;
+    };
+
+    const addLineTo = (nx, ny) => {
+      if (!Number.isFinite(nx) || !Number.isFinite(ny)) return;
+      if (Math.abs(nx - x) < 1e-12 && Math.abs(ny - y) < 1e-12) {
+        x = nx; y = ny;
+        return;
+      }
+
+      const a = transformLocalPoint(x, y, ctm);
+      const b = transformLocalPoint(nx, ny, ctm);
+      const len = Math.hypot(b.x - a.x, b.y - a.y);
+
+      if (len > 1e-10) {
+        current.push({
+          a, b, len,
+          seed: sourceIndex * 1000003 + subpathIndex * 10007 + segmentSerial++ * 97
+        });
+        currentLength += len;
+      }
+
+      x = nx;
+      y = ny;
+    };
+
+    const hasNumber = () => i < tokens.length && !isCommandToken(tokens[i]);
+    const readNumber = () => Number(tokens[i++]);
+
+    while (i < tokens.length) {
+      if (isCommandToken(tokens[i])) cmd = tokens[i++];
+      if (!cmd) break;
+
+      switch (cmd) {
+        case "M":
+        case "m": {
+          const relative = cmd === "m";
+          if (!hasNumber()) { cmd = null; break; }
+
+          // A new moveto means a real pen-up boundary.
+          flush();
+
+          if (i + 1 >= tokens.length || isCommandToken(tokens[i + 1])) {
+            cmd = null;
+            break;
+          }
+
+          let nx = readNumber();
+          let ny = readNumber();
+          if (relative) {
+            nx += x;
+            ny += y;
+          }
+          x = nx; y = ny;
+          sx = x; sy = y;
+
+          // Extra coordinate pairs after M/m are implicit L/l commands.
+          while (hasNumber()) {
+            if (i + 1 >= tokens.length || isCommandToken(tokens[i + 1])) break;
+            let lx = readNumber();
+            let ly = readNumber();
+            if (relative) {
+              lx += x;
+              ly += y;
+            }
+            addLineTo(lx, ly);
+          }
+
+          cmd = relative ? "l" : "L";
+          break;
+        }
+
+        case "L":
+        case "l": {
+          const relative = cmd === "l";
+          while (hasNumber()) {
+            if (i + 1 >= tokens.length || isCommandToken(tokens[i + 1])) break;
+            let nx = readNumber();
+            let ny = readNumber();
+            if (relative) {
+              nx += x;
+              ny += y;
+            }
+            addLineTo(nx, ny);
+          }
+          break;
+        }
+
+        case "H":
+        case "h": {
+          const relative = cmd === "h";
+          while (hasNumber()) {
+            let nx = readNumber();
+            if (relative) nx += x;
+            addLineTo(nx, y);
+          }
+          break;
+        }
+
+        case "V":
+        case "v": {
+          const relative = cmd === "v";
+          while (hasNumber()) {
+            let ny = readNumber();
+            if (relative) ny += y;
+            addLineTo(x, ny);
+          }
+          break;
+        }
+
+        case "Z":
+        case "z":
+          addLineTo(sx, sy);
+          flush();
+          cmd = null;
+          break;
+
+        default:
+          // Unknown path command. Let the general sampler handle the element.
+          return null;
+      }
+    }
+
+    flush();
+    return runs;
+  }
+
+  function buildGeometry(svgText) {
+    const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
+    if (doc.querySelector("parsererror")) throw new Error("Invalid SVG markup.");
+    const root = doc.documentElement;
+    if (!root || root.localName !== "svg") throw new Error("Input is not an SVG document.");
+
+    host.replaceChildren();
+    const mounted = document.importNode(root, true);
+    mounted.style.overflow = "visible";
+    host.appendChild(mounted);
+
+    viewBox = parseViewBox(mounted);
+    updateViewport();
+    const diag = Math.hypot(viewBox.w, viewBox.h);
+    const sampleStep = Math.max(diag / 1100, 0.02);
+
+    const candidates = [...mounted.querySelectorAll("path,polyline,polygon,line,rect,circle,ellipse")];
+    const built = [];
+    let totalSegments = 0;
+    let exactSubpaths = 0;
+    let sampledSubpaths = 0;
+    let suppressedJumps = 0;
+
+    for (let index = 0; index < candidates.length; index++) {
+      const el = candidates[index];
+      const color = colorForElement(el);
+
+      let ctm = null;
+      try { ctm = el.getCTM(); } catch (_) {}
+
+      // Fast + exact route for straight-line path data. This is especially important
+      // for converter/vectorizer output where one DOM path can contain hundreds of M
+      // subpaths. Every M...Z island becomes its own schedulable line.
+      if (el.localName === "path") {
+        const exactRuns = buildLinearPathRuns(el, index, ctm, color);
+        if (exactRuns !== null) {
+          for (const run of exactRuns) {
+            if (!run.segments.length) continue;
+            built.push(run);
+            totalSegments += run.segments.length;
+            exactSubpaths++;
+          }
+          continue;
+        }
+      }
+
+      if (typeof el.getTotalLength !== "function" || typeof el.getPointAtLength !== "function") continue;
+
+      let length = 0;
+      try { length = el.getTotalLength(); } catch (_) { continue; }
+      if (!Number.isFinite(length) || length <= 0) continue;
+
+      // General curves still use browser path-length sampling.
+      const count = clamp(Math.ceil(length / sampleStep), 2, 24000);
+      const points = [];
+
+      const txPoint = (p) => transformLocalPoint(p.x, p.y, ctm);
+
+      for (let i = 0; i <= count; i++) {
+        const d = length * (i / count);
+        const p = el.getPointAtLength(d);
+        points.push({
+          local: { x: p.x, y: p.y },
+          world: txPoint(p),
+          d
+        });
+      }
+
+      // Unlike v3/v4, a detected pen-up jump FLUSHES the current run.
+      // It is not merely omitted from one giant combined path.
+      let runSegments = [];
+      let runLength = 0;
+      let runIndex = 0;
+
+      const flushRun = () => {
+        if (!runSegments.length) return;
+        built.push({
+          id: `${index}:sampled:${runIndex++}`,
+          sourceIndex: index,
+          segments: runSegments,
+          length: runLength,
+          tag: el.localName,
+          color
+        });
+        totalSegments += runSegments.length;
+        sampledSubpaths++;
+        runSegments = [];
+        runLength = 0;
+      };
+
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i], p1 = points[i + 1];
+
+        const localChord = Math.hypot(
+          p1.local.x - p0.local.x,
+          p1.local.y - p0.local.y
+        );
+        const arcDelta = Math.max(1e-9, p1.d - p0.d);
+
+        const isPenUpJump = localChord > arcDelta * 1.18 + sampleStep * 0.03;
+        if (isPenUpJump) {
+          suppressedJumps++;
+          flushRun();
+          continue;
+        }
+
+        const a = p0.world, b = p1.world;
+        const len = Math.hypot(b.x - a.x, b.y - a.y);
+        if (len < 1e-8) continue;
+
+        runSegments.push({
+          a, b, len,
+          seed: index * 1000003 + i * 97
+        });
+        runLength += len;
+      }
+
+      flushRun();
+    }
+
+    if (!built.length) throw new Error("No drawable SVG geometry found.");
+
+    // There is intentionally no global segment cutoff. If the SVG contains a line,
+    // it is admitted to the scheduler.
+    lines = built;
+    reroll();
+    clearCanvas();
+
+    status.textContent =
+      `${lines.length.toLocaleString()} schedulable strokes · ` +
+      `${totalSegments.toLocaleString()} segments · ` +
+      `${exactSubpaths.toLocaleString()} exact subpaths` +
+      (sampledSubpaths ? ` · ${sampledSubpaths.toLocaleString()} sampled subpaths` : "");
+  }
+
+  function reroll() {
+    lineOrder = shuffle(lines.map((_, i) => i));
+    orderCursor = 0;
+    cycle++;
+    startNextLine();
+  }
+
+  function startNextLine() {
+    if (!lines.length) { trace = null; return; }
+
+    // Fair random scheduling:
+    // visit every SVG drawable exactly once per cycle, in shuffled order.
+    // A visit traces only a random local slice, so giant compound paths cannot
+    // monopolize the renderer.
+    if (orderCursor >= lineOrder.length) {
+      lineOrder = shuffle(lines.map((_, i) => i));
+      orderCursor = 0;
+      cycle++;
+    }
+
+    const lineIndex = lineOrder[orderCursor++];
+    const line = lines[lineIndex];
+    const reverse = Math.random() < 0.5;
+
+    // Choose a random place inside this line rather than always beginning at an end.
+    // Uniform-by-segment is intentional here: dense/detail-rich regions get sampled
+    // naturally instead of long sparse segments dominating the choice.
+    const segmentIndex = Math.floor(Math.random() * line.segments.length);
+
+    // Each line gets a short "phrase" per visit. Expressed in screen pixels so the
+    // cadence feels similar regardless of SVG viewBox size or zoom.
+    // Most visits are 45–180 px of source geometry, with occasional short flicks.
+    const shortVisit = Math.random() < 0.18;
+    const visitPixels = shortVisit
+      ? 16 + Math.random() * 38
+      : 45 + Math.random() * 135;
+    const visitDistance = Math.min(
+      line.length,
+      visitPixels / Math.max(viewport.s || 1, 1e-9)
+    );
+
+    trace = {
+      lineIndex,
+      line,
+      reverse,
+      distance: 0,
+      segmentIndex,
+      visitRemaining: visitDistance
+    };
+  }
+
+  function clearCanvas() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "#060908";
+    ctx.fillRect(0, 0, cssW, cssH);
+  }
+
+  function segmentCenterDash(seg, reverse, localProgress) {
+    // The stroke never occupies the whole sampled segment.
+    // Its center gently travels through the middle region as the tracer advances.
+    const f = settings.dash;
+    const travel = 0.30;
+    const c = 0.5 + (clamp(localProgress, 0, 1) - 0.5) * travel * (reverse ? -1 : 1);
+    const t0 = clamp(c - f * 0.5, 0.02, 0.98);
+    const t1 = clamp(c + f * 0.5, 0.02, 0.98);
+
+    return {
+      a: {
+        x: seg.a.x + (seg.b.x - seg.a.x) * t0,
+        y: seg.a.y + (seg.b.y - seg.a.y) * t0
+      },
+      b: {
+        x: seg.a.x + (seg.b.x - seg.a.x) * t1,
+        y: seg.a.y + (seg.b.y - seg.a.y) * t1
+      }
+    };
+  }
+
+  function rgba(c, a) {
+    return `rgba(${c.r},${c.g},${c.b},${a})`;
+  }
+
+  function drawMark(seg, line, reverse, localProgress, energy = 1) {
+    const dash = segmentCenterDash(seg, reverse, localProgress);
+    const a = mapPoint(dash.a);
+    const b = mapPoint(dash.b);
+
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const L = Math.hypot(dx, dy) || 1;
+    const nx = -dy / L, ny = dx / L;
+    const grain = settings.grain;
+    const mapped = line.color;
+    const alpha = (0.24 + 0.18 * energy) * mapped.alpha;
+
+    // At high turbo speeds shadowBlur and extra watercolor passes are the expensive part.
+    // Geometry still advances through every segment; rendering quality scales down gracefully.
+    const highSpeed = settings.turbo > 18;
+    const extremeSpeed = settings.turbo > 55;
+
+    if (settings.glow > 0 && !extremeSpeed) {
+      ctx.strokeStyle = `rgba(104,255,141,${0.032 * settings.glow * energy})`;
+      ctx.lineWidth = 1.4 + 3.1 * settings.glow;
+      if (!highSpeed) {
+        ctx.shadowColor = `rgba(91,255,127,${0.28 * settings.glow})`;
+        ctx.shadowBlur = 4 + 8 * settings.glow;
+      }
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    const passes = highSpeed ? 1 : 3;
+    for (let pass = 0; pass < passes; pass++) {
+      const r = hash(seg.seed + pass * 701);
+      const offset = (r - 0.5) * 1.8 * grain;
+      const jitterX = nx * offset;
+      const jitterY = ny * offset;
+      const colors = [mapped.base, mapped.dark, mapped.light];
+      const widths = [1.25, 2.35, 3.15];
+      const alphas = [0.76, 0.34, 0.22];
+      ctx.strokeStyle = rgba(colors[pass], alpha * alphas[pass]);
+      ctx.lineWidth = widths[pass] + grain * [0.25, 0.65, 1.0][pass];
+      ctx.beginPath();
+      ctx.moveTo(a.x + jitterX, a.y + jitterY);
+      ctx.lineTo(b.x + jitterX, b.y + jitterY);
+      ctx.stroke();
+    }
+
+    if (!highSpeed) {
+      ctx.strokeStyle = rgba(mapped.light, 0.28 * energy * mapped.alpha);
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+  }
+
+  function advanceTracer(distanceToAdvance) {
+    let remaining = distanceToAdvance;
+    let guard = 0;
+    let marks = 0;
+    const maxMarksPerFrame = 26000;
+
+    while (trace && remaining > 0 && guard++ < 120000) {
+      // Do not silently race through geometry after the drawing budget is exhausted.
+      // Carrying on invisibly makes high turbo speeds appear to skip or favor lines.
+      if (marks >= maxMarksPerFrame) break;
+
+      const line = trace.line;
+      const i = trace.segmentIndex;
+
+      // Reaching either the chosen visit budget or the edge of this line immediately
+      // yields to the next shuffled line.
+      if (trace.visitRemaining <= 1e-9 || i < 0 || i >= line.segments.length) {
+        startNextLine();
+        continue;
+      }
+
+      const seg = line.segments[i];
+      const along = trace.distance;
+      const left = Math.max(0, seg.len - along);
+      const step = Math.min(
+        remaining,
+        trace.visitRemaining,
+        Math.max(left, 1e-9)
+      );
+      const after = clamp((along + step) / seg.len, 0, 1);
+
+      drawMark(seg, line, trace.reverse, after, 1);
+      marks++;
+
+      trace.distance += step;
+      trace.visitRemaining -= step;
+      remaining -= step;
+
+      if (trace.distance >= seg.len - 1e-9) {
+        trace.distance = 0;
+        trace.segmentIndex += trace.reverse ? -1 : 1;
+      }
+
+      if (trace.visitRemaining <= 1e-9) {
+        startNextLine();
+      }
+    }
+  }
+
+  function fadeHistory(dt) {
+    // Half-life control: mathematically stable across refresh rates.
+    const halfLife = settings.persistence;
+    const alpha = 1 - Math.pow(0.5, dt / halfLife);
+    ctx.save();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = `rgba(6,9,8,${clamp(alpha, 0, 1)})`;
+    ctx.fillRect(0, 0, cssW, cssH);
+    ctx.restore();
+  }
+
+  function frame(t) {
+    const dt = clamp((t - lastT) / 1000, 0, 0.05);
+    lastT = t;
+
+    if (running) {
+      fadeHistory(dt);
+      if (trace && lines.length) {
+        const scale = viewport.s || 1;
+        // Base speed preserves the original control. Turbo extends it to 100x.
+        advanceTracer((settings.speed * settings.turbo / scale) * dt);
+        const n = trace ? trace.lineIndex + 1 : 0;
+        hud.textContent = `stroke ${n.toLocaleString()}/${lines.length.toLocaleString()} · visit ${Math.min(orderCursor, lines.length).toLocaleString()}/${lines.length.toLocaleString()} · cycle ${cycle}`;
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function bindRange(id, key, format) {
+    const el = $(id), out = $(id + "V");
+    const sync = () => {
+      settings[key] = Number(el.value);
+      out.textContent = format(settings[key]);
+    };
+    el.addEventListener("input", sync);
+    sync();
+  }
+
+  bindRange("speed", "speed", v => `${Math.round(v)} px/s`);
+
+  const turboEl = $("turbo"), turboOut = $("turboV");
+  function syncTurbo() {
+    // Logarithmic slider: left edge is 1x, right edge exactly 100x.
+    settings.turbo = Math.pow(100, Number(turboEl.value) / 1000);
+    turboOut.textContent = `${settings.turbo < 10 ? settings.turbo.toFixed(1) : settings.turbo.toFixed(0)}×`;
+  }
+  turboEl.addEventListener("input", syncTurbo);
+  syncTurbo();
+
+  bindRange("persistence", "persistence", v => `${v.toFixed(2)} s`);
+  bindRange("dash", "dash", v => `${Math.round(v * 100)}%`);
+  bindRange("glow", "glow", v => `${Math.round(v * 100)}%`);
+  bindRange("grain", "grain", v => `${Math.round(v * 100)}%`);
+
+  $("file").addEventListener("change", async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      $("svgText").value = text;
+      buildGeometry(text);
+    } catch (err) {
+      status.textContent = err.message || String(err);
+    }
+  });
+
+  $("loadText").addEventListener("click", () => {
+    try { buildGeometry($("svgText").value); }
+    catch (err) { status.textContent = err.message || String(err); }
+  });
+
+  $("pause").addEventListener("click", () => {
+    running = !running;
+    $("pause").textContent = running ? "Pause" : "Resume";
+    lastT = performance.now();
+  });
+
+  $("reroll").addEventListener("click", reroll);
+  $("clear").addEventListener("click", clearCanvas);
+
+  const demoSvg = `
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620">
+    <path d="M95 312 C145 140 260 75 385 175 C470 242 477 375 392 438 C300 506 164 468 116 372" fill="none"/>
+    <path d="M390 175 C472 78 652 91 744 220 C812 315 778 453 670 510 C567 564 446 510 392 438" fill="none"/>
+    <path d="M165 315 C245 265 315 269 390 315 C465 361 540 360 625 307 C694 264 750 270 792 302" fill="none"/>
+    <path d="M226 218 C283 202 330 217 370 256" fill="none"/>
+    <path d="M505 248 C558 205 620 197 678 222" fill="none"/>
+    <path d="M329 397 C385 426 449 426 507 393" fill="none"/>
+    <circle cx="318" cy="288" r="17" fill="none"/>
+    <circle cx="574" cy="282" r="17" fill="none"/>
+  </svg>`;
+
+  $("demo").addEventListener("click", () => {
+    $("svgText").value = demoSvg.trim();
+    try { buildGeometry(demoSvg); }
+    catch (err) { status.textContent = err.message || String(err); }
+  });
+
+  window.addEventListener("resize", resize);
+  resize();
+  $("svgText").value = demoSvg.trim();
+  buildGeometry(demoSvg);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

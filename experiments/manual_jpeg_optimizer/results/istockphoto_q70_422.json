@@ -1,0 +1,208 @@
+{
+  "best": {
+    "config": {
+      "cartoon_sigma": 1.2,
+      "chroma_projection": 0.0,
+      "luma_texture_shrink": 0.0,
+      "optimize": true,
+      "phase_degrees": 0.0,
+      "progressive": true,
+      "quality": 70,
+      "region_threshold": 0.58,
+      "subsampling": 1
+    },
+    "edge_psnr_db": 48.63732354820125,
+    "objective": 1012.7698148356205,
+    "psnr_db": 41.376333845476566,
+    "size_bytes": 27159,
+    "ssim": 0.9996308157117051
+  },
+  "frontier": [
+    {
+      "config": {
+        "cartoon_sigma": 1.2,
+        "chroma_projection": 0.25,
+        "luma_texture_shrink": 0.12,
+        "optimize": true,
+        "phase_degrees": 0.0,
+        "progressive": true,
+        "quality": 68,
+        "region_threshold": 0.58,
+        "subsampling": 2
+      },
+      "edge_psnr_db": 38.69581418837916,
+      "objective": 1009.2448431229408,
+      "psnr_db": 39.14774762183293,
+      "size_bytes": 24259,
+      "ssim": 0.9975457121797362
+    },
+    {
+      "config": {
+        "cartoon_sigma": 1.2,
+        "chroma_projection": 0.0,
+        "luma_texture_shrink": 0.12,
+        "optimize": true,
+        "phase_degrees": 0.0,
+        "progressive": true,
+        "quality": 68,
+        "region_threshold": 0.58,
+        "subsampling": 2
+      },
+      "edge_psnr_db": 38.6982674796968,
+      "objective": 1009.2456176948464,
+      "psnr_db": 39.14954830444371,
+      "size_bytes": 24265,
+      "ssim": 0.997545881285988
+    },
+    {
+      "config": {
+        "cartoon_sigma": 1.2,
+        "chroma_projection": 0.0,
+        "luma_texture_shrink": 0.0,
+        "optimize": true,
+        "phase_degrees": 0.0,
+        "progressive": true,
+        "quality": 68,
+        "region_threshold": 0.58,
+        "subsampling": 2
+      },
+      "edge_psnr_db": 38.78590554892754,
+      "objective": 1009.2723550826126,
+      "psnr_db": 39.15716357940205,
+      "size_bytes": 24282,
+      "ssim": 0.9975623318118395
+    },
+    {
+      "config": {
+        "cartoon_sigma": 1.2,
+        "chroma_projection": 0.5,
+        "luma_texture_shrink": 0.0,
+        "optimize": true,
+        "phase_degrees": 0.0,
+        "progressive": true,
+        "quality": 68,
+        "region_threshold": 0.58,
+        "subsampling": 2
+      },
+      "edge_psnr_db": 38.78137972338983,
+      "objective": 1009.272127106765,
+      "psnr_db": 39.15336927645458,
+      "size_bytes": 24288,
+      "ssim": 0.997563315279135
+    },
+    {
+      "config": {
+        "cartoon_sigma": 1.2,
+        "chroma_projection": 0.5,
+        "luma_texture_shrink": 0.0,
+        "optimize": true,
+        "phase_degrees": 0.0,
+        "progressive": true,
+        "quality": 70,
+        "region_threshold": 0.58,
+        "subsampling": 2
+      },
+      "edge_psnr_db": 48.10418103491152,
+      "objective": 1012.3100470219985,
+      "psnr_db": 39.62070071563616,
+      "size_bytes": 24545,
+      "ssim": 0.9995754887753799
+    },
+    {
+      "config": {
+        "cartoon_sigma": 1.2,
+        "chroma_projection": 0.25,
+        "luma_texture_shrink": 0.0,
+        "optimize": true,
+        "phase_degrees": 0.0,
+        "progressive": true,
+        "quality": 70,
+        "region_threshold": 0.58,
+        "subsampling": 2
+      },
+      "edge_psnr_db": 48.09252711423457,
+      "objective": 1012.3113137803758,
+      "psnr_db": 39.63175855067353,
+      "size_bytes": 24551,
+      "ssim": 0.9995757093588177
+    },
+    {
+      "config": {
+        "cartoon_sigma": 1.2,
+        "chroma_projection": 0.5,
+        "luma_texture_shrink": 0.0,
+        "optimize": true,
+        "phase_degrees": 0.0,
+        "progressive": true,
+        "quality": 70,
+        "region_threshold": 0.58,
+        "subsampling": 1
+      },
+      "edge_psnr_db": 48.61665161500767,
+      "objective": 1012.7642609758999,
+      "psnr_db": 41.36484167942487,
+      "size_bytes": 27138,
+      "ssim": 0.999629627478514
+    },
+    {
+      "config": {
+        "cartoon_sigma": 1.2,
+        "chroma_projection": 0.25,
+        "luma_texture_shrink": 0.0,
+        "optimize": true,
+        "phase_degrees": 0.0,
+        "progressive": true,
+        "quality": 70,
+        "region_threshold": 0.58,
+        "subsampling": 1
+      },
+      "edge_psnr_db": 48.59880736916391,
+      "objective": 1012.764563741985,
+      "psnr_db": 41.370703469569804,
+      "size_bytes": 27158,
+      "ssim": 0.9996305423111546
+    },
+    {
+      "config": {
+        "cartoon_sigma": 1.2,
+        "chroma_projection": 0.0,
+        "luma_texture_shrink": 0.0,
+        "optimize": true,
+        "phase_degrees": 0.0,
+        "progressive": true,
+        "quality": 70,
+        "region_threshold": 0.58,
+        "subsampling": 1
+      },
+      "edge_psnr_db": 48.63732354820125,
+      "objective": 1012.7698148356205,
+      "psnr_db": 41.376333845476566,
+      "size_bytes": 27159,
+      "ssim": 0.9996308157117051
+    },
+    {
+      "config": {
+        "cartoon_sigma": 1.2,
+        "chroma_projection": 0.5,
+        "luma_texture_shrink": 0.0,
+        "optimize": true,
+        "phase_degrees": 0.0,
+        "progressive": true,
+        "quality": 70,
+        "region_threshold": 0.58,
+        "subsampling": 0
+      },
+      "edge_psnr_db": 55.911399774964934,
+      "objective": 991.3831303501728,
+      "psnr_db": 66.72102599471353,
+      "size_bytes": 30807,
+      "ssim": 0.9999649084614047
+    }
+  ],
+  "output": "/tmp/manual_jpeg_cat.jpg",
+  "regions": 1328,
+  "source": "experiments/manual_jpeg_optimizer/assets/istockphoto-508030340-612x612.jpg",
+  "source_bytes": 32530,
+  "target_bytes": 29200,
+  "target_met": true
+}

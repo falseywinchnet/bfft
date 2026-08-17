@@ -1,0 +1,1441 @@
+{
+  "experiment": "eikonal_matrix_walsh_recovery",
+  "guardrail": "Finite-cube causal-frontier measurements are a recovery and work audit, not an asymptotic SVP theorem.",
+  "summaries": [
+    {
+      "dimension": 9,
+      "ell": 6,
+      "walsh_outputs": 64,
+      "maximum_boundary_mass_fraction": 0.00322593846949539,
+      "exact_population_retention_by_width": {
+        "1": 0.75,
+        "2": 0.625,
+        "4": 0.875,
+        "8": 0.875,
+        "16": 1.0,
+        "32": 1.0,
+        "64": 1.0
+      },
+      "adaptive_exact_population_retention_by_width": {
+        "1": 0.125,
+        "2": 0.5,
+        "4": 0.5,
+        "8": 0.875,
+        "16": 1.0,
+        "32": 1.0,
+        "64": 1.0
+      },
+      "oracle_threshold_certified_frontiers": {
+        "1.0": {
+          "maximum_width": 16,
+          "median_width": 9.0,
+          "maximum_width_fraction": 0.25
+        },
+        "0.5": {
+          "maximum_width": 31,
+          "median_width": 18.0,
+          "maximum_width_fraction": 0.484375
+        },
+        "0.25": {
+          "maximum_width": 44,
+          "median_width": 31.5,
+          "maximum_width_fraction": 0.6875
+        }
+      },
+      "sampled": []
+    }
+  ],
+  "reports": [
+    {
+      "dimension": 9,
+      "cutoff": 3,
+      "enumerated_dual_points": 40353607,
+      "elapsed_seconds": 17.435083458003646,
+      "h": 3,
+      "ell": 6,
+      "walsh_outputs": 64,
+      "theta_star": 34,
+      "maximum_boundary_mass_fraction": 0.00322593846949539,
+      "exact_population": [
+        {
+          "coset": 0,
+          "target_leaf_energy_rank": 9,
+          "target_leaf_energy": 0.0007328210498985049,
+          "beams": {
+            "1": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 12,
+              "first_missed_depth": 2
+            },
+            "2": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 22,
+              "first_missed_depth": 5
+            },
+            "4": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 38,
+              "first_missed_depth": 5
+            },
+            "8": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 62,
+              "first_missed_depth": 5
+            },
+            "16": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 94,
+              "first_missed_depth": null
+            },
+            "32": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 126,
+              "first_missed_depth": null
+            },
+            "64": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 126,
+              "first_missed_depth": null
+            }
+          },
+          "adaptive_beams": {
+            "1": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 42,
+              "bit_order": [
+                0,
+                5,
+                1,
+                2,
+                3,
+                4
+              ],
+              "first_missed_depth": 3
+            },
+            "2": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 72,
+              "bit_order": [
+                4,
+                0,
+                5,
+                1,
+                2,
+                3
+              ],
+              "first_missed_depth": 4
+            },
+            "4": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 112,
+              "bit_order": [
+                4,
+                3,
+                0,
+                2,
+                5,
+                1
+              ],
+              "first_missed_depth": 3
+            },
+            "8": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 160,
+              "bit_order": [
+                4,
+                3,
+                0,
+                5,
+                1,
+                2
+              ],
+              "first_missed_depth": 5
+            },
+            "16": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 208,
+              "bit_order": [
+                4,
+                3,
+                0,
+                1,
+                2,
+                5
+              ],
+              "first_missed_depth": null
+            },
+            "32": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 240,
+              "bit_order": [
+                4,
+                3,
+                0,
+                1,
+                5,
+                2
+              ],
+              "first_missed_depth": null
+            },
+            "64": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 240,
+              "bit_order": [
+                4,
+                3,
+                0,
+                1,
+                5,
+                2
+              ],
+              "first_missed_depth": null
+            }
+          },
+          "certified_frontiers": {
+            "1.0": {
+              "threshold_over_target_energy": 1.0,
+              "maximum_frontier_width": 16,
+              "final_frontier_width": 9,
+              "visited_nodes": 88,
+              "target_retained_all_depths": true
+            },
+            "0.5": {
+              "threshold_over_target_energy": 0.5,
+              "maximum_frontier_width": 31,
+              "final_frontier_width": 27,
+              "visited_nodes": 124,
+              "target_retained_all_depths": true
+            },
+            "0.25": {
+              "threshold_over_target_energy": 0.25,
+              "maximum_frontier_width": 44,
+              "final_frontier_width": 44,
+              "visited_nodes": 126,
+              "target_retained_all_depths": true
+            }
+          }
+        },
+        {
+          "coset": 1,
+          "target_leaf_energy_rank": 1,
+          "target_leaf_energy": 0.001268752781148062,
+          "beams": {
+            "1": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 12,
+              "first_missed_depth": null
+            },
+            "2": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 22,
+              "first_missed_depth": null
+            },
+            "4": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 38,
+              "first_missed_depth": null
+            },
+            "8": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 62,
+              "first_missed_depth": null
+            },
+            "16": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 94,
+              "first_missed_depth": null
+            },
+            "32": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 126,
+              "first_missed_depth": null
+            },
+            "64": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 126,
+              "first_missed_depth": null
+            }
+          },
+          "adaptive_beams": {
+            "1": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 42,
+              "bit_order": [
+                0,
+                5,
+                1,
+                2,
+                3,
+                4
+              ],
+              "first_missed_depth": 3
+            },
+            "2": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 72,
+              "bit_order": [
+                3,
+                0,
+                2,
+                5,
+                1,
+                4
+              ],
+              "first_missed_depth": null
+            },
+            "4": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 112,
+              "bit_order": [
+                3,
+                0,
+                4,
+                2,
+                5,
+                1
+              ],
+              "first_missed_depth": 4
+            },
+            "8": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 160,
+              "bit_order": [
+                3,
+                0,
+                1,
+                4,
+                5,
+                2
+              ],
+              "first_missed_depth": null
+            },
+            "16": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 208,
+              "bit_order": [
+                3,
+                0,
+                1,
+                2,
+                5,
+                4
+              ],
+              "first_missed_depth": null
+            },
+            "32": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 240,
+              "bit_order": [
+                3,
+                0,
+                1,
+                2,
+                4,
+                5
+              ],
+              "first_missed_depth": null
+            },
+            "64": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 240,
+              "bit_order": [
+                3,
+                0,
+                1,
+                2,
+                4,
+                5
+              ],
+              "first_missed_depth": null
+            }
+          },
+          "certified_frontiers": {
+            "1.0": {
+              "threshold_over_target_energy": 1.0,
+              "maximum_frontier_width": 8,
+              "final_frontier_width": 0,
+              "visited_nodes": 40,
+              "target_retained_all_depths": false
+            },
+            "0.5": {
+              "threshold_over_target_energy": 0.5,
+              "maximum_frontier_width": 12,
+              "final_frontier_width": 9,
+              "visited_nodes": 78,
+              "target_retained_all_depths": true
+            },
+            "0.25": {
+              "threshold_over_target_energy": 0.25,
+              "maximum_frontier_width": 24,
+              "final_frontier_width": 17,
+              "visited_nodes": 110,
+              "target_retained_all_depths": true
+            }
+          }
+        },
+        {
+          "coset": 2,
+          "target_leaf_energy_rank": 1,
+          "target_leaf_energy": 0.0013000513386868104,
+          "beams": {
+            "1": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 12,
+              "first_missed_depth": null
+            },
+            "2": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 22,
+              "first_missed_depth": null
+            },
+            "4": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 38,
+              "first_missed_depth": null
+            },
+            "8": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 62,
+              "first_missed_depth": null
+            },
+            "16": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 94,
+              "first_missed_depth": null
+            },
+            "32": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 126,
+              "first_missed_depth": null
+            },
+            "64": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 126,
+              "first_missed_depth": null
+            }
+          },
+          "adaptive_beams": {
+            "1": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 42,
+              "bit_order": [
+                0,
+                5,
+                1,
+                2,
+                3,
+                4
+              ],
+              "first_missed_depth": 3
+            },
+            "2": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 72,
+              "bit_order": [
+                0,
+                1,
+                5,
+                2,
+                3,
+                4
+              ],
+              "first_missed_depth": null
+            },
+            "4": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 112,
+              "bit_order": [
+                0,
+                1,
+                3,
+                2,
+                5,
+                4
+              ],
+              "first_missed_depth": null
+            },
+            "8": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 160,
+              "bit_order": [
+                0,
+                1,
+                5,
+                2,
+                4,
+                3
+              ],
+              "first_missed_depth": null
+            },
+            "16": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 208,
+              "bit_order": [
+                0,
+                1,
+                5,
+                2,
+                4,
+                3
+              ],
+              "first_missed_depth": null
+            },
+            "32": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 240,
+              "bit_order": [
+                0,
+                1,
+                5,
+                2,
+                4,
+                3
+              ],
+              "first_missed_depth": null
+            },
+            "64": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 240,
+              "bit_order": [
+                0,
+                1,
+                5,
+                2,
+                4,
+                3
+              ],
+              "first_missed_depth": null
+            }
+          },
+          "certified_frontiers": {
+            "1.0": {
+              "threshold_over_target_energy": 1.0,
+              "maximum_frontier_width": 8,
+              "final_frontier_width": 1,
+              "visited_nodes": 46,
+              "target_retained_all_depths": true
+            },
+            "0.5": {
+              "threshold_over_target_energy": 0.5,
+              "maximum_frontier_width": 14,
+              "final_frontier_width": 9,
+              "visited_nodes": 84,
+              "target_retained_all_depths": true
+            },
+            "0.25": {
+              "threshold_over_target_energy": 0.25,
+              "maximum_frontier_width": 22,
+              "final_frontier_width": 22,
+              "visited_nodes": 104,
+              "target_retained_all_depths": true
+            }
+          }
+        },
+        {
+          "coset": 3,
+          "target_leaf_energy_rank": 2,
+          "target_leaf_energy": 0.0014435801487096393,
+          "beams": {
+            "1": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 12,
+              "first_missed_depth": null
+            },
+            "2": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 22,
+              "first_missed_depth": null
+            },
+            "4": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 38,
+              "first_missed_depth": null
+            },
+            "8": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 62,
+              "first_missed_depth": null
+            },
+            "16": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 94,
+              "first_missed_depth": null
+            },
+            "32": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 126,
+              "first_missed_depth": null
+            },
+            "64": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 126,
+              "first_missed_depth": null
+            }
+          },
+          "adaptive_beams": {
+            "1": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 42,
+              "bit_order": [
+                0,
+                5,
+                1,
+                2,
+                4,
+                3
+              ],
+              "first_missed_depth": 3
+            },
+            "2": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 72,
+              "bit_order": [
+                2,
+                0,
+                4,
+                3,
+                5,
+                1
+              ],
+              "first_missed_depth": 3
+            },
+            "4": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 112,
+              "bit_order": [
+                2,
+                0,
+                1,
+                5,
+                4,
+                3
+              ],
+              "first_missed_depth": null
+            },
+            "8": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 160,
+              "bit_order": [
+                2,
+                0,
+                1,
+                5,
+                4,
+                3
+              ],
+              "first_missed_depth": null
+            },
+            "16": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 208,
+              "bit_order": [
+                2,
+                0,
+                1,
+                3,
+                5,
+                4
+              ],
+              "first_missed_depth": null
+            },
+            "32": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 240,
+              "bit_order": [
+                2,
+                0,
+                1,
+                3,
+                5,
+                4
+              ],
+              "first_missed_depth": null
+            },
+            "64": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 240,
+              "bit_order": [
+                2,
+                0,
+                1,
+                3,
+                5,
+                4
+              ],
+              "first_missed_depth": null
+            }
+          },
+          "certified_frontiers": {
+            "1.0": {
+              "threshold_over_target_energy": 1.0,
+              "maximum_frontier_width": 10,
+              "final_frontier_width": 1,
+              "visited_nodes": 56,
+              "target_retained_all_depths": false
+            },
+            "0.5": {
+              "threshold_over_target_energy": 0.5,
+              "maximum_frontier_width": 19,
+              "final_frontier_width": 16,
+              "visited_nodes": 100,
+              "target_retained_all_depths": true
+            },
+            "0.25": {
+              "threshold_over_target_energy": 0.25,
+              "maximum_frontier_width": 31,
+              "final_frontier_width": 29,
+              "visited_nodes": 124,
+              "target_retained_all_depths": true
+            }
+          }
+        },
+        {
+          "coset": 4,
+          "target_leaf_energy_rank": 3,
+          "target_leaf_energy": 0.0015367518894278465,
+          "beams": {
+            "1": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 12,
+              "first_missed_depth": null
+            },
+            "2": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 22,
+              "first_missed_depth": null
+            },
+            "4": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 38,
+              "first_missed_depth": null
+            },
+            "8": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 62,
+              "first_missed_depth": null
+            },
+            "16": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 94,
+              "first_missed_depth": null
+            },
+            "32": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 126,
+              "first_missed_depth": null
+            },
+            "64": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 126,
+              "first_missed_depth": null
+            }
+          },
+          "adaptive_beams": {
+            "1": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 42,
+              "bit_order": [
+                0,
+                5,
+                4,
+                2,
+                1,
+                3
+              ],
+              "first_missed_depth": 4
+            },
+            "2": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 72,
+              "bit_order": [
+                1,
+                0,
+                5,
+                2,
+                4,
+                3
+              ],
+              "first_missed_depth": null
+            },
+            "4": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 112,
+              "bit_order": [
+                1,
+                3,
+                0,
+                2,
+                5,
+                4
+              ],
+              "first_missed_depth": null
+            },
+            "8": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 160,
+              "bit_order": [
+                1,
+                3,
+                2,
+                5,
+                0,
+                4
+              ],
+              "first_missed_depth": null
+            },
+            "16": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 208,
+              "bit_order": [
+                1,
+                3,
+                2,
+                0,
+                5,
+                4
+              ],
+              "first_missed_depth": null
+            },
+            "32": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 240,
+              "bit_order": [
+                1,
+                3,
+                2,
+                0,
+                4,
+                5
+              ],
+              "first_missed_depth": null
+            },
+            "64": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 240,
+              "bit_order": [
+                1,
+                3,
+                2,
+                0,
+                4,
+                5
+              ],
+              "first_missed_depth": null
+            }
+          },
+          "certified_frontiers": {
+            "1.0": {
+              "threshold_over_target_energy": 1.0,
+              "maximum_frontier_width": 8,
+              "final_frontier_width": 3,
+              "visited_nodes": 52,
+              "target_retained_all_depths": true
+            },
+            "0.5": {
+              "threshold_over_target_energy": 0.5,
+              "maximum_frontier_width": 17,
+              "final_frontier_width": 9,
+              "visited_nodes": 96,
+              "target_retained_all_depths": true
+            },
+            "0.25": {
+              "threshold_over_target_energy": 0.25,
+              "maximum_frontier_width": 32,
+              "final_frontier_width": 30,
+              "visited_nodes": 126,
+              "target_retained_all_depths": true
+            }
+          }
+        },
+        {
+          "coset": 5,
+          "target_leaf_energy_rank": 7,
+          "target_leaf_energy": 0.0011671986668909035,
+          "beams": {
+            "1": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 12,
+              "first_missed_depth": 4
+            },
+            "2": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 22,
+              "first_missed_depth": 4
+            },
+            "4": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 38,
+              "first_missed_depth": null
+            },
+            "8": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 62,
+              "first_missed_depth": null
+            },
+            "16": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 94,
+              "first_missed_depth": null
+            },
+            "32": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 126,
+              "first_missed_depth": null
+            },
+            "64": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 126,
+              "first_missed_depth": null
+            }
+          },
+          "adaptive_beams": {
+            "1": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 42,
+              "bit_order": [
+                0,
+                4,
+                3,
+                5,
+                1,
+                2
+              ],
+              "first_missed_depth": 2
+            },
+            "2": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 72,
+              "bit_order": [
+                2,
+                0,
+                4,
+                3,
+                5,
+                1
+              ],
+              "first_missed_depth": 3
+            },
+            "4": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 112,
+              "bit_order": [
+                2,
+                0,
+                4,
+                3,
+                5,
+                1
+              ],
+              "first_missed_depth": 4
+            },
+            "8": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 160,
+              "bit_order": [
+                2,
+                0,
+                4,
+                1,
+                5,
+                3
+              ],
+              "first_missed_depth": null
+            },
+            "16": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 208,
+              "bit_order": [
+                2,
+                0,
+                4,
+                1,
+                5,
+                3
+              ],
+              "first_missed_depth": null
+            },
+            "32": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 240,
+              "bit_order": [
+                2,
+                0,
+                4,
+                1,
+                3,
+                5
+              ],
+              "first_missed_depth": null
+            },
+            "64": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 240,
+              "bit_order": [
+                2,
+                0,
+                4,
+                1,
+                3,
+                5
+              ],
+              "first_missed_depth": null
+            }
+          },
+          "certified_frontiers": {
+            "1.0": {
+              "threshold_over_target_energy": 1.0,
+              "maximum_frontier_width": 16,
+              "final_frontier_width": 6,
+              "visited_nodes": 84,
+              "target_retained_all_depths": false
+            },
+            "0.5": {
+              "threshold_over_target_energy": 0.5,
+              "maximum_frontier_width": 29,
+              "final_frontier_width": 22,
+              "visited_nodes": 120,
+              "target_retained_all_depths": true
+            },
+            "0.25": {
+              "threshold_over_target_energy": 0.25,
+              "maximum_frontier_width": 36,
+              "final_frontier_width": 36,
+              "visited_nodes": 126,
+              "target_retained_all_depths": true
+            }
+          }
+        },
+        {
+          "coset": 6,
+          "target_leaf_energy_rank": 6,
+          "target_leaf_energy": 0.0011506187710548764,
+          "beams": {
+            "1": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 12,
+              "first_missed_depth": null
+            },
+            "2": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 22,
+              "first_missed_depth": 5
+            },
+            "4": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 38,
+              "first_missed_depth": null
+            },
+            "8": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 62,
+              "first_missed_depth": null
+            },
+            "16": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 94,
+              "first_missed_depth": null
+            },
+            "32": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 126,
+              "first_missed_depth": null
+            },
+            "64": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 126,
+              "first_missed_depth": null
+            }
+          },
+          "adaptive_beams": {
+            "1": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 42,
+              "bit_order": [
+                4,
+                3,
+                0,
+                5,
+                1,
+                2
+              ],
+              "first_missed_depth": 2
+            },
+            "2": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 72,
+              "bit_order": [
+                4,
+                0,
+                3,
+                1,
+                5,
+                2
+              ],
+              "first_missed_depth": 3
+            },
+            "4": {
+              "target_retained_all_depths": false,
+              "target_recovered": false,
+              "visited_nodes": 112,
+              "bit_order": [
+                4,
+                0,
+                3,
+                5,
+                2,
+                1
+              ],
+              "first_missed_depth": 5
+            },
+            "8": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 160,
+              "bit_order": [
+                4,
+                0,
+                1,
+                3,
+                5,
+                2
+              ],
+              "first_missed_depth": null
+            },
+            "16": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 208,
+              "bit_order": [
+                4,
+                0,
+                1,
+                5,
+                2,
+                3
+              ],
+              "first_missed_depth": null
+            },
+            "32": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 240,
+              "bit_order": [
+                4,
+                0,
+                1,
+                5,
+                2,
+                3
+              ],
+              "first_missed_depth": null
+            },
+            "64": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 240,
+              "bit_order": [
+                4,
+                0,
+                1,
+                5,
+                2,
+                3
+              ],
+              "first_missed_depth": null
+            }
+          },
+          "certified_frontiers": {
+            "1.0": {
+              "threshold_over_target_energy": 1.0,
+              "maximum_frontier_width": 16,
+              "final_frontier_width": 5,
+              "visited_nodes": 88,
+              "target_retained_all_depths": false
+            },
+            "0.5": {
+              "threshold_over_target_energy": 0.5,
+              "maximum_frontier_width": 31,
+              "final_frontier_width": 25,
+              "visited_nodes": 124,
+              "target_retained_all_depths": true
+            },
+            "0.25": {
+              "threshold_over_target_energy": 0.25,
+              "maximum_frontier_width": 38,
+              "final_frontier_width": 38,
+              "visited_nodes": 126,
+              "target_retained_all_depths": true
+            }
+          }
+        },
+        {
+          "coset": 7,
+          "target_leaf_energy_rank": 1,
+          "target_leaf_energy": 0.0015494853228047029,
+          "beams": {
+            "1": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 12,
+              "first_missed_depth": null
+            },
+            "2": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 22,
+              "first_missed_depth": null
+            },
+            "4": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 38,
+              "first_missed_depth": null
+            },
+            "8": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 62,
+              "first_missed_depth": null
+            },
+            "16": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 94,
+              "first_missed_depth": null
+            },
+            "32": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 126,
+              "first_missed_depth": null
+            },
+            "64": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 126,
+              "first_missed_depth": null
+            }
+          },
+          "adaptive_beams": {
+            "1": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 42,
+              "bit_order": [
+                0,
+                5,
+                4,
+                3,
+                1,
+                2
+              ],
+              "first_missed_depth": null
+            },
+            "2": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 72,
+              "bit_order": [
+                0,
+                2,
+                3,
+                5,
+                1,
+                4
+              ],
+              "first_missed_depth": null
+            },
+            "4": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 112,
+              "bit_order": [
+                0,
+                1,
+                2,
+                5,
+                4,
+                3
+              ],
+              "first_missed_depth": null
+            },
+            "8": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 160,
+              "bit_order": [
+                0,
+                1,
+                2,
+                5,
+                4,
+                3
+              ],
+              "first_missed_depth": null
+            },
+            "16": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 208,
+              "bit_order": [
+                0,
+                1,
+                2,
+                3,
+                5,
+                4
+              ],
+              "first_missed_depth": null
+            },
+            "32": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 240,
+              "bit_order": [
+                0,
+                1,
+                2,
+                3,
+                5,
+                4
+              ],
+              "first_missed_depth": null
+            },
+            "64": {
+              "target_retained_all_depths": true,
+              "target_recovered": true,
+              "visited_nodes": 240,
+              "bit_order": [
+                0,
+                1,
+                2,
+                3,
+                5,
+                4
+              ],
+              "first_missed_depth": null
+            }
+          },
+          "certified_frontiers": {
+            "1.0": {
+              "threshold_over_target_energy": 1.0,
+              "maximum_frontier_width": 8,
+              "final_frontier_width": 1,
+              "visited_nodes": 40,
+              "target_retained_all_depths": true
+            },
+            "0.5": {
+              "threshold_over_target_energy": 0.5,
+              "maximum_frontier_width": 16,
+              "final_frontier_width": 7,
+              "visited_nodes": 86,
+              "target_retained_all_depths": true
+            },
+            "0.25": {
+              "threshold_over_target_energy": 0.25,
+              "maximum_frontier_width": 26,
+              "final_frontier_width": 16,
+              "visited_nodes": 114,
+              "target_retained_all_depths": true
+            }
+          }
+        }
+      ],
+      "sampled": [],
+      "sample_model": "IID draws conditional on Algorithm 5 Horvitz-Thompson retention; each stored contribution is weighted by w/pi."
+    }
+  ]
+}

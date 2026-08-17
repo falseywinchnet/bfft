@@ -1,0 +1,173 @@
+{
+  "experiment": "walsh_periodic_hessian_simplex_census",
+  "rows": [
+    {
+      "dimension": 3,
+      "shortest_ratio": 0.97,
+      "basis_condition_number": 2.0694576354393694,
+      "shortest_length": 0.9700000000000001,
+      "shortest_coefficients": [
+        -1,
+        -1,
+        -1
+      ],
+      "target_parity": [
+        1,
+        1,
+        1
+      ],
+      "probe_count": 256,
+      "levels": [
+        {
+          "t": 0.1,
+          "branch_count": 8,
+          "field_gradient_evaluations": 3787,
+          "shortest_parity_present": true,
+          "shortest_parity_probe_count": 54,
+          "shortest_parity_probe_fraction": 0.2109375,
+          "maximum_half_grid_error": 0.0008283559320418514,
+          "distinct_snapped_parity_count": 7
+        },
+        {
+          "t": 0.23675858,
+          "branch_count": 7,
+          "field_gradient_evaluations": 3858,
+          "shortest_parity_present": true,
+          "shortest_parity_probe_count": 65,
+          "shortest_parity_probe_fraction": 0.25390625,
+          "maximum_half_grid_error": 9.406572066305696e-09,
+          "distinct_snapped_parity_count": 7
+        }
+      ]
+    },
+    {
+      "dimension": 4,
+      "shortest_ratio": 0.97,
+      "basis_condition_number": 2.3097615473857243,
+      "shortest_length": 0.97,
+      "shortest_coefficients": [
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "target_parity": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "probe_count": 256,
+      "levels": [
+        {
+          "t": 0.1,
+          "branch_count": 15,
+          "field_gradient_evaluations": 4311,
+          "shortest_parity_present": true,
+          "shortest_parity_probe_count": 33,
+          "shortest_parity_probe_fraction": 0.12890625,
+          "maximum_half_grid_error": 3.012857324489668e-07,
+          "distinct_snapped_parity_count": 15
+        },
+        {
+          "t": 0.23675858,
+          "branch_count": 15,
+          "field_gradient_evaluations": 4483,
+          "shortest_parity_present": true,
+          "shortest_parity_probe_count": 45,
+          "shortest_parity_probe_fraction": 0.17578125,
+          "maximum_half_grid_error": 1.594651662188921e-08,
+          "distinct_snapped_parity_count": 15
+        }
+      ]
+    },
+    {
+      "dimension": 5,
+      "shortest_ratio": 0.97,
+      "basis_condition_number": 2.528354456316485,
+      "shortest_length": 0.97,
+      "shortest_coefficients": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "target_parity": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "probe_count": 256,
+      "levels": [
+        {
+          "t": 0.1,
+          "branch_count": 30,
+          "field_gradient_evaluations": 4813,
+          "shortest_parity_present": true,
+          "shortest_parity_probe_count": 22,
+          "shortest_parity_probe_fraction": 0.0859375,
+          "maximum_half_grid_error": 1.2916722486966272e-06,
+          "distinct_snapped_parity_count": 30
+        },
+        {
+          "t": 0.23675858,
+          "branch_count": 30,
+          "field_gradient_evaluations": 4819,
+          "shortest_parity_present": true,
+          "shortest_parity_probe_count": 37,
+          "shortest_parity_probe_fraction": 0.14453125,
+          "maximum_half_grid_error": 1.4321458206152067e-08,
+          "distinct_snapped_parity_count": 30
+        }
+      ]
+    },
+    {
+      "dimension": 6,
+      "shortest_ratio": 0.97,
+      "basis_condition_number": 2.729880555593099,
+      "shortest_length": 0.9700000000000003,
+      "shortest_coefficients": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "target_parity": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "probe_count": 256,
+      "levels": [
+        {
+          "t": 0.1,
+          "branch_count": 50,
+          "field_gradient_evaluations": 4959,
+          "shortest_parity_present": true,
+          "shortest_parity_probe_count": 25,
+          "shortest_parity_probe_fraction": 0.09765625,
+          "maximum_half_grid_error": 6.821834045377506e-07,
+          "distinct_snapped_parity_count": 50
+        },
+        {
+          "t": 0.23675858,
+          "branch_count": 46,
+          "field_gradient_evaluations": 5386,
+          "shortest_parity_present": true,
+          "shortest_parity_probe_count": 25,
+          "shortest_parity_probe_fraction": 0.09765625,
+          "maximum_half_grid_error": 1.4561854053962108e-07,
+          "distinct_snapped_parity_count": 46
+        }
+      ]
+    }
+  ]
+}

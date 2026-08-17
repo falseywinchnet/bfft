@@ -1,0 +1,52 @@
+{
+  "edge_psnr_db": 47.523292034170986,
+  "fixed_frame_inner_relaxation": {
+    "absolute_gap": 4.957192704780027,
+    "config": {
+      "cartoon_sigma": 1.2,
+      "check_interval": 25,
+      "connection_lambda": 0.5,
+      "cross_region_weight": 0.05,
+      "frame_mode": "chroma",
+      "iterations": 500,
+      "rate_lambda": 0.5,
+      "region_threshold": 0.58,
+      "relative_gap_tolerance": 1e-05
+    },
+    "connection_residual_after": 4.389415334500106,
+    "connection_residual_before": 4.7508469269171165,
+    "converged": true,
+    "dual_lower_bound": 793716.0621605045,
+    "iterations": 50,
+    "primal": 793721.0193532093,
+    "relative_gap": 6.245510177895459e-06,
+    "zero_fraction_after": 0.9395058066933067,
+    "zero_fraction_before": 0.8811527014652014
+  },
+  "global_channel_complete_sdp": {
+    "certified_gap": 1.7648055028463006e-05,
+    "dual_upper_bound": 0.7677326802894526,
+    "edge_count": 28,
+    "gram_rank": 72,
+    "maximum_diagonal_error": 1.0210769670202849e-17,
+    "minimum_gram_eigenvalue": 5.4162524972402805e-06,
+    "proof": "Convex SDP optimum with X positive semidefinite and every 3x3 diagonal block fixed to identity; the dual feasible objective is a global upper bound.",
+    "region_count": 24,
+    "relaxation_value": 0.7677150322344242,
+    "rounded_value": 0.7660448178185938,
+    "rounding_gap": 0.0016702144158303733,
+    "solver": "CLARABEL",
+    "solver_status": "optimal"
+  },
+  "jpeg": {
+    "quality": 70,
+    "subsampling": 1
+  },
+  "output": "experiments/manual_jpeg_optimizer/results/sdp_global_relax.jpg",
+  "output_bytes": 26971,
+  "proof_boundary": "The bloom-region Gram field is the certified global optimum of the locally channel-complete SDP relaxation. Rank-three rounding and the subsequent fixed-frame convex solve are reported separately.",
+  "psnr_db": 41.317802325043196,
+  "source": "experiments/manual_jpeg_optimizer/assets/istockphoto-508030340-612x612.jpg",
+  "source_bytes": 32530,
+  "ssim": 0.9872464629885567
+}

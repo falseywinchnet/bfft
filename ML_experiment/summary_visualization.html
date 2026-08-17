@@ -1,0 +1,1230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Visualization.Fragment</title>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+</head>
+<body>
+<iframe sandbox="allow-scripts" referrerpolicy="no-referrer" title="Visualization.Fragment" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;Visualization.Fragment&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, var(--background));
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 14px);
+  --blue: light-dark(rgb(51 156 255), rgb(51 156 255));
+  --orange: light-dark(rgb(226 85 7), rgb(251 106 34));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --red: light-dark(rgb(224 46 42), rgb(255 103 100));
+  --purple: light-dark(rgb(146 79 247), rgb(173 123 249));
+  --yellow: light-dark(rgb(255 195 0), rgb(255 210 64));
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, &quot;Segoe UI&quot;, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --radius: var(--border-radius-lg, 12.5px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: 5px;
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium, 500);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: superellipse(1.5);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget &gt; :not(.card, .progress) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress {
+  display: flex;
+  height: 6px;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+}
+
+.progress-bar {
+  height: 100%;
+  flex-shrink: 0;
+  border: 0;
+  background: var(--viz-series-1);
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: superellipse(1.5);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+  [aria-pressed=&quot;true&quot;],
+  [aria-selected=&quot;true&quot;],
+  .is-selected
+) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+/* Model-authored chart rules can otherwise stretch icons after these styles load. */
+svg.lucide {
+  display: block;
+  width: 16px !important;
+  height: 16px !important;
+  flex: none;
+  margin: 0 !important;
+  stroke-width: 1.6;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;scs-round2-viz&quot;&gt;
+  &lt;style&gt;
+    #scs-round2-viz{color:var(--foreground);font-size:var(--font-size-base);width:100%}
+    #scs-round2-viz *{box-sizing:border-box}
+    #scs-round2-viz h2,#scs-round2-viz h3,#scs-round2-viz p{margin-top:0}
+    #scs-round2-viz h2{font-weight:500;margin-bottom:6px}
+    #scs-round2-viz h3{font-weight:500;margin-bottom:8px}
+    #scs-round2-viz .lede{color:var(--muted-foreground);margin-bottom:16px}
+    #scs-round2-viz .summary{margin-bottom:18px}
+    #scs-round2-viz .viz-stat-value{font-weight:500}
+    #scs-round2-viz .chart-block{margin:22px 0}
+    #scs-round2-viz .series-controls{display:flex;flex-wrap:wrap;gap:6px 14px;margin:4px 0 10px}
+    #scs-round2-viz .series-controls button{appearance:none;background:transparent;border:0;color:var(--foreground);padding:3px 0;cursor:pointer;font:inherit}
+    #scs-round2-viz .series-controls button[aria-pressed=&quot;false&quot;]{color:var(--muted-foreground);text-decoration:line-through}
+    #scs-round2-viz .swatch{display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:50%;background:var(--swatch)}
+    #scs-round2-viz .svg-host{width:100%;min-height:250px}
+    #scs-round2-viz svg{display:block;width:100%;overflow:visible}
+    #scs-round2-viz svg text{fill:var(--foreground);font-size:12px}
+    #scs-round2-viz svg .muted{fill:var(--muted-foreground)}
+    #scs-round2-viz svg .axis path,#scs-round2-viz svg .axis line{stroke:var(--border)}
+    #scs-round2-viz svg .grid line{stroke:var(--border);opacity:.45}
+    #scs-round2-viz svg .frame{fill:none;stroke:var(--border)}
+    #scs-round2-viz .field-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+    #scs-round2-viz .field-item{min-width:0}
+    #scs-round2-viz .field-item h3{text-align:center;margin-bottom:4px}
+    #scs-round2-viz .field-item svg{aspect-ratio:1/1}
+    #scs-round2-viz .tooltip{position:absolute;pointer-events:none;display:none;background:var(--popover);color:var(--popover-foreground);padding:7px 9px;border-radius:6px;z-index:2}
+    #scs-round2-viz .positioner{position:relative}
+    @media(max-width:760px){#scs-round2-viz .field-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:420px){#scs-round2-viz .field-grid{grid-template-columns:1fr}#scs-round2-viz .svg-host{min-height:220px}}
+  &lt;/style&gt;
+  &lt;h2&gt;Self-context Eikonal: 22-problem superset&lt;/h2&gt;
+  &lt;p class=&quot;lede&quot;&gt;Exact-budget ordinary LELU MLP, self-context baseline, and five parameter-identical additions · 462 benchmark fits · M4 CPU&lt;/p&gt;
+  &lt;div class=&quot;viz-grid summary&quot;&gt;
+    &lt;div class=&quot;card viz-stat&quot;&gt;&lt;div class=&quot;text-muted&quot;&gt;Self-context vs MLP&lt;/div&gt;&lt;div class=&quot;viz-stat-value&quot;&gt;+.094&lt;/div&gt;&lt;div class=&quot;text-small&quot;&gt;mean held-out score&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;card viz-stat&quot;&gt;&lt;div class=&quot;text-muted&quot;&gt;Hard allocation&lt;/div&gt;&lt;div class=&quot;viz-stat-value&quot;&gt;21 / 22&lt;/div&gt;&lt;div class=&quot;text-small&quot;&gt;learning-AUC wins&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;card viz-stat&quot;&gt;&lt;div class=&quot;text-muted&quot;&gt;Chart curvature&lt;/div&gt;&lt;div class=&quot;viz-stat-value&quot;&gt;+.008&lt;/div&gt;&lt;div class=&quot;text-small&quot;&gt;mean tail score&lt;/div&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;section class=&quot;chart-block&quot;&gt;
+    &lt;h3&gt;Five additions relative to self-context&lt;/h3&gt;
+    &lt;div class=&quot;series-controls&quot; id=&quot;scs-series-controls&quot; aria-label=&quot;Toggle experimental variants&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;svg-host positioner&quot; id=&quot;scs-overall-host&quot;&gt;&lt;svg role=&quot;img&quot; aria-label=&quot;Mean score deltas for five self-context variants&quot;&gt;&lt;title&gt;Mean validation, held-out, tail, and learning AUC differences versus self-context&lt;/title&gt;&lt;/svg&gt;&lt;div class=&quot;tooltip&quot; role=&quot;tooltip&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;/section&gt;
+  &lt;section class=&quot;chart-block&quot;&gt;
+    &lt;h3&gt;Chart-curvature tail tradeoff across all problems&lt;/h3&gt;
+    &lt;div class=&quot;svg-host positioner&quot; id=&quot;scs-tail-host&quot;&gt;&lt;svg role=&quot;img&quot; aria-label=&quot;Chart curvature tail score difference on all 22 tasks&quot;&gt;&lt;title&gt;Task-level chart-curvature tail score difference versus self-context&lt;/title&gt;&lt;/svg&gt;&lt;div class=&quot;tooltip&quot; role=&quot;tooltip&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;/section&gt;
+  &lt;section class=&quot;chart-block&quot;&gt;
+    &lt;h3&gt;Ordinary spiral: outer region remains unidentified&lt;/h3&gt;
+    &lt;div class=&quot;field-grid&quot; id=&quot;scs-spiral-grid&quot;&gt;&lt;/div&gt;
+  &lt;/section&gt;
+  &lt;section class=&quot;chart-block&quot;&gt;
+    &lt;h3&gt;Multiscale 1-D continuation&lt;/h3&gt;
+    &lt;div class=&quot;svg-host positioner&quot; id=&quot;scs-curve-host&quot;&gt;&lt;svg role=&quot;img&quot; aria-label=&quot;Multiscale target and model predictions from negative five to five&quot;&gt;&lt;title&gt;Multiscale one-dimensional continuation outside the observed interval&lt;/title&gt;&lt;/svg&gt;&lt;div class=&quot;tooltip&quot; role=&quot;tooltip&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;/section&gt;
+  &lt;script src=&quot;https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js&quot;&gt;&lt;/script&gt;
+  &lt;script&gt;
+  (()=&gt;{
+    const root=document.getElementById(&#x27;scs-round2-viz&#x27;);
+    const data={&quot;overall&quot;:[{&quot;variant&quot;:&quot;self_context_hard&quot;,&quot;validation_score_delta&quot;:0.000737304803135797,&quot;score_delta&quot;:-0.0016048709127377194,&quot;tail_score_delta&quot;:0.0011535119716100093,&quot;learning_auc_delta&quot;:0.008410342294990152},{&quot;variant&quot;:&quot;self_context_iterated&quot;,&quot;validation_score_delta&quot;:-0.0008008645212762718,&quot;score_delta&quot;:-0.005418877108695124,&quot;tail_score_delta&quot;:0.0024641454032487543,&quot;learning_auc_delta&quot;:0.0007257724554192511},{&quot;variant&quot;:&quot;self_context_uncertainty&quot;,&quot;validation_score_delta&quot;:-0.0034446171414220443,&quot;score_delta&quot;:-0.010524711626192795,&quot;tail_score_delta&quot;:-0.0048982454697831515,&quot;learning_auc_delta&quot;:-0.0014891096700663609},{&quot;variant&quot;:&quot;self_context_secant&quot;,&quot;validation_score_delta&quot;:-0.0052833077354691,&quot;score_delta&quot;:-0.006019782074957313,&quot;tail_score_delta&quot;:-0.0036982900222110827,&quot;learning_auc_delta&quot;:0.00039280134466401393},{&quot;variant&quot;:&quot;self_context_chart&quot;,&quot;validation_score_delta&quot;:-0.01048922330362703,&quot;score_delta&quot;:0.00304701839473821,&quot;tail_score_delta&quot;:0.008439920739645466,&quot;learning_auc_delta&quot;:-0.004032687055535809}],&quot;byTask&quot;:[{&quot;task&quot;:&quot;spiral&quot;,&quot;tail_score_delta&quot;:-0.005333333276212215},{&quot;task&quot;:&quot;checkerboard&quot;,&quot;tail_score_delta&quot;:0.08566666916012763},{&quot;task&quot;:&quot;two_moons&quot;,&quot;tail_score_delta&quot;:0.0},{&quot;task&quot;:&quot;pinwheel&quot;,&quot;tail_score_delta&quot;:0.0003787875175476074},{&quot;task&quot;:&quot;nd_spiral_low_rank&quot;,&quot;tail_score_delta&quot;:0.017333333380520344},{&quot;task&quot;:&quot;nd_spiral_high_rank&quot;,&quot;tail_score_delta&quot;:0.15583333969116214},{&quot;task&quot;:&quot;hypercube_checker&quot;,&quot;tail_score_delta&quot;:0.04564262628555296},{&quot;task&quot;:&quot;xor_quads&quot;,&quot;tail_score_delta&quot;:0.00020956993103027344},{&quot;task&quot;:&quot;sinusoid_bounds&quot;,&quot;tail_score_delta&quot;:-0.000298425555229187},{&quot;task&quot;:&quot;radial_stripes&quot;,&quot;tail_score_delta&quot;:-0.18576262146234512},{&quot;task&quot;:&quot;swiss_cheese&quot;,&quot;tail_score_delta&quot;:0.00044974684715270996},{&quot;task&quot;:&quot;lorenz_lobes&quot;,&quot;tail_score_delta&quot;:0.0},{&quot;task&quot;:&quot;periodic_wells&quot;,&quot;tail_score_delta&quot;:0.0013975249141945922},{&quot;task&quot;:&quot;ripple&quot;,&quot;tail_score_delta&quot;:-0.004406620614597012},{&quot;task&quot;:&quot;ring_sdf&quot;,&quot;tail_score_delta&quot;:-3.855733810564921e-06},{&quot;task&quot;:&quot;complex_spiral_3d&quot;,&quot;tail_score_delta&quot;:-0.004327949099800719},{&quot;task&quot;:&quot;periodic_nd&quot;,&quot;tail_score_delta&quot;:-0.003020792244523174},{&quot;task&quot;:&quot;hyperchecker&quot;,&quot;tail_score_delta&quot;:-0.004424199461936951},{&quot;task&quot;:&quot;multiscale_1d&quot;,&quot;tail_score_delta&quot;:0.051015496822882284},{&quot;task&quot;:&quot;chirp_1d&quot;,&quot;tail_score_delta&quot;:0.0457865166892055},{&quot;task&quot;:&quot;localized_steps_1d&quot;,&quot;tail_score_delta&quot;:0.05278465148583994},{&quot;task&quot;:&quot;fourier_mix_1d&quot;,&quot;tail_score_delta&quot;:-0.06324220900456076}],&quot;spiral&quot;:[{&quot;variant&quot;:&quot;ordinary_mlp&quot;,&quot;size&quot;:31,&quot;truth&quot;:[1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0],&quot;prediction&quot;:[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},{&quot;variant&quot;:&quot;self_context&quot;,&quot;size&quot;:31,&quot;truth&quot;:[1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0],&quot;prediction&quot;:[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0]},{&quot;variant&quot;:&quot;self_context_hard&quot;,&quot;size&quot;:31,&quot;truth&quot;:[1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0],&quot;prediction&quot;:[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0]},{&quot;variant&quot;:&quot;self_context_chart&quot;,&quot;size&quot;:31,&quot;truth&quot;:[1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0],&quot;prediction&quot;:[1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]}],&quot;multiscale&quot;:[{&quot;variant&quot;:&quot;ordinary_mlp&quot;,&quot;x&quot;:[-5.0,-4.9667,-4.9333,-4.9,-4.8666,-4.8333,-4.7999,-4.7666,-4.7332,-4.6999,-4.6666,-4.6332,-4.5999,-4.5665,-4.5332,-4.4998,-4.4665,-4.4331,-4.3998,-4.3665,-4.3331,-4.2998,-4.2664,-4.2331,-4.1997,-4.1664,-4.133,-4.0997,-4.0664,-4.033,-3.9997,-3.9663,-3.933,-3.8996,-3.8663,-3.8329,-3.7996,-3.7663,-3.7329,-3.6996,-3.6662,-3.6329,-3.5995,-3.5662,-3.5328,-3.4995,-3.4662,-3.4328,-3.3995,-3.3661,-3.3328,-3.2994,-3.2661,-3.2327,-3.1994,-3.1661,-3.1327,-3.0994,-3.066,-3.0327,-2.9993,-2.966,-2.9326,-2.8993,-2.866,-2.8326,-2.7993,-2.7659,-2.7326,-2.6992,-2.6659,-2.6325,-2.5992,-2.5659,-2.5325,-2.4992,-2.4658,-2.4325,-2.3991,-2.3658,-2.3324,-2.2991,-2.2658,-2.2324,-2.1991,-2.1657,-2.1324,-2.099,-2.0657,-2.0323,-1.999,-1.9657,-1.9323,-1.899,-1.8656,-1.8323,-1.7989,-1.7656,-1.7322,-1.6989,-1.6656,-1.6322,-1.5989,-1.5655,-1.5322,-1.4988,-1.4655,-1.4321,-1.3988,-1.3655,-1.3321,-1.2988,-1.2654,-1.2321,-1.1987,-1.1654,-1.132,-1.0987,-1.0654,-1.032,-0.9987,-0.9653,-0.932,-0.8986,-0.8653,-0.8319,-0.7986,-0.7653,-0.7319,-0.6986,-0.6652,-0.6319,-0.5985,-0.5652,-0.5318,-0.4985,-0.4652,-0.4318,-0.3985,-0.3651,-0.3318,-0.2984,-0.2651,-0.2317,-0.1984,-0.1651,-0.1317,-0.0984,-0.065,-0.0317,0.0017,0.035,0.0684,0.1017,0.135,0.1684,0.2017,0.2351,0.2684,0.3018,0.3351,0.3685,0.4018,0.4351,0.4685,0.5018,0.5352,0.5685,0.6019,0.6352,0.6686,0.7019,0.7352,0.7686,0.8019,0.8353,0.8686,0.902,0.9353,0.9687,1.002,1.0353,1.0687,1.102,1.1354,1.1687,1.2021,1.2354,1.2688,1.3021,1.3354,1.3688,1.4021,1.4355,1.4688,1.5022,1.5355,1.5689,1.6022,1.6355,1.6689,1.7022,1.7356,1.7689,1.8023,1.8356,1.869,1.9023,1.9356,1.969,2.0023,2.0357,2.069,2.1024,2.1357,2.1691,2.2024,2.2357,2.2691,2.3024,2.3358,2.3691,2.4025,2.4358,2.4692,2.5025,2.5358,2.5692,2.6025,2.6359,2.6692,2.7026,2.7359,2.7693,2.8026,2.8359,2.8693,2.9026,2.936,2.9693,3.0027,3.036,3.0694,3.1027,3.136,3.1694,3.2027,3.2361,3.2694,3.3028,3.3361,3.3695,3.4028,3.4361,3.4695,3.5028,3.5362,3.5695,3.6029,3.6362,3.6696,3.7029,3.7362,3.7696,3.8029,3.8363,3.8696,3.903,3.9363,3.9697,4.003,4.0363,4.0697,4.103,4.1364,4.1697,4.2031,4.2364,4.2698,4.3031,4.3364,4.3698,4.4031,4.4365,4.4698,4.5032,4.5365,4.5699,4.6032,4.6365,4.6699,4.7032,4.7366,4.7699,4.8033,4.8366,4.87,4.9033,4.9366,4.97],&quot;truth&quot;:[-0.36817,-0.36028,-0.35179,-0.34278,-0.3333,-0.32335,-0.31289,-0.3019,-0.29035,-0.27825,-0.26562,-0.2525,-0.23888,-0.22471,-0.20984,-0.19411,-0.17732,-0.15935,-0.14021,-0.11999,-0.0989,-0.07713,-0.05485,-0.03206,-0.0087,0.01532,0.04002,0.06518,0.09037,0.11495,0.13827,0.15983,0.17943,0.19726,0.2137,0.22918,0.24384,0.25746,0.26943,0.27902,0.28576,0.28972,0.29172,0.29312,0.29543,0.29977,0.30638,0.3146,0.32309,0.33058,0.33649,0.34139,0.34695,0.35531,0.36804,0.38533,0.40549,0.42538,0.44141,0.45098,0.4535,0.45072,0.44592,0.44239,0.44165,0.44239,0.4406,0.431,0.40933,0.37451,0.32958,0.28104,0.23644,0.2014,0.17714,0.15987,0.14237,0.11734,0.08113,0.03613,-0.00938,-0.04422,-0.05892,-0.05013,-0.02275,0.01143,0.03821,0.04693,0.03522,0.01039,-0.01357,-0.02225,-0.0079,0.02598,0.06456,0.08672,0.07304,0.01353,-0.08828,-0.21662,-0.34949,-0.46667,-0.55642,-0.61843,-0.66195,-0.70022,-0.74328,-0.79196,-0.83588,-0.8571,-0.83847,-0.77352,-0.67258,-0.56145,-0.47207,-0.42883,-0.43681,-0.47796,-0.51749,-0.51849,-0.45851,-0.34065,-0.19401,-0.06268,0.01242,0.01096,-0.05763,-0.15777,-0.24277,-0.2751,-0.2431,-0.16655,-0.08844,-0.05614,-0.10006,-0.21909,-0.37951,-0.52816,-0.61438,-0.61129,-0.52719,-0.40179,-0.2889,-0.23282,-0.24883,-0.31636,-0.38779,-0.40947,-0.34546,-0.19403,0.01067,0.21238,0.35607,0.4108,0.38207,0.30851,0.24431,0.23515,0.29819,0.41466,0.5383,0.61566,0.60959,0.51539,0.36306,0.20455,0.092,0.05623,0.0949,0.17509,0.24886,0.27482,0.23618,0.14767,0.04861,-0.01452,-0.00824,0.07384,0.20875,0.35437,0.46737,0.52087,0.51449,0.47256,0.43209,0.42578,0.46773,0.54778,0.63654,0.69844,0.70702,0.65564,0.55951,0.44845,0.35403,0.29672,0.27865,0.28464,0.29059,0.27541,0.2312,0.16727,0.10677,0.07719,0.09892,0.17646,0.29564,0.42792,0.54006,0.60525,0.61154,0.56442,0.48292,0.39113,0.30907,0.24643,0.20158,0.16525,0.12687,0.08011,0.0255,-0.03076,-0.08058,-0.11831,-0.14354,-0.16117,-0.17905,-0.20436,-0.24052,-0.28583,-0.33436,-0.37852,-0.4121,-0.43245,-0.44105,-0.44235,-0.44161,-0.44262,-0.44639,-0.45115,-0.45354,-0.45035,-0.44007,-0.42351,-0.40343,-0.38343,-0.36655,-0.35429,-0.34631,-0.3409,-0.33596,-0.3299,-0.32227,-0.31374,-0.30563,-0.29923,-0.29512,-0.29296,-0.29157,-0.28943,-0.28522,-0.27819,-0.26833,-0.25616,-0.24241,-0.22766,-0.21211,-0.19555,-0.17756,-0.15776,-0.13601,-0.11254,-0.08787,-0.06265,-0.03752,-0.01289,0.01107,0.03436,0.0571,0.07934,0.10104,0.12206,0.14217,0.1612,0.17905,0.19572,0.21137,0.22616,0.24027,0.25383,0.26691,0.27948,0.29153,0.30302,0.31396,0.32437,0.33427,0.34371,0.35266,0.36109],&quot;prediction&quot;:[1.75613,1.73599,1.71586,1.69573,1.6756,1.65547,1.63534,1.61522,1.5951,1.57498,1.55486,1.53475,1.51463,1.49452,1.47441,1.45431,1.43421,1.4141,1.394,1.37391,1.35381,1.33372,1.31363,1.29354,1.27345,1.25336,1.23328,1.2132,1.19312,1.17304,1.15296,1.13288,1.1128,1.09272,1.07265,1.05257,1.0325,1.01242,0.99234,0.97226,0.95218,0.93209,0.912,0.89191,0.87182,0.85172,0.83161,0.81149,0.79137,0.77124,0.75109,0.73094,0.71077,0.69058,0.67038,0.65015,0.62991,0.60963,0.58933,0.569,0.54864,0.52823,0.50778,0.48729,0.46674,0.44613,0.42547,0.40473,0.38392,0.36302,0.34204,0.32095,0.29977,0.27846,0.25704,0.23548,0.21378,0.19193,0.16991,0.14773,0.12536,0.10281,0.08005,0.0571,0.03393,0.01054,-0.01306,-0.03689,-0.06092,-0.08516,-0.1096,-0.1342,-0.15895,-0.18381,-0.20872,-0.23364,-0.25849,-0.28318,-0.3076,-0.33165,-0.35517,-0.37801,-0.4,-0.42097,-0.44071,-0.45904,-0.47577,-0.49072,-0.50373,-0.51468,-0.52348,-0.53006,-0.53441,-0.53657,-0.53659,-0.53457,-0.53065,-0.52496,-0.51767,-0.50893,-0.49892,-0.48777,-0.47565,-0.46268,-0.44899,-0.43467,-0.41982,-0.40451,-0.38882,-0.37278,-0.35646,-0.33987,-0.32306,-0.30603,-0.28881,-0.2714,-0.25382,-0.23608,-0.21816,-0.20008,-0.18184,-0.16343,-0.14487,-0.12614,-0.10727,-0.08824,-0.06909,-0.04983,-0.03049,-0.0111,0.00827,0.02757,0.04671,0.0656,0.08412,0.10216,0.11959,0.13629,0.15215,0.16708,0.18104,0.19402,0.20602,0.21712,0.22739,0.23694,0.24589,0.25433,0.26238,0.27012,0.27763,0.28497,0.29218,0.29928,0.3063,0.31324,0.32009,0.32686,0.33352,0.34005,0.34644,0.35266,0.35869,0.36448,0.37002,0.37526,0.38018,0.38473,0.38889,0.3926,0.39583,0.39853,0.40066,0.40217,0.40302,0.40315,0.40251,0.40106,0.39874,0.3955,0.3913,0.38609,0.37981,0.37243,0.36392,0.35422,0.34332,0.33119,0.31782,0.30318,0.28728,0.27012,0.25171,0.23206,0.21121,0.18917,0.166,0.14172,0.1164,0.09007,0.0628,0.03464,0.00565,-0.02411,-0.05457,-0.08569,-0.1174,-0.14965,-0.18238,-0.21554,-0.24907,-0.28295,-0.31712,-0.35153,-0.38616,-0.42098,-0.45594,-0.49102,-0.52619,-0.56144,-0.59674,-0.63207,-0.66742,-0.70276,-0.7381,-0.77341,-0.80869,-0.84393,-0.87912,-0.91426,-0.94934,-0.98436,-1.0193,-1.05418,-1.08899,-1.12373,-1.15839,-1.19298,-1.22749,-1.26193,-1.29629,-1.33058,-1.3648,-1.39894,-1.43302,-1.46703,-1.50096,-1.53483,-1.56864,-1.60238,-1.63607,-1.66969,-1.70325,-1.73675,-1.77021,-1.8036,-1.83695,-1.87024,-1.90349,-1.93669,-1.96984,-2.00296,-2.03602,-2.06905,-2.10204,-2.13499,-2.1679,-2.20077,-2.23362,-2.26643,-2.2992,-2.33195,-2.36467,-2.39736,-2.43002,-2.46265,-2.49526,-2.52785,-2.56041,-2.59295]},{&quot;variant&quot;:&quot;self_context&quot;,&quot;x&quot;:[-5.0,-4.9667,-4.9333,-4.9,-4.8666,-4.8333,-4.7999,-4.7666,-4.7332,-4.6999,-4.6666,-4.6332,-4.5999,-4.5665,-4.5332,-4.4998,-4.4665,-4.4331,-4.3998,-4.3665,-4.3331,-4.2998,-4.2664,-4.2331,-4.1997,-4.1664,-4.133,-4.0997,-4.0664,-4.033,-3.9997,-3.9663,-3.933,-3.8996,-3.8663,-3.8329,-3.7996,-3.7663,-3.7329,-3.6996,-3.6662,-3.6329,-3.5995,-3.5662,-3.5328,-3.4995,-3.4662,-3.4328,-3.3995,-3.3661,-3.3328,-3.2994,-3.2661,-3.2327,-3.1994,-3.1661,-3.1327,-3.0994,-3.066,-3.0327,-2.9993,-2.966,-2.9326,-2.8993,-2.866,-2.8326,-2.7993,-2.7659,-2.7326,-2.6992,-2.6659,-2.6325,-2.5992,-2.5659,-2.5325,-2.4992,-2.4658,-2.4325,-2.3991,-2.3658,-2.3324,-2.2991,-2.2658,-2.2324,-2.1991,-2.1657,-2.1324,-2.099,-2.0657,-2.0323,-1.999,-1.9657,-1.9323,-1.899,-1.8656,-1.8323,-1.7989,-1.7656,-1.7322,-1.6989,-1.6656,-1.6322,-1.5989,-1.5655,-1.5322,-1.4988,-1.4655,-1.4321,-1.3988,-1.3655,-1.3321,-1.2988,-1.2654,-1.2321,-1.1987,-1.1654,-1.132,-1.0987,-1.0654,-1.032,-0.9987,-0.9653,-0.932,-0.8986,-0.8653,-0.8319,-0.7986,-0.7653,-0.7319,-0.6986,-0.6652,-0.6319,-0.5985,-0.5652,-0.5318,-0.4985,-0.4652,-0.4318,-0.3985,-0.3651,-0.3318,-0.2984,-0.2651,-0.2317,-0.1984,-0.1651,-0.1317,-0.0984,-0.065,-0.0317,0.0017,0.035,0.0684,0.1017,0.135,0.1684,0.2017,0.2351,0.2684,0.3018,0.3351,0.3685,0.4018,0.4351,0.4685,0.5018,0.5352,0.5685,0.6019,0.6352,0.6686,0.7019,0.7352,0.7686,0.8019,0.8353,0.8686,0.902,0.9353,0.9687,1.002,1.0353,1.0687,1.102,1.1354,1.1687,1.2021,1.2354,1.2688,1.3021,1.3354,1.3688,1.4021,1.4355,1.4688,1.5022,1.5355,1.5689,1.6022,1.6355,1.6689,1.7022,1.7356,1.7689,1.8023,1.8356,1.869,1.9023,1.9356,1.969,2.0023,2.0357,2.069,2.1024,2.1357,2.1691,2.2024,2.2357,2.2691,2.3024,2.3358,2.3691,2.4025,2.4358,2.4692,2.5025,2.5358,2.5692,2.6025,2.6359,2.6692,2.7026,2.7359,2.7693,2.8026,2.8359,2.8693,2.9026,2.936,2.9693,3.0027,3.036,3.0694,3.1027,3.136,3.1694,3.2027,3.2361,3.2694,3.3028,3.3361,3.3695,3.4028,3.4361,3.4695,3.5028,3.5362,3.5695,3.6029,3.6362,3.6696,3.7029,3.7362,3.7696,3.8029,3.8363,3.8696,3.903,3.9363,3.9697,4.003,4.0363,4.0697,4.103,4.1364,4.1697,4.2031,4.2364,4.2698,4.3031,4.3364,4.3698,4.4031,4.4365,4.4698,4.5032,4.5365,4.5699,4.6032,4.6365,4.6699,4.7032,4.7366,4.7699,4.8033,4.8366,4.87,4.9033,4.9366,4.97],&quot;truth&quot;:[-0.36817,-0.36028,-0.35179,-0.34278,-0.3333,-0.32335,-0.31289,-0.3019,-0.29035,-0.27825,-0.26562,-0.2525,-0.23888,-0.22471,-0.20984,-0.19411,-0.17732,-0.15935,-0.14021,-0.11999,-0.0989,-0.07713,-0.05485,-0.03206,-0.0087,0.01532,0.04002,0.06518,0.09037,0.11495,0.13827,0.15983,0.17943,0.19726,0.2137,0.22918,0.24384,0.25746,0.26943,0.27902,0.28576,0.28972,0.29172,0.29312,0.29543,0.29977,0.30638,0.3146,0.32309,0.33058,0.33649,0.34139,0.34695,0.35531,0.36804,0.38533,0.40549,0.42538,0.44141,0.45098,0.4535,0.45072,0.44592,0.44239,0.44165,0.44239,0.4406,0.431,0.40933,0.37451,0.32958,0.28104,0.23644,0.2014,0.17714,0.15987,0.14237,0.11734,0.08113,0.03613,-0.00938,-0.04422,-0.05892,-0.05013,-0.02275,0.01143,0.03821,0.04693,0.03522,0.01039,-0.01357,-0.02225,-0.0079,0.02598,0.06456,0.08672,0.07304,0.01353,-0.08828,-0.21662,-0.34949,-0.46667,-0.55642,-0.61843,-0.66195,-0.70022,-0.74328,-0.79196,-0.83588,-0.8571,-0.83847,-0.77352,-0.67258,-0.56145,-0.47207,-0.42883,-0.43681,-0.47796,-0.51749,-0.51849,-0.45851,-0.34065,-0.19401,-0.06268,0.01242,0.01096,-0.05763,-0.15777,-0.24277,-0.2751,-0.2431,-0.16655,-0.08844,-0.05614,-0.10006,-0.21909,-0.37951,-0.52816,-0.61438,-0.61129,-0.52719,-0.40179,-0.2889,-0.23282,-0.24883,-0.31636,-0.38779,-0.40947,-0.34546,-0.19403,0.01067,0.21238,0.35607,0.4108,0.38207,0.30851,0.24431,0.23515,0.29819,0.41466,0.5383,0.61566,0.60959,0.51539,0.36306,0.20455,0.092,0.05623,0.0949,0.17509,0.24886,0.27482,0.23618,0.14767,0.04861,-0.01452,-0.00824,0.07384,0.20875,0.35437,0.46737,0.52087,0.51449,0.47256,0.43209,0.42578,0.46773,0.54778,0.63654,0.69844,0.70702,0.65564,0.55951,0.44845,0.35403,0.29672,0.27865,0.28464,0.29059,0.27541,0.2312,0.16727,0.10677,0.07719,0.09892,0.17646,0.29564,0.42792,0.54006,0.60525,0.61154,0.56442,0.48292,0.39113,0.30907,0.24643,0.20158,0.16525,0.12687,0.08011,0.0255,-0.03076,-0.08058,-0.11831,-0.14354,-0.16117,-0.17905,-0.20436,-0.24052,-0.28583,-0.33436,-0.37852,-0.4121,-0.43245,-0.44105,-0.44235,-0.44161,-0.44262,-0.44639,-0.45115,-0.45354,-0.45035,-0.44007,-0.42351,-0.40343,-0.38343,-0.36655,-0.35429,-0.34631,-0.3409,-0.33596,-0.3299,-0.32227,-0.31374,-0.30563,-0.29923,-0.29512,-0.29296,-0.29157,-0.28943,-0.28522,-0.27819,-0.26833,-0.25616,-0.24241,-0.22766,-0.21211,-0.19555,-0.17756,-0.15776,-0.13601,-0.11254,-0.08787,-0.06265,-0.03752,-0.01289,0.01107,0.03436,0.0571,0.07934,0.10104,0.12206,0.14217,0.1612,0.17905,0.19572,0.21137,0.22616,0.24027,0.25383,0.26691,0.27948,0.29153,0.30302,0.31396,0.32437,0.33427,0.34371,0.35266,0.36109],&quot;prediction&quot;:[1.19168,1.1804,1.16915,1.15791,1.1467,1.13551,1.12434,1.11318,1.10205,1.09094,1.07986,1.06879,1.05775,1.04673,1.03574,1.02477,1.01382,1.0029,0.99201,0.98113,0.97029,0.95947,0.94867,0.9379,0.92715,0.91643,0.90572,0.89504,0.88438,0.87374,0.86311,0.8525,0.8419,0.83132,0.82074,0.81014,0.79953,0.78892,0.77831,0.76767,0.75702,0.74633,0.73561,0.72484,0.71402,0.70312,0.69215,0.68107,0.66989,0.65857,0.64711,0.63549,0.62367,0.61164,0.59937,0.58683,0.574,0.56082,0.54728,0.53333,0.51893,0.50403,0.48857,0.47248,0.4557,0.43812,0.41965,0.40017,0.37956,0.35767,0.33438,0.30959,0.2833,0.25558,0.22662,0.19669,0.16595,0.13427,0.10097,0.06498,0.02584,-0.01317,-0.04102,-0.04363,-0.02074,0.00832,0.0283,0.03583,0.03282,0.02253,0.00863,-0.00361,-0.00381,0.02337,0.06683,0.08162,0.06326,0.01841,-0.07774,-0.22635,-0.35384,-0.46192,-0.56324,-0.62333,-0.6728,-0.72129,-0.74846,-0.77431,-0.80881,-0.83312,-0.82137,-0.76441,-0.67487,-0.57807,-0.5009,-0.46157,-0.46301,-0.48981,-0.51694,-0.51838,-0.47391,-0.36711,-0.19351,-0.04322,0.00621,-0.01227,-0.06768,-0.13773,-0.23965,-0.31278,-0.25664,-0.20608,-0.16101,-0.07713,-0.04832,-0.14104,-0.30716,-0.44179,-0.53241,-0.57826,-0.5403,-0.40231,-0.29246,-0.2489,-0.25386,-0.30078,-0.37152,-0.41601,-0.37689,-0.21554,0.02909,0.22132,0.32959,0.39102,0.39246,0.31334,0.24907,0.24757,0.29792,0.42492,0.57078,0.63121,0.61078,0.51446,0.41356,0.26987,0.0864,0.05264,0.14955,0.21349,0.22414,0.19915,0.15637,0.11459,0.0895,0.08964,0.11687,0.16898,0.23922,0.31705,0.3926,0.45816,0.50995,0.54864,0.57652,0.59596,0.60864,0.61575,0.61688,0.6112,0.59632,0.56806,0.52061,0.45096,0.37105,0.30556,0.26748,0.24773,0.23388,0.21973,0.20271,0.18195,0.15803,0.13485,0.12543,0.15971,0.27048,0.43026,0.55345,0.60193,0.59257,0.54762,0.48275,0.40925,0.33501,0.26498,0.20163,0.14544,0.09579,0.05151,0.01134,-0.02594,-0.06133,-0.09568,-0.12969,-0.16391,-0.19878,-0.23446,-0.2707,-0.30671,-0.34115,-0.37241,-0.39902,-0.42001,-0.43509,-0.44478,-0.45023,-0.45305,-0.45497,-0.45752,-0.46183,-0.46854,-0.47783,-0.48959,-0.50354,-0.51932,-0.5366,-0.55508,-0.5745,-0.59468,-0.61545,-0.6367,-0.65833,-0.68026,-0.70245,-0.72485,-0.74742,-0.77014,-0.79297,-0.81591,-0.83894,-0.86203,-0.88518,-0.90838,-0.93164,-0.95494,-0.97829,-1.0017,-1.02517,-1.04872,-1.07235,-1.09607,-1.11989,-1.14383,-1.16789,-1.19209,-1.21643,-1.24091,-1.26555,-1.29034,-1.31529,-1.3404,-1.36567,-1.39111,-1.41669,-1.44244,-1.46833,-1.49437,-1.52054,-1.54685,-1.57328,-1.59982,-1.62646,-1.65319,-1.68,-1.70687,-1.73379,-1.76075,-1.78774,-1.81473]},{&quot;variant&quot;:&quot;self_context_hard&quot;,&quot;x&quot;:[-5.0,-4.9667,-4.9333,-4.9,-4.8666,-4.8333,-4.7999,-4.7666,-4.7332,-4.6999,-4.6666,-4.6332,-4.5999,-4.5665,-4.5332,-4.4998,-4.4665,-4.4331,-4.3998,-4.3665,-4.3331,-4.2998,-4.2664,-4.2331,-4.1997,-4.1664,-4.133,-4.0997,-4.0664,-4.033,-3.9997,-3.9663,-3.933,-3.8996,-3.8663,-3.8329,-3.7996,-3.7663,-3.7329,-3.6996,-3.6662,-3.6329,-3.5995,-3.5662,-3.5328,-3.4995,-3.4662,-3.4328,-3.3995,-3.3661,-3.3328,-3.2994,-3.2661,-3.2327,-3.1994,-3.1661,-3.1327,-3.0994,-3.066,-3.0327,-2.9993,-2.966,-2.9326,-2.8993,-2.866,-2.8326,-2.7993,-2.7659,-2.7326,-2.6992,-2.6659,-2.6325,-2.5992,-2.5659,-2.5325,-2.4992,-2.4658,-2.4325,-2.3991,-2.3658,-2.3324,-2.2991,-2.2658,-2.2324,-2.1991,-2.1657,-2.1324,-2.099,-2.0657,-2.0323,-1.999,-1.9657,-1.9323,-1.899,-1.8656,-1.8323,-1.7989,-1.7656,-1.7322,-1.6989,-1.6656,-1.6322,-1.5989,-1.5655,-1.5322,-1.4988,-1.4655,-1.4321,-1.3988,-1.3655,-1.3321,-1.2988,-1.2654,-1.2321,-1.1987,-1.1654,-1.132,-1.0987,-1.0654,-1.032,-0.9987,-0.9653,-0.932,-0.8986,-0.8653,-0.8319,-0.7986,-0.7653,-0.7319,-0.6986,-0.6652,-0.6319,-0.5985,-0.5652,-0.5318,-0.4985,-0.4652,-0.4318,-0.3985,-0.3651,-0.3318,-0.2984,-0.2651,-0.2317,-0.1984,-0.1651,-0.1317,-0.0984,-0.065,-0.0317,0.0017,0.035,0.0684,0.1017,0.135,0.1684,0.2017,0.2351,0.2684,0.3018,0.3351,0.3685,0.4018,0.4351,0.4685,0.5018,0.5352,0.5685,0.6019,0.6352,0.6686,0.7019,0.7352,0.7686,0.8019,0.8353,0.8686,0.902,0.9353,0.9687,1.002,1.0353,1.0687,1.102,1.1354,1.1687,1.2021,1.2354,1.2688,1.3021,1.3354,1.3688,1.4021,1.4355,1.4688,1.5022,1.5355,1.5689,1.6022,1.6355,1.6689,1.7022,1.7356,1.7689,1.8023,1.8356,1.869,1.9023,1.9356,1.969,2.0023,2.0357,2.069,2.1024,2.1357,2.1691,2.2024,2.2357,2.2691,2.3024,2.3358,2.3691,2.4025,2.4358,2.4692,2.5025,2.5358,2.5692,2.6025,2.6359,2.6692,2.7026,2.7359,2.7693,2.8026,2.8359,2.8693,2.9026,2.936,2.9693,3.0027,3.036,3.0694,3.1027,3.136,3.1694,3.2027,3.2361,3.2694,3.3028,3.3361,3.3695,3.4028,3.4361,3.4695,3.5028,3.5362,3.5695,3.6029,3.6362,3.6696,3.7029,3.7362,3.7696,3.8029,3.8363,3.8696,3.903,3.9363,3.9697,4.003,4.0363,4.0697,4.103,4.1364,4.1697,4.2031,4.2364,4.2698,4.3031,4.3364,4.3698,4.4031,4.4365,4.4698,4.5032,4.5365,4.5699,4.6032,4.6365,4.6699,4.7032,4.7366,4.7699,4.8033,4.8366,4.87,4.9033,4.9366,4.97],&quot;truth&quot;:[-0.36817,-0.36028,-0.35179,-0.34278,-0.3333,-0.32335,-0.31289,-0.3019,-0.29035,-0.27825,-0.26562,-0.2525,-0.23888,-0.22471,-0.20984,-0.19411,-0.17732,-0.15935,-0.14021,-0.11999,-0.0989,-0.07713,-0.05485,-0.03206,-0.0087,0.01532,0.04002,0.06518,0.09037,0.11495,0.13827,0.15983,0.17943,0.19726,0.2137,0.22918,0.24384,0.25746,0.26943,0.27902,0.28576,0.28972,0.29172,0.29312,0.29543,0.29977,0.30638,0.3146,0.32309,0.33058,0.33649,0.34139,0.34695,0.35531,0.36804,0.38533,0.40549,0.42538,0.44141,0.45098,0.4535,0.45072,0.44592,0.44239,0.44165,0.44239,0.4406,0.431,0.40933,0.37451,0.32958,0.28104,0.23644,0.2014,0.17714,0.15987,0.14237,0.11734,0.08113,0.03613,-0.00938,-0.04422,-0.05892,-0.05013,-0.02275,0.01143,0.03821,0.04693,0.03522,0.01039,-0.01357,-0.02225,-0.0079,0.02598,0.06456,0.08672,0.07304,0.01353,-0.08828,-0.21662,-0.34949,-0.46667,-0.55642,-0.61843,-0.66195,-0.70022,-0.74328,-0.79196,-0.83588,-0.8571,-0.83847,-0.77352,-0.67258,-0.56145,-0.47207,-0.42883,-0.43681,-0.47796,-0.51749,-0.51849,-0.45851,-0.34065,-0.19401,-0.06268,0.01242,0.01096,-0.05763,-0.15777,-0.24277,-0.2751,-0.2431,-0.16655,-0.08844,-0.05614,-0.10006,-0.21909,-0.37951,-0.52816,-0.61438,-0.61129,-0.52719,-0.40179,-0.2889,-0.23282,-0.24883,-0.31636,-0.38779,-0.40947,-0.34546,-0.19403,0.01067,0.21238,0.35607,0.4108,0.38207,0.30851,0.24431,0.23515,0.29819,0.41466,0.5383,0.61566,0.60959,0.51539,0.36306,0.20455,0.092,0.05623,0.0949,0.17509,0.24886,0.27482,0.23618,0.14767,0.04861,-0.01452,-0.00824,0.07384,0.20875,0.35437,0.46737,0.52087,0.51449,0.47256,0.43209,0.42578,0.46773,0.54778,0.63654,0.69844,0.70702,0.65564,0.55951,0.44845,0.35403,0.29672,0.27865,0.28464,0.29059,0.27541,0.2312,0.16727,0.10677,0.07719,0.09892,0.17646,0.29564,0.42792,0.54006,0.60525,0.61154,0.56442,0.48292,0.39113,0.30907,0.24643,0.20158,0.16525,0.12687,0.08011,0.0255,-0.03076,-0.08058,-0.11831,-0.14354,-0.16117,-0.17905,-0.20436,-0.24052,-0.28583,-0.33436,-0.37852,-0.4121,-0.43245,-0.44105,-0.44235,-0.44161,-0.44262,-0.44639,-0.45115,-0.45354,-0.45035,-0.44007,-0.42351,-0.40343,-0.38343,-0.36655,-0.35429,-0.34631,-0.3409,-0.33596,-0.3299,-0.32227,-0.31374,-0.30563,-0.29923,-0.29512,-0.29296,-0.29157,-0.28943,-0.28522,-0.27819,-0.26833,-0.25616,-0.24241,-0.22766,-0.21211,-0.19555,-0.17756,-0.15776,-0.13601,-0.11254,-0.08787,-0.06265,-0.03752,-0.01289,0.01107,0.03436,0.0571,0.07934,0.10104,0.12206,0.14217,0.1612,0.17905,0.19572,0.21137,0.22616,0.24027,0.25383,0.26691,0.27948,0.29153,0.30302,0.31396,0.32437,0.33427,0.34371,0.35266,0.36109],&quot;prediction&quot;:[1.32419,1.30947,1.29475,1.28005,1.26535,1.25067,1.23598,1.22131,1.20664,1.19198,1.17733,1.16269,1.14806,1.13344,1.11884,1.10426,1.08969,1.07514,1.0606,1.04608,1.03157,1.01709,1.00262,0.98818,0.97376,0.95936,0.945,0.93066,0.91635,0.90205,0.88777,0.87352,0.85932,0.84515,0.83103,0.81696,0.80295,0.78897,0.77505,0.76119,0.7474,0.73369,0.72005,0.7065,0.69305,0.6797,0.66646,0.65333,0.64033,0.62745,0.61471,0.6021,0.58965,0.57735,0.56521,0.55323,0.54139,0.52967,0.51805,0.50651,0.49499,0.4834,0.47163,0.45951,0.44683,0.4333,0.41858,0.40226,0.3839,0.36302,0.33929,0.31249,0.28273,0.25031,0.21587,0.18025,0.1443,0.10867,0.07358,0.03883,0.0045,-0.02712,-0.04896,-0.05136,-0.03214,-0.00325,0.02025,0.03178,0.03228,0.02507,0.01347,0.00137,-0.00343,0.01509,0.06178,0.08949,0.07386,0.02252,-0.06807,-0.19518,-0.32481,-0.44289,-0.54857,-0.60913,-0.64863,-0.68523,-0.72497,-0.77,-0.81633,-0.84665,-0.83153,-0.75545,-0.64549,-0.54423,-0.47214,-0.43185,-0.42575,-0.45913,-0.50956,-0.52197,-0.46903,-0.35672,-0.21226,-0.08026,0.00035,0.0151,-0.04308,-0.15082,-0.23398,-0.2585,-0.23354,-0.17218,-0.09977,-0.06007,-0.08179,-0.18657,-0.36847,-0.52261,-0.59396,-0.59629,-0.53802,-0.41804,-0.28747,-0.23507,-0.26116,-0.31987,-0.36902,-0.38124,-0.33642,-0.20599,0.01793,0.23815,0.3628,0.40518,0.38494,0.3187,0.26217,0.26479,0.32535,0.42624,0.53034,0.602,0.6231,0.56798,0.40253,0.20145,0.09796,0.08175,0.12167,0.19286,0.25787,0.28444,0.25574,0.16964,0.06258,-0.00099,0.00371,0.07075,0.18674,0.3227,0.43972,0.51603,0.54581,0.51398,0.43419,0.42564,0.49775,0.58477,0.65295,0.69125,0.69757,0.66812,0.59174,0.46092,0.33157,0.27887,0.27852,0.28213,0.273,0.25056,0.21566,0.17141,0.12839,0.10404,0.11448,0.17108,0.27495,0.40497,0.523,0.59859,0.62042,0.59285,0.53041,0.45104,0.36946,0.29613,0.23359,0.17948,0.13046,0.08446,0.04098,0.00027,-0.0374,-0.07251,-0.10595,-0.13897,-0.17275,-0.20814,-0.24532,-0.28358,-0.3213,-0.35638,-0.38687,-0.41143,-0.4296,-0.44169,-0.44857,-0.45136,-0.45116,-0.44889,-0.44532,-0.44113,-0.43703,-0.43388,-0.43261,-0.43402,-0.43856,-0.44615,-0.45597,-0.46686,-0.47739,-0.48627,-0.4926,-0.49599,-0.49662,-0.49523,-0.49289,-0.49082,-0.49011,-0.49163,-0.49592,-0.50323,-0.51355,-0.5267,-0.54241,-0.56009,-0.57919,-0.5991,-0.61921,-0.63899,-0.658,-0.67592,-0.69257,-0.70791,-0.72202,-0.73506,-0.74727,-0.75894,-0.77038,-0.78187,-0.79371,-0.80613,-0.81934,-0.83347,-0.84863,-0.86484,-0.8821,-0.90039,-0.91962,-0.93974,-0.96067,-0.98231,-1.00457,-1.02736,-1.05062,-1.07427,-1.09826,-1.12251,-1.147,-1.17168]},{&quot;variant&quot;:&quot;self_context_chart&quot;,&quot;x&quot;:[-5.0,-4.9667,-4.9333,-4.9,-4.8666,-4.8333,-4.7999,-4.7666,-4.7332,-4.6999,-4.6666,-4.6332,-4.5999,-4.5665,-4.5332,-4.4998,-4.4665,-4.4331,-4.3998,-4.3665,-4.3331,-4.2998,-4.2664,-4.2331,-4.1997,-4.1664,-4.133,-4.0997,-4.0664,-4.033,-3.9997,-3.9663,-3.933,-3.8996,-3.8663,-3.8329,-3.7996,-3.7663,-3.7329,-3.6996,-3.6662,-3.6329,-3.5995,-3.5662,-3.5328,-3.4995,-3.4662,-3.4328,-3.3995,-3.3661,-3.3328,-3.2994,-3.2661,-3.2327,-3.1994,-3.1661,-3.1327,-3.0994,-3.066,-3.0327,-2.9993,-2.966,-2.9326,-2.8993,-2.866,-2.8326,-2.7993,-2.7659,-2.7326,-2.6992,-2.6659,-2.6325,-2.5992,-2.5659,-2.5325,-2.4992,-2.4658,-2.4325,-2.3991,-2.3658,-2.3324,-2.2991,-2.2658,-2.2324,-2.1991,-2.1657,-2.1324,-2.099,-2.0657,-2.0323,-1.999,-1.9657,-1.9323,-1.899,-1.8656,-1.8323,-1.7989,-1.7656,-1.7322,-1.6989,-1.6656,-1.6322,-1.5989,-1.5655,-1.5322,-1.4988,-1.4655,-1.4321,-1.3988,-1.3655,-1.3321,-1.2988,-1.2654,-1.2321,-1.1987,-1.1654,-1.132,-1.0987,-1.0654,-1.032,-0.9987,-0.9653,-0.932,-0.8986,-0.8653,-0.8319,-0.7986,-0.7653,-0.7319,-0.6986,-0.6652,-0.6319,-0.5985,-0.5652,-0.5318,-0.4985,-0.4652,-0.4318,-0.3985,-0.3651,-0.3318,-0.2984,-0.2651,-0.2317,-0.1984,-0.1651,-0.1317,-0.0984,-0.065,-0.0317,0.0017,0.035,0.0684,0.1017,0.135,0.1684,0.2017,0.2351,0.2684,0.3018,0.3351,0.3685,0.4018,0.4351,0.4685,0.5018,0.5352,0.5685,0.6019,0.6352,0.6686,0.7019,0.7352,0.7686,0.8019,0.8353,0.8686,0.902,0.9353,0.9687,1.002,1.0353,1.0687,1.102,1.1354,1.1687,1.2021,1.2354,1.2688,1.3021,1.3354,1.3688,1.4021,1.4355,1.4688,1.5022,1.5355,1.5689,1.6022,1.6355,1.6689,1.7022,1.7356,1.7689,1.8023,1.8356,1.869,1.9023,1.9356,1.969,2.0023,2.0357,2.069,2.1024,2.1357,2.1691,2.2024,2.2357,2.2691,2.3024,2.3358,2.3691,2.4025,2.4358,2.4692,2.5025,2.5358,2.5692,2.6025,2.6359,2.6692,2.7026,2.7359,2.7693,2.8026,2.8359,2.8693,2.9026,2.936,2.9693,3.0027,3.036,3.0694,3.1027,3.136,3.1694,3.2027,3.2361,3.2694,3.3028,3.3361,3.3695,3.4028,3.4361,3.4695,3.5028,3.5362,3.5695,3.6029,3.6362,3.6696,3.7029,3.7362,3.7696,3.8029,3.8363,3.8696,3.903,3.9363,3.9697,4.003,4.0363,4.0697,4.103,4.1364,4.1697,4.2031,4.2364,4.2698,4.3031,4.3364,4.3698,4.4031,4.4365,4.4698,4.5032,4.5365,4.5699,4.6032,4.6365,4.6699,4.7032,4.7366,4.7699,4.8033,4.8366,4.87,4.9033,4.9366,4.97],&quot;truth&quot;:[-0.36817,-0.36028,-0.35179,-0.34278,-0.3333,-0.32335,-0.31289,-0.3019,-0.29035,-0.27825,-0.26562,-0.2525,-0.23888,-0.22471,-0.20984,-0.19411,-0.17732,-0.15935,-0.14021,-0.11999,-0.0989,-0.07713,-0.05485,-0.03206,-0.0087,0.01532,0.04002,0.06518,0.09037,0.11495,0.13827,0.15983,0.17943,0.19726,0.2137,0.22918,0.24384,0.25746,0.26943,0.27902,0.28576,0.28972,0.29172,0.29312,0.29543,0.29977,0.30638,0.3146,0.32309,0.33058,0.33649,0.34139,0.34695,0.35531,0.36804,0.38533,0.40549,0.42538,0.44141,0.45098,0.4535,0.45072,0.44592,0.44239,0.44165,0.44239,0.4406,0.431,0.40933,0.37451,0.32958,0.28104,0.23644,0.2014,0.17714,0.15987,0.14237,0.11734,0.08113,0.03613,-0.00938,-0.04422,-0.05892,-0.05013,-0.02275,0.01143,0.03821,0.04693,0.03522,0.01039,-0.01357,-0.02225,-0.0079,0.02598,0.06456,0.08672,0.07304,0.01353,-0.08828,-0.21662,-0.34949,-0.46667,-0.55642,-0.61843,-0.66195,-0.70022,-0.74328,-0.79196,-0.83588,-0.8571,-0.83847,-0.77352,-0.67258,-0.56145,-0.47207,-0.42883,-0.43681,-0.47796,-0.51749,-0.51849,-0.45851,-0.34065,-0.19401,-0.06268,0.01242,0.01096,-0.05763,-0.15777,-0.24277,-0.2751,-0.2431,-0.16655,-0.08844,-0.05614,-0.10006,-0.21909,-0.37951,-0.52816,-0.61438,-0.61129,-0.52719,-0.40179,-0.2889,-0.23282,-0.24883,-0.31636,-0.38779,-0.40947,-0.34546,-0.19403,0.01067,0.21238,0.35607,0.4108,0.38207,0.30851,0.24431,0.23515,0.29819,0.41466,0.5383,0.61566,0.60959,0.51539,0.36306,0.20455,0.092,0.05623,0.0949,0.17509,0.24886,0.27482,0.23618,0.14767,0.04861,-0.01452,-0.00824,0.07384,0.20875,0.35437,0.46737,0.52087,0.51449,0.47256,0.43209,0.42578,0.46773,0.54778,0.63654,0.69844,0.70702,0.65564,0.55951,0.44845,0.35403,0.29672,0.27865,0.28464,0.29059,0.27541,0.2312,0.16727,0.10677,0.07719,0.09892,0.17646,0.29564,0.42792,0.54006,0.60525,0.61154,0.56442,0.48292,0.39113,0.30907,0.24643,0.20158,0.16525,0.12687,0.08011,0.0255,-0.03076,-0.08058,-0.11831,-0.14354,-0.16117,-0.17905,-0.20436,-0.24052,-0.28583,-0.33436,-0.37852,-0.4121,-0.43245,-0.44105,-0.44235,-0.44161,-0.44262,-0.44639,-0.45115,-0.45354,-0.45035,-0.44007,-0.42351,-0.40343,-0.38343,-0.36655,-0.35429,-0.34631,-0.3409,-0.33596,-0.3299,-0.32227,-0.31374,-0.30563,-0.29923,-0.29512,-0.29296,-0.29157,-0.28943,-0.28522,-0.27819,-0.26833,-0.25616,-0.24241,-0.22766,-0.21211,-0.19555,-0.17756,-0.15776,-0.13601,-0.11254,-0.08787,-0.06265,-0.03752,-0.01289,0.01107,0.03436,0.0571,0.07934,0.10104,0.12206,0.14217,0.1612,0.17905,0.19572,0.21137,0.22616,0.24027,0.25383,0.26691,0.27948,0.29153,0.30302,0.31396,0.32437,0.33427,0.34371,0.35266,0.36109],&quot;prediction&quot;:[0.40085,0.41591,0.43105,0.44621,0.46137,0.47649,0.49151,0.50649,0.52144,0.53616,0.5506,0.56471,0.57844,0.59176,0.60461,0.61695,0.62872,0.63989,0.6504,0.66023,0.66932,0.67764,0.68517,0.69186,0.69771,0.70268,0.70677,0.70996,0.71226,0.71368,0.71421,0.71388,0.71271,0.71072,0.70795,0.70443,0.70019,0.69528,0.68974,0.68362,0.67696,0.66981,0.66221,0.65421,0.64586,0.63719,0.62825,0.61907,0.6097,0.60014,0.59043,0.58059,0.57062,0.56053,0.55031,0.53995,0.52944,0.51872,0.50777,0.49656,0.485,0.473,0.46047,0.44727,0.43326,0.41826,0.40206,0.38443,0.36509,0.34374,0.32006,0.29374,0.26451,0.23244,0.19753,0.1604,0.12218,0.0847,0.05049,0.02218,0.00167,-0.01039,-0.01502,-0.01434,-0.00982,-0.0034,0.00336,0.0094,0.01431,0.01849,0.02313,0.03019,0.04178,0.05878,0.07811,0.08905,0.0729,0.01153,-0.09733,-0.23479,-0.37312,-0.4915,-0.5827,-0.65108,-0.70379,-0.74742,-0.78905,-0.83075,-0.86367,-0.86828,-0.83038,-0.7555,-0.66216,-0.56988,-0.49586,-0.45469,-0.45301,-0.4832,-0.51459,-0.51129,-0.45595,-0.35152,-0.21953,-0.10635,-0.05659,-0.07163,-0.11983,-0.1734,-0.21946,-0.24936,-0.25689,-0.23911,-0.19811,-0.15487,-0.16323,-0.26121,-0.4,-0.50588,-0.55142,-0.53992,-0.48757,-0.41933,-0.36121,-0.32866,-0.32333,-0.33519,-0.34711,-0.34129,-0.30102,-0.21336,-0.06792,0.12893,0.3128,0.39347,0.3749,0.33063,0.30879,0.31998,0.3624,0.43326,0.51815,0.57996,0.57168,0.48875,0.38049,0.29169,0.23324,0.1983,0.17791,0.1651,0.15519,0.14486,0.13214,0.11754,0.10579,0.10516,0.12209,0.15643,0.20264,0.25367,0.30409,0.35261,0.39884,0.44276,0.48401,0.52149,0.55312,0.57614,0.5883,0.58807,0.5767,0.55015,0.51255,0.46843,0.4211,0.37344,0.32763,0.28481,0.24648,0.21266,0.18405,0.16295,0.15214,0.15782,0.18899,0.24979,0.34161,0.45649,0.56566,0.62189,0.60201,0.5336,0.45582,0.38733,0.33013,0.28036,0.2338,0.18751,0.14023,0.09194,0.04339,-0.00472,-0.0517,-0.09691,-0.14009,-0.18091,-0.21911,-0.25447,-0.28684,-0.31613,-0.34217,-0.36517,-0.38504,-0.40219,-0.41686,-0.42931,-0.43985,-0.44867,-0.45596,-0.46191,-0.46667,-0.47038,-0.47315,-0.47503,-0.47626,-0.47693,-0.47708,-0.47682,-0.47626,-0.47549,-0.47462,-0.47372,-0.47291,-0.47248,-0.47229,-0.47231,-0.47249,-0.47279,-0.4733,-0.47408,-0.47511,-0.47642,-0.47799,-0.47982,-0.4819,-0.48424,-0.48678,-0.48946,-0.49238,-0.49555,-0.49893,-0.50251,-0.50628,-0.51028,-0.51452,-0.51898,-0.52366,-0.52856,-0.53368,-0.53901,-0.54454,-0.55028,-0.55621,-0.56234,-0.56862,-0.57509,-0.58174,-0.58857,-0.59557,-0.60273,-0.61006,-0.61755,-0.62519,-0.63298,-0.64092,-0.649,-0.65722,-0.66558,-0.67408,-0.6827]}]};
+    const labels={self_context_hard:&#x27;Hard gate&#x27;,self_context_iterated:&#x27;Iterated&#x27;,self_context_uncertainty:&#x27;Uncertainty&#x27;,self_context_secant:&#x27;Output secant&#x27;,self_context_chart:&#x27;Chart curvature&#x27;,ordinary_mlp:&#x27;MLP&#x27;,self_context:&#x27;Self-context&#x27;};
+    const series=[&#x27;self_context_hard&#x27;,&#x27;self_context_iterated&#x27;,&#x27;self_context_uncertainty&#x27;,&#x27;self_context_secant&#x27;,&#x27;self_context_chart&#x27;];
+    const metrics=[[&#x27;validation_score_delta&#x27;,&#x27;Validation&#x27;],[&#x27;score_delta&#x27;,&#x27;Held-out&#x27;],[&#x27;tail_score_delta&#x27;,&#x27;Tail&#x27;],[&#x27;learning_auc_delta&#x27;,&#x27;Learning AUC&#x27;]];
+    const colorTokens=[&#x27;--viz-series-1&#x27;,&#x27;--viz-series-2&#x27;,&#x27;--viz-series-3&#x27;,&#x27;--viz-series-4&#x27;,&#x27;--viz-series-5&#x27;,&#x27;--viz-series-6&#x27;];
+    const style=getComputedStyle(root); const color=Object.fromEntries([...series,&#x27;ordinary_mlp&#x27;,&#x27;self_context&#x27;].map((d,i)=&gt;[d,style.getPropertyValue(colorTokens[i%6]).trim()]));
+    const visible=new Set(series); const controls=d3.select(root).select(&#x27;#scs-series-controls&#x27;);
+    controls.selectAll(&#x27;button&#x27;).data(series).join(&#x27;button&#x27;).attr(&#x27;type&#x27;,&#x27;button&#x27;).attr(&#x27;aria-pressed&#x27;,&#x27;true&#x27;).html(d=&gt;`&lt;span class=&quot;swatch&quot; style=&quot;--swatch:${color[d]}&quot;&gt;&lt;/span&gt;${labels[d]}`).on(&#x27;click&#x27;,function(e,d){visible.has(d)?visible.delete(d):visible.add(d);d3.select(this).attr(&#x27;aria-pressed&#x27;,visible.has(d));drawOverall()});
+    function dims(host,minHeight){const w=Math.max(300,host.getBoundingClientRect().width),mobile=w&lt;430;return{w,h:Math.max(minHeight,mobile?300:minHeight),mobile}}
+    function tooltip(host){return d3.select(host).select(&#x27;.tooltip&#x27;)}
+    function showTip(t,e,html){const r=root.getBoundingClientRect();t.style(&#x27;display&#x27;,&#x27;block&#x27;).style(&#x27;left&#x27;,(e.clientX-r.left+10)+&#x27;px&#x27;).style(&#x27;top&#x27;,(e.clientY-r.top+10)+&#x27;px&#x27;).html(html)}
+    function drawOverall(){const host=root.querySelector(&#x27;#scs-overall-host&#x27;),{w,h,mobile}=dims(host,290),svg=d3.select(host).select(&#x27;svg&#x27;).attr(&#x27;viewBox&#x27;,`0 0 ${w} ${h}`).attr(&#x27;height&#x27;,h);svg.selectAll(&#x27;*:not(title)&#x27;).remove();const m={t:12,r:16,b:48,l:64},iw=w-m.l-m.r,ih=h-m.t-m.b,rows=data.overall.filter(d=&gt;visible.has(d.variant)),points=rows.flatMap(r=&gt;metrics.map((m,i)=&gt;({variant:r.variant,key:m[0],metric:m[1],index:i,value:r[m[0]]}))),extent=d3.max(points,d=&gt;Math.abs(d.value))||.01,x=d3.scalePoint(metrics.map(d=&gt;d[1]),[m.l,m.l+iw]).padding(.5),y=d3.scaleLinear([-extent*1.18,extent*1.18],[m.t+ih,m.t]);svg.append(&#x27;rect&#x27;).attr(&#x27;class&#x27;,&#x27;frame&#x27;).attr(&#x27;data-chart-frame&#x27;,&#x27;&#x27;).attr(&#x27;x&#x27;,m.l).attr(&#x27;y&#x27;,m.t).attr(&#x27;width&#x27;,iw).attr(&#x27;height&#x27;,ih);svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;grid&#x27;).attr(&#x27;transform&#x27;,`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickSize(-iw).tickFormat(d3.format(&#x27;+.3f&#x27;))).call(g=&gt;g.select(&#x27;.domain&#x27;).remove());svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(0,${m.t+ih})`).call(d3.axisBottom(x));svg.append(&#x27;text&#x27;).attr(&#x27;class&#x27;,&#x27;axis-title&#x27;).attr(&#x27;data-axis&#x27;,&#x27;x&#x27;).attr(&#x27;x&#x27;,m.l+iw/2).attr(&#x27;y&#x27;,h-8).attr(&#x27;text-anchor&#x27;,&#x27;middle&#x27;).text(&#x27;Mean paired-seed delta vs self-context&#x27;);svg.append(&#x27;text&#x27;).attr(&#x27;class&#x27;,&#x27;axis-title&#x27;).attr(&#x27;data-axis&#x27;,&#x27;y&#x27;).attr(&#x27;transform&#x27;,`translate(15,${m.t+ih/2}) rotate(-90)`).attr(&#x27;text-anchor&#x27;,&#x27;middle&#x27;).text(&#x27;Score delta&#x27;);const line=d3.line().x(d=&gt;x(d.metric)).y(d=&gt;y(d.value));svg.append(&#x27;g&#x27;).selectAll(&#x27;path&#x27;).data(rows).join(&#x27;path&#x27;).attr(&#x27;fill&#x27;,&#x27;none&#x27;).attr(&#x27;stroke&#x27;,d=&gt;color[d.variant]).attr(&#x27;stroke-width&#x27;,2).attr(&#x27;d&#x27;,r=&gt;line(points.filter(p=&gt;p.variant===r.variant)));const t=tooltip(host);svg.append(&#x27;g&#x27;).selectAll(&#x27;circle&#x27;).data(points).join(&#x27;circle&#x27;).attr(&#x27;cx&#x27;,d=&gt;x(d.metric)).attr(&#x27;cy&#x27;,d=&gt;y(d.value)).attr(&#x27;r&#x27;,4).attr(&#x27;fill&#x27;,d=&gt;color[d.variant]).attr(&#x27;data-chart-hit&#x27;,&#x27;&#x27;).on(&#x27;pointermove&#x27;,(e,d)=&gt;showTip(t,e,`${labels[d.variant]}&lt;br&gt;${d.metric}: ${d3.format(&#x27;+.4f&#x27;)(d.value)}`)).on(&#x27;pointerleave&#x27;,()=&gt;t.style(&#x27;display&#x27;,&#x27;none&#x27;))}
+    function drawTail(){const host=root.querySelector(&#x27;#scs-tail-host&#x27;),{w,mobile}=dims(host,560),rows=[...data.byTask].sort((a,b)=&gt;b.tail_score_delta-a.tail_score_delta),rowH=mobile?25:22,h=rows.length*rowH+70,svg=d3.select(host).select(&#x27;svg&#x27;).attr(&#x27;viewBox&#x27;,`0 0 ${w} ${h}`).attr(&#x27;height&#x27;,h);svg.selectAll(&#x27;*:not(title)&#x27;).remove();const m={t:12,r:56,b:38,l:mobile?126:180},iw=w-m.l-m.r,extent=d3.max(rows,d=&gt;Math.abs(d.tail_score_delta)),x=d3.scaleLinear([-extent*1.1,extent*1.1],[m.l,m.l+iw]),y=d3.scaleBand(rows.map(d=&gt;d.task),[m.t,m.t+rows.length*rowH]).padding(.22);svg.append(&#x27;rect&#x27;).attr(&#x27;class&#x27;,&#x27;frame&#x27;).attr(&#x27;data-chart-frame&#x27;,&#x27;&#x27;).attr(&#x27;x&#x27;,m.l).attr(&#x27;y&#x27;,m.t).attr(&#x27;width&#x27;,iw).attr(&#x27;height&#x27;,rows.length*rowH);svg.append(&#x27;line&#x27;).attr(&#x27;x1&#x27;,x(0)).attr(&#x27;x2&#x27;,x(0)).attr(&#x27;y1&#x27;,m.t).attr(&#x27;y2&#x27;,m.t+rows.length*rowH).attr(&#x27;stroke&#x27;,&#x27;var(--border)&#x27;);svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(0,${m.t+rows.length*rowH})`).call(d3.axisBottom(x).ticks(mobile?4:6).tickFormat(d3.format(&#x27;+.2f&#x27;)));svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(${m.l},0)`).call(d3.axisLeft(y).tickSize(0)).call(g=&gt;g.select(&#x27;.domain&#x27;).remove());svg.append(&#x27;text&#x27;).attr(&#x27;class&#x27;,&#x27;axis-title&#x27;).attr(&#x27;data-axis&#x27;,&#x27;x&#x27;).attr(&#x27;x&#x27;,m.l+iw/2).attr(&#x27;y&#x27;,h-5).attr(&#x27;text-anchor&#x27;,&#x27;middle&#x27;).text(&#x27;Tail-score delta: chart curvature − self-context&#x27;);const t=tooltip(host);svg.append(&#x27;g&#x27;).selectAll(&#x27;rect&#x27;).data(rows).join(&#x27;rect&#x27;).attr(&#x27;x&#x27;,d=&gt;Math.min(x(0),x(d.tail_score_delta))).attr(&#x27;y&#x27;,d=&gt;y(d.task)).attr(&#x27;width&#x27;,d=&gt;Math.abs(x(d.tail_score_delta)-x(0))).attr(&#x27;height&#x27;,y.bandwidth()).attr(&#x27;fill&#x27;,d=&gt;d.tail_score_delta&gt;=0?&#x27;var(--viz-series-5)&#x27;:&#x27;var(--destructive)&#x27;).attr(&#x27;data-chart-hit&#x27;,&#x27;&#x27;).on(&#x27;pointermove&#x27;,(e,d)=&gt;showTip(t,e,`${d.task}&lt;br&gt;${d3.format(&#x27;+.4f&#x27;)(d.tail_score_delta)}`)).on(&#x27;pointerleave&#x27;,()=&gt;t.style(&#x27;display&#x27;,&#x27;none&#x27;));svg.append(&#x27;g&#x27;).selectAll(&#x27;text.value&#x27;).data(rows.filter(d=&gt;Math.abs(d.tail_score_delta)&gt;.025&amp;&amp;(!mobile||d.tail_score_delta&gt;=0))).join(&#x27;text&#x27;).attr(&#x27;x&#x27;,d=&gt;x(d.tail_score_delta)+(d.tail_score_delta&gt;=0?5:-5)).attr(&#x27;y&#x27;,d=&gt;y(d.task)+y.bandwidth()/2+4).attr(&#x27;text-anchor&#x27;,d=&gt;d.tail_score_delta&gt;=0?&#x27;start&#x27;:&#x27;end&#x27;).text(d=&gt;d3.format(&#x27;+.3f&#x27;)(d.tail_score_delta))}
+    function drawFields(){const grid=d3.select(root).select(&#x27;#scs-spiral-grid&#x27;),names=[&#x27;truth&#x27;,&#x27;ordinary_mlp&#x27;,&#x27;self_context&#x27;,&#x27;self_context_hard&#x27;,&#x27;self_context_chart&#x27;],titles=[&#x27;Truth&#x27;,&#x27;MLP&#x27;,&#x27;Self-context&#x27;,&#x27;Hard gate&#x27;,&#x27;Chart curvature&#x27;];const cells=grid.selectAll(&#x27;.field-item&#x27;).data(names).join(&#x27;div&#x27;).attr(&#x27;class&#x27;,&#x27;field-item&#x27;);cells.html((d,i)=&gt;`&lt;h3&gt;${titles[i]}&lt;/h3&gt;&lt;svg role=&quot;img&quot; aria-label=&quot;${titles[i]} spiral region&quot;&gt;&lt;title&gt;${titles[i]} spiral region&lt;/title&gt;&lt;/svg&gt;`);cells.each(function(name){const p=name===&#x27;truth&#x27;?data.spiral[0]:data.spiral.find(d=&gt;d.variant===name),values=name===&#x27;truth&#x27;?p.truth:p.prediction,n=p.size,svg=d3.select(this).select(&#x27;svg&#x27;),w=Math.max(180,this.getBoundingClientRect().width),h=w,m=10,cell=(w-2*m)/n;svg.attr(&#x27;viewBox&#x27;,`0 0 ${w} ${h}`).selectAll(&#x27;rect&#x27;).data(values).join(&#x27;rect&#x27;).attr(&#x27;x&#x27;,(d,i)=&gt;m+(i%n)*cell).attr(&#x27;y&#x27;,(d,i)=&gt;h-m-(Math.floor(i/n)+1)*cell).attr(&#x27;width&#x27;,cell+.3).attr(&#x27;height&#x27;,cell+.3).attr(&#x27;fill&#x27;,d=&gt;d?&#x27;var(--viz-series-2)&#x27;:&#x27;var(--viz-series-1)&#x27;)})}
+    function drawCurve(){const host=root.querySelector(&#x27;#scs-curve-host&#x27;),{w,h,mobile}=dims(host,330),svg=d3.select(host).select(&#x27;svg&#x27;).attr(&#x27;viewBox&#x27;,`0 0 ${w} ${h}`).attr(&#x27;height&#x27;,h);svg.selectAll(&#x27;*:not(title)&#x27;).remove();const m={t:12,r:18,b:44,l:64},iw=w-m.l-m.r,ih=h-m.t-m.b,all=data.multiscale,x=d3.scaleLinear(d3.extent(all[0].x),[m.l,m.l+iw]),values=all.flatMap(d=&gt;d.prediction).concat(all[0].truth),y=d3.scaleLinear(d3.extent(values),[m.t+ih,m.t]).nice();svg.append(&#x27;rect&#x27;).attr(&#x27;x&#x27;,x(-3)).attr(&#x27;y&#x27;,m.t).attr(&#x27;width&#x27;,x(3)-x(-3)).attr(&#x27;height&#x27;,ih).attr(&#x27;fill&#x27;,&#x27;var(--muted)&#x27;).attr(&#x27;opacity&#x27;,.45);svg.append(&#x27;rect&#x27;).attr(&#x27;class&#x27;,&#x27;frame&#x27;).attr(&#x27;data-chart-frame&#x27;,&#x27;&#x27;).attr(&#x27;x&#x27;,m.l).attr(&#x27;y&#x27;,m.t).attr(&#x27;width&#x27;,iw).attr(&#x27;height&#x27;,ih);svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(0,${m.t+ih})`).call(d3.axisBottom(x).ticks(mobile?4:7));svg.append(&#x27;g&#x27;).attr(&#x27;class&#x27;,&#x27;axis&#x27;).attr(&#x27;transform&#x27;,`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));svg.append(&#x27;text&#x27;).attr(&#x27;class&#x27;,&#x27;axis-title&#x27;).attr(&#x27;data-axis&#x27;,&#x27;x&#x27;).attr(&#x27;x&#x27;,m.l+iw/2).attr(&#x27;y&#x27;,h-8).attr(&#x27;text-anchor&#x27;,&#x27;middle&#x27;).text(&#x27;x (observed interval shaded)&#x27;);svg.append(&#x27;text&#x27;).attr(&#x27;class&#x27;,&#x27;axis-title&#x27;).attr(&#x27;data-axis&#x27;,&#x27;y&#x27;).attr(&#x27;transform&#x27;,`translate(16,${m.t+ih/2}) rotate(-90)`).attr(&#x27;text-anchor&#x27;,&#x27;middle&#x27;).text(&#x27;target / prediction&#x27;);const line=d3.line().x((d,i)=&gt;x(all[0].x[i])).y(d=&gt;y(d));svg.append(&#x27;path&#x27;).datum(all[0].truth).attr(&#x27;fill&#x27;,&#x27;none&#x27;).attr(&#x27;stroke&#x27;,&#x27;var(--foreground)&#x27;).attr(&#x27;stroke-width&#x27;,2.5).attr(&#x27;d&#x27;,line);svg.append(&#x27;g&#x27;).selectAll(&#x27;path&#x27;).data(all).join(&#x27;path&#x27;).attr(&#x27;fill&#x27;,&#x27;none&#x27;).attr(&#x27;stroke&#x27;,d=&gt;color[d.variant]).attr(&#x27;stroke-width&#x27;,1.8).attr(&#x27;d&#x27;,d=&gt;line(d.prediction));const legend=d3.select(root).select(&#x27;#scs-curve-host&#x27;).selectAll(&#x27;.curve-legend&#x27;).data([0]).join(&#x27;div&#x27;).attr(&#x27;class&#x27;,&#x27;series-controls curve-legend&#x27;);legend.selectAll(&#x27;span.legend-item&#x27;).data([{variant:&#x27;truth&#x27;},...all]).join(&#x27;span&#x27;).attr(&#x27;class&#x27;,&#x27;legend-item&#x27;).html(d=&gt;`&lt;span class=&quot;swatch&quot; style=&quot;--swatch:${d.variant===&#x27;truth&#x27;?&#x27;var(--foreground)&#x27;:color[d.variant]}&quot;&gt;&lt;/span&gt;${d.variant===&#x27;truth&#x27;?&#x27;Truth&#x27;:labels[d.variant]}`)}
+    function draw(){drawOverall();drawTail();drawFields();drawCurve()}
+    let resizeTimer;new ResizeObserver(()=&gt;{clearTimeout(resizeTimer);resizeTimer=setTimeout(draw,80)}).observe(root);draw();
+  })();
+  &lt;/script&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+
+  const getTrigger = (target) =&gt;
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest(&quot;[data-tooltip]&quot;)
+      : null;
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handleLeave = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    document.removeEventListener(&quot;pointerover&quot;, handlePointerOpen);
+    document.removeEventListener(&quot;pointerout&quot;, handleLeave);
+    document.removeEventListener(&quot;focusin&quot;, handleFocusIn);
+    document.removeEventListener(&quot;focusout&quot;, handleLeave);
+    document.removeEventListener(&quot;keydown&quot;, handleKeyDown);
+    document.removeEventListener(&quot;contextmenu&quot;, handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener(&quot;pointerover&quot;, handlePointerOpen);
+  document.addEventListener(&quot;pointerout&quot;, handleLeave);
+  document.addEventListener(&quot;focusin&quot;, handleFocusIn);
+  document.addEventListener(&quot;focusout&quot;, handleLeave);
+  document.addEventListener(&quot;keydown&quot;, handleKeyDown);
+  document.addEventListener(&quot;contextmenu&quot;, handleContextMenu);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</body>
+</html>
