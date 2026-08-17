@@ -73,6 +73,22 @@ The output suffix chooses and preserves the desired raster format:
 
 Use `--method inherited` for the inherited palette control.
 
+## Performance
+
+Palette construction uses exact weighted one-dimensional split searches as
+initializers, then refines only the distinct candidates. Pixel assignment uses
+a matrix form of the same cylindrical OKLCH metric, and connected-component
+cleanup is a single equal-neighbor graph pass rather than one full image scan
+per palette color. The optimization objective is unchanged, and the 4- and
+128-color portrait reference outputs remained byte-identical in regression
+checks.
+
+As a representative stress check, a 1714×823 photograph at 128 colors completes
+in about 3.3 seconds on the project M4 Mini, including saliency analysis,
+palette construction, full-resolution assignment, cleanup, and diagnostics.
+The 400×400 development portrait completes in about 1.1 seconds at 128 colors.
+Exact time varies with image structure and machine.
+
 ## Four-color allocation check
 
 On the 400×400 portrait used during development, ordinary population weighting

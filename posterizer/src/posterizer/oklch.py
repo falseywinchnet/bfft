@@ -88,19 +88,36 @@ def oklch_distance2(
     nodes = np.asarray(centers, dtype=np.float64).reshape(-1, 4)
     sample_c = np.hypot(values[:, 1], values[:, 2])
     center_c = np.hypot(nodes[:, 1], nodes[:, 2])
-    sample_h = np.arctan2(values[:, 2], values[:, 1])
-    center_h = np.arctan2(nodes[:, 2], nodes[:, 1])
-    hue_delta = sample_h[:, None] - center_h[None, :]
-    return (
-        (lightness_weight * (values[:, None, 0] - nodes[None, :, 0])) ** 2
-        + (chroma_weight * (sample_c[:, None] - center_c[None, :])) ** 2
-        + hue_weight**2
-        * 4.0
-        * sample_c[:, None]
-        * center_c[None, :]
-        * np.sin(0.5 * hue_delta) ** 2
-        + (alpha_weight * (values[:, None, 3] - nodes[None, :, 3])) ** 2
+    lightness2 = lightness_weight**2
+    chroma2 = chroma_weight**2
+    hue2 = hue_weight**2
+    alpha2 = alpha_weight**2
+    sample_norm = (
+        lightness2 * values[:, 0] ** 2
+        + chroma2 * sample_c**2
+        + alpha2 * values[:, 3] ** 2
     )
+    center_norm = (
+        lightness2 * nodes[:, 0] ** 2
+        + chroma2 * center_c**2
+        + alpha2 * nodes[:, 3] ** 2
+    )
+    sample_features = np.stack((
+        lightness2 * values[:, 0],
+        hue2 * values[:, 1],
+        hue2 * values[:, 2],
+        alpha2 * values[:, 3],
+        -(hue2 - chroma2) * sample_c,
+    ), axis=1)
+    center_features = np.stack((
+        nodes[:, 0], nodes[:, 1], nodes[:, 2], nodes[:, 3], center_c
+    ), axis=1)
+    distance = (
+        sample_norm[:, None]
+        + center_norm[None, :]
+        - 2.0 * (sample_features @ center_features.T)
+    )
+    return np.maximum(distance, 0.0)
 
 
 def oklch_pair_distance2(
@@ -119,18 +136,16 @@ def oklch_pair_distance2(
         raise ValueError("paired color arrays must have equal length")
     left_c = np.hypot(left[:, 1], left[:, 2])
     right_c = np.hypot(right[:, 1], right[:, 2])
-    hue_delta = (
-        np.arctan2(left[:, 2], left[:, 1])
-        - np.arctan2(right[:, 2], right[:, 1])
+    chroma_term = (
+        chroma_weight**2 * (left_c**2 + right_c**2)
+        + 2.0 * (hue_weight**2 - chroma_weight**2) * left_c * right_c
+        - 2.0
+        * hue_weight**2
+        * (left[:, 1] * right[:, 1] + left[:, 2] * right[:, 2])
     )
     return (
         (lightness_weight * (left[:, 0] - right[:, 0])) ** 2
-        + (chroma_weight * (left_c - right_c)) ** 2
-        + hue_weight**2
-        * 4.0
-        * left_c
-        * right_c
-        * np.sin(0.5 * hue_delta) ** 2
+        + np.maximum(chroma_term, 0.0)
         + (alpha_weight * (left[:, 3] - right[:, 3])) ** 2
     )
 
@@ -178,45 +193,69 @@ def _two_means_proposal(
     projections.extend(centered[:, axis] for axis in range(centered.shape[1]))
     best_gain = 0.0
     best_side: np.ndarray | None = None
+    seen_splits: set[bytes] = set()
     for projection in projections:
         order = np.argsort(projection, kind="stable")
-        cumulative = np.cumsum(mass[order])
-        for fraction in (0.35, 0.5, 0.65):
-            split = int(np.searchsorted(cumulative, fraction * safe_mass)) + 1
-            split = int(np.clip(split, minimum_leaf, len(values) - minimum_leaf))
-            side = np.zeros(len(values), dtype=bool)
-            side[order[split:]] = True
-            centers = np.stack((
-                np.average(coordinates[~side], axis=0, weights=mass[~side]),
-                np.average(coordinates[side], axis=0, weights=mass[side]),
+        ordered_mass = mass[order]
+        ordered = coordinates[order]
+        prefix_mass = np.cumsum(ordered_mass)
+        prefix_sum = np.cumsum(ordered * ordered_mass[:, None], axis=0)
+        prefix_norm = np.cumsum(
+            ordered_mass * np.einsum("ij,ij->i", ordered, ordered)
+        )
+        cuts = np.arange(minimum_leaf - 1, len(values) - minimum_leaf)
+        left_mass = prefix_mass[cuts]
+        right_mass = safe_mass - left_mass
+        left_sum = prefix_sum[cuts]
+        right_sum = prefix_sum[-1] - left_sum
+        left_sse = prefix_norm[cuts] - np.einsum(
+            "ij,ij->i", left_sum, left_sum
+        ) / left_mass
+        right_sse = (prefix_norm[-1] - prefix_norm[cuts]) - np.einsum(
+            "ij,ij->i", right_sum, right_sum
+        ) / right_mass
+        split = int(cuts[int(np.argmin(left_sse + right_sse))]) + 1
+        side = np.zeros(len(values), dtype=bool)
+        side[order[split:]] = True
+        signature = np.packbits(side).tobytes()
+        if signature in seen_splits:
+            continue
+        seen_splits.add(signature)
+
+        centers = np.stack((
+            np.sum(coordinates[~side] * mass[~side, None], axis=0)
+            / np.sum(mass[~side]),
+            np.sum(coordinates[side] * mass[side, None], axis=0)
+            / np.sum(mass[side]),
+        ))
+        for _ in range(12):
+            # Comparing squared distances only needs the separating hyperplane;
+            # avoid constructing an N x 2 x D temporary on every Lloyd step.
+            threshold = 0.5 * (
+                np.dot(centers[1], centers[1])
+                - np.dot(centers[0], centers[0])
+            )
+            updated = coordinates @ (centers[1] - centers[0]) > threshold
+            left_count = int(np.count_nonzero(~updated))
+            right_count = len(values) - left_count
+            if left_count < minimum_leaf or right_count < minimum_leaf:
+                break
+            if np.array_equal(updated, side):
+                break
+            side = updated
+            next_centers = np.stack((
+                np.sum(coordinates[~side] * mass[~side, None], axis=0)
+                / np.sum(mass[~side]),
+                np.sum(coordinates[side] * mass[side, None], axis=0)
+                / np.sum(mass[side]),
             ))
-            for _ in range(12):
-                costs = np.sum(
-                    (coordinates[:, None, :] - centers[None, :, :]) ** 2,
-                    axis=2,
-                )
-                updated = costs[:, 1] < costs[:, 0]
-                if np.sum(updated) < minimum_leaf or np.sum(~updated) < minimum_leaf:
-                    break
-                next_centers = np.stack((
-                    np.average(
-                        coordinates[~updated], axis=0, weights=mass[~updated]
-                    ),
-                    np.average(
-                        coordinates[updated], axis=0, weights=mass[updated]
-                    ),
-                ))
-                side = updated
-                if np.max(np.abs(next_centers - centers)) < 1e-10:
-                    centers = next_centers
-                    break
-                centers = next_centers
-            residual = coordinates - centers[side.astype(np.int8)]
-            new_sse = float(np.sum(mass[:, None] * residual * residual))
-            gain = old_sse - new_sse
-            if gain > best_gain + 1e-14:
-                best_gain = gain
-                best_side = side.copy()
+            centers = next_centers
+        residual = coordinates - centers[side.astype(np.int8)]
+        new_sse = float(np.sum(mass * np.einsum("ij,ij->i", residual, residual)))
+        gain = old_sse - new_sse
+        if gain > best_gain + 1e-14:
+            best_gain = gain
+            best_side = side.copy()
     if best_side is None:
         return None
     return best_gain, best_side

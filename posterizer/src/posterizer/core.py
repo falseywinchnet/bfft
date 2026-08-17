@@ -10,6 +10,8 @@ from time import perf_counter
 import numpy as np
 from PIL import Image
 from scipy import ndimage
+from scipy import sparse
+from scipy.sparse import csgraph
 
 from tlvector.core import (
     VectorizerConfig,
@@ -90,24 +92,41 @@ def _rgba_to_lab_alpha(rgba: np.ndarray) -> np.ndarray:
 def _component_map(
     labels: np.ndarray,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    result = np.empty(labels.shape, dtype=np.int32)
-    component_labels: list[int] = []
-    component_sizes: list[int] = []
-    offset = 0
-    structure = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=np.uint8)
-    for label in np.unique(labels):
-        local, count = ndimage.label(labels == label, structure=structure)
-        mask = local > 0
-        result[mask] = local[mask] + offset - 1
-        sizes = np.bincount(local.ravel(), minlength=count + 1)[1:]
-        component_labels.extend([int(label)] * count)
-        component_sizes.extend(sizes.astype(int).tolist())
-        offset += count
-    return (
-        result,
-        np.asarray(component_labels, dtype=np.int32),
-        np.asarray(component_sizes, dtype=np.int64),
+    height, width = labels.shape
+    pixel_count = height * width
+    indices = np.arange(pixel_count, dtype=np.int32).reshape(height, width)
+    horizontal = labels[:, :-1] == labels[:, 1:]
+    vertical = labels[:-1, :] == labels[1:, :]
+    first = np.concatenate((
+        indices[:, :-1][horizontal], indices[:-1, :][vertical]
+    ))
+    second = np.concatenate((
+        indices[:, 1:][horizontal], indices[1:, :][vertical]
+    ))
+    graph = sparse.coo_matrix(
+        (np.ones(len(first), dtype=np.uint8), (first, second)),
+        shape=(pixel_count, pixel_count),
+    ).tocsr()
+    count, flat_components = csgraph.connected_components(
+        graph, directed=False, return_labels=True
     )
+    area = np.bincount(flat_components, minlength=count).astype(np.int64)
+    flat_labels = labels.ravel()
+    component_label = np.rint(
+        np.bincount(flat_components, weights=flat_labels, minlength=count) / area
+    ).astype(np.int32)
+    # Preserve the former deterministic ID order: palette label first, then
+    # raster-order discovery within that label. Merge conflict tie-breaking
+    # intentionally depends on these IDs.
+    first_pixel = np.full(count, pixel_count, dtype=np.int64)
+    np.minimum.at(first_pixel, flat_components, np.arange(pixel_count))
+    order = np.lexsort((first_pixel, component_label))
+    remap = np.empty(count, dtype=np.int32)
+    remap[order] = np.arange(count, dtype=np.int32)
+    flat_components = remap[flat_components]
+    area = area[order]
+    component_label = component_label[order]
+    return flat_components.reshape(labels.shape), component_label, area
 
 
 def _adjacency(
@@ -332,20 +351,18 @@ def posterize_array(
     labels, cleaned = _cleanup_components(labels, palette_lab_alpha, config)
     cleaned_at = perf_counter()
     posterized = palette_rgba[labels]
-    completed = perf_counter()
 
     rgba_delta = source.astype(np.float64) - posterized.astype(np.float64)
     mse = float(np.mean(rgba_delta * rgba_delta))
-    perceptual = oklch_distance2(
+    assigned = labels.ravel()
+    assigned_error = oklch_pair_distance2(
         lab_alpha.reshape(-1, 4),
-        palette_lab_alpha,
+        palette_lab_alpha[assigned],
         lightness_weight=config.lightness_weight,
         chroma_weight=config.chroma_weight,
         hue_weight=config.hue_weight,
         alpha_weight=config.alpha_weight,
     )
-    assigned = labels.ravel()
-    assigned_error = perceptual[np.arange(len(assigned)), assigned]
     perceptual_rmse = float(np.sqrt(np.mean(assigned_error)))
     flat_importance = importance_map.ravel()
     weighted_perceptual_rmse = float(np.sqrt(
@@ -355,6 +372,7 @@ def posterize_array(
         f"#{color[0]:02x}{color[1]:02x}{color[2]:02x}{color[3]:02x}"
         for color in palette_rgba
     ]
+    completed = perf_counter()
     diagnostics: dict[str, float | int | str | list] = {
         "method": f"posterizer_{method}",
         "width": int(source.shape[1]),

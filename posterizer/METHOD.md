@@ -45,8 +45,10 @@ its assigned population and importance. A split proposal:
 1. builds a tangent coordinate system from local lightness, chroma, circular
    hue displacement, and alpha;
 2. tests the principal covariance direction and each coordinate direction;
-3. initializes cuts at the 35th, 50th, and 65th percentiles;
-4. refines every valid cut with importance-weighted deterministic two-means;
+3. uses weighted prefix sufficient statistics to find the exact lowest-SSE
+   valid cut along each tested direction;
+4. deduplicates those seeds and refines each with importance-weighted,
+   deterministic two-means;
 5. retains the cut with the largest weighted within-leaf distortion reduction.
 
 All leaves compete in one priority queue. The proposal with the greatest
@@ -82,6 +84,12 @@ cylindrical distance. Small connected islands may then be absorbed into a
 larger adjacent component, choosing a perceptually nearby neighbor normalized
 by shared boundary length. Palette colors remain fixed during cleanup so the
 intentional bifurcation shifts are not averaged away.
+
+The cylindrical metric is evaluated algebraically as a small feature matrix
+product, without allocating separate lightness, chroma, and trigonometric
+pixel-by-palette tensors. Spatial cleanup labels all equal-color neighbor
+connections in one sparse graph pass. Its cost therefore scales with pixels
+and local edges rather than rescanning the image once for every palette color.
 
 The fixed palette is finally rasterized directly. PNG retains alpha; JPEG is
 written as optimized 4:4:4 quality-95 RGB. No path tracing or SVG construction

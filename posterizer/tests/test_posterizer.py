@@ -8,12 +8,13 @@ import unittest
 import numpy as np
 from PIL import Image
 
-from posterizer.core import PosterizerConfig, posterize_array
+from posterizer.core import PosterizerConfig, _component_map, posterize_array
 from posterizer.oklch import (
     bifurcate_palette,
     gamut_map_oklch,
     oklab_to_srgb,
     oklch_distance2,
+    oklch_pair_distance2,
     separate_nodes,
 )
 from posterizer.web_gui import convert_request
@@ -21,6 +22,22 @@ from tlvector.core import _srgb_to_oklab
 
 
 class PosterizerTests(unittest.TestCase):
+    def test_single_pass_component_map_preserves_equal_label_regions(self):
+        labels = np.array([
+            [0, 0, 1, 1, 1, 2],
+            [0, 1, 1, 3, 1, 2],
+            [4, 4, 1, 3, 2, 2],
+            [4, 0, 0, 3, 2, 5],
+        ], dtype=np.int32)
+        component_map, component_labels, areas = _component_map(labels)
+        self.assertEqual(int(np.sum(areas)), labels.size)
+        self.assertEqual(len(np.unique(component_map)), len(areas))
+        for component in range(len(areas)):
+            pixels = component_map == component
+            self.assertEqual(int(np.count_nonzero(pixels)), int(areas[component]))
+            self.assertEqual(len(np.unique(labels[pixels])), 1)
+            self.assertEqual(int(labels[pixels][0]), int(component_labels[component]))
+
     def test_oklab_srgb_round_trip(self):
         rgb = np.array([
             [0.0, 0.0, 0.0],
@@ -58,6 +75,40 @@ class PosterizerTests(unittest.TestCase):
         self.assertLess(distance[0], 0.0001)
         self.assertLess(distance[1], 0.0001)
         self.assertGreater(distance[2], 0.1)
+
+    def test_fast_distance_matches_cylindrical_definition(self):
+        random = np.random.default_rng(2048)
+        samples = random.normal(size=(31, 4))
+        centers = random.normal(size=(9, 4))
+        weights = (1.3, 0.7, 1.6, 0.4)
+        sample_c = np.hypot(samples[:, 1], samples[:, 2])
+        center_c = np.hypot(centers[:, 1], centers[:, 2])
+        hue_delta = (
+            np.arctan2(samples[:, 2], samples[:, 1])[:, None]
+            - np.arctan2(centers[:, 2], centers[:, 1])[None, :]
+        )
+        reference = (
+            (weights[0] * (samples[:, None, 0] - centers[None, :, 0])) ** 2
+            + (weights[1] * (sample_c[:, None] - center_c[None, :])) ** 2
+            + weights[2] ** 2
+            * 4.0
+            * sample_c[:, None]
+            * center_c[None, :]
+            * np.sin(0.5 * hue_delta) ** 2
+            + (weights[3] * (samples[:, None, 3] - centers[None, :, 3])) ** 2
+        )
+        fast = oklch_distance2(
+            samples, centers,
+            lightness_weight=weights[0], chroma_weight=weights[1],
+            hue_weight=weights[2], alpha_weight=weights[3],
+        )
+        np.testing.assert_allclose(fast, reference, rtol=2e-13, atol=2e-13)
+        paired = oklch_pair_distance2(
+            samples[:9], centers,
+            lightness_weight=weights[0], chroma_weight=weights[1],
+            hue_weight=weights[2], alpha_weight=weights[3],
+        )
+        np.testing.assert_allclose(paired, np.diag(reference[:9]), rtol=2e-13)
 
     def test_bifurcation_and_node_separation(self):
         first = np.tile(np.array([0.35, 0.04, 0.02, 1.0]), (40, 1))
