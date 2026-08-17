@@ -31,10 +31,10 @@ CONFIGURATIONS = (
 NAMES = {
     "ordinary_mlp": "Ordinary MLP",
     "self_context": "Self-context",
-    "frame_reference": "Frame reference",
-    "frame_muon": "Frame + Muon",
-    "frame_capacity": "Frame width 32",
-    "frame_fast": "Frame two-probe",
+    "frame_reference": "Continuous frame flow (AdamW)",
+    "frame_muon": "Continuous frame flow (Muon)",
+    "frame_capacity": "Continuous frame flow (width 32)",
+    "frame_fast": "Continuous frame flow (two-probe)",
 }
 LEARNING_TASKS = (
     "radial_stripes",
@@ -77,7 +77,7 @@ def transformed_template():
         "Where curvature changes acquisition, endpoint, and tails": "What Muon changes relative to the frame reference",
         "Curvature self-context metric differences versus self-context for 22 tasks": "Muon metric differences versus the AdamW frame reference",
         "Task-level metric differences between curvature self-context and self-context": "Paired Muon differences by task",
-        "Curvature self-context − self-context": "Frame + Muon − frame reference",
+        "Curvature self-context − self-context": "Continuous frame flow (Muon − AdamW)",
         "<span class=\"key\"><span class=\"dot\" style=\"--key:var(--viz-series-1)\"></span>Self-context</span><span class=\"key\"><span class=\"dot\" style=\"--key:var(--viz-series-2)\"></span>Curvature self-context</span>": legend,
         "Matched fitted-function atlas": "Fitted geometry (seed 0; shaded or solid segment is observed support)",
         "const names={self_context:'Self-context',self_context_jet_curvature_context:'Curvature self-context'};": names,
@@ -94,20 +94,15 @@ def transformed_template():
     old_3d = "function renderCurve3d(node,task,variant){const {w,h,m}=dims(node),svg=d3.select(node).attr('viewBox',`0 0 ${w} ${h}`).attr('height',h),{x,y}=lineScales(task,w,h,m);frame(svg,w,h,m,'t','coordinate');for(let dim=0;dim<3;dim++){const line=d3.line().x((d,i)=>x(task.x[i])).y(d=>y(d[dim]));svg.append('path').datum(task.truth).attr('fill','none').attr('stroke',token(dim)).attr('stroke-width',variant==='truth'?1.8:1).attr('opacity',variant==='truth'?1:.25).attr('d',line);if(variant!=='truth')svg.append('path').datum(task.predictions[variant]).attr('fill','none').attr('stroke',token(dim)).attr('stroke-width',1.8).attr('d',line)}}"
     new_3d = """function renderCurve3d(node,task,variant){
       const {w,h,m}=dims(node,true),svg=d3.select(node).attr('viewBox',`0 0 ${w} ${h}`).attr('height',h);
-      frame(svg,w,h,m,'oblique x','oblique z');
-      const vectors=[task.truth,...Object.values(task.predictions)],all=vectors.flat();
-      const center=[0,1,2].map(j=>d3.mean(all,d=>d[j]));
-      const az=-.72,el=.48;
-      const project=p=>{const a=p[0]-center[0],b=p[1]-center[1],c=p[2]-center[2],u=Math.cos(az)*a-Math.sin(az)*b,v=Math.sin(az)*a+Math.cos(az)*b;return[u,Math.cos(el)*c-Math.sin(el)*v]};
-      const projected=all.map(project),xe=d3.extent(projected,d=>d[0]),ye=d3.extent(projected,d=>d[1]),pad=.06;
-      const xp=d3.scaleLinear([xe[0]-(xe[1]-xe[0])*pad,xe[1]+(xe[1]-xe[0])*pad],[m.l,w-m.r]);
-      const yp=d3.scaleLinear([ye[0]-(ye[1]-ye[0])*pad,ye[1]+(ye[1]-ye[0])*pad],[h-m.b,m.t]);
-      const line=d3.line().x(d=>xp(project(d)[0])).y(d=>yp(project(d)[1]));
-      const boundary=d3.bisector(d=>d).right(task.x,task.train_limits[1]);
-      const draw=(values,stroke,width,opacity)=>{svg.append('path').datum(values.slice(0,boundary+1)).attr('fill','none').attr('stroke',stroke).attr('stroke-width',width).attr('opacity',opacity).attr('d',line);svg.append('path').datum(values.slice(Math.max(0,boundary-1))).attr('fill','none').attr('stroke',stroke).attr('stroke-width',width).attr('stroke-dasharray','4 3').attr('opacity',opacity).attr('d',line)};
-      draw(task.truth,'var(--foreground)',variant==='truth'?2.2:1,variant==='truth'?1:.28);
-      if(variant!=='truth')draw(task.predictions[variant],`var(--viz-series-${variants.indexOf(variant)+1})`,2,1);
-      const mark=project(task.truth[Math.min(boundary,task.truth.length-1)]);svg.append('circle').attr('cx',xp(mark[0])).attr('cy',yp(mark[1])).attr('r',3).attr('fill','var(--foreground)');
+      frame(svg,w,h,m,'x / y','z');
+      const vectors=[task.truth,...Object.values(task.predictions)],all=vectors.flat(),center=[0,1,2].map(j=>d3.mean(all,d=>d[j])),span=d3.max([0,1,2],j=>d3.extent(all,d=>d[j])[1]-d3.extent(all,d=>d[j])[0]);
+      const az=45*Math.PI/180,el=22*Math.PI/180;
+      const project=p=>{const x=(p[0]-center[0])/span,y=(p[1]-center[1])/span,z=(p[2]-center[2])/span,ca=Math.cos(az),sa=Math.sin(az),ce=Math.cos(el),se=Math.sin(el),u=ca*x-sa*y,v=sa*x+ca*y;return[u,ce*z-se*v,se*z+ce*v]};
+      const projected=all.map(project),xe=d3.extent(projected,d=>d[0]),ye=d3.extent(projected,d=>d[1]),xp=d3.scaleLinear(xe,[m.l,w-m.r]),yp=d3.scaleLinear(ye,[h-m.b,m.t]);
+      const values=variant==='truth'?task.truth:task.predictions[variant],points=values.map((point,index)=>({point,index,q:project(point)})).sort((a,b)=>a.q[2]-b.q[2]);
+      svg.append('g').selectAll('circle').data(points).join('circle').attr('cx',d=>xp(d.q[0])).attr('cy',d=>yp(d.q[1])).attr('r',d=>1.4+Math.max(0,d.q[2])*.9).attr('fill',d=>d3.interpolateTurbo((task.x[d.index]+1)/2)).attr('opacity',d=>.58+Math.max(0,Math.min(.4,d.q[2]+.2)));
+      const origin=project(center),axis=[[center[0]+span*.32,center[1],center[2],'x'],[center[0],center[1]+span*.32,center[2],'y'],[center[0],center[1],center[2]+span*.32,'z']];
+      for(const endpoint of axis){const q=project(endpoint);svg.append('line').attr('x1',xp(origin[0])).attr('y1',yp(origin[1])).attr('x2',xp(q[0])).attr('y2',yp(q[1])).attr('stroke','var(--foreground)').attr('opacity',.7);svg.append('text').attr('x',xp(q[0])+3).attr('y',yp(q[1])-3).text(endpoint[3])}
     }"""
     if old_3d not in source:
         raise RuntimeError("3-D renderer marker missing")

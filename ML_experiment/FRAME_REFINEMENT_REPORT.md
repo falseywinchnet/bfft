@@ -17,10 +17,10 @@ capacity experiment increases width, to 6,389–6,902 parameters.
 |---|---:|---:|---:|---:|---|
 | Ordinary LELU MLP | 0.3120 | 0.2686 | 0.6613 | 0.26 s | Parameter-matched functional control |
 | Self-context | 0.4727 | 0.3999 | 0.8432 | 3.96 s | First-order chart reinterpretation |
-| Frame reference | 0.4925 | 0.4004 | 0.8697 | 14.52 s | Full four-ray curvature transport |
-| Frame + Muon | **0.5378** | **0.4404** | 0.8266 | 14.93 s | +0.0453 score, +0.0400 tail, −0.0431 AUC |
-| Frame width 32 | 0.4579 | 0.3735 | **0.8855** | 15.12 s | +0.0158 AUC on all 7 tasks, −0.0346 score |
-| Frame two-probe | 0.4634 | 0.3943 | 0.8642 | **12.12 s** | 16.5% faster, −0.0061 mean tail |
+| Continuous frame flow (AdamW) | 0.4925 | 0.4004 | 0.8697 | 14.52 s | Full four-ray curvature transport |
+| Continuous frame flow (Muon) | **0.5378** | **0.4404** | 0.8266 | 14.93 s | +0.0453 score, +0.0400 tail, −0.0431 AUC |
+| Continuous frame flow (width 32) | 0.4579 | 0.3735 | **0.8855** | 15.12 s | +0.0158 AUC on all 7 tasks, −0.0346 score |
+| Continuous frame flow (two-probe) | 0.4634 | 0.3943 | 0.8642 | **12.12 s** | 16.5% faster, −0.0061 mean tail |
 
 Regression score is `1 / (1 + normalized MSE)`; classification score is mean
 class recall. Averages are diagnostic, not claims that unlike tasks have one
@@ -30,13 +30,13 @@ natural scalar utility.
 
 | Problem | Best held-out form | Score | What it diagnoses |
 |---|---|---:|---|
-| Radial stripes | Frame + Muon | 0.8663 | Muon removes much of the reference model's seed brittleness |
-| High-rank N-D spiral | Frame two-probe | 0.8848 | Dense mixed probes can regularize a high-rank tangent trace |
+| Radial stripes | Continuous frame flow (Muon) | 0.8663 | Muon removes much of the AdamW run's seed brittleness |
+| High-rank N-D spiral | Continuous frame flow (two-probe) | 0.8848 | Dense mixed probes can regularize a high-rank tangent trace |
 | Multiscale 1-D | Self-context | 0.4597 | First-order local focality remains valuable |
-| Chirp 1-D | Frame width 32 | 0.4649 | Extra capacity helps a smoothly changing local frequency |
-| Polynomial drifted chirp | Frame + Muon | 0.3251 | Orthogonalized hidden updates improve continuation strongly |
+| Chirp 1-D | Continuous frame flow (width 32) | 0.4649 | Extra capacity helps a smoothly changing local frequency |
+| Polynomial drifted chirp | Continuous frame flow (Muon) | 0.3251 | Orthogonalized hidden updates improve continuation strongly |
 | Localized steps | Self-context | 0.9420 | Additional frame state can damage piecewise focal continuation |
-| Complex 3-D spiral | Frame + Muon | 0.0597 | Absolute extrapolation remains difficult; Muon is best by a wide relative margin |
+| Complex 3-D spiral | Continuous frame flow (Muon) | 0.0597 | Absolute extrapolation remains difficult; Muon is best by a wide relative margin |
 
 The polynomial chirp and 3-D spiral are now permanent benchmark tasks. Their
 plots expose the observed boundary explicitly. The 3-D view contains both the
