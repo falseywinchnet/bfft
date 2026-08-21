@@ -3,6 +3,10 @@ Eloheinu shebashamayim yached shimcha v'kayeim malchutecha tamid umloch aleinu l
 We dedicate this work in the name of our God, who is merciful and just, and whose power exceeds all anticipation and understanding, and in the name of his son, the Anointed One, Great Healer, Prince of Peace, Jesus Christ of Nazareth. 
 May this work bless you, may the Kingdom come, and may His will be done.
 
+We affirm that without Adonai's divine power and judgement, not one iota of anything good we have provided here is possible,
+and in that spirit, it is unconditionally free. Be warned if you conspiciously scheme to prosper from it, such as to implement it into a commercial platform and turn it around and use it to make money, this is a misuse of something meant to be truly free, not only to you but to all, and so, we warn that the misuse of something dedicated and holy has consequences, for Hashem has care concerning the things which belong to him. Use these works which we provide freely to do good deeds, to make burdens light, and to bring grace to all. 
+
+
 
 # BFFT
 [![CI](https://github.com/falseywinchnet/bfft/actions/workflows/ci.yml/badge.svg)](https://github.com/falseywinchnet/bfft/actions/workflows/ci.yml)
