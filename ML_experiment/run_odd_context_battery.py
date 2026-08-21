@@ -16,7 +16,9 @@ if str(ROOT) not in sys.path:
 import torch
 import torch.nn.functional as F
 
-from ML_experiment.metrics import evaluate, jacobian_variability, tail_metrics
+from ML_experiment.metrics import (
+    evaluate, jacobian_variability, predict, regression_metrics, tail_metrics,
+)
 from ML_experiment.models import parameter_count
 from ML_experiment.odd_context_hybrids import make_hybrid
 from ML_experiment.run_benchmark import auc, threshold
@@ -62,7 +64,49 @@ def mechanism_diagnostics(model):
             "gain_min": float(gains.min()),
             "gain_max": float(gains.max()),
         })
+    operator_coordinates = getattr(model, "operator_coordinates", None)
+    if operator_coordinates is not None:
+        coordinates = F.normalize(operator_coordinates.detach(), dim=0)
+        names = getattr(model, "operator_coordinate_names", None)
+        if names is None:
+            names = (["operator_odd", "operator_curvature"]
+                     if len(coordinates) == 2 else
+                     ["operator_odd", "operator_tangent", "operator_curvature"])
+        diagnostics.update({
+            name: float(coordinates[index].square().mean())
+            for index, name in enumerate(names)
+        })
+    transport_logit = getattr(model, "transport_logit", None)
+    if transport_logit is not None:
+        diagnostics["transport_strength"] = float(
+            0.5 * torch.tanh(transport_logit.detach())
+        )
     return diagnostics
+
+
+def task_geometry_diagnostics(model, task):
+    """Task-owned diagnostics which ordinary aggregate metrics cannot expose."""
+    if not hasattr(task, "segment_edges"):
+        return {}
+    prediction = predict(model, task.x_test)
+    segments = []
+    for index, (lo, hi) in enumerate(zip(
+        task.segment_edges[:-1], task.segment_edges[1:]
+    )):
+        selected = (task.x_test[:, 0] >= lo) & (
+            task.x_test[:, 0] <= hi if index + 1 == len(task.segment_counts)
+            else task.x_test[:, 0] < hi
+        )
+        segments.append({
+            "segment": index,
+            "observation_count": task.segment_counts[index],
+            **regression_metrics(prediction[selected], task.y_test[selected]),
+        })
+    return {
+        "observed_segment_metrics": segments,
+        "sparse_observed_r2": float(sum(row["r2"] for row in segments[-3:]) / 3),
+        "minimum_observed_segment_r2": float(min(row["r2"] for row in segments)),
+    }
 
 
 def train(name, task, width, seed, steps, batch, lr, evaluate_every):
@@ -146,6 +190,7 @@ def main():
                     "validation_score": max(point["score"] for point in history),
                     **test,
                     **tails,
+                    **task_geometry_diagnostics(model, task),
                     "jacobian_variability": variability,
                     "jacobian_change_rank": rank,
                     **mechanism_diagnostics(model),

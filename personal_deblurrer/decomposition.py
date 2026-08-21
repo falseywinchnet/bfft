@@ -19,6 +19,10 @@ import math
 
 import numpy as np
 
+from .analytic_support import (
+    analyze_transport_support,
+    covariance_transport_kernel,
+)
 from .curvilinear import (
     fit_curvilinear_exposure_chart,
     refine_curvilinear_exposure,
@@ -593,6 +597,7 @@ def two_stage_deblur_known(
     measured = np.asarray(observation, dtype=np.float64)
     before = image_fingerprint(measured)
     factor = factor_transport_mix(kernel, audit_shape=measured.shape[:2])
+    analytic_support = analyze_transport_support(factor.centered_mixing)
     inverse_shift = (
         -factor.deterministic_shift_xy[0],
         -factor.deterministic_shift_xy[1],
@@ -796,6 +801,8 @@ def two_stage_deblur_known(
         "shift_detected": factor.shift_detected,
         "shift_observability": "known_forward_operator",
         "mixing_covariance": factor.mixing_covariance.tolist(),
+        "analytic_transport_support": analytic_support.diagnostics,
+        "blur_family_selected": False,
         "mixing_passes": max(int(passes), 0),
         "mixing_residual_trace": residual_trace,
         "support_gate": support_record,
@@ -850,15 +857,13 @@ def estimate_centered_mixing_phase(
     observation: np.ndarray,
     *,
     radius: int = 18,
-    directional_threshold: float = 2.7,
 ) -> CenteredMixEstimate:
     """Estimate centered mixing moments from one phase-only image.
 
-    This estimation-time branch distinguishes a strongly directional path from
-    an isotropic center cloud.  It does not select the deblurring algorithm:
-    both estimates are passed to the same positive center-transport inverse.
-    The estimate is deliberately centered because absolute translation is not
-    identifiable from a single unknown image.
+    The measured covariance is realized by one tensor Lobatto positive
+    cubature.  All eigenaxes contribute continuously; there is no line/cloud
+    threshold and no blur-family decision.  The estimate is deliberately
+    centered because absolute translation is not identifiable from one image.
     """
     image = _luminance(observation)
     if min(image.shape) < 32:
@@ -895,26 +900,19 @@ def estimate_centered_mixing_phase(
         (np.sum(mass * xx * xx), np.sum(mass * xx * yy)),
         (np.sum(mass * xx * yy), np.sum(mass * yy * yy)),
     ))
-    eigenvalues, eigenvectors = np.linalg.eigh(covariance)
+    eigenvalues, _ = np.linalg.eigh(covariance)
     eigenvalues = np.maximum(eigenvalues, 0.0)
     anisotropy = float(eigenvalues[1] / max(eigenvalues[0], 1e-8))
-    if anisotropy >= float(directional_threshold):
-        direction = eigenvectors[:, 1]
-        angle = math.degrees(math.atan2(direction[1], direction[0]))
-        # Empirical finite-window correction removes residual scene spread.
-        length = max(float(np.sqrt(12.0 * 0.70 * eigenvalues[1])), 1.0)
-        kernel = line_kernel(length, angle)
-        branch = "directional_path_moment"
-        confidence = float(np.clip(
-            (anisotropy - directional_threshold) / directional_threshold,
-            0.0, 1.0))
-    else:
-        sigma = max(float(np.sqrt(0.70 * np.mean(eigenvalues))), 0.0)
-        kernel = gaussian_kernel(sigma) if sigma >= 0.45 else identity_kernel()
-        branch = "isotropic_center_moment"
-        confidence = float(np.clip(
-            1.0 - abs(anisotropy - 1.0) / directional_threshold,
-            0.0, 1.0))
+    kernel = covariance_transport_kernel(
+        covariance, name="phase_moment_positive_cubature")
+    branch = "continuous_positive_covariance_measure"
+    centered_deviation = patch - baseline
+    confidence = float(np.clip(
+        np.sum(np.maximum(centered_deviation, 0.0))
+        / max(float(np.sum(np.abs(centered_deviation))), np.finfo(float).tiny),
+        0.0,
+        1.0,
+    ))
     return CenteredMixEstimate(
         kernel=kernel,
         covariance=covariance,
@@ -945,17 +943,12 @@ def two_stage_deblur_blind(
         path_authority_scale=0.0,
     )
     # A single-image kernel estimate is evidence, not an oracle.  Transport
-    # only the supported fraction of its proposed correction.  Directional
-    # phase consensus can earn more authority; an isotropic moment remains a
-    # deliberately conservative nudge because scene texture and blur are
-    # confounded in one observation.
-    if estimate.estimator_branch == "directional_path_moment":
-        authority = float(np.clip(
-            0.10 + 0.35 * estimate.confidence, 0.10, 0.45))
-    elif estimate.estimator_branch == "isotropic_center_moment":
-        authority = 0.18
-    else:
-        authority = 0.0
+    # only the supported fraction of its proposed correction.  Authority is a
+    # continuous evidence mass, never a direction- or family-dependent branch.
+    authority = (
+        float(np.clip(0.08 + 0.37 * estimate.confidence, 0.08, 0.45))
+        if estimate.kernel.psf.size > 1 else 0.0
+    )
     measured = np.asarray(observation, dtype=np.float64)
     image = np.clip(
         measured + authority * (result.image - measured), 0.0, 1.0)
@@ -966,7 +959,9 @@ def two_stage_deblur_blind(
         "forward_rms": forward_rms,
         "shift_detected": False,
         "shift_observability": shift.reason,
-        "kernel_origin": "single_image_phase_only_center_moments",
+        "kernel_origin": (
+            "single_image_phase_moment_positive_covariance_cubature"),
+        "blur_family_selected": False,
         "estimation_branch": estimate.estimator_branch,
         "estimation_confidence": estimate.confidence,
         "estimated_anisotropy_ratio": estimate.anisotropy_ratio,

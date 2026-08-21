@@ -1,4 +1,11 @@
-# Observer-lens denoising: first invertible decomposition
+# Observer-lens denoising: rejected geometry, surviving bookkeeping
+
+> **Correction:** the optical/deblurring reading of "virtual lens" is
+> rejected. The observer is an explanatory compressed sensor over scene
+> support. Noise lives in the scene, not in an unknown lens. The active
+> experiment is `compressed_eikonal_observer_2d.py`; the material below is
+> retained only for its exact residual bookkeeping and as a falsified nearby
+> interpretation.
 
 ## Correction of the initial interpretation
 
@@ -78,3 +85,22 @@ endpoints as denoisers:
 This is the direct algorithmic analogue of a learned encoder/decoder: the
 research question is whether the lens state and its evolution can remain a
 small continuous transport program.
+
+## Replacement: direct support observation
+
+Let the V3 transport measure emit sparse germs and let continuous eikonal
+first arrival define their supported measurement cells. If `B_S` contains the
+affine moment basis carried by that support, the observer takes one direct
+compressed measurement
+
+\[
+e_S=B_S(B_S^TB_S)^+B_S^Ty,
+\qquad r_S=y-e_S.
+\]
+
+Then `B_S^T r_S = 0`: the residual is precisely what this observer cannot
+explain. A later observation remeasures support on that residual and creates a
+new sensor; it does not descend on the old coefficients. The first unresolved
+issue is selection bias because the same scene currently emits `S` and is
+measured by `B_S`. Until a transport-valid cross-measure removes that bias,
+the extraction is a theorem probe rather than a denoiser.

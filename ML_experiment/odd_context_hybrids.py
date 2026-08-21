@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ML_experiment.models import LELU, parameter_count
+from ML_experiment.models import BudgetMatchedMLP, LELU, parameter_count
 from ML_experiment.nd_spiral_wall import ShallowOddCubicNet
 from ML_experiment.response_enhanced import (
     RELATIONAL_CFF_DEEP,
@@ -227,6 +227,137 @@ class ContextualHiddenGraft(nn.Module):
         return self.parent.output(self.parent.down(state))
 
 
+class ContinuousOperatorFrameGraft(nn.Module):
+    """A continuous sphere spanning odd relation, tangent, and curvature.
+
+    The parent allocator chooses its own local frame. Antithetic probes of the
+    same self-context layer then expose transported first- and second-order
+    responses. All components are scale matched and mixed on a unit sphere
+    before the parent's shared LELU/down path. At initialization the sphere is
+    exactly the learned-cone odd bridge, so the extension adds no initial
+    function change and no independent output shortcut.
+    """
+
+    def __init__(self, parent: nn.Module, width: int, *, probe_rank: int = 2,
+                 channel_coordinates: bool = True, include_tangent: bool = True,
+                 probe_fraction: float = 0.2):
+        super().__init__()
+        self.parent = parent
+        self.probe_rank = int(probe_rank)
+        self.include_tangent = bool(include_tangent)
+        self.probe_fraction = float(probe_fraction)
+        self.bridge = ContextualCubicBridge(
+            width, 2 * width, 2 * width, channels=2 * width,
+            conditioning="learned_cone",
+        )
+        component_count = 3 if include_tangent else 2
+        coordinate_width = 2 * width if channel_coordinates else 1
+        initial = torch.zeros(component_count, coordinate_width)
+        initial[0] = 1.0
+        self.operator_coordinates = nn.Parameter(initial)
+        self.branch_scale = nn.Parameter(torch.tensor(-2.0))
+        self.last_parent_state = None
+        self.last_branch_state = None
+
+    @staticmethod
+    def _match_rms(value: torch.Tensor, reference: torch.Tensor) -> torch.Tensor:
+        shape = (value.shape[-1],)
+        reference_rms = reference.detach().square().mean(-1, keepdim=True).sqrt()
+        return F.rms_norm(value, shape) * reference_rms.clamp_min(1e-6)
+
+    def _transport_components(self, source: torch.Tensor,
+                              chart: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        allocator = self.parent.up
+        weight = allocator.last_weight
+        if weight is None:
+            raise RuntimeError("self-context allocator did not retain its frame weights")
+        frame = torch.einsum("bd,dri->bri", weight, allocator.frame_atlas)
+        rank = min(self.probe_rank, frame.shape[1])
+        frame = F.normalize(frame[:, :rank], dim=-1)
+        radius = (
+            self.probe_fraction
+            * source.norm(dim=-1, keepdim=True).detach().clamp_min(1e-3)
+        )
+        displacement = radius[:, None, :] * frame
+        probes = torch.cat(
+            (source[:, None, :] + displacement,
+             source[:, None, :] - displacement),
+            dim=1,
+        )
+        response = allocator(probes.flatten(0, 1)).view(
+            len(source), 2 * rank, chart.shape[-1]
+        )
+        plus, minus = response[:, :rank], response[:, rank:]
+        tangent = ((plus - minus) * 0.5).mean(1)
+        curvature = (plus + minus - 2.0 * chart[:, None, :]).mean(1)
+        return tangent, curvature
+
+    def operator_components(self, x: torch.Tensor):
+        authentic = self.parent.embed(x)
+        chart = self.parent.up(authentic)
+        odd = self.bridge(authentic, chart)
+        tangent, curvature = self._transport_components(authentic, chart)
+        components = [odd]
+        if self.include_tangent:
+            components.append(self._match_rms(tangent, odd))
+        components.append(self._match_rms(curvature, odd))
+        coordinates = F.normalize(self.operator_coordinates, dim=0)
+        relation = sum(
+            coordinates[index] * component
+            for index, component in enumerate(components)
+        )
+        return authentic, chart, relation, components, coordinates
+
+    def hidden_components(self, x: torch.Tensor):
+        authentic, chart, relation, _, _ = self.operator_components(x)
+        branch = F.softplus(self.branch_scale) * relation
+        return authentic, chart, branch
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        _, chart, branch = self.hidden_components(x)
+        self.last_parent_state, self.last_branch_state = chart, branch
+        state = self.parent.activation(chart + branch)
+        return self.parent.output(self.parent.down(state))
+
+
+class NestedOperatorFrameGraft(ContinuousOperatorFrameGraft):
+    """Transport changes the chart used by the odd relation, not its output.
+
+    This is a nested chart: the allocator's transported tangent/curvature
+    changes the context factor C(u), and that changed interpretation determines
+    the odd relational state returned to the ordinary shared response path.
+    """
+
+    def __init__(self, parent: nn.Module, width: int, *, probe_rank: int = 2):
+        super().__init__(
+            parent, width, probe_rank=probe_rank,
+            channel_coordinates=False, include_tangent=True,
+        )
+        self.operator_coordinates = nn.Parameter(torch.tensor([[0.0], [1.0]]))
+        self.operator_coordinate_names = (
+            "transport_tangent", "transport_curvature"
+        )
+        self.transport_logit = nn.Parameter(torch.tensor(0.0))
+
+    def operator_components(self, x: torch.Tensor):
+        authentic = self.parent.embed(x)
+        chart = self.parent.up(authentic)
+        tangent, curvature = self._transport_components(authentic, chart)
+        components = [
+            self._match_rms(tangent, chart),
+            self._match_rms(curvature, chart),
+        ]
+        coordinates = F.normalize(self.operator_coordinates, dim=0)
+        transport = sum(
+            coordinates[index] * component
+            for index, component in enumerate(components)
+        )
+        strength = 0.5 * torch.tanh(self.transport_logit)
+        nested_chart = chart + strength * transport
+        relation = self.bridge(authentic, nested_chart)
+        return authentic, chart, relation, components, coordinates
+
+
 VARIANTS = (
     "self_context",
     "cff",
@@ -267,6 +398,22 @@ FACTOR_VARIANTS = (
 )
 
 
+OPERATOR_VARIANTS = (
+    "self_contextual_operator_curve_global_r2",
+    "self_contextual_operator_sphere_global_r2",
+    "self_contextual_operator_sphere_channel_r2",
+    "self_contextual_operator_sphere_channel_r4",
+    "self_contextual_nested_operator_r2",
+    "self_contextual_nested_operator_r4",
+)
+
+
+BASELINE_VARIANTS = (
+    "ordinary_mlp_self_budget",
+    "ordinary_mlp_cone_budget",
+)
+
+
 def _matched_self_context(n_in: int, n_out: int, width: int,
                           target_parameters: int) -> nn.Module:
     """Return the closest wider plain SCL under the requested parameter count."""
@@ -282,6 +429,21 @@ def _matched_self_context(n_in: int, n_out: int, width: int,
 
 def make_hybrid(name: str, n_in: int, n_out: int, width: int) -> nn.Module:
     channels = max(48, 2 * width)
+    if name == "ordinary_mlp_self_budget":
+        target = make_response_variant(SELF, n_in, n_out, width)
+        return BudgetMatchedMLP(
+            n_in, n_out, width, parameter_count(target)
+        )
+    if name == "ordinary_mlp_cone_budget":
+        target = ContextualHiddenGraft(
+            make_response_variant(SELF, n_in, n_out, width),
+            width,
+            channels=2 * width,
+            conditioning="learned_cone",
+        )
+        return BudgetMatchedMLP(
+            n_in, n_out, width, parameter_count(target)
+        )
     if name == "self_context":
         return make_response_variant(SELF, n_in, n_out, width)
     if name == "cff":
@@ -297,6 +459,30 @@ def make_hybrid(name: str, n_in: int, n_out: int, width: int) -> nn.Module:
     if name == "self_contextual_angular":
         return ContextualHiddenGraft(
             make_response_variant(SELF, n_in, n_out, width), width
+        )
+    operator_variants = {
+        "self_contextual_operator_curve_global_r2": (2, False, False),
+        "self_contextual_operator_sphere_global_r2": (2, False, True),
+        "self_contextual_operator_sphere_channel_r2": (2, True, True),
+        "self_contextual_operator_sphere_channel_r4": (4, True, True),
+    }
+    if name in {
+        "self_contextual_nested_operator_r2",
+        "self_contextual_nested_operator_r4",
+    }:
+        return NestedOperatorFrameGraft(
+            make_response_variant(SELF, n_in, n_out, width),
+            width,
+            probe_rank=2 if name.endswith("r2") else 4,
+        )
+    if name in operator_variants:
+        probe_rank, channel_coordinates, include_tangent = operator_variants[name]
+        return ContinuousOperatorFrameGraft(
+            make_response_variant(SELF, n_in, n_out, width),
+            width,
+            probe_rank=probe_rank,
+            channel_coordinates=channel_coordinates,
+            include_tangent=include_tangent,
         )
     geometry_variants = {
         "self_contextual_full_learned_cone_global_degree": (

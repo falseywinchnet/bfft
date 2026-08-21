@@ -318,6 +318,11 @@ class ShiftMixDecompositionTests(unittest.TestCase):
                     result.diagnostics["shift_observability"],
                     "absolute_translation_is_single_image_gauge",
                 )
+                self.assertFalse(result.diagnostics["blur_family_selected"])
+                self.assertEqual(
+                    result.diagnostics["estimation_branch"],
+                    "continuous_positive_covariance_measure",
+                )
                 self.assertLess(_mse(result.image, truth), _mse(observation, truth))
                 self.assertEqual(result.diagnostics["path_authority_scale"], 0.0)
                 self.assertEqual(

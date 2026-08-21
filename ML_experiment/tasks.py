@@ -343,6 +343,69 @@ def fourier_mix_1d(seed=0):
     return _regression_1d("fourier_mix_1d", lambda x: .45*torch.sin(x)+.28*torch.cos(3*x-.2)+.18*torch.sin(9*x)+.09*torch.cos(21*x), 5300 + seed)
 
 
+def sparse_sine_1d(seed=0):
+    """A simple sinusoid observed through a progressively thinning measure.
+
+    Ten complete periods are observed.  The first two periods are dense, the
+    next three thin progressively, and the remaining five thin exponentially.
+    Evaluation over the observed interval is uniform in coordinate measure,
+    rather than in the empirical sampling measure.  Five additional periods
+    are retained exclusively for continuation diagnostics.
+    """
+    generator = torch.Generator().manual_seed(5400 + seed)
+    counts = (768, 768, 512, 384, 256, 128, 64, 32, 16, 8)
+    observed_periods = len(counts)
+    phase_offset = 0.23
+    points, values, segment_ids = [], [], []
+    for segment, count in enumerate(counts):
+        # Stratification prevents an unlucky eight-point final period from
+        # becoming an accidental missing-interval task.  Density still falls
+        # by 96x from the dense head to the final observed period.
+        local = (
+            torch.arange(count, dtype=torch.float32)
+            + torch.rand(count, generator=generator)
+        ) / count
+        coordinate = (segment + local) / observed_periods
+        phase = 2 * math.pi * (segment + local)
+        points.append(coordinate[:, None])
+        values.append(torch.sin(phase + phase_offset)[:, None])
+        segment_ids.append(torch.full((count,), segment, dtype=torch.long))
+    x = torch.cat(points)
+    y = torch.cat(values)
+    segment_id = torch.cat(segment_ids)
+    xtr, ytr, xva, yva = _split(x, y, 5500 + seed)
+
+    observed_x = torch.linspace(0.0, 1.0, 2401)[:, None]
+    observed_y = torch.sin(
+        2 * math.pi * observed_periods * observed_x + phase_offset
+    )
+    tail_x, tail_y = [], []
+    for segment in range(5):
+        lo = 1.0 + segment / observed_periods
+        hi = 1.0 + (segment + 1) / observed_periods
+        tx = torch.linspace(lo, hi, 241)[:, None]
+        ty = torch.sin(2 * math.pi * observed_periods * tx + phase_offset)
+        tail_x.append(tx)
+        tail_y.append(ty)
+
+    task = _normalize_regression(Task(
+        "sparse_sine_1d", "regression", 1,
+        xtr, ytr, xva, yva,
+        observed_x, observed_y,
+        tail_x, tail_y,
+    ))
+    # Retain the exact sampling measure for focused segment diagnostics.  These
+    # fields do not enter ordinary model evaluation or inference.
+    task.segment_counts = counts
+    task.segment_edges = tuple(index / observed_periods for index in range(observed_periods + 1))
+    task.observed_periods = observed_periods
+    task.phase_offset = phase_offset
+    task.full_x = x
+    task.full_y = (y - task.target_mean) / task.target_std
+    task.full_segment_id = segment_id
+    return task
+
+
 TASK_BUILDERS = {
     "spiral": spiral, "checkerboard": checkerboard, "two_moons": two_moons, "pinwheel": pinwheel,
     "nd_spiral_low_rank": lambda seed=0: nd_spiral(1, seed),
@@ -354,4 +417,5 @@ TASK_BUILDERS = {
     "multiscale_1d": multiscale_1d, "chirp_1d": chirp_1d,
     "poly_drifted_chirp_1d": poly_drifted_chirp_1d,
     "localized_steps_1d": localized_steps_1d, "fourier_mix_1d": fourier_mix_1d,
+    "sparse_sine_1d": sparse_sine_1d,
 }

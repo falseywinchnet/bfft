@@ -43,6 +43,7 @@ DESCRIPTIONS = {
     "poly_drifted_chirp_1d": "1-D polynomial amplitude and phase drift · outer bands withheld",
     "localized_steps_1d": "1-D piecewise localized steps",
     "fourier_mix_1d": "1-D mixed incommensurate frequencies",
+    "sparse_sine_1d": "1-D sinusoid · 96× progressive observation thinning",
 }
 
 

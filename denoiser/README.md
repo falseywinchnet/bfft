@@ -63,6 +63,32 @@ collapsed into one objective.
   `terminal_component_visual64/`: reproducible raw-image and montage gate for
   Cameraman hair/tripod structure, truth error, and displacement from the
   observation.
+- `conservative_exchange_transport_2d.py`: current two-reservoir experiment.
+  Posterior erosion donates its exact signed refusal to the residual; positive
+  residual smoothing returns only phase-supported action; a target-excluded
+  curvature/phase intersection witnesses joint closure. Every substep
+  preserves `posterior + residual = observation` pointwise.
+- `CONSERVATIVE_EXCHANGE_RESULT.md`: equations, the rejected wholesale-joint
+  cycle, the 27-case first-cycle screen, and the unresolved amplitude-coverage
+  and terminal laws. The operator is intentionally not in the GUI.
+- `probe_exchange_transfer_laws_2d.py`: matched ablation of complete,
+  phase-only, curvature-union, and Hellinger-intersection return/closure laws.
+- `zonotopic_edge_flux_2d.py`: the next set-valued state. Exact shed ancestry,
+  reciprocal phase, and curvature explanations are separate zonotopes of
+  antisymmetric Selling-edge fluxes. A safe bounded-residual contractor
+  narrows generator intervals without manufacturing component probabilities.
+- `ZONOTOPIC_EDGE_FLUX_SIMMER.md`: equations, the rejected unsafe empirical
+  enclosure, clean/mixed coverage measurements, and the continuous-scale
+  lineage push-forward now required.
+- `continuous_scale_zonotope_transport_2d.py`: exact but falsified global
+  coefficient-per-scale push-forward control.
+- `continuous_scale_edge_family_transport_2d.py`: sparse local
+  `(scale lineage, Selling edge)` generator families. The complete set is
+  pushed through the positive resolvent by a factorized edge-response map and
+  re-expressed on the evolved graph without losing ancestry.
+- `CONTINUOUS_SCALE_EDGE_FAMILY_RESULT.md`: refinement-stable coverage result,
+  parent/child branch law, and the diagnosis that only independent joint
+  value/jet evidence can contract the current state further.
 
 - `TRUTH_UNDER_DISTORTION.md`: the post-FMMT research charter joining
   one-shot patch typicality, zonotopic mixture falsification, and low-SNR

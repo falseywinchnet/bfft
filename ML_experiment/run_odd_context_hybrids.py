@@ -59,6 +59,14 @@ LABELS = {
     "self_contextual_rank8_tight": "Rank-8 chart bridge + tight frames",
     "self_contextual_full_learned_cone": "Full chart bridge + learned cone",
     "self_contextual_full_weight_norm": "Full chart bridge + direction/gain coordinates",
+    "self_contextual_operator_curve_global_r2": "Cone + global odd/curvature circle",
+    "self_contextual_operator_sphere_global_r2": "Cone + global transport sphere",
+    "self_contextual_operator_sphere_channel_r2": "Cone + channel transport sphere, rank 2",
+    "self_contextual_operator_sphere_channel_r4": "Cone + channel transport sphere, rank 4",
+    "self_contextual_nested_operator_r2": "Nested transport-conditioned cone, rank 2",
+    "self_contextual_nested_operator_r4": "Nested transport-conditioned cone, rank 4",
+    "ordinary_mlp_self_budget": "Ordinary MLP, self-context parameter budget",
+    "ordinary_mlp_cone_budget": "Ordinary MLP, cone parameter budget",
 }
 
 torch.set_num_threads(8)

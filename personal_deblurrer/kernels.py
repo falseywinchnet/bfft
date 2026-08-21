@@ -193,6 +193,86 @@ def curved_path_kernel(
     )
 
 
+def wronski_binomial_kernel(
+    direction_xy: tuple[float, float] | np.ndarray = (1.0, 0.0),
+    *,
+    stages: int = 1,
+    step: float = 1.0,
+) -> TransportKernel:
+    """Return Wronski's ``[1/4, 1/2, 1/4]`` transport measure.
+
+    One stage is the distribution of the sum of two equally weighted signed
+    half-step transports.  Repeated applications are therefore not a new blur
+    family: ``stages=n`` is the order-``2n`` binomial measure on the same
+    displacement fiber. Before rasterization, its characteristic function is
+
+        phi(f) = cos(pi * step * dot(f, direction)) ** (2 * stages).
+
+    The positive atoms are rasterized by the same mass-preserving path
+    operator as every other exposure measure. Axis-aligned unit steps retain
+    the formula exactly; an oblique step additionally carries the analytic
+    bilinear raster-footprint characteristic.
+    """
+    count = int(stages)
+    if count < 1:
+        raise ValueError("Wronski stages must be positive")
+    spacing = float(step)
+    if not np.isfinite(spacing) or spacing <= 0.0:
+        raise ValueError("Wronski step must be finite and positive")
+    direction = np.asarray(direction_xy, dtype=np.float64)
+    if direction.shape != (2,) or np.any(~np.isfinite(direction)):
+        raise ValueError("direction_xy must contain two finite coordinates")
+    norm = float(np.linalg.norm(direction))
+    if norm <= np.finfo(float).tiny:
+        raise ValueError("direction_xy must be nonzero")
+    direction /= norm
+    order = 2 * count
+    indices = np.arange(order + 1, dtype=np.float64)
+    coefficients = np.asarray(
+        [math.comb(order, index) for index in range(order + 1)],
+        dtype=np.float64,
+    )
+    coefficients /= 2.0 ** order
+    coordinates = spacing * (indices - count)
+    points = coordinates[:, None] * direction[None, :]
+    angle = math.degrees(math.atan2(direction[1], direction[0])) % 180.0
+    return path_kernel(
+        points,
+        weights=coefficients,
+        name=(f"wronski_binomial_stages_{count}_step_{spacing:g}_"
+              f"angle_{angle:g}"),
+    )
+
+
+def wronski_separable_kernel(
+    *,
+    stages: int = 1,
+    step: float = 1.0,
+) -> TransportKernel:
+    """Compose orthogonal Wronski measures as one 2-D positive measure."""
+    count = int(stages)
+    if count < 1:
+        raise ValueError("Wronski stages must be positive")
+    spacing = float(step)
+    if not np.isfinite(spacing) or spacing <= 0.0:
+        raise ValueError("Wronski step must be finite and positive")
+    order = 2 * count
+    indices = np.arange(order + 1, dtype=np.float64)
+    coefficients = np.asarray(
+        [math.comb(order, index) for index in range(order + 1)],
+        dtype=np.float64,
+    )
+    coefficients /= 2.0 ** order
+    coordinates = spacing * (indices - count)
+    xx, yy = np.meshgrid(coordinates, coordinates, indexing="xy")
+    weights = np.outer(coefficients, coefficients)
+    return path_kernel(
+        np.column_stack((xx.ravel(), yy.ravel())),
+        weights=weights.ravel(),
+        name=(f"wronski_separable_binomial_stages_{count}_step_{spacing:g}"),
+    )
+
+
 def translated_kernel(
     kernel: TransportKernel,
     shift_xy: tuple[float, float] | np.ndarray,

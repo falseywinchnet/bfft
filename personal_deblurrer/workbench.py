@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 import threading
 import traceback
+from typing import Union
 
 import numpy as np
 from PIL import Image, ImageOps
@@ -26,8 +27,32 @@ from .kernels import (
     line_kernel,
     path_kernel,
     translated_kernel,
+    wronski_binomial_kernel,
+    wronski_separable_kernel,
 )
 from .solver import DeblurResult, fuse_transport_observations
+from .composed_transport import (
+    AffinePositiveObservationTransport,
+    ComposedPositiveObservationTransport,
+    ConsolidatedInverseResult,
+    ObservationBounds,
+    PositiveObservationTransport,
+    compose_positive_transports,
+    radial_scale_measure,
+    refine_consolidated_transport,
+)
+from .observation_anomalies import (
+    astigmatic_scale_measure,
+    bounded_linear_sensor_observation,
+    ghost_measure,
+    rotation_exposure_measure,
+    shear_exposure_measure,
+)
+from .aberration_recovery import (
+    AberrationRecoveryResult,
+    covariance_field_matrices,
+    recover_affine_aberration_multicapture,
+)
 from .multicapture_transport import (
     MultiCaptureTransportResult,
     deblur_multicapture_consensus as solve_multicapture_consensus,
@@ -68,6 +93,12 @@ V3_SKIMAGE_PORTFOLIO = (
     "immunohistochemistry", "retina", "hubble_deep_field",
 )
 
+ObservationTransport = Union[
+    PositiveObservationTransport,
+    AffinePositiveObservationTransport,
+    ComposedPositiveObservationTransport,
+]
+
 
 @dataclass(frozen=True)
 class BlurSpec:
@@ -85,6 +116,16 @@ class BlurSpec:
     rolling_mean_x: float = 4.0
     rolling_row_acceleration: float = 1.0
     rolling_exposure_extent: float = 2.0
+    radial_fractional_extent: float = 0.05
+    anomaly_center_x: float = 4.0
+    anomaly_center_y: float = -3.0
+    ghost_x: float = 3.0
+    ghost_y: float = -2.0
+    ghost_mass: float = 0.08
+    shear_fractional_extent: float = 0.035
+    astigmatic_fractional_extent: float = 0.04
+    sensor_quantization_levels: int = 0
+    dead_pixel_period: int = 0
     exposure_gain: float = 1.0
     seed: int = 0
 
@@ -114,7 +155,20 @@ class BlurSpec:
                 name=f"random_path_extent_{self.extent:g}_seed_{self.seed}",
             )
             return translated_kernel(base, (self.shift_x, self.shift_y))
-        raise ValueError(f"unknown blur family: {self.kind}")
+        if name in ("wronski binomial", "wronski 1d"):
+            angle = np.deg2rad(self.angle_degrees)
+            base = wronski_binomial_kernel(
+                (np.cos(angle), np.sin(angle)), stages=1)
+            return translated_kernel(base, (self.shift_x, self.shift_y))
+        if name in ("wronski repeated", "wronski double"):
+            angle = np.deg2rad(self.angle_degrees)
+            base = wronski_binomial_kernel(
+                (np.cos(angle), np.sin(angle)), stages=2)
+            return translated_kernel(base, (self.shift_x, self.shift_y))
+        if name == "wronski separable":
+            base = wronski_separable_kernel(stages=1)
+            return translated_kernel(base, (self.shift_x, self.shift_y))
+        raise ValueError(f"unknown synthetic blur operator: {self.kind}")
 
     def spatial_field(
         self,
@@ -166,6 +220,91 @@ class BlurSpec:
             weights=field.weights,
         )
 
+    def observation_transport(
+        self,
+        shape: tuple[int, int],
+    ) -> ObservationTransport | None:
+        """Return a consolidated synthetic control, never an image classifier."""
+        name = self.kind.strip().lower()
+        supported = (
+            "radial scale exposure", "radial exposure",
+            "double radial exposure", "double radial",
+            "decentered double radial", "radial rotation ghost",
+            "ghost copy anomaly", "shear exposure",
+            "astigmatic scale exposure", "compound lens anomaly",
+        )
+        if name not in supported:
+            return None
+        height, width = map(int, shape)
+        center = np.asarray((0.5 * (width - 1), 0.5 * (height - 1)))
+        stage = radial_scale_measure(
+            shape,
+            fractional_extent=self.radial_fractional_extent,
+        ).to_transport(shape)
+        if name in ("double radial exposure", "double radial"):
+            return compose_positive_transports(
+                stage, stage, name="double_radial_consolidated_transport")
+        if name == "decentered double radial":
+            offset = np.asarray((self.anomaly_center_x, self.anomaly_center_y))
+            first = radial_scale_measure(
+                shape,
+                fractional_extent=self.radial_fractional_extent,
+                center_xy=tuple(center - 0.5 * offset),
+            ).to_transport(shape)
+            second = radial_scale_measure(
+                shape,
+                fractional_extent=self.radial_fractional_extent,
+                center_xy=tuple(center + 0.5 * offset),
+            ).to_transport(shape)
+            return compose_positive_transports(
+                first, second, name="decentered_double_radial_transport")
+        if name == "ghost copy anomaly":
+            return ghost_measure(
+                (self.ghost_x, self.ghost_y),
+                ghost_mass=self.ghost_mass,
+            ).to_transport(shape)
+        if name == "shear exposure":
+            return shear_exposure_measure(
+                shape,
+                fractional_extent=self.shear_fractional_extent,
+            ).to_transport(shape)
+        if name == "astigmatic scale exposure":
+            return astigmatic_scale_measure(
+                shape,
+                fractional_extent=self.astigmatic_fractional_extent,
+                angle_degrees=self.angle_degrees,
+            ).to_transport(shape)
+        rotation = rotation_exposure_measure(
+            shape,
+            exposure_degrees=self.rotation_exposure_degrees,
+            mean_degrees=self.rotation_mean_degrees,
+            center_xy=tuple(center + np.asarray(
+                (self.anomaly_center_x, self.anomaly_center_y))),
+        ).to_transport(shape)
+        ghost = ghost_measure(
+            (self.ghost_x, self.ghost_y),
+            ghost_mass=self.ghost_mass,
+        ).to_transport(shape)
+        if name == "radial rotation ghost":
+            return compose_positive_transports(
+                compose_positive_transports(stage, rotation),
+                ghost,
+                name="radial_rotation_ghost_transport",
+            )
+        astigmatic = astigmatic_scale_measure(
+            shape,
+            fractional_extent=self.astigmatic_fractional_extent,
+            angle_degrees=self.angle_degrees,
+            center_xy=tuple(center - np.asarray(
+                (self.anomaly_center_x, self.anomaly_center_y))),
+        ).to_transport(shape)
+        return compose_positive_transports(
+            compose_positive_transports(
+                compose_positive_transports(stage, rotation), astigmatic),
+            ghost,
+            name="compound_lens_anomaly_transport",
+        )
+
 
 @dataclass
 class SourceRecord:
@@ -175,6 +314,9 @@ class SourceRecord:
     observation: np.ndarray
     kernel: TransportKernel | None = None
     spatial_field: SpatialExposureField | None = None
+    observation_transport: ObservationTransport | None = None
+    transport_observation: np.ndarray | None = None
+    observation_bounds: ObservationBounds | None = None
     mode: str = "loaded_source"
     synthetic_truth_available: bool = False
     read_noise_sigma: float = 0.0
@@ -182,6 +324,7 @@ class SourceRecord:
     result: np.ndarray | None = None
     uncertainty: np.ndarray | None = None
     diagnostics: dict[str, object] = field(default_factory=dict)
+    diagnostic_views: dict[str, np.ndarray] = field(default_factory=dict)
 
 
 def _load_rgb(path: Path, maximum_dimension: int = 1024) -> np.ndarray:
@@ -287,8 +430,16 @@ class DeblurSession:
         seed: int = 0,
     ) -> SourceRecord:
         record = self.sources[int(index)]
-        spatial_field = spec.spatial_field(record.original.shape[:2])
-        if spatial_field is None:
+        observation_transport = spec.observation_transport(
+            record.original.shape[:2])
+        spatial_field = (
+            None if observation_transport is not None
+            else spec.spatial_field(record.original.shape[:2]))
+        if observation_transport is not None:
+            kernel = None
+            blurred = observation_transport.forward(record.original)
+            operator_name = observation_transport.name
+        elif spatial_field is None:
             kernel = spec.kernel()
             blurred = degrade(
                 record.original,
@@ -302,17 +453,42 @@ class DeblurSession:
             blurred = SpatialReflectedExposureOperator(
                 spatial_field).forward(record.original)
             operator_name = spatial_field.name
-        blurred = max(float(spec.exposure_gain), 0.0) * blurred
         rng = np.random.default_rng(int(seed))
-        if float(shot_peak) > 0.0:
-            peak = float(shot_peak)
-            blurred = rng.poisson(np.maximum(blurred, 0.0) * peak) / peak
-        if float(read_noise_sigma) > 0.0:
-            blurred = blurred + rng.normal(
-                0.0, float(read_noise_sigma), blurred.shape)
-        record.observation = np.clip(blurred, 0.0, 1.0)
+        bounded_sensor = None
+        if (
+            observation_transport is not None
+            and int(spec.sensor_quantization_levels) >= 2
+            and float(shot_peak) <= 0.0
+            and float(read_noise_sigma) <= 0.0
+        ):
+            period = int(spec.dead_pixel_period)
+            invalid = None
+            if period >= 2:
+                yy, xx = np.mgrid[: blurred.shape[0], : blurred.shape[1]]
+                invalid = ((7 * xx + 11 * yy) % period) == 0
+            bounded_sensor = bounded_linear_sensor_observation(
+                blurred,
+                exposure_gain=max(float(spec.exposure_gain), 1e-8),
+                quantization_levels=int(spec.sensor_quantization_levels),
+                invalid_mask=invalid,
+            )
+            record.observation = bounded_sensor.measured.copy()
+            record.transport_observation = bounded_sensor.transport_center.copy()
+            record.observation_bounds = bounded_sensor.bounds
+        else:
+            blurred = max(float(spec.exposure_gain), 0.0) * blurred
+            if float(shot_peak) > 0.0:
+                peak = float(shot_peak)
+                blurred = rng.poisson(np.maximum(blurred, 0.0) * peak) / peak
+            if float(read_noise_sigma) > 0.0:
+                blurred = blurred + rng.normal(
+                    0.0, float(read_noise_sigma), blurred.shape)
+            record.observation = np.clip(blurred, 0.0, 1.0)
+            record.transport_observation = None
+            record.observation_bounds = None
         record.kernel = kernel
         record.spatial_field = spatial_field
+        record.observation_transport = observation_transport
         record.mode = "synthetic_blur"
         record.synthetic_truth_available = True
         record.read_noise_sigma = float(read_noise_sigma)
@@ -323,11 +499,14 @@ class DeblurSession:
             "operation": "synthetic_exposure",
             "operator": operator_name,
             "spatial": spatial_field is not None,
+            "consolidated_positive_transport": observation_transport is not None,
             "read_noise_sigma": float(read_noise_sigma),
             "shot_peak": float(shot_peak),
             "exposure_gain": float(spec.exposure_gain),
             "seed": int(seed),
             "boundary": "reflect",
+            "bounded_sensor_anomaly": (
+                None if bounded_sensor is None else bounded_sensor.diagnostics),
         }
         return record
 
@@ -342,6 +521,9 @@ class DeblurSession:
         record.observation = record.original.copy()
         record.kernel = None
         record.spatial_field = None
+        record.observation_transport = None
+        record.transport_observation = None
+        record.observation_bounds = None
         record.mode = "as_is_observation"
         record.synthetic_truth_available = False
         record.read_noise_sigma = 0.0
@@ -386,12 +568,50 @@ class DeblurSession:
         tv_weight: float = 0.0012,
         flux_penalty: float = 0.035,
         passes: int = 64,
-    ) -> TwoStageDeblurResult | SpatialInverseResult:
+    ) -> TwoStageDeblurResult | SpatialInverseResult | ConsolidatedInverseResult:
         record = self.sources[int(index)]
         del tv_weight, flux_penalty  # retained in the API for older callers
-        if record.kernel is None and record.spatial_field is None:
+        if (
+            record.kernel is None
+            and record.spatial_field is None
+            and record.observation_transport is None
+        ):
             raise ValueError(
                 "this is an unknown as-is observation; use unified blind deblurring")
+        if record.observation_transport is not None:
+            solver_observation = (
+                record.observation
+                if record.transport_observation is None
+                else record.transport_observation)
+            result = refine_consolidated_transport(
+                solver_observation,
+                record.observation_transport,
+                passes=passes,
+                ratio_limit=4.0,
+                observation_bounds=record.observation_bounds,
+            )
+            prediction = record.observation_transport.forward(result.image)
+            discrepancy = estimate_noise_discrepancy(
+                solver_observation, prediction)
+            before_mse = max(float(np.mean(
+                (record.observation - record.original) ** 2)),
+                np.finfo(float).tiny,
+            )
+            after_mse = max(float(np.mean(
+                (result.image - record.original) ** 2)),
+                np.finfo(float).tiny,
+            )
+            record.result = result.image
+            record.uncertainty = result.uncertainty
+            record.diagnostics = {
+                **result.diagnostics,
+                "noise_discrepancy": discrepancy.__dict__,
+                "truth_role": "evaluation_only",
+                "observation_psnr": float(-10.0 * np.log10(before_mse)),
+                "result_psnr": float(-10.0 * np.log10(after_mse)),
+                "psnr_gain": float(10.0 * np.log10(before_mse / after_mse)),
+            }
+            return result
         if record.spatial_field is not None:
             result = refine_spatial_exposure(
                 record.observation,
@@ -443,11 +663,15 @@ class DeblurSession:
         index: int,
         *,
         passes: int = 64,
-    ) -> TwoStageDeblurResult | SpatialInverseResult:
-        """Run the same shift-first/center-mix inverse in known or blind mode."""
+    ) -> TwoStageDeblurResult | SpatialInverseResult | ConsolidatedInverseResult:
+        """Run one supplied transport or the current family-free blind estimate."""
         record = self.sources[int(index)]
         if (
-            (record.kernel is not None or record.spatial_field is not None)
+            (
+                record.kernel is not None
+                or record.spatial_field is not None
+                or record.observation_transport is not None
+            )
             and record.synthetic_truth_available
         ):
             return self.deblur_known(index, passes=passes)
@@ -661,6 +885,118 @@ class DeblurSession:
         record.diagnostics = diagnostics
         return target, inverse, posterior
 
+    def recover_relative_aberration(
+        self,
+        indices: list[int] | tuple[int, ...],
+        *,
+        target_index: int | None = None,
+        passes: int = 64,
+    ) -> tuple[int, AberrationRecoveryResult]:
+        """Recover the relative affine-aberration atlas of selected captures."""
+        selected = tuple(dict.fromkeys(int(index) for index in indices))
+        if len(selected) < 3:
+            raise ValueError(
+                "relative aberration recovery needs at least three selected "
+                "same-scene observations")
+        if any(index < 0 or index >= len(self.sources) for index in selected):
+            raise IndexError("an aberration capture index is outside the session")
+        records = [self.sources[index] for index in selected]
+        if any(
+            record.observation.shape != records[0].observation.shape
+            for record in records[1:]
+        ):
+            raise ValueError(
+                "selected aberration observations must share one raster")
+        synthetic = [record.synthetic_truth_available for record in records]
+        if any(synthetic) and not all(synthetic):
+            raise ValueError(
+                "do not mix synthetic-truth and as-is observations in one "
+                "aberration gauge")
+        if all(synthetic) and len({
+            image_fingerprint(record.original) for record in records
+        }) != 1:
+            raise ValueError(
+                "synthetic aberration captures must share one source truth")
+        target = selected[0] if target_index is None else int(target_index)
+        if target not in selected:
+            raise ValueError(
+                "the aberration output target must be a selected capture")
+
+        minimum_extent = min(records[0].observation.shape[:2])
+        patch_size = min(192, max(16, int(round(0.5 * minimum_extent))))
+        stride = max(8, int(round((2.0 / 3.0) * patch_size)))
+        result = recover_affine_aberration_multicapture(
+            [record.observation for record in records],
+            passes=passes,
+            patch_size=patch_size,
+            stride=stride,
+        )
+        target_record = self.sources[target]
+        target_record.result = result.image
+        target_record.uncertainty = result.uncertainty
+
+        raw = covariance_field_matrices(result.transport_result.fields)
+        raw_relative = raw - np.mean(raw, axis=0, keepdims=True)
+        fitted_relative = (
+            result.aberration_jet.fitted_relative_covariance_fields)
+        stationary = result.aberration_jet.stationary_points_xy
+        point_authority = np.asarray(
+            result.aberration_jet.diagnostics[
+                "stationary_point_authority"],
+            dtype=np.float64,
+        )
+        diagnostic_views: dict[str, np.ndarray] = {}
+        for local_index, (source_index, source_record) in enumerate(
+            zip(selected, records)
+        ):
+            label = f"{source_index + 1}: {source_record.label}"
+            diagnostic_views[
+                f"Relative aberration atlas — {label} "
+                "(R trace, G anisotropy, B coupling)"
+            ] = _relative_covariance_rgb(raw_relative[local_index])
+            point = stationary[local_index]
+            point_text = (
+                "no supported stationary point"
+                if not np.all(np.isfinite(point))
+                else f"stationary authority {point_authority[local_index]:.3f}"
+            )
+            diagnostic_views[
+                f"Quadratic aberration jet — {label} ({point_text})"
+            ] = _relative_covariance_rgb(
+                fitted_relative[local_index], point)
+        target_record.diagnostic_views = diagnostic_views
+
+        diagnostics = {
+            **result.diagnostics,
+            "selected_capture_indices": list(selected),
+            "selected_capture_labels": [record.label for record in records],
+            "output_target_index": target,
+            "mixing_patch_size": patch_size,
+            "mixing_stride": stride,
+            "diagnostic_view_count": len(diagnostic_views),
+            "common_aberration_warning": (
+                "relative aberration recovered; any lens transport common to "
+                "every selected capture remains unidentifiable"),
+        }
+        if all(synthetic):
+            truth = records[0].original
+            average = np.mean(
+                [record.observation for record in records], axis=0)
+            average_mse = float(np.mean((average - truth) ** 2))
+            result_mse = float(np.mean((result.image - truth) ** 2))
+            diagnostics.update({
+                "truth_role": "evaluation_only",
+                "observation_average_psnr": float(-10.0 * np.log10(max(
+                    average_mse, np.finfo(float).tiny))),
+                "aberration_result_psnr": float(-10.0 * np.log10(max(
+                    result_mse, np.finfo(float).tiny))),
+                "psnr_gain_over_observation_average": float(10.0 * np.log10(
+                    max(average_mse, np.finfo(float).tiny)
+                    / max(result_mse, np.finfo(float).tiny))),
+            })
+        target_record.diagnostics = diagnostics
+        return target, result
+
     def deblur_dense_pair_consensus(
         self,
         first_index: int,
@@ -755,6 +1091,44 @@ def _uncertainty_rgb(uncertainty: np.ndarray) -> np.ndarray:
     return np.stack((red, green, blue), axis=2)
 
 
+def _relative_covariance_rgb(
+    covariance: np.ndarray,
+    stationary_point_xy: np.ndarray | None = None,
+) -> np.ndarray:
+    """Render one signed covariance field without assigning a blur family.
+
+    Red is relative trace, green is axis anisotropy, and blue is diagonal
+    coupling.  The common zero gauge is neutral gray.  A supported stationary
+    point is drawn as a yellow cross.
+    """
+    value = np.asarray(covariance, dtype=np.float64)
+    if value.ndim != 4 or value.shape[-2:] != (2, 2):
+        raise ValueError("a covariance diagnostic must be HxWx2x2")
+    components = np.stack((
+        value[..., 0, 0] + value[..., 1, 1],
+        value[..., 0, 0] - value[..., 1, 1],
+        2.0 * value[..., 0, 1],
+    ), axis=-1)
+    scale = max(
+        float(np.quantile(np.abs(components), 0.99)),
+        np.finfo(float).tiny,
+    )
+    rgb = np.clip(0.5 + 0.5 * components / scale, 0.0, 1.0)
+    if stationary_point_xy is not None:
+        point = np.asarray(stationary_point_xy, dtype=np.float64)
+        if point.shape == (2,) and np.all(np.isfinite(point)):
+            x = int(round(float(point[0])))
+            y = int(round(float(point[1])))
+            height, width = rgb.shape[:2]
+            if 0 <= x < width and 0 <= y < height:
+                radius = max(2, int(round(0.02 * min(height, width))))
+                rgb[y, max(0, x - radius):min(width, x + radius + 1)] = (
+                    1.0, 1.0, 0.0)
+                rgb[max(0, y - radius):min(height, y + radius + 1), x] = (
+                    1.0, 1.0, 0.0)
+    return rgb
+
+
 def _rgba_texture(image: np.ndarray) -> tuple[int, int, list[float]]:
     rgb = _display_rgb(image).astype(np.float32)
     alpha = np.ones((*rgb.shape[:2], 1), dtype=np.float32)
@@ -782,6 +1156,43 @@ class DeblurWorkbenchApp:
             self.dpg.set_value("active_source", labels[self.active])
             self.dpg.set_value("pair_first", labels[0])
             self.dpg.set_value("pair_second", labels[min(1, len(labels) - 1)])
+        if self.dpg.does_item_exist("aberration_capture_selector"):
+            retained = {
+                index for index in range(len(labels))
+                if self.dpg.does_item_exist(f"aberration_capture_{index}")
+                and bool(self.dpg.get_value(f"aberration_capture_{index}"))
+            }
+            self.dpg.delete_item(
+                "aberration_capture_selector", children_only=True)
+            for index, label in enumerate(labels):
+                self.dpg.add_checkbox(
+                    label=label,
+                    tag=f"aberration_capture_{index}",
+                    default_value=index in retained,
+                    parent="aberration_capture_selector",
+                )
+
+    def _set_aberration_capture_checked(
+        self,
+        index: int,
+        checked: bool,
+    ) -> None:
+        tag = f"aberration_capture_{int(index)}"
+        if self.dpg.does_item_exist(tag):
+            self.dpg.set_value(tag, bool(checked))
+
+    def _selected_aberration_indices(self) -> list[int]:
+        return [
+            index for index in range(len(self.session.sources))
+            if self.dpg.does_item_exist(f"aberration_capture_{index}")
+            and bool(self.dpg.get_value(f"aberration_capture_{index}"))
+        ]
+
+    def select_all_aberration_captures(self, selected: bool) -> None:
+        for index in range(len(self.session.sources)):
+            self._set_aberration_capture_checked(index, selected)
+        count = len(self.session.sources) if selected else 0
+        self.status(f"Selected {count} aberration capture(s)")
 
     def _index_from_label(self, label: str) -> int:
         if not label:
@@ -831,6 +1242,11 @@ class DeblurWorkbenchApp:
                 return float(dpg.get_value(tag))
             except Exception:
                 return float(default)
+        def optional_int(tag: str, default: int) -> int:
+            try:
+                return int(dpg.get_value(tag))
+            except Exception:
+                return int(default)
         return BlurSpec(
             kind=dpg.get_value("blur_kind"),
             sigma=dpg.get_value("blur_sigma"),
@@ -848,6 +1264,16 @@ class DeblurWorkbenchApp:
                 "rolling_row_acceleration", 1.0),
             rolling_exposure_extent=optional(
                 "rolling_exposure_extent", 2.0),
+            radial_fractional_extent=optional("radial_extent", 0.05),
+            anomaly_center_x=optional("anomaly_center_x", 4.0),
+            anomaly_center_y=optional("anomaly_center_y", -3.0),
+            ghost_x=optional("ghost_x", 3.0),
+            ghost_y=optional("ghost_y", -2.0),
+            ghost_mass=optional("ghost_mass", 0.08),
+            shear_fractional_extent=optional("shear_extent", 0.035),
+            astigmatic_fractional_extent=optional("astigmatic_extent", 0.04),
+            sensor_quantization_levels=optional_int("sensor_levels", 0),
+            dead_pixel_period=optional_int("dead_pixel_period", 0),
             exposure_gain=optional("synthetic_exposure_gain", 1.0),
             seed=dpg.get_value("synthetic_seed"),
         )
@@ -868,6 +1294,7 @@ class DeblurWorkbenchApp:
                 self._refresh_source_controls()
             else:
                 self.session.synthesize(self.active, self.spec(), **kwargs)
+            self._set_aberration_capture_checked(self.active, True)
             self.render()
             record = self.session.sources[self.active]
             self.status(f"Synthesized {record.diagnostics['operator']}")
@@ -880,6 +1307,7 @@ class DeblurWorkbenchApp:
             return
         try:
             record = self.session.use_as_is(self.active)
+            self._set_aberration_capture_checked(self.active, True)
             self.render()
             self.status(
                 "Using loaded pixels as the immutable deblurring observation; "
@@ -916,6 +1344,28 @@ class DeblurWorkbenchApp:
                 passes=self.dpg.get_value("solver_passes"),
             )
             diagnostic = self.session.sources[self.active].diagnostics
+            if diagnostic.get("method") == (
+                "one_consolidated_positive_observation_transport_inverse"
+            ):
+                operator = diagnostic["operator"]
+                message = (
+                    f"{diagnostic['method']}; one row measure with "
+                    f"{operator['contribution_count']} contributions; "
+                    f"passes {diagnostic['passes_used']} "
+                    f"({diagnostic['stopped_by']}); forward RMS "
+                    f"{diagnostic['forward_rms']:.5f}; "
+                    "operator decomposition=false; family classification=false; "
+                    f"sensitivity RMS {diagnostic['uncertainty_rms']:.5f}; "
+                    f"measured synthetic gain {diagnostic['psnr_gain']:+.2f} dB"
+                )
+                bounds = diagnostic.get("observation_bounds", {})
+                if bounds.get("interval_censored"):
+                    message += (
+                        f"; interval-censored observation; authority "
+                        f"{100.0 * diagnostic['observation_authority_fraction']:.2f}%; "
+                        f"mean interval width {diagnostic['mean_interval_width']:.5f}"
+                    )
+                return message
             if "field" in diagnostic:
                 field = diagnostic["field"]
                 if diagnostic.get("estimation_decision") == (
@@ -948,6 +1398,16 @@ class DeblurWorkbenchApp:
                 f"observation unchanged={diagnostic['observation_unchanged']}; "
                 f"unresolved spectrum {100.0 * support['dead_fraction']:.1f}%"
             )
+            analytic = diagnostic.get("analytic_transport_support")
+            if analytic is not None:
+                axis = analytic["principal_direction_xy"]
+                message += (
+                    f"; analytic support dimension "
+                    f"{analytic['numerical_dimension']}; principal flow "
+                    f"({axis[0]:+.3f}, {axis[1]:+.3f}); bend coupling "
+                    f"{analytic['signed_bend_coupling']:+.4f}; "
+                    "family selection=false"
+                )
             characteristic = diagnostic["characteristic_transport"]
             if characteristic.get("selected"):
                 line_authority = characteristic.get(
@@ -987,7 +1447,7 @@ class DeblurWorkbenchApp:
             return message
 
         self._start(
-            "Recovering deterministic transport, then centered mixing...",
+            "Following the supported observation-transport direction...",
             operation,
         )
 
@@ -1100,6 +1560,48 @@ class DeblurWorkbenchApp:
 
         self._start(
             "Transporting all loaded same-scene observations through one posterior...",
+            operation,
+        )
+
+    def recover_selected_aberration(self) -> None:
+        indices = self._selected_aberration_indices()
+        if len(indices) < 3:
+            self.status(
+                "Select at least three same-scene observations for relative "
+                "aberration recovery")
+            return
+        target = self.active if self.active in indices else indices[0]
+
+        def operation() -> str:
+            target_index, result = self.session.recover_relative_aberration(
+                indices,
+                target_index=target,
+                passes=self.dpg.get_value("solver_passes"),
+            )
+            self.active = target_index
+            diagnostic = self.session.sources[target_index].diagnostics
+            jet = result.aberration_jet.diagnostics
+            stationary_authority = np.asarray(
+                jet["stationary_point_authority"], dtype=np.float64)
+            supported_points = int(np.count_nonzero(
+                stationary_authority > 0.05))
+            score = diagnostic.get("psnr_gain_over_observation_average")
+            score_text = (
+                "" if score is None
+                else f"; synthetic gain over average {score:+.2f} dB"
+            )
+            return (
+                f"relative aberration recovered from {len(indices)} selected "
+                f"captures; family classification=false; quadratic-jet "
+                f"crossfit authority {jet['crossfit_predictive_authority']:.3f}; "
+                f"relative atlas RMS {jet['relative_atlas_signal_rms']:.5f}; "
+                f"supported stationary candidates {supported_points}/"
+                f"{len(indices)}; {diagnostic['common_aberration_warning']}"
+                f"{score_text}"
+            )
+
+        self._start(
+            "Cancelling the unknown scene and recovering relative lens transport...",
             operation,
         )
 
@@ -1217,6 +1719,10 @@ class DeblurWorkbenchApp:
                 "Exposure-transport uncertainty (diagnostic)",
                 _uncertainty_rgb(record.uncertainty),
             ))
+        if record.diagnostics.get("method") == (
+            "relative_affine_aberration_transport_recovery"
+        ):
+            views.extend(record.diagnostic_views.items())
         for tag in self.texture_tags:
             if self.dpg.does_item_exist(tag):
                 self.dpg.delete_item(tag)
@@ -1306,10 +1812,17 @@ def run_gui() -> None:
                 dpg.add_combo(
                     (
                         "None", "Gaussian", "Disk", "Line", "Curve",
-                        "Random path", "Rotational exposure",
+                        "Random path", "Wronski binomial",
+                        "Wronski repeated", "Wronski separable",
+                        "Radial scale exposure", "Double radial exposure",
+                        "Decentered double radial", "Ghost copy anomaly",
+                        "Shear exposure", "Astigmatic scale exposure",
+                        "Radial rotation ghost", "Compound lens anomaly",
+                        "Rotational exposure",
                         "Rolling shutter exposure",
                     ),
-                    tag="blur_kind", label="Blur family", default_value="Line", width=150)
+                    tag="blur_kind", label="Synthetic operator",
+                    default_value="Line", width=170)
                 dpg.add_slider_float(
                     tag="blur_sigma", label="Gaussian sigma", default_value=2.0,
                     min_value=0.1, max_value=8.0, width=180)
@@ -1321,6 +1834,10 @@ def run_gui() -> None:
                     min_value=1.0, max_value=41.0, width=180)
             with dpg.group(horizontal=True):
                 dpg.add_slider_float(
+                    tag="radial_extent", label="Radial scale extent",
+                    default_value=0.05, min_value=0.005, max_value=0.20,
+                    format="%.4f", width=210)
+                dpg.add_slider_float(
                     tag="blur_angle", label="Angle", default_value=0.0,
                     min_value=0.0, max_value=179.0, width=180)
                 dpg.add_slider_float(
@@ -1331,6 +1848,36 @@ def run_gui() -> None:
                     min_value=1.0, max_value=24.0, width=180)
                 dpg.add_input_int(
                     tag="synthetic_seed", label="Seed", default_value=0, width=100)
+            with dpg.group(horizontal=True):
+                dpg.add_slider_float(
+                    tag="anomaly_center_x", label="Anomaly center X offset",
+                    default_value=4.0, min_value=-24.0, max_value=24.0,
+                    width=210)
+                dpg.add_slider_float(
+                    tag="anomaly_center_y", label="Anomaly center Y offset",
+                    default_value=-3.0, min_value=-24.0, max_value=24.0,
+                    width=210)
+                dpg.add_slider_float(
+                    tag="astigmatic_extent", label="Astigmatic scale extent",
+                    default_value=0.04, min_value=0.005, max_value=0.20,
+                    format="%.4f", width=210)
+                dpg.add_slider_float(
+                    tag="shear_extent", label="Shear extent",
+                    default_value=0.035, min_value=0.0, max_value=0.20,
+                    format="%.4f", width=180)
+            with dpg.group(horizontal=True):
+                dpg.add_slider_float(
+                    tag="ghost_x", label="Ghost source X offset",
+                    default_value=3.0, min_value=-24.0, max_value=24.0,
+                    width=190)
+                dpg.add_slider_float(
+                    tag="ghost_y", label="Ghost source Y offset",
+                    default_value=-2.0, min_value=-24.0, max_value=24.0,
+                    width=190)
+                dpg.add_slider_float(
+                    tag="ghost_mass", label="Ghost mass",
+                    default_value=0.08, min_value=0.01, max_value=0.45,
+                    format="%.3f", width=180)
             with dpg.group(horizontal=True):
                 dpg.add_slider_float(
                     tag="rotation_mean", label="Mean rotation (degrees)",
@@ -1353,6 +1900,17 @@ def run_gui() -> None:
                     tag="rolling_exposure_extent", label="Rolling exposure extent",
                     default_value=2.0, min_value=0.0, max_value=12.0,
                     width=210)
+            with dpg.group(horizontal=True):
+                dpg.add_input_int(
+                    tag="sensor_levels", label="Linear quantization levels (0=off)",
+                    default_value=0, min_value=0, max_value=65536, width=150)
+                dpg.add_input_int(
+                    tag="dead_pixel_period", label="Dead-pixel pattern period (0=off)",
+                    default_value=0, min_value=0, max_value=997, width=150)
+                dpg.add_text(
+                    "Clipping becomes an interval; dead pixels have zero authority.",
+                    color=(150, 175, 195, 255),
+                )
             with dpg.group(horizontal=True):
                 dpg.add_slider_float(
                     tag="shift_x", label="Deterministic shift X", default_value=0.0,
@@ -1379,10 +1937,12 @@ def run_gui() -> None:
                     width=220)
 
         with dpg.collapsing_header(
-            label="Unified shift-first reconstruction", default_open=True):
+            label="Unified observation-transport reconstruction",
+            default_open=True):
             dpg.add_text(
-                "One inverse: deterministic coordinate transport first; "
-                "positive mixing around the transported centers second.",
+                "One positive observation measure and one matched inverse.  "
+                "Synthetic compositions are consolidated before reconstruction; "
+                "unknown images receive no outer/inner or blur-family label.",
                 color=(180, 205, 220, 255),
             )
             with dpg.group(horizontal=True):
@@ -1392,6 +1952,53 @@ def run_gui() -> None:
                 dpg.add_button(
                     label="Deblur working observation",
                     callback=lambda: app.deblur_active(), width=260)
+
+        with dpg.collapsing_header(
+            label="Relative lens-aberration recovery", default_open=True):
+            dpg.add_text(
+                "Choose only registered observations of the same scene. Pairwise "
+                "Fourier-circle cancellation removes the unknown scene and recovers "
+                "one relative spatial covariance atlas; no radial, astigmatic, "
+                "ghost, or other blur family is selected.",
+                color=(180, 205, 220, 255),
+                wrap=1400,
+            )
+            dpg.add_text(
+                "The result cannot identify lens transport common to every selected "
+                "capture. That component remains an explicit gauge.",
+                color=(245, 185, 90, 255),
+                wrap=1400,
+            )
+            with dpg.group(horizontal=True):
+                dpg.add_button(
+                    label="Add current synthetic operator as a new capture",
+                    callback=lambda: app.synthesize(True), width=390)
+                dpg.add_button(
+                    label="Select all listed",
+                    callback=lambda: app.select_all_aberration_captures(True),
+                    width=150)
+                dpg.add_button(
+                    label="Clear selection",
+                    callback=lambda: app.select_all_aberration_captures(False),
+                    width=150)
+                dpg.add_button(
+                    label="Recover selected aberration (3+)",
+                    callback=lambda: app.recover_selected_aberration(),
+                    width=300)
+            dpg.add_text(
+                "Selected same-scene observations:",
+                color=(150, 175, 195, 255),
+            )
+            with dpg.group(tag="aberration_capture_selector"):
+                pass
+            dpg.add_text(
+                "Diagnostic tabs: neutral gray is the common zero gauge; red is "
+                "relative trace, green is axis anisotropy, blue is diagonal "
+                "coupling, and a yellow cross is an authority-gated stationary "
+                "candidate.",
+                color=(150, 175, 195, 255),
+                wrap=1400,
+            )
 
         with dpg.collapsing_header(
             label="Optional multi-observation estimation", default_open=False):

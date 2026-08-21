@@ -150,6 +150,33 @@ from .cross_chart_transport_closure_2d import (
     cross_chart_transport_closure_readout,
     denoise_cross_chart_transport_closure_2d,
 )
+from .compressed_eikonal_observer_2d import (
+    compressed_eikonal_observation_2d,
+    cross_measured_eikonal_observation_2d,
+    interlaced_scene_views_2d,
+    phase_ordered_cross_observation_2d,
+    phase_resolved_eikonal_observation_2d,
+    phase_union_eikonal_observation_2d,
+    pursue_compressed_eikonal_scene_2d,
+    screened_selling_posterior_observation_2d,
+)
+from .causal_scale_transport_2d import (
+    causal_scale_transport_observation_2d,
+)
+from .residual_erosion_transport_2d import (
+    denoise_cavity_residual_erosion_2d,
+)
+from .conservative_exchange_transport_2d import (
+    conservative_exchange_cycle_2d,
+    denoise_conservative_exchange_transport_2d,
+)
+from .zonotopic_edge_flux_2d import zonotopic_edge_flux_state_2d
+from .continuous_scale_zonotope_transport_2d import (
+    continuous_scale_zonotope_transport_state_2d,
+)
+from .continuous_scale_edge_family_transport_2d import (
+    continuous_scale_edge_family_transport_state_2d,
+)
 from .continuous_tangent_source_geometry_2d import (
     continuous_tangent_source_geometry_2d,
 )
@@ -201,6 +228,21 @@ __all__ = [
     "phase_integrated_zero_residual_component_family_2d",
     "cross_chart_transport_closure_readout",
     "denoise_cross_chart_transport_closure_2d",
+    "conservative_exchange_cycle_2d",
+    "denoise_conservative_exchange_transport_2d",
+    "zonotopic_edge_flux_state_2d",
+    "continuous_scale_zonotope_transport_state_2d",
+    "continuous_scale_edge_family_transport_state_2d",
+    "compressed_eikonal_observation_2d",
+    "cross_measured_eikonal_observation_2d",
+    "interlaced_scene_views_2d",
+    "phase_ordered_cross_observation_2d",
+    "phase_resolved_eikonal_observation_2d",
+    "phase_union_eikonal_observation_2d",
+    "pursue_compressed_eikonal_scene_2d",
+    "screened_selling_posterior_observation_2d",
+    "causal_scale_transport_observation_2d",
+    "denoise_cavity_residual_erosion_2d",
     "denoise_oracle_fabada_1d",
     "denoise_oracle_fabada_from_corruption_1d",
     "denoise_crossfit_characteristic_transport_2d",

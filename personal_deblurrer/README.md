@@ -19,7 +19,12 @@ or did not measure.
 
 1. `kernels.py` constructs positive, exactly normalized analytic and sampled
    exposure paths. Forward and adjoint circular transport close to floating
-   point precision.
+   point precision. Wronski's `[1/4, 1/2, 1/4]` filter, its repeated binomial
+   powers, and its separable product are represented as the same positive
+   displacement measure. `analytic_support.py` derives the measure's centroid,
+   covariance eigenframe, third/fourth cumulants, and exact Fourier-eikonal
+   attenuation flow without choosing a blur family; characteristic zeros are
+   returned as unsupported directions. See `WRONSKI_OPERATOR.md`.
 2. `estimation.py` estimates a pair of registered blur operators from the
    phase-preserving cross-observation closure
 
@@ -49,11 +54,16 @@ or did not measure.
    mixture image, spatial standard deviation, credible limits, entropy,
    retained probability, and a limited noise/model-discrepancy audit.
 7. `workbench.py` is a Dear PyGui laboratory for loading images, synthesizing
-   Gaussian, defocus, line, curved, random-path, rotation, and rolling-shutter
-   exposure blur with sensor gain plus read or shot noise, running
+   Gaussian, defocus, line, curved, random-path, radial-scale, double-radial,
+   rotation, and rolling-shutter exposure blur with sensor gain plus read or
+   shot noise, running
    known-operator deblurring, and estimating/deblurring an
    explicitly chosen registered pair through one continuous positive
-   flow-atlas consensus. Equal image dimensions are never treated as
+   flow-atlas consensus. Its dedicated relative-aberration panel selects an
+   explicit same-scene capture set, runs the blind affine-aberration recovery,
+   reports quadratic-jet crossfit and stationary-candidate authority, warns
+   about the common-lens gauge, and renders raw and fitted relative tensor
+   fields as diagnostic tabs. Equal image dimensions are never treated as
    registration. The
    finite global-kernel posterior remains a headless estimation control, not a
    visible reconstruction mode.
@@ -181,6 +191,31 @@ or did not measure.
     curve, and random-path PSNR and SSIM while removing repeated line echoes.
     First/second exposure moments share one transport call, and numerically
     inert straight-line recurrences are not executed.
+25. `composed_transport.py` makes the spatial positive operator closed under
+    exact discrete composition. Sequential reflected/bilinear transports
+    become one row measure with one exact adjoint, so reconstruction receives
+    no outer/inner factorization. Affine scale atoms supply an additive
+    log-scale chart for radial exposure; a twice-applied radial operator is one
+    convolved measure. The current benchmark is a known-measure representation
+    and inverse gate, not a blind estimate. See
+    `COMPOSED_OBSERVATION_TRANSPORT.md`.
+26. `observation_anomalies.py` constructs ghost, rotation, shear, decentered
+    radial, and rotated astigmatic-scale measures in that same affine
+    transport. Saturation, quantization, and missing pixels instead become
+    per-sample admissible intervals and precision: they constrain the one
+    transport without masquerading as displacement. The workbench exposes the
+    geometric compounds plus optional bounded sensor damage. See
+    `OBSERVATION_ANOMALIES.md`.
+27. `aberration_recovery.py` estimates a relative lens-aberration field from
+    several same-scene observations without clean truth or blur-family labels.
+    Pairwise Fourier-circle cancellation yields a local covariance atlas; a
+    checkerboard-crossfit complete quadratic jet audits whether that atlas has
+    the coordinate structure of affine lens transport. Reconstruction retains
+    the raw atlas, so the diagnostic jet cannot erase unsupported anomalies.
+    A lens component common to every capture remains an explicit gauge. The
+    workbench exposes this exact path over explicitly checked observations and
+    visualizes every recovered raw atlas and fitted jet without using synthetic
+    truth. See `ABERRATION_RECOVERY.md`.
 
 The workbench gives a loaded file exactly two input roles:
 
@@ -235,6 +270,14 @@ the unconstrained atlas while retaining an explicit center uncertainty reserve.
 The measured battery is reported in `RESULTS.md`; `UNCERTAINTY_RESEARCH.md`
 separates the uncertainty types and records the next method; the collected
 primary-paper set and blur-generator taxonomy are under `papers/`.
+
+Run the composition-closure and double-radial gate with:
+
+```sh
+python3 -m unittest personal_deblurrer.test_composed_transport
+python3 -m personal_deblurrer.run_composed_transport_benchmark \
+  --size 96 --passes 64 --out /tmp/personal_deblurrer_composed_transport
+```
 
 ## Chronology boundary
 
@@ -322,6 +365,11 @@ ssh m4mini-awdl \
   --size 96 --passes 64 --out /tmp/personal_deblurrer_visibility
 
 /Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m personal_deblurrer.run_aberration_recovery_benchmark \
+  --size 96 --passes 64 \
+  --out /tmp/personal_deblurrer_aberration_recovery
+
+/Users/ultimussecundai/.local/bin/m4build -- \
   python3 -m personal_deblurrer.run_multisheet_benchmark \
   --size 96 --passes 64 --out /tmp/personal_deblurrer_multisheet
 
@@ -378,8 +426,12 @@ The present positive control demonstrates:
 - large recovery gains when blur families cover complementary Fourier bands;
 - a measurable advantage of the warm flux solve over a closed-form inverse in
   those covered cases; and
-- explicit abstention for common-blur ambiguity and large joint dead bands.
+- explicit abstention for common-blur ambiguity and large joint dead bands;
+- recovery of a relative affine-aberration atlas across same-scene captures,
+  with the common lens component retained as an explicit gauge.
 
 It does not yet establish broad superiority, single-image blind field
 identification, arbitrary non-translational multi-sheet support, or real-capture
-performance. Those are promotion gates, not implied conclusions.
+performance. It also does not establish single-image blind aberration recovery
+or recovery of a lens component shared by every capture. Those are promotion
+gates, not implied conclusions.

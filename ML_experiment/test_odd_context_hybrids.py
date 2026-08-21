@@ -3,14 +3,18 @@ import unittest
 import torch
 
 from ML_experiment.odd_context_hybrids import (
-    CONTROLLED_VARIANTS, FACTOR_VARIANTS, ContextualCubicBridge,
+    BASELINE_VARIANTS, CONTROLLED_VARIANTS, FACTOR_VARIANTS, OPERATOR_VARIANTS,
+    ContextualCubicBridge,
     CubicResidual, VARIANTS, make_hybrid)
 
 
 class OddContextHybridTests(unittest.TestCase):
     def test_all_variants_have_safe_shapes_and_gradients(self):
         x = torch.randn(6, 16)
-        for name in dict.fromkeys((*VARIANTS, *CONTROLLED_VARIANTS, *FACTOR_VARIANTS)):
+        for name in dict.fromkeys((
+            *VARIANTS, *BASELINE_VARIANTS, *CONTROLLED_VARIANTS,
+            *FACTOR_VARIANTS, *OPERATOR_VARIANTS
+        )):
             with self.subTest(name=name):
                 model = make_hybrid(name, 16, 2, 16)
                 output = model(x)
@@ -27,6 +31,19 @@ class OddContextHybridTests(unittest.TestCase):
             control_count = sum(p.numel() for p in make_hybrid(control, 16, 2, 24).parameters())
             bridge_count = sum(p.numel() for p in make_hybrid(bridge, 16, 2, 24).parameters())
             self.assertLess(abs(control_count - bridge_count), 200)
+
+    def test_ordinary_mlp_controls_match_exact_parameter_budgets(self):
+        for ordinary, target in (
+            ("ordinary_mlp_self_budget", "self_context"),
+            ("ordinary_mlp_cone_budget", "self_contextual_full_learned_cone"),
+        ):
+            ordinary_count = sum(
+                p.numel() for p in make_hybrid(ordinary, 16, 2, 24).parameters()
+            )
+            target_count = sum(
+                p.numel() for p in make_hybrid(target, 16, 2, 24).parameters()
+            )
+            self.assertEqual(ordinary_count, target_count)
 
     def test_tied_bridge_rank_is_a_real_capacity_axis(self):
         small = make_hybrid("self_contextual_tied_rank8", 16, 2, 24)
@@ -72,6 +89,48 @@ class OddContextHybridTests(unittest.TestCase):
             self.assertTrue(torch.allclose(
                 bridge._project(layer, value, index), layer(value),
                 atol=2e-6, rtol=2e-6,
+            ))
+
+    def test_operator_frame_starts_as_exact_learned_cone(self):
+        torch.manual_seed(91)
+        baseline = make_hybrid("self_contextual_full_learned_cone", 16, 2, 24)
+        torch.manual_seed(91)
+        operator = make_hybrid(
+            "self_contextual_operator_sphere_channel_r2", 16, 2, 24
+        )
+        operator.parent.load_state_dict(baseline.parent.state_dict())
+        operator.bridge.load_state_dict(baseline.bridge.state_dict())
+        operator.branch_scale.data.copy_(baseline.branch_scale.data)
+        x = torch.randn(9, 16)
+        with torch.no_grad():
+            self.assertTrue(torch.allclose(
+                operator(x), baseline(x), atol=3e-6, rtol=3e-6
+            ))
+
+    def test_operator_coordinates_remain_on_unit_sphere(self):
+        model = make_hybrid(
+            "self_contextual_operator_sphere_channel_r4", 16, 2, 24
+        )
+        coordinates = torch.nn.functional.normalize(
+            model.operator_coordinates, dim=0
+        )
+        self.assertTrue(torch.allclose(
+            coordinates.square().sum(0),
+            torch.ones(coordinates.shape[1]),
+        ))
+
+    def test_nested_operator_starts_as_exact_learned_cone(self):
+        torch.manual_seed(118)
+        baseline = make_hybrid("self_contextual_full_learned_cone", 16, 2, 24)
+        torch.manual_seed(118)
+        nested = make_hybrid("self_contextual_nested_operator_r2", 16, 2, 24)
+        nested.parent.load_state_dict(baseline.parent.state_dict())
+        nested.bridge.load_state_dict(baseline.bridge.state_dict())
+        nested.branch_scale.data.copy_(baseline.branch_scale.data)
+        x = torch.randn(9, 16)
+        with torch.no_grad():
+            self.assertTrue(torch.allclose(
+                nested(x), baseline(x), atol=3e-6, rtol=3e-6
             ))
 
     def test_angular_cubic_is_odd_and_degree_one(self):

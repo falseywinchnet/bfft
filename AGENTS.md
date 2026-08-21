@@ -294,6 +294,47 @@ Run the union-catalog exact-budget comparison and tests on the M4 CPU:
   --out /tmp/self_context_superset --widths 16 --seeds 2 --steps 400
 ```
 
+## Periodic N-D commuting-chart study
+
+Run the focused periodic N-D diagnosis and its structural tests on the M4 CPU:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  PYTHONPATH=/Users/joshuahkuttenkuler/Library/Python/3.9/lib/python/site-packages \
+  python3 ML_experiment/periodic_nd_study.py \
+  --out /tmp/periodic_nd_study --steps 2000 --seeds 3
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  PYTHONPATH=/Users/joshuahkuttenkuler/Library/Python/3.9/lib/python/site-packages \
+  python3 -m unittest ML_experiment.test_periodic_nd_study
+```
+
+Copy the generated `/tmp/periodic_nd_study` artifacts back immediately before
+another mirror sync. The measured interpretation and the nonperiodic
+commuting-chart construction are documented in
+`ML_experiment/PERIODIC_ND_DIAGNOSIS.md`.
+
+## Sparse-observation sine geometry study
+
+Run the progressively thinned 1-D sine acquisition study and its focused tests
+on the M4 CPU:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  PYTHONPATH=/Users/joshuahkuttenkuler/Library/Python/3.9/lib/python/site-packages \
+  python3 ML_experiment/sparse_sine_study.py \
+  --out /tmp/sparse_sine_study --steps 1000 --seeds 3
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  PYTHONPATH=/Users/joshuahkuttenkuler/Library/Python/3.9/lib/python/site-packages \
+  python3 -m unittest ML_experiment.test_sparse_sine_study
+```
+
+Copy the `/tmp/sparse_sine_study` artifacts back before another mirror sync.
+The task, acquisition diagnosis, and measured separation between observed-tail
+recovery and unsupported extrapolation are documented in
+`ML_experiment/SPARSE_SINE_GEOMETRY.md`.
+
 ## Personal deblurrer
 
 Run the complete invariant suite and the spatial estimation batteries on the
@@ -344,7 +385,8 @@ probes on the M4 Mini:
   denoiser.test_continual_fabada_eikonal_2d \
   denoiser.test_canonical_variance_transport_2d \
   denoiser.test_backward_moment_smoother_2d \
-  denoiser.test_causal_information_lineage_2d
+  denoiser.test_causal_information_lineage_2d \
+  denoiser.test_causal_scale_transport_2d
 
 /Users/ultimussecundai/.local/bin/m4build -- \
   python3 -m denoiser probes --out /tmp/denoiser_transport_probes
@@ -411,6 +453,65 @@ probes on the M4 Mini:
 /Users/ultimussecundai/.local/bin/m4build -- \
   python3 -m denoiser.probe_terminal_component_visual_2d \
   --size 64 --out /tmp/terminal_component_visual64
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m unittest denoiser.test_compressed_eikonal_observer_2d
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m denoiser.probe_compressed_eikonal_observer_2d \
+  --size 32 --out /tmp/compressed_eikonal_phase_union_residual_32.json
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m denoiser.probe_causal_scale_transport_2d \
+  --size 32 --out /tmp/causal_scale_transport_32.json
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m denoiser.probe_scale_retention_audit_2d \
+  --size 32 --out /tmp/scale_retention_audit_32.json
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m denoiser.probe_scale_retention_visual_2d \
+  --size 96 --out /tmp/scale_retention_visual_96.png
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m unittest denoiser.test_residual_erosion_transport_2d
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m denoiser.probe_residual_erosion_transport_2d \
+  --size 32 --seeds 1 --out /tmp/residual_erosion_transport_32.json
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m unittest denoiser.test_conservative_exchange_transport_2d
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m denoiser.probe_conservative_exchange_transport_2d \
+  --size 32 --numerical-cycle-ceiling 3 --all-corruptions \
+  --out /tmp/conservative_exchange_transport_32.json
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m denoiser.probe_exchange_transfer_laws_2d \
+  --size 32 --cycles 3 --out /tmp/exchange_transfer_laws_32.json
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m unittest denoiser.test_zonotopic_edge_flux_2d
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m denoiser.probe_zonotopic_edge_flux_2d \
+  --size 32 --out /tmp/zonotopic_edge_flux_32.json
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m unittest denoiser.test_continuous_scale_zonotope_transport_2d
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m denoiser.probe_continuous_scale_zonotope_transport_2d \
+  --size 32 --out /tmp/continuous_scale_zonotope_transport_32.json
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m unittest denoiser.test_continuous_scale_edge_family_transport_2d
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m denoiser.probe_continuous_scale_edge_family_transport_2d \
+  --size 20 --out /tmp/continuous_scale_edge_family_transport_20.json
 ```
 
 The V3 support-corruption probe imports the full BFFT Meyer and vision ABI.

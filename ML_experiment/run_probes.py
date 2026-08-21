@@ -36,6 +36,12 @@ def field_probe(task, model, size):
 def curve_probe(task, model):
     x = task.x_test
     target = task.y_test
+    if task.name == "sparse_sine_1d":
+        # The ordinary test interval is the uniformly measured observed
+        # support. Append the genuinely unobserved periods only for plotting;
+        # evaluation keeps those two questions separate.
+        x = torch.cat((x, *(part[1:] for part in task.tail_x)))
+        target = torch.cat((target, *(part[1:] for part in task.tail_y)))
     if task.output_dim == 3:
         # The spatial plot must show what was observed and what is genuinely
         # continuation.  Join a deterministic observed subset to the ordered

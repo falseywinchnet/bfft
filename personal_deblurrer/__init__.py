@@ -10,6 +10,15 @@ from .kernels import (
     line_kernel,
     path_kernel,
     translated_kernel,
+    wronski_binomial_kernel,
+    wronski_separable_kernel,
+)
+from .analytic_support import (
+    AnalyticTransportSupport,
+    FourierEikonalField,
+    analyze_transport_support,
+    covariance_transport_kernel,
+    fourier_eikonal_field,
 )
 from .decomposition import (
     CenteredMixEstimate,
@@ -49,6 +58,35 @@ from .spatial_transport import (
     refine_spatial_exposure,
     rotational_exposure,
     shear_path_exposure,
+)
+from .composed_transport import (
+    AffineObservationMeasure,
+    AffinePositiveObservationTransport,
+    ComposedPositiveObservationTransport,
+    ConsolidatedInverseResult,
+    LocalObservationJet,
+    ObservationBounds,
+    PositiveObservationTransport,
+    compose_affine_measures,
+    compose_positive_transports,
+    radial_scale_measure,
+    refine_consolidated_transport,
+)
+from .observation_anomalies import (
+    BoundedSensorObservation,
+    astigmatic_scale_measure,
+    bounded_linear_sensor_observation,
+    ghost_measure,
+    rotation_exposure_measure,
+    shear_exposure_measure,
+    translation_mixture_measure,
+)
+from .aberration_recovery import (
+    AberrationRecoveryResult,
+    AffineAberrationJet,
+    covariance_field_matrices,
+    fit_affine_aberration_jet,
+    recover_affine_aberration_multicapture,
 )
 from .spatial_estimation import (
     RotationConsensusEstimate,
@@ -112,6 +150,9 @@ from .uncertainty import (
 )
 
 __all__ = [
+    "AberrationRecoveryResult",
+    "AffineAberrationJet",
+    "AnalyticTransportSupport",
     "DeblurResult",
     "CenteredMixEstimate",
     "CurvilinearExposureChart",
@@ -124,6 +165,9 @@ __all__ = [
     "TransportMixFactorization",
     "TwoStageDeblurResult",
     "UncertainDeblurResult",
+    "FourierEikonalField",
+    "analyze_transport_support",
+    "covariance_transport_kernel",
     "apply_circular",
     "curved_path_kernel",
     "deblur_pair_posterior",
@@ -133,6 +177,7 @@ __all__ = [
     "estimate_pair_posterior",
     "estimate_relative_shift",
     "factor_transport_mix",
+    "fourier_eikonal_field",
     "fit_curvilinear_exposure_chart",
     "fuse_transport_observations",
     "gaussian_kernel",
@@ -142,6 +187,27 @@ __all__ = [
     "path_kernel",
     "refine_curvilinear_exposure",
     "SpatialExposureField",
+    "AffineObservationMeasure",
+    "AffinePositiveObservationTransport",
+    "ComposedPositiveObservationTransport",
+    "ConsolidatedInverseResult",
+    "LocalObservationJet",
+    "ObservationBounds",
+    "PositiveObservationTransport",
+    "compose_affine_measures",
+    "compose_positive_transports",
+    "radial_scale_measure",
+    "refine_consolidated_transport",
+    "BoundedSensorObservation",
+    "astigmatic_scale_measure",
+    "bounded_linear_sensor_observation",
+    "ghost_measure",
+    "rotation_exposure_measure",
+    "shear_exposure_measure",
+    "translation_mixture_measure",
+    "covariance_field_matrices",
+    "fit_affine_aberration_jet",
+    "recover_affine_aberration_multicapture",
     "CompactGlobalExposureField",
     "CompactGlobalExposureOperatorBatch",
     "CompactGlobalReflectedExposureOperator",
@@ -193,4 +259,6 @@ __all__ = [
     "translated_kernel",
     "two_stage_deblur_blind",
     "two_stage_deblur_known",
+    "wronski_binomial_kernel",
+    "wronski_separable_kernel",
 ]

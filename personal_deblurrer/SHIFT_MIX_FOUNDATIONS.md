@@ -96,11 +96,12 @@ way to measure those bands.
 
 For a file marked **Use as-is**, absolute shift is declared unobservable. The
 current provisional estimator uses the autocorrelation of the absolute
-phase-only image to measure centered displacement covariance. A strongly
-anisotropic covariance becomes one continuous directional path moment; an
-isotropic covariance becomes one center-cloud scale. This branch occurs only
-during estimation. Both pass through exactly the same positive center-mixing
-inverse.
+phase-only image to measure centered displacement covariance. The complete
+covariance becomes one tensor Lobatto positive cubature: every numerically
+resolved eigenaxis contributes continuously through the same three-node
+moment rule. There is no anisotropy threshold, line/cloud branch, or Gaussian
+surrogate. The resulting measure passes through the same positive
+center-mixing inverse as a known operator.
 
 This estimator can sharpen analytic controls but does not yet recover curved
 path handedness, projective motion, depth-varying defocus, occlusions, or real

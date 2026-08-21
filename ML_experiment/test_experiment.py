@@ -24,7 +24,7 @@ class SupersetTests(unittest.TestCase):
                     "complex_spiral_3d", "periodic_nd", "hyperchecker", "multiscale_1d", "chirp_1d",
                     "poly_drifted_chirp_1d",
                     "localized_steps_1d", "fourier_mix_1d", "nd_spiral_low_rank", "nd_spiral_high_rank",
-                    "hypercube_checker"}
+                    "hypercube_checker", "sparse_sine_1d"}
         self.assertEqual(required, set(TASK_BUILDERS))
 
     def test_exact_parameter_budget(self):
@@ -211,7 +211,7 @@ class SupersetTests(unittest.TestCase):
     def test_stored_probe_atlas_is_the_full_product(self):
         stored = json.loads((Path(__file__).parent / "results_confirm/probes.json").read_text())["probes"]
         expected_variants = {"ordinary_mlp", "self_context", "self_context_hard", "self_context_chart"}
-        stored_tasks = set(TASK_BUILDERS) - {"poly_drifted_chirp_1d"}
+        stored_tasks = set(TASK_BUILDERS) - {"poly_drifted_chirp_1d", "sparse_sine_1d"}
         self.assertEqual(len(stored), len(stored_tasks) * len(expected_variants))
         self.assertEqual(
             {(task, variant) for task in stored_tasks for variant in expected_variants},
