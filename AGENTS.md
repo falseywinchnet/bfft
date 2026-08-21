@@ -512,6 +512,27 @@ probes on the M4 Mini:
 /Users/ultimussecundai/.local/bin/m4build -- \
   python3 -m denoiser.probe_continuous_scale_edge_family_transport_2d \
   --size 20 --out /tmp/continuous_scale_edge_family_transport_20.json
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m unittest denoiser.test_joint_value_jet_zonotope_contractor_2d
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m denoiser.probe_joint_value_jet_zonotope_contractor_2d \
+  --size 20 --out /tmp/joint_value_jet_zonotope_contractor_20.json
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m unittest denoiser.test_lifted_scale_moment_transport_2d
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m denoiser.probe_lifted_scale_moment_transport_2d \
+  --size 20 --out /tmp/lifted_scale_moment_transport_20.json
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m unittest denoiser.test_lifted_endpoint_action_transport_2d
+
+/Users/ultimussecundai/.local/bin/m4build -- \
+  python3 -m denoiser.probe_lifted_endpoint_action_transport_2d \
+  --size 20 --out /tmp/lifted_endpoint_action_transport_20.json
 ```
 
 The V3 support-corruption probe imports the full BFFT Meyer and vision ABI.

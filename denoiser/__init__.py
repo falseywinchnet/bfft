@@ -177,6 +177,16 @@ from .continuous_scale_zonotope_transport_2d import (
 from .continuous_scale_edge_family_transport_2d import (
     continuous_scale_edge_family_transport_state_2d,
 )
+from .joint_value_jet_zonotope_contractor_2d import (
+    contract_joint_value_jet_scale_edge_state_2d,
+)
+from .lifted_scale_moment_transport_2d import (
+    affine_scale_action,
+    lifted_scale_moment_transport_state_2d,
+)
+from .lifted_endpoint_action_transport_2d import (
+    denoise_lifted_endpoint_action_transport_2d,
+)
 from .continuous_tangent_source_geometry_2d import (
     continuous_tangent_source_geometry_2d,
 )
@@ -233,6 +243,10 @@ __all__ = [
     "zonotopic_edge_flux_state_2d",
     "continuous_scale_zonotope_transport_state_2d",
     "continuous_scale_edge_family_transport_state_2d",
+    "contract_joint_value_jet_scale_edge_state_2d",
+    "lifted_scale_moment_transport_state_2d",
+    "affine_scale_action",
+    "denoise_lifted_endpoint_action_transport_2d",
     "compressed_eikonal_observation_2d",
     "cross_measured_eikonal_observation_2d",
     "interlaced_scene_views_2d",

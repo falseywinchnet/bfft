@@ -87,8 +87,33 @@ collapsed into one objective.
   pushed through the positive resolvent by a factorized edge-response map and
   re-expressed on the evolved graph without losing ancestry.
 - `CONTINUOUS_SCALE_EDGE_FAMILY_RESULT.md`: refinement-stable coverage result,
-  parent/child branch law, and the diagnosis that only independent joint
-  value/jet evidence can contract the current state further.
+  parent/child branch law, and the diagnosis that target-excluded joint
+  value/jet evidence must contract the current state without being mistaken
+  for statistical independence.
+- `joint_value_jet_zonotope_contractor_2d.py`: the conservative joint
+  posterior/residual contractor. Target-excluded parallel witnesses define a
+  value/first-jet tangent; only its normal coordinate contracts the shared
+  local scale-edge transfer. The sparse slab intersection is retained beside
+  the uncontracted support branches.
+- `JOINT_VALUE_JET_ZONOTOPE_RESULT.md`: equations and the measured distinction
+  between the sharply contracted noise-stability component and the parent
+  support-explanation component. The unchanged coefficient-box shadow is
+  explicitly rejected as a representation of the contraction.
+- `lifted_scale_moment_transport_2d.py`: fixed-dimensional closure of both
+  continuous-scale ancestries. Five raw moments per ancestry commute with
+  positive transport, expose cancellation and scale uncertainty to the
+  eikonal metric, and make every affine scale action exact from two signed
+  coordinates.
+- `LIFTED_SCALE_MOMENT_RESULT.md`: the 14-field law, its two-dimensional
+  action fibre, exactness boundary, and the measured `3.0–3.6x` runtime and
+  `182–264x` core-memory improvement over the expanded contractor.
+- `lifted_endpoint_action_transport_2d.py`: the first compact point estimator.
+  Fine/coarse endpoint actions are inferred from transported competition
+  between residual support and posterior rejection, then intersected with
+  local phase, scene phase context, and transported continuous-scale support.
+- `LIFTED_ENDPOINT_ACTION_RESULT.md`: equations, the rejected hard projection,
+  the unknown-corruption battery, and the remaining additive-noise and clean
+  identity-retention failures. This estimator is not yet exposed in the GUI.
 
 - `TRUTH_UNDER_DISTORTION.md`: the post-FMMT research charter joining
   one-shot patch typicality, zonotopic mixture falsification, and low-SNR

@@ -1,22 +1,23 @@
-"""Cross-fitted joint value/first-jet contraction of scale-edge zonotopes.
+"""Cross-fitted joint posterior/residual contraction of scale-edge zonotopes.
 
 For four primitive orientations, every target edge is validated by the two
 parallel edges shifted one lattice unit along its transverse covector.  The
 witness edges share no endpoint with the target and lie in the opposite
-transverse parity fold.  Their residual source values and signed first jets
-form an empirical outer rectangle.  The current target coordinate is included
-to preserve coverage, so zero transfer remains feasible.
+transverse parity fold.  Their values and signed first jets determine a
+tangent in the joint chart.  Only its normal covector is contracted; lawful
+amplitude transport along the witnessed tangent remains free.  The current
+target coordinate is included, so zero transfer remains feasible.
 
 The same local scale-edge coefficients must satisfy both coordinates:
 
     lower_value <= r_i - (A alpha)_i <= upper_value,
     lower_jet <= (r_j-r_i) - ((A alpha)_j-(A alpha)_i) <= upper_jet.
 
-This is a joint contractor because value and jet restrict one shared
-coefficient box; neither action is converted into a scalar penalty.  The
-rectangle does not yet preserve value/jet covariance, and cross-fold
-target-exclusion is weaker than statistical independence.  Both limitations
-remain explicit.
+Posterior and residual restrict the same exchange coefficients with opposite
+signs; neither action is converted into a scalar penalty.  The complete sparse
+slab intersection is retained because its axis-aligned coefficient shadow can
+remain almost unchanged.  Cross-fold target-exclusion remains weaker than
+statistical independence.
 """
 
 from __future__ import annotations
@@ -177,6 +178,84 @@ def _crossfit_value_jet_constraints(
     }
 
 
+def _covariance_normal_constraints(
+    field: np.ndarray,
+    rectangle: dict[str, Any],
+    *,
+    additive_transfer: bool,
+) -> tuple[sparse.csr_matrix, np.ndarray, np.ndarray, dict[str, Any]]:
+    """Contract only transverse to the witnessed value/jet tangent.
+
+    The two target-excluded parallel witnesses determine a direction in
+    ``(value, first jet)`` space.  Its Euclidean normal is the sole contracted
+    coordinate; amplitude along the witnessed tangent remains free.  If both
+    witnesses coincide, the target-to-witness direction supplies the tangent.
+    A completely degenerate triple contributes a zero row and therefore no
+    invented direction.
+    """
+    values = np.asarray(field, dtype=np.float64).reshape(-1)
+    source = rectangle["target_sources"]
+    target = rectangle["target_targets"]
+    witness = rectangle["witness_vertices"]
+    minus_source, minus_target, plus_source, plus_target = witness.T
+    witness_minus = np.column_stack((
+        values[minus_source],
+        values[minus_target] - values[minus_source],
+    ))
+    witness_plus = np.column_stack((
+        values[plus_source],
+        values[plus_target] - values[plus_source],
+    ))
+    current = np.column_stack((
+        values[source],
+        values[target] - values[source],
+    ))
+    tangent = witness_plus - witness_minus
+    tangent_norm = np.linalg.norm(tangent, axis=1)
+    degenerate = tangent_norm <= np.finfo(float).tiny
+    tangent[degenerate] = (
+        current[degenerate] - witness_minus[degenerate])
+    tangent_norm = np.linalg.norm(tangent, axis=1)
+    nonzero = tangent_norm > np.finfo(float).tiny
+    normal = np.zeros_like(tangent)
+    normal[nonzero, 0] = tangent[nonzero, 1] / tangent_norm[nonzero]
+    normal[nonzero, 1] = -tangent[nonzero, 0] / tangent_norm[nonzero]
+    minus_coordinate = np.sum(normal * witness_minus, axis=1)
+    plus_coordinate = np.sum(normal * witness_plus, axis=1)
+    current_coordinate = np.sum(normal * current, axis=1)
+    coordinate_lower = np.minimum.reduce((
+        minus_coordinate, plus_coordinate, current_coordinate))
+    coordinate_upper = np.maximum.reduce((
+        minus_coordinate, plus_coordinate, current_coordinate))
+
+    row = np.repeat(np.arange(source.size, dtype=np.int64), 2)
+    column = np.column_stack((source, target)).reshape(-1)
+    coefficient = np.column_stack((
+        normal[:, 0] - normal[:, 1],
+        normal[:, 1],
+    )).reshape(-1)
+    operator = sparse.coo_matrix(
+        (coefficient, (row, column)),
+        shape=(source.size, values.size),
+    ).tocsr()
+    if additive_transfer:
+        transfer_lower = coordinate_lower - current_coordinate
+        transfer_upper = coordinate_upper - current_coordinate
+    else:
+        transfer_lower = current_coordinate - coordinate_upper
+        transfer_upper = current_coordinate - coordinate_lower
+    return operator, transfer_lower, transfer_upper, {
+        "operator": operator,
+        "coordinate_lower": coordinate_lower,
+        "coordinate_upper": coordinate_upper,
+        "current_coordinate": current_coordinate,
+        "normal": normal,
+        "degenerate_edge_fraction": float(np.mean(~nonzero)),
+        "mean_normal_interval_width": float(np.mean(
+            coordinate_upper - coordinate_lower)),
+    }
+
+
 def contract_joint_value_jet_scale_edge_state_2d(
     observation: np.ndarray,
     *,
@@ -190,9 +269,71 @@ def contract_joint_value_jet_scale_edge_state_2d(
         initial_posterior=initial_posterior,
         trace_refinement=trace_refinement,
     )
-    coordinate_operator, transfer_lower, transfer_upper, witness = (
+    coordinate_operator, residual_transfer_lower, residual_transfer_upper, (
+        residual_witness
+    ) = (
         _crossfit_value_jet_constraints(state["residual_after_erosion"]))
-    joint_generator = (coordinate_operator @ state["generator"]).tocsc()
+    posterior_operator, _posterior_reverse_lower, _posterior_reverse_upper, (
+        posterior_witness
+    ) = _crossfit_value_jet_constraints(state["posterior_after_erosion"])
+    if (
+        posterior_operator.shape != coordinate_operator.shape
+        or (posterior_operator != coordinate_operator).nnz
+    ):
+        raise RuntimeError("posterior and residual coordinate charts diverged")
+    # _crossfit_value_jet_constraints expresses subtraction from its field.
+    # Posterior exchange is additive, so its admissible transfer interval has
+    # the opposite sign.
+    posterior_transfer_lower = (
+        posterior_witness["coordinate_lower"]
+        - posterior_witness["current_coordinate"]
+    )
+    posterior_transfer_upper = (
+        posterior_witness["coordinate_upper"]
+        - posterior_witness["current_coordinate"]
+    )
+    rectangle_transfer_lower = np.maximum(
+        residual_transfer_lower, posterior_transfer_lower)
+    rectangle_transfer_upper = np.minimum(
+        residual_transfer_upper, posterior_transfer_upper)
+    if np.any(rectangle_transfer_lower > rectangle_transfer_upper):
+        raise RuntimeError("safe joint posterior/residual interval is empty")
+    residual_active = residual_transfer_lower >= posterior_transfer_lower
+    posterior_active = posterior_transfer_upper <= residual_transfer_upper
+    witness = {
+        **residual_witness,
+        "residual": residual_witness,
+        "posterior": posterior_witness,
+        "residual_transfer_lower": residual_transfer_lower,
+        "residual_transfer_upper": residual_transfer_upper,
+        "posterior_transfer_lower": posterior_transfer_lower,
+        "posterior_transfer_upper": posterior_transfer_upper,
+        "residual_lower_active_fraction": float(np.mean(residual_active)),
+        "posterior_upper_active_fraction": float(np.mean(posterior_active)),
+    }
+    residual_normal_operator, residual_normal_lower, residual_normal_upper, (
+        residual_normal
+    ) = _covariance_normal_constraints(
+        state["residual_after_erosion"],
+        residual_witness,
+        additive_transfer=False,
+    )
+    posterior_normal_operator, posterior_normal_lower, posterior_normal_upper, (
+        posterior_normal
+    ) = _covariance_normal_constraints(
+        state["posterior_after_erosion"],
+        posterior_witness,
+        additive_transfer=True,
+    )
+    covariance_operator = sparse.vstack((
+        residual_normal_operator,
+        posterior_normal_operator,
+    ), format="csr")
+    transfer_lower = np.concatenate((
+        residual_normal_lower, posterior_normal_lower))
+    transfer_upper = np.concatenate((
+        residual_normal_upper, posterior_normal_upper))
+    joint_generator = (covariance_operator @ state["generator"]).tocsc()
     coefficient_lower, coefficient_upper, contraction = (
         _contract_sparse_generator_box(
             joint_generator,
@@ -250,34 +391,75 @@ def contract_joint_value_jet_scale_edge_state_2d(
     value_width_before = state["coefficient_upper"] - state[
         "coefficient_lower"]
     value_width_after = coefficient_upper - coefficient_lower
+    transfer_enclosure_lower = (
+        center_transfer - radius_transfer).reshape(shape)
+    transfer_enclosure_upper = (
+        center_transfer + radius_transfer).reshape(shape)
+    pushed_transfer_enclosure_lower = (
+        pushed_center - pushed_radius).reshape(shape)
+    pushed_transfer_enclosure_upper = (
+        pushed_center + pushed_radius).reshape(shape)
     return {
         **state,
         "status": (
-            "local scale-edge zonotope after safe value and cross-fitted "
-            "joint value/first-jet contraction"
+            "local scale-edge zonotope with a cross-fitted joint "
+            "posterior/residual value/first-jet contractor branch"
         ),
         "theory_status": (
             "target edges are excluded from opposite-fold parallel witnesses; "
-            "value/jet covariance and statistical independence unresolved"
+            "normal covariance is retained but statistical independence and "
+            "the component-mixture action law remain unresolved"
         ),
         "coefficient_lower_before_joint": state["coefficient_lower"],
         "coefficient_upper_before_joint": state["coefficient_upper"],
         "coefficient_lower": coefficient_lower,
         "coefficient_upper": coefficient_upper,
-        "transfer_enclosure_lower": (
-            center_transfer - radius_transfer).reshape(shape),
-        "transfer_enclosure_upper": (
-            center_transfer + radius_transfer).reshape(shape),
-        "pushed_transfer_enclosure_lower": (
-            pushed_center - pushed_radius).reshape(shape),
-        "pushed_transfer_enclosure_upper": (
-            pushed_center + pushed_radius).reshape(shape),
+        "transfer_enclosure_lower": transfer_enclosure_lower,
+        "transfer_enclosure_upper": transfer_enclosure_upper,
+        "pushed_transfer_enclosure_lower": pushed_transfer_enclosure_lower,
+        "pushed_transfer_enclosure_upper": pushed_transfer_enclosure_upper,
+        "branches": {
+            "uncontracted_parent_identity_lineage": state["branches"][
+                "identity_lineage"],
+            "uncontracted_parent_positive_push_lineage": state["branches"][
+                "positive_push_lineage"],
+            "joint_noise_identity_lineage": {
+                "posterior_base": state["posterior_after_erosion"],
+                "transfer_lower": transfer_enclosure_lower,
+                "transfer_upper": transfer_enclosure_upper,
+                "coefficient_constraints": "constrained_zonotope",
+            },
+            "joint_noise_positive_push_lineage": {
+                "posterior_base": state["pushed_posterior_base"],
+                "transfer_lower": pushed_transfer_enclosure_lower,
+                "transfer_upper": pushed_transfer_enclosure_upper,
+                "coefficient_constraints": "constrained_zonotope",
+            },
+        },
+        "branch_roles": {
+            "uncontracted_parent_identity_lineage": "support explanation",
+            "uncontracted_parent_positive_push_lineage": (
+                "transported support explanation"),
+            "joint_noise_identity_lineage": "noise-consistent stability",
+            "joint_noise_positive_push_lineage": (
+                "transported noise-consistent stability"),
+        },
         "joint_contraction": contraction,
         "joint_witness": witness,
         "constrained_zonotope": {
+            "coordinate_operator": covariance_operator,
             "constraint_matrix": joint_generator,
             "constraint_lower": transfer_lower,
             "constraint_upper": transfer_upper,
+            "constraint_semantics": (
+                "remaining residual and updated posterior must both remain "
+                "inside target-excluded transverse value/jet covariance "
+                "slabs; witnessed tangent amplitude remains unconstrained"
+            ),
+            "constraint_block_edge_count": int(
+                residual_normal_operator.shape[0]),
+            "residual_normal": residual_normal,
+            "posterior_normal": posterior_normal,
             "coefficient_lower": coefficient_lower,
             "coefficient_upper": coefficient_upper,
             "zero_transfer_feasible": zero_feasible,
@@ -292,14 +474,21 @@ def contract_joint_value_jet_scale_edge_state_2d(
             "constraint_support_width_before": support_width_before,
             "constraint_support_width_after": support_width_after,
         },
-        "mean_coefficient_width_before_joint": float(np.mean(
-            value_width_before)),
-        "mean_coefficient_width_after_joint": float(np.mean(
-            value_width_after)),
-        "additional_contracted_coefficient_fraction": float(np.mean(
-            value_width_after
-            < value_width_before - 64.0 * np.finfo(float).eps
-        )),
+        "mean_coefficient_width_before_joint": (
+            float(np.mean(value_width_before))
+            if value_width_before.size else 0.0
+        ),
+        "mean_coefficient_width_after_joint": (
+            float(np.mean(value_width_after))
+            if value_width_after.size else 0.0
+        ),
+        "additional_contracted_coefficient_fraction": (
+            float(np.mean(
+                value_width_after
+                < value_width_before - 64.0 * np.finfo(float).eps
+            ))
+            if value_width_after.size else 0.0
+        ),
     }
 
 
