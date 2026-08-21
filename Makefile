@@ -78,7 +78,11 @@ FCT_SRC := src/fct.cpp
 FCT_OBJ := $(BUILD_DIR)/src/fct.o
 STFT_SRC := src/stft.cpp
 STFT_OBJ := $(BUILD_DIR)/src/stft.o
-LIB_OBJS := $(OBJ) $(BODFT_OBJ) $(FCT_OBJ) $(STFT_OBJ)
+MEYER_SRC := src/meyer.cpp
+MEYER_OBJ := $(BUILD_DIR)/src/meyer.o
+VISION_SRC := src/vision.cpp
+VISION_OBJ := $(BUILD_DIR)/src/vision.o
+LIB_OBJS := $(OBJ) $(BODFT_OBJ) $(FCT_OBJ) $(STFT_OBJ) $(MEYER_OBJ) $(VISION_OBJ)
 STATIC_LIB := $(BUILD_DIR)/lib$(LIB_NAME).a
 SHARED_LIB := $(BUILD_DIR)/lib$(LIB_NAME).so
 PC_FILE := $(BUILD_DIR)/$(LIB_NAME).pc
@@ -129,6 +133,12 @@ $(FCT_OBJ): $(FCT_SRC) include/bfft/fct.h include/bfft/bfft.h src/detail/fct_ker
 	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
 
 $(STFT_OBJ): $(STFT_SRC) include/bfft/stft.h include/bfft/bfft.h include/bfft/bodft.h include/bfft/fct.h | $(BUILD_DIR)
+	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
+
+$(MEYER_OBJ): $(MEYER_SRC) include/bfft/meyer.h include/bfft/bfft.h | $(BUILD_DIR)
+	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
+
+$(VISION_OBJ): $(VISION_SRC) include/bfft/vision.h include/bfft/bfft.h | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
 
 $(STATIC_LIB): $(LIB_OBJS)

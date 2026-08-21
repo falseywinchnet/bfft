@@ -26,8 +26,14 @@ perceptual baseline rather than inventing an unrelated metric.
 
 ## Binary palette tree
 
-Before constructing the tree, every pixel receives an importance weight with
-two factors:
+Before constructing the tree, the image is converted into a structural color
+field. A compact bilateral neighborhood averages nearby OKLab colors with a
+weight that falls with both spatial distance and perceptual color distance.
+Visible and transparent support never mix. The result reduces camera noise,
+JPEG ringing, and antialiasing jitter inside a region without averaging across
+a strong object boundary.
+
+Every original pixel then receives an importance weight with two factors:
 
 1. **Spatial information** combines OKLab Sobel gradient magnitude with the
    difference from a Gaussian local mean. The `detail_priority` control scales
@@ -56,6 +62,15 @@ absolute perceptual gain is split next. A difficult skin-tone or illumination
 interval may therefore receive several descendants while a nearly constant
 background receives none.
 
+When at least four colors are requested, Posterizer also constructs a proposal
+tree whose root temporarily reduces lightness and emphasizes chroma and
+circular hue. It measures which proposal node is both well occupied and least
+represented by the ordinary tonal tree. That node becomes a reserved family
+anchor. Posterizer tests each ordinary node's removal and replaces the one
+whose loss adds the least weighted distortion. The final palette consequently
+retains all but one tonal allocation while preventing total hue collapse.
+`family_priority=0` disables this reservation.
+
 This is a locally optimized binary quantizer, not a claim of globally solving
 unconstrained k-means. The global k-color problem is non-convex. The useful
 properties are deterministic proposals, an explicit distortion gain, and
@@ -79,11 +94,30 @@ by binary search until the node lies inside sRGB.
 
 ## Spatial and raster stages
 
-Full-resolution pixels are assigned to the shifted palette under the same
+Palette learning uses the edge-aware structural field, but final assignment
+returns to the original full-resolution pixels. Before assignment, Posterizer
+measures the lightness residual from a compact Gaussian local field and adds a
+controlled multiple back to the original lightness. This texture transport
+pushes real high-frequency contrast across categorical palette boundaries;
+unlike dithering, it does not manufacture texture in a flat field. The
+`texture_priority` control sets its strength and `0` disables it.
+
+The transported pixels are assigned to the shifted palette under the same
 cylindrical distance. Small connected islands may then be absorbed into a
 larger adjacent component, choosing a perceptually nearby neighbor normalized
 by shared boundary length. Palette colors remain fixed during cleanup so the
 intentional bifurcation shifts are not averaged away.
+
+An optional spatial-mixing pass follows cleanup. For each flat-assigned pixel,
+it projects the source color onto segments from that base node to its nearest
+palette neighbors. Mixing is admitted only in a stable 3x3 label interior,
+suppressed by source gradient, and scaled by the continuous segment's error
+reduction. A deterministic serpentine error diffusion converts the desired
+minority-color density into exact palette labels. Diffusion residuals travel
+only between pixels with the same base/partner pair, so they cannot leak across
+object contours, transparency, or color-family boundaries. This reconstructs
+intermediate optical tones while the file still contains exactly the original
+palette; `mixing_strength=0` disables it.
 
 The cylindrical metric is evaluated algebraically as a small feature matrix
 product, without allocating separate lightness, chroma, and trigonometric
@@ -91,6 +125,28 @@ pixel-by-palette tensors. Spatial cleanup labels all equal-color neighbor
 connections in one sparse graph pass. Its cost therefore scales with pixels
 and local edges rather than rescanning the image once for every palette color.
 
-The fixed palette is finally rasterized directly. PNG retains alpha; JPEG is
-written as optimized 4:4:4 quality-95 RGB. No path tracing or SVG construction
-occurs in Posterizer.
+Shifted nodes are gamut-mapped and rounded to 8-bit display RGBA before final
+assignment. Display-identical nodes are collapsed in stable palette order.
+Assignment, cleanup, diagnostics, and rasterization consequently use the same
+realizable colors rather than comparing pixels to an ideal node that cannot be
+displayed. PNG retains alpha; JPEG is written as optimized 4:4:4 quality-95
+RGB. No path tracing or SVG construction occurs in Posterizer.
+
+## Relational chart diagnostics
+
+Pixel error is not the primary perceptual question. Let `X(i)` and `Y(i)` be
+the source and result at corresponding image sites in Cartesian OKLab, the
+nonsingular metric form of OKLCH. For sampled site pairs, Posterizer reports
+
+```text
+sqrt(E[(|Y(i)-Y(j)| - |X(i)-X(j)|)^2] / E[|X(i)-X(j)|^2]).
+```
+
+Pairs include global relations and local spatial offsets from 1 through 32
+pixels after a 1.5-pixel viewing filter. The diagnostics also report distance
+correlation and the fraction of source relation energy collapsed below one
+quarter of its original length. Finally, materially occupied source-hue
+sectors are measured separately; the worst sector's alignment and relative
+chromatic error prevent a low average from concealing a lost color-family
+branch. This chart objective is the intended basis for further palette
+allocation work; conventional RMSE remains only a secondary diagnostic.

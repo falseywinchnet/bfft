@@ -6,7 +6,8 @@ standard PNG and requires no custom decoder.
 The shared idea is constituent ownership, not JPEG machinery. PNG has no DCT
 or quantization table, so the exact transport domain is its indexed raster:
 
-1. allocate a perceptual palette;
+1. allocate a perceptual palette, using composited/premultiplied color plus
+   alpha for nonopaque images so hidden RGB consumes no palette capacity;
 2. treat every pixel as ownership of one palette constituent;
 3. optionally bloom-fill ownership across edge-gated neighbors when the saved
    boundary cost repays the perceptual regret;
@@ -18,7 +19,7 @@ or quantization table, so the exact transport domain is its indexed raster:
 7. choose PNG scanline filters and DEFLATE strategy by actual output bytes;
 8. decode and select the measured rate/distortion winner.
 
-Step 4 is lossless. The palette and label permutation cancel exactly, but the
+Step 6 is lossless. The palette and label permutation cancel exactly, but the
 new index field can be substantially easier for DEFLATE to represent. The
 lossy spatial pass is anchored to the quantizer's original owner, so zero
 pressure is the exact identity and a color-basis change cannot masquerade as
@@ -49,11 +50,23 @@ python -m experiments.manual_png_optimizer compare input.png output.png
 python -m experiments.manual_png_optimizer gui input.png
 ```
 
-The automatic search uses a descending color bracket, one geometric midpoint,
-then refines the selected palette with deterministic full-image Lloyd steps,
-and runs a short ownership-pressure ladder. It does not enumerate hundreds of
-filter conjectures: palette orders are probed with level-1 DEFLATE, and only
-the selected order reaches the terminal level-9 encode.
+The automatic search uses a descending color bracket followed by measured
+integer rate correction, refines a bounded atlas of edge priors with
+deterministic full-image Lloyd steps, and runs a short ownership-pressure
+ladder. It does not enumerate hundreds of filter conjectures: palette orders
+are first probed with level-1 DEFLATE, the two best reach terminal encoding,
+and the terminal pass searches a small measured set of DEFLATE memory levels.
+Under the byte ceiling, SSIM losses greater than 0.00025 are rejected; within
+that narrow band PSNR and edge PSNR resolve structural near-ties.
+
+When the repository's native library is available, weighted k-means++ and
+nearest-palette ownership run in C++ while retaining NumPy's seeded center
+sequence and SciPy's first-code tie rule. Independent terminal DEFLATE trials
+run on a bounded four-worker pool; results are consumed in their original
+order, so exact-size ties remain deterministic. On the eight-scene synthetic
+control this reduced the M4 Mini sweep from about 107 seconds to 48 seconds,
+and all eight optimized PNG files remained byte-for-byte identical. On the
+representative mixed scene, the local profile fell from 29.6 to 9.9 seconds.
 
 `selective` diffusion is deliberately different from Floyd--Steinberg. For
 each smooth-region pixel it finds the palette constituent on the opposite side

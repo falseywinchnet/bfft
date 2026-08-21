@@ -375,6 +375,39 @@ bfft_status bfft_vision_sobel_f64(
     const double* fields, double* gradient_x, double* gradient_y);
 
 /*
+   Nearest-code assignment for the low-dimensional float32 palette spaces
+   used by the PNG optimizer.  Ties are resolved toward the first code.
+*/
+bfft_status bfft_vision_nearest_code_f32(
+    size_t observation_count, size_t code_count, size_t dimensions,
+    size_t thread_count, const float* observations, const float* codes,
+    int32_t* labels);
+
+/* Weighted k-means++ seeding for the same palette spaces.  random_draws has
+   code_count values in [0,1), allowing the Python caller to retain ownership
+   of deterministic RNG state.  live_code_count receives the initialized
+   prefix; a degenerate zero-distance distribution stops that prefix. */
+bfft_status bfft_vision_weighted_kmeanspp_f32(
+    size_t observation_count, size_t code_count, size_t dimensions,
+    const float* observations, const double* weights,
+    const double* random_draws, float* codes, size_t* live_code_count);
+
+/*
+   Separable orthonormal 8x8 block DCT used by the JPEG laboratory.  The
+   caller supplies its 8x8 row-major transform matrix so the native and NumPy
+   paths share exactly the same basis.  Forward input is HxW and output is
+   ceil(H/8) x ceil(W/8) x 8 x 8; edge samples are extended.  Inverse input
+   has that block shape and output is cropped directly to HxW.
+*/
+bfft_status bfft_vision_block_dct8_f64(
+    size_t height, size_t width, size_t thread_count,
+    const double* input, const double* matrix, double* coefficients);
+
+bfft_status bfft_vision_inverse_block_dct8_f64(
+    size_t height, size_t width, size_t thread_count,
+    const double* coefficients, const double* matrix, double* output);
+
+/*
    Fused RGB terminal quality metric used by the JPEG ownership optimizer.
    All image arrays are contiguous HxWxC float64 fields: RGB/reference moments
    have C=3 and reference_edge has C=2 (axis-0, axis-1 Sobel). scratch must

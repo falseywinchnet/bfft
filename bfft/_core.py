@@ -306,6 +306,22 @@ _vision_sobel_f64 = _decl_optional(
     "bfft_vision_sobel_f64", ctypes.c_int,
     [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
      _dbl_p, _dbl_p, _dbl_p])
+_vision_nearest_code_f32 = _decl_optional(
+    "bfft_vision_nearest_code_f32", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _flt_p, _flt_p, _i32_p])
+_vision_weighted_kmeanspp_f32 = _decl_optional(
+    "bfft_vision_weighted_kmeanspp_f32", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _flt_p, _dbl_p, _dbl_p, _flt_p, _size_p])
+_vision_block_dct8_f64 = _decl_optional(
+    "bfft_vision_block_dct8_f64", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _dbl_p, _dbl_p, _dbl_p])
+_vision_inverse_block_dct8_f64 = _decl_optional(
+    "bfft_vision_inverse_block_dct8_f64", ctypes.c_int,
+    [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+     _dbl_p, _dbl_p, _dbl_p])
 _vision_image_metrics_f64 = _decl_optional(
     "bfft_vision_image_metrics_f64", ctypes.c_int,
     [ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,

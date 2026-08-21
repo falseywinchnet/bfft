@@ -40,6 +40,12 @@ input[type=number],select{width:96px;background:#100d15;color:var(--ink);border:
 <label>Hue weight <input id="hue" type="number" min="0" step="0.05" value="1"></label>
 <label>Detail priority <input id="detail" type="number" min="0" step="0.1" value="2"></label>
 <label>Area exponent <input id="population" type="number" min="0" max="1" step="0.05" value="0.65"></label>
+<label>Color-family priority <input id="family" type="number" min="0" max="4" step="0.1" value="1"></label>
+<label>Structure radius <input id="structure" type="number" min="0" max="12" value="2"></label>
+<label>Edge threshold <input id="threshold" type="number" min="0" max="0.5" step="0.005" value="0.065"></label>
+<label>Texture priority <input id="texture" type="number" min="0" max="4" step="0.05" value="0.25"></label>
+<label>Spatial mixing <input id="mixing" type="number" min="0" max="2" step="0.05" value="0"></label>
+<label>Mix neighbors <input id="neighbors" type="number" min="1" max="8" value="3"></label>
 <label>Minimum island <input id="island" type="number" min="0" value="6"></label>
 <label>Cleanup rounds <input id="rounds" type="number" min="0" max="8" value="1"></label>
 <label>Transparency <select id="alpha"><option value="auto">Auto</option><option value="cutout">Cutout</option><option value="preserve">Preserve</option></select></label>
@@ -47,12 +53,12 @@ input[type=number],select{width:96px;background:#100d15;color:var(--ink);border:
 <div class="actions"><button id="convert" disabled>Posterize</button><button id="clear" class="secondary">Clear</button></div>
 <a id="download" class="download png disabled" style="display:block;margin-top:8px">Download result</a>
 <div id="palette"></div><div id="status">Choose a PNG or JPEG. Processing remains local.</div>
-<div class="note">Detail priority gives local edges and contrast more influence. Area exponent below one prevents a large flat background from consuming the palette merely because it has more pixels. Separation moves child nodes farther from their parent.</div>
+<div class="note">Color-family priority protects hue families before tone refinement. Structure controls stabilize palette learning without softening final labels. Texture priority pushes measured local contrast across palette boundaries. Spatial mixing optically synthesizes missing tones from nearby palette colors inside stable regions; 0.5 is a useful experimental setting.</div>
 </aside><section class="stage"><div class="pane"><h2>Original</h2><div class="canvas" id="source"><div class="empty">No image loaded</div></div></div><div class="pane"><h2>Posterized structure</h2><div class="canvas" id="result"><div class="empty">Posterized preview</div></div></div></section></main>
 <script>
 const $=id=>document.getElementById(id);let file=null,sourceURL=null,resultURL=null;const human=n=>n<1024?`${n} B`:n<1048576?`${(n/1024).toFixed(1)} KiB`:`${(n/1048576).toFixed(2)} MiB`;const revoke=()=>{if(resultURL)URL.revokeObjectURL(resultURL);resultURL=null};const bytes=b64=>{let raw=atob(b64),out=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);return out};
 $('file').onchange=()=>{file=$('file').files[0]||null;$('convert').disabled=!file;if(sourceURL)URL.revokeObjectURL(sourceURL);revoke();if(file){sourceURL=URL.createObjectURL(file);$('source').innerHTML='';let i=new Image;i.src=sourceURL;$('source').append(i);$('status').textContent=`Loaded ${file.name} (${human(file.size)}) — ready.`}};
-$('convert').onclick=async()=>{if(!file)return;$('convert').disabled=true;$('status').textContent='Optimizing spatial and perceptual palette allocation…';let q=new URLSearchParams({method:$('method').value,colors:$('colors').value,separation:$('separation').value,lightness:$('lightness').value,chroma:$('chroma').value,hue:$('hue').value,detail:$('detail').value,population:$('population').value,island:$('island').value,rounds:$('rounds').value,alpha:$('alpha').value,trim:$('trim').checked?'1':'0',name:file.name});try{let r=await fetch('/convert?'+q,{method:'POST',body:file});let data=await r.json();if(!r.ok)throw Error(data.error||'Posterization failed');revoke();resultURL=URL.createObjectURL(new Blob([bytes(data.image)],{type:data.mime}));$('result').innerHTML='';let preview=new Image;preview.src=resultURL;preview.alt='Posterized preview';$('result').append(preview);let stem=file.name.replace(/\.(png|jpe?g)$/i,'');$('download').href=resultURL;$('download').download=stem+'-posterized'+data.extension;$('download').textContent='Download '+data.extension.slice(1).toUpperCase();$('download').classList.remove('disabled');$('palette').innerHTML=data.diagnostics.palette.map(c=>`<span class="swatch" title="${c}" style="background:${c.slice(0,7)}"></span>`).join('');let d=data.diagnostics;$('status').innerHTML=`<span class="metric">${d.visible_palette_colors} visible colors · weighted perceptual RMSE ${d.importance_weighted_perceptual_rmse.toFixed(4)} · MSE ${d.rgba_mse_255.toFixed(2)} · ${human(d.result_bytes)} · ${(d.total_ms/1000).toFixed(2)} s</span>`}catch(e){$('status').textContent=e.message}finally{$('convert').disabled=false}};$('clear').onclick=()=>location.reload();
+$('convert').onclick=async()=>{if(!file)return;$('convert').disabled=true;$('status').textContent='Optimizing spatial and perceptual palette allocation…';let q=new URLSearchParams({method:$('method').value,colors:$('colors').value,separation:$('separation').value,lightness:$('lightness').value,chroma:$('chroma').value,hue:$('hue').value,detail:$('detail').value,population:$('population').value,family:$('family').value,structure:$('structure').value,threshold:$('threshold').value,texture:$('texture').value,mixing:$('mixing').value,neighbors:$('neighbors').value,island:$('island').value,rounds:$('rounds').value,alpha:$('alpha').value,trim:$('trim').checked?'1':'0',name:file.name});try{let r=await fetch('/convert?'+q,{method:'POST',body:file});let data=await r.json();if(!r.ok)throw Error(data.error||'Posterization failed');revoke();resultURL=URL.createObjectURL(new Blob([bytes(data.image)],{type:data.mime}));$('result').innerHTML='';let preview=new Image;preview.src=resultURL;preview.alt='Posterized preview';$('result').append(preview);let stem=file.name.replace(/\.(png|jpe?g)$/i,'');$('download').href=resultURL;$('download').download=stem+'-posterized'+data.extension;$('download').textContent='Download '+data.extension.slice(1).toUpperCase();$('download').classList.remove('disabled');$('palette').innerHTML=data.diagnostics.palette.map(c=>`<span class="swatch" title="${c}" style="background:${c.slice(0,7)}"></span>`).join('');let d=data.diagnostics;$('status').innerHTML=`<span class="metric">${d.visible_palette_colors} colors · chart ${d.chart_local_stress.toFixed(3)} · worst ${d.chart_worst_sector_alignment.toFixed(3)} @ ${d.chart_worst_sector_start_degrees.toFixed(0)}° · collapsed ${(100*d.chart_collapsed_relation_energy).toFixed(2)}% · mixed ${(100*d.mixed_fraction).toFixed(1)}% · texture ${d.texture_correlation.toFixed(3)} · chroma ${d.chroma_correlation.toFixed(3)} · RMSE ${d.importance_weighted_perceptual_rmse.toFixed(4)} · ${human(d.result_bytes)} · ${(d.total_ms/1000).toFixed(2)} s</span>`}catch(e){$('status').textContent=e.message}finally{$('convert').disabled=false}};$('clear').onclick=()=>location.reload();
 </script></body></html>"""
 
 
@@ -68,6 +74,12 @@ def convert_request(data: bytes, query: str) -> dict:
         node_separation=float(get("separation", 1.08)),
         detail_priority=float(get("detail", 2.0)),
         population_exponent=float(get("population", 0.65)),
+        family_priority=float(get("family", 1.0)),
+        structure_radius=int(get("structure", 2)),
+        structure_threshold=float(get("threshold", 0.065)),
+        texture_priority=float(get("texture", 0.25)),
+        mixing_strength=float(get("mixing", 0.0)),
+        mixing_neighbors=int(get("neighbors", 3)),
         minimum_island=int(get("island", 6)),
         cleanup_rounds=int(get("rounds", 1)),
         alpha_mode=get("alpha", "auto"),

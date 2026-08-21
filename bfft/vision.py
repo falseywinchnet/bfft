@@ -31,6 +31,10 @@ from ._core import (
     _vision_hard_affine_fit,
     _vision_hard_basis_refit,
     _vision_image_metrics_f64,
+    _vision_block_dct8_f64,
+    _vision_inverse_block_dct8_f64,
+    _vision_nearest_code_f32,
+    _vision_weighted_kmeanspp_f32,
     _vision_binary_dilation_cross_u8,
     _vision_render_affine,
     _vision_resize_bilinear_f64,
@@ -135,6 +139,85 @@ def sobel_native(fields, *, threads=0):
         _ptr(gradient_y, ctypes.c_double),
     ), "bfft_vision_sobel_f64")
     return gradient_x, gradient_y
+
+
+def nearest_code_native(observations, codes, *, threads=0):
+    """Assign float32 observations to their nearest codes natively."""
+    if _vision_nearest_code_f32 is None:
+        return None
+    values = np.ascontiguousarray(observations, dtype=np.float32)
+    centers = np.ascontiguousarray(codes, dtype=np.float32)
+    if values.ndim != 2 or centers.ndim != 2:
+        raise ValueError("observations and codes must be two-dimensional")
+    if values.shape[1] != centers.shape[1] or not len(values) or not len(centers):
+        raise ValueError("observations and codes must share a nonempty feature axis")
+    labels = np.empty(len(values), dtype=np.int32)
+    _check(_vision_nearest_code_f32(
+        len(values), len(centers), values.shape[1], max(int(threads), 0),
+        _ptr(values, ctypes.c_float), _ptr(centers, ctypes.c_float),
+        _ptr(labels, ctypes.c_int32),
+    ), "bfft_vision_nearest_code_f32")
+    return labels
+
+
+def weighted_kmeanspp_native(observations, weights, code_count, random_draws):
+    """Initialize a deterministic weighted k-means++ code prefix natively."""
+    if _vision_weighted_kmeanspp_f32 is None:
+        return None
+    values = np.ascontiguousarray(observations, dtype=np.float32)
+    importance = np.ascontiguousarray(weights, dtype=np.float64)
+    draws = np.ascontiguousarray(random_draws, dtype=np.float64)
+    count = int(code_count)
+    if values.ndim != 2 or not len(values) or values.shape[1] == 0:
+        raise ValueError("observations must be a nonempty two-dimensional array")
+    if importance.shape != (len(values),) or count < 1 or draws.shape != (count,):
+        raise ValueError("weights, code count, and random draws have incompatible shapes")
+    codes = np.empty((count, values.shape[1]), dtype=np.float32)
+    live = ctypes.c_size_t()
+    _check(_vision_weighted_kmeanspp_f32(
+        len(values), count, values.shape[1],
+        _ptr(values, ctypes.c_float), _ptr(importance, ctypes.c_double),
+        _ptr(draws, ctypes.c_double), _ptr(codes, ctypes.c_float),
+        ctypes.byref(live),
+    ), "bfft_vision_weighted_kmeanspp_f32")
+    return codes[:live.value].copy()
+
+
+def block_dct8_native(channel, matrix, *, threads=0):
+    """Return the edge-extended 8x8 block DCT, or ``None`` if unavailable."""
+    if _vision_block_dct8_f64 is None:
+        return None
+    value = np.ascontiguousarray(channel, dtype=np.float64)
+    basis = np.ascontiguousarray(matrix, dtype=np.float64)
+    if value.ndim != 2 or basis.shape != (8, 8):
+        raise ValueError("channel must be HxW and matrix must be 8x8")
+    height, width = value.shape
+    output = np.empty(((height + 7) // 8, (width + 7) // 8, 8, 8), np.float64)
+    _check(_vision_block_dct8_f64(
+        height, width, max(int(threads), 0),
+        _ptr(value, ctypes.c_double), _ptr(basis, ctypes.c_double),
+        _ptr(output, ctypes.c_double),
+    ), "bfft_vision_block_dct8_f64")
+    return output
+
+
+def inverse_block_dct8_native(coefficients, shape, matrix, *, threads=0):
+    """Invert one native 8x8 block DCT directly into the cropped image."""
+    if _vision_inverse_block_dct8_f64 is None:
+        return None
+    values = np.ascontiguousarray(coefficients, dtype=np.float64)
+    basis = np.ascontiguousarray(matrix, dtype=np.float64)
+    height, width = map(int, shape)
+    expected = ((height + 7) // 8, (width + 7) // 8, 8, 8)
+    if values.shape != expected or basis.shape != (8, 8):
+        raise ValueError(f"coefficients must have shape {expected} and matrix must be 8x8")
+    output = np.empty((height, width), np.float64)
+    _check(_vision_inverse_block_dct8_f64(
+        height, width, max(int(threads), 0),
+        _ptr(values, ctypes.c_double), _ptr(basis, ctypes.c_double),
+        _ptr(output, ctypes.c_double),
+    ), "bfft_vision_inverse_block_dct8_f64")
+    return output
 
 
 def image_metrics_native(

@@ -6,11 +6,12 @@ component cleanup, and local web workflow, but its artifact is deliberately a
 posterized raster—not SVG. PNG inputs produce PNG results; JPEG inputs produce
 JPEG results.
 
-The default method builds a binary palette tree over the occupied OKLCH color
-volume. Unlike ordinary population-weighted quantization, it also measures
-local detail and tempers the influence of large color populations. A broad
-flat wall therefore cannot consume the palette merely because it contains
-more pixels than a face.
+The default method builds a tonal palette tree over an edge-aware structural
+OKLCH field, then reserves one node for the most useful underrepresented color
+family. Unlike ordinary population-weighted quantization, it measures local
+detail and tempers the influence of large color populations. A broad flat wall
+therefore cannot consume the palette merely because it contains more pixels
+than a face, while the reserved anchor prevents complete hue collapse.
 
 ## Install
 
@@ -33,7 +34,9 @@ cd svg_converter
 ```
 
 The interface previews the result, shows the selected palette, preserves the
-input raster format, and exposes these primary controls:
+input raster format, and leads its diagnostics with multiscale OKLCH chart
+stress, worst supported hue-sector alignment, and collapsed relation energy.
+It exposes these primary controls:
 
 - **Colors**: visible palette size.
 - **Node separation**: exaggeration of each final child displacement from its
@@ -43,6 +46,25 @@ input raster format, and exposes these primary controls:
 - **Area exponent**: how strongly raw pixel population influences palette
   allocation. `1.0` is ordinary population weighting; values below one give
   rare occupied color cells more representation. The default is `0.65`.
+- **Color-family priority**: controls a second, chroma/hue-sensitive proposal
+  tree. Its most important missing family contributes one anchor, replacing
+  the tonal node whose loss costs least. Set this to `0` for the unmodified
+  tonal tree.
+- **Structure radius** and **edge threshold**: build local color consensus for
+  palette learning. Neighbors cooperate only across soft perceptual
+  differences, suppressing noise without softening final labels. Radius `0`
+  disables this stage.
+- **Texture priority**: amplifies measured local lightness residual before
+  final palette assignment. This spends categorical boundaries on real hair,
+  facial, fabric, and edge structure rather than adding synthetic dither to
+  flat fields. `0` is ordinary nearest-color assignment.
+- **Spatial mixing**: opt-in tone synthesis using only the selected display
+  palette. Inside stable, low-gradient regions, each pixel may mix its base
+  color with one of a few perceptually adjacent nodes. Segmented error
+  diffusion realizes the mixture density without carrying error across a
+  contour or palette-pair boundary. Start at `0.5`; `0` keeps the flat result.
+- **Mix neighbors**: limits the partner search. Three gives useful tonal reach
+  while avoiding the conspicuous specks produced by distant color pairs.
 - **Lightness/chroma/hue weights**: perceptual allocation preferences.
 
 The server binds only to `127.0.0.1`; images remain local. A fixed-port launch
@@ -64,6 +86,12 @@ The output suffix chooses and preserves the desired raster format:
   --node-separation 1.08 \
   --detail-priority 2 \
   --population-exponent 0.65 \
+  --family-priority 1 \
+  --structure-radius 2 \
+  --structure-threshold 0.065 \
+  --texture-priority 0.25 \
+  --mixing-strength 0.5 \
+  --mixing-neighbors 3 \
   --minimum-island 6 \
   --cleanup-rounds 1 \
   --diagnostics output.json
@@ -79,15 +107,17 @@ Palette construction uses exact weighted one-dimensional split searches as
 initializers, then refines only the distinct candidates. Pixel assignment uses
 a matrix form of the same cylindrical OKLCH metric, and connected-component
 cleanup is a single equal-neighbor graph pass rather than one full image scan
-per palette color. The optimization objective is unchanged, and the 4- and
-128-color portrait reference outputs remained byte-identical in regression
-checks.
+per palette color. After gamut mapping and 8-bit rounding, display-identical
+nodes are collapsed and pixels are assigned again to the actual rendered
+palette. Cleanup and diagnostics therefore measure the colors written to the
+image.
 
-As a representative stress check, a 1714×823 photograph at 128 colors completes
-in about 3.3 seconds on the project M4 Mini, including saliency analysis,
-palette construction, full-resolution assignment, cleanup, and diagnostics.
-The 400×400 development portrait completes in about 1.1 seconds at 128 colors.
-Exact time varies with image structure and machine.
+The edge-aware stage scales with image area and the square of the selected
+radius; the default radius `2` visits a 5×5 neighborhood. Palette construction
+still runs on at most `sample_limit` structural samples, while assignment and
+component cleanup remain linear in full-resolution pixels and local edges.
+Spatial mixing adds a deterministic full-resolution serpentine pass when its
+strength is above zero.
 
 ## Four-color allocation check
 
@@ -100,7 +130,21 @@ and foreground structure.
 This intentionally raises ordinary all-pixel MSE: the method no longer claims
 that a square metre of blank wall is more important than a pair of eyes. The
 diagnostics therefore report both conventional perceptual RMSE and an
-importance-weighted perceptual RMSE matching the allocation objective.
+importance-weighted perceptual RMSE matching the allocation objective. They
+also report high-frequency texture correlation, chroma correlation, mean hue
+alignment, and low-pass perceptual RMSE. The last measurement captures the
+optical tone reconstructed by spatial mixing; the relational measurements
+catch muddy or artificially noisy palettes that RMSE alone incorrectly
+rewards.
+
+The primary relational diagnostic treats the source and result as
+corresponding charts in perceptual color space. It samples global pixel pairs
+and spatial neighbors at radii 1–32 after a 1.5-pixel viewing filter, then
+measures normalized distortion of their OKLab distances. Because OKLab is the
+Cartesian form of OKLCH, this preserves circular hue geometry without a
+singularity at zero chroma. Mean chart stress is reported together with the
+worst materially occupied 30-degree source-hue sector so a small but important
+color branch cannot disappear inside an excellent average.
 
 See [METHOD.md](METHOD.md) for the distance, weighting, split, and gamut-mapping
 details.

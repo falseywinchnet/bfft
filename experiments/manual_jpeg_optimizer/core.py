@@ -20,9 +20,15 @@ from PIL import Image
 from scipy.ndimage import gaussian_filter, label as connected_components, sobel
 
 try:
-    from bfft.vision import image_metrics_native as _native_image_metrics
+    from bfft.vision import (
+        block_dct8_native as _native_block_dct,
+        image_metrics_native as _native_image_metrics,
+        inverse_block_dct8_native as _native_inverse_block_dct,
+    )
 except (ImportError, OSError):  # Portable/source-only installations.
+    _native_block_dct = None
     _native_image_metrics = None
+    _native_inverse_block_dct = None
 
 
 LUMA_Q = np.array([
@@ -121,6 +127,10 @@ class OptimizationResult:
             "evaluations": self.evaluations,
             "search_strategy": self.search_strategy,
             "metric_backend": self.metric_backend,
+            "analysis_dct_backend": (
+                "native_cpp" if _native_block_dct is not None else "numpy"
+            ),
+            "region_signature_backend": "numpy_exact",
         }
 
 
@@ -190,14 +200,26 @@ def _pad8(channel: np.ndarray) -> tuple[np.ndarray, tuple[int, int]]:
     return padded, (height, width)
 
 
-def block_dct(channel: np.ndarray) -> np.ndarray:
+def _block_dct_numpy(channel: np.ndarray) -> np.ndarray:
     padded, _ = _pad8(channel)
     bh, bw = padded.shape[0] // 8, padded.shape[1] // 8
     blocks = padded.reshape(bh, 8, bw, 8).transpose(0, 2, 1, 3)
     return np.einsum("ui,abij,vj->abuv", DCT8, blocks - 128.0, DCT8)
 
 
+def block_dct(channel: np.ndarray) -> np.ndarray:
+    if _native_block_dct is not None:
+        native = _native_block_dct(channel, DCT8, threads=0)
+        if native is not None:
+            return native
+    return _block_dct_numpy(channel)
+
+
 def inverse_block_dct(coefficients: np.ndarray, shape: tuple[int, int]) -> np.ndarray:
+    if _native_inverse_block_dct is not None:
+        native = _native_inverse_block_dct(coefficients, shape, DCT8, threads=0)
+        if native is not None:
+            return native
     blocks = np.einsum("ui,abuv,vj->abij", DCT8, coefficients, DCT8)
     image = blocks.transpose(0, 2, 1, 3).reshape(
         coefficients.shape[0] * 8, coefficients.shape[1] * 8
@@ -221,9 +243,13 @@ def _region_labels(ycc: np.ndarray, sigma: float, threshold: float) -> tuple[np.
     """Connected block regions from v3-like cartoon ownership and texture phase."""
     cartoon = gaussian_filter(ycc, sigma=(max(sigma, 0.05), max(sigma, 0.05), 0.0))
     texture = ycc - cartoon
-    y_dct = block_dct(ycc[..., 0])
-    cb_dct = block_dct(texture[..., 1])
-    cr_dct = block_dct(texture[..., 2])
+    # Region signatures are a discrete bifurcation: a coefficient differing
+    # by one final floating-point bit can move a phase angle across a bin and
+    # relabel a component.  Keep the historical NumPy accumulation here for
+    # byte-identical optimization; interactive/explicit DCT routes use native.
+    y_dct = _block_dct_numpy(ycc[..., 0])
+    cb_dct = _block_dct_numpy(texture[..., 1])
+    cr_dct = _block_dct_numpy(texture[..., 2])
     low = np.sum(y_dct[..., :3, :3] ** 2, axis=(-2, -1))
     high = np.sum(y_dct[..., 3:, 3:] ** 2, axis=(-2, -1))
     detail = np.log1p(high) - np.log1p(low)
@@ -272,10 +298,10 @@ def _prepare_preprocess_basis(rgb: np.ndarray, config: JPEGConfig) -> Preprocess
     )
 
 
-def _apply_preprocess_basis(
+def _project_preprocess_ycc(
     basis: PreprocessBasis, config: JPEGConfig
-) -> PreprocessResult:
-    """Apply projection controls to a shared ownership atlas."""
+) -> np.ndarray:
+    """Apply projection controls without materializing diagnostic views."""
     ycc = basis.ycc
     cartoon = basis.cartoon
     texture = basis.texture
@@ -325,12 +351,19 @@ def _apply_preprocess_basis(
         projected[..., 1] -= (displacement * local_cr).reshape(pixel_labels.shape)
         result[..., 1:3] = cartoon[..., 1:3] + projected
 
+    return result
+
+
+def _apply_preprocess_basis(
+    basis: PreprocessBasis, config: JPEGConfig
+) -> PreprocessResult:
+    """Apply projection controls and materialize the interactive diagnostics."""
     return PreprocessResult(
-        rgb=ycc_to_rgb(result),
-        labels=pixel_labels,
-        cartoon=ycc_to_rgb(cartoon),
-        texture=texture,
-        preferred_angle=_expand_blocks(basis.preferred_angle, ycc.shape[:2]),
+        rgb=ycc_to_rgb(_project_preprocess_ycc(basis, config)),
+        labels=basis.pixel_labels,
+        cartoon=ycc_to_rgb(basis.cartoon),
+        texture=basis.texture,
+        preferred_angle=_expand_blocks(basis.preferred_angle, basis.ycc.shape[:2]),
     )
 
 
@@ -579,12 +612,15 @@ def optimize_jpeg(
 
     preprocess_basis = _prepare_preprocess_basis(reference, structural[0])
     metric_reference = _prepare_metric_reference(reference)
-    preprocess_cache: dict[tuple[float, float, float], PreprocessResult] = {}
+    # The optimizer only needs encoded RGB.  Diagnostic cartoon/angle views
+    # are invariant and formerly got materialized once per representation,
+    # wasting both bandwidth and hundreds of megabytes on large inputs.
+    preprocess_cache: dict[tuple[float, float, float], np.ndarray] = {}
     encoded_cache: dict[JPEGConfig, bytes] = {}
     candidates: list[Candidate] = []
     best: Candidate | None = None
     probe_count = 0
-    maximum_evaluations = len(structural) * (len(qualities) if exhaustive else 7)
+    maximum_evaluations = len(structural) * (len(qualities) if exhaustive else 10)
 
     def probe(config: JPEGConfig) -> bytes:
         nonlocal probe_count
@@ -595,8 +631,10 @@ def optimize_jpeg(
             return cached
         key = (config.chroma_projection, config.luma_texture_shrink, config.phase_degrees)
         if key not in preprocess_cache:
-            preprocess_cache[key] = _apply_preprocess_basis(preprocess_basis, config)
-        data = encode(preprocess_cache[key].rgb, config)
+            preprocess_cache[key] = ycc_to_rgb(
+                _project_preprocess_ycc(preprocess_basis, config)
+            )
+        data = encode(preprocess_cache[key], config)
         encoded_cache[config] = data
         probe_count += 1
         if progress is not None:
@@ -647,7 +685,12 @@ def optimize_jpeg(
             for quality in qualities:
                 evaluate(replace(base, quality=quality))
     else:
-        q_min, q_max = min(qualities), max(qualities)
+        # The byte target can be far below a high-quality source.  The old
+        # source-local [quality-8, quality+16] bracket made the rate tracer stop
+        # before it had an under-target sample, so a requested 2.5 KiB result
+        # could silently return 10 KiB.  Keep the source quality as the warm
+        # start, but let the monotone characteristic reach the JPEG endpoints.
+        q_min, q_max = 1, 100
         quality_seed_by_subsampling: dict[int, int] = {}
         transported_quality_seed = int(np.clip(source_quality, q_min, q_max))
         resolved_configs: list[JPEGConfig] = []
@@ -662,7 +705,7 @@ def optimize_jpeg(
                 q_min,
                 q_max,
             ))
-            for _step in range(7):
+            for _step in range(10):
                 if q not in samples:
                     config = replace(base, quality=q)
                     data = probe(config)
@@ -736,11 +779,7 @@ def optimize_jpeg(
     for candidate in candidates:
         if candidate is not best:
             candidate.data = None
-    regions = int(preprocess_cache[(
-        best.config.chroma_projection,
-        best.config.luma_texture_shrink,
-        best.config.phase_degrees,
-    )].labels.max()) + 1
+    regions = int(preprocess_basis.block_labels.max()) + 1
     return OptimizationResult(
         source=source_path,
         output=output_path,

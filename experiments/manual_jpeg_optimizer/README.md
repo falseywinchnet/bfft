@@ -67,6 +67,16 @@ Add `--exhaustive` for the larger phase/projection sweep. The report contains
 the winning parameters and the SSIM/PSNR/edge-PSNR Pareto frontier measured
 against the source JPEG's decoded pixels.
 
+The explicit DCT/IDCT analysis and spatial-frequency routes use the native
+parallel separable 8x8 kernels when the BFFT library is available. The
+optimizer deliberately retains NumPy accumulation for its discrete region
+signature: final-bit DCT rounding can otherwise move a phase angle across a
+component boundary. Its safe optimization is instead to cache only the RGB
+representation needed by libjpeg, rather than rematerializing invariant
+cartoon and phase diagnostics for every branch. On the 1714x823 city control
+this preserves the exact JPEG, winner, metrics, evaluation count, and region
+count while reducing measured peak memory from roughly 1.20 GB to 0.87 GB.
+
 ## GUI
 
 The Dear PyGui application exposes every manual control, stage/overlay tabs,
@@ -146,3 +156,23 @@ mobility is anisotropic: luma can stay pinned while chroma absorbs
 frustration, but all three remain available rather than collapsing into one
 carrier. JPEG quantization is applied only after this certified continuous
 redistribution and is evaluated by actual bytes and decoded fidelity.
+
+## Evidence-locked browser structural seam
+
+`browser_golden.py` freezes the deterministic native values used to validate
+the first real browser port: RGB/YCbCr conversion, quality tables, forward and
+inverse 8×8 DCT, Gaussian cartoon/exact texture, Sobel flat-luma weighting,
+connected ownership labels, and regional chroma minor-axis projection. The
+fixture records SHA-256 provenance for both `core.py` and its generator.
+
+It explicitly does not establish parity for source-quality inference, the
+terminal JPEG codec, decoded SSIM/edge PSNR, spatial/frequency transport, or
+the fused Jpegli dead-zone/trellis backend.
+
+Generate and verify it from the repository root with:
+
+```sh
+python3 -m experiments.manual_jpeg_optimizer.browser_golden
+python3 -m experiments.manual_jpeg_optimizer.browser_golden --check
+python3 experiments/manual_jpeg_optimizer/test_browser_golden.py
+```

@@ -10,6 +10,7 @@ pixels and accepts candidates by actual PNG bytes and decoded image metrics.
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass, field
 from io import BytesIO
 import json
@@ -24,9 +25,70 @@ from PIL import Image
 
 from experiments.manual_jpeg_optimizer.core import image_metrics
 
+try:
+    from bfft.vision import (
+        nearest_code_native as _native_nearest_code,
+        weighted_kmeanspp_native as _native_weighted_kmeanspp,
+    )
+except (ImportError, OSError):  # Portable/source-only installations.
+    _native_nearest_code = None
+    _native_weighted_kmeanspp = None
+
 
 Progress = Callable[[int, int, str], None]
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+
+
+def _nearest_labels(observations: np.ndarray, codes: np.ndarray) -> np.ndarray:
+    """Assign low-dimensional palette owners using the fastest exact backend."""
+    if _native_nearest_code is not None:
+        labels = _native_nearest_code(observations, codes, threads=0)
+        if labels is not None:
+            return labels
+    from scipy.cluster.vq import vq
+    return np.asarray(vq(observations, codes, check_finite=False)[0], np.int32)
+
+
+def _weighted_kmeanspp(
+    sample: np.ndarray,
+    sample_weight: np.ndarray,
+    colors: int,
+    rng: np.random.Generator,
+    *,
+    pad_degenerate: bool = False,
+) -> np.ndarray:
+    """Seed palette nodes while keeping deterministic RNG ownership in Python."""
+    if _native_weighted_kmeanspp is not None:
+        centers = _native_weighted_kmeanspp(
+            sample, sample_weight, colors, rng.random(colors)
+        )
+        if centers is not None:
+            if pad_degenerate and len(centers) < colors:
+                centers = np.concatenate((
+                    centers,
+                    np.repeat(centers[-1:], colors - len(centers), axis=0),
+                ))
+            return centers
+    centers = np.empty((colors, sample.shape[1]), dtype=np.float32)
+    first = rng.choice(len(sample), p=sample_weight / sample_weight.sum())
+    centers[0] = sample[first]
+    closest = np.sum((sample - centers[0]) ** 2, axis=1)
+    live = 1
+    for index in range(1, colors):
+        probability = sample_weight * closest
+        total = float(probability.sum())
+        if total <= 1e-12:
+            break
+        choice = rng.choice(len(sample), p=probability / total)
+        centers[index] = sample[choice]
+        closest = np.minimum(
+            closest, np.sum((sample - centers[index]) ** 2, axis=1)
+        )
+        live = index + 1
+    if pad_degenerate and live < colors:
+        centers[live:] = centers[live - 1]
+        live = colors
+    return centers[:live]
 
 
 @dataclass(frozen=True)
@@ -64,6 +126,7 @@ class PNGConfig:
 class PNGCandidate:
     colors: int
     quantizer: str
+    palette_edge_weight: float
     dither: str
     diffusion_strength: float
     ownership_strength: float
@@ -107,6 +170,13 @@ class PNGOptimizationResult:
             "source_mode": self.source_mode,
             "shape": list(self.shape),
             "config": asdict(self.config),
+            "palette_compute_backend": (
+                "native_cpp"
+                if _native_nearest_code is not None and
+                _native_weighted_kmeanspp is not None
+                else "scipy_numpy"
+            ),
+            "terminal_deflate_workers": 4,
             "winner": self.winner.report(),
             "candidates": [candidate.report() for candidate in self.candidates],
             "elapsed_seconds": self.elapsed_seconds,
@@ -189,13 +259,17 @@ _STRATEGIES = {
     "rle": zlib.Z_RLE,
 }
 
+# Terminal DEFLATE trials are independent and Python's zlib releases the GIL.
+# One shared bounded pool avoids paying thread construction once per palette.
+_ZLIB_EXECUTOR = ThreadPoolExecutor(max_workers=4, thread_name_prefix="png-zlib")
 
-def _compress(stream: bytes, level: int, strategy: str) -> bytes:
+
+def _compress(stream: bytes, level: int, strategy: str, memory_level: int = 8) -> bytes:
     compressor = zlib.compressobj(
         level=max(0, min(9, int(level))),
         method=zlib.DEFLATED,
         wbits=15,
-        memLevel=9,
+        memLevel=max(1, min(9, int(memory_level))),
         strategy=_STRATEGIES[strategy],
     )
     return compressor.compress(stream) + compressor.flush()
@@ -236,15 +310,32 @@ def _best_idat(
             for kind in range(5)
         })
         strategies = ("default", "filtered", "rle")
+    memory_levels = (8,) if search == "quick" else (4, 5, 8, 9)
 
-    best: tuple[int, bytes, str, str] | None = None
     streams = {name: _filter_stream(filters, choice) for name, choice in policies.items()}
-    for policy, stream in streams.items():
-        for strategy in strategies:
-            compressed = _compress(stream, level, strategy)
-            candidate = (len(compressed), compressed, policy, strategy)
-            if best is None or candidate[0] < best[0]:
-                best = candidate
+    jobs = [
+        (policy, stream, strategy, memory_level)
+        for policy, stream in streams.items()
+        for strategy in strategies
+        for memory_level in memory_levels
+    ]
+
+    def compress_job(job: tuple[str, bytes, str, int]) -> tuple[int, bytes, str, str]:
+        policy, stream, strategy, memory_level = job
+        compressed = _compress(stream, level, strategy, memory_level)
+        return (
+            len(compressed), compressed, policy,
+            f"{strategy}-m{memory_level}",
+        )
+
+    if len(jobs) > 1 and rows.nbytes >= 32_768:
+        encoded = _ZLIB_EXECUTOR.map(compress_job, jobs)
+    else:
+        encoded = map(compress_job, jobs)
+    best: tuple[int, bytes, str, str] | None = None
+    for candidate in encoded:
+        if best is None or candidate[0] < best[0]:
+            best = candidate
     assert best is not None
     return best[1], best[2], best[3]
 
@@ -358,6 +449,135 @@ def _srgb_to_oklab(rgb: np.ndarray) -> np.ndarray:
     ), axis=-1)
 
 
+def _rgba_transport_features(rgba: np.ndarray) -> np.ndarray:
+    """Return display color plus alpha, without charging for invisible RGB.
+
+    Composite color and alpha together retain the premultiplied constituent:
+    ``premul = composite - (1-alpha)``.  The coordinates therefore determine
+    appearance on every background, while raw RGB under zero alpha is correctly
+    free.  Values remain in byte scale for stable SciPy VQ behavior.
+    """
+    values = np.asarray(rgba, dtype=np.float32)
+    alpha = values[..., 3:4] / 255.0
+    composite = values[..., :3] * alpha + 255.0 * (1.0 - alpha)
+    return np.concatenate((composite, values[..., 3:4]), axis=-1)
+
+
+def _features_to_rgba(features: np.ndarray) -> np.ndarray:
+    values = np.asarray(features, dtype=np.float32)
+    alpha_byte = np.clip(values[..., 3:4], 0.0, 255.0)
+    alpha = alpha_byte / 255.0
+    premultiplied = values[..., :3] - 255.0 * (1.0 - alpha)
+    rgb = np.divide(
+        premultiplied,
+        alpha,
+        out=np.zeros_like(premultiplied),
+        where=alpha > (0.5 / 255.0),
+    )
+    return np.concatenate((
+        np.clip(np.rint(rgb), 0, 255),
+        np.rint(alpha_byte),
+    ), axis=-1).astype(np.uint8)
+
+
+def _alpha_classes(alpha: np.ndarray) -> np.ndarray:
+    """Split alpha into transparent, fractional, and opaque ownership strata."""
+    values = np.asarray(alpha)
+    return np.where(values == 0, 0, np.where(values == 255, 2, 1)).astype(np.int8)
+
+
+def _alpha_stratified_refine(
+    source_rgba: np.ndarray,
+    labels: np.ndarray,
+    palette_rgba: np.ndarray,
+    iterations: int = 2,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Refine an RGBA palette without moving pixels across alpha topology.
+
+    A single four-dimensional centroid can otherwise average an opaque fill
+    with its antialiased boundary.  That saves a palette entry, but turns a
+    large opaque region slightly translucent and makes subsequent spatial
+    transport propagate the error.  Keep zero, fractional, and full alpha as
+    separate constituent classes while still optimizing color within each
+    class.
+    """
+    if np.all(source_rgba[..., 3] == 255):
+        return labels.copy(), palette_rgba.copy()
+
+    shape = labels.shape
+    flat_labels = labels.reshape(-1).astype(np.int32, copy=True)
+    features = _rgba_transport_features(source_rgba).reshape(-1, 4).astype(np.float32)
+    source_class = _alpha_classes(source_rgba[..., 3]).reshape(-1)
+    centers_rgba = np.asarray(palette_rgba, dtype=np.uint8).copy()
+    colors = len(centers_rgba)
+
+    counts = np.column_stack(tuple(
+        np.bincount(
+            flat_labels[source_class == category], minlength=colors
+        )
+        for category in range(3)
+    ))
+    center_class = np.argmax(counts, axis=1).astype(np.int8)
+
+    # Reserve a distinct node for every class in the source.  Rarest first
+    # keeps the antialiased boundary from being swallowed by either endpoint.
+    present = [
+        category for category in range(3)
+        if np.any(source_class == category)
+    ]
+    reserved: set[int] = set()
+    for category in sorted(present, key=lambda item: np.count_nonzero(source_class == item)):
+        choices = np.argsort(-counts[:, category], kind="stable")
+        chosen = next((int(item) for item in choices if int(item) not in reserved), None)
+        if chosen is None:
+            continue
+        center_class[chosen] = category
+        reserved.add(chosen)
+
+    chunk = 131072
+
+    def assign(centers_feature: np.ndarray) -> None:
+        for category in present:
+            pixels = np.flatnonzero(source_class == category)
+            owners = np.flatnonzero(center_class == category)
+            if not len(owners):
+                continue
+            for start in range(0, len(pixels), chunk):
+                selected = pixels[start:start + chunk]
+                local = _nearest_labels(features[selected], centers_feature[owners])
+                flat_labels[selected] = owners[local]
+
+    centers_feature = _rgba_transport_features(centers_rgba).astype(np.float32)
+    for _ in range(max(1, int(iterations))):
+        assign(centers_feature)
+        population = np.bincount(flat_labels, minlength=colors).astype(np.float64)
+        sums = np.column_stack(tuple(
+            np.bincount(
+                flat_labels, weights=features[:, channel], minlength=colors
+            )
+            for channel in range(4)
+        ))
+        live = population > 0
+        centers_feature[live] = sums[live] / population[live, None]
+        centers_rgba = _features_to_rgba(centers_feature)
+        centers_rgba[center_class == 0] = np.array((0, 0, 0, 0), np.uint8)
+        fractional = center_class == 1
+        centers_rgba[fractional, 3] = np.clip(
+            centers_rgba[fractional, 3], 1, 254
+        )
+        centers_rgba[center_class == 2, 3] = 255
+        centers_feature = _rgba_transport_features(centers_rgba).astype(np.float32)
+
+    assign(centers_feature)
+    active = np.unique(flat_labels)
+    remap = np.full(colors, -1, dtype=np.int32)
+    remap[active] = np.arange(len(active), dtype=np.int32)
+    dense_labels = remap[flat_labels].reshape(shape)
+    dense_palette = centers_rgba[active]
+    unique_palette, inverse = np.unique(dense_palette, axis=0, return_inverse=True)
+    return inverse[dense_labels].astype(np.int32), unique_palette
+
+
 def _dense_palette(labels: np.ndarray, rgba: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     active = np.unique(labels)
     remap = np.full(int(labels.max()) + 1, -1, dtype=np.int32)
@@ -414,17 +634,29 @@ def _quantize(
     labels = np.asarray(quantized, dtype=np.int32)
     displayed = np.asarray(quantized.convert("RGBA"), dtype=np.uint8)
     labels, palette = _dense_palette(labels, displayed)
-    if quantizer == "lloyd-rgb" and opaque:
-        return _lloyd_refine_rgb(source_rgba, palette, lloyd_iterations)
-    if quantizer == "edge-lloyd" and opaque:
-        return _edge_lloyd_rgb(
-            source_rgba,
-            len(palette),
-            lloyd_iterations,
-            palette_edge_weight,
-            palette_sample_limit,
-            palette_seed,
+    if quantizer == "lloyd-rgb":
+        if opaque:
+            return _lloyd_refine_rgb(source_rgba, palette, lloyd_iterations)
+        labels, palette = _edge_lloyd_rgba(
+            source_rgba, max(2, min(256, colors)), lloyd_iterations,
+            0.0, palette_sample_limit, palette_seed,
         )
+    elif quantizer == "edge-lloyd":
+        if opaque:
+            return _edge_lloyd_rgb(
+                source_rgba,
+                max(2, min(256, colors)),
+                lloyd_iterations,
+                palette_edge_weight,
+                palette_sample_limit,
+                palette_seed,
+            )
+        labels, palette = _edge_lloyd_rgba(
+            source_rgba, max(2, min(256, colors)), lloyd_iterations,
+            palette_edge_weight, palette_sample_limit, palette_seed,
+        )
+    if not opaque:
+        return _alpha_stratified_refine(source_rgba, labels, palette)
     return labels, palette
 
 
@@ -435,18 +667,11 @@ def _lloyd_refine_rgb(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Refine an allocated palette against every source pixel.
 
-    SciPy's vector-quantization kernel performs the heavy nearest-centroid
-    step in compiled code.  Centroids are updated from the complete image,
-    rather than a random sample, so the result is deterministic and avoids the
-    rare-color drift seen in sampled k-means palettes.
+    The native vector-quantization kernel (or SciPy fallback) performs the
+    heavy nearest-centroid step in compiled code. Centroids are updated from
+    the complete image, rather than a random sample, so the result is
+    deterministic and avoids the rare-color drift seen in sampled palettes.
     """
-    try:
-        from scipy.cluster.vq import vq
-    except ImportError as error:  # pragma: no cover - optional desktop extra
-        raise RuntimeError(
-            "lloyd-rgb requires SciPy; install the png-lab optional dependency"
-        ) from error
-
     flat = source_rgba[..., :3].reshape(-1, 3).astype(np.float32)
     centers = initial_palette[:, :3].astype(np.float32)
     labels = np.empty(len(flat), dtype=np.int32)
@@ -454,7 +679,7 @@ def _lloyd_refine_rgb(
     for _ in range(max(0, int(iterations))):
         for start in range(0, len(flat), chunk):
             stop = min(start + chunk, len(flat))
-            labels[start:stop] = vq(flat[start:stop], centers)[0]
+            labels[start:stop] = _nearest_labels(flat[start:stop], centers)
         population = np.bincount(labels, minlength=len(centers)).astype(np.float64)
         sums = np.column_stack((
             np.bincount(labels, weights=flat[:, 0], minlength=len(centers)),
@@ -465,7 +690,7 @@ def _lloyd_refine_rgb(
         centers[live] = sums[live] / population[live, None]
     for start in range(0, len(flat), chunk):
         stop = min(start + chunk, len(flat))
-        labels[start:stop] = vq(flat[start:stop], centers)[0]
+        labels[start:stop] = _nearest_labels(flat[start:stop], centers)
     palette = np.column_stack((
         np.clip(np.rint(centers), 0, 255).astype(np.uint8),
         np.full(len(centers), 255, dtype=np.uint8),
@@ -500,12 +725,6 @@ def _edge_lloyd_rgb(
     seed: int,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Allocate palette capacity with weighted k-means++ and full Lloyd steps."""
-    try:
-        from scipy.cluster.vq import vq
-    except ImportError as error:  # pragma: no cover
-        raise RuntimeError(
-            "edge-lloyd requires SciPy; install the png-lab optional dependency"
-        ) from error
     flat = source_rgba[..., :3].reshape(-1, 3).astype(np.float32)
     detail = _edge_detail(source_rgba).ravel()
     weights = (1.0 + max(0.0, float(edge_weight)) * detail).astype(np.float64)
@@ -515,29 +734,16 @@ def _edge_lloyd_rgb(
     sample = flat[sample_index]
     sample_weight = weights[sample_index]
 
-    centers = np.empty((colors, 3), dtype=np.float32)
-    first = rng.choice(sample_count, p=sample_weight / sample_weight.sum())
-    centers[0] = sample[first]
-    closest = np.sum((sample - centers[0]) ** 2, axis=1)
-    for index in range(1, colors):
-        probability = sample_weight * closest
-        total = float(probability.sum())
-        choice = (
-            rng.choice(sample_count, p=probability / total)
-            if total > 0.0
-            else rng.integers(0, sample_count)
-        )
-        centers[index] = sample[choice]
-        closest = np.minimum(
-            closest, np.sum((sample - centers[index]) ** 2, axis=1)
-        )
+    centers = _weighted_kmeanspp(
+        sample, sample_weight, colors, rng, pad_degenerate=True
+    )
 
     labels = np.empty(len(flat), dtype=np.int32)
     chunk = 131072
     for _ in range(max(0, int(iterations))):
         for start in range(0, len(flat), chunk):
             stop = min(start + chunk, len(flat))
-            labels[start:stop] = vq(flat[start:stop], centers)[0]
+            labels[start:stop] = _nearest_labels(flat[start:stop], centers)
         population = np.bincount(
             labels, weights=weights, minlength=colors
         ).astype(np.float64)
@@ -550,12 +756,72 @@ def _edge_lloyd_rgb(
         centers[live] = sums[live] / population[live, None]
     for start in range(0, len(flat), chunk):
         stop = min(start + chunk, len(flat))
-        labels[start:stop] = vq(flat[start:stop], centers)[0]
+        labels[start:stop] = _nearest_labels(flat[start:stop], centers)
     palette = np.column_stack((
         np.clip(np.rint(centers), 0, 255).astype(np.uint8),
         np.full(colors, 255, dtype=np.uint8),
     ))
-    return labels.reshape(source_rgba.shape[:2]), palette
+    active = np.unique(labels)
+    remap = np.full(len(palette), -1, dtype=np.int32)
+    remap[active] = np.arange(len(active), dtype=np.int32)
+    return remap[labels].reshape(source_rgba.shape[:2]), palette[active]
+
+
+def _edge_lloyd_rgba(
+    source_rgba: np.ndarray,
+    colors: int,
+    iterations: int,
+    edge_weight: float,
+    sample_limit: int,
+    seed: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Allocate RGBA nodes in displayed/premultiplied color and alpha space."""
+    try:
+        from scipy import ndimage
+    except ImportError as error:  # pragma: no cover
+        raise RuntimeError("RGBA edge Lloyd requires SciPy") from error
+    feature_image = _rgba_transport_features(source_rgba)
+    flat = feature_image.reshape(-1, 4).astype(np.float32)
+    normalized = feature_image / 255.0
+    edge2 = np.zeros(source_rgba.shape[:2], dtype=np.float32)
+    for channel in range(4):
+        gx = ndimage.sobel(normalized[..., channel], axis=1, mode="reflect")
+        gy = ndimage.sobel(normalized[..., channel], axis=0, mode="reflect")
+        edge2 += gx * gx + gy * gy
+    detail = np.sqrt(edge2)
+    scale = max(float(np.quantile(detail, 0.9)), 1e-6)
+    weights = (
+        1.0 + max(0.0, float(edge_weight)) * np.clip(detail / scale, 0.0, 4.0)
+    ).ravel().astype(np.float64)
+
+    rng = np.random.default_rng(int(seed))
+    sample_count = min(len(flat), max(colors, int(sample_limit)))
+    sample_index = rng.choice(len(flat), size=sample_count, replace=False)
+    sample, sample_weight = flat[sample_index], weights[sample_index]
+    centers = _weighted_kmeanspp(sample, sample_weight, colors, rng)
+
+    labels = np.empty(len(flat), dtype=np.int32)
+    chunk = 131072
+    for _ in range(max(0, int(iterations))):
+        for start in range(0, len(flat), chunk):
+            stop = min(start + chunk, len(flat))
+            labels[start:stop] = _nearest_labels(flat[start:stop], centers)
+        population = np.bincount(labels, weights=weights, minlength=len(centers)).astype(np.float64)
+        sums = np.column_stack(tuple(
+            np.bincount(labels, weights=weights * flat[:, channel], minlength=len(centers))
+            for channel in range(4)
+        ))
+        live = population > 0
+        centers[live] = sums[live] / population[live, None]
+    palette = _features_to_rgba(centers)
+    palette_features = _rgba_transport_features(palette).astype(np.float32)
+    for start in range(0, len(flat), chunk):
+        stop = min(start + chunk, len(flat))
+        labels[start:stop] = _nearest_labels(flat[start:stop], palette_features)
+    active = np.unique(labels)
+    remap = np.full(len(palette), -1, dtype=np.int32)
+    remap[active] = np.arange(len(active), dtype=np.int32)
+    return remap[labels].reshape(source_rgba.shape[:2]), palette[active]
 
 
 def _neighbor_labels(labels: np.ndarray) -> np.ndarray:
@@ -578,12 +844,17 @@ def _ownership_flow(
 ) -> np.ndarray:
     if strength <= 0.0 or iterations <= 0:
         return labels.copy()
-    source_lab = _srgb_to_oklab(source_rgba[..., :3].astype(np.float32) / 255.0)
-    palette_lab = _srgb_to_oklab(palette_rgba[:, :3].astype(np.float32) / 255.0)
-    alpha = source_rgba[..., 3].astype(np.float32) / 255.0
-    palette_alpha = palette_rgba[:, 3].astype(np.float32) / 255.0
-    gx = np.linalg.norm(source_lab[:, 1:] - source_lab[:, :-1], axis=2)
-    gy = np.linalg.norm(source_lab[1:] - source_lab[:-1], axis=2)
+    opaque = bool(np.all(source_rgba[..., 3] == 255))
+    if opaque:
+        source_space = _srgb_to_oklab(source_rgba[..., :3].astype(np.float32) / 255.0)
+        palette_space = _srgb_to_oklab(palette_rgba[:, :3].astype(np.float32) / 255.0)
+    else:
+        source_space = _rgba_transport_features(source_rgba) / 255.0
+        palette_space = _rgba_transport_features(palette_rgba) / 255.0
+        source_class = _alpha_classes(source_rgba[..., 3])
+        palette_class = _alpha_classes(palette_rgba[:, 3])
+    gx = np.linalg.norm(source_space[:, 1:] - source_space[:, :-1], axis=2)
+    gy = np.linalg.norm(source_space[1:] - source_space[:-1], axis=2)
     edge = np.zeros(labels.shape, dtype=np.float32)
     edge[:, 1:] = np.maximum(edge[:, 1:], gx)
     edge[:, :-1] = np.maximum(edge[:, :-1], gx)
@@ -592,15 +863,16 @@ def _ownership_flow(
     local_strength = float(strength) * np.exp(-max(0.0, edge_protection) * edge)
 
     origin = labels.copy()
-    origin_lab = palette_lab[origin]
-    origin_cost = np.sum((origin_lab - source_lab) ** 2, axis=2)
-    origin_cost += 0.35 * (palette_alpha[origin] - alpha) ** 2
+    origin_value = palette_space[origin]
+    origin_cost = np.sum((origin_value - source_space) ** 2, axis=2)
     current = origin.copy()
     for _ in range(iterations):
         proposals = _neighbor_labels(current)
-        proposal_lab = palette_lab[proposals]
-        color_cost = np.sum((proposal_lab - source_lab[None]) ** 2, axis=3)
-        color_cost += 0.35 * (palette_alpha[proposals] - alpha[None]) ** 2
+        proposal_value = palette_space[proposals]
+        color_cost = np.sum((proposal_value - source_space[None]) ** 2, axis=3)
+        if not opaque:
+            compatible = palette_class[proposals] == source_class[None]
+            color_cost = np.where(compatible, color_cost, np.inf)
         # Charge only perceptual regret relative to the quantizer's original
         # owner.  This makes zero transport the exact identity and prevents a
         # metric-basis change from masquerading as spatial compression.
@@ -640,28 +912,44 @@ def _selective_ordered_diffusion(
     A Bayer phase lattice realizes that fraction, while an exponential edge
     gate prevents the residual from crossing structural boundaries.
     """
-    if strength <= 0.0 or not np.all(source_rgba[..., 3] == 255):
+    if strength <= 0.0:
         return labels.copy()
-    try:
-        from scipy.cluster.vq import vq
-    except ImportError as error:  # pragma: no cover
-        raise RuntimeError("selective diffusion requires SciPy") from error
     source = source_rgba[..., :3].astype(np.float32)
     palette = palette_rgba[:, :3].astype(np.float32)
     first = palette[labels]
-    reflected = np.clip(2.0 * source - first, 0.0, 255.0).reshape(-1, 3)
-    second_labels = np.empty(len(reflected), dtype=np.int32)
+    opaque = bool(np.all(source_rgba[..., 3] == 255))
+    if opaque:
+        eligible = np.ones(labels.shape, dtype=bool)
+        palette_owners = np.arange(len(palette), dtype=np.int32)
+    else:
+        palette_owners = np.flatnonzero(palette_rgba[:, 3] == 255).astype(np.int32)
+        eligible = (
+            (source_rgba[..., 3] == 255)
+            & (palette_rgba[labels, 3] == 255)
+        )
+    if len(palette_owners) < 2 or not np.any(eligible):
+        return labels.copy()
+
+    eligible_flat = np.flatnonzero(eligible.reshape(-1))
+    reflected = np.clip(
+        2.0 * source.reshape(-1, 3)[eligible_flat]
+        - first.reshape(-1, 3)[eligible_flat],
+        0.0,
+        255.0,
+    )
+    second_labels = labels.reshape(-1).copy()
     chunk = 131072
     for start in range(0, len(reflected), chunk):
         stop = min(start + chunk, len(reflected))
-        second_labels[start:stop] = vq(reflected[start:stop], palette)[0]
+        local = _nearest_labels(reflected[start:stop], palette[palette_owners])
+        second_labels[eligible_flat[start:stop]] = palette_owners[local]
     second_labels = second_labels.reshape(labels.shape)
     second = palette[second_labels]
     direction = second - first
     residual = source - first
     denominator = np.sum(direction * direction, axis=2)
     mixture = np.zeros(labels.shape, dtype=np.float32)
-    valid = denominator > 0.0
+    valid = (denominator > 0.0) & eligible
     mixture[valid] = np.clip(
         np.sum(residual[valid] * direction[valid], axis=1) / denominator[valid],
         0.0,
@@ -678,7 +966,7 @@ def _selective_ordered_diffusion(
             int(np.ceil(labels.shape[1] / lattice.shape[1])),
         ),
     )[: labels.shape[0], : labels.shape[1]]
-    return np.where(tiled < probability, second_labels, labels).astype(np.int32)
+    return np.where(eligible & (tiled < probability), second_labels, labels).astype(np.int32)
 
 
 def _smooth_transition_coverage(
@@ -757,9 +1045,19 @@ def _encode_best_palette_order(
             len(data), name, data, ordered_labels, ordered_palette, policy, strategy
         ))
     quick.sort(key=lambda item: item[0])
-    _, name, data, ordered_labels, ordered_palette, policy, strategy = quick[0]
-    data, policy, strategy = _encode_indexed(
-        ordered_labels, ordered_palette, info, config, search=config.filter_search
+    final: list[tuple[int, str, bytes, np.ndarray, np.ndarray, str, str]] = []
+    for _, candidate_name, _, candidate_labels, candidate_palette, _, _ in quick[:2]:
+        candidate_data, candidate_policy, candidate_strategy = _encode_indexed(
+            candidate_labels, candidate_palette, info, config,
+            search=config.filter_search,
+        )
+        final.append((
+            len(candidate_data), candidate_name, candidate_data,
+            candidate_labels, candidate_palette,
+            candidate_policy, candidate_strategy,
+        ))
+    _, name, data, ordered_labels, ordered_palette, policy, strategy = min(
+        final, key=lambda item: item[0]
     )
 
     # Pillow/libpng is a useful terminal-codec lower bound.  The ownership
@@ -805,6 +1103,7 @@ def _candidate(
     config: PNGConfig,
     colors: int,
     quantizer: str,
+    palette_edge_weight: float,
     dither: str,
     diffusion_strength: float,
     strength: float,
@@ -818,6 +1117,7 @@ def _candidate(
     return PNGCandidate(
         colors=len(palette),
         quantizer=quantizer,
+        palette_edge_weight=palette_edge_weight,
         dither=dither,
         diffusion_strength=diffusion_strength,
         ownership_strength=strength,
@@ -848,8 +1148,26 @@ def _better(candidate: PNGCandidate, incumbent: PNGCandidate, config: PNGConfig)
         if candidate_rate != incumbent_rate:
             return candidate_rate
         if candidate_rate:
-            if abs(candidate.ssim - incumbent.ssim) > 1e-9:
+            # Keep SSIM dominant, but do not make it lexicographic.  Inside a
+            # tightly bounded SSIM band, measured color and edge fidelity can
+            # identify a cleaner structural representation (notably thin-line
+            # and texture palettes) that pure SSIM would discard.
+            if candidate.ssim < incumbent.ssim - 2.5e-4:
+                return False
+            if candidate.ssim > incumbent.ssim + 2.5e-4:
                 return candidate.ssim > incumbent.ssim
+            candidate_fidelity = (
+                1000.0 * candidate.ssim
+                + 0.2 * candidate.psnr_db
+                + 0.5 * candidate.edge_psnr_db
+            )
+            incumbent_fidelity = (
+                1000.0 * incumbent.ssim
+                + 0.2 * incumbent.psnr_db
+                + 0.5 * incumbent.edge_psnr_db
+            )
+            if abs(candidate_fidelity - incumbent_fidelity) > 1e-9:
+                return candidate_fidelity > incumbent_fidelity
             return candidate.size < incumbent.size
         return candidate.size < incumbent.size
     if minimum and candidate_quality:
@@ -910,6 +1228,7 @@ def _lossless_candidate(
     return PNGCandidate(
         colors=len(colors) if colors is not None else 0,
         quantizer="lossless",
+        palette_edge_weight=0.0,
         dither="none",
         diffusion_strength=0.0,
         ownership_strength=0.0,
@@ -945,7 +1264,10 @@ def optimize_png(
     rgba = np.asarray(image.convert("RGBA"), dtype=np.uint8)
     candidates: list[PNGCandidate] = []
     schedule = _color_schedule(config)
-    total = 1 if config.lossless else len(schedule) + 4
+    # The guided path may add palette-rate refinement, Lloyd, ownership, and
+    # diffusion probes after the coarse schedule.  Keep GUI progress monotone
+    # instead of letting those probes run beyond the advertised budget.
+    total = 1 if config.lossless else len(schedule) + 38
     completed = 0
 
     def notify(message: str) -> None:
@@ -957,7 +1279,7 @@ def optimize_png(
         candidates.append(_lossless_candidate(source_path, image, rgba, info, config))
         completed = 1
     else:
-        quantized_cache: dict[tuple[int, str, str], tuple[np.ndarray, np.ndarray]] = {}
+        quantized_cache: dict[tuple[int, str, str, float], tuple[np.ndarray, np.ndarray]] = {}
         base_quantizer = "median-cut" if config.quantizer == "auto" else config.quantizer
 
         def evaluate(
@@ -966,11 +1288,15 @@ def optimize_png(
             strength: float,
             quantizer: str | None = None,
             diffusion_strength: float = 0.0,
+            edge_weight: float | None = None,
         ) -> PNGCandidate:
             nonlocal completed
             selected_quantizer = quantizer or base_quantizer
+            selected_edge_weight = (
+                config.palette_edge_weight if edge_weight is None else float(edge_weight)
+            )
             palette_dither = "floyd" if dither == "floyd" else "none"
-            key = (colors, palette_dither, selected_quantizer)
+            key = (colors, palette_dither, selected_quantizer, selected_edge_weight)
             if key not in quantized_cache:
                 quantized_cache[key] = _quantize(
                     rgba,
@@ -978,7 +1304,7 @@ def optimize_png(
                     palette_dither,
                     selected_quantizer,
                     config.lloyd_iterations,
-                    config.palette_edge_weight,
+                    selected_edge_weight,
                     config.palette_sample_limit,
                     config.palette_seed,
                 )
@@ -997,11 +1323,12 @@ def optimize_png(
                 )
             notify(
                 f"{colors} colors, ownership {strength:g}, "
-                f"{dither} diffusion {diffusion_strength:g}"
+                f"{dither} diffusion {diffusion_strength:g}, edge {selected_edge_weight:g}"
             )
             candidate = _candidate(
                 rgba, flowed, palette, info, config, colors,
-                selected_quantizer, dither, diffusion_strength, strength
+                selected_quantizer, selected_edge_weight, dither,
+                diffusion_strength, strength
             )
             candidates.append(candidate)
             completed += 1
@@ -1031,31 +1358,207 @@ def optimize_png(
         if config.quantizer == "auto":
             evaluate(current.colors, "none", 0.0, "edge-lloyd")
             current = _winner(candidates, config)
+            if config.target_bytes:
+                # Palette cardinality is itself a rate coordinate.  A single
+                # geometric midpoint left large holes (often 20-40%) below a
+                # requested byte budget, making matched-rate comparisons
+                # inconclusive.  Bracket the target in the final Lloyd family
+                # and resolve the integer crossing with a bounded binary trace.
+                tested = {
+                    candidate.colors for candidate in candidates
+                    if candidate.quantizer == "edge-lloyd"
+                    and candidate.palette_edge_weight == config.palette_edge_weight
+                    and candidate.dither == "none"
+                    and candidate.ownership_strength == 0.0
+                }
+                for _ in range(6):
+                    family = [
+                        candidate for candidate in candidates
+                        if candidate.quantizer == "edge-lloyd"
+                        and candidate.palette_edge_weight == config.palette_edge_weight
+                        and candidate.dither == "none"
+                        and candidate.ownership_strength == 0.0
+                    ]
+                    under = [
+                        candidate for candidate in family
+                        if candidate.size <= config.target_bytes
+                    ]
+                    if not under:
+                        high = min(family, key=lambda candidate: candidate.colors).colors
+                        proposal = max(2, high // 2)
+                    else:
+                        low = max(under, key=lambda candidate: candidate.colors).colors
+                        if low >= 256:
+                            break
+                        over = [
+                            candidate for candidate in family
+                            if candidate.colors > low
+                            and candidate.size > config.target_bytes
+                        ]
+                        high = (
+                            min(over, key=lambda candidate: candidate.colors).colors
+                            if over else min(256, max(low + 1, low * 2))
+                        )
+                        if high not in tested:
+                            proposal = high
+                        elif high - low > 1:
+                            proposal = (low + high) // 2
+                        else:
+                            break
+                    if proposal in tested:
+                        break
+                    evaluate(proposal, "none", 0.0, "edge-lloyd")
+                    tested.add(proposal)
+                current = _winner(candidates, config)
+                if np.all(rgba[..., 3] == 255):
+                    # The correct edge prior is content-dependent.  Probe a
+                    # small fixed atlas at the resolved rate rather than
+                    # pretending one global weight serves lines, texture, and
+                    # flat graphics equally.  Also admit unweighted full Lloyd,
+                    # which is often the smoother phase/frequency endpoint.
+                    resolved_colors = current.colors
+                    atlas: list[tuple[str, float]] = []
+                    for edge_weight in (0.0, 0.5, 1.0, 2.5):
+                        if edge_weight != config.palette_edge_weight:
+                            probe = evaluate(
+                                resolved_colors, "none", 0.0, "edge-lloyd",
+                                edge_weight=edge_weight,
+                            )
+                            atlas.append(("edge-lloyd", edge_weight))
+                            predicted = int(np.clip(round(
+                                probe.colors * config.target_bytes / max(probe.size, 1)
+                            ), 2, 256))
+                            if predicted != probe.colors:
+                                evaluate(
+                                    predicted, "none", 0.0, "edge-lloyd",
+                                    edge_weight=edge_weight,
+                                )
+                    probe = evaluate(
+                        resolved_colors, "none", 0.0, "lloyd-rgb",
+                        edge_weight=0.0,
+                    )
+                    atlas.append(("lloyd-rgb", 0.0))
+                    predicted = int(np.clip(round(
+                        probe.colors * config.target_bytes / max(probe.size, 1)
+                    ), 2, 256))
+                    if predicted != probe.colors:
+                        evaluate(
+                            predicted, "none", 0.0, "lloyd-rgb",
+                            edge_weight=0.0,
+                        )
+                    # One proportional step can miss when index entropy, not
+                    # PLTE bytes, controls rate (thin lines are the extreme
+                    # case).  Use the measured bytes/color secant for at most
+                    # two corrections per family; once an under/over bracket
+                    # exists, integer bisection resolves it.
+                    for quantizer_name, edge_weight in atlas:
+                        for _ in range(2):
+                            family = [
+                                candidate for candidate in candidates
+                                if candidate.quantizer == quantizer_name
+                                and candidate.palette_edge_weight == edge_weight
+                                and candidate.dither == "none"
+                                and candidate.ownership_strength == 0.0
+                            ]
+                            tested_counts = {candidate.colors for candidate in family}
+                            under = [candidate for candidate in family if candidate.size <= config.target_bytes]
+                            over = [candidate for candidate in family if candidate.size > config.target_bytes]
+                            proposal: int | None = None
+                            if under and over:
+                                low = max(under, key=lambda candidate: candidate.colors)
+                                above = [candidate for candidate in over if candidate.colors > low.colors]
+                                if above:
+                                    high = min(above, key=lambda candidate: candidate.colors)
+                                    if high.colors - low.colors > 1:
+                                        proposal = (low.colors + high.colors) // 2
+                            elif under:
+                                low = max(under, key=lambda candidate: candidate.colors)
+                                if low.colors < 256 and low.size < config.target_bytes:
+                                    proposal = min(256, max(
+                                        low.colors + 1,
+                                        round(low.colors * config.target_bytes / max(low.size, 1)),
+                                    ))
+                            elif len(over) >= 2:
+                                ordered = sorted(over, key=lambda candidate: candidate.colors)
+                                first, second = ordered[0], ordered[1]
+                                slope = (second.size - first.size) / max(second.colors - first.colors, 1)
+                                if slope > 0.5:
+                                    proposal = round(
+                                        first.colors - (first.size - config.target_bytes) / slope
+                                    )
+                                else:
+                                    proposal = first.colors - 1
+                            elif over:
+                                first = min(over, key=lambda candidate: candidate.colors)
+                                proposal = round(
+                                    first.colors * config.target_bytes / max(first.size, 1)
+                                )
+                            if proposal is None:
+                                break
+                            proposal = int(np.clip(proposal, 2, 256))
+                            if proposal in tested_counts:
+                                break
+                            evaluate(
+                                proposal, "none", 0.0, quantizer_name,
+                                edge_weight=edge_weight,
+                            )
+                    current = _winner(candidates, config)
         strengths = (
             [max(0.0, config.ownership_strength)]
             if config.ownership_strength >= 0.0
-            else [0.0005, 0.0015, 0.004]
+            else [0.0005]
         )
         for strength in strengths:
             if strength > 0.0:
-                evaluate(current.colors, "none", strength, current.quantizer)
+                probe = evaluate(
+                    current.colors, "none", strength, current.quantizer,
+                    edge_weight=current.palette_edge_weight,
+                )
+                if config.target_bytes:
+                    for _ in range(2):
+                        if probe.size <= config.target_bytes and probe.colors < 256:
+                            proposal = min(256, max(
+                                probe.colors + 1,
+                                round(
+                                    probe.colors * config.target_bytes
+                                    / max(probe.size, 1)
+                                ),
+                            ))
+                        elif probe.size > config.target_bytes and probe.colors > 2:
+                            proposal = max(2, min(
+                                probe.colors - 1,
+                                round(
+                                    probe.colors * config.target_bytes
+                                    / max(probe.size, 1)
+                                ),
+                            ))
+                        else:
+                            break
+                        if proposal == probe.colors:
+                            break
+                        probe = evaluate(
+                            proposal, "none", strength, current.quantizer,
+                            edge_weight=current.palette_edge_weight,
+                        )
 
         current = _winner(candidates, config)
         if config.dither == "floyd":
             evaluate(
                 current.colors, "floyd", current.ownership_strength,
-                current.quantizer,
+                current.quantizer, edge_weight=current.palette_edge_weight,
             )
         elif config.dither == "selective":
             evaluate(
                 current.colors, "selective", current.ownership_strength,
                 current.quantizer, config.diffusion_strength,
+                edge_weight=current.palette_edge_weight,
             )
         elif config.dither == "auto":
             for diffusion_strength in (0.25, 0.5, 0.75, 1.0):
                 evaluate(
                     current.colors, "selective", current.ownership_strength,
                     current.quantizer, diffusion_strength,
+                    edge_weight=current.palette_edge_weight,
                 )
 
     winner_pool = candidates

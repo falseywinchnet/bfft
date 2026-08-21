@@ -261,6 +261,27 @@ def _two_means_proposal(
     return best_gain, best_side
 
 
+def _partition_gain(
+    values: np.ndarray,
+    weights: tuple[float, float, float, float],
+    sample_weights: np.ndarray,
+    side: np.ndarray,
+) -> float:
+    """Measure a fixed partition in one metric's distortion units."""
+    mass = np.asarray(sample_weights, dtype=np.float64)
+    coordinates = _tangent_coordinates(values, weights, mass)
+    center = np.average(coordinates, axis=0, weights=mass)
+    old_sse = float(np.sum(mass[:, None] * (coordinates - center) ** 2))
+    new_sse = 0.0
+    for selection in (~side, side):
+        child = np.average(
+            coordinates[selection], axis=0, weights=mass[selection]
+        )
+        residual = coordinates[selection] - child
+        new_sse += float(np.sum(mass[selection, None] * residual * residual))
+    return max(0.0, old_sse - new_sse)
+
+
 def bifurcate_palette(
     samples_lab_alpha: np.ndarray,
     colors: int,
@@ -271,8 +292,16 @@ def bifurcate_palette(
     hue_weight: float = 1.0,
     alpha_weight: float = 0.7,
     minimum_leaf: int = 8,
+    family_priority: float = 0.0,
 ) -> BifurcationResult:
-    """Split the globally most profitable occupied perceptual node."""
+    """Split the globally most profitable occupied perceptual node.
+
+    When ``family_priority`` is positive and at least four colors are
+    requested, the root split temporarily emphasizes chroma and hue.  Later
+    splits return to the caller's perceptual metric.  This prevents a small
+    palette from spending every early branch on lightness before distinct
+    color families have a leaf of their own.
+    """
     samples = np.asarray(samples_lab_alpha, dtype=np.float64).reshape(-1, 4)
     if not len(samples):
         raise ValueError("cannot bifurcate an empty color population")
@@ -313,9 +342,46 @@ def bifurcate_palette(
         heapq.heappush(heap, (-gain, serial, label, side))
         serial += 1
 
-    queue(0)
     total_gain = 0.0
     next_label = 1
+    bootstrap = max(0.0, float(family_priority))
+    if bootstrap > 0.0 and requested >= 4:
+        family_weights = (
+            weights[0] / (1.0 + 1.85 * bootstrap),
+            weights[1] * (1.0 + 0.4 * bootstrap),
+            weights[2] * (1.0 + 1.2 * bootstrap),
+            weights[3],
+        )
+        proposal = _two_means_proposal(
+            samples,
+            family_weights,
+            importance,
+            max(1, int(minimum_leaf)),
+        )
+        if proposal is not None:
+            _family_gain, side = proposal
+            indices = leaves.pop(0)
+            parent_center = centers.pop(0)
+            parents.pop(0)
+            for child_indices in (indices[~side], indices[side]):
+                child_label = next_label
+                next_label += 1
+                leaves[child_label] = child_indices
+                centers[child_label] = np.average(
+                    samples[child_indices],
+                    axis=0,
+                    weights=importance[child_indices],
+                )
+                parents[child_label] = parent_center
+                queue(child_label)
+            total_gain += _partition_gain(
+                samples, weights, importance, side
+            )
+        else:
+            queue(0)
+    else:
+        queue(0)
+
     while len(leaves) < requested and heap:
         negative_gain, _serial, label, side = heapq.heappop(heap)
         if label not in leaves:

@@ -3216,6 +3216,295 @@ bfft_status bfft_vision_sobel_f64(
     return BFFT_OK;
 }
 
+bfft_status bfft_vision_nearest_code_f32(
+    std::size_t observation_count,
+    std::size_t code_count,
+    std::size_t dimensions,
+    std::size_t thread_count,
+    const float* observations,
+    const float* codes,
+    std::int32_t* labels) {
+    if (observation_count == 0 || code_count == 0 || dimensions == 0 ||
+        code_count > static_cast<std::size_t>(
+            std::numeric_limits<std::int32_t>::max()) ||
+        observations == nullptr || codes == nullptr || labels == nullptr) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    std::size_t observation_values = 0;
+    std::size_t code_values = 0;
+    if (!checked_product(observation_count, dimensions, &observation_values) ||
+        !checked_product(code_count, dimensions, &code_values)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    (void)observation_values;
+    (void)code_values;
+    try {
+        parallel_ranges(
+            observation_count, code_count * dimensions, thread_count,
+            [&](std::size_t begin, std::size_t end) {
+                for (std::size_t observation = begin;
+                     observation < end; ++observation) {
+                    const float* value =
+                        observations + observation * dimensions;
+                    float best_distance =
+                        std::numeric_limits<float>::infinity();
+                    std::int32_t best_code = 0;
+                    for (std::size_t code = 0; code < code_count; ++code) {
+                        const float* center = codes + code * dimensions;
+                        float distance = 0.0F;
+                        for (std::size_t dimension = 0;
+                             dimension < dimensions; ++dimension) {
+                            const float delta = value[dimension] -
+                                center[dimension];
+                            distance += delta * delta;
+                        }
+                        if (distance < best_distance) {
+                            best_distance = distance;
+                            best_code = static_cast<std::int32_t>(code);
+                        }
+                    }
+                    labels[observation] = best_code;
+                }
+            });
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
+bfft_status bfft_vision_weighted_kmeanspp_f32(
+    std::size_t observation_count,
+    std::size_t code_count,
+    std::size_t dimensions,
+    const float* observations,
+    const double* weights,
+    const double* random_draws,
+    float* codes,
+    std::size_t* live_code_count) {
+    if (observation_count == 0 || code_count == 0 || dimensions == 0 ||
+        observations == nullptr || weights == nullptr ||
+        random_draws == nullptr || codes == nullptr ||
+        live_code_count == nullptr) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    std::size_t observation_values = 0;
+    std::size_t code_values = 0;
+    if (!checked_product(observation_count, dimensions, &observation_values) ||
+        !checked_product(code_count, dimensions, &code_values)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    (void)observation_values;
+    (void)code_values;
+    try {
+        std::vector<float> closest(observation_count);
+        double total = 0.0;
+        for (std::size_t observation = 0; observation < observation_count;
+             ++observation) {
+            if (!std::isfinite(weights[observation]) ||
+                weights[observation] < 0.0) {
+                return BFFT_ERROR_INVALID_ARGUMENT;
+            }
+            total += weights[observation];
+        }
+        if (!(total > 0.0)) {
+            return BFFT_ERROR_INVALID_ARGUMENT;
+        }
+        auto choose = [&](double draw, bool weighted_distance) {
+            double cumulative = 0.0;
+            std::size_t choice = observation_count - 1;
+            for (std::size_t observation = 0;
+                 observation < observation_count; ++observation) {
+                const double probability = weighted_distance
+                    ? weights[observation] *
+                        static_cast<double>(closest[observation])
+                    : weights[observation];
+                cumulative += probability / total;
+                if (draw < cumulative) {
+                    choice = observation;
+                    break;
+                }
+            }
+            return choice;
+        };
+        std::size_t choice = choose(random_draws[0], false);
+        std::copy(
+            observations + choice * dimensions,
+            observations + (choice + 1) * dimensions,
+            codes);
+        for (std::size_t observation = 0; observation < observation_count;
+             ++observation) {
+            float distance = 0.0F;
+            for (std::size_t dimension = 0; dimension < dimensions;
+                 ++dimension) {
+                const float delta =
+                    observations[observation * dimensions + dimension] -
+                    codes[dimension];
+                distance += delta * delta;
+            }
+            closest[observation] = distance;
+        }
+        std::size_t live = 1;
+        for (std::size_t code = 1; code < code_count; ++code) {
+            total = 0.0;
+            for (std::size_t observation = 0;
+                 observation < observation_count; ++observation) {
+                total += weights[observation] *
+                    static_cast<double>(closest[observation]);
+            }
+            if (!(total > 1e-12)) {
+                break;
+            }
+            choice = choose(random_draws[code], true);
+            float* center = codes + code * dimensions;
+            std::copy(
+                observations + choice * dimensions,
+                observations + (choice + 1) * dimensions,
+                center);
+            for (std::size_t observation = 0;
+                 observation < observation_count; ++observation) {
+                float distance = 0.0F;
+                for (std::size_t dimension = 0; dimension < dimensions;
+                     ++dimension) {
+                    const float delta =
+                        observations[observation * dimensions + dimension] -
+                        center[dimension];
+                    distance += delta * delta;
+                }
+                closest[observation] = std::min(
+                    closest[observation], distance);
+            }
+            live = code + 1;
+        }
+        *live_code_count = live;
+    } catch (const std::bad_alloc&) {
+        return BFFT_ERROR_ALLOCATION;
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
+bfft_status bfft_vision_block_dct8_f64(
+    std::size_t height,
+    std::size_t width,
+    std::size_t thread_count,
+    const double* input,
+    const double* matrix,
+    double* coefficients) {
+    if (height == 0 || width == 0 || input == nullptr || matrix == nullptr ||
+        coefficients == nullptr) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    const std::size_t block_height = (height + 7) / 8;
+    const std::size_t block_width = (width + 7) / 8;
+    std::size_t block_count = 0;
+    if (!checked_product(block_height, block_width, &block_count)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    try {
+        parallel_ranges(
+            block_count, std::size_t{1024}, thread_count,
+            [&](std::size_t begin, std::size_t end) {
+                for (std::size_t block = begin; block < end; ++block) {
+                    const std::size_t block_y = block / block_width;
+                    const std::size_t block_x = block % block_width;
+                    double temporary[64];
+                    for (std::size_t u = 0; u < 8; ++u) {
+                        for (std::size_t j = 0; j < 8; ++j) {
+                            double sum = 0.0;
+                            const std::size_t y_base = block_y * 8;
+                            const std::size_t x = std::min(
+                                block_x * 8 + j, width - 1);
+                            for (std::size_t i = 0; i < 8; ++i) {
+                                const std::size_t y = std::min(
+                                    y_base + i, height - 1);
+                                sum += matrix[u * 8 + i] *
+                                    (input[y * width + x] - 128.0);
+                            }
+                            temporary[u * 8 + j] = sum;
+                        }
+                    }
+                    double* output = coefficients + block * 64;
+                    for (std::size_t u = 0; u < 8; ++u) {
+                        for (std::size_t v = 0; v < 8; ++v) {
+                            double sum = 0.0;
+                            for (std::size_t j = 0; j < 8; ++j) {
+                                sum += temporary[u * 8 + j] *
+                                    matrix[v * 8 + j];
+                            }
+                            output[u * 8 + v] = sum;
+                        }
+                    }
+                }
+            });
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
+bfft_status bfft_vision_inverse_block_dct8_f64(
+    std::size_t height,
+    std::size_t width,
+    std::size_t thread_count,
+    const double* coefficients,
+    const double* matrix,
+    double* output) {
+    if (height == 0 || width == 0 || coefficients == nullptr ||
+        matrix == nullptr || output == nullptr) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    const std::size_t block_height = (height + 7) / 8;
+    const std::size_t block_width = (width + 7) / 8;
+    std::size_t block_count = 0;
+    if (!checked_product(block_height, block_width, &block_count)) {
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    }
+    try {
+        parallel_ranges(
+            block_count, std::size_t{1024}, thread_count,
+            [&](std::size_t begin, std::size_t end) {
+                for (std::size_t block = begin; block < end; ++block) {
+                    const std::size_t block_y = block / block_width;
+                    const std::size_t block_x = block % block_width;
+                    const double* source = coefficients + block * 64;
+                    double temporary[64];
+                    for (std::size_t i = 0; i < 8; ++i) {
+                        for (std::size_t v = 0; v < 8; ++v) {
+                            double sum = 0.0;
+                            for (std::size_t u = 0; u < 8; ++u) {
+                                sum += matrix[u * 8 + i] *
+                                    source[u * 8 + v];
+                            }
+                            temporary[i * 8 + v] = sum;
+                        }
+                    }
+                    for (std::size_t i = 0; i < 8; ++i) {
+                        const std::size_t y = block_y * 8 + i;
+                        if (y >= height) {
+                            continue;
+                        }
+                        for (std::size_t j = 0; j < 8; ++j) {
+                            const std::size_t x = block_x * 8 + j;
+                            if (x >= width) {
+                                continue;
+                            }
+                            double sum = 0.0;
+                            for (std::size_t v = 0; v < 8; ++v) {
+                                sum += temporary[i * 8 + v] *
+                                    matrix[v * 8 + j];
+                            }
+                            output[y * width + x] = sum + 128.0;
+                        }
+                    }
+                }
+            });
+    } catch (...) {
+        return BFFT_ERROR_INTERNAL;
+    }
+    return BFFT_OK;
+}
+
 bfft_status bfft_vision_image_metrics_f64(
     std::size_t height,
     std::size_t width,
