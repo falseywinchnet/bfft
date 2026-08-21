@@ -69,6 +69,7 @@
 #include <cstring>
 #include <memory>
 #include <mutex>
+#include <numbers>
 #include <numeric>
 #include <thread>
 #include <type_traits>
@@ -497,7 +498,7 @@ struct engine {
             t.correction.clear();
             t.correction_inverse.clear();
         }
-        const double tau = 2.0 * M_PI / double(FT);
+        const double tau = 2.0 * std::numbers::pi_v<double> / double(FT);
         for (std::size_t k = 0; k < FB; ++k) {
             const double lt = 2.0 * std::cos(tau * double(k)) - 2.0;
             const double base = c - eta * lt;
@@ -542,8 +543,8 @@ struct engine {
 
     void symbol(std::vector<double>& s, double c, double eta) {
         s.resize(2 * WB * HB);
-        const double tau_h = 2.0 * M_PI / double(H);
-        const double tau_w = 2.0 * M_PI / double(W);
+        const double tau_h = 2.0 * std::numbers::pi_v<double> / double(H);
+        const double tau_w = 2.0 * std::numbers::pi_v<double> / double(W);
         for (std::size_t k = 0; k < WB; ++k) {
             const double lx = 2.0 * std::cos(tau_w * double(k)) - 2.0;
             double* srow = s.data() + 2 * k * HB;
@@ -665,8 +666,8 @@ struct engine {
                               int dy, int dx, double theta,
                               double sigma_long = 12.0,
                               double sigma_width = 0.75) {
-        const double tau_h = 2.0 * M_PI / double(H);
-        const double tau_w = 2.0 * M_PI / double(W);
+        const double tau_h = 2.0 * std::numbers::pi_v<double> / double(H);
+        const double tau_w = 2.0 * std::numbers::pi_v<double> / double(W);
         const double ct = std::cos(theta), st = std::sin(theta);
         P.run([&](int tid) {
             for (std::size_t k = std::size_t(tid); k < WB;
@@ -2702,9 +2703,9 @@ struct engine {
         struct direction { int dy, dx; double theta; };
         const direction directions[4] = {
             {1, 0, 0.0},
-            {0, 1, 0.5 * M_PI},
-            {1, 1, 0.25 * M_PI},
-            {1, -1, 0.75 * M_PI},
+            {0, 1, 0.5 * std::numbers::pi_v<double>},
+            {1, 1, 0.25 * std::numbers::pi_v<double>},
+            {1, -1, 0.75 * std::numbers::pi_v<double>},
         };
         for (const direction& d : directions) {
             directional_gaussian(
