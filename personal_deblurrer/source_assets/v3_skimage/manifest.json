@@ -1,0 +1,167 @@
+{
+  "portfolio": "segmenter_v3_skimage_source_data_only",
+  "method_inheritance": "none",
+  "source_api": "skimage.data",
+  "count": 17,
+  "records": [
+    {
+      "name": "brick",
+      "file": "brick.png",
+      "shape": [
+        512,
+        512
+      ],
+      "sha256": "7966caf324f6ba843118d98f7a07746d22f6a343430add0233eca5f6eaaa8fcf"
+    },
+    {
+      "name": "grass",
+      "file": "grass.png",
+      "shape": [
+        512,
+        512
+      ],
+      "sha256": "e7d3a0bb68fc78e975133232b29688f215b6b9feebf7d55da770549c40a040f9"
+    },
+    {
+      "name": "gravel",
+      "file": "gravel.png",
+      "shape": [
+        512,
+        512
+      ],
+      "sha256": "906011f6fc09e365ac53c0ff64733b92c4f89f7d585f147dbb7177b3cfa382db"
+    },
+    {
+      "name": "checkerboard",
+      "file": "checkerboard.png",
+      "shape": [
+        200,
+        200
+      ],
+      "sha256": "b622a342433e58b560922eb35417b74c0bd09c60728e042b4143b55033ad3ffe"
+    },
+    {
+      "name": "text",
+      "file": "text.png",
+      "shape": [
+        172,
+        448
+      ],
+      "sha256": "2118ab1dc0d946d6cdbc61fee13ac4bb3124051d7e1d2d68178283cfab7c19b0"
+    },
+    {
+      "name": "page",
+      "file": "page.png",
+      "shape": [
+        191,
+        384
+      ],
+      "sha256": "b7a64639a4507ee5ee1d295786a35e823bbc95d8fe10bd84ee265d0a385a4a91"
+    },
+    {
+      "name": "coins",
+      "file": "coins.png",
+      "shape": [
+        303,
+        384
+      ],
+      "sha256": "5fd5f7e6bf66870aaab464aed2c68956e733a6ddd87355c30f33a574f0775f3e"
+    },
+    {
+      "name": "moon",
+      "file": "moon.png",
+      "shape": [
+        512,
+        512
+      ],
+      "sha256": "c340709abc762286687a0a838be51c17c9b60e7a35888b7b95c9cdb6322532fb"
+    },
+    {
+      "name": "camera",
+      "file": "camera.png",
+      "shape": [
+        512,
+        512
+      ],
+      "sha256": "d1f2750133b2180aa37b0c7085ef397f46c6dafb7898f891a6dfd72bc77c1b5d"
+    },
+    {
+      "name": "cell",
+      "file": "cell.png",
+      "shape": [
+        660,
+        550
+      ],
+      "sha256": "04f48ee20748d5f6ad4bf068018f50d134a7566330e9f494ff291f9f59afdfcf"
+    },
+    {
+      "name": "clock",
+      "file": "clock.png",
+      "shape": [
+        300,
+        400
+      ],
+      "sha256": "7350ff5256b7e0a3ab2d28c4b2f01767554230924b24f3858fe512184445fef2"
+    },
+    {
+      "name": "astronaut",
+      "file": "astronaut.png",
+      "shape": [
+        512,
+        512,
+        3
+      ],
+      "sha256": "237846e559137b489b2988db2c7425cd7ebe6e7b814ab9d32a6d47f0973c099d"
+    },
+    {
+      "name": "chelsea",
+      "file": "chelsea.png",
+      "shape": [
+        300,
+        451,
+        3
+      ],
+      "sha256": "4453deb3754ba0df44e46fd7bdaa052311c726e6baff64098624375149f29863"
+    },
+    {
+      "name": "coffee",
+      "file": "coffee.png",
+      "shape": [
+        400,
+        600,
+        3
+      ],
+      "sha256": "7cc91c4805735f94919f114660fc75394fa0ca29d8ade7482c1f47b192ec7d58"
+    },
+    {
+      "name": "immunohistochemistry",
+      "file": "immunohistochemistry.png",
+      "shape": [
+        512,
+        512,
+        3
+      ],
+      "sha256": "c131009a19068a8771b4200ad91ca93c25ce1eb2748f7682d1ec4c0e0466e1cc"
+    },
+    {
+      "name": "retina",
+      "file": "retina.png",
+      "shape": [
+        706,
+        706,
+        3
+      ],
+      "sha256": "f4f8bb1789c7699d78ffb93d73c4f8a7e34d4f65ac6311bed3477472c906ad88"
+    },
+    {
+      "name": "hubble_deep_field",
+      "file": "hubble_deep_field.png",
+      "shape": [
+        872,
+        1000,
+        3
+      ],
+      "sha256": "c076bc75b651c3cce159c540b09f6423cabb4ca2cb2d9c5b79215e4e84d6b8ae"
+    }
+  ]
+}

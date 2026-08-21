@@ -1,8 +1,10 @@
 import numpy as np
 from scipy.sparse.linalg import splu
 
-from bfft.vision import (assemble_normal, compact_support_operators,
-                         coownership_graph, render_partition)
+from bfft.vision import (assemble_normal, block_dct8_native,
+                         compact_support_operators, coownership_graph,
+                         inverse_block_dct8_native, nearest_code_native,
+                         render_partition, weighted_kmeanspp_native)
 
 
 def test_fused_partition_matches_explicit_design():
@@ -78,3 +80,63 @@ def test_compact_support_operator_matches_dense_design():
         atol=3e-14,
         rtol=0,
     )
+
+
+def test_native_nearest_code_matches_scipy_vq():
+    from scipy.cluster.vq import vq
+
+    rng = np.random.default_rng(20260820)
+    for dimensions in (3, 4):
+        observations = rng.uniform(0, 255, (4099, dimensions)).astype(np.float32)
+        codes = rng.uniform(0, 255, (193, dimensions)).astype(np.float32)
+        native = nearest_code_native(observations, codes, threads=3)
+        assert native is not None
+        reference = vq(observations, codes, check_finite=False)[0]
+        np.testing.assert_array_equal(native, reference)
+
+
+def test_native_weighted_kmeanspp_preserves_numpy_rng_construction():
+    source_rng = np.random.default_rng(20260822)
+    observations = source_rng.uniform(0, 255, (4096, 3)).astype(np.float32)
+    weights = source_rng.uniform(0.5, 4.0, len(observations))
+    code_count = 61
+    reference_rng = np.random.default_rng(508030340)
+    native_rng = np.random.default_rng(508030340)
+    reference = np.empty((code_count, 3), dtype=np.float32)
+    first = reference_rng.choice(len(observations), p=weights / weights.sum())
+    reference[0] = observations[first]
+    closest = np.sum((observations - reference[0]) ** 2, axis=1)
+    for index in range(1, code_count):
+        probability = weights * closest
+        choice = reference_rng.choice(
+            len(observations), p=probability / probability.sum()
+        )
+        reference[index] = observations[choice]
+        closest = np.minimum(
+            closest,
+            np.sum((observations - reference[index]) ** 2, axis=1),
+        )
+    native = weighted_kmeanspp_native(
+        observations, weights, code_count, native_rng.random(code_count)
+    )
+    assert native is not None
+    np.testing.assert_array_equal(native, reference)
+
+
+def test_native_block_dct_matches_numpy_basis_and_round_trip():
+    rng = np.random.default_rng(20260821)
+    plane = rng.uniform(0, 255, (67, 91))
+    coordinate = np.arange(8, dtype=np.float64)
+    matrix = np.cos(
+        (2.0 * coordinate[None, :] + 1.0) * coordinate[:, None] * np.pi / 16.0
+    )
+    matrix[0] *= 1.0 / np.sqrt(2.0)
+    matrix *= 0.5
+    native = block_dct8_native(plane, matrix, threads=3)
+    assert native is not None
+    padded = np.pad(plane, ((0, (-len(plane)) % 8), (0, (-plane.shape[1]) % 8)), mode="edge")
+    blocks = padded.reshape(9, 8, 12, 8).transpose(0, 2, 1, 3)
+    reference = np.einsum("ui,abij,vj->abuv", matrix, blocks - 128.0, matrix)
+    np.testing.assert_allclose(native, reference, atol=2e-13, rtol=0)
+    recovered = inverse_block_dct8_native(native, plane.shape, matrix, threads=3)
+    np.testing.assert_allclose(recovered, plane, atol=4e-13, rtol=0)

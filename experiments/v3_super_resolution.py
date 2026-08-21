@@ -1,4 +1,10 @@
-"""Two-times single-image super-resolution from the v3 support basis.
+"""HISTORICAL RELIC: early 2x super-resolution from a V3 support basis.
+
+This experiment was last committed on 2026-07-31 (93ec7f8), before the live
+Segmenting V3 pipeline's 2026-08-02 revisions.  Its continuous lift,
+posterior-shrinkage law, and conclusions are not a statement of the current V3
+mathematics.  The maintained ``experiments.super_resolver`` scaffold does not
+import this module.
 
 The benchmark is honest by construction: an original image is cropped to an
 even lattice and Lanczos-reduced by exactly two.  Every method receives only

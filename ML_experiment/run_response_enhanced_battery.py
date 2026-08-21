@@ -25,6 +25,7 @@ from ML_experiment.response_enhanced import (
     allocation_summary,
     make_response_variant,
 )
+from ML_experiment.spectral_response import spectral_response_summary
 from ML_experiment.run_benchmark import auc, threshold
 from ML_experiment.run_frame_refinement import make_probe
 from ML_experiment.tasks import TASK_BUILDERS
@@ -100,6 +101,7 @@ def train(name, task, width, seed, steps, batch, lr, evaluate_every):
         "best_step": best[2],
         **timing,
         **allocation_summary(model),
+        **spectral_response_summary(model),
     }
 
 

@@ -28,6 +28,10 @@ __pycache__/
 # generated reference-split caches (regenerated on demand)
 experiments/out/ref_*.npz
 
+# Generated V3 object-transport runs can exceed several gigabytes. Keep the
+# source and curated assets visible while excluding reproducible run outputs.
+/experiments/v3_object_transport/results/
+
 # High Vision capture, firmware-analysis, and visual-QA artifacts.
 /high_vision/out/fuji_hdmi_bench/
 /high_vision/out/fuji_xa5_*/
@@ -41,3 +45,20 @@ experiments/out/ref_*.npz
 *.key
 *.pem
 *.crt
+
+# Reproducible research outputs and locally cached paper/data corpora. Keep the
+# source, tests, reports, and curated GUI fixtures in Git; regenerate these.
+/ML_experiment/results_*/
+/denoiser/**/*.json
+/denoiser/**/*.png
+/denoiser/**/*.csv
+!/denoiser/assets/*.png
+/personal_deblurrer/papers/*.pdf
+/personal_deblurrer/real_capture_data/
+/personal_deblurrer/real_capture_results/
+/personal_deblurrer/results/
+/personal_deblurrer/*_results/
+/personal_deblurrer/circle_fiber_generalization/
+/personal_deblurrer/ringing_*/
+/personal_deblurrer/ringing_*.json
+/personal_deblurrer/*.json

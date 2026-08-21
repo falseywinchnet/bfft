@@ -1,0 +1,43 @@
+{
+  "purpose": "Sparse evaluation landmarks only; these labels never enter segmentation or transport.",
+  "images": {
+    "pikachu_hard": {
+      "wall": {"xy": [0.02, 0.02], "instance": "wall"},
+      "black_surround": {"xy": [0.50, 0.10], "instance": "surround"},
+      "left_ear_tip": {"xy": [0.245, 0.11], "instance": "pikachu"},
+      "right_ear_tip": {"xy": [0.635, 0.22], "instance": "pikachu"},
+      "body": {"xy": [0.50, 0.60], "instance": "pikachu"},
+      "tail": {"xy": [0.86, 0.29], "instance": "pikachu"}
+    },
+    "coffee": {
+      "cup_wall": {"xy": [0.50, 0.28], "instance": "cup_plate"},
+      "liquid": {"xy": [0.51, 0.36], "instance": "cup_plate"},
+      "plate": {"xy": [0.40, 0.68], "instance": "cup_plate"},
+      "spoon_bowl": {"xy": [0.64, 0.65], "instance": "spoon"},
+      "spoon_handle": {"xy": [0.61, 0.55], "instance": "spoon"},
+      "table": {"xy": [0.90, 0.80], "instance": "table"}
+    },
+    "astronaut": {
+      "flag_blue": {"xy": [0.05, 0.14], "instance": "flag"},
+      "flag_red": {"xy": [0.075, 0.31], "instance": "flag"},
+      "flag_white": {"xy": [0.11, 0.40], "instance": "flag"},
+      "suit": {"xy": [0.31, 0.70], "instance": "astronaut"},
+      "face": {"xy": [0.45, 0.28], "instance": "astronaut"},
+      "helmet": {"xy": [0.80, 0.84], "instance": "helmet"},
+      "rocket": {"xy": [0.86, 0.35], "instance": "rocket"}
+    },
+    "checker": {
+      "black_a": {"xy": [0.0625, 0.0625], "instance": "board"},
+      "white_a": {"xy": [0.1875, 0.0625], "instance": "board"},
+      "black_b": {"xy": [0.3125, 0.0625], "instance": "board"},
+      "white_b": {"xy": [0.4375, 0.0625], "instance": "board"}
+    },
+    "coins": {
+      "coin_00": {"xy": [0.12, 0.19], "instance": "coin_00"},
+      "coin_01": {"xy": [0.31, 0.19], "instance": "coin_01"},
+      "coin_10": {"xy": [0.12, 0.38], "instance": "coin_10"},
+      "coin_11": {"xy": [0.31, 0.38], "instance": "coin_11"},
+      "ground": {"xy": [0.50, 0.04], "instance": "ground"}
+    }
+  }
+}

@@ -104,6 +104,22 @@ class ManualJPEGOptimizerTests(unittest.TestCase):
             self.assertLess(result.evaluations, 126)
             self.assertTrue(output.exists())
 
+    def test_frontier_trace_can_leave_high_quality_source_neighborhood(self):
+        y, x = np.mgrid[:128, :128]
+        rgb = np.stack((
+            (x * 7 + y * 3) % 256,
+            (x * 2 + y * 9) % 256,
+            (x * 11 + y) % 256,
+        ), axis=-1).astype(np.uint8)
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "source-q95.jpg"
+            output = Path(directory) / "output.jpg"
+            Image.fromarray(rgb).save(source, quality=95, subsampling=0)
+            result = optimize_jpeg(source, output, target_bytes=1_800)
+            self.assertEqual(result.source_quality, 95)
+            self.assertLess(result.best.config.quality, 87)
+            self.assertLessEqual(result.best.size_bytes, 1_800)
+
     def test_frontier_trace_is_cooperatively_cancellable(self):
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "source.png"

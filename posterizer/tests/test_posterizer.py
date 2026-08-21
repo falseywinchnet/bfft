@@ -8,7 +8,18 @@ import unittest
 import numpy as np
 from PIL import Image
 
-from posterizer.core import PosterizerConfig, _component_map, posterize_array
+from posterizer.core import (
+    PosterizerConfig,
+    _chart_diagnostics,
+    _component_map,
+    _deduplicate_palette,
+    _edge_aware_structure,
+    _reserve_family_anchor,
+    _rgba_to_lab_alpha,
+    _spatial_mix_labels,
+    _transport_texture,
+    posterize_array,
+)
 from posterizer.oklch import (
     bifurcate_palette,
     gamut_map_oklch,
@@ -37,6 +48,108 @@ class PosterizerTests(unittest.TestCase):
             self.assertEqual(int(np.count_nonzero(pixels)), int(areas[component]))
             self.assertEqual(len(np.unique(labels[pixels])), 1)
             self.assertEqual(int(labels[pixels][0]), int(component_labels[component]))
+
+    def test_display_palette_deduplication_preserves_first_seen_order(self):
+        palette = np.array([
+            [30, 40, 50, 255],
+            [200, 180, 90, 255],
+            [30, 40, 50, 255],
+            [200, 180, 90, 255],
+            [10, 20, 30, 0],
+        ], dtype=np.uint8)
+        unique, remap = _deduplicate_palette(palette)
+        np.testing.assert_array_equal(unique, palette[[0, 1, 4]])
+        np.testing.assert_array_equal(remap, [0, 1, 0, 1, 2])
+
+    def test_edge_aware_structure_reduces_noise_without_crossing_step(self):
+        yy, xx = np.indices((9, 12))
+        lightness = np.where(xx < 6, 0.25, 0.78)
+        lightness += np.where((xx + yy) % 2, -0.025, 0.025)
+        field = np.zeros((9, 12, 4), dtype=np.float64)
+        field[..., 0] = lightness
+        field[..., 3] = 1.0
+        result = _edge_aware_structure(
+            field,
+            np.ones((9, 12), dtype=bool),
+            PosterizerConfig(structure_radius=2, structure_threshold=0.065),
+        )
+        self.assertLess(np.std(result[:, :5, 0]), np.std(field[:, :5, 0]))
+        self.assertLess(float(np.max(result[:, :5, 0])), 0.4)
+        self.assertGreater(float(np.min(result[:, 7:, 0])), 0.6)
+        np.testing.assert_array_equal(result[..., 3], field[..., 3])
+
+    def test_texture_transport_amplifies_measured_detail_not_flat_fields(self):
+        field = np.zeros((9, 12, 4), dtype=np.float64)
+        field[..., 0] = 0.5
+        field[..., 3] = 1.0
+        yy, xx = np.indices((5, 6))
+        field[2:7, 3:9, 0] += np.where((xx + yy) % 2, -0.025, 0.025)
+        result = _transport_texture(
+            field, PosterizerConfig(texture_priority=0.75)
+        )
+        self.assertGreater(
+            np.std(result[2:7, 3:9, 0]), np.std(field[2:7, 3:9, 0])
+        )
+        self.assertAlmostEqual(float(result[0, 0, 0]), 0.5, places=4)
+        np.testing.assert_array_equal(result[..., 3], field[..., 3])
+
+    def test_spatial_mixing_is_deterministic_and_protects_label_edges(self):
+        height, width = 20, 28
+        source = np.full((height, width, 4), 255, dtype=np.uint8)
+        ramp = np.linspace(70, 190, width, dtype=np.uint8)
+        source[..., :3] = ramp[None, :, None]
+        palette = np.array([
+            [70, 70, 70, 255],
+            [190, 190, 190, 255],
+        ], dtype=np.uint8)
+        labels = np.zeros((height, width), dtype=np.int32)
+        labels[:, width // 2:] = 1
+        config = PosterizerConfig(mixing_strength=1.0, mixing_neighbors=1)
+        first, fraction = _spatial_mix_labels(
+            _rgba_to_lab_alpha(source),
+            labels,
+            _rgba_to_lab_alpha(palette),
+            np.ones((height, width), dtype=bool),
+            config,
+        )
+        second, second_fraction = _spatial_mix_labels(
+            _rgba_to_lab_alpha(source),
+            labels,
+            _rgba_to_lab_alpha(palette),
+            np.ones((height, width), dtype=bool),
+            config,
+        )
+        np.testing.assert_array_equal(first, second)
+        self.assertEqual(fraction, second_fraction)
+        self.assertGreater(fraction, 0.0)
+        np.testing.assert_array_equal(
+            first[:, width // 2 - 1: width // 2 + 1],
+            labels[:, width // 2 - 1: width // 2 + 1],
+        )
+        self.assertTrue(np.all((first == 0) | (first == 1)))
+
+    def test_identical_perceptual_charts_have_zero_stress(self):
+        yy, xx = np.indices((12, 16))
+        source = np.zeros((12, 16, 4), dtype=np.uint8)
+        source[..., 0] = 30 + 9 * xx
+        source[..., 1] = 50 + 7 * yy
+        source[..., 2] = 90 + 3 * xx
+        source[..., 3] = 255
+        lab = _rgba_to_lab_alpha(source)
+        diagnostics = _chart_diagnostics(
+            lab,
+            lab,
+            np.ones((12, 16), dtype=np.float64),
+            np.ones((12, 16), dtype=bool),
+        )
+        self.assertAlmostEqual(diagnostics["chart_global_stress"], 0.0)
+        self.assertAlmostEqual(diagnostics["chart_local_stress"], 0.0)
+        self.assertAlmostEqual(
+            diagnostics["chart_distance_correlation"], 1.0
+        )
+        self.assertAlmostEqual(
+            diagnostics["chart_collapsed_relation_energy"], 0.0
+        )
 
     def test_oklab_srgb_round_trip(self):
         rgb = np.array([
@@ -147,6 +260,11 @@ class PosterizerTests(unittest.TestCase):
         self.assertEqual(first.posterized_rgba[0, 0, 3], 0)
         self.assertLessEqual(first.diagnostics["palette_colors"], 7)
         self.assertIn("importance_weighted_perceptual_rmse", first.diagnostics)
+        self.assertIn("texture_correlation", first.diagnostics)
+        self.assertIn("chroma_correlation", first.diagnostics)
+        self.assertIn("mean_hue_alignment", first.diagnostics)
+        self.assertIn("chart_local_stress", first.diagnostics)
+        self.assertIn("chart_worst_sector_alignment", first.diagnostics)
         with tempfile.TemporaryDirectory() as directory:
             png = f"{directory}/control.png"
             jpg = f"{directory}/control.jpg"
@@ -176,6 +294,50 @@ class PosterizerTests(unittest.TestCase):
         self.assertAlmostEqual(ordinary.palette_lab_alpha[0, 0], 0.5)
         self.assertGreater(weighted.palette_lab_alpha[0, 0], 0.69)
 
+    def test_family_bootstrap_reserves_a_chromatic_leaf(self):
+        lightness = np.linspace(0.2, 0.85, 600)
+        neutral = np.stack((
+            lightness,
+            np.full(600, 0.015),
+            np.full(600, 0.01),
+            np.ones(600),
+        ), axis=1)
+        red = np.tile(np.array([0.55, 0.15, 0.05, 1.0]), (40, 1))
+        green = np.tile(np.array([0.55, -0.10, 0.08, 1.0]), (40, 1))
+        samples = np.vstack((neutral, red, green))
+        ordinary = bifurcate_palette(
+            samples, 4, minimum_leaf=4, family_priority=0.0
+        )
+        protected = bifurcate_palette(
+            samples, 4, minimum_leaf=4, family_priority=1.0
+        )
+        self.assertGreater(float(np.min(ordinary.palette_lab_alpha[:, 1])), 0.0)
+        self.assertLess(float(np.min(protected.palette_lab_alpha[:, 1])), -0.05)
+
+    def test_family_anchor_replaces_only_one_tonal_node(self):
+        primary = np.array([
+            [0.2, 0.01, 0.01, 1.0],
+            [0.4, 0.01, 0.01, 1.0],
+            [0.6, 0.01, 0.01, 1.0],
+            [0.8, 0.01, 0.01, 1.0],
+        ])
+        family = primary.copy()
+        family[2] = [0.58, -0.12, 0.08, 1.0]
+        samples = np.vstack((
+            np.repeat(primary, 20, axis=0),
+            np.tile(family[2], (20, 1)),
+        ))
+        result = _reserve_family_anchor(
+            samples,
+            np.ones(len(samples)),
+            primary,
+            family,
+            PosterizerConfig(),
+        )
+        self.assertLess(float(np.min(result[:, 1])), -0.05)
+        retained = sum(np.any(np.all(result == node, axis=1)) for node in primary)
+        self.assertEqual(retained, 3)
+
     def test_web_endpoint_preserves_input_raster_format(self):
         source = np.full((16, 20, 4), (45, 70, 120, 255), dtype=np.uint8)
         source[4:12, 5:15, :3] = (220, 110, 60)
@@ -185,7 +347,8 @@ class PosterizerTests(unittest.TestCase):
         png_payload = convert_request(
             data,
             "colors=4&method=oklch&separation=1.05&lightness=1&chroma=1"
-            "&hue=1&detail=2&population=.65&island=1&rounds=1&name=web.png",
+            "&hue=1&detail=2&population=.65&mixing=.5&neighbors=3"
+            "&island=1&rounds=1&name=web.png",
         )
         self.assertEqual(png_payload["mime"], "image/png")
         self.assertEqual(png_payload["extension"], ".png")
@@ -197,6 +360,8 @@ class PosterizerTests(unittest.TestCase):
         with Image.open(BytesIO(base64.b64decode(jpg_payload["image"]))) as image:
             self.assertEqual(image.format, "JPEG")
         self.assertEqual(png_payload["diagnostics"]["source_bytes"], len(data))
+        self.assertEqual(png_payload["diagnostics"]["mixing_strength"], 0.5)
+        self.assertIn("lowpass_perceptual_rmse", png_payload["diagnostics"])
 
 
 if __name__ == "__main__":

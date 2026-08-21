@@ -1,4 +1,10 @@
-# V3 support-conditioned 2x super-resolution experiment
+# Historical relic: early V3 support-conditioned 2x super-resolution
+
+> Dating audit (2026-08-20): this experiment was last committed on 2026-07-31
+> in `93ec7f8`. The live `experiments/segmenting_v3.py` continued changing
+> through 2026-08-02 (`cd6eddd`). Therefore the lift, posterior law, and
+> conclusions below are relic-grade relative to the current V3 segmenter. The
+> maintained `experiments/super_resolver/` application does not reuse them.
 
 ## Observation model
 

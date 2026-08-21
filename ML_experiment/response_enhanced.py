@@ -13,6 +13,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ML_experiment.models import LELU
+from ML_experiment.spectral_response import SpectralResponse
 from ML_experiment.variants import make_variant
 
 
@@ -20,11 +21,21 @@ ORIGINAL_SELF_CONTEXT = "self_context"
 RELATIONAL_SCL = "relational_scl"
 BASELINE_CFF = "cff"
 RELATIONAL_CFF_DEEP = "relational_cff_deep"
+SPECTRAL_SCL_MIDDLE = "spectral_scl_middle"
+SPECTRAL_SCL_MAX = "spectral_scl_max"
+SPECTRAL_CFF_MIDDLE = "spectral_cff_middle"
 RESPONSE_VARIANTS = (
     ORIGINAL_SELF_CONTEXT,
     RELATIONAL_SCL,
     BASELINE_CFF,
     RELATIONAL_CFF_DEEP,
+)
+SPECTRAL_SCREEN_VARIANTS = (
+    RELATIONAL_SCL,
+    RELATIONAL_CFF_DEEP,
+    SPECTRAL_SCL_MIDDLE,
+    SPECTRAL_SCL_MAX,
+    SPECTRAL_CFF_MIDDLE,
 )
 
 
@@ -276,6 +287,46 @@ class RelationalCFFLinear(RelationalSelfContextLinear):
         return self._correct(x, projected, weight)
 
 
+class SpectralSelfContextLinear(RelationalSelfContextLinear):
+    """Relational self-context whose chart response is an ordered eigenvalue."""
+
+    def __init__(
+        self,
+        n_in: int,
+        n_out: int,
+        *,
+        matrix_dim: int = 5,
+        eigen_index: int | None = None,
+        **options,
+    ):
+        super().__init__(n_in, n_out, **options)
+        self.response = SpectralResponse(
+            7 + 5 * self.rank,
+            matrix_dim=matrix_dim,
+            eigen_index=eigen_index,
+        )
+
+
+class SpectralCFFLinear(RelationalCFFLinear):
+    """CFF geometry with a spectral chart-response mechanism."""
+
+    def __init__(
+        self,
+        n_in: int,
+        n_out: int,
+        *,
+        matrix_dim: int = 5,
+        eigen_index: int | None = None,
+        **options,
+    ):
+        super().__init__(n_in, n_out, **options)
+        self.response = SpectralResponse(
+            7 + 5 * self.rank,
+            matrix_dim=matrix_dim,
+            eigen_index=eigen_index,
+        )
+
+
 class RelationalLayerNet(nn.Module):
     """Matched encode -> expansion -> LELU -> contraction -> decode network."""
 
@@ -312,6 +363,21 @@ def make_response_variant(
         )
     if name == RELATIONAL_CFF_DEEP:
         return RelationalLayerNet(input_dim, output_dim, width, RelationalCFFLinear)
+    if name == SPECTRAL_SCL_MIDDLE:
+        return RelationalLayerNet(
+            input_dim, output_dim, width, SpectralSelfContextLinear
+        )
+    if name == SPECTRAL_SCL_MAX:
+        return RelationalLayerNet(
+            input_dim,
+            output_dim,
+            width,
+            lambda n_in, n_out: SpectralSelfContextLinear(
+                n_in, n_out, matrix_dim=5, eigen_index=4
+            ),
+        )
+    if name == SPECTRAL_CFF_MIDDLE:
+        return RelationalLayerNet(input_dim, output_dim, width, SpectralCFFLinear)
     raise KeyError(name)
 
 

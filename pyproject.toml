@@ -16,6 +16,7 @@ dependencies = ["numpy>=1.20", "cffi>=1.15"]
 vision-viewer = [
     "dearpygui>=1.11",
     "numba>=0.59",
+    "Pillow>=10.0",
     "scipy>=1.10",
     "scikit-image>=0.21",
 ]
