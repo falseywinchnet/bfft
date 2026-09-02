@@ -201,6 +201,75 @@ Scene build_regime_scene(){Scene s;
     return s;
 }
 
+int material_named(const Scene& scene,const std::string& name){
+    for(int i=0;i<static_cast<int>(scene.materials.size());++i)
+        if(scene.materials[i].name==name)return i;
+    throw std::runtime_error("missing material: "+name);
+}
+
+Scene build_demonstrator_scene(const std::string& mode){
+    Scene scene=build_regime_scene();
+    if(mode=="standard")return scene;
+    const int white=material_named(scene,"warm diffuse");
+    const int dark=material_named(scene,"cavity charcoal");
+    const int mirror=material_named(scene,"silver mirror");
+    const int metal=material_named(scene,"rough copper");
+    if(mode=="aperture-canyon"){
+        const int violet=add_material(scene,{"violet diffuse",MaterialKind::Diffuse,{.45,.08,.66},{},.95,.72});
+        const int amber=add_material(scene,{"amber diffuse",MaterialKind::Diffuse,{.88,.34,.035},{},.95,.72});
+        const int side_light=add_material(scene,{"violet side emitter",MaterialKind::Emissive,{1,1,1},{8.5,3.8,12.5},0,0});
+        const int emitter=add_rect(scene,"violet_side_light",{-4.93,1.05,-8.70},{0,0,3.15},{0,3.20,0},
+            {1,0,0},side_light,false);
+        scene.area_lights.push_back({emitter,scene.materials[side_light].emission});
+        for(int i=0;i<7;++i){
+            const double x=-2.55+.82*i,z=-8.45+.19*(i%2),angle=(-18+6*i)*pi/180;
+            const Vec3 span{.72*std::cos(angle),0,.72*std::sin(angle)};
+            add_rect(scene,"aperture_fin_"+std::to_string(i),Vec3{x,0,z}-span*.5,span,{0,2.85,0},
+                unit(cross(span,{0,1,0})),i%2?dark:metal,false);
+        }
+        for(int i=0;i<5;++i){
+            const double radius=.24+.045*(i%3);
+            add_sphere(scene,"aperture_receiver_"+std::to_string(i),{-2.45+1.22*i,radius,-7.15-.36*(i%2)},
+                radius,i%2?violet:amber);
+        }
+    }else if(mode=="mirror-relay"){
+        const int coral=add_material(scene,{"relay coral",MaterialKind::Diffuse,{.82,.10,.055},{},.94,.68});
+        const int cyan=add_material(scene,{"relay cyan",MaterialKind::Diffuse,{.035,.58,.72},{},.94,.68});
+        const int relay_light=add_material(scene,{"cyan relay emitter",MaterialKind::Emissive,{1,1,1},{3.5,10.5,12.0},0,0});
+        const int emitter=add_rect(scene,"cyan_relay_light",{4.93,1.25,-8.85},{0,0,2.65},{0,2.70,0},
+            {-1,0,0},relay_light,false);
+        scene.area_lights.push_back({emitter,scene.materials[relay_light].emission});
+        add_rect(scene,"relay_mirror_left",{-3.85,.72,-7.92},{1.65,0,.58},{0,2.45,0},{.33,0,.94},mirror,false);
+        add_rect(scene,"relay_mirror_centre",{-.78,1.05,-9.68},{1.72,0,0},{0,2.15,0},{0,0,1},mirror,false);
+        add_rect(scene,"relay_mirror_right",{2.25,.62,-8.30},{1.48,0,-.72},{0,2.62,0},{-.44,0,.90},mirror,false);
+        add_rect(scene,"relay_receiver_coral",{-3.75,.04,-6.55},{1.20,0,0},{0,1.35,0},{0,0,1},coral);
+        add_rect(scene,"relay_receiver_cyan",{2.15,.03,-6.78},{1.18,0,0},{0,1.42,0},{0,0,1},cyan);
+        add_sphere(scene,"relay_metal_node",{.12,.46,-7.42},.46,metal,false);
+    }else if(mode=="occlusion-garden"){
+        const std::array<int,4> garden_materials{{
+            add_material(scene,{"garden vermilion",MaterialKind::Diffuse,{.78,.075,.025},{},.95,.78}),
+            add_material(scene,{"garden chartreuse",MaterialKind::Diffuse,{.22,.72,.045},{},.95,.78}),
+            add_material(scene,{"garden cobalt",MaterialKind::Glossy,{.035,.20,.82},{},.64,.16}),
+            add_material(scene,{"garden ivory",MaterialKind::Diffuse,{.78,.74,.61},{},.95,.78})}};
+        for(int row=0;row<4;++row)for(int column=0;column<7;++column){
+            const double radius=.13+.035*((row*3+column)%4);
+            const double x=-3.55+1.05*column+.16*(row%2);
+            const double y=.82+.66*row+.10*((column+row)%3);
+            const double z=-6.05-.28*row-.10*std::sin(column*1.7);
+            add_sphere(scene,"garden_orb_"+std::to_string(row)+"_"+std::to_string(column),
+                {x,y,z},radius,garden_materials[(row+2*column)%4]);
+        }
+        for(int i=0;i<5;++i){
+            const double x=-3.10+1.55*i;
+            add_rect(scene,"garden_flag_"+std::to_string(i),{x,1.18,-8.95+.17*(i%2)},
+                {.62,0,.10*(i%2?1:-1)},{0,1.45,0},{0,0,1},garden_materials[(i+1)%4]);
+        }
+        add_rect(scene,"garden_canopy",{-2.65,4.55,-8.75},{5.30,0,0},{0,0,1.05},{0,-1,0},white,false);
+    }else throw std::runtime_error("unknown scene mode: "+mode);
+    build_scene_bvh(scene);
+    return scene;
+}
+
 struct Ray{Vec3 origin{},direction{};};
 struct Hit{bool valid=false;int primitive=-1;double t=0;Vec3 position{},normal{},geometric_normal{};bool front=true;};
 struct TraceStats{
@@ -1360,16 +1429,25 @@ Vec3 catmull_rom(Vec3 p0,Vec3 p1,Vec3 p2,Vec3 p3,double t){const double t2=t*t,t
 double catmull_rom(double p0,double p1,double p2,double p3,double t){const double t2=t*t,t3=t2*t;
     return .5*(2*p1+(p2-p0)*t+(2*p0-5*p1+4*p2-p3)*t2+(-p0+3*p1-3*p2+p3)*t3);}
 
-JourneyPose journey_pose(double parameter){const auto& keys=journey_keys();const int count=static_cast<int>(keys.size());
+JourneyPose journey_pose(double parameter,const std::string& scene_mode="standard"){const auto& keys=journey_keys();const int count=static_cast<int>(keys.size());
     parameter-=std::floor(parameter);const double scaled=parameter*count;const int i=static_cast<int>(std::floor(scaled));
     const double t=scaled-i;auto key=[&](int offset)->const JourneyKey&{return keys[(i+offset+count)%count];};
-    return {catmull_rom(key(-1).position,key(0).position,key(1).position,key(2).position,t),
+    JourneyPose pose{catmull_rom(key(-1).position,key(0).position,key(1).position,key(2).position,t),
         catmull_rom(key(-1).target,key(0).target,key(1).target,key(2).target,t),
         catmull_rom(key(-1).half_fov_degrees,key(0).half_fov_degrees,key(1).half_fov_degrees,
-            key(2).half_fov_degrees,t)};}
+            key(2).half_fov_degrees,t)};
+    if(scene_mode=="aperture-canyon"){
+        pose.target=pose.target*.32+Vec3{-.35,1.35,-7.60}*.68;pose.half_fov_degrees=24.5;
+    }else if(scene_mode=="mirror-relay"){
+        pose.target=pose.target*.30+Vec3{0,1.60,-8.10}*.70;pose.half_fov_degrees=25.0;
+    }else if(scene_mode=="occlusion-garden"){
+        pose.target=pose.target*.25+Vec3{-.10,.82,-8.05}*.75;pose.half_fov_degrees=25.5;
+    }else if(scene_mode!="standard")throw std::runtime_error("unknown scene mode: "+scene_mode);
+    return pose;}
 
-std::vector<double> journey_arc_parameters(int frame_count){constexpr int samples=8192;std::array<double,samples+1> length{};
-    Vec3 previous=journey_pose(0).position;for(int i=1;i<=samples;++i){const Vec3 current=journey_pose(double(i)/samples).position;
+std::vector<double> journey_arc_parameters(int frame_count,const std::string& scene_mode="standard"){
+    constexpr int samples=8192;std::array<double,samples+1> length{};
+    Vec3 previous=journey_pose(0,scene_mode).position;for(int i=1;i<=samples;++i){const Vec3 current=journey_pose(double(i)/samples,scene_mode).position;
         length[i]=length[i-1]+norm(current-previous);previous=current;}
     std::vector<double> parameter(frame_count);for(int frame=0;frame<frame_count;++frame){const double target=
             length.back()*frame/frame_count;const auto upper=std::lower_bound(length.begin(),length.end(),target);
@@ -2098,6 +2176,15 @@ bool self_test(){const Scene scene=build_regime_scene();const BeamField beams=co
             pose.position.y<.2||pose.position.y>5.7)return false;
         const Hit obstruction=first_hit(linear_scene,{previous_pose.position,segment/distance},distance-1e-6);
         if(obstruction.valid)return false;previous_pose=pose;}
+    for(const std::string mode:{"aperture-canyon","mirror-relay","occlusion-garden"}){
+        Scene demonstrator=build_demonstrator_scene(mode);demonstrator.use_bvh=false;
+        if(demonstrator.primitives.size()<=scene.primitives.size()||demonstrator.primitives.size()>96||
+            demonstrator.bvh_nodes.empty())return false;
+        JourneyPose prior=journey_pose(0,mode);for(int sample=1;sample<=256;++sample){
+            const JourneyPose pose=journey_pose(double(sample)/256,mode);const Vec3 segment=pose.position-prior.position;
+            const double distance=norm(segment);if(distance<1e-8||norm(pose.target-pose.position)<.5)return false;
+            const Hit obstruction=first_hit(demonstrator,{prior.position,segment/distance},distance-1e-6);
+            if(obstruction.valid)return false;prior=pose;}}
     Scene aperture_test;const int matte=add_material(aperture_test,{"matte",MaterialKind::Diffuse,{.7,.7,.7}});
     const int emitter_material=add_material(aperture_test,{"emitter",MaterialKind::Emissive,{1,1,1},{1,1,1},0});
     const int emitter=add_rect(aperture_test,"emitter",{-1,-1,2},{2,0,0},{0,2,0},{0,0,-1},emitter_material,false);
@@ -2152,9 +2239,9 @@ bool self_test(){const Scene scene=build_regime_scene();const BeamField beams=co
 
 int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,animation_frames=0,animation_fps=30;
     bool test=false;std::string out="/tmp/regime_scene.ppm";
-    std::uint64_t max_primitives=96;double max_build_seconds=60,oriented_blur=.14,optical_cutoff=1e-5;
+    std::uint64_t max_primitives=96;double max_build_seconds=60,oriented_blur=.14,optical_cutoff=1e-5,journey_position=-1;
     std::uint64_t benchmark_primitives=0,benchmark_rays=4096;
-    std::string beam_mode="clustered",camera_mode="default",optical_mode="sealed",acceleration="auto";
+    std::string beam_mode="clustered",camera_mode="default",optical_mode="sealed",acceleration="auto",scene_mode="standard";
     for(int i=1;i<argc;++i){const std::string arg=argv[i];if(arg=="--self-test"){test=true;continue;}
         if(i+1>=argc)throw std::runtime_error("missing argument value");if(arg=="--width")width=std::stoi(argv[++i]);
         else if(arg=="--height")height=std::stoi(argv[++i]);else if(arg=="--terminal-error")terminal_error=std::stoi(argv[++i]);
@@ -2164,6 +2251,8 @@ int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,anim
         else if(arg=="--optical-mode")optical_mode=argv[++i];
         else if(arg=="--optical-cutoff")optical_cutoff=std::stod(argv[++i]);
         else if(arg=="--acceleration")acceleration=argv[++i];
+        else if(arg=="--scene")scene_mode=argv[++i];
+        else if(arg=="--journey-position")journey_position=std::stod(argv[++i]);
         else if(arg=="--animation-frames")animation_frames=std::stoi(argv[++i]);
         else if(arg=="--animation-fps")animation_fps=std::stoi(argv[++i]);
         else if(arg=="--benchmark-primitives")benchmark_primitives=std::stoull(argv[++i]);
@@ -2173,13 +2262,16 @@ int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,anim
         std::cout<<"regime-scene invariants: ok\n";return 0;}if(width<16||height<16||terminal_error<0)throw std::runtime_error("invalid render configuration");
     if(animation_frames<0||animation_frames>1800||animation_fps<1||animation_fps>60)
         throw std::runtime_error("invalid animation configuration");
+    if(journey_position!= -1&&!(journey_position>=0&&journey_position<1))
+        throw std::runtime_error("journey position must be in [0,1)");
+    if(animation_frames&&journey_position>=0)throw std::runtime_error("journey position is for still renders");
     if(animation_frames&&(width%2||height%2))throw std::runtime_error("animation dimensions must be even");
     if(acceleration!="auto"&&acceleration!="bvh"&&acceleration!="linear")
         throw std::runtime_error("acceleration must be auto, bvh, or linear");
     if(benchmark_primitives){if(benchmark_primitives>max_primitives)throw std::runtime_error("primitive ceiling reached");
         if(!benchmark_rays)throw std::runtime_error("benchmark rays must be positive");
         return run_intersection_benchmark(benchmark_primitives,benchmark_rays,acceleration);}
-    const auto total_start=Clock::now(),scene_start=Clock::now();Scene scene=build_regime_scene();
+    const auto total_start=Clock::now(),scene_start=Clock::now();Scene scene=build_demonstrator_scene(scene_mode);
     const double scene_ms=std::chrono::duration<double,std::milli>(Clock::now()-scene_start).count();
     if(scene.primitives.size()>max_primitives)throw std::runtime_error("primitive ceiling reached");
     scene.use_bvh=acceleration=="bvh"||(acceleration=="auto"&&scene.primitives.size()>=64);
@@ -2193,11 +2285,11 @@ int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,anim
     const TransportField field=compile_transport_field(scene,beams);const double field_ms=std::chrono::duration<double,std::milli>(Clock::now()-field_start).count();
     if((beam_ms+field_ms)>max_build_seconds*1000)throw std::runtime_error("field build-time ceiling reached");
     TraceContext context{scene,beams,field,nullptr,optical_mode=="sealed",optical_cutoff};
-    if(animation_frames){const auto parameters=journey_arc_parameters(animation_frames);double render_ms=0,adaptive_ms=0,
-            edge_ms=0,boundary_ms=0,path_length=0;Vec3 previous=journey_pose(parameters.front()).position;
+    if(animation_frames){const auto parameters=journey_arc_parameters(animation_frames,scene_mode);double render_ms=0,adaptive_ms=0,
+            edge_ms=0,boundary_ms=0,path_length=0;Vec3 previous=journey_pose(parameters.front(),scene_mode).position;
         const auto animation_start=Clock::now();const int progress_interval=std::max(1,animation_frames/40);
         std::ios::sync_with_stdio(false);for(int frame=0;frame<animation_frames;++frame){const JourneyPose pose=
-                journey_pose(parameters[frame]);if(frame)path_length+=norm(pose.position-previous);previous=pose.position;
+                journey_pose(parameters[frame],scene_mode);if(frame)path_length+=norm(pose.position-previous);previous=pose.position;
             const Camera camera=make_look_camera(width,height,pose.position,pose.target,{0,1,0},pose.half_fov_degrees);
             RenderStats frame_stats;const std::vector<std::uint8_t> image=terminal_error>0?
                 render_visible_edge_field(context,width,height,terminal_error,frame_stats,&camera):
@@ -2208,9 +2300,9 @@ int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,anim
             boundary_ms+=frame_stats.boundary_reconstruction_ms;
             if((frame+1)%progress_interval==0||frame+1==animation_frames)std::cerr<<"animation "<<(frame+1)<<"/"<<animation_frames
                 <<" average-render-ms="<<(render_ms/(frame+1))<<"\n";}
-        path_length+=norm(journey_pose(parameters.front()).position-previous);std::cout.flush();const double total_animation_ms=
+        path_length+=norm(journey_pose(parameters.front(),scene_mode).position-previous);std::cout.flush();const double total_animation_ms=
             std::chrono::duration<double,std::milli>(Clock::now()-animation_start).count();std::cerr<<std::fixed<<std::setprecision(3)
-            <<"{\n  \"animation_frames\": "<<animation_frames<<",\n  \"animation_fps\": "<<animation_fps
+            <<"{\n  \"scene\": \""<<scene_mode<<"\",\n  \"animation_frames\": "<<animation_frames<<",\n  \"animation_fps\": "<<animation_fps
             <<",\n  \"duration_seconds\": "<<double(animation_frames)/animation_fps
             <<",\n  \"path_length\": "<<path_length<<",\n  \"average_scene_speed\": "
             <<path_length/(double(animation_frames)/animation_fps)
@@ -2219,7 +2311,9 @@ int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,anim
             <<",\n  \"average_edge_discovery_ms\": "<<edge_ms/animation_frames
             <<",\n  \"average_boundary_reconstruction_ms\": "<<boundary_ms/animation_frames
             <<",\n  \"animation_total_ms\": "<<total_animation_ms<<"\n}\n";return 0;}
-    const Camera camera=
+    const JourneyPose still_pose=journey_position>=0?journey_pose(journey_position,scene_mode):JourneyPose{};
+    const Camera camera=journey_position>=0?
+        make_look_camera(width,height,still_pose.position,still_pose.target,{0,1,0},still_pose.half_fov_degrees):
         make_camera_mode(width,height,camera_mode);RenderStats render_stats;
     std::vector<std::uint8_t> image=terminal_error>0?render_visible_edge_field(context,width,height,terminal_error,render_stats,&camera):
         render_exact(context,width,height,render_stats,&camera);
@@ -2235,7 +2329,9 @@ int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,anim
         maximum_beam_anisotropy=std::max(maximum_beam_anisotropy,sheet.anisotropy);
         maximum_beam_cross_coupling=std::max(maximum_beam_cross_coupling,sheet.cross_coupling);}
     std::cout<<std::fixed<<std::setprecision(3)<<"{\n  \"width\": "<<width<<",\n  \"height\": "<<height
-        <<",\n  \"camera\": \""<<camera_mode<<"\""
+        <<",\n  \"scene\": \""<<scene_mode<<"\""
+        <<",\n  \"camera\": \""<<(journey_position>=0?"journey":camera_mode)<<"\""
+        <<",\n  \"journey_position\": "<<(journey_position>=0?journey_position:-1)
         <<",\n  \"optical_mode\": \""<<optical_mode<<"\""
         <<",\n  \"acceleration\": \""<<selected_acceleration<<"\""
         <<",\n  \"acceleration_requested\": \""<<acceleration<<"\""

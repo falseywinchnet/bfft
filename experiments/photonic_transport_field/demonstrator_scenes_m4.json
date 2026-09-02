@@ -1,0 +1,73 @@
+{
+  "host": "M4 Mini",
+  "renderer": "native/regime_scene_native.cpp",
+  "render_configuration": {
+    "width": 640,
+    "height": 360,
+    "frames": 240,
+    "fps": 30,
+    "duration_seconds": 8.0,
+    "terminal_error": 1,
+    "optical_mode": "sealed",
+    "maximum_primitives": 96,
+    "maximum_field_build_seconds": 60,
+    "frame_storage": "streamed directly to encoder"
+  },
+  "web_encoding": {
+    "codec": "H.264",
+    "pixel_format": "yuv420p",
+    "crf": 24,
+    "preset": "medium",
+    "fast_start": true
+  },
+  "scenes": [
+    {
+      "name": "aperture-canyon",
+      "purpose": "overlapping rectangular source windows through staggered planar occluders",
+      "analytic_primitives": 42,
+      "materials": 16,
+      "diffuse_nodes": 19,
+      "transport_couplings": 230,
+      "transport_iterations": 6,
+      "average_render_ms": 1903.598,
+      "average_adaptive_ms": 209.748,
+      "average_edge_discovery_ms": 33.400,
+      "average_boundary_reconstruction_ms": 998.877,
+      "animation_total_ms": 456939.967,
+      "encoded_bytes": 494827,
+      "encoded_sha256": "a0daee75a7c12650a4d3a0b4ca364ac72f4e98a9a1cda9d03203145a1db1165e"
+    },
+    {
+      "name": "mirror-relay",
+      "purpose": "directional camera terminals and sealed mirror returns under two broad emitters",
+      "analytic_primitives": 36,
+      "materials": 16,
+      "diffuse_nodes": 16,
+      "transport_couplings": 154,
+      "transport_iterations": 6,
+      "average_render_ms": 2117.400,
+      "average_adaptive_ms": 224.921,
+      "average_edge_discovery_ms": 29.441,
+      "average_boundary_reconstruction_ms": 1145.523,
+      "animation_total_ms": 508249.511,
+      "encoded_bytes": 501404,
+      "encoded_sha256": "dd23272db6cc548b9cfdcdc3013ad67e1edef4226ae0676e966cf54e4eb5baaa"
+    },
+    {
+      "name": "occlusion-garden",
+      "purpose": "dense curved visibility tangencies over a fixed sparse diffuse field",
+      "analytic_primitives": 63,
+      "materials": 17,
+      "diffuse_nodes": 47,
+      "transport_couplings": 1491,
+      "transport_iterations": 5,
+      "average_render_ms": 1263.360,
+      "average_adaptive_ms": 111.014,
+      "average_edge_discovery_ms": 40.982,
+      "average_boundary_reconstruction_ms": 898.262,
+      "animation_total_ms": 303281.528,
+      "encoded_bytes": 519881,
+      "encoded_sha256": "3d875850b7b8e8eec1a4a26c530d867b072f9713898390214c9d04eb284dc088"
+    }
+  ]
+}

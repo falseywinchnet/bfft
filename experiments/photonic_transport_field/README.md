@@ -7,6 +7,38 @@ The measured million-object visibility benchmark and the bounded dual-tree
 design needed to remove quadratic relation discovery are documented in
 [SCALING_ARCHITECTURE.md](SCALING_ARCHITECTURE.md).
 
+## Scene demonstrator suite
+
+The native proof renderer also accepts `--scene standard`,
+`--scene aperture-canyon`, `--scene mirror-relay`, and
+`--scene occlusion-garden`.  These are not cosmetic environment maps.  Each
+variant preserves the standard room, prism, cavity, beam, and material stack
+while adding a different transport burden:
+
+- `aperture-canyon` adds a second, violet rectangular emitter, seven staggered
+  fins, and five diffuse receivers.  It demonstrates exact source-window
+  subdivision when two broad emitters overlap through planar occluders.
+- `mirror-relay` adds a cyan side emitter, three differently oriented mirrors,
+  two colored diffuse receiver panels, and a rough-metal relay node.  It makes
+  camera-terminal directional transport and sealed specular returns visible.
+- `occlusion-garden` suspends 28 colored spheres and five flags in the room.
+  Its many curved tangencies exercise the visible-edge field and show that
+  primitive count alone does not determine evaluation cost.
+
+All three variants remain below the default 96-primitive safety ceiling.  Their
+closed camera paths reuse the collision-audited standard position spline but
+retarget its gaze toward the relevant transport structure.  `--journey-position
+P`, for `P` in `[0,1)`, exposes any point on that path as a still camera.  It is
+mutually exclusive with `--animation-frames`.
+
+The retained M4 Mini animation measurements are recorded in
+[`demonstrator_scenes_m4.json`](demonstrator_scenes_m4.json).  At 640x360,
+240 frames, and 30 fps, aperture canyon averaged 1.904 s/frame, mirror relay
+2.117 s/frame, and the larger occlusion garden 1.263 s/frame.  The comparison
+is instructive: the garden has 47 diffuse nodes and 1,491 sparse couplings, but
+remains cheaper than the two-emitter scenes because source-window integration
+and camera-terminal boundary overlap dominate its additional object count.
+
 ## Multi-regime proof scene
 
 `native/regime_scene_native.cpp` is the larger hybrid proof renderer. It keeps
