@@ -1,0 +1,42 @@
+{
+  "host": "m4mini",
+  "resolution": [3200, 2400],
+  "guard": {
+    "cpu_seconds": 60,
+    "max_regions": 1000,
+    "max_build_seconds": 50
+  },
+  "baseline": {
+    "raster_ms": 2301.486,
+    "total_ms": 2432.275
+  },
+  "lossless_production": {
+    "interval_quadrature_order": 8,
+    "raster_ms": 1561.743,
+    "total_ms": 1663.528,
+    "total_reduction_percent": 31.61,
+    "png_sha256": "2a08e439cec358810056a531b68965b7e90501fc09fa21c5576ffbc6673a0b39",
+    "byte_identical_to_baseline": true
+  },
+  "profiled_lossless": {
+    "raster_ms": 1601.306,
+    "total_ms": 1699.429,
+    "surface_hits": 5196980,
+    "relation_evaluations": 40614482,
+    "plane_evaluations": 25325553,
+    "sphere_evaluations": 15288929,
+    "blocker_candidates": 104138429,
+    "blocker_overlaps": 57442326,
+    "unoccluded_fast_paths": 3984121,
+    "clipped_source_integrals": 20950553,
+    "blocked_intervals": 79297248
+  },
+  "optional_four_point": {
+    "interval_quadrature_order": 4,
+    "raster_ms": 1419.381,
+    "total_ms": 1513.403,
+    "changed_channel_values": 9880,
+    "total_channel_values": 23040000,
+    "maximum_channel_delta": 2
+  }
+}

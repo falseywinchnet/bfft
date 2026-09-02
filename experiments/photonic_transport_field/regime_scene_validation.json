@@ -1,0 +1,43 @@
+{
+  "host": "m4mini",
+  "guard": {
+    "cpu_seconds_per_process": 60,
+    "max_primitives": 96,
+    "max_build_seconds": 60
+  },
+  "exact_adaptive_comparison": {
+    "resolution": [480, 320],
+    "terminal_error": 1,
+    "maximum_channel_delta": 1,
+    "pixels_with_delta_at_least_2": 0,
+    "changed_pixels": 1659,
+    "exact_radiance_samples": 86765,
+    "topology_queries": 135360,
+    "topology_runs": 6206,
+    "exact_oracle_samples": 153600,
+    "exact_raster_ms": 31.589,
+    "adaptive_raster_ms": 51.456
+  },
+  "proof_render": {
+    "resolution": [1920, 1280],
+    "analytic_primitives": 29,
+    "materials": 13,
+    "diffuse_nodes": 14,
+    "transport_couplings": 140,
+    "spectral_beam_fibres": 879,
+    "beam_dielectric_crossings": 2637,
+    "caustic_regions": 22,
+    "glass_sheet_shadow_samples": 46,
+    "cavity_direct_energy": 0.0,
+    "cavity_indirect_energy": 0.016,
+    "specular_caustic_camera_events": 10098,
+    "terminal_exact_samples": 654349,
+    "terminal_topology_queries": 2165760,
+    "terminal_topology_runs": 32930,
+    "terminal_interpolated_pixels": 1833230,
+    "field_compile_ms": 3.404,
+    "raster_ms": 700.541,
+    "total_ms": 711.053
+  },
+  "output": "regime_scene_1920.png"
+}

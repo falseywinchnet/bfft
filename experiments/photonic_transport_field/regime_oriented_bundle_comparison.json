@@ -1,0 +1,39 @@
+{
+  "host": "m4mini",
+  "resolution": [1920, 1280],
+  "terminal_error": 1,
+  "clustered": {
+    "caustic_regions": 22,
+    "beam_compile_ms": 1.253,
+    "field_compile_ms": 5.481,
+    "raster_ms": 2721.111,
+    "total_ms": 2734.859,
+    "cavity_indirect_energy": 0.023,
+    "output": "regime_ab_clustered_1920.png"
+  },
+  "oriented": {
+    "phase_space_sheets": 3,
+    "maximum_spatial_anisotropy": 1.062,
+    "maximum_normalized_position_direction_coupling": 0.320,
+    "beam_compile_ms": 0.725,
+    "field_compile_ms": 5.255,
+    "raster_ms": 2792.103,
+    "total_ms": 2805.708,
+    "cavity_indirect_energy": 0.023,
+    "output": "regime_ab_oriented_1920.png"
+  },
+  "image_difference": {
+    "changed_channel_bytes": 12761,
+    "total_channel_bytes": 7372800,
+    "fraction_changed": 0.0017306,
+    "mean_absolute_8bit_difference_all_channels": 0.009831,
+    "mean_absolute_8bit_difference_changed_channels": 5.679806,
+    "maximum_absolute_8bit_difference": 46
+  },
+  "visual_findings": {
+    "prism_stair": "unchanged",
+    "gold_speck": "unchanged",
+    "global_appearance": "effectively unchanged"
+  },
+  "decision": "retain as an experimental compressed beam representation; keep clustered mode as the default current-best render"
+}

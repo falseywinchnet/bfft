@@ -1,0 +1,34 @@
+{
+  "host": "m4mini",
+  "resolution": [1920, 1280],
+  "optical_mode": "sealed",
+  "optical_cutoff": 1e-5,
+  "half_fov_degrees": 26,
+  "views": {
+    "default-high": {
+      "origin": [0, 5.35, 8.15],
+      "target": [0, 1.85, -4.75],
+      "total_ms": 2815.976,
+      "field_compile_ms": 3.870,
+      "terminal_exact_samples": 782337,
+      "output": "regime_original_high_sealed_1920.png"
+    },
+    "default-low": {
+      "origin": [0, 0.35, 8.15],
+      "target": [0, 1.55, -4.75],
+      "total_ms": 2117.259,
+      "field_compile_ms": 5.835,
+      "terminal_exact_samples": 593796,
+      "output": "regime_original_low_sealed_1920.png"
+    },
+    "default-closer": {
+      "origin": [0, 2.32, 1.70],
+      "target": [0, 2.02, -4.75],
+      "total_ms": 7279.828,
+      "field_compile_ms": 6.082,
+      "terminal_exact_samples": 1124164,
+      "output": "regime_original_closer_sealed_1920.png"
+    }
+  },
+  "montage": "regime_original_camera_variants_montage.png"
+}

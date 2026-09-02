@@ -1,0 +1,316 @@
+{
+  "scene": "Cornell-style room, three colored diffuse spheres, global area light",
+  "patches": 512,
+  "sphere_occluders": 3,
+  "solve_seconds": 578.0477749159327,
+  "transport_depths": 38,
+  "requested_outgoing_l1_error": 0.0071944,
+  "certified_outgoing_l1_error_bound": 0.007194399999998823,
+  "depth_work": [
+    {
+      "depth": 0,
+      "frontier_energy": 359.72,
+      "cluster_pair_visits": 15469,
+      "blocks": 3532,
+      "visibility_tests": 3650,
+      "next_frontier_energy": 132.5137747409614
+    },
+    {
+      "depth": 1,
+      "frontier_energy": 132.5137747409614,
+      "cluster_pair_visits": 216247,
+      "blocks": 90573,
+      "visibility_tests": 62672,
+      "next_frontier_energy": 45.07299246789536
+    },
+    {
+      "depth": 2,
+      "frontier_energy": 45.07299246789536,
+      "cluster_pair_visits": 227515,
+      "blocks": 131722,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 15.576511294865709
+    },
+    {
+      "depth": 3,
+      "frontier_energy": 15.576511294865709,
+      "cluster_pair_visits": 227515,
+      "blocks": 131721,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 5.388908503934266
+    },
+    {
+      "depth": 4,
+      "frontier_energy": 5.388908503934266,
+      "cluster_pair_visits": 227515,
+      "blocks": 131719,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 1.8901217639936796
+    },
+    {
+      "depth": 5,
+      "frontier_energy": 1.8901217639936796,
+      "cluster_pair_visits": 227515,
+      "blocks": 131723,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 0.6658985914557084
+    },
+    {
+      "depth": 6,
+      "frontier_energy": 0.6658985914557084,
+      "cluster_pair_visits": 227515,
+      "blocks": 131719,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 0.23626540585956068
+    },
+    {
+      "depth": 7,
+      "frontier_energy": 0.23626540585956068,
+      "cluster_pair_visits": 227515,
+      "blocks": 131719,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 0.08416762993158494
+    },
+    {
+      "depth": 8,
+      "frontier_energy": 0.08416762993158494,
+      "cluster_pair_visits": 227515,
+      "blocks": 131720,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 0.030116034066318798
+    },
+    {
+      "depth": 9,
+      "frontier_energy": 0.030116034066318804,
+      "cluster_pair_visits": 227515,
+      "blocks": 131721,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 0.010811380346728384
+    },
+    {
+      "depth": 10,
+      "frontier_energy": 0.010811380346728386,
+      "cluster_pair_visits": 227515,
+      "blocks": 131720,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 0.0038934273529876023
+    },
+    {
+      "depth": 11,
+      "frontier_energy": 0.0038934273529876023,
+      "cluster_pair_visits": 227515,
+      "blocks": 131717,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 0.001405787988996761
+    },
+    {
+      "depth": 12,
+      "frontier_energy": 0.001405787988996761,
+      "cluster_pair_visits": 227515,
+      "blocks": 131716,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 0.000508796100801856
+    },
+    {
+      "depth": 13,
+      "frontier_energy": 0.000508796100801856,
+      "cluster_pair_visits": 227515,
+      "blocks": 131716,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 0.00018452735410396835
+    },
+    {
+      "depth": 14,
+      "frontier_energy": 0.00018452735410396835,
+      "cluster_pair_visits": 227515,
+      "blocks": 131716,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 6.704855430671537e-05
+    },
+    {
+      "depth": 15,
+      "frontier_energy": 6.704855430671537e-05,
+      "cluster_pair_visits": 227515,
+      "blocks": 131715,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 2.4400293284710903e-05
+    },
+    {
+      "depth": 16,
+      "frontier_energy": 2.4400293284710903e-05,
+      "cluster_pair_visits": 227515,
+      "blocks": 131711,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 8.891668978617538e-06
+    },
+    {
+      "depth": 17,
+      "frontier_energy": 8.891668978617538e-06,
+      "cluster_pair_visits": 227515,
+      "blocks": 131711,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 3.2437380409909484e-06
+    },
+    {
+      "depth": 18,
+      "frontier_energy": 3.2437380409909484e-06,
+      "cluster_pair_visits": 227515,
+      "blocks": 131712,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 1.1843200692034297e-06
+    },
+    {
+      "depth": 19,
+      "frontier_energy": 1.1843200692034295e-06,
+      "cluster_pair_visits": 227515,
+      "blocks": 131705,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 4.3275310606167887e-07
+    },
+    {
+      "depth": 20,
+      "frontier_energy": 4.3275310606167887e-07,
+      "cluster_pair_visits": 227515,
+      "blocks": 131718,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 1.5860848070371787e-07
+    },
+    {
+      "depth": 21,
+      "frontier_energy": 1.586084807037179e-07,
+      "cluster_pair_visits": 227515,
+      "blocks": 131713,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 5.8143260893835895e-08
+    },
+    {
+      "depth": 22,
+      "frontier_energy": 5.8143260893835895e-08,
+      "cluster_pair_visits": 227515,
+      "blocks": 131706,
+      "visibility_tests": 64451,
+      "next_frontier_energy": 2.1305455535072447e-08
+    },
+    {
+      "depth": 23,
+      "frontier_energy": 2.1305455535072444e-08,
+      "cluster_pair_visits": 227512,
+      "blocks": 131704,
+      "visibility_tests": 64450,
+      "next_frontier_energy": 7.81604794701082e-09
+    },
+    {
+      "depth": 24,
+      "frontier_energy": 7.81604794701082e-09,
+      "cluster_pair_visits": 227512,
+      "blocks": 131706,
+      "visibility_tests": 64450,
+      "next_frontier_energy": 2.8700136214205107e-09
+    },
+    {
+      "depth": 25,
+      "frontier_energy": 2.8700136214205107e-09,
+      "cluster_pair_visits": 227500,
+      "blocks": 131704,
+      "visibility_tests": 64447,
+      "next_frontier_energy": 1.0548576314143674e-09
+    },
+    {
+      "depth": 26,
+      "frontier_energy": 1.0548576314143674e-09,
+      "cluster_pair_visits": 227500,
+      "blocks": 131704,
+      "visibility_tests": 64447,
+      "next_frontier_energy": 3.879224532777552e-10
+    },
+    {
+      "depth": 27,
+      "frontier_energy": 3.879224532777551e-10,
+      "cluster_pair_visits": 227500,
+      "blocks": 131710,
+      "visibility_tests": 64447,
+      "next_frontier_energy": 1.4277540483982922e-10
+    },
+    {
+      "depth": 28,
+      "frontier_energy": 1.4277540483982922e-10,
+      "cluster_pair_visits": 227458,
+      "blocks": 131673,
+      "visibility_tests": 64430,
+      "next_frontier_energy": 5.245647214854036e-11
+    },
+    {
+      "depth": 29,
+      "frontier_energy": 5.245647214854036e-11,
+      "cluster_pair_visits": 227458,
+      "blocks": 131679,
+      "visibility_tests": 64431,
+      "next_frontier_energy": 1.9303837203826388e-11
+    },
+    {
+      "depth": 30,
+      "frontier_energy": 1.9303837203826388e-11,
+      "cluster_pair_visits": 227287,
+      "blocks": 131518,
+      "visibility_tests": 64359,
+      "next_frontier_energy": 7.072141058548029e-12
+    },
+    {
+      "depth": 31,
+      "frontier_energy": 7.072141058548029e-12,
+      "cluster_pair_visits": 226630,
+      "blocks": 131063,
+      "visibility_tests": 64128,
+      "next_frontier_energy": 2.5807175910898925e-12
+    },
+    {
+      "depth": 32,
+      "frontier_energy": 2.580717591089892e-12,
+      "cluster_pair_visits": 226630,
+      "blocks": 131071,
+      "visibility_tests": 64129,
+      "next_frontier_energy": 9.450777473271027e-13
+    },
+    {
+      "depth": 33,
+      "frontier_energy": 9.450777473271027e-13,
+      "cluster_pair_visits": 224023,
+      "blocks": 129767,
+      "visibility_tests": 63480,
+      "next_frontier_energy": 3.380182880637006e-13
+    },
+    {
+      "depth": 34,
+      "frontier_energy": 3.380182880637006e-13,
+      "cluster_pair_visits": 224023,
+      "blocks": 129776,
+      "visibility_tests": 63479,
+      "next_frontier_energy": 1.2219022363173306e-13
+    },
+    {
+      "depth": 35,
+      "frontier_energy": 1.2219022363173306e-13,
+      "cluster_pair_visits": 224023,
+      "blocks": 129774,
+      "visibility_tests": 63480,
+      "next_frontier_energy": 4.421198830584456e-14
+    },
+    {
+      "depth": 36,
+      "frontier_energy": 4.421198830584456e-14,
+      "cluster_pair_visits": 213183,
+      "blocks": 122248,
+      "visibility_tests": 59614,
+      "next_frontier_energy": 1.456827408786605e-14
+    },
+    {
+      "depth": 37,
+      "frontier_energy": 1.456827408786605e-14,
+      "cluster_pair_visits": 171565,
+      "blocks": 97963,
+      "visibility_tests": 46681,
+      "next_frontier_energy": 4.571257081867234e-15
+    }
+  ],
+  "image": "experiments/photonic_transport_field/standard_scene.png"
+}

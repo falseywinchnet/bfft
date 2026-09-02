@@ -1,0 +1,29 @@
+{
+  "width": 3200,
+  "height": 2400,
+  "analytic_objects": 9,
+  "source_regions": 70,
+  "implicit_occluder_boundaries": 162,
+  "stored_spatial_nodes": 0,
+  "transport_couplings": 546,
+  "march_depths": 20,
+  "build_ms": 8.204,
+  "operator_ms": 70.437,
+  "march_ms": 0.009,
+  "raster_ms": 1419.381,
+  "write_ms": 15.370,
+  "total_ms": 1513.403,
+  "evaluator": {
+    "surface_hits": 5196980,
+    "relation_evaluations": 40614482,
+    "plane_evaluations": 25325553,
+    "sphere_evaluations": 15288929,
+    "blocker_candidates": 104138429,
+    "blocker_overlaps": 57442326,
+    "unoccluded_fast_paths": 3984121,
+    "clipped_source_integrals": 20950553,
+    "blocked_intervals": 79297248
+  },
+  "depth_energy": [977.533,478.620,221.752,109.875,53.644,26.775,13.321,6.693,3.367,1.703,0.863,0.439,0.224,0.114,0.059,0.030,0.015,0.008,0.004,0.002],
+  "output": "/tmp/source_region_gl4_16x.ppm"
+}

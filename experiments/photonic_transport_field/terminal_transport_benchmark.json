@@ -1,0 +1,53 @@
+{
+  "host": "m4mini",
+  "resolution": [3200, 2400],
+  "guard": {
+    "cpu_seconds_per_process": 60,
+    "max_regions": 1000,
+    "max_build_seconds": 60
+  },
+  "production_configuration": {
+    "method": "scale-free boundary and residual subdivision with point-certified regional CONV",
+    "terminal_error": 1,
+    "backward_fused_terms": 70,
+    "primary_surface_runs": 7849,
+    "exact_radiance_and_boundary_samples": 2018249,
+    "certificate_samples": 2999685,
+    "subdivided_intervals": 213435,
+    "exact_leaf_intervals": 70727,
+    "interpolated_pixels": 4222743,
+    "exact_output_pixels": 974237
+  },
+  "alternating_three_run_medians": {
+    "exact_raster_ms": 1697.682,
+    "terminal_raster_ms": 1439.447,
+    "raster_reduction_percent": 15.21,
+    "exact_total_ms": 1783.038,
+    "terminal_total_ms": 1522.951,
+    "total_reduction_percent": 14.59,
+    "exact_raster_samples_ms": [1697.789, 1697.682, 1696.328],
+    "terminal_raster_samples_ms": [1439.447, 1457.663, 1424.505],
+    "exact_total_samples_ms": [1806.545, 1783.038, 1782.297],
+    "terminal_total_samples_ms": [1522.951, 1541.498, 1508.909]
+  },
+  "exact_image_comparison": {
+    "total_channel_values": 23040000,
+    "changed_channel_values": 95524,
+    "changed_pixels": 92524,
+    "maximum_channel_delta": 1,
+    "mean_absolute_channel_delta": 0.004146006944444444,
+    "root_mean_square_channel_delta": 0.06438949405333486,
+    "pixels_with_delta_at_least_2": 0
+  },
+  "profiled_evaluator": {
+    "exact_surface_evaluations": 5196980,
+    "terminal_surface_evaluations": 2018249,
+    "exact_relation_evaluations": 40614482,
+    "terminal_relation_evaluations": 16023594,
+    "relation_evaluation_reduction_percent": 60.55,
+    "exact_blocked_intervals": 79297248,
+    "terminal_blocked_intervals": 35022700,
+    "blocked_interval_reduction_percent": 55.83
+  },
+  "output": "terminal_adaptive_16x.png"
+}

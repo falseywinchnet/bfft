@@ -1,0 +1,81 @@
+{
+  "renderer": "native/regime_scene_native.cpp",
+  "host": "m4mini",
+  "sealed_feedback": {
+    "mode": "residual_energy_worklist",
+    "loop_identity": "A-B-A primitive-face return with matching propagation direction",
+    "exit_rule": "accumulate every transmitted surrender once",
+    "remainder_rule": "continue only the reflected cavity packet",
+    "default_energy_cutoff": 1e-5,
+    "seal_bound": "remaining_weight / (1 - measured_cycle_ratio)"
+  },
+  "overhead_ab_640x426": {
+    "recursive": {
+      "total_ms": 2486.043,
+      "secondary_evaluations": 1176653,
+      "emitter_quadrature_samples": 106174690
+    },
+    "sealed": {
+      "total_ms": 2006.185,
+      "secondary_evaluations": 967723,
+      "emitter_quadrature_samples": 85719391,
+      "feedback_loops": 64911,
+      "feedback_returns": 100518,
+      "sealed_feedback_tails": 64722,
+      "summed_residual_weight_bound": 0.166,
+      "maximum_live_packets": 2
+    },
+    "comparison": {
+      "changed_channel_bytes": 61,
+      "total_channel_bytes": 817920,
+      "maximum_absolute_byte_change": 1,
+      "total_time_reduction_percent": 19.30,
+      "secondary_evaluation_reduction_percent": 17.76,
+      "emitter_quadrature_reduction_percent": 19.27
+    }
+  },
+  "orbit_800x600": {
+    "prism-front": {
+      "total_ms": 2599.813,
+      "feedback_loops": 37,
+      "ghost_support_pixels": 5876,
+      "ghost_strong_pixels": 1399,
+      "ghost_peak_byte": 114,
+      "ghost_bbox": [293, 166, 510, 503]
+    },
+    "prism-right": {
+      "total_ms": 1781.470,
+      "feedback_loops": 0,
+      "ghost_support_pixels": 15374,
+      "ghost_strong_pixels": 9536,
+      "ghost_peak_byte": 74,
+      "ghost_bbox": [273, 106, 509, 433]
+    },
+    "prism-back": {
+      "total_ms": 1799.473,
+      "feedback_loops": 0,
+      "ghost_support_pixels": 11357,
+      "ghost_strong_pixels": 4980,
+      "ghost_peak_byte": 48,
+      "ghost_bbox": [241, 150, 542, 423]
+    },
+    "prism-left": {
+      "total_ms": 2599.390,
+      "feedback_loops": 15,
+      "ghost_support_pixels": 6258,
+      "ghost_strong_pixels": 102,
+      "ghost_peak_byte": 43,
+      "ghost_bbox": [290, 180, 551, 401]
+    }
+  },
+  "diagnostic": {
+    "path_filter": "any camera path reflecting at prism_cap_bottom before terminating at large_soft_light",
+    "ghost_only_elapsed_ms": {
+      "front": 70.605,
+      "right": 66.091,
+      "back": 71.486,
+      "left": 67.973
+    },
+    "montage": "prism_orbit_sealed_montage.png"
+  }
+}

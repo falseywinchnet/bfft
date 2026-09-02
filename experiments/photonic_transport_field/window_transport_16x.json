@@ -1,0 +1,27 @@
+{
+  "width": 3200,
+  "height": 2400,
+  "analytic_objects": 9,
+  "saved_relations": 70,
+  "window_nodes": 136006,
+  "visible_leaves": 99939,
+  "beam_splits": 36096,
+  "blocked_cells_pruned": 8539,
+  "mixed_boundary_leaves": 9292,
+  "march_depths": 19,
+  "timing_ms": {
+    "build": 121.856,
+    "march": 0.005,
+    "raster": 130.441,
+    "write": 16.817,
+    "total": 269.321
+  },
+  "depth_energy": [
+    1130.094, 535.317, 250.352, 117.021, 54.726,
+    25.736, 12.123, 5.731, 2.716, 1.290,
+    0.614, 0.293, 0.140, 0.067, 0.032,
+    0.016, 0.007, 0.004, 0.002, 0.001
+  ],
+  "host": "m4mini",
+  "output": "window_transport_16x.png"
+}

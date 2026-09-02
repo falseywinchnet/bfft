@@ -1,0 +1,24 @@
+{
+  "width": 3200,
+  "height": 2400,
+  "pixels": 7680000,
+  "surface_patches": 9784,
+  "sphere_samples_each": 3072,
+  "cached_directed_edges": 11364273,
+  "active_edge_applications": 87365727,
+  "transport_depths": 9,
+  "transport_scale": 0.8,
+  "requested_error": 0.719,
+  "certified_error": 0.578,
+  "timing_ms": {
+    "subdivision": 0.366,
+    "geometry": 133.872,
+    "transport": 84.904,
+    "lookup": 357.192,
+    "raster": 71.461,
+    "write": 18.526,
+    "total": 666.336
+  },
+  "host": "m4mini",
+  "output": "standard_scene_16x.png"
+}

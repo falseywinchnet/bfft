@@ -1,0 +1,37 @@
+{
+  "host": "m4mini",
+  "resolution": [1920, 1280],
+  "camera": {
+    "mode": "prism-overhead",
+    "origin": [-2.193, 5.70, -3.960],
+    "target": [-2.193, 0.72, -3.960],
+    "half_fov_degrees": 18
+  },
+  "transport": {
+    "beam_mode": "clustered",
+    "diffuse_nodes": 14,
+    "transport_couplings": 140,
+    "transport_iterations": 6,
+    "cavity_indirect_energy": 0.023
+  },
+  "camera_evaluation_after_viewport_clipping": {
+    "terminal_exact_samples": 994305,
+    "topology_queries": 2780390,
+    "edge_candidate_segments": 101053,
+    "visible_edge_segments": 47589,
+    "emitter_quadrature_samples": 783837545,
+    "raster_ms": 19511.509,
+    "total_ms": 19522.550
+  },
+  "viewport_clipping_control": {
+    "candidate_segments_before": 69776357,
+    "candidate_segments_after": 101053,
+    "topology_queries_before": 142130998,
+    "topology_queries_after": 2780390,
+    "total_ms_before": 30063.420,
+    "total_ms_after": 19522.550,
+    "image_sha256_unchanged": "83fe402d9893aa06cb1cb44c772b1247ae0940d853e2b377ae6152c12c2ef9a3"
+  },
+  "stair_path": "T(prism_cap_top) -> R(prism_cap_bottom) -> T(prism_cap_top) -> large_soft_light",
+  "finding": "wavelength-dependent ceiling-emitter aperture ghost produced by the lower prism face being treated as a glass-to-air interface"
+}

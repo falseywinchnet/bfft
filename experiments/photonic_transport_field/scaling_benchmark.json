@@ -1,0 +1,51 @@
+{
+  "host": "m4mini",
+  "date": "2026-09-02",
+  "rays_per_case": 4096,
+  "primitive_stride_bytes": 248,
+  "cases": [
+    {
+      "primitives": 1000,
+      "linear_query_ms": 15.491,
+      "bvh_build_ms": 0.208,
+      "bvh_query_ms": 1.891,
+      "bvh_ns_per_ray": 461.700,
+      "checksum_agrees": true
+    },
+    {
+      "primitives": 10000,
+      "linear_query_ms": 96.439,
+      "bvh_build_ms": 2.729,
+      "bvh_query_ms": 3.072,
+      "bvh_ns_per_ray": 749.929,
+      "checksum_agrees": true
+    },
+    {
+      "primitives": 100000,
+      "bvh_build_ms": 30.276,
+      "bvh_query_ms": 3.398,
+      "bvh_ns_per_ray": 829.509,
+      "primitive_storage_bytes": 24800000,
+      "bvh_storage_bytes": 13200000
+    },
+    {
+      "primitives": 1000000,
+      "bvh_build_ms": 203.323,
+      "bvh_query_ms": 5.253,
+      "bvh_ns_per_ray": 1282.583,
+      "primitive_storage_bytes": 248000000,
+      "bvh_storage_bytes": 132000000
+    }
+  ],
+  "proof_scene_1920x1280": {
+    "acceleration_requested": "auto",
+    "acceleration_selected": "linear",
+    "total_ms": 3823.569,
+    "transport_couplings": 140,
+    "transport_propagated_edges": 790,
+    "emitter_intervals": 45740374,
+    "emitter_quadrature_samples": 138159470,
+    "changed_pixels_from_retained": 218,
+    "maximum_channel_delta": 2
+  }
+}
