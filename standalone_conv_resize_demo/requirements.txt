@@ -1,0 +1,4 @@
+numpy>=2.0
+dearpygui>=2.0
+scikit-image>=0.25
+Pillow>=11

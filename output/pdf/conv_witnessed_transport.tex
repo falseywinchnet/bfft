@@ -1,0 +1,266 @@
+\subsection{Source-conditioned Eikonal factor transport}
+\label{sec:witnessedtransport}
+
+Applying the one-dimensional construction in two dimensions yields two
+Cartesian compositions. Let \(\Tcal_{xy}\) apply the horizontal factor and
+then the vertical factor, and let \(\Tcal_{yx}\) apply them in the reverse
+order. With \(\Tcal_C=\Tcal_{xy}\) as the declared Cartesian proposal, CONV
+couples the two orders through one source-conditioned Riemannian action field,
+without constructing a separate raster for every source.
+
+Let the source rectangle be
+\(\Omega=[0,W-1]\times[0,H-1]\), with lattice sites \(x_p\). For channel
+\(c\), define
+\begin{equation}
+ \begin{aligned}
+ g_p^{(c)}&=(D_xY_p^{(c)},D_yY_p^{(c)})^T,\\
+ G_p&=\sum_{c=1}^Cg_p^{(c)}g_p^{(c)T},
+ &\omega_p&=\operatorname{tr}G_p .
+ \end{aligned}
+ \label{eq:witnessjet}
+\end{equation}
+Using the same two-jet stencils and boundary closures already present in the
+Cartesian factors for \(D_x,D_y\), define the dimensionless nodal quadratic
+form
+\begin{equation}
+ Q_p=
+ \begin{cases}
+ I+G_p/\omega_p,&\omega_p>0,\\
+ I,&\omega_p=0,
+ \end{cases}
+ \qquad
+ M_p=\frac{Q_p}{\det(Q_p)^{1/2}}.
+ \label{eq:nodalmetric}
+\end{equation}
+The result is SPD with \(\det M_p=1\); scalar gradient magnitude has been
+removed, leaving only the measured directional shape. For \(x\) in a source
+cell, let \(b_p(x)\) be its four bilinear barycentric weights and put
+\begin{equation}
+ \widetilde M(x)=\sum_{p\in\operatorname{cell}(x)}b_p(x)M_p,
+ \qquad
+ M(x)=\frac{\widetilde M(x)}{\det(\widetilde M(x))^{1/2}}.
+ \label{eq:continuousmetric}
+\end{equation}
+Since positive barycentric combinations preserve positive definiteness,
+\eqref{eq:continuousmetric} gives one continuous determinant-one SPD field on
+\(\Omega\).
+
+For each source site \(s_a=x_a\), \(1\leq a\leq A=HW\), the action is the
+intrinsic Riemannian distance
+\begin{equation}
+ D_a(x)=\inf_{\substack{\gamma(0)=s_a,\,\gamma(1)=x\\
+                        \gamma([0,1])\subseteq\Omega}}
+ \int_0^1\sqrt{\dot\gamma(t)^TM(\gamma(t))\dot\gamma(t)}\,dt.
+ \label{eq:sourceaction}
+\end{equation}
+\begin{proposition}[Well-posed constrained action]
+There exist constants \(0<\mu_-\leq\mu_+<\infty\) such that
+\begin{equation}
+ \mu_-I\preceq M(x)\preceq\mu_+I,\qquad x\in\Omega.
+ \label{eq:actionmetricbounds}
+\end{equation}
+Consequently, for the length metric \(d_M\) induced by
+\eqref{eq:sourceaction},
+\begin{equation}
+ \sqrt{\mu_-}\,\norm{x-z}_2
+ \leq d_M(x,z)
+ \leq \sqrt{\mu_+}\,\norm{x-z}_2 .
+ \label{eq:actiondistancebounds}
+\end{equation}
+The constrained infimum is attained for every \(x,z\in\Omega\). Hence
+\(D_a(x)=d_M(s_a,x)\) is finite and continuous, vanishes only at \(s_a\),
+and is single-valued even where several minimizing curves have the same
+length.
+\end{proposition}
+
+\begin{proof}
+Continuity and positive definiteness of \(M\) on compact \(\Omega\) give
+\eqref{eq:actionmetricbounds}. The lower inequality in
+\eqref{eq:actiondistancebounds} follows by bounding the metric length of
+every admissible curve below by its Euclidean length; the upper inequality
+follows from the straight segment in the convex rectangle. Thus \(d_M\) is
+bi-Lipschitz equivalent to the Euclidean metric, so \((\Omega,d_M)\) is a
+compact length space. A compact length space is geodesic, and therefore the
+infimum is attained.
+\end{proof}
+
+Equivalently, the same action is obtained as the nonnegative viscosity
+solution of
+\begin{equation}
+ \nabla D_a(x)^TM(x)^{-1}\nabla D_a(x)=1,
+ \qquad D_a(s_a)=0,
+ \label{eq:eikonalpde}
+\end{equation}
+where paths are constrained to the closed source rectangle. In practice,
+anisotropic fast marching provides a direct Cartesian evaluation of
+\eqref{eq:sourceaction} \cite{mirebeau2014}.
+Possible nonuniqueness of a minimizing curve introduces no branch choice in
+CONV, because \eqref{eq:actionpartition} depends only on its minimum length.
+
+Using these distances, the normalized inverse-square actions are
+\begin{equation}
+ w_a(x)=\frac{D_a(x)^{-2}}{\sum_bD_b(x)^{-2}},
+ \qquad w_a(x)\geq0,\qquad\sum_aw_a(x)=1.
+ \label{eq:actionpartition}
+\end{equation}
+At a source site, continuous extension of the quotient assigns unit mass to
+its zero-action source site and zero mass to all others. Thus
+\eqref{eq:actionpartition} is Shepard inverse-distance weighting
+\cite{shepard1968} in the source-derived Riemannian distance; normalization
+removes the distance units and yields a direct all-source partition without
+selecting an owner.
+
+\begin{lemma}[Kronecker action reduction]
+For every pair of source sites,
+\begin{equation}
+ w_a(x_p)=\delta_{ap}.
+ \label{eq:kroneckeraction}
+\end{equation}
+Consequently, for every source-indexed quantity \(F_p\),
+\begin{equation}
+ \sum_pw_a(x_p)F_p=F_a.
+ \label{eq:nodalmomentcollapse}
+\end{equation}
+In particular, the action-weighted support inertia about the source site is
+identically zero:
+\begin{equation}
+ \sum_pw_a(x_p)(x_p-s_a)(x_p-s_a)^T=0.
+ \label{eq:zeroinertia}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Since the Riemannian distance vanishes at its own source site and is strictly
+positive between distinct lattice sites, the zero-action extension of
+\eqref{eq:actionpartition} gives \eqref{eq:kroneckeraction}. Substitution then
+yields \eqref{eq:nodalmomentcollapse} and \eqref{eq:zeroinertia}.
+\end{proof}
+
+The lemma removes an apparent geometric degree of freedom: any frame inferred
+from \eqref{eq:zeroinertia} lies necessarily in its repeated-eigenvalue
+branch. With the declared Cartesian tie \(t=e_x\), \(n=e_y\), the nonzero
+nested route is therefore
+\begin{equation}
+ \mathcal C\!\left[
+   \{\mathcal C[Y_{:,i}](v)\}_{i}
+ \right](u)=\Tcal_{yx}Y(u,v),
+ \label{eq:collapsedroute}
+\end{equation}
+independently of the source index. Consequently, a source frame bank and its
+nested chart construction are algebraically redundant under the action
+definitions, and \eqref{eq:collapsedroute} need be evaluated only once.
+
+What remains is to determine how strongly the reverse order is admitted.
+The current tensor already supplies the required directional energy, and its
+normalized vertical component gives
+\begin{equation}
+ \eta_a=
+ \begin{cases}
+ \dfrac{(G_a)_{yy}}{\operatorname{tr}G_a},&\operatorname{tr}G_a>0,\\[5pt]
+ \dfrac12,&\operatorname{tr}G_a=0.
+ \end{cases}
+ \label{eq:witnesscompatibility}
+\end{equation}
+Such normalized tensor energies are standard directional measures
+\cite{bigun1987}. Since \((G_a)_{yy}\geq0\) and
+\((G_a)_{yy}\leq\operatorname{tr}G_a\), equation
+\eqref{eq:witnesscompatibility} gives \(0\leq\eta_a\leq1\) directly, without
+an eigendecomposition, threshold, or fitted gain. The zero-current value is
+one half, while exchanging the Cartesian axes sends \(\eta_a\) to
+\(1-\eta_a\), exactly as it exchanges the two factor orders. The scalar
+reverse-order admission is consequently
+\begin{equation}
+ \beta(x)=\sum_aw_a(x)\eta_a,
+ \qquad 0\leq\beta(x)\leq1.
+ \label{eq:actionadmission}
+\end{equation}
+and the complete two-dimensional CONV reconstruction is
+\begin{equation}
+ \boxed{
+ \Tcal Y(x)=
+ [1-\beta(x)]\Tcal_{xy}Y(x)+\beta(x)\Tcal_{yx}Y(x) .}
+ \label{eq:witnessedblend}
+\end{equation}
+
+\begin{proposition}[Source-conditioned factor convexity]
+For every target point, the two coefficients in
+\eqref{eq:witnessedblend} are nonnegative and sum to one. Consequently
+\(\Tcal Y(x)\) belongs to the componentwise convex hull of the two Cartesian
+factor-order candidates. The operator preserves constants and reproduces
+affine coordinate fields whenever the constituent factors do.
+\end{proposition}
+
+\begin{proof}
+From \eqref{eq:witnesscompatibility},
+\(0\leq\eta_a\leq1\); using \eqref{eq:actionpartition} then gives
+\(0\leq\beta\leq\sum_aw_a=1\), and the two coefficients in
+\eqref{eq:witnessedblend} sum to one. Since both constituent orders return
+the same constant or affine field, their convex combination returns it as
+well.
+\end{proof}
+
+\begin{proposition}[Linewise blend criterion]
+Let \(\gamma:[a,b]\to\Omega\) be a \(C^1\) curve and, at every regular point,
+put
+\begin{equation}
+ A=\Tcal_{xy}Y\circ\gamma,\qquad
+ B=\Tcal_{yx}Y\circ\gamma,\qquad
+ \theta=\beta\circ\gamma.
+\end{equation}
+Then the final reconstruction obeys the exact identity
+\begin{equation}
+ (\Tcal Y\circ\gamma)'
+ =(1-\theta)A'+\theta B'+\theta'(B-A).
+ \label{eq:blendderivative}
+\end{equation}
+Suppose \(sA'\geq0\) and \(sB'\geq0\) for a fixed
+\(s\in\{-1,1\}\). The blend has \(s(\Tcal Y\circ\gamma)'\geq0\) exactly when
+\begin{equation}
+ s\theta'(B-A)
+ \geq-\{(1-\theta)sA'+\theta sB'\}.
+ \label{eq:blendcriterion}
+\end{equation}
+In particular, the readily checked bound
+\begin{equation}
+ |\theta'|\,|B-A|
+ \leq(1-\theta)sA'+\theta sB'
+ \label{eq:blendsufficient}
+\end{equation}
+is sufficient.
+\end{proposition}
+
+\begin{proof}
+Applying the product rule to \eqref{eq:witnessedblend} gives
+\eqref{eq:blendderivative}. Multiplication by \(s\) and rearrangement then
+yields \eqref{eq:blendcriterion}, while \eqref{eq:blendsufficient} bounds its
+left-hand term from below.
+\end{proof}
+
+\begin{proposition}[Pointwise convexity is not variation diminution]
+Nonnegative pointwise blending of two monotone functions with common
+endpoints does not by itself preserve monotonicity.
+\end{proposition}
+
+\begin{proof}
+On \([0,1]\), take
+\begin{equation}
+ A(t)=t,\qquad B(t)=t+t(1-t),\qquad
+ \theta(t)=\frac{1+\sin(4\pi t)}{2}.
+\end{equation}
+Both \(A\) and \(B\) are nondecreasing and share their endpoint values.
+For \(T=(1-\theta)A+\theta B\), equation
+\eqref{eq:blendderivative} gives
+\begin{align}
+ T'(0)&=\frac32>0,&
+ T'(\tfrac34)&=\frac34-\frac{3\pi}{8}<0,\nonumber\\
+ T'(1)&=\frac12>0.&&
+\end{align}
+Continuity therefore forces at least two derivative-sign transitions. Hence
+the convex-hull statement alone cannot prove a sign-pair bound.
+\end{proof}
+
+The factorwise ringing-incapability theorem applies unconditionally to each
+Cartesian composition in its declared order. The final spatially varying
+blend adds no amplitude outside the componentwise interval spanned by those
+two admitted values; its linewise sign topology is governed by
+\eqref{eq:blendcriterion}, not by convexity alone.

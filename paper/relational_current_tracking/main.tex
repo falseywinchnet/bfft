@@ -1,0 +1,1209 @@
+% arXiv source: standard packages and vector PDF figures; no shell escape.
+% House style follows output/pdf/conv_paper_fused.tex (IEEEtran journal).
+\documentclass[journal]{IEEEtran}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{bm}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[hidelinks]{hyperref}
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\floatsep}{7pt plus 2pt minus 2pt}
+\setlength{\intextsep}{7pt plus 2pt minus 2pt}
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Cov}{\operatorname{Cov}}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\trans}{\mathsf{T}}
+\newcommand{\given}{\,\middle|\,}
+\newcommand{\Normal}{\mathcal{N}}
+\newcommand{\data}{\mathcal{D}}
+\newcommand{\clip}{\operatorname{clip}}
+\makeatletter
+\newcommand{\inputrows}[1]{\@@input #1 }
+\makeatother
+\graphicspath{{figures/}}
+\title{Exact Markov Elimination for Relational Current Tracking}
+\author{Anonymous}
+\date{}
+\hypersetup{pdftitle={Exact Markov Elimination for Relational Current Tracking},pdfauthor={Anonymous}}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Glory first be to The Holy One, Blessed be He, from whom all good things
+come. We study position-only tracking with a finite Gaussian current prior
+and an observation-driven acquisition rate. Position is the exact integral
+of orthonormal cell currents; a five-component correlation-length mixture
+retains uncertainty about their continuation. We derive a four-state
+realization per spatial coordinate and mixture component that reproduces
+the original finite midpoint covariance, noisy anchor, observation
+likelihood, and posterior. This eliminates dense current-history covariance
+from streaming updates without changing the represented trajectory model.
+On an M4 CPU, a 128-cell observation update decreases from 452.7 to
+12.2 microseconds; the corresponding NumPy realization already achieves
+23.4 microseconds. Across 480 matched acquisition cases, the implementations
+produce identical acquisition times and boundary-trigger decisions, with
+position and forecast differences below $9\times10^{-12}$ meters. A
+separate retained synthetic comparison includes constant-velocity and
+constant-acceleration Kalman filters, interacting multiple-model filters,
+a robust variant, and a three-dimensional turn unscented Kalman filter.
+At low noise with 65 observations, the current model's two-second endpoint
+RMSE is 2.958 meters, versus 3.269 for robust IMM; the advantage does not
+persist decisively in every noise and sampling condition. Adaptive density
+reduces acquisition count and improves tracking after a settling interval.
+We also give explicit model-conditional uncertainty growth and a sharp
+bounded-acceleration error certificate common to all compared estimators;
+no superior worst-case breakdown rate is established.
+Exact elimination changes the computational balance enough that scheduling,
+rather than assimilation, becomes the dominant adaptive-loop cost.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Target tracking, Gaussian processes, Kalman filtering, Mat\'ern covariance,
+state-space realization, adaptive sampling, exact elimination.
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+A position tracker uses accumulated observations to correct its current
+belief and to continue that belief beyond the last measurement. These two
+operations depend on the same temporal law. A representation that exposes
+all past and future current coefficients makes that dependence explicit,
+but it can conceal a much smaller sufficient filtering state. The
+computational question is therefore precise: can the calculation be
+reorganized while preserving the prior, evidence, and resulting decisions?
+
+We consider a finite current construction on a declared time interval.
+Each Cartesian position is an anchor plus the exact integral of a
+piecewise-constant current. The current covariance combines a shared
+constant component with a Mat\'ern-$3/2$ component, and a fixed mixture of
+five correlation lengths represents uncertainty about continuation scale.
+The first implementation conditioned a dense covariance in either real
+current coordinates or a unitary Zak representation. Both coordinates
+produce the same posterior when the full covariance is retained.
+
+The present work derives and implements a four-state realization of this
+\emph{finite} prior. Two states realize the sampled Mat\'ern current; the
+other two carry the shared constant current and accumulated position.
+The resulting filter retains every length hypothesis and its exact
+Gaussian evidence. The reformulation changes the order in which latent
+history is eliminated. It does not replace the finite current by a
+continuously integrated process, discard mixture components, or introduce
+a new correction-selection rule.
+
+There are three distinct empirical questions. First, how does the declared
+current prior compare with existing tracking implementations? Second,
+what accuracy and acquisition-count tradeoff follows when a boundary
+estimate increases observation density? Third, what computational cost
+can be removed from exactly the same estimation calculation? We answer
+these questions with separate protocols and retained records. We do not
+combine their timings or error statistics into a single ranking.
+
+The contributions are a finite-model equivalence theorem including a
+noisy anchor and a severed-current ablation; an implementation that shares
+spatial covariance, evidence normalization, and cached cell propagation;
+a matched evaluation of numerical equivalence and acquisition cost; and
+explicit uncertainty-growth bounds that separate model-conditional
+posterior statements from physical prediction-error certificates.
+The empirical comparison supports competitiveness on the tested
+synthetic families, with uncertainty intervals and failure-to-dominate
+conditions reported alongside the favorable case. No real-flight or
+universal tracking-optimality claim is made.
+
+\section{Relation to Existing Tracking Methods}
+
+Kalman filtering supplies recursive inference for linear Gaussian state
+models~\cite{kalman1960}. A temporal Gaussian process can also admit a
+finite Markov realization. Hartikainen and S\"arkk\"a give exact
+state-space constructions for temporal Mat\'ern covariance functions and
+discuss nonuniform observations~\cite{hartikainen2010}. Parallel temporal
+GP algorithms further exploit associative filtering and smoothing
+structure~\cite{corenflos2021}. These are established connections. The
+four-state realization below specializes them to a fixed midpoint-current
+model and its cellwise integral; we do not claim the general
+GP--state-space equivalence as new.
+
+An interacting multiple-model filter (IMM) instead mixes dynamically
+switching motion hypotheses~\cite{blom1988}. Its model set and transition
+law determine which maneuvers can be represented. Unscented filtering
+propagates nonlinear state uncertainty through sigma points
+\cite{julier2004}. Our measured turn UKF estimates a continuous
+three-dimensional turn vector, whereas our IMM uses a finite catalog of
+axis-aligned turn generators in its state coordinates. This makes the
+UKF a useful control for the IMM catalog's limitations.
+
+Current tracking research includes comparisons of fixed and adaptive
+multiple-model transition laws~\cite{lizzio2026}, IMM filtering and
+smoothing on manifolds~\cite{koller2021}, and feedback particle filters on
+matrix Lie groups~\cite{zhang2017}. Their observation contracts and
+algorithms differ from the local comparators evaluated here. In
+particular, our robust IMM is a specified contamination-likelihood
+implementation, not a reproduction of every adaptive robust IMM method.
+The recent studies provide context, not additional measured baselines.
+
+The length mixture in this paper has a \emph{fixed latent length per
+trajectory hypothesis}. Its weights update by marginal likelihood; its
+states are not mixed through an IMM transition matrix. It consequently
+represents uncertainty about temporal correlation rather than a Markov
+sequence of switching maneuver labels. ``Relational'' refers here to the
+specified covariance between cell currents. No general nonlinear
+relational denoiser is implied by that name.
+
+\section{Finite Current and Observation Model}
+\label{sec:model}
+
+Let $[0,T]$ be a declared representation interval, $N$ the number of equal
+cells, and $h=T/N$. The endpoint $T$ is known to the representation; it is
+not an observation of future motion. All queries lie in this interval.
+
+\begin{definition}[Finite current position]
+For one spatial coordinate, let $a$ be an anchor error and $v_i$ the
+current value in cell $i$, $0\leq i<N$. Relative to the first measured
+position $y_0$, define
+\begin{equation}
+ x(t)=y_0+a+\sum_{i=0}^{N-1}v_i\,\clip(t-ih,0,h).
+ \label{eq:position}
+\end{equation}
+The orthonormal cell basis and its coefficients are
+\begin{equation*}
+ \phi_i(t)=h^{-1/2}\bm{1}_{[ih,(i+1)h)}(t),\qquad c_i=\sqrt h\,v_i.
+\end{equation*}
+The current is therefore $\sum_i c_i\phi_i$.
+\end{definition}
+
+For each correlation length $\ell$, let $\lambda_\ell=\sqrt{3}/\ell$ and
+prescribe the stationary cell-current covariance
+\begin{align}
+ \Cov(v_i,v_j\mid\ell)
+ &=q_g+q_w(1+\lambda_\ell d_{ij})e^{-\lambda_\ell d_{ij}},
+ \label{eq:kernel}\\
+ d_{ij}&=|i-j|h.\nonumber
+\end{align}
+All experiments fix $q_g=q_w=4\,\mathrm{m}^2\mathrm{s}^{-2}$ and
+\begin{equation}
+ \ell\in\mathcal L=\{0.3,0.7,1.5,3,6\}\ \mathrm{s},
+ \qquad \Pr(\ell)=1/5.
+ \label{eq:lengths}
+\end{equation}
+The covariance is evaluated at cell midpoints. Their common half-cell
+offset cancels in $d_{ij}$. The coefficient covariance is $h$ times
+\eqref{eq:kernel}; increasing $N$ does not silently rescale current units.
+
+Observations are complete three-dimensional positions
+\begin{equation}
+ \bm y_j=\bm x(t_j)+\bm\epsilon_j,
+ \qquad \bm\epsilon_j\sim\Normal(0,\sigma^2I_3),
+ \label{eq:observations}
+\end{equation}
+with known $\sigma>0$ and independent errors. The history begins at
+$t_0=0$ and has strictly increasing arrival times. Conditioning a flat
+absolute-position prior on $\bm y_0$ gives
+$\bm a\sim\Normal(0,\sigma^2I_3)$ relative to that observation. This
+anchor remains uncertain. The later sensor errors are independent of it;
+$\bm y_0$ is not assimilated a second time. Conditional on $\ell$, the
+three axes have independent, identical temporal priors.
+
+A dense coefficient state has $N+1$ entries per axis. Its measurement row is
+\begin{equation}
+ B(t)=\left[1,\left\{\frac{\clip(t-ih,0,h)}{\sqrt h}\right\}_{i=0}^{N-1}\right].
+ \label{eq:dense-row}
+\end{equation}
+An invertible coordinate change preserves the observation law when the
+state, covariance, and measurement rows all transform consistently. In
+particular, a unitary Zak matrix $U$ gives covariance $UPU^*$ and row
+$BU^*$. The complex representation must retain the real-signal conjugacy
+constraints; it does not justify a proper-complex observation likelihood.
+
+\section{Exact Four-State Realization}
+\label{sec:realization}
+
+Write $v_i=g+w_i$, with independent
+$g\sim\Normal(0,q_g)$ and a Mat\'ern-$3/2$ current sequence $w_i$.
+Introduce the normalized derivative $r=w'/\lambda_\ell$ of an auxiliary
+continuous process, sampled at the current midpoints. This auxiliary
+process realizes the covariance; the position remains the finite
+integral in \eqref{eq:position}.
+
+\begin{lemma}[Sampled current realization]
+\label{lem:current}
+Put $\alpha=\lambda_\ell h$ and
+\begin{equation}
+ A_\ell=e^{-\alpha}
+ \begin{bmatrix}1+\alpha&\alpha\\-\alpha&1-\alpha\end{bmatrix},
+ \quad Q_\ell=q_w(I_2-A_\ell A_\ell^\trans).
+ \label{eq:A}
+\end{equation}
+For $z_i=(w_i,r_i)^\trans$, the stationary recursion
+\begin{equation}
+ z_{i+1}=A_\ell z_i+\eta_i,\qquad
+ \eta_i\sim\Normal(0,Q_\ell),\qquad
+ z_0\sim\Normal(0,q_wI_2)
+ \label{eq:z}
+\end{equation}
+has the Mat\'ern part of \eqref{eq:kernel} as its first-coordinate
+covariance. The innovations are independent across cells.
+\end{lemma}
+\begin{proof}
+The continuous generator
+$D=\lambda_\ell\left[\begin{smallmatrix}0&1\\-1&-2\end{smallmatrix}\right]$
+satisfies
+\begin{equation}
+ D(q_wI_2)+(q_wI_2)D^\trans
+ =-\diag(0,4\lambda_\ell q_w).
+\end{equation}
+Thus $Q_\ell$ is the integral of
+$e^{Du}\diag(0,4\lambda_\ell q_w)e^{D^\trans u}$ over $0\leq u\leq h$
+and is positive semidefinite. Exponentiating $Dh$ gives \eqref{eq:A}.
+The nilpotent part of $D+\lambda_\ell I_2$ squares to zero, so
+\begin{equation}
+ A_\ell^n=e^{-n\alpha}
+ \begin{bmatrix}1+n\alpha&n\alpha\\-n\alpha&1-n\alpha\end{bmatrix}.
+ \label{eq:An}
+\end{equation}
+Stationarity follows from $A_\ell(q_wI_2)A_\ell^\trans+Q_\ell=q_wI_2$.
+The $(1,1)$ entry of $q_wA_\ell^n$ is
+$q_w(1+n\alpha)e^{-n\alpha}$, as required.
+\end{proof}
+
+Let $p_i$ be the accumulated position relative to $y_0$ at the start of
+cell $i$. Define $s_i=(p_i,g,w_i,r_i)^\trans$. One cell advances by
+\begin{align}
+ s_{i+1}&=F_\ell s_i+\xi_i,\label{eq:state}\\
+ F_\ell&=\begin{bmatrix}
+ 1&h&h&0\\0&1&0&0\\
+ 0&0&(A_\ell)_{11}&(A_\ell)_{12}\\
+ 0&0&(A_\ell)_{21}&(A_\ell)_{22}
+ \end{bmatrix},\nonumber\\
+ \Cov(\xi_i)&=\diag(0,0,Q_\ell),\nonumber\\
+ \Cov(s_0)&=\diag(\sigma^2,q_g,q_w,q_w).
+ \label{eq:statecov}
+\end{align}
+Here the block notation in \eqref{eq:statecov} places $Q_\ell$ in the
+last two coordinates. At $t\in[ih,(i+1)h]$, let $\tau=t-ih$. The observation
+row and position are
+\begin{equation}
+ H(t)=[1,\tau,\tau,0],\qquad x(t)=y_0+H(t)s_i.
+ \label{eq:H}
+\end{equation}
+At $t=T$, use $i=N-1$ and $\tau=h$. Multiple observations within a cell
+use the same latent state with different rows; no artificial current
+innovation is introduced between them.
+
+\begin{theorem}[Finite-model equivalence]
+\label{thm:equivalence}
+For fixed $N,T,\sigma$ and $\mathcal L$, the dense model
+\eqref{eq:position}--\eqref{eq:kernel} and the realization
+\eqref{eq:state}--\eqref{eq:H} define identical joint position laws conditional on the initial
+observation $\bm y_0$.
+After any finite increasing observation history satisfying
+\eqref{eq:observations}, they therefore have identical component
+posterior laws, marginal likelihoods, mixture weights, and position
+posterior laws at all represented query times.
+\end{theorem}
+\begin{proof}
+Lemma~\ref{lem:current}, together with the independent $g$, gives exactly
+\eqref{eq:kernel}. The initialization gives the same independent anchor
+error. The first row of $F_\ell$ yields
+$p_i=a+h\sum_{j<i}(g+w_j)$, so \eqref{eq:H} is exactly
+\eqref{eq:position}. These are equal linear functions of equal Gaussian
+prior laws. Adding the same independent observation errors preserves
+the joint law of observations and queries. Gaussian conditioning gives
+the same conditional distributions and evidence for each $\ell$.
+Bayes' rule with the same length prior then gives the same mixture.
+\end{proof}
+
+\begin{corollary}[Filtering sufficiency]
+Given the component posterior over $s_i$ and the length weights after the
+latest observation, all current and future position marginals can be
+computed without retaining the dense coefficient posterior.
+\end{corollary}
+\begin{proof}
+Future current innovations in \eqref{eq:z} are independent of the past
+conditional on $z_i$. The state also contains the accumulated position
+and shared constant current. Conditioning on these variables separates
+future propagation from eliminated history.
+\end{proof}
+
+This theorem concerns the finite model at a fixed $N$. It is not a claim
+that changing $N$ leaves the prior unchanged, nor that a continuous
+Mat\'ern integral has the same covariance. The auxiliary derivative in
+Lemma~\ref{lem:current} supplies the Markov realization while the finite
+cell integral supplies the actual position law.
+
+\subsection{Severed Current Covariance}
+
+For an ablation time $t_s$, the dense reference zeros covariance between
+currents whose midpoints lie on opposite sides of $t_s$. Let
+$k_s=\#\{i:(i+1/2)h<t_s\}$. After integrating cell $k_s-1$, reset
+$(g,w,r)$ to an independent Gaussian with covariance
+$\diag(q_g,q_w,q_w)$, preserving accumulated position. The reset replaces
+cross-group current covariance by zero and reproduces the dense ablation
+exactly. For $k_s=0$ or $N$, there is no internal reset. This operation
+removes a continuation connection deliberately; it is not an alternative
+estimate selected from future truth.
+
+\section{Shared Conditioning and Compiled Evaluation}
+\label{sec:implementation}
+
+Let $M_\ell\in\R^{4\times3}$ contain the component state means and
+$P_\ell\in\R^{4\times4}$ its common axis covariance immediately before
+an observation. Compute
+\begin{align}
+ b_\ell&=P_\ell H^\trans,&S_\ell&=Hb_\ell+\sigma^2,\nonumber\\
+ e_\ell&=\bm y-\bm y_0-HM_\ell,\label{eq:innovation}\\
+ M_\ell^+&=M_\ell+(b_\ell/S_\ell)e_\ell,&
+ P_\ell^+&=P_\ell-b_\ell b_\ell^\trans/S_\ell.
+ \label{eq:update}
+\end{align}
+The innovation $e_\ell$ is a row vector. The same rank-one covariance
+update serves all three axes. The log-evidence increment is
+\begin{equation}
+ \Delta L_\ell=-\tfrac12
+ \left(3\log(2\pi S_\ell)+\norm{e_\ell}^2/S_\ell\right).
+ \label{eq:evidence}
+\end{equation}
+Initialize $L_\ell=-\log|\mathcal L|$ and normalize once after each
+observation by $\pi_\ell=e^{L_\ell}/\sum_k e^{L_k}$, using log-sum-exp.
+Readouts reuse the weights and total log evidence.
+
+For component query means $\mu_\ell(t)$ and scalar variances $V_\ell(t)$,
+the reported moments are
+\begin{align}
+ \bar\mu(t)&=\sum_\ell\pi_\ell\mu_\ell(t),\label{eq:mixmean}\\
+ \Sigma(t)&=\sum_\ell\pi_\ell
+ \left[V_\ell(t)I_3+\delta_\ell(t)\delta_\ell(t)^\trans\right],
+ \quad \delta_\ell=\mu_\ell-\bar\mu.
+ \label{eq:mixcov}
+\end{align}
+The between-component term is retained. The result need not be spatially
+isotropic even though each component's within-axis covariance is shared.
+
+\begin{proposition}[Likelihood refinement and coordinates]
+Assimilating one Gaussian likelihood in $m$ equal fractional powers gives
+the same posterior as assimilating it once. An invertible state-coordinate
+change with consistent covariance and measurement transforms gives the
+same observation evidence and physical position posterior.
+\end{proposition}
+\begin{proof}
+For a Gaussian likelihood $\mathcal{L}$, the product of $m$ factors
+$\mathcal{L}^{1/m}$ equals $\mathcal{L}$. Each normalized Gaussian factor
+has noise variance $m\sigma^2$; its normalization differs from that of
+$\mathcal{L}^{1/m}$ only by a state-independent constant. Posterior
+normalization removes that constant. Model evidence must still be
+computed under the original likelihood, as in \eqref{eq:evidence},
+rather than by treating the factors as additional physical observations.
+A coordinate change leaves the physical observation random variable
+unchanged, proving the second statement.
+\end{proof}
+
+Integer-cell propagation uses shared precomputed tables
+\begin{align}
+ F_{\ell,n}&=F_\ell^n,&Q_{\ell,0}&=0,\nonumber\\
+ Q_{\ell,n+1}&=F_\ell Q_{\ell,n}F_\ell^\trans+Cov(\xi_i).
+ \label{eq:jump}
+\end{align}
+A jump of $n$ cells applies $F_{\ell,n}$ and $Q_{\ell,n}$ once. Each
+query propagates a copy of the filtering state, so evaluation does not
+change subsequent estimates or acquisition decisions. The compiled
+kernel fuses branch propagation, rank-one updates, and evidence
+normalization into a single update call; a separate call evaluates all
+requested current/future marginal moments. Double precision is used
+without fast-math.
+
+With $K=|\mathcal L|$ fixed, streaming update work is $O(K)$ after the
+$O(KN)$ table construction. At $N=128$, covariance entries per branch
+decrease from $129^2=16641$ to $4^2=16$. The five filtering means and
+covariances occupy 1120 bytes in double precision, excluding weights,
+object overhead, and shared tables. This is a statement about the
+filtering state, not total program memory.
+
+The implementation retains the observation history for compatibility.
+Queries earlier than the last observation, and exports of the full
+coefficient posterior, lazily replay the dense reference. Their cache
+is invalidated by a new observation. These operations retain dense costs.
+The transition cache is bounded and shared between trackers, and the
+retained input history grows with the observation count. The fast API
+returns position marginals; it does not return a certified continuous
+boundary-crossing probability from those marginals alone.
+
+\section{Causal Acquisition Density}
+\label{sec:acquisition}
+
+The acquisition experiment changes sampling cadence while retaining one
+posterior and one update law. At each acquired position, the tracker is
+updated once. The first acquisition time for which the updated estimated
+first coordinate is nonnegative becomes a latched trigger $t_\star$.
+No true crossing time enters this trigger. For $t\geq t_\star$, the
+requested rate is
+\begin{equation}
+ r(t)=r_0+(r_1-r_0)\left(1-e^{-(t-t_\star)/\tau_r}\right),
+ \label{eq:rate}
+\end{equation}
+with $r_0=2$ Hz, $\tau_r=1$ s, and
+$r_1\in\{4,8,16,32\}$ Hz. Before the trigger $r(t)=r_0$.
+Two controls use constant 2 and 32 Hz rates.
+
+Irregularity is introduced in phase rather than by rounding times to a
+common grid. Draw $u_j\sim\mathrm{Uniform}(0.8,1.2)$ independently and
+choose the next time from
+\begin{equation}
+ \int_{t_j}^{t_{j+1}}r(s)\,ds=u_j.
+ \label{eq:phase}
+\end{equation}
+The retained implementation uses 44 bisection steps for the ramped
+integral. This scheduler is unchanged in the optimized replay. The rate
+command is continuous, but individual observations and posterior updates
+remain discrete. The covariance-weighted innovation in
+\eqref{eq:update} supplies the correction; no separate witness gate or
+boundary-dependent filter selection is applied.
+
+\begin{proposition}[Causal policy equivalence]
+For the same initial observation and random phase/noise streams, exact
+posterior equivalence implies identical acquisition sequences under
+\eqref{eq:rate}--\eqref{eq:phase}, provided the same numerical scheduling
+map is used in the exact-arithmetic comparison.
+\end{proposition}
+\begin{proof}
+The policies initially use the same observation and schedule. If the
+acquired history agrees through step $j$, Theorem~\ref{thm:equivalence}
+gives the same corrected position. The trigger condition and rate
+therefore agree. The same next phase gives the same next time, and the
+same observation law and noise draw give the same next observation.
+Induction proves the claim.
+\end{proof}
+
+Floating-point reordering can change a sign decision exactly at a
+threshold. Consequently exact decision agreement is measured as well as
+proved algebraically; no universal bitwise claim follows from the theorem.
+
+\section{Experimental Protocols}
+\label{sec:protocols}
+
+\subsection{Matched Forecast Comparison}
+\label{sec:forecast-protocol}
+
+The retained screen contains five motion families: straight motion,
+tilted helices, spatial figure eights, smooth stop/restart, and motion
+approaching changing waypoints. Truth uses analytic positions or a
+separate fine-step Cartesian simulation. Random orientations and
+translations avoid a preferred global observation frame. Future
+waypoint commands are unavailable to all estimators.
+
+Six fresh seeds per family give 30 trajectories in each of three paired
+conditions: C1 uses 65 observations with $\sigma=0.35$ m; C2 uses 65 with
+$\sigma=1.4$ m; C3 uses 9 with $\sigma=0.35$ m. Histories span $[0,6]$ s;
+queries are 20 times from 6.1 through 8 s. The 65 observations are evenly
+spaced; the sparse condition takes every eighth history observation.
+Noise draws are paired across conditions. The current representation
+uses $T=8$ s and $N=64$. Eight methods give 720 method/case runs.
+Future truth is used only by the evaluator.
+
+The five conventional controls are local literature-family
+implementations. CV and CA use linear kinematics; IMM mixes CV, CA,
+and six fixed turns of magnitude $0.65$ rad/s about signed Cartesian
+axes. Its mixing time scale is 3 s. Robust IMM uses the same model set
+with a two-component observation-noise mixture having probabilities
+$(0.97,0.03)$ and variances $(\sigma^2,100\sigma^2)$, recombining the
+noise branches by moments. The continuous-turn UKF uses
+$(\alpha,\beta,\kappa)=(1,2,0)$ and estimates a full 3-D turn vector.
+All conventional filters include the pre-existing augmented position/bias
+state. Their priors are therefore not identical to the current prior.
+
+Configurations were frozen from a separate ten-case development stage,
+with three candidate configurations per method and objective tracking
+MSE plus $0.25$ times two-second forecast MSE. Selected process
+intensities are $q=1$ for CV and robust IMM, and $q=0.1$ for CA and IMM;
+the UKF turn/speed diffusivities are $0.75/0.30$. Only supplied sensor
+$\sigma$ changes in this screen. The five current lengths and current
+variances were declared before inspecting this screen and were not
+selected on its future truth. Unequal development histories and differing
+model classes limit claims of globally optimal parameter matching.
+
+The current model produces analytic forecast moments. Conventional
+forecasts retain the existing 2048-path Monte Carlo implementation, with
+separate fixed forecast seeds. Thus their estimated means include finite
+Monte Carlo error. These historical forecast workloads are not used as
+matched-kernel timing comparisons.
+
+The primary error is the Euclidean 3-D position error at 8 s. Reported
+RMSE is the square root of mean squared endpoint distance over the 30
+cases. Paired percentile intervals use 4000 resamples of the six seeds
+within each of the five fixed families. They are pointwise intervals,
+not simultaneous tests or uncertainty over unseen motion families.
+
+\subsection{Acquisition Accuracy and Matched Replay}
+
+Boundary-crossing fixtures use the same five families with eight new
+seeds and two noise levels. Their first coordinate is replaced by
+$2(t-6)+0.3\sin(0.7t+\varphi)$, with seed-dependent phase; the remaining
+coordinates follow the existing generated family. Truth is represented
+on a fixed 0.01 s grid over $[0,14]$ s and linearly interpolated for
+queries. These are explicitly modified crossing fixtures, not the
+unchanged trajectories of Section~\ref{sec:forecast-protocol}.
+
+The tracker uses $T=14$ s, $N=128$. Six acquisition policies give 480
+policy/case runs. Current position and two-second forecasts are evaluated
+at the same 0.1 s grid over $[0,12]$ s for every policy. The true crossing
+is used only to define evaluation windows: the first second, seconds
+3--6 after crossing, and the full first six post-crossing seconds,
+intersected with the evaluation interval. Per-case MSEs are averaged
+with equal case weight before taking their square root.
+
+The exact-optimization study replays all 480 cases through the archived
+dense implementation and compiled realization, giving 960 matched runs.
+Run order alternates by family/seed to reduce systematic order effects.
+Sample arrays, decisions, current estimates, forecasts, and uncertainty
+radius diagnostics are compared. There is no timing-based or
+accuracy-based tracker selection during acquisition.
+
+\subsection{Cost Controls}
+
+Microbenchmarks use an identical 160-observation irregular stream, 31
+repeats after one warm-up, double precision, and one BLAS thread on the
+M4 Mini CPU. Dense 512-cell configurations use five repeats. The four
+implementations are dense Zak, dense real current, four-state NumPy,
+and four-state compiled. Each repeat times updates, current-position
+readouts, and two-query forecasts separately. Cold initialization clears
+the transition cache; warm initialization is measured in the acquisition
+replay. No CPU instruction counters were collected: the evidence is
+algebraic state/work reduction and measured elapsed time.
+
+A separate small CV cost control has two states per axis, a shared
+isotropic covariance, white-acceleration intensity $q=1$, and no mixture
+or bias state. It is implemented in NumPy and compiled C++, with the same
+irregular observation stream and Python interface style. This control
+establishes a simple implementation cost scale. It is not the augmented
+CV model in the earlier accuracy screen and carries no matched-accuracy
+claim.
+
+Total online acquisition cost includes initialization, assimilation,
+readouts, and scheduling. Diagnostic-only pre-update probes and offline
+truth/error scoring are excluded. Sensor energy, communications,
+bandwidth, and acquisition latency are not assigned a monetary or CPU
+cost. All timing claims refer to these retained implementations and this
+host rather than a real-time deadline guarantee.
+
+\section{Uncertainty Growth and Conditional Error Bounds}
+\label{sec:bounds}
+
+Exact inference does not by itself bound error against an arbitrary
+trajectory. We distinguish a posterior statement conditional on the
+current prior, a physical error certificate conditional on motion and
+sensor bounds, and empirical degradation under changed conditions.
+
+\subsection{Growth Under the Declared Current Prior}
+
+Fix a realized observation history ending at $t_b$ and a represented
+query $t_b+u\leq T$. In component $\ell$, write the posterior position
+variance at $t_b$ as $V_{b,\ell}$ per coordinate. Let $a_i(u)$ be the
+length of overlap between cell $i$ and $[t_b,t_b+u]$, so
+$0\leq a_i\leq h$ and $\sum_i a_i=u$. Define
+\begin{align}
+ W_\ell(u)&=q_g u^2+q_w\sum_{i,j}a_i a_j\rho_{|i-j|},\\
+ \rho_k&=(1+k\alpha)e^{-k\alpha},\qquad\alpha=\lambda_\ell h.
+\end{align}
+Gaussian conditioning cannot increase the covariance of this fixed
+linear increment. Cauchy--Schwarz on its posterior covariance with the
+current position therefore gives
+\begin{equation}
+ V_\ell(t_b+u)\leq\bigl(\sqrt{V_{b,\ell}}+\sqrt{W_\ell(u)}\bigr)^2.
+ \label{eq:variance-growth}
+\end{equation}
+The nonnegative Toeplitz kernel has row sum at most
+\begin{equation}
+ C_\alpha=1+2\left(\frac{z}{1-z}+\frac{\alpha z}{(1-z)^2}\right),
+ \qquad z=e^{-\alpha}.
+\end{equation}
+Using $\rho_k\leq1$ and the row-sum operator bound with
+$\sum_i a_i^2\leq hu$ proves
+\begin{equation}
+ W_\ell(u)\leq q_g u^2+q_w\min\{u^2,hC_\alpha u\}.
+ \label{eq:increment-growth}
+\end{equation}
+Thus component standard deviation has an explicit at-most-linear
+envelope in forecast horizon, within the declared interval. This is a
+property of the chosen stochastic prior, not a bound on arbitrary motion.
+
+Let $\mu_\ell(u)$ and $V_\ell(u)I_3$ be the component position moments,
+and $\bar\mu(u)$ the mixture mean. For $0<\delta<1$, the ball of radius
+\begin{equation}
+ R_\delta(u)=\max_\ell\left\{\norm{\mu_\ell(u)-\bar\mu(u)}
+ +\sqrt{6V_\ell(u)\log(6/\delta)}\right\}
+ \label{eq:mixture-ball}
+\end{equation}
+about $\bar\mu(u)$ has posterior probability at least $1-\delta$
+\emph{under the declared mixture model}. Indeed, the coordinate Gaussian
+tail bound and a union bound give the stated component radius; the
+triangle inequality places every component ball inside this ball.
+Averaging the conditional probabilities over the length weights preserves
+$1-\delta$. This includes between-component mean separation, unlike
+using component variance alone. It is a single-query posterior statement,
+not a simultaneous continuous-time tube or a guarantee for the synthetic
+truth families. Exact elimination preserves this bound and its inputs.
+
+\subsection{A Sharp Bound on Actual Prediction Error}
+
+A separate, estimator-independent assumption supplies a physical
+certificate. Suppose $\bm x'$ is absolutely continuous and
+$\norm{\bm x''(t)}\leq A$ almost everywhere over the observation and
+forecast interval. Suppose two observations at $t_a<t_b$ satisfy
+$\norm{\bm y_i-\bm x(t_i)}\leq\varepsilon_i$. These assumptions do not
+follow from a nominal sensor standard deviation or from the current prior.
+
+\begin{theorem}[Two-observation continuation bound]
+\label{thm:physical}
+Put $\Delta=t_b-t_a>0$ and $u\geq0$. Define
+\begin{align}
+ \bm c(u)&=\bm y_b+\frac{u}{\Delta}(\bm y_b-\bm y_a),\\
+ r(u)&=\left(1+\frac{u}{\Delta}\right)\varepsilon_b
+       +\frac{u}{\Delta}\varepsilon_a+\frac A2u(\Delta+u).
+ \label{eq:physical-radius}
+\end{align}
+Then $\norm{\bm x(t_b+u)-\bm c(u)}\leq r(u)$.
+The constants are sharp even in one dimension.
+For any estimator output $\bm m_j(u)$, including current, CV, CA, IMM,
+robust IMM, or UKF, a valid bound is
+\begin{equation}
+ \norm{\bm x(t_b+u)-\bm m_j(u)}
+ \leq r(u)+\norm{\bm m_j(u)-\bm c(u)}.
+ \label{eq:recenter}
+\end{equation}
+\end{theorem}
+\begin{proof}
+Translate $t_b$ to zero. The error of extrapolating the two true positions
+is the integral of acceleration against the nonnegative kernel
+\begin{equation*}
+ K(s)=\begin{cases}u(s+\Delta)/\Delta,&-\Delta\leq s\leq0,\\
+ u-s,&0\leq s\leq u.\end{cases}
+\end{equation*}
+Its integral is $u(\Delta+u)/2$. The two measurement coefficients have
+absolute values $1+u/\Delta$ and $u/\Delta$, giving
+\eqref{eq:physical-radius} by the triangle inequality. In one dimension,
+$x(t)=At^2/2$, $y_a=x(-\Delta)+\varepsilon_a$, and
+$y_b=x(0)-\varepsilon_b$ attain equality. A final triangle inequality
+gives \eqref{eq:recenter}.
+\end{proof}
+
+For equal error limits $\varepsilon$, the growth and noise sensitivity are
+\begin{align}
+ r(u)&=\varepsilon+b u+\tfrac12Au^2,
+ &b&=2\varepsilon/\Delta+A\Delta/2,\\
+ r'(u)&=b+Au,
+ &\partial_\varepsilon r&=1+2u/\Delta.
+ \label{eq:breakdown-rate}
+\end{align}
+For a tolerated radius $d>\varepsilon$ and $A>0$, this pair certificate
+expires at the explicit horizon
+\begin{equation}
+ u_d=\frac{2(d-\varepsilon)}{b+\sqrt{b^2+2A(d-\varepsilon)}}.
+ \label{eq:expiry}
+\end{equation}
+This is loss of the stated certificate, not a prediction that error
+actually reaches $d$. For $A=0$ and $b>0$, $u_d=(d-\varepsilon)/b$.
+For a different estimator center, the offset in \eqref{eq:recenter} must
+also be included before asserting a deadline. The noise-amplification
+and curvature terms balance at $\Delta=2\sqrt{\varepsilon/A}$ when both
+parameters are positive. A shorter observation gap alone can therefore
+worsen this two-point bound.
+
+Every observation pair supplies a ball; their intersection retains all
+such constraints. Appending observations while retaining the old balls
+cannot enlarge that set. Sample count alone supplies no universal
+$n^{-1/2}$ error law: a shared unknown sensor bias need not average away.
+For a fixed history of $n$ isotropic Gaussian observations with known
+marginal standard deviations, choosing
+\begin{equation}
+ \varepsilon_i=\sigma_i\sqrt{6\log(6n/\delta)}
+\end{equation}
+makes all observation limits hold with probability at least $1-\delta$,
+by coordinate tails and a union bound. Independence is unnecessary for
+this union bound, but the marginal error laws must be valid. On that
+event, the physical balls hold simultaneously at all future times for
+which the acceleration assumption holds. Adaptive stopping requires an
+appropriate conditional or anytime observation guarantee; the fixed-$n$
+argument alone does not justify it.
+
+Even perfect knowledge of past position and velocity cannot remove the
+worst-case radius $Au^2/2$: two continuations with opposite constant
+accelerations share the entire past and separate by $Au^2$. Any common
+prediction errs by at least half that separation on one continuation.
+Without a future-motion restriction there is no finite uniform bound.
+Consequently none of the compared estimators has a better worst-case
+horizon order under this common assumption. Differences in their
+recentered bounds remain possible, but have not been measured here.
+
+The finite current model itself has velocity jumps at cell boundaries,
+and the acquisition fixtures use linear interpolation on a fine grid.
+Neither literally satisfies the bounded-acceleration premise in general.
+We therefore do not attach an acceleration constant or certified physical
+radius to those experiments. The physical theorem states what additional
+motion and sensor information would be needed. Conversely, a smaller
+model covariance, in this method or in a Kalman-family comparator, does
+not establish a stronger physical guarantee.
+
+\section{Results}
+\label{sec:results}
+
+\subsection{Comparison with the Earlier Tracking Controls}
+
+\begin{table}[t]
+\centering
+\caption{Two-second endpoint RMSE (m) on the matched forecast screen.
+C1: 65 observations, $\sigma=0.35$ m; C2: 65 observations,
+$\sigma=1.4$ m; C3: 9 observations, $\sigma=0.35$ m.
+Each column contains 30 paired cases.}
+\label{tab:forecast}
+\small
+\begin{tabular}{lrrr}
+\toprule Method & C1 & C2 & C3\\\midrule
+\inputrows{tables/forecast_accuracy.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:forecast} includes every method in the matched current
+screen. At low noise with 65 observations, relational-current endpoint
+RMSE is 2.958 m, compared with 3.750 for CV, 6.319 for CA, 3.443 for IMM,
+3.269 for robust IMM, and 4.243 for the turn UKF. The paired current/robust
+IMM ratio is 0.905 with interval $[0.837,0.981]$; the current/IMM ratio is
+0.859 with interval $[0.779,0.952]$.
+
+The same ordering does not hold in every condition. At high noise,
+robust IMM reaches 4.806 m versus 4.891 m for the current mixture; their
+ratio is 1.018 with interval $[0.921,1.124]$. In the sparse low-noise
+condition, current RMSE is 3.788 m versus 3.940 m for robust IMM, with
+ratio 0.961 and interval $[0.906,1.021]$. These intervals do not establish
+a consistent advantage over robust IMM. Figure~\ref{fig:paired} shows
+all five comparator ratios; the numerical intervals appear in
+Appendix~\ref{app:intervals}.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{paired_forecasts.pdf}
+\caption{Current-model endpoint RMSE divided by comparator endpoint RMSE.
+Values below one favor the current model. Bars are pointwise 95\%
+paired percentile intervals from 4000 within-family resamples. The same
+30 cases support each condition; the intervals do not cover arbitrary
+motion families or simultaneous comparisons.}
+\label{fig:paired}
+\end{figure*}
+
+The severed-current ablation increases C1 error to 4.868 m. A single
+1.5 s length gives 3.556 m. The corresponding paired mixture/ablation
+ratios are 0.608 $[0.537,0.675]$ and 0.832 $[0.757,0.908]$.
+Severing establishes that the declared past--future covariance matters
+for these forecasts. It does not establish uniqueness of that
+continuation law. At high noise the single-length model reaches
+4.762 m, slightly below the mixture's 4.891 m.
+
+\begin{table}[t]
+\centering
+\caption{Endpoints contained in nominal 95\% moment ellipsoids.
+These are empirical diagnostics, not exact mixture coverage guarantees.}
+\label{tab:coverage}
+\small
+\begin{tabular}{lrrr}
+\toprule Method & C1 & C2 & C3\\\midrule
+\inputrows{tables/forecast_coverage.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:coverage} reports containment using
+$(x-\bar\mu)^\trans\Sigma^{-1}(x-\bar\mu)\leq7.814727903$.
+The current mixture contains 30/30, 28/30, and 30/30 endpoints, with
+mean equal-volume ellipsoid radii 5.77, 8.42, and 6.61 m. A Gaussian
+mixture is not itself generally Gaussian, and these trajectories were
+not drawn from the current prior. Consequently the chi-square threshold
+does not certify 95\% posterior coverage here. Good endpoint RMSE and
+large uncertainty regions must be assessed together.
+
+\subsection{Measured Degradation Under Noise and Sparsity}
+
+Table~\ref{tab:degradation} compares each method with its own C1 error.
+The current mixture's RMSE rises 65.4\% when sensor standard deviation
+quadruples, and 28.1\% when observations decrease from 65 to 9.
+Robust IMM rises 47.0\% and 20.5\%, respectively. The current model thus
+has larger relative degradation point estimates despite its lower C1
+error and its still slightly lower C3 error. A lower starting error can
+also increase a relative-growth ratio. These are two finite changes,
+not fitted scaling exponents or formal breakdown laws; overlapping
+pointwise intervals do not test the difference between methods' growth.
+The earlier geometric prototype's degradation results concern a different
+estimator and cannot establish a current-model rate.
+
+\begin{table}[t]
+\centering
+\caption{Within-method endpoint RMSE inflation relative to C1, with
+pointwise 95\% paired percentile intervals (4000 resamples within each
+of five fixed families). Conditions are defined in Table~\ref{tab:forecast}.
+An inflation of 1.654 means 65.4\% more RMSE.}
+\label{tab:degradation}
+\small\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrr}
+\toprule Method & C2/C1 [interval] & C3/C1 [interval]\\\midrule
+\inputrows{tables/degradation.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Acquisition Benefit and Settling}
+
+\begin{table}[t]
+\centering
+\caption{Acquisition count and post-crossing accuracy.
+Counts cover 12 s; RMSE uses the first six post-crossing seconds.
+Rates are in Hz, errors in meters.}
+\label{tab:acquisition}
+\small\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{rlrrr}
+\toprule $\sigma$ & Rate profile & Samples & Position & 2 s forecast\\\midrule
+\inputrows{tables/acquisition.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+Added observations reduce current error and two-second prediction error
+on these crossing fixtures (Table~\ref{tab:acquisition} and
+Fig.~\ref{fig:acquisition}). At $\sigma=0.35$ m, adaptive 2-to-32 Hz
+uses 167.8 samples on average, compared with 383.9 for constant 32 Hz.
+Whole post-crossing position RMSE is 0.307 versus 0.209 m, so the
+reduced acquisition count has a measurable accuracy cost over that
+complete window.
+
+\begin{table}[t]
+\centering
+\caption{Settling after the true crossing: position RMSE (m).
+The true crossing defines evaluation windows only.}
+\label{tab:settling}
+\small
+\begin{tabular}{rlrr}
+\toprule $\sigma$ & Rate profile & First second & Seconds 3--6\\\midrule
+\inputrows{tables/settling.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+After three seconds, adaptive and always-dense tracking are close
+(Table~\ref{tab:settling}). Their later RMSE ratio is 0.996 with interval
+$[0.958,1.034]$ at low noise and 1.001 with interval $[0.951,1.053]$ at
+high noise. The first-second ratios are 2.706 and 2.359, respectively.
+Dense acquisition has already accumulated more information when the
+boundary is crossed; adaptive acquisition pays for its sparse approach
+with this settling interval.
+
+Individual mixture corrections also become smaller as history grows.
+At low noise, the later mean correction decreases from 0.702 m under
+constant 2 Hz to 0.077 m under adaptive 2-to-32 Hz. The measured
+projection of the correction onto the innovation decreases from 0.716
+to 0.129. This projection describes the mixture correction; it does not impose
+a clipping coefficient.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{acquisition_accuracy.pdf}
+\caption{Acquisition count versus post-crossing accuracy, averaged over
+40 cases per noise level. Connected filled markers run from constant
+2 Hz through the four adaptive target rates. Open markers are constant
+32 Hz. All policies use the same physical evaluation grid. The same
+accuracy values are retained by exact elimination; the figure shows
+sampling effects rather than an optimization-induced accuracy change.}
+\label{fig:acquisition}
+\end{figure*}
+
+\subsection{Exactness and Cost}
+
+All 480 dense/compiled acquisition pairs have identical trigger times,
+counts, timestamps, and observation arrays. Maximum absolute differences
+are $7.29\times10^{-12}$ m for evaluated current positions,
+$8.13\times10^{-12}$ m for two-second forecasts,
+$6.26\times10^{-12}$ m for acquisition-event estimates, and
+$1.37\times10^{-13}$ m for reported radius diagnostics.
+These are numerical equivalence measurements, not improvements in
+tracking accuracy or universal bitwise identities.
+
+\begin{table}[t]
+\centering
+\caption{128-cell microbenchmark: median microseconds per call.
+Forecast requests return current and two-second-ahead marginal moments.}
+\label{tab:micro}
+\small\setlength{\tabcolsep}{3.8pt}
+\begin{tabular}{lrrr}
+\toprule Implementation & Update & Position & Forecast\\\midrule
+\inputrows{tables/micro.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+The compiled update is 37.2 times faster than the original at 128 cells
+(Table~\ref{tab:micro}). Moving the dense computation to real current
+coordinates yields only 1.8 times, whereas the four-state NumPy
+realization already yields 19.4 times. The state elimination is therefore
+the main reduction. At 32, 128, and 512 cells, compiled updates take
+11.99, 12.18, and 12.45 microseconds, versus 150.63, 452.68, and 5129.44
+for dense Zak. The 128-cell cold initialization is 0.357 ms for the
+compiled realization and 4.744 ms for dense Zak; with shared tables,
+warm acquisition initialization is approximately 0.028 ms.
+
+The small compiled CV cost control takes 5.39 microseconds per update
+and 11.16 per two-query forecast. The five-component current model costs
+2.26 and 2.02 times those operations, respectively. The NumPy CV control
+takes 7.28 and 10.39 microseconds. Compilation therefore does not remove
+all interface overhead, and neither comparison proves a lower bound
+on achievable native latency. The CV control is independently checked
+against its NumPy equations over 160 irregular updates and 320 queries.
+
+\begin{table}[t]
+\centering
+\caption{Whole online compute over a 12 s trajectory, $\sigma=0.35$ m.
+Means over 40 cases; costs include scheduling and readout, but not sensor
+acquisition. Each pair follows identical acquisition decisions.}
+\label{tab:online}
+\small
+\begin{tabular}{lrrr}
+\toprule Rate profile & Dense (ms) & Compiled (ms) & Speedup\\\midrule
+\inputrows{tables/online.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+Whole-loop effects differ from isolated updates
+(Table~\ref{tab:online} and Fig.~\ref{fig:cost}). Adaptive 2-to-32 Hz
+falls from 114.47 to 12.55 ms, a 9.12-fold reduction. Assimilation falls
+from 78.09 to 2.29 ms, while the unchanged scheduler takes 6.73 ms and
+becomes the largest component. Constant 32 Hz falls from 218.18 to
+9.58 ms. Thus the optimized adaptive loop costs \emph{more CPU} than
+always-dense acquisition in this implementation, despite using only
+43.7\% as many samples. This reversal is a consequence of inexpensive
+filtering and nontrivial rate inversion. It must not be hidden by
+reporting assimilation cost alone. The high-noise runs show the same
+cost pattern.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{exact_cost.pdf}
+\caption{Left: update scaling with represented cell count, in double
+precision. Right: whole online acquisition cost at $\sigma=0.35$ m;
+each pair shows dense (left) and compiled (right). Scheduling is
+unchanged and dominates the optimized adaptive loop. Microbenchmarks
+use 31 repeats except 512-cell dense cases (five); whole-loop bars
+average 40 matched cases per policy.}
+\label{fig:cost}
+\end{figure*}
+
+\section{Interpretation and Limitations}
+
+The computational and statistical claims have different scopes.
+Theorem~\ref{thm:equivalence} establishes equality for the declared
+finite Gaussian model. The synthetic comparisons ask whether that model
+is useful outside its own prior distribution. Favorable low-noise
+forecast errors cannot extend the theorem into a universal prediction
+guarantee. Unknown future commands, correlated sensor drift, and noise
+misspecification remain substantive limitations.
+
+The measured current model is competitive with the selected conventional
+implementations, but it does not decisively dominate robust IMM in every
+condition. The earlier baseline forecasts also carry Monte Carlo error.
+A more extensive benchmark would require external trajectories,
+additional contemporary implementations, matched sensor assumptions,
+and a common analytical or adequately converged forecast interface.
+The separate simple CV timing control cannot supply those missing
+accuracy comparisons.
+
+The representation horizon is fixed, not periodically wrapped or
+extended implicitly. Five 64-to-128-cell checks in the forecast screen
+change endpoint means by less than 0.022 m; four 128-to-256-cell
+acquisition checks change position RMSE by less than 0.00013 m and
+forecast RMSE by less than 0.00084 m. These limited checks do not prove
+a uniform continuum limit. Very fine cells also require care when
+forming $Q_\ell$ by subtracting nearly equal matrices.
+
+Twenty-three focused tests pass: 17 existing relational/acquisition
+checks and six realization checks covering both NumPy and native
+backends. They include kernel reconstruction, covariance stationarity,
+8/32/128-cell streams, two coordinate systems, six sever configurations,
+within-cell and irregular observations, evidence, fractional updates,
+historical queries, full coefficient exports, and cache invalidation.
+The archived dense oracle has the same source hash as the original
+acquisition implementation. Five additional physical-certificate tests pass, including exact-rational
+sharpness, a finite-turn path, retained constraints, recentering, and
+invalid-input rejection. These test the conditional certificate separately.
+Tests and replay establish the stated
+implementation fidelity; they are not a formal floating-point proof.
+
+\section{Conclusion}
+
+A dense finite current history can be eliminated exactly when its
+covariance admits a small Markov realization. For the specified
+constant-plus-Mat\'ern-$3/2$ current model, accumulated position,
+constant current, local current, and normalized current derivative
+suffice. Shared spatial conditioning and evidence preserve the
+five-component posterior while reducing a 128-cell update from
+452.7 to 12.2 microseconds on the measured host.
+
+The resulting computational scale is within a small factor of a simple
+compiled CV filter, while the retained forecast comparison shows a
+low-noise benefit over the measured robust IMM and no decisive benefit
+in every other condition. Adaptive acquisition provides a separate
+count--accuracy tradeoff with a settling interval. Once exact elimination
+makes assimilation inexpensive, scheduling can determine the CPU cost
+of that tradeoff. The representation, prediction law, numerical fidelity,
+and acquisition policy must therefore be evaluated separately and then
+accounted for together.
+
+\appendices
+\section{Complete Paired Forecast Intervals}
+\label{app:intervals}
+
+Table~\ref{tab:all-ci} gives the paired current/comparator RMSE ratios
+under the protocol of Section~\ref{sec:forecast-protocol}. IMM and robust
+IMM intervals retain the original reported bootstrap draws. CV, CA,
+and UKF intervals are computed from the same retained case errors with
+the same 4000-resample within-family procedure and a separately fixed
+resampling seed. No method is retuned. All intervals are pointwise.
+
+\begin{table}[h]
+\centering
+\caption{Current/comparator endpoint RMSE ratios and 95\% paired
+percentile intervals. Condition definitions are in Table~\ref{tab:forecast}.}
+\label{tab:all-ci}
+\small
+\begin{tabular}{llrr}
+\toprule Condition & Comparator & Ratio & Interval\\\midrule
+\inputrows{tables/paired_intervals.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Earlier Geometric-Transport Confirmation}
+\label{app:historical}
+
+For completeness, Table~\ref{tab:historical} records the earlier
+continuous-turn geometric-transport confirmation alongside the same
+conventional filter families. This is a \emph{different cohort and
+method}: 80 trajectories, eight seeds in each of five family/two
+corruption strata, 6144 filtering particles for geometric transport,
+and 256 forecast paths. It uses irregular observation intervals,
+approximately two-second rolling forecasts, and corruption episodes
+including drift, outliers, noise-scale changes, and missing samples.
+The current model of Section~\ref{sec:model} was not evaluated in this
+cohort, so its errors cannot be compared directly with this table.
+
+The geometric prototype transports a particle distribution over speed,
+direction, turn, position, and bias through finite rotation maps. Its
+6144-particle confirmation obtained a 3.6\% endpoint RMSE reduction
+against robust IMM, with a paired interval of $[-2.1\%,8.5\%]$.
+That result did not establish an advantage over the strongest robust
+control. Its crossing Brier score was also worse. These findings
+motivate keeping accuracy, uncertainty, and boundary decisions distinct;
+they are not additional evidence of current-model superiority.
+
+\begin{table}[h]
+\centering
+\caption{Separate geometric confirmation cohort. Tracking/forecast
+RMSE and energy score are in meters. Brier score concerns sampled-path
+crossing of $x=0$. The current model is absent from this cohort.}
+\label{tab:historical}
+\small\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrr}
+\toprule Method & Track & $\sim$2 s & Energy & Brier\\\midrule
+\inputrows{tables/historical.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Reproduction and Artifact Map}
+\label{app:artifact}
+\begingroup\raggedright
+
+The accompanying evidence archive retains the forecast, acquisition,
+optimization, and geometric-confirmation records separately, with a
+SHA-256 source manifest. The manuscript's tables and vector figures are
+generated from these records by \texttt{generate\_assets.py}; rendering
+performs no fitting or new estimator selection. The TeX bundle includes
+all generated table inputs and figures, and uses standard packages
+without shell escape or machine-specific fonts. It compiles without
+access to the experiment repository.
+
+The repository experiment directory is
+\texttt{experiments/civilian\_transport}. Its
+\texttt{relational\_reference.py} preserves the dense oracle;
+\texttt{relational\_markov.py} specifies the four-state algebra;
+\texttt{relational\_native.py} and \texttt{native/markov.cpp} expose
+and implement the compiled operations. The runner
+\texttt{run\_optimization\_m4.sh} builds the optional kernels, runs the
+23 focused tests, performs the 480-case paired replay and microbenchmark,
+and copies the result files back from the compute host. The standalone
+cost control is \texttt{cost\_controls.py}.
+
+The earlier forecast screen is reproduced by
+\texttt{run\_relational\_m4.sh}; acquisition accuracy by
+\texttt{run\_acquisition\_m4.sh}; and the separate geometric
+confirmation by \texttt{run\_confirmation\_m4.sh}. Re-running through
+the promoted streaming class changes computation cost but not the
+specified finite prior. Original timing evidence remains archived
+rather than being silently replaced by a rerun.
+
+\par\endgroup
+
+\begin{table}[h]
+\centering
+\caption{128-cell update variability: median and 10th--90th percentiles
+of repeat-average microseconds per observation.}
+\label{tab:variability}
+\small
+\begin{tabular}{lrr}
+\toprule Implementation & Median & 10th--90th percentile\\\midrule
+\inputrows{tables/micro_variability.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{thebibliography}{99}
+\bibitem{kalman1960}
+R. E. Kalman, ``A new approach to linear filtering and prediction
+problems,'' \emph{J. Basic Eng.}, vol. 82, no. 1, pp. 35--45, 1960,
+doi: \href{https://doi.org/10.1115/1.3662552}{10.1115/1.3662552}.
+\bibitem{hartikainen2010}
+J. Hartikainen and S. S\"arkk\"a, ``Kalman filtering and smoothing
+solutions to temporal Gaussian process regression models,'' in
+\emph{Proc. IEEE Int. Workshop Mach. Learn. Signal Process.}, 2010,
+pp. 379--384, doi: \href{https://doi.org/10.1109/MLSP.2010.5589113}{10.1109/MLSP.2010.5589113}.
+\bibitem{corenflos2021}
+A. Corenflos, Z. Zhao, and S. S\"arkk\"a, ``Temporal Gaussian process
+regression in logarithmic time,'' arXiv:2102.09964, 2021.
+[Online]. Available: \url{https://arxiv.org/abs/2102.09964}
+\bibitem{blom1988}
+H. A. P. Blom and Y. Bar-Shalom, ``The interacting multiple model
+algorithm for systems with Markovian switching coefficients,''
+\emph{IEEE Trans. Autom. Control}, vol. 33, no. 8, pp. 780--783, 1988,
+doi: \href{https://doi.org/10.1109/9.1299}{10.1109/9.1299}.
+\bibitem{julier2004}
+S. J. Julier and J. K. Uhlmann, ``Unscented filtering and nonlinear
+estimation,'' \emph{Proc. IEEE}, vol. 92, no. 3, pp. 401--422, 2004,
+doi: \href{https://doi.org/10.1109/JPROC.2003.823141}{10.1109/JPROC.2003.823141}.
+\bibitem{lizzio2026}
+F. F. Lizzio, E. I. Trombetta, E. Capello, and Y. Fujisaki,
+``Comparative evaluation of multiple-model Kalman filters for highly
+maneuvering UAV tracking,'' \emph{Appl. Sci.}, vol. 16, no. 5,
+Art. no. 2377, 2026, doi: \href{https://doi.org/10.3390/app16052377}{10.3390/app16052377}.
+\bibitem{koller2021}
+T. L. Koller and U. Frese, ``The interacting multiple model filter and
+smoother on boxplus-manifolds,'' \emph{Sensors}, vol. 21, no. 12,
+Art. no. 4164, 2021, doi: \href{https://doi.org/10.3390/s21124164}{10.3390/s21124164}.
+\bibitem{zhang2017}
+C. Zhang, A. Taghvaei, and P. G. Mehta, ``Feedback particle filter on
+matrix Lie groups,'' arXiv:1701.02416, 2017.
+[Online]. Available: \url{https://arxiv.org/abs/1701.02416}
+\end{thebibliography}
+\end{document}

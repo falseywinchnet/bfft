@@ -1,0 +1,359 @@
+\onecolumn
+\begin{multicols}{2}
+\section{Can CONV Be Made Efficient Using Convolution?}
+\label{sec:convstar}
+
+Because CONV specifies the two-jet, lineage ledger, signed-fibre projection,
+Bernstein synthesis, and Eikonal factor blend independently of an execution
+backend, the same operator admits a bounded-work FIR realization. Denoted by
+CONV$^{*}$, this realization eliminates the one-dimensional jet algebra into
+fixed convolution banks, batches the exact projection, compiles repeated
+phases into a polyphase output bank, and replaces the all-source action sum by
+the local nodal compilation derived below. The asterisk therefore denotes a
+computational refinement of the same admitted fibre, rather than another
+interpolation model. In two dimensions, the FIR bank replaces each
+one-dimensional occurrence of \(\mathcal C\) in \(\Tcal_{xy}\) and
+\(\Tcal_{yx}\); at a fixed endpoint-aligned scale, the same polyphase bank is
+used in opposite factor orders and the resulting proposals are blended
+pointwise, without forming a source-specific frame or chart bank.
+
+\subsection{Local compilation of Eikonal admission}
+
+Let \(\eta_p\) be the nodal order coordinate in
+\eqref{eq:witnesscompatibility}. A local compilation is obtained by replacing
+the all-source action interpolant \(\beta\) with its bilinear nodal extension,
+\begin{align}
+ \beta^*(x)&=\sum_{p\in\operatorname{cell}(x)}b_p(x)\eta_p,\nonumber\\
+ \Tcal^*Y&=(1-\beta^*)\Tcal_{xy}Y+\beta^*\Tcal_{yx}Y.
+ \label{eq:starlocaladmission}
+\end{align}
+\begin{proposition}[Cardinal compilation identity]
+Let \(I_h\) denote cellwise bilinear \(Q_1\) interpolation on the source
+lattice. Then
+\begin{equation}
+ \boxed{\beta^*=I_h\beta.}
+ \label{eq:starcardinalcompilation}
+\end{equation}
+Consequently, \(\beta^*\) is the unique continuous cellwise bilinear extension
+of the formal Eikonal admission's nodal trace.
+\end{proposition}
+
+\begin{proof}
+The Kronecker action identity \eqref{eq:kroneckeraction} gives
+\(\beta(x_p)=\eta_p\) at every source node. Applying \(I_h\) therefore yields
+\((I_h\beta)(x)=\sum_{p\in\operatorname{cell}(x)}b_p(x)\beta(x_p)\), which is
+exactly \eqref{eq:starlocaladmission}.
+\end{proof}
+
+Thus the compilation is not an independently chosen approximation rule, but
+the canonical \(Q_1\) interpolant of the formal admission data; it is
+parameter-free, bounded in \([0,1]\), and permutation covariant. Subtracting
+\eqref{eq:witnessedblend} from \eqref{eq:starlocaladmission} gives the exact
+implementation defect
+\begin{equation}
+ \Tcal^*Y-\Tcal Y
+ = (\beta^*-\beta)(\Tcal_{yx}Y-\Tcal_{xy}Y),
+ \label{eq:stardefect}
+\end{equation}
+and therefore, componentwise,
+\begin{equation}
+ |\Tcal^*Y-\Tcal Y|
+ \leq |\beta^*-\beta|\,|\Tcal_{yx}Y-\Tcal_{xy}Y|.
+ \label{eq:stardefectbound}
+\end{equation}
+Therefore the local compilation is exact wherever the factor orders commute,
+including constant and affine coordinate fields. Moreover,
+\eqref{eq:stardefect} isolates the sole two-dimensional approximation
+introduced by CONV$^{*}$, since the current construction within each factor
+remains unchanged.
+
+For direct evaluation, \(\eta_p\) requires only the squared first-jet
+channels already produced by the two Cartesian front ends:
+\begin{equation}
+ \eta_p=
+ \frac{\sum_c(D_yY_p^{(c)})^2}
+ {\sum_c\bigl[(D_xY_p^{(c)})^2+(D_yY_p^{(c)})^2\bigr]},
+ \label{eq:stardirecteta}
+\end{equation}
+with the value one half when the denominator vanishes. Consequently, neither
+an eigendecomposition nor the cross term of the current tensor is required
+to evaluate the order coordinate. At a target point, the four nodal values
+in \eqref{eq:starlocaladmission} may be combined with the final convex blend
+in the same output write. This evaluates \(I_h\eta\) exactly while avoiding a
+separate target-sized coordinate raster and its two Cartesian interpolation
+passes.
+
+\subsection{Aggregate Green admission}
+
+A global elliptic continuation of the same nodal coordinate is obtained as
+follows. Put \(K=M^{-1}\), let \(\rho\) be the source density per unit
+Riemannian area, and define
+\begin{equation}
+ \begin{aligned}
+  (\rho-\Delta_M)U&=\sum_a\delta_{s_a},\\
+  (\rho-\Delta_M)V&=\sum_a\eta_a\delta_{s_a},\\
+  \beta_G&=V/U.
+ \end{aligned}
+ \label{eq:greenadmission}
+\end{equation}
+subject to the no-flux boundary condition
+\(n^TK\nabla U=n^TK\nabla V=0\). In the unit source-lattice coordinates used
+throughout the paper, \(\rho=1\). Under \(x\mapsto cx\), both \(\rho\) and
+\(\Delta_M\) scale by \(c^{-2}\), so the screening length is fixed by the
+sampling density rather than by a fitted bandwidth. Moreover, the two
+right-hand sides use one SPD operator and one factorization, without forming
+an individual distance field for each source.
+
+\begin{proposition}[Green transport coordinate]
+The continuum coordinate in \eqref{eq:greenadmission} is cardinal by
+continuous extension, satisfies
+\begin{equation}
+ \min_a\eta_a\leq\beta_G(x)\leq\max_a\eta_a,
+ \label{eq:greenmaximum}
+\end{equation}
+and, away from the source sites, obeys
+\begin{equation}
+ \operatorname{div}\!\left(U^2M^{-1}\nabla\beta_G\right)=0.
+ \label{eq:greenharmonic}
+\end{equation}
+Equivalently, it minimizes
+\begin{equation}
+ \mathcal E_U[\vartheta]
+ =\frac12\int_\Omega U^2\nabla\vartheta^TM^{-1}\nabla\vartheta\,
+ d\operatorname{vol}_M
+ \label{eq:greenenergy}
+\end{equation}
+subject to the nodal traces \(\vartheta(s_a)=\eta_a\).
+\end{proposition}
+
+\begin{proof}
+For \(\rho>0\), the shifted Neumann form is coercive and its Green kernel is
+strictly positive. Consequently, \(V/U\) is a positive normalized
+Green-kernel blend of the \(\eta_a\), which proves
+\eqref{eq:greenmaximum} \cite{gilbargtrudinger2001}. In two dimensions, the
+diagonal singularity is
+\begin{equation}
+ G_\rho(x,s_a)=-\frac{1}{2\pi}\log d_M(x,s_a)+O(1).
+ \label{eq:greensingu}
+\end{equation}
+and therefore the self term dominates at \(s_a\), giving
+\(\lim_{x\to s_a}\beta_G(x)=\eta_a\). Away from the sources, substituting
+\(V=U\beta_G\) into the two homogeneous resolvent equations cancels the
+common mass term; the product rule then yields \eqref{eq:greenharmonic}, whose
+weak form is the Euler equation of \eqref{eq:greenenergy}.
+\end{proof}
+
+This construction continues the same nodal order coordinate, but it does not
+fuse the inverse-square Eikonal admission exactly. Indeed,
+\eqref{eq:greensingu} is logarithmic, whereas
+\eqref{eq:actionpartition} uses \(d_M^{-2}\); hence no second-order local
+elliptic Green function in two dimensions can make the two kernels
+identical. Since a finite-stencil diagonal also removes the continuum
+singularity, the raw discrete ratio \(V/U\) is not exactly cardinal. Exact
+discrete cardinality is obtained by solving \eqref{eq:greenharmonic} with the
+nodal traces imposed.
+
+Both the global Green admission and the local compilation therefore have the
+trace \(\eta_p\). The latter is the unique cellwise \(Q_1\) continuation
+satisfying locality, linearity in the four nodal values, cardinality, and
+separate affine exactness, whereas the former is the global minimizer of
+\eqref{eq:greenenergy}. Their difference in the reconstructed field is
+isolated exactly by
+\begin{equation}
+ \Tcal_{\beta_G}Y-\Tcal_{\beta^*}Y
+ =(\beta_G-\beta^*)(\Tcal_{yx}Y-\Tcal_{xy}Y).
+ \label{eq:greenblenddefect}
+\end{equation}
+Consequently, Green admission supplies a global metric-harmonic coordinate
+when that property is required, while \(Q_1\) remains the compact
+CONV$^{*}$ realization.
+
+One Cartesian factor has the dataflow
+\begin{equation}
+ y\xrightarrow{\rm FIR}(a,\delta)
+ \xrightarrow{\rm scan}\sigma
+ \xrightarrow{\rm tensorized\ projection}c
+ \xrightarrow{\rm polyphase}\widehat y.
+ \label{eq:starflow}
+\end{equation}
+Since the factors retain CONV's horizontal--vertical barrier, the second
+factor analyzes the values synthesized by the first. No single separable
+two-dimensional convolution therefore represents the complete nonlinear
+composition.
+
+\subsection{Compact FIR current bank}
+
+On an interior cell, let \(v_i=(y_{i+r})_{r=-2}^{3}\). Eliminating the
+intermediate jets and Bezier controls yields
+\begin{equation}
+ a_i=Kv_i,\quad K=\frac1{240}
+ \left[\begin{smallmatrix}
+ 4&-32&0&32&-4&0\\
+ 3&-16&-30&48&-5&0\\
+ -7&39&-130&130&-39&7\\
+ 0&5&-48&30&16&-3\\
+ 0&4&-32&0&32&-4
+ \end{smallmatrix}\right].
+ \label{eq:starfir}
+\end{equation}
+Hence the complete interior proposal is a fixed bank of five six-tap FIR
+filters. An equivalent realization first computes the two five-tap jet
+channels and the secant, and then forms the five currents by pointwise
+algebra. The latter requires fewer arithmetic operations on a conventional
+CPU, whereas the fused form maps directly to a multi-output convolution
+primitive. At the outer and near-outer cells, the stated second-order closure
+is retained rather than inferred from \eqref{eq:starfir} or supplied by zero
+padding.
+
+\subsection{The irreducible sign scan}
+
+Starting from the sampled signs
+\(s_i=\operatorname{sign}(\delta_i)\), CONV$^{*}$ fills a zero from the last
+witnessed nonzero sign, using the first future witness only for an initial
+zero run. Applying the same local least-disagreement rule to the resulting
+transition sites gives a segmented prefix scan followed by a short causal
+transition scan.
+
+\begin{proposition}[No bounded convolutional ledger]
+No fixed finite-receptive-field operator can reproduce the zero-sign filling
+rule for every line length.
+\end{proposition}
+
+\begin{proof}
+Fix a receptive-field radius \(R\) and a zero secant at a site whose previous
+\(R\) secants are also zero. Construct two lines with identical secants on
+that complete receptive field, but place a positive witness immediately
+before it in one line and a negative witness there in the other. The formal
+ledger assigns opposite signs at the selected zero site. A bounded local
+operator receives identical inputs and must return the same value, a
+contradiction.
+\end{proof}
+
+Therefore the scan must be retained rather than approximated by a bounded
+convolution. It involves linear work with one sign of persistent state per
+component, while all lines of a Cartesian factor remain independent.
+
+\subsection{Vectorized scalar-threshold admission}
+
+CONV$^{*}$ batches the exact scalar projection
+\eqref{eq:thresholdcurrent}--\eqref{eq:thresholdroot} by using a fixed sorting
+network for the five breakpoints in each cell. The six resulting affine
+intervals are tested in parallel, after which five signed clips return the
+admitted current. Chunking consequently bounds temporary storage
+independently of image size, and neither a combinatorial search nor an
+iterative numerical solve is involved.
+
+\subsection{Polyphase synthesis}
+
+Let \(B_j^5(u)\) denote the degree-five Bernstein basis. Eliminating the
+integrated controls gives
+\begin{equation}
+ \widehat y(i+u)=y_i+\sum_{k=0}^{4}g_k(u)c_{ik},\qquad
+ g_k(u)=\sum_{j=k+1}^{5}B_j^5(u).
+ \label{eq:starpolyphase}
+\end{equation}
+For integer refinement \(r\), only the phases \(u=p/r\),
+\(p=1,\ldots,r-1\), are required. Their \(g_k\) values form a fixed
+polyphase matrix. At twofold refinement,
+\begin{equation}
+ \widehat y(i+\tfrac12)=y_i+\frac{1}{32}
+ [31,26,16,6,1]c_i.
+ \label{eq:starmidpoint}
+\end{equation}
+Thus neither the Bezier controls nor their cumulative current sums need be
+stored. Nested source nodes are copied directly for point interpolation,
+whereas conservative multiresolution compiles the half-cell functional
+\eqref{eq:halfcells}, block averages, and centered moment channels of
+Section~IX; it does not replace them by strided anchor selection.
+Accordingly, \eqref{eq:starmidpoint} is a compiled twofold phase rather than
+the domain of CONV. For an arbitrary target length \(M\), the continuous
+operator evaluates \eqref{eq:starpolyphase} at the coordinates
+\eqref{eq:targetmap}; whenever the target uses a repeated finite phase set,
+the same expression yields a fixed polyphase bank.
+
+\subsection{Equivalence audit}
+
+The binary64 audit uses 72 deterministic Gaussian three-channel lines over
+lengths \(5,9,17,33,65,129\). The maximum difference from the formal current
+is \(9.44\times10^{-16}\); the maximum synthesized-value difference is
+\(8.88\times10^{-16}\). Cardinal error is zero, current-mass residual is at
+most \(1.78\times10^{-15}\), and no sign-variation surplus is observed.
+
+A second audit in Section~XI compares the local action compilation with the
+formal all-source Eikonal operator. It reports the defect in
+\eqref{eq:stardefect}, rather than conflating that approximation with the
+binary64-equivalent FIR factor compilation.
+
+\subsection{FIR refinement}
+
+Collecting the preceding reductions, CONV$^{*}$ comprises compact FIR
+analysis, exact segmented lineage, vectorized scalar-threshold admission,
+polyphase synthesis, and the cardinal \(Q_1\) action coordinate
+\eqref{eq:starcardinalcompilation}. Its one-dimensional factor is
+algebraically identical to CONV; in two dimensions, the only departure is the
+explicitly bounded defect \eqref{eq:stardefect}.
+
+\subsection{Can CONV\texorpdfstring{$^{*}$}{*} Compete with EASU?}
+
+EASU produces each target pixel in a single two-dimensional pass over a fixed
+neighborhood \cite{lottes2021}. CONV$^{*}$, however, retains a barrier between
+its Cartesian factors, since the second factor analyzes the nonlinear output
+of the first. No throughput ordering follows from the formulas alone;
+nevertheless, every nonlinear cell operation has now been reduced to the
+fixed scalar-threshold and scan primitives specified above.
+
+\subsubsection{Parallel lineage}
+
+Sign inheritance is obtained by seeded prefix propagation, and the boundary
+objective likewise has a scan form. For one transition window
+\([p,q]\), let \(s^-\) and \(s^+\) be its left and right coarse signs and
+define
+\begin{align}
+ P^-(b)&=\sum_{k=p}^{b-1}[\min(0,s^-a_k)]^2,\nonumber\\
+ S^+(b)&=\sum_{k=b}^{q}[\min(0,s^+a_k)]^2.
+ \label{eq:starconflictscan}
+\end{align}
+Using these partial sums, every candidate cost in \eqref{eq:boundary} becomes
+\begin{equation}
+ C(b)=P^-(b)+S^+(b),
+ \label{eq:starboundarycost}
+\end{equation}
+so that one prefix sum and one suffix sum replace repeated evaluation of the
+overlapping windows.
+
+The dependence between successive transition boundaries is finite as well.
+Indeed, if \(\kappa_\ell-\kappa_{\ell-1}\geq2\), then
+\begin{equation}
+ b_{\ell-1}+1\leq5\kappa_\ell-5<5\kappa_\ell-4,
+ \label{eq:starwindowseparation}
+\end{equation}
+and the preceding boundary cannot restrict the candidate set
+\eqref{eq:candidates}; dependence remains only inside a run of adjacent
+coarse transitions. Writing
+\(r_\ell=b_\ell-5\kappa_\ell\in\{-4,\ldots,4\}\), each transition in such a
+run defines a deterministic map \(G_\ell\) from the preceding offset to the
+next, including the stated first-minimum tie rule. Since function composition
+is associative, a parallel prefix composition of these nine-state maps yields
+the exact greedy result.
+
+\subsubsection{Factor schedule}
+
+The remaining work of one factor is fixed local analysis, the lineage scans,
+the scalar solve \eqref{eq:thresholdmass}, and the polyphase dot product
+\eqref{eq:starpolyphase}. Node jets may be formed once and shared by their two
+incident cells. Fixed-scale phases are constants, and components in the
+declared channel basis may be evaluated together. A tiled implementation may
+write the synthesized factor through an on-chip transpose so that the next
+factor again reads contiguous lines; it may not remove the intervening factor
+barrier without changing the operator.
+
+These reductions preserve the boundary closures, ordered tie rules, channel
+basis, and Cartesian factor order of CONV. They reduce the remaining
+nonlinear state to scans and a five-value piecewise-affine root. Whether that
+arithmetic advantage offsets the intermediate factor traffic is a property
+of a concrete implementation and target architecture. No performance claim
+is made here; equations \eqref{eq:thresholdcurrent}--\eqref{eq:starwindowseparation}
+specify the exact reduced form for such an implementation.
+
+\end{multicols}
+\twocolumn

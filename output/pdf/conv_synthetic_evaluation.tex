@@ -1,0 +1,435 @@
+\clearpage
+\raggedbottom
+\section{Synthetic Evaluation}
+
+\subsection{Declared analytic design}
+
+The evaluation uses a deterministic census of closed-form fields, without a
+natural image, interpolated surrogate, trained parameter, or selected
+favorable case. For a target field $f$, the source nodes form the exact
+even--even sublattice, and error is evaluated on the remaining target nodes
+after a four-target-node boundary crop:
+\begin{equation}
+ \operatorname{MSE}_{H}(\widehat f,f)
+ =\frac{1}{|H|}\sum_{x\in H}|\widehat f(x)-f(x)|^2.
+ \label{eq:empiricalmse}
+\end{equation}
+Thus the reference in \eqref{eq:empiricalmse} is the analytic field itself
+rather than another reconstruction method.
+
+The one-dimensional census contains 56 profiles at source lengths
+$9,17,33,65,129$: 32 sinusoidal carriers from four frequencies and eight
+phases, eight translated smooth transitions, eight Gaussian bumps, and eight
+quadratic chirps. The two-dimensional census contains 28 fields at source
+sides $9,17,33$: smooth transitions and windowed carriers at six off-axis
+orientations and two subpixel phases, followed by two radial transitions and
+two crossing-wave phases. The discontinuity census contains a step and a box
+at 16 phases for each of five source lengths, giving 160 topology cases.
+
+The one-dimensional census evaluates formal CONV and its raw two-jet
+quintic before \(\Pi_{\mathcal C}\). The two-dimensional census evaluates
+the bounded-work CONV$^{*}$ realization of Section~XII and audits it against
+formal Eikonal CONV separately. Comparators are normalized endpoint-aligned
+Lanczos-3, endpoint-aligned bilinear interpolation, and the EASU construction
+specified below \cite{lanczos1956,lottes2021}. Every method uses its stated
+fixed rule. Since the declared cases span many orders of magnitude, MSE is
+aggregated by geometric mean, while paired win--loss counts retain the
+individual case outcomes.
+
+\subsection{Generator specification}
+
+All analytic coordinates lie in \([0,1]\). For \(k=0,\ldots,7\), let
+\(\phi_k=k\pi/4\). The one-dimensional families are
+\begin{align}
+ f_{\rm car}(x)&=0.5+0.38\sin(2\pi\nu x+\phi_k),\nonumber\\
+ f_{\rm edge}(x)&=0.5+0.45\tanh((x-c)/w),\nonumber\\
+ f_{\rm bump}(x)&=0.08+0.84\exp(-((x-c)/\sigma)^2),\nonumber\\
+ f_{\rm chirp}(x)&=0.5+0.34\sin(2\pi(0.5x+2.5x^2)+\phi_k).
+ \label{eq:onedgenerators}
+\end{align}
+Here \(\nu\in\{0.75,1.5,2.25,3\}\),
+\(c\in\{0.44,0.48,0.52,0.56\}\),
+\(w\in\{0.025,0.05\}\), and
+\(\sigma\in\{0.045,0.09\}\). The carrier uses all \((\nu,\phi_k)\)
+pairs; edge and bump use all stated \((c,w)\) and \((c,\sigma)\) pairs;
+the chirp uses all \(\phi_k\).
+
+For the two-dimensional fields, put
+\begin{align}
+ p_\theta&=x\cos\theta+y\sin\theta,\nonumber\\
+ n_\theta&=(x-\tfrac12)\cos\theta+(y-\tfrac12)\sin\theta,\nonumber\\
+ e(x,y)&=\sin^2(\pi x)\sin^2(\pi y),\nonumber\\
+ r&=\sqrt{(x-0.47)^2+(y-0.53)^2}.
+\end{align}
+With \(h=(N-1)^{-1}\), the four families are
+\begin{align}
+ F_{\rm edge}&=0.5+0.43\tanh((n_\theta-\delta)/0.035),\nonumber\\
+ F_{\rm car}&=0.5+0.34e\sin(2\pi(3.25)p_\theta+\phi),\nonumber\\
+ F_{\rm curved}&=0.5+0.42\tanh((r-0.27-\delta)/0.032),\nonumber\\
+ F_{\rm cross}&=0.5+0.19\{g_1+g_2\},\nonumber\\
+ g_1&=\sin(2\pi(2.75x+0.9y)+\phi),\nonumber\\
+ g_2&=\sin(2\pi(-0.9x+2.75y)-\phi).
+ \label{eq:twodgenerators}
+\end{align}
+Here
+\(\theta\in\{7.5,22.5,37.5,52.5,67.5,82.5\}^{\circ}\). Edge fields
+use \(\delta=\pm h/4\), carriers use \(\phi\in\{0,\pi/2\}\), curved
+fields use \(\delta=\pm h/4\), and crossing fields use
+\(\phi\in\{0,\pi/2\}\).
+
+For a source line of length \(N\), topology phase
+\(s_k=(k+1/2)/16\) gives
+\begin{align}
+ y_j^{\rm step}&=\mathbf 1\{j\geq N/2-1/2+s_k\},\nonumber\\
+ y_j^{\rm box}&=\mathbf 1\{|j-(N/2-1/2+s_k)|\leq N/6\}.
+ \label{eq:topologygenerators}
+\end{align}
+Here \(k=0,\ldots,15\).
+Equations \eqref{eq:onedgenerators}--\eqref{eq:topologygenerators}, the
+listed grids, and the held-out rule in \eqref{eq:empiricalmse} determine the
+entire population without an external corpus.
+
+\subsection{Comparator definitions}
+
+Let \(\operatorname{sinc}(t)=\sin(\pi t)/(\pi t)\) and
+\(L_3(t)=\operatorname{sinc}(t)\operatorname{sinc}(t/3)\) for
+\(|t|<3\), zero otherwise. Resampling \(n\) nodes to \(m\) nodes uses
+\begin{align}
+ x_r&=\frac{r(n-1)}{m-1},\nonumber\\
+ \rho&=\min\!\left\{1,\frac{m-1}{n-1}\right\},\nonumber\\
+ w_{rj}&=\frac{L_3(\rho(x_r-j))}{\sum_q L_3(\rho(x_r-q))}.
+ \label{eq:lanczosanalysis}
+\end{align}
+Only in-domain \(j\) are summed; hence the boundary rule is support
+truncation followed by renormalization. This gives the endpoint-aligned
+Lanczos arm for the point-sample interpolation census. Bilinear uses the same
+endpoint coordinates with support restricted to the two neighboring nodes,
+whereas the cell-centered conservative transform ablation is stated
+separately in
+\eqref{eq:celllanczoscoordinate}--\eqref{eq:celllanczosweight}.
+
+The EASU arm is a binary64 CPU transcription of the FSR 1.0 EASU
+construction. Scalar fields are replicated to RGB. It uses the twelve EASU
+fetch locations, exact binary64 reciprocal and square root rather than the
+shader approximations, and no RCAS pass. Target \((r,s)\) is evaluated at
+source coordinate \((r/2,s/2)\); this is the complete coordinate-constant
+specialization for the nested endpoint-aligned grid. Out-of-domain fetches
+are clamped to the nearest source pixel. The raw two-jet arm uses the same
+stencils, quintic controls, Cartesian order, and evaluation rule as CONV but
+sets \(c_i=a_i\), omitting the ledger and \(\Pi_{\mathcal C}\).
+PCHIP appears only in the timing audit; SciPy's \texttt{PchipInterpolator}
+is applied horizontally and then vertically on the same endpoint-aligned
+nested coordinates, without padding.
+
+\begin{figure*}[t]
+ \centering
+ \includegraphics[width=\textwidth]{conv_evidence_v2/convergence.pdf}
+ \caption{Resolution census against direct analytic target values. Each point
+ is the geometric mean over the complete declared population at that source
+ size. The coarse regime exposes underresolution; the resolved regime exposes
+ the approximation order of each fixed operator.}
+ \label{fig:convconvergence}
+\end{figure*}
+
+\subsection{Resolution and paired fidelity}
+
+Table~\ref{tab:pairedfidelity} compares formal one-dimensional CONV and
+two-dimensional CONV$^{*}$ with Lanczos-3, such that a ratio below one favors
+the corresponding CONV form. At nine nodes neither population is resolved,
+and Lanczos-3 has the lower aggregate error. From 17 nodes onward, however,
+CONV wins the majority of one-dimensional cases; at 129 nodes, it wins all
+56. In two dimensions, CONV$^{*}$ has the lower geometric-mean error at 17
+and 33 nodes. The paired count at 33 nodes is even because Lanczos retains a
+small advantage on steep transition fields, whereas CONV$^{*}$ has larger
+advantages on the resolved carrier and crossing fields. The aggregate ratio
+therefore records the magnitude of this distinction without discarding its
+paired count.
+
+\begin{table}[H]
+\caption{Paired point-fidelity results versus Lanczos-3}
+\label{tab:pairedfidelity}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3.0pt}
+\begin{tabular}{c|cc|cc}
+\hline
+Source & \multicolumn{2}{c|}{1-D point} &
+\multicolumn{2}{c}{2-D point} \\
+nodes & W--L & MSE ratio & W--L & MSE ratio \\
+\hline
+9   & 28--28 & 1.247 & 9--19  & 1.277 \\
+17  & 36--20 & 0.0929 & 19--9 & 0.800 \\
+33  & 44--12 & 0.00751 & 14--14 & 0.126 \\
+65  & 52--4  & 0.000481 & -- & -- \\
+129 & 56--0  & 0.0000275 & -- & -- \\
+\hline
+\end{tabular}
+\end{table}
+
+The EASU arm establishes a different engineering point. At the $9\times9$
+source size it has the lowest two-dimensional geometric-mean MSE,
+$2.38\times10^{-3}$. Its nested-source maximum error is $1.81\times10^{-1}$,
+whereas CONV$^{*}$, Lanczos-3, and bilinear are cardinal to their stated
+floating-point precision. At $33\times33$, CONV$^{*}$ gives
+$4.31\times10^{-8}$ geometric-mean MSE, compared
+with $3.42\times10^{-7}$ for Lanczos-3, $3.23\times10^{-5}$ for bilinear,
+and $4.67\times10^{-5}$ for EASU. These measurements separate interpolation
+fidelity from a reconstruction rule that is permitted to alter source nodes.
+
+\subsection{Ordered-current ablation}
+
+The raw two-jet arm isolates the admission map by retaining the compact
+quintic proposal and removing only \(\Pi_{\mathcal C}\). From
+Table~\ref{tab:projectionablation}, it can be seen that admission does not
+obtain its topology result by replacing the high-order proposal: aggregate
+MSE is slightly lower on every reported grid and becomes indistinguishable
+from the raw proposal in the resolved regime.
+
+\begin{table}[H]
+\caption{Raw two-jet versus admitted CONV geometric-mean MSE; the 2-D columns use CONV$^{*}$}
+\label{tab:projectionablation}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{4.0pt}
+\begin{tabular}{c|cc|cc}
+\hline
+Source & \multicolumn{2}{c|}{1-D} & \multicolumn{2}{c}{2-D} \\
+nodes & Raw & CONV & Raw & CONV \\
+\hline
+9  & $2.95\!\times\!10^{-4}$ & $2.50\!\times\!10^{-4}$ &
+     $4.02\!\times\!10^{-3}$ & $3.87\!\times\!10^{-3}$ \\
+17 & $7.02\!\times\!10^{-7}$ & $6.88\!\times\!10^{-7}$ &
+     $2.63\!\times\!10^{-5}$ & $2.48\!\times\!10^{-5}$ \\
+33 & $5.51\!\times\!10^{-10}$ & $5.49\!\times\!10^{-10}$ &
+     $4.31\!\times\!10^{-8}$ & $4.31\!\times\!10^{-8}$ \\
+\hline
+\end{tabular}
+\end{table}
+
+The distinction is decisive on the discontinuity census. The raw quintic
+has \(S>0\) in all 160 step/box cases and reaches a surplus of eight sign
+changes; CONV has \(S=0\) in all 160. Thus the compact jet supplies the
+resolved-field accuracy, while ordered-current admission removes the
+unwitnessed variation and, on this census, does not increase aggregate MSE.
+
+\subsection{Topology and excursion}
+
+For the discontinuity census, the measured topology quantity is
+\begin{equation}
+ S=\max\{0,\var(d_h\widehat f)-\var(d_cf)\}.
+ \label{eq:measuredsurplus}
+\end{equation}
+CONV has $S=0$ in all 160 cases, agreeing with
+\eqref{eq:vardim}; bilinear also has zero surplus. The raw quintic and
+Lanczos-3 each have $S>0$ in all 160 cases and reach eight additional sign
+changes. This isolates the effect of admission from that of the compact jet
+and distinguishes CONV from a sharp signed-lobe kernel.
+CONV's maximum amplitude excursion on these step and box cases is 0.1008,
+compared with 0.1194 for Lanczos-3 and zero for bilinear. The zero-surplus
+result therefore does not conceal the separately measured motion of an
+existing extremum.
+
+\begin{figure*}[t]
+ \centering
+ \includegraphics[width=0.58\textwidth]{conv_evidence_v2/topology.pdf}
+ \caption{One-dimensional discontinuity topology. The plot counts every
+ declared step or box phase that creates a derivative-sign pair absent from
+ the samples.}
+ \label{fig:convtopology}
+\end{figure*}
+
+\input{conv_conservative_evaluation.tex}
+
+\clearpage
+\subsection{Technical synthetic fields}
+
+Figure~\ref{fig:convtechnical} contains one declared case from each
+two-dimensional family at source side 17. The images use a dense
+$513\times513$ endpoint-aligned query lattice; its comparison grid retains
+the scored target side 33 and reports held-out MSE, maximum excursion, and
+nested-source error.
+Lanczos is slightly better on the selected edge and radial transition;
+CONV$^{*}$ is better on the carrier and crossing field and has the smaller maximum
+excursion while remaining cardinal. The tabulated raw row records the
+projection's local effect on the same fields.
+
+\begin{figure*}[t]
+ \centering
+ \includegraphics[width=0.90\textwidth]{conv_evidence_v2/technical_synthetics.pdf}
+ \vspace{1mm}
+
+ \scriptsize
+ \setlength{\tabcolsep}{4.0pt}
+ \begin{tabular}{l|cccc|cc}
+ \hline
+ Method & Edge MSE & Carrier MSE & Curved MSE & Crossing MSE &
+ Max. excursion & Source $L_\infty$ \\
+ \hline
+ CONV$^{*}$ & $1.09\!\times\!10^{-4}$ & $1.43\!\times\!10^{-6}$ & $7.93\!\times\!10^{-4}$ &
+ $9.98\!\times\!10^{-7}$ & $1.92\!\times\!10^{-2}$ & $2.98\!\times\!10^{-8}$ \\
+ Raw 2-jet & $1.22\!\times\!10^{-4}$ & $1.43\!\times\!10^{-6}$ & $8.68\!\times\!10^{-4}$ &
+ $9.98\!\times\!10^{-7}$ & $2.49\!\times\!10^{-2}$ & 0 \\
+ Lanczos-3 & $9.46\!\times\!10^{-5}$ & $4.56\!\times\!10^{-6}$ & $7.48\!\times\!10^{-4}$ &
+ $7.89\!\times\!10^{-6}$ & $3.31\!\times\!10^{-2}$ & $1.11\!\times\!10^{-16}$ \\
+ Bilinear & $5.96\!\times\!10^{-4}$ & $3.29\!\times\!10^{-4}$ & $1.97\!\times\!10^{-3}$ &
+ $5.34\!\times\!10^{-4}$ & 0 & 0 \\
+ EASU & $4.26\!\times\!10^{-4}$ & $1.38\!\times\!10^{-4}$ & $7.34\!\times\!10^{-4}$ &
+ $2.31\!\times\!10^{-4}$ & 0 & $9.05\!\times\!10^{-2}$ \\
+ \hline
+ \end{tabular}
+ \caption{Technical synthetic fields and their local comparison grid. Images
+ use a dense endpoint-aligned query lattice and one common $[0,1]$ display
+ scale; the table reports unquantized binary64 values at target side 33
+ against direct analytic evaluation.}
+ \label{fig:convtechnical}
+\end{figure*}
+
+\subsection{Eikonal compilation conformance}
+
+CONV$^{*}$ evaluates the two formal Cartesian factor orders and replaces the
+all-source Eikonal coefficient \(\beta\) by the bilinear extension
+\(\beta^*=I_h\beta\) of its cardinal nodal trace. Subtraction from the formal
+operator gives the exact relation
+\begin{equation}
+ \Tcal^*Y-\Tcal Y
+ = (\beta^*-\beta)(\Tcal_{yx}Y-\Tcal_{xy}Y).
+ \label{eq:evidenceimplementationdefect}
+\end{equation}
+Therefore the fast form is exact wherever the factor orders commute; away
+from that set, its complete discrepancy is precisely the product in
+\eqref{eq:evidenceimplementationdefect}.
+
+Table~\ref{tab:eikonalconformance} evaluates that discrepancy on 16 fixed
+edge, carrier, curved-interface, and crossing fields. Every row has the same
+$65\times65$ target lattice; only source density and scale change. RMS is
+formed over all target values and cases. The maximum column is a census
+maximum, not a confidence estimate. Across the three rows, replacing the
+formal action changes geometric-mean truth MSE by less than 0.01 percent.
+
+\begin{table}[H]
+\caption{CONV$^{*}$ conformance to formal Eikonal CONV at target side 65}
+\label{tab:eikonalconformance}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{c|c|ccc|cc}
+\hline
+Source & Scale & RMS & Median $L_\infty$ & Max. $L_\infty$ &
+ Formal ms & CONV$^{*}$ ms \\
+\hline
+9  & 8 & $1.75\!\times\!10^{-4}$ & $1.50\!\times\!10^{-3}$ &
+ $4.63\!\times\!10^{-3}$ & 11.0 & 0.402 \\
+17 & 4 & $5.67\!\times\!10^{-5}$ & $6.05\!\times\!10^{-4}$ &
+ $2.43\!\times\!10^{-3}$ & 43.6 & 0.460 \\
+33 & 2 & $5.95\!\times\!10^{-6}$ & $1.56\!\times\!10^{-5}$ &
+ $8.50\!\times\!10^{-4}$ & 236 & 0.659 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+\subsection{Aggregate Green admission audit}
+
+The optional Green coordinate \eqref{eq:greenadmission} was evaluated on the
+same 16 fixed fields using the source-derived determinant-one metric,
+\(\rho=1\), no-flux boundaries, a monotone anisotropic Selling stencil, and
+the cardinal weighted-harmonic form \eqref{eq:greenharmonic}
+\cite{mirebeau2014}. Table
+\ref{tab:greenadmission} compares the result with the local coordinate
+\(\beta^*=I_h\beta\). Although the coordinate changes materially, the exact
+commutator identity \eqref{eq:greenblenddefect} suppresses most of that
+difference in the reconstructed field.
+
+\begin{table}[H]
+\caption{Cardinal Green admission versus local \(Q_1\) compilation}
+\label{tab:greenadmission}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.2pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{c|ccc|cc}
+\hline
+Source & Local MSE & Green MSE & Ratio & \(\beta\) RMS & Output RMS \\
+\hline
+\(9^2\)  & \(2.3888571\!\times\!10^{-3}\) &
+ \(2.3890219\!\times\!10^{-3}\) & 1.000069 &
+ \(4.76\!\times\!10^{-2}\) & \(7.78\!\times\!10^{-5}\) \\
+\(17^2\) & \(1.8625653\!\times\!10^{-4}\) &
+ \(1.8626100\!\times\!10^{-4}\) & 1.000024 &
+ \(3.89\!\times\!10^{-2}\) & \(8.50\!\times\!10^{-6}\) \\
+\hline
+\end{tabular}%
+}
+\end{table}
+
+Because its discrete diagonal is finite, the raw finite-grid ratio \(V/U\)
+has maximum source error 0.542 and 0.628 on the two lattices. Imposing the
+nodal traces makes that error exactly zero. Consequently, the global
+coordinate supplies a closed metric-harmonic option and a formal comparator;
+however, this census yields no fidelity reason to displace the local \(Q_1\)
+compilation.
+
+\subsection{Native CPU cost}
+
+Table~\ref{tab:nativecpu} reports three-channel float32 wall time on an M4
+Mac mini. Native CONV$^{*}$, Lanczos-3, bilinear, and EASU use ARM
+NEON and the same ten-worker pool; PCHIP is SciPy's compiled implementation.
+Each entry is the median of 21 calls after three warmups, without affinity.
+The largest median absolute deviation in the table is 0.065 ms. Fidelity and
+timing use the same formulas, but the EASU timing arm uses the native shader
+translation rather than the binary64 audit port.
+
+\begin{table}[H]
+\caption{Native RGB point-synthesis time to $512^2$ (ms)}
+\label{tab:nativecpu}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.7pt}
+\begin{tabular}{l|rr}
+\hline
+Method & from $64^2$ & from $256^2$ \\
+\hline
+CONV$^{*}$ & 2.985 & 9.725 \\
+Lanczos-3  & 2.045 & 3.147 \\
+Bilinear   & 0.282 & 0.834 \\
+EASU       & 1.715 & 1.704 \\
+PCHIP      & 3.750 & 15.131 \\
+\hline
+\end{tabular}
+\end{table}
+
+The native result places the cost rather than hiding it: at twofold synthesis
+CONV$^{*}$ is 3.09 times the Lanczos-3 time and 5.71 times the EASU time. At
+eightfold synthesis it is 1.46 times the Lanczos-3 time and 1.74 times the
+EASU time. These measurements
+characterize the present CPU realization;
+they are not used in any analytical claim.
+
+Table~\ref{tab:binary64audit} is an implementation audit, not a substitute for
+the preceding exact-arithmetic proofs. It uses 80 deterministic Gaussian
+three-channel lines over five lengths. The current-mass, cardinal, and lifting
+residuals remain at binary64 rounding scale, and no admitted current has sign
+variation exceeding its observed secant sequence.
+
+\begin{table}[H]
+\caption{Binary64 conformance audit over 80 deterministic trials}
+\label{tab:binary64audit}
+\centering
+\scriptsize
+\begin{tabular}{l|c}
+\hline
+Quantity & Maximum observed value \\
+\hline
+Cell-current mass residual & $8.88\times10^{-16}$ \\
+Nested cardinal error & $1.33\times10^{-15}$ \\
+Retained-detail lifting error & $4.44\times10^{-16}$ \\
+Sign-variation surplus & 0 \\
+\hline
+\end{tabular}
+\end{table}
+
+The executable generator, complete per-case records, and figure construction
+form the supplementary material accompanying the paper. Aggregate curves and
+tables are generated from those records without case removal or post hoc
+weighting; the analytic population itself is fully specified above.

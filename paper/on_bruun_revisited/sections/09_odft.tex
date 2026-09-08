@@ -1,0 +1,73 @@
+\section{An Odd-Frequency Transform in Real Two-Plane Arithmetic}
+\label{sec:odft}
+
+Replacing the root polynomial $z^N-1$ by $z^N+1$ moves evaluation from integer
+frequencies to half bins.  This removes the two scalar endpoints and leaves only
+conjugate quadratic factors.
+
+The exact half-bin coefficients lie in $\K_{2N}$; all maps below are stated
+over $\R$.
+
+\begin{definition}[Odd-frequency DFT]
+For real $x\in\R^N$, define
+\begin{equation}
+ H_k=\sum_{n=0}^{N-1}x_n
+ e^{-2\pi i(k+1/2)n/N},\qquad 0\le k<N.
+ \label{eq:odft-definition}
+\end{equation}
+Since $H_{N-1-k}=\overline{H_k}$, define the real packing
+\begin{equation}
+ \ODFT_Nx=\sqrt2(\Re H_0,-\Im H_0,\ldots,
+ \Re H_{N/2-1},-\Im H_{N/2-1})^{\trans}.
+ \label{eq:odft-packing}
+\end{equation}
+\end{definition}
+
+The terminal factors of $z^N+1$ are
+\begin{equation}
+ z^2-2\cos\!\left({2\pi(k+1/2)\over N}\right)z+1,
+ \qquad 0\le k<N/2.
+ \label{eq:odft-factors}
+\end{equation}
+Each therefore possesses the same normalized generator as
+\eqref{eq:normalized-generator}.
+
+\begin{theorem}[Exact ODFT]
+Repeated real two-plane reduction through the factors of $z^N+1$, followed by
+normalized leaf evaluation, equals \eqref{eq:odft-packing}.  Moreover,
+\begin{equation}
+ \ODFT_N^{\trans}\ODFT_N=NI,
+ \qquad
+ \ODFT_N^{-1}={1\over N}\ODFT_N^{\trans}.
+ \label{eq:odft-orthogonality}
+\end{equation}
+\end{theorem}
+\begin{proof}
+The evaluation proof is identical to that of
+\eqref{eq:exact-fourier-identity}, using the roots of $z^N+1$.  Parseval for the
+full shifted DFT gives $\sum_k|H_k|^2=N\|x\|^2$.  Conjugacy and the $\sqrt2$
+packing give \eqref{eq:odft-orthogonality}.
+\end{proof}
+
+The recursion closes without complex scalar arithmetic.  For even $N=2M$,
+split $x$ into its even and odd subsequences.  With the child index reduced
+modulo $M$, one has
+\begin{equation}
+ H_k^{(N)}=H_{k\bmod M}^{(M,e)}+
+ R_{2\pi(k+1/2)/N}H_{k\bmod M}^{(M,o)},
+ \label{eq:odft-recursion}
+\end{equation}
+where every quantity on the right is unfolded to the oriented real pair
+$(\Re,-\Im)$, and $R_\theta$ is the real matrix in
+\eqref{eq:plane-rotation}.  For $k\ge M$, child conjugacy selects the paired
+index before the merge.  Radix-four grouping uses the three shared
+rotations $R_\theta,R_{2\theta},R_{3\theta}$ and the real quarter-turn
+$J=\left[\begin{smallmatrix}0&-1\\1&0\end{smallmatrix}\right]$.
+
+\begin{example}[$N=4$]
+The positive half-bin angles are $\pi/4$ and $3\pi/4$.  The only constants are
+$\cos(\pi/4)=\sin(\pi/4)=1/\sqrt2$ and their signs.  Real rotations, additions,
+and the quarter-turn produce the four real packed coordinates exactly.  The
+codomain remains canonically identified with two complex spectral values, but
+the interior arithmetic is entirely over $\R^2$.
+\end{example}

@@ -1,0 +1,61 @@
+\section{The Decimation-in-Time Dual}
+\label{sec:dit}
+
+The Bruun remainder cascade descends from a time polynomial to spectral
+residues and is naturally a decimation-in-frequency (DIF) walk.  An explicit
+decimation-in-time (DIT) dual reverses the dependency order: bit-reversed time
+atoms are merged into successively longer local spectra until the ordinary DFT
+appears in natural order.
+
+Let $\operatorname{rev}_L$ reverse $L$ binary digits and initialize
+\begin{equation}
+ Y_0[j]=x_{\operatorname{rev}_L(j)},\qquad0\le j<N.
+ \label{eq:dit-seed}
+\end{equation}
+At rank $s$, put $e=2^s$.  For every block origin
+$b\equiv0\pmod{2e}$ and $0\le j<e$, define
+\begin{align}
+ U&=Y_s[b+j],\qquad V=Y_s[b+j+e],\\
+ W&=e^{-2\pi i j/(2e)}V,\nonumber\\
+ Y_{s+1}[b+j]&=U+W,\\
+ Y_{s+1}[b+j+e]&=U-W.
+ \label{eq:dit-rank}
+\end{align}
+
+\begin{theorem}[Constructive DIT identity]
+After rank $s$, each consecutive block of $2^{s+1}$ entries contains the
+natural-order DFT of the corresponding bit-reversed time comb.  In particular,
+\begin{equation}
+ Y_L[k]=\sum_{n=0}^{N-1}x_ne^{-2\pi ikn/N}=X_k.
+ \label{eq:dit-terminal}
+\end{equation}
+\end{theorem}
+\begin{proof}
+For $s=0$, \eqref{eq:dit-rank} forms the length-two DFTs of adjacent seeds.
+Assume the claim for length $e$.  The even and odd local spectra of a length
+$2e$ comb are the two child spectra $U$ and $V$; the shift between their time
+supports contributes $e^{-2\pi ij/(2e)}$.  Equation \eqref{eq:dit-rank} is
+therefore the exact length-$2e$ Fourier merge.  Induction reaches the complete
+time set, and the initial bit reversal places its bits in the required merge
+order.
+\end{proof}
+
+For real input, each local spectrum has conjugate symmetry.  Store a conjugate
+pair as $(a,b)=(\Re X,-\Im X)$.  Multiplication by the unit phase in
+\eqref{eq:dit-rank} becomes the real rotation $R_\theta$, and the two outputs
+become the normalized cell \eqref{eq:normalized-cell}; DC and local Nyquist
+coordinates use $H_2$.  The real folded DIT is consequently a schedule of the
+same exact pair merges used by the normalized Bruun map.
+
+\begin{corollary}[DIT inverse and metric]
+Reversing the ranks, applying $T_\theta^{\trans}/2$ and $H_2^{\trans}/2$ to
+their local coordinates, and undoing \eqref{eq:dit-seed} gives the two-sided
+inverse.  After the terminal $\sqrt2$ pair packing, the real DIT boundary map is
+$\DFT_N^{\R}$ and has Gram matrix $NI$.
+\end{corollary}
+
+More generally, if intermediate layouts are $J_s$, the conjugated ranks
+$\widetilde S_s=J_{s+1}S_sJ_s^{-1}$ telescope to
+$J_L(S_{L-1}\cdots S_0)J_0^{-1}$.  This identity explains why an internal sort
+changes only the declared boundary layouts; equations
+\eqref{eq:dit-seed}--\eqref{eq:dit-rank} supply the specific DIT construction.

@@ -1,0 +1,1 @@
+These before/after field dumps document a rejected intermediate candidate-filter change before finite source-window clipping was repaired. They are diagnostic history, not final benchmark evidence. The accepted engine receipts are in the parent directory.

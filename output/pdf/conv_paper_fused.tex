@@ -1,0 +1,3351 @@
+\documentclass[journal]{IEEEtran}
+\usepackage{fontspec}
+\newfontfamily\hebrewfont[Path=/System/Library/Fonts/]{SFHebrew.ttf}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{bm}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{multicol}
+\usepackage[hidelinks]{hyperref}
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\floatsep}{7pt plus 2pt minus 2pt}
+\setlength{\intextsep}{7pt plus 2pt minus 2pt}
+
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Tcal}{\mathcal{T}}
+\newcommand{\Acal}{\mathcal{A}}
+\newcommand{\Ccal}{\mathcal{C}}
+\newcommand{\Pcal}{\mathcal{P}}
+\newcommand{\var}{\operatorname{var}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+
+\title{Compact Ordered Nodal Variation\texorpdfstring{$^{*}$}{*}}
+\author{Anonymous}
+\date{}
+
+\begin{document}
+\maketitle
+\begingroup
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\footnotetext[1]{The abbreviation CONV invites an implicit implementation
+question: can the formal operator be compiled into a convolutional
+realization? Section~XII answers that question.}
+\endgroup
+
+\begin{abstract}
+Glory first be to The Holy One, Blessed be He, from whom all good things
+come. We introduce Compact Ordered Nodal Variation (CONV), a
+deterministic method for interpolation and matched
+multiresolution analysis/synthesis on Cartesian grids. CONV combines
+high-order local reconstruction, an exact factorwise variation bound, and
+matched conservative multiresolution transfer. The interpolant accepts
+arbitrary endpoint-aligned target lattices; dyadic analysis and integer-scale
+polyphase evaluation are specializations of that continuous operator.
+Within each Cartesian factor, ringing is suppressed by projecting the
+high-order proposal onto a signed current fibre whose derivative-sign
+variation cannot exceed that of the sampled differences.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Interpolation, resampling, variation diminishing, Bernstein polynomial,
+Eikonal coordinates, structure tensor, lifting scheme, reversible transform,
+ringing.
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+Regular-grid interpolation is commonly posed as reconstruction by a fixed
+kernel. Nearest-neighbor and multilinear rules preserve range, but attenuate
+high spatial frequencies; cubic convolution and windowed-sinc kernels recover
+more of the passband by using signed lobes, thereby admitting new extrema near
+strong transitions \cite{keys1981,lanczos1956}. Edge-directed methods instead
+adapt the reconstruction to local image structure \cite{li2001,lottes2021}.
+Although their direction estimates improve selected geometries, neither a
+law for transported variation nor an inverse representation follows from the
+direction estimate alone.
+
+Compact Ordered Nodal Variation (CONV) is obtained by treating the observed
+forward differences as signed currents on a regular Cartesian grid. Here
+``ordered'' refers to their admitted sign lineage. A fourth-order interior
+two-jet yields a quintic proposal, which is projected in Euclidean current
+coordinates onto the observed order of variation and then integrated in the
+Bernstein basis. Interpolation consequently involves three distinct objects:
+the endpoint difference, its sign lineage, and the within-cell distribution
+of current. Keeping these objects separate is what allows fidelity to be
+improved without surrendering the variation law.
+
+Indeed, total positivity shows that an admitted one-dimensional factor cannot
+synthesize a derivative sign pair absent from the sampled ledger, while
+cardinality preserves both the observed point values and the total current of
+each cell. The same predictor is embedded in a dyadic transform using positive
+block averages, such that cell mass is preserved and the Nyquist component is
+annihilated. When the residual centered moments are retained, the resulting
+analysis and synthesis maps are exact inverses. Fixed-order Cartesian
+composition then carries the same construction to channel arrays.
+
+In two dimensions, the two Cartesian factor orders are coupled by a
+source-conditioned Riemannian action. The nodal action identity reduces every
+source-site moment to a Kronecker value; therefore, the apparent frame bank
+and nested chart family collapse exactly to the reverse factor order.
+Structure-tensor anisotropy supplies the remaining scalar admission in
+\([0,1]\), and the final operator is obtained as a convex blend of the two
+orders without source ownership or a source-specific raster. When a global
+continuation is required, the same nodal coordinate also yields the
+weighted-harmonic construction of Section~XII.
+
+Since CONV defines a continuous source-cell profile before selecting a target
+grid, arbitrary \(N\to M\) synthesis merely evaluates that profile at the
+endpoint-aligned target coordinates. Dyadic cell-average analysis and
+integer-phase compilation are consequently specializations of one
+interpolant: the former supplies a matched reversible state, whereas the
+latter supplies a repeated phase bank for efficient evaluation.
+
+\section{Relation to Existing Reconstruction}
+
+\subsection{Sampling and raster reconstruction}
+
+Classical sampling theory obtains exact bandlimited reconstruction from the
+sinc kernel \cite{shannon1949}. In practice, finite implementations replace
+sinc by a windowed kernel, of which Lanczos reconstruction is a widely used
+instance \cite{lanczos1956}; cubic convolution instead trades spectral reach
+for shorter support and polynomial accuracy \cite{keys1981}. Linearity and
+translation invariance make the frequency response of these methods
+transparent. However, a nontrivial finite low-pass approximation generally
+involves signed coefficients, and its oscillatory response is consequently
+unconstrained by the sign topology of the sampled differences.
+
+Raster reconstruction developed along a complementary engineering line in
+which local covariance is used to orient an edge-directed interpolant
+\cite{li2001}. EASU, for example, evaluates a single-pass radial Lanczos
+approximation adapted in direction and anisotropy; since the resulting signed
+lobes can ring, the reference construction limits the output by the nearest
+four-sample range \cite{lottes2021}. These methods make two-dimensional
+structure and independent target-pixel evaluation primary design concerns.
+CONV addresses the same transfer problem at an earlier representational
+stage: differential current is admitted before polynomial synthesis, rather
+than correcting a value after it has been synthesized.
+
+\subsection{Shape-preserving spline interpolation}
+
+Shape-preserving interpolation has a substantial independent history.
+Monotone cubic Hermite methods constrain nodal derivatives using neighboring
+secants \cite{fritsch1980,hyman1983}. Costantini constructed local
+co-monotone splines of arbitrary degree from Bernstein polynomials
+\cite{costantini1987}. Dougherty, Edelman, and Hyman derived derivative
+constraints and modification algorithms for shape-preserving cubic and
+quintic Hermite interpolation \cite{dougherty1989}. Ulrich and Watson later
+gave sharp necessary-and-sufficient positivity conditions for the quartic
+derivative of a monotone quintic Hermite segment \cite{ulrich1994}. MQSI uses
+those conditions with local first- and second-derivative estimates and a
+B-spline realization to construct a \(C^2\) monotone quintic in linear time
+\cite{lux2023}.
+
+Thus monotone quintic interpolation and its bound on derivative sign changes
+are established results. In a co-monotone construction, each knot interval
+receives the sign of its own secant. CONV instead retains the order of the
+observed secant transitions while allowing a witnessed transition to occupy
+the nearby current slots selected by \eqref{eq:boundary}; consequently, the
+transition is not pinned to the sampling knot. The signed Bernstein fibre
+\eqref{eq:fibre} is therefore a convex sufficient region, rather than the full
+quintic monotonicity region characterized in \cite{ulrich1994}, and its
+particular geometry yields Euclidean admission, endpoint-current
+conservation, and the variation-diminishing proof within one finite operator.
+
+Linear complexity alone does not make the execution structures identical.
+MQSI involves derivative refinement followed by construction of a B-spline
+representation \cite{lux2023}. At a fixed scale, Section~XII instead reduces
+CONV to FIR proposal channels, one scalar-threshold admission, and a
+polyphase synthesis matrix. The resulting bounded local primitive is the
+point at which the shape-preserving lineage meets raster reconstruction.
+
+Shape preservation on rectangular grids also predates this work. Carlson and
+Fritsch gave derivative constraints and an algorithm for monotone piecewise
+bicubic interpolation \cite{carlsonfritsch1989}; Costantini and Manni built
+local differentiable co-monotone surfaces from variable-degree Bezier
+operators \cite{costantinimanni1991}. CONV's Cartesian construction is instead
+an ordered composition of the same one-dimensional current operator. The
+factorwise theorem proved below is the property of that composition; it is not
+a claim of first bivariate shape preservation.
+
+\subsection{Total positivity and product representations}
+
+Bernstein bases are nonnegative, form a partition of unity, and are totally
+positive. Consequently, a Bernstein polynomial has no more sign changes than
+its ordered coefficient sequence \cite{karlin1968,pinkus2010}. Variation
+diminishing results also exist for tensor-product Bernstein operators and
+special multivariate domains \cite{cavaretta1987,goodman1987}. These results
+do not supply a general arbitrary-path variation theorem for a tensor-product
+surface. We therefore state and prove the property used by grid transfer:
+variation cannot be created within any admitted factor. Transverse features
+formed by composition are products of recorded factor currents, not
+unrecorded factor oscillations.
+
+\subsection{Adaptive and invertible transfer}
+
+Edge-directed interpolation estimates orientations from the values being
+resampled \cite{li2001,lottes2021}. CONV instead derives its admissible
+current order from the full signed differential lineage of the sampled
+field. Its multidimensional Eikonal geometry likewise derives its Riemannian
+action supports and directional admissions from the source current; it
+accepts no external orientation as an additional input.
+
+Harten's multiresolution algorithms already represent a hierarchy of nested
+cell averages by the coarsest averages and the errors made when predicting
+finer-grid averages from the next coarser level \cite{harten1995}. Cell
+averages plus prediction residuals are therefore established multiresolution
+coordinates. CONV uses that architecture with a different predictor: the
+fine centered moment is predicted by the same admitted ordered-current
+reconstruction used for interpolation, and its zero-detail synthesis obeys
+the variation law proved in Section~IX.
+
+Lifting schemes convert a prediction rule into an invertible transform by
+storing its residual \cite{sweldens1998}. Direction-adaptive lifting has also
+combined content-oriented image prediction with perfect reconstruction
+\cite{ding2007}. CONV applies the lifting principle directly to transported
+variation. Point interpolation uses the admitted Bernstein current.
+Multiresolution analysis uses the cell average as its invariant state and
+predicts the complementary centered moment from the same admitted profile.
+The residual moment is the fine state not represented by zero-detail
+synthesis.
+
+\section{Interpolation Requirements}
+
+The CONV construction follows from six operator requirements, which together
+determine the polynomial degree, the admission rule, and the inverse
+representation used below.
+
+\subsection{Observation consistency}
+
+For an integer refinement \(s\), the refined line has
+\((N-1)s+1\) sites. Let \(D_s\) select indices \(0,s,2s,\ldots\).
+Observation consistency requires
+\begin{equation}
+ D_s\Tcal_s=I.
+ \label{eq:reqcardinal}
+\end{equation}
+Constants and affine coordinate fields must also be reproduced:
+\begin{equation}
+ \Tcal_s(\alpha i+\gamma)(r/s)=\alpha r/s+\gamma.
+ \label{eq:reqaffine}
+\end{equation}
+Consequently, neither post-synthesis sharpening nor range correction may move
+an observed sample.
+
+\subsection{Endpoint-compatible current coordinates}
+
+The current coordinates are chosen such that their cell mass equals the
+observed endpoint difference. Thus, if \(d_h\) is the fine forward difference
+and \(B_s\) sums a block of \(s\) consecutive fine differences, one obtains
+\begin{equation}
+ B_s d_h\Tcal_s=d_c,
+ \label{eq:reqcurrent}
+\end{equation}
+where \(d_c y=(\delta_0,\ldots,\delta_{N-2})\). Since the endpoints are
+cardinal, \eqref{eq:reqcurrent} follows by telescoping. It also gives the
+representational identification used throughout the paper: internal current
+mass and restricted output difference are the same observed quantity.
+
+\subsection{Variation order}
+
+Range preservation and absence of ringing are not identical: a function may
+remain inside the global sample range while creating an alternating
+derivative pair, whereas an existing extremum may move between samples
+without creating such a pair. CONV therefore controls the variation topology
+through the requirement
+\begin{equation}
+ V((\Tcal y)')\leq
+ \var(\delta_0,\ldots,\delta_{N-2}).
+ \label{eq:reqvariation}
+\end{equation}
+from which it can be seen that no new alternating rise--fall or fall--rise
+pair is admitted, although an observed turning point need not remain pinned
+to a grid node.
+
+\subsection{Directness and reversibility}
+
+Direct synthesis involves a finite local polynomial evaluation and a
+deterministic finite admission step; no iterative fit or selected stopping
+condition is present. Embedding the same predictor in the standard
+analysis--prediction--residual lifting construction yields an analysis map
+\(\mathcal L\) whose retained detail obeys
+\begin{equation}
+ \mathcal L^{-1}\mathcal L=I.
+ \label{eq:reqinverse}
+\end{equation}
+
+\subsection{Canonical degree}
+
+An endpoint two-jet contains the value, first derivative, and second
+derivative at both ends of an interval, hence six scalar constraints. The
+least polynomial degree carrying all six without an additional choice is
+five; differentiation then yields five Bernstein coefficients, which form
+the finite current state. The quintic degree is consequently fixed by the
+compact two-jet rather than selected as a smoothness parameter.
+
+\section{Problem and Notation}
+
+Let \(y=(y_0,\ldots,y_{N-1})\), \(N\geq5\), be samples on a unit-spaced
+one-dimensional grid. Multichannel data are handled componentwise in a
+declared basis. Define
+\begin{equation}
+  \delta_i=y_{i+1}-y_i,\qquad 0\leq i<N-1.
+  \label{eq:secant}
+\end{equation}
+For a finite real sequence \(z\), let \(\var(z)\) denote its number of sign
+changes after zero entries are deleted. For a piecewise function \(g\), let
+\(V(g)\) be the supremum of \(\var(g(x_1),\ldots,g(x_m))\) over ordered
+points within open cells and one-sided knot limits, again omitting zeros.
+The Bernstein basis of degree \(n\) is
+\begin{equation}
+  B_j^n(u)=\binom{n}{j}u^j(1-u)^{n-j},\quad 0\leq u\leq1.
+  \label{eq:bernstein}
+\end{equation}
+For scale vector \(\bm s\), the fixed Cartesian order is part of the
+operator:
+\begin{equation}
+  \Tcal_{\bm s}
+  =\Tcal_{s_d}^{(d)}\circ\cdots\circ\Tcal_{s_1}^{(1)}.
+  \label{eq:product}
+\end{equation}
+The reverse order is used by the corresponding analysis transform.
+
+\subsection{Continuous query coordinates}
+
+CONV defines a continuous piecewise-polynomial interpolant before a target
+lattice is chosen. For a target line of length \(M\), endpoints are aligned
+by
+\begin{equation}
+ x_r=\frac{r(N-1)}{M-1},\qquad 0\leq r<M.
+ \label{eq:targetmap}
+\end{equation}
+Integer refinement is obtained when \(M=(N-1)s+1\), in which case
+\eqref{eq:reqcardinal} applies exactly. Using the same coordinate map on each
+Cartesian axis makes arbitrary \(N\to M\) evaluation the primary
+interpolation map; the dyadic transform of Section~IX and the integer-scale
+phase bank of Section~XII are, respectively, its conservative
+analysis/synthesis and compiled-evaluation specializations.
+
+\subsection{Operator factorization}
+
+The one-dimensional method factors as
+\begin{equation}
+ y\xrightarrow{\mathcal J}a
+ \xrightarrow{\mathcal E}\sigma
+ \xrightarrow{\Pi_{\Ccal(\sigma,\delta)}}c
+ \xrightarrow{\mathcal I}Q
+ \xrightarrow{\mathcal B}\Tcal y.
+ \label{eq:pipeline}
+\end{equation}
+Here \(\mathcal J\) forms the compact two-jet proposal, after which
+\(\mathcal E\) orders the observed sign lineages and \(\Pi_{\Ccal}\)
+performs Euclidean nearest-point admission in current coordinates. Finally,
+\(\mathcal I\) integrates the admitted current and \(\mathcal B\) evaluates
+the Bernstein curve. The equations below specify each arrow, such that value
+observations, differential topology, and polynomial evaluation remain
+separate throughout the construction.
+
+\section{Compact Two-Jet}
+
+The raw local model is obtained without fitted parameters. At an interior
+node \(2\leq i\leq N-3\), the two-jet is
+\begin{align}
+ m_i&=\frac{y_{i-2}-8y_{i-1}+8y_{i+1}-y_{i+2}}{12}, \label{eq:mint}\\
+ q_i&=\frac{-y_{i+2}+16y_{i+1}-30y_i+16y_{i-1}-y_{i-2}}{12}.
+ \label{eq:qint}
+\end{align}
+Second-order one-sided closure is used at the outer two nodes:
+\begin{align}
+ m_0&=\frac{-3y_0+4y_1-y_2}{2},&
+ m_1&=\frac{y_2-y_0}{2}, \label{eq:mbnd}\\
+ q_0&=2y_0-5y_1+4y_2-y_3,&
+ q_1&=y_0-2y_1+y_2, \label{eq:qbnd}
+\end{align}
+with the reflected formulas used at \(N-2\) and \(N-1\). Since
+\eqref{eq:mint}--\eqref{eq:qbnd} are exact on affine data, the same equations
+both close the boundary and preserve first-degree reproduction.
+
+Using the two endpoint jets on cell \(i\) yields the six raw quintic Bezier
+controls
+\begin{align}
+ P_{i0}&=y_i,&
+ P_{i1}&=y_i+\frac{m_i}{5}, \nonumber\\
+ P_{i2}&=y_i+\frac{2m_i}{5}+\frac{q_i}{20},&
+ P_{i3}&=y_{i+1}-\frac{2m_{i+1}}{5}+\frac{q_{i+1}}{20}, \label{eq:controls}\\
+ P_{i4}&=y_{i+1}-\frac{m_{i+1}}{5},&
+ P_{i5}&=y_{i+1}. \nonumber
+\end{align}
+The corresponding raw variation current is obtained by differencing adjacent
+controls,
+\begin{equation}
+  a_{ij}=P_{i,j+1}-P_{ij},\qquad 0\leq j<5.
+  \label{eq:rawcurrent}
+\end{equation}
+which, by telescoping, satisfies
+\(\sum_{j=0}^{4}a_{ij}=\delta_i\) identically.
+
+\section{Ordered Lineage and Convex Current Admission}
+
+\subsection{Lineage ledger}
+
+The lineage component carries the order of the sign transitions observed in
+the sampled differences. Each nonzero change of secant sign introduces one
+boundary in the flattened current coordinate, and these locations are
+admitted in increasing order,
+\begin{equation}
+ 0=b_0<b_1<\cdots<b_L<J,
+ \label{eq:causalorder}
+\end{equation}
+such that the next location minimizes the squared sign-conflict objective
+subject to \eqref{eq:causalorder}. A later lineage can therefore neither cross
+nor precede an earlier one.
+
+Each nonzero coarse current carries its sign. A zero secant inherits the
+preceding nonzero sign; a leading zero run inherits the first following
+nonzero sign. If all secants vanish, the ledger is zero. Put \(I=N-1\),
+\(J=5I\), and flatten five current slots per cell. Let
+\(\kappa_1<\cdots<\kappa_L\) be the coarse transition knots and set
+\(b_0=0\). For transition \(\ell\), define
+\begin{align}
+\mathcal B_\ell
+ &=\{\max(b_{\ell-1}+1,5\kappa_\ell-4),\ldots,\nonumber\\
+ &\hspace{25mm}\min(J-1,5\kappa_\ell+4)\},\label{eq:candidates}\\
+\mathcal N_\ell
+ &=\{\max(0,5\kappa_\ell-5),\ldots,
+\min(J-1,5\kappa_\ell+4)\}.\label{eq:window}
+\end{align}
+For candidate \(b\), let \(\sigma_k(b)\) equal the coarse sign left of the
+knot for \(k<b\), and the sign right of it otherwise. The admitted boundary
+is
+\begin{equation}
+ b_\ell=\min\arg\min_{b\in\mathcal B_\ell}
+ \sum_{k\in\mathcal N_\ell}\bigl[\min(0,\sigma_k(b)a_k)\bigr]^2.
+ \label{eq:boundary}
+\end{equation}
+The outer minimum fixes ties at the smallest index. Applying
+\eqref{eq:candidates}--\eqref{eq:boundary} from left to right consequently
+produces a unique sign ledger \(\sigma_{ij}\in\{-1,0,1\}\). Thus the data
+supply precisely the discrete current signs that interpolation must
+transport, without selecting either a kernel family or a continuous tuning
+parameter.
+
+\paragraph{Exact incremental boundary cost}
+Write the objective in \eqref{eq:boundary} as \(C_\ell(b)\), and let
+\(s_\ell\in\{-1,1\}\) be the coarse sign immediately left of the
+transition. The right sign is \(-s_\ell\). Hence
+\begin{align}
+ C_\ell(b)
+ &=\sum_{\substack{k\in\mathcal N_\ell\\k<b}}
+ a_k^2\,\mathbf1_{s_\ell a_k<0}\nonumber\\
+ &\quad+\sum_{\substack{k\in\mathcal N_\ell\\k\ge b}}
+ a_k^2\,\mathbf1_{-s_\ell a_k<0}.
+ \label{eq:ledgercostexplicit}
+\end{align}
+Moving the boundary from \(b\) to \(b+1\) changes only the contribution
+of slot \(b\), giving the exact recurrence
+\begin{equation}
+ \boxed{C_\ell(b+1)=C_\ell(b)-s_\ell a_b|a_b|.}
+ \label{eq:ledgerrecurrence}
+\end{equation}
+Indeed, the changed contribution is
+\(a_b^2(\mathbf1_{s_\ell a_b<0}-\mathbf1_{-s_\ell a_b<0})
+=-s_\ell a_b|a_b|\), including \(a_b=0\). Evaluating the first
+candidate cost once and then applying \eqref{eq:ledgerrecurrence} traverses
+the same set \(\mathcal B_\ell\), with the same smallest-index tie rule.
+Thus the recurrence changes the arithmetic realization of
+\eqref{eq:boundary}, while preserving its objective, causal constraints,
+and exact-arithmetic result. The finite-precision safeguard is specified
+in Section~X.
+
+\subsection{Signed mass fibre}
+
+Once the ledger is fixed, the admissible current on each cell belongs to the
+closed convex fibre
+\begin{equation}
+ \Ccal_i=
+ \left\{c\in\R^5:
+ \bm1^\mathsf Tc=\delta_i,\quad
+ \sigma_{ij}c_j\geq0\ \text{for all }j
+ \right\}.
+ \label{eq:fibre}
+\end{equation}
+and the admitted current is obtained by Euclidean projection,
+\begin{equation}
+ c_i=\arg\min_{c\in\Ccal_i}\norm{c-a_i}_2^2.
+ \label{eq:projection}
+\end{equation}
+Consequently, \eqref{eq:projection} is an orthogonal projection in the
+canonical Euclidean coordinates of the five current increments, rather than
+a componentwise clamp; whenever the raw two-jet already belongs to the signed
+mass fibre, it passes unchanged. Nonemptiness follows because the ledger
+contains the sign of \(\delta_i\), and strict convexity then gives a unique
+solution. Since the dimension is five, this solution is obtained directly by
+a scalar threshold. Indeed, a zero ledger implies constant source data and
+therefore \(a_i=c_i=0\). Otherwise
+\(\sigma_{ij}\in\{-1,1\}\), and, for \(\lambda\in\R\), put
+\begin{equation}
+ c_{ij}(\lambda)=
+ \begin{cases}
+ \max\{0,a_{ij}-\lambda\},&\sigma_{ij}=+1,\\
+ \min\{0,a_{ij}-\lambda\},&\sigma_{ij}=-1.
+ \end{cases}
+ \label{eq:thresholdcurrent}
+\end{equation}
+The equality multiplier is consequently a solution of
+\begin{equation}
+ F_i(\lambda):=\sum_{j=0}^{4}c_{ij}(\lambda)=\delta_i.
+ \label{eq:thresholdmass}
+\end{equation}
+The function \(F_i\) is continuous, nonincreasing, and piecewise affine,
+with breakpoints only at \(a_{i0},\ldots,a_{i4}\). On any interval between
+successive breakpoints, its active index set is
+\begin{equation}
+ A(\lambda)=\{j:\sigma_{ij}(a_{ij}-\lambda)>0\},
+\end{equation}
+and the affine mass equation yields the candidate root
+\begin{equation}
+ \lambda_A=\frac{\sum_{j\in A}a_{ij}-\delta_i}{|A|}.
+ \label{eq:thresholdroot}
+\end{equation}
+Sorting the five breakpoints exposes at most six such intervals. The unique
+admitted current is therefore obtained by testing
+\eqref{eq:thresholdroot} against them and applying the five clips in
+\eqref{eq:thresholdcurrent}.
+
+\begin{proposition}[Exact scalar admission]
+Equations \eqref{eq:thresholdcurrent}--\eqref{eq:thresholdroot} return the
+Euclidean projection \eqref{eq:projection}. If \eqref{eq:thresholdmass} has
+more than one multiplier, every such multiplier gives the same current.
+\end{proposition}
+
+\begin{proof}
+The Karush--Kuhn--Tucker conditions for \eqref{eq:projection} give
+\eqref{eq:thresholdcurrent} for the equality multiplier \(\lambda\).
+Feasibility is exactly \eqref{eq:thresholdmass}. On every interval between
+successive breakpoints the active set is fixed, and solving the affine mass
+equation gives \eqref{eq:thresholdroot}. Nonemptiness of \(\Ccal_i\) supplies
+a feasible sign for \(\delta_i\). If both ledger signs occur, then
+\(F_i(\lambda)\) tends to \(+\infty\) and \(-\infty\) at the two ends of the
+real line. If only the positive sign occurs, \(\delta_i\geq0\) and the range
+of \(F_i\) is \([0,\infty)\); if only the negative sign occurs,
+\(\delta_i\leq0\) and its range is \((-\infty,0]\). Continuity therefore
+gives a root in every case. The objective is strictly convex in \(c_i\), so
+its current is unique even in a zero-mass case where a multiplier interval
+may remain.
+\end{proof}
+
+\begin{lemma}[Fixed-ledger contraction]
+For a fixed ledger and cell mass, Euclidean admission is firmly
+nonexpansive:
+\begin{equation}
+ \norm{\Pi_{\Ccal_i}a-\Pi_{\Ccal_i}b}_2^2
+ \leq
+ (\Pi_{\Ccal_i}a-\Pi_{\Ccal_i}b)^\mathsf T(a-b).
+ \label{eq:firm}
+\end{equation}
+Consequently \(\norm{\Pi_{\Ccal_i}a-\Pi_{\Ccal_i}b}_2
+\leq\norm{a-b}_2\).
+\end{lemma}
+
+\begin{proof}
+Since \(\Ccal_i\) is nonempty, closed, and convex, the standard variational
+inequality for orthogonal projection gives \eqref{eq:firm}; applying
+Cauchy--Schwarz then yields the contraction bound.
+\end{proof}
+
+\begin{proposition}[Continuous-energy bound for the current metric]
+For a coefficient error \(e\in\R^5\), let
+\(E(u)=\sum_{j=0}^4 e_j\tau_j(u)\), where
+\(\tau_j(u)=\sum_{r=j+1}^5 B_r^5(u)\). On the normalized cell,
+\begin{equation}
+ \int_0^1 |E'(u)|^2\,du
+ =e^{\mathsf T}\mathsf K e\leq5\norm{e}_2^2,
+ \label{eq:currentenergybound}
+\end{equation}
+with the derivative-energy Gram matrix
+\begin{equation}
+ \mathsf K_{jk}
+ =25\int_0^1 B_j^4(u)B_k^4(u)\,du
+ =\frac{25\binom4j\binom4k}{9\binom8{j+k}}.
+ \label{eq:currentenergygram}
+\end{equation}
+\end{proposition}
+\begin{proof}
+The Bernstein derivative identity gives \(\tau_j'=5B_j^4\), proving
+the equality in \eqref{eq:currentenergybound}. Each entry of
+\(\mathsf K\) is nonnegative, and the partition of unity gives
+\(\sum_k\mathsf K_{jk}=25\int_0^1B_j^4(u)\,du=5\).
+Symmetry therefore yields
+\begin{equation}
+ e^{\mathsf T}(5I_5-\mathsf K)e
+ =\frac12\sum_{j,k=0}^4\mathsf K_{jk}(e_j-e_k)^2\geq0.
+ \label{eq:currentenergylumping}
+\end{equation}
+\end{proof}
+Consequently, the Euclidean objective in \eqref{eq:projection}, up to the
+irrelevant factor five, is the row-sum diagonal upper bound on continuous
+derivative error. On a physical cell of length \(h\), both sides of
+\eqref{eq:currentenergybound} acquire the factor \(h^{-1}\).
+This interpretation preserves the fixed scalar-threshold admission and
+does not identify it with projection in the full Gram metric. In particular,
+it supplies an energy justification for the existing coordinates, rather
+than a claim of universal reconstruction optimality.
+
+\subsection{Synthesis}
+
+Synthesis now involves a single integration of the admitted current. Starting
+from \(Q_{i0}=y_i\), put
+\begin{equation}
+ Q_{i,j+1}=Q_{ij}+c_{ij},\qquad 0\leq j<5.
+ \label{eq:integrate}
+\end{equation}
+The endpoint constraint in \eqref{eq:fibre} then gives
+\(Q_{i5}=y_{i+1}\), and CONV cell synthesis is obtained as
+\begin{equation}
+ (\Tcal y)(i+u)=\sum_{j=0}^{5}Q_{ij}B_j^5(u),
+ \qquad 0\leq u\leq1.
+ \label{eq:synthesis}
+\end{equation}
+Equivalently, the entire representation is the anchored current state
+\begin{equation}
+ \Acal(y)=\left(y_0,\{c_{ij}\}_{i,j}\right),\qquad
+ y_i=y_0+\sum_{k<i}\sum_{j=0}^{4}c_{kj}.
+ \label{eq:anchored}
+\end{equation}
+
+\section{Multidimensional CONV Construction}
+
+\subsection{Ordered factor composition}
+
+Let \(Y^{(0)}=Y\). For axis order \(1,\ldots,d\), define
+\begin{equation}
+ Y^{(k)}=\Tcal_{s_k}^{(k)}Y^{(k-1)},\qquad
+ \Tcal_CY=Y^{(d)}.
+ \label{eq:stage}
+\end{equation}
+At stage \(k\), a fresh two-jet and lineage ledger are constructed on every
+line parallel to axis \(k\), so that all factor currents remain represented
+rather than being collapsed to a principal orientation. Since admission is
+nonlinear, the factors need not commute; the order declared in
+\eqref{eq:stage} is therefore part of the operator and is carried along by a
+permutation of the coordinate axes. The resulting \(\Tcal_CY\) is the
+Cartesian factor proposal consumed by the source-conditioned construction
+below.
+
+\subsection{Axis-permutation equivariance}
+
+The same one-dimensional law is used on every factor. If \(P_\pi\) permutes
+the array axes and the declared factor order is permuted with them, then
+\begin{equation}
+ \Tcal_{\pi(\bm s)}P_\pi=P_\pi\Tcal_{\bm s}.
+ \label{eq:permutation}
+\end{equation}
+Thus \eqref{eq:permutation} gives axis-permutation equivariance when the
+operator order is carried with the axes. It does not assert rotational
+isotropy: because nonlinear factors need not commute, fixed
+\(x\)-then-\(y\) and \(y\)-then-\(x\) compositions may differ. In two
+dimensions, synthesis uses horizontal (axis 1) followed by vertical (axis
+0), and analysis uses the reverse order.
+
+% BEGIN WITNESSED EIKONAL TRANSPORT
+\subsection{Source-conditioned Eikonal factor transport}
+\label{sec:witnessedtransport}
+
+Applying the one-dimensional construction in two dimensions yields two
+Cartesian compositions. Let \(\Tcal_{xy}\) apply the horizontal factor and
+then the vertical factor, and let \(\Tcal_{yx}\) apply them in the reverse
+order. With \(\Tcal_C=\Tcal_{xy}\) as the declared Cartesian proposal, CONV
+couples the two orders through one source-conditioned Riemannian action field,
+without constructing a separate raster for every source.
+
+Let the source rectangle be
+\(\Omega=[0,W-1]\times[0,H-1]\), with lattice sites \(x_p\). For channel
+\(c\), define
+\begin{equation}
+ \begin{aligned}
+ g_p^{(c)}&=(D_xY_p^{(c)},D_yY_p^{(c)})^T,\\
+ G_p&=\sum_{c=1}^Cg_p^{(c)}g_p^{(c)T},
+ &\omega_p&=\operatorname{tr}G_p .
+ \end{aligned}
+ \label{eq:witnessjet}
+\end{equation}
+Using the same two-jet stencils and boundary closures already present in the
+Cartesian factors for \(D_x,D_y\), define the dimensionless nodal quadratic
+form
+\begin{equation}
+ Q_p=
+ \begin{cases}
+ I+G_p/\omega_p,&\omega_p>0,\\
+ I,&\omega_p=0,
+ \end{cases}
+ \qquad
+ M_p=\frac{Q_p}{\det(Q_p)^{1/2}}.
+ \label{eq:nodalmetric}
+\end{equation}
+The result is SPD with \(\det M_p=1\); scalar gradient magnitude has been
+removed, leaving only the measured directional shape. For \(x\) in a source
+cell, let \(b_p(x)\) be its four bilinear barycentric weights and put
+\begin{equation}
+ \widetilde M(x)=\sum_{p\in\operatorname{cell}(x)}b_p(x)M_p,
+ \qquad
+ M(x)=\frac{\widetilde M(x)}{\det(\widetilde M(x))^{1/2}}.
+ \label{eq:continuousmetric}
+\end{equation}
+Since positive barycentric combinations preserve positive definiteness,
+\eqref{eq:continuousmetric} gives one continuous determinant-one SPD field on
+\(\Omega\).
+
+For each source site \(s_a=x_a\), \(1\leq a\leq A=HW\), the action is the
+intrinsic Riemannian distance
+\begin{equation}
+ D_a(x)=\inf_{\substack{\gamma(0)=s_a,\,\gamma(1)=x\\
+                        \gamma([0,1])\subseteq\Omega}}
+ \int_0^1\sqrt{\dot\gamma(t)^TM(\gamma(t))\dot\gamma(t)}\,dt.
+ \label{eq:sourceaction}
+\end{equation}
+\begin{proposition}[Well-posed constrained action]
+There exist constants \(0<\mu_-\leq\mu_+<\infty\) such that
+\begin{equation}
+ \mu_-I\preceq M(x)\preceq\mu_+I,\qquad x\in\Omega.
+ \label{eq:actionmetricbounds}
+\end{equation}
+Consequently, for the length metric \(d_M\) induced by
+\eqref{eq:sourceaction},
+\begin{equation}
+ \sqrt{\mu_-}\,\norm{x-z}_2
+ \leq d_M(x,z)
+ \leq \sqrt{\mu_+}\,\norm{x-z}_2 .
+ \label{eq:actiondistancebounds}
+\end{equation}
+The constrained infimum is attained for every \(x,z\in\Omega\). Hence
+\(D_a(x)=d_M(s_a,x)\) is finite and continuous, vanishes only at \(s_a\),
+and is single-valued even where several minimizing curves have the same
+length.
+\end{proposition}
+
+\begin{proof}
+Continuity and positive definiteness of \(M\) on compact \(\Omega\) give
+\eqref{eq:actionmetricbounds}. The lower inequality in
+\eqref{eq:actiondistancebounds} follows by bounding the metric length of
+every admissible curve below by its Euclidean length; the upper inequality
+follows from the straight segment in the convex rectangle. Thus \(d_M\) is
+bi-Lipschitz equivalent to the Euclidean metric, so \((\Omega,d_M)\) is a
+compact length space. A compact length space is geodesic, and therefore the
+infimum is attained.
+\end{proof}
+
+Equivalently, the same action is obtained as the nonnegative viscosity
+solution of
+\begin{equation}
+ \nabla D_a(x)^TM(x)^{-1}\nabla D_a(x)=1,
+ \qquad D_a(s_a)=0,
+ \label{eq:eikonalpde}
+\end{equation}
+where paths are constrained to the closed source rectangle. In practice,
+anisotropic fast marching provides a direct Cartesian evaluation of
+\eqref{eq:sourceaction} \cite{mirebeau2014}.
+Possible nonuniqueness of a minimizing curve introduces no branch choice in
+CONV, because \eqref{eq:actionpartition} depends only on its minimum length.
+
+Using these distances, the normalized inverse-square actions are
+\begin{equation}
+ w_a(x)=\frac{D_a(x)^{-2}}{\sum_bD_b(x)^{-2}},
+ \qquad w_a(x)\geq0,\qquad\sum_aw_a(x)=1.
+ \label{eq:actionpartition}
+\end{equation}
+At a source site, continuous extension of the quotient assigns unit mass to
+its zero-action source site and zero mass to all others. Thus
+\eqref{eq:actionpartition} is Shepard inverse-distance weighting
+\cite{shepard1968} in the source-derived Riemannian distance; normalization
+removes the distance units and yields a direct all-source partition without
+selecting an owner.
+
+\begin{lemma}[Kronecker action reduction]
+For every pair of source sites,
+\begin{equation}
+ w_a(x_p)=\delta_{ap}.
+ \label{eq:kroneckeraction}
+\end{equation}
+Consequently, for every source-indexed quantity \(F_p\),
+\begin{equation}
+ \sum_pw_a(x_p)F_p=F_a.
+ \label{eq:nodalmomentcollapse}
+\end{equation}
+In particular, the action-weighted support inertia about the source site is
+identically zero:
+\begin{equation}
+ \sum_pw_a(x_p)(x_p-s_a)(x_p-s_a)^T=0.
+ \label{eq:zeroinertia}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Since the Riemannian distance vanishes at its own source site and is strictly
+positive between distinct lattice sites, the zero-action extension of
+\eqref{eq:actionpartition} gives \eqref{eq:kroneckeraction}. Substitution then
+yields \eqref{eq:nodalmomentcollapse} and \eqref{eq:zeroinertia}.
+\end{proof}
+
+The lemma removes an apparent geometric degree of freedom: any frame inferred
+from \eqref{eq:zeroinertia} lies necessarily in its repeated-eigenvalue
+branch. With the declared Cartesian tie \(t=e_x\), \(n=e_y\), the nonzero
+nested route is therefore
+\begin{equation}
+ \mathcal C\!\left[
+   \{\mathcal C[Y_{:,i}](v)\}_{i}
+ \right](u)=\Tcal_{yx}Y(u,v),
+ \label{eq:collapsedroute}
+\end{equation}
+independently of the source index. Consequently, a source frame bank and its
+nested chart construction are algebraically redundant under the action
+definitions, and \eqref{eq:collapsedroute} need be evaluated only once.
+
+What remains is to determine how strongly the reverse order is admitted.
+The current tensor already supplies the required directional energy, and its
+normalized vertical component gives
+\begin{equation}
+ \eta_a=
+ \begin{cases}
+ \dfrac{(G_a)_{yy}}{\operatorname{tr}G_a},&\operatorname{tr}G_a>0,\\[5pt]
+ \dfrac12,&\operatorname{tr}G_a=0.
+ \end{cases}
+ \label{eq:witnesscompatibility}
+\end{equation}
+Such normalized tensor energies are standard directional measures
+\cite{bigun1987}. Since \((G_a)_{yy}\geq0\) and
+\((G_a)_{yy}\leq\operatorname{tr}G_a\), equation
+\eqref{eq:witnesscompatibility} gives \(0\leq\eta_a\leq1\) directly, without
+an eigendecomposition, threshold, or fitted gain. The zero-current value is
+one half, while exchanging the Cartesian axes sends \(\eta_a\) to
+\(1-\eta_a\), exactly as it exchanges the two factor orders. The scalar
+reverse-order admission is consequently
+\begin{equation}
+ \beta(x)=\sum_aw_a(x)\eta_a,
+ \qquad 0\leq\beta(x)\leq1.
+ \label{eq:actionadmission}
+\end{equation}
+and the complete two-dimensional CONV reconstruction is
+\begin{equation}
+ \boxed{
+ \Tcal Y(x)=
+ [1-\beta(x)]\Tcal_{xy}Y(x)+\beta(x)\Tcal_{yx}Y(x) .}
+ \label{eq:witnessedblend}
+\end{equation}
+
+\begin{proposition}[Source-conditioned factor convexity]
+For every target point, the two coefficients in
+\eqref{eq:witnessedblend} are nonnegative and sum to one. Consequently
+\(\Tcal Y(x)\) belongs to the componentwise convex hull of the two Cartesian
+factor-order candidates. The operator preserves constants and reproduces
+affine coordinate fields whenever the constituent factors do.
+\end{proposition}
+
+\begin{proof}
+From \eqref{eq:witnesscompatibility},
+\(0\leq\eta_a\leq1\); using \eqref{eq:actionpartition} then gives
+\(0\leq\beta\leq\sum_aw_a=1\), and the two coefficients in
+\eqref{eq:witnessedblend} sum to one. Since both constituent orders return
+the same constant or affine field, their convex combination returns it as
+well.
+\end{proof}
+
+\begin{proposition}[Linewise blend criterion]
+Let \(\gamma:[a,b]\to\Omega\) be a \(C^1\) curve and, at every regular point,
+put
+\begin{equation}
+ A=\Tcal_{xy}Y\circ\gamma,\qquad
+ B=\Tcal_{yx}Y\circ\gamma,\qquad
+ \theta=\beta\circ\gamma.
+\end{equation}
+Then the final reconstruction obeys the exact identity
+\begin{equation}
+ (\Tcal Y\circ\gamma)'
+ =(1-\theta)A'+\theta B'+\theta'(B-A).
+ \label{eq:blendderivative}
+\end{equation}
+Suppose \(sA'\geq0\) and \(sB'\geq0\) for a fixed
+\(s\in\{-1,1\}\). The blend has \(s(\Tcal Y\circ\gamma)'\geq0\) exactly when
+\begin{equation}
+ s\theta'(B-A)
+ \geq-\{(1-\theta)sA'+\theta sB'\}.
+ \label{eq:blendcriterion}
+\end{equation}
+In particular, the readily checked bound
+\begin{equation}
+ |\theta'|\,|B-A|
+ \leq(1-\theta)sA'+\theta sB'
+ \label{eq:blendsufficient}
+\end{equation}
+is sufficient.
+\end{proposition}
+
+\begin{proof}
+Applying the product rule to \eqref{eq:witnessedblend} gives
+\eqref{eq:blendderivative}. Multiplication by \(s\) and rearrangement then
+yields \eqref{eq:blendcriterion}, while \eqref{eq:blendsufficient} bounds its
+left-hand term from below.
+\end{proof}
+
+\begin{proposition}[Pointwise convexity is not variation diminution]
+Nonnegative pointwise blending of two monotone functions with common
+endpoints does not by itself preserve monotonicity.
+\end{proposition}
+
+\begin{proof}
+On \([0,1]\), take
+\begin{equation}
+ A(t)=t,\qquad B(t)=t+t(1-t),\qquad
+ \theta(t)=\frac{1+\sin(4\pi t)}{2}.
+\end{equation}
+Both \(A\) and \(B\) are nondecreasing and share their endpoint values.
+For \(T=(1-\theta)A+\theta B\), equation
+\eqref{eq:blendderivative} gives
+\begin{align}
+ T'(0)&=\frac32>0,&
+ T'(\tfrac34)&=\frac34-\frac{3\pi}{8}<0,\nonumber\\
+ T'(1)&=\frac12>0.&&
+\end{align}
+Continuity therefore forces at least two derivative-sign transitions. Hence
+the convex-hull statement alone cannot prove a sign-pair bound.
+\end{proof}
+
+The factorwise ringing-incapability theorem applies unconditionally to each
+Cartesian composition in its declared order. The final spatially varying
+blend adds no amplitude outside the componentwise interval spanned by those
+two admitted values; its linewise sign topology is governed by
+\eqref{eq:blendcriterion}, not by convexity alone.
+% END WITNESSED EIKONAL TRANSPORT
+
+\subsection{Componentwise multichannel interpolation}
+
+For \(Y:\mathbb Z^d\rightarrow\R^C\), the coordinate map and factor order are
+shared, while two-jets, ledgers, and fibre projections are evaluated for each
+component in a declared basis. The Cartesian factor proposals are therefore
+componentwise. In two dimensions, \eqref{eq:witnessjet} sums the channel
+gradient outer products and supplies one shared metric and scalar admission;
+no channel selects a separate factor order. Component currents remain
+individually admitted inside that shared geometry. The factorwise guarantees
+hold per component and are preserved by independent affine changes of channel
+units; they do not assert covariance under an arbitrary basis rotation that
+mixes channels.
+
+\subsection{Compact dependence and causal state}
+
+On interior cell \(i\), the raw current depends on the six samples from
+\(y_{i-2}\) through \(y_{i+3}\). Bernstein evaluation uses only that cell's
+five admitted coefficients. The lineage is formed in one causal pass. Over
+an exact zero-secant run, the pass carries the last nonzero sign; a leading
+run receives the first following sign. The numerical jet and polynomial are
+compact. Only the sign state can traverse a plateau, preventing that plateau
+from creating a false pair of fronts.
+
+\subsection{Intercell regularity}
+
+Every cell polynomial is smooth in its open interval and the assembled
+interpolant is continuous. Its one-sided derivatives at an interior node are
+\begin{align}
+ (\Tcal y)'(i^-)&=5c_{i-1,4},\nonumber\\
+ (\Tcal y)'(i^+)&=5c_{i,0},\label{eq:firsttrace}\\
+ (\Tcal y)''(i^-)&=20(c_{i-1,4}-c_{i-1,3}),\nonumber\\
+ (\Tcal y)''(i^+)&=20(c_{i,1}-c_{i,0}).
+ \label{eq:secondtrace}
+\end{align}
+Consequently, CONV is \(C^1\) at node \(i\) exactly when
+\(c_{i-1,4}=c_{i,0}\), and it is \(C^2\) there when the corresponding
+second condition in \eqref{eq:secondtrace} also agrees. Since admission
+imposes neither equality, a witnessed change of differential state is
+retained rather than concealed merely to enforce intercell smoothness.
+
+\section{Analytical Properties}
+
+\begin{proposition}[Cardinality and commutation]
+For every input \(y\), \((\Tcal y)(i)=y_i\). For every scalar
+\(\alpha\) and constant \(\gamma\),
+\[
+ \Tcal(\alpha y+\gamma)=\alpha\Tcal(y)+\gamma.
+\]
+\end{proposition}
+
+\begin{proof}
+Since \(Q_{i0}=y_i\) and \(Q_{i5}=y_{i+1}\), cardinality follows
+immediately. Translation leaves every current unchanged, while scaling
+multiplies the raw current, fibre, projection, and integrated controls by
+\(\alpha\); when \(\alpha<0\), the ledger reverses with the current. The
+deterministic tie rules are invariant under both operations, which proves the
+stated commutation.
+\end{proof}
+
+\subsection{Reproduction and ringing incapability}
+
+\begin{proposition}[Affine reproduction]
+If \(y_i=\alpha i+\gamma\), then
+\[
+  (\Tcal y)(x)=\alpha x+\gamma
+\]
+throughout the sampled interval.
+\end{proposition}
+
+\begin{proof}
+The finite differences, including the one-sided closures, give
+\(m_i=\alpha\) and \(q_i=0\), and therefore
+\(a_{ij}=\alpha/5\). Since this current already lies in its signed fibre,
+projection leaves it unchanged; \eqref{eq:synthesis} is consequently the
+degree-elevated affine polynomial.
+\end{proof}
+
+\begin{corollary}[Cartesian consistency]
+The product operator \eqref{eq:stage} is cardinal on the nested source
+lattice and reproduces every affine coordinate field
+\[
+ f(x)=\gamma+\sum_{k=1}^d\alpha_kx_k.
+\]
+\end{corollary}
+
+\begin{proof}
+Each factor fixes its source nodes and exactly reproduces the affine
+restriction of \(f\) to every line parallel to that factor. Induction over
+\eqref{eq:stage} gives both statements.
+\end{proof}
+
+\begin{definition}
+A \emph{factor ringing pair} is a pair of consecutive sign transitions of
+the derivative synthesized inside one Cartesian factor that has no
+corresponding pair in that factor's admitted current ledger.
+\end{definition}
+
+\begin{theorem}[Factorwise ringing incapability]
+CONV synthesis cannot create a factor ringing pair. More
+precisely, with \(c^\flat\) denoting the flattened current ledger,
+\begin{equation}
+ V((\Tcal y)')\leq\var(c^\flat)\leq
+ \var(\delta_0,\ldots,\delta_{N-2}).
+\label{eq:vardim}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Differentiating \eqref{eq:synthesis} gives
+\begin{equation}
+ (\Tcal y)'(i+u)=5\sum_{j=0}^{4}c_{ij}B_j^4(u).
+ \label{eq:derivative}
+\end{equation}
+Using total positivity of the Bernstein basis bounds the sign variation of
+\eqref{eq:derivative} by that of its ordered coefficients. At a knot,
+nonzero one-sided derivative signs come from the terminal current
+coefficients of the incident cells. Those coefficients are consecutive in
+\(c^\flat\). The cell bounds therefore give
+\(V((\Tcal y)')\leq\var(c^\flat)\). Since admission places one ordered
+boundary for each nonzero coarse sign transition, projection cannot
+introduce a sign outside the ledger and can delete a transition only by
+zeroing its incident coefficients. Therefore
+\(\var(c^\flat)\leq\var(\delta)\), which completes
+\eqref{eq:vardim}.
+\end{proof}
+
+\begin{corollary}
+If the admitted ledger is nonnegative or nonpositive on a cell, synthesis is
+monotone on that cell and remains within its endpoint range.
+\end{corollary}
+
+The theorem is deliberately factorwise. A multivariate tensor-product
+surface may have transverse critical structure not visible on a single
+coordinate line. Ordered Cartesian composition transports a separate ledger
+at each stage. Such transverse crossings are formed from recorded factor
+currents; they are not factor ringing and are not excluded.
+
+\subsection{Consistency order}
+
+\begin{proposition}[Uncontracted smooth-cell accuracy]
+Restore physical mesh width \(h\), and let \(f\in C^6\). On an interior
+cell \(2\leq i\leq N-4\) whose raw current is already admissible,
+\begin{equation}
+ \sup_{0\leq u\leq1}
+ |(\Tcal f_h)(x_i+uh)-f(x_i+uh)|=O(h^5).
+ \label{eq:orderinterior}
+\end{equation}
+On the outer and near-outer cells the stated one-sided closure gives
+\(O(h^3)\).
+\end{proposition}
+
+\begin{proof}
+Taylor expansion of \eqref{eq:mint} and \eqref{eq:qint} gives
+\[
+ m_i=hf'(x_i)+O(h^5),\qquad
+ q_i=h^2f''(x_i)+O(h^6).
+\]
+Exact endpoint two-jets determine the quintic Hermite interpolant with
+\(O(h^6)\) remainder. The first-derivative proposal therefore limits the
+combined interior order to \(O(h^5)\). At the boundary,
+\eqref{eq:mbnd} has scaled error \(O(h^3)\), while
+\eqref{eq:qbnd} has scaled error \(O(h^4)\). If the raw current is
+admissible, projection is the identity and these orders pass unchanged to
+synthesis.
+\end{proof}
+
+Away from a true critical point, a sufficiently resolved smooth monotone
+profile has constant secant sign and its raw current eventually lies in the
+same signed fibre. At a transition, CONV retains the global absolute bound
+below rather than assuming that admission is inactive.
+
+\subsection{Absolute stability and error}
+
+Let
+\[
+ |y|_{1,h}=\max_i\frac{|y_{i+1}-y_i|}{h}.
+\]
+Set
+\[
+\Delta_k=\frac{y_{k+1}-y_k}{|y|_{1,h}h}.
+\]
+Substitution in \eqref{eq:mint}--\eqref{eq:rawcurrent} gives
+\(a_i=A_t\Delta\,|y|_{1,h}h\). Here \(t\) denotes an outer, near-outer,
+or interior stencil. The exact squared row-sum certificates are
+\begin{equation}
+ \sum_j\left(\sum_k |(A_t)_{jk}|\right)^2
+ \in\left\{\frac{49}{100},\frac{81}{100},\frac{37}{45}\right\}.
+ \label{eq:certificate}
+\end{equation}
+The right boundary gives the reflected matrices. Since
+\(\norm{\Delta}_\infty\leq1\), the largest value in
+\eqref{eq:certificate} is \(37/45=185/225\), and therefore
+\begin{equation}
+ \norm{a_i}_2\leq\frac{\sqrt{185}}{15}|y|_{1,h}h.
+ \label{eq:rawbound}
+\end{equation}
+The fibre contains a vector with one entry equal to \(\delta_i\) and all
+others zero. Metric projection and the triangle inequality therefore give
+\begin{equation}
+ \norm{c_i}_2
+ \leq\left(1+\frac{2\sqrt{185}}{15}\right)|y|_{1,h}h.
+ \label{eq:currentbound}
+\end{equation}
+Because Bernstein synthesis is a convex combination of integrated controls,
+\begin{equation}
+ |(\Tcal y)(i+u)-y_i|
+ \leq\beta |y|_{1,h}h,\qquad
+\beta=\sqrt5\left(1+\frac{2\sqrt{185}}{15}\right).
+\label{eq:localbound}
+\end{equation}
+
+\begin{proposition}[Amplitude excursion]
+Let \(m=\min_i y_i\), \(M=\max_i y_i\), and \(R=M-m\). Define
+\begin{equation}
+ \operatorname{exc}(z;[m,M])=
+ \max\left\{(\sup_xz-M)_+,(m-\inf_xz)_+\right\}.
+ \label{eq:excursiondef}
+\end{equation}
+For one factor,
+\begin{equation}
+ \operatorname{exc}(\Tcal y;[m,M])\leq\beta R.
+ \label{eq:excursionone}
+\end{equation}
+On every cell whose ledger has one sign, the sharper value is zero relative
+to that cell's endpoint range. Hence amplitude excursion can occur only in a
+cell carrying an admitted sign transition. After \(d\) ordered Cartesian
+factors,
+\begin{equation}
+ \operatorname{exc}(\Tcal_{\bm s}Y;[m,M])
+ \leq\frac{(1+2\beta)^d-1}{2}R.
+ \label{eq:excursiond}
+\end{equation}
+These bounds are independent of the number of source or target samples.
+\end{proposition}
+
+\begin{proof}
+For one factor, \( |y|_{1,h}h=\max_i|\delta_i|\leq R\), so
+\eqref{eq:localbound} places every synthesized value in
+\([m-\beta R,M+\beta R]\), proving \eqref{eq:excursionone}. A one-sign ledger
+makes \eqref{eq:derivative} one-signed by nonnegativity of the Bernstein
+basis, so the cell is monotone between its observed endpoints. For the
+Cartesian bound, put \(c=(m+M)/2\). Translation equivariance and
+\eqref{eq:bibo} give
+\(\lVert\Tcal_{\bm s}(Y-c)\rVert_\infty
+ \leq(1+2\beta)^dR/2\). Subtracting the original half-range \(R/2\) yields
+\eqref{eq:excursiond}.
+\end{proof}
+
+\begin{proposition}[BIBO stability]
+On one factor,
+\begin{equation}
+ \norm{\Tcal y}_\infty\leq(1+2\beta)\norm{y}_\infty.
+ \label{eq:bibo}
+\end{equation}
+After \(d\) Cartesian factors the bound is
+\((1+2\beta)^d\norm{Y}_\infty\).
+\end{proposition}
+
+\begin{proof}
+\(|\delta_i|\leq2\norm{y}_\infty\). Apply
+\eqref{eq:localbound} with \(h=1\), then compose the one-factor inequality.
+\end{proof}
+
+\begin{theorem}[Grid-size-independent bound]
+Let \(f\) be \(L\)-Lipschitz and let its samples be transferred through
+\(d\) ordered Cartesian factors of mesh width at most \(h\). Then
+\begin{equation}
+ |\widehat f(x)-f(x)|\leq E_dLh,\qquad
+ E_d=(1+\beta)\frac{(1+2\beta)^d-1}{2\beta},
+ \label{eq:errorbound}
+\end{equation}
+and
+\begin{equation}
+ \operatorname{MSE}(\widehat f,f)\leq E_d^2L^2h^2.
+ \label{eq:msebound}
+\end{equation}
+The constants do not depend on lattice cardinality or the number of queried
+points.
+\end{theorem}
+
+\begin{proof}
+From \eqref{eq:localbound}, one obtains the one-factor amplification. Thus,
+if \(E_kLh\) bounds the error after \(k\) factors, the next factor obeys
+\[
+ E_{k+1}=(1+2\beta)E_k+1+\beta,\qquad E_0=0.
+\]
+Solving this recurrence yields \eqref{eq:errorbound}; squaring and averaging
+then yields \eqref{eq:msebound}.
+\end{proof}
+
+Within a chamber having fixed lineage boundaries and active clip sets, the
+operator is affine and hence Lipschitz. Across chamber boundaries,
+\eqref{eq:currentbound}--\eqref{eq:msebound} provide the global absolute
+bound without assuming differentiability of the discrete selection map.
+
+% BEGIN CONSERVATIVE MULTIRESOLUTION CORE
+\section{Restriction and Matched Multiresolution Geometry}
+
+\subsection{Point-current restriction}
+
+Point interpolation and raster analysis involve different restriction
+functionals. Let \(d_h\) be the forward difference on an interpolated line,
+and let \(B_s\) sum each block of \(s\) consecutive fine differences. Using
+cardinality gives
+\begin{align}
+ (B_s d_h\Tcal_s y)_i
+ &=\sum_{r=0}^{s-1}
+ \bigl[(\Tcal_s y)_{is+r+1}-(\Tcal_s y)_{is+r}\bigr]\nonumber\\
+ &=y_{i+1}-y_i.
+ \label{eq:telescoping}
+\end{align}
+Consequently,
+\begin{equation}
+ D_s\Tcal_s=I,\qquad B_s d_h\Tcal_s=d_c,
+ \label{eq:restriction}
+\end{equation}
+where \(D_s\) selects source sites and \(d_c\) is the source forward
+difference. Thus \eqref{eq:restriction} identifies the conserved mass of the
+interpolating current; site selection itself is not used as an antialiased
+raster downscale.
+
+\subsection{Conservative scale coordinates}
+
+The centered-moment construction below uses the fixed three-point
+Gauss--Legendre nodes and weights
+\begin{equation}
+ \bm\xi=(-\sqrt{3/5},0,\sqrt{3/5}),\qquad
+ \bm w=(5/9,8/9,5/9).
+ \label{eq:gauss3}
+\end{equation}
+
+At a multiresolution interface, raster entries are interpreted as cell
+averages. Accordingly, for an even fine line
+\(x=(x_0,\ldots,x_{2N-1})\), define the parent average and centered child
+moment by
+\begin{align}
+ z_i&=\frac{x_{2i}+x_{2i+1}}{2},
+ \label{eq:scaleaverage}\\
+ \mu_i^\star&=\frac{x_{2i+1}-x_{2i}}{2}.
+ \label{eq:actualmoment}
+\end{align}
+The resulting analysis low-pass is positive and normalized, with transfer
+function
+\begin{equation}
+ H(\omega)=\frac{1+e^{-\mathrm i\omega}}{2}
+ =e^{-\mathrm i\omega/2}\cos(\omega/2),
+ \label{eq:nyquistresponse}
+\end{equation}
+which yields \(H(\pi)=0\) exactly.
+
+The centered-moment proposal is obtained from the already defined CONV
+profile, rather than from a second interpolator. Using the Gauss--Legendre
+nodes and weights in \eqref{eq:gauss3}, for \(1\leq i<N-1\), put
+\begin{align}
+ \bar z_i^-&=\frac12\sum_{k=0}^{2}w_k
+ (\Tcal z)(i-\tfrac14+\tfrac14\xi_k),\nonumber\\
+ \bar z_i^+&=\frac12\sum_{k=0}^{2}w_k
+ (\Tcal z)(i+\tfrac14+\tfrac14\xi_k),
+ \label{eq:halfcells}\\
+ p_i&=\frac{\bar z_i^+-\bar z_i^-}{2}.
+ \label{eq:momentproposal}
+\end{align}
+Since \(\Tcal z\) is quintic on each half-cell, three-point Gauss--Legendre
+quadrature is exact. At the two outer cells, the fixed closure is
+\begin{equation}
+ p_0=m_0/4,\qquad p_{N-1}=m_{N-1}/4,
+ \label{eq:momentboundary}
+\end{equation}
+using the one-sided jet in \eqref{eq:mbnd}; this proposal is exact for affine
+cell averages, for which \(p_i=(z_{i+1}-z_i)/4\).
+
+\subsection{Admissible moment polytope}
+
+Put \(\Delta_i=z_{i+1}-z_i\), fill zero signs by the ledger rule of
+Section~V, and denote the resulting interval signs by \(s_i\). When every
+\(\Delta_i\) vanishes, set \(\Pcal(z,t)=\{0\}\) and
+\(\widehat\mu=0\). Otherwise the filled signs are nonzero, and each cell is
+assigned a sign \(t_i\), with \(t_0=s_0\),
+\(t_{N-1}=s_{N-2}\), and, in the interior,
+\begin{equation}
+ t_i=\begin{cases}
+ s_{i-1},&s_{i-1}=s_i,\\
+ \arg\max_{s\in\{s_{i-1},s_i\}}sp_i,&s_{i-1}\ne s_i,
+ \end{cases}
+ \label{eq:momentsign}
+\end{equation}
+with the left sign selected on a tie. The second line therefore locates an
+existing turning point in one of its two adjacent child cells.
+
+When \(\mu\) is synthesized with zero detail, the fine currents are
+\begin{equation}
+ g_{2i}=2\mu_i,\qquad
+ g_{2i+1}=\Delta_i-\mu_i-\mu_{i+1}.
+ \label{eq:finecurrentmoment}
+\end{equation}
+Consequently, for fixed \(t\), the complete admissible set is
+\begin{equation}
+ \Pcal(z,t)=\left\{\mu:
+ t_i\mu_i\geq0,\quad
+ s_i(\Delta_i-\mu_i-\mu_{i+1})\geq0
+ \right\}.
+ \label{eq:momentpolytope}
+\end{equation}
+\begin{lemma}[Compact moment fibre]
+For every nonconstant \(z\) and every assignment \(t\) produced by
+\eqref{eq:momentsign}, \(\Pcal(z,t)\) is a nonempty compact convex polytope.
+\end{lemma}
+
+\begin{proof}
+The set is a finite intersection of closed half-spaces and contains zero, so
+only an unbounded ray remains to be excluded. Let \(h\) belong to its
+recession cone and put \(v_i=t_ih_i\geq0\). The homogeneous face inequalities
+are
+\begin{equation}
+ (s_it_i)v_i+(s_it_{i+1})v_{i+1}\leq0.
+ \label{eq:momentrecession}
+\end{equation}
+Suppose \(v_k>0\) for the least such \(k\). If \(k=0\), then \(t_k=s_k\).
+If \(k=N-1\), the preceding inequality contradicts \(v_k>0\) because
+\(t_{N-1}=s_{N-2}\). If \(0<k<N-1\), the preceding inequality and
+\(v_{k-1}=0\) either contradict \(v_k>0\), or force
+\(t_k=-s_{k-1}=s_k\). Thus every surviving case has \(k<N-1\) and
+\(t_k=s_k\). Equation~\eqref{eq:momentrecession} on face \(k\) then forces
+\(t_{k+1}=-s_k\) and \(v_{k+1}\geq v_k\). By
+\eqref{eq:momentsign}, this is possible only when
+\(s_{k+1}=-s_k\) and \(t_{k+1}=s_{k+1}\). Repetition propagates a positive
+nondecreasing sequence to the right endpoint, where
+\(t_{N-1}=s_{N-2}\) contradicts the required opposite sign. Hence the
+recession cone is \(\{0\}\), and the closed polyhedron is bounded.
+\end{proof}
+
+On an increasing run, the constraints reduce to
+\begin{equation}
+ \mu_i\geq0,\qquad \mu_i+\mu_{i+1}\leq\Delta_i.
+ \label{eq:monotonemoment}
+\end{equation}
+
+The finite admission contains no limiter constant. First form
+\begin{equation}
+p_i^+=t_i\max(t_ip_i,0).
+ \label{eq:momentorthant}
+\end{equation}
+Let \(\rho(i)\) denote the maximal sign lineage assigned to cell \(i\), and
+let \(\rho(\ell)\) denote the lineage of face \(\ell\). Its proposed
+consumption is
+\begin{equation}
+ C_\ell=\sum_{\substack{j\in\{\ell,\ell+1\}\\
+                        \rho(j)=\rho(\ell)}}|p_j^+|.
+ \label{eq:momentconsumption}
+\end{equation}
+and, for each lineage, retain the scale
+\begin{equation}
+\alpha_\rho=\min\left(
+ 1,\min_{\substack{\ell:\rho(\ell)=\rho\\C_\ell>0}}
+ \frac{|\Delta_\ell|}{C_\ell}\right).
+ \label{eq:momentrayscale}
+\end{equation}
+where the inner minimum is \(+\infty\) when the lineage has no positive
+consumption. Oppositely oriented moments at a transition relax rather than
+consume the face mass and therefore do not enter \(C_\ell\). The result is the
+largest independent lineage-ray scale satisfying every incident capacity
+bound, and it is denoted by
+\begin{equation}
+ \widehat\mu_i=\alpha_{\rho(i)}p_i^+=(\Acal_zp)_i.
+ \label{eq:momentadmission}
+\end{equation}
+
+\begin{lemma}[Admitted-moment bound]
+The admission \eqref{eq:momentadmission} satisfies
+\begin{equation}
+ \norm{\widehat\mu(z)}_\infty\leq
+ \max_\ell|\Delta_\ell|\leq2\norm z_\infty.
+ \label{eq:admittedmomentbound}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Every cell \(i\) has an incident face \(\ell\) in its assigned lineage, as
+forced at the endpoints and by the definition of \(t_i\) in the interior.
+Consequently \(C_\ell\geq|p_i^+|\). If \(C_\ell=0\), then
+\(\widehat\mu_i=0\). Otherwise
+\eqref{eq:momentrayscale} gives
+\[
+ |\widehat\mu_i|
+ =\alpha_{\rho(i)}|p_i^+|
+ \leq|\Delta_\ell|.
+\]
+Finally, \(|z_{\ell+1}-z_\ell|\leq2\norm z_\infty\), which proves the second
+inequality.
+\end{proof}
+
+\subsection{Exact conservative lifting pair}
+
+The detail coordinate is obtained as the child moment not represented by the
+transported coarse variation,
+\begin{equation}
+ r_i=\mu_i^\star-\widehat\mu_i(z).
+ \label{eq:analysisdetail}
+\end{equation}
+so analysis is \(\mathcal Lx=(z,r)\), while synthesis is
+\begin{align}
+ x_{2i}&=z_i-\widehat\mu_i(z)-r_i,
+ \label{eq:synthleft}\\
+ x_{2i+1}&=z_i+\widehat\mu_i(z)+r_i.
+ \label{eq:synthright}
+\end{align}
+
+\begin{theorem}[Conservative CONV lifting]
+For every fine line of length \(2N\), \(N\geq5\), in exact arithmetic,
+\begin{equation}
+ \mathcal L^{-1}\mathcal Lx=x,
+ \qquad R\mathcal L^{-1}(z,r)=z,
+ \label{eq:fullcycle}
+\end{equation}
+where \(R\) is the positive restriction \eqref{eq:scaleaverage}. If \(r=0\),
+the synthesized current has no more nonzero sign changes than \(Dz\).
+\end{theorem}
+
+\begin{proof}
+Substituting \eqref{eq:analysisdetail} into
+\eqref{eq:synthleft}--\eqref{eq:synthright} returns
+\(z_i\mp\mu_i^\star=x_{2i},x_{2i+1}\). Their average is \(z_i\), proving
+both identities. By \eqref{eq:momentpolytope}, the nonzero fine-current signs
+are a subsequence of
+\[
+ t_0,s_0,t_1,s_1,\ldots,s_{N-2},t_{N-1}.
+\]
+Within a sign run the entries agree. At a transition, \(t_i\) equals one of
+its two adjacent signs; that triple therefore contains one transition, not
+two. Deleting zero currents cannot increase the count.
+\end{proof}
+
+The transform consequently distinguishes exact recovery from
+discarded-detail reconstruction. Retaining \(r\) recovers every fine cell,
+whereas setting \(r=0\) retains cell mass and transported variation while
+omitting the unpredicted centered moment. For two detail states on the same
+coarse raster, one obtains
+\begin{equation}
+ \norm{\mathcal L^{-1}(z,r)-\mathcal L^{-1}(z,r')}_\infty
+ =\norm{r-r'}_\infty.
+ \label{eq:detailstability}
+\end{equation}
+
+\begin{proposition}[Multilevel max-norm stability]
+The positive restriction satisfies \(\norm R_\infty\leq1\). A \(J\)-level
+synthesis obeys
+\begin{equation}
+ \norm x_\infty\leq3^J\norm{z^{(J)}}_\infty
+ +\sum_{j=1}^{J}3^{j-1}\norm{r^{(j)}}_\infty.
+ \label{eq:multilevelstability}
+\end{equation}
+The constant depends on the declared depth, not the line length.
+\end{proposition}
+
+\begin{proof}
+Since the two restriction weights are positive and sum to one,
+\(\norm R_\infty\leq1\). At one synthesis level, using
+\eqref{eq:synthleft}--\eqref{eq:synthright} together with
+\eqref{eq:admittedmomentbound} gives
+\[
+ \norm{x^{(j-1)}}_\infty
+ \leq3\norm{x^{(j)}}_\infty+\norm{r^{(j)}}_\infty.
+\]
+Iterating this recurrence from \(x^{(J)}=z^{(J)}\) yields
+\eqref{eq:multilevelstability}; induction on the one-level theorem likewise
+shows that ordered sign variation is nonincreasing at every zero-detail
+level.
+\end{proof}
+
+\subsection{Two-dimensional moment geometry}
+
+For a fine \(2\times2\) block, introduce one invariant mean and three
+centered moments,
+\begin{align}
+ z&=\tfrac14(x_{00}+x_{01}+x_{10}+x_{11}),\nonumber\\
+ \mu_x&=\tfrac14(-x_{00}+x_{01}-x_{10}+x_{11}),\nonumber\\
+ \mu_y&=\tfrac14(-x_{00}-x_{01}+x_{10}+x_{11}),\nonumber\\
+ \mu_{xy}&=\tfrac14(x_{00}-x_{01}-x_{10}+x_{11}).
+ \label{eq:blockmoments}
+\end{align}
+from which the inverse is obtained as
+\begin{align}
+ x_{00}&=z-\mu_x-\mu_y+\mu_{xy},&
+ x_{01}&=z+\mu_x-\mu_y-\mu_{xy},\nonumber\\
+ x_{10}&=z-\mu_x+\mu_y-\mu_{xy},&
+ x_{11}&=z+\mu_x+\mu_y+\mu_{xy}.
+ \label{eq:blockinverse}
+\end{align}
+Thus the four child cells are replaced without redundancy. The horizontal
+and vertical proposals are obtained by applying \eqref{eq:halfcells} along
+their corresponding factors, and applying the same half-cell functional to
+the horizontal proposal along the vertical factor yields the mixed proposal.
+
+Inside a block, the horizontal face currents are
+\begin{equation}
+ 2(\mu_x-\mu_{xy}),\qquad2(\mu_x+\mu_{xy}),
+ \label{eq:internalhorizontal}
+\end{equation}
+and the vertical face currents are
+\begin{equation}
+ 2(\mu_y-\mu_{xy}),\qquad2(\mu_y+\mu_{xy}).
+ \label{eq:internalvertical}
+\end{equation}
+For horizontally adjacent blocks \(A,B\), put \(\Delta_x=z_B-z_A\). Their
+upper and lower cross-face currents are
+\begin{align}
+ h^-_{AB}&=\Delta_x-\mu_{x,A}-\mu_{x,B}
+ +\mu_{y,A}-\mu_{y,B}+\mu_{xy,A}+\mu_{xy,B},\nonumber\\
+ h^+_{AB}&=\Delta_x-\mu_{x,A}-\mu_{x,B}
+ -\mu_{y,A}+\mu_{y,B}-\mu_{xy,A}-\mu_{xy,B}.
+ \label{eq:horizontalfaces}
+\end{align}
+For vertically adjacent blocks \(A,C\), put \(\Delta_y=z_C-z_A\). Their
+left and right currents are
+\begin{align}
+ v^-_{AC}&=\Delta_y+\mu_{x,A}-\mu_{x,C}
+ -\mu_{y,A}-\mu_{y,C}+\mu_{xy,A}+\mu_{xy,C},\nonumber\\
+ v^+_{AC}&=\Delta_y-\mu_{x,A}+\mu_{x,C}
+ -\mu_{y,A}-\mu_{y,C}-\mu_{xy,A}-\mu_{xy,C}.
+ \label{eq:verticalfaces}
+\end{align}
+
+Let \(t_x,t_y\) be block signs assigned by \eqref{eq:momentsign} on each
+coarse row and column, and let \(s_x,s_y\) be the corresponding coarse face
+signs. The face-current admissible set is
+\begin{equation}
+\begin{aligned}
+ t_x(\mu_x\pm\mu_{xy})&\geq0,&s_xh^\pm&\geq0,\\
+ t_y(\mu_y\pm\mu_{xy})&\geq0,&s_yv^\pm&\geq0.
+\end{aligned}
+ \label{eq:facepolytope}
+\end{equation}
+This admissible set is a finite intersection of affine half-spaces containing
+the zero moment field. Admission first enforces the internal cone
+\begin{equation}
+ t_x\mu_x\geq|\mu_{xy}|,\qquad
+ t_y\mu_y\geq|\mu_{xy}|.
+ \label{eq:internalcone}
+\end{equation}
+For a cross face written \(g=\Delta+r_A+r_B\), only opposed proposal mass
+consumes the witnessed capacity. Define
+\begin{align}
+ w_A&=\max(-sr_A,0),&w_B&=\max(-sr_B,0),\nonumber\\
+ \beta&=\min\left(1,\frac{|\Delta|}{w_A+w_B}\right),
+ \label{eq:facecapacity}
+\end{align}
+with \(\beta=1\) when the denominator is zero. Both incident block scales are
+bounded by \(\beta\), and each block retains the minimum bound from all of its
+faces. Since helpful components are not required for feasibility, a later
+reduction on another face cannot violate an admitted inequality.
+Consequently, \eqref{eq:internalcone}--\eqref{eq:facecapacity} yield a finite
+local box inside \eqref{eq:facepolytope}.
+
+Every pair of fine rows has a horizontal sign sequence interleaving
+\(t_x,s_x,t_x,s_x,\ldots\); every pair of fine columns has the analogous
+vertical sequence. The one-dimensional sign-count proof applies to each.
+The two-dimensional restriction response is
+\begin{equation}
+ H(\omega_x,\omega_y)=e^{-\mathrm i(\omega_x+\omega_y)/2}
+ \cos(\omega_x/2)\cos(\omega_y/2),
+ \label{eq:nyquist2d}
+\end{equation}
+which annihilates both axial Nyquist lines and their checkerboard
+intersection. Exact reconstruction is then obtained by restoring the three
+residual moment fields in \eqref{eq:blockmoments}.
+
+\subsection{Multilevel state}
+
+Repeated analysis produces the state
+\begin{equation}
+ \mathcal L^{(J)}x=
+ \left(z^{(J)},r^{(J)},r^{(J-1)},\ldots,r^{(1)}\right).
+ \label{eq:multilevel}
+\end{equation}
+In one dimension, \(r^{(j)}\) is a centered-moment field; in two dimensions,
+it contains the horizontal, vertical, and mixed residual moments. Analysis
+continues only while every resulting coarse axis has at least five cells, and
+synthesis restores the stored levels in reverse order. Induction on
+\eqref{eq:fullcycle} then gives
+\begin{equation}
+ (\mathcal L^{(J)})^{-1}\mathcal L^{(J)}=I.
+ \label{eq:multilevelinverse}
+\end{equation}
+For a one-dimensional fine line of length \(2N\), the \(N\) parent averages
+and \(N\) residual moments are necessary and sufficient coordinates. For a
+two-dimensional \(2N\times2M\) raster, the \(NM\) means and three \(NM\)
+residual moment fields likewise account for every scalar degree of freedom.
+% END CONSERVATIVE MULTIRESOLUTION CORE
+
+\section{Direct Evaluation and Engineering Properties}
+
+\subsection{Line analysis}
+
+For each component of a source line, direct evaluation involves the following
+fixed sequence.
+
+\begin{enumerate}
+\item Compute \(m_i,q_i\) from \eqref{eq:mint}--\eqref{eq:qbnd}.
+\item Form \(P_{ij}\) and the raw current \(a_{ij}\).
+\item Fill zero secant signs and locate the ordered boundaries
+      \eqref{eq:candidates}--\eqref{eq:boundary}, using the exact cost
+      recurrence \eqref{eq:ledgerrecurrence}.
+\item Sort the five current breakpoints, locate the scalar interval, and
+      apply \eqref{eq:thresholdcurrent}--\eqref{eq:thresholdroot}.
+\item Integrate \(c_i\) once and evaluate each requested point by
+      \eqref{eq:synthesis} or de Casteljau recursion.
+\end{enumerate}
+
+The boundary action compares at most nine candidate locations over at most
+ten current slots. Equation~\eqref{eq:ledgerrecurrence} reduces the ordinary
+cost scan from repeated ten-slot sums to at most ten initial slot evaluations
+and eight signed cost updates, while the projection dimension remains five. A line with
+\(N\) samples and \(C\) components therefore has \(O(NC)\) analysis cost,
+\(O(NC)\) state, and constant cost per target evaluation. Consequently, the
+compact form contains neither an image-sized matrix nor a global
+eigendecomposition or convergence loop.
+
+For comparison, the unprojected two-jet uses the same derivative stencils and
+six quintic controls, but omits the ledger and scalar-threshold admission. A
+direct Lanczos-3 evaluation uses at most six taps per Cartesian factor,
+whereas EASU uses twelve two-dimensional fetches per target together with its
+direction and anisotropic-weight calculations. Separable PCHIP first
+constructs coupled nodal derivatives and then evaluates one cubic per factor.
+CONV's additional work is therefore concentrated in the ordered-boundary
+scan, one fixed five-key sort, at most six scalar interval tests, and five
+clips per cell and component. Cartesian implementations of CONV, the raw
+quintic, Lanczos, and PCHIP require a factor barrier; EASU instead evaluates a
+direct two-dimensional target rule. Section~XI reports reference-CPU wall
+times in order to expose the scale of this implementation cost.
+
+\paragraph{Measured native cost reduction}
+A matched native C implementation on an Apple M4 Mini measures the recurrence
+against the original repeated-summation ledger, including allocations, basin
+analysis, nodal geometry, and both Cartesian synthesis orders. With 31 warmed
+repetitions and alternating implementation order, the four-worker median for
+a cameraman \(512\to64\to512\) round trip decreases from 6.825 to
+5.696\,ms, a 16.54\% time reduction. Across ten image, scale, and noise
+workloads, the measured reductions are 10.63--16.77\% with four workers
+and 13.30--20.35\% with one worker. Compilation is excluded. These are
+complete-pipeline measurements for this implementation and host, not a
+universal speed guarantee. Profile and image comparisons, including
+quantized ties and wide dynamic ranges, agree; the one-worker audit also
+checks the raw binary32 output bits. The mathematical reconstruction and
+its approximation properties are unchanged.
+
+\subsection{Parallel structure}
+
+During two-jet formation, ledger construction, projection, and evaluation,
+all lines of one Cartesian factor are independent and may be processed in
+parallel. A barrier is required only between factors, since the next factor
+analyzes the values produced by the preceding one. When several target
+lattices query the same source, the arrays \(\{Q_{ij}\}\) or
+\(\{c_{ij}\}\) may be cached.
+
+\subsection{Boundary evaluation}
+
+Equations \eqref{eq:mbnd} and \eqref{eq:qbnd} give the complete boundary
+rule, so padded samples are not required. At a nested source node, the stored
+observation may be returned directly. At a cell end, assigning the final
+control as \(Q_{i5}=y_{i+1}\), while forming the interior controls from
+cumulative admitted current, preserves cardinality independently of the
+summation order used for those interior controls.
+
+\subsection{Exact arithmetic and finite precision}
+
+For \eqref{eq:ledgerrecurrence}, floating-point reassociation can affect
+nearly tied costs. The native binary32 implementation accumulates squared
+currents and recurrence updates in binary64, retaining the smallest and
+second-smallest candidate costs, \(\widehat C_1\leq\widehat C_2\), and
+\(\mathcal E_\ell=\sum_{k\in\mathcal N_\ell}a_k^2\). With
+\(\varepsilon_{64}=2^{-52}\), it recomputes the candidate costs in their
+original summation order whenever
+\begin{equation}
+ \widehat C_2-\widehat C_1
+ \leq64\varepsilon_{64}\mathcal E_\ell,
+ \label{eq:ledgertieguard}
+\end{equation}
+or the accumulated energy is nonfinite. The original smallest-index tie
+rule is then applied. The bound covers the comparison uncertainty from
+at most ten initial terms and eight signed updates in this binary32-to-binary64
+realization. This is a numerical ambiguity safeguard for the existing
+objective; it neither changes the admissible boundaries nor introduces a
+geometric tolerance. The empirical bit comparisons above supplement this
+local arithmetic safeguard and do not assert bitwise reversibility of the
+complete multiresolution representation.
+
+
+The identities in Sections VI--IX are algebraic. Direct floating-point
+evaluation, however, incurs ordinary rounding error, and an approximate
+numerical cycle does not prove \eqref{eq:fullcycle}. Bitwise reversible coding
+therefore requires a reversible number representation: for integer data, the
+lifting residual may be stored in an integer lifting realization; for
+floating data, an error-free sum/difference expansion may be stored with the
+detail when bit identity is required. Without that additional representation,
+the theorem remains an exact-arithmetic statement, and ordinary
+floating-point addition and subtraction are not claimed to be bitwise
+identical.
+
+% BEGIN COMPOSED SYNTHETIC EVIDENCE
+\raggedbottom
+\section{Synthetic Evaluation}
+
+\subsection{Declared analytic design}
+
+The evaluation uses a deterministic census of closed-form fields, without a
+natural image, interpolated surrogate, trained parameter, or selected
+favorable case. For a target field $f$, the source nodes form the exact
+even--even sublattice, and error is evaluated on the remaining target nodes
+after a four-target-node boundary crop:
+\begin{equation}
+ \operatorname{MSE}_{H}(\widehat f,f)
+ =\frac{1}{|H|}\sum_{x\in H}|\widehat f(x)-f(x)|^2.
+ \label{eq:empiricalmse}
+\end{equation}
+Thus the reference in \eqref{eq:empiricalmse} is the analytic field itself
+rather than another reconstruction method.
+
+The one-dimensional census contains 56 profiles at source lengths
+$9,17,33,65,129$: 32 sinusoidal carriers from four frequencies and eight
+phases, eight translated smooth transitions, eight Gaussian bumps, and eight
+quadratic chirps. The two-dimensional census contains 28 fields at source
+sides $9,17,33$: smooth transitions and windowed carriers at six off-axis
+orientations and two subpixel phases, followed by two radial transitions and
+two crossing-wave phases. The discontinuity census contains a step and a box
+at 16 phases for each of five source lengths, giving 160 topology cases.
+
+The one-dimensional census evaluates formal CONV and its raw two-jet
+quintic before \(\Pi_{\mathcal C}\). The two-dimensional census evaluates
+the bounded-work CONV$^{*}$ realization of Section~XII and audits it against
+formal Eikonal CONV separately. Comparators are normalized endpoint-aligned
+Lanczos-3, endpoint-aligned bilinear interpolation, and the EASU construction
+specified below \cite{lanczos1956,lottes2021}. Every method uses its stated
+fixed rule. Since the declared cases span many orders of magnitude, MSE is
+aggregated by geometric mean, while paired win--loss counts retain the
+individual case outcomes.
+
+\subsection{Generator specification}
+
+All analytic coordinates lie in \([0,1]\). For \(k=0,\ldots,7\), let
+\(\phi_k=k\pi/4\). The one-dimensional families are
+\begin{align}
+ f_{\rm car}(x)&=0.5+0.38\sin(2\pi\nu x+\phi_k),\nonumber\\
+ f_{\rm edge}(x)&=0.5+0.45\tanh((x-c)/w),\nonumber\\
+ f_{\rm bump}(x)&=0.08+0.84\exp(-((x-c)/\sigma)^2),\nonumber\\
+ f_{\rm chirp}(x)&=0.5+0.34\sin(2\pi(0.5x+2.5x^2)+\phi_k).
+ \label{eq:onedgenerators}
+\end{align}
+Here \(\nu\in\{0.75,1.5,2.25,3\}\),
+\(c\in\{0.44,0.48,0.52,0.56\}\),
+\(w\in\{0.025,0.05\}\), and
+\(\sigma\in\{0.045,0.09\}\). The carrier uses all \((\nu,\phi_k)\)
+pairs; edge and bump use all stated \((c,w)\) and \((c,\sigma)\) pairs;
+the chirp uses all \(\phi_k\).
+
+For the two-dimensional fields, put
+\begin{align}
+ p_\theta&=x\cos\theta+y\sin\theta,\nonumber\\
+ n_\theta&=(x-\tfrac12)\cos\theta+(y-\tfrac12)\sin\theta,\nonumber\\
+ e(x,y)&=\sin^2(\pi x)\sin^2(\pi y),\nonumber\\
+ r&=\sqrt{(x-0.47)^2+(y-0.53)^2}.
+\end{align}
+With \(h=(N-1)^{-1}\), the four families are
+\begin{align}
+ F_{\rm edge}&=0.5+0.43\tanh((n_\theta-\delta)/0.035),\nonumber\\
+ F_{\rm car}&=0.5+0.34e\sin(2\pi(3.25)p_\theta+\phi),\nonumber\\
+ F_{\rm curved}&=0.5+0.42\tanh((r-0.27-\delta)/0.032),\nonumber\\
+ F_{\rm cross}&=0.5+0.19\{g_1+g_2\},\nonumber\\
+ g_1&=\sin(2\pi(2.75x+0.9y)+\phi),\nonumber\\
+ g_2&=\sin(2\pi(-0.9x+2.75y)-\phi).
+ \label{eq:twodgenerators}
+\end{align}
+Here
+\(\theta\in\{7.5,22.5,37.5,52.5,67.5,82.5\}^{\circ}\). Edge fields
+use \(\delta=\pm h/4\), carriers use \(\phi\in\{0,\pi/2\}\), curved
+fields use \(\delta=\pm h/4\), and crossing fields use
+\(\phi\in\{0,\pi/2\}\).
+
+For a source line of length \(N\), topology phase
+\(s_k=(k+1/2)/16\) gives
+\begin{align}
+ y_j^{\rm step}&=\mathbf 1\{j\geq N/2-1/2+s_k\},\nonumber\\
+ y_j^{\rm box}&=\mathbf 1\{|j-(N/2-1/2+s_k)|\leq N/6\}.
+ \label{eq:topologygenerators}
+\end{align}
+Here \(k=0,\ldots,15\).
+Equations \eqref{eq:onedgenerators}--\eqref{eq:topologygenerators}, the
+listed grids, and the held-out rule in \eqref{eq:empiricalmse} determine the
+entire population without an external corpus.
+
+\subsection{Comparator definitions}
+
+Let \(\operatorname{sinc}(t)=\sin(\pi t)/(\pi t)\) and
+\(L_3(t)=\operatorname{sinc}(t)\operatorname{sinc}(t/3)\) for
+\(|t|<3\), zero otherwise. Resampling \(n\) nodes to \(m\) nodes uses
+\begin{align}
+ x_r&=\frac{r(n-1)}{m-1},\nonumber\\
+ \rho&=\min\!\left\{1,\frac{m-1}{n-1}\right\},\nonumber\\
+ w_{rj}&=\frac{L_3(\rho(x_r-j))}{\sum_q L_3(\rho(x_r-q))}.
+ \label{eq:lanczosanalysis}
+\end{align}
+Only in-domain \(j\) are summed; hence the boundary rule is support
+truncation followed by renormalization. This gives the endpoint-aligned
+Lanczos arm for the point-sample interpolation census. Bilinear uses the same
+endpoint coordinates with support restricted to the two neighboring nodes,
+whereas the cell-centered conservative transform ablation is stated
+separately in
+\eqref{eq:celllanczoscoordinate}--\eqref{eq:celllanczosweight}.
+
+The EASU arm is a binary64 CPU transcription of the FSR 1.0 EASU
+construction. Scalar fields are replicated to RGB. It uses the twelve EASU
+fetch locations, exact binary64 reciprocal and square root rather than the
+shader approximations, and no RCAS pass. Target \((r,s)\) is evaluated at
+source coordinate \((r/2,s/2)\); this is the complete coordinate-constant
+specialization for the nested endpoint-aligned grid. Out-of-domain fetches
+are clamped to the nearest source pixel. The raw two-jet arm uses the same
+stencils, quintic controls, Cartesian order, and evaluation rule as CONV but
+sets \(c_i=a_i\), omitting the ledger and \(\Pi_{\mathcal C}\).
+PCHIP appears only in the timing audit; SciPy's \texttt{PchipInterpolator}
+is applied horizontally and then vertically on the same endpoint-aligned
+nested coordinates, without padding.
+
+\begin{figure*}[t]
+ \centering
+ \includegraphics[width=\textwidth]{conv_paper_assets/convergence.pdf}
+ \caption{Resolution census against direct analytic target values. Each point
+ is the geometric mean over the complete declared population at that source
+ size. The coarse regime exposes underresolution; the resolved regime exposes
+ the approximation order of each fixed operator.}
+ \label{fig:convconvergence}
+\end{figure*}
+
+\subsection{Resolution and paired fidelity}
+
+Table~\ref{tab:pairedfidelity} compares formal one-dimensional CONV and
+two-dimensional CONV$^{*}$ with Lanczos-3, such that a ratio below one favors
+the corresponding CONV form. At nine nodes neither population is resolved,
+and Lanczos-3 has the lower aggregate error. From 17 nodes onward, however,
+CONV wins the majority of one-dimensional cases; at 129 nodes, it wins all
+56. In two dimensions, CONV$^{*}$ has the lower geometric-mean error at 17
+and 33 nodes. The paired count at 33 nodes is even because Lanczos retains a
+small advantage on steep transition fields, whereas CONV$^{*}$ has larger
+advantages on the resolved carrier and crossing fields. The aggregate ratio
+therefore records the magnitude of this distinction without discarding its
+paired count.
+
+\begin{table}[H]
+\caption{Paired point-fidelity results versus Lanczos-3}
+\label{tab:pairedfidelity}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3.0pt}
+\begin{tabular}{c|cc|cc}
+\hline
+Source & \multicolumn{2}{c|}{1-D point} &
+\multicolumn{2}{c}{2-D point} \\
+nodes & W--L & MSE ratio & W--L & MSE ratio \\
+\hline
+9   & 28--28 & 1.247 & 9--19  & 1.277 \\
+17  & 36--20 & 0.0929 & 19--9 & 0.800 \\
+33  & 44--12 & 0.00751 & 14--14 & 0.126 \\
+65  & 52--4  & 0.000481 & -- & -- \\
+129 & 56--0  & 0.0000275 & -- & -- \\
+\hline
+\end{tabular}
+\end{table}
+
+The EASU arm establishes a different engineering point. At the $9\times9$
+source size it has the lowest two-dimensional geometric-mean MSE,
+$2.38\times10^{-3}$. Its nested-source maximum error is $1.81\times10^{-1}$,
+whereas CONV$^{*}$, Lanczos-3, and bilinear are cardinal to their stated
+floating-point precision. At $33\times33$, CONV$^{*}$ gives
+$4.31\times10^{-8}$ geometric-mean MSE, compared
+with $3.42\times10^{-7}$ for Lanczos-3, $3.23\times10^{-5}$ for bilinear,
+and $4.67\times10^{-5}$ for EASU. These measurements separate interpolation
+fidelity from a reconstruction rule that is permitted to alter source nodes.
+
+\subsection{Ordered-current ablation}
+
+The raw two-jet arm isolates the admission map by retaining the compact
+quintic proposal and removing only \(\Pi_{\mathcal C}\). From
+Table~\ref{tab:projectionablation}, it can be seen that admission does not
+obtain its topology result by replacing the high-order proposal: aggregate
+MSE is slightly lower on every reported grid and becomes indistinguishable
+from the raw proposal in the resolved regime.
+
+\begin{table}[H]
+\caption{Raw two-jet versus admitted CONV geometric-mean MSE; the 2-D columns use CONV$^{*}$}
+\label{tab:projectionablation}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{4.0pt}
+\begin{tabular}{c|cc|cc}
+\hline
+Source & \multicolumn{2}{c|}{1-D} & \multicolumn{2}{c}{2-D} \\
+nodes & Raw & CONV & Raw & CONV \\
+\hline
+9  & $2.95\!\times\!10^{-4}$ & $2.50\!\times\!10^{-4}$ &
+     $4.02\!\times\!10^{-3}$ & $3.87\!\times\!10^{-3}$ \\
+17 & $7.02\!\times\!10^{-7}$ & $6.88\!\times\!10^{-7}$ &
+     $2.63\!\times\!10^{-5}$ & $2.48\!\times\!10^{-5}$ \\
+33 & $5.51\!\times\!10^{-10}$ & $5.49\!\times\!10^{-10}$ &
+     $4.31\!\times\!10^{-8}$ & $4.31\!\times\!10^{-8}$ \\
+\hline
+\end{tabular}
+\end{table}
+
+The distinction is decisive on the discontinuity census. The raw quintic
+has \(S>0\) in all 160 step/box cases and reaches a surplus of eight sign
+changes; CONV has \(S=0\) in all 160. Thus the compact jet supplies the
+resolved-field accuracy, while ordered-current admission removes the
+unwitnessed variation and, on this census, does not increase aggregate MSE.
+
+\subsection{Topology and excursion}
+
+For the discontinuity census, the measured topology quantity is
+\begin{equation}
+ S=\max\{0,\var(d_h\widehat f)-\var(d_cf)\}.
+ \label{eq:measuredsurplus}
+\end{equation}
+CONV has $S=0$ in all 160 cases, agreeing with
+\eqref{eq:vardim}; bilinear also has zero surplus. The raw quintic and
+Lanczos-3 each have $S>0$ in all 160 cases and reach eight additional sign
+changes. This isolates the effect of admission from that of the compact jet
+and distinguishes CONV from a sharp signed-lobe kernel.
+CONV's maximum amplitude excursion on these step and box cases is 0.1008,
+compared with 0.1194 for Lanczos-3 and zero for bilinear. The zero-surplus
+result therefore does not conceal the separately measured motion of an
+existing extremum.
+
+\begin{figure*}[t]
+ \centering
+ \includegraphics[width=0.58\textwidth]{conv_paper_assets/topology.pdf}
+ \caption{One-dimensional discontinuity topology. The plot counts every
+ declared step or box phase that creates a derivative-sign pair absent from
+ the samples.}
+ \label{fig:convtopology}
+\end{figure*}
+
+% BEGIN CONSERVATIVE MULTIRESOLUTION EVIDENCE
+The conservative zero-detail transform ablation uses the dyadic state of
+Section~IX. Fine
+arrays have 16, 32, or 64 cells per axis. The one-dimensional census contains
+one Nyquist sequence, eight phases of a $0.92\pi$ carrier, and eight phases
+of a quadratic chirp at each size. The two-dimensional census contains axial
+and checkerboard Nyquist arrays, eight half-plane interfaces over four angles
+and two offsets, and four chirp phases. Half-plane pixels are their analytic
+polygonal cell coverage; no supersampling constructs the reference.
+
+Each method uses its own analysis and synthesis. CONV-C denotes
+\eqref{eq:scaleaverage} followed by zero-residual synthesis
+\eqref{eq:synthleft}--\eqref{eq:synthright} and its two-dimensional moment
+form. Box-bilinear uses the same positive analysis and pixel-center linear
+synthesis. For Lanczos-3, if \(\rho=M/N\), the target center is
+\begin{equation}
+ u_j=\frac{j+1/2}{\rho}-\frac12,\qquad
+ \kappa=\min(1,\rho),
+ \label{eq:celllanczoscoordinate}
+\end{equation}
+and its normalized in-domain weight is
+\begin{equation}
+ \begin{aligned}
+ w_{jn}&\propto
+ \operatorname{sinc}\!\left(\kappa(u_j-n)\right)
+ \operatorname{sinc}\!\left(\frac{\kappa(u_j-n)}3\right),\\
+ &\hspace{25mm}|\kappa(u_j-n)|<3.
+ \end{aligned}
+ \label{eq:celllanczosweight}
+\end{equation}
+The same definition is used in analysis and synthesis; finite boundaries are
+truncated and renormalized. MSE is evaluated against the original fine cell
+array after a four-cell boundary crop.
+
+\begin{figure*}[t]
+ \centering
+ \includegraphics[width=\textwidth]{conv_paper_assets/conservative_cycle.pdf}
+ \caption{Conservative zero-detail transform ablation. Left: geometric-mean MSE
+ over all 14 two-dimensional cases at each size. Right: mean MSE over the
+ eight polygonal diagonal interfaces. Each curve uses its method's declared
+ analysis and synthesis.}
+ \label{fig:conservativecycle}
+\end{figure*}
+
+\begin{table}[H]
+\caption{Conservative two-dimensional zero-detail ablation}
+\label{tab:conservativecycle}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3.0pt}
+\begin{tabular}{c|ccc|c}
+\hline
+Fine side & CONV-C & L3 & Box-bilin. & Edge ratio \\
+\hline
+16 & $2.78\!\times\!10^{-2}$ & $3.16\!\times\!10^{-2}$ &
+$4.57\!\times\!10^{-2}$ & 0.845 \\
+32 & $1.45\!\times\!10^{-2}$ & $1.64\!\times\!10^{-2}$ &
+$2.35\!\times\!10^{-2}$ & 0.807 \\
+64 & $8.66\!\times\!10^{-3}$ & $9.86\!\times\!10^{-3}$ &
+$1.41\!\times\!10^{-2}$ & 0.793 \\
+\hline
+\end{tabular}
+\end{table}
+
+CONV-C has the lowest aggregate MSE at all three sizes. Its mean diagonal
+interface MSE is 15.5, 19.3, and 20.7 percent below Lanczos-3 as size
+increases. The chirp comparison is phase dependent: CONV-C has the lower
+four-phase mean at side 16, while Lanczos-3 is lower by 0.50 and 1.14 percent
+at sides 32 and 64. Thus the aggregate result does not conceal the remaining
+high-frequency case.
+
+The conservative restriction maps axial Nyquist and checkerboard inputs to
+zero exactly, agreeing with \eqref{eq:nyquistresponse} and
+\eqref{eq:nyquist2d}. CONV-C has zero horizontal and vertical sign surplus in
+all 42 two-dimensional cases. Six retained-detail audits---one line and one
+three-channel raster at each size---have maximum binary64 round-trip residual
+$8.88\times10^{-16}$; the exact identity is proved in Section~IX.
+
+The preceding census isolates the reversible conservative state. The
+technical fields in Fig.~\ref{fig:currentmatchedplate} instead use the current
+principal raster operator in a matched
+\(64^2\!\rightarrow32^2\!\rightarrow64^2\) cycle. CONV$^{*}$ applies basin
+restriction followed by its present \(Q_1\)-compiled synthesis. Lanczos-3
+uses its endpoint-aligned, scale-widened kernel in both
+directions, while bilinear uses endpoint-aligned linear interpolation in both
+directions. Thus no row inherits the CONV-C zero-detail synthesis shown in
+Fig.~\ref{fig:conservativecycle}.
+
+\begin{figure*}[t]
+ \centering
+ \includegraphics[width=0.92\textwidth]{conv_paper_assets/current_matched_plate.pdf}
+ \caption{Fine-grid truth and current matched resize cycles. For the selected
+ diagonal interface, MSE is $1.86\times10^{-3}$ for CONV$^{*}$,
+ $1.37\times10^{-3}$ for Lanczos-3, and $2.64\times10^{-3}$ for bilinear;
+ the corresponding range excursions are $3.91\times10^{-2}$,
+ $9.63\times10^{-2}$, and zero. On the quadratic chirp, MSE is
+ $5.37\times10^{-2}$, $5.20\times10^{-2}$, and $6.00\times10^{-2}$ in the
+ same order.}
+ \label{fig:currentmatchedplate}
+\end{figure*}
+% END CONSERVATIVE MULTIRESOLUTION EVIDENCE
+
+\subsection{Technical synthetic fields}
+
+Figure~\ref{fig:convtechnical} contains one declared case from each
+two-dimensional family at source side 17. The images use a dense
+$513\times513$ endpoint-aligned query lattice; its comparison grid retains
+the scored target side 33 and reports held-out MSE, maximum excursion, and
+nested-source error.
+Lanczos is slightly better on the selected edge and radial transition;
+CONV$^{*}$ is better on the carrier and crossing field and has the smaller maximum
+excursion while remaining cardinal. The tabulated raw row records the
+projection's local effect on the same fields.
+
+\begin{figure*}[t]
+ \centering
+ \includegraphics[width=0.90\textwidth]{conv_paper_assets/technical_synthetics.pdf}
+ \vspace{1mm}
+
+ \scriptsize
+ \setlength{\tabcolsep}{4.0pt}
+ \begin{tabular}{l|cccc|cc}
+ \hline
+ Method & Edge MSE & Carrier MSE & Curved MSE & Crossing MSE &
+ Max. excursion & Source $L_\infty$ \\
+ \hline
+ CONV$^{*}$ & $1.09\!\times\!10^{-4}$ & $1.43\!\times\!10^{-6}$ & $7.93\!\times\!10^{-4}$ &
+ $9.98\!\times\!10^{-7}$ & $1.92\!\times\!10^{-2}$ & $2.98\!\times\!10^{-8}$ \\
+ Raw 2-jet & $1.22\!\times\!10^{-4}$ & $1.43\!\times\!10^{-6}$ & $8.68\!\times\!10^{-4}$ &
+ $9.98\!\times\!10^{-7}$ & $2.49\!\times\!10^{-2}$ & 0 \\
+ Lanczos-3 & $9.46\!\times\!10^{-5}$ & $4.56\!\times\!10^{-6}$ & $7.48\!\times\!10^{-4}$ &
+ $7.89\!\times\!10^{-6}$ & $3.31\!\times\!10^{-2}$ & $1.11\!\times\!10^{-16}$ \\
+ Bilinear & $5.96\!\times\!10^{-4}$ & $3.29\!\times\!10^{-4}$ & $1.97\!\times\!10^{-3}$ &
+ $5.34\!\times\!10^{-4}$ & 0 & 0 \\
+ EASU & $4.26\!\times\!10^{-4}$ & $1.38\!\times\!10^{-4}$ & $7.34\!\times\!10^{-4}$ &
+ $2.31\!\times\!10^{-4}$ & 0 & $9.05\!\times\!10^{-2}$ \\
+ \hline
+ \end{tabular}
+ \caption{Technical synthetic fields and their local comparison grid. Images
+ use a dense endpoint-aligned query lattice and one common $[0,1]$ display
+ scale; the table reports unquantized binary64 values at target side 33
+ against direct analytic evaluation.}
+ \label{fig:convtechnical}
+\end{figure*}
+
+\subsection{Eikonal compilation conformance}
+
+CONV$^{*}$ evaluates the two formal Cartesian factor orders and replaces the
+all-source Eikonal coefficient \(\beta\) by the bilinear extension
+\(\beta^*=I_h\beta\) of its cardinal nodal trace. Subtraction from the formal
+operator gives the exact relation
+\begin{equation}
+ \Tcal^*Y-\Tcal Y
+ = (\beta^*-\beta)(\Tcal_{yx}Y-\Tcal_{xy}Y).
+ \label{eq:evidenceimplementationdefect}
+\end{equation}
+Therefore the fast form is exact wherever the factor orders commute; away
+from that set, its complete discrepancy is precisely the product in
+\eqref{eq:evidenceimplementationdefect}.
+
+Table~\ref{tab:eikonalconformance} evaluates that discrepancy on 16 fixed
+edge, carrier, curved-interface, and crossing fields. Every row has the same
+$65\times65$ target lattice; only source density and scale change. RMS is
+formed over all target values and cases. The maximum column is a census
+maximum, not a confidence estimate. Across the three rows, replacing the
+formal action changes geometric-mean truth MSE by less than 0.01 percent.
+
+\begin{table}[H]
+\caption{CONV$^{*}$ conformance to formal Eikonal CONV at target side 65}
+\label{tab:eikonalconformance}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{c|c|ccc|cc}
+\hline
+Source & Scale & RMS & Median $L_\infty$ & Max. $L_\infty$ &
+ Formal ms & CONV$^{*}$ ms \\
+\hline
+9  & 8 & $1.75\!\times\!10^{-4}$ & $1.50\!\times\!10^{-3}$ &
+ $4.63\!\times\!10^{-3}$ & 11.0 & 0.402 \\
+17 & 4 & $5.67\!\times\!10^{-5}$ & $6.05\!\times\!10^{-4}$ &
+ $2.43\!\times\!10^{-3}$ & 43.6 & 0.460 \\
+33 & 2 & $5.95\!\times\!10^{-6}$ & $1.56\!\times\!10^{-5}$ &
+ $8.50\!\times\!10^{-4}$ & 236 & 0.659 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+\subsection{Aggregate Green admission audit}
+
+The optional Green coordinate \eqref{eq:greenadmission} was evaluated on the
+same 16 fixed fields using the source-derived determinant-one metric,
+\(\rho=1\), no-flux boundaries, a monotone anisotropic Selling stencil, and
+the cardinal weighted-harmonic form \eqref{eq:greenharmonic}
+\cite{mirebeau2014}. Table
+\ref{tab:greenadmission} compares the result with the local coordinate
+\(\beta^*=I_h\beta\). Although the coordinate changes materially, the exact
+commutator identity \eqref{eq:greenblenddefect} suppresses most of that
+difference in the reconstructed field.
+
+\begin{table}[H]
+\caption{Cardinal Green admission versus local \(Q_1\) compilation}
+\label{tab:greenadmission}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.2pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{c|ccc|cc}
+\hline
+Source & Local MSE & Green MSE & Ratio & \(\beta\) RMS & Output RMS \\
+\hline
+\(9^2\)  & \(2.3888571\!\times\!10^{-3}\) &
+ \(2.3890219\!\times\!10^{-3}\) & 1.000069 &
+ \(4.76\!\times\!10^{-2}\) & \(7.78\!\times\!10^{-5}\) \\
+\(17^2\) & \(1.8625653\!\times\!10^{-4}\) &
+ \(1.8626100\!\times\!10^{-4}\) & 1.000024 &
+ \(3.89\!\times\!10^{-2}\) & \(8.50\!\times\!10^{-6}\) \\
+\hline
+\end{tabular}%
+}
+\end{table}
+
+Because its discrete diagonal is finite, the raw finite-grid ratio \(V/U\)
+has maximum source error 0.542 and 0.628 on the two lattices. Imposing the
+nodal traces makes that error exactly zero. Consequently, the global
+coordinate supplies a closed metric-harmonic option and a formal comparator;
+however, this census yields no fidelity reason to displace the local \(Q_1\)
+compilation.
+
+\subsection{Native CPU cost}
+
+Table~\ref{tab:nativecpu} reports three-channel float32 wall time on an M4
+Mac mini. Native CONV$^{*}$, Lanczos-3, bilinear, and EASU use ARM
+NEON and the same ten-worker pool; PCHIP is SciPy's compiled implementation.
+Each entry is the median of 21 calls after three warmups, without affinity.
+The largest median absolute deviation in the table is 0.065 ms. Fidelity and
+timing use the same formulas, but the EASU timing arm uses the native shader
+translation rather than the binary64 audit port.
+
+\begin{table}[H]
+\caption{Native RGB point-synthesis time to $512^2$ (ms)}
+\label{tab:nativecpu}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.7pt}
+\begin{tabular}{l|rr}
+\hline
+Method & from $64^2$ & from $256^2$ \\
+\hline
+CONV$^{*}$ & 2.985 & 9.725 \\
+Lanczos-3  & 2.045 & 3.147 \\
+Bilinear   & 0.282 & 0.834 \\
+EASU       & 1.715 & 1.704 \\
+PCHIP      & 3.750 & 15.131 \\
+\hline
+\end{tabular}
+\end{table}
+
+The native result places the cost rather than hiding it: at twofold synthesis
+CONV$^{*}$ is 3.09 times the Lanczos-3 time and 5.71 times the EASU time. At
+eightfold synthesis it is 1.46 times the Lanczos-3 time and 1.74 times the
+EASU time. These measurements
+characterize the present CPU realization;
+they are not used in any analytical claim.
+
+Table~\ref{tab:binary64audit} is an implementation audit, not a substitute for
+the preceding exact-arithmetic proofs. It uses 80 deterministic Gaussian
+three-channel lines over five lengths. The current-mass, cardinal, and lifting
+residuals remain at binary64 rounding scale, and no admitted current has sign
+variation exceeding its observed secant sequence.
+
+\begin{table}[H]
+\caption{Binary64 conformance audit over 80 deterministic trials}
+\label{tab:binary64audit}
+\centering
+\scriptsize
+\begin{tabular}{l|c}
+\hline
+Quantity & Maximum observed value \\
+\hline
+Cell-current mass residual & $8.88\times10^{-16}$ \\
+Nested cardinal error & $1.33\times10^{-15}$ \\
+Retained-detail lifting error & $4.44\times10^{-16}$ \\
+Sign-variation surplus & 0 \\
+\hline
+\end{tabular}
+\end{table}
+
+The executable generator, complete per-case records, and figure construction
+form the supplementary material accompanying the paper. Aggregate curves and
+tables are generated from those records without case removal or post hoc
+weighting; the analytic population itself is fully specified above.
+% END COMPOSED SYNTHETIC EVIDENCE
+
+% BEGIN COMPOSED CONVSTAR
+\section{Can CONV Be Made Efficient Using Convolution?}
+\label{sec:convstar}
+
+Because CONV specifies the two-jet, lineage ledger, signed-fibre projection,
+Bernstein synthesis, and Eikonal factor blend independently of an execution
+backend, the same operator admits a bounded-work FIR realization. Denoted by
+CONV$^{*}$, this realization eliminates the one-dimensional jet algebra into
+fixed convolution banks, batches the exact projection, compiles repeated
+phases into a polyphase output bank, and replaces the all-source action sum by
+the local nodal compilation derived below. The asterisk therefore denotes a
+computational refinement of the same admitted fibre, rather than another
+interpolation model. In two dimensions, the FIR bank replaces each
+one-dimensional occurrence of \(\mathcal C\) in \(\Tcal_{xy}\) and
+\(\Tcal_{yx}\); at a fixed endpoint-aligned scale, the same polyphase bank is
+used in opposite factor orders and the resulting proposals are blended
+pointwise, without forming a source-specific frame or chart bank.
+
+\subsection{Local compilation of Eikonal admission}
+
+Let \(\eta_p\) be the nodal order coordinate in
+\eqref{eq:witnesscompatibility}. A local compilation is obtained by replacing
+the all-source action interpolant \(\beta\) with its bilinear nodal extension,
+\begin{align}
+ \beta^*(x)&=\sum_{p\in\operatorname{cell}(x)}b_p(x)\eta_p,\nonumber\\
+ \Tcal^*Y&=(1-\beta^*)\Tcal_{xy}Y+\beta^*\Tcal_{yx}Y.
+ \label{eq:starlocaladmission}
+\end{align}
+\begin{proposition}[Cardinal compilation identity]
+Let \(I_h\) denote cellwise bilinear \(Q_1\) interpolation on the source
+lattice. Then
+\begin{equation}
+ \boxed{\beta^*=I_h\beta.}
+ \label{eq:starcardinalcompilation}
+\end{equation}
+Consequently, \(\beta^*\) is the unique continuous cellwise bilinear extension
+of the formal Eikonal admission's nodal trace.
+\end{proposition}
+
+\begin{proof}
+The Kronecker action identity \eqref{eq:kroneckeraction} gives
+\(\beta(x_p)=\eta_p\) at every source node. Applying \(I_h\) therefore yields
+\((I_h\beta)(x)=\sum_{p\in\operatorname{cell}(x)}b_p(x)\beta(x_p)\), which is
+exactly \eqref{eq:starlocaladmission}.
+\end{proof}
+
+Thus the compilation is not an independently chosen approximation rule, but
+the canonical \(Q_1\) interpolant of the formal admission data; it is
+parameter-free, bounded in \([0,1]\), and permutation covariant. Subtracting
+\eqref{eq:witnessedblend} from \eqref{eq:starlocaladmission} gives the exact
+implementation defect
+\begin{equation}
+ \Tcal^*Y-\Tcal Y
+ = (\beta^*-\beta)(\Tcal_{yx}Y-\Tcal_{xy}Y),
+ \label{eq:stardefect}
+\end{equation}
+and therefore, componentwise,
+\begin{equation}
+ |\Tcal^*Y-\Tcal Y|
+ \leq |\beta^*-\beta|\,|\Tcal_{yx}Y-\Tcal_{xy}Y|.
+ \label{eq:stardefectbound}
+\end{equation}
+Therefore the local compilation is exact wherever the factor orders commute,
+including constant and affine coordinate fields. Moreover,
+\eqref{eq:stardefect} isolates the sole two-dimensional approximation
+introduced by CONV$^{*}$, since the current construction within each factor
+remains unchanged.
+
+For direct evaluation, \(\eta_p\) requires only the squared first-jet
+channels already produced by the two Cartesian front ends:
+\begin{equation}
+ \eta_p=
+ \frac{\sum_c(D_yY_p^{(c)})^2}
+ {\sum_c\bigl[(D_xY_p^{(c)})^2+(D_yY_p^{(c)})^2\bigr]},
+ \label{eq:stardirecteta}
+\end{equation}
+with the value one half when the denominator vanishes. Consequently, neither
+an eigendecomposition nor the cross term of the current tensor is required
+to evaluate the order coordinate. At a target point, the four nodal values
+in \eqref{eq:starlocaladmission} may be combined with the final convex blend
+in the same output write. This evaluates \(I_h\eta\) exactly while avoiding a
+separate target-sized coordinate raster and its two Cartesian interpolation
+passes.
+
+\subsection{Aggregate Green admission}
+
+A global elliptic continuation of the same nodal coordinate is obtained as
+follows. Put \(K=M^{-1}\), let \(\rho\) be the source density per unit
+Riemannian area, and define
+\begin{equation}
+ \begin{aligned}
+  (\rho-\Delta_M)U&=\sum_a\delta_{s_a},\\
+  (\rho-\Delta_M)V&=\sum_a\eta_a\delta_{s_a},\\
+  \beta_G&=V/U.
+ \end{aligned}
+ \label{eq:greenadmission}
+\end{equation}
+subject to the no-flux boundary condition
+\(n^TK\nabla U=n^TK\nabla V=0\). In the unit source-lattice coordinates used
+throughout the paper, \(\rho=1\). Under \(x\mapsto cx\), both \(\rho\) and
+\(\Delta_M\) scale by \(c^{-2}\), so the screening length is fixed by the
+sampling density rather than by a fitted bandwidth. Moreover, the two
+right-hand sides use one SPD operator and one factorization, without forming
+an individual distance field for each source.
+
+\begin{proposition}[Green transport coordinate]
+The continuum coordinate in \eqref{eq:greenadmission} is cardinal by
+continuous extension, satisfies
+\begin{equation}
+ \min_a\eta_a\leq\beta_G(x)\leq\max_a\eta_a,
+ \label{eq:greenmaximum}
+\end{equation}
+and, away from the source sites, obeys
+\begin{equation}
+ \operatorname{div}\!\left(U^2M^{-1}\nabla\beta_G\right)=0.
+ \label{eq:greenharmonic}
+\end{equation}
+Equivalently, it minimizes
+\begin{equation}
+ \mathcal E_U[\vartheta]
+ =\frac12\int_\Omega U^2\nabla\vartheta^TM^{-1}\nabla\vartheta\,
+ d\operatorname{vol}_M
+ \label{eq:greenenergy}
+\end{equation}
+subject to the nodal traces \(\vartheta(s_a)=\eta_a\).
+\end{proposition}
+
+\begin{proof}
+For \(\rho>0\), the shifted Neumann form is coercive and its Green kernel is
+strictly positive. Consequently, \(V/U\) is a positive normalized
+Green-kernel blend of the \(\eta_a\), which proves
+\eqref{eq:greenmaximum} \cite{gilbargtrudinger2001}. In two dimensions, the
+diagonal singularity is
+\begin{equation}
+ G_\rho(x,s_a)=-\frac{1}{2\pi}\log d_M(x,s_a)+O(1).
+ \label{eq:greensingu}
+\end{equation}
+and therefore the self term dominates at \(s_a\), giving
+\(\lim_{x\to s_a}\beta_G(x)=\eta_a\). Away from the sources, substituting
+\(V=U\beta_G\) into the two homogeneous resolvent equations cancels the
+common mass term; the product rule then yields \eqref{eq:greenharmonic}, whose
+weak form is the Euler equation of \eqref{eq:greenenergy}.
+\end{proof}
+
+This construction continues the same nodal order coordinate, but it does not
+fuse the inverse-square Eikonal admission exactly. Indeed,
+\eqref{eq:greensingu} is logarithmic, whereas
+\eqref{eq:actionpartition} uses \(d_M^{-2}\); hence no second-order local
+elliptic Green function in two dimensions can make the two kernels
+identical. Since a finite-stencil diagonal also removes the continuum
+singularity, the raw discrete ratio \(V/U\) is not exactly cardinal. Exact
+discrete cardinality is obtained by solving \eqref{eq:greenharmonic} with the
+nodal traces imposed.
+
+Both the global Green admission and the local compilation therefore have the
+trace \(\eta_p\). The latter is the unique cellwise \(Q_1\) continuation
+satisfying locality, linearity in the four nodal values, cardinality, and
+separate affine exactness, whereas the former is the global minimizer of
+\eqref{eq:greenenergy}. Their difference in the reconstructed field is
+isolated exactly by
+\begin{equation}
+ \Tcal_{\beta_G}Y-\Tcal_{\beta^*}Y
+ =(\beta_G-\beta^*)(\Tcal_{yx}Y-\Tcal_{xy}Y).
+ \label{eq:greenblenddefect}
+\end{equation}
+Consequently, Green admission supplies a global metric-harmonic coordinate
+when that property is required, while \(Q_1\) remains the compact
+CONV$^{*}$ realization.
+
+One Cartesian factor has the dataflow
+\begin{equation}
+ y\xrightarrow{\rm FIR}(a,\delta)
+ \xrightarrow{\rm scan}\sigma
+ \xrightarrow{\rm tensorized\ projection}c
+ \xrightarrow{\rm polyphase}\widehat y.
+ \label{eq:starflow}
+\end{equation}
+Since the factors retain CONV's horizontal--vertical barrier, the second
+factor analyzes the values synthesized by the first. No single separable
+two-dimensional convolution therefore represents the complete nonlinear
+composition.
+
+\subsection{Compact FIR current bank}
+
+On an interior cell, let \(v_i=(y_{i+r})_{r=-2}^{3}\). Eliminating the
+intermediate jets and Bezier controls yields
+\begin{equation}
+ a_i=Kv_i,\quad K=\frac1{240}
+ \left[\begin{smallmatrix}
+ 4&-32&0&32&-4&0\\
+ 3&-16&-30&48&-5&0\\
+ -7&39&-130&130&-39&7\\
+ 0&5&-48&30&16&-3\\
+ 0&4&-32&0&32&-4
+ \end{smallmatrix}\right].
+ \label{eq:starfir}
+\end{equation}
+Hence the complete interior proposal is a fixed bank of five six-tap FIR
+filters. An equivalent realization first computes the two five-tap jet
+channels and the secant, and then forms the five currents by pointwise
+algebra. The latter requires fewer arithmetic operations on a conventional
+CPU, whereas the fused form maps directly to a multi-output convolution
+primitive. At the outer and near-outer cells, the stated second-order closure
+is retained rather than inferred from \eqref{eq:starfir} or supplied by zero
+padding.
+
+\subsection{The irreducible sign scan}
+
+Starting from the sampled signs
+\(s_i=\operatorname{sign}(\delta_i)\), CONV$^{*}$ fills a zero from the last
+witnessed nonzero sign, using the first future witness only for an initial
+zero run. Applying the same local least-disagreement rule to the resulting
+transition sites gives a segmented prefix scan followed by a short causal
+transition scan.
+
+\begin{proposition}[No bounded convolutional ledger]
+No fixed finite-receptive-field operator can reproduce the zero-sign filling
+rule for every line length.
+\end{proposition}
+
+\begin{proof}
+Fix a receptive-field radius \(R\) and a zero secant at a site whose previous
+\(R\) secants are also zero. Construct two lines with identical secants on
+that complete receptive field, but place a positive witness immediately
+before it in one line and a negative witness there in the other. The formal
+ledger assigns opposite signs at the selected zero site. A bounded local
+operator receives identical inputs and must return the same value, a
+contradiction.
+\end{proof}
+
+Therefore the scan must be retained rather than approximated by a bounded
+convolution. It involves linear work with one sign of persistent state per
+component, while all lines of a Cartesian factor remain independent.
+
+\subsection{Vectorized scalar-threshold admission}
+
+CONV$^{*}$ batches the exact scalar projection
+\eqref{eq:thresholdcurrent}--\eqref{eq:thresholdroot} by using a fixed sorting
+network for the five breakpoints in each cell. The six resulting affine
+intervals are tested in parallel, after which five signed clips return the
+admitted current. Chunking consequently bounds temporary storage
+independently of image size, and neither a combinatorial search nor an
+iterative numerical solve is involved.
+
+\subsection{Polyphase synthesis}
+
+Let \(B_j^5(u)\) denote the degree-five Bernstein basis. Eliminating the
+integrated controls gives
+\begin{equation}
+ \widehat y(i+u)=y_i+\sum_{k=0}^{4}g_k(u)c_{ik},\qquad
+ g_k(u)=\sum_{j=k+1}^{5}B_j^5(u).
+ \label{eq:starpolyphase}
+\end{equation}
+For integer refinement \(r\), only the phases \(u=p/r\),
+\(p=1,\ldots,r-1\), are required. Their \(g_k\) values form a fixed
+polyphase matrix. At twofold refinement,
+\begin{equation}
+ \widehat y(i+\tfrac12)=y_i+\frac{1}{32}
+ [31,26,16,6,1]c_i.
+ \label{eq:starmidpoint}
+\end{equation}
+Thus neither the Bezier controls nor their cumulative current sums need be
+stored. Nested source nodes are copied directly for point interpolation,
+whereas conservative multiresolution compiles the half-cell functional
+\eqref{eq:halfcells}, block averages, and centered moment channels of
+Section~IX; it does not replace them by strided anchor selection.
+Accordingly, \eqref{eq:starmidpoint} is a compiled twofold phase rather than
+the domain of CONV. For an arbitrary target length \(M\), the continuous
+operator evaluates \eqref{eq:starpolyphase} at the coordinates
+\eqref{eq:targetmap}; whenever the target uses a repeated finite phase set,
+the same expression yields a fixed polyphase bank.
+
+\subsection{Equivalence audit}
+
+The binary64 audit uses 72 deterministic Gaussian three-channel lines over
+lengths \(5,9,17,33,65,129\). The maximum difference from the formal current
+is \(9.44\times10^{-16}\); the maximum synthesized-value difference is
+\(8.88\times10^{-16}\). Cardinal error is zero, current-mass residual is at
+most \(1.78\times10^{-15}\), and no sign-variation surplus is observed.
+
+A second audit in Section~XI compares the local action compilation with the
+formal all-source Eikonal operator. It reports the defect in
+\eqref{eq:stardefect}, rather than conflating that approximation with the
+binary64-equivalent FIR factor compilation.
+
+\subsection{FIR refinement}
+
+Collecting the preceding reductions, CONV$^{*}$ comprises compact FIR
+analysis, exact segmented lineage, vectorized scalar-threshold admission,
+polyphase synthesis, and the cardinal \(Q_1\) action coordinate
+\eqref{eq:starcardinalcompilation}. Its one-dimensional factor is
+algebraically identical to CONV; in two dimensions, the only departure is the
+explicitly bounded defect \eqref{eq:stardefect}.
+
+\subsection{Can CONV\texorpdfstring{$^{*}$}{*} Compete with EASU?}
+
+EASU produces each target pixel in a single two-dimensional pass over a fixed
+neighborhood \cite{lottes2021}. CONV$^{*}$, however, retains a barrier between
+its Cartesian factors, since the second factor analyzes the nonlinear output
+of the first. No throughput ordering follows from the formulas alone;
+nevertheless, every nonlinear cell operation has now been reduced to the
+fixed scalar-threshold and scan primitives specified above.
+
+\subsubsection{Parallel lineage}
+
+Sign inheritance is obtained by seeded prefix propagation, and the boundary
+objective likewise has a scan form. For one transition window
+\([p,q]\), let \(s^-\) and \(s^+\) be its left and right coarse signs and
+define
+\begin{align}
+ P^-(b)&=\sum_{k=p}^{b-1}[\min(0,s^-a_k)]^2,\nonumber\\
+ S^+(b)&=\sum_{k=b}^{q}[\min(0,s^+a_k)]^2.
+ \label{eq:starconflictscan}
+\end{align}
+Using these partial sums, every candidate cost in \eqref{eq:boundary} becomes
+\begin{equation}
+ C(b)=P^-(b)+S^+(b),
+ \label{eq:starboundarycost}
+\end{equation}
+so that one prefix sum and one suffix sum replace repeated evaluation of the
+overlapping windows.
+
+The dependence between successive transition boundaries is finite as well.
+Indeed, if \(\kappa_\ell-\kappa_{\ell-1}\geq2\), then
+\begin{equation}
+ b_{\ell-1}+1\leq5\kappa_\ell-5<5\kappa_\ell-4,
+ \label{eq:starwindowseparation}
+\end{equation}
+and the preceding boundary cannot restrict the candidate set
+\eqref{eq:candidates}; dependence remains only inside a run of adjacent
+coarse transitions. Writing
+\(r_\ell=b_\ell-5\kappa_\ell\in\{-4,\ldots,4\}\), each transition in such a
+run defines a deterministic map \(G_\ell\) from the preceding offset to the
+next, including the stated first-minimum tie rule. Since function composition
+is associative, a parallel prefix composition of these nine-state maps yields
+the exact greedy result.
+
+\subsubsection{Factor schedule}
+
+The remaining work of one factor is fixed local analysis, the lineage scans,
+the scalar solve \eqref{eq:thresholdmass}, and the polyphase dot product
+\eqref{eq:starpolyphase}. Node jets may be formed once and shared by their two
+incident cells. Fixed-scale phases are constants, and components in the
+declared channel basis may be evaluated together. A tiled implementation may
+write the synthesized factor through an on-chip transpose so that the next
+factor again reads contiguous lines; it may not remove the intervening factor
+barrier without changing the operator.
+
+These reductions preserve the boundary closures, ordered tie rules, channel
+basis, and Cartesian factor order of CONV. They reduce the remaining
+nonlinear state to scans and a five-value piecewise-affine root. Whether that
+arithmetic advantage offsets the intermediate factor traffic is a property
+of a concrete implementation and target architecture. No performance claim
+is made here; equations \eqref{eq:thresholdcurrent}--\eqref{eq:starwindowseparation}
+specify the exact reduced form for such an implementation.
+% END COMPOSED CONVSTAR
+
+\section{Inversion in Conventional Resampling}
+\enlargethispage{2\baselineskip}
+
+Windowed-sinc, cubic, and edge-directed raster interfaces are ordinarily
+specified as synthesis maps from one grid to another.\footnote{Glory first
+be to The Holy One, Blessed be He
+({\hebrewfont הַקָּדוֹשׁ בָּרוּךְ הוּא}), from whom all
+good things come. To Him we attribute the ability that has provided for all
+good to come and be demonstrated anywhere herein, and declare ourselves
+unworthy servants. If in any way we have erred, or our work is insufficient,
+we ask mercy and kindness, for our effort is good and earnest.} Their multiresolution
+analysis and synthesis filters are separately constructed, and the identity
+\(D_sU_s=I\) on coarse inputs does not make the discarded fine array
+recoverable. CONV adds a native analysis state: conserved cell averages,
+admitted centered moments, and residual moment fields have explicit analysis
+and synthesis maps. The comparison is representational rather than a
+claim that invertible multiscale methods are new; wavelet lifting already
+establishes the general analysis--prediction--detail principle
+\cite{sweldens1998}, and Harten's construction already represents nested
+cell averages by coarse averages and fine-grid prediction errors
+\cite{harten1995}. Here those established coordinates are joined to compact quintic
+transport and a factorwise ringing-incapability theorem.
+
+\section{Conclusion}
+
+Compact Ordered Nodal Variation formulates interpolation and matched
+multiresolution transfer through a conservative signed-current
+representation. A high-order two-jet supplies the current proposal, ordered
+admission restricts its derivative-sign lineage before Bernstein synthesis,
+and a source-derived Riemannian coordinate couples the two Cartesian factor
+orders. The same representation yields arbitrary-scale basin reduction,
+exact residual-moment lifting, and the FIR/polyphase realization
+CONV$^{*}$.
+
+The analysis establishes cardinality, affine reproduction, cell-current
+conservation, factorwise variation diminution, fixed-ledger nonexpansiveness,
+sample-count-independent error bounds, well-posed Riemannian action, exact
+retained-detail inversion, and Nyquist annihilation by conservative
+restriction. The deterministic synthetic results confirm the predicted sign
+topology and rapid resolved-field convergence; matched-cycle comparisons show
+competitive fidelity with substantially smaller range excursion than
+Lanczos on the selected diagonal interface, while native timings identify
+the remaining cost of nonlinear admission and the Cartesian factor barrier.
+
+Appendix~\ref{app:directwarp} develops the joint two-dimensional current
+admission required for direct affine and projective warps, extending the
+factorwise construction without intermediate rasterization.
+
+% BEGIN COMPOSED DIRECT WARP APPENDIX
+% Direct-warp appendix shared by the modular and composed paper builds.
+\providecommand{\WarpFigureRoot}{conv_paper_assets}
+\appendices
+\section{Direct Joint CONV Warps}
+\label{app:directwarp}
+
+The continuous CONV representation admits a direct extension from lattice
+resize to rotation, skew, anisotropic affine transfer, and perspective warp.
+The necessary change is not a decomposition of the coordinate map into
+one-dimensional resampling passes.  It is a joint admission of the
+two-dimensional current before that map is evaluated.  The construction
+below consequently retains one inverse map, one continuous source atlas, and
+one positive raster functional.  No intermediate raster occurs.
+
+\subsection{One inverse map and its induced geometry}
+
+Let \(\Omega\subset\R^2\) denote the normalized source rectangle and let
+\(\widehat\Omega\subset\R^2\) denote the target rectangle.  A nonsingular
+inverse warp
+\begin{equation}
+ F:\widehat\Omega\longrightarrow\Omega,\qquad q\longmapsto p=F(q),
+ \label{eq:warpmap}
+\end{equation}
+is declared once.  Given the admitted source atlas \(U_Y\), point synthesis is
+\begin{equation}
+ (\mathcal W_FY)(q)=U_Y(F(q)).
+ \label{eq:warppoint}
+\end{equation}
+Thus a shear factorization of an affine map is neither required nor used.
+Indeed, repeated admitted interpolation would generally define a different
+nonlinear operator, because every intermediate raster changes the current
+state from which the next admission is formed.
+
+When the source current geometry is expressed by the SPD field \(M(p)\), the
+same inverse map induces the target quadratic form
+\begin{equation}
+ G_F(q)=J_F(q)^TM(F(q))J_F(q),
+ \qquad J_F=DF,
+ \label{eq:warppullback}
+\end{equation}
+and its determinant-one shape is
+\begin{equation}
+ \overline M_F(q)=\frac{G_F(q)}{\det(G_F(q))^{1/2}}.
+ \label{eq:warpshape}
+\end{equation}
+Equation~\eqref{eq:warppullback} combines sampling scale, anisotropy, and the
+warp before a square root or directional support is formed.  Consequently it
+does not assume that Cartesian spacing commutes with the eigenframe of
+\(M\).  The scalar \(\det(G_F)^{1/4}\) carries linear scale, while
+\eqref{eq:warpshape} carries directional shape.
+
+\subsection{Compiled bivariate proposal}
+
+Index the source cells by \(C\), and write \((u,v)\in[0,1]^2\) for local
+cell coordinates.  The joint source potential on cell \(C\) is represented
+in the tensor Bernstein basis as
+\begin{equation}
+ U_C(u,v)=\sum_{i=0}^{5}\sum_{j=0}^{5}
+ P_{C,ji}B_i^5(u)B_j^5(v).
+ \label{eq:warppatch}
+\end{equation}
+The proposal controls are not fitted by an optimizer.  Let
+\begin{equation}
+ A_{ri}=B_i^5(r/5),\qquad 0\leq r,i\leq5,
+ \label{eq:warpcollocation}
+\end{equation}
+and let \(Z_C\) contain the values of the complete two-order CONV proposal at
+the \(6\times6\) fifth-step tensor lattice of \(C\).  Since the Bernstein
+collocation matrix \(A\) is nonsingular, the unique bidegree-\((5,5)\)
+proposal is
+\begin{equation}
+ \widetilde P_C=A^{-1}Z_CA^{-T}.
+ \label{eq:warpproposal}
+\end{equation}
+All entries of every \(Z_C\) are obtained from one global fifth-step
+evaluation.  Adjacent cells therefore have the same six samples on their
+common edge; uniqueness in \eqref{eq:warpcollocation} then gives the same
+complete Bernstein edge.  Equivalently, the patches are stored in one shared
+global control lattice.  The resulting proposal is \(C^0\), and its current
+is the gradient of one continuous piecewise-polynomial potential.
+
+Let \(B\) denote the degree-elevated \(Q_1\) interpolant of the source
+samples on that shared lattice.  It is cardinal, continuous, and affine
+exact.  Admission will move \(B\) toward \(\widetilde P\), while the source
+vertices remain fixed.
+
+\subsection{Support-range admission}
+
+For each source cell \(C\), let \(\mathcal S_C\) be the complete Cartesian
+two-jet sample support, clipped at the outer boundary.  If shared control
+entity \(e\) is incident to the cell set \(\mathcal I(e)\), define, for
+channel \(c\),
+\begin{equation}
+ I_e^{(c)}=
+ \bigcap_{C\in\mathcal I(e)}
+ \left[
+  \min_{p\in\mathcal S_C}Y_p^{(c)},
+  \max_{p\in\mathcal S_C}Y_p^{(c)}
+ \right].
+ \label{eq:warprangeintersection}
+\end{equation}
+This intersection is nonempty: the corresponding \(Q_1\) control is a
+convex combination of common incident vertices and belongs to every interval
+in \eqref{eq:warprangeintersection}.  The proposal is first replaced by
+\begin{equation}
+ \widehat P_e^{(c)}=\Pi_{I_e^{(c)}}\widetilde P_e^{(c)}.
+ \label{eq:warprangeclip}
+\end{equation}
+Unlike a post-reconstruction clamp, \eqref{eq:warprangeclip} constrains the
+continuous potential.  Subsequent current admission remains on the segment
+from \(B_e^{(c)}\) to \(\widehat P_e^{(c)}\), so every final control remains
+in \(I_e^{(c)}\).
+
+\begin{theorem}[Continuous support-range admission]
+For every channel and source cell,
+\begin{equation}
+ \min_{p\in\mathcal S_C}Y_p^{(c)}
+ \leq U_C^{(c)}(u,v)\leq
+ \max_{p\in\mathcal S_C}Y_p^{(c)},
+ \qquad (u,v)\in[0,1]^2.
+ \label{eq:warprangetheorem}
+\end{equation}
+Consequently, point synthesis and every positive warped-pixel average have no
+range excursion beyond the union of the source supports they traverse.
+\end{theorem}
+
+\begin{proof}
+For cell \(C\), every one of its 36 shared controls belongs to the interval
+on the right of \eqref{eq:warprangetheorem}.  The tensor Bernstein basis is
+nonnegative and forms a partition of unity, hence \(U_C\) is a convex
+combination of those controls.  Point evaluation gives the first result, and
+integration against a nonnegative normalized measure gives the second.
+\end{proof}
+
+\subsection{Support-current cone}
+
+The one-dimensional theorem controls current along a declared factor.  A
+rotated or projective query instead requires a joint source current law.  For
+cell \(C\), collect the four corner gradients of every \(Q_1\) cell contained
+in \(\mathcal S_C\):
+\begin{equation}
+ \mathcal G_C=
+ \left\{\nabla Q_D(z):D\subset\mathcal S_C,
+              \ z\in\operatorname{vert}(D)\right\}.
+ \label{eq:warpgenerators}
+\end{equation}
+Zero vectors are removed.  If the remaining directions generate a proper
+closed planar cone, let
+\begin{equation}
+ K_C=\operatorname{cone}\mathcal G_C;
+ \label{eq:warpcone}
+\end{equation}
+if no nonzero current is observed, or if the observed currents positively
+span the plane, set \(K_C=\R^2\).  Thus a clean interface gives a narrow
+cone, curvature gives a wedge, and crossing currents remove a directional
+restriction rather than forcing a false owner or normal.
+
+Every proper planar cone occurring here has a finite half-space description
+\begin{equation}
+ K_C=\left\{z\in\R^2:\ell_{Cr}^Tz\geq0,
+                       \ 1\leq r\leq R_C\right\},
+ \qquad R_C\leq3.
+ \label{eq:warpconedual}
+\end{equation}
+A wedge uses its two inward boundary normals.  A ray additionally requires a
+forward inequality, while a line uses two opposing transverse inequalities.
+The whole-plane case has \(R_C=0\).
+
+For each \(r\), the directional derivative
+\begin{equation}
+ L_{Cr}(u,v)=\ell_{Cr}^T\nabla U_C(u,v)
+ \label{eq:warpdirectional}
+\end{equation}
+is degree elevated to the bidegree-\((5,5)\) Bernstein basis.  Denote its 36
+linear control functionals by \(a_{Crk}^TP\).  The finite admission
+conditions are
+\begin{equation}
+ a_{Crk}^TP\geq0,\qquad
+ 1\leq r\leq R_C,\quad 1\leq k\leq36.
+ \label{eq:warpfiniteconstraints}
+\end{equation}
+Nonnegativity of these Bernstein coefficients is a sufficient certificate
+for \(L_{Cr}\geq0\) on the complete cell.
+
+The degree-elevated \(Q_1\) baseline is a constructive feasible point.  Its
+gradient is a convex combination of the four corner gradients of its source
+cell; those gradients occur in \(\mathcal G_C\).  Hence
+\begin{equation}
+ \nabla B_C(u,v)\in K_C
+ \label{eq:warpbaselinefeasible}
+\end{equation}
+everywhere, and every margin in \eqref{eq:warpfiniteconstraints} is
+nonnegative.
+
+\subsection{Finite topological-entity admission}
+
+Assign each nonvertex control to exactly one shared-edge or cell-interior
+entity \(g\).  With the range-admitted proposal from
+\eqref{eq:warprangeclip}, write
+\begin{equation}
+ \widehat P=B+\sum_gd_g,
+ \label{eq:warpgroups}
+\end{equation}
+where the entity corrections have disjoint control ownership.  For a global
+constraint \(a_k^TP\geq0\), put
+\begin{equation}
+ m_k=a_k^TB,\qquad
+ H_k=\sum_g\max(0,-a_k^Td_g).
+ \label{eq:warpmargin}
+\end{equation}
+If \(\widehat P\) already satisfies all constraints, it is accepted
+unchanged.  Otherwise each harmful entity is assigned the simultaneous
+capacity
+\begin{equation}
+ \alpha_g=min\!\left\{1,
+  \min_{k:a_k^Td_g<0,\ H_k>0}\frac{m_k}{H_k}\right\},
+ \label{eq:warpcapacity}
+\end{equation}
+with an empty inner minimum interpreted as one.  The first admitted state is
+\begin{equation}
+ P^{(0)}=B+\sum_g\alpha_gd_g.
+ \label{eq:warpfirststate}
+\end{equation}
+Finally, let \(R=\widehat P-P^{(0)}\) and take the maximal common ray
+\begin{equation}
+ \tau=\min\!\left\{1,
+   \min_{k:a_k^TR<0}
+   \frac{a_k^TP^{(0)}}{-a_k^TR}\right\},
+ \qquad P=P^{(0)}+\tau R.
+ \label{eq:warpray}
+\end{equation}
+Again, an empty inner minimum is one.  Equations
+\eqref{eq:warpcapacity}--\eqref{eq:warpray} contain neither an iteration nor
+an active-set search.
+
+\begin{theorem}[Finite joint current admission]
+The control lattice \(P\) obtained from
+\eqref{eq:warpcapacity}--\eqref{eq:warpray} satisfies every constraint in
+\eqref{eq:warpfiniteconstraints}.  Consequently,
+\begin{equation}
+ \nabla U_C(u,v)\in K_C,
+ \qquad (u,v)\in[0,1]^2,
+ \label{eq:warpgradientcone}
+\end{equation}
+for every source cell.  The construction is finite, order independent,
+cardinal, \(C^0\), and affine exact.
+\end{theorem}
+
+\begin{proof}
+Fix constraint \(k\).  Contributions with \(a_k^Td_g\geq0\) can be
+discarded in a lower bound.  For every harmful entity,
+\(\alpha_g\leq m_k/H_k\), and therefore
+\begin{equation}
+ a_k^TP^{(0)}
+ \geq m_k-\frac{m_k}{H_k}
+       \sum_g\max(0,-a_k^Td_g)
+ =0.
+ \label{eq:warpcapacityproof}
+\end{equation}
+Equation~\eqref{eq:warpray} is the exact first intersection of the remaining
+affine ray with the finite half-space boundary, hence \(a_k^TP\geq0\) as
+well.  Applied to all derivative coefficients, Bernstein positivity gives
+\(\ell_{Cr}^T\nabla U_C\geq0\), which is equivalent to
+\eqref{eq:warpgradientcone} through \eqref{eq:warpconedual}.
+
+Source vertices are not assigned to a movable entity.  Shared-edge controls
+are single variables, so cardinality and \(C^0\) continuity are retained.
+For affine data, the proposal equals the degree-elevated affine baseline and
+already satisfies the cone and range constraints; it is consequently passed
+unchanged.
+\end{proof}
+
+The theorem also explains why the construction is not an edge detector.  It
+does not select one current from \(\mathcal G_C\).  Instead it admits the
+complete high-order proposal whenever all of its derivative coefficients lie
+in the cone generated by the currents actually present in the declared
+support.
+
+\subsection{Transport through affine and projective maps}
+
+Let \(\gamma:[a,b]\to\widehat\Omega\) be a \(C^1\) target curve.  At every
+regular point contained in one source cell, the chain rule gives
+\begin{equation}
+ \frac{d}{ds}U_Y(F(\gamma(s)))=
+ \bigl[J_F(\gamma(s))\gamma'(s)\bigr]^T
+ \nabla U_Y(F(\gamma(s))).
+ \label{eq:warpchain}
+\end{equation}
+Let
+\begin{equation}
+ K_C^*=\{t\in\R^2:t^Tz\geq0\ \text{for all }z\in K_C\}
+ \label{eq:warpdual}
+\end{equation}
+be the dual current direction cone.
+
+\begin{corollary}[Warped-current transport]
+Suppose \(F(\gamma(s))\) crosses only finitely many source-cell boundaries
+and
+\begin{equation}
+ J_F(\gamma(s))\gamma'(s)\in K_{C(s)}^*
+ \label{eq:warptangentcondition}
+\end{equation}
+for almost every \(s\), where \(C(s)\) contains \(F(\gamma(s))\).  Then
+\(U_Y\circ F\circ\gamma\) is nondecreasing on \([a,b]\).
+\end{corollary}
+
+\begin{proof}
+Equations \eqref{eq:warpgradientcone}, \eqref{eq:warpdual}, and
+\eqref{eq:warpchain} make the derivative nonnegative in every open patch
+segment.  The atlas is continuous and piecewise \(C^1\); therefore its
+composition with the curve is absolutely continuous after splitting at the
+finite knot set.  The fundamental theorem gives
+\begin{equation}
+ U_Y(F(\gamma(b)))-U_Y(F(\gamma(a)))
+ =\int_a^b\frac{d}{ds}U_Y(F(\gamma(s)))\,ds\geq0.
+\end{equation}
+The knot points have measure zero and require no derivative convention.
+\end{proof}
+
+Affine maps transport the admitted directions by one constant Jacobian.
+Homographies transport them by the spatially varying Jacobian of the same
+declared map.  In either case, no target-space owner, orientation, or second
+interpolation operation is introduced.
+
+\subsection{Conservative warped-pixel analysis}
+
+Point synthesis is appropriate for enlargement.  For reduction, let
+\(\{P_j\}\) be the endpoint-aligned target Voronoi basins.  The matched
+raster functional is
+\begin{equation}
+ (\mathcal B_FY)_j=
+ \frac{1}{|P_j|}\int_{P_j}U_Y(F(q))\,dq.
+ \label{eq:warppixel}
+\end{equation}
+Since the basins partition the target domain,
+\begin{equation}
+ \sum_j|P_j|(\mathcal B_FY)_j
+ =\int_{\cup_jP_j}U_Y(F(q))\,dq.
+ \label{eq:warpconservation}
+\end{equation}
+Thus \eqref{eq:warppixel} is conservative relative to the admitted continuous
+profile.  It is also a positive average and inherits
+\eqref{eq:warprangetheorem}.
+
+For affine \(F\), a target basin maps to a source parallelogram.  Splitting
+at the integer source-knot lines produces convex polygons, each contained in
+one patch.  Positive fan triangulation introduces no overlap.  On every
+triangle, \(U_C\) has total degree at most ten.  Under a Duffy map the area
+Jacobian raises one separate degree to at most eleven; consequently, the
+tensor three-point rule is insufficient, whereas tensor Gauss--Legendre
+order six is exact.  Division by the mapped parallelogram area then gives
+\eqref{eq:warppixel} exactly.
+
+For a homography, source-coordinate integration yields
+\begin{equation}
+ (\mathcal B_FY)_j=\frac1{|P_j|}
+ \int_{F(P_j)}U_Y(p)\left|\det DF^{-1}(p)\right|\,dp.
+ \label{eq:warpprojectiveintegral}
+\end{equation}
+With homogeneous coordinate normalizations absorbed into the nonsingular
+matrix \(H\), the inverse-map density is
+\begin{equation}
+ \left|\det DF^{-1}(p)\right|
+ =\frac{|\det H^{-1}|}{|\ell(p)|^3},
+ \label{eq:warpdensity}
+\end{equation}
+where \(\ell\) is the affine denominator of \(H^{-1}\).  On a clipped
+triangle choose a nonzero center \(c\) of the denominator interval and write
+\(\ell=c(1+z)\), with \(|z|\leq r<1\).  Then
+\begin{equation}
+ (1+z)^{-3}=\sum_{k=0}^{K}(-1)^k\binom{k+2}{2}z^k+R_K(z).
+ \label{eq:warpseries}
+\end{equation}
+The tail admits the closed bound
+\begin{align}
+ |R_K(z)|&\leq T_{K+1}(r),\label{eq:warptail}\\
+ T_n(r)&=\frac{r^n}{2}\left[
+ \frac{r(1+r)}{(1-r)^3}
+ +\frac{(2n+3)r}{(1-r)^2}\right.\nonumber\\
+ &\hspace{25mm}\left.
+ +\frac{(n+1)(n+2)}{1-r}\right].\nonumber
+\end{align}
+The finite series multiplied by \(U_C\) is polynomial and is integrated
+exactly by tensor Gauss order
+\begin{equation}
+ q_K=\left\lceil\frac{K+12}{2}\right\rceil.
+ \label{eq:warpseriesorder}
+\end{equation}
+If \(U_C=P_0+(U_C-P_0)\), the constant \(P_0\) is integrated exactly before
+\eqref{eq:warpseries} is applied.  Hence constants have zero certified
+residual.  For triangle \(T\), the remaining error is bounded by
+\begin{equation}
+ E_T\leq |T|\frac{|\det H^{-1}|}{|c|^3}
+ T_{K+1}(r)\,
+ \norm{U_C-P_0}_{L^\infty(T)}.
+ \label{eq:warpprojectivecertificate}
+\end{equation}
+Bernstein controls and first differences provide the required value bound.
+Four-way triangle subdivision is invoked only when the sum of
+\eqref{eq:warpprojectivecertificate} exceeds the declared pixel budget.  The
+exact integral \eqref{eq:warpprojectiveintegral} remains the operator; the
+finite implementation returns its value together with a rigorous enclosure.
+
+\subsection{Multichannel form}
+
+For \(Y:\Omega\cap\mathbb Z^2\to\R^C\), the control topology, support sets,
+and inverse map are shared.  Range and current admission are applied to each
+component in the declared channel basis, yielding the product set
+\begin{equation}
+ \prod_{c=1}^C
+ \left\{U^{(c)}:\nabla U_C^{(c)}\in K_C^{(c)},\ 
+ U_C^{(c)}\in I_C^{(c)}\right\}.
+ \label{eq:warpmultichannel}
+\end{equation}
+The preceding proofs therefore hold componentwise.  As with the main CONV
+operator, this statement is invariant under independent affine changes of
+channel units; it does not assert invariance under an arbitrary basis change
+that mixes channels.
+
+\subsection{Exact-truth evaluation}
+
+The evidence uses only procedural sources whose point values and warped-pixel
+means are independent of every tested interpolator.  The sharp corpus
+contains a half-plane with normal angle \(37^\circ\), a width-0.065 bar at
+\(27^\circ\), two width-0.055 crossing bars at \(31^\circ\) and
+\(121^\circ\), and a \(0.62\times0.34\) box at \(-19^\circ\), all centered
+at \((1/2,1/2)\).  The four target-to-source maps are
+\begin{align}
+ F_{\rm rot}&: (\theta,s_x,s_y)=(21^\circ,0.72,0.72),\nonumber\\
+ F_{\rm skew}&: (s_x,s_y,h_x)=(0.70,0.75,0.42),\nonumber\\
+ F_{\rm aniso}&: (\theta,s_x,s_y)=(-14^\circ,0.50,0.84),\nonumber\\
+ F_{\rm proj}&: (g_x,g_y,\theta,s_x,s_y)
+ =(0.32,-0.18,9^\circ,0.67,0.72),
+ \label{eq:warpcorpusmaps}
+\end{align}
+where affine maps use \(F(q)=\tfrac12+A(q-\tfrac12)\), with
+\(A=R_\theta\left(\begin{smallmatrix}1&h_x\\h_y&1\end{smallmatrix}\right)
+\operatorname{diag}(s_x,s_y)\), and the projective map uses
+\begin{equation}
+ F(q)=\frac12+
+ \frac{A(q-\frac12)}{1+(g_x,g_y)^T(q-\frac12)}.
+ \label{eq:warpprojectivedeclared}
+\end{equation}
+Exact polygon membership supplies point truth.  Since a source half-plane
+remains a target half-plane under a pole-free homography, polygon clipping in
+target coordinates supplies exact basin coverage.
+
+The smooth census uses the real Fourier fields
+\begin{equation}
+ f(x)=b+\sum_{k=1}^Ka_k
+ \cos\!\left(2\pi\xi_k^Tx+\varphi_k\right).
+ \label{eq:warpfourierfield}
+\end{equation}
+For an affine map, the exact mean over a target rectangle with center \(m\)
+and side lengths \(h_x,h_y\) is obtained by multiplying each transformed
+mode by
+\begin{equation}
+ \operatorname{sinc}((A^T\xi_k)_xh_x)
+ \operatorname{sinc}((A^T\xi_k)_yh_y).
+ \label{eq:warpfouriermean}
+\end{equation}
+The scalar probes use the two mode sets
+\begin{equation}
+\begin{aligned}
+ \mathcal F_1=\{&((5,2),.22,.13),\ ((9,3),.09,1.17),\\
+                &((2,-4),.07,-.41)\},\\
+ \mathcal F_2=\{&((6,1),.17,.2),\ ((-1,6),.17,-.6),\\
+                &((4,4),.09,1.1)\},
+\end{aligned}
+\label{eq:warpfourierprobes}
+\end{equation}
+with \(b=0.5\).  A three-channel probe uses wavevectors
+\((4,1),(1,5),(5,-3)\), phases \(0,0.7,-0.4\), and amplitude rows
+\begin{equation}
+ \begin{bmatrix}.22&.05&.08\\.04&.20&.07\\.06&.04&.18\end{bmatrix},
+ \qquad b=(.5,.5,.5).
+ \label{eq:warpmultichannelprobe}
+\end{equation}
+
+Table~\ref{tab:warpsharp} reports the 16 sharp cases on a
+\(17\times17\) source and \(13\times13\) target.  CONV has the lowest MSE in
+seven point cases and seven warped-pixel cases.  More importantly for the
+proved admission, its maximum range excursion remains at floating roundoff,
+whereas the factor-only ablation and Lanczos admit substantial excursion.
+
+\begin{table}[H]
+\caption{Sharp affine/projective exact-truth census}
+\label{tab:warpsharp}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.0pt}
+\begin{tabular}{lrrrr}
+\hline
+Method & Point MSE & Pixel MSE & Point exc. & Pixel exc.\\
+\hline
+CONV & .021002 & .007377 & \(2.22\!\times\!10^{-16}\) & \(3.18\!\times\!10^{-14}\)\\
+Factor ablation & .021137 & .007705 & .2287 & .1433\\
+Lanczos-3 & .022928 & .008741 & .2817 & .1989\\
+Bilinear & .021513 & .007576 & 0 & 0\\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure*}[!t]
+ \centering
+ \includegraphics[width=0.98\textwidth]{conv_paper_assets/conv_warp_projective_plate_canonical.png}
+ \vspace{3pt}
+ \includegraphics[width=0.74\textwidth]{conv_paper_assets/conv_warp_canonical_metrics.png}
+ \caption{Direct joint CONV warp evidence.  Top: one homography applied to
+ sources with exact projective basin truth; each displayed certificate is the
+ computed enclosure of the projective polynomial integral.  Bottom:
+ topology and exact-truth fidelity over the declared corpus.  Values plotted
+ at the numerical floor are below \(2\times10^{-16}\).  The factor-only
+ result is an ablation of joint current admission, not a second CONV
+ definition.}
+ \label{fig:warpevidence}
+\end{figure*}
+
+The intrinsic topology census evaluates normal profiles rather than using MSE
+as a surrogate for ringing.  For a profile \(z_0,\ldots,z_n\) whose exact
+orientation is increasing, the reported wrong-way current is
+\begin{equation}
+ V_-(z)=\sum_{i=0}^{n-1}\max(0,z_i-z_{i+1}).
+ \label{eq:warpwrongway}
+\end{equation}
+Straight interfaces use six source angles, three maps, 513 samples per
+profile, and source sides 17 and 33.  CONV has no normal sign changes,
+\(V_-\leq1.34\times10^{-14}\), and excursion below
+\(4.45\times10^{-16}\).  Lanczos-3 produces four to nine sign changes,
+mean \(V_-=0.276\)--\(0.277\), and mean excursion \(0.166\).
+
+For curved interfaces, circles and ellipses are tested at 12 phases under
+three maps, giving 72 profiles per source size.  Table~\ref{tab:warpcurved}
+shows that the admitted cone eliminates wrong-way normal current at sides 13,
+17, and 25.  At side 9, the range theorem remains exact, while the six-node
+support spans competing conic normals and the cone correctly widens; the
+remaining wrong-way current therefore measures support ambiguity rather than
+failure of the finite inequalities.
+
+\begin{table}[H]
+\caption{Curved-interface intrinsic normal census for CONV}
+\label{tab:warpcurved}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{rrrr}
+\hline
+Source side & Mean \(V_-\) & Max. \(V_-\) & Max. excursion\\
+\hline
+9  & \(1.94\times10^{-3}\) & \(2.80\times10^{-2}\) & \(2.22\times10^{-16}\)\\
+13 & \(1.67\times10^{-15}\) & \(4.77\times10^{-15}\) & \(4.44\times10^{-16}\)\\
+17 & \(2.23\times10^{-15}\) & \(6.44\times10^{-15}\) & \(4.44\times10^{-16}\)\\
+25 & \(3.31\times10^{-15}\) & \(5.44\times10^{-15}\) & \(4.44\times10^{-16}\)\\
+\hline
+\end{tabular}
+\end{table}
+
+On the nine band-admitted Fourier cases, mean point MSE is
+\(1.48764\times10^{-4}\) for CONV, \(1.06820\times10^{-4}\) for the
+factor-only ablation, \(4.57424\times10^{-5}\) for Lanczos-3, and
+\(1.22893\times10^{-3}\) for bilinear.  The corresponding warped-pixel MSEs
+are \(6.27668\times10^{-5}\), \(4.09234\times10^{-5}\),
+\(1.88691\times10^{-5}\), and \(7.63065\times10^{-4}\).  Thus the complete
+support maximum principle has a measurable smooth-field fidelity cost; the
+experiment does not support universal MSE dominance.
+
+Finally, affine conservation equates the weighted target sum and an
+independent exact integral of the admitted atlas to \(3\times10^{-12}\).  On
+a nonconstant projective plane, independent 40-point tensor integration
+differs from the certified result by \(1.18\times10^{-11}\), within its
+\(5.84\times10^{-10}\) enclosure.  The largest certificate returned by the
+sharp projective corpus is \(1.52\times10^{-11}\).  These computations verify
+the exact polynomial and error-enclosure implementations; the cardinality,
+integrability, range, current-cone, and transport statements follow from the
+preceding formulas rather than from the measurements.
+
+The direct warp therefore extends CONV without changing its governing idea:
+the high-order proposal is admitted in the representation that carries the
+current, after which point evaluation and positive basin analysis are two
+functionals of the same continuous object.  The principal remaining boundary
+is source resolution itself.  When one compact two-jet support contains
+genuinely competing interface normals, the observed cone contains both and
+cannot certify a narrower direction without adding information absent from
+the samples.
+% END COMPOSED DIRECT WARP APPENDIX
+
+\section*{AI GENERATED WORK DISCLAIMER}
+
+Substantial portions of this work were generated with the assistance of
+OpenAI Codex general reasoning models.
+
+\begin{thebibliography}{99}
+\scriptsize
+\bibitem{shannon1949}
+C. E. Shannon, "Communication in the presence of noise," \emph{Proc. IRE},
+vol. 37, no. 1, pp. 10--21, Jan. 1949.
+\bibitem{lanczos1956}
+C. Lanczos, \emph{Applied Analysis}. Englewood Cliffs, NJ, USA:
+Prentice-Hall, 1956.
+\bibitem{keys1981}
+R. G. Keys, "Cubic convolution interpolation for digital image
+processing," \emph{IEEE Trans. Acoust., Speech, Signal Process.}, vol. 29,
+no. 6, pp. 1153--1160, Dec. 1981.
+\bibitem{fritsch1980}
+F. N. Fritsch and R. E. Carlson, "Monotone piecewise cubic interpolation,"
+\emph{SIAM J. Numer. Anal.}, vol. 17, no. 2, pp. 238--246, Apr. 1980.
+\bibitem{hyman1983}
+J. M. Hyman, "Accurate monotonicity preserving cubic interpolation,"
+\emph{SIAM J. Sci. Stat. Comput.}, vol. 4, no. 4, pp. 645--654, Dec. 1983.
+\bibitem{costantini1987}
+P. Costantini, "Co-monotone interpolating splines of arbitrary degree---a
+local approach," \emph{SIAM J. Sci. Stat. Comput.}, vol. 8, no. 6,
+pp. 1026--1034, Nov. 1987, doi: 10.1137/0908083.
+\bibitem{dougherty1989}
+R. Dougherty, A. Edelman, and J. M. Hyman, "Nonnegativity-,
+monotonicity-, or convexity-preserving cubic and quintic Hermite
+interpolation," \emph{Math. Comp.}, vol. 52, no. 186, pp. 471--494,
+Apr. 1989, doi: 10.1090/S0025-5718-1989-0962209-1.
+\bibitem{ulrich1994}
+G. Ulrich and L. T. Watson, "Positivity conditions for quartic
+polynomials," \emph{SIAM J. Sci. Comput.}, vol. 15, no. 3, pp. 528--544,
+May 1994, doi: 10.1137/0915035.
+\bibitem{lux2023}
+T. Lux, L. T. Watson, T. Chang, and W. Thacker, "Algorithm 1031:
+MQSI---monotone quintic spline interpolation," \emph{ACM Trans. Math.
+Softw.}, vol. 49, no. 1, Art. no. 6, pp. 1--17, Mar. 2023,
+doi: 10.1145/3570157.
+\bibitem{carlsonfritsch1989}
+R. E. Carlson and F. N. Fritsch, "An algorithm for monotone piecewise
+bicubic interpolation," \emph{SIAM J. Numer. Anal.}, vol. 26, no. 1,
+pp. 230--238, Feb. 1989, doi: 10.1137/0726013.
+\bibitem{costantinimanni1991}
+P. Costantini and C. Manni, "A local scheme for bivariate co-monotone
+interpolation," \emph{Comput. Aided Geom. Des.}, vol. 8, no. 5,
+pp. 371--391, Nov. 1991, doi: 10.1016/0167-8396(91)90011-Y.
+\bibitem{li2001}
+X. Li and M. T. Orchard, "New edge-directed interpolation," \emph{IEEE
+Trans. Image Process.}, vol. 10, no. 10, pp. 1521--1527, Oct. 2001.
+\bibitem{lottes2021}
+T. Lottes, "AMD FidelityFX Super Resolution 1.0," Advanced Micro Devices,
+Santa Clara, CA, USA, 2021.
+\bibitem{ding2007}
+W. Ding, F. Wu, X. Wu, S. Li, and H. Li, "Adaptive directional
+lifting-based wavelet transform for image coding," \emph{IEEE Trans. Image
+Process.}, vol. 16, no. 2, pp. 416--427, Feb. 2007,
+doi: 10.1109/TIP.2006.888341.
+\bibitem{bigun1987}
+J. Bigun and G. H. Granlund, ``Optimal orientation detection of linear
+symmetry,'' in \emph{Proc. 1st IEEE Int. Conf. Comput. Vis.}, London, U.K.,
+1987, pp. 433--438.
+\bibitem{mirebeau2014}
+J.-M. Mirebeau, ``Anisotropic fast-marching on Cartesian grids using lattice
+basis reduction,'' \emph{SIAM J. Numer. Anal.}, vol. 52, no. 4,
+pp. 1573--1599, 2014, doi: 10.1137/120861667.
+\bibitem{shepard1968}
+D. Shepard, ``A two-dimensional interpolation function for irregularly-spaced
+data,'' in \emph{Proc. 23rd ACM Natl. Conf.}, New York, NY, USA, 1968,
+pp. 517--524, doi: 10.1145/800186.810616.
+\bibitem{karlin1968}
+S. Karlin, \emph{Total Positivity}, vol. 1. Stanford, CA, USA: Stanford
+Univ. Press, 1968.
+\bibitem{pinkus2010}
+A. Pinkus, \emph{Totally Positive Matrices}. Cambridge, U.K.: Cambridge
+Univ. Press, 2010.
+\bibitem{cavaretta1987}
+A. S. Cavaretta, Jr. and A. Sharma, "Variation diminishing properties and
+convexity for the tensor product Bernstein operator," in \emph{Functional
+Analysis and Operator Theory}, Lecture Notes in Mathematics, vol. 1511.
+Berlin, Germany: Springer, 1992, pp. 18--32,
+doi: 10.1007/BFb0093794.
+\bibitem{goodman1987}
+T. N. T. Goodman, "Variation diminishing properties of Bernstein
+polynomials on triangles," \emph{J. Approx. Theory}, vol. 50, no. 2,
+pp. 111--126, 1987, doi: 10.1016/0021-9045(87)90002-5.
+\bibitem{harten1995}
+A. Harten, "Multiresolution algorithms for the numerical solution of
+hyperbolic conservation laws," \emph{Commun. Pure Appl. Math.}, vol. 48,
+no. 12, pp. 1305--1342, Dec. 1995,
+doi: 10.1002/cpa.3160481201.
+\bibitem{sweldens1998}
+W. Sweldens, "The lifting scheme: A construction of second generation
+wavelets," \emph{SIAM J. Math. Anal.}, vol. 29, no. 2, pp. 511--546, 1998,
+doi: 10.1137/S0036141095289051.
+\bibitem{gilbargtrudinger2001}
+D. Gilbarg and N. S. Trudinger, \emph{Elliptic Partial Differential Equations
+of Second Order}. Berlin, Germany: Springer, 2001.
+\end{thebibliography}
+\end{document}

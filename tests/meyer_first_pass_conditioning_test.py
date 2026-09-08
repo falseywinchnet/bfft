@@ -238,19 +238,19 @@ def test_jump_measure_candidate_improves_two_product_texture_truth_error():
     jump_oscillation, _ = tangent_reservoir_route(
         jump_proposed, gate, radius=40.0
     )
-    first_cartoon = 0.05 / (0.05 - 0.10 * lap_hat(source.shape))
-    jump_boundary = np.fft.ifft2(
-        np.fft.fft2(jump_potential) * (1.0 - first_cartoon)
-    ).real
-    jump = jump_boundary + jump_oscillation
+    # The scalar jump-potential complement is the proved halo term and is no
+    # longer part of the hard control's public texture readout.
+    del jump_potential
+    jump = jump_oscillation
     baseline_error = np.linalg.norm(baseline - scene["texture"])
     jump_error = np.linalg.norm(jump - scene["texture"])
-    assert diagnostic["half_threshold"] == 5.0
+    assert diagnostic["exploratory_threshold"] == 5.0
+    assert diagnostic["structural_threshold"] == 10.0
     assert diagnostic["support_partition"] == "Otsu between-class variance"
     assert 0.0 < diagnostic["support_class_boundary"] < diagnostic[
         "support_high_mean"
     ] < 1.0
-    assert jump_error < 0.40 * baseline_error
+    assert jump_error < 0.60 * baseline_error
 
 
 def test_jump_measure_represents_structure_only_discontinuity_as_texture():
@@ -331,35 +331,33 @@ def test_native_jump_measure_matches_python_research_operator():
     scene = multiscale_crossing_scene(128)
     source = scene["source"]
     gate = native_structural_gate(source)
-    proposed, jump_potential, _ = jump_texture_components(
+    proposed, _jump_potential, _ = jump_texture_components(
         source, gate, lam=0.05, virtual_passes=8
     )
     oscillation, _ = tangent_reservoir_route(
         proposed, gate, radius=40.0
     )
-    first_cartoon = 0.05 / (0.05 - 0.10 * lap_hat(source.shape))
-    boundary = np.fft.ifft2(
-        np.fft.fft2(jump_potential) * (1.0 - first_cartoon)
-    ).real
-    expected_texture = boundary + oscillation
+    expected_texture = oscillation
     expected = source - expected_texture, expected_texture
     actual = bfft.MeyerPlan(
         source.shape, passes=64, threads=1, solver=0
-    ).split_jump_measure(source)
+    ).split_jump_measure(source, virtual_passes=8)
     np.testing.assert_allclose(actual[0], expected[0], atol=3e-10)
     np.testing.assert_allclose(actual[1], expected[1], atol=3e-10)
 
 
-def test_default_split_is_jump_measure_and_legacy_remains_explicit():
+def test_default_split_is_quality_flow_and_controls_remain_explicit():
     source = multiscale_crossing_scene(128)["source"]
     plan = bfft.MeyerPlan(
         source.shape, passes=64, threads=1, solver=0
     )
     default = plan.split(source)
+    flow = plan.split_flow_jump(source)
     jump = plan.split_jump_measure(source)
     legacy = plan.split_legacy(source)
-    np.testing.assert_array_equal(default[0], jump[0])
-    np.testing.assert_array_equal(default[1], jump[1])
+    np.testing.assert_array_equal(default[0], flow[0])
+    np.testing.assert_array_equal(default[1], flow[1])
+    assert np.linalg.norm(default[1] - jump[1]) > 1.0
     assert np.linalg.norm(default[1] - legacy[1]) > 1.0
 
 

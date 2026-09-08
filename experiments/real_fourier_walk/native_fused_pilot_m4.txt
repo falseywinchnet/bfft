@@ -1,0 +1,10 @@
+BFFT power-of-two RFFT benchmark. backend: neon-128, version: 1.0
+standard policy is plan-dependent; FFTW uses FFTW_ESTIMATE-style flag 64 for cheap large plans.
+Intel oneMKL disabled; pass --intel-mkl to add dynamic libmkl_rt DFTI comparison columns.
+PFFFT disabled; compile with -DBFFT_WITH_PFFFT and link pffft to enable.
+       N    iters     FFTW_ns    FFTWf_ns    PFFFT_ns    MKL64_ns    MKL32_ns   Native_ns      Std_ns   F32Nat_ns   F32Std_ns      Inv_ns       RT_ns    S/F64   F32/Ff      S/P    F32/P    S/MKL    F32/M  checks
+QUARTIC {"N":4096,"policy":"sibling","iters":2000,"passes":7,"dif_ns":4374.292,"walk_ns":6080.500,"walk_over_dif":1.390054,"max_abs_error":1.13686838e-13,"relative_l2_error":2.47807021e-16,"plan_bytes":65472,"crossings":0,"dif_min_ns":4366.646,"dif_max_ns":4421.125,"walk_min_ns":6072.938,"walk_max_ns":6087.896}
+QUARTIC {"N":4096,"policy":"separated","iters":2000,"passes":7,"dif_ns":4378.750,"walk_ns":6016.229,"walk_over_dif":1.373960,"max_abs_error":1.13686838e-13,"relative_l2_error":2.47807021e-16,"plan_bytes":65472,"crossings":1013,"dif_min_ns":4355.770,"dif_max_ns":4388.396,"walk_min_ns":5993.646,"walk_max_ns":6044.667}
+QUARTIC {"N":4096,"policy":"random","iters":2000,"passes":7,"dif_ns":4394.438,"walk_ns":6047.562,"walk_over_dif":1.376186,"max_abs_error":1.13686838e-13,"relative_l2_error":2.47807021e-16,"plan_bytes":65472,"crossings":684,"dif_min_ns":4320.583,"dif_max_ns":4407.542,"walk_min_ns":5997.500,"walk_max_ns":6090.292}
+QUARTIC {"N":4096,"policy":"separated_unfused","iters":2000,"passes":7,"dif_ns":4324.375,"walk_ns":7259.708,"walk_over_dif":1.678788,"max_abs_error":1.13686838e-13,"relative_l2_error":2.47807024e-16,"plan_bytes":65472,"crossings":1013,"dif_min_ns":4309.750,"dif_max_ns":4345.979,"walk_min_ns":7221.250,"walk_max_ns":7340.312}
+    4096     2000     11611.4      5047.3         n/a         n/a         n/a      3613.9      4432.4      2856.5      2934.6      5431.8     11131.6    0.382    0.581      n/a      n/a      n/a      n/a err64 4.8e-15 err32 2.4e-06 mkl64       n/a mkl32       n/a rt 6.7e-16 sink 24621.022

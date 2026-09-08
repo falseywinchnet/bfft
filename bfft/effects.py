@@ -37,7 +37,8 @@ rescaling affine, unit gains reproduce the input to roundoff.
 
 import numpy as np
 
-from ._core import meyer_split, meyer_split_batch, rof
+from ._core import (meyer_split, meyer_split_batch, meyer_split_flow_jump,
+                    meyer_split_jump_measure, meyer_split_legacy, rof)
 
 __all__ = ["srgb_to_lab", "lab_to_srgb", "shade", "recompose",
            "meyer_channels", "recompose_channels", "ChannelSplit",
@@ -244,6 +245,7 @@ def meyer_channels(
     solver=0,
     *,
     working_lab=None,
+    method="quality",
 ):
     """Decompose a colour image plane by plane.
 
@@ -261,9 +263,18 @@ def meyer_channels(
     the range the default lambda and mu are set for -- and the scaling is
     recorded so :func:`recompose_channels` inverts it exactly.
 
+    ``method`` selects one fixed operator: ``"quality"`` is the default
+    five-jump finite-flow schedule, ``"fast"`` is its three-jump Pareto point,
+    ``"hard"`` reproduces the earlier scalar hard jump, and ``"fused64"``
+    runs the 64-pass reference alternation. ``passes`` remains accepted for
+    API compatibility and for non-default legacy uses.
+
     Returns a :class:`ChannelSplit`."""
     if space not in SPACES:
         raise ValueError(f"unknown space {space!r}; expected one of {SPACES}")
+    if method not in ("quality", "fast", "hard", "fused64"):
+        raise ValueError(
+            "method must be 'quality', 'fast', 'hard', or 'fused64'")
     was_gray = np.asarray(image).ndim == 2
     planes, names, carried, space = _to_working(
         image, space, working_lab=working_lab)
@@ -281,7 +292,7 @@ def meyer_channels(
 
     cartoon = np.empty_like(work)
     texture = np.empty_like(work)
-    if k > 1 and int(threads) >= k:
+    if method == "quality" and k > 1 and int(threads) >= k:
         cartoon_planes, texture_planes = meyer_split_batch(
             np.moveaxis(work, 2, 0),
             lam=lam,
@@ -294,9 +305,24 @@ def meyer_channels(
         texture[...] = np.moveaxis(texture_planes, 0, 2)
     else:
         for i in range(k):
-            u, v = meyer_split(
-                work[..., i], lam=lam, mu=mu, passes=passes,
-                threads=threads, solver=solver)
+            if method == "quality":
+                u, v = meyer_split(
+                    work[..., i], lam=lam, mu=mu, passes=passes,
+                    threads=threads, solver=solver)
+            elif method == "fast":
+                u, v = meyer_split_flow_jump(
+                    work[..., i], lam=lam, mu=mu,
+                    prefix_passes=4, horizon=18,
+                    settle_passes=2, jump_count=3, threads=threads)
+            elif method == "hard":
+                u, v = meyer_split_jump_measure(
+                    work[..., i], lam=lam, mu=mu,
+                    virtual_passes=12, threads=threads)
+            else:
+                u, v = meyer_split_legacy(
+                    work[..., i], lam=lam, mu=mu,
+                    passes=64, threads=threads, solver=solver)
+                u = work[..., i] - v
             cartoon[..., i] = u
             texture[..., i] = v
     carried["_was_gray"] = was_gray

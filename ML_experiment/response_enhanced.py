@@ -19,6 +19,7 @@ from ML_experiment.variants import make_variant
 
 ORIGINAL_SELF_CONTEXT = "self_context"
 RELATIONAL_SCL = "relational_scl"
+RELATIONAL_SCL_SELECTION_CURVE = "relational_scl_selection_curve"
 BASELINE_CFF = "cff"
 RELATIONAL_CFF_DEEP = "relational_cff_deep"
 SPECTRAL_SCL_MIDDLE = "spectral_scl_middle"
@@ -215,6 +216,65 @@ class RelationalSelfContextLinear(nn.Module):
         return self._correct(x, projected, weight)
 
 
+class SelectionCurvatureSelfContextLinear(RelationalSelfContextLinear):
+    """Integrate local chart-selection curvature before pooling.
+
+    Ordinary self-context chooses one distribution over its atlas at the
+    reinterpreted point.  Here one symmetric ray pair asks which atlas charts
+    the immediate neighborhood would choose.  Their mean remains on the
+    probability simplex, so a learned convex blend is a bounded transport of
+    chart ownership rather than an unconstrained hidden-state residual.
+    """
+
+    def __init__(self, *args, probe_fraction: float = 0.2, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.probe_fraction = float(probe_fraction)
+        generator = torch.Generator().manual_seed(12119 + self.rank)
+        self.register_buffer(
+            "selection_probe",
+            F.normalize(torch.randn(self.rank, generator=generator), dim=0),
+        )
+        # Roughly 12% local integration at initialization.  This keeps the
+        # parent dominant while making the geometric channel trainable.
+        self.selection_blend_logit = nn.Parameter(torch.tensor(-2.0))
+        self.last_selection_blend: torch.Tensor | None = None
+        self.last_selection_shift: torch.Tensor | None = None
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        _, authentic_projected, weight = self._allocate(x)
+        context = self._normalize_like(self._lift(authentic_projected, weight), x)
+        chart = x + self.strength * context
+        _, projected, center_weight = self._allocate(chart, authentic_projected)
+
+        selected_frame = torch.einsum(
+            "bd,dri->bri", center_weight, self.frame_atlas
+        )
+        direction = F.normalize(
+            torch.einsum("r,bri->bi", self.selection_probe, selected_frame),
+            dim=-1,
+        )
+        radius = (
+            self.probe_fraction
+            * chart.norm(dim=-1, keepdim=True).detach().clamp_min(1e-3)
+        )
+        probes = torch.stack(
+            (chart + radius * direction, chart - radius * direction), dim=1
+        )
+        anchor = projected[:, None].expand(-1, 2, -1, -1).flatten(0, 1)
+        _, _, probe_weight = self._allocate(probes.flatten(0, 1), anchor)
+        neighborhood_weight = probe_weight.view(
+            len(x), 2, self.directions
+        ).mean(1)
+
+        blend = torch.sigmoid(self.selection_blend_logit)
+        weight = torch.lerp(center_weight, neighborhood_weight, blend)
+        self.last_selection_blend = blend.detach()
+        self.last_selection_shift = (
+            neighborhood_weight - center_weight
+        ).square().mean(-1).sqrt().detach()
+        return self._correct(x, projected, weight)
+
+
 class RelationalCFFLinear(RelationalSelfContextLinear):
     """Continuous frame flow with relational, two-LELU response heads."""
 
@@ -360,6 +420,10 @@ def make_response_variant(
     if name == RELATIONAL_SCL:
         return RelationalLayerNet(
             input_dim, output_dim, width, RelationalSelfContextLinear
+        )
+    if name == RELATIONAL_SCL_SELECTION_CURVE:
+        return RelationalLayerNet(
+            input_dim, output_dim, width, SelectionCurvatureSelfContextLinear
         )
     if name == RELATIONAL_CFF_DEEP:
         return RelationalLayerNet(input_dim, output_dim, width, RelationalCFFLinear)

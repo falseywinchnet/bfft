@@ -48,10 +48,28 @@ class ProjectiveWitnessAtlas:
         self.cells = int(cells)
         centered = self.x - self.x.mean(0, keepdim=True)
         covariance = centered.T @ centered / max(1, len(centered))
-        direction = torch.linalg.eigh(covariance).eigenvectors[:, -1]
-        score = centered @ direction
+        eigenvalue, basis = torch.linalg.eigh(covariance)
+        eigenvalue, basis = eigenvalue.flip(0), basis.flip(1)
+        gaps = eigenvalue[:-1] / eigenvalue[1:].clamp_min(1e-12)
+        largest_gap, gap_index = gaps.max(0)
+        self.intrinsic_rank = (
+            int(gap_index) + 1 if float(largest_gap) >= 8.0 else self.x.shape[1]
+        )
+        if self.intrinsic_rank < self.x.shape[1]:
+            # A one-dimensional projection folds a curved low-rank support
+            # back over itself.  Its whitened intrinsic radius is the
+            # rotation-invariant ordering along which withheld annuli test
+            # whether an update transports beyond individual observations.
+            retained = basis[:, :self.intrinsic_rank]
+            scale = eigenvalue[:self.intrinsic_rank].sqrt().clamp_min(1e-8)
+            score = ((centered @ retained) / scale).norm(dim=1)
+            self.geometry_mode = "intrinsic_radius"
+        else:
+            score = centered @ basis[:, 0]
+            self.geometry_mode = "principal_projection"
         self.score = score
         self.fold = torch.empty(len(self.x), dtype=torch.long)
+        self.band = torch.empty(len(self.x), dtype=torch.long)
         self.cell = torch.empty(len(self.x), dtype=torch.long)
 
         groups = (
@@ -63,6 +81,9 @@ class ProjectiveWitnessAtlas:
             order = group[torch.argsort(score[group])]
             rank = torch.arange(len(order))
             self.fold[order] = (rank + 3 * group_index) % self.folds
+            self.band[order] = torch.clamp(
+                rank * self.folds // max(1, len(order)), 0, self.folds - 1
+            )
             self.cell[order] = torch.clamp(
                 rank * self.cells // max(1, len(order)), 0, self.cells - 1
             )
@@ -74,6 +95,9 @@ class ProjectiveWitnessAtlas:
             torch.where(self.fold == held_out)[0]
             for held_out in range(self.folds)
         ]
+        self.band_pool = [
+            torch.where(self.band == band)[0] for band in range(self.folds)
+        ]
 
     def sample(self, batch: int, held_out: int, generator: torch.Generator):
         pool = self.train_pool[held_out]
@@ -82,6 +106,10 @@ class ProjectiveWitnessAtlas:
     def witness(self, held_out: int):
         return self.witness_pool[held_out]
 
+    def sample_band(self, batch: int, band: int, generator: torch.Generator):
+        pool = self.band_pool[band]
+        return pool[torch.randint(len(pool), (batch,), generator=generator)]
+
 
 def _functional_prediction(model, parameters, x):
     return functional_call(
@@ -89,8 +117,10 @@ def _functional_prediction(model, parameters, x):
     )
 
 
-def witness_objective(model, parameters, atlas, held_out, worst_weight):
-    index = atlas.witness(held_out)
+def witness_objective(model, parameters, atlas, held_out, worst_weight,
+                      band_witness=False):
+    index = (atlas.band_pool[held_out] if band_witness
+             else atlas.witness(held_out))
     output = _functional_prediction(model, parameters, atlas.x[index])
     target = atlas.y[index]
     if atlas.task.kind == "classification":
@@ -122,6 +152,7 @@ def transported_step(
     rank,
     temperature,
     worst_weight,
+    band_witness=False,
 ):
     named = _named_parameters(model)
     candidate_parameters, candidate_states, displacements = [], [], []
@@ -150,7 +181,7 @@ def transported_step(
             offset += count
         projected_parameters.append(values)
         scores.append(witness_objective(
-            model, values, atlas, held_out, worst_weight
+            model, values, atlas, held_out, worst_weight, band_witness
         ))
     scores = torch.stack(scores)
     relative = (scores - scores.mean()) / scores.abs().mean().clamp_min(1e-8)

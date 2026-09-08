@@ -1,0 +1,44 @@
+\section{Address Algebra}
+\label{app:address}
+
+Number the nontrivial heap leaves by $1\le m<N/2$.  Put
+\begin{equation}
+ t=\lfloor\log_2m\rfloor,
+ \qquad r=m-2^t,
+ \qquad0\le r<2^t.
+ \label{eq:heap-shell}
+\end{equation}
+Let $\operatorname{rev}_t$ reverse the $t$ binary digits of its argument, and
+let $\operatorname{gray}^{-1}$ be inverse Gray decoding, defined by the prefix
+XOR recurrence $b_{t-1}=g_{t-1}$ and
+$b_j=b_{j+1}\mathbin{\mathsf{xor}}g_j$.  The standard conjugate-pair label is
+\begin{equation}
+ k(m)=\left(2\operatorname{gray}^{-1}
+ \bigl(\operatorname{rev}_t(r)\bigr)+1\right)2^{L-2-t}.
+ \label{eq:heap-frequency}
+\end{equation}
+
+\begin{theorem}[Heap-shell bijection]
+Equation \eqref{eq:heap-frequency} is a bijection from the nontrivial Bruun
+leaves to $1\le k<N/2$.  The heap shell $2^t\le m<2^{t+1}$ maps exactly to the
+frequency shell with dyadic valuation $L-2-t$.
+\end{theorem}
+\begin{proof}
+Bit reversal and inverse Gray decoding are bijections on the $t$-bit words.
+The parenthesized term in \eqref{eq:heap-frequency} therefore visits every odd
+integer from one through $2^{t+1}-1$ exactly once.  Multiplication by
+$2^{L-2-t}$ gives precisely one dyadic-valuation shell.  The shells are
+disjoint and their union is $1,\ldots,N/2-1$.
+\end{proof}
+
+For $N=16$, the leaf indices $m=1,\ldots,7$ map to
+\begin{equation}
+ (k(1),\ldots,k(7))=(4,2,6,1,7,3,5),
+\end{equation}
+which is the quadratic-leaf portion of Table~\ref{tab:n16-labels}.
+
+The sibling-orientation word acts by replacing any subtree interval with its
+reverse.  Because this action never changes the underlying quadratic factor,
+it changes only the output permutation.  A standard-frequency conversion may
+therefore be attached at the boundary of any DIF, DIT, or DIP schedule without
+changing an interior coefficient.

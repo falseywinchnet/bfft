@@ -1,0 +1,183 @@
+\section{Alternative Bases and Exact Normalization}
+\label{sec:normalized}
+
+CRT exactness is invariant under a change of coordinates, but numerical
+geometry is not.  Monomial coordinates $(1,z)$ in a quadratic quotient do not
+display the conjugate pair as an orthogonal Euclidean plane.  The basis question
+is therefore intrinsic: find a real quotient coordinate whose multiplication
+law is the unit complex law.
+
+\subsection{The unit quotient coordinate}
+
+For $0<\theta<\pi$, let
+\begin{equation}
+ q_\theta=z^2-2\cos\theta\,z+1,
+ \qquad
+ e_\theta={z-\cos\theta\over\sin\theta}
+ \quad\text{in }\K_N[z]/(q_\theta).
+ \label{eq:normalized-generator}
+\end{equation}
+
+\begin{lemma}[Quadratic unit]
+The normalized generator satisfies $e_\theta^2=-1$.
+\end{lemma}
+\begin{proof}
+Writing $c=\cos\theta$ and $s=\sin\theta$, the quotient relation gives
+$z^2=2cz-1$.  Therefore
+\[
+ e_\theta^2={z^2-2cz+c^2\over s^2}
+ ={c^2-1\over s^2}=-1.
+\]
+\end{proof}
+
+\begin{proposition}[Uniqueness among affine generators]
+If a real affine class $\eta=\alpha z+\beta$ satisfies
+$\eta^2=-1$ in $\R[z]/(q_\theta)$, then
+\begin{equation}
+ \eta=\pm{z-\cos\theta\over\sin\theta}.
+ \label{eq:affine-generator-unique}
+\end{equation}
+\end{proposition}
+\begin{proof}
+Reducing $\eta^2$ by $z^2=2cz-1$, the coefficient of $z$ is
+$2\alpha(\alpha c+\beta)$.  The case $\alpha=0$ has no real solution to
+$\eta^2=-1$, so $\beta=-\alpha c$.  The constant term is then
+$-\alpha^2(1-c^2)=-\alpha^2\sin^2\theta$, which equals $-1$ precisely for
+$\alpha=\pm1/\sin\theta$.
+\end{proof}
+
+\begin{proposition}[Canonical complex chart]
+Equip the quotient with the oriented inner product
+\begin{equation}
+ \langle a+be_\theta,a'+b'e_\theta\rangle_\theta=aa'+bb'.
+ \label{eq:quotient-inner-product}
+\end{equation}
+The map
+\begin{equation}
+ \phi_\theta:a+be_\theta\longmapsto a+ib
+ \label{eq:complex-chart}
+\end{equation}
+is an isometric real-algebra isomorphism from
+$\K_N[z]/(q_\theta)$, after scalar extension to $\R$, onto $\C$.  At the root
+$z=e^{-i\theta}$, evaluation is $a+be_\theta\mapsto a-ib$.
+\end{proposition}
+\begin{proof}
+The relation $e_\theta^2=-1$ proves multiplicativity and bijectivity.
+The coefficient norm $a^2+b^2$ is the complex modulus squared.  Finally,
+$(e^{-i\theta}-\cos\theta)/\sin\theta=-i$.
+\end{proof}
+
+For comparison, a raw residue $u+vz$ has normalized coordinates
+$(A,B)=(u+v\cos\theta,v\sin\theta)$.  The coordinate matrix
+\begin{equation}
+ J_\theta=\begin{bmatrix}1&\cos\theta\\0&\sin\theta\end{bmatrix}
+ \label{eq:raw-unit-change}
+\end{equation}
+has singular values $\sqrt{1\pm|\cos\theta|}$ and therefore
+\begin{equation}
+ \kappa_2(J_\theta)=
+ \sqrt{{1+|\cos\theta|\over1-|\cos\theta|}}.
+ \label{eq:raw-condition}
+\end{equation}
+For $0<\theta\le\pi/2$ this is $\cot(\theta/2)$.  The raw monomial chart thus
+becomes singular as conjugate roots approach one another, whereas the unit
+chart has condition number one by construction.
+
+The choice of $e^{-i\theta}$ fixes the orientation; choosing its conjugate
+reverses the sign of the second coordinate.
+
+\subsection{The normalized four-real cell}
+
+The normalized merge of two conjugate-pair states can now be written entirely
+over $\R$.  Set
+\begin{equation}
+ \begin{bmatrix}r\\ i\end{bmatrix}
+ =
+ \begin{bmatrix}c&-s\\s&c\end{bmatrix}
+ \begin{bmatrix}o_a\\o_b\end{bmatrix},
+ \quad c^2+s^2=1,
+ \label{eq:plane-rotation}
+\end{equation}
+and define
+\begin{equation}
+ T_\theta
+ \begin{bmatrix}e_a\\e_b\\o_a\\o_b\end{bmatrix}
+ =
+ \begin{bmatrix}e_a+r\\e_b+i\\e_a-r\\i-e_b\end{bmatrix}.
+ \label{eq:normalized-cell}
+\end{equation}
+
+\begin{theorem}[Local scaled orthogonality]
+For every real $\theta$,
+\begin{equation}
+ T_\theta^{\trans}T_\theta=2I_4,
+ \qquad
+ T_\theta^{-1}={1\over2}T_\theta^{\trans}.
+ \label{eq:cell-orthogonality}
+\end{equation}
+The binomial map $H_2(a,b)=(a+b,a-b)$ obeys the same identity.
+\end{theorem}
+\begin{proof}
+The rotation in \eqref{eq:plane-rotation} preserves
+$o_a^2+o_b^2$.  Expanding the two add-subtract pairs in
+\eqref{eq:normalized-cell} gives
+\[
+ \|T_\theta(e_a,e_b,o_a,o_b)\|_2^2
+ =2(e_a^2+e_b^2+r^2+i^2)=2\|x\|_2^2.
+\]
+Polarization yields the matrix identity.  The binomial case is the ordinary
+Hadamard identity.
+\end{proof}
+
+\begin{proposition}[Pair-merge interpretation]
+Identify a real pair $(a,b)$ with $a-ib$.  Then
+\eqref{eq:normalized-cell}, up to the displayed orientation of the second high
+coordinate, is the real-coordinate form of
+\begin{equation}
+ (E,O)\longmapsto(E+e^{-i\theta}O,\;E-e^{-i\theta}O).
+ \label{eq:complex-pair-merge}
+\end{equation}
+Thus the cell is an exact coordinate expression of a Fourier pair merge.
+\end{proposition}
+\begin{proof}
+Multiplication of $O=o_a-io_b$ by $e^{-i\theta}=c-is$ gives
+$(co_a-so_b)-i(so_a+co_b)=r-ii$.  Addition and subtraction from
+$E=e_a-ie_b$ give the four entries in
+\eqref{eq:normalized-cell}, with the high pair stored in the declared
+conjugate orientation.
+\end{proof}
+
+\subsection{What the alternative-basis inquiry established}
+
+Two distinct alternative-basis questions sharpened this conclusion.  First,
+balanced partitions of conjugate roots were compared by the sparsity of their
+CRT reduction projectors.  Circularly adjacent partitions can be dense, while
+the covering-compatible partition in \eqref{eq:half-angle-factorization}
+retains binomial and trinomial descendants.  This observation motivates the
+covering-map family used here; it is not a classification of all sparse CRT
+trees.  The June 14--16 radix-four study, conducted after the first DIT
+construction, expressed quartic residues in Chebyshev even and odd coordinates.
+An isolated quartic node used fewer distinct scalar products, but its state was
+not the uniform quadratic two-plane used by neighboring levels.  The normalized basis
+\eqref{eq:normalized-generator} is the exact point at which algebraic closure,
+unit metric, and a uniform inverse coincide.
+
+\begin{table}[t]
+\caption{Coordinates in a terminal real quadratic quotient}
+\label{tab:bases}
+\centering
+\footnotesize
+\begin{tabularx}{\columnwidth}{@{}lXX@{}}
+\toprule
+Basis & Defining relation & Evaluation at $e^{-i\theta}$\\
+\midrule
+$(1,z)$ & $z^2=2cz-1$ & $a+b(c-is)$\\
+$(1,e_\theta)$ & $e_\theta^2=-1$ & $a-ib$\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Global orthogonality will follow after the leaf coordinate map has been defined
+and identified with Fourier evaluation.  This order avoids assigning a uniform
+depth to the binomial spine: different dyadic frequency shells leave that spine
+at different levels.

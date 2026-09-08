@@ -1,0 +1,66 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Let $N=2^L$ with $L\ge2$ and associate a real vector $x\in\R^N$ with the residue class
+\begin{equation}
+  x(z)=\sum_{n=0}^{N-1}x_nz^n
+  \quad\text{in}\quad
+  R_N=\R[z]/(z^N-1).
+  \label{eq:intro-polynomial}
+\end{equation}
+The discrete Fourier transform is the simultaneous evaluation of this class at
+the $N$ roots of unity.  Complex linear algebra is therefore a coordinate
+choice, not a requirement of the polynomial problem: conjugate roots have the
+real minimal polynomial $z^2-2\cos\theta\,z+1$.
+
+Bruun organized these real factors into a sparse recursive reduction
+\cite{bruun1978}.  The construction was remarkable for exposing a real
+coefficient route to the spectrum, but three questions remain mathematically
+prior to any implementation question.  What is the local inverse of a
+trinomial split?  Which coordinates make the factorization metrically regular?
+How does the native leaf order identify the ordinary Fourier frequencies?
+Answering only the first question gives an exact polynomial reconstruction;
+answering all three identifies a stable Fourier operator.
+
+The present investigation began from those questions.  It then asked whether
+alternative factor bases changed the local multiplication geometry; whether
+blocks of equal-angle nodes possessed a common real representation; which
+spectral orders preserve subtree locality; and whether the same factor tree can
+be traversed upward rather than downward.  Those questions lead, respectively,
+to a normalized quadratic chart, an isoclinic block form, a classification of
+admissible leaf orders, and a decimation-in-time dual.  Two further questions
+extend the algebra.  Replacing roots of $z^N-1$ by roots of $z^N+1$ produces an
+odd-frequency transform, while shearing the intermediate coordinates produces
+a diagonal phase-packet transform.  A final question asks whether the signed
+linear cells admit a conservative nonnegative or exact equilibrium
+realization.
+
+The principal results are as follows.
+\begin{enumerate}
+  \item An explicit sibling merge gives a two-sided Chinese-remainder inverse
+        for every binomial and trinomial node.
+  \item The normalized terminal coordinate $e_\theta$ squares to $-1$ and
+        converts evaluation into the standard real and imaginary Fourier
+        coordinates.
+  \item Every normalized node is $\sqrt{2}$ times an orthogonal map, giving
+        $B_N^{\trans}B_N=NI$ and condition number one.
+  \item A commuting reduction-evaluation diagram proves
+        $P_NB_N=\DFT_N^{\R}$ exactly; the factorization is not an approximation
+        to the DFT.
+  \item DIF, DIT, and diagonal phase-packet schedules are boundary-permuted
+        factorizations of that same operator.
+  \item The roots of $z^N+1$ give an exact real two-plane odd-frequency
+        transform with the same orthogonality law.
+  \item A positive-cone intertwining identity gives exact signed projection
+        through arbitrary compositions, and diagonal gauges convert the cells
+        into conservative transports or convex equilibrium maps.
+\end{enumerate}
+
+The mathematical development is intentionally ordered by dependency.  Section
+\ref{sec:bruun} reconstructs Bruun's factor tree and the questions that resume
+its thread.  Sections \ref{sec:crt}--\ref{sec:fourier-identity} give the inverse,
+normalization, and exact Fourier identity.  Sections
+\ref{sec:isoclinic}--\ref{sec:dip} develop the block, ordering, DIT, ODFT, and
+DIP consequences.  Section \ref{sec:physical} proves physical realizability in
+an explicit ideal linear category.  Exact examples and finite-precision audits
+follow only after the algebraic results.

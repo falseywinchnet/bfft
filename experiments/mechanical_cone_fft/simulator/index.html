@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Move eight sample sliders and watch a 44-bar mechanical Bruun FFT compute a spectrum through exact rigid-linkage motion.">
+<meta name="color-scheme" content="dark"><title>The Fourier Machine · BFFT</title>
+<style>:root{--bg:#0b1017;--panel:#111a24;--panel2:#15202c;--line:#2b3947;--fg:#edf3f6;--muted:#93a6b5;--cyan:#62decf;--gold:#e7b970;--metal:#c3d1dc;--mono:ui-monospace,SFMono-Regular,Consolas,monospace;color-scheme:dark;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--fg)}*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button,select{cursor:pointer}button{color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:5px;padding:.5rem .8rem;transition:background .15s,border-color .15s}button:hover{background:#223341;border-color:#668496}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}button.active,button[aria-pressed=true]{background:#203d3c;border-color:var(--cyan);color:var(--cyan)}.machine-app{max-width:1530px;margin:auto;padding:0 32px}.masthead{height:76px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}.brand{color:var(--fg);font-weight:850;letter-spacing:-.08em;text-decoration:none;font-size:25px}.brand>span{color:var(--cyan)}.brand small{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.13em;margin-left:20px;font-weight:400}.edition{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--muted);display:flex;align-items:center;gap:13px}.status-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--cyan)}.intro{display:flex;justify-content:space-between;align-items:center;padding:32px 0 27px}.eyebrow{font:11px var(--mono);letter-spacing:.18em;color:var(--cyan);margin:0 0 9px}h1{font-size:clamp(30px,3.5vw,48px);letter-spacing:-.055em;line-height:1.1;margin:0 0 9px;font-weight:650}h1>span{color:var(--cyan)}.lede{font-size:16px;line-height:1.5;color:var(--muted);margin:0}.intro-note{font:12px/1.6 var(--mono);color:var(--muted);padding-left:22px;border-left:1px solid var(--line)}.section-top{display:flex;gap:15px;align-items:center;justify-content:space-between}h2{font-size:15px;letter-spacing:-.01em;margin:0;font-weight:550}.number{font:12px var(--mono);color:var(--cyan);margin-right:9px}.inputs{border:1px solid var(--line);background:var(--panel);padding:17px 20px 12px;border-radius:8px}.presets{display:flex;gap:4px;flex-wrap:wrap}.presets button{font-size:12px;padding:5px 10px}.sample-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:22px;margin-top:22px}.sample-control{min-width:0}.sample-label{display:flex;justify-content:space-between;align-items:center;font:12px var(--mono);margin-bottom:14px}.sample-label label{color:var(--muted)}.sample-label output{font-variant-numeric:tabular-nums;color:var(--fg)}input[type=range]{display:block;appearance:none;width:100%;height:3px;margin:0;background:linear-gradient(to right,var(--gold),#526474 50%,var(--cyan));border-radius:3px;cursor:ew-resize}input[type=range]::-webkit-slider-thumb{appearance:none;background:var(--fg);width:13px;height:22px;border:3px solid var(--panel);border-radius:5px;box-shadow:0 0 0 1px #8193a3}input[type=range]::-moz-range-thumb{background:var(--fg);width:9px;height:18px;border:3px solid var(--panel);border-radius:5px}.sample-ticks{display:flex;justify-content:space-between;margin-top:10px;color:#667f91;font:10px var(--mono)}.input-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:13px;border-top:1px solid #25323f;padding-top:10px;font-size:12px;color:var(--muted)}.muted{color:var(--muted)}.motion-controls{display:flex;align-items:center;gap:18px}.motion-controls label{display:flex;align-items:center;gap:7px;cursor:pointer}.motion-controls input{accent-color:var(--cyan)}.motion-controls button{font-size:12px;border:0;padding:4px 0;color:var(--cyan)}.workspace{display:grid;grid-template-columns:minmax(0,1fr) 288px;gap:20px;margin-top:22px;align-items:start}.mechanism{border:1px solid var(--line);border-radius:8px;background:var(--panel);overflow:hidden}.mechanism>.section-top{padding:19px 18px 0}.rail-legend{font-size:11px;display:flex;gap:14px}.positive{color:var(--cyan)}.negative{color:var(--gold)}.diagram-hint{font-size:12px;color:var(--muted);margin:8px 18px 0}.diagram-scroll{overflow-x:auto;scrollbar-color:#415565 var(--bg);padding:0 8px}#machine{display:block;width:100%;min-width:790px;max-height:none}.mechanism-footer{display:flex;justify-content:space-between;padding:13px 18px;border-top:1px solid var(--line);color:var(--muted);font:11px var(--mono)}.mechanism-footer i{font-style:normal;color:#596d7b;padding:0 5px}.mechanism-footer .status-dot{margin-right:7px}.inspector{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:18px;position:sticky;top:18px}.inspector h2{font-size:14px}.text-button{font-size:11px;padding:0;border:0;color:var(--cyan)}select{background:#0f1922;border:1px solid #3b4c5a;border-radius:5px;color:var(--fg);width:100%;font-size:12px;padding:9px 7px;margin-top:18px}#lever{display:block;width:100%;margin:3px 0 -5px}.lever-equation{display:flex;justify-content:space-between;align-items:center;text-align:center;font-family:var(--mono);font-size:13px}.lever-equation small{display:block;font:10px var(--mono);color:var(--muted);margin-top:6px}.lever-equation b{font-weight:400;color:var(--muted)}.tap-value{color:var(--cyan)}.lever-copy{font-size:12px;line-height:1.6;color:var(--muted);min-height:40px}.specs{font:12px var(--mono);margin:15px 0}.specs>div{display:flex;justify-content:space-between;border-top:1px solid #2a3a48;padding:10px 0}.specs dt{color:var(--muted)}.specs dd{margin:0}.physical-note{font-size:13px;line-height:1.65;color:#afbec9}.checker{padding-top:15px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;font-size:11px}.checker strong{color:var(--cyan);font-family:var(--mono);font-weight:400}.checker small{color:var(--muted);font-size:11px;line-height:1.5}.spectrum{margin-top:24px}.spectrum-convention{font-size:12px;color:var(--muted)}.bin-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:16px}.bin-card{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:14px 16px}.bin-top{display:flex;align-items:center;justify-content:space-between;font:12px var(--mono)}.bin-top small{color:var(--muted);font-size:11px}.phasor{width:100%;height:103px;display:block}.bin-number{font:clamp(12px,1.2vw,16px) var(--mono);font-variant-numeric:tabular-nums;text-align:center;white-space:nowrap}.magnitude-track{height:3px;background:#2a3c47;margin:14px 0 8px;border-radius:2px;overflow:hidden}.magnitude-fill{height:100%;background:var(--cyan);width:0}.magnitude-label{font:11px var(--mono);color:var(--muted);display:flex;justify-content:space-between}.spectrum-note{font-size:12px;line-height:1.6;color:var(--muted)}.theory{border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:27px 0 0;padding:20px 0}.theory summary{font-size:14px;cursor:pointer;list-style:none;display:flex;justify-content:space-between}.theory summary::-webkit-details-marker{display:none}.theory summary span{font-size:20px;color:var(--cyan)}.theory[open] summary span{transform:rotate(45deg)}.theory-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;padding-top:15px;max-width:1150px}.theory h3{font-size:15px;font-weight:550;margin-top:20px}.theory p{font-size:14px;line-height:1.8;color:#aebecb}.page-footer{display:flex;justify-content:space-between;gap:20px;color:var(--muted);font:11px/1.6 var(--mono);padding:22px 0 30px}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}svg text{font-family:var(--mono)}svg .route{fill:none;stroke-width:1;opacity:.2}svg .rod{stroke:var(--metal);stroke-width:4;stroke-linecap:round}svg .pin{fill:var(--panel);stroke:var(--metal);stroke-width:1.5}svg .tap{fill:var(--cyan);stroke:#102125;stroke-width:1.2}svg .guide{stroke:#3b5364;stroke-width:1;stroke-dasharray:2 3}svg .slot{fill:var(--panel2);stroke:#556c7c;stroke-width:1}svg .bar-hit{fill:transparent;cursor:pointer}svg .bar.selected .rod{stroke:var(--cyan);stroke-width:5}svg .bar.selected .pin{stroke:var(--cyan)}svg .faded{opacity:.27}svg .chosen-route{opacity:.85;stroke-width:1.5}svg .gridline{stroke:#22323e;stroke-width:1;stroke-dasharray:2 5}svg .diagram-label{fill:#93a6b5;font-size:12px}svg .stage-label{fill:#d6e2e9;font-size:12px}svg .tiny-label{fill:#738b9d;font-size:10px}svg .row-label{font-size:10px}svg .output-label{fill:#b4c6d4;font-size:10px}svg .needle{stroke:var(--cyan);stroke-width:2;stroke-linecap:round}@media(min-width:1500px){#machine{min-width:0}}@media(max-width:1150px){.workspace{grid-template-columns:minmax(0,1fr)}.inspector{position:static;display:grid;grid-template-columns:270px 1fr 1fr;gap:0 25px;align-items:start}.inspector>.section-top{grid-column:1/-1}.inspector select{grid-column:1;margin-top:15px}.inspector #lever{grid-column:1;grid-row:3/7}.lever-equation{grid-column:2;grid-row:2;margin-top:24px}.lever-copy{grid-column:2;grid-row:3}.specs{grid-column:2;grid-row:4/7}.physical-note{grid-column:3;grid-row:2/4;margin-top:20px}.checker{grid-column:3;grid-row:4/7}#machine{min-width:790px}.sample-grid{gap:16px}.bin-card{padding:12px}.intro-note{display:none}}@media(max-width:700px){.machine-app{padding:0 16px}.masthead{height:62px}.edition{display:none}.intro{padding:24px 0}.lede{font-size:14px}.brand small{font-size:10px;margin-left:12px}.inputs{padding:15px 13px}.inputs>.section-top{align-items:flex-start;flex-direction:column;gap:12px}.sample-grid{grid-template-columns:repeat(4,1fr);gap:20px 18px;margin-top:22px}.sample-label{font-size:12px}.input-bottom{align-items:flex-start;gap:12px;flex-direction:column}.motion-controls{justify-content:space-between;width:100%}.mechanism>.section-top{padding:15px 13px 0;flex-wrap:wrap}.diagram-hint{margin-left:13px}.mechanism-footer{font-size:10px;padding:12px;gap:10px;flex-wrap:wrap}.inspector{display:block}.inspector #lever{max-width:320px;margin:0 auto}.lever-equation{margin:0;max-width:350px}.specs{margin:15px 0}.physical-note{margin-top:0}.bin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bin-card:last-child{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:0 15px}.bin-card:last-child .phasor{grid-column:2;grid-row:1/5}.bin-card:last-child .bin-number{align-self:end}.bin-number{font-size:14px}.spectrum>.section-top{align-items:flex-start;flex-direction:column;gap:9px}.theory-grid{grid-template-columns:1fr;gap:0}.theory p{font-size:14px}.page-footer{flex-direction:column;font-size:10px;gap:7px}.rail-legend{font-size:10px}.eyebrow{font-size:10px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* Vertical connected assembly. Keep enough width to inspect physical joints. */
+.workspace{grid-template-columns:minmax(0,1fr) 270px}.diagram-scroll{padding:0 4px}#machine{min-width:1000px;width:100%}.input-handle{cursor:ns-resize;touch-action:none}.input-handle:focus{outline:none;stroke:#fff;stroke-width:5;filter:drop-shadow(0 0 5px #62decf)}svg .rigid-member{paint-order:stroke;filter:drop-shadow(0 1px 1px #080c11)}svg .yoke.faded{opacity:.17}svg .rod{stroke-width:5}svg .stage-label{font-size:13px;letter-spacing:.03em}svg .tiny-label{font-size:11px} .diagram-hint{line-height:1.6;margin-bottom:10px}.physical-output{font-variant-numeric:tabular-nums}
+@media(max-width:1400px){.workspace{grid-template-columns:minmax(0,1fr)}.inspector{position:static;display:grid;grid-template-columns:270px 1fr 1fr;gap:0 25px}.inspector>.section-top{grid-column:1/-1}.inspector select{grid-column:1}.inspector #lever{grid-column:1;grid-row:3/7}.lever-equation{grid-column:2;grid-row:2;margin-top:24px}.lever-copy{grid-column:2;grid-row:3}.specs{grid-column:2;grid-row:4/7}.physical-note{grid-column:3;grid-row:2/4}.checker{grid-column:3;grid-row:4/7}}@media(max-width:700px){.inspector{display:block}.inputs>.section-top{align-items:flex-start}.lever-equation{margin-top:0}}
+
+#machine{min-width:0}#machine.expanded{min-width:1100px}.rail-legend{align-items:center;flex-wrap:wrap}.rail-legend button{font-size:11px;padding:4px 7px}.stage-caption{paint-order:stroke;stroke:#111a24;stroke-width:5px;stroke-linejoin:round}
+</style>
+</head>
+<body>
+<main class="machine-app">
+<header class="masthead"><a class="brand" href="#" aria-label="BFFT mechanical lab">B<span>F</span>FT <small>MECHANICAL LAB</small></a><span class="edition">EXPERIMENT 008 <span class="status-dot"></span> LIVE KINEMATICS</span></header>
+<section class="intro"><div><p class="eyebrow">FOURIER ANALYSIS, MADE TANGIBLE</p><h1>The Fourier machine<span>.</span></h1><p class="lede">Move eight samples. Watch forty-four levers find their spectrum.</p></div><div class="intro-note"><span class="mini-rule"></span>Fixed lengths.<br>Moving taps.<br>A spectrum in the geometry.</div></section>
+<section class="inputs" aria-labelledby="input-heading"><div class="section-top"><h2 id="input-heading"><span class="number">01 ↓</span> Move the input levers</h2><div class="presets" role="group" aria-label="Sample presets"><button data-preset="wave" class="active">Wave</button><button data-preset="impulse">Impulse</button><button data-preset="alternating">Alternating</button><button data-preset="flat">Flat</button><button data-preset="zero">Zero</button></div></div><div class="input-bottom"><span>Drag a white handle on the machine, or focus it and use ↑ / ↓.</span><div class="motion-controls"><label><input type="checkbox" id="slow"> Slow motion</label><button id="play" aria-pressed="false">▷ Travel the wave</button></div></div></section>
+<div class="workspace">
+<section class="mechanism" aria-labelledby="mechanism-heading"><div class="section-top"><h2 id="mechanism-heading"><span class="number">02</span> Follow the connected mechanism</h2><div class="rail-legend"><button id="zoom-machine" aria-pressed="false">Enlarge joints</button><span class="positive">● Positive rail</span><span class="negative">● Negative rail</span></div></div><p class="diagram-hint">Top to bottom: input rockers → rigid transfer yokes → 44 interpolation bars → moving Fourier rulers. Click a bar to trace its connected members.</p><div class="diagram-scroll" tabindex="0" aria-label="Scrollable diagram of all 44 interpolation bars"><svg id="machine" viewBox="0 0 1120 1370" role="group" aria-label="Vertical mechanical FFT. Eight draggable input rockers at the top connect through rigid yokes to Fourier rulers at the bottom."></svg></div><div class="mechanism-footer"><span id="motion-status"><span class="status-dot"></span>At equilibrium</span><span>Input rockers <i>↓</i> Three stages <i>↓</i> Fourier output</span></div></section>
+<aside class="inspector" aria-labelledby="inspector-heading"><div class="section-top"><h2 id="inspector-heading">Inside one lever</h2><button class="text-button" id="unfocus" title="Show all transmission paths">Show all</button></div><label class="sr-only" for="bar-select">Inspect a linkage</label><select id="bar-select"></select><svg id="lever" viewBox="0 0 300 235" role="img" aria-label="Enlarged selected lever with sliding endpoint pins and a fixed tap"></svg><div class="lever-equation"><div><span id="weight-a">0.5000</span><small>left travel</small></div><b>+</b><div><span id="weight-b">0.5000</span><small>right travel</small></div><b>=</b><div class="tap-value"><span id="tap-value">0.5000</span><small>tap travel</small></div></div><p class="lever-copy" id="lever-copy"></p><dl class="specs"><div><dt>Tap fraction</dt><dd id="tap-fraction"></dd></div><div><dt>Bar length</dt><dd id="bar-length">1.000000</dd></div><div><dt>Rotation</dt><dd id="bar-angle"></dd></div></dl><p class="physical-note">Pins slide horizontally inside the shuttles. The bar rotates without stretching, and its fixed tap sets the output height.</p><div class="checker"><span>Independent DFT check</span><strong id="fft-error">—</strong><small>Readout is taken from the linkage. The DFT only checks it.</small></div></aside>
+</div>
+<section class="spectrum" aria-labelledby="spectrum-heading"><div class="section-top"><h2 id="spectrum-heading"><span class="number">03</span> Fourier output — bottom readout</h2><span class="spectrum-convention">Ordinary, unnormalized FFT · e<sup>−i2πkn/8</sup></span></div><div class="bin-grid" id="bin-grid"></div><p class="spectrum-note">The remaining three bins are the conjugate mirror of bins 3, 2 and 1. Each needle shows a complex coefficient; the bar below shows its magnitude.</p></section>
+<details class="theory"><summary>The mathematics behind the motion <span>+</span></summary><div class="theory-grid"><article><h3>Two rails carry a signed sample</h3><p>A fixed-pivot input rocker sets p = (1 + x) / 2 and n = (1 − x) / 2 through its two opposite endpoint pins. Both shuttles remain between 0 and 1; their separation p − n is the sample. Negative weights exchange the rails.</p><h3>Geometry performs each operation</h3><p>The eight-point Bruun factorization is lifted to two rails and given a forward kinematic gauge. Each output becomes a convex average, made by a bar with a fixed tap: q = (1 − β)a + βb.</p><p>The 44 bars use just two tap fractions: 36 at ½, and 8 at √2 − 1. Output ruler calibration removes the fixed gauge and converts the orthonormal coordinates to the ordinary FFT scale.</p></article><article><h3>A finite-motion model</h3><p>For a unit bar, the endpoint heights are 0.55a and 0.55b. Their horizontal separation is √(1 − 0.55²(b − a)²). Its length therefore stays exactly one throughout the slider range. The fixed tap’s vertical coordinate is the required average, even at finite rotation.</p><h3>What this simulation represents</h3><p>An ideal, rigid, frictionless linkage at quasistatic equilibrium. Animation moves the prescribed inputs; all output positions satisfy the linkage constraints in every frame. Each colored branched member is one rigid yoke translating in a vertical guide. Its source slot and every receiving slot move together. Long pin axles connect the front levers to yokes in separate depth layers; overlapping members in this front projection are not joined. The bottom ruler travels with the negative rail, while its pointer travels with the positive rail: their relative displacement is the Fourier coordinate.</p><p>This is a layered ideal kinematic assembly. The model checks connected pin-and-slot interfaces and rigid member motion. Finite-thickness axle clearances, friction, inertia and fabrication tolerances still require an engineering layout.</p></article></div></details>
+<footer class="page-footer"><span>BFFT <span class="muted">/</span> A Fourier transform you can move.</span><span>8 samples · 44 bars · 36 midpoint taps · 8 silver-ratio taps</span></footer>
+</main>
+<script>/* Exact finite-displacement, two-rail N=8 Bruun linkage model. */
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.MechanicalFFT=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+'use strict';
+const N=8, SQRT2=Math.SQRT2, EPS=1e-13;
+const matrix=(r,c)=>Array.from({length:r},()=>Array(c).fill(0));
+function identity(n){const m=matrix(n,n);for(let i=0;i<n;i++)m[i][i]=1;return m;}
+function mul(a,b){return a.map(row=>b[0].map((_,j)=>row.reduce((v,x,k)=>v+x*b[k][j],0)));}
+function mv(a,x){return a.map(row=>row.reduce((s,v,i)=>s+v*x[i],0));}
+function block(a,b){const m=matrix(a.length+b.length,a.length+b.length);a.forEach((r,i)=>r.forEach((v,j)=>m[i][j]=v));b.forEach((r,i)=>r.forEach((v,j)=>m[i+a.length][j+a.length]=v));return m;}
+function half(n){const h=n/2,m=matrix(n,n);for(let j=0;j<h;j++){m[j][j]=m[j][j+h]=m[j+h][j]=1/SQRT2;m[j+h][j+h]=-1/SQRT2;}return m;}
+function factorization(){
+ const c=1/SQRT2,s=c;
+ const r=[[1,0,c,-s],[0,1,s,c],[1,0,-c,s],[0,-1,s,c]].map(row=>row.map(v=>v/SQRT2));
+ const p=identity(4);const odd=mul(r,[p[0],p[2],p[1],p[3]]).map((row,i)=>row.map(v=>(i%2?-1:1)*v));
+ const e=[[1/SQRT2,1/SQRT2,0,0],[0,0,1,0],[0,0,0,-1],[1/SQRT2,-1/SQRT2,0,0]];
+ return [half(8),block(half(4),odd),block(e,identity(4))];
+}
+function lift(m){const n=m.length,out=matrix(2*n,2*n);for(let i=0;i<n;i++)for(let j=0;j<n;j++){const p=Math.max(m[i][j],0),v=Math.max(-m[i][j],0);out[i][j]=out[i+n][j+n]=p;out[i][j+n]=out[i+n][j]=v;}return out;}
+function gauge(stages){const scales=[Array(16).fill(1)],physical=[];for(const stage of stages){const c=lift(stage),d=scales.at(-1),next=c.map(row=>1/row.reduce((s,v,i)=>s+v/d[i],0));physical.push(c.map((row,j)=>row.map((v,i)=>next[j]*v/d[i])));scales.push(next);}return {scales,physical};}
+/* A rigid bar of unit length, centre constrained laterally, with its endpoint
+   and tap pins in horizontal slots on vertical shuttles. q is travel fraction.
+   The branch dx>0 is nonsingular because travel<length and q is in [0,1]. */
+function barGeometry(a,b,beta,length=1,travel=.55){
+ if(![a,b,beta,length,travel].every(Number.isFinite)||length<=0||travel<=0||beta<0||beta>1)throw Error('Invalid bar geometry');
+ const ya=travel*a,yb=travel*b,dy=yb-ya;
+ if(Math.abs(dy)>=length)throw Error('Bar travel exceeds its nonsingular range');
+ const dx=Math.sqrt(length*length-dy*dy);
+ const A={x:-dx/2,y:ya},B={x:dx/2,y:yb};
+ const tap={x:A.x+beta*(B.x-A.x),y:A.y+beta*(B.y-A.y)};
+ return {A,B,tap,q:tap.y/travel,angle:Math.atan2(dy,dx),length,travel,beta};
+}
+function build(){
+ const stages=factorization(),{scales,physical}=gauge(stages),nodes=[],bars=[],ops=[],stageNodes=[];
+ for(let i=0;i<16;i++)nodes.push({id:i,stage:-1,row:i,label:`x${i%8}${i<8?'+':'−'}`});
+ let prev=nodes.map(v=>v.id);
+ function node(stage,row,label){const id=nodes.length;nodes.push({id,stage,row,label});return id;}
+ function combine(a,b,beta,stage,row,part){
+  if(beta>.5+EPS){[a,b]=[b,a];beta=1-beta;}
+  const out=node(stage,row,`s${stage+1}.${row%8}${row<8?'+':'−'}${part?'·tap':''}`);
+  const bar={id:bars.length,a,b,beta,out,stage,row,part};bars.push(bar);ops.push({type:'bar',...bar});return out;
+ }
+ physical.forEach((m,stage)=>{
+  const next=[];
+  m.forEach((row,j)=>{
+   const support=row.map((w,i)=>({w,id:prev[i]})).filter(v=>v.w>EPS);
+   if(support.length===1){const out=node(stage,j,`s${stage+1}.${j%8}${j<8?'+':'−'}`);ops.push({type:'copy',a:support[0].id,out,stage,row:j});next.push(out);}
+   else if(support.length===2)next.push(combine(support[0].id,support[1].id,support[1].w/(support[0].w+support[1].w),stage,j,0));
+   else if(support.length===3){
+    let best=null;
+    for(const [a,b] of [[0,1],[0,2],[1,2]]){const k=[0,1,2].find(i=>i!==a&&i!==b),sum=support[a].w+support[b].w,beta=support[b].w/sum,last=support[k].w/(sum+support[k].w),score=Math.min(beta,1-beta,last,1-last);if(!best||score>best.score)best={a,b,k,beta,last,score};}
+    const inner=combine(support[best.a].id,support[best.b].id,best.beta,stage,j,1);
+    next.push(combine(inner,support[best.k].id,best.last,stage,j,2));
+   }else throw Error('Unsupported row');
+  });stageNodes.push(next);prev=next;
+ });
+ const permutation=[0,4,5,1,2,6,7,3];
+ return {N,stages,physical,scales,nodes,bars,ops,stageNodes,permutation};
+}
+function evaluate(model,samples){
+ if(samples.length!==8||samples.some(x=>!Number.isFinite(x)||Math.abs(x)>1+EPS))throw Error('Eight finite samples in [-1,1] required');
+ const positions=Array(model.nodes.length).fill(0),geometries=[];
+ const inputGeometries=samples.map(x=>{const g=barGeometry((1+x)/2,(1-x)/2,.5,1,.4);return {...g,pivot:{x:0,y:.2}};});
+ inputGeometries.forEach((g,i)=>{positions[i]=g.A.y/g.travel;positions[i+8]=g.B.y/g.travel;});
+ for(const op of model.ops){if(op.type==='copy')positions[op.out]=positions[op.a];else{const g=barGeometry(positions[op.a],positions[op.b],op.beta);positions[op.out]=g.q;geometries[op.id]=g;}}
+ const last=model.stageNodes.at(-1),d=model.scales.at(-1);
+ const packed=model.permutation.map(i=>(positions[last[i]]-positions[last[i+8]])/d[i]);
+ const spectrum=[{re:Math.sqrt(8)*packed[0],im:0},...Array.from({length:3},(_,i)=>({re:2*packed[1+2*i],im:2*packed[2+2*i]})),{re:Math.sqrt(8)*packed[7],im:0}];
+ return {positions,geometries,inputGeometries,packed,spectrum};
+}
+/* Independent oracle only; evaluate() does not call this or any Fourier sum. */
+function directDFT(samples){return Array.from({length:5},(_,k)=>samples.reduce((z,x,j)=>{const p=-2*Math.PI*k*j/8;return {re:z.re+x*Math.cos(p),im:z.im+x*Math.sin(p)};},{re:0,im:0}));}
+function ancestors(model,id){const nodes=new Set([id]),bars=new Set();for(let i=model.ops.length-1;i>=0;i--){const op=model.ops[i];if(nodes.has(op.out)){nodes.add(op.a);if(op.type==='bar'){nodes.add(op.b);bars.add(op.id);}}}return {nodes,bars};}
+return {N,build,evaluate,barGeometry,directDFT,ancestors,factorization,lift,gauge,mul,mv};
+});
+</script><script>/* Front projection of a layered, connected rigid-yoke assembly. */
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.MechanicalAssembly=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+'use strict';
+const L=48,T=.55*L,INPUT_L=66,SLOT=12;
+const col=r=>80+(2*(r%8)+(r>=8?1:0))*64;
+function build(model){
+ const owners=new Map(),aliases=new Map(),ports=[],bars=[];
+ for(let i=0;i<8;i++){const cx=112+128*i;owners.set(i,{x:cx-INPUT_L/2,y:150});owners.set(i+8,{x:cx+INPUT_L/2,y:150});}
+ const root=id=>{while(aliases.has(id))id=aliases.get(id);return id;};
+ for(const op of model.ops){if(op.type==='copy'){aliases.set(op.out,root(op.a));continue;}
+  const x=col(op.row),y=op.stage===0?410:op.stage===1?(op.part===1?650:760):1010;
+  const b={...op,x,y};bars[op.id]=b;
+  ports.push({node:root(op.a),x:x-L/2,y,bar:op.id,pin:'A'},{node:root(op.b),x:x+L/2,y,bar:op.id,pin:'B'});
+  owners.set(op.out,{x:x+(op.beta-.5)*L,y});
+ }
+ const outputs=model.permutation.map((row,k)=>{const x=112+k*128,y=1240;ports.push({node:root(model.stageNodes[2][row]),x:x-17,y,output:k,rail:'positive'},{node:root(model.stageNodes[2][row+8]),x:x+17,y,output:k,rail:'negative'});return {x,y,row,k,positive:root(model.stageNodes[2][row]),negative:root(model.stageNodes[2][row+8])};});
+ const yokes=[...owners].map(([node,source],layer)=>{const targets=ports.filter(p=>p.node===node);const bus=source.y+65+(layer%16)*3;
+  const segments=targets.map(p=>[source,{x:source.x,y:bus},{x:p.x,y:bus},p]);
+  return {node,source,targets,segments,layer:layer+1,z:-(layer+1)*4};});
+ return {bars,outputs,yokes,root,L,T,INPUT_L,SLOT,width:1120,height:1370};
+}
+function rocker(x,i){const cx=112+128*i,dy=T*x,dx=Math.sqrt(INPUT_L**2-dy**2);return {A:{x:cx-dx/2,y:150-dy/2},B:{x:cx+dx/2,y:150+dy/2},pivot:{x:cx,y:150},positive:(1+x)/2,negative:(1-x)/2};}
+function geometry(assembly,result,samples){
+ const shift=id=>-T*(result.positions[id]-.5);
+ const yokes=assembly.yokes.map(y=>({...y,dy:shift(y.node),source:{...y.source,y:y.source.y+shift(y.node)},targets:y.targets.map(p=>({...p,y:p.y+shift(y.node)})),segments:y.segments.map(s=>s.map(p=>({x:p.x,y:p.y+shift(y.node)})))}));
+ const bars=assembly.bars.map(b=>{const g=result.geometries[b.id],p=v=>({x:b.x+v.x*L,y:b.y+T/2-v.y*L});return {...b,A:p(g.A),B:p(g.B),tap:p(g.tap),centre:{x:b.x,y:(p(g.A).y+p(g.B).y)/2}};});
+ const outputs=assembly.outputs.map(o=>({...o,positiveY:o.y+shift(o.positive),negativeY:o.y+shift(o.negative)}));
+ return {bars,yokes,outputs,inputs:samples.map(rocker)};
+}
+return {build,geometry,rocker,L,T,INPUT_L,SLOT};
+});
+</script><script>(function(){
+'use strict';
+const M=window.MechanicalFFT,model=M.build(),$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg';
+const cyan='#62decf',gold='#e7b970',muted='#93a6b5',metal='#c3d1dc';
+const presets={wave:Array.from({length:8},(_,i)=>.65*Math.cos(2*Math.PI*i/8)+.25*Math.sin(4*Math.PI*i/8)),impulse:[1,0,0,0,0,0,0,0],alternating:[1,-1,1,-1,1,-1,1,-1],flat:Array(8).fill(.6),zero:Array(8).fill(0)};
+let target=presets.wave.slice(),current=target.slice(),selected=model.bars.find(b=>Math.abs(b.beta-.5)>.01).id,focused=false,playing=false,waveTime=0,lastTime=0,lastReadout=0,raf=0;
+const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
+const inputs=[],sampleOutputs=[],binRefs=[],barRefs=[],routes=[],portRefs=[];
+function svg(tag,attrs={},parent){const e=document.createElementNS(NS,tag);for(const [k,v]of Object.entries(attrs))e.setAttribute(k,v);if(parent)parent.appendChild(e);return e;}
+function text(parent,x,y,value,attrs={}){const t=svg('text',{x,y,...attrs},parent);t.textContent=value;return t;}
+function attrs(e,a){for(const[k,v]of Object.entries(a))e.setAttribute(k,v);}
+function fmt(x,d=3){return (Math.abs(x)<.5*10**(-d)?0:x).toFixed(d);}
+function signed(x){return (x>=0?'+':'')+fmt(x,2);}
+const assembly=window.MechanicalAssembly.build(model),Y=window.MechanicalAssembly,yokeRefs=[],inputRefs=[],rulerRefs=[];
+function makeInputs(){} // The actual rocker handles are the input controls.
+function syncInputLabels(){for(let i=0;i<inputRefs.length;i++){const r=inputRefs[i];r.label.textContent=`x${i}  ${signed(target[i])}`;attrs(r.handle,{'aria-valuenow':fmt(target[i],2),'aria-valuetext':`Sample ${i}: ${fmt(target[i],2)}`});}}
+function changeSample(i,value){stopPlay();target[i]=Math.max(-1,Math.min(1,value));document.querySelectorAll('[data-preset]').forEach(b=>b.classList.remove('active'));syncInputLabels();wake();}
+function makeDiagram(){const s=$('machine');
+ const frame=svg('g',{class:'fixed-frame'},s);
+ svg('path',{d:'M24 1300V115H1096V1300M24 1300H1096',fill:'none',stroke:'#405363','stroke-width':12},frame);
+ for(const y of [150,410,650,760,1010])svg('line',{x1:24,y1:y,x2:1096,y2:y,stroke:'#2e414f','stroke-width':6},frame);
+ text(s,40,38,'INPUT · EIGHT FIXED-PIVOT ROCKERS',{'class':'stage-label'});
+ text(s,40,60,'Drag the white endpoint ↑ ↓. Both rail shuttles are attached to the same lever.',{'class':'tiny-label'});
+ for(const [y,title,sub] of [[340,'01 ↓ SPLIT','16 midpoint bars'],[570,'02 ↓ ROTATE & COMBINE','24 bars · two levels for three-input averages'],[940,'03 ↓ RESOLVE','4 bars · remaining rails continue on the same rigid yokes'],[1160,'FOURIER OUTPUT ↓','Moving rulers: gold scale + cyan pointer = signed Fourier coefficient']]){text(s,40,y,title,{'class':'stage-label stage-caption'});text(s,40,y+20,sub,{'class':'tiny-label stage-caption'});}
+ const transfer=svg('g',{},s);
+ for(const y of assembly.yokes){const group=svg('g',{'class':'yoke','data-node':y.node},transfer),color=model.nodes[y.node].row<8?cyan:gold;
+  const title=svg('title',{},group);title.textContent=`Rigid yoke ${y.layer} · ${model.nodes[y.node].label} · depth ${y.z}. All branches and slots form one translating body.`;
+  const paths=y.segments.map(()=>svg('path',{fill:'none',stroke:color,'stroke-width':2.8,'stroke-linejoin':'round','class':'rigid-member'},group));
+  const slots=[y.source,...y.targets].map(p=>{const slot=svg('rect',{x:p.x-Y.SLOT/2,y:p.y-3,width:Y.SLOT,height:6,rx:2,fill:'#101922',stroke:color,'stroke-width':1.8},group);return slot;});
+  // A bearing around the source stem supplies the yoke's vertical prismatic joint.
+  svg('path',{d:`M${y.source.x-8} ${y.source.y}V${y.source.y+40}H${y.source.x+8}V${y.source.y}`,fill:'none',stroke:'#334b5b','stroke-width':2},frame);
+  svg('rect',{x:y.source.x-5,y:y.source.y+26,width:10,height:14,rx:2,fill:'#263946',stroke:'#67818f'},frame);
+  yokeRefs.push({group,paths,slots,yoke:y});
+ }
+ const front=svg('g',{},s);
+ for(let i=0;i<8;i++){const cx=112+i*128;
+  const group=svg('g',{},front);const label=text(s,cx,97,'',{'text-anchor':'middle',fill:'#edf3f6','font-size':13});
+  svg('path',{d:`M${cx-8} 160L${cx} 150L${cx+8} 160Z`,fill:'#8aa0ad'},group);
+  const rod=svg('line',{'class':'input-rod',stroke:metal,'stroke-width':7,'stroke-linecap':'round'},group);
+  svg('circle',{cx,cy:150,r:5,fill:'#12202a',stroke:'#d9e5ea','stroke-width':2},group);
+  const pin=svg('circle',{r:4,fill:gold,stroke:'#0b1017','stroke-width':1.5},group);
+  const handle=svg('circle',{r:9,fill:'#f1f6fa',stroke:cyan,'stroke-width':2,role:'slider',tabindex:0,'aria-label':`Sample ${i}`,'aria-valuemin':-1,'aria-valuemax':1,'aria-orientation':'vertical','class':'input-handle'},group);
+  text(s,cx-45,202,'+', {fill:cyan,'font-size':14});text(s,cx+43,202,'−',{fill:gold,'font-size':14});
+  let dragging=false;
+  const move=e=>{const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(s.getScreenCTM().inverse());changeSample(i,2*(150-p.y)/Y.T);};
+  handle.addEventListener('pointerdown',e=>{e.preventDefault();dragging=true;handle.setPointerCapture(e.pointerId);move(e);});
+  handle.addEventListener('pointermove',e=>{if(dragging)move(e);});
+  const release=()=>{dragging=false;};handle.addEventListener('pointerup',release);handle.addEventListener('pointercancel',release);handle.addEventListener('lostpointercapture',release);
+  handle.addEventListener('keydown',e=>{let v=target[i];if(['ArrowUp','ArrowRight'].includes(e.key))v+=.01;else if(['ArrowDown','ArrowLeft'].includes(e.key))v-=.01;else if(e.key==='Home')v=-1;else if(e.key==='End')v=1;else if(e.key==='PageUp')v+=.1;else if(e.key==='PageDown')v-=.1;else return;e.preventDefault();changeSample(i,v);});
+  inputRefs.push({rod,pin,handle,label});
+ }
+ for(const b of assembly.bars){const group=svg('g',{'class':'bar','data-bar':b.id},front);
+  svg('rect',{x:b.x-3,y:b.y-Y.T/2-5,width:6,height:Y.T+10,rx:2,fill:'#101a22',stroke:'#627684'},group);
+  const rod=svg('line',{'class':'rod'},group),A=svg('circle',{r:3.2,'class':'pin'},group),B=svg('circle',{r:3.2,'class':'pin'},group),centre=svg('circle',{r:2.3,fill:'#f3f8fa'},group),tap=svg('circle',{r:3.4,'class':'tap'},group);
+  const hit=svg('rect',{x:b.x-Y.L/2-5,y:b.y-Y.T/2-5,width:Y.L+10,height:Y.T+10,'class':'bar-hit'},group);hit.addEventListener('click',()=>chooseBar(b.id));
+  svg('title',{},group).textContent=`Bar ${b.id+1}: fixed-length bar, endpoint axle pins in the incoming yoke slots, output axle at the fixed tap.`;
+  barRefs[b.id]={group,rod,A,B,tap,centre};
+ }
+ // Keep captions legible above the projected transfer members.
+ for(const label of [...s.querySelectorAll('.stage-caption')])s.appendChild(label);
+ const names=['DC','Re X₁','Im X₁','Re X₂','Im X₂','Re X₃','Im X₃','Nyquist'];
+ for(const o of assembly.outputs){const group=svg('g',{},front),scale=svg('g',{},group),pointer=svg('g',{},group);
+  // Both bodies extend rigidly from their receiving slots; the ruler rides n.
+  svg('path',{d:`M${o.x+17} ${o.y}H${o.x+28}V${o.y-38}M${o.x+28} ${o.y-38}V${o.y+38}`,stroke:gold,'stroke-width':3,fill:'none'},scale);
+  for(let j=-4;j<=4;j++)svg('line',{x1:o.x+28,y1:o.y+j*Y.T/4,x2:o.x+(j===0?41:35),y2:o.y+j*Y.T/4,stroke:gold,'stroke-width':1.5},scale);
+  svg('path',{d:`M${o.x-17} ${o.y}H${o.x+24}M${o.x+18} ${o.y-4}L${o.x+24} ${o.y}L${o.x+18} ${o.y+4}`,stroke:cyan,'stroke-width':3,fill:'none'},pointer);
+  const calibration=(o.k===0||o.k===7?Math.sqrt(8):2)/model.scales[3][o.row];
+  for(const j of [-1,0,1])text(scale,o.x+43,o.y-j*Y.T+3,j===0?'0':(j>0?'+':'−')+fmt(calibration,1),{fill:gold,'font-size':8});
+  text(s,o.x,1200,names[o.k],{'text-anchor':'middle','class':'stage-label'});
+  const value=text(s,o.x,1325,'0.000',{'text-anchor':'middle',fill:cyan,'font-size':15,'class':'physical-output','data-coordinate':o.k});
+  rulerRefs.push({scale,pointer,value,o});
+ }
+ text(s,40,1356,'FRONT PROJECTION · Rigid yokes occupy separate depth planes; ringed axle pins join each slot to its lever.',{'class':'tiny-label'});
+ syncInputLabels();
+}
+function updateFocus(){const path=M.ancestors(model,model.bars[selected].out);for(const b of model.bars){barRefs[b.id].group.classList.toggle('selected',b.id===selected);barRefs[b.id].group.classList.toggle('faded',focused&&!path.bars.has(b.id));}for(const r of yokeRefs){r.group.classList.toggle('faded',focused&&!path.nodes.has(r.yoke.node));}}
+function renderAssembly(result){const g=Y.geometry(assembly,result,current);
+ for(const b of g.bars){const r=barRefs[b.id];attrs(r.rod,{x1:b.A.x,y1:b.A.y,x2:b.B.x,y2:b.B.y});for(const k of ['A','B','tap','centre'])attrs(r[k],{cx:b[k].x,cy:b[k].y});}
+ g.yokes.forEach((y,i)=>{const r=yokeRefs[i];y.segments.forEach((points,j)=>r.paths[j].setAttribute('d',points.map((p,k)=>`${k?'L':'M'}${p.x},${p.y}`).join(' ')));[y.source,...y.targets].forEach((p,j)=>attrs(r.slots[j],{x:p.x-Y.SLOT/2,y:p.y-3}));});
+ g.inputs.forEach((v,i)=>{const r=inputRefs[i];attrs(r.rod,{x1:v.A.x,y1:v.A.y,x2:v.B.x,y2:v.B.y});attrs(r.handle,{cx:v.A.x,cy:v.A.y});attrs(r.pin,{cx:v.B.x,cy:v.B.y});});
+ g.outputs.forEach((v,i)=>{const r=rulerRefs[i];r.scale.setAttribute('transform',`translate(0 ${v.negativeY-v.y})`);r.pointer.setAttribute('transform',`translate(0 ${v.positiveY-v.y})`);const factor=(i===0||i===7?Math.sqrt(8):2)/model.scales[3][v.row];r.value.textContent=fmt((v.negativeY-v.positiveY)/Y.T*factor);});
+}
+
+function point(p,l){return {x:l.x+p.x*l.length,y:l.y+.275*l.length-p.y*l.length};}
+const leverRefs={};
+function makeInspector(){for(const b of model.bars){const option=document.createElement('option');option.value=b.id;option.textContent=`Bar ${String(b.id+1).padStart(2,'0')} · stage ${b.stage+1} · ${Math.abs(b.beta-.5)<.001?'midpoint':'silver tap'}`;$('bar-select').appendChild(option);} $('bar-select').value=selected;$('bar-select').addEventListener('change',e=>chooseBar(Number(e.target.value)));
+ const s=$('lever');text(s,150,20,'RIGID LENGTH = 1',{'text-anchor':'middle',fill:muted,'font-size':10});
+ for(const x of [43,150,257])svg('line',{x1:x,y1:34,x2:x,y2:188,class:'guide'},s);
+ leverRefs.tapGuide=svg('line',{y1:34,y2:188,stroke:'#376e6b','stroke-dasharray':'2 3'},s);
+ leverRefs.slots=[0,1,2].map(()=>svg('rect',{width:26,height:10,rx:3,class:'slot'},s));
+ leverRefs.rod=svg('line',{stroke:metal,'stroke-width':9,'stroke-linecap':'round'},s);
+ leverRefs.highlight=svg('line',{stroke:'#f6fbff','stroke-opacity':.22,'stroke-width':2},s);
+ leverRefs.pins=[0,1].map(()=>svg('circle',{r:5,class:'pin'},s));leverRefs.tap=svg('circle',{r:6,class:'tap'},s);
+ leverRefs.drop=svg('line',{stroke:cyan,'stroke-width':1.3},s);
+ text(s,43,211,'LEFT',{'text-anchor':'middle',fill:muted,'font-size':10});text(s,257,211,'RIGHT',{'text-anchor':'middle',fill:muted,'font-size':10});leverRefs.tapLabel=text(s,150,228,'FIXED TAP',{'text-anchor':'middle',fill:cyan,'font-size':10});
+}
+function makeBins(){for(let k=0;k<5;k++){const card=document.createElement('article');card.className='bin-card';card.setAttribute('aria-label',`FFT bin ${k}`);card.innerHTML=`<div class="bin-top"><span>k = ${k}</span><small>${k===0?'DC':k===4?'Nyquist':`${k} / 8 cycles`}</small></div><svg class="phasor" viewBox="0 0 180 110" aria-hidden="true"><circle cx="90" cy="54" r="38" fill="none" stroke="#2e4351"/><path d="M42 54H138M90 8V100" stroke="#243745"/><text x="142" y="58" fill="#738b9d" font-size="10">Re</text><text x="95" y="12" fill="#738b9d" font-size="10">Im</text><line class="needle" x1="90" y1="54" x2="90" y2="54"/><circle class="tip" cx="90" cy="54" r="3" fill="${cyan}"/></svg><div class="bin-number" role="status" aria-live="off">0.000 + 0.000i</div><div class="magnitude-track"><div class="magnitude-fill"></div></div><div class="magnitude-label"><span>|X${k}|</span><span class="magnitude-value">0.000</span></div>`;$('bin-grid').appendChild(card);binRefs.push({needle:card.querySelector('.needle'),tip:card.querySelector('.tip'),number:card.querySelector('.bin-number'),fill:card.querySelector('.magnitude-fill'),magnitude:card.querySelector('.magnitude-value')});}}
+function chooseBar(id){selected=id;focused=true;$('bar-select').value=id;updateFocus();wake();}
+function render(result,readout=true){
+ renderAssembly(result);
+ const b=model.bars[selected],g=result.geometries[selected],l={x:150,y:111,length:214},A=point(g.A,l),B=point(g.B,l),T=point(g.tap,l),tapX=150+(b.beta-.5)*214;
+ attrs(leverRefs.rod,{x1:A.x,y1:A.y,x2:B.x,y2:B.y});attrs(leverRefs.highlight,{x1:A.x,y1:A.y-2,x2:B.x,y2:B.y-2});attrs(leverRefs.pins[0],{cx:A.x,cy:A.y});attrs(leverRefs.pins[1],{cx:B.x,cy:B.y});attrs(leverRefs.tap,{cx:T.x,cy:T.y});attrs(leverRefs.tapGuide,{x1:tapX,x2:tapX});attrs(leverRefs.slots[0],{x:21,y:A.y-5,width:44});attrs(leverRefs.slots[1],{x:235,y:B.y-5,width:44});attrs(leverRefs.slots[2],{x:tapX-13,y:T.y-5});attrs(leverRefs.drop,{x1:T.x,y1:T.y+7,x2:tapX,y2:190});leverRefs.tapLabel.setAttribute('x',tapX);
+ if(readout){const a=result.positions[b.a],right=result.positions[b.b];$('weight-a').textContent=fmt((1-b.beta)*a);$('weight-b').textContent=fmt(b.beta*right);$('tap-value').textContent=fmt(g.q);$('weight-a').nextElementSibling.textContent=`${fmt(1-b.beta)} × ${fmt(a)}`;$('weight-b').nextElementSibling.textContent=`${fmt(b.beta)} × ${fmt(right)}`;$('tap-fraction').textContent=Math.abs(b.beta-.5)<.001?'½ = 0.500000':'√2 − 1 = 0.414214';$('bar-length').textContent=Math.hypot(g.B.x-g.A.x,g.B.y-g.A.y).toFixed(6);$('bar-angle').textContent=fmt(g.angle*180/Math.PI,2)+'°';$('lever-copy').textContent=`${model.nodes[b.a].label} and ${model.nodes[b.b].label} position the ends. ${Math.abs(b.beta-.5)<.001?'The midpoint takes their average.':'The silver tap takes 58.58% of the left travel and 41.42% of the right.'}`;
+  const ref=M.directDFT(current),err=Math.max(...ref.map((v,k)=>Math.hypot(v.re-result.spectrum[k].re,v.im-result.spectrum[k].im)));$('fft-error').textContent=err<1e-14?'< 10⁻¹⁴':err.toExponential(2);$('fft-error').style.color=err<1e-10?cyan:gold;
+  const max=Math.max(1,...result.spectrum.map(z=>Math.hypot(z.re,z.im)));result.spectrum.forEach((z,k)=>{const e=binRefs[k],x=90+38*z.re/max,y=54-38*z.im/max,mag=Math.hypot(z.re,z.im);attrs(e.needle,{x2:x,y2:y});attrs(e.tip,{cx:x,cy:y});e.number.textContent=`${fmt(z.re)} ${z.im<-.0005?'−':'+'} ${fmt(Math.abs(z.im))}i`;e.fill.style.width=`${100*mag/8}%`;e.magnitude.textContent=fmt(mag);});
+ }
+}
+function stopPlay(){playing=false;$('play').setAttribute('aria-pressed','false');$('play').innerHTML='<span aria-hidden="true">▷</span> Travel the wave';}
+function tick(time){raf=0;const dt=lastTime?Math.min(.05,(time-lastTime)/1000):.016;lastTime=time;
+ if(playing){waveTime+=dt;target=Array.from({length:8},(_,i)=>.65*Math.cos(2*Math.PI*(i/8-waveTime*.12))+.25*Math.sin(4*Math.PI*(i/8-waveTime*.12)));syncInputLabels();}
+ const alpha=reduced.matches?1:1-Math.exp(-dt/($('slow').checked?.7:.11));let moving=false;
+ current=current.map((x,i)=>{const next=x+alpha*(target[i]-x);if(Math.abs(next-target[i])>1e-7){moving=true;return next;}return target[i];});
+ const result=M.evaluate(model,current);const readout=!moving||time-lastReadout>45||playing;if(readout)lastReadout=time;render(result,readout);
+ $('motion-status').innerHTML=`<span class="status-dot"></span>${playing?'Wave in motion':moving?'Inputs moving · constraints exact':'At equilibrium'}`;
+ if(moving||playing)raf=requestAnimationFrame(tick);else lastTime=0;
+}
+function wake(){if(!raf)raf=requestAnimationFrame(tick);}
+makeInputs();makeDiagram();makeInspector();makeBins();updateFocus();render(M.evaluate(model,current));
+$('zoom-machine').addEventListener('click',()=>{const expanded=$('machine').classList.toggle('expanded');$('zoom-machine').setAttribute('aria-pressed',String(expanded));$('zoom-machine').textContent=expanded?'Fit whole machine':'Enlarge joints';});
+$('unfocus').addEventListener('click',()=>{focused=false;updateFocus();});
+$('play').addEventListener('click',()=>{if(playing)stopPlay();else{playing=true;waveTime=0;$('play').setAttribute('aria-pressed','true');$('play').innerHTML='<span aria-hidden="true">Ⅱ</span> Pause wave';document.querySelectorAll('[data-preset]').forEach(b=>b.classList.remove('active'));}wake();});
+$('slow').addEventListener('change',wake);
+reduced.addEventListener('change',()=>{if(reduced.matches)stopPlay();wake();});
+document.querySelectorAll('[data-preset]').forEach(button=>button.addEventListener('click',()=>{stopPlay();target=presets[button.dataset.preset].slice();syncInputLabels();document.querySelectorAll('[data-preset]').forEach(b=>b.classList.toggle('active',b===button));wake();}));
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(raf)cancelAnimationFrame(raf);raf=0;lastTime=0;}else wake();});
+/* Read-only state for embedding diagnostics and integration tests. */
+window.fourierMachine=Object.freeze({getState:()=>({samples:current.slice(),targets:target.slice(),selectedBar:selected,playing,...M.evaluate(model,current)}),model});
+})();
+</script>
+</body></html>

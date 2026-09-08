@@ -1,0 +1,145 @@
+\section{Bruun's Real Factor Tree}
+\label{sec:bruun}
+
+Bruun's construction begins with the observation that a real DFT need not split
+$z^N-1$ into complex linear factors.  The two real roots are represented by
+$z-1$ and $z+1$; every other conjugate pair is represented by a real quadratic.
+The sparse route to those factors is a repeated half-angle identity.
+
+\subsection{Binomial spine and trinomial descendants}
+
+For every positive integer $m$ define
+\begin{equation}
+ Q_{m,\theta}(z)=z^{2m}-2\cos\theta\,z^m+1.
+ \label{eq:Q-definition}
+\end{equation}
+The coefficient field throughout the exact development is
+\begin{equation}
+\K_N=\mathbb{Q}\bigl(\sqrt2,
+\{\cos(2\pi k/N),\sin(2\pi k/N):k\in\Z\}\bigr)
+ \subset\R.
+ \label{eq:coefficient-field}
+\end{equation}
+All polynomial quotients in Sections \ref{sec:bruun}--\ref{sec:fourier-identity}
+may be taken over $\K_N$.
+
+\begin{lemma}[Half-angle factorization]
+For even $m$,
+\begin{equation}
+ Q_{m,\theta}
+ =Q_{m/2,\theta/2}\,Q_{m/2,\pi-\theta/2}.
+ \label{eq:half-angle-factorization}
+\end{equation}
+\end{lemma}
+\begin{proof}
+Put $v=z^{m/2}$ and $a=2\cos(\theta/2)$.  The right side is
+$(v^2-av+1)(v^2+av+1)=(v^2+1)^2-a^2v^2$.
+Since $a^2=2+2\cos\theta$, this equals
+$v^4-2\cos\theta\,v^2+1$.
+\end{proof}
+
+The root polynomial first splits along the binomial spine,
+\begin{equation}
+ z^{2m}-1=(z^m-1)(z^m+1),
+ \label{eq:binomial-spine}
+\end{equation}
+and $z^m+1=Q_{m/2,\pi/2}$.  Repeated application of
+\eqref{eq:half-angle-factorization} terminates at
+\begin{equation}
+ q_k(z)=z^2-2\cos(2\pi k/N)z+1,
+ \quad 1\leq k<N/2,
+ \label{eq:terminal-quadratic}
+\end{equation}
+together with $z-1$ and $z+1$.  Each $q_k$ represents the conjugate frequencies
+$k$ and $N-k$.
+
+\subsection{Forward reduction}
+
+If $p=p_-p_+$ with coprime children, the local forward map is simply
+\begin{equation}
+ [f]_p\longmapsto([f]_{p_-},[f]_{p_+}).
+ \label{eq:local-reduction}
+\end{equation}
+Composing \eqref{eq:local-reduction} down the complete factor tree gives
+\begin{equation}
+ \red_N:R_N\longrightarrow
+ \R\times\R\times
+ \prod_{k=1}^{N/2-1}\R[z]/(q_k).
+ \label{eq:global-reduction}
+\end{equation}
+The two scalar components correspond to $z=1$ and $z=-1$.
+
+\subsection{The resumed questions}
+
+The line of inquiry recorded for the present construction began in November
+2024 with four concrete problems: reproduce Bruun's reduction; identify the
+leaf shuffle; construct an inverse; and determine whether a normalized form
+could serve as a complete transform.  On June 10, 2026 the thread was resumed
+from the inverse problem.  Claude Fable contributed the decisive local
+Chinese-remainder reconstruction described in Section \ref{sec:crt}.  That
+formula made the factor tree bidirectional and exposed the next obstruction:
+exact inversion alone does not choose a well-conditioned coordinate system.
+
+The subsequent questions are stated here because they determine the logical
+shape of the paper.  First, can the terminal quotient be given a unit complex
+coordinate without introducing complex polynomial arithmetic?  Second, do
+alternative balanced bases improve the local factor geometry?  Third, which
+orders preserve the tree's sparse intervals?  Fourth, do downward, upward, and
+diagonal walks compute the same boundary map?  The answers will be a normalized
+quadratic chart, a covering-map locality principle, an address algebra, and
+three exact schedules of one Fourier factorization.
+
+\subsection{Dated reconstruction of the inquiry}
+
+Table~\ref{tab:development-line} records the order in which the questions were
+resolved.  The logical order of the proofs is different: normalization must be
+established before any schedule can inherit its metric.  The June 14--16
+Chebyshev work was a return to alternative bases after the first DIT
+construction, not the origin of the normalized chart present on June 10.
+
+\begin{table}[t]
+\caption{Documented mathematical development leading to the present theory.}
+\label{tab:development-line}
+\centering
+\footnotesize
+\begin{tabular}{@{}p{0.20\columnwidth}p{0.73\columnwidth}@{}}
+\toprule
+Date & Mathematical event\\
+\midrule
+Nov. 2024 & Bruun reduction, order, inverse, and viability posed as questions.\\
+June 10, 2026 & Fable CRT inverse; first staged normalized forward and inverse maps.\\
+June 10--11 & Equal-angle block and real rotation inquiry.\\
+June 12 & Subtree locality, output order, and first DIT construction.\\
+June 13 & Faithful monomial-residue reference reconstructed.\\
+June 14--16 & Radix-four and Chebyshev alternative-basis study.\\
+June 23 & Exact odd-frequency transform defined independently.\\
+July 4--5 & Phase-packet shear, DIP, and twisted span walk.\\
+July 5 & Positive-cone and field-delay realizations.\\
+Aug. 13 & Corrected cone composition and mechanical gauges.\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[level distance=8mm,
+ level 1/.style={sibling distance=38mm},
+ level 2/.style={sibling distance=21mm},
+ level 3/.style={sibling distance=12mm},
+ every node/.style={font=\tiny,inner sep=1pt},
+ edge from parent/.style={draw,-{Latex[length=1.2mm]}}]
+\node {$z^8-1$}
+ child {node {$z^4-1$}
+   child {node {$z^2-1$}
+     child {node {$z-1$}}
+     child {node {$z+1$}}}
+   child {node {$z^2+1$}}}
+ child {node {$z^4+1$}
+   child {node {$z^2-\sqrt2z+1$}}
+   child {node {$z^2+\sqrt2z+1$}}};
+\end{tikzpicture}
+\caption{The $N=8$ real factor tree.  The leaves represent DC, Nyquist, and
+three conjugate frequency pairs.  Every edge is a remainder map; Section
+\ref{sec:crt} reverses every edge explicitly.}
+\label{fig:n8-tree}
+\end{figure}

@@ -17,6 +17,7 @@ from ML_experiment.nd_spiral_wall import ShallowOddCubicNet
 from ML_experiment.response_enhanced import (
     RELATIONAL_CFF_DEEP,
     RELATIONAL_SCL,
+    RELATIONAL_SCL_SELECTION_CURVE,
     make_response_variant,
 )
 
@@ -358,6 +359,88 @@ class NestedOperatorFrameGraft(ContinuousOperatorFrameGraft):
         return authentic, chart, relation, components, coordinates
 
 
+class CurvatureResponseGraft(nn.Module):
+    """The operator sphere's even response, returned directly to self-context.
+
+    This is the narrow backport motivated by Hermite acquisition: no odd cubic
+    bridge, tangent component, or operator-coordinate sphere is retained.  A
+    single symmetric probe direction asks only how the allocator response bends
+    around its current chart point.  The ordinary self-context down path remains
+    the sole decoder.
+    """
+
+    def __init__(self, parent: nn.Module, *, probe_fraction: float = 0.2,
+                 probe_count: int = 1, authority_mode: str = "full",
+                 gain_mode: str = "positive"):
+        super().__init__()
+        if authority_mode not in {"full", "bounded", "geometric"}:
+            raise ValueError(authority_mode)
+        if gain_mode not in {"positive", "signed"}:
+            raise ValueError(gain_mode)
+        self.parent = parent
+        self.probe_fraction = float(probe_fraction)
+        self.authority_mode = authority_mode
+        self.gain_mode = gain_mode
+        rank = parent.up.rank
+        if not 1 <= probe_count <= rank:
+            raise ValueError(probe_count)
+        generator = torch.Generator().manual_seed(8113 + rank + probe_count)
+        dense, _ = torch.linalg.qr(torch.randn(rank, rank, generator=generator))
+        self.register_buffer("probe_mixer", dense[:, :probe_count].T)
+        self.curvature_scale = nn.Parameter(torch.tensor(
+            0.0 if gain_mode == "signed" else -2.0
+        ))
+        self.last_curvature_ratio = None
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        authentic = self.parent.embed(x)
+        chart = self.parent.up(authentic)
+        allocator = self.parent.up
+        weight = allocator.last_weight
+        if weight is None:
+            raise RuntimeError("self-context allocator did not retain its frame weights")
+        frame = torch.einsum("bd,dri->bri", weight, allocator.frame_atlas)
+        # Fixed dense mixtures preserve the complete selected frame without
+        # eigenvector sign choices or discontinuities at eigenvalue crossings.
+        direction = F.normalize(
+            torch.einsum("sr,bri->bsi", self.probe_mixer, frame), dim=-1
+        )
+        radius = (
+            self.probe_fraction
+            * authentic.norm(dim=-1, keepdim=True).detach().clamp_min(1e-3)
+        )
+        displacement = radius[:, None] * direction
+        probes = torch.cat(
+            (authentic[:, None] + displacement,
+             authentic[:, None] - displacement), dim=1,
+        )
+        count = direction.shape[1]
+        response = allocator(probes.flatten(0, 1)).view(
+            len(authentic), 2 * count, chart.shape[-1]
+        )
+        curvature = (
+            response[:, :count] + response[:, count:] - 2.0 * chart[:, None]
+        ).mean(1)
+        chart_rms = chart.detach().square().mean(-1, keepdim=True).sqrt().clamp_min(1e-6)
+        curvature_rms = curvature.square().mean(-1, keepdim=True).sqrt().clamp_min(1e-6)
+        normalized = curvature * (chart_rms / curvature_rms)
+        ratio = curvature_rms / chart_rms
+        if self.authority_mode == "bounded":
+            authority = ratio / (1.0 + ratio)
+        elif self.authority_mode == "geometric":
+            authority = (ratio / (1.0 + ratio)).sqrt()
+        else:
+            authority = torch.ones_like(ratio)
+        self.last_curvature_ratio = ratio.detach()
+        self.last_curvature_authority = authority.detach()
+        gain = (0.5 * torch.tanh(self.curvature_scale)
+                if self.gain_mode == "signed"
+                else F.softplus(self.curvature_scale))
+        self.last_curvature_gain = gain.detach()
+        state = self.parent.activation(chart + gain * authority * normalized)
+        return self.parent.output(self.parent.down(state))
+
+
 VARIANTS = (
     "self_context",
     "cff",
@@ -446,6 +529,38 @@ def make_hybrid(name: str, n_in: int, n_out: int, width: int) -> nn.Module:
         )
     if name == "self_context":
         return make_response_variant(SELF, n_in, n_out, width)
+    if name == "self_context_selection_curvature":
+        return make_response_variant(
+            RELATIONAL_SCL_SELECTION_CURVE, n_in, n_out, width
+        )
+    if name == "self_context_curvature_response":
+        return CurvatureResponseGraft(
+            make_response_variant(SELF, n_in, n_out, width)
+        )
+    if name == "self_context_curvature_response2":
+        return CurvatureResponseGraft(
+            make_response_variant(SELF, n_in, n_out, width), probe_count=2
+        )
+    if name == "self_context_curvature_response_bounded":
+        return CurvatureResponseGraft(
+            make_response_variant(SELF, n_in, n_out, width),
+            authority_mode="bounded",
+        )
+    if name == "self_context_curvature_response_geometric":
+        return CurvatureResponseGraft(
+            make_response_variant(SELF, n_in, n_out, width),
+            authority_mode="geometric",
+        )
+    if name == "self_context_curvature_response_signed":
+        return CurvatureResponseGraft(
+            make_response_variant(SELF, n_in, n_out, width),
+            gain_mode="signed",
+        )
+    if name == "self_context_curvature_response_signed_geometric":
+        return CurvatureResponseGraft(
+            make_response_variant(SELF, n_in, n_out, width),
+            authority_mode="geometric", gain_mode="signed",
+        )
     if name == "cff":
         return make_response_variant(FLOW, n_in, n_out, width)
     if name == "shallow_odd_cubic":

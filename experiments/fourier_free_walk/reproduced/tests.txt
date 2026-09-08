@@ -1,0 +1,20 @@
+test_actual_program_exactly (test_exact8.Tests) ... ok
+test_random_real_input (test_exact8.Tests) ... ok
+test_cycle_obstruction (test_gauge.Tests) ... ok
+test_fixed_endpoint_and_actual_oblique_frames (test_gauge.Tests) ... ok
+test_chart_singularity_is_explicit (test_general_turnover.Tests) ... ok
+test_complete_general_walk (test_general_turnover.Tests) ... ok
+test_general_oblique_charts (test_general_turnover.Tests) ... ok
+test_all_euler_charts (test_turnover.Tests) ... ok
+test_commuting_fusion (test_turnover.Tests) ... ok
+test_degenerate_charts (test_turnover.Tests) ... ok
+test_full_walk (test_turnover.Tests) ... ok
+test_broader_than_radix (test_walk.Tests) ... ok
+test_inverse_general_shear (test_walk.Tests) ... ok
+test_orientation_against_full_enumeration (test_walk.Tests) ... ok
+test_synthesis_and_physical_execution (test_walk.Tests) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.439s
+
+OK

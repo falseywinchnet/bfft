@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(bfft-obs VERSION 0.7.0 LANGUAGES C CXX)
+project(bfft-obs VERSION 0.9.0 LANGUAGES C CXX)
 
 include(FetchContent)
 
@@ -45,6 +45,7 @@ target_link_libraries(bfft-cartoon PRIVATE
   high_vision::high_vision)
 
 if(APPLE)
+  enable_language(OBJCXX)
   target_link_libraries(bfft-cartoon PRIVATE
     "${OBS_APP}/Contents/Frameworks/libobs.framework/libobs")
   set_target_properties(bfft-cartoon PROPERTIES
@@ -65,6 +66,19 @@ if(APPLE)
     COMMAND /usr/bin/codesign --force --sign -
       "${CMAKE_CURRENT_BINARY_DIR}/bfft-cartoon.plugin"
     VERBATIM)
+
+  add_executable(bfft-cartoon-smoke cartoon-obs-smoke.mm)
+  target_compile_features(bfft-cartoon-smoke PRIVATE cxx_std_17)
+  target_include_directories(bfft-cartoon-smoke PRIVATE
+    "${CMAKE_CURRENT_BINARY_DIR}"
+    "${simde_SOURCE_DIR}"
+    "${OBS_SOURCE_DIR}/libobs"
+    "${OBS_SOURCE_DIR}/libobs/util")
+  target_link_libraries(bfft-cartoon-smoke PRIVATE
+    "${OBS_APP}/Contents/Frameworks/libobs.framework/libobs"
+    "-framework AppKit")
+  set_target_properties(bfft-cartoon-smoke PROPERTIES
+    BUILD_RPATH "${OBS_APP}/Contents/Frameworks")
 elseif(UNIX)
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(LIBOBS REQUIRED IMPORTED_TARGET libobs)

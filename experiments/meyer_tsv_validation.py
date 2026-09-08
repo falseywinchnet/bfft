@@ -185,11 +185,9 @@ def multiscale_crossing_scene(size: int = 256) -> dict:
         + 0.35 * np.cos(2.0 * np.pi * (x + 0.75 * y) / 5.0 + 0.19)
     )
     material_texture = coarse + fine
-    # Texture is divergence-generated and therefore has no DC mode.  Move
-    # the jump potential's one undetermined integration constant to cartoon.
-    # The first Meyer cartoon resolvent declares the continuous transition:
-    # cartoon retains the objects with smooth boundaries, while texture owns
-    # exactly the complementary energy that sharpens those transitions.
+    # Retain the former scalar-resolvent split as an explicit negative-control
+    # field. It is not the cartoon/texture truth: (I-H) applied to a step is a
+    # signed two-sided halo, so declaring it texture rewards ringing.
     jump_mean = float(np.mean(authored_jump))
     jump_potential = authored_jump - jump_mean
     wy = 2.0 * np.cos(2.0 * np.pi * np.arange(size) / size) - 2.0
@@ -200,8 +198,10 @@ def multiscale_crossing_scene(size: int = 256) -> dict:
         np.fft.fft2(jump_potential) * first_cartoon_resolvent
     ).real
     boundary_texture = jump_potential - smooth_jump
-    cartoon = smooth_cartoon + jump_mean + smooth_jump
-    texture = boundary_texture + material_texture
+    legacy_cartoon = smooth_cartoon + jump_mean + smooth_jump
+    legacy_texture = boundary_texture + material_texture
+    cartoon = hard_composition
+    texture = material_texture
     source = cartoon + texture
     structural_gradient = _gradient_magnitude(hard_composition)
     contour = _dilate(structural_gradient > 4.0, 3)
@@ -218,6 +218,8 @@ def multiscale_crossing_scene(size: int = 256) -> dict:
         "jump_potential": jump_potential,
         "smooth_jump": smooth_jump,
         "boundary_texture": boundary_texture,
+        "legacy_cartoon": legacy_cartoon,
+        "legacy_texture": legacy_texture,
         "texture": texture,
         "material_texture": material_texture,
         "coarse_texture": coarse,

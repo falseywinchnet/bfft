@@ -1,0 +1,6 @@
+BFFT power-of-two RFFT benchmark. backend: neon-128, version: 1.0
+standard policy is plan-dependent; FFTW uses FFTW_ESTIMATE-style flag 64 for cheap large plans.
+Intel oneMKL disabled; pass --intel-mkl to add dynamic libmkl_rt DFTI comparison columns.
+PFFFT disabled; compile with -DBFFT_WITH_PFFFT and link pffft to enable.
+       N    iters     FFTW_ns    FFTWf_ns    PFFFT_ns    MKL64_ns    MKL32_ns   Native_ns      Std_ns   F32Nat_ns   F32Std_ns      Inv_ns       RT_ns    S/F64   F32/Ff      S/P    F32/P    S/MKL    F32/M  checks
+      64    20000       268.6       222.8         n/a         n/a         n/a       181.4       182.0       130.5       121.7       170.9       107.4    0.678    0.546      n/a      n/a      n/a      n/a err64 5.9e-16 err32 1.3e-07 mkl64       n/a mkl32       n/a rt 3.3e-16 sink 0.48943668

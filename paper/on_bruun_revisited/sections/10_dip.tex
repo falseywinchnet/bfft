@@ -1,0 +1,148 @@
+\section{The Diagonal Phase Transform}
+\label{sec:dip}
+
+DIF descends a factor tree and DIT ascends time combs.  A diagonal-in-packets
+(DIP) transform follows a sheared coordinate frame on the finite
+time-frequency lattice.  The construction begins with a finite Zak state, so
+its equality with the DFT follows by induction.
+
+Let $\DFT_N:\C^N\to\C^N$ denote the complex map in
+\eqref{eq:dft-definition}, with the same negative-exponential convention.
+
+For $0\le t\le L$, put $e_t=2^t$ and $q_t=N/e_t$, and define
+\begin{equation}
+\begin{aligned}
+ Z_t[d,j]&=\sum_{r=0}^{e_t-1}x_{j+rq_t}e^{-2\pi i dr/e_t},\\
+ &0\le d<e_t,\qquad0\le j<q_t.
+\end{aligned}
+ \label{eq:zak-state}
+\end{equation}
+At $t=0$, $Z_0[0,j]=x_j$; at $t=L$, $Z_L[d,0]=X_d$.
+
+\begin{lemma}[Explicit Zak advance]
+For $0\le d<2e_t$ and $0\le j<q_t/2$,
+\begin{equation}
+\begin{aligned}
+ Z_{t+1}[d,j]={}&Z_t[d\bmod e_t,j]\\
+ &+e^{-2\pi i d/(2e_t)}Z_t[d\bmod e_t,j+q_t/2].
+\end{aligned}
+ \label{eq:zak-advance}
+\end{equation}
+Thus every advance is two-sparse.
+\end{lemma}
+\begin{proof}
+Split the sum defining $Z_{t+1}$ into even and odd comb indices.  The even
+indices give the first child state.  Writing an odd index as $2r+1$ contributes
+the phase $e^{-2\pi id/(2e_t)}$ and the offset $j+q_t/2$, giving the second
+state in \eqref{eq:zak-advance}.
+\end{proof}
+
+\subsection{Admissible monomial shears}
+
+For an integer $\sigma_t$, impose
+\begin{equation}
+ \sigma_tq_t^2\equiv0\pmod N,
+ \qquad c_t={\sigma_tq_t^2\over N}\in\Z.
+ \label{eq:shear-admissibility}
+\end{equation}
+The sheared Zak frame is the monomial unitary
+\begin{equation}
+ (S_t^{\sigma_t}Z_t)[\kappa,j]
+ =e^{i\pi\sigma_tj^2/N}
+ Z_t[(\kappa-\sigma_tj-c_t2^{t-1})\bmod e_t,j].
+ \label{eq:monomial-shear}
+\end{equation}
+At $t=0$ the final term is interpreted as zero.  Admissibility makes the row
+shift integral on the finite lattice.  The phase factor makes $S_t^{\sigma_t}$
+unitary rather than merely permutational.
+
+Let $A_t$ denote \eqref{eq:zak-advance} and define the DIP stage
+\begin{equation}
+ A_t^{\mathrm{DIP}}=S_{t+1}^{\sigma_{t+1}}A_t
+ (S_t^{\sigma_t})^{-1}.
+ \label{eq:dip-stage}
+\end{equation}
+
+\begin{theorem}[DIP exactness]
+For any admissible schedule with $S_0^{\sigma_0}=S_L^{\sigma_L}=I$,
+\begin{equation}
+ A_{L-1}^{\mathrm{DIP}}\cdots A_0^{\mathrm{DIP}}
+ =A_{L-1}\cdots A_0=\DFT_N.
+ \label{eq:dip-exactness}
+\end{equation}
+Every stage remains a two-sparse packet merge.  In the centered diagonal
+coordinate
+\begin{equation}
+ \delta=(\kappa-\sigma_{t+1}j-c_{t+1}e_t)\bmod 2e_t,
+ \label{eq:dip-diagonal-coordinate}
+\end{equation}
+its butterfly phase is $e^{-2\pi i\delta/(2e_t)}$, a function of one diagonal
+coordinate.
+\end{theorem}
+\begin{proof}
+The first equality follows by cancellation of adjacent monomial unitaries.
+The Zak boundary identities and \eqref{eq:zak-advance} give the second.
+Substitution of \eqref{eq:monomial-shear} into \eqref{eq:dip-stage}, using
+\eqref{eq:shear-admissibility}, leaves two input coordinates and collects their
+relative phase into \eqref{eq:dip-diagonal-coordinate}.  Hence the conjugated
+stage is still two-sparse and its rotation is constant along each diagonal.
+\end{proof}
+
+A canonical complex schedule is
+\begin{equation}
+ \sigma_0=\sigma_L=0,
+ \qquad
+ \sigma_t=2^{\max(0,2t-L)},\quad1\le t<L,
+ \label{eq:canonical-dip-schedule}
+\end{equation}
+which satisfies \eqref{eq:shear-admissibility}.  If packets are phase-referenced
+at their centers, the quadratic factor in \eqref{eq:monomial-shear} is absorbed
+into the packet definition.  Diagonal-major storage then has the same arithmetic
+recurrence as \eqref{eq:zak-advance}; the diagonal motion resides in the
+physical meaning of $(\delta,j)$.
+
+\subsection{Real folding and the span form}
+
+For real $x$, $Z_t[e_t-d,j]=\overline{Z_t[d,j]}$.  Folding each conjugate pair
+into $(a,b)=(\Re,-\Im)$ changes the phase in \eqref{eq:zak-advance} into the
+real rotation of \eqref{eq:normalized-cell}.  Conjugation remains span-local
+precisely when
+\begin{equation}
+ 2\sigma_t\equiv0\pmod{e_t};
+ \label{eq:real-shear-law}
+\end{equation}
+for $e_t\ge2$, the real-fold-compatible shears modulo $e_t$ are therefore $0$
+and $e_t/2$.  At $e_0=1$, only the zero class exists.
+The half-turn exchanges sibling orientation without changing the covered
+frequencies.
+
+In the equivalent depth-first span notation, $e$ is a power of two dividing
+$N$, $0<d<e/2$, and a generic span $(d,e)$ uses angle $\theta=\pi d/e$.  Its two children
+are $(d,2e)$ and $(e-d,2e)$.  At terminal denominator $E$, its leaves form
+\begin{equation}
+ \Lambda(d,E)=\{jE+d,jE-d:j\in\Z\}\pmod N.
+ \label{eq:span-comb}
+\end{equation}
+Doubling lifts a congruence class into exactly the two child classes, so
+induction proves that sibling combs are disjoint up to conjugacy and partition
+the parent comb.  The ridge cases $d=0$ and $d=e/2$ advance by a Hadamard map
+and promote the new quarter-frequency pair; they are excluded from the generic
+two-child rule.
+
+\begin{proposition}[Span--Zak equivalence]
+Under centered packet coordinates, a generic span $(d,e)$ is the folded Zak
+pair $(Z_t[d,\cdot],Z_t[e-d,\cdot])$ with $e=2^t$.  Its normalized span cell is
+exactly the real folding of \eqref{eq:zak-advance}, and its children have labels
+$(d,2e)$ and $(e-d,2e)$.
+\end{proposition}
+\begin{proof}
+The phase in \eqref{eq:zak-advance} is
+$e^{-2\pi id/(2e)}=e^{-i\pi d/e}$.  In the oriented pair
+$(\Re,-\Im)$ it is the rotation $R_{\pi d/e}$.  Adding and subtracting the two
+comb halves gives $T_{\pi d/e}$, while conjugacy sends the second output to
+row $e-d$ at denominator $2e$.  Induction from the ridge initialization proves
+the identification at every span.
+\end{proof}
+
+This span recursion is the in-place real representative of the diagonal packet
+walk.

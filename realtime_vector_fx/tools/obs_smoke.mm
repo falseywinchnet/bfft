@@ -13,7 +13,7 @@ namespace {
 
 constexpr const char* CPU_ID="realtime_vector_fx";
 constexpr const char* GPU_ID="realtime_vector_fx_gpu";
-constexpr const char* POSTER_ID="optimal_oklch_posterizer";
+constexpr const char* POSTER_ID="posterizer_mark_iv";
 #ifndef RVFX_SMOKE_WIDTH
 #define RVFX_SMOKE_WIDTH 640
 #endif
@@ -245,7 +245,7 @@ int main(int argc,char** argv) {
         std::printf("rvfx Metal %ux%u baseline %.3f ms, filtered %.3f ms, overhead %.3f ms\n",
             WIDTH,HEIGHT,baseline_ms,filtered_ms,filtered_ms-baseline_ms);
         std::printf("rvfx poster look total %.3f ms/frame\n",poster_ms);
-        std::puts("rvfx OBS module, Optimal OKLCH Posterizer, all GPU effects/motions, Metal shaders, and changing filter chains passed");
+        std::puts("rvfx OBS module, Posterizer Mark IV, all GPU effects/motions, Metal shaders, and changing filter chains passed");
         return 0;
     }
 }

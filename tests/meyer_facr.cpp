@@ -197,8 +197,8 @@ int main() {
         if (!finite(ca) || !finite(va) || thread_error != 0.0) return 4;
     }
 
-    // The default jump-measure path is native on periodic FACR too.  It is
-    // fixed-cost (legacy pass changes do not alter it), exactly recomposes,
+    // FACR defaults to its configured fused alternation and folds the
+    // texture-side survivor into cartoon at readout.  It exactly recomposes,
     // is thread-count invariant, and permits the input/cartoon alias used by
     // the OBS filter.
     for (const auto shape : {std::pair<std::size_t, std::size_t>{37, 64},
@@ -209,7 +209,7 @@ int main() {
         fill(in);
         bfft_meyer_plan *one = nullptr, *four = nullptr;
         if (bfft_meyer_plan_create(shape.first, shape.second, 0.05, 40.0,
-                                   1, 2, 0.0, 1, &one) != BFFT_OK ||
+                                   8, 2, 0.0, 1, &one) != BFFT_OK ||
             bfft_meyer_plan_create(shape.first, shape.second, 0.05, 40.0,
                                    8, 2, 0.0, 4, &four) != BFFT_OK ||
             bfft_meyer_plan_set_solver(one, 1) != BFFT_OK ||
@@ -218,10 +218,12 @@ int main() {
                 BFFT_OK ||
             bfft_meyer_split(four, in.data(), c4.data(), v4.data()) !=
                 BFFT_OK ||
-            bfft_meyer_split_jump_measure(
-                four, in.data(), explicit_c.data(), explicit_v.data(), 8) !=
+            bfft_meyer_split_legacy(
+                four, in.data(), explicit_c.data(), explicit_v.data()) !=
                 BFFT_OK)
             return 9;
+        for (std::size_t i = 0; i < n; ++i)
+            explicit_c[i] = in[i] - explicit_v[i];
         aliased = in;
         if (bfft_meyer_split(four, aliased.data(), aliased.data(),
                              alias_v.data()) != BFFT_OK)
@@ -236,6 +238,11 @@ int main() {
             max_error(c4, explicit_c), max_error(v4, explicit_v));
         const double alias_error = std::max(
             max_error(c4, aliased), max_error(v4, alias_v));
+		std::printf(
+			"FACR default %zux%zu: recompose %.3e, threads %.3e, "
+			"explicit %.3e, alias %.3e\n",
+			shape.first, shape.second, recompose_error, default_error,
+			explicit_error, alias_error);
         bfft_meyer_plan_destroy(one);
         bfft_meyer_plan_destroy(four);
         if (!finite(c1) || !finite(v1) || recompose_error > 3e-14 ||

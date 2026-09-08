@@ -81,6 +81,34 @@ def mechanism_diagnostics(model):
         diagnostics["transport_strength"] = float(
             0.5 * torch.tanh(transport_logit.detach())
         )
+    curvature_scale = getattr(model, "curvature_scale", None)
+    if curvature_scale is not None:
+        gain_mode = getattr(model, "gain_mode", "positive")
+        gain = (0.5 * torch.tanh(curvature_scale.detach())
+                if gain_mode == "signed"
+                else F.softplus(curvature_scale.detach()))
+        diagnostics["curvature_response_gain"] = float(
+            gain
+        )
+    curvature_ratio = getattr(model, "last_curvature_ratio", None)
+    if curvature_ratio is not None:
+        diagnostics["curvature_response_ratio"] = float(curvature_ratio.mean())
+    curvature_authority = getattr(model, "last_curvature_authority", None)
+    if curvature_authority is not None:
+        diagnostics["curvature_response_authority"] = float(
+            curvature_authority.mean()
+        )
+    selection_layers = [
+        layer for layer in (getattr(model, "up", None), getattr(model, "down", None))
+        if getattr(layer, "last_selection_blend", None) is not None
+    ]
+    if selection_layers:
+        diagnostics["selection_curvature_blend"] = float(torch.stack([
+            layer.last_selection_blend for layer in selection_layers
+        ]).mean())
+        diagnostics["selection_curvature_shift"] = float(torch.cat([
+            layer.last_selection_shift.flatten() for layer in selection_layers
+        ]).mean())
     return diagnostics
 
 

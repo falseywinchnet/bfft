@@ -2,6 +2,7 @@
 #include <bfft/meyer.h>
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <cstdint>
@@ -19,7 +20,7 @@ void register_high_vision_filter();
 OBS_DECLARE_MODULE()
 MODULE_EXPORT const char *obs_module_description(void)
 {
-	return "BFFT Cartoon and High Vision realtime filters";
+	return "BFFT Cartoon sync/async and High Vision realtime filters";
 }
 
 namespace {
@@ -31,19 +32,68 @@ constexpr const char *kShadeC = "shading_rof_c_v2";
 constexpr const char *kEffectSweeps = "effect_sweeps_v1";
 constexpr const char *kThreads = "threads";
 constexpr const char *kMode = "mode";
+constexpr const char *kJumpLattice = "jump_lattice_v1";
+constexpr const char *kDecomposition = "decomposition_v1";
+constexpr const char *kFusedPasses = "fused_passes_v1";
 constexpr const char *kRelief = "relief";
 constexpr const char *kGloss = "gloss";
 constexpr const char *kRecoveryGain = "recovery_gain";
 constexpr const char *kInformationGain = "information_gain";
 constexpr const char *kPhaseFolds = "phase_folds";
 
+const char *kSyncEffect = R"(
+uniform float4x4 ViewProj;
+uniform texture2d image;
+uniform texture2d correction_image;
+uniform float monochrome;
+
+sampler_state linear_sampler {
+	Filter = Linear;
+	AddressU = Clamp;
+	AddressV = Clamp;
+};
+
+struct VertData {
+	float4 pos : POSITION;
+	float2 uv : TEXCOORD0;
+};
+
+VertData VSDefault(VertData v_in)
+{
+	VertData v_out;
+	v_out.pos = mul(float4(v_in.pos.xyz, 1.0), ViewProj);
+	v_out.uv = v_in.uv;
+	return v_out;
+}
+
+float4 PSBfftCartoon(VertData v_in) : TARGET
+{
+	float4 source = image.Sample(linear_sampler, v_in.uv);
+	float correction = correction_image.Sample(linear_sampler, v_in.uv).r;
+	if (monochrome > 0.5)
+		return float4(correction, correction, correction, source.a);
+	source.rgb = saturate(source.rgb + correction);
+	return source;
+}
+
+technique Draw {
+	pass {
+		vertex_shader = VSDefault(v_in);
+		pixel_shader = PSBfftCartoon(v_in);
+	}
+}
+)";
+
 struct Filter {
 	obs_source_t *source = nullptr;
+	bool synchronous = false;
 	bfft_meyer_plan *plan = nullptr;
 	uint32_t work_width = 0;
 	uint32_t work_height = 0;
 	uint32_t frame_width = 0;
 	uint32_t frame_height = 0;
+	uint32_t content_width = 0;
+	uint32_t content_height = 0;
 	int plan_threads = 0;
 
 	// bfft_meyer_split permits image==cartoon. The decoded input plane is
@@ -54,20 +104,28 @@ struct Filter {
 	// needs more than these two planes.
 	std::vector<double> scratch_a;
 	std::vector<double> scratch_b;
-	std::vector<uint32_t> work_source_x;
-	std::vector<uint32_t> work_source_y;
-	uint32_t crop_left = 0;
-	uint32_t crop_top = 0;
+	struct Sample {
+		uint32_t lo = 0;
+		uint32_t hi = 0;
+		double weight = 0.0;
+	};
+	std::vector<Sample> source_sample_x;
+	std::vector<Sample> source_sample_y;
+	std::vector<Sample> output_sample_x;
+	std::vector<Sample> output_sample_y;
 
 	std::mutex settings_mutex;
 	std::mutex processing_mutex;
 	double cartoon_gain = 1.0;
-	double texture_gain = 1.0;
+	double texture_gain = 0.0;
 	double shading_gain = 0.0;
 	double shade_c = 0.02;
 	int effect_sweeps = 8;
 	int threads = 6;
 	int mode = 0;
+	int jump_lattice = 512;
+	int decomposition = 0;
+	int fused_passes = 16;
 	double relief = 1.0;
 	double gloss = 0.75;
 	double recovery_gain = 5.0;
@@ -80,101 +138,150 @@ struct Filter {
 	double split_ms = 0.0;
 	double effect_ms = 0.0;
 	uint64_t plan_builds = 0;
+
+	// The new macOS fast-capture source is GPU/synchronous.  Its bridge stages
+	// only the aspect-correct reduced lattice, processes the previous surface,
+	// then applies a floating-point luma correction to the native-resolution
+	// source.  Full-resolution chroma therefore never takes the CPU round trip.
+	gs_effect_t *sync_effect = nullptr;
+	gs_texrender_t *sync_analysis = nullptr;
+	std::array<gs_stagesurf_t *, 2> sync_stage{};
+	std::array<bool, 2> sync_written{};
+	size_t sync_stage_index = 0;
+	gs_texture_t *sync_correction_texture = nullptr;
+	std::vector<float> sync_correction;
+	uint32_t sync_target_width = 0;
+	uint32_t sync_target_height = 0;
+	uint32_t sync_analysis_width = 0;
+	uint32_t sync_analysis_height = 0;
+	bool sync_ready = false;
+	bool sync_monochrome = false;
 };
 
-bool is_power_of_two(uint32_t value)
+int normalize_lattice(int value)
 {
-	return value >= 8 && (value & (value - 1)) == 0;
-}
-
-uint32_t next_power_of_two(uint32_t value)
-{
-	uint32_t result = 8;
-	while (result < value && result <= UINT32_MAX / 2)
-		result *= 2;
-	return result;
+	if (value >= 2048)
+		return 2048;
+	if (value >= 1024)
+		return 1024;
+	if (value >= 512)
+		return 512;
+	return 256;
 }
 
 void choose_work_shape(uint32_t frame_width, uint32_t frame_height,
-		       uint32_t &work_width, uint32_t &work_height)
+		       uint32_t long_side, uint32_t &work_width,
+		       uint32_t &work_height, uint32_t &content_width,
+		       uint32_t &content_height)
 {
-	work_width = frame_width;
-	work_height = frame_height;
-	if (is_power_of_two(frame_width) || is_power_of_two(frame_height))
-		return;
+	// The semismooth finite-flow chart is defined on the complete periodic
+	// spectrum, so both canvas axes must be powers of two.  Wide video uses a
+	// half-height canvas: for 16:9 this retains 89% of the requested linear
+	// detail while halving the jump cost.  Near-square sources use a square.
+	const bool landscape = frame_width >= frame_height;
+	const uint64_t long_extent = landscape ? frame_width : frame_height;
+	const uint64_t short_extent = landscape ? frame_height : frame_width;
+	const bool wide = 2 * long_extent >= 3 * short_extent;
+	work_width = landscape ? long_side : (wide ? long_side / 2 : long_side);
+	work_height = landscape ? (wide ? long_side / 2 : long_side) : long_side;
 
-	const uint32_t padded_width = next_power_of_two(frame_width);
-	const uint32_t padded_height = next_power_of_two(frame_height);
-	const uint64_t width_candidate =
-		static_cast<uint64_t>(padded_width) * frame_height;
-	const uint64_t height_candidate =
-		static_cast<uint64_t>(frame_width) * padded_height;
-	const uint64_t source_area =
-		static_cast<uint64_t>(frame_width) * frame_height;
-	const bool video_sized = source_area >= 1280ULL * 720ULL;
-	// Row FFTs consume contiguous image lines. Column FFTs must gather and
-	// scatter strided lines around every transform. Above the cache crossover,
-	// prefer rows while their reflected lattice is within the measured 4/3
-	// area envelope; otherwise retain the smaller column lattice.
-	if (width_candidate <= height_candidate ||
-	    (video_sized && 3 * width_candidate <= 4 * height_candidate)) {
-		work_width = padded_width;
-	} else {
-		work_height = padded_height;
-	}
+	const double scale = std::min(
+		static_cast<double>(work_width) / frame_width,
+		static_cast<double>(work_height) / frame_height);
+	content_width = std::clamp(
+		static_cast<uint32_t>(std::lround(frame_width * scale)),
+		uint32_t{8}, work_width);
+	content_height = std::clamp(
+		static_cast<uint32_t>(std::lround(frame_height * scale)),
+		uint32_t{8}, work_height);
+}
+
+uint32_t reflected_index(int64_t coordinate, uint32_t length)
+{
+	const int64_t period = 2 * static_cast<int64_t>(length);
+	int64_t folded = coordinate % period;
+	if (folded < 0)
+		folded += period;
+	if (folded >= static_cast<int64_t>(length))
+		folded = period - folded - 1;
+	return static_cast<uint32_t>(folded);
+}
+
+Filter::Sample linear_sample(double coordinate, uint32_t length)
+{
+	coordinate = std::clamp(coordinate, 0.0,
+				static_cast<double>(length - 1));
+	const uint32_t lo = static_cast<uint32_t>(std::floor(coordinate));
+	const uint32_t hi = std::min(lo + 1, length - 1);
+	return {lo, hi, coordinate - lo};
 }
 
 void update_resample_maps(Filter *filter, uint32_t frame_width,
 			  uint32_t frame_height, uint32_t work_width,
-			  uint32_t work_height)
+			  uint32_t work_height, uint32_t content_width,
+			  uint32_t content_height)
 {
 	if (filter->frame_width == frame_width &&
 	    filter->frame_height == frame_height &&
 	    filter->work_width == work_width &&
 	    filter->work_height == work_height &&
-	    filter->work_source_x.size() == work_width &&
-	    filter->work_source_y.size() == work_height)
+	    filter->content_width == content_width &&
+	    filter->content_height == content_height &&
+	    filter->source_sample_x.size() == work_width &&
+	    filter->source_sample_y.size() == work_height &&
+	    filter->output_sample_x.size() == frame_width &&
+	    filter->output_sample_y.size() == frame_height)
 		return;
 
 	filter->frame_width = frame_width;
 	filter->frame_height = frame_height;
-	filter->work_source_x.resize(work_width);
-	filter->work_source_y.resize(work_height);
-	const int64_t left =
-		static_cast<int64_t>(work_width - frame_width) / 2;
-	const int64_t top =
-		static_cast<int64_t>(work_height - frame_height) / 2;
-	filter->crop_left = static_cast<uint32_t>(left);
-	filter->crop_top = static_cast<uint32_t>(top);
-	auto reflected_index = [](int64_t coordinate, uint32_t length) {
-		if (coordinate < 0)
-			return static_cast<uint32_t>(-coordinate - 1);
-		if (coordinate >= static_cast<int64_t>(length))
-			return static_cast<uint32_t>(
-				2 * static_cast<int64_t>(length) -
-				coordinate - 1);
-		return static_cast<uint32_t>(coordinate);
-	};
-	for (uint32_t x = 0; x < work_width; ++x)
-		filter->work_source_x[x] =
-			reflected_index(static_cast<int64_t>(x) - left,
-					frame_width);
-	for (uint32_t y = 0; y < work_height; ++y)
-		filter->work_source_y[y] =
-			reflected_index(static_cast<int64_t>(y) - top,
-					frame_height);
+	filter->content_width = content_width;
+	filter->content_height = content_height;
+	filter->source_sample_x.resize(work_width);
+	filter->source_sample_y.resize(work_height);
+	filter->output_sample_x.resize(frame_width);
+	filter->output_sample_y.resize(frame_height);
+	const int64_t left = (work_width - content_width) / 2;
+	const int64_t top = (work_height - content_height) / 2;
+
+	for (uint32_t x = 0; x < work_width; ++x) {
+		const uint32_t cx = reflected_index(
+			static_cast<int64_t>(x) - left, content_width);
+		const double sx = (cx + 0.5) * frame_width / content_width - 0.5;
+		filter->source_sample_x[x] = linear_sample(sx, frame_width);
+	}
+	for (uint32_t y = 0; y < work_height; ++y) {
+		const uint32_t cy = reflected_index(
+			static_cast<int64_t>(y) - top, content_height);
+		const double sy = (cy + 0.5) * frame_height / content_height - 0.5;
+		filter->source_sample_y[y] = linear_sample(sy, frame_height);
+	}
+	for (uint32_t x = 0; x < frame_width; ++x) {
+		const double wx = left +
+			(x + 0.5) * content_width / frame_width - 0.5;
+		filter->output_sample_x[x] = linear_sample(wx, work_width);
+	}
+	for (uint32_t y = 0; y < frame_height; ++y) {
+		const double wy = top +
+			(y + 0.5) * content_height / frame_height - 0.5;
+		filter->output_sample_y[y] = linear_sample(wy, work_height);
+	}
 }
 
 bool ensure_plan(Filter *filter, uint32_t frame_width, uint32_t frame_height,
-		 int threads)
+		 int threads, int jump_lattice)
 {
-	uint32_t work_width, work_height;
-	choose_work_shape(frame_width, frame_height, work_width, work_height);
+	uint32_t work_width, work_height, content_width, content_height;
+	const uint32_t long_side =
+		static_cast<uint32_t>(normalize_lattice(jump_lattice));
+	choose_work_shape(frame_width, frame_height, long_side, work_width,
+			  work_height, content_width, content_height);
 	if (filter->plan && filter->work_width == work_width &&
 	    filter->work_height == work_height &&
 	    filter->plan_threads == threads) {
 		update_resample_maps(filter, frame_width, frame_height,
-				     work_width, work_height);
+				     work_width, work_height, content_width,
+				     content_height);
 		return true;
 	}
 
@@ -183,6 +290,7 @@ bool ensure_plan(Filter *filter, uint32_t frame_width, uint32_t frame_height,
 	filter->plan = nullptr;
 	filter->work_width = filter->work_height = 0;
 	filter->frame_width = filter->frame_height = 0;
+	filter->content_width = filter->content_height = 0;
 	filter->plan_threads = 0;
 	std::vector<double>().swap(filter->input);
 	std::vector<double>().swap(filter->texture);
@@ -192,11 +300,9 @@ bool ensure_plan(Filter *filter, uint32_t frame_width, uint32_t frame_height,
 	bfft_status status = bfft_meyer_plan_create(
 		work_height, work_width, 0.05, 40.0, 1, 1, 0.0,
 		threads, &filter->plan);
-	if (status == BFFT_OK)
-		status = bfft_meyer_plan_set_solver(filter->plan, 1);
 	if (status != BFFT_OK) {
 		blog(LOG_ERROR,
-		     "[BFFT Cartoon] arbitrary-size FACR plan failed (%d) "
+		     "[BFFT Cartoon] spectral finite-flow plan failed (%d) "
 		     "for %ux%u",
 		     static_cast<int>(status), work_width, work_height);
 		bfft_meyer_plan_destroy(filter->plan);
@@ -212,11 +318,12 @@ bool ensure_plan(Filter *filter, uint32_t frame_width, uint32_t frame_height,
 	filter->input.resize(count);
 	filter->texture.resize(count);
 	update_resample_maps(filter, frame_width, frame_height, work_width,
-			     work_height);
+			     work_height, content_width, content_height);
 	blog(LOG_INFO,
-	     "[BFFT Cartoon] native-pitch jump FACR grid %ux%u for %ux%u "
-	     "input, %d threads",
-	     work_width, work_height, frame_width, frame_height, threads);
+	     "[BFFT Cartoon] finite-flow spectral grid %ux%u, content %ux%u "
+	     "for %ux%u input, %d threads",
+	     work_width, work_height, content_width, content_height,
+	     frame_width, frame_height, threads);
 	return true;
 }
 
@@ -436,38 +543,19 @@ void read_work_input(Filter *filter, const obs_source_frame *frame)
 {
 	const uint32_t ww = filter->work_width;
 	const uint32_t wh = filter->work_height;
-	const bool exact_width = ww == frame->width;
-	if (is_planar_luma(frame->format)) {
-		for (uint32_t wy = 0; wy < wh; ++wy) {
-			const uint8_t *row =
-				frame->data[0] +
-				static_cast<size_t>(
-					filter->work_source_y[wy]) *
-					frame->linesize[0];
-			double *dst = filter->input.data() +
-				      static_cast<size_t>(wy) * ww;
-			if (exact_width) {
-				for (uint32_t wx = 0; wx < ww; ++wx)
-					dst[wx] = row[wx];
-			} else {
-				for (uint32_t wx = 0; wx < ww; ++wx)
-					dst[wx] = row[filter->work_source_x[wx]];
-			}
-		}
-		return;
-	}
-
 	for (uint32_t wy = 0; wy < wh; ++wy) {
-		const uint32_t sy = filter->work_source_y[wy];
+		const Filter::Sample sy = filter->source_sample_y[wy];
 		double *dst = filter->input.data() +
 			      static_cast<size_t>(wy) * ww;
-		if (exact_width) {
-			for (uint32_t wx = 0; wx < ww; ++wx)
-				dst[wx] = read_luma(frame, wx, sy);
-		} else {
-			for (uint32_t wx = 0; wx < ww; ++wx)
-				dst[wx] = read_luma(
-					frame, filter->work_source_x[wx], sy);
+		for (uint32_t wx = 0; wx < ww; ++wx) {
+			const Filter::Sample sx = filter->source_sample_x[wx];
+			const double a = read_luma(frame, sx.lo, sy.lo);
+			const double b = read_luma(frame, sx.hi, sy.lo);
+			const double c = read_luma(frame, sx.lo, sy.hi);
+			const double d = read_luma(frame, sx.hi, sy.hi);
+			const double upper = a + sx.weight * (b - a);
+			const double lower = c + sx.weight * (d - c);
+			dst[wx] = upper + sy.weight * (lower - upper);
 		}
 	}
 }
@@ -485,29 +573,52 @@ void write_work_output(Filter *filter, obs_source_frame *frame,
 	const uint32_t ww = filter->work_width;
 	if (monochrome)
 		neutralize_chroma(frame);
-	if (is_planar_luma(frame->format)) {
-		for (uint32_t y = 0; y < frame->height; ++y) {
-			uint8_t *row =
-				frame->data[0] +
-				static_cast<size_t>(y) * frame->linesize[0];
-			const double *src =
-				output +
-				static_cast<size_t>(filter->crop_top + y) * ww +
-				filter->crop_left;
-			for (uint32_t x = 0; x < frame->width; ++x)
-				row[x] = clamp_byte(src[x]);
-		}
-		return;
-	}
-
 	for (uint32_t y = 0; y < frame->height; ++y) {
-		const double *src =
-			output +
-			static_cast<size_t>(filter->crop_top + y) * ww +
-			filter->crop_left;
-		for (uint32_t x = 0; x < frame->width; ++x)
-			write_luma(frame, x, y, src[x], monochrome);
+		const Filter::Sample sy = filter->output_sample_y[y];
+		const double *upper = output + static_cast<size_t>(sy.lo) * ww;
+		const double *lower = output + static_cast<size_t>(sy.hi) * ww;
+		for (uint32_t x = 0; x < frame->width; ++x) {
+			const Filter::Sample sx = filter->output_sample_x[x];
+			const double a = upper[sx.lo] +
+				sx.weight * (upper[sx.hi] - upper[sx.lo]);
+			const double b = lower[sx.lo] +
+				sx.weight * (lower[sx.hi] - lower[sx.lo]);
+			write_luma(frame, x, y, a + sy.weight * (b - a),
+				   monochrome);
+		}
 	}
+}
+
+bfft_status split_frame(Filter *filter, const double *image, double *cartoon,
+			double *texture, int decomposition, int fused_passes)
+{
+	if (decomposition == 1) {
+		const bfft_status configured = bfft_meyer_plan_set_passes(
+			filter->plan, std::clamp(fused_passes, 1, 64));
+		if (configured != BFFT_OK)
+			return configured;
+		// Gilles' model leaves a texture-side survivor w.  Expose the same
+		// exact two-product contract as finite-flow by folding that survivor
+		// into effective cartoon: (f-v, v).  Keep u in temporary storage so
+		// image may alias cartoon without destroying f before the fold.
+		double *model_cartoon = ensure_effect_plane(
+			filter->scratch_b,
+			static_cast<size_t>(filter->work_width) * filter->work_height);
+		const bfft_status status = bfft_meyer_split_legacy(
+			filter->plan, image, model_cartoon, texture);
+		if (status != BFFT_OK)
+			return status;
+		for (size_t i = 0;
+		     i < static_cast<size_t>(filter->work_width) *
+				 filter->work_height;
+		     ++i)
+			cartoon[i] = image[i] - texture[i];
+		return BFFT_OK;
+	}
+	// The realtime finite-flow endpoint validated in the surgical audit:
+	// prefix 4, horizon 18, two exact refreshes, three jumps (19 map-cost).
+	return bfft_meyer_split_flow_jump(filter->plan, image, cartoon, texture,
+					  4, 18, 2, 3);
 }
 
 const char *filter_name(void *)
@@ -527,6 +638,12 @@ void filter_update(void *data, obs_data_t *settings)
 		static_cast<int>(obs_data_get_int(settings, kEffectSweeps));
 	filter->threads = static_cast<int>(obs_data_get_int(settings, kThreads));
 	filter->mode = static_cast<int>(obs_data_get_int(settings, kMode));
+	filter->jump_lattice =
+		static_cast<int>(obs_data_get_int(settings, kJumpLattice));
+	filter->decomposition =
+		static_cast<int>(obs_data_get_int(settings, kDecomposition));
+	filter->fused_passes =
+		static_cast<int>(obs_data_get_int(settings, kFusedPasses));
 	filter->relief = obs_data_get_double(settings, kRelief);
 	filter->gloss = obs_data_get_double(settings, kGloss);
 	filter->recovery_gain =
@@ -539,12 +656,15 @@ void filter_update(void *data, obs_data_t *settings)
 void filter_defaults(obs_data_t *settings)
 {
 	obs_data_set_default_double(settings, kCartoon, 1.0);
-	obs_data_set_default_double(settings, kTexture, 1.0);
+	obs_data_set_default_double(settings, kTexture, 0.0);
 	obs_data_set_default_double(settings, kShading, 0.0);
 	obs_data_set_default_double(settings, kShadeC, 0.02);
 	obs_data_set_default_int(settings, kEffectSweeps, 8);
 	obs_data_set_default_int(settings, kThreads, 6);
 	obs_data_set_default_int(settings, kMode, 0);
+	obs_data_set_default_int(settings, kJumpLattice, 512);
+	obs_data_set_default_int(settings, kDecomposition, 0);
+	obs_data_set_default_int(settings, kFusedPasses, 16);
 	obs_data_set_default_double(settings, kRelief, 1.0);
 	obs_data_set_default_double(settings, kGloss, 0.75);
 	obs_data_set_default_double(settings, kRecoveryGain, 5.0);
@@ -560,10 +680,25 @@ obs_properties_t *filter_properties(void *)
 		OBS_COMBO_FORMAT_INT);
 	obs_property_list_add_int(mode, "Cartoon + texture", 0);
 	// Preserve value 3 so existing Fine chrome scenes remain selected.
-	obs_property_list_add_int(mode, "Fine chrome", 3);
+	obs_property_list_add_int(mode, "Fine chrome (optional TVS)", 3);
 	obs_property_list_add_int(mode, "Recursive recovery", 20);
 	obs_property_list_add_int(mode, "Layer interference", 21);
 	obs_property_list_add_int(mode, "Information caustics", 22);
+	obs_property_t *decomposition = obs_properties_add_list(
+		props, kDecomposition, "Decomposition engine",
+		OBS_COMBO_TYPE_LIST, OBS_COMBO_FORMAT_INT);
+	obs_property_list_add_int(
+		decomposition, "Finite-flow fast (4, 18, 2, 3)", 0);
+	obs_property_list_add_int(decomposition, "Fused passes", 1);
+	obs_properties_add_int_slider(
+		props, kFusedPasses, "Fused pass count", 1, 64, 1);
+	obs_property_t *lattice = obs_properties_add_list(
+		props, kJumpLattice, "Spectral work lattice",
+		OBS_COMBO_TYPE_LIST, OBS_COMBO_FORMAT_INT);
+	obs_property_list_add_int(lattice, "Preview (256 class)", 256);
+	obs_property_list_add_int(lattice, "Detailed (512 class, default)", 512);
+	obs_property_list_add_int(lattice, "High detail (1024 class)", 1024);
+	obs_property_list_add_int(lattice, "Extreme detail (2048 class)", 2048);
 	obs_properties_add_float_slider(
 		props, kCartoon, "Cartoon gain", 0.0, 2.0, 0.05);
 	obs_properties_add_float_slider(
@@ -590,22 +725,77 @@ obs_properties_t *filter_properties(void *)
 	return props;
 }
 
-void *filter_create(obs_data_t *settings, obs_source_t *source)
+void destroy_sync_graphics(Filter *filter)
+{
+	if (filter->sync_correction_texture) {
+		gs_texture_destroy(filter->sync_correction_texture);
+		filter->sync_correction_texture = nullptr;
+	}
+	for (auto *&stage : filter->sync_stage) {
+		if (stage)
+			gs_stagesurface_destroy(stage);
+		stage = nullptr;
+	}
+	if (filter->sync_analysis) {
+		gs_texrender_destroy(filter->sync_analysis);
+		filter->sync_analysis = nullptr;
+	}
+	if (filter->sync_effect) {
+		gs_effect_destroy(filter->sync_effect);
+		filter->sync_effect = nullptr;
+	}
+}
+
+void *filter_create_impl(obs_data_t *settings, obs_source_t *source,
+			 bool synchronous)
 {
 	auto *filter = new Filter;
 	filter->source = source;
+	filter->synchronous = synchronous;
 	filter_update(filter, settings);
+	if (synchronous) {
+		char *errors = nullptr;
+		obs_enter_graphics();
+		filter->sync_effect = gs_effect_create(
+			kSyncEffect, "bfft-cartoon-sync.effect", &errors);
+		obs_leave_graphics();
+		if (errors) {
+			blog(LOG_ERROR, "[BFFT Cartoon] sync shader: %s", errors);
+			bfree(errors);
+		}
+		if (!filter->sync_effect) {
+			delete filter;
+			return nullptr;
+		}
+	}
 	return filter;
+}
+
+void *filter_create(obs_data_t *settings, obs_source_t *source)
+{
+	return filter_create_impl(settings, source, false);
+}
+
+void *sync_filter_create(obs_data_t *settings, obs_source_t *source)
+{
+	return filter_create_impl(settings, source, true);
 }
 
 void filter_destroy(void *data)
 {
 	auto *filter = static_cast<Filter *>(data);
 	blog(LOG_INFO,
-	     "[BFFT Cartoon] destroyed after %llu frames; %llu plan build(s)",
+	     "[BFFT Cartoon] destroyed %s filter after %llu frames; "
+	     "%llu plan build(s)",
+	     filter->synchronous ? "sync" : "async",
 	     static_cast<unsigned long long>(filter->frames),
 	     static_cast<unsigned long long>(filter->plan_builds));
 	bfft_meyer_plan_destroy(filter->plan);
+	if (filter->synchronous) {
+		obs_enter_graphics();
+		destroy_sync_graphics(filter);
+		obs_leave_graphics();
+	}
 	delete filter;
 }
 
@@ -619,7 +809,8 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 	std::lock_guard<std::mutex> processing_lock(filter->processing_mutex);
 	double cartoon_gain, texture_gain, shading_gain, shade_c, relief, gloss;
 	double recovery_gain, information_gain, phase_folds;
-	int effect_sweeps, threads, mode;
+	int effect_sweeps, threads, mode, jump_lattice, decomposition;
+	int fused_passes;
 	{
 		std::lock_guard<std::mutex> lock(filter->settings_mutex);
 		cartoon_gain = filter->cartoon_gain;
@@ -628,6 +819,9 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 		shade_c = filter->shade_c;
 		effect_sweeps = std::clamp(filter->effect_sweeps, 4, 16);
 		threads = std::clamp(filter->threads, 1, 8);
+		jump_lattice = normalize_lattice(filter->jump_lattice);
+		decomposition = filter->decomposition == 1 ? 1 : 0;
+		fused_passes = std::clamp(filter->fused_passes, 1, 64);
 		switch (filter->mode) {
 		case 3:
 		case 20:
@@ -650,7 +844,8 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 	    std::abs(shading_gain) < 1e-12)
 		return frame;
 
-	if (!ensure_plan(filter, frame->width, frame->height, threads))
+	if (!ensure_plan(filter, frame->width, frame->height, threads,
+			 jump_lattice))
 		return frame;
 
 	const auto started = std::chrono::steady_clock::now();
@@ -659,9 +854,9 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 	read_work_input(filter, frame);
 	const auto input_done = std::chrono::steady_clock::now();
 
-	if (bfft_meyer_split(filter->plan, filter->input.data(),
-			     filter->input.data(),
-			     filter->texture.data()) != BFFT_OK)
+	if (split_frame(filter, filter->input.data(), filter->input.data(),
+			filter->texture.data(), decomposition,
+			fused_passes) != BFFT_OK)
 		return frame;
 	const auto split_done = std::chrono::steady_clock::now();
 
@@ -674,8 +869,9 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 					   0.0) != BFFT_OK)
 				return frame;
 		}
-		// The jump split is complementary, so recomposition needs no model
-		// residual plane. Reuse the cartoon/input plane for the final field.
+		// Both engine choices expose exact complementary products, so
+		// recomposition needs no residual plane. Reuse cartoon/input for the
+		// final field.
 		const bool signed_detail = std::abs(cartoon_gain) < 1e-12;
 		for (size_t i = 0; i < count; ++i) {
 			const double cartoon = filter->input[i];
@@ -689,9 +885,9 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 		write_work_output(filter, frame, filter->input.data(),
 				  signed_detail);
 	} else if (mode == 3) {
-		// Fine chrome: one accurate outer-map correction,
-		// u_jump - ROF(u_jump, lambda). The complementary jump split makes
-		// f-v exactly u, so no subtraction plane is needed.
+		// Fine chrome / TVS: one optional outer-map correction,
+		// cartoon - ROF(cartoon, lambda). The complementary split contract
+		// means no third residual plane is needed.
 		double *defect = ensure_effect_plane(filter->scratch_a, count);
 		double *chrome_output =
 			ensure_effect_plane(filter->scratch_b, count);
@@ -790,9 +986,9 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 		// texture plane and no state copy.
 		double *recursive_texture =
 			ensure_effect_plane(filter->scratch_a, count);
-		if (bfft_meyer_split(filter->plan, filter->input.data(),
-				     filter->input.data(),
-				     recursive_texture) != BFFT_OK)
+		if (split_frame(filter, filter->input.data(), filter->input.data(),
+				recursive_texture, decomposition,
+				fused_passes) != BFFT_OK)
 			return frame;
 		recovery_gain = std::clamp(recovery_gain, 0.0, 10.0);
 		for (size_t i = 0; i < count; ++i) {
@@ -942,6 +1138,186 @@ obs_source_frame *filter_video(void *data, obs_source_frame *frame)
 	return frame;
 }
 
+bool sync_output_is_monochrome(Filter *filter)
+{
+	std::lock_guard<std::mutex> lock(filter->settings_mutex);
+	if (filter->mode == 3 || filter->mode == 21)
+		return true;
+	return filter->mode == 0 && std::abs(filter->cartoon_gain) < 1e-12;
+}
+
+bool ensure_sync_graphics(Filter *filter, uint32_t target_width,
+			  uint32_t target_height)
+{
+	int jump_lattice;
+	{
+		std::lock_guard<std::mutex> lock(filter->settings_mutex);
+		jump_lattice = normalize_lattice(filter->jump_lattice);
+	}
+	uint32_t work_width, work_height, analysis_width, analysis_height;
+	choose_work_shape(target_width, target_height,
+			  static_cast<uint32_t>(jump_lattice), work_width,
+			  work_height, analysis_width, analysis_height);
+	if (filter->sync_analysis && filter->sync_target_width == target_width &&
+	    filter->sync_target_height == target_height &&
+	    filter->sync_analysis_width == analysis_width &&
+	    filter->sync_analysis_height == analysis_height)
+		return true;
+
+	if (filter->sync_correction_texture) {
+		gs_texture_destroy(filter->sync_correction_texture);
+		filter->sync_correction_texture = nullptr;
+	}
+	for (auto *&stage : filter->sync_stage) {
+		if (stage)
+			gs_stagesurface_destroy(stage);
+		stage = nullptr;
+	}
+	if (filter->sync_analysis)
+		gs_texrender_destroy(filter->sync_analysis);
+	filter->sync_analysis = gs_texrender_create(GS_RGBA, GS_ZS_NONE);
+	filter->sync_stage[0] =
+		gs_stagesurface_create(analysis_width, analysis_height, GS_RGBA);
+	filter->sync_stage[1] =
+		gs_stagesurface_create(analysis_width, analysis_height, GS_RGBA);
+	filter->sync_correction_texture = gs_texture_create(
+		analysis_width, analysis_height, GS_R32F, 1, nullptr, GS_DYNAMIC);
+	filter->sync_correction.assign(
+		static_cast<size_t>(analysis_width) * analysis_height, 0.0f);
+	filter->sync_target_width = target_width;
+	filter->sync_target_height = target_height;
+	filter->sync_analysis_width = analysis_width;
+	filter->sync_analysis_height = analysis_height;
+	filter->sync_written = {false, false};
+	filter->sync_stage_index = 0;
+	filter->sync_ready = false;
+	blog(LOG_INFO,
+	     "[BFFT Cartoon] sync bridge %ux%u -> %ux%u reduced lattice",
+	     target_width, target_height, analysis_width, analysis_height);
+	return filter->sync_analysis && filter->sync_stage[0] &&
+	       filter->sync_stage[1] && filter->sync_correction_texture;
+}
+
+void stage_sync_target(Filter *filter)
+{
+	obs_source_t *target = obs_filter_get_target(filter->source);
+	if (!target)
+		return;
+	obs_source_t *parent = obs_filter_get_parent(filter->source);
+	gs_texrender_reset(filter->sync_analysis);
+	gs_viewport_push();
+	gs_projection_push();
+	gs_matrix_push();
+	if (gs_texrender_begin(filter->sync_analysis,
+			       filter->sync_analysis_width,
+			       filter->sync_analysis_height)) {
+		vec4 clear;
+		vec4_zero(&clear);
+		gs_clear(GS_CLEAR_COLOR, &clear, 0.0f, 0);
+		gs_matrix_identity();
+		gs_ortho(0.0f, static_cast<float>(filter->sync_target_width),
+			 0.0f, static_cast<float>(filter->sync_target_height),
+			 -100.0f, 100.0f);
+		const uint32_t flags = parent ? obs_source_get_output_flags(parent) : 0;
+		const bool custom = (flags & OBS_SOURCE_CUSTOM_DRAW) != 0;
+		const bool async = (flags & OBS_SOURCE_ASYNC) != 0;
+		if (target == parent && !custom && !async)
+			obs_source_default_render(target);
+		else
+			obs_source_video_render(target);
+		gs_texrender_end(filter->sync_analysis);
+		gs_stage_texture(filter->sync_stage[filter->sync_stage_index],
+				 gs_texrender_get_texture(filter->sync_analysis));
+		filter->sync_written[filter->sync_stage_index] = true;
+	}
+	gs_matrix_pop();
+	gs_projection_pop();
+	gs_viewport_pop();
+}
+
+void process_sync_surface(Filter *filter, size_t read_index)
+{
+	if (!filter->sync_written[read_index])
+		return;
+	uint8_t *mapped = nullptr;
+	uint32_t stride = 0;
+	if (!gs_stagesurface_map(filter->sync_stage[read_index], &mapped, &stride))
+		return;
+
+	obs_source_frame frame{};
+	frame.data[0] = mapped;
+	frame.linesize[0] = stride;
+	frame.width = filter->sync_analysis_width;
+	frame.height = filter->sync_analysis_height;
+	frame.format = VIDEO_FORMAT_RGBA;
+	frame.full_range = true;
+	const size_t count = static_cast<size_t>(frame.width) * frame.height;
+	for (uint32_t y = 0; y < frame.height; ++y) {
+		for (uint32_t x = 0; x < frame.width; ++x) {
+			const size_t i = static_cast<size_t>(y) * frame.width + x;
+			filter->sync_correction[i] =
+				static_cast<float>(read_luma(&frame, x, y));
+		}
+	}
+
+	filter_video(filter, &frame);
+	const bool monochrome = sync_output_is_monochrome(filter);
+	for (uint32_t y = 0; y < frame.height; ++y) {
+		for (uint32_t x = 0; x < frame.width; ++x) {
+			const size_t i = static_cast<size_t>(y) * frame.width + x;
+			const float processed =
+				static_cast<float>(read_luma(&frame, x, y));
+			filter->sync_correction[i] = monochrome
+				? processed / 255.0f
+				: (processed - filter->sync_correction[i]) / 255.0f;
+		}
+	}
+	gs_stagesurface_unmap(filter->sync_stage[read_index]);
+	gs_texture_set_image(filter->sync_correction_texture,
+			     reinterpret_cast<const uint8_t *>(
+				     filter->sync_correction.data()),
+			     filter->sync_analysis_width * sizeof(float), false);
+	filter->sync_monochrome = monochrome;
+	filter->sync_ready = true;
+}
+
+void sync_filter_render(void *data, gs_effect_t *)
+{
+	auto *filter = static_cast<Filter *>(data);
+	obs_source_t *target = obs_filter_get_target(filter->source);
+	if (!target) {
+		obs_source_skip_video_filter(filter->source);
+		return;
+	}
+	const uint32_t width = obs_source_get_base_width(target);
+	const uint32_t height = obs_source_get_base_height(target);
+	if (!width || !height || !ensure_sync_graphics(filter, width, height)) {
+		obs_source_skip_video_filter(filter->source);
+		return;
+	}
+
+	const size_t read_index = (filter->sync_stage_index + 1) % 2;
+	process_sync_surface(filter, read_index);
+	stage_sync_target(filter);
+	filter->sync_stage_index = read_index;
+	if (!filter->sync_ready) {
+		obs_source_skip_video_filter(filter->source);
+		return;
+	}
+	if (!obs_source_process_filter_begin(filter->source, GS_RGBA,
+					     OBS_NO_DIRECT_RENDERING))
+		return;
+	gs_effect_set_texture(
+		gs_effect_get_param_by_name(filter->sync_effect,
+					    "correction_image"),
+		filter->sync_correction_texture);
+	gs_effect_set_float(
+		gs_effect_get_param_by_name(filter->sync_effect, "monochrome"),
+		filter->sync_monochrome ? 1.0f : 0.0f);
+	obs_source_process_filter_end(filter->source, filter->sync_effect, width,
+				      height);
+}
+
 obs_source_info filter_info = {
 	.id = "bfft_cartoon_filter",
 	.type = OBS_SOURCE_TYPE_FILTER,
@@ -955,11 +1331,25 @@ obs_source_info filter_info = {
 	.filter_video = filter_video,
 };
 
+obs_source_info sync_filter_info = {
+	.id = "bfft_cartoon_filter_sync",
+	.type = OBS_SOURCE_TYPE_FILTER,
+	.output_flags = OBS_SOURCE_VIDEO,
+	.get_name = filter_name,
+	.create = sync_filter_create,
+	.destroy = filter_destroy,
+	.get_defaults = filter_defaults,
+	.get_properties = filter_properties,
+	.update = filter_update,
+	.video_render = sync_filter_render,
+};
+
 } // namespace
 
 bool obs_module_load(void)
 {
 	obs_register_source(&filter_info);
+	obs_register_source(&sync_filter_info);
 	register_high_vision_filter();
 	blog(LOG_INFO, "[BFFT Cartoon] loaded");
 	return true;

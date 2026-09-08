@@ -56,6 +56,28 @@ nonempty staged output and no OBS error-level logs.
 The non-installed verification bundle is
 `dist/realtime-vector-fx.plugin` on the development MacBook.
 
+## Mark IV high-color assignment
+
+Measured 2026-08-23 on the same M4 Mini with a 1920×1080 changing RGBA source,
+64 colors, 4,096 samples, 12 warmups, and 40 measured frames. The immediately
+preceding build and the Mark IV build used the same command and host:
+
+| 64-color posterizer | Core p50 | Core p95 | Composited p95 |
+| --- | ---: | ---: | ---: |
+| Previous exhaustive distance loop | 20.375 ms | 20.712 ms | 23.099 ms |
+| Mark IV exact ordered search (palette every frame) | 7.767 ms | 7.940 ms | 10.361 ms |
+
+This is a 61.7% reduction in core p95 (2.61× throughput) without approximating
+the nearest-color result. After enabling the imported structural-field,
+color-family reservation, texture-assignment, two-frame palette cadence, and
+hysteresis defaults, an 80-frame final run measured 7.685 ms core p95 and
+10.106 ms composited p95 at 64 colors. A matching 24-color run measured 5.708
+ms core p95 and 8.115 ms composited p95. Both remain comfortably inside the
+33.333 ms frame budget while doing the more useful Mark IV assignment work.
+The final non-installing libobs/Metal smoke run on the A18 Pro host measured
+23.651 ms per 640×360 Mark IV frame, including staged readback synchronization,
+and completed with no error-level OBS log entries.
+
 The same harness was then run four times at 1920×1080, each with 12 warmups and
 120 measured frames, on the development Apple A18 Pro host. A static synthetic
 RGBA source had a 0.767 ms median bare-source frame; the complete GPU filter

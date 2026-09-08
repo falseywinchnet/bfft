@@ -1,0 +1,27 @@
+\begin{abstract}
+Bruun's 1978 real-coefficient Fourier factorization is revisited as a complete
+algebraic transform rather than only a forward reduction scheme.  The starting
+point is the factor tree of $z^N-1$ into a binomial spine and real conjugate-pair
+trinomials.  An explicit Chinese-remainder merge supplies a two-sided inverse
+at every internal node.  A normalized coordinate
+$e_\theta=(z-\cos\theta)/\sin\theta$ turns every terminal quadratic quotient
+into a Euclidean complex line with $e_\theta^2=-1$.  In these coordinates each
+nontrivial node is a plane rotation followed by a Hadamard map.  Consequently,
+the packed real transform $B_N$ satisfies $B_N^{\trans}B_N=N I$, and direct
+evaluation in the terminal quotients proves that $B_N$ is exactly the discrete
+Fourier transform up to an explicit output permutation.  The same factorization
+admits decimation-in-frequency, decimation-in-time, and diagonal phase-packet
+walks.  Its half-bin companion gives an exact odd-frequency transform using
+real two-plane arithmetic.  Finally, a positive-cone lift and two diagonal
+gauges give conservative transport and equilibrium realizations whose signed
+projection is exactly the Fourier map.  Symbolic examples and binary64 audits
+are reported separately from the proofs.  The resulting theory identifies an
+exact, condition-one, real arithmetic Fourier factorization and a physically
+realizable representative of it in the declared ideal linear categories.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Bruun transform, discrete Fourier transform, Chinese remainder theorem,
+real FFT, cyclotomic factorization, orthogonal factorization, odd-frequency
+transform, passive linear network.
+\end{IEEEkeywords}

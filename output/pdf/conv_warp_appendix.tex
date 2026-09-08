@@ -1,0 +1,584 @@
+% Direct-warp appendix shared by the modular and composed paper builds.
+\providecommand{\WarpFigureRoot}{../support_geometry}
+\appendices
+\section{Direct Joint CONV Warps}
+\label{app:directwarp}
+
+The continuous CONV representation admits a direct extension from lattice
+resize to rotation, skew, anisotropic affine transfer, and perspective warp.
+The necessary change is not a decomposition of the coordinate map into
+one-dimensional resampling passes.  It is a joint admission of the
+two-dimensional current before that map is evaluated.  The construction
+below consequently retains one inverse map, one continuous source atlas, and
+one positive raster functional.  No intermediate raster occurs.
+
+\subsection{One inverse map and its induced geometry}
+
+Let \(\Omega\subset\R^2\) denote the normalized source rectangle and let
+\(\widehat\Omega\subset\R^2\) denote the target rectangle.  A nonsingular
+inverse warp
+\begin{equation}
+ F:\widehat\Omega\longrightarrow\Omega,\qquad q\longmapsto p=F(q),
+ \label{eq:warpmap}
+\end{equation}
+is declared once.  Given the admitted source atlas \(U_Y\), point synthesis is
+\begin{equation}
+ (\mathcal W_FY)(q)=U_Y(F(q)).
+ \label{eq:warppoint}
+\end{equation}
+Thus a shear factorization of an affine map is neither required nor used.
+Indeed, repeated admitted interpolation would generally define a different
+nonlinear operator, because every intermediate raster changes the current
+state from which the next admission is formed.
+
+When the source current geometry is expressed by the SPD field \(M(p)\), the
+same inverse map induces the target quadratic form
+\begin{equation}
+ G_F(q)=J_F(q)^TM(F(q))J_F(q),
+ \qquad J_F=DF,
+ \label{eq:warppullback}
+\end{equation}
+and its determinant-one shape is
+\begin{equation}
+ \overline M_F(q)=\frac{G_F(q)}{\det(G_F(q))^{1/2}}.
+ \label{eq:warpshape}
+\end{equation}
+Equation~\eqref{eq:warppullback} combines sampling scale, anisotropy, and the
+warp before a square root or directional support is formed.  Consequently it
+does not assume that Cartesian spacing commutes with the eigenframe of
+\(M\).  The scalar \(\det(G_F)^{1/4}\) carries linear scale, while
+\eqref{eq:warpshape} carries directional shape.
+
+\subsection{Compiled bivariate proposal}
+
+Index the source cells by \(C\), and write \((u,v)\in[0,1]^2\) for local
+cell coordinates.  The joint source potential on cell \(C\) is represented
+in the tensor Bernstein basis as
+\begin{equation}
+ U_C(u,v)=\sum_{i=0}^{5}\sum_{j=0}^{5}
+ P_{C,ji}B_i^5(u)B_j^5(v).
+ \label{eq:warppatch}
+\end{equation}
+The proposal controls are not fitted by an optimizer.  Let
+\begin{equation}
+ A_{ri}=B_i^5(r/5),\qquad 0\leq r,i\leq5,
+ \label{eq:warpcollocation}
+\end{equation}
+and let \(Z_C\) contain the values of the complete two-order CONV proposal at
+the \(6\times6\) fifth-step tensor lattice of \(C\).  Since the Bernstein
+collocation matrix \(A\) is nonsingular, the unique bidegree-\((5,5)\)
+proposal is
+\begin{equation}
+ \widetilde P_C=A^{-1}Z_CA^{-T}.
+ \label{eq:warpproposal}
+\end{equation}
+All entries of every \(Z_C\) are obtained from one global fifth-step
+evaluation.  Adjacent cells therefore have the same six samples on their
+common edge; uniqueness in \eqref{eq:warpcollocation} then gives the same
+complete Bernstein edge.  Equivalently, the patches are stored in one shared
+global control lattice.  The resulting proposal is \(C^0\), and its current
+is the gradient of one continuous piecewise-polynomial potential.
+
+Let \(B\) denote the degree-elevated \(Q_1\) interpolant of the source
+samples on that shared lattice.  It is cardinal, continuous, and affine
+exact.  Admission will move \(B\) toward \(\widetilde P\), while the source
+vertices remain fixed.
+
+\subsection{Support-range admission}
+
+For each source cell \(C\), let \(\mathcal S_C\) be the complete Cartesian
+two-jet sample support, clipped at the outer boundary.  If shared control
+entity \(e\) is incident to the cell set \(\mathcal I(e)\), define, for
+channel \(c\),
+\begin{equation}
+ I_e^{(c)}=
+ \bigcap_{C\in\mathcal I(e)}
+ \left[
+  \min_{p\in\mathcal S_C}Y_p^{(c)},
+  \max_{p\in\mathcal S_C}Y_p^{(c)}
+ \right].
+ \label{eq:warprangeintersection}
+\end{equation}
+This intersection is nonempty: the corresponding \(Q_1\) control is a
+convex combination of common incident vertices and belongs to every interval
+in \eqref{eq:warprangeintersection}.  The proposal is first replaced by
+\begin{equation}
+ \widehat P_e^{(c)}=\Pi_{I_e^{(c)}}\widetilde P_e^{(c)}.
+ \label{eq:warprangeclip}
+\end{equation}
+Unlike a post-reconstruction clamp, \eqref{eq:warprangeclip} constrains the
+continuous potential.  Subsequent current admission remains on the segment
+from \(B_e^{(c)}\) to \(\widehat P_e^{(c)}\), so every final control remains
+in \(I_e^{(c)}\).
+
+\begin{theorem}[Continuous support-range admission]
+For every channel and source cell,
+\begin{equation}
+ \min_{p\in\mathcal S_C}Y_p^{(c)}
+ \leq U_C^{(c)}(u,v)\leq
+ \max_{p\in\mathcal S_C}Y_p^{(c)},
+ \qquad (u,v)\in[0,1]^2.
+ \label{eq:warprangetheorem}
+\end{equation}
+Consequently, point synthesis and every positive warped-pixel average have no
+range excursion beyond the union of the source supports they traverse.
+\end{theorem}
+
+\begin{proof}
+For cell \(C\), every one of its 36 shared controls belongs to the interval
+on the right of \eqref{eq:warprangetheorem}.  The tensor Bernstein basis is
+nonnegative and forms a partition of unity, hence \(U_C\) is a convex
+combination of those controls.  Point evaluation gives the first result, and
+integration against a nonnegative normalized measure gives the second.
+\end{proof}
+
+\subsection{Support-current cone}
+
+The one-dimensional theorem controls current along a declared factor.  A
+rotated or projective query instead requires a joint source current law.  For
+cell \(C\), collect the four corner gradients of every \(Q_1\) cell contained
+in \(\mathcal S_C\):
+\begin{equation}
+ \mathcal G_C=
+ \left\{\nabla Q_D(z):D\subset\mathcal S_C,
+              \ z\in\operatorname{vert}(D)\right\}.
+ \label{eq:warpgenerators}
+\end{equation}
+Zero vectors are removed.  If the remaining directions generate a proper
+closed planar cone, let
+\begin{equation}
+ K_C=\operatorname{cone}\mathcal G_C;
+ \label{eq:warpcone}
+\end{equation}
+if no nonzero current is observed, or if the observed currents positively
+span the plane, set \(K_C=\R^2\).  Thus a clean interface gives a narrow
+cone, curvature gives a wedge, and crossing currents remove a directional
+restriction rather than forcing a false owner or normal.
+
+Every proper planar cone occurring here has a finite half-space description
+\begin{equation}
+ K_C=\left\{z\in\R^2:\ell_{Cr}^Tz\geq0,
+                       \ 1\leq r\leq R_C\right\},
+ \qquad R_C\leq3.
+ \label{eq:warpconedual}
+\end{equation}
+A wedge uses its two inward boundary normals.  A ray additionally requires a
+forward inequality, while a line uses two opposing transverse inequalities.
+The whole-plane case has \(R_C=0\).
+
+For each \(r\), the directional derivative
+\begin{equation}
+ L_{Cr}(u,v)=\ell_{Cr}^T\nabla U_C(u,v)
+ \label{eq:warpdirectional}
+\end{equation}
+is degree elevated to the bidegree-\((5,5)\) Bernstein basis.  Denote its 36
+linear control functionals by \(a_{Crk}^TP\).  The finite admission
+conditions are
+\begin{equation}
+ a_{Crk}^TP\geq0,\qquad
+ 1\leq r\leq R_C,\quad 1\leq k\leq36.
+ \label{eq:warpfiniteconstraints}
+\end{equation}
+Nonnegativity of these Bernstein coefficients is a sufficient certificate
+for \(L_{Cr}\geq0\) on the complete cell.
+
+The degree-elevated \(Q_1\) baseline is a constructive feasible point.  Its
+gradient is a convex combination of the four corner gradients of its source
+cell; those gradients occur in \(\mathcal G_C\).  Hence
+\begin{equation}
+ \nabla B_C(u,v)\in K_C
+ \label{eq:warpbaselinefeasible}
+\end{equation}
+everywhere, and every margin in \eqref{eq:warpfiniteconstraints} is
+nonnegative.
+
+\subsection{Finite topological-entity admission}
+
+Assign each nonvertex control to exactly one shared-edge or cell-interior
+entity \(g\).  With the range-admitted proposal from
+\eqref{eq:warprangeclip}, write
+\begin{equation}
+ \widehat P=B+\sum_gd_g,
+ \label{eq:warpgroups}
+\end{equation}
+where the entity corrections have disjoint control ownership.  For a global
+constraint \(a_k^TP\geq0\), put
+\begin{equation}
+ m_k=a_k^TB,\qquad
+ H_k=\sum_g\max(0,-a_k^Td_g).
+ \label{eq:warpmargin}
+\end{equation}
+If \(\widehat P\) already satisfies all constraints, it is accepted
+unchanged.  Otherwise each harmful entity is assigned the simultaneous
+capacity
+\begin{equation}
+ \alpha_g=min\!\left\{1,
+  \min_{k:a_k^Td_g<0,\ H_k>0}\frac{m_k}{H_k}\right\},
+ \label{eq:warpcapacity}
+\end{equation}
+with an empty inner minimum interpreted as one.  The first admitted state is
+\begin{equation}
+ P^{(0)}=B+\sum_g\alpha_gd_g.
+ \label{eq:warpfirststate}
+\end{equation}
+Finally, let \(R=\widehat P-P^{(0)}\) and take the maximal common ray
+\begin{equation}
+ \tau=\min\!\left\{1,
+   \min_{k:a_k^TR<0}
+   \frac{a_k^TP^{(0)}}{-a_k^TR}\right\},
+ \qquad P=P^{(0)}+\tau R.
+ \label{eq:warpray}
+\end{equation}
+Again, an empty inner minimum is one.  Equations
+\eqref{eq:warpcapacity}--\eqref{eq:warpray} contain neither an iteration nor
+an active-set search.
+
+\begin{theorem}[Finite joint current admission]
+The control lattice \(P\) obtained from
+\eqref{eq:warpcapacity}--\eqref{eq:warpray} satisfies every constraint in
+\eqref{eq:warpfiniteconstraints}.  Consequently,
+\begin{equation}
+ \nabla U_C(u,v)\in K_C,
+ \qquad (u,v)\in[0,1]^2,
+ \label{eq:warpgradientcone}
+\end{equation}
+for every source cell.  The construction is finite, order independent,
+cardinal, \(C^0\), and affine exact.
+\end{theorem}
+
+\begin{proof}
+Fix constraint \(k\).  Contributions with \(a_k^Td_g\geq0\) can be
+discarded in a lower bound.  For every harmful entity,
+\(\alpha_g\leq m_k/H_k\), and therefore
+\begin{equation}
+ a_k^TP^{(0)}
+ \geq m_k-\frac{m_k}{H_k}
+       \sum_g\max(0,-a_k^Td_g)
+ =0.
+ \label{eq:warpcapacityproof}
+\end{equation}
+Equation~\eqref{eq:warpray} is the exact first intersection of the remaining
+affine ray with the finite half-space boundary, hence \(a_k^TP\geq0\) as
+well.  Applied to all derivative coefficients, Bernstein positivity gives
+\(\ell_{Cr}^T\nabla U_C\geq0\), which is equivalent to
+\eqref{eq:warpgradientcone} through \eqref{eq:warpconedual}.
+
+Source vertices are not assigned to a movable entity.  Shared-edge controls
+are single variables, so cardinality and \(C^0\) continuity are retained.
+For affine data, the proposal equals the degree-elevated affine baseline and
+already satisfies the cone and range constraints; it is consequently passed
+unchanged.
+\end{proof}
+
+The theorem also explains why the construction is not an edge detector.  It
+does not select one current from \(\mathcal G_C\).  Instead it admits the
+complete high-order proposal whenever all of its derivative coefficients lie
+in the cone generated by the currents actually present in the declared
+support.
+
+\subsection{Transport through affine and projective maps}
+
+Let \(\gamma:[a,b]\to\widehat\Omega\) be a \(C^1\) target curve.  At every
+regular point contained in one source cell, the chain rule gives
+\begin{equation}
+ \frac{d}{ds}U_Y(F(\gamma(s)))=
+ \bigl[J_F(\gamma(s))\gamma'(s)\bigr]^T
+ \nabla U_Y(F(\gamma(s))).
+ \label{eq:warpchain}
+\end{equation}
+Let
+\begin{equation}
+ K_C^*=\{t\in\R^2:t^Tz\geq0\ \text{for all }z\in K_C\}
+ \label{eq:warpdual}
+\end{equation}
+be the dual current direction cone.
+
+\begin{corollary}[Warped-current transport]
+Suppose \(F(\gamma(s))\) crosses only finitely many source-cell boundaries
+and
+\begin{equation}
+ J_F(\gamma(s))\gamma'(s)\in K_{C(s)}^*
+ \label{eq:warptangentcondition}
+\end{equation}
+for almost every \(s\), where \(C(s)\) contains \(F(\gamma(s))\).  Then
+\(U_Y\circ F\circ\gamma\) is nondecreasing on \([a,b]\).
+\end{corollary}
+
+\begin{proof}
+Equations \eqref{eq:warpgradientcone}, \eqref{eq:warpdual}, and
+\eqref{eq:warpchain} make the derivative nonnegative in every open patch
+segment.  The atlas is continuous and piecewise \(C^1\); therefore its
+composition with the curve is absolutely continuous after splitting at the
+finite knot set.  The fundamental theorem gives
+\begin{equation}
+ U_Y(F(\gamma(b)))-U_Y(F(\gamma(a)))
+ =\int_a^b\frac{d}{ds}U_Y(F(\gamma(s)))\,ds\geq0.
+\end{equation}
+The knot points have measure zero and require no derivative convention.
+\end{proof}
+
+Affine maps transport the admitted directions by one constant Jacobian.
+Homographies transport them by the spatially varying Jacobian of the same
+declared map.  In either case, no target-space owner, orientation, or second
+interpolation operation is introduced.
+
+\subsection{Conservative warped-pixel analysis}
+
+Point synthesis is appropriate for enlargement.  For reduction, let
+\(\{P_j\}\) be the endpoint-aligned target Voronoi basins.  The matched
+raster functional is
+\begin{equation}
+ (\mathcal B_FY)_j=
+ \frac{1}{|P_j|}\int_{P_j}U_Y(F(q))\,dq.
+ \label{eq:warppixel}
+\end{equation}
+Since the basins partition the target domain,
+\begin{equation}
+ \sum_j|P_j|(\mathcal B_FY)_j
+ =\int_{\cup_jP_j}U_Y(F(q))\,dq.
+ \label{eq:warpconservation}
+\end{equation}
+Thus \eqref{eq:warppixel} is conservative relative to the admitted continuous
+profile.  It is also a positive average and inherits
+\eqref{eq:warprangetheorem}.
+
+For affine \(F\), a target basin maps to a source parallelogram.  Splitting
+at the integer source-knot lines produces convex polygons, each contained in
+one patch.  Positive fan triangulation introduces no overlap.  On every
+triangle, \(U_C\) has total degree at most ten.  Under a Duffy map the area
+Jacobian raises one separate degree to at most eleven; consequently, the
+tensor three-point rule is insufficient, whereas tensor Gauss--Legendre
+order six is exact.  Division by the mapped parallelogram area then gives
+\eqref{eq:warppixel} exactly.
+
+For a homography, source-coordinate integration yields
+\begin{equation}
+ (\mathcal B_FY)_j=\frac1{|P_j|}
+ \int_{F(P_j)}U_Y(p)\left|\det DF^{-1}(p)\right|\,dp.
+ \label{eq:warpprojectiveintegral}
+\end{equation}
+With homogeneous coordinate normalizations absorbed into the nonsingular
+matrix \(H\), the inverse-map density is
+\begin{equation}
+ \left|\det DF^{-1}(p)\right|
+ =\frac{|\det H^{-1}|}{|\ell(p)|^3},
+ \label{eq:warpdensity}
+\end{equation}
+where \(\ell\) is the affine denominator of \(H^{-1}\).  On a clipped
+triangle choose a nonzero center \(c\) of the denominator interval and write
+\(\ell=c(1+z)\), with \(|z|\leq r<1\).  Then
+\begin{equation}
+ (1+z)^{-3}=\sum_{k=0}^{K}(-1)^k\binom{k+2}{2}z^k+R_K(z).
+ \label{eq:warpseries}
+\end{equation}
+The tail admits the closed bound
+\begin{align}
+ |R_K(z)|&\leq T_{K+1}(r),\label{eq:warptail}\\
+ T_n(r)&=\frac{r^n}{2}\left[
+ \frac{r(1+r)}{(1-r)^3}
+ +\frac{(2n+3)r}{(1-r)^2}\right.\nonumber\\
+ &\hspace{25mm}\left.
+ +\frac{(n+1)(n+2)}{1-r}\right].\nonumber
+\end{align}
+The finite series multiplied by \(U_C\) is polynomial and is integrated
+exactly by tensor Gauss order
+\begin{equation}
+ q_K=\left\lceil\frac{K+12}{2}\right\rceil.
+ \label{eq:warpseriesorder}
+\end{equation}
+If \(U_C=P_0+(U_C-P_0)\), the constant \(P_0\) is integrated exactly before
+\eqref{eq:warpseries} is applied.  Hence constants have zero certified
+residual.  For triangle \(T\), the remaining error is bounded by
+\begin{equation}
+ E_T\leq |T|\frac{|\det H^{-1}|}{|c|^3}
+ T_{K+1}(r)\,
+ \norm{U_C-P_0}_{L^\infty(T)}.
+ \label{eq:warpprojectivecertificate}
+\end{equation}
+Bernstein controls and first differences provide the required value bound.
+Four-way triangle subdivision is invoked only when the sum of
+\eqref{eq:warpprojectivecertificate} exceeds the declared pixel budget.  The
+exact integral \eqref{eq:warpprojectiveintegral} remains the operator; the
+finite implementation returns its value together with a rigorous enclosure.
+
+\subsection{Multichannel form}
+
+For \(Y:\Omega\cap\mathbb Z^2\to\R^C\), the control topology, support sets,
+and inverse map are shared.  Range and current admission are applied to each
+component in the declared channel basis, yielding the product set
+\begin{equation}
+ \prod_{c=1}^C
+ \left\{U^{(c)}:\nabla U_C^{(c)}\in K_C^{(c)},\ 
+ U_C^{(c)}\in I_C^{(c)}\right\}.
+ \label{eq:warpmultichannel}
+\end{equation}
+The preceding proofs therefore hold componentwise.  As with the main CONV
+operator, this statement is invariant under independent affine changes of
+channel units; it does not assert invariance under an arbitrary basis change
+that mixes channels.
+
+\subsection{Exact-truth evaluation}
+
+The evidence uses only procedural sources whose point values and warped-pixel
+means are independent of every tested interpolator.  The sharp corpus
+contains a half-plane with normal angle \(37^\circ\), a width-0.065 bar at
+\(27^\circ\), two width-0.055 crossing bars at \(31^\circ\) and
+\(121^\circ\), and a \(0.62\times0.34\) box at \(-19^\circ\), all centered
+at \((1/2,1/2)\).  The four target-to-source maps are
+\begin{align}
+ F_{\rm rot}&: (\theta,s_x,s_y)=(21^\circ,0.72,0.72),\nonumber\\
+ F_{\rm skew}&: (s_x,s_y,h_x)=(0.70,0.75,0.42),\nonumber\\
+ F_{\rm aniso}&: (\theta,s_x,s_y)=(-14^\circ,0.50,0.84),\nonumber\\
+ F_{\rm proj}&: (g_x,g_y,\theta,s_x,s_y)
+ =(0.32,-0.18,9^\circ,0.67,0.72),
+ \label{eq:warpcorpusmaps}
+\end{align}
+where affine maps use \(F(q)=\tfrac12+A(q-\tfrac12)\), with
+\(A=R_\theta\left(\begin{smallmatrix}1&h_x\\h_y&1\end{smallmatrix}\right)
+\operatorname{diag}(s_x,s_y)\), and the projective map uses
+\begin{equation}
+ F(q)=\frac12+
+ \frac{A(q-\frac12)}{1+(g_x,g_y)^T(q-\frac12)}.
+ \label{eq:warpprojectivedeclared}
+\end{equation}
+Exact polygon membership supplies point truth.  Since a source half-plane
+remains a target half-plane under a pole-free homography, polygon clipping in
+target coordinates supplies exact basin coverage.
+
+The smooth census uses the real Fourier fields
+\begin{equation}
+ f(x)=b+\sum_{k=1}^Ka_k
+ \cos\!\left(2\pi\xi_k^Tx+\varphi_k\right).
+ \label{eq:warpfourierfield}
+\end{equation}
+For an affine map, the exact mean over a target rectangle with center \(m\)
+and side lengths \(h_x,h_y\) is obtained by multiplying each transformed
+mode by
+\begin{equation}
+ \operatorname{sinc}((A^T\xi_k)_xh_x)
+ \operatorname{sinc}((A^T\xi_k)_yh_y).
+ \label{eq:warpfouriermean}
+\end{equation}
+The scalar probes use the two mode sets
+\begin{equation}
+\begin{aligned}
+ \mathcal F_1=\{&((5,2),.22,.13),\ ((9,3),.09,1.17),\\
+                &((2,-4),.07,-.41)\},\\
+ \mathcal F_2=\{&((6,1),.17,.2),\ ((-1,6),.17,-.6),\\
+                &((4,4),.09,1.1)\},
+\end{aligned}
+\label{eq:warpfourierprobes}
+\end{equation}
+with \(b=0.5\).  A three-channel probe uses wavevectors
+\((4,1),(1,5),(5,-3)\), phases \(0,0.7,-0.4\), and amplitude rows
+\begin{equation}
+ \begin{bmatrix}.22&.05&.08\\.04&.20&.07\\.06&.04&.18\end{bmatrix},
+ \qquad b=(.5,.5,.5).
+ \label{eq:warpmultichannelprobe}
+\end{equation}
+
+Table~\ref{tab:warpsharp} reports the 16 sharp cases on a
+\(17\times17\) source and \(13\times13\) target.  CONV has the lowest MSE in
+seven point cases and seven warped-pixel cases.  More importantly for the
+proved admission, its maximum range excursion remains at floating roundoff,
+whereas the factor-only ablation and Lanczos admit substantial excursion.
+
+\begin{table}[H]
+\caption{Sharp affine/projective exact-truth census}
+\label{tab:warpsharp}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.0pt}
+\begin{tabular}{lrrrr}
+\hline
+Method & Point MSE & Pixel MSE & Point exc. & Pixel exc.\\
+\hline
+CONV & .021002 & .007377 & \(2.22\!\times\!10^{-16}\) & \(3.18\!\times\!10^{-14}\)\\
+Factor ablation & .021137 & .007705 & .2287 & .1433\\
+Lanczos-3 & .022928 & .008741 & .2817 & .1989\\
+Bilinear & .021513 & .007576 & 0 & 0\\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure*}[!t]
+ \centering
+ \includegraphics[width=0.98\textwidth]{\WarpFigureRoot/conv_warp_projective_plate_canonical.png}
+ \vspace{3pt}
+ \includegraphics[width=0.74\textwidth]{\WarpFigureRoot/conv_warp_canonical_metrics.png}
+ \caption{Direct joint CONV warp evidence.  Top: one homography applied to
+ sources with exact projective basin truth; each displayed certificate is the
+ computed enclosure of the projective polynomial integral.  Bottom:
+ topology and exact-truth fidelity over the declared corpus.  Values plotted
+ at the numerical floor are below \(2\times10^{-16}\).  The factor-only
+ result is an ablation of joint current admission, not a second CONV
+ definition.}
+ \label{fig:warpevidence}
+\end{figure*}
+
+The intrinsic topology census evaluates normal profiles rather than using MSE
+as a surrogate for ringing.  For a profile \(z_0,\ldots,z_n\) whose exact
+orientation is increasing, the reported wrong-way current is
+\begin{equation}
+ V_-(z)=\sum_{i=0}^{n-1}\max(0,z_i-z_{i+1}).
+ \label{eq:warpwrongway}
+\end{equation}
+Straight interfaces use six source angles, three maps, 513 samples per
+profile, and source sides 17 and 33.  CONV has no normal sign changes,
+\(V_-\leq1.34\times10^{-14}\), and excursion below
+\(4.45\times10^{-16}\).  Lanczos-3 produces four to nine sign changes,
+mean \(V_-=0.276\)--\(0.277\), and mean excursion \(0.166\).
+
+For curved interfaces, circles and ellipses are tested at 12 phases under
+three maps, giving 72 profiles per source size.  Table~\ref{tab:warpcurved}
+shows that the admitted cone eliminates wrong-way normal current at sides 13,
+17, and 25.  At side 9, the range theorem remains exact, while the six-node
+support spans competing conic normals and the cone correctly widens; the
+remaining wrong-way current therefore measures support ambiguity rather than
+failure of the finite inequalities.
+
+\begin{table}[H]
+\caption{Curved-interface intrinsic normal census for CONV}
+\label{tab:warpcurved}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{rrrr}
+\hline
+Source side & Mean \(V_-\) & Max. \(V_-\) & Max. excursion\\
+\hline
+9  & \(1.94\times10^{-3}\) & \(2.80\times10^{-2}\) & \(2.22\times10^{-16}\)\\
+13 & \(1.67\times10^{-15}\) & \(4.77\times10^{-15}\) & \(4.44\times10^{-16}\)\\
+17 & \(2.23\times10^{-15}\) & \(6.44\times10^{-15}\) & \(4.44\times10^{-16}\)\\
+25 & \(3.31\times10^{-15}\) & \(5.44\times10^{-15}\) & \(4.44\times10^{-16}\)\\
+\hline
+\end{tabular}
+\end{table}
+
+On the nine band-admitted Fourier cases, mean point MSE is
+\(1.48764\times10^{-4}\) for CONV, \(1.06820\times10^{-4}\) for the
+factor-only ablation, \(4.57424\times10^{-5}\) for Lanczos-3, and
+\(1.22893\times10^{-3}\) for bilinear.  The corresponding warped-pixel MSEs
+are \(6.27668\times10^{-5}\), \(4.09234\times10^{-5}\),
+\(1.88691\times10^{-5}\), and \(7.63065\times10^{-4}\).  Thus the complete
+support maximum principle has a measurable smooth-field fidelity cost; the
+experiment does not support universal MSE dominance.
+
+Finally, affine conservation equates the weighted target sum and an
+independent exact integral of the admitted atlas to \(3\times10^{-12}\).  On
+a nonconstant projective plane, independent 40-point tensor integration
+differs from the certified result by \(1.18\times10^{-11}\), within its
+\(5.84\times10^{-10}\) enclosure.  The largest certificate returned by the
+sharp projective corpus is \(1.52\times10^{-11}\).  These computations verify
+the exact polynomial and error-enclosure implementations; the cardinality,
+integrability, range, current-cone, and transport statements follow from the
+preceding formulas rather than from the measurements.
+
+The direct warp therefore extends CONV without changing its governing idea:
+the high-order proposal is admitted in the representation that carries the
+current, after which point evaluation and positive basin analysis are two
+functionals of the same continuous object.  The principal remaining boundary
+is source resolution itself.  When one compact two-jet support contains
+genuinely competing interface normals, the observed cone contains both and
+cannot certify a narrower direction without adding information absent from
+the samples.

@@ -26,7 +26,13 @@ constexpr const char* K_ALPHA="rvfx_alpha_weight";
 constexpr const char* K_SEPARATION="rvfx_node_separation";
 constexpr const char* K_DETAIL="rvfx_detail_priority";
 constexpr const char* K_POPULATION="rvfx_population_exponent";
+constexpr const char* K_FAMILY="rvfx_family_priority";
+constexpr const char* K_STRUCTURE_RADIUS="rvfx_structure_radius";
+constexpr const char* K_STRUCTURE_THRESHOLD="rvfx_structure_threshold";
+constexpr const char* K_TEXTURE="rvfx_texture_priority";
 constexpr const char* K_PRIOR="rvfx_prior_learning_rate";
+constexpr const char* K_STABILITY="rvfx_assignment_hysteresis";
+constexpr const char* K_PALETTE_INTERVAL="rvfx_palette_update_interval";
 constexpr const char* K_MIN_LEAF="rvfx_minimum_leaf";
 constexpr const char* K_REFINEMENT="rvfx_bifurcation_refinement";
 constexpr const char* K_CONTOUR="rvfx_contour_strength";
@@ -192,7 +198,13 @@ rvfx::Config read_poster_config(obs_data_t* settings) {
     c.node_separation=static_cast<float>(obs_data_get_double(settings,K_SEPARATION));
     c.detail_priority=static_cast<float>(obs_data_get_double(settings,K_DETAIL));
     c.population_exponent=static_cast<float>(obs_data_get_double(settings,K_POPULATION));
+    c.family_priority=static_cast<float>(obs_data_get_double(settings,K_FAMILY));
+    c.structure_radius=static_cast<std::uint32_t>(obs_data_get_int(settings,K_STRUCTURE_RADIUS));
+    c.structure_threshold=static_cast<float>(obs_data_get_double(settings,K_STRUCTURE_THRESHOLD));
+    c.texture_priority=static_cast<float>(obs_data_get_double(settings,K_TEXTURE));
     c.prior_learning_rate=static_cast<float>(obs_data_get_double(settings,K_PRIOR));
+    c.assignment_hysteresis=static_cast<float>(obs_data_get_double(settings,K_STABILITY));
+    c.palette_update_interval=static_cast<std::uint32_t>(obs_data_get_int(settings,K_PALETTE_INTERVAL));
     c.minimum_leaf=static_cast<std::uint32_t>(obs_data_get_int(settings,K_MIN_LEAF));
     c.bifurcation_refinement=static_cast<std::uint32_t>(obs_data_get_int(settings,K_REFINEMENT));
     return c;
@@ -446,7 +458,8 @@ void gpu_render(void* data,gs_effect_t*) {
 }
 
 const char* gpu_name(void*){return "Realtime Vector FX (GPU)";}
-const char* poster_name(void*){return "Optimal OKLCH Posterizer";}
+const char* poster_name(void*){return "Posterizer Mark IV";}
+const char* poster_legacy_name(void*){return "Optimal OKLCH Posterizer (legacy scene compatibility)";}
 void gpu_defaults(obs_data_t* s){obs_data_set_default_int(s,K_COLORS,8);obs_data_set_default_int(s,K_TRACE_WIDTH,480);
     obs_data_set_default_int(s,K_SEGMENTS,2048);obs_data_set_default_int(s,K_EFFECT,0);
     obs_data_set_default_double(s,K_PERSISTENCE,.86);obs_data_set_default_int(s,K_GLYPHS,256);
@@ -469,7 +482,10 @@ void poster_defaults(obs_data_t* s){
     obs_data_set_default_double(s,K_CHROMA,1.0);obs_data_set_default_double(s,K_HUE,1.0);
     obs_data_set_default_double(s,K_ALPHA,.7);obs_data_set_default_double(s,K_SEPARATION,1.08);
     obs_data_set_default_double(s,K_DETAIL,2.0);obs_data_set_default_double(s,K_POPULATION,.65);
-    obs_data_set_default_double(s,K_PRIOR,.14);obs_data_set_default_int(s,K_MIN_LEAF,8);
+    obs_data_set_default_double(s,K_FAMILY,1.0);obs_data_set_default_int(s,K_STRUCTURE_RADIUS,2);
+    obs_data_set_default_double(s,K_STRUCTURE_THRESHOLD,.065);obs_data_set_default_double(s,K_TEXTURE,.25);
+    obs_data_set_default_double(s,K_PRIOR,.08);obs_data_set_default_double(s,K_STABILITY,.12);
+    obs_data_set_default_int(s,K_PALETTE_INTERVAL,2);obs_data_set_default_int(s,K_MIN_LEAF,8);
     obs_data_set_default_int(s,K_REFINEMENT,4);
     obs_data_set_default_double(s,K_CONTOUR,.16);obs_data_set_default_double(s,K_INTERIOR_INK,.06);
     obs_data_set_default_double(s,K_LINE_REACH,.65);obs_data_set_default_double(s,K_SATURATION,1.06);
@@ -492,7 +508,13 @@ obs_properties_t* poster_properties(void*){auto* p=obs_properties_create();
     obs_properties_add_float_slider(p,K_ALPHA,"Alpha weight",0.0,4.0,0.05);
     obs_properties_add_float_slider(p,K_DETAIL,"Detail priority",0.0,8.0,0.1);
     obs_properties_add_float_slider(p,K_POPULATION,"Area exponent",0.1,1.0,0.01);
+    obs_properties_add_float_slider(p,K_FAMILY,"Color-family priority",0.0,4.0,0.05);
+    obs_properties_add_int_slider(p,K_STRUCTURE_RADIUS,"Structure radius",0,4,1);
+    obs_properties_add_float_slider(p,K_STRUCTURE_THRESHOLD,"Structure edge threshold",0.0,0.25,0.005);
+    obs_properties_add_float_slider(p,K_TEXTURE,"Texture assignment priority",0.0,1.0,0.01);
     obs_properties_add_float_slider(p,K_PRIOR,"Temporal prior learning",0.01,1.0,0.01);
+    obs_properties_add_float_slider(p,K_STABILITY,"Color stability",0.0,0.5,0.01);
+    obs_properties_add_int_slider(p,K_PALETTE_INTERVAL,"Palette refresh interval (frames)",1,8,1);
     obs_properties_add_int_slider(p,K_MIN_LEAF,"Minimum bifurcation leaf",1,64,1);
     obs_properties_add_int_slider(p,K_REFINEMENT,"Bifurcation refinement passes",0,12,1);
     return p;
@@ -500,16 +522,21 @@ obs_properties_t* poster_properties(void*){auto* p=obs_properties_create();
 
 obs_source_info gpu_info{};
 obs_source_info poster_info{};
+obs_source_info poster_legacy_info{};
 struct GpuInfoInit { GpuInfoInit(){gpu_info.id="realtime_vector_fx_gpu";gpu_info.type=OBS_SOURCE_TYPE_FILTER;
     gpu_info.output_flags=OBS_SOURCE_VIDEO|OBS_SOURCE_SRGB;gpu_info.get_name=gpu_name;gpu_info.create=gpu_create;
     gpu_info.destroy=gpu_destroy;gpu_info.update=gpu_update;gpu_info.get_defaults=gpu_defaults;
     gpu_info.get_properties=gpu_properties;gpu_info.video_render=gpu_render;
-    poster_info.id="optimal_oklch_posterizer";poster_info.type=OBS_SOURCE_TYPE_FILTER;
+    poster_info.id="posterizer_mark_iv";poster_info.type=OBS_SOURCE_TYPE_FILTER;
     poster_info.output_flags=OBS_SOURCE_VIDEO|OBS_SOURCE_SRGB;poster_info.get_name=poster_name;
     poster_info.create=poster_create;poster_info.destroy=gpu_destroy;poster_info.update=gpu_update;
     poster_info.get_defaults=poster_defaults;poster_info.get_properties=poster_properties;
-    poster_info.video_render=gpu_render;} } gpu_info_init;
+    poster_info.video_render=gpu_render;
+    poster_legacy_info=poster_info;poster_legacy_info.id="optimal_oklch_posterizer";
+    poster_legacy_info.output_flags|=OBS_SOURCE_CAP_OBSOLETE;
+    poster_legacy_info.get_name=poster_legacy_name;} } gpu_info_init;
 
 } // namespace
 
-void rvfx_register_gpu_filter(){obs_register_source(&gpu_info);obs_register_source(&poster_info);}
+void rvfx_register_gpu_filter(){obs_register_source(&gpu_info);obs_register_source(&poster_info);
+    obs_register_source(&poster_legacy_info);}

@@ -1,0 +1,123 @@
+--- a/experiments/photonic_transport_field/native/regime_scene_native.cpp
++++ b/experiments/photonic_transport_field/native/regime_scene_native.cpp
+@@ -46,6 +46,8 @@
+ bool camera_sparse_crossings=true;
+ bool boundary_audit=false;
+ std::string expansion_audit_out;
++bool spectral_transport_topology=false;
++int spectral_quadrature_order=1;
+ int boundary_path_capacity=128;
+ bool boundary_shared_filter=true;
+ 
+@@ -2060,7 +2062,7 @@
+         ((1-fresnel)*transmitted+fresnel*reflected);return sample;
+ }
+ 
+-std::uint64_t spectral_path_signature(const TraceContext& ctx,const Ray& primary_ray,const Hit& primary_hit,
++std::uint64_t legacy_spectral_path_signature(const TraceContext& ctx,const Ray& primary_ray,const Hit& primary_hit,
+     double coordinate){
+     if(ctx.expansion)++ctx.expansion->pixel.probes;
+     std::uint64_t signature=0;signature_push(&signature,primary_hit.primitive,-73);Ray ray=primary_ray;Hit hit=primary_hit;
+@@ -2084,13 +2086,64 @@
+     return signature;
+ }
+ 
++// The partition observes the same finite continuation operator as radiance.
++// A change strictly after its packet cutoff cannot introduce a radiance event.
++std::uint64_t spectral_path_signature(const TraceContext& ctx,const Ray& primary_ray,const Hit& primary_hit,
++    double coordinate,int channel=-1){
++    if(!spectral_transport_topology)return legacy_spectral_path_signature(ctx,primary_ray,primary_hit,coordinate);
++    if(channel<0)channel=std::clamp(int(std::lround(coordinate)),0,2);
++    if(ctx.expansion)++ctx.expansion->pixel.probes;
++    std::uint64_t signature=0;signature_push(&signature,primary_hit.primitive,-73);
++    Ray ray=primary_ray;Hit hit=primary_hit;double weight=1;
++    for(int depth=0;depth<8;++depth){const Material& material=
++        ctx.scene.materials[ctx.scene.primitives[hit.primitive].material];Vec3 direction{};
++        if(material.kind==MaterialKind::Mirror){direction=unit(reflect(ray.direction,hit.normal));
++            if(depth)weight*=material.base[channel];}
++        else if(material.kind==MaterialKind::Metal||material.kind==MaterialKind::Glossy){
++            direction=unit(reflect(ray.direction,hit.normal));const RoughTerminalRelation terminal=
++                rough_terminal_relation(ctx.scene,{hit.position+direction*3e-4,direction},hit.primitive,material.roughness);
++            if(terminal.area_emitter)break;
++            if(depth)weight*=terminal.coverage*(material.kind==MaterialKind::Metal?
++                .88*material.base[channel]:(.04+.20*(1-material.roughness)));
++            if(weight<=ctx.optical_cutoff)break;
++            ray={hit.position+direction*3e-4,direction};hit=terminal.terminal;
++            if(!hit.valid)break;signature_push(&signature,hit.primitive,151+depth);continue;
++        }else if(material.kind==MaterialKind::Dielectric){
++            const double index=spectral_ior(material,coordinate),ni=hit.front?1:index,nt=hit.front?index:1;
++            const double fresnel=schlick(std::abs(dot(ray.direction,hit.normal)),ni,nt);
++            const double common=weight*material.base[channel]*(hit.primitive==ctx.scene.jelly_volume?1.0:
++                std::exp(-material.absorption[channel]*(material.thin?.10:.24)));
++            const Vec3 reflected=unit(reflect(ray.direction,hit.normal));
++            if(!depth||common*fresnel>ctx.optical_cutoff){
++                const Hit reflected_hit=optical_first_hit(ctx,{hit.position+reflected*3e-4,reflected},
++                    std::numeric_limits<double>::infinity(),hit.primitive);
++                if(reflected_hit.valid)signature_push(&signature,reflected_hit.primitive,129+depth);}
++            bool transmitted=material.thin||refract(ray.direction,hit.normal,ni/nt,direction);
++            if(material.thin)direction=ray.direction;
++            if(!transmitted)direction=reflected;
++            if(depth)weight=common*(transmitted?1-fresnel:fresnel);
++            if(weight<=ctx.optical_cutoff)break;
++            if(transmitted){const VolumeChord chord=jelly_volume_chord(ctx.scene,hit,direction,index);
++                if(chord.valid){if(depth)weight*=std::exp(-material.absorption[channel]*chord.length);
++                    if(weight<=ctx.optical_cutoff)break;
++                    ray=chord.exit_ray;hit=optical_first_hit(ctx,ray,std::numeric_limits<double>::infinity(),hit.primitive);
++                    if(!hit.valid)break;signature_push(&signature,hit.primitive,151+depth);continue;}}
++        }else break;
++        if(weight<=ctx.optical_cutoff)break;
++        ray={hit.position+direction*3e-4,direction};
++        hit=optical_first_hit(ctx,ray,std::numeric_limits<double>::infinity(),hit.primitive);
++        if(!hit.valid)break;signature_push(&signature,hit.primitive,151+depth);
++    }
++    return signature;
++}
++
+ double integrate_spectral_band(const TraceContext& ctx,const Ray& ray,const Hit& hit,const Material& material,
+     int channel,std::uint64_t* signature){
+     if(ctx.expansion)++ctx.expansion->pixel.bands;
+     struct Interval{double begin=0,end=0;std::uint64_t topology=0;};std::vector<Interval> leaves;
+     auto subdivide=[&](auto&& self,double begin,std::uint64_t begin_signature,double end,
+         std::uint64_t end_signature,int depth)->void{const double middle=(begin+end)*.5;
+-        const std::uint64_t middle_signature=spectral_path_signature(ctx,ray,hit,middle);
++        const std::uint64_t middle_signature=spectral_path_signature(ctx,ray,hit,middle,channel);
+         if((begin_signature==middle_signature&&middle_signature==end_signature)||depth>=10){
+             leaves.push_back({begin,end,middle_signature});
+             if(ctx.expansion&&depth>=10&&!(begin_signature==middle_signature&&middle_signature==end_signature))
+@@ -2100,7 +2153,7 @@
+         self(self,middle,middle_signature,end,end_signature,depth+1);};
+     const double begin=channel-.5,end=channel+.5;constexpr int seed_intervals=8;
+     std::array<std::uint64_t,seed_intervals+1> topology{};for(int i=0;i<=seed_intervals;++i)
+-        topology[i]=spectral_path_signature(ctx,ray,hit,begin+(end-begin)*i/seed_intervals);
++        topology[i]=spectral_path_signature(ctx,ray,hit,begin+(end-begin)*i/seed_intervals,channel);
+     for(int i=0;i<seed_intervals;++i)subdivide(subdivide,begin+(end-begin)*i/seed_intervals,topology[i],
+         begin+(end-begin)*(i+1)/seed_intervals,topology[i+1],0);
+     std::vector<Interval> regions;for(const Interval& leaf:leaves){if(!regions.empty()&&regions.back().topology==leaf.topology)
+@@ -2109,9 +2162,13 @@
+         ctx.expansion->pixel.max_regions=std::max<std::uint64_t>(ctx.expansion->pixel.max_regions,regions.size());}
+     double integral=0;for(const Interval& region:regions){if(ctx.expansion)ctx.expansion->pixel.minimum_region=
+             std::min(ctx.expansion->pixel.minimum_region,region.end-region.begin);
+-        const SpectralTraceSample sample=
++        if(spectral_quadrature_order==1){const SpectralTraceSample sample=
+             trace_primary_dielectric_sample(ctx,ray,hit,material,channel,(region.begin+region.end)*.5);
+-        merge_signature(signature,sample.signature);integral+=sample.value*(region.end-region.begin);}
++            merge_signature(signature,sample.signature);integral+=sample.value*(region.end-region.begin);
++        }else for(int node=0;node<3;++node){const double coordinate=.5*(region.begin+region.end+
++                (region.end-region.begin)*emitter_gauss3_x[node]);
++            const SpectralTraceSample sample=trace_primary_dielectric_sample(ctx,ray,hit,material,channel,coordinate);
++            merge_signature(signature,sample.signature);integral+=sample.value*.5*(region.end-region.begin)*emitter_gauss3_w[node];}}
+     return integral/(end-begin);
+ }
+ 
+@@ -3341,6 +3398,11 @@
+         else if(arg=="--transport-backend")transport_backend=argv[++i];
+         else if(arg=="--angular-backend")angle_backend_option=argv[++i];
+         else if(arg=="--topology-backend")topology_backend_option=argv[++i];
++        else if(arg=="--spectral-topology"){const std::string mode=argv[++i];
++            if(mode!="legacy"&&mode!="transport")throw std::runtime_error("invalid spectral topology");
++            spectral_transport_topology=mode=="transport";}
++        else if(arg=="--spectral-quadrature"){spectral_quadrature_order=std::stoi(argv[++i]);
++            if(spectral_quadrature_order!=1&&spectral_quadrature_order!=3)throw std::runtime_error("invalid spectral quadrature");}
+         else if(arg=="--expansion-audit")expansion_audit_out=argv[++i];
+         else if(arg=="--boundary-path-cache"){boundary_path_capacity=std::stoi(argv[++i]);
+             if(boundary_path_capacity<0||boundary_path_capacity>16384||

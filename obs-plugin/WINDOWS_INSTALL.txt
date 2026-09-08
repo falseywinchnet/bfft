@@ -1,20 +1,20 @@
-BFFT Cartoon for OBS Studio 32.1.x — Windows x64
+BFFT Cartoon for OBS Studio 32.2.x — Windows x64
 =================================================
 
 This build includes five display modes:
 
 * Cartoon + texture
-* Fine chrome
+* Fine chrome (optional TVS)
 * Recursive recovery
 * Layer interference
 * Information caustics
 
-The filter processes every source pixel at its original pitch. Its FACR
-backend accepts an arbitrary length on one axis. If neither source axis is a
-supported power-of-two length, one axis is extended with symmetric reflection.
-The selection balances padded area against the substantially cheaper
-contiguous row-transform path, and the exact source rectangle is cropped
-afterward. There is no work-resolution scaling or aspect distortion.
+The filter offers finite-flow fast (4,18,2,3) and ordinary fused decomposition
+on the same aspect-preserving power-of-two work lattice. Fused pass count
+defaults to 16. Preview uses a 256-class lattice; Detailed (the default) uses
+512-class; High detail and Extreme detail use 1024- and 2048-class lattices.
+Wide video uses a half-height canvas, and unused margins are filled by
+symmetric reflection. There is no aspect distortion.
 
 Install
 -------
@@ -52,18 +52,14 @@ Compatibility
 -------------
 
 * Windows 10 or 11, x64
-* OBS Studio 32.1.x, x64
+* OBS Studio 32.2.x, x64
 * No separate BFFT, MinGW, or Visual C++ runtime installation is required.
 
 If OBS was running during installation, restart it before looking for the
 filter.
 
-Native-resolution processing is intentionally more expensive than the older
-small surrogate grid. Start with 6 CPU threads and 8 TV effect sweeps. The
-jump split is fixed-cost; this sweep control affects the ROF-based effects.
-Recursive recovery performs two splits per frame and is the heaviest mode.
-
-The periodic FACR backend now carries the new jump-measure cartoon on ordinary
-video dimensions. Input aliases the cartoon output in place, recomposition
-reuses that plane, and effect scratch is lazy, substantially reducing the
-plugin's frame-buffer footprint.
+Start with Finite-flow fast, Detailed, 6 CPU threads, and 8 TV effect sweeps.
+Switch only Decomposition engine to Fused passes for a matched fused-16 A/B.
+The TV sweep control affects only Fine chrome and the other ROF-derived
+effects. Recursive recovery performs two selected decompositions per frame and
+is the heaviest mode.

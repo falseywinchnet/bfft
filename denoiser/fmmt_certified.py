@@ -668,6 +668,7 @@ def denoise_fmmt(image, *, stride=None, bins=24, residual_bins=31,
     likelihood += 0.01 * np.mean(likelihood, axis=1, keepdims=True) + 1e-12
     posterior = signal_prior * likelihood
     posterior /= np.maximum(posterior.sum(axis=1, keepdims=True), 1e-12)
+
     posterior_mean = (posterior @ values).reshape(h, w)
 
     # 6. Entropy-controlled state update.

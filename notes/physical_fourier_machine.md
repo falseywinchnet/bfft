@@ -81,9 +81,12 @@ equivalently replace each weight by M̃_{iw} = g_i · M_{iw} / g_w. Then:
 2. **Exact projection.** Present the input in gauged units; the gauges
    telescope through the composition and the output boundary is g = 1, so the
    projected output equals the FFT with **no compensation factor at all**.
-3. **Uniqueness.** g is the Perron left-vector of the absolute circuit — the
-   physically meaningful "mass amplification from this wire to the output".
-   It is unique up to the boundary normalization.
+3. **Uniqueness.** On a finite feed-forward circuit where every retained wire
+   has a nonzero path to a positive output boundary, g is the uniquely
+   determined backward absolute-weight potential: the "mass amplification
+   from this wire to the output". It is not generally a Perron eigenvector
+   of one square operator; uniqueness follows by backward induction for the
+   specified boundary.
 
 *Proof sketch.* Column sums of |L(M̃)| equal column sums of |M̃| (the lift
 duplicates each column into two nonnegative halves whose absolute sums add to

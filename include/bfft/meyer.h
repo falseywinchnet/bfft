@@ -86,14 +86,15 @@ bfft_status bfft_meyer_plan_set_passes(bfft_meyer_plan* plan, int passes);
 bfft_status bfft_meyer_plan_set_solver(bfft_meyer_plan* plan, int mode);
 int bfft_meyer_plan_solver(const bfft_meyer_plan* plan);
 
-/* Default two-product split. Uses the fixed-cost jump-measure construction
-   with validated virtual depth 8 on the full periodic spectral solver and
-   its one-axis periodic FACR realization.  The FACR realization uses the
-   same oriented jump/Hodge construction, an O(N) four-direction structural
-   gate, and a two-pole approximation of the virtual-depth resolvent. Neumann
-   solver mode 2 retains the legacy alternation because its boundary
-   functional is deliberately different. cartoon + texture == image up to
-   floating-point roundoff.
+/* Default two-product split.  The full periodic spectral solver uses the
+   coupled finite-flow quality schedule (prefix=4, horizon=10, settle=2,
+   jumps=5) documented by bfft_meyer_split_flow_jump.  It accelerates the
+   actual fused Meyer state and introduces no source-content ownership law.
+   One-axis periodic and Neumann FACR plans retain their configured fused
+   alternation until the semismooth chart is ported to that representation;
+   their texture-side survivor is folded into cartoon at readout.  Every
+   mode therefore satisfies cartoon + texture == image up to floating-point
+   roundoff.
 
    image may alias cartoon or texture, which lets realtime callers reuse the
    input plane after the split. cartoon and texture must not alias each other. */
@@ -103,7 +104,9 @@ bfft_status bfft_meyer_split(bfft_meyer_plan* plan,
                              double* texture);
 
 /* Explicit legacy Gilles-Osher alternation using the plan's configured pass
-   count. This is retained for traces, FACR research, and reproducibility. */
+   count. This returns the model cartoon u and texture v separately, leaving
+   the texture-side ROF survivor as the model residual. It is retained for
+   traces, FACR research, and reproducibility. */
 bfft_status bfft_meyer_split_legacy(bfft_meyer_plan* plan,
                                     const double* image,
                                     double* cartoon,
@@ -149,26 +152,53 @@ bfft_status bfft_meyer_split_preconditioned(
     double* cartoon, double* texture, double strength,
     int virtual_passes, int gate_power);
 
-/* Fixed-cost jump-measure split.
+/* Fixed-cost two-observation jump-measure split.
 
    Estimates discontinuities as an oriented Hodge measure, removes one
    feed-forward carrier estimate before rebuilding that measure, and routes
    the remaining oscillation through one transverse G_mu capacity correction.
-   The public result remains exactly two products:
+   The oriented jump is retained wholly by cartoon; only the independently
+   observed, capacity-feasible residual current is emitted as texture. The
+   public result remains exactly two products:
 
-       texture = (I-H_u) jump_potential + routed_oscillation
+       texture = routed_oscillation
        cartoon = image - texture.
 
-   Thus cartoon retains objects with continuous first-resolvent boundaries;
-   texture owns the complementary transition and material energy. There is no
-   convergence loop or runtime candidate scan. virtual_passes is a spectral
-   integer exponent in [1,64] (the validated default is 8). Full spectral and
+   No scalar spectral complement of the jump potential is assigned to texture:
+   doing so creates a signed halo around every coherent discontinuity. There is
+   no convergence loop or runtime candidate scan. virtual_passes is a spectral
+   integer exponent in [1,64] (the validated public default is 12). Full spectral and
    periodic FACR plans are supported; Neumann FACR plans return
    BFFT_ERROR_INVALID_ARGUMENT. image may alias either output, but the two
    outputs must not alias each other. */
 bfft_status bfft_meyer_split_jump_measure(
     bfft_meyer_plan* plan, const double* image,
     double* cartoon, double* texture, int virtual_passes);
+
+/* Coupled finite-flow Meyer jump.
+
+   Runs prefix_passes ordinary fused Meyer passes so the two nonlinear
+   reflected-dual routes are observed.  Each subsequent jump forms the exact
+   six-field residual of that same fused map, builds a depth-two semismooth
+   Arnoldi chart from the derivative of its Euclidean disk projections, and
+   applies the finite-horizon action
+
+       sum_{j=0}^{horizon-1} J^j (T(z)-z).
+
+   settle_passes ordinary fused passes refresh the nonlinear projection
+   branches before another jump.  This approximates a finite pass trajectory,
+   not the terminal fixed point.  It introduces no source-content classifier,
+   threshold, or ownership gate.  cartoon + texture == image up to floating
+   point roundoff.
+
+   The current native implementation requires solver mode 0.  Parameters:
+   prefix_passes and horizon in [1,64], settle_passes in [0,64], jump_count
+   in [1,16].  The validated quality schedule is (4,10,2,5). */
+bfft_status bfft_meyer_split_flow_jump(
+    bfft_meyer_plan* plan, const double* image,
+    double* cartoon, double* texture,
+    int prefix_passes, int horizon,
+    int settle_passes, int jump_count);
 
 /* Run the model once and retain every intermediate outer-pass state.
    cartoon_trace and texture_trace are passes*height*width doubles in

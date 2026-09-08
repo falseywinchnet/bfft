@@ -297,3 +297,14 @@ proof of compliance matching for all powers of two.
 The next mathematical target is a recursive compliance operator for the dyadic
 Bruun convex tree. The next mechanical target is a two-input and three-input
 coupon whose measured hinge parasitics replace the ideal-pin model.
+
+## 12. Exact finite-motion completion and simulator
+
+The [finite-linkage continuation](mechanical_fft_finite_linkage.md) replaces
+the infinitesimal interpolation assumption by rigid members with horizontal
+sliding pin connections and a lateral centre guide. This preserves exact
+convex interpolation at finite angles. The accompanying
+[HTML simulator](../experiments/mechanical_cone_fft/simulator/index.html)
+computes all output coefficients from these member/tap positions. It retains
+the same N=8 factorization and 44-bar vocabulary. Fabrication and dynamic
+behavior remain separate engineering questions.

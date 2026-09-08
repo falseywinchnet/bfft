@@ -11,9 +11,10 @@ Public functions (stateless drop-ins, with cached plans/buffers under the hood):
     bfft.fct(x)       -- Fast Correlated Transform (forward-only): (C, tau)
                          with each standard bin at its maximally correlated
                          leading-edge slice. No inverse exists.
-    bfft.meyer_split(img) -- fixed-cost jump-measure Meyer cartoon + texture
+    bfft.meyer_split(img) -- coupled finite-flow Meyer cartoon + texture
                          split of an arbitrary-size grayscale image; returns
-                         (cartoon, texture).  This is the default fast path.
+                         (cartoon, texture).  This is the default quality-fast
+                         path.
     bfft.meyer(img)   -- legacy Gilles-Osher decomposition plus the 3-rung
                          scale ladder; returns (cartoon, texture,
                          band_coarse, band_mid, band_fine).
@@ -40,6 +41,7 @@ Planned objects (lowest per-call overhead for hot loops; one per thread):
 from ._core import (FctPlan, MeyerPlan, OdftPlan, Plan, STFTPlan, fct,
                     hann_window, iodft, irfft, meyer, meyer_split,
                     meyer_split_conditioned_first,
+                    meyer_split_flow_jump,
                     meyer_split_jump_measure,
                     meyer_split_legacy,
                     meyer_split_preconditioned,
@@ -54,6 +56,7 @@ from .vision import (CoownershipGraph, SingleStageDecompositionObjective,
 
 __all__ = ["rfft", "irfft", "odft", "iodft", "fct", "meyer",
            "meyer_split", "meyer_split_conditioned_first", "meyer_trace",
+           "meyer_split_flow_jump",
            "meyer_split_jump_measure",
            "meyer_split_legacy",
            "meyer_split_preconditioned",

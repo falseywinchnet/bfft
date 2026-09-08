@@ -1,0 +1,201 @@
+\section{A Physically Realizable Fourier Transform}
+\label{sec:physical}
+
+Here ``physically realizable'' has a precise ideal linear meaning.  A signed
+state is represented by two nonnegative rails; local transport matrices have
+nonnegative entries and preserve a declared mass or constant potential; and an
+observable is recovered by rail difference.  A second realization uses convex
+equilibrium junctions with an explicit quadratic energy.  These element laws
+are sufficient to realize every normalized Bruun stage.
+
+\subsection{Positive-cone lift}
+
+For a real matrix $M\in\R^{m\times n}$, define $M^+=\max(M,0)$ and
+$M^-=\max(-M,0)$ entrywise, and set
+\begin{equation}
+ C(M)=\begin{bmatrix}M^+&M^-\\M^-&M^+\end{bmatrix},
+ \qquad
+ \Pi_n=\begin{bmatrix}I_n&-I_n\end{bmatrix}.
+ \label{eq:cone-lift}
+\end{equation}
+
+\begin{theorem}[Exact cone projection]
+For every real matrix $M$,
+\begin{equation}
+ \Pi_m C(M)=M\Pi_n.
+ \label{eq:cone-intertwining}
+\end{equation}
+Consequently, for any composable sequence $M_1,\ldots,M_s$,
+\begin{equation}
+ \Pi C(M_s)\cdots C(M_1)=M_s\cdots M_1\Pi.
+ \label{eq:cone-composition}
+\end{equation}
+\end{theorem}
+\begin{proof}
+Since $M=M^+-M^-$,
+\[
+ \Pi_m C(M)=[M^+-M^-,\;M^--M^+]=M\Pi_n.
+\]
+Repeated substitution proves \eqref{eq:cone-composition}.
+\end{proof}
+
+When dimensions are clear, subscripts on $\Pi$ are suppressed.  The cone lift
+maps $\R_+^{2n}$ to $\R_+^{2m}$ and stores additional common mode in
+$\ker\Pi_n=\{(u,u):u\in\R^n\}$.  Equal
+amounts may be removed from both rails without changing the signed observable.
+Composition is exact after projection even though the lifted matrices need not
+multiply as $C(AB)$.
+
+Define rail canonicalization componentwise by
+\begin{equation}
+ K(p,n)=(p-r,n-r),\qquad r_i=\min(p_i,n_i),
+ \label{eq:rail-canonicalization}
+\end{equation}
+and signed injection by $J(x)=(x^+,x^-)$.  Canonicalization gives a literal
+fixed-point law for the nonnegative state.
+
+\begin{theorem}[Canonical rail fixed points]
+The map $K$ is idempotent, $\Pi K=\Pi$, and
+\begin{equation}
+ \operatorname{Fix}(K)=\{(p,n):p_i n_i=0\text{ for every }i\}.
+ \label{eq:canonical-fixed-set}
+\end{equation}
+For every real $M$ and signed $x$,
+\begin{equation}
+ KC(M)J(x)=J(Mx).
+ \label{eq:canonical-stage}
+\end{equation}
+Consequently, inserting $K$ after every lifted Fourier stage yields the
+canonical injection of the exact signed stage product.
+\end{theorem}
+\begin{proof}
+After subtracting $r_i$, at least one rail in each pair is zero; a second
+application subtracts zero, proving idempotence and
+\eqref{eq:canonical-fixed-set}.  Equal subtraction preserves rail difference.
+Equation \eqref{eq:cone-intertwining} shows that $C(M)J(x)$ has signed
+projection $Mx$; canonicalization selects the unique disjoint-support
+representative of that projection, namely $J(Mx)$.  Induction proves the stage
+product statement.
+\end{proof}
+
+\subsection{Conservative mass gauge}
+
+Consider a factorization $x_{s+1}=M_sx_s$.  Fix $g_S=\bm{1}$ and recurse backward
+by
+\begin{equation}
+ g_s=|M_s|^{\trans}g_{s+1},
+ \qquad
+ A_s=\diag(g_{s+1})M_s\diag(g_s)^{-1}.
+ \label{eq:mass-gauge}
+\end{equation}
+
+\begin{theorem}[Column-stochastic cone stages]
+If every component of $g_s$ is positive, then $C(A_s)$ is nonnegative and
+column-stochastic.  The diagonal gauges telescope, and terminal signed
+projection with the declared boundary calibration recovers
+$M_{S-1}\cdots M_0$ exactly.
+\end{theorem}
+\begin{proof}
+For column $j$,
+\[
+ \sum_i|(A_s)_{ij}|=
+ {\sum_i(g_{s+1})_i|(M_s)_{ij}|\over(g_s)_j}=1.
+\]
+Each column of $C(A_s)$ therefore sums to one.  With
+$D_s=\diag(g_s)$, multiplying the gauged stages gives
+\begin{equation}
+ A_{S-1}\cdots A_0=D_S(M_{S-1}\cdots M_0)D_0^{-1}.
+ \label{eq:mass-boundary-product}
+\end{equation}
+Injecting $J(D_0x)$ and decoding by $D_S^{-1}\Pi$ therefore recovers the
+original signed product.  Here $g_S=\bm{1}$, so $D_S=I$.
+\end{proof}
+
+This construction preserves total two-rail mass at every transport stage.
+Annihilation of equal rail amounts is a separately ledgered conversion into a
+null observable; it cannot change any Fourier coordinate.
+
+\subsection{Kinematic and equilibrium gauge}
+
+For a nonnegative cone stage $C_s$ with no zero row, choose $d_0>0$ and define
+componentwise
+\begin{equation}
+ d_{s+1}=\bigl(C_s(1/d_s)\bigr)^{-1},
+ \qquad
+ B_s=\diag(d_{s+1})C_s\diag(d_s)^{-1}.
+ \label{eq:kinematic-gauge}
+\end{equation}
+Every normalized Bruun cell has a nonzero entry in each row, so direct sums and
+coordinate permutations of its cone lifts satisfy the hypothesis.
+
+\begin{proposition}[Convex junction form]
+$B_s\bm{1}=\bm{1}$.  Hence each output coordinate is a convex combination of the
+input coordinates and can be decomposed into binary interpolation junctions.
+\end{proposition}
+\begin{proof}
+Substitution of \eqref{eq:kinematic-gauge} gives
+$B_s\bm{1}=\diag(d_{s+1})C_s(1/d_s)=\bm{1}$.
+\end{proof}
+
+Writing $\Delta_s=\diag(d_s)$ gives the boundary-calibrated product
+\begin{equation}
+ B_{S-1}\cdots B_0
+ =\Delta_SC_{S-1}\cdots C_0\Delta_0^{-1}.
+ \label{eq:kinematic-boundary-product}
+\end{equation}
+Thus a cone input is encoded by $\Delta_0$, and the output is decoded by
+$\Delta_S^{-1}$ before applying $\Pi$.
+
+\begin{theorem}[Exact clamped equilibrium]
+Let $B\ge0$ be row-stochastic and hold $x$ fixed.  The energy
+\begin{equation}
+ E_x(y)={1\over2}\sum_{j,i}B_{ji}(y_j-x_i)^2
+ \label{eq:equilibrium-energy}
+\end{equation}
+has the unique equilibrium
+\begin{equation}
+ y=Bx.
+ \label{eq:equilibrium-map}
+\end{equation}
+\end{theorem}
+\begin{proof}
+Row stochasticity gives
+$\partial E_x/\partial y_j=y_j-\sum_iB_{ji}x_i$.  The Hessian with respect to
+$y$ is $I$, so the stationary point \eqref{eq:equilibrium-map} is unique.
+\end{proof}
+
+The theorem applies to an isolated stage with prescribed input, or once to the
+row-stochastic product of all kinematic stages.  The latter makes the complete
+Fourier boundary response an exact static equilibrium.  The sparse exact
+realization is instead the ideal kinematic-constraint or reciprocal-force
+cascade.  A reciprocal linkage obeying
+$q_{\rm in}=A^{\trans}q_{\rm out}$ also transmits generalized force as
+$f_{\rm out}=Af_{\rm in}$ by equality of virtual work.  Thus the transpose
+kinematic constraint and forward Fourier force map are the same reciprocal
+linear element.
+
+\subsection{Field-phase DIP form}
+
+Before conjugate folding, the normalized complex butterfly is
+\begin{equation}
+ {1\over\sqrt2}\begin{bmatrix}1&w\\1&-w\end{bmatrix},
+ \qquad |w|=1.
+ \label{eq:lossless-butterfly}
+\end{equation}
+It is a fixed phase delay followed by a lossless balanced coupler, since the
+matrix in \eqref{eq:lossless-butterfly} is unitary.  In the real two-plane
+description, the phase delay is $R_\theta$ and addition is a linear junction.
+Conjugation required by a folded half-spectrum is a separate real reflection.
+Thus the unfurled DIP lattice has an exact passive scattering realization of
+$N^{-1/2}\DFT_N$; a declared boundary gain $\sqrt N$ recovers the unnormalized
+Fourier convention.  The folded construction adds the declared reflection
+element.  The cone and field constructions are two ideal physical categories
+for the same Fourier observable.
+
+\begin{corollary}[Normalized Bruun realization]
+Apply the cone lift and either diagonal gauge to any exact stage factorization
+of $B_N$.  With the boundary encodings in
+\eqref{eq:mass-boundary-product} or
+\eqref{eq:kinematic-boundary-product}, rail-difference projection equals
+$B_Nx$, and standard output permutation gives $\DFT_N^{\R}x$ exactly.
+\end{corollary}

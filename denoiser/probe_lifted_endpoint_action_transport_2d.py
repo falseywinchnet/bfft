@@ -57,11 +57,16 @@ def run(size: int, selected: tuple[str, ...]) -> dict[str, Any]:
             )
             started = perf_counter()
             estimate, diagnostic = denoise_lifted_endpoint_action_transport_2d(
-                observation)
+                observation, return_temporal_ablation=True)
             elapsed = perf_counter() - started
             initial = np.asarray(diagnostic["lifted"]["initial_posterior"])
+            first_cycle = np.asarray(diagnostic["first_cycle_estimate"])
+            unstopped = np.asarray(
+                diagnostic["unstopped_second_cycle_estimate"])
             observation_mse = _mse(observation, truth)
             initial_mse = _mse(initial, truth)
+            first_cycle_mse = _mse(first_cycle, truth)
+            unstopped_mse = _mse(unstopped, truth)
             estimate_mse = _mse(estimate, truth)
             rows.append({
                 "source": source,
@@ -69,6 +74,8 @@ def run(size: int, selected: tuple[str, ...]) -> dict[str, Any]:
                 "elapsed_seconds": elapsed,
                 "observation_mse": observation_mse,
                 "initial_posterior_mse": initial_mse,
+                "first_cycle_estimate_mse": first_cycle_mse,
+                "unstopped_second_cycle_mse": unstopped_mse,
                 "endpoint_estimate_mse": estimate_mse,
                 "endpoint_improvement_over_observation_fraction": (
                     float((observation_mse - estimate_mse) / observation_mse)
@@ -78,9 +85,24 @@ def run(size: int, selected: tuple[str, ...]) -> dict[str, Any]:
                     float((initial_mse - estimate_mse) / initial_mse)
                     if initial_mse > 0.0 else None
                 ),
+                "second_cycle_improvement_over_first_fraction": (
+                    float((first_cycle_mse - estimate_mse) / first_cycle_mse)
+                    if first_cycle_mse > 0.0 else None
+                ),
+                "stopping_improvement_over_unstopped_fraction": (
+                    float((unstopped_mse - estimate_mse) / unstopped_mse)
+                    if unstopped_mse > 0.0 else None
+                ),
                 "observation_gradient_mse": _gradient_mse(observation, truth),
                 "initial_gradient_mse": _gradient_mse(initial, truth),
+                "first_cycle_gradient_mse": _gradient_mse(first_cycle, truth),
+                "unstopped_second_cycle_gradient_mse": _gradient_mse(
+                    unstopped, truth),
                 "endpoint_gradient_mse": _gradient_mse(estimate, truth),
+                "mean_first_cycle_fine_endpoint": diagnostic[
+                    "mean_first_cycle_fine_endpoint"],
+                "mean_first_cycle_coarse_endpoint": diagnostic[
+                    "mean_first_cycle_coarse_endpoint"],
                 "mean_fine_endpoint": diagnostic["mean_fine_endpoint"],
                 "mean_coarse_endpoint": diagnostic["mean_coarse_endpoint"],
                 "mean_absolute_transfer": diagnostic["mean_absolute_transfer"],
@@ -90,15 +112,58 @@ def run(size: int, selected: tuple[str, ...]) -> dict[str, Any]:
                     "mean_transported_scale_support"],
                 "observation_recomposition_error": diagnostic[
                     "observation_recomposition_error"],
+                "mean_between_cycle_action_variance": diagnostic[
+                    "endpoint_action_evidence"]["causal_temporal_fusion"][
+                        "mean_between_cycle_action_variance"],
+                "mean_temporal_continuation_authority": diagnostic[
+                    "endpoint_action_evidence"]["causal_temporal_fusion"][
+                        "mean_continuation_authority"],
                 "action_evidence": diagnostic["endpoint_action_evidence"],
             })
+    corrupted = [row for row in rows if row["observation_mse"] > 0.0]
+    clean = [row for row in rows if row["condition"] == "clean"]
+    additive = [
+        row for row in rows
+        if row["condition"].startswith(("Gaussian", "uniform"))
+    ]
+    replacement = [
+        row for row in rows
+        if row["condition"].startswith(("salt", "mixed"))
+    ]
+
+    def second_better(group: list[dict[str, Any]]) -> int:
+        return sum(
+            row["endpoint_estimate_mse"] < row["first_cycle_estimate_mse"]
+            for row in group
+        )
+
     return {
         "purpose": (
-            "measure the two-coordinate transported support/noise action "
-            "estimator across corruption laws not supplied to the estimator"
+            "ablate one versus two conservative cycles of the retained "
+            "four-coordinate support/rejection action measure across "
+            "corruption laws not supplied to the estimator"
         ),
         "size": int(size),
         "sources": list(selected),
+        "summary": {
+            "final_improves_observation_count": sum(
+                row["endpoint_estimate_mse"] < row["observation_mse"]
+                for row in corrupted
+            ),
+            "corrupted_case_count": len(corrupted),
+            "final_improves_initial_count": sum(
+                row["endpoint_estimate_mse"] < row["initial_posterior_mse"]
+                for row in corrupted
+            ),
+            "second_cycle_improves_first_clean_count": second_better(clean),
+            "clean_case_count": len(clean),
+            "second_cycle_improves_first_additive_count": second_better(
+                additive),
+            "additive_case_count": len(additive),
+            "second_cycle_improves_first_replacement_count": second_better(
+                replacement),
+            "replacement_case_count": len(replacement),
+        },
         "rows": rows,
     }
 
@@ -122,6 +187,8 @@ def main() -> None:
             "mse", (
                 round(row["observation_mse"], 7),
                 round(row["initial_posterior_mse"], 7),
+                round(row["first_cycle_estimate_mse"], 7),
+                round(row["unstopped_second_cycle_mse"], 7),
                 round(row["endpoint_estimate_mse"], 7),
             ),
             "gradient", (

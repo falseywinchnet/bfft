@@ -46,7 +46,7 @@ $RVFX_CXX $INCLUDES $COMMON_FLAGS -c "$PROJECT_DIR/obs/gpu-filter.cpp" -o "$BUIL
 $RVFX_CXX -bundle "$BUILD_DIR/engine.o" "$BUILD_DIR/plugin-main.o" "$BUILD_DIR/gpu-filter.o" \
     "$FRAMEWORK" -Wl,-rpath,"$OBS_APP/Contents/Frameworks" \
     -o "$BUNDLE_DIR/Contents/MacOS/realtime-vector-fx"
-sed 's/@PROJECT_VERSION@/0.1.0/g' "$PROJECT_DIR/obs/Info.plist.in" > "$BUNDLE_DIR/Contents/Info.plist"
+sed 's/@PROJECT_VERSION@/0.4.0/g' "$PROJECT_DIR/obs/Info.plist.in" > "$BUNDLE_DIR/Contents/Info.plist"
 /usr/bin/codesign --force --sign - "$BUNDLE_DIR"
 /usr/bin/codesign --verify --strict --verbose=2 "$BUNDLE_DIR"
 

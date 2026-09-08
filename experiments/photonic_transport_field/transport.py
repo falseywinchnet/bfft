@@ -534,6 +534,7 @@ def compile_hierarchical_field(
     occluders: Iterable[SphereOccluder] = (),
     admissibility: float = 0.35,
     minimum_fraction: float = 0.0,
+    transport_scale: float = 1.0,
 ) -> HierarchicalTransportField:
     """Compile patches with dual-tree refinement around uncertain geometry.
 
@@ -553,10 +554,13 @@ def compile_hierarchical_field(
         raise ValueError("transport compilation needs at least two patches")
     eta = float(admissibility)
     threshold = float(minimum_fraction)
+    scale = float(transport_scale)
     if not math.isfinite(eta) or eta <= 0.0:
         raise ValueError("admissibility must be positive")
     if not math.isfinite(threshold) or threshold < 0.0:
         raise ValueError("minimum fraction must be nonnegative")
+    if not math.isfinite(scale) or not 0.0 < scale <= 1.0:
+        raise ValueError("transport scale must lie in (0, 1]")
 
     centers = np.stack([patch.center for patch in surface])
     normals = np.stack([patch.normal for patch in surface])
@@ -586,7 +590,11 @@ def compile_hierarchical_field(
         minimum_distance = max(
             center_distance - source.radius - receiver.radius, 1.0e-15
         )
-        bound = receiver.area / (math.pi * minimum_distance * minimum_distance)
+        bound = (
+            scale
+            * receiver.area
+            / (math.pi * minimum_distance * minimum_distance)
+        )
         if bound < threshold:
             stats["bound_prunes"] += 1
             return True
@@ -600,7 +608,7 @@ def compile_hierarchical_field(
             source=source.indices,
             receiver=receiver.indices,
             source_factor=u,
-            receiver_factor=v,
+            receiver_factor=scale * v,
             kind=kind,
         ))
         return True
@@ -660,10 +668,28 @@ def compile_hierarchical_field(
                 return
             forward = _leaf_link(i, j, centers, normals, areas)
             reverse = _leaf_link(j, i, centers, normals, areas)
-            if forward is not None and forward.receiver_factor[0] >= threshold:
-                blocks.append(forward)
-            if reverse is not None and reverse.receiver_factor[0] >= threshold:
-                blocks.append(reverse)
+            if (
+                forward is not None
+                and scale * forward.receiver_factor[0] >= threshold
+            ):
+                blocks.append(TransportBlock(
+                    forward.source,
+                    forward.receiver,
+                    forward.source_factor,
+                    scale * forward.receiver_factor,
+                    forward.kind,
+                ))
+            if (
+                reverse is not None
+                and scale * reverse.receiver_factor[0] >= threshold
+            ):
+                blocks.append(TransportBlock(
+                    reverse.source,
+                    reverse.receiver,
+                    reverse.source_factor,
+                    scale * reverse.receiver_factor,
+                    reverse.kind,
+                ))
             return
 
 
@@ -681,6 +707,7 @@ def compile_hierarchical_field(
 
     visit(root, root)
     stats["node_count"] = len(surface)
+    stats["transport_scale"] = scale
     return _field_from_blocks(len(surface), blocks, stats)
 
 

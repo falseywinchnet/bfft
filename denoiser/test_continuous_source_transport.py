@@ -5,6 +5,10 @@ from __future__ import annotations
 import unittest
 
 import numpy as np
+from port_needed.metric_reduced_stencil import (
+    _reduce_metric_field,
+    _reduce_metric_field_reference,
+)
 
 from .continuous_source_transport import (
     ContinuousSourceResolution,
@@ -16,6 +20,19 @@ from .continuous_source_transport import (
 
 
 class ContinuousSourceTransportTests(unittest.TestCase):
+    def test_vector_metric_reduction_is_exact_scalar_recurrence(self):
+        rng = np.random.default_rng(20260828)
+        angle = rng.uniform(-np.pi, np.pi, size=(17, 19))
+        stretch = np.exp(rng.uniform(-3.0, 3.0, size=(17, 19)))
+        cosine = np.cos(angle)
+        sine = np.sin(angle)
+        mxx = stretch * cosine**2 + sine**2 / stretch
+        mxy = (stretch - 1.0 / stretch) * cosine * sine
+        myy = stretch * sine**2 + cosine**2 / stretch
+        expected = _reduce_metric_field_reference(mxx, mxy, myy)
+        actual = _reduce_metric_field(mxx, mxy, myy)
+        np.testing.assert_array_equal(actual, expected)
+
     def test_selling_flux_reconstructs_inverse_metric(self):
         yy, xx = np.mgrid[:11, :13]
         angle = 0.4 * np.sin(xx / 4.0) + 0.2 * np.cos(yy / 3.0)

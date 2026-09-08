@@ -10,6 +10,8 @@
 
 namespace {
 
+std::uint8_t qbyte(float x){return static_cast<std::uint8_t>(std::max(0.0f,std::min(255.0f,std::round(x))));}
+
 std::vector<std::uint8_t> checker(std::uint32_t w, std::uint32_t h, int shift=0) {
     std::vector<std::uint8_t> image(static_cast<std::size_t>(w)*h*4);
     for (std::uint32_t y=0; y<h; ++y) for (std::uint32_t x=0; x<w; ++x) {
@@ -20,11 +22,31 @@ std::vector<std::uint8_t> checker(std::uint32_t w, std::uint32_t h, int shift=0)
     return image;
 }
 
+std::vector<std::uint8_t> gradient(std::uint32_t w,std::uint32_t h,int shift=0) {
+    std::vector<std::uint8_t> image(static_cast<std::size_t>(w)*h*4);
+    for(std::uint32_t y=0;y<h;++y)for(std::uint32_t x=0;x<w;++x){
+        const auto value=static_cast<std::uint8_t>(std::clamp(
+            static_cast<int>(255*x/std::max(1u,w-1))+shift,0,255));
+        auto* p=&image[(static_cast<std::size_t>(y)*w+x)*4];
+        p[0]=value;p[1]=qbyte(.78f*value+18);p[2]=qbyte(.48f*value+35);p[3]=255;
+    }
+    return image;
+}
+
+std::vector<std::uint8_t> rare_family(std::uint32_t w,std::uint32_t h) {
+    std::vector<std::uint8_t> image(static_cast<std::size_t>(w)*h*4);
+    for(std::uint32_t y=0;y<h;++y)for(std::uint32_t x=0;x<w;++x){
+        auto* p=&image[(static_cast<std::size_t>(y)*w+x)*4];
+        const auto tone=static_cast<std::uint8_t>(30+190*((x/20)%5)/4);
+        p[0]=tone;p[1]=tone;p[2]=tone;p[3]=255;
+        if(x<20&&y<30){p[0]=10;p[1]=215;p[2]=75;}
+    }
+    return image;
+}
+
 rvfx::FrameView view(const std::vector<std::uint8_t>& p, std::uint32_t w, std::uint32_t h) {
     return {p.data(),w,h,static_cast<std::ptrdiff_t>(4*w),rvfx::PixelFormat::RGBA};
 }
-
-std::uint8_t qbyte(float x){return static_cast<std::uint8_t>(std::max(0.0f,std::min(255.0f,std::round(x))));}
 
 struct Nv12 { std::vector<std::uint8_t> y,uv; };
 Nv12 to_nv12(const std::vector<std::uint8_t>& rgba,std::uint32_t w,std::uint32_t h) {
@@ -151,6 +173,44 @@ int main() {
     assert(posterizer.palette().size()==64);
     assert(posterizer.active_segments().empty()&&posterizer.commands().empty());
     assert(poster_stats.trace_ms<.1&&poster_stats.effects_ms<.1);
+
+    // Mark IV keeps the sample phase fixed and requires a meaningful nearest-
+    // color improvement before changing an established lattice owner.
+    auto gradient_a=gradient(w,h),gradient_b=gradient(w,h,2);
+    rvfx::Config responsive_cfg=poster_cfg;responsive_cfg.palette_colors=8;
+    responsive_cfg.palette_update_interval=16;responsive_cfg.assignment_hysteresis=0.0f;
+    rvfx::Engine responsive(responsive_cfg);responsive.process(view(gradient_a,w,h));
+    const auto responsive_shift=responsive.process(view(gradient_b,w,h));
+    rvfx::Config stable_cfg=responsive_cfg;stable_cfg.assignment_hysteresis=.20f;
+    rvfx::Engine stable(stable_cfg);stable.process(view(gradient_a,w,h));
+    const auto stable_shift=stable.process(view(gradient_b,w,h));
+    assert(responsive_shift.reassigned_cells>0);
+    assert(stable_shift.reassigned_cells<responsive_shift.reassigned_cells);
+
+    // The recently added standalone-posterizer allocation rule is carried
+    // into Mark IV: a chroma/hue proposal reserves an underrepresented family
+    // instead of allowing every small-palette node to become a gray tone.
+    auto family_source=rare_family(w,h);
+    rvfx::Config tonal_cfg=responsive_cfg;tonal_cfg.palette_colors=4;
+    tonal_cfg.family_priority=0.0f;tonal_cfg.structure_radius=2;
+    tonal_cfg.structure_threshold=.065f;tonal_cfg.texture_priority=.25f;
+    rvfx::Engine tonal(tonal_cfg);tonal.process(view(family_source,w,h));
+    rvfx::Config family_cfg=tonal_cfg;family_cfg.family_priority=4.0f;
+    rvfx::Engine family(family_cfg);family.process(view(family_source,w,h));
+    const auto max_chroma=[](const auto& palette){float result=0.0f;
+        for(const auto& color:palette)result=std::max(result,color.chroma);return result;};
+    assert(max_chroma(family.palette())>max_chroma(tonal.palette())+.01f);
+
+    rvfx::Config cadence_cfg=stable_cfg;cadence_cfg.palette_update_interval=4;
+    rvfx::Engine cadence(cadence_cfg);cadence.process(view(gradient_a,w,h));
+    const auto cadence_palette=cadence.palette();
+    cadence.process(view(a,w,h));
+    assert(cadence.palette().size()==cadence_palette.size());
+    for(std::size_t i=0;i<cadence_palette.size();++i){
+        assert(cadence.palette()[i].l==cadence_palette[i].l);
+        assert(cadence.palette()[i].a==cadence_palette[i].a);
+        assert(cadence.palette()[i].b==cadence_palette[i].b);
+    }
 
     cfg.glyph_layer=false; cfg.effect=rvfx::EffectMode::LiquidMetal; engine.set_config(cfg);
     engine.process(view(a,w,h));

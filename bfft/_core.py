@@ -176,6 +176,10 @@ _meyer_split_preconditioned = _decl_optional(
 _meyer_split_jump_measure = _decl_optional(
     "bfft_meyer_split_jump_measure", ctypes.c_int,
     [_plan_p, _void_p, _void_p, _void_p, ctypes.c_int])
+_meyer_split_flow_jump = _decl_optional(
+    "bfft_meyer_split_flow_jump", ctypes.c_int,
+    [_plan_p, _void_p, _void_p, _void_p,
+     ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int])
 _meyer_split_trace = _decl_optional(
     "bfft_meyer_split_trace", ctypes.c_int,
     [_plan_p, _void_p, _void_p, _void_p])
@@ -831,10 +835,12 @@ def fct(x):
 class MeyerPlan:
     """Planned Meyer G-norm cartoon + texture decomposer (TGFD).
 
-    :meth:`split` uses the fixed-cost jump-measure operator by default on the
-    full spectral solver and periodic FACR. :meth:`split_legacy` and
-    :meth:`decompose` retain the Gilles-Osher iteration for explicit pass
-    studies and the scale ladder.
+    :meth:`split` uses the coupled finite-flow quality schedule by default on
+    the full spectral solver. FACR uses the configured fused alternation.
+    :meth:`split_jump_measure` retains the earlier scalar hard jump as an
+    explicit diagnostic control. :meth:`split_legacy` and :meth:`decompose`
+    retain the Gilles-Osher iteration for explicit pass studies and the scale
+    ladder.
 
     ``MeyerPlan((H, W)).decompose(image)`` runs the Gilles-Osher two-projector
     alternation as warm interleaved Split Bregman sweeps (one per subproblem
@@ -901,13 +907,15 @@ class MeyerPlan:
             _meyer_plan_destroy(plan)
 
     def split(self, image):
-        """Default fixed-cost jump-measure ``(cartoon, texture)`` split.
+        """Default coupled finite-flow ``(cartoon, texture)`` split.
 
-        On the full spectral solver this uses the validated virtual depth 8,
-        independent of the legacy ``passes`` setting. Periodic FACR uses the
-        native one-axis jump-measure realization; Neumann FACR retains the
-        legacy alternation. Use :meth:`split_legacy` for explicit iterative
-        Gilles-Osher results and :meth:`trace` for their intermediate states.
+        The full spectral solver uses the fixed quality schedule
+        ``(prefix=4, horizon=10, settle=2, jumps=5)`` independent of the
+        configured legacy pass count. FACR uses that configured fused count
+        and folds its survivor into cartoon. Use :meth:`split_flow_jump` for
+        another fixed Pareto schedule, :meth:`split_legacy` for explicit
+        iterative states, and :meth:`split_jump_measure` only to reproduce
+        the earlier scalar hard jump.
         """
         a = np.ascontiguousarray(image, dtype=np.float64)
         if a.shape != self.shape:
@@ -1002,12 +1010,13 @@ class MeyerPlan:
             "bfft_meyer_split_preconditioned")
         return outs
 
-    def split_jump_measure(self, image, virtual_passes=8):
+    def split_jump_measure(self, image, virtual_passes=12):
         """Fixed-cost jump-measure cartoon/texture split.
 
-        Discontinuities are estimated as an oriented Hodge measure. Cartoon
-        retains their smooth first-resolvent transitions; texture receives
-        the complementary boundary energy plus one routed oscillatory layer.
+        Discontinuities are estimated as an oriented Hodge measure and retained
+        wholly by cartoon. Texture receives only the independently observed,
+        capacity-feasible routed residual current; no scalar jump complement
+        is emitted as a boundary halo.
         The construction has no convergence loop or runtime candidate scan
         and requires the full periodic spectral solver.
         """
@@ -1028,6 +1037,43 @@ class MeyerPlan:
             self._plan, a.ctypes.data,
             *(o.ctypes.data for o in outs), virtual_passes),
             "bfft_meyer_split_jump_measure")
+        return outs
+
+    def split_flow_jump(self, image, prefix_passes=4, horizon=10,
+                        settle_passes=2, jump_count=5):
+        """Finite-horizon jump on the actual fused Meyer state.
+
+        A short ordinary prefix observes both reflected-dual routes.  Each
+        jump applies a depth-two semismooth Arnoldi action of the coupled
+        fused map for ``horizon`` virtual passes, then ordinary settling
+        passes refresh its disk-projection branches.  The operator contains
+        no image-content admission rule and requires the full spectral
+        solver.  ``(4, 10, 2, 5)`` is the validated quality schedule.
+        """
+        if _meyer_split_flow_jump is None:
+            raise RuntimeError(
+                "this bfft build does not provide finite-flow Meyer splitting")
+        a = np.ascontiguousarray(image, dtype=np.float64)
+        if a.shape != self.shape:
+            raise ValueError(
+                f"MeyerPlan{self.shape}.split_flow_jump expects "
+                f"shape {self.shape}")
+        parameters = tuple(map(int, (
+            prefix_passes, horizon, settle_passes, jump_count)))
+        if not 1 <= parameters[0] <= 64:
+            raise ValueError("prefix_passes must be in [1, 64]")
+        if not 1 <= parameters[1] <= 64:
+            raise ValueError("horizon must be in [1, 64]")
+        if not 0 <= parameters[2] <= 64:
+            raise ValueError("settle_passes must be in [0, 64]")
+        if not 1 <= parameters[3] <= 16:
+            raise ValueError("jump_count must be in [1, 16]")
+        outs = (np.empty(self.shape, dtype=np.float64),
+                np.empty(self.shape, dtype=np.float64))
+        _check(_meyer_split_flow_jump(
+            self._plan, a.ctypes.data,
+            *(o.ctypes.data for o in outs), *parameters),
+            "bfft_meyer_split_flow_jump")
         return outs
 
     def trace(self, image):
@@ -1225,13 +1271,13 @@ def _meyer_padded(image, lam, mu, passes, rung_sweeps, rung_tol, threads,
 
 
 def meyer_split(image, lam=0.05, mu=40.0, passes=64, threads=0, solver=0):
-    """Default fixed-cost jump-measure split for an arbitrary-size image.
+    """Default coupled finite-flow split for an arbitrary-size image.
 
     Existing ``passes`` arguments are accepted for source compatibility but
-    are ignored by the full spectral and periodic-FACR defaults, whose virtual
-    depth is fixed at 8. Neumann FACR retains the legacy alternation and uses
-    ``passes``. Use a plan's :meth:`MeyerPlan.split_legacy` for explicit
-    iterative results.
+    are ignored by the full spectral default, whose quality schedule is fixed.
+    FACR retains the configured fused alternation and therefore uses
+    ``passes``. Use a plan's :meth:`MeyerPlan.split_legacy` for explicit model
+    states or :meth:`MeyerPlan.split_jump_measure` for the old hard control.
     """
     plan, padded, top, left, h, w = _meyer_padded(
         image, lam, mu, passes, 1, 0.0, threads, solver)
@@ -1281,11 +1327,27 @@ def meyer_split_preconditioned(
 
 
 def meyer_split_jump_measure(
-        image, lam=0.05, mu=40.0, virtual_passes=8, threads=0):
+        image, lam=0.05, mu=40.0, virtual_passes=12, threads=0):
     """Fixed-cost jump-measure split for an arbitrary-size grayscale image."""
     plan, padded, top, left, h, w = _meyer_padded(
         image, lam, mu, 1, 1, 0.0, threads, 0)
     outs = plan.split_jump_measure(padded, virtual_passes=virtual_passes)
+    return tuple(o[top:top + h, left:left + w].copy() for o in outs)
+
+
+def meyer_split_flow_jump(
+        image, lam=0.05, mu=40.0, prefix_passes=4, horizon=10,
+        settle_passes=2, jump_count=5, threads=0):
+    """Coupled finite-flow Meyer jump for an arbitrary-size image."""
+    plan, padded, top, left, h, w = _meyer_padded(
+        image, lam, mu, 1, 1, 0.0, threads, 0)
+    outs = plan.split_flow_jump(
+        padded,
+        prefix_passes=prefix_passes,
+        horizon=horizon,
+        settle_passes=settle_passes,
+        jump_count=jump_count,
+    )
     return tuple(o[top:top + h, left:left + w].copy() for o in outs)
 
 

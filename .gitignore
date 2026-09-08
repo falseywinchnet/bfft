@@ -19,6 +19,7 @@ __pycache__/
 *.egg-info/
 /dist/
 /tmp/
+/standalone_conv_resize_demo/.native_build/
 *.aux
 *.toc
 *.log
@@ -62,3 +63,79 @@ experiments/out/ref_*.npz
 /personal_deblurrer/ringing_*/
 /personal_deblurrer/ringing_*.json
 /personal_deblurrer/*.json
+
+# Large generated frozen-city response cache; m4build also excludes build/.
+/experiments/photonic_transport_field/city_rain/build/
+
+/experiments/civilian_transport/native/libmarkov.so
+/experiments/civilian_transport/native/libcv_control.so
+
+# Build trees and compiled experiment executables.
+/build-*/
+**/.native_build/
+/experiments/photonic_transport_field/native/*_native
+/experiments/photonic_transport_field/native/retained_test
+
+# Raw compute outputs stay local. Source, findings, and curated input assets
+# remain versioned; do not add blanket repository-wide image/JSON ignores.
+/.png
+/experiments/out/
+/output/support_geometry/
+/output/v3_first_look/
+/ML_experiment/results_*.json
+/ML_experiment/*_atlas.html
+/ML_experiment/curvature_response_battery*.html
+/ML_experiment/matrix_transport_unseen_battery.html
+/ML_experiment/*_ripple.html
+/ML_experiment/*_ripple.png
+/ML_experiment/*_ripple.svg
+/ML_experiment/muon_primacy.png
+/ML_experiment/*_operator.svg
+/ML_experiment/self_context_transition_state.svg
+/content_aware_resizer/papers/*.pdf
+/experiments/civilian_transport/*results/
+/experiments/civilian_transport/confirmation/
+/experiments/pdf_optimizer/results/
+/experiments/sgd_transport_restraint/out/
+/experiments/photonic_transport_field/**/output/
+/experiments/photonic_transport_field/**/*.json
+/experiments/photonic_transport_field/**/*.png
+/experiments/photonic_transport_field/**/*.ppm
+/experiments/photonic_transport_field/**/*.zip
+/experiments/meyer_transport_audit/*.json
+/experiments/meyer_transport_audit/*.npz
+/experiments/meyer_transport_audit/*.png
+/experiments/meyer_transport_audit/*.svg
+/experiments/*_m4.json
+/experiments/eikonal_*_diagnostic.json
+/experiments/eikonal_*_certificate.json
+/experiments/diagonal_packet_walk/*.json
+/experiments/dip_packet_gauge/*.jsonl
+/experiments/dip_packet_gauge/source_manifest.json
+/experiments/elliptic_mellin_current/*.json
+/experiments/fourier_free_walk/**/*.json
+/experiments/fourier_twos/m4_results/
+/experiments/real_fourier_atlas/*.json
+/experiments/real_fourier_walk/**/*.json
+/experiments/real_fourier_walk/**/*.jsonl
+/experiments/real_fourier_walk/native_m4*/benchmark.s
+/experiments/mechanical_cone_fft/simulator/*validation.json
+
+# Paper sources, tables and input assets are retained. Local render QA,
+# numerical arrays, compiled documents and submission archives are generated.
+/paper/fast_meyer_bregman/render/
+/paper/fast_meyer_bregman/results/**/*.npz
+/paper/fast_meyer_bregman/results/**/*.json
+/paper/fast_meyer_bregman/results/**/*.png
+/paper/relational_current_tracking/build/**/*.png
+/paper/relational_current_tracking/build/**/*.json
+/paper/relational_current_tracking/build/clean_source/
+/output/pdf/**/*.pdf
+/output/pdf/**/*.png
+/output/pdf/**/*.json
+/output/pdf/**/*.zip
+/output/pdf/**/*.tar.gz
+
+/experiments/photonic_transport_field/**/*.mp4
+/experiments/photonic_transport_field/source_expansion_m4/**/source_expansion_words.txt
+/experiments/real_fourier_walk/native_m4*/benchmark.txt

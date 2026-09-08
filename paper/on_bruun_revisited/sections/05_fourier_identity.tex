@@ -1,0 +1,131 @@
+\section{Exact Fourier Identity and Non-Approximation}
+\label{sec:fourier-identity}
+
+Orthogonality identifies the metric of $B_N$, but not its frequencies.  Equality
+with the DFT follows from evaluation, independently of the round-trip theorem.
+
+\begin{definition}[Packed real DFT]
+For
+\begin{equation}
+ X_k=\sum_{n=0}^{N-1}x_n e^{-2\pi i kn/N},
+ \label{eq:dft-definition}
+\end{equation}
+define $\DFT_N^{\R}:\R^N\to\R^N$ by
+\begin{equation}
+\begin{aligned}
+ \DFT_N^{\R}x=(&X_0,\sqrt2\Re X_1,-\sqrt2\Im X_1,\ldots,\\
+ &\sqrt2\Re X_{N/2-1},-\sqrt2\Im X_{N/2-1},X_{N/2})^{\trans}.
+\end{aligned}
+ \label{eq:packed-dft}
+\end{equation}
+\end{definition}
+
+\begin{definition}[Normalized Bruun map]
+Apply $\red_N$ in \eqref{eq:global-reduction}.  Express each quadratic residue
+uniquely as $a_k+b_ke_{2\pi k/N}$, retain the scalar residues at $z=1,-1$,
+multiply every quadratic pair $(a_k,b_k)$ by $\sqrt2$, and list these real
+coordinates in native factor-tree order.  The resulting real linear map is
+\begin{equation}
+ B_N:\R^N\longrightarrow\R^N.
+ \label{eq:BN-definition}
+\end{equation}
+The terminal pair weight is part of $B_N$.
+\end{definition}
+
+\begin{lemma}[Normalized reduction diagram]
+Let $\mathcal A_t$ be the product of quotient algebras at a cut through the
+Bruun tree, retaining completed scalar and quadratic leaves, and let
+$\rho_t:\mathcal A_t\to\mathcal A_{t+1}$ be the simultaneous remainder map at
+the active nodes.  Let $C_t$ list active polynomial coefficients, completed
+scalars, and completed quadratic coefficients in the ordered basis
+$(1,e_\theta)$.  Define
+\begin{equation}
+ S_t=C_{t+1}\rho_tC_t^{-1}.
+ \label{eq:normalized-rank}
+\end{equation}
+Then the diagram $C_{t+1}\rho_t=S_tC_t$ commutes and
+\begin{equation}
+ B_N=W_NC_T\rho_{T-1}\cdots\rho_0C_0^{-1},
+ \label{eq:BN-stage-product}
+\end{equation}
+where $W_N$ is $\sqrt2 I_2$ on each completed quadratic pair and identity on
+the scalar leaves.  In a pair-oriented cut schedule, every generic block of
+$S_t$ is the cell $T_\theta$, every ridge block is $H_2$, and completed leaves
+are carry blocks.
+\end{lemma}
+\begin{proof}
+The commuting identity is the definition of a change of coordinates on the
+exact remainder map.  Multiplying the identities telescopes to the complete
+CRT reduction, and $W_NC_T$ is exactly Definition~\ref{eq:BN-definition}.
+For a binomial ridge, coefficient reduction is the add-subtract map $H_2$.
+For a conjugate pair, evaluation of the two child representatives gives
+\eqref{eq:complex-pair-merge}; that equation gives
+the displayed real cell.  A factor already terminal at a cut is unchanged and
+therefore carried.  The terminal $W_N$ supplies the declared pair packing.
+\end{proof}
+
+\begin{lemma}[Evaluation commutes with reduction]
+If $q(\omega)=0$ and $f\equiv r\pmod q$, then $f(\omega)=r(\omega)$.
+Consequently, the value at a terminal root is unchanged by every remainder map
+on the path from the root polynomial to its leaf.
+\end{lemma}
+\begin{proof}
+Write $f-r=qh$ and evaluate at $\omega$.  The path statement follows by
+composition.
+\end{proof}
+
+Let $P_N$ be the signed permutation matrix that sends native factor-tree order to the
+order in \eqref{eq:packed-dft}.  Its address law is made explicit in Section
+\ref{sec:orders}; all scaling is already part of $B_N$, and
+$P_N^{\trans}P_N=I$.
+
+\begin{theorem}[Exact Fourier identity]
+For every $N=2^L$ and every $x\in\R^N$,
+\begin{equation}
+ \boxed{\;P_NB_Nx=\DFT_N^{\R}x\;}.
+ \label{eq:exact-fourier-identity}
+\end{equation}
+The equality holds as a linear identity over $\R$.  Its matrix coefficients lie
+in the algebraic field $\K_N$ of \eqref{eq:coefficient-field}.
+\end{theorem}
+\begin{proof}
+Associate $x$ with the polynomial in \eqref{eq:intro-polynomial}.  The forward
+tree computes its exact residue at every terminal factor.  The scalar leaves
+$z-1$ and $z+1$ evaluate to $X_0$ and $X_{N/2}$.  At $q_k$, write the normalized
+residue as $a_k+b_ke_{2\pi k/N}$.  By the preceding lemma and the normalized
+chart proposition,
+\[
+ X_k=x(e^{-2\pi ik/N})=a_k-ib_k.
+\]
+Conjugacy gives $X_{N-k}=\overline{X_k}$.  The terminal pair scaling and $P_N$
+place $(\sqrt2a_k,\sqrt2b_k)$ in exactly the coordinates of
+\eqref{eq:packed-dft}.  Every packed coordinate therefore agrees.
+\end{proof}
+
+\begin{corollary}[Global normalization, inverse, and Parseval identities]
+\begin{equation}
+\begin{aligned}
+ B_N^{\trans}B_N&=NI,\\
+ (\DFT_N^{\R})^{-1}&={1\over N}(\DFT_N^{\R})^{\trans},\\
+ \|\DFT_N^{\R}x\|_2^2&=N\|x\|_2^2.
+\end{aligned}
+ \label{eq:inverse-parseval}
+\end{equation}
+Thus $B_N/\sqrt N$ is orthogonal, every singular value is $\sqrt N$, and the
+condition number is one.  In a normalized cell schedule, the local inverse
+halves and boundary weights distribute the inverse measure; no separate
+terminal normalization pass is required.
+\end{corollary}
+
+\begin{corollary}[Fourier modes and convolution]
+Real cosine and sine modes map to their corresponding single conjugate-pair
+leaf, while the constant and alternating modes map to the scalar leaves.  For
+circular convolution, multiplication of the complex numbers represented by
+the terminal pairs gives the ordinary convolution theorem after removing the
+boundary $\sqrt2$ weight from each input pair and restoring it on output.
+\end{corollary}
+
+Equation \eqref{eq:exact-fourier-identity} is the relevant non-approximation
+statement.  $B_N$ is an exact factorization of the DFT linear map.  A
+finite-precision program evaluates this factorization with rounded coefficients
+and arithmetic; those residuals do not define the transform.

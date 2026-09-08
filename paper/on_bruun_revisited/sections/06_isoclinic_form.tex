@@ -1,0 +1,40 @@
+\section{Block-Isoclinic Form}
+\label{sec:isoclinic}
+
+The inquiry into simultaneous arithmetic across several cells has a purely
+linear-algebraic consequence.  Cells belonging to one factor node share the
+same angle, so a block is a repeated rotation on mutually orthogonal
+two-planes.
+
+Historically, the June 10--11 block/SIMD inquiry produced exactly the invariant
+proved below: equal-angle lanes carry an $O(w)$-equivariant representation of
+one isoclinic rotation.  The statement is independent of any instruction set.
+
+Let $R_\theta=\left[\begin{smallmatrix}c&-s\\s&c\end{smallmatrix}\right]$ and
+let $w$ be the number of pairs in a node.  After a fixed coordinate shuffle,
+the rotation portion is
+\begin{equation}
+ \mathcal{R}_{\theta,w}=I_w\otimes R_\theta.
+ \label{eq:isoclinic-block}
+\end{equation}
+The add-subtract portion is a signed direct sum of $H_2$ maps.
+
+\begin{proposition}[Lane equivariance]
+For every $U\in O(w)$,
+\begin{equation}
+ (U\otimes I_2)\mathcal{R}_{\theta,w}
+ =\mathcal{R}_{\theta,w}(U\otimes I_2).
+ \label{eq:lane-equivariance}
+\end{equation}
+Moreover, the complete block is $\sqrt2$ times an orthogonal map.
+\end{proposition}
+\begin{proof}
+The mixed-product rule for Kronecker products gives both sides as
+$U\otimes R_\theta$.  The Gram identity follows from
+$R_\theta^{\trans}R_\theta=I_2$ and the Hadamard identity.
+\end{proof}
+
+Thus a collection of lanes is a representation of one algebraic operator, not
+a different Fourier transform.  The important invariant is the common
+two-plane angle.  DIF associates that angle with a factor-tree node, DIT with a
+spectral position, and DIP with a diagonal phase span.

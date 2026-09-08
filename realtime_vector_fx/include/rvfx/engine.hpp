@@ -48,6 +48,10 @@ struct Config {
     std::uint32_t segments_per_frame = 2048;
     float detail_priority = 1.5f;
     float population_exponent = 0.70f;
+    float family_priority = 0.0f;
+    std::uint32_t structure_radius = 0;
+    float structure_threshold = 0.065f;
+    float texture_priority = 0.0f;
     float lightness_weight = 1.0f;
     float chroma_weight = 1.0f;
     float hue_weight = 1.0f;
@@ -56,6 +60,8 @@ struct Config {
     std::uint32_t minimum_leaf = 8;
     std::uint32_t bifurcation_refinement = 4;
     float prior_learning_rate = 0.14f;
+    float assignment_hysteresis = 0.0f;
+    std::uint32_t palette_update_interval = 1;
     float trace_speed = 0.075f;
     float trace_persistence = 0.86f;
     float glow = 0.65f;
@@ -69,7 +75,7 @@ struct Config {
 };
 
 struct PaletteColor {
-    float l = 0.0f, a = 0.0f, b = 0.0f, alpha = 1.0f;
+    float l = 0.0f, a = 0.0f, b = 0.0f, chroma = 0.0f, alpha = 1.0f;
     std::uint8_t r = 0, g = 0, blue = 0, opacity = 255;
 };
 
@@ -101,6 +107,7 @@ struct FrameStats {
     std::uint32_t live_glyphs = 0;
     std::uint32_t changed_cells = 0;
     std::uint32_t reused_cells = 0;
+    std::uint32_t reassigned_cells = 0;
     std::uint32_t emitted_commands = 0;
     bool within_budget = false;
 };

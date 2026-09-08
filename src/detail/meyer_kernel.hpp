@@ -29,6 +29,15 @@
 //     t <- grad(u) + proj(t)
 //
 // It carries two planes per subproblem instead of b plus materialized db.
+// Phase contract (x is u or w): incoming b = t - grad(x), p = proj(t),
+// d = t - p.  An ordinary pass satisfies
+//     p - b = grad(x) - d,
+//     t_next - t = grad(x_next - x) + (p - b).
+// Thus a small primal change alone does not certify a settled full state.
+// Keep the complete vector t: a divergence-free component can affect a
+// later pointwise projection and hence a later divergence.  These identities
+// and the exact finite-increment oracle are recorded in
+// experiments/meyer_transport_audit/PRE_REFRESH_INTEGRATION.md.
 // The scalar divergence is streamed into the soon-to-be-overwritten iterate
 // plane, so the reflected vector field never lands in memory.
 //
@@ -69,7 +78,6 @@
 #include <cstring>
 #include <memory>
 #include <mutex>
-#include <numbers>
 #include <numeric>
 #include <thread>
 #include <type_traits>
@@ -83,6 +91,7 @@ using trace_visitor = void (*)(int pass, const double* cartoon,
                                void* user);
 
 constexpr std::size_t PANEL = 8;   // rows per panel transpose; H,W >= 8
+constexpr double PI = 3.141592653589793238462643383279502884;
 
 // ---- persistent worker pool: run(f) executes f(tid) on all T lanes ------
 
@@ -206,6 +215,22 @@ struct spectrum {
     }
 };
 
+// One vector in the six-field reduced Meyer state and the spectra of its
+// two primal coordinates.  The finite-flow accelerator allocates three of
+// these lazily: two Arnoldi basis vectors and one work vector.  Keeping the
+// primal spectra with the basis makes each tangent action cost the same two
+// forward/two inverse transforms as one ordinary fused pass.
+struct flow_vector {
+    std::array<std::vector<double>, 6> field;
+    spectrum us, ws;
+
+    void alloc(std::size_t count, std::size_t hb, std::size_t wb) {
+        for (auto& value : field) value.assign(count, 0.0);
+        us.alloc(hb, wb);
+        ws.alloc(hb, wb);
+    }
+};
+
 // One-axis real spectra for FACR.  The swept coordinate is unit-stride
 // within each transformed-axis bin, independently for real and imaginary
 // parts.  This makes both Thomas passes streaming.
@@ -292,7 +317,6 @@ struct engine {
     std::vector<double> vplane, prev, rhodge, rhodge_x, rhodge_y;
     // Lazy scratch for the opt-in first-pass structural conditioner.
     std::vector<double> condition_gate;
-    std::vector<double> jump_boundary;
     double jump_confidence_boundary = 0.0;
     double jump_confidence_inverse_span = 0.0;
     int last_rof_sweeps = 0;
@@ -302,6 +326,7 @@ struct engine {
     std::vector<double> reT, imT;
 
     spectrum f_spec, u_spec, w_spec, d_spec, q_spec, v_spec;
+    flow_vector flow_q0, flow_q1, flow_work;
     facr_spectrum ff_spec, fu_spec, fw_spec, fd_spec, fq_spec, fv_spec;
 
     bfft_status init(std::size_t h, std::size_t wdt, double lam_, double mu_,
@@ -402,9 +427,14 @@ struct engine {
 
     void ensure_jump_measure_storage() {
         ensure_conditioning_storage();
-        ensure_visit_storage();
+    }
+
+    void ensure_flow_storage() {
+        if (!flow_q0.field[0].empty()) return;
         const std::size_t n = H * W;
-        if (jump_boundary.empty()) jump_boundary.assign(n, 0.0);
+        flow_q0.alloc(n, HB, WB);
+        flow_q1.alloc(n, HB, WB);
+        flow_work.alloc(n, HB, WB);
     }
 
     void clear_spectral_storage() {
@@ -498,7 +528,7 @@ struct engine {
             t.correction.clear();
             t.correction_inverse.clear();
         }
-        const double tau = 2.0 * std::numbers::pi_v<double> / double(FT);
+        const double tau = 2.0 * PI / double(FT);
         for (std::size_t k = 0; k < FB; ++k) {
             const double lt = 2.0 * std::cos(tau * double(k)) - 2.0;
             const double base = c - eta * lt;
@@ -543,8 +573,8 @@ struct engine {
 
     void symbol(std::vector<double>& s, double c, double eta) {
         s.resize(2 * WB * HB);
-        const double tau_h = 2.0 * std::numbers::pi_v<double> / double(H);
-        const double tau_w = 2.0 * std::numbers::pi_v<double> / double(W);
+        const double tau_h = 2.0 * PI / double(H);
+        const double tau_w = 2.0 * PI / double(W);
         for (std::size_t k = 0; k < WB; ++k) {
             const double lx = 2.0 * std::cos(tau_w * double(k)) - 2.0;
             double* srow = s.data() + 2 * k * HB;
@@ -666,8 +696,8 @@ struct engine {
                               int dy, int dx, double theta,
                               double sigma_long = 12.0,
                               double sigma_width = 0.75) {
-        const double tau_h = 2.0 * std::numbers::pi_v<double> / double(H);
-        const double tau_w = 2.0 * std::numbers::pi_v<double> / double(W);
+        const double tau_h = 2.0 * PI / double(H);
+        const double tau_w = 2.0 * PI / double(W);
         const double ct = std::cos(theta), st = std::sin(theta);
         P.run([&](int tid) {
             for (std::size_t k = std::size_t(tid); k < WB;
@@ -828,6 +858,81 @@ struct engine {
                     for (std::size_t x = 0; x < W; ++x)
                         reflected(tx[y * W + x], ty[y * W + x], threshold,
                                   L.reflect_x[x], L.reflect_y[x]);
+                    for (std::size_t x = 0; x < W; ++x) {
+                        const std::size_t xp = (x == 0 ? W : x) - 1;
+                        L.line[x] = L.reflect_x[x] - L.reflect_x[xp] +
+                            L.reflect_y[x] - L.correction[x];
+                    }
+                    L.row.fwd(L.line.data(), L.stage.data() + r * WB);
+                    std::memcpy(L.correction.data(), L.reflect_y.data(),
+                                W * sizeof(double));
+                }
+                panel_scatter(L, i0);
+            }
+        });
+        cols_fwd(spec);
+    }
+
+    static void projected_tangent(
+            double tx, double ty, double hx, double hy, double radius,
+            double& px, double& py) {
+        const double magnitude = std::sqrt(tx * tx + ty * ty);
+        if (!(magnitude > radius)) {
+            px = hx;
+            py = hy;
+            return;
+        }
+        const double inverse = 1.0 / magnitude;
+        const double nx = tx * inverse;
+        const double ny = ty * inverse;
+        const double tangent = -ny * hx + nx * hy;
+        const double factor = radius * inverse;
+        px = -factor * ny * tangent;
+        py = factor * nx * tangent;
+    }
+
+    static void reflected_tangent(
+            double tx, double ty, double hx, double hy, double radius,
+            double& rx, double& ry) {
+        double px, py;
+        projected_tangent(tx, ty, hx, hy, radius, px, py);
+        rx = hx - 2.0 * px;
+        ry = hy - 2.0 * py;
+    }
+
+    // Transform the divergence of one semismooth reflected-map tangent
+    // without materializing either vector component.  The branch is exactly
+    // the Clarke derivative of the Euclidean disk projection already used
+    // by the reduced Split-Bregman recurrence.
+    void fwd2d_reflection_tangent(
+            const std::vector<double>& tx,
+            const std::vector<double>& ty,
+            const std::vector<double>& hx,
+            const std::vector<double>& hy,
+            double eta, spectrum& spec) {
+        const double radius = 1.0 / eta;
+        std::atomic<std::size_t> next_panel{0};
+        P.run([&](int tid) {
+            lane& L = *lanes[tid];
+            for (;;) {
+                const std::size_t i0 =
+                    next_panel.fetch_add(PANEL, std::memory_order_relaxed);
+                if (i0 >= H) break;
+                const std::size_t yp0 = (i0 == 0 ? H : i0) - 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    double unused;
+                    reflected_tangent(
+                        tx[yp0 * W + x], ty[yp0 * W + x],
+                        hx[yp0 * W + x], hy[yp0 * W + x], radius,
+                        unused, L.correction[x]);
+                }
+                for (std::size_t r = 0; r < PANEL; ++r) {
+                    const std::size_t y = i0 + r;
+                    for (std::size_t x = 0; x < W; ++x)
+                        reflected_tangent(
+                            tx[y * W + x], ty[y * W + x],
+                            hx[y * W + x], hy[y * W + x], radius,
+                            L.reflect_x[x], L.reflect_y[x]);
                     for (std::size_t x = 0; x < W; ++x) {
                         const std::size_t xp = (x == 0 ? W : x) - 1;
                         L.line[x] = L.reflect_x[x] - L.reflect_x[xp] +
@@ -1596,6 +1701,74 @@ struct engine {
         });
     }
 
+    // Apply one ordinary nonlinear triangle without overwriting the live
+    // primal spectra.  This produces the exact fixed-flow residual used as
+    // the Arnoldi seed.
+    void solve_meyer_triangle_to(
+            const spectrum& state_u, const spectrum& state_w,
+            const spectrum& du, const spectrum& dv, double c_u,
+            double eta_u, double c_v, double eta_v,
+            spectrum& out_u, spectrum& out_w) {
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            for (int plane = 0; plane < 2; ++plane) {
+                const double* f = plane == 0
+                    ? f_spec.a.data() : f_spec.b.data();
+                const double* iu = plane == 0
+                    ? state_u.a.data() : state_u.b.data();
+                const double* iw = plane == 0
+                    ? state_w.a.data() : state_w.b.data();
+                const double* ud = plane == 0
+                    ? du.a.data() : du.b.data();
+                const double* wd = plane == 0
+                    ? dv.a.data() : dv.b.data();
+                double* ou = plane == 0
+                    ? out_u.a.data() : out_u.b.data();
+                double* ow = plane == 0
+                    ? out_w.a.data() : out_w.b.data();
+                for (std::size_t r = lo; r < hi; ++r) {
+                    const double un =
+                        (c_u * (iu[r] + iw[r]) - eta_u * ud[r]) * s_u[r];
+                    ou[r] = un;
+                    ow[r] =
+                        (c_v * (f[r] - un) - eta_v * wd[r]) * s_v[r];
+                }
+            }
+        });
+    }
+
+    // Semismooth tangent of the same lower-triangular spectral map.
+    void solve_meyer_tangent_to(
+            const flow_vector& input, const spectrum& du,
+            const spectrum& dv, double c_u, double eta_u, double c_v,
+            double eta_v, spectrum& out_u, spectrum& out_w) {
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            for (int plane = 0; plane < 2; ++plane) {
+                const double* iu = plane == 0
+                    ? input.us.a.data() : input.us.b.data();
+                const double* iw = plane == 0
+                    ? input.ws.a.data() : input.ws.b.data();
+                const double* ud = plane == 0
+                    ? du.a.data() : du.b.data();
+                const double* wd = plane == 0
+                    ? dv.a.data() : dv.b.data();
+                double* ou = plane == 0
+                    ? out_u.a.data() : out_u.b.data();
+                double* ow = plane == 0
+                    ? out_w.a.data() : out_w.b.data();
+                for (std::size_t r = lo; r < hi; ++r) {
+                    const double un =
+                        (c_u * (iu[r] + iw[r]) - eta_u * ud[r]) * s_u[r];
+                    ou[r] = un;
+                    ow[r] = (-c_v * un - eta_v * wd[r]) * s_v[r];
+                }
+            }
+        });
+    }
+
     void solve_meyer_triangle_first(double c_u, double c_v) {
         P.run([&](int tid) {
             std::size_t lo, hi;
@@ -1715,6 +1888,275 @@ struct engine {
         const std::size_t n = H * W;
         for (std::size_t i = 0; i < n; ++i)
             texture[i] = image[i] - u[i] - w[i];
+    }
+
+    std::array<double, 5> flow_gram() {
+        // [<r,r>, <r,s>, <s,s>, <r,t>, <s,t>] for
+        // r=flow_q0, s=Jr=flow_q1, t=J^2r=flow_work.  Sixty-four fixed
+        // pixel chunks make each local summation independent of the active
+        // worker count; the final fixed-order reduction is bit-identical.
+        constexpr std::size_t chunks = 64;
+        std::array<std::array<double, 5>, chunks> partial{};
+        const std::size_t n = H * W;
+        P.run([&](int tid) {
+            for (std::size_t chunk = std::size_t(tid); chunk < chunks;
+                 chunk += std::size_t(P.lanes())) {
+                const std::size_t lo = n * chunk / chunks;
+                const std::size_t hi = n * (chunk + 1) / chunks;
+                auto& value = partial[chunk];
+                for (std::size_t i = lo; i < hi; ++i) {
+                    for (std::size_t field = 0; field < 6; ++field) {
+                        const double r = flow_q0.field[field][i];
+                        const double s = flow_q1.field[field][i];
+                        const double t = flow_work.field[field][i];
+                        value[0] += r * r;
+                        value[1] += r * s;
+                        value[2] += s * s;
+                        value[3] += r * t;
+                        value[4] += s * t;
+                    }
+                }
+            }
+        });
+        std::array<double, 5> result{};
+        for (const auto& chunk : partial)
+            for (std::size_t i = 0; i < result.size(); ++i)
+                result[i] += chunk[i];
+        return result;
+    }
+
+    void build_flow_residual(double c_u, double eta_u,
+                             double c_v, double eta_v) {
+        fwd2d_reflection(bux, buy, eta_u, d_spec);
+        fwd2d_reflection(bvx, bvy, eta_v, q_spec);
+        solve_meyer_triangle_to(
+            u_spec, w_spec, d_spec, q_spec, c_u, eta_u, c_v, eta_v,
+            flow_q0.us, flow_q0.ws);
+        inv2d(flow_q0.us, flow_q0.field[0].data());
+        inv2d(flow_q0.ws, flow_q0.field[1].data());
+
+        const std::size_t n = H * W;
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n, lo, hi);
+            for (std::size_t i = lo; i < hi; ++i) {
+                flow_q0.field[0][i] -= u[i];
+                flow_q0.field[1][i] -= w[i];
+            }
+        });
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            for (std::size_t i = lo; i < hi; ++i) {
+                flow_q0.us.a[i] -= u_spec.a[i];
+                flow_q0.us.b[i] -= u_spec.b[i];
+                flow_q0.ws.a[i] -= w_spec.a[i];
+                flow_q0.ws.b[i] -= w_spec.b[i];
+            }
+        });
+
+        const double radius_u = 1.0 / eta_u;
+        const double radius_v = 1.0 / eta_v;
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yn = y + 1 == H ? 0 : y + 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xn = x + 1 == W ? 0 : x + 1;
+                    const std::size_t i = y * W + x;
+                    const std::size_t ix = y * W + xn;
+                    const std::size_t iy = yn * W + x;
+                    const double next_ux =
+                        (u[ix] + flow_q0.field[0][ix]) -
+                        (u[i] + flow_q0.field[0][i]);
+                    const double next_uy =
+                        (u[iy] + flow_q0.field[0][iy]) -
+                        (u[i] + flow_q0.field[0][i]);
+                    const double next_wx =
+                        (w[ix] + flow_q0.field[1][ix]) -
+                        (w[i] + flow_q0.field[1][i]);
+                    const double next_wy =
+                        (w[iy] + flow_q0.field[1][iy]) -
+                        (w[i] + flow_q0.field[1][i]);
+                    const double magnitude_u =
+                        std::sqrt(bux[i] * bux[i] + buy[i] * buy[i]);
+                    const double scale_u = std::fmin(
+                        1.0, radius_u / std::fmax(magnitude_u, 1e-30));
+                    const double magnitude_v =
+                        std::sqrt(bvx[i] * bvx[i] + bvy[i] * bvy[i]);
+                    const double scale_v = std::fmin(
+                        1.0, radius_v / std::fmax(magnitude_v, 1e-30));
+                    flow_q0.field[2][i] =
+                        next_ux + scale_u * bux[i] - bux[i];
+                    flow_q0.field[3][i] =
+                        next_uy + scale_u * buy[i] - buy[i];
+                    flow_q0.field[4][i] =
+                        next_wx + scale_v * bvx[i] - bvx[i];
+                    flow_q0.field[5][i] =
+                        next_wy + scale_v * bvy[i] - bvy[i];
+                }
+            }
+        });
+    }
+
+    void apply_flow_tangent(const flow_vector& input, flow_vector& output,
+                            double c_u, double eta_u,
+                            double c_v, double eta_v) {
+        fwd2d_reflection_tangent(
+            bux, buy, input.field[2], input.field[3], eta_u, d_spec);
+        fwd2d_reflection_tangent(
+            bvx, bvy, input.field[4], input.field[5], eta_v, q_spec);
+        solve_meyer_tangent_to(
+            input, d_spec, q_spec, c_u, eta_u, c_v, eta_v,
+            output.us, output.ws);
+        inv2d(output.us, output.field[0].data());
+        inv2d(output.ws, output.field[1].data());
+
+        const double radius_u = 1.0 / eta_u;
+        const double radius_v = 1.0 / eta_v;
+        P.run([&](int tid) {
+            for (std::size_t y = std::size_t(tid); y < H;
+                 y += std::size_t(P.lanes())) {
+                const std::size_t yn = y + 1 == H ? 0 : y + 1;
+                for (std::size_t x = 0; x < W; ++x) {
+                    const std::size_t xn = x + 1 == W ? 0 : x + 1;
+                    const std::size_t i = y * W + x;
+                    const std::size_t ix = y * W + xn;
+                    const std::size_t iy = yn * W + x;
+                    double pux, puy, pvx, pvy;
+                    projected_tangent(
+                        bux[i], buy[i], input.field[2][i],
+                        input.field[3][i], radius_u, pux, puy);
+                    projected_tangent(
+                        bvx[i], bvy[i], input.field[4][i],
+                        input.field[5][i], radius_v, pvx, pvy);
+                    output.field[2][i] =
+                        output.field[0][ix] - output.field[0][i] + pux;
+                    output.field[3][i] =
+                        output.field[0][iy] - output.field[0][i] + puy;
+                    output.field[4][i] =
+                        output.field[1][ix] - output.field[1][i] + pvx;
+                    output.field[5][i] =
+                        output.field[1][iy] - output.field[1][i] + pvy;
+                }
+            }
+        });
+    }
+
+    void apply_flow_displacement(double coefficient0, double coefficient1) {
+        const std::size_t n = H * W;
+        std::array<std::vector<double>*, 6> state = {
+            &u, &w, &bux, &buy, &bvx, &bvy};
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n, lo, hi);
+            for (std::size_t field = 0; field < 6; ++field)
+                for (std::size_t i = lo; i < hi; ++i)
+                    (*state[field])[i] +=
+                        coefficient0 * flow_q0.field[field][i] +
+                        coefficient1 * flow_q1.field[field][i];
+        });
+        P.run([&](int tid) {
+            std::size_t lo, hi;
+            split(tid, n2(), lo, hi);
+            for (std::size_t i = lo; i < hi; ++i) {
+                u_spec.a[i] += coefficient0 * flow_q0.us.a[i] +
+                    coefficient1 * flow_q1.us.a[i];
+                u_spec.b[i] += coefficient0 * flow_q0.us.b[i] +
+                    coefficient1 * flow_q1.us.b[i];
+                w_spec.a[i] += coefficient0 * flow_q0.ws.a[i] +
+                    coefficient1 * flow_q1.ws.a[i];
+                w_spec.b[i] += coefficient0 * flow_q0.ws.b[i] +
+                    coefficient1 * flow_q1.ws.b[i];
+            }
+        });
+    }
+
+    void flow_ordinary_step(double c_u, double eta_u,
+                            double c_v, double eta_v) {
+        fwd2d_reflection(bux, buy, eta_u, d_spec);
+        fwd2d_reflection(bvx, bvy, eta_v, q_spec);
+        solve_meyer_triangle(d_spec, q_spec, c_u, eta_u, c_v, eta_v);
+        inv2d(u_spec, u.data());
+        inv2d(w_spec, w.data());
+        update_reflected_dual_pair(
+            u, bux, buy, eta_u, w, bvx, bvy, eta_v);
+    }
+
+    bool split_flow_jump(const double* image, double* cartoon,
+                         double* texture, int prefix_passes,
+                         int horizon, int settle_passes, int jump_count) {
+        if (facr_active || prefix_passes < 1 || prefix_passes > 64 ||
+            horizon < 1 || horizon > 64 || settle_passes < 0 ||
+            settle_passes > 64 || jump_count < 1 || jump_count > 16)
+            return false;
+        ensure_flow_storage();
+        const std::size_t n = H * W;
+        for (auto* value : {&u, &w, &bux, &buy, &bvx, &bvy})
+            std::memset(value->data(), 0, n * sizeof(double));
+        u_spec.zero();
+        w_spec.zero();
+        fwd2d(image, f_spec);
+
+        const double c_u = lam, eta_u = 2.0 * lam;
+        const double c_v = 1.0 / mu, eta_v = 10.0 / mu;
+        solve_meyer_triangle_first(c_u, c_v);
+        inv2d(u_spec, u.data());
+        inv2d(w_spec, w.data());
+        update_reflected_dual_pair(
+            u, bux, buy, eta_u, w, bvx, bvy, eta_v);
+        for (int pass = 1; pass < prefix_passes; ++pass)
+            flow_ordinary_step(c_u, eta_u, c_v, eta_v);
+
+        for (int jump = 0; jump < jump_count; ++jump) {
+            build_flow_residual(c_u, eta_u, c_v, eta_v);
+            apply_flow_tangent(
+                flow_q0, flow_q1, c_u, eta_u, c_v, eta_v);
+            apply_flow_tangent(
+                flow_q1, flow_work, c_u, eta_u, c_v, eta_v);
+            const auto gram = flow_gram();
+            const double g00 = gram[0], g01 = gram[1], g11 = gram[2];
+            const double k01 = gram[3], k11 = gram[4];
+            if (!(g00 > 1e-30)) break;
+
+            // Galerkin projection in the nonorthogonal Krylov basis
+            // B=[r,Jr].  Since J*r is the second basis vector, H's first
+            // column is exactly (0,1); only the second column requires the
+            // 2x2 Gram solve.  This is algebraically the depth-two Arnoldi
+            // polynomial without normalization or full-field MGS sweeps.
+            const double determinant = g00 * g11 - g01 * g01;
+            double h00 = 0.0, h10 = 1.0, h01 = 0.0, h11 = 0.0;
+            const bool rank_two = determinant >
+                1e-13 * std::fmax(g00 * g11, 1e-300);
+            if (rank_two) {
+                h01 = (g11 * k01 - g01 * k11) / determinant;
+                h11 = (-g01 * k01 + g00 * k11) / determinant;
+            } else {
+                // One-dimensional Krylov breakdown: J*r is collinear with
+                // r, so the exact projected recurrence is scalar.
+                h00 = g01 / g00;
+                h10 = 0.0;
+            }
+
+            double power0 = 1.0, power1 = 0.0;
+            double sum0 = 0.0, sum1 = 0.0;
+            for (int step = 0; step < horizon; ++step) {
+                sum0 += power0;
+                sum1 += power1;
+                const double next0 = h00 * power0 + h01 * power1;
+                const double next1 = h10 * power0 + h11 * power1;
+                power0 = next0;
+                power1 = next1;
+            }
+            apply_flow_displacement(sum0, sum1);
+            for (int pass = 0; pass < settle_passes; ++pass)
+                flow_ordinary_step(c_u, eta_u, c_v, eta_v);
+        }
+
+        finish_split_texture(image, texture);
+        for (std::size_t i = 0; i < n; ++i)
+            cartoon[i] = image[i] - texture[i];
+        return true;
     }
 
     void run_split_reduced_spectral(
@@ -2289,6 +2731,17 @@ struct engine {
         std::memcpy(cartoon, u.data(), n * sizeof(double));
     }
 
+    // Exact two-product readout used by the public default on FACR plans.
+    // Texture is finalized before cartoon is written, so image may alias
+    // cartoon without losing the source needed for cartoon = image-texture.
+    void split_effective(const double* image, double* cartoon,
+                         double* texture) {
+        run_split_reduced(image, texture);
+        const std::size_t n = H * W;
+        for (std::size_t i = 0; i < n; ++i)
+            cartoon[i] = image[i] - texture[i];
+    }
+
     static std::size_t periodic_index(std::size_t coordinate, int offset,
                                       std::size_t length) {
         std::int64_t value = static_cast<std::int64_t>(coordinate) + offset;
@@ -2703,9 +3156,9 @@ struct engine {
         struct direction { int dy, dx; double theta; };
         const direction directions[4] = {
             {1, 0, 0.0},
-            {0, 1, 0.5 * std::numbers::pi_v<double>},
-            {1, 1, 0.25 * std::numbers::pi_v<double>},
-            {1, -1, 0.75 * std::numbers::pi_v<double>},
+            {0, 1, 0.5 * PI},
+            {1, 1, 0.25 * PI},
+            {1, -1, 0.75 * PI},
         };
         for (const direction& d : directions) {
             directional_gaussian(
@@ -2781,8 +3234,8 @@ struct engine {
 
     // q_spec <- scalar potential whose gradient is the longitudinal Hodge
     // projection of the Otsu-supported, nonnegative-garrote jump bonds.
-    void build_jump_potential_spectrum(const double* value) {
-        const double half_threshold = 1.0 / (4.0 * lam);
+    void build_jump_potential_spectrum(const double* value,
+                                       double threshold) {
         P.run([&](int tid) {
             for (std::size_t y = std::size_t(tid); y < H;
                  y += std::size_t(P.lanes())) {
@@ -2794,7 +3247,7 @@ struct engine {
                     const double gy = value[yn * W + x] - value[i];
                     const double magnitude2 = gx * gx + gy * gy;
                     const double activation = std::fmax(
-                        1.0 - half_threshold * half_threshold /
+                        1.0 - threshold * threshold /
                             std::fmax(magnitude2, 1e-30),
                         0.0);
                     const double weight =
@@ -2827,8 +3280,8 @@ struct engine {
 
     // fq_spec <- periodic scalar potential whose gradient is the FACR
     // longitudinal projection of the supported jump bonds.
-    void build_jump_potential_facr(const double* value) {
-        const double half_threshold = 1.0 / (4.0 * lam);
+    void build_jump_potential_facr(const double* value,
+                                   double threshold) {
         P.run([&](int tid) {
             for (std::size_t y = std::size_t(tid); y < H;
                  y += std::size_t(P.lanes())) {
@@ -2840,7 +3293,7 @@ struct engine {
                     const double gy = value[yn * W + x] - value[i];
                     const double magnitude2 = gx * gx + gy * gy;
                     const double activation = std::fmax(
-                        1.0 - half_threshold * half_threshold /
+                        1.0 - threshold * threshold /
                             std::fmax(magnitude2, 1e-30),
                         0.0);
                     const double weight =
@@ -3124,7 +3577,9 @@ struct engine {
         build_condition_gate_facr(image);
         build_jump_confidence_from_condition_gate();
 
-        build_jump_potential_facr(image);
+        // The first observation is deliberately permissive: it learns a
+        // carrier seed at half the Meyer reflected-current threshold.
+        build_jump_potential_facr(image, 1.0 / (4.0 * lam));
         const facr_spectrum& first_lowpass =
             build_virtual_lowpass_facr(
                 ff_spec, fq_spec, virtual_passes);
@@ -3138,18 +3593,13 @@ struct engine {
             for (std::size_t i = lo; i < hi; ++i)
                 u[i] = image[i] - w[i];
         });
-        build_jump_potential_facr(u.data());
+        // After removing that seed, admit structure at the full Meyer
+        // threshold. Reusing the exploratory threshold here promotes a pure
+        // alternating carrier to the structural jump potential.
+        build_jump_potential_facr(u.data(), 1.0 / (2.0 * lam));
         const facr_spectrum& resident_lowpass =
             build_virtual_lowpass_facr(
                 ff_spec, fq_spec, virtual_passes);
-
-        // (I-H_u) applied to the second jump potential.  The first FACR
-        // resolvent is already factorized in t_u.
-        facr_spectrum& boundary_lowpass =
-            &resident_lowpass == &fu_spec ? fw_spec : fu_spec;
-        facr_scale(fq_spec, lam, t_u, boundary_lowpass);
-        facr_inv_difference(
-            fq_spec, boundary_lowpass, jump_boundary.data());
 
         // Longitudinal lift of the resident oscillation.
         facr_poisson_difference(
@@ -3187,7 +3637,7 @@ struct engine {
                         const std::size_t i = y * W + x;
                         const double value =
                             bux[i] - bux[y * W + xp] +
-                            buy[i] - buy[yp * W + x] + jump_boundary[i];
+                            buy[i] - buy[yp * W + x];
                         cartoon[i] = image[i] - value;
                         texture[i] = value;
                     }
@@ -3278,9 +3728,8 @@ struct engine {
                     const double oscillation =
                         bux[i] - bux[y * W + xp] +
                         buy[i] - buy[yp * W + x];
-                    const double value = oscillation + jump_boundary[i];
-                    cartoon[i] = image[i] - value;
-                    texture[i] = value;
+                    cartoon[i] = image[i] - oscillation;
+                    texture[i] = oscillation;
                 }
             }
         });
@@ -3303,7 +3752,9 @@ struct engine {
         build_jump_confidence_from_condition_gate();
 
         // First feed-forward jump observation and its virtual oscillation.
-        build_jump_potential_spectrum(image);
+        // Exploratory high-recall observation: learn a carrier seed at half
+        // the Meyer reflected-current threshold.
+        build_jump_potential_spectrum(image, 1.0 / (4.0 * lam));
         build_virtual_oscillation_spectrum(virtual_passes);
         inv2d(d_spec, w.data());
 
@@ -3316,30 +3767,15 @@ struct engine {
                  i += std::size_t(P.lanes()))
                 u[i] = image[i] - w[i];
         });
-        build_jump_potential_spectrum(u.data());
+        // Structural high-precision observation: after carrier removal, use
+        // the full Meyer threshold so alternating current is not relabelled
+        // as a coherent jump.
+        build_jump_potential_spectrum(u.data(), 1.0 / (2.0 * lam));
 
         // Keep the final material oscillation spectral. The capacity route
         // consumes this spectrum directly, avoiding an inverse+forward round
         // trip through vplane.
         build_virtual_oscillation_spectrum(virtual_passes);
-
-        // Boundary texture is the exact complement of the first cartoon
-        // resolvent: (I-H_u)s_jump. The smooth H_u part remains in cartoon.
-        P.run([&](int tid) {
-            std::size_t lo, hi;
-            split(tid, n2(), lo, hi);
-            const double* __restrict qa = q_spec.a.data();
-            const double* __restrict qb = q_spec.b.data();
-            const double* __restrict su = s_u.data();
-            double* __restrict ua = u_spec.a.data();
-            double* __restrict ub = u_spec.b.data();
-            for (std::size_t r = lo; r < hi; ++r) {
-                const double highpass = 1.0 - c_u * su[r];
-                ua[r] = highpass * qa[r];
-                ub[r] = highpass * qb[r];
-            }
-        });
-        inv2d(u_spec, jump_boundary.data());
 
         // Longitudinal Hodge lift of the resident oscillatory spectrum.
         P.run([&](int tid) {
@@ -3472,9 +3908,8 @@ struct engine {
                     const double oscillation =
                         bux[i] - bux[y * W + xp]
                         + buy[i] - buy[yp * W + x];
-                    const double value = oscillation + jump_boundary[i];
-                    cartoon[i] = image[i] - value;
-                    texture[i] = value;
+                    cartoon[i] = image[i] - oscillation;
+                    texture[i] = oscillation;
                 }
             }
         });

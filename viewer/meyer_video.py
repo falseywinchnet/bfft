@@ -10,16 +10,11 @@ Decoding is done by piping raw frames from the ffmpeg CLI (which also
 performs the scaling), so the only python dependencies are dearpygui,
 numpy, and bfft itself.
 
-Realtime: the 30 fps budget is 33.3 ms/frame.  Measured split cost on a
-4-lane build (best of 5, ms):
-
-    size      p=8   p=16  p=24  p=32  p=48  p=64
-    256x256    2.8   5.6    8.7  11.9  21.5  23.9
-    512x256    6.0  19.6   18.6  23.3  34.3  47.1
-    512x512   13.9  27.1   41.2  64.4  81.3 105.0
-
-The presets below are chosen to sit under the budget.  The processing
-panel reports achieved ms/frame and flags whether the run was realtime.
+Realtime: the 30 fps budget is 33.3 ms/frame.  This demo uses the fixed
+three-jump finite-flow schedule (4 learned passes, three depth-two Arnoldi
+jumps, and two settling passes after each).  The presets are calibrated on
+the active host; the processing panel reports achieved ms/frame and flags
+whether the run was realtime.
 
 Run:  .venv/bin/python viewer/meyer_video.py
 """
@@ -40,23 +35,20 @@ sys.path.insert(0, str(ROOT))
 import bfft  # noqa: E402
 import dearpygui.dearpygui as dpg  # noqa: E402
 
-# (label, (H, W), passes).  Rates are MEASURED SUSTAINED throughput --
-# mean over 120 distinct frames at T=4, not best-of-N on a warm array.
-# Frame-level and intra-frame parallelism both cap at the same rate here:
-# the kernel is memory-bandwidth bound, so headroom comes from doing less
-# work per frame, not from more concurrency.
+# (label, (H, W)). Throughput is calibrated on the active host.
 PRESETS = [
-    ("512x256 p=12  ~86 fps  REALTIME", (256, 512), 12),
-    ("512x256 p=8   ~114 fps REALTIME", (256, 512), 8),
-    ("256x256 p=24  ~88 fps  REALTIME", (256, 256), 24),
-    ("512x256 p=16  ~48 fps  realtime, thin margin", (256, 512), 16),
-    ("512x512 p=8   ~35 fps  marginal", (512, 512), 8),
-    ("512x256 p=32  ~20 fps  OFFLINE", (256, 512), 32),
-    ("512x512 p=16  ~22 fps  OFFLINE", (512, 512), 16),
-    ("512x512 p=32  ~11 fps  OFFLINE", (512, 512), 32),
+    ("512x256 fast finite flow", (256, 512)),
+    ("256x256 fast finite flow", (256, 256)),
+    ("512x512 fast finite flow", (512, 512)),
 ]
 BUDGET_MS = 1000.0 / 30.0
 MAX_FRAMES = 1200
+
+
+def flow_split(plan, frame):
+    return plan.split_flow_jump(
+        frame, prefix_passes=4, horizon=18,
+        settle_passes=2, jump_count=3)
 
 
 class State:
@@ -160,18 +152,18 @@ def calibrate(sample, target_fps, threads, headroom=1.25):
     """
     results = []
     # try richest first; stop at the first that clears target*headroom
-    for idx, (label, shape, passes) in enumerate(PRESETS):
+    for idx, (label, shape) in enumerate(PRESETS):
         H, W = shape
         fr = np.asarray(
             [[sample[int(y * sample.shape[0] / H)][int(x * sample.shape[1] / W)]
               for x in range(W)] for y in range(H)], dtype=np.float64) \
             if sample.shape != (H, W) else sample.astype(np.float64)
-        pl = bfft.MeyerPlan((H, W), passes=passes, threads=threads)
-        pl.split(fr)                                   # warm
+        pl = bfft.MeyerPlan((H, W), threads=threads)
+        flow_split(pl, fr)                             # warm
         t0 = time.perf_counter()
         reps = 0
         while time.perf_counter() - t0 < 0.35:         # short, honest burst
-            pl.split(fr)
+            flow_split(pl, fr)
             reps += 1
         fps = reps / (time.perf_counter() - t0)
         results.append((idx, label, fps))
@@ -186,7 +178,7 @@ def calibrate(sample, target_fps, threads, headroom=1.25):
 # processing
 # ----------------------------------------------------------------------
 
-def process_video(path, shape, passes, threads):
+def process_video(path, shape, threads):
     """Producer: decode -> decompose -> deposit into the framebuffers.
 
     Buffers are allocated up front and filled in place, so the consumer
@@ -207,7 +199,7 @@ def process_video(path, shape, passes, threads):
         S.src_fps = fps if fps > 0 else 30.0
         cap = min(n_est if n_est > 0 else MAX_FRAMES, MAX_FRAMES)
 
-        plan = bfft.MeyerPlan((H, W), passes=passes, threads=threads)
+        plan = bfft.MeyerPlan((H, W), threads=threads)
         gray = np.zeros((cap, H, W), dtype=np.uint8)
         cart = np.zeros((cap, H, W), dtype=np.uint8)
         tex = np.zeros((cap, H, W), dtype=np.uint8)
@@ -229,7 +221,7 @@ def process_video(path, shape, passes, threads):
             if S.cancel:
                 break
             t_a = time.perf_counter()
-            c, x = plan.split(fr.astype(np.float64))
+            c, x = flow_split(plan, fr.astype(np.float64))
             t_split += time.perf_counter() - t_a
             gray[n] = fr
             np.clip(c, 0, 255, out=c)
@@ -374,13 +366,13 @@ def cb_process():
         dpg.set_value("path_label", "(none)")
         return
     idx = PRESETS_LABELS.index(dpg.get_value("preset"))
-    _, shape, passes = PRESETS[idx]
+    _, shape = PRESETS[idx]
     S.tex_gain = dpg.get_value("gain")
     threads = int(dpg.get_value("threads"))
     S.playing = False
     alloc_textures(*shape)
     threading.Thread(target=process_video,
-                     args=(S.path, shape, passes, threads),
+                     args=(S.path, shape, threads),
                      daemon=True).start()
 
 

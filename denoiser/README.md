@@ -1,11 +1,28 @@
 # Denoiser: post-FMMT truth under distortion
 
-FMMT is rejected as a denoising model and is preserved only as a falsified
-historical control. The patch-typicality branch was also rejected as the
-foundation. The active replacement is a continual state: radiance, residual
-noise law, bounded uncertainty, and an eikonal flux metric evolve together
-under an intrinsic descent/contractor gate. No post-FMMT estimator is promoted
-yet.
+Integrated FMMT remains the strongest empirical denoiser and the untouched
+canon. The active rebuilt candidate retains its joint signal/noise posterior,
+then asks which FMMT residual survives matched target-excluded transport from
+the observation and posterior. Three observer closures remove correction that
+cannot itself transport. DCNT and causal-population Chambolle remain useful
+falsified comparisons rather than peer candidates.
+
+The active Chambolle reconstruction decomposes classical TV into observation
+geometry, Cartesian differential pair, dual flux body, and projected descent.
+It retains the efficient convex flux contraction but replaces the global TV
+weight with target-excluded CONV* uncertainty, Meyer coherent-resistance
+separation, an oriented transport zonotope, and a noise/structure phase stop.
+The current survivor then replaces the insufficient two-coordinate flux body
+with a positive Selling-edge graph and retains the exact CONV correction as a
+second coordinate. Their RMS action quotient supplies a continuous population
+phase; no corruption label or denoising strength selects between them.
+
+The previous stopping experiment retains the full three-observer population
+instead of collapsing it immediately to a scalar phase. A target-excluded
+complete action has an exact continuous minimum between observer generations;
+the later endpoint is then contracted by the fraction of its temporal support
+that was witnessed before exact noise/structure phase balance. This causal
+population Chambolle form is retained as the last canon freeze.
 
 The other BFFT denoising, compression, Meyer, and transport projects are
 inspected only for mechanisms that survive this new foundation; they are not
@@ -13,6 +30,40 @@ collapsed into one objective.
 
 ## What is here
 
+- `fmmt_rebuilt.py`: matched observation/posterior CONV* residual charts,
+  signed Rayleigh-coherence donation, and three target-excluded support
+  closures on top of canonical FMMT.
+- `probe_fmmt_rebuilt.py` and `test_fmmt_rebuilt.py`: the matched multi-source
+  battery and segment, target-exclusion, cancellation, and observer invariants.
+
+- `transport_chambolle.py`: reconstructed Chambolle pieces and the rebuilt
+  parameter-free transport flux estimator.
+- `selling_chambolle.py`: raw Selling network-flow ablation and the active
+  population-phase Selling/CONV candidate.
+- `cross_validated_transport_stopping.py`: complete target-excluded observer
+  population, exact piecewise-quadratic endpoint, and causal phase-time stop.
+- `hodge_zonotope_chambolle.py`: rejected nonlocal Hodge-flux uncertainty
+  experiment, retained with its componentwise factorization and invariants.
+- `TRANSPORT_CHAMBOLLE_RESEARCH.md`: cross-project derivation, hypothesis
+  ledger, M4 gates, and current theoretical boundary.
+- `TRANSPORT_CHAMBOLLE_SIMMER.md`: equations, component substitution table,
+  matched falsification battery, and current limitation.
+- `probe_transport_chambolle.py` and `test_transport_chambolle.py`: matched
+  classical/DCNT/FMMT battery and the adjoint, projection, identity, descent,
+  contraction, and recomposition invariants.
+
+- `dcnt.py`: the new target-excluded CONV* observer family, analytic minimal
+  noise under a transported zonotope, Meyer Split-Bregman/Hodge contraction,
+  and a literal reconstruction of scikit's Chambolle TV baseline.
+- `DCNT_SIMMER.md`: equations, target-exclusion proof boundary, first matched
+  battery, the rejected literal transport-descent branch, and the next
+  generator-valued transport state.
+- `probe_dcnt.py`, `dcnt_first_battery.json`, `dcnt_battery_64.json`, and
+  `dcnt_*.png`: reproducible three-source/five-condition comparisons with
+  reconstructed TV and FMMT at 32 and 64 pixels.
+- `test_dcnt.py`: scikit equivalence, target exclusion, witness count,
+  transport enclosure, affine fixed point, replacement contraction, and
+  exact observation-partition invariants.
 - `continual_eikonal_noise_transport_2d.py`: first patch-free fused recurrence.
   A Back-to-Basics quadratic majorizer advances radiance on a V3-derived
   Selling/eikonal flux graph; the same positive operator transports complete
@@ -107,13 +158,22 @@ collapsed into one objective.
 - `LIFTED_SCALE_MOMENT_RESULT.md`: the 14-field law, its two-dimensional
   action fibre, exactness boundary, and the measured `3.0–3.6x` runtime and
   `182–264x` core-memory improvement over the expanded contractor.
-- `lifted_endpoint_action_transport_2d.py`: the first compact point estimator.
-  Fine/coarse endpoint actions are inferred from transported competition
-  between residual support and posterior rejection, then intersected with
-  local phase, scene phase context, and transported continuous-scale support.
+- `lifted_endpoint_action_transport_2d.py`: the compact two-cycle point
+  estimator. Four raw fine/coarse support/rejection actions survive the first
+  conservative posterior/residual exchange, are carried through its rebuilt
+  eikonal metric, and admit a second target-excluded observation only through
+  transported structural rejection, four-vector directional overlap, and
+  component overlap. A radiance-fourth stopping certificate continuously
+  contracts the second endpoint when temporal action disagreement exceeds
+  unresolved endpoint uncertainty. The fixed state has 22 per-pixel
+  coordinates, not a scale-lineage or edge expansion.
 - `LIFTED_ENDPOINT_ACTION_RESULT.md`: equations, the rejected hard projection,
-  the unknown-corruption battery, and the remaining additive-noise and clean
-  identity-retention failures. This estimator is not yet exposed in the GUI.
+  the two-cycle raw-action mixture, its unknown-corruption ablation, and the
+  dimensionally matched stopping law. It records the evaluation gains and the
+  remaining replacement-noise stopping failures exposed by the active GUI.
+- `probe_temporal_action_barycentres_2d.py`: isolates the temporal fusion law
+  and compares arithmetic, moment, projective, causal, and dimensionally
+  matched stopping laws without changing the downstream endpoint estimator.
 
 - `TRUTH_UNDER_DISTORTION.md`: the post-FMMT research charter joining
   one-shot patch typicality, zonotopic mixture falsification, and low-SNR
@@ -282,7 +342,9 @@ collapsed into one objective.
   continuous-support FMMT, retained as a representation benchmark only.
 - `benchmark_2d_acceleration.py` and `2d_acceleration_m4.json`: repeatable
   128/256-square kernel and GUI support-reuse timing record.
-- `gui.py`: Dear PyGui laboratory with 1-D and 2-D tabs.
+- `gui.py`: Dear PyGui laboratory exposing exactly one current best, one last
+  canon freeze, and one canonical comparison against OEM Chambolle, the
+  reconstructed TV recurrence, a 3x3 mean, and integrated FMMT.
 - `probes.py`: a smooth 1-D scene and a tapered 2-D hair-edge falsification
   scene.
 - `test_transport_support.py`: conservation, maximum-principle, dimension,
@@ -430,6 +492,21 @@ python3 -m denoiser.probe_v3_support_under_corruption \
   --out /tmp/v3_support_under_corruption.json
 ```
 
+Run the DCNT uncertainty estimator from the CLI:
+
+```sh
+.venv-jpeg/bin/python -m denoiser denoise input.png /tmp/dcnt.png \
+  --method dcnt --diagnostics /tmp/dcnt.json
+```
+
+Run the current causal population endpoint:
+
+```sh
+.venv-jpeg/bin/python -m denoiser denoise input.png /tmp/causal_population.png \
+  --method causal-population-chambolle \
+  --diagnostics /tmp/causal_population.json
+```
+
 Run the rejected 2-D FMMT control for reproduction:
 
 ```sh
@@ -442,14 +519,34 @@ The GUI uses the repository's vision-viewer dependencies on the MacBook:
 
 ```sh
 python3 -m pip install -e '.[vision-viewer]'
-python3 -m denoiser gui
+.venv-jpeg/bin/python -m denoiser gui
 ```
 
-The archived 2-D workflow is `skimage/file source -> explicit corruption ->
-selected FMMT form`. The 1-D workflow is `component composition -> explicit corruption
--> selected denoiser`; each stage has its own button, with a full-pipeline
-button for rapid comparisons. `PFABADA-Cesaro oracle risk` is the deliberately
-unfair known-noise comparison. It receives the GUI's chosen corruption law and
+The 2-D workflow is `skimage/file source -> explicit corruption -> selected
+denoiser`. Its three modes are `Best — rebuilt FMMT transport support`, `Last
+canon freeze — causal population Chambolle`, and `Canon compare — OEM
+Chambolle / TV / mean / FMMT`. Research ablations are not peer candidates in
+the interface.
+Buttons select clean, Gaussian, uniform, salt/pepper, and mixed cases. The
+clean source is used only to score outputs. `Save images + report` exports
+every displayed state, compact diagnostics, and the scoreboard.
+
+The 256-square canon comparison remains an active latency gate. On the M4
+Mini, the current mixed-Cameraman gate completes in 2.93 seconds: 1.66 seconds
+for integrated FMMT, 1.25 seconds for its rebuilt support closure, and 0.03
+seconds for OEM Chambolle, reconstructed TV, and the mean control together.
+Canon Compare reuses the exact integrated-FMMT posterior instead of solving it
+again. The existing representation optimizations batch independent CONV*
+components, retain sparse sign-ledger
+boundaries until one causal prefix fill, solve signed fibres through their
+scalar KKT breakpoints, vectorize per-pixel metric reduction, and carry the
+linear Selling readout with its FISTA state. Scalar oracles remain in-tree for
+every replaced recurrence.
+
+The 1-D workflow remains `component composition -> explicit corruption ->
+selected denoiser`; each stage has its own button, with a full-pipeline button
+for rapid comparisons. `PFABADA-Cesaro oracle risk` is the deliberately unfair
+known-noise comparison. It receives the GUI's chosen corruption law and
 generating moments, uses no duration control, and displays both its global
 readout and the MSE of its rejected point-adaptive control in diagnostics.
 
@@ -470,13 +567,24 @@ Numba recurrence remains as an exact representation oracle in the tests.
 
 ## Present status
 
-No denoiser is currently promoted. FMMT and the 1-D candidates are frozen as
-negative evidence. The GUI opens on the rejected 2-D controls and identifies
-them as an archive. The next active experiment is the typical-orbit feasible
-set specified in `TRUTH_UNDER_DISTORTION.md`; it has no GUI readout yet.
+Rebuilt FMMT is the single active experiment in the evaluation interface.
+It forms canonical integrated FMMT first, then admits only residual action
+which survives three target-excluded CONV* observer closures. Integrated FMMT
+is unchanged and remains the empirical canon comparator; causal population
+Chambolle is the last pre-rebuild freeze. DCNT remains a foundational research
+record but is no longer promoted as a peer candidate.
+
+On the 168-case, three-seed, 64-square matched battery, the rebuild lowers
+aggregate MSE from 0.004656 to 0.004416, raises SSIM from 0.75327 to 0.75492,
+and raises edge correlation from 0.61546 to 0.62573. It wins 127/168 MSE
+comparisons, 93/168 SSIM comparisons, and 168/168 edge comparisons against
+unchanged integrated FMMT. These are screening results, not a claim that the
+rebuild has displaced FMMT visually; the GUI keeps both outputs visible for
+that decision.
 
 The remaining discussion in this section is the chronological FMMT research
-record. Its intermediate improvements do not override the final rejection.
+record. Its intermediate failures remain useful evidence even though the
+integrated estimator has returned as the empirical canon.
 
 The new support layer is intentionally not a final algorithm. It has removed
 the checkpoint's fixed support scales, hand-placed evidence ramps, hard

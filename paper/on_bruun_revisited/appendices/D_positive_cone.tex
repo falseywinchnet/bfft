@@ -1,0 +1,32 @@
+\section{Positive-Cone Gauges and Common Mode}
+\label{app:cone}
+
+Every signed vector $x$ admits nonnegative representatives
+$u=(x^+,x^-)^{\trans}$ with $\Pi u=x$.  Representatives are not unique:
+$(x^++a,x^-+a)$ has the same projection for every $a\ge0$.  This freedom is
+the common-mode gauge.
+
+Canonicalization in \eqref{eq:rail-canonicalization} removes exactly
+$2\sum_i\min(p_i,n_i)$ units of two-rail mass.  The identity $K^2=K$ makes the
+remaining state a fixed point of further annihilation, while $\Pi K=\Pi$ makes
+the removed mass an exact common-mode ledger.  No signed Fourier information is
+carried by that ledger.
+
+For a stage $M$, $C(M)u$ is nonnegative and projects to $Mx$.  For two stages,
+\begin{equation}
+ \Pi C(B)C(A)u=BA\Pi u,
+ \label{eq:cone-two-stage}
+\end{equation}
+even when $C(B)C(A)\ne C(BA)$.  Their difference maps every representative into
+$\ker\Pi$.  Hence annihilating equal rails between stages selects a smaller
+representative without changing any downstream signed observable.
+
+For the backward gauge, positivity of $g_s$ follows whenever every input
+coordinate influences at least one terminal coordinate.  Normalized Bruun
+cells have this property.  Column stochasticity gives
+\begin{equation}
+ \bm{1}^{\trans}C(A_s)u=\bm{1}^{\trans}u,
+\end{equation}
+so transported mass is conserved exactly.  For the forward gauge, row
+stochasticity makes constant potential an exact fixed point.  The two gauges
+are dual boundary normalizations of the same positive cone operator.

@@ -25,11 +25,15 @@ int main(int argc,char** argv) {
     rvfx::Config cfg; cfg.trace_width=480; cfg.palette_colors=8;
     cfg.palette_samples=4096; cfg.segments_per_frame=2048;
     if(poster_only){cfg.posterize_only=true;cfg.palette_colors=std::clamp(poster_colors,2u,64u);cfg.node_separation=1.08f;
-        cfg.detail_priority=2.0f;cfg.population_exponent=.65f;cfg.glyph_layer=false;cfg.glyph_particles=0;}
+        cfg.detail_priority=2.0f;cfg.population_exponent=.65f;cfg.family_priority=1.0f;
+        cfg.structure_radius=2;cfg.structure_threshold=.065f;cfg.texture_priority=.25f;
+        cfg.prior_learning_rate=.08f;
+        cfg.assignment_hysteresis=.12f;cfg.palette_update_interval=2;
+        cfg.glyph_layer=false;cfg.glyph_particles=0;}
     rvfx::Engine engine(cfg);
     std::vector<double> total, core;
     double cold_core=0.0,cold_total=0.0;
-    std::uint64_t reused_cells=0,changed_cells=0;
+    std::uint64_t reused_cells=0,changed_cells=0,reassigned_cells=0;
     for(int f=0;f<frames+12;++f) {
         const int scene_frame=static_scene?0:f;
         const auto rgb=[&](std::uint32_t x,std::uint32_t y){
@@ -66,6 +70,7 @@ int main(int argc,char** argv) {
         if(f>=12) {
             core.push_back(stats.total_ms);
             reused_cells+=stats.reused_cells;changed_cells+=stats.changed_cells;
+            reassigned_cells+=stats.reassigned_cells;
             total.push_back(std::chrono::duration<double,std::milli>(stop-start).count());
         }
     }
@@ -80,6 +85,7 @@ int main(int argc,char** argv) {
              <<",\"cold_core_ms\":"<<cold_core<<",\"cold_composited_ms\":"<<cold_total
              <<",\"mean_reused_cells\":"<<(reused_cells/frames)
              <<",\"mean_changed_cells\":"<<(changed_cells/frames)
+             <<",\"mean_reassigned_cells\":"<<(reassigned_cells/frames)
              <<",\"composited_mean_ms\":"<<mean<<",\"composited_p95_ms\":"<<pct(total,.95)
              <<",\"budget_ms\":"<<cfg.frame_budget_ms<<",\"passes_30fps\":"
              <<(pct(total,.95)<=cfg.frame_budget_ms?"true":"false")<<"}\n";

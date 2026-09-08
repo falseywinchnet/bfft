@@ -40,9 +40,12 @@ L(M) = [ M⁺  M⁻ ]        M = M⁺ − M⁻ ,  M⁺, M⁻ ≥ 0 entrywise
        [ M⁻  M⁺ ]
 ```
 
-and the lift is a monoid homomorphism — `L(A)·L(B) = L(A·B)` — with the
-projection `π(p, n) = p − n` intertwining everything: `π∘L(M) = M∘π`. The
-whole signed circuit rides above the nonnegative circuit as its shadow. The
+The projection `π(p, n) = p − n` intertwines the lift:
+`π∘L(M) = M∘π`, and hence `π L(A)L(B) = AB π`. The canonical lift is
+**not** generally a monoid homomorphism before projection: for `A=[1,1]`
+and `B=[1,-1]^T`, `AB=0` while `L(A)L(B)` retains equal nonzero common mode
+on both rails. Composition is exact in the quotient by `ker π`, which is
+the property the signed circuit needs. The
 primitive set changes character completely:
 
 | signed arithmetic | cone transport |
@@ -106,10 +109,12 @@ in gauged units `u_w = g_w · x_w`, i.e. replace each weight by
 2. *(Exact projection)* with the input presented in gauged units (`g·x`,
    lifted), the projected output *is* the FFT — the gauges telescope, the
    output boundary is 1, and **no compensation factor exists**.
-3. *(Uniqueness)* `g` is the unique positive gauge achieving (1) given the
-   boundary normalization: it is the Perron left-vector of the absolute
-   circuit — physically, each wire's calibrated "mass amplification to
-   output."
+3. *(Uniqueness)* On a finite feed-forward circuit in which every retained
+   wire has a nonzero path to a positive output boundary, `g` is the unique
+   positive gauge achieving (1) for that boundary. It is a backward
+   absolute-weight potential, not in general a Perron eigenvector of a
+   single square operator. Physically it accounts for each wire's calibrated
+   "mass amplification to output."
 
 *Proof.* Column sums of `|L(M̃)|` equal column sums of `|M̃|` (the block
 structure duplicates columns across sheets), and the recursion sets

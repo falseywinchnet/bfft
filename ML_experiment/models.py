@@ -7,6 +7,20 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+class _ScaleBackward(torch.autograd.Function):
+    """Leave a value unchanged while scaling only its incoming cotangent."""
+
+    @staticmethod
+    def forward(ctx, value, scale):
+        ctx.save_for_backward(scale)
+        return value
+
+    @staticmethod
+    def backward(ctx, gradient):
+        (scale,) = ctx.saved_tensors
+        return gradient * scale, None
+
+
 class LELU(nn.Module):
     def __init__(self):
         super().__init__()
@@ -25,7 +39,8 @@ class SoftEikonalLinear(nn.Module):
                  jet_mode: str = "none", nested_self_context: bool = False,
                  transport_mode: str = "none", value_mode: str = "transported",
                  primitive_mode: str = "random", allocation_smoothing: float = 0.0,
-                 shell_metric_mode: str = "dynamic", shell_samples: int | None = None):
+                 shell_metric_mode: str = "dynamic", shell_samples: int | None = None,
+                 context_backward_mode: str = "exact"):
         super().__init__()
         self.directions, self.rank = directions, rank
         self.temperature = float(temperature)
@@ -33,6 +48,10 @@ class SoftEikonalLinear(nn.Module):
         self.context_steps = int(context_steps)
         self.uncertainty_context = bool(uncertainty_context)
         self.nested_self_context = bool(nested_self_context)
+        if context_backward_mode not in {"exact", "detached", "nonexpansive"}:
+            raise ValueError(context_backward_mode)
+        self.context_backward_mode = context_backward_mode
+        self.last_context_backward_scale: torch.Tensor | None = None
         if jet_mode not in {"none", "laplacian", "factor", "richardson",
                             "shell_mean", "shell_midpoint", "shell_mean_orthogonal",
                             "curvature_context", "curvature_context_bounded",
@@ -142,6 +161,11 @@ class SoftEikonalLinear(nn.Module):
     def set_diagnostics_enabled(self, enabled: bool):
         self.capture_diagnostics = enabled
 
+    def set_context_backward_mode(self, mode: str):
+        if mode not in {"exact", "detached", "nonexpansive"}:
+            raise ValueError(mode)
+        self.context_backward_mode = mode
+
     def _allocation_weights(self, metric, projected):
         cost = torch.einsum("bdr,brs,bds->bd", projected, metric, projected)
         norm = projected.square().mean(-1)
@@ -172,6 +196,30 @@ class SoftEikonalLinear(nn.Module):
         state_rms = state.square().mean(1, keepdim=True).sqrt().clamp_min(1e-6)
         reference_rms = reference.square().mean(1, keepdim=True).sqrt().detach().clamp_min(1e-6)
         return state * (reference_rms / state_rms), state_rms, reference_rms
+
+    def _temper_context_backward(
+        self, normalized_context, context_rms, reference_rms
+    ):
+        """Expose or restrain only the context-mediated backward channel.
+
+        The forward self-context proposal is unchanged.  Normalizing a raw
+        context ``c`` to reference RMS ``r`` has tangential Jacobian norm
+        ``r / rms(c)``.  The nonexpansive mode multiplies its incoming
+        cotangent by ``min(1, rms(c) / r)``, so the composed normalization
+        Jacobian has operator norm at most one.  This is a local small-gain
+        certificate, not a task label or a fitted threshold.
+        """
+        nonexpansive_scale = (
+            context_rms.detach() / reference_rms.detach()
+        ).clamp(max=1.0)
+        self.last_context_backward_scale = nonexpansive_scale
+        if self.context_backward_mode == "exact":
+            return normalized_context
+        if self.context_backward_mode == "detached":
+            scale = torch.zeros_like(nonexpansive_scale)
+        else:
+            scale = nonexpansive_scale
+        return _ScaleBackward.apply(normalized_context, scale)
 
     @staticmethod
     def _bound_like(state, reference_rms):
@@ -391,6 +439,9 @@ class SoftEikonalLinear(nn.Module):
             for _ in range(self.context_steps if self.self_context_strength else 0):
                 context = self._lift_context(projected, weight)
                 normalized_context, context_rms, input_rms = self._normalize_like(context, x)
+                normalized_context = self._temper_context_backward(
+                    normalized_context, context_rms, input_rms
+                )
                 gain = self.self_context_strength
                 if self.uncertainty_context:
                     entropy = -(weight * torch.log(weight + 1e-9)).sum(1, keepdim=True) / math.log(self.directions)
@@ -563,7 +614,8 @@ class SoftEikonalNet(nn.Module):
                  primitive_mode: str = "random", directions: int = 12,
                  rank: int = 4, allocation_smoothing: float = 0.0,
                  shell_metric_mode: str = "dynamic", curvature_layers: str = "both",
-                 shell_samples: int | None = None):
+                 shell_samples: int | None = None,
+                 context_backward_mode: str = "exact"):
         super().__init__()
         if curvature_layers not in {"both", "up", "down"}:
             raise ValueError(curvature_layers)
@@ -579,7 +631,8 @@ class SoftEikonalNet(nn.Module):
                                     primitive_mode=primitive_mode,
                                     allocation_smoothing=allocation_smoothing,
                                     shell_metric_mode=shell_metric_mode,
-                                    shell_samples=shell_samples)
+                                    shell_samples=shell_samples,
+                                    context_backward_mode=context_backward_mode)
         self.down = SoftEikonalLinear(2 * width, width, directions=directions, rank=rank,
                                       temperature=temperature,
                                       self_context_strength=self_context_strength,
@@ -589,7 +642,8 @@ class SoftEikonalNet(nn.Module):
                                       primitive_mode=primitive_mode,
                                       allocation_smoothing=allocation_smoothing,
                                       shell_metric_mode=shell_metric_mode,
-                                      shell_samples=shell_samples)
+                                      shell_samples=shell_samples,
+                                      context_backward_mode=context_backward_mode)
         self.activation = LELU()
         self.output = nn.Linear(width, output_dim)
 
@@ -598,6 +652,10 @@ class SoftEikonalNet(nn.Module):
 
     def set_diagnostics_enabled(self, enabled: bool):
         self.up.set_diagnostics_enabled(enabled); self.down.set_diagnostics_enabled(enabled)
+
+    def set_context_backward_mode(self, mode: str):
+        self.up.set_context_backward_mode(mode)
+        self.down.set_context_backward_mode(mode)
 
     def forward(self, x):
         return self.output(self.down(self.activation(self.up(self.embed(x)))))

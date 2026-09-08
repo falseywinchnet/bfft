@@ -1,11 +1,14 @@
 # BFFT Vision for OBS
 
-This module registers two native OBS asynchronous-video filters:
+This module registers BFFT Cartoon for both OBS frame/async sources and
+GPU-rendered synchronous sources, plus the native BFFT High Vision temporal
+filter. OBS shows only the Cartoon registration compatible with the selected
+source, so both menu entries have the same **BFFT Cartoon** name:
 
 - **BFFT Cartoon**, with five display modes:
   - **Cartoon + texture** — the adjustable Meyer layer recomposition.
-  - **Fine chrome** — chrome relief driven by the signed one-step outer-map
-    defect `cartoon - ROF(input - texture, shading_c)`.
+  - **Fine chrome (optional TVS)** — the earlier chrome-to-TV-projection look,
+    driven by the signed defect `cartoon - ROF(cartoon, shading_c)`.
   - **Recursive recovery** — repeats the decomposition on `input - texture`
     and boosts the newly recovered texture. This reproduces the useful
     two-filter recovery behavior without an intervening 8-bit OBS round trip.
@@ -21,21 +24,35 @@ This module registers two native OBS asynchronous-video filters:
   releasing support in changing regions.
 
 The Cartoon filter keeps the source color and runs its decomposition on luma.
-It no longer shrinks the image to a surrogate work resolution. Every source
-pixel enters the decomposition at its original pitch and is returned to the
-same coordinate. When neither axis is a supported power-of-two length, one
-axis is extended by symmetric reflection and the exact source rectangle is
-cropped from the result. The shaping policy accounts for both padded area and
-row-major transform locality: at video scale it prefers contiguous row FFTs
-within a bounded padding envelope, while large area savings retain the column
-path. Examples are `1920x1080 → 2048x1080` and
-`1280x720 → 2048x720`; these are padding operations, not resampling.
+Its two selectable engines run on the same aspect-preserving spectral work
+lattice, so their visual difference is an operator difference rather than a
+resolution mismatch:
+
+- **Finite-flow fast (4, 18, 2, 3)** runs four exact fused prefix passes,
+  three depth-two semismooth finite-horizon jumps, and two exact refresh passes
+  after each jump. Its fixed operator-map cost is 19.
+- **Fused passes** runs the ordinary fused Meyer recurrence. The pass slider
+  defaults to 16 and may be changed from 1 to 64.
+
+Both expose the exact two-product contract `(cartoon, texture) = (f-v, v)`.
+For the fused engine, the texture-side ROF survivor is folded into effective
+cartoon at readout. This makes the mixer and A/B comparison identical without
+claiming that the underlying fused state lacks that survivor.
+
+The finite-flow chart requires complete power-of-two spectra. **Preview** uses
+a 256-class canvas, **Detailed** uses 512 (the default), **High detail** uses
+1024, and **Extreme detail** uses 2048. Wide video uses a half-height
+power-of-two canvas; the source aspect is fitted inside it and the small unused
+margin is filled by symmetric reflection. Thus 16:9 video maps respectively to
+`228x128`, `455x256`, `910x512`, or `1820x1024` content inside `256x128`,
+`512x256`, `1024x512`, or `2048x1024` spectral canvases. Bilinear maps are
+cached when source or lattice dimensions change. The two larger choices are
+intended for quality comparisons: transform cost and plan memory grow sharply.
 High Vision instead processes the camera's native pixel lattice. Photon
 evidence, detector-fixed noise, and motion are not inferred from a resized
 surrogate. Night emits monochrome luma; Synthetic HDR retains source chroma.
 
-The fixed jump-measure split is exactly complementary. The main effect mixer
-is therefore:
+Both engine readouts are exactly complementary. The main effect mixer is:
 
 ```
 output = cartoon_gain * cartoon
@@ -57,13 +74,14 @@ color image. The plugin therefore displays that field around
 mid-gray and neutralizes chroma. This preserves negative detail and prevents
 low luma with retained NV12 chroma from producing false red regions.
 
-Fine chrome performs one adjustable TV projection of `input - texture`, which
-is exactly the jump cartoon under the complementary split.
-This yields a useful local transport direction without running the full slow
-Gilles loop. Relief depth and chrome gloss are adjustable. Its environment
-carrier uses BFFT's low-error table-polynomial sine rather than a scalar
-library `sin` at every pixel. Information caustics also uses BFFT's
-slope-tree phase estimator for its TV-defect/texture angle.
+Fine chrome is optional and does not alter the selected decomposition engine.
+It performs one adjustable TV projection of the effective cartoon and renders
+the signed difference as displaced chrome. **TV effect sweeps** controls only
+this projection and the other ROF-derived display effects; it does not change
+finite-flow or fused pass count. Relief depth and chrome gloss are adjustable.
+Its environment carrier uses BFFT's low-error table-polynomial sine rather
+than a scalar library `sin` at every pixel. Information caustics also uses
+BFFT's slope-tree phase estimator for its TV-defect/texture angle.
 
 Recursive recovery uses **Recovery boost**. Layer interference and Information
 caustics use **Information gain**; caustics additionally uses **Information
@@ -75,14 +93,14 @@ not acquire an arbitrary color or phase.
 ## Build on macOS
 
 The OBS headers are not shipped inside OBS.app, so use a matching source
-checkout. For the currently installed OBS 32.1.1:
+checkout. For the currently installed OBS 32.2.1:
 
 ```sh
-git clone --depth 1 --branch 32.1.1 \
-  https://github.com/obsproject/obs-studio.git /tmp/obs-studio-32.1.1
+git clone --depth 1 --branch 32.2.1 \
+  https://github.com/obsproject/obs-studio.git /tmp/obs-studio-32.2.1
 
 cmake -S obs-plugin -B build-obs \
-  -DOBS_SOURCE_DIR=/tmp/obs-studio-32.1.1 \
+  -DOBS_SOURCE_DIR=/tmp/obs-studio-32.2.1 \
   -DOBS_APP=/Applications/OBS.app \
   -DCMAKE_BUILD_TYPE=Release
 cmake --build build-obs --parallel
@@ -96,12 +114,14 @@ cp -R build-obs/bfft-cartoon.plugin \
 ```
 
 Restart OBS, open a source's **Filters**, and add **BFFT Cartoon** or **BFFT
-High Vision**. For Cartoon, start with 6 CPU threads and 8 TV effect sweeps.
-The jump split itself is fixed-cost; the sweep control affects only shading,
-Fine chrome, Layer interference, and Information caustics. On the development
-machine, the native-pitch `1280x1024` periodic-FACR jump split typically takes
-about 35–43 ms. Recursive recovery performs a second split and is
-correspondingly heavier. For High Vision, start
+High Vision**. For Cartoon, start with **Finite-flow fast**, **Detailed
+(512 class)**, cartoon gain 1, texture gain 0, 6 CPU threads, and 8 TV effect
+sweeps. Those are the new-filter defaults, so the effect is visible as soon as
+it is added. Switch only
+**Decomposition engine** to **Fused passes** for the default fused-16 A/B;
+the work lattice and display settings remain unchanged. Recursive recovery
+performs a second selected decomposition and is correspondingly heavier. For
+High Vision, start
 with Synthetic HDR; Night integrator retains evidence longer for fixed-exposure
 low-light capture.
 
@@ -170,17 +190,29 @@ frame's full/limited-range metadata before transfer decoding and is mapped
 back to the same code range afterward; limited-range black is not treated as
 physical scene light.
 
-The periodic FACR engine now runs the same jump-measure/Hodge construction as
-the full two-axis spectral path, using an O(N) structural gate and a two-pole
-virtual-depth approximation. It no longer falls back to the legacy outer
-alternation on ordinary video sizes.
+The Cartoon path deliberately uses the complete spectral solver rather than
+FACR because the current semismooth finite-flow chart is a two-axis spectral
+operator. Selecting fused passes uses the same spectral plan. The plan is
+rebuilt only when work-lattice dimensions or CPU thread count changes; changing
+engine or fused pass count updates the persistent plan in place. Sampling maps
+are cached on source/lattice changes. The decoded input plane aliases effective
+cartoon, recomposition reuses it, and effect scratch is allocated lazily.
 
-The native engine and base frame buffers are persistent. A plan is rebuilt
-only when padded native dimensions or CPU thread count changes, and the
-incompatible plan is released before its replacement is allocated.
-Source/padded coordinate maps are cached on resolution changes. The decoded
-input plane aliases the cartoon output in place; recomposition reuses that
-plane, and effect scratch is allocated lazily. Cartoon + texture therefore
-owns two plugin image planes instead of seven. Fine chrome and Information
-caustics peak at four. Exact crop rows use pointer offsets rather than
-per-pixel coordinate-map reads.
+For synchronous GPU sources (including OBS 32's `macos-avcapture-fast`), the
+Cartoon registration uses a two-surface Metal staging bridge. It reads back
+only the fitted spectral content lattice, processes the previous surface, and
+uploads one floating-point luminance correction. The shader applies that
+correction to the current native-resolution source, preserving full-resolution
+chroma and alpha. The bridge adds one frame of latency; it does not upscale a
+256/512 image to impersonate native processing.
+
+The macOS build also produces `bfft-cartoon-smoke`. It loads the actual bundle
+through libobs, sends one synthetic async source through finite-flow fast,
+fused-16, and Fine chrome, then exercises the synchronous Metal bridge against
+a GPU-rendered source and writes PPM comparisons:
+
+```sh
+build-obs/bfft-cartoon-smoke \
+  build-obs/bfft-cartoon.plugin/Contents/MacOS/bfft-cartoon \
+  build-obs/cartoon-smoke
+```

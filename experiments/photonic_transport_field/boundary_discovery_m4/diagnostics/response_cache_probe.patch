@@ -1,0 +1,70 @@
+--- a/experiments/photonic_transport_field/native/regime_scene_native.cpp
++++ b/experiments/photonic_transport_field/native/regime_scene_native.cpp
+@@ -45,6 +45,7 @@
+ bool camera_demand_gather=true;
+ bool camera_sparse_crossings=true;
+ bool boundary_audit=false;
++int boundary_response_capacity=0;
+ int boundary_path_capacity=128;
+ bool boundary_shared_filter=true;
+ 
+@@ -1474,8 +1475,15 @@
+ 
+ struct SurfaceRadianceMemoEntry{int primitive;Vec3 position,normal,view;RGB value;bool directional=false;};
+ struct SpecularMemo{
+-    std::array<SurfaceRadianceMemoEntry,32> surface_entry;
+-    std::array<std::uint64_t,32> surface_tag{};
++    std::array<SurfaceRadianceMemoEntry,32> inline_entry;
++    std::array<std::uint64_t,32> inline_tag{};
++    SurfaceRadianceMemoEntry* surface_entry=inline_entry.data();
++    std::uint64_t* surface_tag=inline_tag.data();std::size_t capacity=32;
++    SpecularMemo()=default;
++    SpecularMemo(const SpecularMemo&)=delete;
++    SpecularMemo& operator=(const SpecularMemo&)=delete;
++    SpecularMemo(SurfaceRadianceMemoEntry* entries,std::uint64_t* tags,std::size_t size):
++        surface_entry(entries),surface_tag(tags),capacity(size){}
+ };
+ 
+ struct Camera{Vec3 origin{},forward{},right{},up{};double scale=0,aspect=1;};
+@@ -1763,7 +1771,7 @@
+     const Material& m=ctx.scene.materials[p.material];if(m.kind==MaterialKind::Emissive)return emitted_radiance(ctx.scene,hit,view);
+     const bool directional=m.kind==MaterialKind::Glossy||m.kind==MaterialKind::Metal;
+     const std::uint64_t memo_tag=ctx.specular_memo?radiance_memo_hash(hit.primitive,hit.position,hit.normal,view,directional):0;
+-    const std::size_t memo_mask=ctx.specular_memo?ctx.specular_memo->surface_entry.size()-1:0;
++    const std::size_t memo_mask=ctx.specular_memo?ctx.specular_memo->capacity-1:0;
+     const std::size_t memo_home=memo_tag&memo_mask;std::size_t memo_slot=memo_home;
+     if(ctx.specular_memo)for(int probe=0;probe<4;++probe){const std::size_t slot=(memo_home+probe)&memo_mask;
+         const std::uint64_t tag=ctx.specular_memo->surface_tag[slot];if(tag==0){memo_slot=slot;break;}
+@@ -2822,7 +2830,12 @@
+         retained_counts(workers),sampled_counts(workers);
+     for(unsigned worker=0;worker<workers;++worker)threads.emplace_back([&,worker]{TraceContext ctx=camera_context;
+         ctx.stats=&trace_stats[worker];
+-        ctx.specular_memo=nullptr;
++        // Responses are functions of exact surface position, normal, direction,
++        // and this frame's immutable field. Keep them beyond one spectral ray.
++        std::vector<SurfaceRadianceMemoEntry> response_entries(boundary_response_capacity);
++        std::vector<std::uint64_t> response_tags(boundary_response_capacity,0);
++        SpecularMemo responses(response_entries.data(),response_tags.data(),response_entries.size());
++        ctx.specular_memo=boundary_response_capacity?&responses:nullptr;
+         OpticalQueryMemo query_memo(boundary_path_capacity);ctx.optical_queries=boundary_path_capacity?&query_memo:nullptr;
+         struct Bucket{TerminalLabel label{};double weight=0,x=0,y=0,first_x=0,first_y=0;};
+         std::array<Bucket,256> buckets{};
+@@ -3284,6 +3297,10 @@
+             if(boundary_path_capacity<0||boundary_path_capacity>16384||
+                 (boundary_path_capacity&&(boundary_path_capacity&(boundary_path_capacity-1))))
+                 throw std::runtime_error("boundary path cache must be zero or a power of two up to 16384");}
++        else if(arg=="--boundary-response-cache"){boundary_response_capacity=std::stoi(argv[++i]);
++            if(boundary_response_capacity<0||boundary_response_capacity>16384||
++                (boundary_response_capacity&&(boundary_response_capacity&(boundary_response_capacity-1))))
++                throw std::runtime_error("boundary response cache must be zero or a power of two up to 16384");}
+         else if(arg=="--boundary-filter"){const std::string mode=argv[++i];
+             if(mode!="shared"&&mode!="independent")throw std::runtime_error("boundary filter must be shared or independent");
+             boundary_shared_filter=mode=="shared";}
+@@ -3484,6 +3501,7 @@
+         <<",\n  \"camera_specular_new_samples\": "<<render_stats.camera_specular_new_samples
+         <<",\n  \"camera_specular_cell_tests\": "<<render_stats.camera_specular_cell_tests
+         <<",\n  \"edge_crossing_storage_bytes\": "<<render_stats.edge_crossing_storage_bytes
++        <<",\n  \"boundary_response_capacity\": "<<boundary_response_capacity
+         <<",\n  \"boundary_path_capacity\": "<<boundary_path_capacity
+         <<",\n  \"boundary_optical_queries\": "<<render_stats.boundary_optical_queries
+         <<",\n  \"boundary_optical_reused\": "<<render_stats.boundary_optical_reused

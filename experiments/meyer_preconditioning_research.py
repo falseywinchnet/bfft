@@ -87,8 +87,14 @@ def junction_texture_scene(size: int = 256) -> dict:
         np.fft.fft2(jump_potential) * first_cartoon_resolvent
     ).real
     boundary_texture = jump_potential - smooth_jump
-    cartoon = smooth_cartoon + jump_mean + smooth_jump
-    texture = boundary_texture + material_texture
+    # The old research contract assigned ``boundary_texture`` to texture.
+    # That term is the signed scalar-resolvent halo of a coherent jump and is
+    # retained below only as a negative control. Canonical cartoon/texture
+    # semantics keep the whole hard composition in cartoon.
+    legacy_cartoon = smooth_cartoon + jump_mean + smooth_jump
+    legacy_texture = boundary_texture + material_texture
+    cartoon = hard_composition
+    texture = material_texture
     source = cartoon + texture
     contour = _dilate(_gradient_magnitude(hard_composition) > 4.0, 3)
     interior = ((support0 > 0.995) | (support1 > 0.995))
@@ -102,6 +108,8 @@ def junction_texture_scene(size: int = 256) -> dict:
         "jump_potential": jump_potential,
         "smooth_jump": smooth_jump,
         "boundary_texture": boundary_texture,
+        "legacy_cartoon": legacy_cartoon,
+        "legacy_texture": legacy_texture,
         "texture": texture,
         "material_texture": material_texture,
         "fine_support": support0,

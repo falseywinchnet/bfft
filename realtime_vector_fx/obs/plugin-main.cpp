@@ -8,7 +8,7 @@ OBS_DECLARE_MODULE()
 void rvfx_register_gpu_filter();
 
 MODULE_EXPORT const char* obs_module_description(void) {
-    return "Persistent real-time posterization, incremental tracing, and phosphor/metal/sheen effects";
+    return "Posterizer Mark IV plus persistent realtime tracing and phosphor/metal/sheen effects";
 }
 
 namespace {
@@ -83,4 +83,4 @@ struct InfoInit { InfoInit() {
 } } info_init;
 
 bool obs_module_load(void){obs_register_source(&info);rvfx_register_gpu_filter();
-    blog(LOG_INFO,"[Realtime Vector FX] CPU, GPU FX, and Optimal OKLCH Posterizer filters registered");return true;}
+    blog(LOG_INFO,"[Realtime Vector FX] CPU, GPU FX, and Posterizer Mark IV filters registered");return true;}

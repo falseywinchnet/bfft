@@ -1,0 +1,53 @@
+\section{Relation to Prior Work}
+\label{sec:related}
+
+Cooley and Tukey established the recursive decomposition now associated with
+complex-radix FFTs \cite{cooley1965}.  Bruun instead retained real conjugate
+factors and interpreted the recursion through real $z$-transform filters
+\cite{bruun1978}.  The construction here retains Bruun's half-angle factor tree
+and supplies explicit inverse interpolation, normalized quotient coordinates,
+and boundary maps.
+
+Chen, Sorensen, and Jones specialized Bruun's structure to real-symmetric data
+\cite{chen1992}.  The normalized quotient map here instead treats arbitrary
+real input and derives its inverse and metric from the complete real CRT.
+
+Chinese-remainder formulations of Fourier algorithms appear in the work of
+Good, Winograd, and the algebraic signal-processing literature
+\cite{good1958,winograd1978,puschel2008,voronenko2009}.  In that language,
+Cooley-Tukey and Bruun are instances of a common polynomial factorization
+scheme expressed in different intermediate bases \cite{voronenko2009}.  The
+present normalization makes this basis choice explicit at every real quadratic
+leaf and follows its metric consequence through the complete product.
+
+Real-input FFT algorithms commonly exploit conjugate symmetry to reduce
+arithmetic and storage \cite{sorensen1987,duhamel1990}.  The packed transform
+\eqref{eq:packed-dft} uses the same spectral degrees of freedom, but derives
+them directly from real quotient algebras.  The ODFT is related to shifted and
+half-bin Fourier grids; its contribution here is closure of the same normalized
+two-plane arithmetic on the factors of $z^N+1$.
+
+Stockham schedules and DIT/DIF variants reorder intermediate Fourier states
+\cite{stockham1966,duhamel1990}.  The phase-packet result states the common
+principle as an exact conjugation of each stage, with the DIP schedule selected
+by a lattice shear.  The positive-cone result is independent of a particular
+schedule: it lifts any signed stage factorization and preserves the complete
+product under rail-difference projection.
+
+\begin{table*}[t]
+\caption{Algebraic roles of the transforms developed here}
+\label{tab:relation}
+\centering
+\scriptsize
+\begin{tabularx}{\textwidth}{@{}lXXXXX@{}}
+\toprule
+Object & Root polynomial & Interior state & Boundary order & Exact inverse & Metric\\
+\midrule
+Normalized Bruun DIF & $z^N-1$ & real CRT residues & native leaves & local CRT ascent & $B^{\trans}B=NI$\\
+Bruun DIT & $z^N-1$ & spectral combs & natural spectrum & reversed cells & $B^{\trans}B=NI$\\
+DIP & $z^N-1$ & sheared Zak packets & natural spectrum & reversed shear & $B^{\trans}B=NI$\\
+ODFT & $z^N+1$ & real half-bin pairs & conjugate pairs & local pair inverse & $O^{\trans}O=NI$\\
+Cone lift & either & nonnegative rails & projected boundary & signed inverse after projection & gauge-dependent\\
+\bottomrule
+\end{tabularx}
+\end{table*}

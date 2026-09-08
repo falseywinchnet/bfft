@@ -1,11 +1,49 @@
 # Adaptive photonic transport field
 
+The boundary follow-up shares overlapping optical filter queries and retains
+identical geometric ray results across optical consumers. At 800×600 the
+standard CLI view's boundary stage falls from 95.89 to 70.57 ms, with exact
+image equivalence. See [BOUNDARY_INFORMATION_REUSE.md](BOUNDARY_INFORMATION_REUSE.md)
+for the four-mode comparison, harder-scene limits, acceleration-policy correction,
+and current integrated update times of 333–395 ms using BVH traversal.
+
+The preceding camera follow-up gathers glossy source responses on demand and stores
+optical crossings sparsely. The four-pose 800×600 comparison cuts standard-scene
+camera time from 561–573 ms to 285–300 ms, with byte-identical eager/demand
+images. Its integrated edited-frame baseline was 362–424 ms. See
+[CAMERA_DEMAND_GATHER.md](CAMERA_DEMAND_GATHER.md) for paired timings, concurrency
+checks, remaining boundary costs, and the distinction between camera time and
+the complete 33.33 ms CPU frame target.
+
+The earlier September 5 integrated engine update adds retained geometry edits, signed
+lighting corrections, affine source responses, and finite emitter-window
+clipping. See [RETAINED_SCENE_UPDATES.md](RETAINED_SCENE_UPDATES.md) for the math,
+reproduction command, and checked **800×600 CPU measurements**. That earlier
+standard-scene edited-frame baseline took 636–703 ms; the waterfall/grass/free-flight
+target remains at least 800×600 at 30 fps. These are measured execution times,
+not the playback rate of a saved animation.
+
+The corrected source window also reveals a tiny real direct-light opening at
+the historically named `indirect_only_target`. Earlier zero-direct descriptions
+below describe the older measurement. The current tests separately verify a
+strictly occluded receiver with positive indirect light; the update note records
+the independent visibility evidence.
+
 The active proof renderer now includes BVH visibility, conservative
 source-pyramid and camera-frustum queries, output-sensitive blocker sweeps,
 sparse incoming/outgoing transport edges, and a source-forward residual march.
 The measured million-object visibility benchmark and the bounded dual-tree
 design needed to remove quadratic relation discovery are documented in
 [SCALING_ARCHITECTURE.md](SCALING_ARCHITECTURE.md).
+
+The retained child-volume operator now has an operational C++20/arm64 NEON
+backend. Geometry remains stored as rank-one `v(u^T L)` blocks; the native plan
+validates and packs topology once, applies wavelength/polarization extinction
+once per block and mode, and never creates a pair matrix. A packed terminal
+API keeps renderer fields in numeric mode-major storage until an object ledger
+is explicitly requested. The measured M4 implementation and child-volume
+contract are documented in
+[CHILD_VOLUME_RESPONSE.md](CHILD_VOLUME_RESPONSE.md).
 
 ## Scene demonstrator suite
 
@@ -723,6 +761,115 @@ diffuse spheres and one broad overhead area source.  The camera interpolates
 the solved outgoing radiance on 214 adaptive surface cells; it performs no
 per-pixel secondary-light tracing.
 
+The established `regime_scene_native` room uses `--transport-backend retained`
+by default. Its already-compiled geometric relationships are spatially
+bifurcated and backward-fused only where a source-by-recipient rectangle has
+identical visibility support, fits the bounded rank-one residual, and reduces
+storage. Uncovered relationships are re-coalesced into exact source strips.
+The retained plan therefore cannot manufacture a formerly absent light link,
+and failed fusion cannot fragment the exact fallback.
+
+The standard room now includes a participating jelly control beside a violet
+floor emitter and a rear witness card. The visible jelly boundary refracts a
+ray in and out, integrates wavelength-dependent extinction over the exact
+sphere chord, and mixes the retained illumination of a hidden transport
+centroid as the diffuse source function. The centroid is non-intersectable: it
+cannot appear as an opaque inner sphere. The same exact chord length controls
+light-source and inter-surface segments, so opacity increases continuously
+toward the center rather than being painted onto a transparent shell.
+
+The refined control doubles the overhead emitter and uses the same affine
+medium action for source-to-surface visibility:
+
+\[
+L_{out}=B^2T L_{in}+B(1-T)S.
+\]
+
+Thus through-light crosses two interfaces, while diffuse light generated in
+the medium crosses the exit interface once. The rough copper sphere also
+blends one retained jelly relation with its neighboring background relation by
+the analytic Gaussian mass of its rough lobe over the jelly's angular disk;
+this removes binary reflected ownership without restoring the former ray
+cross.
+
+In the 1920x1280 M4 control, the camera integrated 67,670 participating-medium
+chords spanning 64,467.270 scene-distance units and invoked 3,237 rough-jelly
+regional gathers. The added centroid and card produce 16 diffuse nodes and 162
+visible transport couplings. Whole-program admission retains three
+many-to-many blocks while reducing the exact source-strip representation from
+178 coefficients to 172; its six-depth SIMD march takes 0.015 ms. The full
+build and render takes 1.648 s. See `regime_jelly_refined_1920.{png,json}` and
+the requested `regime_jelly_refined_detail_1920.png` crop.
+
+### Bruun magnitude/phase angular backend
+
+The renderer now reuses `src/detail/MAG_REPRESENT_KERNEL.hpp` directly through
+the narrow `native/bruun_mag_angle_adapter.hpp` environment. It does not import
+the FFT backend. The adapter supplies only the inline policy and angle
+constants; Bruun's checked-in phase-slope and sine/cosine table families remain
+the single source of truth.
+
+Bruun magnitude-aware phase recovery replaces `atan2` in the hot spherical
+surface-atlas gather, and its table/poly3 sine--cosine pair constructs the
+deformed rough-jelly angular window. Exact algebraic source-cone culling is
+left algebraic. `--angular-backend bruun-mag` is the default and
+`--angular-backend libm` remains as a matched control. The native self-test
+checks the original `6.4e-8` radian phase bound, a `2e-9` sine/cosine bound,
+and rendered agreement between the two backends.
+
+On the M4 Mini, a 16,777,216-sample isolated run measured 227.786 million
+double phases/s for Bruun versus 59.011 million for `std::atan2` (3.86x), and
+946.157 million sine/cosine pairs/s versus 156.214 million for libm (6.06x).
+Across three alternating 1920x1280 renderer runs, median raster time was
+1,270.918 ms with Bruun and 1,272.713 ms with libm: a 0.14% whole-raster gain,
+because visibility and radiance work still dominate. The paired full-resolution
+PPM files were byte-identical across all 7,372,817 bytes. Exact measurements
+are retained in `bruun_mag_integration_m4.json`.
+
+### Retained camera-boundary regions
+
+The visible-edge field now retains sparse local equations for the projected
+boundary fragments that cross a pixel. Analytic planar edges and subpixel
+piecewise-linearized sphere conics carry stable curve tokens; view-dependent
+optical-topology transitions are refined to one sixteenth of a pixel and
+connected across adjacent sensor cells. Repeated fragments from one curve are
+coalesced in a sparse linked representation rather than allocating boundary
+storage for every pixel.
+
+At reconstruction, the retained lines split the pixel square into convex
+ownership regions. Their exact areas and centroids replace the former fixed
+16x16 ownership census, and radiance is gathered once per distinct region.
+The sampled path remains only for boundary configurations whose arrangement
+has not yet been retained.
+
+On the 1920x1280 standard view, 13,618 boundary pixels used retained region
+integration and only 829 reached the sampled fallback. Boundary ownership
+samples fell from 3,387,936 to 440,204 and camera packet rays from 5,808,896
+to 2,832,896. Boundary reconstruction fell from 786.116 ms to 234.465 ms; the
+complete M4 run was 1,185.929 ms. The new image differs from the former
+16x16-grid result at 4,782 pixels, confined to reconstructed boundaries
+(0.195% of the image); its mean absolute change is 0.0035 of one 8-bit channel
+level. See `regime_retained_boundary_1920.png`.
+
+### Demand-driven camera topology
+
+The camera raster no longer has to march a complete optical-path signature for
+every visible pixel before it attempts interpolation. With the default
+`--topology-backend adaptive`, the dense packet pass establishes only the
+first-surface owner. Full terminal and visible-path signatures are evaluated
+at the same control and witness samples used by the CONV radiance certificate.
+An accepted interval propagates its verified visible-topology label to every
+covered pixel; a disagreement bifurcates the interval. The former pass remains
+available as `--topology-backend dense` for matched comparisons.
+
+At 1920x1280 on the M4 Mini this reduced reported terminal-topology evaluations
+from 2,407,347 to 1,120,357 (53.46%). The adaptive-raster stage changed from
+268.672 ms to 265.267 ms in the matched pair, while complete render time was
+unchanged within run noise (1,136.268 ms dense and 1,137.392 ms adaptive).
+Only 1,473 of 2,457,600 pixels changed; all but two changed by at most one
+8-bit code value, and the maximum change was six. The retained comparison
+image is `regime_topology_adaptive_1920.png`.
+
 ## Subdivision theorem and native checkpoint
 
 [`SUBDIVISION_THEOREM.md`](SUBDIVISION_THEOREM.md) gives the error criterion
@@ -831,3 +978,103 @@ transport field is compiled once; most animation cost remains in terminal
 camera-boundary reconstruction when a view exposes many overlapping analytic
 edge signatures.  The animation therefore isolates the next optimization
 target without coupling camera motion back into global illumination.
+
+## Signed spectral--polarization foundation
+
+[`LIGHT_TENSOR_FOUNDATION.md`](LIGHT_TENSOR_FOUNDATION.md) defines and tests the
+first six-dimensional light state:
+
+\[
+(w,\mu_\lambda,\sigma_\lambda^2,\theta,p,\chi).
+\]
+
+It includes continuous Gaussian spectral components, adaptive mixture
+refinement under wavelength-selective materials, direct orientation/
+peakedness/chirality polarization feed-forward, transitive Mueller
+interactions, unified mode-dependent extinction, positive/correction reconciliation,
+source provenance, and exact signed incremental transport after registered
+geometry links change. Run the focused controls with:
+
+```sh
+python3 -m unittest experiments.photonic_transport_field.test_light_tensor -v
+python3 -m experiments.photonic_transport_field.run_light_tensor_experiment \
+  --out /tmp/photonic_light_tensor_foundation.json
+```
+
+## Child-volume response
+
+[`CHILD_VOLUME_RESPONSE.md`](CHILD_VOLUME_RESPONSE.md) implements the first
+sealed two-port child domain:
+
+\[
+L_{\partial V}^{\rm out}=\mathcal R_V[L_{\partial V}^{\rm in}]+E_V.
+\]
+
+It provides role-duplicated directional boundary fibers, private internal
+surface/material nodes, unified mode-dependent volume extinction, exact
+internal feedback marching, unit-mode response caching, localized child
+invalidation, egress-to-parent gathering, and a coupled parent/child residual
+solver which injects child emission only once. Coherent child exchanges can
+now remain as role-filtered rank-one blocks and execute as
+\(v(u^\mathsf T L)\), without materializing pair links or a unit-response
+matrix. Run its controls and dogfood record with:
+
+```sh
+python3 -m unittest experiments.photonic_transport_field.test_child_volume -v
+python3 -m experiments.photonic_transport_field.run_child_volume_experiment \
+  --out /tmp/photonic_child_volume_response.json
+```
+
+## Return-extinction screen
+
+[`RETURN_EXTINCTION.md`](RETURN_EXTINCTION.md) records the rejected native
+return-extinction experiment: negligible reduction of the expensive frame work,
+no exact-state return coverage in the measured standard views, and radiance
+loss in controlled recurrent-light fixtures. The experimental modes remain off
+by default. Reproduce the M4 screen with `sh experiments/photonic_transport_field/run_return_extinction.sh`.
+
+## Expensive-pixel redundancy census
+
+[`PIXEL_REDUNDANCY.md`](PIXEL_REDUNDANCY.md) traces the two worst aperture pixels
+through coverage, wavelength, surface lighting, and source integration. It
+separates distinct numerical sample keys from repeatedly evaluated source
+relationships. Run `sh experiments/photonic_transport_field/run_pixel_redundancy.sh`
+for the M4 census and exact-cache control; normal renderer builds omit its hooks.
+
+### Native child-boundary diagnostic
+
+The opt-in native route `--child-boundaries on` gives the prism, sheet, and jelly
+owned boundary responses and removes the jelly's hidden core from the parent
+transport graph. The archived `--child-response exact` unit-response cache fails the compactness gate:
+aperture-canyon retains over 1 GB and remains slower when warm. The default stays
+`off`. See [NATIVE_CHILD_BOUNDARY.md](NATIVE_CHILD_BOUNDARY.md) for the implementation,
+measured limits, image changes, and tests. Reproduce on the selected M4 with
+`experiments/photonic_transport_field/run_child_boundary.sh`.
+
+### Shared observer registration
+
+Child boundaries now default to `--child-response shared`: three child laws are
+registered once, and observation queries create no sample records. Classification
+evaluates only its first two required ports; full radiance retains all exits.
+The 24-frame comparison is byte-identical to the exact-state backend and removes
+its 1.08 GB aperture-canyon sample payload. See [OBSERVER_REGISTRATION.md](OBSERVER_REGISTRATION.md)
+for remaining evaluation cost and timings. Run
+`experiments/photonic_transport_field/run_observer_registration.sh` on the selected M4.
+The broader child-boundary optical route remains opt-in with `--child-boundaries on`.
+
+## Frozen city / rain-normal video
+
+`city_rain/` adds a small city behind a glass sheet and a transparent observer
+volume. A dense position/normal response is baked once; a separate playback
+process animates only the far-surface normal texture and records an 18-second
+1280×720, 60 fps rain clip with zero city evaluations. See
+[`city_rain/README.md`](city_rain/README.md) for the video, timings, frozen-field
+checks, memory cost, and direct-reference interpolation errors. Reproduce with
+`city_rain/run_m4.sh final` from this experiment directory, or the repository-root
+path shown in that README. The generated cache is excluded from mirror sync.
+
+The expanded [night-city screen experiment](city_rain/NIGHT_SCREEN.md) adds dozens
+of buildings, a geometric moon, illuminated interiors and vehicle/road lights.
+It tests a different representation: one pinhole illumination screen, followed
+by rain-driven deformation and footprint filtering from a frozen mip pyramid.
+Run `city_rain/run_night_screen.sh` from this directory.

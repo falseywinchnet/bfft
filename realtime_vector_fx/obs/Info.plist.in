@@ -5,7 +5,7 @@
   <key>CFBundleExecutable</key><string>realtime-vector-fx</string>
   <key>CFBundleIdentifier</key><string>com.falseywinchnet.realtime-vector-fx</string>
   <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
-  <key>CFBundleName</key><string>Realtime Vector FX</string>
+  <key>CFBundleName</key><string>Realtime Vector FX + Posterizer Mark IV</string>
   <key>CFBundlePackageType</key><string>BNDL</string>
   <key>CFBundleShortVersionString</key><string>@PROJECT_VERSION@</string>
   <key>CFBundleVersion</key><string>@PROJECT_VERSION@</string>

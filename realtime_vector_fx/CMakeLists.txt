@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(realtime-vector-fx VERSION 0.1.0 LANGUAGES CXX)
+project(realtime-vector-fx VERSION 0.4.0 LANGUAGES CXX)
 
 option(RVFX_BUILD_OBS "Build the OBS Studio filter" OFF)
 set(OBS_SOURCE_DIR "" CACHE PATH "OBS Studio source tree")

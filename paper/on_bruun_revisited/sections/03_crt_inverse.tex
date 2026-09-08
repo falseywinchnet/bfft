@@ -1,0 +1,107 @@
+\section{Exact Chinese-Remainder Reconstruction}
+\label{sec:crt}
+
+The inverse problem is local.  Given the two child residues of a parent class,
+one must reconstruct the unique parent residue without solving a global linear
+system.  The required Bezout coefficient has a closed form for every Bruun
+sibling pair.
+
+\subsection{Trinomial siblings}
+
+Let $h$ be even, $b\ne0$, and
+\begin{equation}
+ p_-=z^h-bz^{h/2}+1,
+ \qquad
+ p_+=z^h+bz^{h/2}+1.
+ \label{eq:crt-siblings}
+\end{equation}
+
+\begin{lemma}[Local Bezout coefficient]
+In $\K_N[z]/(p_+)$,
+\begin{equation}
+ p_-^{-1}\equiv {z^{h/2}+b\over 2b}.
+ \label{eq:local-bezout}
+\end{equation}
+\end{lemma}
+\begin{proof}
+Modulo $p_+$, multiplication by $z^{-h/2}$ gives
+$z^{-h/2}\equiv-(z^{h/2}+b)$.  Also
+$p_--p_+=-2bz^{h/2}$.  Hence
+$p_-(z^{h/2}+b)/(2b)\equiv1\pmod{p_+}$.
+\end{proof}
+
+\begin{proposition}[Explicit sibling merge]
+Let $r_-$ and $r_+$ be residues modulo $p_-$ and $p_+$, respectively.  Put
+\begin{equation}
+ t=\left[
+ { (r_+-r_-)(z^{h/2}+b)\over 2b}
+ \right]_{p_+},
+ \qquad
+ c=[r_-+p_-t]_{p_-p_+}.
+ \label{eq:trinomial-merge}
+\end{equation}
+Then $c\equiv r_-\pmod{p_-}$ and $c\equiv r_+\pmod{p_+}$, and $c$ is unique
+modulo $p_-p_+$.
+\end{proposition}
+\begin{proof}
+Choose the canonical polynomial representatives of degrees below $h$ in the
+two child quotients.  The expression in \eqref{eq:trinomial-merge} then defines
+a polynomial lift; changing either lift by its child factor changes $c$ only by
+a multiple of $p_-p_+$.
+The first congruence is immediate.  For the second, use
+\eqref{eq:local-bezout} to obtain
+$p_-t\equiv r_+-r_-\pmod{p_+}$.  Coprimality and the Chinese remainder theorem
+give uniqueness.
+\end{proof}
+
+At a binomial node, $p_-=z^h-1$ and $p_+=z^h+1$.  The corresponding merge is
+\begin{equation}
+ t={r_--r_+\over2},
+ \qquad c=r_-+(z^h-1)t.
+ \label{eq:binomial-merge}
+\end{equation}
+The factors $1/2$ and $1/(2b)$ are the local CRT interpolation measures.  Their
+relation to the uniform inverse Fourier scale is established only after the
+normalized packed map is identified in Section~\ref{sec:fourier-identity}.
+
+\subsection{Global inverse and fixed points}
+
+Let $A_N$ denote the product algebra on the right side of
+\eqref{eq:global-reduction}.  Define $\rec_N:A_N\to R_N$ by applying
+\eqref{eq:trinomial-merge} and \eqref{eq:binomial-merge} from leaves to root.
+
+\begin{theorem}[Two-sided Bruun reconstruction]
+The reduction and reconstruction maps are mutual inverses:
+\begin{equation}
+ \rec_N\red_N=\id_{R_N},
+ \qquad
+ \red_N\rec_N=\id_{A_N}.
+ \label{eq:two-sided-crt}
+\end{equation}
+\end{theorem}
+\begin{proof}
+At one node, the explicit merge is the inverse of the residue map by the
+preceding proposition and the binomial identity.  Induction on the height of
+the factor tree proves both compositions in \eqref{eq:two-sided-crt}.
+\end{proof}
+
+\begin{corollary}[Exact fixed-point law]
+Every polynomial state is a fixed point of reconstruction after reduction, and
+every admissible leaf state is a fixed point of reduction after reconstruction.
+These are identities over $\R$; their structure constants lie in $\K_N$.
+They are not convergence statements.
+\end{corollary}
+
+\begin{example}[A symbolic $N=8$ merge]
+The siblings $p_-=z^2-\sqrt2z+1$ and
+$p_+=z^2+\sqrt2z+1$ have $h=2$ and $b=\sqrt2$.  For linear residues
+$r_-=a_0+a_1z$ and $r_+=b_0+b_1z$, the unique quartic parent is
+\begin{equation}
+ c=r_-+p_-\left[
+ {(r_+-r_-)(z+\sqrt2)\over2\sqrt2}
+ \right]_{p_+}.
+ \label{eq:n8-symbolic-merge}
+\end{equation}
+Substitution modulo either child recovers its prescribed residue.  Applying the
+binomial merge above this node recovers the degree-seven input class.
+\end{example}

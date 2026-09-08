@@ -501,6 +501,10 @@ bool check_dip_direct(std::size_t n) {
     const std::vector<bfft::complex> expected = naive_rfft(input);
     double spectrum_error = 0.0;
     for (std::size_t i = 0; i < expected.size(); ++i) {
+        if (!std::isfinite(output[i].re) || !std::isfinite(output[i].im)) {
+            std::fprintf(stderr, "n=%zu DIP direct nonfinite spectrum at bin %zu\n", n, i);
+            return false;
+        }
         spectrum_error = std::max(spectrum_error, std::fabs(output[i].re - expected[i].re));
         spectrum_error = std::max(spectrum_error, std::fabs(output[i].im - expected[i].im));
     }
@@ -516,6 +520,10 @@ bool check_dip_direct(std::size_t n) {
     plan.inverse_standard(output.data(), roundtrip.data(), work.data());
     double inverse_error = 0.0;
     for (std::size_t i = 0; i < n; ++i) {
+        if (!std::isfinite(roundtrip[i])) {
+            std::fprintf(stderr, "n=%zu DIP direct nonfinite inverse at sample %zu\n", n, i);
+            return false;
+        }
         inverse_error = std::max(inverse_error, std::fabs(roundtrip[i] - input[i]));
     }
     if (inverse_error > tolerance) {

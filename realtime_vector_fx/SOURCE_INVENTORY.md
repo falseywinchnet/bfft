@@ -3,7 +3,7 @@
 ## Optimized posterizer
 
 The current implementation is `../posterizer/src/posterizer` on branch
-`codex/posterizer`:
+`codex/posterizer` (including the later assignment work in `ce012d1`):
 
 - `core.py:_perceptual_importance` computes spatial OKLab gradient/contrast
   saliency and sublinear occupied-color population mass.

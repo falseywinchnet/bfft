@@ -134,7 +134,7 @@ def train(configuration, task, width, seed, steps, batch, lr, evaluate_every):
     }
 
 
-def exact_curve(seed, count=900):
+def exact_curve(seed, planes=8, count=900):
     u = torch.linspace(0.015, 1.0, count)
     theta = 0.45 + 5.4 * math.pi * u
     radius = 0.12 + 0.88 * u
@@ -142,18 +142,21 @@ def exact_curve(seed, count=900):
     branches = []
     for label in (0, 1):
         features = []
-        for plane in range(8):
+        for plane in range(planes):
             frequency = plane + 1
             phase = frequency * theta + 0.37 * plane + label * math.pi
-            amplitude = radius * (1 + 0.08 * torch.sin((plane + 2) * theta)) / math.sqrt(8)
+            amplitude = radius * (1 + 0.08 * torch.sin((plane + 2) * theta)) / math.sqrt(planes)
             features.extend((amplitude * torch.cos(phase), amplitude * torch.sin(phase)))
-        branches.append(torch.stack(features, 1) @ rotation)
+        core = torch.stack(features, 1)
+        padded = torch.zeros((len(core), 16), dtype=core.dtype)
+        padded[:, :2 * planes] = core
+        branches.append(padded @ rotation)
     return u, branches
 
 
 @torch.no_grad()
-def visual_probe(model, task, seed):
-    u, branches = exact_curve(seed)
+def visual_probe(model, task, seed, planes=8):
+    u, branches = exact_curve(seed, planes)
     center = task.x_train.mean(0)
     _, _, vectors = torch.pca_lowrank(task.x_train - center, q=3)
     return {
@@ -166,6 +169,10 @@ def visual_probe(model, task, seed):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path, default=Path("/tmp/nd_spiral_wall"))
+    parser.add_argument(
+        "--task", choices=("nd_spiral_low_rank", "nd_spiral_high_rank"),
+        default="nd_spiral_high_rank",
+    )
     parser.add_argument("--width", type=int, default=24)
     parser.add_argument("--steps", type=int, default=500)
     parser.add_argument("--batch", type=int, default=256)
@@ -175,14 +182,18 @@ def main():
     parser.add_argument("--models", default=",".join(CONFIGURATIONS))
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
-    task = TASK_BUILDERS["nd_spiral_high_rank"](args.seed)
+    task = TASK_BUILDERS[args.task](args.seed)
+    planes = 1 if args.task == "nd_spiral_low_rank" else 8
     rows = []
     probes = []
     for configuration in args.models.split(","):
         print(f"START {configuration}", flush=True)
         model, row = train(configuration, task, args.width, args.seed, args.steps,
                            args.batch, args.lr, args.eval_every)
-        probes.append({"configuration": configuration, **visual_probe(model, task, args.seed)})
+        probes.append({
+            "configuration": configuration,
+            **visual_probe(model, task, args.seed, planes),
+        })
         rows.append(row)
         (args.out / "results.partial.json").write_text(json.dumps({"runs": rows}, indent=2))
         (args.out / "probes.partial.json").write_text(json.dumps({"probes": probes}))

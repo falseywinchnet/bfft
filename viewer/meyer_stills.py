@@ -37,6 +37,12 @@ import gallery  # noqa: E402
 from bfft.effects import lab_to_srgb, meyer_channels, shade  # noqa: E402
 
 SPACES = ["oklab_lc", "oklab", "rgb", "gray"]
+METHODS = {
+    "quality flow (5 jumps)": "quality",
+    "fast flow (3 jumps)": "fast",
+    "fused 64 reference": "fused64",
+    "old scalar hard control": "hard",
+}
 SPACE_HELP = {
     "oklab_lc": "OKLab lightness + chroma; hue carried untouched",
     "oklab": "OKLab L, a, b independently",
@@ -78,11 +84,12 @@ def _fit(a):
     return a[::step, ::step] if step > 1 else a
 
 
-def do_split(space, passes, mu):
+def do_split(space, mu, method_label):
     S.busy = True
     try:
         t0 = time.perf_counter()
-        sp = meyer_channels(S.img, space=space, mu=mu, passes=passes)
+        method = METHODS[method_label]
+        sp = meyer_channels(S.img, space=space, mu=mu, method=method)
         dt = time.perf_counter() - t0
         sh = np.stack([shade(sp.cartoon[..., i], c=S.shade_want)
                        for i in range(sp.planes.shape[2])], -1)
@@ -95,7 +102,7 @@ def do_split(space, passes, mu):
         k = sp.planes.shape[2]
         S.status = (f"{S.name}  {S.img.shape[0]}x{S.img.shape[1]}  "
                     f"{space}: {k} plane(s) {sp.names} in {dt * 1e3:.0f} ms "
-                    f"({dt * 1e3 / k:.0f} ms/plane, {passes} passes).  "
+                    f"({dt * 1e3 / k:.0f} ms/plane; {method_label}).  "
                     f"Drag the gains.")
     except Exception as exc:
         S.status = f"Decomposition failed: {type(exc).__name__}: {exc}"
@@ -291,10 +298,10 @@ def cb_decompose():
             S.status = "No image selected."
         return
     space = dpg.get_value("space")
-    passes = int(dpg.get_value("passes"))
     mu = float(dpg.get_value("mu"))
-    S.status = f"Decomposing in {space}..."
-    threading.Thread(target=do_split, args=(space, passes, mu),
+    method = dpg.get_value("method")
+    S.status = f"Decomposing in {space} with {method}..."
+    threading.Thread(target=do_split, args=(space, mu, method),
                      daemon=True).start()
 
 
@@ -360,9 +367,10 @@ def build_ui(labels):
             dpg.add_text("Space")
             dpg.add_combo(SPACES, default_value=SPACES[0], tag="space",
                           width=110)
-            dpg.add_text("passes")
-            dpg.add_input_int(default_value=64, min_value=4, max_value=400,
-                              step=8, tag="passes", width=110)
+            dpg.add_text("Method")
+            dpg.add_combo(
+                list(METHODS), default_value=next(iter(METHODS)),
+                tag="method", width=205)
             dpg.add_text("mu")
             dpg.add_input_float(default_value=40.0, min_value=2.0,
                                 max_value=400.0, step=5.0, tag="mu",

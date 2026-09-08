@@ -1,0 +1,690 @@
+\documentclass[10pt,twocolumn]{article}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setsansfont{Helvetica Neue}
+\setmonofont{Menlo}
+\usepackage[letterpaper,top=0.64in,bottom=0.70in,left=0.67in,right=0.67in,columnsep=0.24in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,bm,microtype,booktabs,graphicx,xcolor,enumitem}
+\usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue!55!black]{hyperref}
+\graphicspath{{results/}}
+\setlength{\parindent}{1em}\setlength{\parskip}{0pt}
+\setlength{\textfloatsep}{7pt plus 2pt minus 2pt}
+\setlength{\floatsep}{6pt plus 2pt minus 2pt}
+\setlength{\intextsep}{6pt plus 2pt minus 2pt}
+\setlist{nosep,leftmargin=*}\renewcommand{\arraystretch}{1.08}
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{theorem}[proposition]{Theorem}
+\newtheorem{lemma}[proposition]{Lemma}
+\theoremstyle{definition}\newtheorem{remark}[proposition]{Remark}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\TV}{\operatorname{TV}}
+\newcommand{\diver}{\operatorname{div}}
+\newcommand{\grad}{\nabla}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\PiD}{\Pi}
+\newcommand{\Tf}{T_f}
+
+
+\title{\textbf{Transport-State Fusion for Fast\\Meyer--Bregman Decomposition}}
+\author{Joshuah Rainstar\\\small\texttt{joshuah.rainstar@gmail.com}}
+\date{September 4, 2026}
+\begin{document}
+\twocolumn[
+\maketitle
+\begin{abstract}
+Efficient cartoon--texture decomposition requires more than inexpensive
+iterations: the information needed by the next coupled subproblem must
+survive the current one. We present an engineering realization of
+Meyer--Bregman decomposition organized around a six-field transport state.
+Two primal images and four accumulated gradient fields close a warm
+interleaved recurrence. Retained primal spectra, streamed reflected
+divergences, and a lower-triangular spectral solve eliminate redundant work
+without changing that recurrence. The construction arose from studying
+transport between related measurements in an earlier superresolution
+experiment; matrix-function approximation was subsequently used to advance
+the retained state, rather than to define it.
+
+We distinguish exact implementation improvements from approximate trajectory
+acceleration. A finite-flow polynomial on the complete state avoids the
+specific retained-carrier and contour-halo defects of an earlier scalar
+surrogate. Its numerical machinery is standard Krylov projection; the
+contribution is the state formulation, its fused realization, and the
+measured tradeoff on this decomposition. A September audit adds denser
+ordinary controls, late trajectory checkpoints, and inexpensive feasible
+primal--dual certificates. Agreement with a visually accepted 64-pass image
+is not equivalent to objective convergence. A current-state factor
+experiment improves finite-reference accuracy, but fixed factors have
+parameter-dependent counterexamples. We identify statistically determined,
+certified, low-overhead step selection as an open engineering requirement.
+Code, numerical oracles, timing samples, and negative controls accompany
+the paper.
+\end{abstract}
+\par\vspace{.6em}
+\noindent\textbf{Keywords:} Meyer decomposition, bounded flux, Split Bregman,
+transport state, spectral fusion, finite flow, primal--dual certificate.
+\par\vspace{1em}
+]
+
+\section{Introduction}
+Meyer's model represents oscillation through the divergence of a bounded
+vector field, rather than by a frequency cutoff \cite{meyer2001,aujol2005}.
+Gilles and Osher used duality and Split Bregman to implement the associated
+alternating ROF subproblems \cite{gilles2024,goldstein2009}. That model and
+its Bregman interpretation are the starting point of this work.
+
+Our engineering question is what must remain available when one coupled
+subproblem becomes the next. The driving images change during the
+alternation. An estimate of the image alone does not necessarily retain
+the flux and projection information that makes the next update effective.
+Repeated cold solves discard useful information; extrapolation of stale
+subproblem updates can carry information in the wrong frame.
+
+The development began with transform planning and a two-lattice
+superresolution experiment concerned with transport between related
+measurements. In the Meyer problem, this motivated retaining the coupled
+transport state and reducing repeated work around it. The resulting
+sequence was warm interleaving, six-field reduction, retained spectra,
+paired spectral solution, and only then finite-state advance.
+Transport here refers to the model's bounded-flux structure and propagation
+of its coupled state. We do not claim a new optimal-transport distance or
+a mass-preserving image warp.
+
+This distinction matters for attribution. The transport construction was
+the author's motivating idea. Krylov projection is a recognized numerical
+tool used in its later implementation, not the claimed source of that
+idea. Conversely, a different route of discovery does not make established
+matrix-function algebra new.
+
+The engineering contributions are:
+\begin{enumerate}
+\item A closed warm six-field recurrence and its exact spectral fusion,
+including source initialization and effective two-product output.
+\item A diagnosis of a scalar shortcut's failure and a finite-flow
+implementation on the retained state, with independent checks.
+\item A measurement framework separating elapsed work, finite-trajectory
+agreement, and objective certificates, including negative results.
+\end{enumerate}
+The September revision adds a current-state factor experiment and explicit
+requirements for dynamic factors. These are subsequent investigations, not
+retroactive explanations of the August measurements.
+
+\subsection{Relation to prior work}
+The Meyer model, Chambolle projection, and Split Bregman are established
+\cite{meyer2001,aujol2005,chambolle2004,goldstein2009}.
+Gilles--Osher's Bregman implementation appeared as UCLA CAM Report 11-73
+in 2011; its 2024 arXiv posting is later dissemination \cite{gilles2024}.
+Fourier diagonalization, warm starts, and Krylov matrix-function actions
+are established techniques \cite{saad1992,jia2015}. Accelerating splitting
+states has close precedents in Anderson-accelerated Douglas--Rachford and
+ADMM \cite{fu2020,ouyang2020}. Those are relevant comparisons, although
+they do not identify the finite polynomial or exact realization here.
+
+A changing inner driving image does not make all acceleration of a fully
+specified enlarged fixed-point map impossible. It does invalidate treating
+successive inner problems as one unchanged problem without justification.
+Historical experiments motivating this work rejected stale subproblem
+momentum. The present method reconstructs the current coupled update.
+\section{The retained transport state}
+
+Let $X=\R^{H\times W}$ with periodic forward gradient $D:X\to X^2$ and
+$D^*$ its adjoint. We use $\operatorname{div}=-D^*$ throughout. The discrete isotropic variation is
+\begin{equation}
+J(u)=\TV(u)=\sum_x \norm{(Du)(x)}_2 .
+\end{equation}
+Meyer's discrete oscillation norm is
+\begin{equation}
+\norm v_G=\inf_{v=D^*p}\norm p_{\infty,2},\qquad
+\norm p_{\infty,2}=\max_x\norm{p(x)}_2 .
+\label{eq:gnorm}
+\end{equation}
+The associated BV--$G$ formulations and alternating projections are
+developed in \cite{meyer2001,aujol2005,gillesmeyer2024}.  We use the same
+$[0,255]$ intensity convention and fixed parameters $\lambda=.05$, $\mu=40$.
+
+The optimized reference retains two primal fields and four accumulated
+gradient fields:
+\begin{equation}
+z=(u,w,t_u^x,t_u^y,t_w^x,t_w^y).
+\label{eq:state}
+\end{equation}
+Here $w=f-u-v$ is the finite-pass survivor.  Consequently the public
+two-product decomposition is
+\begin{equation}
+v=f-u-w,\qquad \bar u=f-v=u+w.
+\label{eq:effective}
+\end{equation}
+This convention matters in comparisons: raw $u$ from a finite model is not
+the effective cartoon $f-v$.
+
+Define the pointwise disk projection and reflected projection
+\begin{equation}
+\PiD_a(t)=\begin{cases}t,&|t|\le a,\\a,t/|t|,&|t|>a,
+\end{cases}\qquad R_a=I-2\PiD_a,
+\label{eq:projection}
+\end{equation}
+and the screened inverse $S(c,\eta)=(cI+\eta D^*D)^{-1}$.  With
+\begin{align}
+c_u&=\lambda,&\eta_u&=2\lambda,&a_u&=\eta_u^{-1},\nonumber\\
+c_w&=\mu^{-1},&\eta_w&=10\mu^{-1},&a_w&=\eta_w^{-1},
+\end{align}
+Write $S_u=S(c_u,\eta_u)$ and $S_w=S(c_w,\eta_w)$.
+One exact warm fused pass $\Tf:z\mapsto z^+$ is
+\begin{align}
+u^+&=S(c_u,\eta_u)
+ \{c_u(u+w)+\eta_uD^*R_{a_u}(t_u)\},\label{eq:upass}\\
+w^+&=S(c_w,\eta_w)
+ \{c_w(f-u^+)+\eta_wD^*R_{a_w}(t_w)\},\label{eq:wpass}\\
+t_u^+&=Du^++\PiD_{a_u}(t_u),\qquad
+t_w^+=Dw^++\PiD_{a_w}(t_w).\label{eq:tpass}
+\end{align}
+
+\begin{proposition}[Lower-triangular spectral pass]
+For periodic boundaries, equations \eqref{eq:upass}--\eqref{eq:wpass} form a
+lower-triangular two-by-two system at every Fourier coefficient.  Both
+reflected divergences may be transformed before either inverse transform,
+and the two primal spectra may be solved in one range traversal.
+\end{proposition}
+\begin{proof}
+$D^*D$ diagonalizes under the periodic DFT.  If $\sigma_u$ and $\sigma_w$
+are the two screened multipliers and $\widehat d_i$ denotes the transform
+of $D^*R_{a_i}(t_i)$, then
+\begin{align*}
+\widehat u^+&=\sigma_u\{c_u(\widehat u+\widehat w)
++\eta_u\widehat d_u\},\\
+\widehat w^+&=\sigma_w\{c_w(\widehat f-\widehat u^+)
++\eta_w\widehat d_w\}.
+\end{align*}
+The second equation depends on the newly computed first variable and no
+reverse coupling remains.  This is exactly the paired spectral loop in the
+C++ kernel.
+\end{proof}
+
+
+\subsection{Source initialization}
+The first pass is source driven:
+\begin{align}
+u_1&=S_u(c_uf),&w_1&=S_w\{c_w(f-u_1)\},\nonumber\\
+t_{u,1}&=Du_1,&t_{w,1}&=Dw_1.
+\label{eq:first}
+\end{align}
+It is not obtained by inserting a zero state into \eqref{eq:upass}.
+Every experimental pass count includes this initialization.
+The plus signs before $D^*R$ in the recurrence correspond to the code's
+$-\eta\operatorname{div}R$. Exact recomposition does not itself certify
+that the finite emitted texture lies in the prescribed $G$ ball.
+
+\section{Exact implementation economy}
+The current driving images are $u+w$ and $f-u^+$. They change, but the
+fields needed to compute them and their Bregman corrections remain in the
+state. Warm interleaving takes one inner sweep per route and immediately
+updates the coupled state. It is a different finite schedule from converging
+both inner problems at every outer step.
+
+The screened solve resolves global spatial linear coupling exactly for the
+selected boundary conditions. This can replace many local updates even
+when each local update is individually cheap. The retained state and
+global solve work together; neither a warm start nor a cheap local step
+alone explains the efficiency.
+
+Retaining $\widehat f,\widehat u,\widehat w$ avoids transforming driving
+images already known spectrally. Streaming the reflected divergence avoids
+materializing unneeded intermediate fields. Pairing the spectral solution
+shares traversal and synchronization work. An ordinary outer pass contains
+two forward and two inverse two-dimensional transforms, one pair per
+screened subproblem.
+
+These are exact changes of representation and execution of the chosen
+recurrence. They must be distinguished from taking fewer nonlinear passes
+or approximating several passes by a jump. Persistent workers and reusable
+plans support the native implementation. The one-axis FACR route extends
+shape support, but the finite-flow tangent remains full spectral.
+\section{Diagnosis of the scalar shortcut}
+
+The rejected hard construction replaced the state recurrence by two scalar
+observations.  Let $\mathcal S$ be its scalar separator, $H$ its contraction,
+$P_K=I-H^K$, and
+\begin{align}
+s_0&=\mathcal S(f),&m_0&=P_K(f-s_0),\nonumber\\
+r_1&=f-m_0,&s_1&=\mathcal S(r_1).
+\end{align}
+Before its final $G$-capacity correction, the texture proposal is
+$m=P_K(f-s_1)$.  Write $v_H=m+q_\mu$, where $q_\mu$ is the change caused by
+that final capacity route.
+
+\begin{proposition}[Common cause of halo and retained texture]
+Let $(u_*,v_*)$ be any exact two-product reference, $f=u_*+v_*$.  The second
+hard observation and its final texture error satisfy
+\begin{align}
+r_1&=u_*+H^Kv_*+P_K(s_0-u_*),\label{eq:secondobs}\\
+v_H-v_*&=P_K(u_*-s_1)-H^Kv_*+q_\mu .\label{eq:defect}
+\end{align}
+\end{proposition}
+\begin{proof}
+Since $P_K=I-H^K$,
+\begin{align*}
+r_1&=f-P_K(f-s_0)=s_0+H^K(f-s_0)\\
+&=u_*+H^Kv_*+P_K(s_0-u_*),
+\end{align*}
+which proves \eqref{eq:secondobs}.  Similarly,
+\begin{align*}
+m-v_*&=P_K(f-s_1)-v_*\\
+&=P_K(u_*-s_1)+(P_K-I)v_*\\
+&=P_K(u_*-s_1)-H^Kv_*.
+\end{align*}
+Adding $q_\mu=v_H-m$ proves \eqref{eq:defect}.
+\end{proof}
+
+The two visible failures are therefore one representation error.
+$H^Kv_*$ is the uncompleted carrier tail; it remains in cartoon with the
+opposite sign in texture.  If $e=u_*-s_1$ contains a step mismatch and
+$H^Ke=h_K*e$ for a normalized smoothing kernel $h_K$, then
+$P_Ke=e-h_K*e$ has the paired positive and negative contour response of a
+halo.  It has zero mean, so a one-sided clamp cannot remove it faithfully.
+For a Fourier carrier with contraction gain $0<\rho<1$,
+$H^Kv_*=\rho^Kv_*\ne0$ at every finite $K$.
+
+Figure \ref{fig:defect} renders the terms independently.  Across six
+$256^2$ controls, direct substitution into \eqref{eq:secondobs} and
+\eqref{eq:defect} leaves at most $1.42\times10^{-13}$ in $L_\infty$.  This is
+an identity check, not a fitted explanation.
+
+\begin{figure*}[t]
+\centering\includegraphics[width=.98\textwidth]{revision_defect.png}
+\caption{Three representative controls from the six-control scalar-defect
+archive. The carrier, structural, and capacity columns sum to the actual
+texture error in the last column, to roundoff. Pure edge and pure carrier
+isolate the terms; supported texture shows their superposition. Signed
+error columns share a color scale within each row.}
+\label{fig:defect}
+\end{figure*}
+
+
+The identity explains the observed defects of this construction. It is not
+an impossibility theorem for all scalar algorithms, nor proof that a
+different representation cannot produce a halo by another mechanism.
+The engineering response was to advance the actual state instead of
+repairing the output using a content-admission rule.
+
+\section{Finite flow of the complete state}
+
+After a short ordinary prefix, fix the current state $z$ and define
+\begin{equation}
+r=\Tf(z)-z,\qquad A\in\partial\Tf(z).
+\label{eq:residual}
+\end{equation}
+If $\Tf$ were affine on the visited chart, its exact finite displacement after
+$m$ more passes would be
+\begin{equation}
+\Tf^m(z)-z=p_m(A)r,\qquad
+p_m(A)=I+A+\cdots+A^{m-1}.
+\label{eq:finitepoly}
+\end{equation}
+This is the finite-trajectory target.  The stationary Newton displacement
+$(I-A)^{-1}r$ was tested and rejected: it can overshoot a desired finite
+state at structural transitions.
+
+The only nonlinear branch derivative comes from the disk projection already
+present in \eqref{eq:projection}.  For $n=t/|t|$,
+\begin{equation}
+D\PiD_a(t)h=\begin{cases}
+h,&|t|<a,\\[2pt]
+\dfrac{a}{|t|}(I-nn^T)h,&|t|>a,
+\end{cases}
+\label{eq:diskderivative}
+\end{equation}
+and $DR_a(t)h=h-2D\PiD_a(t)h$.  At $|t|=a$ the implementation chooses the
+interior member of the Clarke derivative.  Differentiating the fused triangle
+gives
+\begin{align}
+\dot u^+&=S_u\{c_u(\dot u+\dot w)
++\eta_uD^*DR_{a_u}(t_u)\dot t_u\},\nonumber\\
+\dot w^+&=S_w\{-c_w\dot u^+
++\eta_wD^*DR_{a_w}(t_w)\dot t_w\},\label{eq:tangent}\\
+\dot t_u^+&=D\dot u^++D\PiD_{a_u}(t_u)\dot t_u,\nonumber\\
+\dot t_w^+&=D\dot w^++D\PiD_{a_w}(t_w)\dot t_w.\nonumber
+\end{align}
+No statistic of $f$ enters \eqref{eq:tangent}; only the current optimization
+state and the original projection geometry do.
+
+\subsection{A standard small numerical representation}
+
+The implementation evaluates $r$, $Ar$, and $A^2r$.  Let
+\begin{equation}
+\begin{gathered}
+B=[r,Ar],\qquad G=B^TB,\\
+K=B^TAB,\qquad \widehat A=G^{-1}K.
+\end{gathered}
+\label{eq:galerkin}
+\end{equation}
+Because $Ar$ is the second basis vector, the first column of $\widehat A$ is
+exactly $(0,1)^T$.  Only the projection of $A^2r$ needs a two-by-two solve.
+The applied displacement is
+\begin{equation}
+\delta_m=Bp_m(\widehat A)e_1.
+\label{eq:krylovjump}
+\end{equation}
+This is standard Krylov matrix-function machinery \cite{saad1992,jia2015}, not a newly claimed algebraic principle. It is algebraically the depth-two Arnoldi polynomial without normalization
+or full-field modified Gram--Schmidt sweeps.  A fixed 64-chunk reduction
+computes the five required inner products in a thread-count-independent
+summation order.
+
+\subsection{What error remains}
+
+Write the semismooth expansion at $z$ as
+\begin{equation}
+\Tf(z+d)=\Tf(z)+Ad+N_z(d).
+\end{equation}
+Let $d_k=\Tf^k(z)-z$, $p_0=0$, $p_{k+1}=r+Ap_k$, and
+$e_k=d_k-p_k$.  Then
+\begin{equation}
+e_{k+1}=Ae_k+N_z(d_k).
+\end{equation}
+If $\norm A\le\gamma$ and $\norm{N_z(d)}\le L\norm d^2/2$ on the traversed
+chart, induction gives
+\begin{equation}
+\norm{e_m}\le \frac{L}{2}\sum_{k=0}^{m-1}
+\gamma^{m-1-k}\norm{d_k}^2.
+\label{eq:remainderbound}
+\end{equation}
+The quadratic assumption is not guaranteed across projection boundaries by
+semismoothness alone. At $t=(a,0)$, select the interior derivative and take
+outward $h=(\epsilon,0)$. Then
+$\Pi_a(t+h)-\Pi_a(t)-h=-h$, a first-order remainder. The exterior disk
+derivative also varies within an unchanged active set. Thus an active set
+is not an affine chart.
+
+The implemented error additionally contains the depth-two projection term
+\begin{equation}
+\norm{p_m(A)r-Bp_m(\widehat A)e_1}.
+\end{equation}
+Ordinary passes after each jump refresh the nonlinear disk branches and
+shorten the chart over which \eqref{eq:remainderbound} accumulates.  Thus the
+remaining discrepancy from pass 64 consists of finite target tail, Krylov
+projection, and semismooth chart error.  The terms $P_K(u_*-s_1)$ and
+$-H^Kv_*$ of \eqref{eq:defect} are absent as terms of that particular surrogate identity: this method never
+forms $s_1$, $P_K$, or a scalar surrogate for $z$.
+
+\subsection{Fixed schedules and the shorter-jump ablation}
+
+For prefix $p$, two tangent products, $s$ ordinary refresh passes, and $j$
+jumps, the exact operator-pass cost is
+\begin{equation}
+C=p+j(1+2+s),
+\label{eq:cost}
+\end{equation}
+where the one counts the exact nonlinear residual evaluation.  The public
+schedules are fixed independently of the source:
+\begin{center}\small
+\begin{tabular}{lrrrrr}\toprule
+&$p$& horizon &$s$&$j$&$C$\\\midrule
+fast&4&18&2&3&19\\
+quality&4&10&2&5&29\\\bottomrule
+\end{tabular}
+\end{center}
+
+We also tested the natural alternative ``jump less, refresh once.''  A cheap
+post-jump graph retraction,
+\begin{equation}
+t\leftarrow Du+\PiD_a(t-Du),
+\label{eq:retract}
+\end{equation}
+restores the dual feasibility $|t-Du|\le a$ in $O(HW)$ pointwise work and no
+FFT.  Retraction alone prevents instability but loses most of the
+acceleration.  Shorter jumps with one exact refresh won at $128^2$ but did
+not uniformly beat the two-refresh schedules at $256^2$.  Reducing only the
+horizon traded small wins among controls rather than producing dominance.
+This negative ablation shows that refreshes are nonlinear chart updates, not
+backtracking overhead.  A useful constrained variant is therefore likely to
+cost about the same total spectral work unless it exploits a stronger bound
+than \eqref{eq:retract}.
+
+\section{C++ realization}
+
+The public full-spectral entry point is
+\path{bfft_meyer_split_flow_jump}.  Its plan owns the ordinary reduced
+state and lazily allocates three six-field Krylov vectors plus primal spectra.
+The implementation performs:
+\begin{enumerate}[label=\arabic*.]
+\item a source FFT and ordinary fused prefix;
+\item one exact residual pass without overwriting live spectra;
+\item two streamed tangent passes using \eqref{eq:diskderivative};
+\item one fixed-chunk five-scalar Gram reduction;
+\item the $2\times2$ polynomial in registers and one state AXPY;
+\item fixed ordinary refresh passes, repeated by schedule.
+\end{enumerate}
+No candidate scan or line search is performed.  Texture is emitted as
+$f-u-w$ and cartoon as $f-v$, guaranteeing exact two-product recomposition.
+
+The Python binding exposes \path{MeyerPlan.split_flow_jump}; the default
+full-spectral \code{split} uses the quality schedule.  The effect API and
+still-image demo expose \code{quality}, \code{fast}, \code{fused64}, and the
+old hard control.  The video demo uses the fixed fast schedule.  FACR plans
+retain their configured ordinary fused recurrence because the current
+finite-flow tangent is full-spectral; they also fold the finite survivor into
+effective cartoon.
+
+Native tests compare the C++ output to an independent NumPy implementation of
+\eqref{eq:upass}--\eqref{eq:krylovjump}, check exact recomposition, translation
+equivariance, and bit identity across thread counts, and require both public
+schedules to beat their equal-cost ordinary controls on the surgical battery.
+
+
+\section{Distance to the objective}
+A visually accepted finite image is an engineering reference, not a
+certificate of the discrete constrained model
+\begin{align}
+F^\star=\min_{u,\ v\in\mathcal G_\mu}
+&J(u)+\frac{\lambda}{2}\norm{f-u-v}^2,\nonumber\\
+&\mathcal G_\mu=\{D^*g:|g(x)|\le\mu\}.
+\label{eq:objective}
+\end{align}
+We report $E_{64}=\norm{v_{\rm out}-v_{64}}/\norm{v_{64}}$ and late
+trajectory differences, while separately recovering feasible bounds.
+
+From any retained state define
+\begin{align}
+p&=\eta_u\Pi_{a_u}(t_u),&q&=D^*p,\nonumber\\
+g&=(\eta_w/c_w)\Pi_{a_w}(t_w),&v_F&=D^*g.
+\end{align}
+The flux radii are one and $\mu$ respectively.
+\begin{proposition}[Feasible objective certificate]
+For
+\begin{align}
+P&=J(u)+\frac{\lambda}{2}\norm{f-u-v_F}^2,\nonumber\\
+L&=\langle f,q\rangle-\frac{\norm q^2}{2\lambda}-\mu J(q),
+\end{align}
+one has $L\le F^\star\le P$.
+\end{proposition}
+\begin{proof}
+The upper bound uses a feasible pair. For the lower bound use
+$J(u)\ge\langle u,q\rangle$ and
+$\sup_{v\in\mathcal G_\mu}\langle v,q\rangle=\mu J(q)$, then minimize the
+quadratic. Equivalently, the gap decomposes into nonnegative terms:
+\begin{align}
+P-L={}&J(u)-\langle u,q\rangle+\mu J(q)-\langle v_F,q\rangle\nonumber\\
+&+\frac{\lambda}{2}\norm{f-u-v_F-q/\lambda}^2.
+\label{eq:gap}
+\end{align}
+\end{proof}
+This needs pointwise projections, local differences, and reductions, with
+no additional screened solve. It certifies the recovered feasible pair,
+not automatically the emitted texture. We also record their RMS difference.
+A small gap does not establish uniqueness of the decomposed images.
+
+\section{Engineering evidence}
+\subsection{Archived finite-flow measurements}
+The August surgical battery uses six designed $256^2$ controls and
+$(\lambda,\mu)=(.05,40)$ on $[0,255]$ intensities. Mean texture RMS error
+to fused 64 is 3.431 for the scalar shortcut, 1.400 for fast versus 1.496
+for ordinary 19, and 1.039 for quality versus 1.196 for ordinary 29.
+Every equal-operator-count comparison improves in that battery.
+
+Archived eight-thread M4 medians on a multiscale crossing are 11.52 ms
+(fast), 18.16 ms (quality), and 34.60 ms (ordinary 64) at $256^2$.
+These are different-accuracy operating points. Cold nested Gilles timings
+in the archive use NumPy/SciPy and different stopping rules; they are
+historical context, not evidence of a same-implementation speedup.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=.94\textwidth]{revision_natural.png}
+\caption{Archived two-product comparison, with survivor folded into effective
+cartoon. Barbara is $512^2$; the other two sources are $256^2$.
+The scalar shortcut retains oscillatory material and exhibits contour
+error. Finite-flow outputs track the ordinary 64-pass allocation more
+closely. Texture columns share a color scale within each row.}
+\end{figure*}
+
+\subsection{September audit and clean timing rerun}
+The audit adds ordinary 32, 40, and 48 controls; ordinary 2048 and 4096
+checkpoints; and the certificate \eqref{eq:gap}. All four comparison
+sources are resized or retained at $256^2$, including Barbara.
+Parameters and periodic boundaries are unchanged.
+The late reference is checked: texture drift from pass 2048 to 4096 is
+0.39--1.73\%, while the relative recovered objective gap at 4096 is
+$2.05\times10^{-5}$ to $1.36\times10^{-4}$.
+Ordinary 64 differs from pass 4096 by 8.7--22.7\% in texture norm.
+
+The original September screen ran under competing CPU load. Its numerical
+outputs remain valid, but its timings are not used as a clean speed claim.
+The new record was collected after those workers were stopped.
+Plan construction and post-run diagnostics are excluded; returned-output
+allocation is included. Two warmup rounds precede 15 timed rounds, with
+method order shuffled in each round. Table~\ref{tab:clean} is generated
+from serialized measurements.
+
+\input{results/september_clean_table.tex}
+
+Equal operator counts do not mean equal time. Zero error to pass 64 is
+true by definition for ordinary 64, not evidence of objective convergence.
+The quality schedule has a larger recovered gap than ordinary 32 on all
+four sources, despite better $E_{64}$. Its role is finite-state prediction,
+not direct minimization of that certificate.
+
+\subsection{A current-state factor experiment}
+The audit tests, after the four-pass prefix,
+\begin{equation}
+z^+=z+\alpha(\Tf(z)-z).
+\label{eq:relax}
+\end{equation}
+This is classical full-state overrelaxation, not a new acceleration
+principle. Both driving fields are recomputed inside $\Tf$ before applying
+the factor. An experimental native version fuses the state combination
+and maintains spectra without extra FFTs.
+
+At $\alpha=1.75$ and 32 total passes, $E_{64}$ is 59--65\% lower than
+the quality preset on the four audit sources. Recovered gaps are smaller
+by factors 1.89--3.31. At 64 passes, error to pass 4096 improves by
+12--27\% against ordinary 64 and the gap improves by 36--54\%, but relaxed
+passes cost more. Same-count gains alone are not matched-time
+convergence-speed claims.
+
+The factor is not universal. At 128 passes, a screen of eight sources at
+three parameter pairs leaves all outputs finite, yet $\alpha=1.75$
+improves the gap in only 16 of 19 nontrivial cases. Counterexamples include
+a ramp, an edge, and a low-frequency carrier. At $\alpha=1.9$, one ramp
+has approximately 94.5 times the ordinary gap. Five other cases have
+ordinary gaps below $10^{-8}$ and are excluded from gain ratios.
+Two final ordinary steps improve the gap in every tested finishing-pass
+ablation, but can worsen agreement with pass 64.
+
+\section{Requirements for dynamic factors}
+A constant multiplier diagnoses available progress; it is not a sufficient
+method. A production factor should be determined from current transport
+statistics, carry a stated mathematical guarantee, and cost materially
+less than the work it saves. There are three separate requirements:
+\begin{enumerate}
+\item \emph{A valid statistic.} Boundary distance, nonlinear defect,
+residual, or objective bound must measure the claimed quantity.
+Active-set persistence alone does not certify a long affine prediction.
+\item \emph{A valid decision.} A local slope can suggest a candidate.
+An established bound or checked inequality must certify its advertised
+property. A feasible gap comparison certifies that comparison; it does not
+by itself prove convergence of repeated choices.
+\item \emph{A measured cost.} Reductions, stencils, trial projections,
+and rejected candidates must all be timed. Absence of extra FFTs does not
+imply negligible overhead.
+\end{enumerate}
+The certificate \eqref{eq:gap} enables an initial investigation without
+changing the model. Dynamic-factor work is maintained as a separate
+follow-up. No successful adaptive convergence theorem or universal dynamic
+speedup is asserted in this revision.
+
+\section{Reproducibility and limitations}
+The full-spectral implementation is checked against an independent NumPy
+six-field oracle. Tests cover adjoint signs, tangent finite differences,
+initialization through trajectory agreement, recomposition, translation
+equivariance, and thread reproducibility. The audit adds the nonnegative
+gap decomposition, a zero-gap constant case, a boundary remainder
+counterexample, and native agreement for experimental factors and refreshes.
+
+{\small\raggedright Code and evidence reside in
+\path{src/detail/meyer_kernel.hpp},
+\path{experiments/meyer_semismooth_state_jump.py},
+\path{experiments/meyer_hard_jump_defect_proof.py}, and
+\path{experiments/meyer_transport_audit/}.
+Raw timing samples, arrays, counterexamples, and reproduction commands are
+retained. The audit wrapper does not replace production presets.\par}
+
+The study does not establish global convergence of warm one-sweep
+interleaving for every parameter or boundary condition, image uniqueness,
+or priority for every ingredient. Finite-flow evidence covers a limited
+source set and primarily one parameter pair. Factors were selected during
+exploration on these sources; repeated timing is not held-out validation.
+The arbitrary-shape route is not included in the finite-flow speed claim.
+
+\section{Conclusion}
+The principal engineering result is a retained transport state that makes
+the changing coupled problems inexpensive to reconstruct and globally
+solve. Spectral fusion realizes the same recurrence with less repeated
+work. Finite-flow approximation and current-state overrelaxation are
+subsequent choices about how far to advance that state.
+
+A scalar shortcut loses identifiable information; a faithful finite-state
+jump improves finite-reference agreement; objective certificates reveal
+progress that a finite image reference cannot measure. Further
+acceleration should be earned by a cheap, formally stated, continuously
+updated decision about the current transport, with its full cost included.
+
+\section*{Research attribution}
+Joshuah Rainstar developed the transport-oriented research direction,
+connected it to earlier superresolution work, and supplied visual and
+computational falsification criteria. Substantial algebraic exploration,
+implementation, benchmark scaffolding, and manuscript drafting were
+performed with AI assistance under that direction. Established model,
+splitting, and matrix-function ideas are credited in their respective
+sections. Claims are limited to the stated derivations and executable
+evidence.
+\begin{thebibliography}{10}
+\small
+\bibitem{meyer2001} Y. Meyer, \emph{Oscillating Patterns in Image Processing
+and in Some Nonlinear Evolution Equations}. AMS, 2001.
+\bibitem{aujol2005} J.-F. Aujol, G. Aubert, L. Blanc-F\'eraud, and A.
+Chambolle, ``Image decomposition into a bounded variation component and an
+oscillating component,'' \emph{J. Math. Imaging Vision}, 22:71--88, 2005.
+\bibitem{chambolle2004} A. Chambolle, ``An algorithm for total variation
+minimization and applications,'' \emph{J. Math. Imaging Vision}, 20:89--97,
+2004.
+\bibitem{goldstein2009} T. Goldstein and S. Osher, ``The Split Bregman method
+for $L^1$-regularized problems,'' \emph{SIAM J. Imaging Sci.}, 2:323--343,
+2009.
+\bibitem{gilles2024} J. Gilles and S. Osher, ``Bregman implementation of
+Meyer's $G$-norm for cartoon + textures decomposition,'' UCLA CAM Report 11-73, 2011; later posted as arXiv:2410.22777, 2024.
+\bibitem{gillesmeyer2024} J. Gilles and Y. Meyer, ``Properties of BV--G
+decomposition models,'' arXiv:2411.04456, 2024.
+
+\bibitem{saad1992} Y. Saad, Analysis of some Krylov subspace approximations
+to the matrix exponential operator. \emph{SIAM J. Numer. Anal.},
+29(1):209--228, 1992.
+\bibitem{jia2015} Z. Jia and H. Lv, A posteriori error estimates of Krylov
+subspace approximations to matrix functions. \emph{Numerical Algorithms},
+69:1--28, 2015; arXiv:1307.7219.
+\bibitem{fu2020} A. Fu, J. Zhang, and S. Boyd, Anderson accelerated
+Douglas--Rachford splitting. \emph{SIAM J. Sci. Comput.},
+42(6):A3560--A3583, 2020.
+\bibitem{ouyang2020} W. Ouyang, Y. Peng, Y. Yao, J. Zhang, and B. Deng,
+Anderson acceleration for nonconvex ADMM based on Douglas--Rachford
+splitting. \emph{Computer Graphics Forum}, 2020; arXiv:2006.14539.
+\end{thebibliography}
+\end{document}

@@ -74,11 +74,16 @@ bfft_status bfft_meyer_split(bfft_meyer_plan* plan, const double* image,
         cartoon == nullptr ||
         texture == nullptr || cartoon == texture)
         return BFFT_ERROR_INVALID_ARGUMENT;
-    if (plan->eng.solver != 2) {
-        if (!plan->eng.split_jump_measure(image, cartoon, texture, 8))
+    if (!plan->eng.facr_active) {
+        if (!plan->eng.split_flow_jump(
+                image, cartoon, texture, 4, 10, 2, 5))
             return BFFT_ERROR_INVALID_ARGUMENT;
     } else {
-        plan->eng.split(image, cartoon, texture);
+        // The semismooth chart currently uses the complete 2-D spectrum.
+        // Periodic and Neumann FACR therefore retain the configured fused
+        // alternation rather than falling back to the defective scalar hard
+        // jump.
+        plan->eng.split_effective(image, cartoon, texture);
     }
     return BFFT_OK;
 }
@@ -129,6 +134,25 @@ bfft_status bfft_meyer_split_jump_measure(
         return BFFT_ERROR_INVALID_ARGUMENT;
     if (!plan->eng.split_jump_measure(
             image, cartoon, texture, virtual_passes))
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    return BFFT_OK;
+}
+
+bfft_status bfft_meyer_split_flow_jump(
+        bfft_meyer_plan* plan, const double* image,
+        double* cartoon, double* texture,
+        int prefix_passes, int horizon,
+        int settle_passes, int jump_count) {
+    if (plan == nullptr || !plan->configured || image == nullptr ||
+        cartoon == nullptr || texture == nullptr || cartoon == texture ||
+        prefix_passes < 1 || prefix_passes > 64 ||
+        horizon < 1 || horizon > 64 ||
+        settle_passes < 0 || settle_passes > 64 ||
+        jump_count < 1 || jump_count > 16)
+        return BFFT_ERROR_INVALID_ARGUMENT;
+    if (!plan->eng.split_flow_jump(
+            image, cartoon, texture, prefix_passes, horizon,
+            settle_passes, jump_count))
         return BFFT_ERROR_INVALID_ARGUMENT;
     return BFFT_OK;
 }

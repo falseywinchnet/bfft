@@ -205,12 +205,12 @@ def main():
           "ok" if t_c < t_py else "FAIL")
     ok &= t_c < t_py
 
-    # 5b. fixed-cost default split speed.
+    # 5b. finite-flow default split speed.
     # Best of 3: a single shot here lands right after the python reference
     # run above and picks up thermal/scheduling noise.
     plan5.split(f512)
     t_s = min(_time_call(plan5.split, f512) for _ in range(3))
-    print(f"5b. default jump-measure split 512^2: {t_s * 1e3:.0f} ms "
+    print(f"5b. default finite-flow split 512^2: {t_s * 1e3:.0f} ms "
           f"({t_c / t_s:.0f}x cheaper than the laddered call)",
           "ok" if t_s < t_c else "FAIL")
     ok &= t_s < t_c

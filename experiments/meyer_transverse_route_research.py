@@ -140,6 +140,7 @@ def estimate_jump_measure(
     *,
     lam: float,
     virtual_passes: int,
+    state_sink: dict[str, np.ndarray] | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict]:
     """Estimate the jump as an oriented bond measure and its potential.
 
@@ -155,7 +156,8 @@ def estimate_jump_measure(
     laplacian = lap_hat(source.shape)
     transfer = lam / (lam - eta * laplacian)
 
-    half_threshold = 1.0 / (2.0 * eta)
+    exploratory_threshold = 1.0 / (2.0 * eta)
+    structural_threshold = 1.0 / eta
     histogram, edges = np.histogram(gate, bins=256, range=(0.0, 1.0))
     centers = 0.5 * (edges[:-1] + edges[1:])
     probability = histogram.astype(np.float64)
@@ -188,13 +190,14 @@ def estimate_jump_measure(
 
     def estimate(
         value: np.ndarray,
+        threshold: float,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         value_gx = np.roll(value, -1, axis=1) - value
         value_gy = np.roll(value, -1, axis=0) - value
         value_magnitude = np.hypot(value_gx, value_gy)
         value_activation = np.maximum(
             1.0 - (
-                half_threshold / np.maximum(value_magnitude, 1e-30)
+                threshold / np.maximum(value_magnitude, 1e-30)
             ) ** 2,
             0.0,
         )
@@ -206,15 +209,19 @@ def estimate_jump_measure(
         spectrum[0, 0] = 0.0
         return spectrum, flux_x, flux_y, value_activation
 
-    jump_spectrum, _, _, activation = estimate(source)
+    jump_spectrum, _, _, activation = estimate(
+        source, exploratory_threshold
+    )
+    initial_jump_potential = np.fft.ifft2(jump_spectrum).real
     initial_texture = np.fft.ifft2(
         highpass * (source_spectrum - jump_spectrum)
     ).real
     # One feed-forward residualization: remove the initially measured carrier
     # from the accepted contour bonds, then measure the oriented jump once.
     # The confidence partition remains frozen; this is not a converged loop.
+    second_observation_input = source - initial_texture
     jump_spectrum, observed_x, observed_y, refined_activation = estimate(
-        source - initial_texture
+        second_observation_input, structural_threshold
     )
     # Only the longitudinal component is a valid BV jump measure.  The raw
     # accepted bonds are observations and may contain a transverse carrier
@@ -226,7 +233,8 @@ def estimate_jump_measure(
         observed_x * observed_x + observed_y * observed_y
     )), 1e-30)
     diagnostic = {
-        "half_threshold": float(half_threshold),
+        "exploratory_threshold": float(exploratory_threshold),
+        "structural_threshold": float(structural_threshold),
         "support_partition": "Otsu between-class variance",
         "support_histogram_bins": 256,
         "support_class_boundary": class_boundary,
@@ -243,6 +251,13 @@ def estimate_jump_measure(
             np.linalg.norm(jump_potential) / np.sqrt(source.size)
         ),
     }
+    if state_sink is not None:
+        state_sink.update({
+            "initial_jump_potential": initial_jump_potential,
+            "initial_texture": initial_texture,
+            "second_observation_input": second_observation_input,
+            "final_jump_potential": jump_potential,
+        })
     return jump_spectrum, flux_x, flux_y, diagnostic
 
 
@@ -252,6 +267,7 @@ def jump_texture_components(
     *,
     lam: float,
     virtual_passes: int,
+    state_sink: dict[str, np.ndarray] | None = None,
 ) -> tuple[np.ndarray, np.ndarray, dict]:
     """Internal jump potential and oscillatory residual for a two-way split.
 
@@ -283,6 +299,7 @@ def jump_texture_components(
         structural_gate,
         lam=lam,
         virtual_passes=virtual_passes,
+        state_sink=state_sink,
     )
     oscillatory_texture = np.fft.ifft2(
         highpass * (source_spectrum - jump_spectrum)

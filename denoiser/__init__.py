@@ -187,6 +187,9 @@ from .lifted_scale_moment_transport_2d import (
 from .lifted_endpoint_action_transport_2d import (
     denoise_lifted_endpoint_action_transport_2d,
 )
+from .cross_validated_transport_stopping import (
+    denoise_cross_validated_transport_chambolle,
+)
 from .continuous_tangent_source_geometry_2d import (
     continuous_tangent_source_geometry_2d,
 )
@@ -247,6 +250,7 @@ __all__ = [
     "lifted_scale_moment_transport_state_2d",
     "affine_scale_action",
     "denoise_lifted_endpoint_action_transport_2d",
+    "denoise_cross_validated_transport_chambolle",
     "compressed_eikonal_observation_2d",
     "cross_measured_eikonal_observation_2d",
     "interlaced_scene_views_2d",

@@ -28,7 +28,7 @@ _compile = njit(cache=True) if njit is not None else _identity
 
 
 @_compile
-def _reduce_metric_field(
+def _reduce_metric_field_reference(
     mxx: np.ndarray,
     mxy: np.ndarray,
     myy: np.ndarray,
@@ -80,6 +80,70 @@ def _reduce_metric_field(
             superbase[y, x, 1, 1] = uy
             superbase[y, x, 2, 0] = vx
             superbase[y, x, 2, 1] = vy
+    return superbase
+
+
+def _reduce_metric_field(
+    mxx: np.ndarray,
+    mxy: np.ndarray,
+    myy: np.ndarray,
+) -> np.ndarray:
+    """Vectorize the exact Gauss recurrence over the metric field.
+
+    Pixels stop independently when their rounded reduction quotient vanishes.
+    The iteration order, swap condition, quotient, and 64-step ceiling are the
+    scalar oracle's; only independent pixel arithmetic is batched.
+    """
+
+    a = np.asarray(mxx, dtype=np.float64)
+    b = np.asarray(mxy, dtype=np.float64)
+    c = np.asarray(myy, dtype=np.float64)
+    shape = a.shape
+    ux = np.ones(shape, dtype=np.int64)
+    uy = np.zeros(shape, dtype=np.int64)
+    vx = np.zeros(shape, dtype=np.int64)
+    vy = np.ones(shape, dtype=np.int64)
+    active = np.ones(shape, dtype=bool)
+    for _ in range(64):
+        norm_u = a * ux * ux + 2.0 * b * ux * uy + c * uy * uy
+        norm_v = a * vx * vx + 2.0 * b * vx * vy + c * vy * vy
+        swap = active & (norm_v + 1.0e-14 < norm_u)
+        old_ux = ux.copy()
+        old_uy = uy.copy()
+        ux = np.where(swap, vx, ux)
+        uy = np.where(swap, vy, uy)
+        vx = np.where(swap, old_ux, vx)
+        vy = np.where(swap, old_uy, vy)
+        norm_u = np.where(swap, norm_v, norm_u)
+        inner = (
+            a * ux * vx
+            + b * (ux * vy + uy * vx)
+            + c * uy * vy
+        )
+        quotient = np.rint(
+            inner / np.maximum(norm_u, 1.0e-30)).astype(np.int64)
+        continuing = active & (quotient != 0)
+        if not np.any(continuing):
+            break
+        vx = np.where(continuing, vx - quotient * ux, vx)
+        vy = np.where(continuing, vy - quotient * uy, vy)
+        active = continuing
+
+    inner = (
+        a * ux * vx
+        + b * (ux * vy + uy * vx)
+        + c * uy * vy
+    )
+    flip = inner > 0.0
+    vx = np.where(flip, -vx, vx)
+    vy = np.where(flip, -vy, vy)
+    superbase = np.empty(shape + (3, 2), dtype=np.int32)
+    superbase[..., 0, 0] = -ux - vx
+    superbase[..., 0, 1] = -uy - vy
+    superbase[..., 1, 0] = ux
+    superbase[..., 1, 1] = uy
+    superbase[..., 2, 0] = vx
+    superbase[..., 2, 1] = vy
     return superbase
 
 

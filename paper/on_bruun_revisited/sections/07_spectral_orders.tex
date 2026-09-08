@@ -1,0 +1,88 @@
+\section{Admissible Spectral Orders}
+\label{sec:orders}
+
+The native order of the terminal residues is determined by traversal of the
+factor tree.  Its apparent shuffle becomes a precise ordering problem once
+locality is defined algebraically.
+
+\begin{definition}[Subtree-contiguous order]
+A total order on the leaves of a rooted binary factor tree is
+subtree-contiguous if the leaves below every node form one interval of the
+order.
+\end{definition}
+
+\begin{theorem}[Admissible orders]
+An order is subtree-contiguous if and only if it is obtained by independently
+choosing the left-right orientation at every internal node and then listing the
+leaves recursively.
+\end{theorem}
+\begin{proof}
+Every recursive orientation clearly produces intervals.  Conversely, the two
+child leaf sets of the root are disjoint intervals whose union is the complete
+order, so one precedes the other.  Restriction to each child is again
+subtree-contiguous.  Induction gives an orientation at every internal node.
+\end{proof}
+
+This theorem explains the sorting experiments without referring to a storage
+device.  Reordering siblings preserves the same local factor operations;
+interleaving leaves from unrelated subtrees fragments at least one factor
+interval.  The admissible freedom is exactly a word of sibling reversals.
+
+\subsection{Frequency labels}
+
+The label of a quadratic leaf is an unordered conjugate pair
+$\{k,N-k\}$.  The binomial spine supplies a dyadic shell before the half-angle
+word begins.  Write
+\begin{equation}
+ k=2^v u,\qquad u\text{ odd},\qquad0\le v\le L-2.
+ \label{eq:dyadic-shell}
+\end{equation}
+The shell $v$ leaves the spine through
+$z^{N/2^{v+1}}+1$.  Within that factor, start at $\alpha_0=\pi/2$ and apply
+$\ell=L-v-2$ half-angle decisions
+\begin{equation}
+ \alpha\longmapsto {\alpha\over2},
+ \qquad
+ \alpha\longmapsto \pi-{\alpha\over2}.
+ \label{eq:angle-address}
+\end{equation}
+After $\ell$ decisions, $k=N\alpha/(2\pi)$ has dyadic valuation $v$.  Choosing the
+representative $1\le k<N/2$ and adjoining $0$ and $N/2$ defines a bijection from
+native leaves to standard packed positions.
+
+\begin{proposition}[Address bijection]
+The shell index $v$ together with the recursive law
+\eqref{eq:angle-address} visits every conjugate pair $\{k,N-k\}$ exactly once.
+\end{proposition}
+\begin{proof}
+Every $1\le k<N/2$ has a unique dyadic valuation $v$.  The roots of
+$z^{N/2^{v+1}}+1$ are precisely the frequencies $2^v u$ with $u$ odd.  By the
+half-angle factorization, the two child root sets are disjoint and their union
+is the parent root set.  The $\ell$ decisions terminate in every conjugate pair
+of that shell once.  Unique valuation separates the shells.
+\end{proof}
+
+\begin{table}[t]
+\caption{Native left-first factor-tree traversal for $N=16$.  A quadratic leaf
+$q_k$ maps to packed coordinates $(2k-1,2k)$.}
+\label{tab:n16-labels}
+\centering
+\begin{tabular}{@{}rrll@{}}
+\toprule
+Leaf & Shell $v$ & Factor & Frequency\\
+\midrule
+0 & -- & $z-1$ & $0$\\
+1 & -- & $z+1$ & $8$\\
+2 & 2 & $q_4$ & $4$\\
+3 & 1 & $q_2$ & $2$\\
+4 & 1 & $q_6$ & $6$\\
+5 & 0 & $q_1$ & $1$\\
+6 & 0 & $q_7$ & $7$\\
+7 & 0 & $q_3$ & $3$\\
+8 & 0 & $q_5$ & $5$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The address algebra is therefore an exact boundary permutation.  It does not
+alter the factorization, its inverse, or its metric.

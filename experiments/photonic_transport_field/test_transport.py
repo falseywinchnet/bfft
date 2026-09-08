@@ -41,6 +41,19 @@ class PhotonicTransportFieldTests(unittest.TestCase):
             int(hierarchical.diagnostics["coherent_pair_count"]), 0
         )
 
+    def test_transport_scale_preserves_every_pair_ratio(self) -> None:
+        patches, _ = facing_patch_grids(side=4, separation=6.0, extent=2.0)
+        ordinary = compile_hierarchical_field(patches, admissibility=0.2)
+        scaled = compile_hierarchical_field(
+            patches, admissibility=0.2, transport_scale=0.73
+        )
+        self.assertTrue(np.allclose(
+            scaled.dense_matrix(), 0.73 * ordinary.dense_matrix()
+        ))
+        self.assertTrue(np.allclose(
+            scaled.outgoing_fraction, 0.73 * ordinary.outgoing_fraction
+        ))
+
     def test_occlusion_uncertainty_forces_local_refinement(self) -> None:
         patches, blockers = facing_patch_grids(
             side=6,

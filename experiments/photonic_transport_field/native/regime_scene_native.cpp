@@ -10,13 +10,19 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <memory>
+#include <mutex>
 #include <numbers>
 #include <stdexcept>
 #include <string>
 #include <thread>
 #include <tuple>
 #include <utility>
+#include <unordered_map>
 #include <vector>
+
+#include "bruun_mag_angle_adapter.hpp"
+#include "retained_transport.h"
 
 extern "C" int conv_resize_lines_f32(const float*,int,int,float*,int);
 extern "C" int conv_evaluate_profile_f32(const float*,int,int,const float*,float*,int);
@@ -32,6 +38,61 @@ namespace {
 using Clock=std::chrono::steady_clock;
 using RGB=std::array<double,3>;
 constexpr double pi=std::numbers::pi_v<double>;
+
+enum class AngularBackend{BruunMag,Libm};
+AngularBackend angular_backend=AngularBackend::BruunMag;
+enum class TopologyBackend{Adaptive,Dense};
+TopologyBackend topology_backend=TopologyBackend::Adaptive;
+bool camera_demand_gather=true;
+bool camera_sparse_crossings=true;
+bool boundary_audit=false;
+std::string expansion_audit_out;
+bool source_zero_elision=true;
+// Opt-in source-chart extinction. The night-screen experiment enables this;
+// other clients retain the existing numerical path by default.
+bool source_interval_extinction=false;
+struct SourceExtinctionCounters {std::uint64_t source_calls=0,intervals=0,extinguished=0,primitive_checks=0,fallbacks=0;};
+thread_local SourceExtinctionCounters source_extinction_counts;
+
+bool source_cone_algebraic=true;
+enum class ReturnMode{Off,PathExtinction,StateExtinction,StateClosure};
+ReturnMode return_mode=ReturnMode::Off;
+const char* return_mode_label(){switch(return_mode){
+    case ReturnMode::PathExtinction:return "path-extinction";
+    case ReturnMode::StateExtinction:return "state-extinction";
+    case ReturnMode::StateClosure:return "state-closure";
+    default:return "off";}}
+
+int boundary_path_capacity=128;
+bool boundary_shared_filter=true;
+
+double positive_phase(double y,double x,double magnitude){
+    if(angular_backend==AngularBackend::BruunMag)
+        return photonic_mag::bruun_phase_atan2_mag(y,x,magnitude);
+    double phase=std::atan2(y,x);if(phase<0)phase+=2*pi;return phase;
+}
+
+void phase_sincos(double phase,double& sine,double& cosine){
+    if(angular_backend==AngularBackend::BruunMag){
+        photonic_mag::bruun_table256_poly3_sincos(phase,&sine,&cosine);return;}
+    sine=std::sin(phase);cosine=std::cos(phase);
+}
+
+const char* angular_backend_label(){return angular_backend==AngularBackend::BruunMag?"bruun-mag":"libm";}
+const char* topology_backend_label(){return topology_backend==TopologyBackend::Adaptive?"adaptive":"dense";}
+
+bool check_mag_angle_kernel(){
+    constexpr int samples=16384;double maximum_phase_error=0,maximum_sincos_error=0;
+    for(int i=0;i<samples;++i){const double reference_phase=(2*pi*i)/samples;
+        const double reference_sine=std::sin(reference_phase),reference_cosine=std::cos(reference_phase);
+        const double phase=photonic_mag::bruun_phase_atan2_mag(reference_sine,reference_cosine,1.0);
+        double error=std::abs(phase-reference_phase);error=std::min(error,2*pi-error);
+        maximum_phase_error=std::max(maximum_phase_error,error);double sine=0,cosine=1;
+        photonic_mag::bruun_table256_poly3_sincos(reference_phase,&sine,&cosine);
+        maximum_sincos_error=std::max({maximum_sincos_error,std::abs(sine-reference_sine),
+            std::abs(cosine-reference_cosine)});}
+    return maximum_phase_error<=6.4e-8&&maximum_sincos_error<=2e-9;
+}
 
 struct Vec3{double x=0,y=0,z=0;};
 struct Vec2{double x=0,y=0;};
@@ -61,7 +122,7 @@ struct Material{
 };
 enum class Shape{Rectangle,Sphere,Triangle};
 struct Primitive{
-    std::string name;Shape shape=Shape::Rectangle;int material=-1;bool transport=true;
+    std::string name;Shape shape=Shape::Rectangle;int material=-1;bool transport=true,intersectable=true;
     Vec3 origin{},u{},v{},normal{},center{},a{},b{},c{},edge1{},edge2{};
     double radius=0,radius2=0,area=0,gram_uu=0,gram_uv=0,gram_vv=0,gram_det=0;
 };
@@ -71,13 +132,21 @@ struct Bounds3{
     Vec3 upper{-std::numeric_limits<double>::infinity(),-std::numeric_limits<double>::infinity(),
         -std::numeric_limits<double>::infinity()};
 };
-struct BvhNode{Bounds3 bounds{};int left=-1,right=-1,begin=0,count=0;};
+struct BvhNode{Bounds3 bounds{};int left=-1,right=-1,begin=0,count=0,parent=-1;};
 struct AreaLight{int primitive=-1;RGB radiance{};};
 struct BeamBundle{std::string name;Vec3 origin{},direction{},axis_u{},axis_v{};double radius=.08,spread=.003;RGB power{};int fibres=19;};
+struct ConvexOpticalChild;
 struct Scene{std::vector<Material> materials;std::vector<Primitive> primitives;std::vector<AreaLight> area_lights;
     std::vector<BeamBundle> beams;int floor=-1,prism_volume=-1,prism_bottom=-1,prism_top=-1;
     int glass_sheet=-1,mirror_panel=-1,cavity_target=-1,projector_lens=-1;
-    std::vector<int> bvh_primitives;std::vector<BvhNode> bvh_nodes;bool use_bvh=true;};
+    int jelly_volume=-1,jelly_core=-1,jelly_floor_light=-1,jelly_receiver=-1;
+    std::vector<int> bvh_primitives,bvh_leaf;std::vector<BvhNode> bvh_nodes;bool use_bvh=true;
+    std::uint64_t geometry_revision=0;
+    bool child_boundaries=false,exact_child_states=false;
+    std::vector<std::shared_ptr<const ConvexOpticalChild>> optical_children;
+    std::vector<int> optical_owner;
+};
+void refresh_optical_children(Scene& scene);
 
 double coordinate(Vec3 value,int axis){return axis==0?value.x:(axis==1?value.y:value.z);}
 void expand(Bounds3& bounds,Vec3 point){bounds.lower.x=std::min(bounds.lower.x,point.x);
@@ -95,21 +164,98 @@ Bounds3 primitive_bounds(const Primitive& primitive){Bounds3 bounds;
     bounds.upper=bounds.upper+Vec3{epsilon,epsilon,epsilon};return bounds;}
 
 void build_scene_bvh(Scene& scene){scene.bvh_primitives.resize(scene.primitives.size());
+    scene.bvh_leaf.assign(scene.primitives.size(),-1);
     for(int i=0;i<static_cast<int>(scene.primitives.size());++i)scene.bvh_primitives[i]=i;
-    scene.bvh_nodes.clear();scene.bvh_nodes.reserve(scene.primitives.size()*2);
+    scene.bvh_nodes.clear();// Median splits with <=4 primitives per leaf need at most N nodes.
+    scene.bvh_nodes.reserve(scene.primitives.size());
     auto build=[&](auto&& self,int begin,int end)->int{const int node_index=static_cast<int>(scene.bvh_nodes.size());
         scene.bvh_nodes.push_back({});Bounds3 bounds,centroids;
         for(int i=begin;i<end;++i){const Primitive& primitive=scene.primitives[scene.bvh_primitives[i]];
             expand(bounds,primitive_bounds(primitive));expand(centroids,primitive.center);}
         scene.bvh_nodes[node_index].bounds=bounds;const int count=end-begin;
-        if(count<=4){scene.bvh_nodes[node_index].begin=begin;scene.bvh_nodes[node_index].count=count;return node_index;}
+        if(count<=4){scene.bvh_nodes[node_index].begin=begin;scene.bvh_nodes[node_index].count=count;
+            for(int i=begin;i<end;++i)scene.bvh_leaf[scene.bvh_primitives[i]]=node_index;return node_index;}
         const Vec3 extent=centroids.upper-centroids.lower;const int axis=extent.x>=extent.y&&extent.x>=extent.z?0:(extent.y>=extent.z?1:2);
         const int middle=begin+count/2;std::nth_element(scene.bvh_primitives.begin()+begin,scene.bvh_primitives.begin()+middle,
             scene.bvh_primitives.begin()+end,[&](int a,int b){return coordinate(scene.primitives[a].center,axis)<
                 coordinate(scene.primitives[b].center,axis);});
         const int left=self(self,begin,middle),right=self(self,middle,end);scene.bvh_nodes[node_index].left=left;
-        scene.bvh_nodes[node_index].right=right;return node_index;};
-    if(!scene.primitives.empty())build(build,0,static_cast<int>(scene.primitives.size()));}
+        scene.bvh_nodes[node_index].right=right;scene.bvh_nodes[left].parent=node_index;
+        scene.bvh_nodes[right].parent=node_index;return node_index;};
+    if(!scene.primitives.empty())build(build,0,static_cast<int>(scene.primitives.size()));
+    refresh_optical_children(scene);}
+
+// An edit carries both endpoint bounds. The hull also encloses linear motion;
+// curved animation must submit its own intermediate states or swept envelope.
+struct GeometryChanges {
+    std::vector<int> primitives;
+    std::vector<Bounds3> swept;
+    std::vector<Primitive> previous_geometry;
+    std::uint64_t from_revision=0,to_revision=0;
+    std::size_t refit_nodes=0;
+    bool rebuilt=false;
+};
+
+void prepare_primitive(Primitive& p) {
+    auto finite=[](Vec3 v){return std::isfinite(v.x)&&std::isfinite(v.y)&&std::isfinite(v.z);};
+    if(p.shape==Shape::Sphere){
+        if(!finite(p.center)||!std::isfinite(p.radius)||p.radius<=0)throw std::invalid_argument("invalid sphere");
+        p.radius2=p.radius*p.radius;p.area=4*pi*p.radius2;
+    }else if(p.shape==Shape::Rectangle){
+        if(!finite(p.origin)||!finite(p.u)||!finite(p.v)||!finite(p.normal))throw std::invalid_argument("invalid rectangle");
+        const Vec3 geometric=cross(p.u,p.v);p.area=norm(geometric);
+        if(p.area<=1e-12)throw std::invalid_argument("degenerate rectangle");
+        p.normal=unit(geometric)*(dot(geometric,p.normal)<0?-1:1);
+        p.center=p.origin+(p.u+p.v)*.5;p.gram_uu=dot(p.u,p.u);p.gram_uv=dot(p.u,p.v);
+        p.gram_vv=dot(p.v,p.v);p.gram_det=p.gram_uu*p.gram_vv-p.gram_uv*p.gram_uv;
+        if(p.gram_det<=1e-16)throw std::invalid_argument("degenerate rectangle Gram matrix");
+    }else{
+        if(!finite(p.a)||!finite(p.b)||!finite(p.c))throw std::invalid_argument("invalid triangle");
+        p.edge1=p.b-p.a;p.edge2=p.c-p.a;const Vec3 normal=cross(p.edge1,p.edge2);
+        p.area=.5*norm(normal);if(p.area<=1e-12)throw std::invalid_argument("degenerate triangle");
+        p.normal=unit(normal);p.center=(p.a+p.b+p.c)/3;
+    }
+    if(!finite(p.center)||!std::isfinite(p.area))throw std::invalid_argument("unbounded primitive");
+}
+
+// Stable primitive IDs; additions remain in a directly queried delta until a
+// batched rebuild. Existing leaves and their ancestor union alone are refitted.
+GeometryChanges edit_scene_geometry(Scene& scene,std::vector<std::pair<int,Primitive>> edits,
+                                    std::vector<Primitive> additions={}) {
+    GeometryChanges changes;changes.from_revision=scene.geometry_revision;
+    std::vector<int> ids;
+    for(auto& [id,p]:edits){
+        if(id<0||id>=static_cast<int>(scene.primitives.size()))throw std::invalid_argument("invalid primitive ID");
+        ids.push_back(id);prepare_primitive(p);
+        if(p.material<0||p.material>=static_cast<int>(scene.materials.size()))throw std::invalid_argument("invalid material ID");
+    }
+    std::sort(ids.begin(),ids.end());
+    if(std::adjacent_find(ids.begin(),ids.end())!=ids.end())throw std::invalid_argument("duplicate primitive edit");
+    for(auto& p:additions){prepare_primitive(p);
+        if(p.material<0||p.material>=static_cast<int>(scene.materials.size()))throw std::invalid_argument("invalid material ID");}
+    for(auto& [id,p]:edits){Bounds3 sweep=primitive_bounds(scene.primitives[id]);expand(sweep,primitive_bounds(p));
+        changes.primitives.push_back(id);changes.swept.push_back(sweep);
+        changes.previous_geometry.push_back(scene.primitives[id]);scene.primitives[id]=std::move(p);}
+    for(auto& p:additions){changes.primitives.push_back(static_cast<int>(scene.primitives.size()));
+        changes.swept.push_back(primitive_bounds(p));Primitive absent;absent.intersectable=false;
+        changes.previous_geometry.push_back(std::move(absent));scene.primitives.push_back(std::move(p));}
+    if(!changes.primitives.empty())++scene.geometry_revision;
+    changes.to_revision=scene.geometry_revision;
+    if(scene.bvh_nodes.empty()||scene.primitives.size()-scene.bvh_primitives.size()>32){
+        build_scene_bvh(scene);changes.rebuilt=true;changes.refit_nodes=scene.bvh_nodes.size();return changes;}
+    std::vector<int> dirty;
+    for(int id:changes.primitives)if(id<static_cast<int>(scene.bvh_leaf.size())){
+        for(int node=scene.bvh_leaf[id];node>=0;node=scene.bvh_nodes[node].parent)dirty.push_back(node);}
+    // Preorder indices put every child after its parent. Descending order is
+    // therefore a bottom-up refit of precisely the deduplicated ancestor union.
+    std::sort(dirty.begin(),dirty.end(),std::greater<int>());dirty.erase(std::unique(dirty.begin(),dirty.end()),dirty.end());
+    for(int index:dirty){BvhNode& node=scene.bvh_nodes[index];Bounds3 bounds;
+        if(node.count){for(int i=0;i<node.count;++i)expand(bounds,primitive_bounds(scene.primitives[scene.bvh_primitives[node.begin+i]]));}
+        else{expand(bounds,scene.bvh_nodes[node.left].bounds);expand(bounds,scene.bvh_nodes[node.right].bounds);}
+        node.bounds=bounds;}
+    changes.refit_nodes=dirty.size();
+    if(!changes.primitives.empty())refresh_optical_children(scene);return changes;
+}
 
 int add_material(Scene& s,Material m){s.materials.push_back(std::move(m));return static_cast<int>(s.materials.size())-1;}
 int add_rect(Scene& s,std::string name,Vec3 origin,Vec3 u,Vec3 v,Vec3 normal,int material,bool transport=true){
@@ -151,9 +297,18 @@ Scene build_regime_scene(){Scene s;
     const int glass_sheet=add_material(s,sheet);
     Material prism{"dispersive prism",MaterialKind::Dielectric,{.98,.99,1.0},{},0,.01,0,1.52,{1.490,1.520,1.560},{.018,.010,.006},false};
     const int prism_glass=add_material(s,prism);
-    const int light=add_material(s,{"large soft emitter",MaterialKind::Emissive,{1,1,1},{26,24,21.5},0,0});
+    const int light=add_material(s,{"large soft emitter",MaterialKind::Emissive,{1,1,1},{52,48,43},0,0});
     const int projector=add_material(s,{"collimated emitter",MaterialKind::Emissive,{1,1,1},{44,40,34},0,0});
     const int black=add_material(s,{"projector housing",MaterialKind::Glossy,{.07,.075,.085},{},.38,.28});
+    // The boundary is refractive, but opacity belongs to the participating
+    // density inside it.  diffuse is the scattering albedo used by the chord
+    // response; absorption is the wavelength-dependent extinction density.
+    Material jelly{"participating spectral jelly",MaterialKind::Dielectric,{.992,.998,.995},{},.86,.075,0,1.36,
+        {1.345,1.360,1.382},{2.20,.38,1.10},false};
+    const int jelly_shell=add_material(s,jelly);
+    const int jelly_core=add_material(s,{"jelly diffuse core",MaterialKind::Diffuse,{.16,.68,.43},{},.46,.72});
+    const int jelly_receiver=add_material(s,{"jelly witness card",MaterialKind::Diffuse,{.74,.72,.70},{},.92,.78});
+    const int jelly_light=add_material(s,{"violet floor emitter",MaterialKind::Emissive,{1,1,1},{13.5,4.2,17.0},0,0});
 
     s.floor=add_rect(s,"floor",{-5,0,-10},{10,0,0},{0,0,12},{0,1,0},white);
     add_rect(s,"back_wall",{-5,0,-10},{10,0,0},{0,6,0},{0,0,1},white);
@@ -172,6 +327,19 @@ Scene build_regime_scene(){Scene s;
     add_sphere(s,"diffuse_sphere",{-.75,.83,-4.65},.83,red);
     add_sphere(s,"glossy_sphere",{.85,.72,-6.35},.72,glossy);
     add_sphere(s,"rough_metal_sphere",{2.05,.88,-5.05},.88,metal,false);
+
+    // The inner sphere is a hidden transport centroid, not opaque geometry.
+    // Its retained illumination is the source function of the enclosing
+    // participating medium; the visible sphere integrates that function and
+    // wavelength extinction over the exact camera/light chord.
+    s.jelly_volume=add_sphere(s,"jelly_blob_envelope",{3.18,.57,-3.72},.57,jelly_shell,false);
+    s.jelly_core=add_sphere(s,"jelly_blob_core",{3.18,.57,-3.72},.365,jelly_core,true);
+    s.primitives[s.jelly_core].intersectable=false;
+    s.jelly_floor_light=add_rect(s,"jelly_floor_light",{3.68,.012,-4.20},{.82,0,0},{0,0,.82},
+        {0,1,0},jelly_light,false);
+    s.area_lights.push_back({s.jelly_floor_light,s.materials[jelly_light].emission});
+    s.jelly_receiver=add_rect(s,"jelly_receiver_card",{2.58,.035,-4.55},{1.92,0,0},{0,1.28,0},
+        {0,0,1},jelly_receiver,true);
 
     s.glass_sheet=add_rect(s,"glass_sheet",{.48,.32,-5.28},{2.72,0,-.76},{0,3.65,0},{.269,0,.963},glass_sheet,false);
     add_rect(s,"glass_frame_bottom",{.42,.25,-5.25},{2.85,0,-.80},{0,.08,0},{.269,0,.963},metal,false);
@@ -273,17 +441,23 @@ Scene build_demonstrator_scene(const std::string& mode){
 struct Ray{Vec3 origin{},direction{};};
 struct Hit{bool valid=false;int primitive=-1;double t=0;Vec3 position{},normal{},geometric_normal{};bool front=true;};
 struct TraceStats{
+    std::uint64_t child_responses=0,child_internal_hits=0,child_egress_ports=0,child_cache_hits=0;
+    double child_unresolved_weight=0;
     std::uint64_t primary=0,secondary=0,shadow=0,mirror=0,metal=0,dielectric=0,specular_caustic=0;
-    std::uint64_t prism_bottom_events=0,prism_top_events=0;
+    std::uint64_t prism_bottom_events=0,prism_top_events=0,jelly_volume_events=0;
     std::uint64_t direct_atlas_gathers=0,direct_exact_calls=0,specular_area_calls=0,specular_memo_hits=0;
     std::uint64_t surface_radiance_memo_hits=0,surface_radiance_memo_stores=0;
     std::uint64_t primary_specular_area_calls=0,secondary_specular_area_calls=0;
     std::uint64_t camera_specular_gathers=0;
+    std::uint64_t source_zero_certificates=0,specular_zero_lobes=0;
     std::uint64_t secondary_specular_weight_lt_1e4=0,secondary_specular_weight_lt_1e3=0;
     std::uint64_t secondary_specular_weight_lt_1e2=0;
     std::uint64_t emitter_rows=0,emitter_intervals=0,emitter_quadrature_samples=0;
     std::uint64_t feedback_loops=0,feedback_returns=0,sealed_feedback_tails=0,maximum_optical_packets=0;
-    double sealed_residual_weight=0;
+    std::uint64_t return_tests=0,return_matches=0,return_extinctions=0,return_closures=0,return_rejections=0;
+    double return_removed_weight=0,return_added_radiance=0;
+    std::uint64_t participating_volume_chords=0,rough_jelly_gathers=0;
+    double participating_volume_distance=0,sealed_residual_weight=0;
 };
 
 Hit intersect_primitive(const Primitive& p,int id,const Ray& ray,double t_max=std::numeric_limits<double>::infinity()){
@@ -313,10 +487,12 @@ bool intersect_bounds(const Bounds3& bounds,const Ray& ray,double t_limit,double
 
 Hit first_hit(const Scene& scene,const Ray& ray,double t_max=std::numeric_limits<double>::infinity(),int ignore=-1){
     Hit best;best.t=t_max;
-    auto consider=[&](int primitive){if(primitive==ignore)return;const double epsilon=1e-11*std::max(1.0,best.t);
-        const Hit hit=intersect_primitive(scene.primitives[primitive],primitive,ray,best.t+epsilon);if(!hit.valid)return;
+    auto consider=[&](int primitive){if(primitive==ignore||!scene.primitives[primitive].intersectable)return;
+        const double epsilon=1e-11*std::max(1.0,best.t);
+        const Hit hit=intersect_primitive(scene.primitives[primitive],primitive,ray,best.t+epsilon);if(!hit.valid||hit.t>=t_max)return;
         if(!best.valid||hit.t<best.t-epsilon||(std::abs(hit.t-best.t)<=epsilon&&primitive<best.primitive))best=hit;};
     if(!scene.use_bvh||scene.bvh_nodes.empty()){for(int i=0;i<static_cast<int>(scene.primitives.size());++i)consider(i);return best;}
+    for(int id=static_cast<int>(scene.bvh_primitives.size());id<static_cast<int>(scene.primitives.size());++id)consider(id);
     struct StackEntry{int node=-1;double near=0;};std::array<StackEntry,128> stack{};int size=0;double root_near=0;
     if(!intersect_bounds(scene.bvh_nodes.front().bounds,ray,best.t,root_near))return best;stack[size++]={0,root_near};
     while(size){const StackEntry entry=stack[--size];if(entry.near>best.t)continue;const BvhNode& node=scene.bvh_nodes[entry.node];
@@ -348,6 +524,7 @@ void first_hit_camera_packet(const Scene& scene,Vec3 ray_origin,const Ray* PHOTO
     if(scene.use_bvh||scene.bvh_nodes.empty()){for(int i=0;i<count;++i)hits[i]=first_hit(scene,rays[i]);return;}
     std::fill_n(best_t,count,std::numeric_limits<double>::infinity());std::fill_n(best_id,count,-1);
     for(int id=0;id<static_cast<int>(scene.primitives.size());++id){const Primitive& p=scene.primitives[id];
+        if(!p.intersectable)continue;
         if(p.shape==Shape::Rectangle){const Vec3 rel=ray_origin-p.origin;
 #pragma clang loop vectorize(enable) interleave(enable)
             for(int i=0;i<count;++i){const double den=p.normal.x*dx[i]+p.normal.y*dy[i]+p.normal.z*dz[i];
@@ -390,6 +567,8 @@ bool bounds_overlap(const Bounds3& a,const Bounds3& b){return a.lower.x<=b.upper
 void query_scene_bounds(const Scene& scene,const Bounds3& query,std::vector<int>& candidates){candidates.clear();
     if(!scene.use_bvh||scene.bvh_nodes.empty()){candidates.resize(scene.primitives.size());
         for(int i=0;i<static_cast<int>(scene.primitives.size());++i)candidates[i]=i;return;}
+    for(int id=static_cast<int>(scene.bvh_primitives.size());id<static_cast<int>(scene.primitives.size());++id)
+        if(bounds_overlap(primitive_bounds(scene.primitives[id]),query))candidates.push_back(id);
     std::array<int,128> stack{};int size=0;stack[size++]=0;while(size){const BvhNode& node=scene.bvh_nodes[stack[--size]];
         if(!bounds_overlap(node.bounds,query))continue;if(node.count){for(int i=0;i<node.count;++i)
                 candidates.push_back(scene.bvh_primitives[node.begin+i]);}
@@ -420,68 +599,130 @@ double spectral_ior(const Material& material,double coordinate){
     return material.ior_rgb[1]+(coordinate-1)*(material.ior_rgb[2]-material.ior_rgb[1]);
 }
 
+double segment_sphere_length(const Primitive& sphere,Vec3 a,Vec3 b){
+    const Vec3 segment=b-a;const double length=norm(segment);if(length<=1e-12)return 0;
+    const Vec3 direction=segment/length,offset=a-sphere.center;const double projection=dot(offset,direction);
+    const double discriminant=projection*projection-(dot(offset,offset)-sphere.radius2);if(discriminant<=0)return 0;
+    const double root=std::sqrt(discriminant);const double enter=std::max(0.0,-projection-root);
+    const double leave=std::min(length,-projection+root);return std::max(0.0,leave-enter);
+}
+
+#include "child_boundary_response.hpp"
+
 RGB segment_transmittance(const Scene& scene,Vec3 a,Vec3 b,int ignore_a=-1,int ignore_b=-1){RGB throughput{1,1,1};
     Vec3 delta=b-a;double remaining=norm(delta);if(remaining<1e-8)return throughput;const Vec3 d=delta/remaining;
     Ray ray{a+d*2e-4,d};remaining-=2e-4;int previous=ignore_a;
     for(int step=0;step<16&&remaining>2e-4;++step){const Hit h=first_hit(scene,ray,remaining+1e-4,previous);if(!h.valid)break;
         if(h.primitive==ignore_b)break;const Material& m=scene.materials[scene.primitives[h.primitive].material];
         if(m.kind!=MaterialKind::Dielectric)return {};
-        const double path=m.thin?.08:.16;for(int c=0;c<3;++c)
-            throughput[c]*=m.base[c]*(1-schlick(std::abs(dot(d,h.normal)),1,m.ior_rgb[c]))*std::exp(-m.absorption[c]*path);
+        if(const auto* child=optical_child(scene,h.primitive)){
+            const auto response=child_segment_response(*child,h,a,b);
+            if(!response.valid)throw std::runtime_error("unclosed child source boundary");
+            throughput=multiply(throughput,response.transfer);
+            const double advanced=dot(response.egress.position-ray.origin,d)+3e-4;
+            remaining-=advanced;ray.origin=response.egress.position+d*3e-4;previous=response.egress.primitive;continue;
+        }
+        const bool jelly=h.primitive==scene.jelly_volume;const double path=jelly?
+            segment_sphere_length(scene.primitives[h.primitive],a,b):(m.thin?.08:.16);for(int c=0;c<3;++c){
+            const double boundary=m.base[c]*(1-schlick(std::abs(dot(d,h.normal)),1,m.ior_rgb[c]));
+            throughput[c]*=boundary*std::exp(-m.absorption[c]*path)*(jelly?boundary:1.0);}
         remaining-=h.t+3e-4;ray.origin=h.position+d*3e-4;previous=h.primitive;}
     return throughput;
 }
 
-struct SegmentProgram{std::array<int,16> primitive{};int count=0;};
+struct SegmentProgram{
+    std::array<int,16> primitive{};std::array<bool,16> front{};int count=0;
+    // Source-most opaque operation in this finite receiver-to-source word.
+    // It annihilates the source-side suffix once membership is verified.
+    int last_opaque=-1;
+};
+
+#ifdef PHOTONIC_PIXEL_REUSE_AUDIT
+#include "pixel_redundancy_audit.hpp"
+#endif
 
 SegmentProgram discover_segment_program(const Scene& scene,Vec3 a,Vec3 b,int ignore_a=-1,int ignore_b=-1){
     SegmentProgram program;Vec3 delta=b-a;double remaining=norm(delta);if(remaining<1e-8)return program;
     const Vec3 d=delta/remaining;Ray ray{a+d*2e-4,d};remaining-=2e-4;int previous=ignore_a;
     for(int step=0;step<16&&remaining>2e-4;++step){const Hit hit=first_hit(scene,ray,remaining+1e-4,previous);
-        if(!hit.valid||hit.primitive==ignore_b)break;program.primitive[program.count++]=hit.primitive;
+        if(!hit.valid||hit.primitive==ignore_b)break;program.front[program.count]=hit.front;
+        program.primitive[program.count++]=hit.primitive;
+        if(source_zero_elision&&scene.materials[scene.primitives[hit.primitive].material].kind!=MaterialKind::Dielectric)
+            program.last_opaque=program.count-1;
+        if(const auto* child=optical_child(scene,hit.primitive)){
+            const auto response=child_segment_response(*child,hit,a,b);
+            if(!response.valid)throw std::runtime_error("unclosed child source program");
+            const double advanced=dot(response.egress.position-ray.origin,d)+3e-4;
+            remaining-=advanced;ray.origin=response.egress.position+d*3e-4;previous=response.egress.primitive;continue;
+        }
         remaining-=hit.t+3e-4;ray.origin=hit.position+d*3e-4;previous=hit.primitive;}
     return program;
 }
 
-RGB evaluate_segment_program(const Scene& scene,const SegmentProgram& program,Vec3 a,Vec3 b,
-                             int ignore_a=-1,int ignore_b=-1){
-    RGB throughput{1,1,1};const Vec3 delta=b-a;const double distance=norm(delta);if(distance<1e-8)return throughput;
-    const Vec3 d=delta/distance;const Ray ray{a+d*2e-4,d};
-    for(int i=0;i<program.count;++i){const int primitive=program.primitive[i];if(primitive==ignore_a||primitive==ignore_b)continue;
-        const Hit hit=intersect_primitive(scene.primitives[primitive],primitive,ray,distance+1e-4);
-        if(!hit.valid)return segment_transmittance(scene,a,b,ignore_a,ignore_b);const Material& material=
-            scene.materials[scene.primitives[hit.primitive].material];if(material.kind!=MaterialKind::Dielectric)return {};
-        const double path=material.thin?.08:.16;
-        for(int channel=0;channel<3;++channel)throughput[channel]*=material.base[channel]*
-            (1-schlick(std::abs(dot(d,hit.normal)),1,material.ior_rgb[channel]))*
-            std::exp(-material.absorption[channel]*path);}
-    return throughput;
+RGB evaluate_segment_radiance(const Scene& scene,const SegmentProgram& program,Vec3 receiver,Vec3 source,
+                              RGB incident,const RGB* jelly_source,int ignore_receiver=-1,int ignore_source=-1,
+                              RGB* source_response=nullptr,TraceStats* stats=nullptr){
+    if(source_response)*source_response={};
+    const Vec3 delta=source-receiver;const double distance=norm(delta);if(distance<1e-8)return incident;
+    const Vec3 direction=delta/distance;const Ray ray{receiver+direction*2e-4,direction};
+    if(source_zero_elision&&program.last_opaque>=0){
+        // Validate the SAME suffix and ray limits as the ordinary evaluator.
+        // No whole-scene guess and no early truncation of program discovery:
+        // a changed ordinate may invalidate membership and require its fallback.
+        bool certified=true;
+        for(int i=program.count-1;i>=program.last_opaque;--i){const int primitive=program.primitive[i];
+            if(primitive==ignore_receiver||primitive==ignore_source){
+                if(i==program.last_opaque)certified=false;
+                continue;}
+            if(!intersect_primitive(scene.primitives[primitive],primitive,ray,distance+1e-4).valid){
+                certified=false;break;}}
+        if(certified){if(stats)++stats->source_zero_certificates;return {};}
+    }
+    // The discovered program is receiver-to-source. Radiance propagates in the
+    // opposite order, so compose its affine medium/filter actions backwards.
+    for(int i=program.count-1;i>=0;--i){const int primitive=program.primitive[i];
+        if(primitive==ignore_receiver||primitive==ignore_source)continue;const Hit hit=
+            intersect_primitive(scene.primitives[primitive],primitive,ray,distance+1e-4);
+        if(!hit.valid||(optical_child(scene,primitive)&&hit.front!=program.front[i])){
+            const RGB trans=segment_transmittance(scene,receiver,source,ignore_receiver,ignore_source);
+            if(source_response)*source_response=multiply(*source_response,trans);return multiply(incident,trans);}
+        const Material& material=scene.materials[scene.primitives[primitive].material];
+        if(material.kind!=MaterialKind::Dielectric){if(source_response)*source_response={};return {};}
+        if(const auto* child=optical_child(scene,primitive)){
+            const auto response=child_segment_response(*child,hit,receiver,source);
+            if(!response.valid)throw std::runtime_error("unclosed child source evaluation");
+            for(int c=0;c<3;++c){incident[c]=incident[c]*response.transfer[c]+
+                    (jelly_source?(*jelly_source)[c]:0)*response.source[c];
+                if(source_response)(*source_response)[c]=(*source_response)[c]*response.transfer[c]+response.source[c];}
+            continue;
+        }
+        const bool jelly=primitive==scene.jelly_volume;const double path=jelly?
+            segment_sphere_length(scene.primitives[primitive],receiver,source):(material.thin?.08:.16);
+        for(int channel=0;channel<3;++channel){const double boundary=material.base[channel]*
+                (1-schlick(std::abs(dot(direction,hit.normal)),1,material.ior_rgb[channel]));
+            const double retention=std::exp(-material.absorption[channel]*path);
+            if(jelly){const double scattered=jelly_source?(*jelly_source)[channel]:0;
+                incident[channel]=incident[channel]*boundary*boundary*retention+
+                    scattered*boundary*(1-retention);
+                if(source_response)(*source_response)[channel]=(*source_response)[channel]*boundary*boundary*retention+
+                    boundary*(1-retention);}
+            else{incident[channel]*=boundary*retention;
+                if(source_response)(*source_response)[channel]*=boundary*retention;}}}
+    return incident;
 }
 
-struct ProjectedPolygon{std::array<Vec2,4> vertex{};int count=0,primitive=-1;};
-struct EmitterPartition{std::vector<ProjectedPolygon> polygons;std::vector<int> spheres;};
-
-bool emitter_coordinates(const Primitive& light,Vec3 point,Vec2& uv){
-    const Vec3 q=point-light.origin;const double uu=dot(light.u,light.u),cross_uv=dot(light.u,light.v),vv=dot(light.v,light.v);
-    const double det=uu*vv-cross_uv*cross_uv;if(std::abs(det)<1e-18)return false;
-    const double qu=dot(q,light.u),qv=dot(q,light.v);
-    uv={(qu*vv-qv*cross_uv)/det,(qv*uu-qu*cross_uv)/det};return true;
-}
-
-bool project_vertex_to_emitter(const Primitive& light,Vec3 target,Vec3 vertex,Vec2& uv){
-    const Vec3 direction=vertex-target;const double denominator=dot(light.normal,direction);
-    if(std::abs(denominator)<1e-12)return false;const double t=dot(light.normal,light.origin-target)/denominator;
-    if(t<=0)return false;return emitter_coordinates(light,target+direction*t,uv);
-}
+struct ProjectedPolygon{std::array<Vec2,12> vertex{};int count=0,primitive=-1;};
+struct EmitterPartition{std::vector<ProjectedPolygon> polygons;std::vector<int> spheres;
+    bool has_candidates=false,fully_occluded=false,opaque_only=true;};
 
 double primitive_bound_radius(const Primitive& primitive){
     if(primitive.shape==Shape::Sphere)return primitive.radius;
-    if(primitive.shape==Shape::Rectangle)return .5*std::sqrt(norm2(primitive.u)+norm2(primitive.v));
+    if(primitive.shape==Shape::Rectangle)return .5*std::max(norm(primitive.u+primitive.v),norm(primitive.u-primitive.v));
     return std::max({norm(primitive.a-primitive.center),norm(primitive.b-primitive.center),
         norm(primitive.c-primitive.center)});
 }
 
-bool blocker_may_overlap_emitter(const Primitive& light,const Primitive& blocker,Vec3 target){
+bool blocker_may_overlap_emitter_angles(const Primitive& light,const Primitive& blocker,Vec3 target){
     // A conservative angular-disk rejection.  The disks enclose both the
     // rectangular emitter and every analytic blocker, so rejecting disjoint
     // disks cannot discard a real source interval.
@@ -499,24 +740,93 @@ bool blocker_may_overlap_emitter(const Primitive& light,const Primitive& blocker
     return separation<=source_angle+blocker_angle;
 }
 
+// Prepare the source cone once per receiver/emitter pair. Testing overlap
+// needs cos(separation) >= cos(alpha+beta), not any of the three angles.
+struct SourceCone{
+    bool enabled=source_cone_algebraic;
+    Vec3 direction{};double distance=0,radius=0,sine=0,cosine=0;
+    SourceCone(const Primitive& light,Vec3 target){
+        if(!enabled)return;
+        const Vec3 axis=light.center-target;distance=norm(axis);radius=primitive_bound_radius(light);
+        if(distance<=1e-12)return;direction=axis/distance;
+        // Factoring 1-s*s avoids cancellation for receivers near a cone horizon.
+        sine=std::min(1.0,radius/distance);cosine=std::sqrt(std::max(0.0,(1-sine)*(1+sine)));
+    }
+    bool overlaps(const Primitive& light,const Primitive& blocker,Vec3 target)const{
+        if(!enabled)return blocker_may_overlap_emitter_angles(light,blocker,target);
+        if(distance<=1e-12)return true;
+        const double blocker_radius=primitive_bound_radius(blocker);
+        const Vec3 axis=blocker.center-target;const double range=norm(axis);
+        if(range<=blocker_radius*(1+1e-12))return true;
+        if(dot(axis,direction)+blocker_radius<=0)return false;
+        if(range-blocker_radius>=distance+radius)return false;
+        const double blocker_sine=std::clamp(blocker_radius/range,0.0,1.0);
+        const double cosine_sum=cosine*std::sqrt(std::max(0.0,(1-blocker_sine)*(1+blocker_sine)))-sine*blocker_sine;
+        const double separation_cosine=std::clamp(dot(direction,axis/range),-1.0,1.0);
+        const double difference=separation_cosine-cosine_sum;
+        // Keep the established finite-precision decision at numerical ties.
+        if(std::abs(difference)<=128*std::numeric_limits<double>::epsilon())
+            return blocker_may_overlap_emitter_angles(light,blocker,target);
+        return difference>=0;
+    }
+};
+
+bool blocker_may_overlap_emitter(const Primitive& light,const Primitive& blocker,Vec3 target){
+    return SourceCone(light,target).overlaps(light,blocker,target);
+}
+
+// Clip the source rectangle by the cone of a finite planar blocker. The
+// inequalities live on the source chart; no blocker vertex is divided by its
+// distance to the receiver horizon. A final half-space enforces t <= 1.
+ProjectedPolygon clip_blocker_to_emitter(const Primitive& light,const Primitive& blocker,Vec3 target,int id){
+    ProjectedPolygon polygon;polygon.primitive=id;polygon.count=4;
+    polygon.vertex[0]={0,0};polygon.vertex[1]={1,0};polygon.vertex[2]={1,1};polygon.vertex[3]={0,1};
+    const int count=blocker.shape==Shape::Rectangle?4:3;
+    const std::array<Vec3,4> vertex=blocker.shape==Shape::Rectangle?
+        std::array<Vec3,4>{blocker.origin,blocker.origin+blocker.u,blocker.origin+blocker.u+blocker.v,blocker.origin+blocker.v}:
+        std::array<Vec3,4>{blocker.a,blocker.b,blocker.c,blocker.c};
+    auto clip=[&](Vec3 normal,Vec3 origin){
+        const double a=dot(normal,light.u),b=dot(normal,light.v),c=dot(normal,light.origin-origin);
+        std::array<Vec2,12> next{};int used=0;
+        for(int i=0;i<polygon.count;++i){Vec2 p=polygon.vertex[i],q=polygon.vertex[(i+1)%polygon.count];
+            const double fp=a*p.x+b*p.y+c,fq=a*q.x+b*q.y+c;
+            if(fp>=0){if(used>=12)throw std::runtime_error("source polygon capacity");next[used++]=p;}
+            if((fp>=0)!=(fq>=0)){const double t=fp/(fp-fq);
+                if(used>=12)throw std::runtime_error("source polygon capacity");
+                next[used++]={p.x+t*(q.x-p.x),p.y+t*(q.y-p.y)};}
+        }
+        polygon.vertex=next;polygon.count=used;
+    };
+    const double depth=dot(blocker.normal,vertex[0]-target);
+    if(depth==0){polygon.count=0;return polygon;}
+    for(int i=0;i<count&&polygon.count;++i){Vec3 plane=cross(vertex[i]-target,vertex[(i+1)%count]-target);
+        if(dot(plane,blocker.center-target)<0)plane=-plane;
+        clip(plane,target);
+    }
+    if(polygon.count)clip(blocker.normal*(depth>0?1:-1),vertex[0]);
+    return polygon;
+}
+
 EmitterPartition build_emitter_partition(const Scene& scene,const Primitive& light,Vec3 target,int receiver,int emitter){
-    EmitterPartition partition;Bounds3 source_pyramid;expand(source_pyramid,target);expand(source_pyramid,light.origin);
-    expand(source_pyramid,light.origin+light.u);expand(source_pyramid,light.origin+light.v);
-    expand(source_pyramid,light.origin+light.u+light.v);std::vector<int> candidates;
-    query_scene_bounds(scene,source_pyramid,candidates);
+    EmitterPartition partition;Bounds3 source_bounds;expand(source_bounds,target);expand(source_bounds,light.origin);
+    expand(source_bounds,light.origin+light.u);expand(source_bounds,light.origin+light.v);
+    expand(source_bounds,light.origin+light.u+light.v);std::vector<int> candidates;
+    query_scene_bounds(scene,source_bounds,candidates);
+    const SourceCone source_cone(light,target);
     for(int id:candidates){if(id==receiver||id==emitter)continue;
-        const Primitive& blocker=scene.primitives[id];if(!blocker_may_overlap_emitter(light,blocker,target))continue;
+        const Primitive& blocker=scene.primitives[id];
+        // Leaf membership cannot decide the numerical integration partition.
+        if(!blocker.intersectable||!bounds_overlap(primitive_bounds(blocker),source_bounds)||
+            !source_cone.overlaps(light,blocker,target))continue;
+        partition.has_candidates=true;
+        if(scene.materials[blocker.material].kind==MaterialKind::Dielectric)partition.opaque_only=false;
         if(blocker.shape==Shape::Sphere){partition.spheres.push_back(id);continue;}
-        ProjectedPolygon polygon;polygon.count=blocker.shape==Shape::Rectangle?4:3;polygon.primitive=id;
-        const std::array<Vec3,4> vertices=blocker.shape==Shape::Rectangle?
-            std::array<Vec3,4>{{blocker.origin,blocker.origin+blocker.u,blocker.origin+blocker.u+blocker.v,blocker.origin+blocker.v}}:
-            std::array<Vec3,4>{{blocker.a,blocker.b,blocker.c,blocker.c}};
-        bool valid=true;double u0=std::numeric_limits<double>::infinity(),u1=-u0;
-        double v0=std::numeric_limits<double>::infinity(),v1=-v0;
-        for(int i=0;i<polygon.count;++i){valid=valid&&project_vertex_to_emitter(light,target,vertices[i],polygon.vertex[i]);
-            if(!valid)break;u0=std::min(u0,polygon.vertex[i].x);u1=std::max(u1,polygon.vertex[i].x);
-            v0=std::min(v0,polygon.vertex[i].y);v1=std::max(v1,polygon.vertex[i].y);}
-        if(valid&&u1>=0&&u0<=1&&v1>=0&&v0<=1)partition.polygons.push_back(polygon);
+        ProjectedPolygon polygon=clip_blocker_to_emitter(light,blocker,target,id);
+        if(scene.materials[blocker.material].kind!=MaterialKind::Dielectric&&polygon.count==4&&
+            polygon.vertex[0].x==0&&polygon.vertex[0].y==0&&polygon.vertex[1].x==1&&polygon.vertex[1].y==0&&
+            polygon.vertex[2].x==1&&polygon.vertex[2].y==1&&polygon.vertex[3].x==0&&polygon.vertex[3].y==1){
+            partition.fully_occluded=true;return partition;}
+        if(polygon.count>=3)partition.polygons.push_back(polygon);
     }
     return partition;
 }
@@ -555,8 +865,10 @@ std::vector<double> emitter_vertical_cuts(const Scene& scene,const Primitive& li
         [](double a,double b){return std::abs(a-b)<1e-10;}),cuts.end());return cuts;
 }
 
+struct OpaqueSourceSpan {double lower=0,upper=0;int primitive=-1;};
+
 std::vector<double> emitter_row_cuts(const Scene& scene,const Primitive& light,const EmitterPartition& partition,
-                                     Vec3 target,double v){std::vector<double> cuts{0,1};
+                                     Vec3 target,double v,std::vector<OpaqueSourceSpan>* opaque_spans=nullptr){std::vector<double> cuts{0,1};
     // Silhouette events are linear in the row population. Depth-order events
     // are appended only for actually overlapping spans below; never reserve a
     // quadratic array for pairs that may not exist.
@@ -564,12 +876,14 @@ std::vector<double> emitter_row_cuts(const Scene& scene,const Primitive& light,c
     for(int id:partition.spheres)append_sphere_conic_roots(light,scene.primitives[id],target,v,cuts);
     struct RowSpan{std::size_t polygon=0;double lower=0,upper=0;};std::vector<RowSpan> spans;spans.reserve(partition.polygons.size());
     for(std::size_t polygon_index=0;polygon_index<partition.polygons.size();++polygon_index){
-        const ProjectedPolygon& polygon=partition.polygons[polygon_index];std::array<double,4> intersection{};int count=0;
+        const ProjectedPolygon& polygon=partition.polygons[polygon_index];std::array<double,12> intersection{};int count=0;
         for(int i=0;i<polygon.count;++i){const Vec2 a=polygon.vertex[i],b=polygon.vertex[(i+1)%polygon.count];
             if((a.y<=v&&v<b.y)||(b.y<=v&&v<a.y)){const double u=a.x+(v-a.y)*(b.x-a.x)/(b.y-a.y);
                 if(std::isfinite(u)){intersection[count++]=u;if(u>1e-10&&u<1-1e-10)cuts.push_back(u);}}}
         if(count>=2){const auto limits=std::minmax_element(intersection.begin(),intersection.begin()+count);
-            if(*limits.second>=0&&*limits.first<=1)spans.push_back({polygon_index,*limits.first,*limits.second});}}
+            if(*limits.second>=0&&*limits.first<=1){spans.push_back({polygon_index,*limits.first,*limits.second});
+                if(opaque_spans&&scene.materials[scene.primitives[polygon.primitive].material].kind!=MaterialKind::Dielectric)
+                    opaque_spans->push_back({*limits.first,*limits.second,polygon.primitive});}}}
     // Two overlapping planar blockers may exchange front-to-back order without
     // either silhouette ending.  Their ray depths are ai/(bi+ci*u), so the
     // equality has one analytic root along this source row.  Cutting there
@@ -607,20 +921,36 @@ static constexpr std::array<double,4> emitter_gauss4_w{{
 
 template<class Kernel>
 RGB integrate_rectangular_emitter(const Scene& scene,const AreaLight& area,Vec3 point,Vec3 normal,int receiver,
-                                  Kernel&& kernel,TraceStats* stats=nullptr,int quadrature_order=2){RGB result{};
+                                  Kernel&& kernel,TraceStats* stats=nullptr,int quadrature_order=2,
+                                  const RGB* jelly_source=nullptr,RGB* source_response=nullptr){RGB result{};
+    if(source_response)*source_response={};
     const double* gauss_x=emitter_gauss2_x.data();const double* gauss_w=emitter_gauss2_w.data();
     if(quadrature_order>=4){quadrature_order=4;gauss_x=emitter_gauss4_x.data();gauss_w=emitter_gauss4_w.data();}
     else if(quadrature_order==3){gauss_x=emitter_gauss3_x.data();gauss_w=emitter_gauss3_w.data();}
     else quadrature_order=2;
-    const Primitive& light=scene.primitives[area.primitive];const EmitterPartition partition=
+    if(source_interval_extinction)++source_extinction_counts.source_calls;
+    const Primitive& light=scene.primitives[area.primitive];
+    // Both cosine numerators are affine on the finite source rectangle. Their
+    // maxima occur at a corner; a nonpositive maximum proves zero contribution.
+    if(dot(normal,light.origin-point)+std::max(0.0,dot(normal,light.u))+
+        std::max(0.0,dot(normal,light.v))<=0)return result;
+    if(dot(light.normal,point-light.origin)+std::max(0.0,-dot(light.normal,light.u))+
+        std::max(0.0,-dot(light.normal,light.v))<=0)return result;
+    const EmitterPartition partition=
         build_emitter_partition(scene,light,point,receiver,area.primitive);
+    if(partition.fully_occluded)return result;
     const auto vertical_cuts=emitter_vertical_cuts(scene,light,partition,point);
     for(std::size_t band=1;band<vertical_cuts.size();++band){const double vlo=vertical_cuts[band-1],vhi=vertical_cuts[band];
         if(vhi-vlo<=1e-12)continue;
         for(int j=0;j<quadrature_order;++j){const double v=.5*((vhi-vlo)*gauss_x[j]+vhi+vlo);
-            const auto cuts=emitter_row_cuts(scene,light,partition,point,v);if(stats)++stats->emitter_rows;
+            std::vector<OpaqueSourceSpan> opaque_spans;
+            const bool extinguish=source_interval_extinction&&partition.opaque_only&&!jelly_source&&!source_response;
+            const auto cuts=emitter_row_cuts(scene,light,partition,point,v,extinguish?&opaque_spans:nullptr);if(stats)++stats->emitter_rows;
+#ifdef PHOTONIC_PIXEL_REUSE_AUDIT
+            if(pixel_reuse_audit)pixel_reuse_audit->first_in_row=true;
+#endif
             for(std::size_t interval=1;interval<cuts.size();++interval){const double lo=cuts[interval-1],hi=cuts[interval];
-                if(hi-lo<=1e-12)continue;if(stats)++stats->emitter_intervals;RGB row{};
+                if(hi-lo<=1e-12)continue;if(stats)++stats->emitter_intervals;RGB row{},response_row{};
                 // Every blocker boundary is already a cut, hence the ordered
                 // opacity/dielectric membership is constant inside this open
                 // interval.  Discover it once at the interval centroid; the
@@ -629,22 +959,51 @@ RGB integrate_rectangular_emitter(const Scene& scene,const AreaLight& area,Vec3 
                 // faces, so their angle-dependent Fresnel terms remain exact at
                 // every ordinate without repeating a whole-scene ray walk.
                 const Vec3 midpoint=light.origin+light.u*((lo+hi)*.5)+light.v*v;
-                const SegmentProgram program=partition.polygons.empty()&&partition.spheres.empty()?SegmentProgram{}:
+                if(extinguish){
+                    ++source_extinction_counts.intervals;bool zero=false;const double mid=(lo+hi)*.5;
+                    // A clipped planar support names a local zero witness. Check
+                    // the same finite ray origin/limit at midpoint and ALL of the
+                    // actual quadrature ordinates, avoiding numerical horizon ties.
+                    // No whole-scene walk is needed once this witness survives.
+                    for(const auto& span:opaque_spans){if(mid<=span.lower||mid>=span.upper)continue;
+                        const int id=span.primitive;bool certified=true;
+                        for(int k=-1;k<quadrature_order;++k){const double u=k<0?mid:.5*((hi-lo)*gauss_x[k]+hi+lo);
+                            const Vec3 q=light.origin+light.u*u+light.v*v,delta=q-point;const double distance=norm(delta);
+                            if(distance<1e-8){certified=false;break;}const Vec3 direction=delta/distance;
+                            ++source_extinction_counts.primitive_checks;
+                            if(!intersect_primitive(scene.primitives[id],id,{point+direction*2e-4,direction},distance+1e-4).valid){certified=false;break;}}
+                        if(certified){zero=true;break;}}
+                    if(zero){++source_extinction_counts.extinguished;continue;}
+                    ++source_extinction_counts.fallbacks;
+                }
+                // Finite blockers have complete source-chart half-space windows.
+                const SegmentProgram program=!partition.has_candidates?SegmentProgram{}:
                     discover_segment_program(scene,point,midpoint,receiver,area.primitive);
+#ifdef PHOTONIC_PIXEL_REUSE_AUDIT
+                if(pixel_reuse_audit)pixel_reuse_audit->source_word(receiver,area.primitive,program);
+#endif
                 if(stats)++stats->shadow;
                 for(int i=0;i<quadrature_order;++i){const double u=.5*((hi-lo)*gauss_x[i]+hi+lo);
                 const Vec3 q=light.origin+light.u*u+light.v*v,delta=q-point;const double r2=norm2(delta);if(r2<1e-12)continue;
                 const Vec3 d=delta/std::sqrt(r2);const double cr=std::max(dot(normal,d),0.0),cl=std::max(dot(light.normal,-d),0.0);
                 if(cr<=0||cl<=0)continue;if(stats)++stats->emitter_quadrature_samples;
-                const RGB trans=evaluate_segment_program(scene,program,point,q,receiver,area.primitive);
-                row+=kernel(q,d,r2,cr,cl,trans)*gauss_w[i];}
-                result+=row*(.25*gauss_w[j]*(vhi-vlo)*(hi-lo)*light.area);}}}
+                RGB coefficient{};const RGB incoming=evaluate_segment_radiance(scene,program,point,q,area.radiance,jelly_source,
+                    receiver,area.primitive,source_response?&coefficient:nullptr,stats);
+                row+=kernel(q,d,r2,cr,cl,incoming)*gauss_w[i];
+                if(source_response)response_row+=kernel(q,d,r2,cr,cl,coefficient)*gauss_w[i];}
+                const double weight=.25*gauss_w[j]*(vhi-vlo)*(hi-lo)*light.area;
+                result+=row*weight;if(source_response)*source_response+=response_row*weight;}}}
     return result;
 }
 
-RGB area_irradiance(const Scene& scene,Vec3 point,Vec3 normal,int receiver,TraceStats* stats=nullptr){RGB result{};
-    for(const AreaLight& area:scene.area_lights)result+=integrate_rectangular_emitter(scene,area,point,normal,receiver,
-        [&](Vec3,Vec3,double r2,double cr,double cl,const RGB& trans){return multiply(area.radiance,trans)*(cr*cl/r2);},stats);
+RGB area_irradiance(const Scene& scene,Vec3 point,Vec3 normal,int receiver,TraceStats* stats=nullptr,
+                    const RGB* jelly_source=nullptr,RGB* source_response=nullptr){RGB result{};
+    if(source_response)*source_response={};
+    for(const AreaLight& area:scene.area_lights){RGB coefficient{};
+        result+=integrate_rectangular_emitter(scene,area,point,normal,receiver,
+            [&](Vec3,Vec3,double r2,double cr,double cl,const RGB& incoming){return incoming*(cr*cl/r2);},
+            stats,2,jelly_source,source_response?&coefficient:nullptr);
+        if(source_response)*source_response+=coefficient;}
     return result;
 }
 
@@ -674,6 +1033,13 @@ BeamField compile_beam_field(const Scene& scene,BeamCompileConfig config={}){Bea
             for(int depth=0;depth<12&&power>1e-7;++depth){const Hit h=first_hit(scene,ray,std::numeric_limits<double>::infinity(),previous);
                 if(!h.valid)break;const Material& m=scene.materials[scene.primitives[h.primitive].material];
                 if(m.kind==MaterialKind::Dielectric){++field.dielectric_crossings;++field.dielectric_by_primitive[h.primitive];
+                    if(const auto* child=optical_child(scene,h.primitive)){
+                        const auto response=child->response(ray,h,channel,channel,1e-7/std::max(power,1e-30),48,.18,.08);
+                        // Preserve this beam model's transmitted-branch convention.
+                        const auto port=response.ports.begin()+(response.ports.size()>1&&(h.front||m.thin)?1:0);
+                        if(port==response.ports.end())break;
+                        power*=port->weight;ray=port->ray;previous=port->primitive;continue;
+                    }
                     const double eta_i=h.front?1:m.ior_rgb[channel];
                     const double eta_t=h.front?m.ior_rgb[channel]:1;const double F=schlick(std::abs(dot(ray.direction,h.normal)),eta_i,eta_t);
                     power*=m.base[channel]*(1-F)*std::exp(-m.absorption[channel]*(m.thin?.08:.18));Vec3 next=ray.direction;
@@ -703,6 +1069,13 @@ bool march_beam_endpoint(const Scene& scene,const BeamBundle& beam,double u,doub
     for(int depth=0;depth<12&&power>1e-7;++depth){const Hit hit=first_hit(scene,ray,std::numeric_limits<double>::infinity(),previous);
         if(!hit.valid)return false;const Material& material=scene.materials[scene.primitives[hit.primitive].material];
         if(material.kind==MaterialKind::Dielectric){++field.dielectric_crossings;++field.dielectric_by_primitive[hit.primitive];
+            if(const auto* child=optical_child(scene,hit.primitive)){
+                const auto response=child->response(ray,hit,channel,channel,1e-7/std::max(power,1e-30),48,.18,.08);
+                const auto port=response.ports.begin()+(response.ports.size()>1&&(hit.front||material.thin)?1:0);
+                if(port==response.ports.end())return false;
+                path=beam_path_push(path,hit.primitive,1);path=beam_path_push(path,port->primitive,5);
+                power*=port->weight;ray=port->ray;previous=port->primitive;continue;
+            }
             path=beam_path_push(path,hit.primitive,1);const double eta_i=hit.front?1:material.ior_rgb[channel];
             const double eta_t=hit.front?material.ior_rgb[channel]:1;const double fresnel=
                 schlick(std::abs(dot(ray.direction,hit.normal)),eta_i,eta_t);power*=material.base[channel]*(1-fresnel)*
@@ -772,9 +1145,14 @@ RGB beam_irradiance(const BeamField& field,int primitive,Vec3 point){RGB result{
 
 std::uint8_t tone_byte(double linear);
 
+struct RegisteredIrradianceSample{
+    RGB base{},source_response{};
+    RGB evaluate(const RGB& source)const{return base+multiply(source_response,source);}
+};
 struct SurfaceIrradianceAtlas{
     int primitive=-1,width=0,height=0,refine_side=5;bool sphere=false;std::vector<RGB> value,refined_value;
     std::vector<int> refined_offset;
+    std::shared_ptr<const std::map<std::pair<int,int>,RegisteredIrradianceSample>> construction_samples;
 };
 
 bool rectangle_coordinates(const Primitive& primitive,Vec3 point,double& u,double& v){
@@ -783,10 +1161,17 @@ bool rectangle_coordinates(const Primitive& primitive,Vec3 point,double& u,doubl
     if(std::abs(det)<1e-18)return false;u=(qu*vv-qv*uv)/det;v=(qv*uu-qu*uv)/det;return true;
 }
 
+bool surface_atlas_coordinates(bool sphere,const Primitive& primitive,Vec3 point,double& u,double& v){
+    if(sphere){const Vec3 normal=unit(point-primitive.center);
+        const double planar_magnitude=std::sqrt(normal.x*normal.x+normal.z*normal.z);
+        double phase=positive_phase(normal.z,normal.x,planar_magnitude);
+        if(phase>pi)phase-=2*pi;u=(phase+pi)/(2*pi);v=(1-normal.y)*.5;
+    }else if(!rectangle_coordinates(primitive,point,u,v))return false;
+    return true;
+}
+
 RGB sample_surface_atlas(const SurfaceIrradianceAtlas& atlas,const Primitive& primitive,Vec3 point){
-    double u=0,v=0;if(atlas.sphere){const Vec3 normal=unit(point-primitive.center);
-        u=(std::atan2(normal.z,normal.x)+pi)/(2*pi);v=(1-normal.y)*.5;
-    }else if(!rectangle_coordinates(primitive,point,u,v))return {};
+    double u=0,v=0;if(!surface_atlas_coordinates(atlas.sphere,primitive,point,u,v))return {};
     const double x=std::clamp(u,0.0,1.0)*(atlas.width-1),y=std::clamp(v,0.0,1.0)*(atlas.height-1);
     const int x0=std::clamp(static_cast<int>(std::floor(x)),0,atlas.width-1),x1=std::min(x0+1,atlas.width-1);
     const int y0=std::clamp(static_cast<int>(std::floor(y)),0,atlas.height-1),y1=std::min(y0+1,atlas.height-1);
@@ -806,34 +1191,112 @@ RGB sample_surface_atlas(const SurfaceIrradianceAtlas& atlas,const Primitive& pr
 
 struct TransportCoupling{int source=-1;double weight=0;};
 struct TransportRecipient{int receiver=-1;double weight=0;};
+struct RetainedRadianceOperator {
+    pft_retained_plan* plan=nullptr;
+    pft_retained_mode_plan* modes=nullptr;
+    ~RetainedRadianceOperator(){pft_retained_mode_plan_destroy(modes);pft_retained_plan_destroy(plan);}
+    RetainedRadianceOperator()=default;
+    RetainedRadianceOperator(const RetainedRadianceOperator&)=delete;
+    RetainedRadianceOperator& operator=(const RetainedRadianceOperator&)=delete;
+};
 struct TransportField{std::vector<int> node_primitives,index_by_primitive;std::vector<RGB> direct,bounce,radiance;
     std::vector<TransportCoupling> coupling;std::vector<std::size_t> incoming_offset;
     std::vector<TransportRecipient> outgoing;std::vector<std::size_t> outgoing_offset;
     std::vector<SurfaceIrradianceAtlas> direct_atlas;std::vector<int> direct_atlas_by_primitive;
-    std::uint64_t direct_atlas_samples=0,nonzeros=0,propagated_edges=0;int iterations=0;double final_residual=0;};
+    std::uint64_t direct_atlas_samples=0,nonzeros=0,propagated_edges=0;
+    std::uint64_t retained_blocks=0,retained_coefficients=0,retained_block_applications=0;
+    std::uint64_t retained_gathered_coefficients=0,retained_scattered_coefficients=0;
+    std::uint64_t retained_expanded_pairs=0,retained_many_source_blocks=0;
+    std::uint64_t retained_many_receiver_blocks=0,retained_many_to_many_blocks=0;
+    std::uint32_t retained_max_source_width=0,retained_max_receiver_width=0;
+    double retained_max_relative_error=0;
+    int iterations=0;double final_residual=0,retained_plan_ms=0,transport_solve_ms=0;
+    std::string transport_backend="scalar-csr";
+    std::vector<double> raw_coupling;
+    std::shared_ptr<RetainedRadianceOperator> retained_operator;
+    std::uint64_t geometry_revision=0,generation=0;
+    std::uint64_t reused_pairs=0,recomputed_pairs=0,reused_direct=0,reused_atlases=0,reused_atlas_samples=0;
+    double contraction_bound=0,certified_tail=0,initial_defect=0;
+    std::uint64_t negative_defect_channels=0;
+    bool warm_started=false;RGB atlas_volume_source{};
+};
 
-TransportField compile_transport_field(const Scene& scene,const BeamField& beams){TransportField field;
+// A segment between two registered supports lies in their convex hull, hence
+// also in this padded AABB. Disjoint edited bounds certify unchanged visibility.
+// Testing only old nonzero edges is wrong: removing a blocker creates edges.
+bool relation_dirty(const Bounds3& a,const Bounds3& b,const GeometryChanges& changes){
+    Bounds3 support=a;expand(support,b);const Vec3 padding{.001,.001,.001};
+    support.lower=support.lower-padding;support.upper=support.upper+padding;
+    for(const Bounds3& swept:changes.swept)if(bounds_overlap(support,swept))return true;
+    return false;
+}
+
+
+
+TransportField compile_transport_field(const Scene& scene,const BeamField& beams,bool use_retained=true,
+    const TransportField* previous=nullptr,const GeometryChanges* changes=nullptr){TransportField field;
+    static std::atomic<std::uint64_t> generation{0};field.generation=++generation;
+    field.geometry_revision=scene.geometry_revision;
+    if(previous&&(!changes||changes->from_revision!=previous->geometry_revision||
+        changes->to_revision!=scene.geometry_revision||
+        changes->previous_geometry.size()!=changes->primitives.size()))throw std::invalid_argument("transport update revision mismatch");
+    std::vector<std::uint8_t> edited(scene.primitives.size(),0);
+    if(changes)for(int id:changes->primitives)edited.at(id)=1;
+    std::vector<Bounds3> bounds;bounds.reserve(scene.primitives.size());
+    for(const auto& primitive:scene.primitives)bounds.push_back(primitive_bounds(primitive));
+    auto old_node=[&](int id){return previous&&id<static_cast<int>(previous->index_by_primitive.size())?
+        previous->index_by_primitive[id]:-1;};
+    auto direct_dirty=[&](int id){
+        if(!previous||edited[id])return true;
+        for(const AreaLight& light:scene.area_lights)
+            if(edited[light.primitive]||relation_dirty(bounds[id],bounds[light.primitive],*changes))return true;
+        return false;
+    };
+
     field.index_by_primitive.assign(scene.primitives.size(),-1);
     for(int p=0;p<static_cast<int>(scene.primitives.size());++p){const Primitive& primitive=scene.primitives[p];
-        const Material& m=scene.materials[primitive.material];if(!primitive.transport||m.diffuse<=0||m.kind==MaterialKind::Emissive||
-            m.kind==MaterialKind::Mirror||m.kind==MaterialKind::Dielectric)continue;
+        const Material& m=scene.materials[primitive.material];
+        if(scene.child_boundaries&&p==scene.jelly_core)continue;
+        const bool child_mode=scene.child_boundaries&&p==scene.jelly_volume;
+        if(!child_mode&&(!primitive.transport||m.diffuse<=0||m.kind==MaterialKind::Emissive||
+            m.kind==MaterialKind::Mirror||m.kind==MaterialKind::Dielectric))continue;
         field.index_by_primitive[p]=static_cast<int>(field.node_primitives.size());field.node_primitives.push_back(p);}
     const int count=static_cast<int>(field.node_primitives.size());field.direct.resize(count);field.bounce.resize(count);
     field.radiance.resize(count);field.incoming_offset.resize(static_cast<std::size_t>(count)+1);
     field.direct_atlas_by_primitive.assign(scene.primitives.size(),-1);
     std::vector<std::vector<SurfaceSample>> samples(count);
-    for(int i=0;i<count;++i){const int p=field.node_primitives[i];samples[i]=surface_samples(scene.primitives[p]);double area=0;
-        for(const SurfaceSample& s:samples[i]){field.direct[i]+=(area_irradiance(scene,s.position+s.normal*2e-4,s.normal,p)+
-                beam_irradiance(beams,p,s.position))*s.weight;area+=s.weight;}if(area>0)field.direct[i]=field.direct[i]*(1/area);}
-    std::vector<double> source_sum(count);for(int receiver=0;receiver<count;++receiver){field.incoming_offset[receiver]=field.coupling.size();
-        for(int source=0;source<count;++source){if(receiver==source)continue;double g=0,receiver_area=0;
-        const int rp=field.node_primitives[receiver],sp=field.node_primitives[source];
-        for(const SurfaceSample& r:samples[receiver]){receiver_area+=r.weight;for(const SurfaceSample& q:samples[source]){
-            const Vec3 delta=r.position-q.position;const double d2=norm2(delta);if(d2<1e-7)continue;const Vec3 direction=delta/std::sqrt(d2);
-            const double cs=std::max(dot(q.normal,direction),0.0),cr=std::max(dot(r.normal,-direction),0.0);if(cs<=0||cr<=0)continue;
-            const RGB trans=segment_transmittance(scene,q.position,r.position,sp,rp);const double scalar=(trans[0]+trans[1]+trans[2])/3;
-            g+=r.weight*q.weight*cs*cr*scalar/d2;}}
-        if(receiver_area>0)g/=receiver_area;if(g>1e-8){field.coupling.push_back({source,g});source_sum[source]+=g;}}
+    for(int i=0;i<count;++i){const int p=field.node_primitives[i];samples[i]=surface_samples(scene.primitives[p]);
+        const int old=old_node(p);
+        if(old>=0&&scene.beams.empty()&&!direct_dirty(p)){field.direct[i]=previous->direct[old];++field.reused_direct;continue;}
+        double area=0;
+        for(const SurfaceSample& q:samples[i]){field.direct[i]+=(area_irradiance(scene,q.position+q.normal*2e-4,q.normal,p)+
+                beam_irradiance(beams,p,q.position))*q.weight;area+=q.weight;}if(area>0)field.direct[i]=field.direct[i]*(1/area);}
+    std::vector<double> source_sum(count);
+    for(int receiver=0;receiver<count;++receiver){field.incoming_offset[receiver]=field.coupling.size();
+        for(int source=0;source<count;++source){if(receiver==source)continue;
+            const int rp=field.node_primitives[receiver],sp=field.node_primitives[source];
+            const int old_r=old_node(rp),old_s=old_node(sp);double g=0;
+            const bool reuse=old_r>=0&&old_s>=0&&!edited[rp]&&!edited[sp]&&
+                !relation_dirty(bounds[rp],bounds[sp],*changes);
+            if(reuse){
+                const auto begin=previous->coupling.begin()+previous->incoming_offset[old_r];
+                const auto end=previous->coupling.begin()+previous->incoming_offset[old_r+1];
+                const auto edge=std::lower_bound(begin,end,old_s,[](const TransportCoupling& e,int id){return e.source<id;});
+                if(edge!=end&&edge->source==old_s)g=previous->raw_coupling[edge-previous->coupling.begin()];
+                ++field.reused_pairs;
+            }else{
+                ++field.recomputed_pairs;double receiver_area=0;
+                for(const SurfaceSample& r:samples[receiver]){receiver_area+=r.weight;for(const SurfaceSample& q:samples[source]){
+                    const Vec3 delta=r.position-q.position;const double d2=norm2(delta);if(d2<1e-7)continue;
+                    const Vec3 direction=delta/std::sqrt(d2);
+                    const double cs=std::max(dot(q.normal,direction),0.0),cr=std::max(dot(r.normal,-direction),0.0);
+                    if(cs<=0||cr<=0)continue;
+                    const RGB trans=segment_transmittance(scene,q.position,r.position,sp,rp);
+                    const double scalar=(trans[0]+trans[1]+trans[2])/3;g+=r.weight*q.weight*cs*cr*scalar/d2;
+                }}if(receiver_area>0)g/=receiver_area;
+            }
+            if(g>1e-8){field.coupling.push_back({source,g});field.raw_coupling.push_back(g);source_sum[source]+=g;}
+        }
     }field.incoming_offset[count]=field.coupling.size();field.nonzeros=field.coupling.size();
     for(int receiver=0;receiver<count;++receiver)for(std::size_t edge=field.incoming_offset[receiver];
             edge<field.incoming_offset[receiver+1];++edge){TransportCoupling& coupling=field.coupling[edge];
@@ -845,23 +1308,227 @@ TransportField compile_transport_field(const Scene& scene,const BeamField& beams
     std::vector<std::size_t> cursor=field.outgoing_offset;for(int receiver=0;receiver<count;++receiver)
         for(std::size_t edge=field.incoming_offset[receiver];edge<field.incoming_offset[receiver+1];++edge){
             const TransportCoupling& coupling=field.coupling[edge];field.outgoing[cursor[coupling.source]++]={receiver,coupling.weight};}
-    auto energy=[](const RGB& value){return value[0]+value[1]+value[2];};
-    std::vector<RGB> response(count),delta(count);for(int i=0;i<count;++i){const Material& material=
-            scene.materials[scene.primitives[field.node_primitives[i]].material];response[i]=material.base*(material.diffuse/pi);
-        field.radiance[i]=delta[i]=multiply(field.direct[i],response[i]);}
-    std::vector<int> active,next_active;active.reserve(count);next_active.reserve(count);for(int i=0;i<count;++i)
-        if(energy(delta[i])>1e-14)active.push_back(i);
-    for(int iteration=0;iteration<24;++iteration){std::vector<RGB> next(count);std::vector<std::uint8_t> marked(count);next_active.clear();
-        for(int source:active)for(std::size_t edge=field.outgoing_offset[source];edge<field.outgoing_offset[source+1];++edge){
-            const TransportRecipient& recipient=field.outgoing[edge];next[recipient.receiver]+=multiply(
-                delta[source]*recipient.weight,response[recipient.receiver]);++field.propagated_edges;
-            if(!marked[recipient.receiver]){marked[recipient.receiver]=1;next_active.push_back(recipient.receiver);}}
-        double residual=0;active.clear();for(int receiver:next_active){const RGB value=next[receiver];residual+=energy(value);
-            field.radiance[receiver]+=value;if(energy(value)>1e-14)active.push_back(receiver);}
-        delta.swap(next);field.iterations=iteration+1;field.final_residual=residual;if(residual<1e-5)break;}
-    for(int i=0;i<count;++i){RGB incident{};for(std::size_t edge=field.incoming_offset[i];edge<field.incoming_offset[i+1];++edge){
-            const TransportCoupling& coupling=field.coupling[edge];incident+=field.radiance[coupling.source]*coupling.weight;}
-        field.bounce[i]=incident;}
+    std::vector<pft_retained_block_f64> retained_blocks;
+    std::vector<std::uint32_t> retained_sources,retained_receivers;
+    std::vector<double> retained_source_factors,retained_receiver_factors;
+    if(use_retained){
+        // Backward fusion starts from the established geometric coefficients,
+        // but never turns them into path objects.  A coherent matrix rectangle
+        // is retained as v(u^T L); only a failed rank/visibility rectangle is
+        // bisected.  One-source leaves are the irreducible fallback, not the
+        // representation of the complete field.
+        const std::size_t no_edge=std::numeric_limits<std::size_t>::max();
+        auto edge_index=[&](int receiver,int source){const auto begin=field.coupling.begin()+
+                static_cast<std::ptrdiff_t>(field.incoming_offset[receiver]),end=field.coupling.begin()+
+                static_cast<std::ptrdiff_t>(field.incoming_offset[receiver+1]);const auto found=std::lower_bound(
+                begin,end,source,[](const TransportCoupling& coupling,int value){return coupling.source<value;});
+            return found!=end&&found->source==source?static_cast<std::size_t>(found-field.coupling.begin()):no_edge;};
+        auto matrix=[&](int receiver,int source){const std::size_t edge=edge_index(receiver,source);
+            return edge==no_edge?0.0:field.coupling[edge].weight;};
+        auto contiguous=[](const std::vector<int>& index){if(index.empty())return false;
+            for(std::size_t i=1;i<index.size();++i)if(index[i]!=index[i-1]+1)return false;return true;};
+        auto append_block=[&](const std::vector<int>& source,const std::vector<double>& u,
+                              const std::vector<int>& receiver,const std::vector<double>& v,double relative_error){
+            if(source.empty()||receiver.empty())return;const std::uint32_t source_offset=
+                static_cast<std::uint32_t>(retained_sources.size()),receiver_offset=
+                static_cast<std::uint32_t>(retained_receivers.size());
+            for(std::size_t i=0;i<source.size();++i){retained_sources.push_back(static_cast<std::uint32_t>(source[i]));
+                retained_source_factors.push_back(u[i]);}
+            for(std::size_t i=0;i<receiver.size();++i){retained_receivers.push_back(static_cast<std::uint32_t>(receiver[i]));
+                retained_receiver_factors.push_back(v[i]);}
+            const bool source_contiguous=contiguous(source),receiver_contiguous=contiguous(receiver);
+            retained_blocks.push_back({source_offset,static_cast<std::uint32_t>(source.size()),receiver_offset,
+                static_cast<std::uint32_t>(receiver.size()),static_cast<std::uint32_t>(source.front()),
+                static_cast<std::uint32_t>(receiver.front()),static_cast<std::uint32_t>(
+                    (source_contiguous?PFT_BLOCK_SOURCE_CONTIGUOUS:0)|
+                    (receiver_contiguous?PFT_BLOCK_RECEIVER_CONTIGUOUS:0)),0,0,0,0,0});
+            field.retained_expanded_pairs+=source.size()*receiver.size();
+            field.retained_many_source_blocks+=source.size()>1;field.retained_many_receiver_blocks+=receiver.size()>1;
+            field.retained_many_to_many_blocks+=source.size()>1&&receiver.size()>1;
+            field.retained_max_source_width=std::max(field.retained_max_source_width,
+                static_cast<std::uint32_t>(source.size()));field.retained_max_receiver_width=std::max(
+                field.retained_max_receiver_width,static_cast<std::uint32_t>(receiver.size()));
+            field.retained_max_relative_error=std::max(field.retained_max_relative_error,relative_error);};
+        auto split_spatial=[&](std::vector<int> index){Bounds3 bounds;
+            for(int node:index){expand(bounds,scene.primitives[field.node_primitives[node]].center);}
+            const Vec3 extent=bounds.upper-bounds.lower;
+            const int axis=extent.x>=extent.y&&extent.x>=extent.z?0:(extent.y>=extent.z?1:2);
+            std::stable_sort(index.begin(),index.end(),[&](int a,int b){return coordinate(
+                scene.primitives[field.node_primitives[a]].center,axis)<coordinate(
+                scene.primitives[field.node_primitives[b]].center,axis);});return index;};
+        auto spread=[&](const std::vector<int>& index){if(index.size()<2)return 0.0;Bounds3 bounds;
+            for(int node:index)expand(bounds,scene.primitives[field.node_primitives[node]].center);
+            return norm(bounds.upper-bounds.lower);};
+        struct FusionCandidate{std::vector<int> source,receiver;std::vector<double> u,v;double relative_error=0;};
+        std::vector<FusionCandidate> candidates;std::vector<std::uint8_t> covered(field.coupling.size());
+        constexpr double fusion_relative_tolerance=5.0e-2;
+        auto fuse=[&](auto&& self,std::vector<int> source,std::vector<int> receiver)->void{
+            double maximum=0;int pivot_source=-1,pivot_receiver=-1;
+            for(int r:receiver)for(int s:source){const double value=matrix(r,s);
+                if(value>maximum){maximum=value;pivot_source=s;pivot_receiver=r;}}
+            if(maximum<=0)return;
+            std::vector<double> u(source.size()),v(receiver.size());
+            for(std::size_t i=0;i<source.size();++i)u[i]=matrix(pivot_receiver,source[i]);
+            for(std::size_t i=0;i<receiver.size();++i)v[i]=matrix(receiver[i],pivot_source)/maximum;
+            double maximum_error=0;for(std::size_t r=0;r<receiver.size();++r)for(std::size_t s=0;s<source.size();++s)
+                maximum_error=std::max(maximum_error,std::abs(matrix(receiver[r],source[s])-v[r]*u[s]));
+            const double relative_error=maximum_error/maximum;
+            bool same_support=true;for(std::size_t r=0;r<receiver.size();++r)for(std::size_t s=0;s<source.size();++s){
+                const bool actual=matrix(receiver[r],source[s])>0,predicted=v[r]*u[s]>maximum*1e-12;
+                same_support=same_support&&actual==predicted;}
+            const bool reduces_storage=source.size()*receiver.size()>source.size()+receiver.size();
+            const bool coherent=source.size()>1&&receiver.size()>1&&reduces_storage&&same_support&&
+                relative_error<=fusion_relative_tolerance;
+            if(coherent){
+                std::vector<int> kept_source,kept_receiver;std::vector<double> kept_u,kept_v;
+                for(std::size_t i=0;i<source.size();++i)if(u[i]>0){kept_source.push_back(source[i]);kept_u.push_back(u[i]);}
+                for(std::size_t i=0;i<receiver.size();++i)if(v[i]>0){kept_receiver.push_back(receiver[i]);kept_v.push_back(v[i]);}
+                if(!kept_source.empty()&&!kept_receiver.empty())candidates.push_back({
+                    std::move(kept_source),std::move(kept_receiver),std::move(kept_u),std::move(kept_v),relative_error});
+                return;
+            }
+            if(source.size()==1||receiver.size()==1)return;
+            const bool split_source=source.size()>1&&(receiver.size()==1||
+                spread(source)>=spread(receiver));
+            if(split_source){source=split_spatial(std::move(source));const auto middle=source.begin()+source.size()/2;
+                std::vector<int> left(source.begin(),middle),right(middle,source.end());self(self,std::move(left),receiver);
+                self(self,std::move(right),std::move(receiver));}
+            else{receiver=split_spatial(std::move(receiver));const auto middle=receiver.begin()+receiver.size()/2;
+                std::vector<int> left(receiver.begin(),middle),right(middle,receiver.end());self(self,source,std::move(left));
+                self(self,std::move(source),std::move(right));}}
+        ;
+        std::vector<int> all(count);for(int i=0;i<count;++i)all[i]=i;fuse(fuse,all,all);
+        // Rank rectangles may share sources. A rectangle that is locally
+        // compact can still duplicate enough source coefficients to enlarge
+        // the complete program. Admit candidates against the live exact
+        // remainder, accepting only a non-increasing marginal representation.
+        std::stable_sort(candidates.begin(),candidates.end(),[](const FusionCandidate& a,const FusionCandidate& b){
+            const std::ptrdiff_t saving=static_cast<std::ptrdiff_t>(a.source.size()*a.receiver.size()-
+                a.source.size()-a.receiver.size());
+            const std::ptrdiff_t other=static_cast<std::ptrdiff_t>(b.source.size()*b.receiver.size()-
+                b.source.size()-b.receiver.size());return saving>other;});
+        std::vector<std::size_t> remaining(count);for(int source=0;source<count;++source)
+            remaining[source]=field.outgoing_offset[source+1]-field.outgoing_offset[source];
+        std::vector<std::uint8_t> admitted(candidates.size());bool changed=true;
+        while(changed){changed=false;for(std::size_t candidate_index=0;candidate_index<candidates.size();++candidate_index){
+            if(admitted[candidate_index])continue;const FusionCandidate& candidate=candidates[candidate_index];
+            const std::size_t pairs=candidate.source.size()*candidate.receiver.size();std::size_t eliminated_sources=0;
+            for(int source:candidate.source)eliminated_sources+=remaining[source]==candidate.receiver.size();
+            const std::size_t added=candidate.source.size()+candidate.receiver.size();
+            if(added>pairs+eliminated_sources)continue;admitted[candidate_index]=1;changed=true;
+            append_block(candidate.source,candidate.u,candidate.receiver,candidate.v,candidate.relative_error);
+            for(int source:candidate.source)remaining[source]-=candidate.receiver.size();
+            for(int receiver:candidate.receiver)for(int source:candidate.source){const std::size_t edge=edge_index(receiver,source);
+                if(edge!=no_edge)covered[edge]=1;}}}
+        // Re-coalesce every exact coefficient not profitably covered by a
+        // many-to-many block.  Thus hierarchy can only reduce the old source
+        // representation; failed candidate rectangles do not fragment it.
+        std::vector<std::vector<int>> remainder_receiver(count);std::vector<std::vector<double>> remainder_factor(count);
+        for(int receiver=0;receiver<count;++receiver)for(std::size_t edge=field.incoming_offset[receiver];
+                edge<field.incoming_offset[receiver+1];++edge)if(!covered[edge]){const TransportCoupling& coupling=
+                    field.coupling[edge];remainder_receiver[coupling.source].push_back(receiver);
+                    remainder_factor[coupling.source].push_back(coupling.weight);}
+        for(int source=0;source<count;++source)if(!remainder_receiver[source].empty())append_block(
+            {source},{1.0},remainder_receiver[source],remainder_factor[source],0.0);
+        field.retained_blocks=retained_blocks.size();field.retained_coefficients=
+            retained_sources.size()+retained_receivers.size();field.transport_backend=
+            std::string(pft_retained_backend())+"-hierarchical";}
+    const auto transport_solve_start=Clock::now();
+    std::vector<RGB> response(count),rhs(count);
+    for(int i=0;i<count;++i){const Material& material=scene.materials[scene.primitives[field.node_primitives[i]].material];
+        const auto* child=optical_child(scene,field.node_primitives[i]);
+        const Material& response_material=child&&child->participating?child->internal_material:material;
+        response[i]=response_material.base*(response_material.diffuse/pi);rhs[i]=multiply(field.direct[i],response[i]);
+        for(double value:response[i])if(!std::isfinite(value)||value<0)throw std::runtime_error("invalid diffuse response");
+        const int old=old_node(field.node_primitives[i]);
+        if(old>=0){field.radiance[i]=previous->radiance[old];field.warm_started=true;}
+    }
+    // Bound the ACTUAL fused operator, not the unfused CSR approximation.
+    // For nonnegative K, ||K||_1 is its largest column sum. Rank blocks allow
+    // these sums in O(sum(source width + receiver width)), without expansion.
+    std::vector<RGB> column_sum(count);
+    if(use_retained&&count){
+        const auto plan_start=Clock::now();field.retained_operator=std::make_shared<RetainedRadianceOperator>();
+        auto& op=*field.retained_operator;
+        int status=pft_retained_plan_create_f64(count,retained_blocks.size(),retained_blocks.data(),
+            retained_sources.size(),retained_sources.data(),retained_source_factors.data(),retained_receivers.size(),
+            retained_receivers.data(),retained_receiver_factors.data(),&op.plan);
+        if(status)throw std::runtime_error("retained plan creation failed: "+std::to_string(status));
+        const std::array<double,3> unpolarized{};
+        status=pft_retained_mode_plan_create_f64(op.plan,3,unpolarized.data(),unpolarized.data(),&op.modes);
+        if(status)throw std::runtime_error("retained mode binding failed: "+std::to_string(status));
+        field.retained_plan_ms=std::chrono::duration<double,std::milli>(Clock::now()-plan_start).count();
+        for(const auto& block:retained_blocks){RGB sum{};
+            for(std::size_t i=block.receiver_offset;i<block.receiver_offset+block.receiver_count;++i)
+                sum+=response[retained_receivers[i]]*retained_receiver_factors[i];
+            for(std::size_t i=block.source_offset;i<block.source_offset+block.source_count;++i)
+                column_sum[retained_sources[i]]+=sum*retained_source_factors[i];}
+    }else for(int source=0;source<count;++source)
+        for(std::size_t e=field.outgoing_offset[source];e<field.outgoing_offset[source+1];++e){
+            const auto& recipient=field.outgoing[e];column_sum[source]+=response[recipient.receiver]*recipient.weight;}
+    for(const RGB& sum:column_sum)for(double value:sum)field.contraction_bound=std::max(field.contraction_bound,value);
+    if(!std::isfinite(field.contraction_bound)||field.contraction_bound>=1)
+        throw std::runtime_error("diffuse operator lacks a contraction certificate");
+    std::vector<double> power(static_cast<std::size_t>(count)*3),output(power.size());
+    std::vector<std::uint8_t> active(count);std::array<double,3> scratch{};
+    auto apply=[&](const std::vector<RGB>& source,std::vector<RGB>& incident){
+        std::fill(incident.begin(),incident.end(),RGB{});
+        if(use_retained&&count){
+            for(int i=0;i<count;++i){active[i]=source[i][0]!=0||source[i][1]!=0||source[i][2]!=0;
+                for(int c=0;c<3;++c)power[static_cast<std::size_t>(c)*count+i]=source[i][c];}
+            pft_retained_stats stats{};const int status=pft_retained_mode_plan_apply_f64(field.retained_operator->modes,
+                active.data(),power.data(),output.data(),scratch.data(),&stats);
+            if(status)throw std::runtime_error("retained signed application failed: "+std::to_string(status));
+            field.retained_block_applications+=stats.block_applications;
+            field.retained_gathered_coefficients+=stats.gathered_source_coefficients;
+            field.retained_scattered_coefficients+=stats.scattered_receiver_coefficients;
+            field.propagated_edges+=stats.scattered_receiver_coefficients;
+            for(int i=0;i<count;++i)for(int c=0;c<3;++c)incident[i][c]=output[static_cast<std::size_t>(c)*count+i];
+        }else for(int i=0;i<count;++i){if(source[i][0]==0&&source[i][1]==0&&source[i][2]==0)continue;
+            for(std::size_t e=field.outgoing_offset[i];e<field.outgoing_offset[i+1];++e){const auto& r=field.outgoing[e];
+                incident[r.receiver]+=source[i]*r.weight;++field.propagated_edges;}}
+    };
+    auto l1=[](const std::vector<RGB>& values){double total=0;
+        for(const RGB& value:values)for(double channel:value)total+=std::abs(channel);return total;};
+    std::vector<RGB> residual(count),incident(count);
+    if(field.warm_started)apply(field.radiance,incident);
+    for(int i=0;i<count;++i)for(int c=0;c<3;++c){
+        residual[i][c]=rhs[i][c]+response[i][c]*incident[i][c]-field.radiance[i][c];
+        field.negative_defect_channels+=residual[i][c]<0;}
+    field.initial_defect=l1(residual);
+    constexpr double radiance_l1_tolerance=1e-8;
+    for(;;){field.certified_tail=l1(residual)/(1-field.contraction_bound);
+        if(!std::isfinite(field.certified_tail))throw std::runtime_error("nonfinite radiance residual");
+        if(field.certified_tail<=radiance_l1_tolerance)break;
+        if(field.iterations>=128)throw std::runtime_error("signed residual did not reach certificate");
+        for(int i=0;i<count;++i)field.radiance[i]+=residual[i];
+        apply(residual,incident);
+        for(int i=0;i<count;++i)residual[i]=multiply(incident[i],response[i]);
+        ++field.iterations;
+    }
+    apply(field.radiance,field.bounce);
+    // Verify the remaining fixed-point defect after all floating-point updates.
+    for(int i=0;i<count;++i)for(int c=0;c<3;++c)
+        residual[i][c]=rhs[i][c]+response[i][c]*field.bounce[i][c]-field.radiance[i][c];
+    field.final_residual=l1(residual);field.certified_tail=field.final_residual/(1-field.contraction_bound);
+    if(!std::isfinite(field.certified_tail)||field.certified_tail>radiance_l1_tolerance*1.01)
+        throw std::runtime_error("radiance residual certificate failed");
+    field.transport_solve_ms=std::chrono::duration<double,std::milli>(Clock::now()-transport_solve_start).count();
+    const int volume_mode=scene.child_boundaries?scene.jelly_volume:scene.jelly_core;
+    RGB volume_source{};const int volume_source_node=volume_mode>=0&&
+        volume_mode<static_cast<int>(field.index_by_primitive.size())?field.index_by_primitive[volume_mode]:-1;
+    if(volume_source_node>=0){const Material& medium=scene.materials[scene.primitives[scene.jelly_volume].material];
+        volume_source=field.radiance[volume_source_node]*medium.diffuse;}
+    field.atlas_volume_source=volume_source;
+    auto atlas_dirty=[&](int id){
+        if(direct_dirty(id))return true;
+        if(scene.jelly_volume>=0&&previous->atlas_volume_source!=volume_source){
+            GeometryChanges volume_change;volume_change.swept.push_back(bounds[scene.jelly_volume]);
+            for(const AreaLight& light:scene.area_lights)
+                if(relation_dirty(bounds[id],bounds[light.primitive],volume_change))return true;
+        }
+        return false;
+    };
     for(int primitive_id=0;primitive_id<static_cast<int>(scene.primitives.size());++primitive_id){
         const Primitive& primitive=scene.primitives[primitive_id];const Material& material=scene.materials[primitive.material];
         if(material.kind==MaterialKind::Emissive||material.kind==MaterialKind::Mirror||
@@ -869,6 +1536,10 @@ TransportField compile_transport_field(const Scene& scene,const BeamField& beams
             (primitive.shape!=Shape::Rectangle&&primitive.shape!=Shape::Sphere))continue;
         if(primitive.shape==Shape::Rectangle){const double a=norm(primitive.u),b=norm(primitive.v);
             if(std::max(a,b)/std::max(std::min(a,b),1e-12)>10)continue;}
+        if(previous&&!atlas_dirty(primitive_id)&&primitive_id<static_cast<int>(previous->direct_atlas_by_primitive.size())){
+            const int old=previous->direct_atlas_by_primitive[primitive_id];
+            if(old>=0){field.direct_atlas_by_primitive[primitive_id]=static_cast<int>(field.direct_atlas.size());
+                field.direct_atlas.push_back(previous->direct_atlas[old]);++field.reused_atlases;continue;}}
         SurfaceIrradianceAtlas atlas;atlas.primitive=primitive_id;atlas.sphere=primitive.shape==Shape::Sphere;
         atlas.width=atlas.sphere?33:33;atlas.height=atlas.sphere?17:33;
         atlas.value.resize(static_cast<std::size_t>(atlas.width)*atlas.height);
@@ -877,13 +1548,38 @@ TransportField compile_transport_field(const Scene& scene,const BeamField& beams
                 normal={r*std::cos(angle),ny,r*std::sin(angle)};position=primitive.center+normal*primitive.radius;}
             else{normal=primitive.normal;position=primitive.origin+primitive.u*u+primitive.v*v;}};
         auto evaluate=[&](double u,double v){Vec3 position,normal;surface_point(u,v,position,normal);++field.direct_atlas_samples;
-            return area_irradiance(scene,position+normal*2e-4,normal,primitive_id);};
+            RegisteredIrradianceSample sample;
+            sample.base=area_irradiance(scene,position+normal*2e-4,normal,primitive_id,nullptr,nullptr,
+                scene.jelly_volume>=0?&sample.source_response:nullptr);return sample;};
         constexpr int refinement=4;const int fine_width=(atlas.width-1)*refinement;
-        const int fine_height=(atlas.height-1)*refinement;std::map<std::pair<int,int>,RGB> fine_samples;
+        const int fine_height=(atlas.height-1)*refinement;std::map<std::pair<int,int>,RegisteredIrradianceSample> fine_samples;
+        const SurfaceIrradianceAtlas* old_atlas=nullptr;
+        if(previous&&!edited[primitive_id]&&primitive_id<static_cast<int>(previous->direct_atlas_by_primitive.size())){
+            const int old=previous->direct_atlas_by_primitive[primitive_id];
+            if(old>=0)old_atlas=&previous->direct_atlas[old];}
+        auto sample_dirty=[&](double u,double v){
+            Vec3 position,normal;surface_point(u,v,position,normal);position=position+normal*2e-4;
+            for(const AreaLight& light:scene.area_lights){
+                if(edited[light.primitive])return true;
+                const Primitive& emitter=scene.primitives[light.primitive];Bounds3 support=bounds[light.primitive];expand(support,position);
+                auto could_partition=[&](const Primitive& blocker){return blocker.intersectable&&
+                    bounds_overlap(support,primitive_bounds(blocker))&&blocker_may_overlap_emitter(emitter,blocker,position);};
+                for(std::size_t i=0;i<changes->primitives.size();++i){const int id=changes->primitives[i];
+                    // Certify absence from both old and new NUMERICAL source
+                    // partitions, including superfluous integration cuts.
+                    if(could_partition(changes->previous_geometry[i])||could_partition(scene.primitives[id]))return true;}
+            }
+            return false;
+        };
         auto evaluate_grid=[&](int gx,int gy){const int key_x=atlas.sphere&&gx==fine_width?0:gx;
             const std::pair<int,int> key{key_x,gy};const auto existing=fine_samples.find(key);
-            if(existing!=fine_samples.end())return existing->second;const RGB value=evaluate(
-                double(key_x)/fine_width,double(gy)/fine_height);fine_samples.emplace(key,value);return value;};
+            if(existing!=fine_samples.end())return existing->second.evaluate(volume_source);
+            const double u=double(key_x)/fine_width,v=double(gy)/fine_height;
+            if(old_atlas&&old_atlas->construction_samples){const auto& cache=*old_atlas->construction_samples;
+                const auto found=cache.find(key);
+                if(found!=cache.end()&&!sample_dirty(u,v)){++field.reused_atlas_samples;
+                    fine_samples.emplace(key,found->second);return found->second.evaluate(volume_source);}}
+            const RegisteredIrradianceSample value=evaluate(u,v);fine_samples.emplace(key,value);return value.evaluate(volume_source);};
         for(int y=0;y<atlas.height;++y)for(int x=0;x<atlas.width;++x)
             atlas.value[static_cast<std::size_t>(y)*atlas.width+x]=evaluate_grid(x*refinement,y*refinement);
         atlas.refined_offset.assign(static_cast<std::size_t>(atlas.width-1)*(atlas.height-1),-1);
@@ -899,10 +1595,38 @@ TransportField compile_transport_field(const Scene& scene,const BeamField& beams
             atlas.refined_offset[static_cast<std::size_t>(y)*(atlas.width-1)+x]=offset;
             for(int ry=0;ry<atlas.refine_side;++ry)for(int rx=0;rx<atlas.refine_side;++rx)
                 atlas.refined_value.push_back(evaluate_grid(x*refinement+rx,y*refinement+ry));}
+        atlas.construction_samples=std::make_shared<const std::map<std::pair<int,int>,RegisteredIrradianceSample>>(std::move(fine_samples));
         field.direct_atlas_by_primitive[primitive_id]=static_cast<int>(field.direct_atlas.size());
         field.direct_atlas.push_back(std::move(atlas));}
     return field;
 }
+
+// Own all dependencies together. Observers receive const state. A successful
+// geometry update publishes the repaired field; a failed compile makes the
+// owner unavailable rather than exposing old lighting with new geometry.
+class RetainedSceneState {
+    Scene scene_;BeamField beams_;TransportField field_;bool valid_=true;
+public:
+    double last_geometry_ms=0,last_field_ms=0;
+    explicit RetainedSceneState(Scene scene):scene_(std::move(scene)) {
+        if(scene_.bvh_nodes.empty())build_scene_bvh(scene_);
+        beams_=compile_beam_field(scene_);field_=compile_transport_field(scene_,beams_);
+    }
+    const Scene& geometry()const {if(!valid_)throw std::runtime_error("retained scene requires recovery");return scene_;}
+    const BeamField& beams()const {geometry();return beams_;}
+    const TransportField& field()const {geometry();return field_;}
+    GeometryChanges apply_geometry(std::vector<std::pair<int,Primitive>> edits,std::vector<Primitive> additions={}) {
+        geometry();const auto start=Clock::now();
+        const GeometryChanges changes=edit_scene_geometry(scene_,std::move(edits),std::move(additions));
+        last_geometry_ms=std::chrono::duration<double,std::milli>(Clock::now()-start).count();last_field_ms=0;
+        if(changes.primitives.empty())return changes;
+        valid_=false;const auto field_start=Clock::now();
+        BeamField next_beams=compile_beam_field(scene_);
+        TransportField next=compile_transport_field(scene_,next_beams,true,&field_,&changes);
+        beams_=std::move(next_beams);field_=std::move(next);valid_=true;
+        last_field_ms=std::chrono::duration<double,std::milli>(Clock::now()-field_start).count();return changes;
+    }
+};
 
 double rgb_energy(const RGB& v){return v[0]+v[1]+v[2];}
 std::uint8_t tone_byte(double linear){const double mapped=std::pow(std::clamp(1-std::exp(-.75*std::max(linear,0.0)),0.0,1.0),1/2.2);
@@ -922,16 +1646,105 @@ struct SpecularMemo{
 };
 
 struct Camera{Vec3 origin{},forward{},right{},up{};double scale=0,aspect=1;};
+// A sample and its numerical cell decision are each published once. Cells
+// share their boundary samples, including the periodic sphere seam. Geometry
+// and illumination remain immutable for this field's generation.
+struct CameraDemandSample{std::once_flag ready;RGB value{};};
+struct CameraDemandCell{std::once_flag ready;bool refined=false;};
+struct CameraDemandAtlas{
+    int primitive=-1,width=33,height=33;bool sphere=false;
+    std::unique_ptr<CameraDemandSample[]> samples;
+    std::unique_ptr<CameraDemandCell[]> cells;
+    std::atomic<std::uint64_t> evaluations{0},quadrature{0},cell_tests{0};
+    CameraDemandAtlas(int id,bool is_sphere):primitive(id),height(is_sphere?17:33),sphere(is_sphere),
+        samples(std::make_unique<CameraDemandSample[]>((4*(width-1)+1)*(4*(height-1)+1))),
+        cells(std::make_unique<CameraDemandCell[]>((width-1)*(height-1))){}
+};
 struct CameraSpecularField{
     std::vector<SurfaceIrradianceAtlas> atlas;std::vector<int> by_primitive;
-    TraceStats construction{};std::uint64_t samples=0;Vec3 origin{};
+    std::vector<std::shared_ptr<CameraDemandAtlas>> demand_atlas;
+    TraceStats construction{};std::uint64_t samples=0,field_generation=0;Vec3 origin{};
 };
+
+// Exact geometric query reuse across ownership, wavelength probes, and
+// radiance. A bounded frame-local table stores full keys, so collisions only
+// cause eviction and never turn a nearby ray into an identical ray.
+struct OpticalQueryMemo{
+    struct Entry{std::array<std::uint64_t,8> key{};std::uint64_t tag=0;Hit hit{};};
+    std::vector<Entry> entries;std::uint64_t requests=0,reused=0;
+    explicit OpticalQueryMemo(std::size_t size):entries(size){
+        if(size&&(size&(size-1)))throw std::invalid_argument("optical query capacity must be a power of two");}
+    Hit query(const Scene& scene,const Ray& ray,double limit,int ignore){
+        ++requests;if(entries.empty())return first_hit(scene,ray,limit,ignore);
+        const std::array<std::uint64_t,8> key{{
+            std::bit_cast<std::uint64_t>(ray.origin.x),std::bit_cast<std::uint64_t>(ray.origin.y),std::bit_cast<std::uint64_t>(ray.origin.z),
+            std::bit_cast<std::uint64_t>(ray.direction.x),std::bit_cast<std::uint64_t>(ray.direction.y),std::bit_cast<std::uint64_t>(ray.direction.z),
+            std::bit_cast<std::uint64_t>(limit),static_cast<std::uint64_t>(ignore)}};
+        std::uint64_t hash=key[0]^std::rotl(key[1],9)^std::rotl(key[2],19)^std::rotl(key[3],29)^
+            std::rotl(key[4],39)^std::rotl(key[5],49)^key[6]^key[7];
+        hash^=hash>>30;hash*=0xbf58476d1ce4e5b9ULL;hash^=hash>>27;hash*=0x94d049bb133111ebULL;hash^=hash>>31;
+        const std::uint64_t tag=hash|1ULL;Entry& entry=entries[hash&(entries.size()-1)];
+        if(entry.tag==tag&&entry.key==key){++reused;return entry.hit;}
+        const Hit hit=first_hit(scene,ray,limit,ignore);entry={key,tag,hit};return hit;
+    }
+};
+
+std::string expansion_json_string(const std::string& value){
+    std::string out="\"";constexpr char hex[]="0123456789abcdef";
+    for(unsigned char c:value){
+        if(c=='"'||c=='\\'){out+='\\';out+=char(c);}
+        else if(c<32){out+="\\u00";out+=hex[c>>4];out+=hex[c&15];}
+        else out+=char(c);
+    }
+    return out+'"';
+}
+
+struct ExpansionCounts{
+    std::uint64_t primary=0,mixed=0,bands=0,probes=0,leaves=0,regions=0,max_regions=0,spectral_samples=0,
+        packets=0,dielectric_packets=0,shaded_packets=0,specular=0,quadrature=0,zero_quadrature=0,zero_responses=0,
+        depth_limited=0;double minimum_region=1;
+};
+struct ExpansionReceiver{std::uint64_t calls=0,quadrature=0,zero_quadrature=0,zero_responses=0;};
+struct ExpansionAudit{ExpansionCounts pixel;std::vector<ExpansionReceiver> receivers;};
 
 struct TraceContext{
     const Scene& scene;const BeamField& beams;const TransportField& field;TraceStats* stats=nullptr;
     bool sealed_optics=true;double optical_cutoff=1e-5;SpecularMemo* specular_memo=nullptr;
     const CameraSpecularField* camera_specular=nullptr;
+    OpticalQueryMemo* optical_queries=nullptr;
+    ExpansionAudit* expansion=nullptr;
 };
+
+Hit optical_first_hit(const TraceContext& context,const Ray& ray,
+    double limit=std::numeric_limits<double>::infinity(),int ignore=-1){
+    return context.optical_queries?context.optical_queries->query(context.scene,ray,limit,ignore):
+        first_hit(context.scene,ray,limit,ignore);
+}
+
+struct VolumeChord{bool valid=false;double length=0;Ray exit_ray{};};
+
+VolumeChord jelly_volume_chord(const Scene& scene,const Hit& entry,Vec3 internal_direction,double index){
+    if(entry.primitive!=scene.jelly_volume||!entry.front)return {};
+    const Primitive& volume=scene.primitives[entry.primitive];const Ray internal{
+        entry.position+internal_direction*3e-4,internal_direction};
+    const Hit exit=intersect_primitive(volume,entry.primitive,internal);
+    if(!exit.valid)return {};Vec3 external_direction{};
+    if(!refract(internal_direction,exit.normal,index,external_direction))return {};
+    return {true,exit.t+3e-4,{exit.position+external_direction*3e-4,external_direction}};
+}
+
+double jelly_source_radiance(const TraceContext& ctx,int channel){
+    const int mode=ctx.scene.child_boundaries?ctx.scene.jelly_volume:ctx.scene.jelly_core;
+    const int node=mode>=0&&mode<static_cast<int>(ctx.field.index_by_primitive.size())?
+        ctx.field.index_by_primitive[mode]:-1;
+    if(node<0)return 0;const Material& medium=ctx.scene.materials[
+        ctx.scene.primitives[ctx.scene.jelly_volume].material];
+    return medium.diffuse*ctx.field.radiance[node][channel];
+}
+
+RGB jelly_source_radiance(const TraceContext& ctx){RGB result{};
+    for(int channel=0;channel<3;++channel)result[channel]=jelly_source_radiance(ctx,channel);return result;
+}
 
 bool is_area_emitter(const Scene& scene,int primitive){
     return std::any_of(scene.area_lights.begin(),scene.area_lights.end(),[&](const AreaLight& light){
@@ -986,8 +1799,43 @@ RoughTerminalRelation rough_terminal_relation(const Scene& scene,const Ray& ray,
     const double t=std::clamp(margin/alpha,0.0,1.0);relation.coverage=t*t*(3-2*t);return relation;
 }
 
+struct RoughJellyWindow{
+    double overlap=0;Ray jelly_ray{},background_ray{};Hit jelly_hit{},background_hit{};
+};
+
+RoughJellyWindow rough_jelly_window(const Scene& scene,const Hit& reflector,Vec3 reflected,double roughness){
+    RoughJellyWindow window;if(scene.jelly_volume<0)return window;const Primitive& jelly=scene.primitives[scene.jelly_volume];
+    const Vec3 origin=reflector.position+reflected*3e-4,axis=jelly.center-origin;const double distance=norm(axis);
+    if(distance<=jelly.radius)return window;const Vec3 centre=axis/distance;const double cosine=
+        std::clamp(dot(reflected,centre),-1.0,1.0);const double separation_sine=
+        std::sqrt(std::max(0.0,1-cosine*cosine));const double separation=
+        positive_phase(separation_sine,cosine,1.0);const double radius_sine=
+        std::clamp(jelly.radius/distance,0.0,1.0);const double angular_radius=
+        positive_phase(radius_sine,std::sqrt(std::max(0.0,1-radius_sine*radius_sine)),1.0);
+    const double sigma=std::max(1e-4,roughness*roughness);if(separation>angular_radius+4*sigma)return window;
+    window.overlap=.5*(1+std::erf((angular_radius-separation)/(std::sqrt(2.0)*sigma)));
+    Vec3 tangent=reflected-centre*cosine;if(norm2(tangent)<1e-12)tangent=unit(cross(centre,
+        std::abs(centre.y)<.9?Vec3{0,1,0}:Vec3{1,0,0}));else tangent=unit(tangent);
+    const double jelly_angle=std::min(separation,angular_radius*.68);double jelly_sine=0,jelly_cosine=1;
+    phase_sincos(jelly_angle,jelly_sine,jelly_cosine);const Vec3 jelly_direction=
+        unit(centre*jelly_cosine+tangent*jelly_sine);const double background_angle=angular_radius+2*sigma;
+    double background_sine=0,background_cosine=1;phase_sincos(background_angle,background_sine,background_cosine);
+    const Vec3 background_direction=unit(centre*background_cosine+tangent*background_sine);
+    window.jelly_ray={reflector.position+jelly_direction*3e-4,jelly_direction};
+    window.background_ray={reflector.position+background_direction*3e-4,background_direction};
+    window.jelly_hit=first_hit(scene,window.jelly_ray,std::numeric_limits<double>::infinity(),reflector.primitive);
+    window.background_hit=first_hit(scene,window.background_ray,std::numeric_limits<double>::infinity(),reflector.primitive);
+    if(!window.jelly_hit.valid||window.jelly_hit.primitive!=scene.jelly_volume)window.overlap=0;
+    return window;
+}
+
 RGB specular_area(const TraceContext& ctx,const Hit& hit,Vec3 view,const Material& material,bool camera_primary=false,
     double path_weight=1){RGB result{};
+#ifdef PHOTONIC_PIXEL_REUSE_AUDIT
+    PixelSpecularGuard audit_scope(pixel_reuse_audit);
+    if(pixel_reuse_audit)pixel_reuse_audit->specular(hit.primitive,hit);
+#endif
+    if(ctx.expansion){++ctx.expansion->pixel.specular;++ctx.expansion->receivers[hit.primitive].calls;}
     if(ctx.stats){++ctx.stats->specular_area_calls;
         if(camera_primary)++ctx.stats->primary_specular_area_calls;else{++ctx.stats->secondary_specular_area_calls;
             if(path_weight<1e-4)++ctx.stats->secondary_specular_weight_lt_1e4;
@@ -995,14 +1843,80 @@ RGB specular_area(const TraceContext& ctx,const Hit& hit,Vec3 view,const Materia
             if(path_weight<1e-2)++ctx.stats->secondary_specular_weight_lt_1e2;}}
     const double alpha=std::max(.035,material.roughness),exponent=std::min(900.0,std::max(2.0,2/(alpha*alpha)-2));
     const RGB f0=material.kind==MaterialKind::Metal?material.base:RGB{.045,.045,.045};
+    const RGB volume_source=jelly_source_radiance(ctx);
     for(const AreaLight& area:ctx.scene.area_lights)result+=integrate_rectangular_emitter(ctx.scene,area,
-        hit.position+hit.normal*2e-4,hit.normal,hit.primitive,[&](Vec3,Vec3 l,double r2,double nl,double ll,const RGB& trans){
+        hit.position+hit.normal*2e-4,hit.normal,hit.primitive,[&](Vec3,Vec3 l,double r2,double nl,double ll,const RGB& incoming){
+            if(ctx.expansion){++ctx.expansion->pixel.quadrature;++ctx.expansion->receivers[hit.primitive].quadrature;
+                if(incoming==RGB{}){++ctx.expansion->pixel.zero_quadrature;++ctx.expansion->receivers[hit.primitive].zero_quadrature;}}
+            // The lobe is homogeneous in incident radiance. This is exact zero
+            // support, independent of roughness, exposure, or a quality budget.
+            if(source_zero_elision&&incoming==RGB{}){if(ctx.stats)++ctx.stats->specular_zero_lobes;return RGB{};}
             const Vec3 half=unit(l+view);const double nh=std::max(dot(hit.normal,half),0.0),vh=std::max(dot(view,half),0.0);
             const double lobe=(exponent+2)/(2*pi)*std::pow(nh,exponent);RGB fresnel{};
             for(int c=0;c<3;++c)fresnel[c]=f0[c]+(1-f0[c])*std::pow(1-vh,5);
-            return multiply(multiply(area.radiance,trans),fresnel)*(lobe*nl*ll/r2);},ctx.stats,
-        material.roughness<=.18?4:3);
+            return multiply(incoming,fresnel)*(lobe*nl*ll/r2);},ctx.stats,
+        material.roughness<=.18?4:3,&volume_source);
+    if(ctx.expansion&&result==RGB{}){++ctx.expansion->pixel.zero_responses;++ctx.expansion->receivers[hit.primitive].zero_responses;}
     return result;
+}
+
+// The same finite atlas function as the eager compiler, evaluated only at
+// coordinates needed by gathers. Its centre test chooses the original coarse
+// or refined interpolation; an accepted refined cell needs only the four
+// ordinates surrounding this query, not all 25 ordinates in that cell.
+RGB gather_camera_specular(const TraceContext& ctx,CameraDemandAtlas& atlas,Vec3 point){
+    const Primitive& primitive=ctx.scene.primitives[atlas.primitive];
+    const Material& material=ctx.scene.materials[primitive.material];
+    const Vec3 origin=ctx.camera_specular->origin;
+    constexpr int refinement=4;const int fine_width=(atlas.width-1)*refinement;
+    const int fine_height=(atlas.height-1)*refinement;
+    auto evaluate_grid=[&](int gx,int gy)->const RGB&{
+        const int key_x=atlas.sphere&&gx==fine_width?0:gx;
+        CameraDemandSample& sample=atlas.samples[static_cast<std::size_t>(gy)*(fine_width+1)+key_x];
+        std::call_once(sample.ready,[&]{const double u=double(key_x)/fine_width,v=double(gy)/fine_height;
+            Vec3 position,normal;if(atlas.sphere){const double ny=1-2*v,r=std::sqrt(std::max(0.0,1-ny*ny)),angle=2*pi*u-pi;
+                normal={r*std::cos(angle),ny,r*std::sin(angle)};position=primitive.center+normal*primitive.radius;
+            }else{normal=primitive.normal;position=primitive.origin+primitive.u*u+primitive.v*v;}
+            const Vec3 view=unit(origin-position);if(!atlas.sphere&&dot(normal,view)<0)normal=-normal;
+            if(atlas.sphere&&dot(normal,view)<=0)return;
+            Hit hit;hit.valid=true;hit.primitive=atlas.primitive;hit.position=position;hit.normal=normal;
+            hit.geometric_normal=atlas.sphere?unit(position-primitive.center):primitive.normal;
+            hit.front=dot(view,hit.geometric_normal)>0;
+            TraceStats construction;TraceContext evaluator=ctx;evaluator.stats=&construction;
+            evaluator.specular_memo=nullptr;evaluator.camera_specular=nullptr;
+            sample.value=specular_area(evaluator,hit,view,material,true);
+            atlas.evaluations.fetch_add(1,std::memory_order_relaxed);
+            atlas.quadrature.fetch_add(construction.emitter_quadrature_samples,std::memory_order_relaxed);
+        });return sample.value;
+    };
+    double u=0,v=0;if(!surface_atlas_coordinates(atlas.sphere,primitive,point,u,v))return {};
+    const double x=std::clamp(u,0.0,1.0)*(atlas.width-1),y=std::clamp(v,0.0,1.0)*(atlas.height-1);
+    const int x0=std::clamp(static_cast<int>(std::floor(x)),0,atlas.width-1),x1=std::min(x0+1,atlas.width-1);
+    const int y0=std::clamp(static_cast<int>(std::floor(y)),0,atlas.height-1),y1=std::min(y0+1,atlas.height-1);
+    double tx=x-x0,ty=y-y0;int gx0=x0*refinement,gx1=x1*refinement,gy0=y0*refinement,gy1=y1*refinement;
+    if(x0+1<atlas.width&&y0+1<atlas.height){CameraDemandCell& cell=atlas.cells[
+            static_cast<std::size_t>(y0)*(atlas.width-1)+x0];
+        std::call_once(cell.ready,[&]{const RGB& centre=evaluate_grid(gx0+2,gy0+2);
+            const RGB &a=evaluate_grid(gx0,gy0),&b=evaluate_grid(gx1,gy0),
+                &c=evaluate_grid(gx0,gy1),&d=evaluate_grid(gx1,gy1);
+            int error=0;for(int channel=0;channel<3;++channel){const double predicted=.25*(a[channel]+b[channel]+c[channel]+d[channel]);
+                error=std::max(error,std::abs(int(tone_byte(centre[channel]))-int(tone_byte(predicted))));}
+            cell.refined=error>1;atlas.cell_tests.fetch_add(1,std::memory_order_relaxed);
+        });
+        if(cell.refined){const double rx=tx*refinement,ry=ty*refinement;
+            const int sx=std::min(static_cast<int>(std::floor(rx)),refinement-1),sy=std::min(static_cast<int>(std::floor(ry)),refinement-1);
+            gx0+=sx;gx1=gx0+1;gy0+=sy;gy1=gy0+1;tx=rx-sx;ty=ry-sy;}
+    }
+    const RGB &a=evaluate_grid(gx0,gy0),&b=evaluate_grid(gx1,gy0),&c=evaluate_grid(gx0,gy1),&d=evaluate_grid(gx1,gy1);
+    RGB result{};for(int channel=0;channel<3;++channel){const double top=a[channel]*(1-tx)+b[channel]*tx;
+        const double bottom=c[channel]*(1-tx)+d[channel]*tx;result[channel]=top*(1-ty)+bottom*ty;}return result;
+}
+
+std::array<std::uint64_t,3> camera_demand_counts(const CameraSpecularField& field){
+    std::array<std::uint64_t,3> result{};for(const auto& atlas:field.demand_atlas){
+        result[0]+=atlas->evaluations.load(std::memory_order_relaxed);
+        result[1]+=atlas->quadrature.load(std::memory_order_relaxed);
+        result[2]+=atlas->cell_tests.load(std::memory_order_relaxed);}return result;
 }
 
 RGB compiled_specular_area(const TraceContext& ctx,const Hit& hit,Vec3 view,const Material& material,bool camera_primary,
@@ -1013,6 +1927,8 @@ RGB compiled_specular_area(const TraceContext& ctx,const Hit& hit,Vec3 view,cons
         ctx.camera_specular->by_primitive[hit.primitive]:-1;
     if(atlas_index<0)return specular_area(ctx,hit,view,material,camera_primary,path_weight);
     if(ctx.stats)++ctx.stats->camera_specular_gathers;
+    if(!ctx.camera_specular->demand_atlas.empty())return gather_camera_specular(
+        ctx,*ctx.camera_specular->demand_atlas[atlas_index],hit.position);
     return sample_surface_atlas(ctx.camera_specular->atlas[atlas_index],ctx.scene.primitives[hit.primitive],hit.position);
 }
 
@@ -1020,10 +1936,12 @@ RGB compiled_area_irradiance(const TraceContext& ctx,const Hit& hit){const int a
         hit.primitive>=0&&hit.primitive<static_cast<int>(ctx.field.direct_atlas_by_primitive.size())?
         ctx.field.direct_atlas_by_primitive[hit.primitive]:-1;
     if(atlas_index<0){if(ctx.stats)++ctx.stats->direct_exact_calls;
-        return area_irradiance(ctx.scene,hit.position+hit.normal*2e-4,hit.normal,hit.primitive,ctx.stats);}
+        const RGB source=jelly_source_radiance(ctx);return area_irradiance(
+            ctx.scene,hit.position+hit.normal*2e-4,hit.normal,hit.primitive,ctx.stats,&source);}
     const Primitive& primitive=ctx.scene.primitives[hit.primitive];
     if(primitive.shape==Shape::Rectangle&&dot(hit.normal,primitive.normal)<0){if(ctx.stats)++ctx.stats->direct_exact_calls;
-        return area_irradiance(ctx.scene,hit.position+hit.normal*2e-4,hit.normal,hit.primitive,ctx.stats);
+        const RGB source=jelly_source_radiance(ctx);return area_irradiance(
+            ctx.scene,hit.position+hit.normal*2e-4,hit.normal,hit.primitive,ctx.stats,&source);
     }
     if(ctx.stats)++ctx.stats->direct_atlas_gathers;
     return sample_surface_atlas(ctx.field.direct_atlas[atlas_index],primitive,hit.position);
@@ -1044,6 +1962,11 @@ std::uint64_t radiance_memo_hash(int primitive,Vec3 position,Vec3 normal,Vec3 vi
 RGB base_radiance(const TraceContext& ctx,const Hit& hit,Vec3 view,bool camera_primary=false,double path_weight=1){const Primitive& p=ctx.scene.primitives[hit.primitive];
     const Material& m=ctx.scene.materials[p.material];if(m.kind==MaterialKind::Emissive)return emitted_radiance(ctx.scene,hit,view);
     const bool directional=m.kind==MaterialKind::Glossy||m.kind==MaterialKind::Metal;
+#ifdef PHOTONIC_PIXEL_REUSE_AUDIT
+    PixelReuseEntry* audit_entry=nullptr;
+    if(pixel_reuse_audit){audit_entry=&pixel_reuse_audit->request(hit.primitive,hit,view,directional,camera_primary);
+        if(pixel_reuse_audit->reuse(*audit_entry)){++pixel_reuse_audit->wide_hits;return audit_entry->value;}}
+#endif
     const std::uint64_t memo_tag=ctx.specular_memo?radiance_memo_hash(hit.primitive,hit.position,hit.normal,view,directional):0;
     const std::size_t memo_mask=ctx.specular_memo?ctx.specular_memo->surface_entry.size()-1:0;
     const std::size_t memo_home=memo_tag&memo_mask;std::size_t memo_slot=memo_home;
@@ -1053,7 +1976,11 @@ RGB base_radiance(const TraceContext& ctx,const Hit& hit,Vec3 view,bool camera_p
         const bool same_view=!entry.directional||(entry.view.x==view.x&&entry.view.y==view.y&&entry.view.z==view.z);
         if(entry.primitive==hit.primitive&&same_view&&entry.position.x==hit.position.x&&entry.position.y==hit.position.y&&
             entry.position.z==hit.position.z&&entry.normal.x==hit.normal.x&&entry.normal.y==hit.normal.y&&
-            entry.normal.z==hit.normal.z){if(ctx.stats)++ctx.stats->surface_radiance_memo_hits;return entry.value;}}
+            entry.normal.z==hit.normal.z){if(ctx.stats)++ctx.stats->surface_radiance_memo_hits;
+#ifdef PHOTONIC_PIXEL_REUSE_AUDIT
+                if(audit_entry)pixel_reuse_audit->record(*audit_entry,entry.value,true);
+#endif
+                return entry.value;}}
     RGB incident=compiled_area_irradiance(ctx,hit)+
         beam_irradiance(ctx.beams,hit.primitive,hit.position);
     const int node=ctx.field.index_by_primitive[hit.primitive];if(node>=0)incident+=ctx.field.bounce[node];
@@ -1063,20 +1990,26 @@ RGB base_radiance(const TraceContext& ctx,const Hit& hit,Vec3 view,bool camera_p
     if(ctx.specular_memo){ctx.specular_memo->surface_entry[memo_slot]=
             {hit.primitive,hit.position,hit.normal,view,result,directional};ctx.specular_memo->surface_tag[memo_slot]=memo_tag;
         if(ctx.stats)++ctx.stats->surface_radiance_memo_stores;}
+#ifdef PHOTONIC_PIXEL_REUSE_AUDIT
+    if(audit_entry)pixel_reuse_audit->record(*audit_entry,result,false);
+#endif
     return result;
 }
 
-CameraSpecularField compile_viewer_origin_specular_field(const TraceContext& context,Vec3 viewer_origin){CameraSpecularField field;
+CameraSpecularField compile_viewer_origin_specular_field(const TraceContext& context,Vec3 viewer_origin,
+    bool demand=camera_demand_gather){CameraSpecularField field;
     // This field is attached to the eye point, not its sensor chart. Rotation,
     // roll, FOV, aspect, and resolution leave every surface-to-eye direction
     // unchanged and must not invalidate it.
-    field.origin=viewer_origin;
+    field.origin=viewer_origin;field.field_generation=context.field.generation;
     field.by_primitive.assign(context.scene.primitives.size(),-1);TraceContext evaluator=context;
     evaluator.stats=&field.construction;evaluator.specular_memo=nullptr;evaluator.camera_specular=nullptr;
     for(int primitive_id=0;primitive_id<static_cast<int>(context.scene.primitives.size());++primitive_id){
         const Primitive& primitive=context.scene.primitives[primitive_id];const Material& material=
             context.scene.materials[primitive.material];if((material.kind!=MaterialKind::Glossy&&material.kind!=MaterialKind::Metal)||
             (primitive.shape!=Shape::Rectangle&&primitive.shape!=Shape::Sphere))continue;
+        if(demand){field.by_primitive[primitive_id]=static_cast<int>(field.demand_atlas.size());
+            field.demand_atlas.push_back(std::make_shared<CameraDemandAtlas>(primitive_id,primitive.shape==Shape::Sphere));continue;}
         SurfaceIrradianceAtlas atlas;atlas.primitive=primitive_id;atlas.sphere=primitive.shape==Shape::Sphere;
         atlas.width=atlas.sphere?33:33;atlas.height=atlas.sphere?17:33;
         atlas.value.resize(static_cast<std::size_t>(atlas.width)*atlas.height);
@@ -1127,23 +2060,34 @@ double trace_channel_recursive(const TraceContext& ctx,const Ray& ray,int depth,
     const Hit* prefetched=nullptr){
     if(!std::isfinite(spectral_coordinate))spectral_coordinate=channel;
     if(depth<=0)return 0;if(ctx.stats)++ctx.stats->secondary;const Hit hit=prefetched?*prefetched:
-        first_hit(ctx.scene,ray,std::numeric_limits<double>::infinity(),ignore);
+        optical_first_hit(ctx,ray,std::numeric_limits<double>::infinity(),ignore);
     if(!hit.valid)return 0;signature_push(signature,hit.primitive,channel);const Material& m=ctx.scene.materials[ctx.scene.primitives[hit.primitive].material];
     if(m.kind==MaterialKind::Emissive)return exclude_area_emitters&&is_area_emitter(ctx.scene,hit.primitive)?0:
         emitted_radiance(ctx.scene,hit,-ray.direction)[channel];
     if(m.kind==MaterialKind::Dielectric){if(ctx.stats){++ctx.stats->dielectric;
         if(hit.primitive==ctx.scene.prism_bottom)++ctx.stats->prism_bottom_events;
-        if(hit.primitive==ctx.scene.prism_top)++ctx.stats->prism_top_events;}
+        if(hit.primitive==ctx.scene.prism_top)++ctx.stats->prism_top_events;
+        if(hit.primitive==ctx.scene.jelly_volume)++ctx.stats->jelly_volume_events;}
         const double index=spectral_ior(m,spectral_coordinate),ni=hit.front?1:index,nt=hit.front?index:1;
         const double F=schlick(std::abs(dot(ray.direction,hit.normal)),ni,nt);const Vec3 rd=unit(reflect(ray.direction,hit.normal));
         const double reflected=trace_channel_recursive(ctx,{hit.position+rd*3e-4,rd},depth-1,channel,signature,
             hit.primitive,spectral_coordinate,exclude_area_emitters);
         Vec3 td=ray.direction;double transmitted=0;if(m.thin||refract(ray.direction,hit.normal,ni/nt,td)){
-            if(m.thin)td=ray.direction;transmitted=trace_channel_recursive(ctx,{hit.position+td*3e-4,td},depth-1,
+            if(m.thin)td=ray.direction;
+            const VolumeChord chord=jelly_volume_chord(ctx.scene,hit,td,index);
+            if(chord.valid){if(ctx.stats){++ctx.stats->participating_volume_chords;
+                    ctx.stats->participating_volume_distance+=chord.length;}
+                const double retention=std::exp(-m.absorption[channel]*chord.length);
+                const double background=trace_channel_recursive(ctx,chord.exit_ray,depth-1,channel,signature,
+                    hit.primitive,spectral_coordinate,exclude_area_emitters);
+                transmitted=retention*background+(1-retention)*jelly_source_radiance(ctx,channel);}
+            else transmitted=trace_channel_recursive(ctx,{hit.position+td*3e-4,td},depth-1,
                 channel,signature,hit.primitive,spectral_coordinate,exclude_area_emitters);}
-        const double absorb=std::exp(-m.absorption[channel]*(m.thin?.10:.24));return m.base[channel]*absorb*((1-F)*transmitted+F*reflected);}
+        const double absorb=hit.primitive==ctx.scene.jelly_volume?1.0:
+            std::exp(-m.absorption[channel]*(m.thin?.10:.24));
+        return m.base[channel]*absorb*((1-F)*transmitted+F*reflected);}
     if(m.kind==MaterialKind::Mirror){if(ctx.stats)++ctx.stats->mirror;const Vec3 d=unit(reflect(ray.direction,hit.normal));
-        if(ctx.stats){const Hit next=first_hit(ctx.scene,{hit.position+d*3e-4,d},std::numeric_limits<double>::infinity(),hit.primitive);
+        if(ctx.stats){const Hit next=optical_first_hit(ctx,{hit.position+d*3e-4,d},std::numeric_limits<double>::infinity(),hit.primitive);
             if(next.valid&&rgb_energy(beam_irradiance(ctx.beams,next.primitive,next.position))>1e-5)++ctx.stats->specular_caustic;}
         return m.base[channel]*trace_channel_recursive(ctx,{hit.position+d*3e-4,d},depth-1,channel,signature,
             hit.primitive,spectral_coordinate,exclude_area_emitters);}
@@ -1168,10 +2112,13 @@ double trace_channel_recursive(const TraceContext& ctx,const Ray& ray,int depth,
 
 struct OpticalPacket{
     Ray ray{};double weight=1;int interactions=0,ignore=-1;
+    int return_parent=-1,return_edge=-1;
     int previous=-1,previous_previous=-1;double previous_weight=1,previous_previous_weight=1;
     bool feedback=false;double feedback_ratio=0;bool exclude_area_emitters=false;
     Vec3 previous_direction{},previous_previous_direction{};Hit prefetched{};bool has_prefetched=false;
 };
+
+#include "return_extinction.hpp"
 
 double trace_channel_sealed(const TraceContext& ctx,const Ray& initial,int depth,int channel,
     std::uint64_t* signature,int ignore=-1,double spectral_coordinate=std::numeric_limits<double>::quiet_NaN(),
@@ -1184,6 +2131,9 @@ double trace_channel_sealed(const TraceContext& ctx,const Ray& initial,int depth
     const double packet_cutoff=ctx.optical_cutoff;
     const int maximum_interactions=std::max(16,depth*4);double result=0;
     std::vector<OpticalPacket> packets;packets.reserve(24);
+    std::vector<ReturnEvent> return_history;
+    const bool keep_returns=return_mode==ReturnMode::StateExtinction||return_mode==ReturnMode::StateClosure;
+    if(keep_returns)return_history.reserve(32);
     OpticalPacket initial_packet;initial_packet.ray=initial;initial_packet.ignore=ignore;
     initial_packet.previous=ignore;initial_packet.exclude_area_emitters=exclude_area_emitters;
     if(prefetched){initial_packet.prefetched=*prefetched;initial_packet.has_prefetched=true;}
@@ -1195,7 +2145,8 @@ double trace_channel_sealed(const TraceContext& ctx,const Ray& initial,int depth
         if(packet.weight<=packet_cutoff||packet.interactions>=maximum_interactions){
             if(ctx.stats&&packet.feedback){++ctx.stats->sealed_feedback_tails;
                 ctx.stats->sealed_residual_weight+=packet.weight;}continue;}
-        if(ctx.stats)++ctx.stats->secondary;const Hit hit=packet.has_prefetched?packet.prefetched:first_hit(ctx.scene,packet.ray,
+        if(ctx.expansion)++ctx.expansion->pixel.packets;
+        if(ctx.stats)++ctx.stats->secondary;const Hit hit=packet.has_prefetched?packet.prefetched:optical_first_hit(ctx,packet.ray,
             std::numeric_limits<double>::infinity(),packet.ignore);if(!hit.valid)continue;
         signature_push(signature,hit.primitive,channel);const Material& material=
             ctx.scene.materials[ctx.scene.primitives[hit.primitive].material];
@@ -1204,10 +2155,29 @@ double trace_channel_sealed(const TraceContext& ctx,const Ray& initial,int depth
         if(packet.previous_previous==hit.primitive&&direction_return){const double ratio=packet.previous_previous_weight>0?
                 packet.weight/packet.previous_previous_weight:0;
             if(ctx.stats){++ctx.stats->feedback_returns;if(!packet.feedback)++ctx.stats->feedback_loops;}
-            packet.feedback=true;if(ratio>0&&ratio<1)packet.feedback_ratio=ratio;}
+            packet.feedback=true;if(ratio>0&&ratio<1)packet.feedback_ratio=ratio;
+            if(return_mode==ReturnMode::PathExtinction){if(ctx.stats){++ctx.stats->return_extinctions;
+                    ctx.stats->return_removed_weight+=packet.weight;}continue;}}
+        int return_id=-1;
+        if(keep_returns){int ancestor=-1;
+            for(int id=packet.return_parent;id>=0;id=return_history[id].incoming.return_parent){
+                if(ctx.stats)++ctx.stats->return_tests;
+                if(same_return_state(return_history[id],packet,hit)){ancestor=id;break;}}
+            if(ancestor>=0){if(ctx.stats)++ctx.stats->return_matches;
+                if(return_mode==ReturnMode::StateExtinction){if(ctx.stats){++ctx.stats->return_extinctions;
+                        ctx.stats->return_removed_weight+=packet.weight;}continue;}
+                double added=0;
+                if(close_return_cycle(ctx,return_history,packet,ancestor,channel,added)){result+=added;
+                    if(ctx.stats){++ctx.stats->return_closures;ctx.stats->return_added_radiance+=added;}continue;}
+                if(ctx.stats)++ctx.stats->return_rejections;
+            }
+            return_id=int(return_history.size());return_history.push_back({packet,hit});
+        }
+        auto add_source=[&](double value){result+=value;if(return_id>=0)return_history[return_id].source+=value;};
         auto continuation=[&](Vec3 direction,double weight,bool loop_remainder=false,bool exclude_emitter=false,
             const Hit* next_hit=nullptr){
-            if(weight<=0)return;OpticalPacket child=packet;child.ray={hit.position+direction*3e-4,direction};
+            if(weight<=0)return;OpticalPacket child=packet;
+            child.return_parent=return_id;child.return_edge=return_id>=0?return_history[return_id].count:-1;child.ray={hit.position+direction*3e-4,direction};
             child.weight=weight;child.ignore=hit.primitive;child.interactions=packet.interactions+1;
             child.previous_previous=packet.previous;child.previous_previous_weight=packet.previous_weight;
             child.previous=hit.primitive;child.previous_weight=packet.weight;
@@ -1218,40 +2188,76 @@ double trace_channel_sealed(const TraceContext& ctx,const Ray& initial,int depth
             if(loop_remainder&&child.feedback&&child.feedback_ratio>0&&child.feedback_ratio<1){const double bound=
                     child.weight/(1-child.feedback_ratio);
                 if(bound<=packet_cutoff){if(ctx.stats){++ctx.stats->sealed_feedback_tails;
-                        ctx.stats->sealed_residual_weight+=bound;}return;}}
+                        ctx.stats->sealed_residual_weight+=bound;}
+                    if(return_id>=0)return_history[return_id].pruned=true;return;}}
+            if(return_id>=0){ReturnEvent& event=return_history[return_id];
+                if(event.count>=2)throw std::logic_error("return event child overflow");
+                event.children[event.count++]=child;}
             packets.push_back(child);
         };
         if(material.kind==MaterialKind::Emissive){
             if(!(packet.exclude_area_emitters&&is_area_emitter(ctx.scene,hit.primitive)))
-                result+=packet.weight*emitted_radiance(ctx.scene,hit,-packet.ray.direction)[channel];
+                add_source(packet.weight*emitted_radiance(ctx.scene,hit,-packet.ray.direction)[channel]);
             continue;}
-        if(material.kind==MaterialKind::Dielectric){if(ctx.stats){++ctx.stats->dielectric;
+        if(material.kind==MaterialKind::Dielectric){if(ctx.expansion)++ctx.expansion->pixel.dielectric_packets;
+            if(ctx.stats){++ctx.stats->dielectric;
                 if(hit.primitive==ctx.scene.prism_bottom)++ctx.stats->prism_bottom_events;
-                if(hit.primitive==ctx.scene.prism_top)++ctx.stats->prism_top_events;}
+                if(hit.primitive==ctx.scene.prism_top)++ctx.stats->prism_top_events;
+                if(hit.primitive==ctx.scene.jelly_volume)++ctx.stats->jelly_volume_events;}
+            {const ConvexOpticalChild* owned=optical_child(ctx.scene,hit.primitive);
+                if(owned){
+                    const auto response=owned->response(packet.ray,hit,channel,spectral_coordinate,
+                        packet_cutoff/packet.weight,maximum_interactions-packet.interactions);
+                    if(ctx.stats){++ctx.stats->child_responses;ctx.stats->child_internal_hits+=response.cache_hit?0:response.internal_hits;
+                        ctx.stats->child_cache_hits+=response.cache_hit;
+                        ctx.stats->child_egress_ports+=response.ports.size();
+                        ctx.stats->child_unresolved_weight+=packet.weight*response.unresolved_weight;}
+                    add_source(packet.weight*response.source_weight*jelly_source_radiance(ctx,channel));
+                    for(const auto& port:response.ports){OpticalPacket output;
+                        output.ray=port.ray;output.weight=packet.weight*port.weight;
+                        output.ignore=port.primitive;output.previous=port.primitive;
+                        output.interactions=packet.interactions+1;
+                        output.exclude_area_emitters=packet.exclude_area_emitters;
+                        packets.push_back(output);}
+                    continue;
+                }
+            }
             const double index=spectral_ior(material,spectral_coordinate),ni=hit.front?1:index,nt=hit.front?index:1;
             const double fresnel=schlick(std::abs(dot(packet.ray.direction,hit.normal)),ni,nt);
             const double common=packet.weight*material.base[channel]*
-                std::exp(-material.absorption[channel]*(material.thin?.10:.24));
+                (hit.primitive==ctx.scene.jelly_volume?1.0:
+                    std::exp(-material.absorption[channel]*(material.thin?.10:.24)));
             const Vec3 reflected=unit(reflect(packet.ray.direction,hit.normal));
             continuation(reflected,common*fresnel,packet.feedback);Vec3 transmitted=packet.ray.direction;
             if(material.thin||refract(packet.ray.direction,hit.normal,ni/nt,transmitted)){
-                if(material.thin)transmitted=packet.ray.direction;continuation(transmitted,common*(1-fresnel));}
+                if(material.thin)transmitted=packet.ray.direction;
+                const VolumeChord chord=jelly_volume_chord(ctx.scene,hit,transmitted,index);
+                if(chord.valid){if(ctx.stats){++ctx.stats->participating_volume_chords;
+                        ctx.stats->participating_volume_distance+=chord.length;}
+                    const double retention=std::exp(-material.absorption[channel]*chord.length);
+                    add_source(common*(1-fresnel)*(1-retention)*jelly_source_radiance(ctx,channel));
+                    continuation(chord.exit_ray.direction,common*(1-fresnel)*retention,false,false,nullptr);
+                    if(!packets.empty()){packets.back().ray=chord.exit_ray;packets.back().ignore=hit.primitive;
+                        if(return_id>=0&&return_history[return_id].count>0)
+                            return_history[return_id].children[return_history[return_id].count-1]=packets.back();}}
+                else continuation(transmitted,common*(1-fresnel));}
             continue;}
         if(material.kind==MaterialKind::Mirror){if(ctx.stats)++ctx.stats->mirror;
             const Vec3 direction=unit(reflect(packet.ray.direction,hit.normal));continuation(direction,
                 packet.weight*material.base[channel],packet.feedback);continue;}
+        if(ctx.expansion)++ctx.expansion->pixel.shaded_packets;
         const RGB base=base_radiance(ctx,hit,-packet.ray.direction,false,packet.weight);
-        if(material.kind==MaterialKind::Metal){if(ctx.stats)++ctx.stats->metal;result+=packet.weight*.12*base[channel];
+        if(material.kind==MaterialKind::Metal){if(ctx.stats)++ctx.stats->metal;add_source(packet.weight*.12*base[channel]);
             const Vec3 direction=unit(reflect(packet.ray.direction,hit.normal));const RoughTerminalRelation terminal=
                 rough_terminal_relation(ctx.scene,{hit.position+direction*3e-4,direction},hit.primitive,material.roughness);
             if(!terminal.area_emitter){continuation(direction,
                 packet.weight*.88*material.base[channel]*terminal.coverage,packet.feedback,true,&terminal.terminal);}continue;}
-        if(material.kind==MaterialKind::Glossy){result+=packet.weight*base[channel];const Vec3 direction=
+        if(material.kind==MaterialKind::Glossy){add_source(packet.weight*base[channel]);const Vec3 direction=
             unit(reflect(packet.ray.direction,hit.normal));const RoughTerminalRelation terminal=
                 rough_terminal_relation(ctx.scene,{hit.position+direction*3e-4,direction},hit.primitive,material.roughness);
             if(!terminal.area_emitter){continuation(direction,
                 packet.weight*(.04+.20*(1-material.roughness))*terminal.coverage,packet.feedback,true,&terminal.terminal);}continue;}
-        result+=packet.weight*base[channel];
+        add_source(packet.weight*base[channel]);
     }
     return result;
 }
@@ -1259,7 +2265,7 @@ double trace_channel_sealed(const TraceContext& ctx,const Ray& initial,int depth
 double trace_channel(const TraceContext& ctx,const Ray& ray,int depth,int channel,std::uint64_t* signature,int ignore=-1,
     double spectral_coordinate=std::numeric_limits<double>::quiet_NaN(),bool exclude_area_emitters=false,
     const Hit* prefetched=nullptr){
-    return ctx.sealed_optics?trace_channel_sealed(ctx,ray,depth,channel,signature,ignore,spectral_coordinate,
+    return (ctx.sealed_optics||ctx.scene.child_boundaries)?trace_channel_sealed(ctx,ray,depth,channel,signature,ignore,spectral_coordinate,
         exclude_area_emitters,prefetched):trace_channel_recursive(ctx,ray,depth,channel,signature,ignore,spectral_coordinate,
         exclude_area_emitters,prefetched);
 }
@@ -1274,8 +2280,14 @@ void merge_signature(std::uint64_t* destination,std::uint64_t source){if(!destin
 
 SpectralTraceSample trace_primary_dielectric_sample(const TraceContext& ctx,const Ray& ray,const Hit& hit,
     const Material& material,int channel,double coordinate){
+    if(ctx.expansion)++ctx.expansion->pixel.spectral_samples;
+    if(ctx.scene.child_boundaries){SpectralTraceSample sample;sample.coordinate=coordinate;
+        sample.value=trace_channel_sealed(ctx,ray,8,channel,&sample.signature,-1,coordinate,false,&hit);
+        return sample;}
+
     if(ctx.stats){++ctx.stats->dielectric;if(hit.primitive==ctx.scene.prism_bottom)++ctx.stats->prism_bottom_events;
-        if(hit.primitive==ctx.scene.prism_top)++ctx.stats->prism_top_events;}
+        if(hit.primitive==ctx.scene.prism_top)++ctx.stats->prism_top_events;
+        if(hit.primitive==ctx.scene.jelly_volume)++ctx.stats->jelly_volume_events;}
     SpectralTraceSample sample;sample.coordinate=coordinate;const double index=spectral_ior(material,coordinate);
     const double ni=hit.front?1:index,nt=hit.front?index:1;
     const double fresnel=schlick(std::abs(dot(ray.direction,hit.normal)),ni,nt);
@@ -1283,40 +2295,69 @@ SpectralTraceSample trace_primary_dielectric_sample(const TraceContext& ctx,cons
         {hit.position+reflected_direction*3e-4,reflected_direction},7,channel,&sample.signature,hit.primitive,coordinate);
     Vec3 transmitted_direction=ray.direction;double transmitted=0;
     if(material.thin||refract(ray.direction,hit.normal,ni/nt,transmitted_direction)){if(material.thin)transmitted_direction=ray.direction;
-        transmitted=trace_channel(ctx,{hit.position+transmitted_direction*3e-4,transmitted_direction},7,channel,
+        const VolumeChord chord=jelly_volume_chord(ctx.scene,hit,transmitted_direction,index);
+        if(chord.valid){if(ctx.stats){++ctx.stats->participating_volume_chords;
+                ctx.stats->participating_volume_distance+=chord.length;}
+            const double retention=std::exp(-material.absorption[channel]*chord.length);
+            const double background=trace_channel(ctx,chord.exit_ray,7,channel,&sample.signature,hit.primitive,coordinate);
+            transmitted=retention*background+(1-retention)*jelly_source_radiance(ctx,channel);}
+        else transmitted=trace_channel(ctx,{hit.position+transmitted_direction*3e-4,transmitted_direction},7,channel,
             &sample.signature,hit.primitive,coordinate);}
-    sample.value=material.base[channel]*std::exp(-material.absorption[channel]*(material.thin?.10:.24))*
+    const double boundary_absorption=hit.primitive==ctx.scene.jelly_volume?1.0:
+        std::exp(-material.absorption[channel]*(material.thin?.10:.24));
+    sample.value=material.base[channel]*boundary_absorption*
         ((1-fresnel)*transmitted+fresnel*reflected);return sample;
 }
 
 std::uint64_t spectral_path_signature(const TraceContext& ctx,const Ray& primary_ray,const Hit& primary_hit,
     double coordinate){
+    if(ctx.expansion)++ctx.expansion->pixel.probes;
     std::uint64_t signature=0;signature_push(&signature,primary_hit.primitive,-73);Ray ray=primary_ray;Hit hit=primary_hit;
     for(int depth=0;depth<8;++depth){const Material& material=
             ctx.scene.materials[ctx.scene.primitives[hit.primitive].material];Vec3 direction{};
         if(material.kind==MaterialKind::Mirror||material.kind==MaterialKind::Metal||material.kind==MaterialKind::Glossy)
             direction=unit(reflect(ray.direction,hit.normal));
-        else if(material.kind==MaterialKind::Dielectric){const Vec3 reflected=unit(reflect(ray.direction,hit.normal));
-            const Hit reflected_hit=first_hit(ctx.scene,{hit.position+reflected*3e-4,reflected},
+        else if(material.kind==MaterialKind::Dielectric){
+            if(const auto* child=optical_child(ctx.scene,hit.primitive)){
+                const auto response=child->classification_response(ray,hit,1,coordinate,ctx.optical_cutoff,32);
+                Ray next_ray;Hit next_hit;
+                const std::size_t primary=(hit.front||material.thin)&&response.ports.size()>1?1:0;
+                for(std::size_t p=0;p<std::min<std::size_t>(2,response.ports.size());++p){const auto& port=response.ports[p];
+                    const Hit terminal=optical_first_hit(ctx,port.ray,
+                        std::numeric_limits<double>::infinity(),port.primitive);
+                    signature_push(&signature,port.primitive,190+depth);
+                    signature_push(&signature,terminal.valid?terminal.primitive:-1,210+depth);
+                    if(p==primary){next_ray=port.ray;next_hit=terminal;}}
+                if(!next_hit.valid)break;ray=next_ray;hit=next_hit;continue;
+            }
+            const Vec3 reflected=unit(reflect(ray.direction,hit.normal));
+            const Hit reflected_hit=optical_first_hit(ctx,{hit.position+reflected*3e-4,reflected},
                 std::numeric_limits<double>::infinity(),hit.primitive);
             if(reflected_hit.valid)signature_push(&signature,reflected_hit.primitive,129+depth);
             if(material.thin)direction=ray.direction;else{const double index=spectral_ior(material,coordinate);
                 const double ni=hit.front?1:index,nt=hit.front?index:1;
-                if(!refract(ray.direction,hit.normal,ni/nt,direction))direction=reflected;}}
+                if(!refract(ray.direction,hit.normal,ni/nt,direction))direction=reflected;
+                else{const VolumeChord chord=jelly_volume_chord(ctx.scene,hit,direction,index);if(chord.valid){
+                    ray=chord.exit_ray;hit=optical_first_hit(ctx,ray,std::numeric_limits<double>::infinity(),hit.primitive);
+                    if(!hit.valid)break;signature_push(&signature,hit.primitive,151+depth);continue;}}}}
         else break;ray={hit.position+direction*3e-4,direction};
-        hit=first_hit(ctx.scene,ray,std::numeric_limits<double>::infinity(),hit.primitive);if(!hit.valid)break;
+        hit=optical_first_hit(ctx,ray,std::numeric_limits<double>::infinity(),hit.primitive);if(!hit.valid)break;
         signature_push(&signature,hit.primitive,151+depth);}
     return signature;
 }
 
 double integrate_spectral_band(const TraceContext& ctx,const Ray& ray,const Hit& hit,const Material& material,
     int channel,std::uint64_t* signature){
+    if(ctx.expansion)++ctx.expansion->pixel.bands;
     struct Interval{double begin=0,end=0;std::uint64_t topology=0;};std::vector<Interval> leaves;
     auto subdivide=[&](auto&& self,double begin,std::uint64_t begin_signature,double end,
         std::uint64_t end_signature,int depth)->void{const double middle=(begin+end)*.5;
         const std::uint64_t middle_signature=spectral_path_signature(ctx,ray,hit,middle);
         if((begin_signature==middle_signature&&middle_signature==end_signature)||depth>=10){
-            leaves.push_back({begin,end,middle_signature});return;}
+            leaves.push_back({begin,end,middle_signature});
+            if(ctx.expansion&&depth>=10&&!(begin_signature==middle_signature&&middle_signature==end_signature))
+                ++ctx.expansion->pixel.depth_limited;
+            return;}
         self(self,begin,begin_signature,middle,middle_signature,depth+1);
         self(self,middle,middle_signature,end,end_signature,depth+1);};
     const double begin=channel-.5,end=channel+.5;constexpr int seed_intervals=8;
@@ -1326,13 +2367,18 @@ double integrate_spectral_band(const TraceContext& ctx,const Ray& ray,const Hit&
         begin+(end-begin)*(i+1)/seed_intervals,topology[i+1],0);
     std::vector<Interval> regions;for(const Interval& leaf:leaves){if(!regions.empty()&&regions.back().topology==leaf.topology)
             regions.back().end=leaf.end;else regions.push_back(leaf);}
-    double integral=0;for(const Interval& region:regions){const SpectralTraceSample sample=
+    if(ctx.expansion){ctx.expansion->pixel.leaves+=leaves.size();ctx.expansion->pixel.regions+=regions.size();
+        ctx.expansion->pixel.max_regions=std::max<std::uint64_t>(ctx.expansion->pixel.max_regions,regions.size());}
+    double integral=0;for(const Interval& region:regions){if(ctx.expansion)ctx.expansion->pixel.minimum_region=
+            std::min(ctx.expansion->pixel.minimum_region,region.end-region.begin);
+        const SpectralTraceSample sample=
             trace_primary_dielectric_sample(ctx,ray,hit,material,channel,(region.begin+region.end)*.5);
         merge_signature(signature,sample.signature);integral+=sample.value*(region.end-region.begin);}
     return integral/(end-begin);
 }
 
 RGB trace_primary(const TraceContext& ctx,const Ray& ray,const Hit& hit,std::uint64_t* signature){if(!hit.valid)return {};
+    if(ctx.expansion)++ctx.expansion->pixel.primary;
     if(ctx.stats)++ctx.stats->primary;const Material& m=ctx.scene.materials[ctx.scene.primitives[hit.primitive].material];
     signature_push(signature,hit.primitive,-1);if(m.kind==MaterialKind::Diffuse||m.kind==MaterialKind::Emissive)
         return base_radiance(ctx,hit,-ray.direction);
@@ -1343,6 +2389,7 @@ RGB trace_primary(const TraceContext& ctx,const Ray& ray,const Hit& hit,std::uin
         spectral_paths[band]=spectral_path_signature(local,ray,hit,band);
     const bool mixed_spectrum=prism_face&&
         (spectral_paths[0]!=spectral_paths[1]||spectral_paths[1]!=spectral_paths[2]);
+    if(ctx.expansion&&mixed_spectrum)++ctx.expansion->pixel.mixed;
     const bool shared_base=m.kind==MaterialKind::Metal||m.kind==MaterialKind::Glossy;
     const RGB primary_base=shared_base?base_radiance(local,hit,-ray.direction,true):RGB{};
     const bool reflected_primary=m.kind==MaterialKind::Mirror||m.kind==MaterialKind::Metal||m.kind==MaterialKind::Glossy;
@@ -1350,10 +2397,13 @@ RGB trace_primary(const TraceContext& ctx,const Ray& ray,const Hit& hit,std::uin
     const Ray reflected_continuation=reflected_primary?Ray{hit.position+reflected_direction*3e-4,reflected_direction}:Ray{};
     RoughTerminalRelation rough_terminal{};if(shared_base)rough_terminal=
         rough_terminal_relation(local.scene,reflected_continuation,hit.primitive,m.roughness);
+    RoughJellyWindow jelly_window{};if(m.kind==MaterialKind::Metal)jelly_window=
+        rough_jelly_window(local.scene,hit,reflected_direction,m.roughness);
+    if(local.stats&&jelly_window.overlap>1e-6)++local.stats->rough_jelly_gathers;
     // Geometry is shared by all spectral channels. One reflected hit supplies
     // both the caustic diagnostic and the first event of all three RGB marches.
     Hit mirror_terminal;const bool mirror_primary=m.kind==MaterialKind::Mirror;
-    if(mirror_primary){mirror_terminal=first_hit(local.scene,reflected_continuation,
+    if(mirror_primary){mirror_terminal=optical_first_hit(local,reflected_continuation,
             std::numeric_limits<double>::infinity(),hit.primitive);
         if(local.stats&&mirror_terminal.valid&&rgb_energy(beam_irradiance(
                 local.beams,mirror_terminal.primitive,mirror_terminal.position))>1e-5)
@@ -1366,9 +2416,15 @@ RGB trace_primary(const TraceContext& ctx,const Ray& ray,const Hit& hit,std::uin
             result[c]=m.base[c]*trace_channel(local,reflected_continuation,7,c,signature,hit.primitive,
                 std::numeric_limits<double>::quiet_NaN(),false,&mirror_terminal);
         }else if(m.kind==MaterialKind::Metal){
-            const double reflected=rough_terminal.area_emitter?0:rough_terminal.coverage*
+            double reflected=rough_terminal.area_emitter?0:rough_terminal.coverage*
                 trace_channel(local,reflected_continuation,6,c,signature,hit.primitive,
                     std::numeric_limits<double>::quiet_NaN(),true,&rough_terminal.terminal);
+            if(jelly_window.overlap>1e-6){const double jelly_value=trace_channel(local,jelly_window.jelly_ray,6,c,
+                    signature,hit.primitive,std::numeric_limits<double>::quiet_NaN(),true,&jelly_window.jelly_hit);
+                const double background_value=jelly_window.background_hit.valid?trace_channel(local,
+                    jelly_window.background_ray,6,c,signature,hit.primitive,std::numeric_limits<double>::quiet_NaN(),
+                    true,&jelly_window.background_hit):0;
+                reflected=jelly_window.overlap*jelly_value+(1-jelly_window.overlap)*background_value;}
             result[c]=.12*primary_base[c]+.88*m.base[c]*reflected;
         }else{const double reflected=
                 rough_terminal.area_emitter?0:rough_terminal.coverage*trace_channel(local,reflected_continuation,5,c,signature,hit.primitive,
@@ -1466,15 +2522,31 @@ bool append_visible_path_signature(const TraceContext& ctx,const Ray& primary_ra
         const Material& material=ctx.scene.materials[ctx.scene.primitives[hit.primitive].material];Vec3 direction{};
         if(material.kind==MaterialKind::Mirror||material.kind==MaterialKind::Metal||material.kind==MaterialKind::Glossy)
             direction=unit(reflect(ray.direction,hit.normal));
-        else if(material.kind==MaterialKind::Dielectric){dielectric=true;const Vec3 reflected=
-                unit(reflect(ray.direction,hit.normal));const Hit reflected_hit=first_hit(ctx.scene,
+        else if(material.kind==MaterialKind::Dielectric){dielectric=true;
+            if(const auto* child=optical_child(ctx.scene,hit.primitive)){
+                const auto response=child->classification_response(ray,hit,channel,channel,ctx.optical_cutoff,32);
+                Ray next_ray;Hit next_hit;
+                const std::size_t primary=(hit.front||material.thin)&&response.ports.size()>1?1:0;
+                for(std::size_t p=0;p<std::min<std::size_t>(2,response.ports.size());++p){const auto& port=response.ports[p];
+                    const Hit terminal=optical_first_hit(ctx,port.ray,
+                        std::numeric_limits<double>::infinity(),port.primitive);
+                    push(port.primitive,tag_base+190+32*channel+depth);
+                    push(terminal.valid?terminal.primitive:-1,tag_base+210+32*channel+depth);
+                    if(p==primary){next_ray=port.ray;next_hit=terminal;}}
+                if(!next_hit.valid)break;ray=next_ray;hit=next_hit;continue;
+            }
+            const Vec3 reflected=
+                unit(reflect(ray.direction,hit.normal));const Hit reflected_hit=optical_first_hit(ctx,
                 {hit.position+reflected*3e-4,reflected},std::numeric_limits<double>::infinity(),hit.primitive);
             if(reflected_hit.valid)push(reflected_hit.primitive,tag_base+96+32*channel+depth);
             if(material.thin)direction=ray.direction;else{
             const double ni=hit.front?1:material.ior_rgb[channel],nt=hit.front?material.ior_rgb[channel]:1;
-            if(!refract(ray.direction,hit.normal,ni/nt,direction))direction=unit(reflect(ray.direction,hit.normal));}}
+            if(!refract(ray.direction,hit.normal,ni/nt,direction))direction=unit(reflect(ray.direction,hit.normal));
+            else{const VolumeChord chord=jelly_volume_chord(ctx.scene,hit,direction,material.ior_rgb[channel]);if(chord.valid){
+                ray=chord.exit_ray;hit=optical_first_hit(ctx,ray,std::numeric_limits<double>::infinity(),hit.primitive);
+                if(!hit.valid)break;push(hit.primitive,tag_base+32*channel+depth);continue;}}}}
         else break;ray={hit.position+direction*3e-4,direction};
-        hit=first_hit(ctx.scene,ray,std::numeric_limits<double>::infinity(),hit.primitive);if(!hit.valid)break;
+        hit=optical_first_hit(ctx,ray,std::numeric_limits<double>::infinity(),hit.primitive);if(!hit.valid)break;
         push(hit.primitive,tag_base+32*channel+depth);}
     return dielectric;
 }
@@ -1515,14 +2587,19 @@ std::uint64_t visible_path_signature(const TraceContext& ctx,const Ray& primary_
 
 struct TerminalLabel{int primitive=-1;std::uint64_t signature=0;};
 bool operator==(const TerminalLabel& a,const TerminalLabel& b){return a.primitive==b.primitive&&a.signature==b.signature;}
+struct BoundaryAudit{std::uint64_t pixels=0,labels=0,radiance=0,specular=0,quadrature=0;double discovery_ms=0,shading_ms=0;};
 struct RenderStats{std::uint64_t exact_samples=0,topology_queries=0,topology_runs=0,certificate_samples=0,subdivisions=0,exact_leaves=0,interpolated=0,exact_pixels=0;
     std::uint64_t conv2d_regions=0,conv2d_accepted=0,boundary_pixels=0,boundary_samples=0,
-        boundary_topology_samples=0,boundary_radiance_samples=0,primary_packet_rays=0;
+        boundary_topology_samples=0,boundary_radiance_samples=0,retained_boundary_pixels=0,
+        sampled_boundary_pixels=0,primary_packet_rays=0;
     std::uint64_t edge_candidate_segments=0,visible_edge_segments=0,edge_refinements=0;
     std::uint64_t prism_top_edge_pixels=0,prism_top_mixed_pixels=0,analytic_edge_pixels=0,filtered_edge_pixels=0;
-    std::uint64_t camera_specular_samples=0,camera_specular_quadrature_samples=0;
+    std::uint64_t camera_specular_samples=0,camera_specular_quadrature_samples=0,
+        camera_specular_new_samples=0,camera_specular_cell_tests=0,edge_crossing_storage_bytes=0,shared_filter_queries=0,shared_filter_requests=0,shared_filter_storage_bytes=0,
+        boundary_optical_queries=0,boundary_optical_reused=0;
+    std::array<BoundaryAudit,5> boundary_audit{};
     TraceStats trace{};double camera_specular_build_ms=0,adaptive_ms=0,edge_discovery_ms=0,boundary_reconstruction_ms=0,
-        raster_ms=0;bool viewer_origin_field_reused=false;};
+        raster_ms=0,shared_filter_build_ms=0;bool viewer_origin_field_reused=false;};
 
 std::vector<std::uint8_t> render_exact(const TraceContext& context,int width,int height,RenderStats& stats,
     const Camera* camera_override=nullptr){
@@ -1533,13 +2610,19 @@ std::vector<std::uint8_t> render_exact(const TraceContext& context,int width,int
     for(unsigned worker=0;worker<workers;++worker)threads.emplace_back([&,worker]{TraceContext ctx=context;
         ctx.stats=&worker_stats[worker];ctx.specular_memo=nullptr;
         for(;;){const int y=next_row.fetch_add(1);if(y>=height)break;for(int x=0;x<width;++x){const Ray ray=camera_ray(camera,width,height,x,y);
-            const Hit hit=first_hit(ctx.scene,ray);const RGB value=trace_primary(ctx,ray,hit,nullptr);++exact_counts[worker];
+            const Hit hit=optical_first_hit(ctx,ray);const RGB value=trace_primary(ctx,ray,hit,nullptr);++exact_counts[worker];
             const std::size_t offset=(static_cast<std::size_t>(y)*width+x)*3;for(int c=0;c<3;++c)image[offset+c]=tone_byte(value[c]);}}});
     for(auto& thread:threads)thread.join();for(unsigned i=0;i<workers;++i){stats.exact_samples+=exact_counts[i];const auto& s=worker_stats[i];
         stats.trace.primary+=s.primary;stats.trace.secondary+=s.secondary;
         stats.trace.shadow+=s.shadow;stats.trace.mirror+=s.mirror;stats.trace.metal+=s.metal;stats.trace.dielectric+=s.dielectric;
         stats.trace.specular_caustic+=s.specular_caustic;stats.trace.prism_bottom_events+=s.prism_bottom_events;
-        stats.trace.prism_top_events+=s.prism_top_events;stats.trace.direct_atlas_gathers+=s.direct_atlas_gathers;
+        stats.trace.prism_top_events+=s.prism_top_events;stats.trace.jelly_volume_events+=s.jelly_volume_events;
+        stats.trace.child_responses+=s.child_responses;
+        stats.trace.child_cache_hits+=s.child_cache_hits;
+        stats.trace.child_internal_hits+=s.child_internal_hits;
+        stats.trace.child_egress_ports+=s.child_egress_ports;
+        stats.trace.child_unresolved_weight+=s.child_unresolved_weight;
+        stats.trace.direct_atlas_gathers+=s.direct_atlas_gathers;
         stats.trace.direct_exact_calls+=s.direct_exact_calls;stats.trace.specular_area_calls+=s.specular_area_calls;
         stats.trace.specular_memo_hits+=s.specular_memo_hits;
         stats.trace.surface_radiance_memo_hits+=s.surface_radiance_memo_hits;
@@ -1547,14 +2630,23 @@ std::vector<std::uint8_t> render_exact(const TraceContext& context,int width,int
         stats.trace.primary_specular_area_calls+=s.primary_specular_area_calls;
         stats.trace.secondary_specular_area_calls+=s.secondary_specular_area_calls;
         stats.trace.camera_specular_gathers+=s.camera_specular_gathers;
+        stats.trace.source_zero_certificates+=s.source_zero_certificates;
+        stats.trace.specular_zero_lobes+=s.specular_zero_lobes;
         stats.trace.secondary_specular_weight_lt_1e4+=s.secondary_specular_weight_lt_1e4;
         stats.trace.secondary_specular_weight_lt_1e3+=s.secondary_specular_weight_lt_1e3;
         stats.trace.secondary_specular_weight_lt_1e2+=s.secondary_specular_weight_lt_1e2;
         stats.trace.emitter_rows+=s.emitter_rows;
         stats.trace.emitter_intervals+=s.emitter_intervals;stats.trace.emitter_quadrature_samples+=s.emitter_quadrature_samples;
+        stats.trace.return_tests+=s.return_tests;stats.trace.return_matches+=s.return_matches;
+        stats.trace.return_extinctions+=s.return_extinctions;stats.trace.return_closures+=s.return_closures;
+        stats.trace.return_rejections+=s.return_rejections;stats.trace.return_removed_weight+=s.return_removed_weight;
+        stats.trace.return_added_radiance+=s.return_added_radiance;
         stats.trace.feedback_loops+=s.feedback_loops;stats.trace.feedback_returns+=s.feedback_returns;
         stats.trace.sealed_feedback_tails+=s.sealed_feedback_tails;stats.trace.maximum_optical_packets=
             std::max(stats.trace.maximum_optical_packets,s.maximum_optical_packets);
+        stats.trace.participating_volume_chords+=s.participating_volume_chords;
+        stats.trace.rough_jelly_gathers+=s.rough_jelly_gathers;
+        stats.trace.participating_volume_distance+=s.participating_volume_distance;
         stats.trace.sealed_residual_weight+=s.sealed_residual_weight;}
     stats.raster_ms=std::chrono::duration<double,std::milli>(Clock::now()-start).count();return image;
 }
@@ -1572,27 +2664,35 @@ std::vector<std::uint8_t> render_adaptive(const TraceContext& context,int width,
         std::vector<Ray> rays(width);std::vector<Hit> hits(width);std::vector<RGB> exact(width);
         std::vector<double> direction_x(width),direction_y(width),direction_z(width),best_t(width);
         std::vector<int> best_id(width);
-        std::vector<std::array<std::uint8_t,3>> exact_bytes(width);std::vector<TerminalLabel> labels(width),ownership(width);
+        std::vector<std::array<std::uint8_t,3>> exact_bytes(width);std::vector<TerminalLabel> labels(width),ownership(width),
+            visible_labels(width);
         std::vector<std::uint8_t> known(width);std::vector<float> synthesized;
         for(;;){const int y=next_row.fetch_add(1);if(y>=height)break;std::fill(known.begin(),known.end(),0);
             for(int x=0;x<width;++x){rays[x]=camera_ray(camera,width,height,x,y);direction_x[x]=rays[x].direction.x;
                 direction_y[x]=rays[x].direction.y;direction_z[x]=rays[x].direction.z;}
             first_hit_camera_packet(ctx.scene,camera.origin,rays.data(),direction_x.data(),direction_y.data(),direction_z.data(),
                 hits.data(),best_t.data(),best_id.data(),width);counts[worker].packet_rays+=width;
-            for(int x=0;x<width;++x){
-                std::uint64_t visible_signature=0;if(hits[x].valid){ownership[x]={hits[x].primitive,
-                    terminal_topology_signature(ctx,rays[x],hits[x],ownership_field?&visible_signature:nullptr)};++counts[worker].topology;}
-                else ownership[x]={-1,0};if(ownership_field)(*ownership_field)[static_cast<std::size_t>(y)*width+x]=hits[x].valid?
-                    TerminalLabel{hits[x].primitive,visible_signature}:TerminalLabel{-1,0};}
+            for(int x=0;x<width;++x){if(!hits[x].valid){ownership[x]={-1,0};visible_labels[x]={-1,0};
+                    if(ownership_field)(*ownership_field)[static_cast<std::size_t>(y)*width+x]={-1,0};continue;}
+                if(topology_backend==TopologyBackend::Dense){std::uint64_t visible_signature=0;ownership[x]={hits[x].primitive,
+                        terminal_topology_signature(ctx,rays[x],hits[x],ownership_field?&visible_signature:nullptr)};
+                    visible_labels[x]={hits[x].primitive,visible_signature};++counts[worker].topology;
+                    if(ownership_field)(*ownership_field)[static_cast<std::size_t>(y)*width+x]=visible_labels[x];}
+                else ownership[x]={hits[x].primitive,0};}
             auto evaluate=[&](int x)->const RGB&{if(known[x])return exact[x];known[x]=1;++counts[worker].exact;
                 if(!hits[x].valid){labels[x]={-1,0};exact[x]={};return exact[x];}std::uint64_t signature=0;
-                exact[x]=trace_primary(ctx,rays[x],hits[x],&signature);labels[x]={hits[x].primitive,signature^ownership[x].signature};
+                std::uint64_t terminal_signature=ownership[x].signature;if(topology_backend==TopologyBackend::Adaptive){
+                    std::uint64_t visible_signature=0;terminal_signature=terminal_topology_signature(ctx,rays[x],hits[x],
+                        ownership_field?&visible_signature:nullptr);visible_labels[x]={hits[x].primitive,visible_signature};
+                    ++counts[worker].topology;}
+                exact[x]=trace_primary(ctx,rays[x],hits[x],&signature);labels[x]={hits[x].primitive,signature^terminal_signature};
                 for(int c=0;c<3;++c)exact_bytes[x][c]=tone_byte(exact[x][c]);return exact[x];};
             int begin=0;while(begin<width){const int primitive=ownership[begin].primitive;int end=begin;
                 while(end+1<width&&ownership[end+1]==ownership[begin])++end;++counts[worker].runs;
                 if(primitive<0){begin=end+1;continue;}
                 auto exact_segment=[&](int a,int b){++counts[worker].leaves;for(int x=a;x<=b;++x){evaluate(x);
                     const std::size_t offset=(static_cast<std::size_t>(y)*width+x)*3;for(int c=0;c<3;++c)image[offset+c]=exact_bytes[x][c];
+                    if(ownership_field&&topology_backend==TopologyBackend::Adaptive)(*ownership_field)[static_cast<std::size_t>(y)*width+x]=visible_labels[x];
                     ++counts[worker].exact_pixels;}};
                 auto approximate=[&](auto&& self,int a,int b)->void{const int length=b-a+1;if(length<5){exact_segment(a,b);return;}
                     constexpr std::array<double,5> controls{{0,.25,.5,.75,1}};
@@ -1600,10 +2700,13 @@ std::vector<std::uint8_t> render_adaptive(const TraceContext& context,int width,
                     std::array<int,5> sites{};std::array<float,15> source{};for(int i=0;i<5;++i){sites[i]=std::clamp(
                         static_cast<int>(std::lround(a+controls[i]*(b-a))),a,b);const RGB& value=evaluate(sites[i]);
                         for(int c=0;c<3;++c)source[i*3+c]=static_cast<float>(value[c]);}
-                    bool reject=false;const TerminalLabel label=labels[sites[0]];for(int i=1;i<5;++i)reject=reject||!(labels[sites[i]]==label);
+                    bool reject=false;const TerminalLabel label=labels[sites[0]];const TerminalLabel visible_label=visible_labels[sites[0]];
+                    for(int i=1;i<5;++i)reject=reject||!(labels[sites[i]]==label)||
+                        (ownership_field&&topology_backend==TopologyBackend::Adaptive&&!(visible_labels[sites[i]]==visible_label));
                     std::array<int,12> probe{};std::array<float,12> positions{};std::array<float,36> predicted{};
                     for(int i=0;!reject&&i<12;++i){probe[i]=std::clamp(static_cast<int>(std::lround(a+probes[i]*(b-a))),a,b);
-                        ++counts[worker].certificate;evaluate(probe[i]);if(!(labels[probe[i]]==label)){reject=true;break;}
+                        ++counts[worker].certificate;evaluate(probe[i]);if(!(labels[probe[i]]==label)||
+                            (ownership_field&&topology_backend==TopologyBackend::Adaptive&&!(visible_labels[probe[i]]==visible_label))){reject=true;break;}
                         positions[i]=static_cast<float>(4.0*(probe[i]-a)/(b-a));}
                     std::array<float,60> prepared{};if(!reject&&conv_prepare_profile_f32(source.data(),5,3,prepared.data())!=0)
                         throw std::runtime_error("CONV profile preparation failed");
@@ -1616,7 +2719,9 @@ std::vector<std::uint8_t> render_adaptive(const TraceContext& context,int width,
                     synthesized.resize(static_cast<std::size_t>(length)*3);if(conv_resize_prepared_lines_f32(
                             source.data(),prepared.data(),5,3,synthesized.data(),length)!=0)
                         throw std::runtime_error("CONV regional synthesis failed");
-                    for(int x=a;x<=b;++x){const std::size_t offset=(static_cast<std::size_t>(y)*width+x)*3;bool control=false;
+                    for(int x=a;x<=b;++x){const std::size_t offset=(static_cast<std::size_t>(y)*width+x)*3;
+                        if(ownership_field&&topology_backend==TopologyBackend::Adaptive)(*ownership_field)[static_cast<std::size_t>(y)*width+x]=visible_label;
+                        bool control=false;
                         for(int site:sites)control=control||x==site;if(control){evaluate(x);
                             for(int c=0;c<3;++c)image[offset+c]=exact_bytes[x][c];++counts[worker].exact_pixels;}
                         else{const std::size_t local=static_cast<std::size_t>(x-a)*3;for(int c=0;c<3;++c)image[offset+c]=tone_byte(synthesized[local+c]);
@@ -1630,6 +2735,12 @@ std::vector<std::uint8_t> render_adaptive(const TraceContext& context,int width,
         stats.trace.primary+=s.primary;stats.trace.secondary+=s.secondary;stats.trace.shadow+=s.shadow;stats.trace.mirror+=s.mirror;
         stats.trace.metal+=s.metal;stats.trace.dielectric+=s.dielectric;stats.trace.specular_caustic+=s.specular_caustic;
         stats.trace.prism_bottom_events+=s.prism_bottom_events;stats.trace.prism_top_events+=s.prism_top_events;
+        stats.trace.jelly_volume_events+=s.jelly_volume_events;
+        stats.trace.child_responses+=s.child_responses;
+        stats.trace.child_cache_hits+=s.child_cache_hits;
+        stats.trace.child_internal_hits+=s.child_internal_hits;
+        stats.trace.child_egress_ports+=s.child_egress_ports;
+        stats.trace.child_unresolved_weight+=s.child_unresolved_weight;
         stats.trace.direct_atlas_gathers+=s.direct_atlas_gathers;stats.trace.direct_exact_calls+=s.direct_exact_calls;
         stats.trace.specular_area_calls+=s.specular_area_calls;
         stats.trace.specular_memo_hits+=s.specular_memo_hits;
@@ -1638,14 +2749,23 @@ std::vector<std::uint8_t> render_adaptive(const TraceContext& context,int width,
         stats.trace.primary_specular_area_calls+=s.primary_specular_area_calls;
         stats.trace.secondary_specular_area_calls+=s.secondary_specular_area_calls;
         stats.trace.camera_specular_gathers+=s.camera_specular_gathers;
+        stats.trace.source_zero_certificates+=s.source_zero_certificates;
+        stats.trace.specular_zero_lobes+=s.specular_zero_lobes;
         stats.trace.secondary_specular_weight_lt_1e4+=s.secondary_specular_weight_lt_1e4;
         stats.trace.secondary_specular_weight_lt_1e3+=s.secondary_specular_weight_lt_1e3;
         stats.trace.secondary_specular_weight_lt_1e2+=s.secondary_specular_weight_lt_1e2;
         stats.trace.emitter_rows+=s.emitter_rows;stats.trace.emitter_intervals+=s.emitter_intervals;
         stats.trace.emitter_quadrature_samples+=s.emitter_quadrature_samples;
+        stats.trace.return_tests+=s.return_tests;stats.trace.return_matches+=s.return_matches;
+        stats.trace.return_extinctions+=s.return_extinctions;stats.trace.return_closures+=s.return_closures;
+        stats.trace.return_rejections+=s.return_rejections;stats.trace.return_removed_weight+=s.return_removed_weight;
+        stats.trace.return_added_radiance+=s.return_added_radiance;
         stats.trace.feedback_loops+=s.feedback_loops;stats.trace.feedback_returns+=s.feedback_returns;
         stats.trace.sealed_feedback_tails+=s.sealed_feedback_tails;stats.trace.maximum_optical_packets=
             std::max(stats.trace.maximum_optical_packets,s.maximum_optical_packets);
+        stats.trace.participating_volume_chords+=s.participating_volume_chords;
+        stats.trace.rough_jelly_gathers+=s.rough_jelly_gathers;
+        stats.trace.participating_volume_distance+=s.participating_volume_distance;
         stats.trace.sealed_residual_weight+=s.sealed_residual_weight;}
     stats.raster_ms=std::chrono::duration<double,std::milli>(Clock::now()-start).count();return image;
 }
@@ -1654,7 +2774,13 @@ void accumulate_trace_stats(TraceStats& total,const TraceStats& value){
     total.primary+=value.primary;total.secondary+=value.secondary;total.shadow+=value.shadow;
     total.mirror+=value.mirror;total.metal+=value.metal;total.dielectric+=value.dielectric;
     total.specular_caustic+=value.specular_caustic;total.prism_bottom_events+=value.prism_bottom_events;
-    total.prism_top_events+=value.prism_top_events;total.emitter_rows+=value.emitter_rows;
+    total.prism_top_events+=value.prism_top_events;total.jelly_volume_events+=value.jelly_volume_events;
+        total.child_responses+=value.child_responses;
+        total.child_cache_hits+=value.child_cache_hits;
+        total.child_internal_hits+=value.child_internal_hits;
+        total.child_egress_ports+=value.child_egress_ports;
+        total.child_unresolved_weight+=value.child_unresolved_weight;
+    total.emitter_rows+=value.emitter_rows;
     total.direct_atlas_gathers+=value.direct_atlas_gathers;total.direct_exact_calls+=value.direct_exact_calls;
     total.specular_area_calls+=value.specular_area_calls;total.specular_memo_hits+=value.specular_memo_hits;
     total.surface_radiance_memo_hits+=value.surface_radiance_memo_hits;
@@ -1662,14 +2788,23 @@ void accumulate_trace_stats(TraceStats& total,const TraceStats& value){
     total.primary_specular_area_calls+=value.primary_specular_area_calls;
     total.secondary_specular_area_calls+=value.secondary_specular_area_calls;
     total.camera_specular_gathers+=value.camera_specular_gathers;
+    total.source_zero_certificates+=value.source_zero_certificates;
+    total.specular_zero_lobes+=value.specular_zero_lobes;
     total.secondary_specular_weight_lt_1e4+=value.secondary_specular_weight_lt_1e4;
     total.secondary_specular_weight_lt_1e3+=value.secondary_specular_weight_lt_1e3;
     total.secondary_specular_weight_lt_1e2+=value.secondary_specular_weight_lt_1e2;
     total.emitter_intervals+=value.emitter_intervals;
     total.emitter_quadrature_samples+=value.emitter_quadrature_samples;
+    total.return_tests+=value.return_tests;total.return_matches+=value.return_matches;
+    total.return_extinctions+=value.return_extinctions;total.return_closures+=value.return_closures;
+    total.return_rejections+=value.return_rejections;total.return_removed_weight+=value.return_removed_weight;
+    total.return_added_radiance+=value.return_added_radiance;
     total.feedback_loops+=value.feedback_loops;total.feedback_returns+=value.feedback_returns;
     total.sealed_feedback_tails+=value.sealed_feedback_tails;total.maximum_optical_packets=
         std::max(total.maximum_optical_packets,value.maximum_optical_packets);
+    total.participating_volume_chords+=value.participating_volume_chords;
+    total.rough_jelly_gathers+=value.rough_jelly_gathers;
+    total.participating_volume_distance+=value.participating_volume_distance;
     total.sealed_residual_weight+=value.sealed_residual_weight;
 }
 
@@ -1693,6 +2828,8 @@ bool bounds_may_reach_camera(const Bounds3& bounds,const Camera& camera){const d
 void query_camera_primitives(const Scene& scene,const Camera& camera,std::vector<int>& candidates){candidates.clear();
     if(!scene.use_bvh||scene.bvh_nodes.empty()){candidates.resize(scene.primitives.size());
         for(int i=0;i<static_cast<int>(scene.primitives.size());++i)candidates[i]=i;return;}
+    for(int id=static_cast<int>(scene.bvh_primitives.size());id<static_cast<int>(scene.primitives.size());++id)
+        if(bounds_may_reach_camera(primitive_bounds(scene.primitives[id]),camera))candidates.push_back(id);
     std::array<int,128> stack{};int size=0;stack[size++]=0;while(size){const BvhNode& node=scene.bvh_nodes[stack[--size]];
         if(!bounds_may_reach_camera(node.bounds,camera))continue;if(node.count){for(int i=0;i<node.count;++i)
                 candidates.push_back(scene.bvh_primitives[node.begin+i]);}
@@ -1701,45 +2838,98 @@ void query_camera_primitives(const Scene& scene,const Camera& camera,std::vector
 
 struct ProjectedEdgeLine{double a=0,b=0,c=0;std::uint8_t count=0;};
 
+struct RetainedBoundaryFragment{
+    ProjectedEdgeLine line{};std::uint64_t token=0;int next=-1;double proximity=0;
+};
+
 struct VisibleEdgeField{
     // bit 0: primary, bit 1: topology, bit 2: shallow line,
     // bit 3: topology reconstruction, bits 4/5: x/y topology crossings
     std::vector<std::uint8_t> kind;
     std::vector<ProjectedEdgeLine> straight;
-    std::uint64_t candidate_segments=0,visible_segments=0,label_queries=0,refinements=0;
+    std::vector<int> fragment_head;
+    std::vector<RetainedBoundaryFragment> fragment;
+    std::uint64_t candidate_segments=0,visible_segments=0,label_queries=0,refinements=0,crossing_storage_bytes=0;
 };
 
 struct PixelRegion{double area=0;Vec2 centroid{};};
 
-PixelRegion clipped_pixel_region(int px,int py,const ProjectedEdgeLine& line,bool positive){
-    std::vector<Vec2> polygon{{px-.5,py-.5},{px+.5,py-.5},{px+.5,py+.5},{px-.5,py+.5}},clipped;
-    auto value=[&](Vec2 point){const double v=line.a*point.x+line.b*point.y+line.c;return positive?v:-v;};
+bool projected_line(Vec2 a,Vec2 b,ProjectedEdgeLine& line){const double dx=b.x-a.x,dy=b.y-a.y;
+    const double length=std::hypot(dx,dy);if(length<1e-12)return false;line={-dy/length,dx/length,0,1};
+    line.c=-(line.a*a.x+line.b*a.y);if(line.a<0||(std::abs(line.a)<1e-14&&line.b<0)){
+        line.a=-line.a;line.b=-line.b;line.c=-line.c;}return true;}
+
+std::vector<Vec2> clip_polygon(const std::vector<Vec2>& polygon,const ProjectedEdgeLine& line,bool positive){
+    std::vector<Vec2> clipped;clipped.reserve(polygon.size()+1);auto value=[&](Vec2 point){const double v=
+        line.a*point.x+line.b*point.y+line.c;return positive?v:-v;};
     for(std::size_t i=0;i<polygon.size();++i){const Vec2 current=polygon[i],next=polygon[(i+1)%polygon.size()];
-        const double fc=value(current),fn=value(next);const bool inside_current=fc>=0,inside_next=fn>=0;
-        if(inside_current)clipped.push_back(current);if(inside_current!=inside_next){const double t=fc/(fc-fn);
+        const double fc=value(current),fn=value(next);const bool current_inside=fc>=-1e-12,next_inside=fn>=-1e-12;
+        if(current_inside)clipped.push_back(current);if(current_inside!=next_inside){const double t=fc/(fc-fn);
             clipped.push_back({current.x+(next.x-current.x)*t,current.y+(next.y-current.y)*t});}}
-    if(clipped.size()<3)return {};double twice_area=0,cx=0,cy=0;
-    for(std::size_t i=0;i<clipped.size();++i){const Vec2 p=clipped[i],q=clipped[(i+1)%clipped.size()];
-        const double cross_value=p.x*q.y-q.x*p.y;twice_area+=cross_value;cx+=(p.x+q.x)*cross_value;
-        cy+=(p.y+q.y)*cross_value;}
-    if(std::abs(twice_area)<1e-14)return {};PixelRegion result;result.area=std::abs(twice_area)*.5;
-    result.centroid={cx/(3*twice_area),cy/(3*twice_area)};return result;
+    return clipped;
+}
+
+PixelRegion measure_polygon(const std::vector<Vec2>& polygon){if(polygon.size()<3)return {};double twice_area=0,cx=0,cy=0;
+    for(std::size_t i=0;i<polygon.size();++i){const Vec2 p=polygon[i],q=polygon[(i+1)%polygon.size()];
+        const double value=p.x*q.y-q.x*p.y;twice_area+=value;cx+=(p.x+q.x)*value;cy+=(p.y+q.y)*value;}
+    if(std::abs(twice_area)<1e-14)return {};return {std::abs(twice_area)*.5,{cx/(3*twice_area),cy/(3*twice_area)}};
+}
+
+bool retained_boundary_regions(const VisibleEdgeField& field,int pixel,int px,int py,std::vector<PixelRegion>& regions){
+    std::array<ProjectedEdgeLine,12> lines{};int line_count=0;
+    for(int fragment=field.fragment_head[pixel];fragment>=0;fragment=field.fragment[fragment].next){
+        const ProjectedEdgeLine candidate=field.fragment[fragment].line;bool duplicate=false;
+        for(int i=0;i<line_count;++i)duplicate=duplicate||(std::abs(lines[i].a-candidate.a)<1e-5&&
+            std::abs(lines[i].b-candidate.b)<1e-5&&std::abs(lines[i].c-candidate.c)<2e-4);
+        if(duplicate)continue;if(line_count==static_cast<int>(lines.size()))return false;lines[line_count++]=candidate;}
+    if(!line_count)return false;std::vector<std::vector<Vec2>> cells{{{px-.5,py-.5},{px+.5,py-.5},
+        {px+.5,py+.5},{px-.5,py+.5}}};
+    for(int i=0;i<line_count;++i){std::vector<std::vector<Vec2>> split;split.reserve(cells.size()*2);
+        for(const auto& cell:cells){auto positive=clip_polygon(cell,lines[i],true),negative=clip_polygon(cell,lines[i],false);
+            const PixelRegion positive_measure=measure_polygon(positive),negative_measure=measure_polygon(negative);
+            if(positive_measure.area>1e-9)split.push_back(std::move(positive));
+            if(negative_measure.area>1e-9)split.push_back(std::move(negative));}
+        cells=std::move(split);if(cells.empty()||cells.size()>32)return false;}
+    regions.clear();double total=0;for(const auto& cell:cells){const PixelRegion region=measure_polygon(cell);
+        if(region.area<=1e-8)continue;regions.push_back(region);total+=region.area;}
+    return !regions.empty()&&std::abs(total-1.0)<1e-7;
+}
+
+PixelRegion clipped_pixel_region(int px,int py,const ProjectedEdgeLine& line,bool positive){
+    return measure_polygon(clip_polygon({{px-.5,py-.5},{px+.5,py-.5},{px+.5,py+.5},{px-.5,py+.5}},line,positive));
 }
 
 VisibleEdgeField discover_visible_edges(const TraceContext& context,const Camera& camera,int width,int height,
     const std::vector<TerminalLabel>& ownership){
     VisibleEdgeField field;field.kind.assign(static_cast<std::size_t>(width)*height,0);
     field.straight.resize(static_cast<std::size_t>(width)*height);
+    field.fragment_head.assign(static_cast<std::size_t>(width)*height,-1);
     std::vector<int> visible_curved_owner(static_cast<std::size_t>(width)*height,-1);
     auto mark=[&](double x,double y,std::uint8_t kind){const int px=static_cast<int>(std::floor(x+.5));
         const int py=static_cast<int>(std::floor(y+.5));if(px>=0&&px<width&&py>=0&&py<height)
             field.kind[static_cast<std::size_t>(py)*width+px]|=kind;};
+    auto retain_line_at_pixel=[&](int px,int py,const ProjectedEdgeLine& line,std::uint64_t token,std::uint8_t kind){
+        if(px<0||px>=width||py<0||py>=height)return;const int pixel=py*width+px;
+        const double proximity=std::abs(line.a*px+line.b*py+line.c);int existing=field.fragment_head[pixel];
+        for(;existing>=0;existing=field.fragment[existing].next)if(field.fragment[existing].token==token)break;
+        if(existing>=0){if(proximity<field.fragment[existing].proximity){field.fragment[existing].line=line;
+                field.fragment[existing].proximity=proximity;}}
+        else{const int index=static_cast<int>(field.fragment.size());field.fragment.push_back(
+                {line,token,field.fragment_head[pixel],proximity});field.fragment_head[pixel]=index;}
+        field.kind[pixel]|=kind;};
+    auto retain_segment=[&](Vec2 a,Vec2 b,std::uint64_t token,std::uint8_t kind){ProjectedEdgeLine line;
+        if(!projected_line(a,b,line))return;const int x0=std::max(0,static_cast<int>(std::ceil(std::min(a.x,b.x)-.5)));
+        const int x1=std::min(width-1,static_cast<int>(std::floor(std::max(a.x,b.x)+.5)));
+        const int y0=std::max(0,static_cast<int>(std::ceil(std::min(a.y,b.y)-.5)));
+        const int y1=std::min(height-1,static_cast<int>(std::floor(std::max(a.y,b.y)+.5)));
+        for(int py=y0;py<=y1;++py)for(int px=x0;px<=x1;++px){double minimum=std::numeric_limits<double>::infinity();
+            double maximum=-minimum;for(Vec2 corner:std::array<Vec2,4>{{{px-.5,py-.5},{px+.5,py-.5},
+                    {px+.5,py+.5},{px-.5,py+.5}}}){const double value=line.a*corner.x+line.b*corner.y+line.c;
+                minimum=std::min(minimum,value);maximum=std::max(maximum,value);}if(minimum>1e-10||maximum<-1e-10)continue;
+            retain_line_at_pixel(px,py,line,token,kind);}};
     auto mark_straight=[&](double x,double y,Vec2 a,Vec2 b){const int px=static_cast<int>(std::floor(x+.5));
         const int py=static_cast<int>(std::floor(y+.5));if(px<0||px>=width||py<0||py>=height)return;
-        const double dx=b.x-a.x,dy=b.y-a.y,length=std::hypot(dx,dy);if(length<1e-12)return;
-        ProjectedEdgeLine candidate{-dy/length,dx/length,0,1};candidate.c=-(candidate.a*a.x+candidate.b*a.y);
-        if(candidate.a<0||(std::abs(candidate.a)<1e-14&&candidate.b<0)){
-            candidate.a=-candidate.a;candidate.b=-candidate.b;candidate.c=-candidate.c;}
+        ProjectedEdgeLine candidate;if(!projected_line(a,b,candidate))return;
         ProjectedEdgeLine& stored=field.straight[static_cast<std::size_t>(py)*width+px];
         if(stored.count==0)stored=candidate;else if(stored.count==1&&(std::abs(stored.a-candidate.a)>1e-7||
                 std::abs(stored.b-candidate.b)>1e-7||std::abs(stored.c-candidate.c)>1e-4))stored.count=2;};
@@ -1747,10 +2937,10 @@ VisibleEdgeField discover_visible_edges(const TraceContext& context,const Camera
         const Hit hit=first_hit(context.scene,ray);if(!hit.valid)return TerminalLabel{-1,0};
         return TerminalLabel{hit.primitive,topology?visible_path_signature(context,ray,hit):0};};
     auto refine=[&](Vec2 a,Vec2 b,TerminalLabel left,TerminalLabel right,bool topology){
-        // This result is consumed only by mark(), which rounds it back to one
-        // of the two adjacent sensor pixels.  One midpoint classification
-        // determines that rounded basin; deeper bisection was discarded.
-        for(int iteration=0;iteration<1;++iteration){const Vec2 middle{(a.x+b.x)*.5,(a.y+b.y)*.5};
+        // Topology crossings become retained geometry, so refine their end
+        // points below a sixteenth of a pixel. Primary contours are replaced
+        // by their analytic projected geometry below and need only one test.
+        const int iterations=topology?4:1;for(int iteration=0;iteration<iterations;++iteration){const Vec2 middle{(a.x+b.x)*.5,(a.y+b.y)*.5};
             const TerminalLabel value=label_at(middle.x,middle.y,topology);++field.refinements;
             if(value==left)a=middle;else{b=middle;right=value;}}
         (void)right;return Vec2{(a.x+b.x)*.5,(a.y+b.y)*.5};};
@@ -1759,16 +2949,49 @@ VisibleEdgeField discover_visible_edges(const TraceContext& context,const Camera
     // contains its first change. This includes reflected/refracted terminal
     // changes already present at sensor resolution, rather than only
     // first-surface silhouettes. Analytic contours carry subpixel coverage.
+    struct GridCrossing{Vec2 point{};TerminalLabel a{},b{};bool valid=false;};
+    // Most sensor adjacencies have no optical ownership crossing. Keep one
+    // index for them, and store the geometric crossing only where it exists.
+    // The dense representation remains an exact comparison mode.
+    struct CrossingStore{
+        std::vector<int> index;std::vector<GridCrossing> values;bool sparse;
+        CrossingStore(std::size_t size,bool compact):sparse(compact){
+            if(sparse)index.assign(size,-1);else values.resize(size);}
+        void set(std::size_t at,GridCrossing value){if(sparse){index[at]=static_cast<int>(values.size());values.push_back(value);}
+            else values[at]=value;}
+        GridCrossing get(std::size_t at)const{if(!sparse)return values[at];
+            const int entry=index[at];return entry<0?GridCrossing{}:values[entry];}
+        std::size_t bytes()const{return index.capacity()*sizeof(int)+values.capacity()*sizeof(GridCrossing);}
+    };
+    CrossingStore horizontal(static_cast<std::size_t>(height)*std::max(0,width-1),camera_sparse_crossings);
+    CrossingStore vertical(static_cast<std::size_t>(std::max(0,height-1))*width,camera_sparse_crossings);
     for(int y=0;y<height;++y)for(int x=0;x+1<width;++x){const TerminalLabel a=ownership[static_cast<std::size_t>(y)*width+x];
         const TerminalLabel b=ownership[static_cast<std::size_t>(y)*width+x+1];if(a==b)continue;
         const bool topology=a.primitive==b.primitive;const TerminalLabel la=topology?a:TerminalLabel{a.primitive,0};
         const TerminalLabel lb=topology?b:TerminalLabel{b.primitive,0};const Vec2 crossing=refine({double(x),double(y)},
-            {double(x+1),double(y)},la,lb,topology);mark(crossing.x,crossing.y,topology?18:1);}
+            {double(x+1),double(y)},la,lb,topology);mark(crossing.x,crossing.y,topology?18:1);
+        if(topology)horizontal.set(static_cast<std::size_t>(y)*(width-1)+x,{crossing,a,b,true});}
     for(int y=0;y+1<height;++y)for(int x=0;x<width;++x){const TerminalLabel a=ownership[static_cast<std::size_t>(y)*width+x];
         const TerminalLabel b=ownership[static_cast<std::size_t>(y+1)*width+x];if(a==b)continue;
         const bool topology=a.primitive==b.primitive;const TerminalLabel la=topology?a:TerminalLabel{a.primitive,0};
         const TerminalLabel lb=topology?b:TerminalLabel{b.primitive,0};const Vec2 crossing=refine({double(x),double(y)},
-            {double(x),double(y+1)},la,lb,topology);mark(crossing.x,crossing.y,topology?34:1);}
+            {double(x),double(y+1)},la,lb,topology);mark(crossing.x,crossing.y,topology?34:1);
+        if(topology)vertical.set(static_cast<std::size_t>(y)*width+x,{crossing,a,b,true});}
+    auto same_pair=[](const GridCrossing& first,const GridCrossing& second){return
+        (first.a==second.a&&first.b==second.b)||(first.a==second.b&&first.b==second.a);};
+    auto pair_token=[](TerminalLabel a,TerminalLabel b){if(a.primitive>b.primitive||
+            (a.primitive==b.primitive&&a.signature>b.signature)){std::swap(a,b);}std::uint64_t token=
+            a.signature^(b.signature+0x9e3779b97f4a7c15ULL+(a.signature<<6)+(a.signature>>2));
+        token^=static_cast<std::uint64_t>(a.primitive+1)*0xbf58476d1ce4e5b9ULL;
+        token^=static_cast<std::uint64_t>(b.primitive+1)*0x94d049bb133111ebULL;return token|1ULL;};
+    for(int y=0;y+1<height;++y)for(int x=0;x+1<width;++x){std::array<GridCrossing,4> crossing{{
+            horizontal.get(static_cast<std::size_t>(y)*(width-1)+x),vertical.get(static_cast<std::size_t>(y)*width+x+1),
+            horizontal.get(static_cast<std::size_t>(y+1)*(width-1)+x),vertical.get(static_cast<std::size_t>(y)*width+x)}};
+        std::array<GridCrossing,4> active{};int count=0;for(const GridCrossing& value:crossing)if(value.valid)active[count++]=value;
+        if(count!=2||!same_pair(active[0],active[1]))continue;retain_segment(active[0].point,active[1].point,
+            pair_token(active[0].a,active[0].b),2);}
+
+    field.crossing_storage_bytes=horizontal.bytes()+vertical.bytes();
 
     // Analytic primitive contours catch visible geometry thinner than a sensor
     // sample.  Straight world edges remain straight under pinhole projection;
@@ -1782,7 +3005,7 @@ VisibleEdgeField discover_visible_edges(const TraceContext& context,const Camera
             else if(outside&2){if(std::abs(b.x-a.x)<1e-15)return false;q={xmax,a.y+(b.y-a.y)*(xmax-a.x)/(b.x-a.x)};}
             else{if(std::abs(b.x-a.x)<1e-15)return false;q={xmin,a.y+(b.y-a.y)*(xmin-a.x)/(b.x-a.x)};}
             if(outside==ca){a=q;ca=code(a);}else{b=q;cb=code(b);}}return false;};
-    auto visible_segment=[&](int primitive,Vec2 a,Vec2 b,bool straight=false){if(!clip_to_sensor(a,b))return;
+    auto visible_segment=[&](int primitive,Vec2 a,Vec2 b,bool straight,std::uint64_t token){if(!clip_to_sensor(a,b))return;
         const double dx=b.x-a.x,dy=b.y-a.y,length=std::hypot(dx,dy);
         if(length<1e-9)return;const int pieces=std::clamp(static_cast<int>(std::ceil(length*8)),1,200000);
         const double nx=-dy/length,ny=dx/length;int last_visible_pixel=-1;
@@ -1793,7 +3016,10 @@ VisibleEdgeField discover_visible_edges(const TraceContext& context,const Camera
             const TerminalLabel left=label_at(x+nx*.04,y+ny*.04,false);
             const TerminalLabel right=label_at(x-nx*.04,y-ny*.04,false);
             if(left.primitive!=right.primitive&&(left.primitive==primitive||right.primitive==primitive)){
-                ++field.visible_segments;mark(x,y,1);if(straight){mark_straight(x,y,a,b);last_visible_pixel=pixel;}
+                ++field.visible_segments;mark(x,y,1);if(straight){ProjectedEdgeLine line;
+                    if(pixel>=0&&projected_line(a,b,line))retain_line_at_pixel(px,py,line,token,1);}
+                else retain_segment(a,b,token,1);
+                if(straight){mark_straight(x,y,a,b);last_visible_pixel=pixel;}
                 else if(pixel>=0)visible_curved_owner[pixel]=primitive;}}};
     std::vector<int> camera_primitives;query_camera_primitives(context.scene,camera,camera_primitives);
     for(int id:camera_primitives){const Primitive& primitive=context.scene.primitives[id];
@@ -1809,13 +3035,13 @@ VisibleEdgeField discover_visible_edges(const TraceContext& context,const Camera
             const int pieces=std::clamp(static_cast<int>(std::ceil(2*pi*radius_pixels*8)),64,20000);Vec2 previous{};
             for(int piece=0;piece<=pieces;++piece){const double angle=2*pi*(piece%pieces)/pieces;Vec2 current;
                 if(!project_to_sensor(camera,width,height,circle+(tangent_u*std::cos(angle)+tangent_v*std::sin(angle))*radius,current))break;
-                if(piece>0)visible_segment(id,previous,current);previous=current;}}
+                if(piece>0)visible_segment(id,previous,current,false,(1ULL<<63)|static_cast<std::uint64_t>(id+1));previous=current;}}
         else{const std::array<Vec3,4> vertex=primitive.shape==Shape::Rectangle?
                 std::array<Vec3,4>{{primitive.origin,primitive.origin+primitive.u,primitive.origin+primitive.u+primitive.v,primitive.origin+primitive.v}}:
                 std::array<Vec3,4>{{primitive.a,primitive.b,primitive.c,primitive.a}};
             const int count=primitive.shape==Shape::Rectangle?4:3;for(int edge=0;edge<count;++edge){Vec2 a,b;
                 if(project_to_sensor(camera,width,height,vertex[edge],a)&&project_to_sensor(camera,width,height,vertex[(edge+1)%count],b))
-                    visible_segment(id,a,b,true);}}
+                    visible_segment(id,a,b,true,(static_cast<std::uint64_t>(id+1)<<8)|static_cast<std::uint64_t>(edge+1));}}
     }
 
     // Box reconstruction can leave coherent stairs on nearly horizontal or
@@ -1849,11 +3075,58 @@ VisibleEdgeField discover_visible_edges(const TraceContext& context,const Camera
     return field;
 }
 
+// Adjacent two-pixel filters share the same quarter-pixel query lattice.
+// A 4x4 block owns sixteen exact optical labels; an 8x8 filter gathers four
+// blocks. This is a finite coverage field, with no guessed region interiors.
+struct BoundaryFilterField{
+    int stride=0;std::uint64_t optical_requests=0,optical_reused=0;std::vector<int> block_index;std::vector<std::array<TerminalLabel,16>> labels;
+    std::vector<std::pair<int,int>> blocks;std::uint64_t requests=0;
+    TerminalLabel at(int px,int py,int sx,int sy)const{
+        const int bx=px+sx/4,by=py+sy/4,index=block_index[static_cast<std::size_t>(by)*stride+bx];
+        return labels[index][(sy%4)*4+sx%4];}
+    std::size_t storage_bytes()const{return block_index.capacity()*sizeof(int)+labels.capacity()*sizeof(labels[0])+
+        blocks.capacity()*sizeof(blocks[0]);}
+};
+BoundaryFilterField compile_boundary_filter_field(const TraceContext& context,const Camera& camera,
+    int width,int height,const VisibleEdgeField& edges,const std::vector<int>& pixels){
+    BoundaryFilterField field;if(!boundary_shared_filter)return field;
+    for(int pixel:pixels)if((edges.kind[pixel]&10)==10)field.requests+=64;
+    if(field.requests<256)return {};field.stride=width+1;
+    field.block_index.assign(static_cast<std::size_t>(width+1)*(height+1),-1);
+    for(int pixel:pixels)if((edges.kind[pixel]&10)==10){const int px=pixel%width,py=pixel/width;
+        for(int dy=0;dy<2;++dy)for(int dx=0;dx<2;++dx){int& index=field.block_index[
+                static_cast<std::size_t>(py+dy)*field.stride+px+dx];
+            if(index<0){index=static_cast<int>(field.blocks.size());field.blocks.emplace_back(px+dx,py+dy);}}}
+    // Admit a shared pass only when its exact query count saves at least 10%.
+    if(field.blocks.size()*16>=field.requests*.9)return {};
+    field.labels.resize(field.blocks.size());std::atomic<std::size_t> next{0};std::vector<std::thread> workers;
+    const unsigned count=std::min<std::size_t>(std::max(1u,std::thread::hardware_concurrency()),field.blocks.size());
+    std::vector<std::array<std::uint64_t,2>> query_counts(count);
+    for(unsigned worker=0;worker<count;++worker)workers.emplace_back([&,worker]{
+        OpticalQueryMemo query_memo(boundary_path_capacity);TraceContext ctx=context;
+        ctx.optical_queries=boundary_path_capacity?&query_memo:nullptr;
+        std::array<Ray,16> rays;std::array<Hit,16> hits;std::array<double,16> dx,dy,dz,best_t;std::array<int,16> best_id;
+        for(;;){const std::size_t index=next.fetch_add(1);if(index>=field.blocks.size())break;
+            const auto [bx,by]=field.blocks[index];for(int sy=0;sy<4;++sy)for(int sx=0;sx<4;++sx){
+                const int sample=sy*4+sx;const double x=bx+.25*sx-.875,y=by+.25*sy-.875;
+                rays[sample]=camera_ray(camera,width,height,x,y);dx[sample]=rays[sample].direction.x;
+                dy[sample]=rays[sample].direction.y;dz[sample]=rays[sample].direction.z;}
+            first_hit_camera_packet(context.scene,camera.origin,rays.data(),dx.data(),dy.data(),dz.data(),
+                hits.data(),best_t.data(),best_id.data(),16);
+            for(int sample=0;sample<16;++sample)if(hits[sample].valid)field.labels[index][sample]=
+                {hits[sample].primitive,visible_path_signature(ctx,rays[sample],hits[sample])};
+        }query_counts[worker]={query_memo.requests,query_memo.reused};});
+    for(auto& worker:workers)worker.join();for(const auto& counts:query_counts){
+        field.optical_requests+=counts[0];field.optical_reused+=counts[1];}return field;
+}
+
 std::vector<std::uint8_t> render_visible_edge_field(
     const TraceContext& context,int width,int height,int terminal_error,RenderStats& stats,const Camera* camera_override=nullptr,
     const CameraSpecularField* cached_viewer_origin_field=nullptr){
     const auto start=Clock::now();const Camera camera=camera_override?*camera_override:make_camera(width,height);
-    const bool origin_matches=cached_viewer_origin_field&&cached_viewer_origin_field->origin.x==camera.origin.x&&
+    const bool origin_matches=cached_viewer_origin_field&&
+        cached_viewer_origin_field->field_generation==context.field.generation&&
+        cached_viewer_origin_field->origin.x==camera.origin.x&&
         cached_viewer_origin_field->origin.y==camera.origin.y&&cached_viewer_origin_field->origin.z==camera.origin.z;
     CameraSpecularField owned_viewer_origin_field;const CameraSpecularField* viewer_origin_field=cached_viewer_origin_field;
     if(!origin_matches){const auto camera_field_start=Clock::now();owned_viewer_origin_field=
@@ -1863,6 +3136,7 @@ std::vector<std::uint8_t> render_visible_edge_field(
     stats.camera_specular_samples=viewer_origin_field->samples;stats.camera_specular_quadrature_samples=
         origin_matches?0:viewer_origin_field->construction.emitter_quadrature_samples;TraceContext camera_context=context;
     camera_context.camera_specular=viewer_origin_field;
+    const auto demand_before=camera_demand_counts(*viewer_origin_field);
     const auto adaptive_start=Clock::now();std::vector<TerminalLabel> ownership;
     std::vector<std::uint8_t> image=render_adaptive(camera_context,width,height,terminal_error,stats,&ownership,&camera);
     stats.adaptive_ms=std::chrono::duration<double,std::milli>(Clock::now()-adaptive_start).count();
@@ -1872,16 +3146,29 @@ std::vector<std::uint8_t> render_visible_edge_field(
     std::vector<int> pixels;
     for(std::size_t index=0;index<edges.kind.size();++index)if(edges.kind[index])pixels.push_back(static_cast<int>(index));
     stats.boundary_pixels=pixels.size();stats.edge_candidate_segments=edges.candidate_segments;
-    stats.visible_edge_segments=edges.visible_segments;stats.edge_refinements=edges.refinements;
+    stats.visible_edge_segments=edges.visible_segments;stats.edge_refinements=edges.refinements;stats.edge_crossing_storage_bytes=edges.crossing_storage_bytes;
     stats.topology_queries+=edges.label_queries;
 
     const auto boundary_start=Clock::now();
+    const BoundaryFilterField filter_field=compile_boundary_filter_field(camera_context,camera,width,height,edges,pixels);
+    stats.shared_filter_build_ms=std::chrono::duration<double,std::milli>(Clock::now()-boundary_start).count();
+    stats.shared_filter_queries=filter_field.labels.size()*16;stats.shared_filter_requests=filter_field.requests;
+    stats.shared_filter_storage_bytes=filter_field.storage_bytes();stats.primary_packet_rays+=stats.shared_filter_queries;
     const unsigned workers=std::max(1u,std::thread::hardware_concurrency());std::atomic<std::size_t> next{0};
     std::vector<std::thread> threads;std::vector<TraceStats> trace_stats(workers);
+    std::vector<std::array<BoundaryAudit,5>> audits(workers);
+    struct PixelExpansion{int x=0,y=0,kind=0;ExpansionCounts counts;};
+    std::vector<PixelExpansion> expansion_pixels(expansion_audit_out.empty()?0:pixels.size());
+    std::vector<ExpansionAudit> expansions(workers);if(!expansion_audit_out.empty())
+        for(auto& audit:expansions)audit.receivers.resize(context.scene.primitives.size());
+    std::vector<std::array<std::uint64_t,2>> query_counts(workers);
     std::vector<std::uint64_t> label_counts(workers),topology_label_counts(workers),packet_counts(workers),radiance_counts(workers),
-        prism_top_counts(workers),prism_mixed_counts(workers),analytic_counts(workers),filtered_counts(workers);
+        prism_top_counts(workers),prism_mixed_counts(workers),analytic_counts(workers),filtered_counts(workers),
+        retained_counts(workers),sampled_counts(workers);
     for(unsigned worker=0;worker<workers;++worker)threads.emplace_back([&,worker]{TraceContext ctx=camera_context;
-        ctx.stats=&trace_stats[worker];ctx.specular_memo=nullptr;
+        ctx.stats=&trace_stats[worker];
+        ctx.specular_memo=nullptr;
+        OpticalQueryMemo query_memo(boundary_path_capacity);ctx.optical_queries=boundary_path_capacity?&query_memo:nullptr;
         struct Bucket{TerminalLabel label{};double weight=0,x=0,y=0,first_x=0,first_y=0;};
         std::array<Bucket,256> buckets{};
         std::array<Ray,256> packet_rays{};std::array<Hit,256> packet_hits{};
@@ -1889,9 +3176,13 @@ std::vector<std::uint8_t> render_visible_edge_field(
         std::array<int,256> packet_best_id{};
         for(;;){const std::size_t work=next.fetch_add(1);if(work>=pixels.size())break;const int index=pixels[work];
             const int px=index%width,py=index/width;
+            if(!expansion_audit_out.empty()){ctx.expansion=&expansions[worker];ctx.expansion->pixel={};}
+            const auto audit_start=boundary_audit?Clock::now():Clock::time_point{};int audit_kind=4;
+            const auto labels_before=label_counts[worker],radiance_before=radiance_counts[worker];
+            const auto specular_before=trace_stats[worker].specular_area_calls,quadrature_before=trace_stats[worker].emitter_quadrature_samples;
             const bool topology=(edges.kind[index]&2)!=0;int bucket_count=0;
             auto label_at=[&](double x,double y){const Ray ray=camera_ray(camera,width,height,x,y);
-                const Hit hit=first_hit(ctx.scene,ray);TerminalLabel label{-1,0};if(hit.valid){label.primitive=hit.primitive;
+                const Hit hit=optical_first_hit(ctx,ray);TerminalLabel label{-1,0};if(hit.valid){label.primitive=hit.primitive;
                 if(topology)label.signature=visible_path_signature(ctx,ray,hit);}++label_counts[worker];
                 topology_label_counts[worker]+=topology;return label;};
             auto add_region=[&](TerminalLabel label,double x,double y,double weight){
@@ -1912,11 +3203,16 @@ std::vector<std::uint8_t> render_visible_edge_field(
                 for(int sy=0;sy<filter_side;++sy)for(int sx=0;sx<filter_side;++sx){const double dx=-1+(sx+.5)*2/filter_side;
                     const double dy=-1+(sy+.5)*2/filter_side,weight=(1-std::abs(dx))*(1-std::abs(dy));
                     const int sample=sy*filter_side+sx;packet_x[sample]=px+dx;packet_y[sample]=py+dy;
-                    packet_weight[sample]=weight;packet_rays[sample]=camera_ray(camera,width,height,packet_x[sample],packet_y[sample]);
-                    packet_dx[sample]=packet_rays[sample].direction.x;packet_dy[sample]=packet_rays[sample].direction.y;
-                    packet_dz[sample]=packet_rays[sample].direction.z;filter_weight+=weight;}
-                add_packet_regions(filter_side*filter_side);
-                analytic=filter_weight>0;if(analytic)++filtered_counts[worker];}
+                    packet_weight[sample]=weight;if(filter_field.labels.empty()){
+                        packet_rays[sample]=camera_ray(camera,width,height,packet_x[sample],packet_y[sample]);
+                        packet_dx[sample]=packet_rays[sample].direction.x;packet_dy[sample]=packet_rays[sample].direction.y;
+                        packet_dz[sample]=packet_rays[sample].direction.z;}filter_weight+=weight;}
+                if(!filter_field.labels.empty()){
+                    label_counts[worker]+=filter_side*filter_side;topology_label_counts[worker]+=filter_side*filter_side;
+                    for(int sy=0;sy<filter_side;++sy)for(int sx=0;sx<filter_side;++sx){const int sample=sy*filter_side+sx;
+                        add_region(filter_field.at(px,py,sx,sy),packet_x[sample],packet_y[sample],packet_weight[sample]);}
+                }else add_packet_regions(filter_side*filter_side);
+                analytic=filter_weight>0;if(analytic){++filtered_counts[worker];audit_kind=0;}}
             if(!analytic&&(edges.kind[index]&4)&&straight.count==1){const double distance=
                     straight.a*px+straight.b*py+straight.c;constexpr double sigma=.42;
                 const double positive_weight=.5*(1+std::erf(distance/(std::sqrt(2.0)*sigma)));
@@ -1929,7 +3225,7 @@ std::vector<std::uint8_t> render_visible_edge_field(
                     label_at(negative_point.x,negative_point.y);if(!(positive_label==negative_label)){
                     if(positive_weight>1e-8)add_region(positive_label,positive_point.x,positive_point.y,positive_weight);
                     if(positive_weight<1-1e-8)add_region(negative_label,negative_point.x,negative_point.y,1-positive_weight);
-                    analytic=true;++filtered_counts[worker];}}
+                    analytic=true;++filtered_counts[worker];audit_kind=1;}}
             if(!analytic&&!topology&&straight.count==1){const PixelRegion positive=clipped_pixel_region(px,py,straight,true);
                 const PixelRegion negative=clipped_pixel_region(px,py,straight,false);
                 if(positive.area>1e-10&&negative.area>1e-10){const TerminalLabel positive_label=
@@ -1937,14 +3233,19 @@ std::vector<std::uint8_t> render_visible_edge_field(
                         label_at(negative.centroid.x,negative.centroid.y);
                     if(!(positive_label==negative_label)){add_region(positive_label,positive.centroid.x,
                             positive.centroid.y,positive.area);add_region(negative_label,negative.centroid.x,
-                            negative.centroid.y,negative.area);analytic=true;++analytic_counts[worker];}}}
-            constexpr int side=16;if(!analytic){for(int sy=0;sy<side;++sy)for(int sx=0;sx<side;++sx){
+                            negative.centroid.y,negative.area);analytic=true;++analytic_counts[worker];audit_kind=2;}}}
+            if(!analytic){std::vector<PixelRegion> retained_regions;if(retained_boundary_regions(edges,index,px,py,retained_regions)){
+                    for(const PixelRegion& region:retained_regions){const TerminalLabel label=
+                            label_at(region.centroid.x,region.centroid.y);add_region(label,region.centroid.x,
+                            region.centroid.y,region.area);}analytic=bucket_count>0;if(analytic){++retained_counts[worker];audit_kind=3;}}}
+            constexpr int side=16;if(!analytic){++sampled_counts[worker];for(int sy=0;sy<side;++sy)for(int sx=0;sx<side;++sx){
                     const int sample=sy*side+sx;const double x=px-.5+(sx+.5)/side,y=py-.5+(sy+.5)/side;
                     packet_x[sample]=x;packet_y[sample]=y;packet_weight[sample]=1;
                     packet_rays[sample]=camera_ray(camera,width,height,x,y);
                     packet_dx[sample]=packet_rays[sample].direction.x;packet_dy[sample]=packet_rays[sample].direction.y;
                     packet_dz[sample]=packet_rays[sample].direction.z;}
                 add_packet_regions(side*side);}
+            const auto shade_start=boundary_audit?Clock::now():Clock::time_point{};
             bool has_prism_top=false,has_other_owner=false;for(int bucket_index=0;bucket_index<bucket_count;++bucket_index){
                 const Bucket& bucket=buckets[bucket_index];
                 has_prism_top=has_prism_top||bucket.label.primitive==ctx.scene.prism_top;
@@ -1953,11 +3254,19 @@ std::vector<std::uint8_t> render_visible_edge_field(
             double total_weight=0;for(int bucket_index=0;bucket_index<bucket_count;++bucket_index)total_weight+=buckets[bucket_index].weight;
             RGB value{};for(int bucket_index=0;bucket_index<bucket_count;++bucket_index){const Bucket& bucket=buckets[bucket_index];
                 if(bucket.label.primitive<0)continue;double x=bucket.x/bucket.weight,y=bucket.y/bucket.weight;
-                Ray ray=camera_ray(camera,width,height,x,y);Hit hit=first_hit(ctx.scene,ray);TerminalLabel actual{hit.valid?hit.primitive:-1,0};
+                Ray ray=camera_ray(camera,width,height,x,y);Hit hit=optical_first_hit(ctx,ray);TerminalLabel actual{hit.valid?hit.primitive:-1,0};
                 if(hit.valid&&topology)actual.signature=visible_path_signature(ctx,ray,hit);if(!(actual==bucket.label)){
-                    x=bucket.first_x;y=bucket.first_y;ray=camera_ray(camera,width,height,x,y);hit=first_hit(ctx.scene,ray);}
+                    x=bucket.first_x;y=bucket.first_y;ray=camera_ray(camera,width,height,x,y);hit=optical_first_hit(ctx,ray);}
                 value+=trace_primary(ctx,ray,hit,nullptr)*(bucket.weight/total_weight);++radiance_counts[worker];}
-            const std::size_t offset=static_cast<std::size_t>(index)*3;for(int c=0;c<3;++c)image[offset+c]=tone_byte(value[c]);}}
+            const std::size_t offset=static_cast<std::size_t>(index)*3;for(int c=0;c<3;++c)image[offset+c]=tone_byte(value[c]);
+            if(ctx.expansion)expansion_pixels[work]={px,py,audit_kind,ctx.expansion->pixel};
+            if(boundary_audit){auto& audit=audits[worker][audit_kind];++audit.pixels;
+                audit.labels+=label_counts[worker]-labels_before;audit.radiance+=radiance_counts[worker]-radiance_before;
+                audit.specular+=trace_stats[worker].specular_area_calls-specular_before;
+                audit.quadrature+=trace_stats[worker].emitter_quadrature_samples-quadrature_before;
+                audit.discovery_ms+=std::chrono::duration<double,std::milli>(shade_start-audit_start).count();
+                audit.shading_ms+=std::chrono::duration<double,std::milli>(Clock::now()-shade_start).count();}}
+        query_counts[worker]={query_memo.requests,query_memo.reused};}
     );
     for(auto& thread:threads)thread.join();for(unsigned worker=0;worker<workers;++worker){stats.boundary_samples+=label_counts[worker];
         stats.boundary_topology_samples+=topology_label_counts[worker];
@@ -1967,8 +3276,46 @@ std::vector<std::uint8_t> render_visible_edge_field(
         stats.prism_top_mixed_pixels+=prism_mixed_counts[worker];
         stats.analytic_edge_pixels+=analytic_counts[worker];
         stats.filtered_edge_pixels+=filtered_counts[worker];
+        stats.retained_boundary_pixels+=retained_counts[worker];
+        stats.sampled_boundary_pixels+=sampled_counts[worker];
         accumulate_trace_stats(stats.trace,trace_stats[worker]);}
+    stats.boundary_optical_queries=filter_field.optical_requests;stats.boundary_optical_reused=filter_field.optical_reused;
+    for(const auto& counts:query_counts){stats.boundary_optical_queries+=counts[0];stats.boundary_optical_reused+=counts[1];}
+    for(const auto& worker:audits)for(int kind=0;kind<5;++kind){const auto& a=worker[kind];auto& b=stats.boundary_audit[kind];
+        b.pixels+=a.pixels;b.labels+=a.labels;b.radiance+=a.radiance;b.specular+=a.specular;b.quadrature+=a.quadrature;
+        b.discovery_ms+=a.discovery_ms;b.shading_ms+=a.shading_ms;}
     stats.boundary_reconstruction_ms=std::chrono::duration<double,std::milli>(Clock::now()-boundary_start).count();
+    const auto demand_after=camera_demand_counts(*viewer_origin_field);
+    if(!viewer_origin_field->demand_atlas.empty()){
+        stats.camera_specular_samples=demand_after[0];stats.camera_specular_new_samples=demand_after[0]-demand_before[0];
+        stats.camera_specular_quadrature_samples=demand_after[1]-demand_before[1];
+        stats.camera_specular_cell_tests=demand_after[2]-demand_before[2];
+    }else stats.camera_specular_new_samples=origin_matches?0:viewer_origin_field->samples;
+    if(!expansion_audit_out.empty()){
+        std::ofstream out(expansion_audit_out);if(!out)throw std::runtime_error("cannot write source expansion audit");
+        out<<std::setprecision(12)<<"{\"width\":"<<width<<",\"height\":"<<height<<",\"pixels\": [";bool comma=false;
+        for(const auto& pixel:expansion_pixels){if(comma)out<<",";comma=true;const auto& a=pixel.counts;
+            out<<"{\"x\":"<<pixel.x<<",\"y\":"<<pixel.y<<",\"kind\":"<<pixel.kind
+                <<",\"primary\":"<<a.primary<<",\"mixed\":"<<a.mixed<<",\"bands\":"<<a.bands<<",\"probes\":"<<a.probes
+                <<",\"leaves\":"<<a.leaves<<",\"regions\":"<<a.regions<<",\"max_regions\":"<<a.max_regions
+                <<",\"spectral_samples\":"<<a.spectral_samples<<",\"packets\":"<<a.packets<<",\"dielectric_packets\":"<<a.dielectric_packets
+                <<",\"shaded_packets\":"<<a.shaded_packets<<",\"specular\":"<<a.specular<<",\"quadrature\":"<<a.quadrature
+                <<",\"zero_quadrature\":"<<a.zero_quadrature<<",\"zero_responses\":"<<a.zero_responses
+                <<",\"depth_limited\":"<<a.depth_limited<<",\"minimum_region\":"<<a.minimum_region<<"}";}
+        out<<"],\"receivers\":[";comma=false;
+        for(std::size_t primitive=0;primitive<context.scene.primitives.size();++primitive){ExpansionReceiver total;
+            for(const auto& audit:expansions){const auto& a=audit.receivers[primitive];total.calls+=a.calls;total.quadrature+=a.quadrature;
+                total.zero_quadrature+=a.zero_quadrature;total.zero_responses+=a.zero_responses;}
+            if(!total.calls)continue;if(comma)out<<",";comma=true;
+            out<<"{\"primitive\":"<<primitive<<",\"name\":"<<expansion_json_string(context.scene.primitives[primitive].name)<<",\"calls\":"<<total.calls
+                <<",\"quadrature\":"<<total.quadrature<<",\"zero_quadrature\":"<<total.zero_quadrature<<",\"zero_responses\":"<<total.zero_responses<<"}";}
+        out<<"]}\n";
+    }
+    if(boundary_audit){std::cerr<<"{\"boundary_classes\": [";for(int kind=0;kind<5;++kind){if(kind)std::cerr<<",";
+        const auto& a=stats.boundary_audit[kind];std::cerr<<"{\"kind\": "<<kind<<", \"pixels\": "<<a.pixels
+            <<", \"labels\": "<<a.labels<<", \"radiance\": "<<a.radiance<<", \"specular\": "<<a.specular
+            <<", \"quadrature\": "<<a.quadrature<<", \"discovery_worker_ms\": "<<a.discovery_ms
+            <<", \"shading_worker_ms\": "<<a.shading_ms<<"}";}std::cerr<<"]}\n";}
     stats.raster_ms=std::chrono::duration<double,std::milli>(Clock::now()-start).count();return image;
 }
 
@@ -2018,7 +3365,7 @@ struct TerminalPoint{RGB value{};TerminalLabel label{};};
     for(unsigned worker=0;worker<workers;++worker)render_threads.emplace_back([&,worker]{
         TraceContext ctx{context.scene,context.beams,context.field,&worker_stats[worker],context.sealed_optics,context.optical_cutoff};
         auto evaluate=[&](double x,double y){TerminalPoint result;const Ray ray=camera_ray(camera,width,height,x,y);
-            const Hit hit=first_hit(ctx.scene,ray);++counts[worker].exact;if(!hit.valid){result.label={-1,0};return result;}
+            const Hit hit=optical_first_hit(ctx,ray);++counts[worker].exact;if(!hit.valid){result.label={-1,0};return result;}
             const std::uint64_t topology=terminal_topology_signature(ctx,ray,hit);std::uint64_t signature=0;
             result.value=trace_primary(ctx,ray,hit,&signature);result.label={hit.primitive,signature^topology};return result;};
         auto exact_rectangle=[&](const TerminalRect& rectangle){++counts[worker].leaves;
@@ -2089,7 +3436,7 @@ struct TerminalPoint{RGB value{};TerminalLabel label{};};
     for(unsigned worker=0;worker<workers;++worker)boundary_threads.emplace_back([&,worker]{
         TraceContext ctx{context.scene,context.beams,context.field,&boundary_stats[worker],context.sealed_optics,context.optical_cutoff};
         auto sample=[&](double x,double y){TerminalPoint result;const Ray ray=camera_ray(camera,width,height,x,y);
-            const Hit hit=first_hit(ctx.scene,ray);++boundary_samples[worker];if(!hit.valid){result.label={-1,0};return result;}
+            const Hit hit=optical_first_hit(ctx,ray);++boundary_samples[worker];if(!hit.valid){result.label={-1,0};return result;}
             const std::uint64_t topology=terminal_topology_signature(ctx,ray,hit);std::uint64_t signature=0;
             result.value=trace_primary(ctx,ray,hit,&signature);result.label={hit.primitive,signature^topology};return result;};
         auto integrate=[&](auto&& self,double cx,double cy,double width,int depth)->RGB{
@@ -2138,7 +3485,7 @@ int run_intersection_benchmark(std::uint64_t primitive_count,std::uint64_t ray_c
     const double query_ms=std::chrono::duration<double,std::milli>(Clock::now()-query_start).count();const double total_ms=
         std::chrono::duration<double,std::milli>(Clock::now()-total_start).count();const std::size_t primitive_bytes=
         scene.primitives.capacity()*sizeof(Primitive),bvh_bytes=scene.bvh_nodes.capacity()*sizeof(BvhNode)+
-        scene.bvh_primitives.capacity()*sizeof(int);
+        (scene.bvh_primitives.capacity()+scene.bvh_leaf.capacity())*sizeof(int);
     std::cout<<std::fixed<<std::setprecision(3)<<"{\n  \"benchmark\": \"intersection_scaling\""
         <<",\n  \"primitives\": "<<primitive_count<<",\n  \"rays\": "<<ray_count
         <<",\n  \"acceleration\": \""<<selected<<"\""
@@ -2149,8 +3496,10 @@ int run_intersection_benchmark(std::uint64_t primitive_count,std::uint64_t ray_c
         <<",\n  \"checksum\": "<<checksum<<",\n  \"total_ms\": "<<total_ms<<"\n}\n";return 0;
 }
 
-bool self_test(){const Scene scene=build_regime_scene();const BeamField beams=compile_beam_field(scene);const BeamField oriented=
+bool self_test(){angular_backend=AngularBackend::BruunMag;if(!check_mag_angle_kernel())return false;
+    const Scene scene=build_regime_scene();const BeamField beams=compile_beam_field(scene);const BeamField oriented=
     compile_oriented_beam_field(scene);const TransportField field=compile_transport_field(scene,beams);
+    const TransportField scalar_field=compile_transport_field(scene,beams,false);
     if(scene.primitives.size()<29||scene.materials.size()<13||beams.launched<800||beams.dielectric_crossings==0||beams.deposits.empty())return false;
     if(!oriented.oriented||oriented.launched!=beams.launched||oriented.oriented_sheets.empty())return false;
     for(const OrientedBeamSheet& sheet:oriented.oriented_sheets)if(!(sheet.position_determinant>0&&std::isfinite(sheet.anisotropy)&&
@@ -2196,8 +3545,30 @@ bool self_test(){const Scene scene=build_regime_scene();const BeamField beams=co
     const EmitterPartition test_partition=build_emitter_partition(aperture_test,test_light,{0,0,0},-1,emitter);
     const auto centre_cuts=emitter_row_cuts(aperture_test,test_light,test_partition,{0,0,0},.5);
     if(!(clipped[0]>0&&clipped[0]<clear[0]&&centre_cuts.size()>=4))return false;
-    if(field.node_primitives.size()<12||field.nonzeros<80||field.iterations<2)return false;const int cavity=field.index_by_primitive[scene.cavity_target];
-    if(cavity<0||rgb_energy(field.direct[cavity])>1e-9||rgb_energy(field.bounce[cavity])<=0)return false;
+    if(field.node_primitives.size()<12||field.nonzeros<80||field.iterations<2||field.retained_blocks==0||
+        field.retained_many_to_many_blocks==0||field.retained_coefficients>=field.nonzeros+field.node_primitives.size()||
+        field.retained_expanded_pairs!=field.nonzeros||field.retained_max_relative_error>5.0e-2||
+        field.transport_backend=="scalar-csr"||scalar_field.transport_backend!="scalar-csr"||
+        field.node_primitives!=scalar_field.node_primitives)return false;
+    const int jelly_core_node=field.index_by_primitive[scene.jelly_core];
+    const int jelly_receiver_node=field.index_by_primitive[scene.jelly_receiver];
+    if(scene.jelly_volume<0||scene.jelly_floor_light<0||jelly_core_node<0||jelly_receiver_node<0||
+        scene.materials[scene.primitives[scene.jelly_volume].material].kind!=MaterialKind::Dielectric||
+        rgb_energy(field.direct[jelly_core_node])<=0||rgb_energy(field.direct[jelly_receiver_node])<=0||
+        field.outgoing_offset[jelly_core_node]==field.outgoing_offset[jelly_core_node+1]||
+        field.incoming_offset[jelly_core_node]==field.incoming_offset[jelly_core_node+1])return false;
+    for(std::size_t node=0;node<field.radiance.size();++node)for(int channel=0;channel<3;++channel)
+        if(std::abs(field.radiance[node][channel]-scalar_field.radiance[node][channel])>
+                0.08*std::max(std::abs(scalar_field.radiance[node][channel]),1e-7)||
+            std::abs(field.bounce[node][channel]-scalar_field.bounce[node][channel])>
+                0.08*std::max(std::abs(scalar_field.bounce[node][channel]),1e-7))return false;
+    const int cavity=field.index_by_primitive[scene.cavity_target];
+    // The floor emitter has a small real opening past the receiver card.
+    // Finite half-space clipping resolves it; the historical zero-direct
+    // assertion depended on missed source-window coverage. A separate closed
+    // fixture in update tests verifies strictly indirect-only illumination.
+    if(cavity<0||rgb_energy(field.direct[cavity])>1e-3||rgb_energy(field.bounce[cavity])<=0||
+        rgb_energy(field.direct[cavity])>.01*rgb_energy(field.bounce[cavity]))return false;
     int metal=-1;for(int i=0;i<static_cast<int>(scene.primitives.size());++i)if(scene.primitives[i].name=="rough_metal_sphere")metal=i;
     if(count_sheet_shadow_samples(scene,metal)==0)return false;TraceContext context{scene,beams,field,nullptr};RenderStats exact_stats,adaptive_stats;
     // A close-view gold highlight has a delta direction which first meets the
@@ -2226,38 +3597,119 @@ bool self_test(){const Scene scene=build_regime_scene();const BeamField beams=co
     for(int channel=0;channel<3;++channel)loop_difference=std::max(loop_difference,
         std::abs(sealed_value[channel]-recursive_value[channel]));
     if(sealed_stats.feedback_loops==0||loop_difference>.01)return false;
-    const auto exact=render_exact(context,160,100,exact_stats);const auto adaptive=render_adaptive(context,160,100,1,adaptive_stats);
+    const auto exact=render_exact(context,160,100,exact_stats);angular_backend=AngularBackend::Libm;
+    RenderStats libm_angle_stats;const auto libm_angle_exact=render_exact(context,160,100,libm_angle_stats);
+    angular_backend=AngularBackend::BruunMag;int angular_maximum=0;
+    for(std::size_t i=0;i<exact.size();++i){angular_maximum=std::max(angular_maximum,
+        std::abs(int(exact[i])-int(libm_angle_exact[i])));}
+    if(angular_maximum>1)return false;
+    TraceContext scalar_context{scene,beams,scalar_field,nullptr};
+    RenderStats scalar_exact_stats;const auto scalar_exact=render_exact(scalar_context,160,100,scalar_exact_stats);
+    int backend_maximum=0;for(std::size_t i=0;i<exact.size();++i){backend_maximum=std::max(
+        backend_maximum,std::abs(int(exact[i])-int(scalar_exact[i])));}
+    if(backend_maximum>1)return false;
+    const auto adaptive=render_adaptive(context,160,100,1,adaptive_stats);
     int maximum=0;for(std::size_t i=0;i<exact.size();++i)maximum=std::max(maximum,std::abs(int(exact[i])-int(adaptive[i])));
     if(maximum>1)return false;RenderStats edge_stats;const Camera edge_camera=make_camera(96,60);
-    const CameraSpecularField viewer_origin_field=compile_viewer_origin_specular_field(context,edge_camera.origin);
+    const CameraSpecularField viewer_origin_field=compile_viewer_origin_specular_field(context,edge_camera.origin,false);
     const auto edge_field=render_visible_edge_field(context,96,60,1,edge_stats,&edge_camera,&viewer_origin_field);
-    return edge_field.size()==96u*60u*3u&&edge_stats.boundary_pixels>0&&edge_stats.visible_edge_segments>0&&
-        edge_stats.boundary_samples>0&&edge_stats.analytic_edge_pixels>0&&edge_stats.viewer_origin_field_reused&&
+    return exact_stats.trace.participating_volume_chords>0&&exact_stats.trace.participating_volume_distance>0&&
+        exact_stats.trace.rough_jelly_gathers>0&&
+        edge_field.size()==96u*60u*3u&&edge_stats.boundary_pixels>0&&edge_stats.visible_edge_segments>0&&
+        edge_stats.boundary_samples>0&&edge_stats.analytic_edge_pixels>0&&edge_stats.retained_boundary_pixels>0&&
+        edge_stats.sampled_boundary_pixels<edge_stats.boundary_pixels&&edge_stats.viewer_origin_field_reused&&
         edge_stats.camera_specular_build_ms==0&&edge_stats.camera_specular_quadrature_samples==0;}
+
+#include "retained_scene_update_checks.hpp"
+#include "retained_camera_checks.hpp"
+#include "retained_boundary_checks.hpp"
+#include "retained_source_checks.hpp"
 
 } // namespace
 
 int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,animation_frames=0,animation_fps=30;
-    bool test=false;std::string out="/tmp/regime_scene.ppm";
+    bool use_child_boundaries=false,use_exact_child_states=false;
+    bool test=false,update_test=false,camera_test=false,boundary_test=false,source_test=false;std::string update_benchmark,geometry_benchmark,camera_benchmark,boundary_benchmark,source_benchmark;std::string out="/tmp/regime_scene.ppm";
     std::uint64_t max_primitives=96;double max_build_seconds=60,oriented_blur=.14,optical_cutoff=1e-5,journey_position=-1;
     std::uint64_t benchmark_primitives=0,benchmark_rays=4096;
     std::string beam_mode="clustered",camera_mode="default",optical_mode="sealed",acceleration="auto",scene_mode="standard";
+    std::string transport_backend="retained",angle_backend_option="bruun-mag",topology_backend_option="adaptive";
     for(int i=1;i<argc;++i){const std::string arg=argv[i];if(arg=="--self-test"){test=true;continue;}
+        if(arg=="--update-self-test"){update_test=true;continue;}
+        if(arg=="--camera-self-test"){camera_test=true;continue;}
+        if(arg=="--boundary-audit"){boundary_audit=true;continue;}
+        if(arg=="--boundary-self-test"){boundary_test=true;continue;}
+        if(arg=="--source-self-test"){source_test=true;continue;}
         if(i+1>=argc)throw std::runtime_error("missing argument value");if(arg=="--width")width=std::stoi(argv[++i]);
         else if(arg=="--height")height=std::stoi(argv[++i]);else if(arg=="--terminal-error")terminal_error=std::stoi(argv[++i]);
         else if(arg=="--out")out=argv[++i];else if(arg=="--max-primitives")max_primitives=std::stoull(argv[++i]);
         else if(arg=="--max-build-seconds")max_build_seconds=std::stod(argv[++i]);else if(arg=="--beam-mode")beam_mode=argv[++i];
         else if(arg=="--oriented-blur")oriented_blur=std::stod(argv[++i]);else if(arg=="--camera")camera_mode=argv[++i];
+        else if(arg=="--child-boundaries"){const std::string mode=argv[++i];
+            if(mode!="on"&&mode!="off")throw std::runtime_error("child boundaries must be on or off");
+            use_child_boundaries=mode=="on";}
+        else if(arg=="--child-response"){const std::string mode=argv[++i];
+            if(mode!="shared"&&mode!="exact")throw std::runtime_error("child response must be shared or exact");
+            use_exact_child_states=mode=="exact";}
         else if(arg=="--optical-mode")optical_mode=argv[++i];
         else if(arg=="--optical-cutoff")optical_cutoff=std::stod(argv[++i]);
         else if(arg=="--acceleration")acceleration=argv[++i];
         else if(arg=="--scene")scene_mode=argv[++i];
+        else if(arg=="--transport-backend")transport_backend=argv[++i];
+        else if(arg=="--angular-backend")angle_backend_option=argv[++i];
+        else if(arg=="--topology-backend")topology_backend_option=argv[++i];
+        else if(arg=="--return-mode"){const std::string mode=argv[++i];
+            if(mode=="off")return_mode=ReturnMode::Off;
+            else if(mode=="path-extinction")return_mode=ReturnMode::PathExtinction;
+            else if(mode=="state-extinction")return_mode=ReturnMode::StateExtinction;
+            else if(mode=="state-closure")return_mode=ReturnMode::StateClosure;
+            else throw std::runtime_error("return mode must be off, path-extinction, state-extinction, or state-closure");}
+        else if(arg=="--source-cones"){const std::string mode=argv[++i];
+            if(mode!="algebraic"&&mode!="angles")throw std::runtime_error("source cones must be algebraic or angles");
+            source_cone_algebraic=mode=="algebraic";}
+        else if(arg=="--source-zero-elision"){const std::string mode=argv[++i];
+            if(mode!="on"&&mode!="off")throw std::runtime_error("source zero elision must be on or off");
+            source_zero_elision=mode=="on";}
+        else if(arg=="--expansion-audit")expansion_audit_out=argv[++i];
+        else if(arg=="--boundary-path-cache"){boundary_path_capacity=std::stoi(argv[++i]);
+            if(boundary_path_capacity<0||boundary_path_capacity>16384||
+                (boundary_path_capacity&&(boundary_path_capacity&(boundary_path_capacity-1))))
+                throw std::runtime_error("boundary path cache must be zero or a power of two up to 16384");}
+        else if(arg=="--boundary-filter"){const std::string mode=argv[++i];
+            if(mode!="shared"&&mode!="independent")throw std::runtime_error("boundary filter must be shared or independent");
+            boundary_shared_filter=mode=="shared";}
+        else if(arg=="--camera-crossings"){const std::string mode=argv[++i];
+            if(mode!="dense"&&mode!="sparse")throw std::runtime_error("camera crossings must be dense or sparse");
+            camera_sparse_crossings=mode=="sparse";}
+        else if(arg=="--camera-gather"){const std::string mode=argv[++i];
+            if(mode!="eager"&&mode!="demand")throw std::runtime_error("camera gather must be eager or demand");
+            camera_demand_gather=mode=="demand";}
         else if(arg=="--journey-position")journey_position=std::stod(argv[++i]);
         else if(arg=="--animation-frames")animation_frames=std::stoi(argv[++i]);
         else if(arg=="--animation-fps")animation_fps=std::stoi(argv[++i]);
+        else if(arg=="--benchmark-source")source_benchmark=argv[++i];
+        else if(arg=="--benchmark-boundary")boundary_benchmark=argv[++i];
+        else if(arg=="--benchmark-camera")camera_benchmark=argv[++i];
+        else if(arg=="--benchmark-geometry-updates")geometry_benchmark=argv[++i];
+        else if(arg=="--benchmark-updates")update_benchmark=argv[++i];
         else if(arg=="--benchmark-primitives")benchmark_primitives=std::stoull(argv[++i]);
         else if(arg=="--benchmark-rays")benchmark_rays=std::stoull(argv[++i]);
         else throw std::runtime_error("unknown argument: "+arg);}
+    if(angle_backend_option!="bruun-mag"&&angle_backend_option!="libm")
+        throw std::runtime_error("angular backend must be bruun-mag or libm");
+    angular_backend=angle_backend_option=="bruun-mag"?AngularBackend::BruunMag:AngularBackend::Libm;
+    if(topology_backend_option!="adaptive"&&topology_backend_option!="dense")
+        throw std::runtime_error("topology backend must be adaptive or dense");
+    topology_backend=topology_backend_option=="adaptive"?TopologyBackend::Adaptive:TopologyBackend::Dense;
+    if(source_test){retained_source_self_test();return 0;}
+    if(!source_benchmark.empty())return run_source_expansion_benchmark(source_benchmark,width,height);
+    if(boundary_test){retained_boundary_self_test();std::cout<<"boundary reuse invariants: ok\n";return 0;}
+    if(!boundary_benchmark.empty())return run_boundary_discovery_benchmark(boundary_benchmark,width,height);
+    if(camera_test){retained_camera_self_test();std::cout<<"camera gather invariants: ok\n";return 0;}
+    if(!camera_benchmark.empty())return run_camera_gather_benchmark(camera_benchmark,width,height);
+    if(update_test){retained_update_self_test();std::cout<<"retained update invariants: ok\n";return 0;}
+    if(!geometry_benchmark.empty())return run_geometry_update_benchmark(geometry_benchmark);
+    if(!update_benchmark.empty())return run_retained_update_benchmark(update_benchmark,width,height);
     if(test){if(!self_test())throw std::runtime_error("regime-scene invariants failed");
         std::cout<<"regime-scene invariants: ok\n";return 0;}if(width<16||height<16||terminal_error<0)throw std::runtime_error("invalid render configuration");
     if(animation_frames<0||animation_frames>1800||animation_fps<1||animation_fps>60)
@@ -2268,10 +3720,14 @@ int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,anim
     if(animation_frames&&(width%2||height%2))throw std::runtime_error("animation dimensions must be even");
     if(acceleration!="auto"&&acceleration!="bvh"&&acceleration!="linear")
         throw std::runtime_error("acceleration must be auto, bvh, or linear");
+    if(transport_backend!="retained"&&transport_backend!="scalar")
+        throw std::runtime_error("transport backend must be retained or scalar");
     if(benchmark_primitives){if(benchmark_primitives>max_primitives)throw std::runtime_error("primitive ceiling reached");
         if(!benchmark_rays)throw std::runtime_error("benchmark rays must be positive");
         return run_intersection_benchmark(benchmark_primitives,benchmark_rays,acceleration);}
     const auto total_start=Clock::now(),scene_start=Clock::now();Scene scene=build_demonstrator_scene(scene_mode);
+    scene.child_boundaries=use_child_boundaries;scene.exact_child_states=use_exact_child_states;
+    refresh_optical_children(scene);
     const double scene_ms=std::chrono::duration<double,std::milli>(Clock::now()-scene_start).count();
     if(scene.primitives.size()>max_primitives)throw std::runtime_error("primitive ceiling reached");
     scene.use_bvh=acceleration=="bvh"||(acceleration=="auto"&&scene.primitives.size()>=64);
@@ -2282,7 +3738,7 @@ int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,anim
     const auto beam_start=Clock::now();const BeamField beams=beam_mode=="oriented"?
         compile_oriented_beam_field(scene,oriented_blur):compile_beam_field(scene);
     const double beam_ms=std::chrono::duration<double,std::milli>(Clock::now()-beam_start).count();const auto field_start=Clock::now();
-    const TransportField field=compile_transport_field(scene,beams);const double field_ms=std::chrono::duration<double,std::milli>(Clock::now()-field_start).count();
+    const TransportField field=compile_transport_field(scene,beams,transport_backend=="retained");const double field_ms=std::chrono::duration<double,std::milli>(Clock::now()-field_start).count();
     if((beam_ms+field_ms)>max_build_seconds*1000)throw std::runtime_error("field build-time ceiling reached");
     TraceContext context{scene,beams,field,nullptr,optical_mode=="sealed",optical_cutoff};
     if(animation_frames){const auto parameters=journey_arc_parameters(animation_frames,scene_mode);double render_ms=0,adaptive_ms=0,
@@ -2306,6 +3762,9 @@ int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,anim
             <<",\n  \"duration_seconds\": "<<double(animation_frames)/animation_fps
             <<",\n  \"path_length\": "<<path_length<<",\n  \"average_scene_speed\": "
             <<path_length/(double(animation_frames)/animation_fps)
+            <<",\n  \"transport_backend\": \""<<field.transport_backend<<"\""
+            <<",\n  \"angular_backend\": \""<<angular_backend_label()<<"\""
+            <<",\n  \"topology_backend\": \""<<topology_backend_label()<<"\""
             <<",\n  \"average_render_ms\": "<<render_ms/animation_frames
             <<",\n  \"average_adaptive_ms\": "<<adaptive_ms/animation_frames
             <<",\n  \"average_edge_discovery_ms\": "<<edge_ms/animation_frames
@@ -2325,6 +3784,8 @@ int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,anim
     const std::uint64_t prism_bottom_crossings=beams.dielectric_by_primitive[scene.prism_bottom];
     const std::uint64_t prism_top_crossings=beams.dielectric_by_primitive[scene.prism_top];
     const double prism_floor_separation=scene.primitives[scene.prism_bottom].center.y-scene.primitives[scene.floor].origin.y;
+    const int jelly_core_node=field.index_by_primitive[scene.child_boundaries?scene.jelly_volume:scene.jelly_core];
+    const int jelly_receiver_node=field.index_by_primitive[scene.jelly_receiver];
     double maximum_beam_anisotropy=1,maximum_beam_cross_coupling=0;for(const OrientedBeamSheet& sheet:beams.oriented_sheets){
         maximum_beam_anisotropy=std::max(maximum_beam_anisotropy,sheet.anisotropy);
         maximum_beam_cross_coupling=std::max(maximum_beam_cross_coupling,sheet.cross_coupling);}
@@ -2339,6 +3800,23 @@ int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,anim
         <<",\n  \"analytic_primitives\": "<<scene.primitives.size()<<",\n  \"materials\": "<<scene.materials.size()
         <<",\n  \"bvh_nodes\": "<<scene.bvh_nodes.size()
         <<",\n  \"diffuse_nodes\": "<<field.node_primitives.size()<<",\n  \"transport_couplings\": "<<field.nonzeros
+        <<",\n  \"transport_backend\": \""<<field.transport_backend<<"\""
+        <<",\n  \"angular_backend\": \""<<angular_backend_label()<<"\""
+        <<",\n  \"topology_backend\": \""<<topology_backend_label()<<"\""
+        <<",\n  \"retained_transport_blocks\": "<<field.retained_blocks
+        <<",\n  \"retained_transport_coefficients\": "<<field.retained_coefficients
+        <<",\n  \"retained_expanded_pairs\": "<<field.retained_expanded_pairs
+        <<",\n  \"retained_many_source_blocks\": "<<field.retained_many_source_blocks
+        <<",\n  \"retained_many_receiver_blocks\": "<<field.retained_many_receiver_blocks
+        <<",\n  \"retained_many_to_many_blocks\": "<<field.retained_many_to_many_blocks
+        <<",\n  \"retained_max_source_width\": "<<field.retained_max_source_width
+        <<",\n  \"retained_max_receiver_width\": "<<field.retained_max_receiver_width
+        <<",\n  \"retained_max_relative_error\": "<<std::scientific<<field.retained_max_relative_error<<std::fixed
+        <<",\n  \"retained_block_applications\": "<<field.retained_block_applications
+        <<",\n  \"retained_gathered_coefficients\": "<<field.retained_gathered_coefficients
+        <<",\n  \"retained_scattered_coefficients\": "<<field.retained_scattered_coefficients
+        <<",\n  \"retained_plan_ms\": "<<field.retained_plan_ms
+        <<",\n  \"transport_solve_ms\": "<<field.transport_solve_ms
         <<",\n  \"transport_propagated_edges\": "<<field.propagated_edges
         <<",\n  \"direct_atlas_samples\": "<<field.direct_atlas_samples
         <<",\n  \"transport_iterations\": "<<field.iterations<<",\n  \"transport_residual\": "<<field.final_residual
@@ -2355,6 +3833,10 @@ int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,anim
         <<",\n  \"glass_sheet_shadow_samples\": "<<count_sheet_shadow_samples(scene,metal_primitive)
         <<",\n  \"cavity_direct_energy\": "<<(cavity>=0?rgb_energy(field.direct[cavity]):0)
         <<",\n  \"cavity_indirect_energy\": "<<(cavity>=0?rgb_energy(field.bounce[cavity]):0)
+        <<",\n  \"jelly_core_direct_energy\": "<<(jelly_core_node>=0?rgb_energy(field.direct[jelly_core_node]):0)
+        <<",\n  \"jelly_core_indirect_energy\": "<<(jelly_core_node>=0?rgb_energy(field.bounce[jelly_core_node]):0)
+        <<",\n  \"jelly_receiver_direct_energy\": "<<(jelly_receiver_node>=0?rgb_energy(field.direct[jelly_receiver_node]):0)
+        <<",\n  \"jelly_receiver_indirect_energy\": "<<(jelly_receiver_node>=0?rgb_energy(field.bounce[jelly_receiver_node]):0)
         <<",\n  \"terminal_error\": "<<terminal_error<<",\n  \"terminal_exact_samples\": "<<render_stats.exact_samples
         <<",\n  \"terminal_topology_queries\": "<<render_stats.topology_queries
         <<",\n  \"terminal_topology_runs\": "<<render_stats.topology_runs
@@ -2367,6 +3849,8 @@ int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,anim
         <<",\n  \"terminal_boundary_samples\": "<<render_stats.boundary_samples
         <<",\n  \"terminal_boundary_topology_samples\": "<<render_stats.boundary_topology_samples
         <<",\n  \"terminal_boundary_radiance_samples\": "<<render_stats.boundary_radiance_samples
+        <<",\n  \"terminal_retained_boundary_pixels\": "<<render_stats.retained_boundary_pixels
+        <<",\n  \"terminal_sampled_boundary_pixels\": "<<render_stats.sampled_boundary_pixels
         <<",\n  \"primary_packet_rays\": "<<render_stats.primary_packet_rays
         <<",\n  \"terminal_edge_candidate_segments\": "<<render_stats.edge_candidate_segments
         <<",\n  \"terminal_visible_edge_segments\": "<<render_stats.visible_edge_segments
@@ -2379,10 +3863,25 @@ int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,anim
         <<",\n  \"mirror_events\": "<<render_stats.trace.mirror<<",\n  \"metal_events\": "<<render_stats.trace.metal
         <<",\n  \"dielectric_events\": "<<render_stats.trace.dielectric
         <<",\n  \"camera_prism_bottom_events\": "<<render_stats.trace.prism_bottom_events
+        <<",\n  \"child_boundaries\": "<<(scene.child_boundaries?"true":"false")
+        <<",\n  \"child_response_backend\": \""<<(scene.exact_child_states?"exact":"shared")<<"\""
+        <<",\n  \"child_responses\": "<<render_stats.trace.child_responses
+        <<",\n  \"child_cache_hits\": "<<render_stats.trace.child_cache_hits
+        <<",\n  \"child_internal_hits\": "<<render_stats.trace.child_internal_hits
+        <<",\n  \"child_egress_ports\": "<<render_stats.trace.child_egress_ports
+        <<",\n  \"child_unresolved_weight\": "<<render_stats.trace.child_unresolved_weight
         <<",\n  \"camera_prism_top_events\": "<<render_stats.trace.prism_top_events
+        <<",\n  \"camera_jelly_volume_events\": "<<render_stats.trace.jelly_volume_events
+        <<",\n  \"participating_volume_chords\": "<<render_stats.trace.participating_volume_chords
+        <<",\n  \"participating_volume_distance\": "<<render_stats.trace.participating_volume_distance
+        <<",\n  \"rough_jelly_gathers\": "<<render_stats.trace.rough_jelly_gathers
         <<",\n  \"specular_caustic_camera_events\": "<<render_stats.trace.specular_caustic
         <<",\n  \"direct_atlas_gathers\": "<<render_stats.trace.direct_atlas_gathers
         <<",\n  \"direct_exact_calls\": "<<render_stats.trace.direct_exact_calls
+        <<",\n  \"source_cones\": \""<<(source_cone_algebraic?"algebraic":"angles")<<"\""
+        <<",\n  \"source_zero_elision\": "<<(source_zero_elision?"true":"false")
+        <<",\n  \"source_zero_certificates\": "<<render_stats.trace.source_zero_certificates
+        <<",\n  \"specular_zero_lobes\": "<<render_stats.trace.specular_zero_lobes
         <<",\n  \"specular_area_calls\": "<<render_stats.trace.specular_area_calls
         <<",\n  \"primary_specular_area_calls\": "<<render_stats.trace.primary_specular_area_calls
         <<",\n  \"secondary_specular_area_calls\": "<<render_stats.trace.secondary_specular_area_calls
@@ -2391,6 +3890,17 @@ int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,anim
         <<",\n  \"secondary_specular_weight_lt_1e-2\": "<<render_stats.trace.secondary_specular_weight_lt_1e2
         <<",\n  \"camera_specular_gathers\": "<<render_stats.trace.camera_specular_gathers
         <<",\n  \"camera_specular_samples\": "<<render_stats.camera_specular_samples
+        <<",\n  \"camera_gather\": \""<<(camera_demand_gather?"demand":"eager")<<"\""
+        <<",\n  \"camera_specular_new_samples\": "<<render_stats.camera_specular_new_samples
+        <<",\n  \"camera_specular_cell_tests\": "<<render_stats.camera_specular_cell_tests
+        <<",\n  \"edge_crossing_storage_bytes\": "<<render_stats.edge_crossing_storage_bytes
+        <<",\n  \"boundary_path_capacity\": "<<boundary_path_capacity
+        <<",\n  \"boundary_optical_queries\": "<<render_stats.boundary_optical_queries
+        <<",\n  \"boundary_optical_reused\": "<<render_stats.boundary_optical_reused
+        <<",\n  \"shared_filter_queries\": "<<render_stats.shared_filter_queries
+        <<",\n  \"shared_filter_requests\": "<<render_stats.shared_filter_requests
+        <<",\n  \"shared_filter_storage_bytes\": "<<render_stats.shared_filter_storage_bytes
+        <<",\n  \"shared_filter_build_ms\": "<<render_stats.shared_filter_build_ms
         <<",\n  \"camera_specular_quadrature_samples\": "<<render_stats.camera_specular_quadrature_samples
         <<",\n  \"camera_specular_build_ms\": "<<render_stats.camera_specular_build_ms
         <<",\n  \"viewer_origin_field_reused\": "<<(render_stats.viewer_origin_field_reused?"true":"false")
@@ -2400,6 +3910,14 @@ int main(int argc,char** argv)try{int width=960,height=640,terminal_error=1,anim
         <<",\n  \"emitter_source_rows\": "<<render_stats.trace.emitter_rows
         <<",\n  \"emitter_source_intervals\": "<<render_stats.trace.emitter_intervals
         <<",\n  \"emitter_quadrature_samples\": "<<render_stats.trace.emitter_quadrature_samples
+        <<",\n  \"return_mode\": \""<<return_mode_label()<<"\""
+        <<",\n  \"return_tests\": "<<render_stats.trace.return_tests
+        <<",\n  \"return_matches\": "<<render_stats.trace.return_matches
+        <<",\n  \"return_extinctions\": "<<render_stats.trace.return_extinctions
+        <<",\n  \"return_closures\": "<<render_stats.trace.return_closures
+        <<",\n  \"return_rejections\": "<<render_stats.trace.return_rejections
+        <<",\n  \"return_removed_weight\": "<<render_stats.trace.return_removed_weight
+        <<",\n  \"return_added_radiance\": "<<render_stats.trace.return_added_radiance
         <<",\n  \"feedback_loops\": "<<render_stats.trace.feedback_loops
         <<",\n  \"feedback_returns\": "<<render_stats.trace.feedback_returns
         <<",\n  \"sealed_feedback_tails\": "<<render_stats.trace.sealed_feedback_tails

@@ -1,0 +1,34 @@
+{
+  "relational_raw.json": {
+    "repository_source": "experiments/civilian_transport/relational_results/results.json",
+    "sha256": "35ff0a4f0e5c7ac9f89d953f9448f89947ba828cebe4ded1a6f2d61cab232a4f"
+  },
+  "relational_summary.json": {
+    "repository_source": "experiments/civilian_transport/relational_results/summary.json",
+    "sha256": "52699f1c4a02f97ebc8ef45dfa2f731d948c10f69c74459c4f98d2e308b78c80"
+  },
+  "acquisition_raw.json": {
+    "repository_source": "experiments/civilian_transport/acquisition_results/results.json",
+    "sha256": "f6ed334a61717908c9aa8347acf5a65269c0298e0d776a276adae7b70cc9c5e5"
+  },
+  "acquisition_summary.json": {
+    "repository_source": "experiments/civilian_transport/acquisition_results/summary.json",
+    "sha256": "1a0cfbf1fa0d27d93b8471e4ca9128e19eef42cc3d6e40ef362c3c35406a3b76"
+  },
+  "optimization_raw.json": {
+    "repository_source": "experiments/civilian_transport/optimization_results/results.json",
+    "sha256": "ed994a129af58044e167024774039a67091145b27d99a0ffad418dd6223d1a30"
+  },
+  "cv_cost_controls.json": {
+    "repository_source": "experiments/civilian_transport/optimization_results/cv_cost_controls.json",
+    "sha256": "2ff115b711c8471800155926a9c19ce4eed921ae9080e5fcb1f1d962fc90e5b1"
+  },
+  "geometric_confirmation.json": {
+    "repository_source": "experiments/civilian_transport/confirmation/results.json",
+    "sha256": "a9a8230156266d3c250f278528c61c95c3852e05df61b8cb53904a44a9f02c72"
+  },
+  "baseline_development.json": {
+    "repository_source": "experiments/civilian_transport/results/development.json",
+    "sha256": "807a8b3bdffbaf5f97f11490640e400cf975df7d0ae70752185df9000108f55c"
+  }
+}

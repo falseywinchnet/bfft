@@ -1,0 +1,25 @@
+\section{Expanded Local CRT Algebra}
+\label{app:crt}
+
+For completeness, the trinomial merge can be checked without invoking an
+abstract CRT theorem.  Put $u=z^{h/2}$.  Modulo $p_+$,
+\begin{equation}
+ u^2+bu+1=0,\qquad u^{-1}=-(u+b).
+ \label{eq:crt-u-inverse}
+\end{equation}
+Since $p_-=p_+-2bu$, one has
+\begin{equation}
+ p_-{u+b\over2b}\equiv-u(u+b)=1\pmod{p_+}.
+ \label{eq:crt-direct-check}
+\end{equation}
+Thus the correction from $r_-$ to $r_+$ is the child difference multiplied by
+the inverse in \eqref{eq:crt-direct-check}.  Degree reduction modulo $p_+$ makes
+$\deg t<h$, and multiplication by $p_-$ gives a representative of degree below
+$2h$.  This is exactly the unique parent coordinate range.
+
+For binomial siblings, $p_-=z^h-1\equiv-2\pmod{p_+}$.  The correction equation
+$r_-+p_-t\equiv r_+$ gives $t=(r_--r_+)/2$.  In normalized coordinates, every
+four-real pair merge has inverse $T_\theta^{\trans}/2$.  Across the complete
+unbalanced tree, these local measures combine with the terminal pair weights
+to give the global inverse $B_N^{-1}=B_N^{\trans}/N$ proved from Fourier
+evaluation in Section~\ref{sec:fourier-identity}.

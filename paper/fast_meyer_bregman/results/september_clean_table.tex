@@ -1,0 +1,13 @@
+\begin{table*}[t]\centering\scriptsize
+\caption{Clean M4 rerun: eight threads, $256^2$ sources, 15 shuffled timed repetitions after two warmup rounds. Each source reports median ms, $E_{64}$, and recovered objective gap per pixel $G=(P-L)/(HW)$. Barbara is resized to $256^2$.}\label{tab:clean}
+\begin{tabular}{lrrrrrrrrrrrr}\toprule
+&\multicolumn{3}{c}{Barbara}&\multicolumn{3}{c}{Cameraman}&\multicolumn{3}{c}{Analytic}&\multicolumn{3}{c}{Crossing}\\
+Method &ms & $E_{64}$ & $G$&ms & $E_{64}$ & $G$&ms & $E_{64}$ & $G$&ms & $E_{64}$ & $G$\\\midrule
+Ordinary 32&16.56&0.0628&0.2527&17.43&0.1137&0.3147&17.07&0.1272&0.1639&15.81&0.1349&0.1928\\
+Ordinary 40&21.96&0.0412&0.1675&21.74&0.0817&0.2395&21.71&0.0928&0.1191&20.09&0.1029&0.1618\\
+Ordinary 48&24.97&0.0251&0.1173&26.03&0.0531&0.1913&25.93&0.0601&0.0974&23.52&0.0671&0.1383\\
+Ordinary 64&34.37&0.0000&0.0728&34.96&0.0000&0.1305&34.68&0.0000&0.0711&32.05&0.0000&0.1040\\
+Finite flow fast&11.53&0.0968&0.8921&11.77&0.1582&0.9235&11.72&0.1689&0.7375&10.95&0.1727&0.4824\\
+Finite flow quality&18.03&0.0498&0.4546&18.28&0.0917&0.6279&18.13&0.1111&0.4695&16.91&0.1260&0.3289\\
+Current state 1.75 / 32&18.35&0.0174&0.1371&19.43&0.0374&0.2259&18.40&0.0441&0.1430&17.15&0.0485&0.1736\\
+\bottomrule\end{tabular}\end{table*}

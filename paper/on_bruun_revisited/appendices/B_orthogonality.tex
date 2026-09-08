@@ -1,0 +1,31 @@
+\section{Stagewise Orthogonality}
+\label{app:orthogonality}
+
+The normalized cell has the explicit matrix
+\begin{equation}
+ T_\theta=
+ \begin{bmatrix}
+ 1&0&c&-s\\
+ 0&1&s&c\\
+ 1&0&-c&s\\
+ 0&-1&s&c
+ \end{bmatrix}.
+ \label{eq:cell-matrix}
+\end{equation}
+Its columns have squared norm two.  The first and third columns are orthogonal
+because their $c$ contributions cancel; the second and fourth behave
+similarly.  The remaining inner products vanish by either sign cancellation or
+$cs-sc=0$.  Hence $T_\theta^{\trans}T_\theta=2I$ entrywise.
+
+Direct sums of equal-rank cells retain this Gram identity, and permutations
+retain it by conjugation.  The complete Bruun tree also contains shell carry
+coordinates because its binomial spine is unbalanced; those coordinates and
+the terminal $\sqrt2$ pair weights are included in Definition
+\ref{eq:BN-definition}.  The schedule-independent global statement is therefore
+obtained from the exact identity $P_NB_N=\DFT_N^{\R}$ and Fourier Parseval:
+\begin{equation}
+ B_N^{\trans}B_N
+ =B_N^{\trans}P_N^{\trans}P_NB_N=NI.
+\end{equation}
+This argument covers every exact schedule of the same boundary map without
+assigning an artificial common depth to the terminal factors.

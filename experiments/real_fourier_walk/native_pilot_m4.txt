@@ -1,0 +1,9 @@
+BFFT power-of-two RFFT benchmark. backend: neon-128, version: 1.0
+standard policy is plan-dependent; FFTW uses FFTW_ESTIMATE-style flag 64 for cheap large plans.
+Intel oneMKL disabled; pass --intel-mkl to add dynamic libmkl_rt DFTI comparison columns.
+PFFFT disabled; compile with -DBFFT_WITH_PFFFT and link pffft to enable.
+       N    iters     FFTW_ns    FFTWf_ns    PFFFT_ns    MKL64_ns    MKL32_ns   Native_ns      Std_ns   F32Nat_ns   F32Std_ns      Inv_ns       RT_ns    S/F64   F32/Ff      S/P    F32/P    S/MKL    F32/M  checks
+QUARTIC {"N":4096,"policy":"sibling","iters":2000,"passes":7,"dif_ns":4634.417,"walk_ns":6714.771,"walk_over_dif":1.448892,"max_abs_error":1.13686838e-13,"relative_l2_error":2.47807024e-16,"plan_bytes":65472,"crossings":0,"dif_min_ns":4612.250,"dif_max_ns":4704.188,"walk_min_ns":6587.292,"walk_max_ns":7722.583}
+QUARTIC {"N":4096,"policy":"separated","iters":2000,"passes":7,"dif_ns":5648.083,"walk_ns":7625.708,"walk_over_dif":1.350141,"max_abs_error":1.13686838e-13,"relative_l2_error":2.47807024e-16,"plan_bytes":65472,"crossings":1013,"dif_min_ns":4677.062,"dif_max_ns":5745.125,"walk_min_ns":6800.167,"walk_max_ns":7822.062}
+QUARTIC {"N":4096,"policy":"random","iters":2000,"passes":7,"dif_ns":4624.480,"walk_ns":6831.208,"walk_over_dif":1.477184,"max_abs_error":1.13686838e-13,"relative_l2_error":2.47807143e-16,"plan_bytes":65472,"crossings":684,"dif_min_ns":4592.750,"dif_max_ns":4663.271,"walk_min_ns":6783.438,"walk_max_ns":7646.979}
+    4096     2000     15121.3      5053.7         n/a         n/a         n/a      3649.9      4630.9      2850.0      2937.8      5613.2     11313.7    0.306    0.581      n/a      n/a      n/a      n/a err64 4.8e-15 err32 2.4e-06 mkl64       n/a mkl32       n/a rt 6.7e-16 sink 18514.016

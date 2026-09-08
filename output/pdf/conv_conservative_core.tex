@@ -1,0 +1,391 @@
+\section{Restriction and Matched Multiresolution Geometry}
+
+\subsection{Point-current restriction}
+
+Point interpolation and raster analysis involve different restriction
+functionals. Let \(d_h\) be the forward difference on an interpolated line,
+and let \(B_s\) sum each block of \(s\) consecutive fine differences. Using
+cardinality gives
+\begin{align}
+ (B_s d_h\Tcal_s y)_i
+ &=\sum_{r=0}^{s-1}
+ \bigl[(\Tcal_s y)_{is+r+1}-(\Tcal_s y)_{is+r}\bigr]\nonumber\\
+ &=y_{i+1}-y_i.
+ \label{eq:telescoping}
+\end{align}
+Consequently,
+\begin{equation}
+ D_s\Tcal_s=I,\qquad B_s d_h\Tcal_s=d_c,
+ \label{eq:restriction}
+\end{equation}
+where \(D_s\) selects source sites and \(d_c\) is the source forward
+difference. Thus \eqref{eq:restriction} identifies the conserved mass of the
+interpolating current; site selection itself is not used as an antialiased
+raster downscale.
+
+\subsection{Conservative scale coordinates}
+
+The centered-moment construction below uses the fixed three-point
+Gauss--Legendre nodes and weights
+\begin{equation}
+ \bm\xi=(-\sqrt{3/5},0,\sqrt{3/5}),\qquad
+ \bm w=(5/9,8/9,5/9).
+ \label{eq:gauss3}
+\end{equation}
+
+At a multiresolution interface, raster entries are interpreted as cell
+averages. Accordingly, for an even fine line
+\(x=(x_0,\ldots,x_{2N-1})\), define the parent average and centered child
+moment by
+\begin{align}
+ z_i&=\frac{x_{2i}+x_{2i+1}}{2},
+ \label{eq:scaleaverage}\\
+ \mu_i^\star&=\frac{x_{2i+1}-x_{2i}}{2}.
+ \label{eq:actualmoment}
+\end{align}
+The resulting analysis low-pass is positive and normalized, with transfer
+function
+\begin{equation}
+ H(\omega)=\frac{1+e^{-\mathrm i\omega}}{2}
+ =e^{-\mathrm i\omega/2}\cos(\omega/2),
+ \label{eq:nyquistresponse}
+\end{equation}
+which yields \(H(\pi)=0\) exactly.
+
+The centered-moment proposal is obtained from the already defined CONV
+profile, rather than from a second interpolator. Using the Gauss--Legendre
+nodes and weights in \eqref{eq:gauss3}, for \(1\leq i<N-1\), put
+\begin{align}
+ \bar z_i^-&=\frac12\sum_{k=0}^{2}w_k
+ (\Tcal z)(i-\tfrac14+\tfrac14\xi_k),\nonumber\\
+ \bar z_i^+&=\frac12\sum_{k=0}^{2}w_k
+ (\Tcal z)(i+\tfrac14+\tfrac14\xi_k),
+ \label{eq:halfcells}\\
+ p_i&=\frac{\bar z_i^+-\bar z_i^-}{2}.
+ \label{eq:momentproposal}
+\end{align}
+Since \(\Tcal z\) is quintic on each half-cell, three-point Gauss--Legendre
+quadrature is exact. At the two outer cells, the fixed closure is
+\begin{equation}
+ p_0=m_0/4,\qquad p_{N-1}=m_{N-1}/4,
+ \label{eq:momentboundary}
+\end{equation}
+using the one-sided jet in \eqref{eq:mbnd}; this proposal is exact for affine
+cell averages, for which \(p_i=(z_{i+1}-z_i)/4\).
+
+\subsection{Admissible moment polytope}
+
+Put \(\Delta_i=z_{i+1}-z_i\), fill zero signs by the ledger rule of
+Section~V, and denote the resulting interval signs by \(s_i\). When every
+\(\Delta_i\) vanishes, set \(\Pcal(z,t)=\{0\}\) and
+\(\widehat\mu=0\). Otherwise the filled signs are nonzero, and each cell is
+assigned a sign \(t_i\), with \(t_0=s_0\),
+\(t_{N-1}=s_{N-2}\), and, in the interior,
+\begin{equation}
+ t_i=\begin{cases}
+ s_{i-1},&s_{i-1}=s_i,\\
+ \arg\max_{s\in\{s_{i-1},s_i\}}sp_i,&s_{i-1}\ne s_i,
+ \end{cases}
+ \label{eq:momentsign}
+\end{equation}
+with the left sign selected on a tie. The second line therefore locates an
+existing turning point in one of its two adjacent child cells.
+
+When \(\mu\) is synthesized with zero detail, the fine currents are
+\begin{equation}
+ g_{2i}=2\mu_i,\qquad
+ g_{2i+1}=\Delta_i-\mu_i-\mu_{i+1}.
+ \label{eq:finecurrentmoment}
+\end{equation}
+Consequently, for fixed \(t\), the complete admissible set is
+\begin{equation}
+ \Pcal(z,t)=\left\{\mu:
+ t_i\mu_i\geq0,\quad
+ s_i(\Delta_i-\mu_i-\mu_{i+1})\geq0
+ \right\}.
+ \label{eq:momentpolytope}
+\end{equation}
+\begin{lemma}[Compact moment fibre]
+For every nonconstant \(z\) and every assignment \(t\) produced by
+\eqref{eq:momentsign}, \(\Pcal(z,t)\) is a nonempty compact convex polytope.
+\end{lemma}
+
+\begin{proof}
+The set is a finite intersection of closed half-spaces and contains zero, so
+only an unbounded ray remains to be excluded. Let \(h\) belong to its
+recession cone and put \(v_i=t_ih_i\geq0\). The homogeneous face inequalities
+are
+\begin{equation}
+ (s_it_i)v_i+(s_it_{i+1})v_{i+1}\leq0.
+ \label{eq:momentrecession}
+\end{equation}
+Suppose \(v_k>0\) for the least such \(k\). If \(k=0\), then \(t_k=s_k\).
+If \(k=N-1\), the preceding inequality contradicts \(v_k>0\) because
+\(t_{N-1}=s_{N-2}\). If \(0<k<N-1\), the preceding inequality and
+\(v_{k-1}=0\) either contradict \(v_k>0\), or force
+\(t_k=-s_{k-1}=s_k\). Thus every surviving case has \(k<N-1\) and
+\(t_k=s_k\). Equation~\eqref{eq:momentrecession} on face \(k\) then forces
+\(t_{k+1}=-s_k\) and \(v_{k+1}\geq v_k\). By
+\eqref{eq:momentsign}, this is possible only when
+\(s_{k+1}=-s_k\) and \(t_{k+1}=s_{k+1}\). Repetition propagates a positive
+nondecreasing sequence to the right endpoint, where
+\(t_{N-1}=s_{N-2}\) contradicts the required opposite sign. Hence the
+recession cone is \(\{0\}\), and the closed polyhedron is bounded.
+\end{proof}
+
+On an increasing run, the constraints reduce to
+\begin{equation}
+ \mu_i\geq0,\qquad \mu_i+\mu_{i+1}\leq\Delta_i.
+ \label{eq:monotonemoment}
+\end{equation}
+
+The finite admission contains no limiter constant. First form
+\begin{equation}
+p_i^+=t_i\max(t_ip_i,0).
+ \label{eq:momentorthant}
+\end{equation}
+Let \(\rho(i)\) denote the maximal sign lineage assigned to cell \(i\), and
+let \(\rho(\ell)\) denote the lineage of face \(\ell\). Its proposed
+consumption is
+\begin{equation}
+ C_\ell=\sum_{\substack{j\in\{\ell,\ell+1\}\\
+                        \rho(j)=\rho(\ell)}}|p_j^+|.
+ \label{eq:momentconsumption}
+\end{equation}
+and, for each lineage, retain the scale
+\begin{equation}
+\alpha_\rho=\min\left(
+ 1,\min_{\substack{\ell:\rho(\ell)=\rho\\C_\ell>0}}
+ \frac{|\Delta_\ell|}{C_\ell}\right).
+ \label{eq:momentrayscale}
+\end{equation}
+where the inner minimum is \(+\infty\) when the lineage has no positive
+consumption. Oppositely oriented moments at a transition relax rather than
+consume the face mass and therefore do not enter \(C_\ell\). The result is the
+largest independent lineage-ray scale satisfying every incident capacity
+bound, and it is denoted by
+\begin{equation}
+ \widehat\mu_i=\alpha_{\rho(i)}p_i^+=(\Acal_zp)_i.
+ \label{eq:momentadmission}
+\end{equation}
+
+\begin{lemma}[Admitted-moment bound]
+The admission \eqref{eq:momentadmission} satisfies
+\begin{equation}
+ \norm{\widehat\mu(z)}_\infty\leq
+ \max_\ell|\Delta_\ell|\leq2\norm z_\infty.
+ \label{eq:admittedmomentbound}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Every cell \(i\) has an incident face \(\ell\) in its assigned lineage, as
+forced at the endpoints and by the definition of \(t_i\) in the interior.
+Consequently \(C_\ell\geq|p_i^+|\). If \(C_\ell=0\), then
+\(\widehat\mu_i=0\). Otherwise
+\eqref{eq:momentrayscale} gives
+\[
+ |\widehat\mu_i|
+ =\alpha_{\rho(i)}|p_i^+|
+ \leq|\Delta_\ell|.
+\]
+Finally, \(|z_{\ell+1}-z_\ell|\leq2\norm z_\infty\), which proves the second
+inequality.
+\end{proof}
+
+\subsection{Exact conservative lifting pair}
+
+The detail coordinate is obtained as the child moment not represented by the
+transported coarse variation,
+\begin{equation}
+ r_i=\mu_i^\star-\widehat\mu_i(z).
+ \label{eq:analysisdetail}
+\end{equation}
+so analysis is \(\mathcal Lx=(z,r)\), while synthesis is
+\begin{align}
+ x_{2i}&=z_i-\widehat\mu_i(z)-r_i,
+ \label{eq:synthleft}\\
+ x_{2i+1}&=z_i+\widehat\mu_i(z)+r_i.
+ \label{eq:synthright}
+\end{align}
+
+\begin{theorem}[Conservative CONV lifting]
+For every fine line of length \(2N\), \(N\geq5\), in exact arithmetic,
+\begin{equation}
+ \mathcal L^{-1}\mathcal Lx=x,
+ \qquad R\mathcal L^{-1}(z,r)=z,
+ \label{eq:fullcycle}
+\end{equation}
+where \(R\) is the positive restriction \eqref{eq:scaleaverage}. If \(r=0\),
+the synthesized current has no more nonzero sign changes than \(Dz\).
+\end{theorem}
+
+\begin{proof}
+Substituting \eqref{eq:analysisdetail} into
+\eqref{eq:synthleft}--\eqref{eq:synthright} returns
+\(z_i\mp\mu_i^\star=x_{2i},x_{2i+1}\). Their average is \(z_i\), proving
+both identities. By \eqref{eq:momentpolytope}, the nonzero fine-current signs
+are a subsequence of
+\[
+ t_0,s_0,t_1,s_1,\ldots,s_{N-2},t_{N-1}.
+\]
+Within a sign run the entries agree. At a transition, \(t_i\) equals one of
+its two adjacent signs; that triple therefore contains one transition, not
+two. Deleting zero currents cannot increase the count.
+\end{proof}
+
+The transform consequently distinguishes exact recovery from
+discarded-detail reconstruction. Retaining \(r\) recovers every fine cell,
+whereas setting \(r=0\) retains cell mass and transported variation while
+omitting the unpredicted centered moment. For two detail states on the same
+coarse raster, one obtains
+\begin{equation}
+ \norm{\mathcal L^{-1}(z,r)-\mathcal L^{-1}(z,r')}_\infty
+ =\norm{r-r'}_\infty.
+ \label{eq:detailstability}
+\end{equation}
+
+\begin{proposition}[Multilevel max-norm stability]
+The positive restriction satisfies \(\norm R_\infty\leq1\). A \(J\)-level
+synthesis obeys
+\begin{equation}
+ \norm x_\infty\leq3^J\norm{z^{(J)}}_\infty
+ +\sum_{j=1}^{J}3^{j-1}\norm{r^{(j)}}_\infty.
+ \label{eq:multilevelstability}
+\end{equation}
+The constant depends on the declared depth, not the line length.
+\end{proposition}
+
+\begin{proof}
+Since the two restriction weights are positive and sum to one,
+\(\norm R_\infty\leq1\). At one synthesis level, using
+\eqref{eq:synthleft}--\eqref{eq:synthright} together with
+\eqref{eq:admittedmomentbound} gives
+\[
+ \norm{x^{(j-1)}}_\infty
+ \leq3\norm{x^{(j)}}_\infty+\norm{r^{(j)}}_\infty.
+\]
+Iterating this recurrence from \(x^{(J)}=z^{(J)}\) yields
+\eqref{eq:multilevelstability}; induction on the one-level theorem likewise
+shows that ordered sign variation is nonincreasing at every zero-detail
+level.
+\end{proof}
+
+\subsection{Two-dimensional moment geometry}
+
+For a fine \(2\times2\) block, introduce one invariant mean and three
+centered moments,
+\begin{align}
+ z&=\tfrac14(x_{00}+x_{01}+x_{10}+x_{11}),\nonumber\\
+ \mu_x&=\tfrac14(-x_{00}+x_{01}-x_{10}+x_{11}),\nonumber\\
+ \mu_y&=\tfrac14(-x_{00}-x_{01}+x_{10}+x_{11}),\nonumber\\
+ \mu_{xy}&=\tfrac14(x_{00}-x_{01}-x_{10}+x_{11}).
+ \label{eq:blockmoments}
+\end{align}
+from which the inverse is obtained as
+\begin{align}
+ x_{00}&=z-\mu_x-\mu_y+\mu_{xy},&
+ x_{01}&=z+\mu_x-\mu_y-\mu_{xy},\nonumber\\
+ x_{10}&=z-\mu_x+\mu_y-\mu_{xy},&
+ x_{11}&=z+\mu_x+\mu_y+\mu_{xy}.
+ \label{eq:blockinverse}
+\end{align}
+Thus the four child cells are replaced without redundancy. The horizontal
+and vertical proposals are obtained by applying \eqref{eq:halfcells} along
+their corresponding factors, and applying the same half-cell functional to
+the horizontal proposal along the vertical factor yields the mixed proposal.
+
+Inside a block, the horizontal face currents are
+\begin{equation}
+ 2(\mu_x-\mu_{xy}),\qquad2(\mu_x+\mu_{xy}),
+ \label{eq:internalhorizontal}
+\end{equation}
+and the vertical face currents are
+\begin{equation}
+ 2(\mu_y-\mu_{xy}),\qquad2(\mu_y+\mu_{xy}).
+ \label{eq:internalvertical}
+\end{equation}
+For horizontally adjacent blocks \(A,B\), put \(\Delta_x=z_B-z_A\). Their
+upper and lower cross-face currents are
+\begin{align}
+ h^-_{AB}&=\Delta_x-\mu_{x,A}-\mu_{x,B}
+ +\mu_{y,A}-\mu_{y,B}+\mu_{xy,A}+\mu_{xy,B},\nonumber\\
+ h^+_{AB}&=\Delta_x-\mu_{x,A}-\mu_{x,B}
+ -\mu_{y,A}+\mu_{y,B}-\mu_{xy,A}-\mu_{xy,B}.
+ \label{eq:horizontalfaces}
+\end{align}
+For vertically adjacent blocks \(A,C\), put \(\Delta_y=z_C-z_A\). Their
+left and right currents are
+\begin{align}
+ v^-_{AC}&=\Delta_y+\mu_{x,A}-\mu_{x,C}
+ -\mu_{y,A}-\mu_{y,C}+\mu_{xy,A}+\mu_{xy,C},\nonumber\\
+ v^+_{AC}&=\Delta_y-\mu_{x,A}+\mu_{x,C}
+ -\mu_{y,A}-\mu_{y,C}-\mu_{xy,A}-\mu_{xy,C}.
+ \label{eq:verticalfaces}
+\end{align}
+
+Let \(t_x,t_y\) be block signs assigned by \eqref{eq:momentsign} on each
+coarse row and column, and let \(s_x,s_y\) be the corresponding coarse face
+signs. The face-current admissible set is
+\begin{equation}
+\begin{aligned}
+ t_x(\mu_x\pm\mu_{xy})&\geq0,&s_xh^\pm&\geq0,\\
+ t_y(\mu_y\pm\mu_{xy})&\geq0,&s_yv^\pm&\geq0.
+\end{aligned}
+ \label{eq:facepolytope}
+\end{equation}
+This admissible set is a finite intersection of affine half-spaces containing
+the zero moment field. Admission first enforces the internal cone
+\begin{equation}
+ t_x\mu_x\geq|\mu_{xy}|,\qquad
+ t_y\mu_y\geq|\mu_{xy}|.
+ \label{eq:internalcone}
+\end{equation}
+For a cross face written \(g=\Delta+r_A+r_B\), only opposed proposal mass
+consumes the witnessed capacity. Define
+\begin{align}
+ w_A&=\max(-sr_A,0),&w_B&=\max(-sr_B,0),\nonumber\\
+ \beta&=\min\left(1,\frac{|\Delta|}{w_A+w_B}\right),
+ \label{eq:facecapacity}
+\end{align}
+with \(\beta=1\) when the denominator is zero. Both incident block scales are
+bounded by \(\beta\), and each block retains the minimum bound from all of its
+faces. Since helpful components are not required for feasibility, a later
+reduction on another face cannot violate an admitted inequality.
+Consequently, \eqref{eq:internalcone}--\eqref{eq:facecapacity} yield a finite
+local box inside \eqref{eq:facepolytope}.
+
+Every pair of fine rows has a horizontal sign sequence interleaving
+\(t_x,s_x,t_x,s_x,\ldots\); every pair of fine columns has the analogous
+vertical sequence. The one-dimensional sign-count proof applies to each.
+The two-dimensional restriction response is
+\begin{equation}
+ H(\omega_x,\omega_y)=e^{-\mathrm i(\omega_x+\omega_y)/2}
+ \cos(\omega_x/2)\cos(\omega_y/2),
+ \label{eq:nyquist2d}
+\end{equation}
+which annihilates both axial Nyquist lines and their checkerboard
+intersection. Exact reconstruction is then obtained by restoring the three
+residual moment fields in \eqref{eq:blockmoments}.
+
+\subsection{Multilevel state}
+
+Repeated analysis produces the state
+\begin{equation}
+ \mathcal L^{(J)}x=
+ \left(z^{(J)},r^{(J)},r^{(J-1)},\ldots,r^{(1)}\right).
+ \label{eq:multilevel}
+\end{equation}
+In one dimension, \(r^{(j)}\) is a centered-moment field; in two dimensions,
+it contains the horizontal, vertical, and mixed residual moments. Analysis
+continues only while every resulting coarse axis has at least five cells, and
+synthesis restores the stored levels in reverse order. Induction on
+\eqref{eq:fullcycle} then gives
+\begin{equation}
+ (\mathcal L^{(J)})^{-1}\mathcal L^{(J)}=I.
+ \label{eq:multilevelinverse}
+\end{equation}
+For a one-dimensional fine line of length \(2N\), the \(N\) parent averages
+and \(N\) residual moments are necessary and sufficient coordinates. For a
+two-dimensional \(2N\times2M\) raster, the \(NM\) means and three \(NM\)
+residual moment fields likewise account for every scalar degree of freedom.

@@ -68,6 +68,7 @@ struct Engine::Impl {
     std::vector<std::uint16_t> sample_owner;
     std::vector<Lab> palette_centroids;
     std::vector<Lab> palette_parents;
+    std::vector<std::uint16_t> palette_by_lightness;
     std::vector<Lab> grid_lab;
     std::vector<std::uint64_t> grid_token;
     std::vector<std::uint16_t> labels;
@@ -84,6 +85,7 @@ struct Engine::Impl {
     std::uint64_t visit_cycle = 0;
     std::size_t visit_cursor = 0;
     bool initialized = false;
+    bool labels_initialized = false;
 
     explicit Impl(Config c) : cfg(sanitize(c)) {
         for (std::size_t i = 0; i < linear.size(); ++i) {
@@ -102,6 +104,10 @@ struct Engine::Impl {
         c.segments_per_frame = std::max(1u, std::min(65536u, c.segments_per_frame));
         c.detail_priority = std::max(0.0f, std::min(8.0f, c.detail_priority));
         c.population_exponent = std::max(0.1f, std::min(1.0f, c.population_exponent));
+        c.family_priority = std::max(0.0f, std::min(4.0f, c.family_priority));
+        c.structure_radius = std::min(4u, c.structure_radius);
+        c.structure_threshold = std::max(0.0f, std::min(0.5f, c.structure_threshold));
+        c.texture_priority = std::max(0.0f, std::min(1.0f, c.texture_priority));
         c.lightness_weight = std::max(0.0f, std::min(4.0f, c.lightness_weight));
         c.chroma_weight = std::max(0.0f, std::min(4.0f, c.chroma_weight));
         c.hue_weight = std::max(0.0f, std::min(4.0f, c.hue_weight));
@@ -110,6 +116,8 @@ struct Engine::Impl {
         c.minimum_leaf = std::max(1u, std::min(256u, c.minimum_leaf));
         c.bifurcation_refinement = std::min(12u, c.bifurcation_refinement);
         c.prior_learning_rate = std::max(0.001f, std::min(1.0f, c.prior_learning_rate));
+        c.assignment_hysteresis = std::max(0.0f, std::min(0.5f, c.assignment_hysteresis));
+        c.palette_update_interval = std::max(1u, std::min(16u, c.palette_update_interval));
         c.trace_speed = std::max(0.001f, std::min(1.0f, c.trace_speed));
         c.trace_persistence = std::max(0.0f, std::min(0.98f, c.trace_persistence));
         c.glow = clamp01(c.glow);
@@ -174,17 +182,71 @@ struct Engine::Impl {
                 byte(128.0f+chroma*u), byte(128.0f+chroma*v)};
     }
 
-    float distance2(const Lab& x, const PaletteColor& p) const {
-        const float sample_c=std::hypot(x.a,x.b),center_c=std::hypot(p.a,p.b);
-        const float dl=cfg.lightness_weight*(x.l-p.l);
-        const float dc=cfg.chroma_weight*(sample_c-center_c);
-        float hue_term=0.0f;
-        if(sample_c>1e-8f&&center_c>1e-8f){
-            const float cosine=std::clamp((x.a*p.a+x.b*p.b)/(sample_c*center_c),-1.0f,1.0f);
-            hue_term=2.0f*cfg.hue_weight*cfg.hue_weight*sample_c*center_c*(1.0f-cosine);
+    Lab structural_sample(std::uint32_t x,std::uint32_t y) const {
+        const auto center=grid_lab[static_cast<std::size_t>(y)*gw+x];
+        if(cfg.structure_radius==0||cfg.structure_threshold<=0.0f)return center;
+        const int radius=static_cast<int>(cfg.structure_radius);
+        const float spatial_sigma=std::max(.5f,.65f*radius);
+        const float inverse_spatial=.5f/(spatial_sigma*spatial_sigma);
+        const float inverse_range=.5f/(cfg.structure_threshold*cfg.structure_threshold);
+        double total=0.0,l=0.0,a=0.0,b=0.0,alpha=0.0;
+        for(int dy=-radius;dy<=radius;++dy)for(int dx=-radius;dx<=radius;++dx){
+            const auto sx=static_cast<std::uint32_t>(std::clamp(static_cast<int>(x)+dx,0,static_cast<int>(gw)-1));
+            const auto sy=static_cast<std::uint32_t>(std::clamp(static_cast<int>(y)+dy,0,static_cast<int>(gh)-1));
+            const auto sample=grid_lab[static_cast<std::size_t>(sy)*gw+sx];
+            if((sample.alpha>4.0f/255.0f)!=(center.alpha>4.0f/255.0f))continue;
+            const float dl=sample.l-center.l,da=sample.a-center.a,db=sample.b-center.b;
+            const double weight=std::exp(-(dx*dx+dy*dy)*inverse_spatial-
+                (dl*dl+da*da+db*db)*inverse_range);
+            total+=weight;l+=weight*sample.l;a+=weight*sample.a;b+=weight*sample.b;
+            alpha+=weight*sample.alpha;
         }
+        const double safe=std::max(total,1e-15);
+        return {static_cast<float>(l/safe),static_cast<float>(a/safe),
+            static_cast<float>(b/safe),static_cast<float>(alpha/safe)};
+    }
+
+    float distance2(const Lab& x,float sample_c,const PaletteColor& p,
+                    float ceiling=std::numeric_limits<float>::max()) const {
+        const float dl=cfg.lightness_weight*(x.l-p.l);
+        float result=dl*dl;if(result>=ceiling)return result;
+        const float dc=cfg.chroma_weight*(sample_c-p.chroma);
+        result+=dc*dc;if(result>=ceiling)return result;
+        float hue_term=0.0f;
+        if(sample_c>1e-8f&&p.chroma>1e-8f){
+            const float product=sample_c*p.chroma;
+            const float dot=std::clamp(x.a*p.a+x.b*p.b,-product,product);
+            hue_term=2.0f*cfg.hue_weight*cfg.hue_weight*(product-dot);
+        }
+        result+=hue_term;if(result>=ceiling)return result;
         const float da=cfg.alpha_weight*(x.alpha-p.alpha);
-        return dl*dl+dc*dc+hue_term+da*da;
+        return result+da*da;
+    }
+
+    std::pair<std::uint16_t,float> nearest_palette(const Lab& x,std::uint16_t preferred=0) const {
+        const float sample_c=std::hypot(x.a,x.b);
+        preferred=palette.empty()?0:std::min<std::uint16_t>(preferred,
+            static_cast<std::uint16_t>(palette.size()-1));
+        std::uint16_t best_index=preferred;
+        float best=distance2(x,sample_c,palette[preferred]);
+        const auto middle=std::lower_bound(palette_by_lightness.begin(),palette_by_lightness.end(),x.l,
+            [&](std::uint16_t index,float lightness){return palette[index].l<lightness;});
+        std::ptrdiff_t left=middle-palette_by_lightness.begin()-1;
+        std::size_t right=static_cast<std::size_t>(middle-palette_by_lightness.begin());
+        while(left>=0||right<palette_by_lightness.size()){
+            const float left_delta=left>=0?std::abs(x.l-palette[palette_by_lightness[left]].l):
+                std::numeric_limits<float>::max();
+            const float right_delta=right<palette_by_lightness.size()?
+                std::abs(x.l-palette[palette_by_lightness[right]].l):std::numeric_limits<float>::max();
+            const std::uint16_t candidate=left_delta<=right_delta?
+                palette_by_lightness[left--]:palette_by_lightness[right++];
+            const float lightness_bound=cfg.lightness_weight*std::min(left_delta,right_delta);
+            if(lightness_bound*lightness_bound>=best)break;
+            if(candidate==preferred)continue;
+            const float d=distance2(x,sample_c,palette[candidate],best);
+            if(d<best){best=d;best_index=candidate;}
+        }
+        return {best_index,best};
     }
 
     static PaletteColor make_color(const Lab& c) {
@@ -213,14 +275,25 @@ struct Engine::Impl {
             mapped.a=ua*low;mapped.b=ub*low;rgb=linear_rgb(mapped);
         }
         PaletteColor out;
-        out.l=mapped.l;out.a=mapped.a;out.b=mapped.b;out.alpha=mapped.alpha;
         const auto gamma = [](float v) {
             v = clamp01(v);
             return v <= 0.0031308f ? 12.92f*v
                                   : 1.055f*std::pow(v, 1.0f/2.4f) - 0.055f;
         };
         out.r=byte(255.0f*gamma(rgb[0]));out.g=byte(255.0f*gamma(rgb[1]));
-        out.blue=byte(255.0f*gamma(rgb[2]));out.opacity=byte(255.0f*out.alpha);
+        out.blue=byte(255.0f*gamma(rgb[2]));out.opacity=byte(255.0f*mapped.alpha);
+        // Assignment must see exactly the gamut-mapped, rounded color that
+        // the GPU will display, not an unreachable pre-quantization node.
+        const auto decode=[](std::uint8_t q){const float s=q/255.0f;
+            return s<=.04045f?s/12.92f:std::pow((s+.055f)/1.055f,2.4f);};
+        const float r=decode(out.r),g=decode(out.g),blue=decode(out.blue);
+        const float ll=std::cbrt(std::max(0.0f,.4122214708f*r+.5363325363f*g+.0514459929f*blue));
+        const float mm=std::cbrt(std::max(0.0f,.2119034982f*r+.6806995451f*g+.1073969566f*blue));
+        const float ss=std::cbrt(std::max(0.0f,.0883024619f*r+.2817188376f*g+.6299787005f*blue));
+        out.l=.2104542553f*ll+.7936177850f*mm-.0040720468f*ss;
+        out.a=1.9779984951f*ll-2.4285922050f*mm+.4505937099f*ss;
+        out.b=.0259040371f*ll+.7827717662f*mm-.8086757660f*ss;
+        out.chroma=std::hypot(out.a,out.b);out.alpha=out.opacity/255.0f;
         return out;
     }
 
@@ -237,25 +310,29 @@ struct Engine::Impl {
         vertical.assign(gw > 1 ? static_cast<std::size_t>(gw - 1) * gh : 0, {});
         horizontal.assign(gh > 1 ? static_cast<std::size_t>(gw) * (gh - 1) : 0, {});
         segments.clear();
+        labels_initialized=false;
     }
 
-    void fill_samples(const FrameView& f) {
+    void fill_samples() {
         const auto count = std::min<std::size_t>(cfg.palette_samples,
-                                                 static_cast<std::size_t>(f.width) * f.height);
+                                                 static_cast<std::size_t>(gw) * gh);
         sample_scratch.resize(count);
         sample_detail.resize(count);
         sample_importance.resize(count);
         sample_owner.resize(count);
-        const std::uint64_t total = static_cast<std::uint64_t>(f.width) * f.height;
-        const std::uint64_t offset = mix64(frame_number + 0x9e3779b97f4a7c15ULL) % total;
+        const std::uint64_t total = static_cast<std::uint64_t>(gw) * gh;
+        // A fixed stratified phase removes Monte Carlo palette shimmer. The
+        // samples reuse cached analysis-lattice OKLab values, including the
+        // structural neighborhood, rather than converting pixels repeatedly.
+        const std::uint64_t offset = mix64((static_cast<std::uint64_t>(gw)<<32)|gh) % total;
         for (std::size_t i = 0; i < count; ++i) {
             const auto q = (offset + (static_cast<std::uint64_t>(i) * total) / count) % total;
-            const auto x = static_cast<std::uint32_t>(q % f.width);
-            const auto y = static_cast<std::uint32_t>(q / f.width);
-            const Lab c = read_lab(f, x, y);
-            const Lab dx = read_lab(f, std::min(x+1, f.width-1), y);
-            const Lab dy = read_lab(f, x, std::min(y+1, f.height-1));
-            sample_scratch[i] = c;
+            const auto x = static_cast<std::uint32_t>(q % gw);
+            const auto y = static_cast<std::uint32_t>(q / gw);
+            const Lab c = grid_lab[static_cast<std::size_t>(y)*gw+x];
+            const Lab dx = grid_lab[static_cast<std::size_t>(y)*gw+std::min(x+1,gw-1)];
+            const Lab dy = grid_lab[static_cast<std::size_t>(std::min(y+1,gh-1))*gw+x];
+            sample_scratch[i] = structural_sample(x,y);
             sample_detail[i] = std::abs(c.l-dx.l)+std::abs(c.l-dy.l) +
                 0.5f*(std::abs(c.a-dx.a)+std::abs(c.b-dx.b)+
                       std::abs(c.a-dy.a)+std::abs(c.b-dy.b));
@@ -304,8 +381,12 @@ struct Engine::Impl {
         std::vector<std::uint32_t> left,right;
     };
 
-    SplitProposal propose_split(const std::vector<std::uint32_t>& indices) const {
+    SplitProposal propose_split(const std::vector<std::uint32_t>& indices,bool family_root=false) const {
         SplitProposal best;if(indices.size()<2u*cfg.minimum_leaf)return best;
+        const float family=family_root?cfg.family_priority:0.0f;
+        const float lightness_weight=cfg.lightness_weight/(1.0f+1.85f*family);
+        const float chroma_weight=cfg.chroma_weight*(1.0f+0.4f*family);
+        const float hue_weight=cfg.hue_weight*(1.0f+1.2f*family);
         using Coordinate=std::array<double,4>;
         std::vector<Coordinate> coordinates(indices.size());double mass=0.0,hx=0.0,hy=0.0,mean_chroma=0.0;
         for(const auto index:indices){const double w=sample_importance[index];const auto& c=sample_scratch[index];
@@ -315,8 +396,8 @@ struct Engine::Impl {
         for(std::size_t i=0;i<indices.size();++i){const auto& c=sample_scratch[indices[i]];
             const double chroma=std::hypot(c.a,c.b);double hue=std::atan2(c.b,c.a)-center_hue;
             hue=std::atan2(std::sin(hue),std::cos(hue));
-            coordinates[i]={cfg.lightness_weight*c.l,cfg.chroma_weight*chroma,
-                cfg.hue_weight*std::sqrt(std::max(chroma*mean_chroma,1e-8))*hue,cfg.alpha_weight*c.alpha};
+            coordinates[i]={lightness_weight*c.l,chroma_weight*chroma,
+                hue_weight*std::sqrt(std::max(chroma*mean_chroma,1e-8))*hue,cfg.alpha_weight*c.alpha};
             const double w=sample_importance[indices[i]];for(int axis=0;axis<4;++axis)center[axis]+=w*coordinates[i][axis];
         }
         for(auto& value:center)value/=std::max(mass,1e-15);
@@ -388,6 +469,11 @@ struct Engine::Impl {
                 parent.a+cfg.node_separation*(center.a-parent.a),parent.b+cfg.node_separation*(center.b-parent.b),
                 parent.alpha+cfg.node_separation*(center.alpha-parent.alpha)};
             palette[i]=make_color(display);}
+        palette_by_lightness.resize(palette.size());
+        std::iota(palette_by_lightness.begin(),palette_by_lightness.end(),0u);
+        std::stable_sort(palette_by_lightness.begin(),palette_by_lightness.end(),[&](auto left,auto right){
+            return palette[left].l<palette[right].l;
+        });
     }
 
     void seed_palette(const std::vector<Lab>& s) {
@@ -397,17 +483,51 @@ struct Engine::Impl {
         // Bound only that cold-start tree construction; the immediately
         // following centroid update still consumes the full sample budget.
         const std::size_t seed_count=std::min<std::size_t>(s.size(),1536u);
-        Leaf root;root.indices.resize(seed_count);
-        for(std::size_t i=0;i<seed_count;++i)root.indices[i]=static_cast<std::uint32_t>(i*s.size()/seed_count);
-        root.center=weighted_center(root.indices);root.parent=root.center;root.proposal=propose_split(root.indices);
-        std::vector<Leaf> leaves;leaves.push_back(std::move(root));
-        while(leaves.size()<cfg.palette_colors){std::size_t choice=leaves.size();double gain=0.0;
-            for(std::size_t i=0;i<leaves.size();++i)if(leaves[i].proposal.gain>gain){gain=leaves[i].proposal.gain;choice=i;}
-            if(choice==leaves.size())break;Leaf parent=std::move(leaves[choice]);leaves.erase(leaves.begin()+choice);
-            Leaf left,right;left.indices=std::move(parent.proposal.left);right.indices=std::move(parent.proposal.right);
-            left.center=weighted_center(left.indices);right.center=weighted_center(right.indices);
-            left.parent=right.parent=parent.center;left.proposal=propose_split(left.indices);right.proposal=propose_split(right.indices);
-            leaves.push_back(std::move(left));leaves.push_back(std::move(right));
+        const auto build_tree=[&](bool family_root){
+            Leaf root;root.indices.resize(seed_count);
+            for(std::size_t i=0;i<seed_count;++i)root.indices[i]=static_cast<std::uint32_t>(i*s.size()/seed_count);
+            root.center=weighted_center(root.indices);root.parent=root.center;
+            root.proposal=propose_split(root.indices,family_root);
+            std::vector<Leaf> result;result.push_back(std::move(root));
+            while(result.size()<cfg.palette_colors){std::size_t choice=result.size();double gain=0.0;
+                for(std::size_t i=0;i<result.size();++i)if(result[i].proposal.gain>gain){gain=result[i].proposal.gain;choice=i;}
+                if(choice==result.size())break;Leaf parent=std::move(result[choice]);result.erase(result.begin()+choice);
+                Leaf left,right;left.indices=std::move(parent.proposal.left);right.indices=std::move(parent.proposal.right);
+                left.center=weighted_center(left.indices);right.center=weighted_center(right.indices);
+                left.parent=right.parent=parent.center;left.proposal=propose_split(left.indices);right.proposal=propose_split(right.indices);
+                result.push_back(std::move(left));result.push_back(std::move(right));
+            }
+            return result;
+        };
+        auto leaves=build_tree(false);
+        if(cfg.family_priority>0.0f&&cfg.palette_colors>=4){
+            const auto family_leaves=build_tree(true);
+            std::size_t anchor_index=0;double anchor_score=-1.0;
+            std::vector<PaletteColor> primary;primary.reserve(leaves.size());
+            for(const auto& leaf:leaves)primary.push_back(make_color(leaf.center));
+            for(std::size_t i=0;i<family_leaves.size();++i){
+                float nearest=std::numeric_limits<float>::max();
+                const float chroma=std::hypot(family_leaves[i].center.a,family_leaves[i].center.b);
+                for(const auto& node:primary)nearest=std::min(nearest,
+                    distance2(family_leaves[i].center,chroma,node));
+                double mass=0.0;for(const auto index:family_leaves[i].indices)mass+=sample_importance[index];
+                const double score=nearest*std::sqrt(mass/std::max(1.0,static_cast<double>(seed_count)));
+                if(score>anchor_score){anchor_score=score;anchor_index=i;}
+            }
+            const auto anchor=family_leaves[anchor_index].center;
+            const auto anchor_color=make_color(anchor);
+            std::size_t drop=0;double best_loss=std::numeric_limits<double>::max();
+            for(std::size_t removed=0;removed<leaves.size();++removed){double loss=0.0;
+                for(std::size_t q=0;q<seed_count;++q){const auto index=static_cast<std::uint32_t>(q*s.size()/seed_count);
+                    const auto& sample=s[index];const float chroma=std::hypot(sample.a,sample.b);
+                    float d=distance2(sample,chroma,anchor_color);
+                    for(std::size_t j=0;j<primary.size();++j)if(j!=removed)
+                        d=std::min(d,distance2(sample,chroma,primary[j],d));
+                    loss+=sample_importance[index]*d;
+                }
+                if(loss<best_loss){best_loss=loss;drop=removed;}
+            }
+            leaves[drop].center=anchor;leaves[drop].parent=anchor;
         }
         for(const auto& leaf:leaves){palette_centroids.push_back(leaf.center);palette_parents.push_back(leaf.parent);}
         while(palette_centroids.size()<cfg.palette_colors){const auto source=palette_centroids.size()%leaves.size();
@@ -415,19 +535,14 @@ struct Engine::Impl {
         refresh_palette();initialized=true;
     }
 
-    void update_palette(const FrameView& f) {
-        fill_samples(f);
+    void update_palette() {
+        fill_samples();
         const auto& s = sample_scratch;
         if (!initialized || palette.size() != cfg.palette_colors) seed_palette(s);
         const std::size_t k = palette.size();
         std::array<double,64> weight{}, sl{}, sa{}, sb{}, salpha{};
         for (std::size_t i = 0; i < s.size(); ++i) {
-            float best = std::numeric_limits<float>::max(); std::size_t bi = 0;
-            for (std::size_t j = 0; j < k; ++j) {
-                const float d = distance2(s[i], palette[j]);
-                if (d < best) { best = d; bi = j; }
-            }
-            sample_owner[i] = static_cast<std::uint16_t>(bi);
+            sample_owner[i]=nearest_palette(s[i],sample_owner[i]).first;
         }
         for (std::size_t i = 0; i < s.size(); ++i) {
             const auto j = sample_owner[i];
@@ -448,7 +563,7 @@ struct Engine::Impl {
         refresh_palette();
     }
 
-    void assign_lattice(const FrameView& f) {
+    void prepare_lattice(const FrameView& f) {
         stats.changed_cells=0;stats.reused_cells=0;
         for (std::uint32_t y = 0; y < gh; ++y) {
             const auto sy = std::min(f.height - 1, (2*y + 1)*f.height/(2*gh));
@@ -470,17 +585,39 @@ struct Engine::Impl {
                     token|=yy|(static_cast<std::uint64_t>(u)<<8)|(static_cast<std::uint64_t>(v)<<16);
                     token|=static_cast<std::uint64_t>(f.full_range)<<40;
                 }
-                Lab lab;
-                if(grid_token[q]==token){lab=grid_lab[q];++stats.reused_cells;}
-                else{lab=read_lab(f,sx,sy);grid_lab[q]=lab;grid_token[q]=token;++stats.changed_cells;}
-                float best = std::numeric_limits<float>::max(); std::uint16_t bi = 0;
-                for (std::uint16_t j = 0; j < palette.size(); ++j) {
-                    const float d = distance2(lab, palette[j]);
-                    if (d < best) { best = d; bi = j; }
-                }
-                labels[q] = bi;
+                if(grid_token[q]==token)++stats.reused_cells;
+                else{grid_lab[q]=read_lab(f,sx,sy);grid_token[q]=token;++stats.changed_cells;}
             }
         }
+    }
+
+    void assign_lattice() {
+        stats.reassigned_cells=0;
+        for(std::uint32_t y=0;y<gh;++y)for(std::uint32_t x=0;x<gw;++x){
+                const std::size_t q=static_cast<std::size_t>(y)*gw+x;
+                Lab lab=grid_lab[q];
+                if(cfg.texture_priority>0.0f){
+                    float local=0.0f,normalization=0.0f;
+                    for(int dy=-1;dy<=1;++dy)for(int dx=-1;dx<=1;++dx){
+                        const auto nx=static_cast<std::uint32_t>(std::clamp(static_cast<int>(x)+dx,0,static_cast<int>(gw)-1));
+                        const auto ny=static_cast<std::uint32_t>(std::clamp(static_cast<int>(y)+dy,0,static_cast<int>(gh)-1));
+                        const float weight=(dx==0?2.0f:1.0f)*(dy==0?2.0f:1.0f);
+                        local+=weight*grid_lab[static_cast<std::size_t>(ny)*gw+nx].l;normalization+=weight;
+                    }
+                    lab.l=clamp01(lab.l+cfg.texture_priority*(lab.l-local/normalization));
+                }
+                const auto previous=labels_initialized?labels[q]:0;
+                auto nearest=nearest_palette(lab,previous);
+                std::uint16_t bi=nearest.first;
+                if(labels_initialized&&bi!=previous&&cfg.assignment_hysteresis>0.0f){
+                    const float sample_c=std::hypot(lab.a,lab.b);
+                    const float previous_distance=distance2(lab,sample_c,palette[previous]);
+                    if(nearest.second>=previous_distance*(1.0f-cfg.assignment_hysteresis))bi=previous;
+                }
+                if(labels_initialized&&bi!=previous)++stats.reassigned_cells;
+                labels[q] = bi;
+        }
+        labels_initialized=true;
     }
 
     void update_edges() {
@@ -705,9 +842,10 @@ struct Engine::Impl {
         if (!f.data || f.width == 0 || f.height == 0 ||
             f.stride < static_cast<std::ptrdiff_t>(packed?4*f.width:f.width) || !valid_chroma)
             return stats;
-        const auto t0 = Clock::now(); ensure_shape(f);
-        update_palette(f); const auto t1 = Clock::now();
-        assign_lattice(f); const auto t2 = Clock::now();
+        const auto t0 = Clock::now(); ensure_shape(f);prepare_lattice(f);
+        if(!initialized||frame_number%cfg.palette_update_interval==0)update_palette();
+        const auto t1 = Clock::now();
+        assign_lattice(); const auto t2 = Clock::now();
         if(cfg.posterize_only){segments.clear();commands.clear();stats.live_glyphs=0;}
         else update_edges();
         const auto t3 = Clock::now();
@@ -884,11 +1022,16 @@ void Engine::set_config(const Config& c) {
     const auto next=Impl::sanitize(c);const auto& old=impl_->cfg;
     const bool reseed=next.palette_colors!=old.palette_colors||next.palette_samples!=old.palette_samples||
         next.detail_priority!=old.detail_priority||next.population_exponent!=old.population_exponent||
+        next.family_priority!=old.family_priority||next.structure_radius!=old.structure_radius||
+        next.structure_threshold!=old.structure_threshold||
         next.lightness_weight!=old.lightness_weight||next.chroma_weight!=old.chroma_weight||
         next.hue_weight!=old.hue_weight||next.alpha_weight!=old.alpha_weight||
         next.minimum_leaf!=old.minimum_leaf||next.bifurcation_refinement!=old.bifurcation_refinement;
     const bool reseparate=next.node_separation!=old.node_separation;
-    impl_->cfg=next;if(reseed)impl_->initialized=false;else if(reseparate&&!impl_->palette_centroids.empty())impl_->refresh_palette();
+    const bool reassign=next.texture_priority!=old.texture_priority;
+    impl_->cfg=next;if(reseed){impl_->initialized=false;impl_->labels_initialized=false;}
+    else{if(reassign)impl_->labels_initialized=false;
+        if(reseparate&&!impl_->palette_centroids.empty())impl_->refresh_palette();}
     impl_->reserve_outputs();
 }
 const Config& Engine::config() const noexcept { return impl_->cfg; }

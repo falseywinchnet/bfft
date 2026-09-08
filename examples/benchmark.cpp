@@ -1,4 +1,7 @@
 #include <bfft/bfft.hpp>
+#if defined(BFFT_BENCH_QUARTIC_WALK)
+#include "../experiments/real_fourier_walk/normalized_quartic.hpp"
+#endif
 
 #include <algorithm>
 #include <chrono>
@@ -600,6 +603,54 @@ Result bench_one(std::size_t n, int forced_iters, FFTW* fftw, FFTWf* fftwf, Inte
     plan.forward(input.data(), standard.data(), work.data(), scratch.data());
     result.sink += standard[(static_cast<std::size_t>(result.sink) * 17) % nb].re;
   });
+
+#if defined(BFFT_BENCH_QUARTIC_WALK)
+  // Opt-in research comparison in the production benchmark. Both paths include
+  // real input copying and standard-bin output; plans/allocations are untimed.
+  for (int variant = 0; variant < 4; ++variant) {
+    const quartic_walk::Policy policies[] = {quartic_walk::Policy::sibling,
+      quartic_walk::Policy::separated, quartic_walk::Policy::random, quartic_walk::Policy::separated};
+    const char* names[] = {"sibling", "separated", "random", "separated_unfused"};
+    quartic_walk::Plan walk(static_cast<int>(n), policies[variant],7043,variant!=3);
+    std::vector<double> walk_work(n), walk_input(original), dif_input(original);
+    std::vector<bfft::complex> walk_out(nb), dif_out(nb);
+    walk.forward(original.data(), walk_out.data(), walk_work.data());
+    plan.forward(original.data(), dif_out.data(), work.data(), scratch.data());
+    double peak = 0, error2 = 0, reference2 = 0;
+    for (std::size_t k = 0; k < nb; ++k) {
+      double dr=walk_out[k].re-dif_out[k].re, di=walk_out[k].im-dif_out[k].im;
+      if (!std::isfinite(dr) || !std::isfinite(di)) throw std::runtime_error("quartic nonfinite result");
+      peak=std::max(peak,std::max(std::abs(dr),std::abs(di)));
+      error2+=dr*dr+di*di;
+      reference2+=dif_out[k].re*dif_out[k].re+dif_out[k].im*dif_out[k].im;
+    }
+    double relative=std::sqrt(error2/std::max(reference2,1e-300));
+    if(relative>1e-10) throw std::runtime_error("quartic correctness gate failed");
+    double dt[7],wt[7];std::size_t dc=0,wc=0;
+    auto run_dif=[&] {
+      dif_input[(dc*131)&(n-1)]+=1e-12;
+      plan.forward(dif_input.data(),dif_out.data(),work.data(),scratch.data());
+      result.sink+=dif_out[(dc++*17)%nb].re;
+    };
+    auto run_walk=[&] {
+      walk_input[(wc*131)&(n-1)]+=1e-12;
+      walk.forward(walk_input.data(),walk_out.data(),walk_work.data());
+      result.sink+=walk_out[(wc++*17)%nb].re;
+    };
+    for(int pass=0;pass<7;++pass) {
+      if(pass&1) {wt[pass]=bench_ns(iters,run_walk);dt[pass]=bench_ns(iters,run_dif);}
+      else {dt[pass]=bench_ns(iters,run_dif);wt[pass]=bench_ns(iters,run_walk);}
+    }
+    std::sort(dt,dt+7);std::sort(wt,wt+7);
+    std::printf("QUARTIC {\"N\":%zu,\"policy\":\"%s\",\"iters\":%d,\"passes\":7,"
+                "\"dif_ns\":%.3f,\"walk_ns\":%.3f,\"walk_over_dif\":%.6f,"
+                "\"max_abs_error\":%.9g,\"relative_l2_error\":%.9g,"
+                "\"plan_bytes\":%zu,\"crossings\":%zu,\"executed_crossings\":%zu,\"dif_min_ns\":%.3f,\"dif_max_ns\":%.3f,"
+                "\"walk_min_ns\":%.3f,\"walk_max_ns\":%.3f}\n",
+                n,names[variant],iters,dt[3],wt[3],wt[3]/dt[3],peak,relative,
+                walk.plan_bytes(),walk.crossings(),walk.executed_crossings(),dt[0],dt[6],wt[0],wt[6]);
+  }
+#endif
 
   input_f32 = original_f32;
   result.native_f32_ns = bench_ns(iters, [&] {

@@ -1,7 +1,7 @@
 # ML experiment: self-context Eikonal acquisition
 
 This folder is a self-contained checkpoint of the structure-learning study. It
-contains the model, all 23 tasks, five additions to the self-context baseline,
+contains the model, all 24 tasks, five additions to the self-context baseline,
 the exact-budget ordinary LELU MLP control, raw results, fitted probes, an
 interactive visualization, and the research interpretation.
 
@@ -34,6 +34,36 @@ Fourier basis, periodic feature map, unseen-support label, or GELU activation.
 - [`RESPONSE_ENHANCED_REPORT.md`](RESPONSE_ENHANCED_REPORT.md): 184-fit,
   two-seed comparison of original self-context, relational SCL, baseline CFF,
   and relational/deeper-response CFF, including CPU Pareto measurements.
+- [`ANCHOR_BATTERY_REPORT.md`](ANCHOR_BATTERY_REPORT.md): 432-fit paired
+  AdamW/SGD/Anchor iteration-efficiency battery, including the complete winner
+  rule, aggregate result, and failure boundary.
+- [`ANCHOR_FORMAL_DECOMPOSITION.md`](ANCHOR_FORMAL_DECOMPOSITION.md): exact
+  recurrence, Euclidean/Bregman comparison, Meyer-transport boundary, scalar
+  stability analysis, and falsifiable next experiments for Anchor.
+- [`MUON_GEOMETRY_NOTE.md`](MUON_GEOMETRY_NOTE.md): faithful Muon recurrence,
+  spectral/Shampoo equivalence, precise non-Bregman boundary, and the proposed
+  restraint-shaped matrix momentum geometry.
+- [`MUON_TRANSPORT_LEPTON_RESULT.md`](MUON_TRANSPORT_LEPTON_RESULT.md):
+  Transport-Muon, smooth Bregman Lepton, transported dual-state Lepton, the
+  60-run paired result, and the resulting mirror-shaped Anchor hypothesis.
+- [`MUON_PRIMACY_PROBLEM.md`](MUON_PRIMACY_PROBLEM.md): exact one-step and
+  rank-deficient block-sweep theorems for anisotropic operator recovery,
+  numerical certificate, random-streaming boundary, and the resulting moving
+  block research program.
+- [`optimizer.py`](optimizer.py): standalone `ResidualPolarTransport`
+  implementation with explicit training-residual observation, optional
+  layer-local activation/cotangent hooks, reversible Fusion/polar control,
+  cached matrix roots, and a copyable `Optimizer` alias.
+- [`MATRIX_TRANSPORT_BREGMAN_TRANSLATION.md`](MATRIX_TRANSPORT_BREGMAN_TRANSLATION.md):
+  the Fusion/Muon crossover-state decomposition, residual-operator anisotropy
+  governor, and the first governed self-context result.
+- [`RESIDUAL_POLAR_RIPPLE.md`](RESIDUAL_POLAR_RIPPLE.md): five-seed AdamW,
+  Muon, fixed Matrix Transport, and `optimizer.py` Ripple stability test,
+  including the live entropy-rank/polar-weight trace and wall-time boundary.
+- [`OPTIMIZER_GEOMETRY_BATTERY_REPORT.md`](OPTIMIZER_GEOMETRY_BATTERY_REPORT.md):
+  864-fit six-arm neural battery plus 72 operator-witness runs, the restrained
+  slow-memory Anchor ablation, exact/practical Muon boundary, complete paired
+  result, and all-problem validation/loss atlas.
 - [`response_enhanced.py`](response_enhanced.py): the new relational SCL and
   response-enhanced CFF layers.
 - [`response_enhanced.html`](response_enhanced.html): complete timing table,
@@ -78,7 +108,7 @@ Seven parameter-identical variants are compared:
 
 `models.py` contains LELU, the soft Eikonal layer, and the exact-budget MLP.
 `variants.py` constructs the seven matched models. `tasks.py` contains the full
-23-problem suite. `build_problem_atlas.py` compacts the fitted probes into the
+24-problem suite. `build_problem_atlas.py` compacts the fitted probes into the
 responsive all-problem visualization.
 
 ## Reproduce on the M4 Mini CPU
@@ -200,3 +230,57 @@ python3 -m ML_experiment.build_problem_atlas
 The benchmark uses CPU Torch, AdamW, paired seeds, explicit held-out support,
 mean class recall for classification, and normalized MSE-derived score for
 regression. See `REPORT.md` for the boundaries on what the results establish.
+
+## Anchor optimizer experiment
+
+`anchor.py` contains the standalone transported lead--lag optimizer.  The
+`anchor` factory uses a fixed maximum LR with a local dynamic trust controller;
+`anchor_fixed` and `anchor_isotropic` retain the mechanism ablations.  The
+derivation and pre-battery contrast screen are in
+`../experiments/sgd_transport_restraint/ANCHOR.md`.
+
+The completed three-optimizer battery is documented in
+`ANCHOR_BATTERY_REPORT.md`.  Recompute its frozen summary with:
+
+```sh
+python3 -m ML_experiment.analyze_anchor_battery \
+  ML_experiment/results_anchor_battery/results.json \
+  --out ML_experiment/results_anchor_battery/summary.json
+```
+
+## Source-aware self-context optimizer battery
+
+`context_backprop.py` decomposes the parameter cotangent into the derivative
+with the self-context chart held fixed and the feedback caused by moving that
+chart. `split_trust` applies the locally nonexpansive normalization derivative,
+then bounds chart feedback once per parameter tensor without elementwise
+clipping. The forward function is bit-identical across backward modes.
+
+The four-arm battery compares Anchor, Transport-Lepton, AdamW, and Transported
+AdamW on the same self-context model. `TransportedAdamW` replaces AdamW's
+elementwise second moment with a transported full covariance inside each row;
+it does not couple rows or apply Muon's matrix polar map.
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  PYTHONPATH=/Users/joshuahkuttenkuler/Library/Python/3.9/lib/python/site-packages \
+  python3 -m ML_experiment.run_benchmark \
+  --out /tmp/cured_four_arm_full --variants self_context --widths 24 \
+  --seeds 3 --steps 500 --batch 256 --eval-every 5 \
+  --context-backward-mode nonexpansive \
+  --context-gradient-mode split_trust \
+  --optimizers anchor_cured,lepton_transport_cured,adamw,adamw_transport \
+  --optimizer-lrs anchor_cured=1.0,lepton_transport_cured=.003,adamw=.003,adamw_transport=.003
+```
+
+After copying the M4 result back, rebuild the atlas with:
+
+```sh
+python3 ML_experiment/build_cured_optimizer_atlas.py \
+  ML_experiment/results_cured_four_arm_full/results.json \
+  --operator ML_experiment/results_transported_adam_operator_rms.json \
+  --out ML_experiment/cured_optimizer_atlas.html
+```
+
+The mathematical and experimental notes are
+`SELF_CONTEXT_BACKPROP_TRANSPORT.md` and `TRANSPORTED_ADAMW.md`.

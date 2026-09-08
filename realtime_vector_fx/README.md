@@ -30,15 +30,41 @@ posterizer and topology-first vector tracing ideas, designed around a strict
    rendering so the OBS GPU filter can posterize the full-resolution texture
    with a shader and stream only low-resolution analysis pixels to the CPU.
 
-## Dedicated posterizer filter
+## Posterizer Mark IV
 
-The OBS bundle also registers **Optimal OKLCH Posterizer**, a posterization-only
+The OBS bundle registers **Posterizer Mark IV**, a posterization-only
 GPU filter. It does not allocate trace-history textures or a geometry buffer,
 and the core skips edge extraction, segment scheduling, glyph simulation, and
 all overlay work. Its properties expose 2–64 colors plus the original
 posterizer's node separation, lightness/chroma/hue/alpha metric weights, detail
 priority, sublinear area exponent, minimum leaf size, split-refinement passes,
 sample budget, analysis resolution, and temporal-prior learning rate.
+
+The August assignment work is now part of the live engine as well: an
+edge-aware structural field suppresses noise during palette learning, a second
+chroma/hue-sensitive proposal tree reserves a useful underrepresented color
+family, assignment uses the actual gamut-mapped display nodes, and measured
+local lightness residual can steer categorical texture boundaries. These are
+exposed as **Color-family priority**, **Structure radius**, **Structure edge
+threshold**, and **Texture assignment priority**. Spatial mixing remains off
+in the realtime filter because frame-local error diffusion would work against
+Mark IV's temporal consistency goal.
+
+Mark IV keeps its stratified sample phase fixed across frames, updates the
+palette every two frames by default, and retains an established lattice color
+unless a replacement improves perceptual distance by the configured **Color
+stability** margin. These three layers prevent sample shimmer, soften palette
+motion, and stop near-tie ownership boundaries from flashing. The palette
+refresh interval and stability margin remain live OBS controls.
+
+High-color assignment is exact but no longer pays for repeated chroma square
+roots on every palette comparison. Palette nodes cache chroma, candidates are
+visited in lightness order, the current owner is tested first, and the search
+stops as soon as the lightness lower bound cannot beat it. The old
+`optimal_oklch_posterizer` source ID remains registered as an obsolete alias so
+existing OBS scenes continue to load; new scenes use `posterizer_mark_iv`.
+Structural neighborhoods reuse this same cached analysis lattice, so enabling
+the more useful palette learning does not reconvert every neighbor to OKLab.
 
 A lightweight GPU-only finish adds optional graphic contours at palette-region
 boundaries, restrained luminance-detail ink inside those regions, line reach,
@@ -112,7 +138,8 @@ the non-installing Metal filter-chain test.
 - `../posterizer/src/posterizer/core.py` and `oklch.py`: perceptual OKLab/OKLCH
   ownership, detail-weighted/sublinear population allocation, deterministic
   bifurcation, assignment, and component cleanup. This is the optimized
-  posterizer (commits `a25e385`, `701e00f`, `98ae5d5`).
+  posterizer (commits `a25e385`, `701e00f`, `98ae5d5`, and the assignment work
+  published in `ce012d1`).
 - `../svg_converter/src/tlvector/core.py`: topology-first owner lifting,
   parent-locked residual colors, exact oriented raster-square boundary loops,
   simplification, subpixel relaxation, and quadratic SVG compilation. This is

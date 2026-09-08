@@ -1,0 +1,99 @@
+The conservative zero-detail transform ablation uses the dyadic state of
+Section~IX. Fine
+arrays have 16, 32, or 64 cells per axis. The one-dimensional census contains
+one Nyquist sequence, eight phases of a $0.92\pi$ carrier, and eight phases
+of a quadratic chirp at each size. The two-dimensional census contains axial
+and checkerboard Nyquist arrays, eight half-plane interfaces over four angles
+and two offsets, and four chirp phases. Half-plane pixels are their analytic
+polygonal cell coverage; no supersampling constructs the reference.
+
+Each method uses its own analysis and synthesis. CONV-C denotes
+\eqref{eq:scaleaverage} followed by zero-residual synthesis
+\eqref{eq:synthleft}--\eqref{eq:synthright} and its two-dimensional moment
+form. Box-bilinear uses the same positive analysis and pixel-center linear
+synthesis. For Lanczos-3, if \(\rho=M/N\), the target center is
+\begin{equation}
+ u_j=\frac{j+1/2}{\rho}-\frac12,\qquad
+ \kappa=\min(1,\rho),
+ \label{eq:celllanczoscoordinate}
+\end{equation}
+and its normalized in-domain weight is
+\begin{equation}
+ \begin{aligned}
+ w_{jn}&\propto
+ \operatorname{sinc}\!\left(\kappa(u_j-n)\right)
+ \operatorname{sinc}\!\left(\frac{\kappa(u_j-n)}3\right),\\
+ &\hspace{25mm}|\kappa(u_j-n)|<3.
+ \end{aligned}
+ \label{eq:celllanczosweight}
+\end{equation}
+The same definition is used in analysis and synthesis; finite boundaries are
+truncated and renormalized. MSE is evaluated against the original fine cell
+array after a four-cell boundary crop.
+
+\begin{figure*}[t]
+ \centering
+ \includegraphics[width=\textwidth]{conv_conservative_evidence/conservative_cycle.pdf}
+ \caption{Conservative zero-detail transform ablation. Left: geometric-mean MSE
+ over all 14 two-dimensional cases at each size. Right: mean MSE over the
+ eight polygonal diagonal interfaces. Each curve uses its method's declared
+ analysis and synthesis.}
+ \label{fig:conservativecycle}
+\end{figure*}
+
+\begin{table}[H]
+\caption{Conservative two-dimensional zero-detail ablation}
+\label{tab:conservativecycle}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3.0pt}
+\begin{tabular}{c|ccc|c}
+\hline
+Fine side & CONV-C & L3 & Box-bilin. & Edge ratio \\
+\hline
+16 & $2.78\!\times\!10^{-2}$ & $3.16\!\times\!10^{-2}$ &
+$4.57\!\times\!10^{-2}$ & 0.845 \\
+32 & $1.45\!\times\!10^{-2}$ & $1.64\!\times\!10^{-2}$ &
+$2.35\!\times\!10^{-2}$ & 0.807 \\
+64 & $8.66\!\times\!10^{-3}$ & $9.86\!\times\!10^{-3}$ &
+$1.41\!\times\!10^{-2}$ & 0.793 \\
+\hline
+\end{tabular}
+\end{table}
+
+CONV-C has the lowest aggregate MSE at all three sizes. Its mean diagonal
+interface MSE is 15.5, 19.3, and 20.7 percent below Lanczos-3 as size
+increases. The chirp comparison is phase dependent: CONV-C has the lower
+four-phase mean at side 16, while Lanczos-3 is lower by 0.50 and 1.14 percent
+at sides 32 and 64. Thus the aggregate result does not conceal the remaining
+high-frequency case.
+
+The conservative restriction maps axial Nyquist and checkerboard inputs to
+zero exactly, agreeing with \eqref{eq:nyquistresponse} and
+\eqref{eq:nyquist2d}. CONV-C has zero horizontal and vertical sign surplus in
+all 42 two-dimensional cases. Six retained-detail audits---one line and one
+three-channel raster at each size---have maximum binary64 round-trip residual
+$8.88\times10^{-16}$; the exact identity is proved in Section~IX.
+
+The preceding census isolates the reversible conservative state. The
+technical fields in Fig.~\ref{fig:currentmatchedplate} instead use the current
+principal raster operator in a matched
+\(64^2\!\rightarrow32^2\!\rightarrow64^2\) cycle. CONV$^{*}$ applies basin
+restriction followed by its present \(Q_1\)-compiled synthesis. Lanczos-3
+uses its endpoint-aligned, scale-widened kernel in both
+directions, while bilinear uses endpoint-aligned linear interpolation in both
+directions. Thus no row inherits the CONV-C zero-detail synthesis shown in
+Fig.~\ref{fig:conservativecycle}.
+
+\begin{figure*}[t]
+ \centering
+ \includegraphics[width=0.92\textwidth]{conv_conservative_evidence/current_matched_plate.pdf}
+ \caption{Fine-grid truth and current matched resize cycles. For the selected
+ diagonal interface, MSE is $1.86\times10^{-3}$ for CONV$^{*}$,
+ $1.37\times10^{-3}$ for Lanczos-3, and $2.64\times10^{-3}$ for bilinear;
+ the corresponding range excursions are $3.91\times10^{-2}$,
+ $9.63\times10^{-2}$, and zero. On the quadratic chirp, MSE is
+ $5.37\times10^{-2}$, $5.20\times10^{-2}$, and $6.00\times10^{-2}$ in the
+ same order.}
+ \label{fig:currentmatchedplate}
+\end{figure*}
