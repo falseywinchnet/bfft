@@ -106,10 +106,9 @@ def main():
             r'time, while frequent boundary changes can eliminate that benefit. '
             r'The timing table retains all seeds and repeats.}',r'\end{figure}',
             r'This extension establishes a discoverable, checkable finite transport '
-            r'construction for a nontrivial convex mirror class. The central unresolved '
-            r'problem is to discover comparably economical validity descriptions for '
-            r'curved proximal geometry and changing observable spaces, including the '
-            r'original coupled Meyer iteration.']
+            r'construction for a nontrivial convex mirror class. The next section '
+            r'extends validity to the curved original Meyer map. Economical '
+            r'acquisition across changing geometries remains a separate requirement.']
     (PAPER/'discovery_results.tex').write_text('\n\n'.join(tex)+'\n')
     (RECORDS/'discovery_summary.json').write_text(json.dumps(output,indent=2))
     print(json.dumps(output,indent=2))

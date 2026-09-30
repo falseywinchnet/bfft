@@ -216,7 +216,7 @@ Reproduce on the selected Mini (copy each /tmp result back immediately):
   --seeds 3 --repeats 3 --budget 80000
 ```
 
-The next major question is a discovery certificate for curved proximal pieces
+The next major question at that stage was a discovery certificate for curved proximal pieces
 and lifted observables. An unchanged exterior disk mask is not an affine
 piece. Extending the Huber theorem to that case requires new geometry, not
 relabeling an existing mask check as a certificate.
@@ -236,3 +236,100 @@ The recorded Anderson trajectories include gap excursions of 25.26x and
 7.35x the initial gap on seeds zero and one before recovering. Final time
 alone omits this behavior; the paper preserves it explicitly. Recorded
 checkpoints are not a bound on every intermediate objective value.
+
+## Curved Meyer continuation: exact validity beyond affine pieces
+
+`curved_meyer.py` applies to the original coupled recurrence in
+`experiments/meyer_transport_audit/model.py`. It does not replace either disk
+projection or remove a vector memory. The exact future-driving state is
+`(s=u+w, t_u, t_w)`. The emitted texture is already `f-s`; the current primal
+difference is forgotten, but an actual next pass recovers both next primals
+exactly. Independent tests compare complete future outputs.
+
+The quotient is globally nonexpansive, and in fact 2/3-averaged, in
+`||s||² + 2||t_u||² + 10||t_w||²`. The proof factors each branch into a firmly
+nonexpansive graph/projection map and then combines their energy inequalities.
+It holds for arbitrary input states, not only a proximal trajectory.
+
+For a reduced direction, every disk's squared radius is a quadratic form in
+Krylov coordinates. The implementation prepares normal/tangential linear
+forms and evaluates the exact projection remainder, including both inward
+and outward crossings. Exterior radial motion is distinguished from turning.
+The full map's nonlinear remainder is a fixed linear response to these two
+projection remainders. Its Fourier operator norm is computed once from the
+grid and parameters (1.14819 on the retained 64-square grid), independently of
+the image. Path validation therefore needs **zero additional screened solves**.
+It still has pointwise/coordinate evaluation cost, which is timed.
+
+The sum of curvature and Arnoldi compression bounds controls the actual
+finite trajectory in the nonexpansive quotient norm and bounds emitted
+texture error. This is an exact-arithmetic theorem with floating-point
+verification, not an outward-rounded numerical certificate.
+
+Retained evidence:
+
+- `curved_meyer_v1.json`: 240 predictions on camera, Barbara, a permuted
+  camera, a straight carrier, and crossing carriers/edge, size 64; ordinary
+  prefixes 4/32/128/512; depths 2/4/8; horizons 8/16/32/64. No measured bound
+  violation. Acquisition plus full-horizon checks/reconstruction are timed.
+- `curved_discovery_v1.json`: live order/horizon discovery at the twenty
+  source/prefix anchors, five timing repeats. Seven anchors admitted. Late
+  camera selects depth 2/horizon 16 and is 1.39x faster than replay; coherent
+  carrier anchors select depth 2/horizon 64 and achieve 3.47x/3.48x. Three
+  other admitted blocks fail to amortize in time despite nominal work savings.
+- `curved_solve_v1.json`: complete same-map solves at a primal-dual gap ratio
+  target of 1e-4, budget 4096 map/tangent units, three shuffled timings.
+  The discovered policy loses to ordinary iteration on all five sources.
+  It uses a 10% displacement-relative sufficient path bound and a 32-step
+  ordinary cooldown after failed acquisition. Failed probes, geometry checks,
+  output-recovery steps, and gap checks are charged. The six-field fixed
+  polynomial and fixed quotient polynomial remain separate comparators.
+
+These results establish the curved validity description and some local
+amortization; they do not establish a generally faster complete solver.
+The conservative gate is a research instrument, not a promoted replacement
+for the native Meyer operator. Whole-trajectory fidelity remains sufficient
+for this certificate but is not necessary for useful objective acceleration.
+
+The complete research suite now passes **41 tests**, including sharp
+attainment of the Fourier gain, the averaged inequality, crossing formulas,
+quotient output equivalence, and actual trajectory-error bounds.
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.krylov_bregman.test_curved_meyer \
+  experiments.krylov_bregman.test_contracts \
+  experiments.krylov_bregman.test_discovery \
+  experiments.krylov_bregman.test_certified_piece -v
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.curved_study \
+  --out /tmp/krylov_curved_meyer_v1.json --size 64 --repeats 3
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.curved_discovery_study \
+  --out /tmp/krylov_curved_discovery_v1.json --size 64 --repeats 5
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.curved_solve \
+  --out /tmp/krylov_curved_solve_v1.json --size 64 --repeats 3 \
+  --budget 4096 --target 1e-4
+```
+
+Copy each remote JSON immediately into this experiment's `results/` folder.
+Render locally with the existing environment:
+
+```sh
+/Users/ultimussecundai/bfft/.venv-jpeg/bin/python \
+  -m experiments.krylov_bregman.curved_report
+tectonic --keep-logs --outdir output/pdf paper/krylov_bregman/main.tex
+```
+
+The next cost questions are acquisition scheduling and how much structure is
+lost when spatial curvature responses are reduced to norm bounds. Capturing
+the direction and cancellation of those responses may improve the certificate,
+but its extra discovery cost must be measured; it is not implemented here.

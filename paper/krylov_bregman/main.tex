@@ -45,7 +45,9 @@ compression from geometric evolution. A boundary-optimum entropy example
 shows why finite transport remains meaningful without a finite dual fixed
 point. An initial synthetic study measures complete execution cost and
 includes stationary Krylov and Anderson comparators. We extend the investigation to algebraic discovery, polynomial observable
-closure, and a certified affine-piece construction for Huber mirror descent.
+closure, and certified constructions for Huber mirror descent and the original coupled
+Meyer map. The latter uses an exact future-driving quotient, its nonexpansive
+metric, and pointwise algebraic descriptions of disk curvature.
 These results formulate
 a research program in geometry-aware polynomial transport; they do not
 establish a universal acceleration theorem or priority for polynomial
@@ -500,6 +502,8 @@ problem samples. Failures and budget censoring remain in the records.
 
 \input{discovery.tex}
 
+\input{curved_meyer.tex}
+
 \section{What would establish the broader research claim?}
 The useful generalization is a statement about a favorable combination of
 geometry and cost. A low-dimensional local Krylov space must capture the
@@ -510,9 +514,11 @@ ordinary work it replaces. The preceding propositions make these conditions
 explicit, but do not establish that they hold uniformly across Bregman methods.
 
 Three developments would turn the present foundations into a stronger
-fundamental result. First, a practical nonlinear bound must control the
-trajectory defect without evaluating every skipped step, including active
-manifold transitions and degeneration of mirror metrics near boundaries.
+fundamental result. First, nonlinear bounds must become sufficiently tight and cheap across
+regimes to justify their use in discovery. The curved Meyer certificate
+controls boundary transitions without replaying screened solves, but its
+conservative admission policy does not yet amortize across complete solves.
+Degenerating mirror metrics near boundaries remain a separate issue.
 Second, a geometric rule for horizon and dimension must be assessed against
 fixed choices with its entire acquisition cost charged. Third, independent
 problems and faithful implementations of guarded AA-BPG, trajectory-following

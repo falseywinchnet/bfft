@@ -1546,6 +1546,14 @@ thread; exact retained commands are in that experiment README. Copy their
 `/tmp/krylov_*` JSON outputs into the experiment's `results/` immediately.
 The sparse live-probe gate is diagnostic, not certified. The Huber affine-piece
 certificate does not apply to curved exterior Meyer disk projections.
+The separate `curved_meyer` continuation derives the actual curved-map
+certificate. Run `test_curved_meyer`, `curved_study`,
+`curved_discovery_study`, and `curved_solve` on the selected Mini with one
+BLAS thread; exact arguments and immediate result-copy paths are in the
+experiment README. Its quotient preserves all future-driving memory and the
+emitted texture. Local certified speedups do not establish complete-solve
+acceleration: the retained conservative complete-solve gate loses to ordinary
+iteration. Do not promote it into the native operator.
 
 ## Meyer pre-refresh transport contracts
 
