@@ -1911,3 +1911,24 @@ and noise-resolved history predictions from an actual acquisition algorithm.
 The Gaussian probe is continuous, at fixed regularization, and retains the
 numerical failures of naive matrix block powering as well as the successful
 closed-form marginal checks.
+
+Evaluate directional representation limits on the original six failed scalar
+acquisition cases, including the exact three-anchor affine minimax bound:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.entropic_transport_closure.test_directional_limit -v
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.probe_directional_limit \
+  --out /tmp/directional_limit.json
+```
+
+Copy the JSON immediately into `experiments/entropic_transport_closure/results/theory/`.
+`DIRECTIONAL_LIMIT.md` specifies the metrics, perturbation/excitation ensembles,
+and the difference between a linear representation lower bound, failure of
+the particular scalar affine law, and a general computational impossibility.
+The ordinary transport problems converge; the failed object is the acquisition
+and changing-rule model, not Sinkhorn solvability itself.

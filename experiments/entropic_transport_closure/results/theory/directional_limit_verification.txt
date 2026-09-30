@@ -1,0 +1,7 @@
+2026-09-30, M4 Mini selected by m4host.
+Five test_directional_limit tests passed (0.004 s).
+All six original cases reproduced with original anchor indices and convergence counts.
+Exact directional-capture law verified on retained spectra, including empirical excitation.
+All six evaluated exact three-point affine minimax floors exceed 10% of the last dense eigenvalue change.
+This is numerical evaluation of exact formulas, not an interval-certified calculation.
+Input SHA256: 374a90885faf4770d6ba12a287973c25dee2c3fdbc4e38a51831330afb518c66

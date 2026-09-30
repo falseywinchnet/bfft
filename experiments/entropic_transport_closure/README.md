@@ -13,6 +13,9 @@ carried and advanced in positive-kernel Sinkhorn iteration.
 * [Objection tests and Gaussian controls](CLAUDE_OBJECTIONS.md): cluster size,
   approximate rule observability, history prediction, radius and partial cost
   screens, and exact continuous Gaussian covariance closure at fixed scale.
+* [Directional limit on the failed scalar model](DIRECTIONAL_LIMIT.md): optimized
+  directional-capture bounds, actual-excitation weighting, and an attained
+  three-anchor affine-fit obstruction on the six original failed cases.
 
 Example general-kernel call (NumPy arrays K,a,b):
 
