@@ -1,0 +1,905 @@
+{
+  "rows": [
+    {
+      "scene": "camera",
+      "prefix": 4,
+      "horizon": 16,
+      "depth": 4,
+      "displacement": 486.55683816814974,
+      "compression_error": 280.0384385100955,
+      "geometry_error": 361.8846982031267,
+      "total_error": 323.8258789131949
+    },
+    {
+      "scene": "camera",
+      "prefix": 4,
+      "horizon": 16,
+      "depth": 8,
+      "displacement": 486.55683816814974,
+      "compression_error": 39.24152779228606,
+      "geometry_error": 361.8846982031267,
+      "total_error": 363.436570665893
+    },
+    {
+      "scene": "camera",
+      "prefix": 4,
+      "horizon": 16,
+      "depth": 12,
+      "displacement": 486.55683816814974,
+      "compression_error": 0.46000338560601783,
+      "geometry_error": 361.8846982031267,
+      "total_error": 361.94071980127507
+    },
+    {
+      "scene": "camera",
+      "prefix": 4,
+      "horizon": 64,
+      "depth": 4,
+      "displacement": 682.9178536176585,
+      "compression_error": 1105.796820418897,
+      "geometry_error": 996.5003033167391,
+      "total_error": 522.9889476309478
+    },
+    {
+      "scene": "camera",
+      "prefix": 4,
+      "horizon": 64,
+      "depth": 8,
+      "displacement": 682.9178536176585,
+      "compression_error": 765.9177700787752,
+      "geometry_error": 996.5003033167391,
+      "total_error": 676.5247010473511
+    },
+    {
+      "scene": "camera",
+      "prefix": 4,
+      "horizon": 64,
+      "depth": 12,
+      "displacement": 682.9178536176585,
+      "compression_error": 514.3757371134421,
+      "geometry_error": 996.5003033167391,
+      "total_error": 820.440458064634
+    },
+    {
+      "scene": "camera",
+      "prefix": 32,
+      "horizon": 16,
+      "depth": 4,
+      "displacement": 124.81227474589609,
+      "compression_error": 22.788198368432646,
+      "geometry_error": 38.925969603529396,
+      "total_error": 42.1244930027108
+    },
+    {
+      "scene": "camera",
+      "prefix": 32,
+      "horizon": 16,
+      "depth": 8,
+      "displacement": 124.81227474589609,
+      "compression_error": 2.2920947273869827,
+      "geometry_error": 38.925969603529396,
+      "total_error": 38.98287408369861
+    },
+    {
+      "scene": "camera",
+      "prefix": 32,
+      "horizon": 16,
+      "depth": 12,
+      "displacement": 124.81227474589609,
+      "compression_error": 0.022643491369115948,
+      "geometry_error": 38.925969603529396,
+      "total_error": 38.92634800355694
+    },
+    {
+      "scene": "camera",
+      "prefix": 32,
+      "horizon": 64,
+      "depth": 4,
+      "displacement": 285.9978528665734,
+      "compression_error": 202.1387558763859,
+      "geometry_error": 226.06811656081013,
+      "total_error": 167.65040891887662
+    },
+    {
+      "scene": "camera",
+      "prefix": 32,
+      "horizon": 64,
+      "depth": 8,
+      "displacement": 285.9978528665734,
+      "compression_error": 107.41908731864005,
+      "geometry_error": 226.06811656081013,
+      "total_error": 196.74821085209118
+    },
+    {
+      "scene": "camera",
+      "prefix": 32,
+      "horizon": 64,
+      "depth": 12,
+      "displacement": 285.9978528665734,
+      "compression_error": 68.02651329408687,
+      "geometry_error": 226.06811656081013,
+      "total_error": 209.38869261398713
+    },
+    {
+      "scene": "camera",
+      "prefix": 128,
+      "horizon": 16,
+      "depth": 4,
+      "displacement": 23.255330531968962,
+      "compression_error": 1.3494571833681828,
+      "geometry_error": 1.036641334904991,
+      "total_error": 1.6741111169979201
+    },
+    {
+      "scene": "camera",
+      "prefix": 128,
+      "horizon": 16,
+      "depth": 8,
+      "displacement": 23.255330531968962,
+      "compression_error": 0.153243136465396,
+      "geometry_error": 1.036641334904991,
+      "total_error": 1.0533682629325232
+    },
+    {
+      "scene": "camera",
+      "prefix": 128,
+      "horizon": 16,
+      "depth": 12,
+      "displacement": 23.255330531968962,
+      "compression_error": 0.0015815719502789382,
+      "geometry_error": 1.036641334904991,
+      "total_error": 1.0366624455762812
+    },
+    {
+      "scene": "camera",
+      "prefix": 128,
+      "horizon": 64,
+      "depth": 4,
+      "displacement": 72.30891931925056,
+      "compression_error": 18.824626120000993,
+      "geometry_error": 20.08354272236329,
+      "total_error": 23.05502225950185
+    },
+    {
+      "scene": "camera",
+      "prefix": 128,
+      "horizon": 64,
+      "depth": 8,
+      "displacement": 72.30891931925056,
+      "compression_error": 11.498043961359864,
+      "geometry_error": 20.08354272236329,
+      "total_error": 20.943059286803166
+    },
+    {
+      "scene": "camera",
+      "prefix": 128,
+      "horizon": 64,
+      "depth": 12,
+      "displacement": 72.30891931925056,
+      "compression_error": 6.773705654843941,
+      "geometry_error": 20.08354272236329,
+      "total_error": 20.565875237362675
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 4,
+      "horizon": 16,
+      "depth": 4,
+      "displacement": 858.9756682620678,
+      "compression_error": 296.128010969541,
+      "geometry_error": 362.66525972917503,
+      "total_error": 364.67549381356605
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 4,
+      "horizon": 16,
+      "depth": 8,
+      "displacement": 858.9756682620678,
+      "compression_error": 53.41167298367884,
+      "geometry_error": 362.66525972917503,
+      "total_error": 359.8063300534624
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 4,
+      "horizon": 16,
+      "depth": 12,
+      "displacement": 858.9756682620678,
+      "compression_error": 0.8996611727546694,
+      "geometry_error": 362.66525972917503,
+      "total_error": 362.62892703409244
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 4,
+      "horizon": 64,
+      "depth": 4,
+      "displacement": 1258.1878105934343,
+      "compression_error": 705.3259107681477,
+      "geometry_error": 784.3374385175113,
+      "total_error": 735.8289270193711
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 4,
+      "horizon": 64,
+      "depth": 8,
+      "displacement": 1258.1878105934343,
+      "compression_error": 391.96492730344886,
+      "geometry_error": 784.3374385175113,
+      "total_error": 700.4823045461302
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 4,
+      "horizon": 64,
+      "depth": 12,
+      "displacement": 1258.1878105934343,
+      "compression_error": 220.24741361998016,
+      "geometry_error": 784.3374385175113,
+      "total_error": 732.5579256004432
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 32,
+      "horizon": 16,
+      "depth": 4,
+      "displacement": 172.08183881687987,
+      "compression_error": 23.255460252070797,
+      "geometry_error": 36.34154298826328,
+      "total_error": 39.4835464640188
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 32,
+      "horizon": 16,
+      "depth": 8,
+      "displacement": 172.08183881687987,
+      "compression_error": 2.869162807053873,
+      "geometry_error": 36.34154298826328,
+      "total_error": 36.158729213274704
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 32,
+      "horizon": 16,
+      "depth": 12,
+      "displacement": 172.08183881687987,
+      "compression_error": 0.029122337570340197,
+      "geometry_error": 36.34154298826328,
+      "total_error": 36.3395407092872
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 32,
+      "horizon": 64,
+      "depth": 4,
+      "displacement": 317.2678454450104,
+      "compression_error": 114.13022044285914,
+      "geometry_error": 129.5250892333159,
+      "total_error": 113.17806385946326
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 32,
+      "horizon": 64,
+      "depth": 8,
+      "displacement": 317.2678454450104,
+      "compression_error": 74.67040277433378,
+      "geometry_error": 129.5250892333159,
+      "total_error": 108.30581405050089
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 32,
+      "horizon": 64,
+      "depth": 12,
+      "displacement": 317.2678454450104,
+      "compression_error": 50.03149213778858,
+      "geometry_error": 129.5250892333159,
+      "total_error": 113.52074221455281
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 128,
+      "horizon": 16,
+      "depth": 4,
+      "displacement": 5.8962580728408645,
+      "compression_error": 0.5120709889736829,
+      "geometry_error": 0.1742394780000823,
+      "total_error": 0.5278128507202632
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 128,
+      "horizon": 16,
+      "depth": 8,
+      "displacement": 5.8962580728408645,
+      "compression_error": 0.0698043211241557,
+      "geometry_error": 0.1742394780000823,
+      "total_error": 0.18552850164662474
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 128,
+      "horizon": 16,
+      "depth": 12,
+      "displacement": 5.8962580728408645,
+      "compression_error": 0.0007724273239413306,
+      "geometry_error": 0.1742394780000823,
+      "total_error": 0.17417231610027603
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 128,
+      "horizon": 64,
+      "depth": 4,
+      "displacement": 16.093991640865628,
+      "compression_error": 5.058182039717057,
+      "geometry_error": 2.8158463540552057,
+      "total_error": 5.31399494645406
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 128,
+      "horizon": 64,
+      "depth": 8,
+      "displacement": 16.093991640865628,
+      "compression_error": 3.6443873192081253,
+      "geometry_error": 2.8158463540552057,
+      "total_error": 4.206865468309737
+    },
+    {
+      "scene": "camera_permuted",
+      "prefix": 128,
+      "horizon": 64,
+      "depth": 12,
+      "displacement": 16.093991640865628,
+      "compression_error": 2.0699168242359627,
+      "geometry_error": 2.8158463540552057,
+      "total_error": 3.251376133428372
+    },
+    {
+      "scene": "barbara",
+      "prefix": 4,
+      "horizon": 16,
+      "depth": 4,
+      "displacement": 421.0933851555317,
+      "compression_error": 276.5342848796795,
+      "geometry_error": 389.22253786396834,
+      "total_error": 275.7122263987977
+    },
+    {
+      "scene": "barbara",
+      "prefix": 4,
+      "horizon": 16,
+      "depth": 8,
+      "displacement": 421.0933851555317,
+      "compression_error": 48.71283852088845,
+      "geometry_error": 389.22253786396834,
+      "total_error": 380.999683323774
+    },
+    {
+      "scene": "barbara",
+      "prefix": 4,
+      "horizon": 16,
+      "depth": 12,
+      "displacement": 421.0933851555317,
+      "compression_error": 0.7549416968737184,
+      "geometry_error": 389.22253786396834,
+      "total_error": 389.2279235534076
+    },
+    {
+      "scene": "barbara",
+      "prefix": 4,
+      "horizon": 64,
+      "depth": 4,
+      "displacement": 478.40809545351914,
+      "compression_error": 799.7004942390198,
+      "geometry_error": 890.9646748721,
+      "total_error": 335.7753631768007
+    },
+    {
+      "scene": "barbara",
+      "prefix": 4,
+      "horizon": 64,
+      "depth": 8,
+      "displacement": 478.40809545351914,
+      "compression_error": 533.5679377071905,
+      "geometry_error": 890.9646748721,
+      "total_error": 581.8799062795947
+    },
+    {
+      "scene": "barbara",
+      "prefix": 4,
+      "horizon": 64,
+      "depth": 12,
+      "displacement": 478.40809545351914,
+      "compression_error": 343.65196246533736,
+      "geometry_error": 890.9646748721,
+      "total_error": 786.2786950501021
+    },
+    {
+      "scene": "barbara",
+      "prefix": 32,
+      "horizon": 16,
+      "depth": 4,
+      "displacement": 50.42739805492547,
+      "compression_error": 10.96210389248983,
+      "geometry_error": 16.726284907875037,
+      "total_error": 18.443600555840973
+    },
+    {
+      "scene": "barbara",
+      "prefix": 32,
+      "horizon": 16,
+      "depth": 8,
+      "displacement": 50.42739805492547,
+      "compression_error": 1.1332499124630988,
+      "geometry_error": 16.726284907875037,
+      "total_error": 16.798212738373408
+    },
+    {
+      "scene": "barbara",
+      "prefix": 32,
+      "horizon": 16,
+      "depth": 12,
+      "displacement": 50.42739805492547,
+      "compression_error": 0.01061210505371523,
+      "geometry_error": 16.726284907875037,
+      "total_error": 16.72719965795615
+    },
+    {
+      "scene": "barbara",
+      "prefix": 32,
+      "horizon": 64,
+      "depth": 4,
+      "displacement": 104.8767979431682,
+      "compression_error": 77.59472623366786,
+      "geometry_error": 66.99719953608245,
+      "total_error": 63.88059617129904
+    },
+    {
+      "scene": "barbara",
+      "prefix": 32,
+      "horizon": 64,
+      "depth": 8,
+      "displacement": 104.8767979431682,
+      "compression_error": 48.551641900571916,
+      "geometry_error": 66.99719953608245,
+      "total_error": 59.26824478573587
+    },
+    {
+      "scene": "barbara",
+      "prefix": 32,
+      "horizon": 64,
+      "depth": 12,
+      "displacement": 104.8767979431682,
+      "compression_error": 31.862420343843194,
+      "geometry_error": 66.99719953608245,
+      "total_error": 61.49813873255827
+    },
+    {
+      "scene": "barbara",
+      "prefix": 128,
+      "horizon": 16,
+      "depth": 4,
+      "displacement": 7.756495771074497,
+      "compression_error": 0.4147030339484636,
+      "geometry_error": 0.8269674171242409,
+      "total_error": 0.8924323171519466
+    },
+    {
+      "scene": "barbara",
+      "prefix": 128,
+      "horizon": 16,
+      "depth": 8,
+      "displacement": 7.756495771074497,
+      "compression_error": 0.03934433871184531,
+      "geometry_error": 0.8269674171242409,
+      "total_error": 0.8248623920858207
+    },
+    {
+      "scene": "barbara",
+      "prefix": 128,
+      "horizon": 16,
+      "depth": 12,
+      "displacement": 7.756495771074497,
+      "compression_error": 0.0003479163149743015,
+      "geometry_error": 0.8269674171242409,
+      "total_error": 0.8269466789648069
+    },
+    {
+      "scene": "barbara",
+      "prefix": 128,
+      "horizon": 64,
+      "depth": 4,
+      "displacement": 19.413240488764657,
+      "compression_error": 6.104780491905697,
+      "geometry_error": 10.031255099094153,
+      "total_error": 9.266088770541801
+    },
+    {
+      "scene": "barbara",
+      "prefix": 128,
+      "horizon": 64,
+      "depth": 8,
+      "displacement": 19.413240488764657,
+      "compression_error": 4.186179821328569,
+      "geometry_error": 10.031255099094153,
+      "total_error": 9.603071452003029
+    },
+    {
+      "scene": "barbara",
+      "prefix": 128,
+      "horizon": 64,
+      "depth": 12,
+      "displacement": 19.413240488764657,
+      "compression_error": 2.4898316303863144,
+      "geometry_error": 10.031255099094153,
+      "total_error": 9.765929828287497
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 4,
+      "horizon": 16,
+      "depth": 4,
+      "displacement": 47.80507184974235,
+      "compression_error": 5.969838668472863e-13,
+      "geometry_error": 6.532502798648267e-13,
+      "total_error": 6.252683864363403e-13
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 4,
+      "horizon": 16,
+      "depth": 8,
+      "displacement": 47.80507184974235,
+      "compression_error": 5.969838668472863e-13,
+      "geometry_error": 6.532502798648267e-13,
+      "total_error": 6.252683864363403e-13
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 4,
+      "horizon": 16,
+      "depth": 12,
+      "displacement": 47.80507184974235,
+      "compression_error": 5.969838668472863e-13,
+      "geometry_error": 6.532502798648267e-13,
+      "total_error": 6.252683864363403e-13
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 4,
+      "horizon": 64,
+      "depth": 4,
+      "displacement": 47.80992651767589,
+      "compression_error": 5.136313243765545e-13,
+      "geometry_error": 7.065151383366472e-13,
+      "total_error": 5.687181748140202e-13
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 4,
+      "horizon": 64,
+      "depth": 8,
+      "displacement": 47.80992651767589,
+      "compression_error": 5.136313243765545e-13,
+      "geometry_error": 7.065151383366472e-13,
+      "total_error": 5.687181748140202e-13
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 4,
+      "horizon": 64,
+      "depth": 12,
+      "displacement": 47.80992651767589,
+      "compression_error": 5.136313243765545e-13,
+      "geometry_error": 7.065151383366472e-13,
+      "total_error": 5.687181748140202e-13
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 32,
+      "horizon": 16,
+      "depth": 4,
+      "displacement": 2.8579550403668374e-05,
+      "compression_error": 2.574180980248188e-13,
+      "geometry_error": 7.77823282551937e-13,
+      "total_error": 7.407318562352539e-13
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 32,
+      "horizon": 16,
+      "depth": 8,
+      "displacement": 2.8579550403668374e-05,
+      "compression_error": 8.706693263374805e-14,
+      "geometry_error": 7.77823282551937e-13,
+      "total_error": 7.834658796236454e-13
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 32,
+      "horizon": 16,
+      "depth": 12,
+      "displacement": 2.8579550403668374e-05,
+      "compression_error": 1.90977073614282e-15,
+      "geometry_error": 7.77823282551937e-13,
+      "total_error": 7.779596412672226e-13
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 32,
+      "horizon": 64,
+      "depth": 4,
+      "displacement": 2.8583281945106582e-05,
+      "compression_error": 2.2234790790932606e-13,
+      "geometry_error": 5.04458672549331e-13,
+      "total_error": 5.247717137369809e-13
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 32,
+      "horizon": 64,
+      "depth": 8,
+      "displacement": 2.8583281945106582e-05,
+      "compression_error": 2.6347786435871066e-13,
+      "geometry_error": 5.04458672549331e-13,
+      "total_error": 6.198705438539064e-13
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 32,
+      "horizon": 64,
+      "depth": 12,
+      "displacement": 2.8583281945106582e-05,
+      "compression_error": 1.1466250611273557e-13,
+      "geometry_error": 5.04458672549331e-13,
+      "total_error": 5.53016779727837e-13
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 128,
+      "horizon": 16,
+      "depth": 4,
+      "displacement": 5.687116766346677e-15,
+      "compression_error": 4.490923408798758e-15,
+      "geometry_error": 6.407567734746946e-15,
+      "total_error": 3.9942193805914774e-15
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 128,
+      "horizon": 16,
+      "depth": 8,
+      "displacement": 5.687116766346677e-15,
+      "compression_error": 1.0179123496086924e-15,
+      "geometry_error": 6.407567734746946e-15,
+      "total_error": 6.153363355670355e-15
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 128,
+      "horizon": 16,
+      "depth": 12,
+      "displacement": 5.687116766346677e-15,
+      "compression_error": 1.8944353144104835e-17,
+      "geometry_error": 6.407567734746946e-15,
+      "total_error": 6.40752906619729e-15
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 128,
+      "horizon": 64,
+      "depth": 4,
+      "displacement": 1.4043333874306805e-15,
+      "compression_error": 1.3114452788864498e-14,
+      "geometry_error": 1.62312413615048e-14,
+      "total_error": 7.168653069140349e-15
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 128,
+      "horizon": 64,
+      "depth": 8,
+      "displacement": 1.4043333874306805e-15,
+      "compression_error": 1.0664560333176481e-14,
+      "geometry_error": 1.62312413615048e-14,
+      "total_error": 9.63582982662531e-15
+    },
+    {
+      "scene": "straight_carrier",
+      "prefix": 128,
+      "horizon": 64,
+      "depth": 12,
+      "displacement": 1.4043333874306805e-15,
+      "compression_error": 9.343815200056292e-15,
+      "geometry_error": 1.62312413615048e-14,
+      "total_error": 8.782909896538544e-15
+    },
+    {
+      "scene": "crossing",
+      "prefix": 4,
+      "horizon": 16,
+      "depth": 4,
+      "displacement": 245.85806467790283,
+      "compression_error": 213.41947326491467,
+      "geometry_error": 287.81101345759276,
+      "total_error": 211.91950936778335
+    },
+    {
+      "scene": "crossing",
+      "prefix": 4,
+      "horizon": 16,
+      "depth": 8,
+      "displacement": 245.85806467790283,
+      "compression_error": 34.708695365942674,
+      "geometry_error": 287.81101345759276,
+      "total_error": 290.5809473420998
+    },
+    {
+      "scene": "crossing",
+      "prefix": 4,
+      "horizon": 16,
+      "depth": 12,
+      "displacement": 245.85806467790283,
+      "compression_error": 0.39507283981370345,
+      "geometry_error": 287.81101345759276,
+      "total_error": 287.83162439054496
+    },
+    {
+      "scene": "crossing",
+      "prefix": 4,
+      "horizon": 64,
+      "depth": 4,
+      "displacement": 356.9893580982119,
+      "compression_error": 1174.1697347087177,
+      "geometry_error": 1173.89531776806,
+      "total_error": 309.2237732941383
+    },
+    {
+      "scene": "crossing",
+      "prefix": 4,
+      "horizon": 64,
+      "depth": 8,
+      "displacement": 356.9893580982119,
+      "compression_error": 860.2737735033932,
+      "geometry_error": 1173.89531776806,
+      "total_error": 517.4516498737088
+    },
+    {
+      "scene": "crossing",
+      "prefix": 4,
+      "horizon": 64,
+      "depth": 12,
+      "displacement": 356.9893580982119,
+      "compression_error": 449.8117719542308,
+      "geometry_error": 1173.89531776806,
+      "total_error": 856.8983820112335
+    },
+    {
+      "scene": "crossing",
+      "prefix": 32,
+      "horizon": 16,
+      "depth": 4,
+      "displacement": 66.54980389960572,
+      "compression_error": 13.617567009410937,
+      "geometry_error": 52.77020915054786,
+      "total_error": 52.594199514624016
+    },
+    {
+      "scene": "crossing",
+      "prefix": 32,
+      "horizon": 16,
+      "depth": 8,
+      "displacement": 66.54980389960572,
+      "compression_error": 1.549951223735502,
+      "geometry_error": 52.77020915054786,
+      "total_error": 52.75501838515447
+    },
+    {
+      "scene": "crossing",
+      "prefix": 32,
+      "horizon": 16,
+      "depth": 12,
+      "displacement": 66.54980389960572,
+      "compression_error": 0.015608851615392612,
+      "geometry_error": 52.77020915054786,
+      "total_error": 52.769864752913485
+    },
+    {
+      "scene": "crossing",
+      "prefix": 32,
+      "horizon": 64,
+      "depth": 4,
+      "displacement": 89.88588291853335,
+      "compression_error": 113.93697905160487,
+      "geometry_error": 194.99967507602318,
+      "total_error": 151.6993884353584
+    },
+    {
+      "scene": "crossing",
+      "prefix": 32,
+      "horizon": 64,
+      "depth": 8,
+      "displacement": 89.88588291853335,
+      "compression_error": 81.17456776205506,
+      "geometry_error": 194.99967507602318,
+      "total_error": 172.68222129923845
+    },
+    {
+      "scene": "crossing",
+      "prefix": 32,
+      "horizon": 64,
+      "depth": 12,
+      "displacement": 89.88588291853335,
+      "compression_error": 53.815353705014935,
+      "geometry_error": 194.99967507602318,
+      "total_error": 176.73251993157342
+    },
+    {
+      "scene": "crossing",
+      "prefix": 128,
+      "horizon": 16,
+      "depth": 4,
+      "displacement": 1.1468651992916177,
+      "compression_error": 0.021785239612979436,
+      "geometry_error": 0.005082959631355451,
+      "total_error": 0.02221772676032615
+    },
+    {
+      "scene": "crossing",
+      "prefix": 128,
+      "horizon": 16,
+      "depth": 8,
+      "displacement": 1.1468651992916177,
+      "compression_error": 0.0008488437061678875,
+      "geometry_error": 0.005082959631355451,
+      "total_error": 0.005179413251681217
+    },
+    {
+      "scene": "crossing",
+      "prefix": 128,
+      "horizon": 16,
+      "depth": 12,
+      "displacement": 1.1468651992916177,
+      "compression_error": 4.641663561177434e-06,
+      "geometry_error": 0.005082959631355451,
+      "total_error": 0.0050833793782837184
+    },
+    {
+      "scene": "crossing",
+      "prefix": 128,
+      "horizon": 64,
+      "depth": 4,
+      "displacement": 3.5731538747455356,
+      "compression_error": 0.5958638597115411,
+      "geometry_error": 0.2757696666543983,
+      "total_error": 0.6114679260715628
+    },
+    {
+      "scene": "crossing",
+      "prefix": 128,
+      "horizon": 64,
+      "depth": 8,
+      "displacement": 3.5731538747455356,
+      "compression_error": 0.28579822211989214,
+      "geometry_error": 0.2757696666543983,
+      "total_error": 0.37888008631206904
+    },
+    {
+      "scene": "crossing",
+      "prefix": 128,
+      "horizon": 64,
+      "depth": 12,
+      "displacement": 3.5731538747455356,
+      "compression_error": 0.17557560738689307,
+      "geometry_error": 0.2757696666543983,
+      "total_error": 0.32348025879807624
+    }
+  ],
+  "note": "full tangent and actual replay are diagnostic only"
+}

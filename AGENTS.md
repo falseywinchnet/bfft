@@ -1797,3 +1797,29 @@ Copy both JSON files immediately into `experiments/krylov_bregman/results/`
 without the `krylov_` filename prefix. Retained timings include all solver-loop
 cost but exclude common setup and final plan materialization. See
 `experiments/krylov_bregman/SINKHORN_FINDINGS.md` for transfer scope and losses.
+
+## Meyer response and increment transport mutations
+
+These are retained research diagnostics, not promoted accelerators. The
+structure comparison, exact factorization and failed cost gates are documented
+in `experiments/krylov_bregman/MUTATION_FINDINGS.md`. Run on the M4 Mini:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.krylov_bregman.test_factor_transport \
+  experiments.krylov_bregman.test_increment_transport -v
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.factor_study \
+  --repeats 3 --out /tmp/krylov_factor_full.json
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.increment_study \
+  --repeats 3 --out /tmp/krylov_increment_full.json
+```
+
+Copy each JSON immediately into `experiments/krylov_bregman/results/` with
+its unchanged filename. The structural and frozen-tangent replay diagnostics
+are in `structure_probe.py` and `phase_probe.py`; their work is separate from
+runtime discovery and must not be treated as free information for an algorithm.

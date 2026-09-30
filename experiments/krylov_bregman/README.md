@@ -402,3 +402,35 @@ Copy each JSON immediately to this experiment's `results/` directory as
 /Users/ultimussecundai/bfft/.venv-jpeg/bin/python \
   -m experiments.krylov_bregman.sinkhorn_report
 ```
+
+## Sinkhorn/Meyer structural difference and mutations
+
+See [MUTATION_FINDINGS.md](MUTATION_FINDINGS.md). The positive Sinkhorn tangent
+is contrasted with the rotating primal/vector-memory branches of Meyer.
+Implemented mutations retain exact disk nonlinearity in a reduced recurrence,
+enrich its basis from a live defect, or infer finite coupled increment transport
+from ordinary history. None is an accepted faster Meyer implementation.
+Defect enrichment improves local prediction but loses complete cost; increment
+learning speeds up two Sinkhorn controls and rejects nearly all Meyer proposals.
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest discover -s experiments/krylov_bregman -t . -p 'test_*.py' -q
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.structure_probe --out /tmp/krylov_structure_probe.json
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.phase_probe --out /tmp/krylov_phase_probe.json
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.factor_study --repeats 3 --out /tmp/krylov_factor_full.json
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.increment_study --repeats 3 --out /tmp/krylov_increment_full.json
+```
+
+Copy each JSON immediately into this experiment's `results/` directory,
+retaining the filename. Render with the MacBook `.venv-jpeg` Python using
+`-m experiments.krylov_bregman.mutation_report`.
