@@ -370,3 +370,35 @@ synthesis; use `general_geometry_v2.json` for the paper table.
 
 Copy the JSON immediately to `experiments/krylov_bregman/results/`, then run
 `python3 -m experiments.krylov_bregman.general_geometry_report` locally.
+
+## Sinkhorn transfer experiment
+
+The real-problem transfer test is entropic optimal transport on irregular point
+supports. See [SINKHORN_FINDINGS.md](SINKHORN_FINDINGS.md) for the exact objective,
+protocol, full timing scope, all successes and losses, and comparison with
+Anderson. Fixed polynomial transport speeds up all 24 tested cases (median
+2.40x); existing discovery speeds up 19 (median 1.18x). The coordinatewise
+rational chart does not transfer reliably. This is a separate experiment;
+it does not change the open paper or the original Meyer solver.
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest discover -s experiments/krylov_bregman -t . -p 'test_*.py' -q
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.sinkhorn_study \
+  --out /tmp/krylov_sinkhorn_full.json
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.sinkhorn_chart_probe \
+  --out /tmp/krylov_sinkhorn_chart_probe.json
+```
+
+Copy each JSON immediately to this experiment's `results/` directory as
+`sinkhorn_full.json` and `sinkhorn_chart_probe.json`. Render with:
+
+```sh
+/Users/ultimussecundai/bfft/.venv-jpeg/bin/python \
+  -m experiments.krylov_bregman.sinkhorn_report
+```

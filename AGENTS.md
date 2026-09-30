@@ -1774,3 +1774,26 @@ Copy that JSON immediately into the experiment's `results/` directory.
 The rational grammar and known mirror factorization are explicit priors;
 finite fitted samples do not certify arbitrary smooth maps. This control is
 not a universal speed result or a replacement for the Meyer implementation.
+
+## Sinkhorn polynomial-transport transfer
+
+Run the distinct entropic-OT transfer benchmark and chart probe on the Mini:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.krylov_bregman.test_sinkhorn_transport -v
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.sinkhorn_study \
+  --out /tmp/krylov_sinkhorn_full.json
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.sinkhorn_chart_probe \
+  --out /tmp/krylov_sinkhorn_chart_probe.json
+```
+
+Copy both JSON files immediately into `experiments/krylov_bregman/results/`
+without the `krylov_` filename prefix. Retained timings include all solver-loop
+cost but exclude common setup and final plan materialization. See
+`experiments/krylov_bregman/SINKHORN_FINDINGS.md` for transfer scope and losses.
