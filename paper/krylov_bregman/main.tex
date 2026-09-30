@@ -21,13 +21,15 @@
 \newcommand{\D}{\mathrm{D}}
 \DeclareMathOperator{\diag}{diag}
 \DeclareMathOperator{\spanop}{span}
-\title{Krylov Transport in Mirror Geometry:\\Finite-Horizon Acceleration of Bregman Iterations}
+\title{Discoverable Polynomial Transport in Mirror Geometry:\\Finite-Horizon Acceleration of Bregman Iterations}
 \author{Joshuah Rainstar}
 \date{September 29, 2026\\\small Research draft: foundations and initial experiments}
 \begin{document}
 \maketitle
 
 \begin{abstract}
+Discoverable polynomial transport asks which relations governing an iteration
+can be acquired, verified, and reused at less cost than repeated execution.
 A mirror or Bregman iteration transports a state through a geometry determined
 by dual coordinates, proximal constraints, and retained memory. We study
 advancing this state with a finite polynomial of its local propagator,
@@ -42,7 +44,9 @@ For nonlinear maps, a discrete trajectory-defect identity separates Krylov
 compression from geometric evolution. A boundary-optimum entropy example
 shows why finite transport remains meaningful without a finite dual fixed
 point. An initial synthetic study measures complete execution cost and
-includes stationary Krylov and Anderson comparators. These results formulate
+includes stationary Krylov and Anderson comparators. We extend the investigation to algebraic discovery, polynomial observable
+closure, and a certified affine-piece construction for Huber mirror descent.
+These results formulate
 a research program in geometry-aware polynomial transport; they do not
 establish a universal acceleration theorem or priority for polynomial
 extrapolation, which has substantial prior development.
@@ -494,6 +498,8 @@ problem samples. Failures and budget censoring remain in the records.
 
 \input{results.tex}
 
+\input{discovery.tex}
+
 \section{What would establish the broader research claim?}
 The useful generalization is a statement about a favorable combination of
 geometry and cost. A low-dimensional local Krylov space must capture the
@@ -522,7 +528,7 @@ inexact proximal operations, or stochastic gradients requires additional
 state and error accounting; none is silently included in the present claim.
 
 The present research contribution is therefore a concrete, testable
-formulation of finite transport in mirror geometry, with exact foundations,
+formulation of discoverable polynomial transport in mirror geometry, with exact foundations,
 explicit classical connections, and a reproducible initial comparison.
 The overarching question is which predictable geometric evolutions can be
 represented and advanced more cheaply than they can be repeatedly executed.
@@ -567,7 +573,7 @@ ADMM KKT point, and the necessity of retained memory. The scalar curvature
 counterexample is an explicit negative test. Reproduction commands and
 unaltered run records accompany the source.
 
-\begin{thebibliography}{10}
+\begin{thebibliography}{99}
 \bibitem{walker} H. F. Walker and P. Ni.
 Anderson acceleration for fixed-point iterations.
 \emph{SIAM Journal on Numerical Analysis}, 49(4):1715--1735, 2011.
@@ -616,5 +622,18 @@ Accelerated Bregman proximal gradient methods for relatively smooth convex optim
 Accelerated Bregman proximal gradient methods from dual geometric perspectives.
 Preprint, September 28, 2026.
 \href{https://arxiv.org/abs/2609.34773}{arXiv:2609.34773}.
+\bibitem{tomic} M. Tomi\'c, R. Widdershoven, and L. De Lathauwer.
+Sparse approximation via polynomial equations. Preprint, September 10, 2026.
+\href{https://arxiv.org/abs/2609.11215}{arXiv:2609.11215}.
+
+\bibitem{brunton} S. L. Brunton, B. W. Brunton, J. L. Proctor, and J. N. Kutz.
+Koopman invariant subspaces and finite linear representations of nonlinear
+dynamical systems for control. \emph{PLOS ONE}, 11(2):e0150171, 2016.
+\href{https://doi.org/10.1371/journal.pone.0150171}{doi:10.1371/journal.pone.0150171}.
+
+\bibitem{ssd} M. Haseli and J. Cort\'es.
+Learning Koopman eigenfunctions and invariant subspaces from data:
+symmetric subspace decomposition. Preprint, 2019.
+\href{https://arxiv.org/abs/1909.01419}{arXiv:1909.01419}.
 \end{thebibliography}
 \end{document}

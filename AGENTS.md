@@ -1539,6 +1539,13 @@ from full-state convergence. See `paper/krylov_bregman/main.tex` and the
 experiment README; no universal speedup or new-priority claim is established.
 Copy the shadow output into `experiments/krylov_bregman/results/shadow_v2/`.
 The experiment README also records local figure and manuscript build commands.
+The discoverable-transport continuation adds `test_discovery` and
+`test_certified_piece` to the `experiments.krylov_bregman` unittest suite.
+Run `discovery_study` and `certified_study` through `m4build` with one BLAS
+thread; exact retained commands are in that experiment README. Copy their
+`/tmp/krylov_*` JSON outputs into the experiment's `results/` immediately.
+The sparse live-probe gate is diagnostic, not certified. The Huber affine-piece
+certificate does not apply to curved exterior Meyer disk projections.
 
 ## Meyer pre-refresh transport contracts
 

@@ -1,0 +1,5281 @@
+{
+  "configuration": {
+    "size": 32,
+    "seeds": 2,
+    "prefixes": [
+      4,
+      32,
+      128
+    ],
+    "depths": [
+      2,
+      4,
+      8,
+      12
+    ],
+    "horizons": [
+      64,
+      32,
+      16,
+      8
+    ],
+    "sampled_tolerance": 0.05,
+    "minimum_work_gain": 1.5,
+    "python": "3.9.6",
+    "numpy": "1.26.4",
+    "timing_repeats": 1,
+    "note": "Discovery/falsification screen; exploratory timings, no certified admission or performance claim."
+  },
+  "probes": [
+    {
+      "prefix": 4,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 64,
+      "sampled_score": 1.569118308511142e-13,
+      "relative_trajectory_error": 4.2844728363282435e-14,
+      "fixed4_h16_error": 4.1808128772474683e-14,
+      "discovery_map_calls": 4,
+      "tangent_actions": 2,
+      "work_with_settling": 7,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.00029758299999999016,
+      "seconds_ordinary_horizon": 0.0001431669999999996,
+      "settled_gap_ratio_to_equalcost": 0.900822532343197,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 1.569118308511142e-13,
+          "passed": true,
+          "algebraic_closure": true,
+          "work_including_settling": 7
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 89,
+      "post_discovery_diagnostic_actions": 2,
+      "family": "spectral_degree_2",
+      "seed": 0
+    },
+    {
+      "prefix": 32,
+      "accepted": true,
+      "depth": 1,
+      "horizon": 64,
+      "sampled_score": 4.945564807824747e-12,
+      "relative_trajectory_error": 5.8218300071126e-13,
+      "fixed4_h16_error": 1.6459494693028525e-13,
+      "discovery_map_calls": 4,
+      "tangent_actions": 1,
+      "work_with_settling": 6,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.00023120799999998276,
+      "seconds_ordinary_horizon": 0.00013325000000000142,
+      "settled_gap_ratio_to_equalcost": 0.8992017814513255,
+      "trials": [
+        {
+          "depth": 1,
+          "horizon": 64,
+          "score": 4.945564807824747e-12,
+          "passed": true,
+          "algebraic_closure": true,
+          "work_including_settling": 6
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 88,
+      "post_discovery_diagnostic_actions": 1,
+      "family": "spectral_degree_2",
+      "seed": 0
+    },
+    {
+      "prefix": 128,
+      "accepted": true,
+      "depth": 1,
+      "horizon": 64,
+      "sampled_score": 6.021435651915311e-12,
+      "relative_trajectory_error": 2.3450203487324073e-13,
+      "fixed4_h16_error": 1.151012572193931e-13,
+      "discovery_map_calls": 4,
+      "tangent_actions": 1,
+      "work_with_settling": 6,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.00021462499999999607,
+      "seconds_ordinary_horizon": 0.00013333399999998496,
+      "settled_gap_ratio_to_equalcost": 0.8992017814512363,
+      "trials": [
+        {
+          "depth": 1,
+          "horizon": 64,
+          "score": 6.021435651915311e-12,
+          "passed": true,
+          "algebraic_closure": true,
+          "work_including_settling": 6
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 88,
+      "post_discovery_diagnostic_actions": 1,
+      "family": "spectral_degree_2",
+      "seed": 0
+    },
+    {
+      "prefix": 4,
+      "accepted": true,
+      "depth": 4,
+      "horizon": 64,
+      "sampled_score": 4.345789121461415e-14,
+      "relative_trajectory_error": 7.431616040184288e-15,
+      "fixed4_h16_error": 1.926943351085021e-15,
+      "discovery_map_calls": 8,
+      "tangent_actions": 4,
+      "work_with_settling": 13,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.00046504199999999885,
+      "seconds_ordinary_horizon": 0.0001459169999999954,
+      "settled_gap_ratio_to_equalcost": 0.32466346901615906,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.28512896966661627,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.05170936489798822,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.10198509282373637,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 8
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 4.345789121461415e-14,
+          "passed": true,
+          "algebraic_closure": true,
+          "work_including_settling": 13
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 95,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_4",
+      "seed": 0
+    },
+    {
+      "prefix": 32,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 32,
+      "sampled_score": 0.020099047068142986,
+      "relative_trajectory_error": 0.008167569761403138,
+      "fixed4_h16_error": 6.760156972789094e-15,
+      "discovery_map_calls": 6,
+      "tangent_actions": 2,
+      "work_with_settling": 9,
+      "equivalent_ordinary_steps": 33,
+      "seconds_discovery": 0.00032470900000000635,
+      "seconds_ordinary_horizon": 7.354200000000977e-05,
+      "settled_gap_ratio_to_equalcost": 0.6834119733001491,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.0519056004026716,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.020099047068142986,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 9
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 59,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_4",
+      "seed": 0
+    },
+    {
+      "prefix": 128,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 64,
+      "sampled_score": 0.0017472321829003392,
+      "relative_trajectory_error": 0.00025115073790708435,
+      "fixed4_h16_error": 1.501653775957892e-14,
+      "discovery_map_calls": 4,
+      "tangent_actions": 2,
+      "work_with_settling": 7,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.00023666600000002425,
+      "seconds_ordinary_horizon": 0.00014600000000000724,
+      "settled_gap_ratio_to_equalcost": 0.571015427580865,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.0017472321829003392,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 89,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_4",
+      "seed": 0
+    },
+    {
+      "prefix": 4,
+      "accepted": true,
+      "depth": 8,
+      "horizon": 64,
+      "sampled_score": 3.574534219589126e-11,
+      "relative_trajectory_error": 3.060386297363111e-12,
+      "fixed4_h16_error": 0.010661044105419905,
+      "discovery_map_calls": 9,
+      "tangent_actions": 8,
+      "work_with_settling": 18,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.0006512919999999978,
+      "seconds_ordinary_horizon": 0.00012812499999997895,
+      "settled_gap_ratio_to_equalcost": 0.3790813277878103,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 1.327142759237043,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.36325744584324526,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.07547783809873619,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 0.12355280634258205,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.07549561451469072,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 3.574534219589126e-11,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 18
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 100,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_8",
+      "seed": 0
+    },
+    {
+      "prefix": 32,
+      "accepted": true,
+      "depth": 4,
+      "horizon": 64,
+      "sampled_score": 0.0239258362107485,
+      "relative_trajectory_error": 0.0024653361719773697,
+      "fixed4_h16_error": 2.3455943031996356e-05,
+      "discovery_map_calls": 8,
+      "tangent_actions": 4,
+      "work_with_settling": 13,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.0004281250000000014,
+      "seconds_ordinary_horizon": 0.00013004200000002464,
+      "settled_gap_ratio_to_equalcost": 0.47787001818626546,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.14014754059392667,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.1152286819003169,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.09220851338590254,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 8
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 0.0239258362107485,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 13
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 95,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_8",
+      "seed": 0
+    },
+    {
+      "prefix": 128,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 64,
+      "sampled_score": 0.04165469862267671,
+      "relative_trajectory_error": 0.011219072061468393,
+      "fixed4_h16_error": 1.5410666950475533e-07,
+      "discovery_map_calls": 4,
+      "tangent_actions": 2,
+      "work_with_settling": 7,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.00022595799999999833,
+      "seconds_ordinary_horizon": 0.00012891599999997894,
+      "settled_gap_ratio_to_equalcost": 0.6175175692001181,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.04165469862267671,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 89,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_8",
+      "seed": 0
+    },
+    {
+      "prefix": 4,
+      "accepted": true,
+      "depth": 12,
+      "horizon": 64,
+      "sampled_score": 0.012760907545585305,
+      "relative_trajectory_error": 0.0020415210697095143,
+      "fixed4_h16_error": 0.029822121650835143,
+      "discovery_map_calls": 13,
+      "tangent_actions": 12,
+      "work_with_settling": 26,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.001007625000000012,
+      "seconds_ordinary_horizon": 0.00012566700000002373,
+      "settled_gap_ratio_to_equalcost": 0.47252039152367264,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 2.8856599412094397,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.8643380132823595,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.18997559796632194,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 0.44832085093901936,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.2514743167948264,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 0.0996786925537465,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 0.057963607251081156,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 19
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 0.012760907545585305,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 26
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 108,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_32",
+      "seed": 0
+    },
+    {
+      "prefix": 32,
+      "accepted": true,
+      "depth": 4,
+      "horizon": 32,
+      "sampled_score": 0.014606116515456126,
+      "relative_trajectory_error": 0.002897274967614211,
+      "fixed4_h16_error": 0.00023057232388374235,
+      "discovery_map_calls": 10,
+      "tangent_actions": 4,
+      "work_with_settling": 15,
+      "equivalent_ordinary_steps": 33,
+      "seconds_discovery": 0.0005051249999999952,
+      "seconds_ordinary_horizon": 6.283300000001213e-05,
+      "settled_gap_ratio_to_equalcost": 0.735983837384285,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.11513026391333103,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.09624977509648378,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.07709044343906726,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 8
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 0.09753006707975614,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 13
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.014606116515456126,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 15
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 65,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_32",
+      "seed": 0
+    },
+    {
+      "prefix": 128,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 32,
+      "sampled_score": 0.013799792407328197,
+      "relative_trajectory_error": 0.0038544461182321273,
+      "fixed4_h16_error": 1.2545735687257023e-06,
+      "discovery_map_calls": 6,
+      "tangent_actions": 2,
+      "work_with_settling": 9,
+      "equivalent_ordinary_steps": 33,
+      "seconds_discovery": 0.00030383300000000335,
+      "seconds_ordinary_horizon": 6.283299999998437e-05,
+      "settled_gap_ratio_to_equalcost": 0.790125205205094,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.053832496517019005,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.013799792407328197,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 9
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 59,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_32",
+      "seed": 0
+    },
+    {
+      "prefix": 4,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 32,
+      "sampled_score": 0.025728745779785095,
+      "relative_trajectory_error": 0.009002461004755404,
+      "fixed4_h16_error": 0.0024686504867932214,
+      "discovery_map_calls": 6,
+      "tangent_actions": 2,
+      "work_with_settling": 9,
+      "equivalent_ordinary_steps": 33,
+      "seconds_discovery": 0.0003581249999999869,
+      "seconds_ordinary_horizon": 0.0002481669999999936,
+      "settled_gap_ratio_to_equalcost": 0.6694392761927944,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.07927318588694711,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.025728745779785095,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 9
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 59,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "entropy_simplex",
+      "seed": 0
+    },
+    {
+      "prefix": 32,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 32,
+      "sampled_score": 0.017264261254788197,
+      "relative_trajectory_error": 0.005977164069202714,
+      "fixed4_h16_error": 0.0013956700427831734,
+      "discovery_map_calls": 6,
+      "tangent_actions": 2,
+      "work_with_settling": 9,
+      "equivalent_ordinary_steps": 33,
+      "seconds_discovery": 0.00033337499999999687,
+      "seconds_ordinary_horizon": 0.000225542000000023,
+      "settled_gap_ratio_to_equalcost": 0.7603429739791124,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.06334809175141674,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.017264261254788197,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 9
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 59,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "entropy_simplex",
+      "seed": 0
+    },
+    {
+      "prefix": 128,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 32,
+      "sampled_score": 0.022306869196354093,
+      "relative_trajectory_error": 0.007582476738279401,
+      "fixed4_h16_error": 0.0005436747055763773,
+      "discovery_map_calls": 6,
+      "tangent_actions": 2,
+      "work_with_settling": 9,
+      "equivalent_ordinary_steps": 33,
+      "seconds_discovery": 0.0003257499999999858,
+      "seconds_ordinary_horizon": 0.00022516699999999834,
+      "settled_gap_ratio_to_equalcost": 0.8570179844211062,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.08034950538490124,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.022306869196354093,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 9
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 59,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "entropy_simplex",
+      "seed": 0
+    },
+    {
+      "prefix": 4,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 2.445239330818108,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 1.5706943734936551,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.0007394160000000205,
+      "seconds_ordinary_horizon": 5.208000000006541e-06,
+      "settled_gap_ratio_to_equalcost": 339.50425337917426,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 23.425344244389848,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 8.923618235285915,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 2.445239330818108,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 21.689219736809985,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 6.892572111781408,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 14.917746058707166,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 5.77057250185382,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 14.312783635465102,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_0.01",
+      "seed": 0
+    },
+    {
+      "prefix": 32,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.09581346551468649,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.041415630273616916,
+      "discovery_map_calls": 13,
+      "tangent_actions": 12,
+      "work_with_settling": 25,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.0009254999999999958,
+      "seconds_ordinary_horizon": 4.957999999999352e-06,
+      "settled_gap_ratio_to_equalcost": 5.976927554387235,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 1.931946849000154,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.6065204403996872,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.1754247810299804,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 0.5070213800140141,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.09581346551468649,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 0.2201462161612269,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 0.1377927430405684,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 19
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 0.140571089005483,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 26
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 43,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_0.01",
+      "seed": 0
+    },
+    {
+      "prefix": 128,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 64,
+      "sampled_score": 0.040827463170723104,
+      "relative_trajectory_error": 0.009978004193977591,
+      "fixed4_h16_error": 8.828541032669037e-07,
+      "discovery_map_calls": 4,
+      "tangent_actions": 2,
+      "work_with_settling": 7,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.0002144999999999786,
+      "seconds_ordinary_horizon": 0.00024145899999999942,
+      "settled_gap_ratio_to_equalcost": 0.04784084708395337,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.040827463170723104,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 89,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_0.01",
+      "seed": 0
+    },
+    {
+      "prefix": 4,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.4161157776335796,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.2853869103337781,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.0007450830000000075,
+      "seconds_ordinary_horizon": 5.290999999990609e-06,
+      "settled_gap_ratio_to_equalcost": 6.813382527044685,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 3.885599992141635,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 1.6077574317579562,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.4161157776335796,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 2.7095807687920397,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 1.170049724540194,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 2.3630501473632037,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 1.1260039729271483,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 2.344325650023702,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_1.0",
+      "seed": 0
+    },
+    {
+      "prefix": 32,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.07923914139939331,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.08868168630145724,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.0007202910000000118,
+      "seconds_ordinary_horizon": 5.0410000000111754e-06,
+      "settled_gap_ratio_to_equalcost": 3.2246592795609663,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 2.478808933614592,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.15336235304807064,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.1260585435039467,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 1.9707589600708453,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.07923914139939331,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 1.9794695754279878,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 0.07984394601142192,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 1.9794491196679695,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_1.0",
+      "seed": 0
+    },
+    {
+      "prefix": 128,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 32,
+      "sampled_score": 0.0322340138194676,
+      "relative_trajectory_error": 0.008250186126151365,
+      "fixed4_h16_error": 2.708634298086873e-05,
+      "discovery_map_calls": 6,
+      "tangent_actions": 2,
+      "work_with_settling": 9,
+      "equivalent_ordinary_steps": 33,
+      "seconds_discovery": 0.0002903330000000037,
+      "seconds_ordinary_horizon": 0.00012379200000001145,
+      "settled_gap_ratio_to_equalcost": 0.3877413920975588,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.1010259473775153,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.0322340138194676,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 9
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 59,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_1.0",
+      "seed": 0
+    },
+    {
+      "prefix": 4,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.20247665053707187,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.055989512275960766,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.0007267499999999982,
+      "seconds_ordinary_horizon": 5.124999999994717e-06,
+      "settled_gap_ratio_to_equalcost": 1.8542889810929626,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.6365553240647112,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.25680920495696763,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.20247665053707187,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 0.5426385844717591,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.24146582142777828,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 0.5373107128016883,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 0.2413079451769904,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 0.537301001997386,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_10.0",
+      "seed": 0
+    },
+    {
+      "prefix": 32,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.2082927408632507,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.07878111042359195,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.0007222500000000354,
+      "seconds_ordinary_horizon": 4.999999999977245e-06,
+      "settled_gap_ratio_to_equalcost": 1.3457675719731172,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.9720676676761126,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.2273293289349806,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.2082927408632507,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 0.9515858745666913,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.21818231976951774,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 0.9515779537461464,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 0.21818229905169495,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 0.9515779570122225,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_10.0",
+      "seed": 0
+    },
+    {
+      "prefix": 128,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.7600514139160865,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.19704247036290629,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.0007199170000000144,
+      "seconds_ordinary_horizon": 4.833999999953598e-06,
+      "settled_gap_ratio_to_equalcost": 1.202770813654892,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 1.0664911340869068,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.9994885875625303,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.7600514139160865,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 1.0642621887343202,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.999114320979346,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 1.0642574684405415,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 0.9991141457563204,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 1.0642574683685508,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_10.0",
+      "seed": 0
+    },
+    {
+      "prefix": 4,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 2.267362262821334,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.584979177236752,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.007188500000000042,
+      "seconds_ordinary_horizon": 0.00012758299999998668,
+      "settled_gap_ratio_to_equalcost": 4.804461956925622,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 19.947763001160805,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 8.203740387825036,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 2.267362262821334,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 18.55983250394821,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 7.25601461170733,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 15.158855082979848,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 5.004447635475078,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 12.074773916933191,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "camera",
+      "seed": 0
+    },
+    {
+      "prefix": 32,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.6141291988866242,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.3243179058736041,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.005419249999999987,
+      "seconds_ordinary_horizon": 0.00012304199999996213,
+      "settled_gap_ratio_to_equalcost": 2.02454559740029,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 8.739650456597962,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 2.237798187960237,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.6141291988866242,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 6.077077883750559,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 1.4938691983499688,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 4.628575180347697,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 1.2877395837934695,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 4.3349543840807545,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "camera",
+      "seed": 0
+    },
+    {
+      "prefix": 128,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.09570947569158647,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.05623792079450886,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.005383458000000008,
+      "seconds_ordinary_horizon": 0.00012145900000004595,
+      "settled_gap_ratio_to_equalcost": 1.2351806330864703,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.9035770870335804,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.32179448920720277,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.09570947569158647,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 0.6207986187566844,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.11192410613465878,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 0.3605158236288646,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 0.3232638034785768,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 0.34383242814732146,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "camera",
+      "seed": 0
+    },
+    {
+      "prefix": 4,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 4.18189166876293,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.5871439848106369,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.0053194170000000485,
+      "seconds_ordinary_horizon": 0.0001186659999999895,
+      "settled_gap_ratio_to_equalcost": 12.161552410611717,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 20.271393938046433,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 10.390560990267351,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 4.18189166876293,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 22.299666378699385,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 7.4798158750115045,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 22.038993191592073,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 5.207171351379343,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 20.134605329162458,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "camera_permuted",
+      "seed": 0
+    },
+    {
+      "prefix": 32,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.6302124206987878,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.3381116176700063,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.005362042000000011,
+      "seconds_ordinary_horizon": 0.00011833299999997049,
+      "settled_gap_ratio_to_equalcost": 2.9385912984217275,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 10.550121152926641,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 2.724842727271216,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.6302124206987878,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 7.335977437233502,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 1.7769170673456207,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 6.492903768846283,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 1.5857462344523405,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 6.412898694880918,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "camera_permuted",
+      "seed": 0
+    },
+    {
+      "prefix": 128,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.15074203868957825,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.13558465260276792,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.005341708000000001,
+      "seconds_ordinary_horizon": 0.00011820799999995302,
+      "settled_gap_ratio_to_equalcost": 1.5782797915134776,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 2.8646903178159926,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.7035343519752224,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.15074203868957825,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 2.2297621513244597,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.2743569438068743,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 1.783857964204324,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 0.21720875882597893,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 1.7496012618199768,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "camera_permuted",
+      "seed": 0
+    },
+    {
+      "prefix": 4,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 4.411444328789271,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.6343641224201869,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.006028917000000078,
+      "seconds_ordinary_horizon": 0.0001275419999999805,
+      "settled_gap_ratio_to_equalcost": 13.756075688415555,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 19.307473571702598,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 10.213426022363242,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 4.411444328789271,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 23.31353194287538,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 9.476858240870481,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 26.04478525902608,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 7.144767008953521,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 21.418270853377944,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "barbara",
+      "seed": 0
+    },
+    {
+      "prefix": 32,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.7953557678291033,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.37072721965508293,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.005386582999999945,
+      "seconds_ordinary_horizon": 0.00011925000000001518,
+      "settled_gap_ratio_to_equalcost": 2.984913073299301,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 13.462843953242364,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 3.614466072591022,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.7953557678291033,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 8.30902063371047,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 2.133030740959088,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 5.735104507623062,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 1.7316946568057159,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 5.064442266117601,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "barbara",
+      "seed": 0
+    },
+    {
+      "prefix": 128,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.09511777682255038,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.115583220804297,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.005344124999999922,
+      "seconds_ordinary_horizon": 0.00011895900000014059,
+      "settled_gap_ratio_to_equalcost": 1.3417285652627546,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 2.3072530449628355,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.476594167050534,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.09511777682255038,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 2.2054708973283885,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.3369937993110797,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 2.1456581815157696,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 0.3270324480276348,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 2.091503765577823,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "barbara",
+      "seed": 0
+    },
+    {
+      "prefix": 4,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 3.937824395025305,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.45584793253200195,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.005344124999999922,
+      "seconds_ordinary_horizon": 0.00012070799999985837,
+      "settled_gap_ratio_to_equalcost": 32.619601277316825,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 15.486682635042458,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 8.116802967690655,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 3.937824395025305,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 15.94702125564231,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 7.325502663488807,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 18.039730497921422,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 5.9334837782119925,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 19.17034343017744,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "barbara_permuted",
+      "seed": 0
+    },
+    {
+      "prefix": 32,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.6226700636933054,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.26712550921475353,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.005343915999999949,
+      "seconds_ordinary_horizon": 0.00012141699999990152,
+      "settled_gap_ratio_to_equalcost": 4.029674591578153,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 11.79862783621165,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 3.1359950588468064,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.6226700636933054,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 7.996704949585896,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 1.9948402568636148,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 6.798213592848652,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 1.7454252662059269,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 6.4328318327586755,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "barbara_permuted",
+      "seed": 0
+    },
+    {
+      "prefix": 128,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.053837959891220255,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.04947472416691265,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.005348332999999927,
+      "seconds_ordinary_horizon": 0.00011920900000017554,
+      "settled_gap_ratio_to_equalcost": 1.257807332973404,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.9565366937892095,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.26722074111616784,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.053837959891220255,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 0.631706117585702,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.15980620758251549,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 0.5965034220204157,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 0.1568875199702133,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 0.589900312663199,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "barbara_permuted",
+      "seed": 0
+    },
+    {
+      "prefix": 4,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 64,
+      "sampled_score": 2.1422038050712344e-13,
+      "relative_trajectory_error": 9.328164389228337e-14,
+      "fixed4_h16_error": 9.066000118307699e-14,
+      "discovery_map_calls": 4,
+      "tangent_actions": 2,
+      "work_with_settling": 7,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.00022120799999991725,
+      "seconds_ordinary_horizon": 0.00011833399999994221,
+      "settled_gap_ratio_to_equalcost": 0.9008225323432152,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 2.1422038050712344e-13,
+          "passed": true,
+          "algebraic_closure": true,
+          "work_including_settling": 7
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 89,
+      "post_discovery_diagnostic_actions": 2,
+      "family": "spectral_degree_2",
+      "seed": 1
+    },
+    {
+      "prefix": 32,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 64,
+      "sampled_score": 1.9346742579001412e-13,
+      "relative_trajectory_error": 5.6729585078661354e-14,
+      "fixed4_h16_error": 5.612322419398546e-14,
+      "discovery_map_calls": 4,
+      "tangent_actions": 2,
+      "work_with_settling": 7,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.00022733299999999623,
+      "seconds_ordinary_horizon": 0.00011841600000006558,
+      "settled_gap_ratio_to_equalcost": 0.9008225323432582,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 1.9346742579001412e-13,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 89,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_2",
+      "seed": 1
+    },
+    {
+      "prefix": 128,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 64,
+      "sampled_score": 2.0578109597507133e-13,
+      "relative_trajectory_error": 7.228348207402985e-14,
+      "fixed4_h16_error": 7.264547235642309e-14,
+      "discovery_map_calls": 4,
+      "tangent_actions": 2,
+      "work_with_settling": 7,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.00020966700000002447,
+      "seconds_ordinary_horizon": 0.00013262499999999733,
+      "settled_gap_ratio_to_equalcost": 0.900822532343244,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 2.0578109597507133e-13,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 89,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_2",
+      "seed": 1
+    },
+    {
+      "prefix": 4,
+      "accepted": true,
+      "depth": 4,
+      "horizon": 64,
+      "sampled_score": 6.317980124976472e-14,
+      "relative_trajectory_error": 7.15717244801864e-15,
+      "fixed4_h16_error": 1.6656266096916753e-15,
+      "discovery_map_calls": 8,
+      "tangent_actions": 4,
+      "work_with_settling": 13,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.00040416700000012185,
+      "seconds_ordinary_horizon": 0.00011616700000005586,
+      "settled_gap_ratio_to_equalcost": 0.32372687794535426,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.26114869381925904,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.14085173907478737,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.0772301847026275,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 8
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 6.317980124976472e-14,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 13
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 95,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_4",
+      "seed": 1
+    },
+    {
+      "prefix": 32,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 64,
+      "sampled_score": 0.04398504737282596,
+      "relative_trajectory_error": 0.019961339534245587,
+      "fixed4_h16_error": 9.009131218999246e-15,
+      "discovery_map_calls": 4,
+      "tangent_actions": 2,
+      "work_with_settling": 7,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.00020233400000013724,
+      "seconds_ordinary_horizon": 0.00012449999999986083,
+      "settled_gap_ratio_to_equalcost": 0.42990253953827273,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.04398504737282596,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 89,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_4",
+      "seed": 1
+    },
+    {
+      "prefix": 128,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 64,
+      "sampled_score": 0.0029024767041084328,
+      "relative_trajectory_error": 0.00040919803905171547,
+      "fixed4_h16_error": 1.9246288855469906e-14,
+      "discovery_map_calls": 4,
+      "tangent_actions": 2,
+      "work_with_settling": 7,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.00020474999999997578,
+      "seconds_ordinary_horizon": 0.00011658300000005895,
+      "settled_gap_ratio_to_equalcost": 0.6007105031385386,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.0029024767041084328,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 89,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_4",
+      "seed": 1
+    },
+    {
+      "prefix": 4,
+      "accepted": true,
+      "depth": 8,
+      "horizon": 64,
+      "sampled_score": 3.6161934677959285e-11,
+      "relative_trajectory_error": 1.6439375278840952e-12,
+      "fixed4_h16_error": 0.0072949968838240875,
+      "discovery_map_calls": 9,
+      "tangent_actions": 8,
+      "work_with_settling": 18,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.0005806670000001457,
+      "seconds_ordinary_horizon": 0.00011520799999997777,
+      "settled_gap_ratio_to_equalcost": 0.29568445162222623,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 1.1324668950405676,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.312479443058603,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.06620767442008567,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 0.09848998832833347,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.05805496434594001,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 3.6161934677959285e-11,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 18
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 100,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_8",
+      "seed": 1
+    },
+    {
+      "prefix": 32,
+      "accepted": true,
+      "depth": 4,
+      "horizon": 64,
+      "sampled_score": 0.035161721822830706,
+      "relative_trajectory_error": 0.0018781143782807509,
+      "fixed4_h16_error": 2.8798536230263488e-05,
+      "discovery_map_calls": 8,
+      "tangent_actions": 4,
+      "work_with_settling": 13,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.0003973329999999997,
+      "seconds_ordinary_horizon": 0.00012833299999992498,
+      "settled_gap_ratio_to_equalcost": 0.3944170000093777,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.08703862479072996,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.06710540194730427,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.05204141849047273,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 8
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 0.035161721822830706,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 13
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 95,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_8",
+      "seed": 1
+    },
+    {
+      "prefix": 128,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 32,
+      "sampled_score": 0.015817600007713196,
+      "relative_trajectory_error": 0.004366244695528936,
+      "fixed4_h16_error": 2.7855610572792e-07,
+      "discovery_map_calls": 6,
+      "tangent_actions": 2,
+      "work_with_settling": 9,
+      "equivalent_ordinary_steps": 33,
+      "seconds_discovery": 0.00027991599999999117,
+      "seconds_ordinary_horizon": 5.883299999998037e-05,
+      "settled_gap_ratio_to_equalcost": 0.8344144380386983,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.061633113119691385,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.015817600007713196,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 9
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 59,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_8",
+      "seed": 1
+    },
+    {
+      "prefix": 4,
+      "accepted": true,
+      "depth": 8,
+      "horizon": 32,
+      "sampled_score": 0.04050241150427796,
+      "relative_trajectory_error": 0.002815172793354699,
+      "fixed4_h16_error": 0.022473744874282282,
+      "discovery_map_calls": 10,
+      "tangent_actions": 8,
+      "work_with_settling": 19,
+      "equivalent_ordinary_steps": 33,
+      "seconds_discovery": 0.000582834000000032,
+      "seconds_ordinary_horizon": 5.9167000000082126e-05,
+      "settled_gap_ratio_to_equalcost": 0.6387060295474222,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 2.1775545865751105,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.6281712941638381,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.13537313054904476,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 0.37026747247746544,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.19878885894267795,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 0.07731166049601006,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 0.04050241150427796,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 19
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 69,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_32",
+      "seed": 1
+    },
+    {
+      "prefix": 32,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 16,
+      "sampled_score": 0.04045800610224505,
+      "relative_trajectory_error": 0.010623595070946281,
+      "fixed4_h16_error": 0.00023753995491384384,
+      "discovery_map_calls": 5,
+      "tangent_actions": 2,
+      "work_with_settling": 8,
+      "equivalent_ordinary_steps": 17,
+      "seconds_discovery": 0.00017920899999990247,
+      "seconds_ordinary_horizon": 2.9958999999912805e-05,
+      "settled_gap_ratio_to_equalcost": 0.8174121552414636,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.06609749203143682,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.05223826977642323,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.04045800610224505,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 8
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 42,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_32",
+      "seed": 1
+    },
+    {
+      "prefix": 128,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 32,
+      "sampled_score": 0.014111397075042,
+      "relative_trajectory_error": 0.004210756258445653,
+      "fixed4_h16_error": 1.571145527487956e-06,
+      "discovery_map_calls": 6,
+      "tangent_actions": 2,
+      "work_with_settling": 9,
+      "equivalent_ordinary_steps": 33,
+      "seconds_discovery": 0.00028020800000017054,
+      "seconds_ordinary_horizon": 5.795799999996909e-05,
+      "settled_gap_ratio_to_equalcost": 0.8175244200692745,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.05551542800500743,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.014111397075042,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 9
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 59,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "spectral_degree_32",
+      "seed": 1
+    },
+    {
+      "prefix": 4,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 16,
+      "sampled_score": 0.012583100562025622,
+      "relative_trajectory_error": 0.0042161958082691745,
+      "fixed4_h16_error": 0.004049507359579733,
+      "discovery_map_calls": 7,
+      "tangent_actions": 2,
+      "work_with_settling": 10,
+      "equivalent_ordinary_steps": 17,
+      "seconds_discovery": 0.0003370410000000934,
+      "seconds_ordinary_horizon": 0.00011533299999988422,
+      "settled_gap_ratio_to_equalcost": 0.8670962756203932,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.06493106573279592,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.050466314894774926,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 8
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.012583100562025622,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 44,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "entropy_simplex",
+      "seed": 1
+    },
+    {
+      "prefix": 32,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 16,
+      "sampled_score": 0.012347370644694036,
+      "relative_trajectory_error": 0.004169863521946471,
+      "fixed4_h16_error": 0.003047741389211324,
+      "discovery_map_calls": 7,
+      "tangent_actions": 2,
+      "work_with_settling": 10,
+      "equivalent_ordinary_steps": 17,
+      "seconds_discovery": 0.00030804199999989734,
+      "seconds_ordinary_horizon": 0.00011808300000004657,
+      "settled_gap_ratio_to_equalcost": 0.8843730339631578,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.06411973020426805,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.050248065376862945,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 8
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.012347370644694036,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 44,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "entropy_simplex",
+      "seed": 1
+    },
+    {
+      "prefix": 128,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 32,
+      "sampled_score": 0.029482605777045333,
+      "relative_trajectory_error": 0.008913915249489252,
+      "fixed4_h16_error": 0.001385934299092228,
+      "discovery_map_calls": 6,
+      "tangent_actions": 2,
+      "work_with_settling": 9,
+      "equivalent_ordinary_steps": 33,
+      "seconds_discovery": 0.0003450839999998845,
+      "seconds_ordinary_horizon": 0.00023454200000005976,
+      "settled_gap_ratio_to_equalcost": 0.8189809335642465,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.11182492520848909,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.029482605777045333,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 9
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 59,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "entropy_simplex",
+      "seed": 1
+    },
+    {
+      "prefix": 4,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 2.292402269735537,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 1.480764017298586,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.0007589590000001145,
+      "seconds_ordinary_horizon": 5.542000000025027e-06,
+      "settled_gap_ratio_to_equalcost": 291.7912286412974,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 23.395890602526084,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 7.353196875074258,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 2.292402269735537,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 18.375049912388025,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 5.8745168774177845,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 15.35752840773309,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 5.508723740207329,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 15.094454780122053,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_0.01",
+      "seed": 1
+    },
+    {
+      "prefix": 32,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.16424940250440373,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.02071175829047821,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.0007476659999998692,
+      "seconds_ordinary_horizon": 5.166000000000892e-06,
+      "settled_gap_ratio_to_equalcost": 4.561610751014355,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.93016184117393,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.2197460292048964,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.16424940250440373,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 0.5250255379925424,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.3373512789846754,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 0.5653838258678943,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 0.37416028304168836,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 0.5628575579840688,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_0.01",
+      "seed": 1
+    },
+    {
+      "prefix": 128,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 32,
+      "sampled_score": 0.02253321594592935,
+      "relative_trajectory_error": 0.00677022201906848,
+      "fixed4_h16_error": 1.1399941567403073e-06,
+      "discovery_map_calls": 6,
+      "tangent_actions": 2,
+      "work_with_settling": 9,
+      "equivalent_ordinary_steps": 33,
+      "seconds_discovery": 0.00030483299999994884,
+      "seconds_ordinary_horizon": 0.00012329200000005258,
+      "settled_gap_ratio_to_equalcost": 0.35801330841145035,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.07387383089476132,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.02253321594592935,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 9
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 59,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_0.01",
+      "seed": 1
+    },
+    {
+      "prefix": 4,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.9330928300088026,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.48162009465690225,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.0007625420000001437,
+      "seconds_ordinary_horizon": 5.291999999990082e-06,
+      "settled_gap_ratio_to_equalcost": 18.72483943011156,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 5.809806706886968,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 2.739482692867019,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.9330928300088026,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 4.52512796514216,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 2.4548007054864147,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 3.8147676799982637,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 2.343395047748692,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 3.799155981924522,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_1.0",
+      "seed": 1
+    },
+    {
+      "prefix": 32,
+      "accepted": true,
+      "depth": 4,
+      "horizon": 32,
+      "sampled_score": 0.03105809618419483,
+      "relative_trajectory_error": 0.00511621695478799,
+      "fixed4_h16_error": 0.0004850421270615817,
+      "discovery_map_calls": 10,
+      "tangent_actions": 4,
+      "work_with_settling": 15,
+      "equivalent_ordinary_steps": 33,
+      "seconds_discovery": 0.0005187920000000457,
+      "seconds_ordinary_horizon": 0.0001236250000000716,
+      "settled_gap_ratio_to_equalcost": 0.41942957010667736,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.15848718035183243,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.10563390081133689,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.07374980047888698,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 8
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 0.1836673798977187,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 13
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.03105809618419483,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 15
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 65,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_1.0",
+      "seed": 1
+    },
+    {
+      "prefix": 128,
+      "accepted": true,
+      "depth": 2,
+      "horizon": 64,
+      "sampled_score": 0.0319088183020687,
+      "relative_trajectory_error": 0.006611193601955737,
+      "fixed4_h16_error": 1.22456250068213e-06,
+      "discovery_map_calls": 4,
+      "tangent_actions": 2,
+      "work_with_settling": 7,
+      "equivalent_ordinary_steps": 65,
+      "seconds_discovery": 0.0002300000000001745,
+      "seconds_ordinary_horizon": 0.0002599580000000046,
+      "settled_gap_ratio_to_equalcost": 0.1692540182634854,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.0319088183020687,
+          "passed": true,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 89,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_1.0",
+      "seed": 1
+    },
+    {
+      "prefix": 4,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.10745513099275385,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.04245063130720638,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.000755750000000166,
+      "seconds_ordinary_horizon": 5.249999999845656e-06,
+      "settled_gap_ratio_to_equalcost": 2.0132217516068756,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 0.7437199285140225,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.12964749356279534,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.10745513099275385,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 0.7140155730489669,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.11886529709613562,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 0.7137626955257711,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 0.11886018016987307,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 0.7137626011192294,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_10.0",
+      "seed": 1
+    },
+    {
+      "prefix": 32,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.23053611599807067,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.13079456606408213,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.0007531249999999101,
+      "seconds_ordinary_horizon": 5.1670000000836325e-06,
+      "settled_gap_ratio_to_equalcost": 1.6146162565543132,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 1.0292738793192426,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.5955349148637445,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.23053611599807067,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 1.0127167225839926,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.5976819348622985,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 1.0121815386473823,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 0.597659594405729,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 1.0121790355767857,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_10.0",
+      "seed": 1
+    },
+    {
+      "prefix": 128,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.9420301101090158,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.25033580609968836,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.000721041999999894,
+      "seconds_ordinary_horizon": 5.6670000001535215e-06,
+      "settled_gap_ratio_to_equalcost": 1.3590437481548188,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 1.948170209273078,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 1.5445138600554615,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.9420301101090158,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 2.01742361272103,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 1.543838840278537,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 2.0130683821698487,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 1.5433007071129299,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 2.0130664203929873,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "admm_shadow_10.0",
+      "seed": 1
+    },
+    {
+      "prefix": 4,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 4.309648549023081,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.5848427758590565,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.0054680830000000125,
+      "seconds_ordinary_horizon": 0.00011916700000003111,
+      "settled_gap_ratio_to_equalcost": 9.692796085162515,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 20.84933370438761,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 10.594943606855804,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 4.309648549023081,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 23.167533602808067,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 7.608794845451625,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 22.87902874376621,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 5.520108075448988,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 20.566941923539765,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "camera_permuted",
+      "seed": 1
+    },
+    {
+      "prefix": 32,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.5791231041213298,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.32845003492301417,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.005552500000000071,
+      "seconds_ordinary_horizon": 0.00012041699999998379,
+      "settled_gap_ratio_to_equalcost": 4.37534657229878,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 10.700524542571756,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 2.6110049924126333,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.5791231041213298,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 8.195287401256206,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 1.7662371576292204,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 6.850562758653861,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 1.5644579632336213,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 6.509812162142552,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "camera_permuted",
+      "seed": 1
+    },
+    {
+      "prefix": 128,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.10131010732713876,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.16617116435324872,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.005361708000000132,
+      "seconds_ordinary_horizon": 0.0001189579999998358,
+      "settled_gap_ratio_to_equalcost": 1.5684033234066952,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 3.1890367819381855,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.6775957579877907,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.10131010732713876,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 3.043491744576189,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.6016869644501657,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 2.8744733470254826,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 0.5878899670398309,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 2.804282674407925,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "camera_permuted",
+      "seed": 1
+    },
+    {
+      "prefix": 4,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 4.011352094791758,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.6318737069660801,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.005152500000000115,
+      "seconds_ordinary_horizon": 0.00011849999999991034,
+      "settled_gap_ratio_to_equalcost": 19.739402312654455,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 18.36570306644192,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 9.751067636928884,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 4.011352094791758,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 19.351874851514943,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 7.439722846910251,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 24.186019286258094,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 6.860798509356541,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 25.5753768391746,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "barbara_permuted",
+      "seed": 1
+    },
+    {
+      "prefix": 32,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.8959031945608317,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.30922965951250425,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.005183791999999965,
+      "seconds_ordinary_horizon": 0.00011612500000035553,
+      "settled_gap_ratio_to_equalcost": 3.685702015301724,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 16.721405536688607,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 4.712050838607231,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.8959031945608317,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 11.596051367830286,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 2.791472802501733,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 8.180357556401871,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 2.1725966398078103,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 7.879948445958104,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "barbara_permuted",
+      "seed": 1
+    },
+    {
+      "prefix": 128,
+      "accepted": false,
+      "depth": 12,
+      "horizon": 1,
+      "sampled_score": 0.06655590728213655,
+      "relative_trajectory_error": 0.0,
+      "fixed4_h16_error": 0.08529365552695974,
+      "discovery_map_calls": 9,
+      "tangent_actions": 12,
+      "work_with_settling": 21,
+      "equivalent_ordinary_steps": 1,
+      "seconds_discovery": 0.005192708000000046,
+      "seconds_ordinary_horizon": 0.00011699999999992272,
+      "settled_gap_ratio_to_equalcost": 1.2334012343387983,
+      "trials": [
+        {
+          "depth": 2,
+          "horizon": 64,
+          "score": 1.6529761762649053,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 5
+        },
+        {
+          "depth": 2,
+          "horizon": 32,
+          "score": 0.41082159299842413,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 6
+        },
+        {
+          "depth": 2,
+          "horizon": 16,
+          "score": 0.06655590728213655,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 7
+        },
+        {
+          "depth": 4,
+          "horizon": 64,
+          "score": 1.4168584952306547,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 10
+        },
+        {
+          "depth": 4,
+          "horizon": 32,
+          "score": 0.328862555054709,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 11
+        },
+        {
+          "depth": 8,
+          "horizon": 64,
+          "score": 1.3739264526882775,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 16
+        },
+        {
+          "depth": 8,
+          "horizon": 32,
+          "score": 0.32307636088874175,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 17
+        },
+        {
+          "depth": 12,
+          "horizon": 64,
+          "score": 1.3683504934102786,
+          "passed": false,
+          "algebraic_closure": false,
+          "work_including_settling": 22
+        }
+      ],
+      "post_discovery_diagnostic_map_calls": 39,
+      "post_discovery_diagnostic_actions": 4,
+      "family": "barbara_permuted",
+      "seed": 1
+    }
+  ],
+  "solves": [
+    {
+      "method": "ordinary",
+      "calls": 512,
+      "actions": 0,
+      "accepted": 0,
+      "rejected": 0,
+      "seconds_including_checks": 0.004059499999999994,
+      "objective_diagnostic_seconds_including_initial": 6.012399999999474e-05,
+      "trace": [
+        {
+          "work": 64,
+          "gap_ratio": 0.36174779188100986,
+          "seconds_including_checks": 0.000515957999999983
+        },
+        {
+          "work": 128,
+          "gap_ratio": 0.2146025103480775,
+          "seconds_including_checks": 0.0010278330000000058
+        },
+        {
+          "work": 192,
+          "gap_ratio": 0.14397425581738407,
+          "seconds_including_checks": 0.0015359999999999818
+        },
+        {
+          "work": 256,
+          "gap_ratio": 0.10221096858193376,
+          "seconds_including_checks": 0.0020442910000000036
+        },
+        {
+          "work": 320,
+          "gap_ratio": 0.07501777713123552,
+          "seconds_including_checks": 0.0025474580000000024
+        },
+        {
+          "work": 384,
+          "gap_ratio": 0.05622422667010231,
+          "seconds_including_checks": 0.003048749999999989
+        },
+        {
+          "work": 448,
+          "gap_ratio": 0.04274285120595692,
+          "seconds_including_checks": 0.0035536250000000047
+        },
+        {
+          "work": 512,
+          "gap_ratio": 0.03283907352181302,
+          "seconds_including_checks": 0.004058540999999999
+        }
+      ],
+      "family": "entropy_simplex",
+      "seed": 0
+    },
+    {
+      "method": "fixed",
+      "calls": 212,
+      "actions": 300,
+      "accepted": 0,
+      "rejected": 0,
+      "seconds_including_checks": 0.007629792000000024,
+      "objective_diagnostic_seconds_including_initial": 6.212500000005172e-05,
+      "trace": [
+        {
+          "work": 64,
+          "gap_ratio": 0.15991799727158013,
+          "seconds_including_checks": 0.0010035000000000183
+        },
+        {
+          "work": 130,
+          "gap_ratio": 0.062244925360416765,
+          "seconds_including_checks": 0.0020585830000000027
+        },
+        {
+          "work": 196,
+          "gap_ratio": 0.028421644038483594,
+          "seconds_including_checks": 0.003101417000000023
+        },
+        {
+          "work": 256,
+          "gap_ratio": 0.014786526760363758,
+          "seconds_including_checks": 0.0040491250000000145
+        },
+        {
+          "work": 322,
+          "gap_ratio": 0.00750573293123905,
+          "seconds_including_checks": 0.005093082999999998
+        },
+        {
+          "work": 388,
+          "gap_ratio": 0.003924318040196632,
+          "seconds_including_checks": 0.006137458000000012
+        },
+        {
+          "work": 448,
+          "gap_ratio": 0.0022173729214060942,
+          "seconds_including_checks": 0.00708429200000002
+        },
+        {
+          "work": 512,
+          "gap_ratio": 0.0017314362685858476,
+          "seconds_including_checks": 0.007628792000000023
+        }
+      ],
+      "family": "entropy_simplex",
+      "seed": 0
+    },
+    {
+      "method": "discovered",
+      "calls": 388,
+      "actions": 124,
+      "accepted": 62,
+      "rejected": 0,
+      "seconds_including_checks": 0.015900458999999978,
+      "objective_diagnostic_seconds_including_initial": 6.154199999997001e-05,
+      "trace": [
+        {
+          "work": 67,
+          "gap_ratio": 0.1142610523460717,
+          "seconds_including_checks": 0.0023070419999999814
+        },
+        {
+          "work": 132,
+          "gap_ratio": 0.01147700828925983,
+          "seconds_including_checks": 0.004524333999999991
+        },
+        {
+          "work": 195,
+          "gap_ratio": 0.0015461596542422158,
+          "seconds_including_checks": 0.0066445419999999755
+        },
+        {
+          "work": 258,
+          "gap_ratio": 0.0002409483014302281,
+          "seconds_including_checks": 0.008762916999999981
+        },
+        {
+          "work": 321,
+          "gap_ratio": 4.010691543613767e-05,
+          "seconds_including_checks": 0.01088204199999998
+        },
+        {
+          "work": 384,
+          "gap_ratio": 6.9030181338681845e-06,
+          "seconds_including_checks": 0.013037624999999997
+        },
+        {
+          "work": 454,
+          "gap_ratio": 9.985940957288116e-07,
+          "seconds_including_checks": 0.015442624999999988
+        },
+        {
+          "work": 512,
+          "gap_ratio": 8.410072384964489e-07,
+          "seconds_including_checks": 0.015899458999999977
+        }
+      ],
+      "family": "entropy_simplex",
+      "seed": 0
+    },
+    {
+      "method": "anderson",
+      "calls": 512,
+      "actions": 0,
+      "accepted": 0,
+      "rejected": 0,
+      "seconds_including_checks": 0.015291165999999995,
+      "objective_diagnostic_seconds_including_initial": 6.52489999999617e-05,
+      "trace": [
+        {
+          "work": 64,
+          "gap_ratio": 0.029802223259439528,
+          "seconds_including_checks": 0.002064874999999994
+        },
+        {
+          "work": 128,
+          "gap_ratio": 0.02642221527949458,
+          "seconds_including_checks": 0.004195624999999981
+        },
+        {
+          "work": 192,
+          "gap_ratio": 0.016373268204594157,
+          "seconds_including_checks": 0.006320875000000004
+        },
+        {
+          "work": 256,
+          "gap_ratio": 3.3620445728830655e-05,
+          "seconds_including_checks": 0.008439332999999993
+        },
+        {
+          "work": 320,
+          "gap_ratio": 2.065671323569577e-05,
+          "seconds_including_checks": 0.010555832999999987
+        },
+        {
+          "work": 384,
+          "gap_ratio": 1.1876886299461336e-05,
+          "seconds_including_checks": 0.012664415999999984
+        },
+        {
+          "work": 448,
+          "gap_ratio": 6.677688107686137e-06,
+          "seconds_including_checks": 0.014765749999999994
+        },
+        {
+          "work": 512,
+          "gap_ratio": 4.325475036004178e-06,
+          "seconds_including_checks": 0.015290165999999994
+        }
+      ],
+      "family": "entropy_simplex",
+      "seed": 0
+    },
+    {
+      "method": "ordinary",
+      "calls": 512,
+      "actions": 0,
+      "accepted": 0,
+      "rejected": 0,
+      "seconds_including_checks": 0.0024229169999999967,
+      "objective_diagnostic_seconds_including_initial": 5.233199999996052e-05,
+      "trace": [
+        {
+          "work": 64,
+          "gap_ratio": 0.003702733811031441,
+          "seconds_including_checks": 0.0003039169999999869
+        },
+        {
+          "work": 128,
+          "gap_ratio": 0.00018413361130849233,
+          "seconds_including_checks": 0.0006085419999999897
+        },
+        {
+          "work": 192,
+          "gap_ratio": 1.4929391022919036e-05,
+          "seconds_including_checks": 0.0009109579999999895
+        },
+        {
+          "work": 256,
+          "gap_ratio": 1.2954028617000764e-06,
+          "seconds_including_checks": 0.0012125829999999893
+        },
+        {
+          "work": 320,
+          "gap_ratio": 1.1442637205306125e-07,
+          "seconds_including_checks": 0.0015157080000000045
+        },
+        {
+          "work": 384,
+          "gap_ratio": 1.0164959640292728e-08,
+          "seconds_including_checks": 0.0018176249999999894
+        },
+        {
+          "work": 448,
+          "gap_ratio": 9.048318800518195e-10,
+          "seconds_including_checks": 0.0021180419999999867
+        },
+        {
+          "work": 512,
+          "gap_ratio": 8.060888907549103e-11,
+          "seconds_including_checks": 0.0024218329999999844
+        }
+      ],
+      "family": "admm_shadow_1.0",
+      "seed": 0
+    },
+    {
+      "method": "fixed",
+      "calls": 212,
+      "actions": 300,
+      "accepted": 0,
+      "rejected": 0,
+      "seconds_including_checks": 0.006276875000000015,
+      "objective_diagnostic_seconds_including_initial": 5.6082000000012844e-05,
+      "trace": [
+        {
+          "work": 64,
+          "gap_ratio": 0.012701988960382375,
+          "seconds_including_checks": 0.0008325829999999979
+        },
+        {
+          "work": 130,
+          "gap_ratio": 0.0029228348612034983,
+          "seconds_including_checks": 0.0017109999999999903
+        },
+        {
+          "work": 196,
+          "gap_ratio": 0.012868087594846044,
+          "seconds_including_checks": 0.002585625000000008
+        },
+        {
+          "work": 256,
+          "gap_ratio": 0.012868113947962044,
+          "seconds_including_checks": 0.003386
+        },
+        {
+          "work": 322,
+          "gap_ratio": 0.0029208279926429266,
+          "seconds_including_checks": 0.004259249999999992
+        },
+        {
+          "work": 388,
+          "gap_ratio": 0.012868114579852756,
+          "seconds_including_checks": 0.005133916000000016
+        },
+        {
+          "work": 448,
+          "gap_ratio": 0.012868114580098714,
+          "seconds_including_checks": 0.005924499999999999
+        },
+        {
+          "work": 512,
+          "gap_ratio": 4.717336134588567e-06,
+          "seconds_including_checks": 0.006275875000000014
+        }
+      ],
+      "family": "admm_shadow_1.0",
+      "seed": 0
+    },
+    {
+      "method": "discovered",
+      "calls": 248,
+      "actions": 264,
+      "accepted": 0,
+      "rejected": 22,
+      "seconds_including_checks": 0.015955084000000008,
+      "objective_diagnostic_seconds_including_initial": 5.94610000000384e-05,
+      "trace": [
+        {
+          "work": 67,
+          "gap_ratio": 0.224146916272519,
+          "seconds_including_checks": 0.002182875000000001
+        },
+        {
+          "work": 130,
+          "gap_ratio": 0.16095847905790375,
+          "seconds_including_checks": 0.004333834000000009
+        },
+        {
+          "work": 193,
+          "gap_ratio": 0.11880703212486102,
+          "seconds_including_checks": 0.006469334000000021
+        },
+        {
+          "work": 256,
+          "gap_ratio": 0.0904632835790729,
+          "seconds_including_checks": 0.008607958999999998
+        },
+        {
+          "work": 340,
+          "gap_ratio": 0.06401904197624418,
+          "seconds_including_checks": 0.011460459000000006
+        },
+        {
+          "work": 403,
+          "gap_ratio": 0.05007455156201277,
+          "seconds_including_checks": 0.013596917000000014
+        },
+        {
+          "work": 466,
+          "gap_ratio": 0.039162822892246554,
+          "seconds_including_checks": 0.01573237500000002
+        },
+        {
+          "work": 512,
+          "gap_ratio": 0.002364956834477599,
+          "seconds_including_checks": 0.015954042
+        }
+      ],
+      "family": "admm_shadow_1.0",
+      "seed": 0
+    },
+    {
+      "method": "anderson",
+      "calls": 512,
+      "actions": 0,
+      "accepted": 0,
+      "rejected": 0,
+      "seconds_including_checks": 0.013439167000000002,
+      "objective_diagnostic_seconds_including_initial": 5.787399999998555e-05,
+      "trace": [
+        {
+          "work": 64,
+          "gap_ratio": 5.555268276486369e-09,
+          "seconds_including_checks": 0.001785542000000001
+        },
+        {
+          "work": 128,
+          "gap_ratio": 0.0,
+          "seconds_including_checks": 0.003664875000000012
+        },
+        {
+          "work": 192,
+          "gap_ratio": 8.738786438177179e-18,
+          "seconds_including_checks": 0.005536959000000008
+        },
+        {
+          "work": 256,
+          "gap_ratio": 6.154336831920425e-17,
+          "seconds_including_checks": 0.007425542000000007
+        },
+        {
+          "work": 320,
+          "gap_ratio": 0.0,
+          "seconds_including_checks": 0.009317041999999998
+        },
+        {
+          "work": 384,
+          "gap_ratio": 0.0,
+          "seconds_including_checks": 0.011211417000000001
+        },
+        {
+          "work": 448,
+          "gap_ratio": 1.4688598481092488e-17,
+          "seconds_including_checks": 0.013110499999999997
+        },
+        {
+          "work": 512,
+          "gap_ratio": 2.2869590040126642e-17,
+          "seconds_including_checks": 0.013438124999999995
+        }
+      ],
+      "family": "admm_shadow_1.0",
+      "seed": 0
+    },
+    {
+      "method": "ordinary",
+      "calls": 512,
+      "actions": 0,
+      "accepted": 0,
+      "rejected": 0,
+      "seconds_including_checks": 0.060777459000000034,
+      "objective_diagnostic_seconds_including_initial": 0.0005603329999999684,
+      "trace": [
+        {
+          "work": 64,
+          "gap_ratio": 0.01672803126488401,
+          "seconds_including_checks": 0.0075428750000000044
+        },
+        {
+          "work": 128,
+          "gap_ratio": 0.006220113775794258,
+          "seconds_including_checks": 0.015139084000000025
+        },
+        {
+          "work": 192,
+          "gap_ratio": 0.002691677448584987,
+          "seconds_including_checks": 0.02277600000000002
+        },
+        {
+          "work": 256,
+          "gap_ratio": 0.0016395444504489812,
+          "seconds_including_checks": 0.030332667000000035
+        },
+        {
+          "work": 320,
+          "gap_ratio": 0.0011466261967684056,
+          "seconds_including_checks": 0.037935209000000025
+        },
+        {
+          "work": 384,
+          "gap_ratio": 0.0007712987831344088,
+          "seconds_including_checks": 0.04556875000000005
+        },
+        {
+          "work": 448,
+          "gap_ratio": 0.0005810066519207614,
+          "seconds_including_checks": 0.053130709
+        },
+        {
+          "work": 512,
+          "gap_ratio": 0.0004864291777529289,
+          "seconds_including_checks": 0.06077558400000005
+        }
+      ],
+      "family": "camera",
+      "seed": 0
+    },
+    {
+      "method": "fixed",
+      "calls": 212,
+      "actions": 300,
+      "accepted": 0,
+      "rejected": 0,
+      "seconds_including_checks": 0.0826305,
+      "objective_diagnostic_seconds_including_initial": 0.0005735399999999835,
+      "trace": [
+        {
+          "work": 64,
+          "gap_ratio": 0.024201648523490795,
+          "seconds_including_checks": 0.010516042000000003
+        },
+        {
+          "work": 130,
+          "gap_ratio": 0.006612536871238403,
+          "seconds_including_checks": 0.02150058399999999
+        },
+        {
+          "work": 196,
+          "gap_ratio": 0.003669123313015896,
+          "seconds_including_checks": 0.03252687500000001
+        },
+        {
+          "work": 256,
+          "gap_ratio": 0.0014221690647574928,
+          "seconds_including_checks": 0.042526375000000005
+        },
+        {
+          "work": 322,
+          "gap_ratio": 0.0014543432164017423,
+          "seconds_including_checks": 0.05354379199999998
+        },
+        {
+          "work": 388,
+          "gap_ratio": 0.0009420739314685271,
+          "seconds_including_checks": 0.06460729199999998
+        },
+        {
+          "work": 448,
+          "gap_ratio": 0.0008841703610114776,
+          "seconds_including_checks": 0.07462291700000001
+        },
+        {
+          "work": 512,
+          "gap_ratio": 0.00025678371585018583,
+          "seconds_including_checks": 0.08262833400000003
+        }
+      ],
+      "family": "camera",
+      "seed": 0
+    },
+    {
+      "method": "discovered",
+      "calls": 248,
+      "actions": 264,
+      "accepted": 0,
+      "rejected": 22,
+      "seconds_including_checks": 0.12404325000000005,
+      "objective_diagnostic_seconds_including_initial": 0.000597542000000062,
+      "trace": [
+        {
+          "work": 67,
+          "gap_ratio": 0.24170185195974586,
+          "seconds_including_checks": 0.01674020799999998
+        },
+        {
+          "work": 130,
+          "gap_ratio": 0.18796181051351182,
+          "seconds_including_checks": 0.03295345800000005
+        },
+        {
+          "work": 193,
+          "gap_ratio": 0.14713128175711784,
+          "seconds_including_checks": 0.049214082999999964
+        },
+        {
+          "work": 256,
+          "gap_ratio": 0.1191021530722449,
+          "seconds_including_checks": 0.06547800000000004
+        },
+        {
+          "work": 340,
+          "gap_ratio": 0.09633693063760101,
+          "seconds_including_checks": 0.08690658299999998
+        },
+        {
+          "work": 403,
+          "gap_ratio": 0.0772289153426074,
+          "seconds_including_checks": 0.10282875000000002
+        },
+        {
+          "work": 466,
+          "gap_ratio": 0.062008965044123315,
+          "seconds_including_checks": 0.11869320800000005
+        },
+        {
+          "work": 512,
+          "gap_ratio": 0.013387176133343073,
+          "seconds_including_checks": 0.12404137500000001
+        }
+      ],
+      "family": "camera",
+      "seed": 0
+    },
+    {
+      "method": "anderson",
+      "calls": 512,
+      "actions": 0,
+      "accepted": 0,
+      "rejected": 0,
+      "seconds_including_checks": 0.16511816700000004,
+      "objective_diagnostic_seconds_including_initial": 0.0005691670000002036,
+      "trace": [
+        {
+          "work": 64,
+          "gap_ratio": 0.008895365709156451,
+          "seconds_including_checks": 0.021354666999999994
+        },
+        {
+          "work": 128,
+          "gap_ratio": 0.0020329527082684254,
+          "seconds_including_checks": 0.04404516700000005
+        },
+        {
+          "work": 192,
+          "gap_ratio": 0.0009031827248916657,
+          "seconds_including_checks": 0.06675379199999998
+        },
+        {
+          "work": 256,
+          "gap_ratio": 0.0005454539053995646,
+          "seconds_including_checks": 0.08943541700000002
+        },
+        {
+          "work": 320,
+          "gap_ratio": 0.00039262273994218,
+          "seconds_including_checks": 0.11207575000000003
+        },
+        {
+          "work": 384,
+          "gap_ratio": 0.00031863632859946834,
+          "seconds_including_checks": 0.134771333
+        },
+        {
+          "work": 448,
+          "gap_ratio": 0.00025629114113958913,
+          "seconds_including_checks": 0.157504792
+        },
+        {
+          "work": 512,
+          "gap_ratio": 0.0002147945229392198,
+          "seconds_including_checks": 0.165116292
+        }
+      ],
+      "family": "camera",
+      "seed": 0
+    },
+    {
+      "method": "ordinary",
+      "calls": 512,
+      "actions": 0,
+      "accepted": 0,
+      "rejected": 0,
+      "seconds_including_checks": 0.059916791999999996,
+      "objective_diagnostic_seconds_including_initial": 0.000551872999999925,
+      "trace": [
+        {
+          "work": 64,
+          "gap_ratio": 0.001047253827986379,
+          "seconds_including_checks": 0.007524500000000045
+        },
+        {
+          "work": 128,
+          "gap_ratio": 7.965383953409848e-05,
+          "seconds_including_checks": 0.01502470900000008
+        },
+        {
+          "work": 192,
+          "gap_ratio": 1.8132142742959083e-05,
+          "seconds_including_checks": 0.022514542000000026
+        },
+        {
+          "work": 256,
+          "gap_ratio": 1.1280072431234113e-05,
+          "seconds_including_checks": 0.03000758400000003
+        },
+        {
+          "work": 320,
+          "gap_ratio": 6.387668844728557e-06,
+          "seconds_including_checks": 0.03748770899999998
+        },
+        {
+          "work": 384,
+          "gap_ratio": 4.572673809229662e-06,
+          "seconds_including_checks": 0.04498270900000001
+        },
+        {
+          "work": 448,
+          "gap_ratio": 4.012276801597757e-06,
+          "seconds_including_checks": 0.05245641700000003
+        },
+        {
+          "work": 512,
+          "gap_ratio": 2.912708715931235e-06,
+          "seconds_including_checks": 0.05991495899999999
+        }
+      ],
+      "family": "camera_permuted",
+      "seed": 0
+    },
+    {
+      "method": "fixed",
+      "calls": 212,
+      "actions": 300,
+      "accepted": 0,
+      "rejected": 0,
+      "seconds_including_checks": 0.08312729100000005,
+      "objective_diagnostic_seconds_including_initial": 0.0005722920000000853,
+      "trace": [
+        {
+          "work": 64,
+          "gap_ratio": 0.001324333962737441,
+          "seconds_including_checks": 0.010693791000000008
+        },
+        {
+          "work": 130,
+          "gap_ratio": 0.00015831902970152648,
+          "seconds_including_checks": 0.021857832999999993
+        },
+        {
+          "work": 196,
+          "gap_ratio": 6.49947020569165e-05,
+          "seconds_including_checks": 0.032965833
+        },
+        {
+          "work": 256,
+          "gap_ratio": 4.630559035720636e-05,
+          "seconds_including_checks": 0.043041541000000016
+        },
+        {
+          "work": 322,
+          "gap_ratio": 4.545275221643563e-05,
+          "seconds_including_checks": 0.05414620800000003
+        },
+        {
+          "work": 388,
+          "gap_ratio": 2.1374446599153237e-05,
+          "seconds_including_checks": 0.06522712500000005
+        },
+        {
+          "work": 448,
+          "gap_ratio": 2.2552255124681215e-05,
+          "seconds_including_checks": 0.07531395800000007
+        },
+        {
+          "work": 512,
+          "gap_ratio": 1.578513581776633e-06,
+          "seconds_including_checks": 0.08312541600000001
+        }
+      ],
+      "family": "camera_permuted",
+      "seed": 0
+    },
+    {
+      "method": "discovered",
+      "calls": 248,
+      "actions": 264,
+      "accepted": 0,
+      "rejected": 22,
+      "seconds_including_checks": 0.12446562500000002,
+      "objective_diagnostic_seconds_including_initial": 0.0005716679999999696,
+      "trace": [
+        {
+          "work": 67,
+          "gap_ratio": 0.08466235370461395,
+          "seconds_including_checks": 0.016557041999999966
+        },
+        {
+          "work": 130,
+          "gap_ratio": 0.05740372244972062,
+          "seconds_including_checks": 0.032714416999999996
+        },
+        {
+          "work": 193,
+          "gap_ratio": 0.04007047893950206,
+          "seconds_including_checks": 0.048926167000000076
+        },
+        {
+          "work": 256,
+          "gap_ratio": 0.029391631093531084,
+          "seconds_including_checks": 0.06510862499999992
+        },
+        {
+          "work": 340,
+          "gap_ratio": 0.018520209547651566,
+          "seconds_including_checks": 0.0866544170000001
+        },
+        {
+          "work": 403,
+          "gap_ratio": 0.013389160316740532,
+          "seconds_including_checks": 0.102853042
+        },
+        {
+          "work": 466,
+          "gap_ratio": 0.01068919600393266,
+          "seconds_including_checks": 0.11908008399999992
+        },
+        {
+          "work": 512,
+          "gap_ratio": 0.0006215817821585095,
+          "seconds_including_checks": 0.12446366700000011
+        }
+      ],
+      "family": "camera_permuted",
+      "seed": 0
+    },
+    {
+      "method": "anderson",
+      "calls": 512,
+      "actions": 0,
+      "accepted": 0,
+      "rejected": 0,
+      "seconds_including_checks": 0.16971058300000008,
+      "objective_diagnostic_seconds_including_initial": 0.0005700829999997215,
+      "trace": [
+        {
+          "work": 64,
+          "gap_ratio": 0.00038593295906725895,
+          "seconds_including_checks": 0.02191791700000012
+        },
+        {
+          "work": 128,
+          "gap_ratio": 2.3174987762954338e-05,
+          "seconds_including_checks": 0.045232750000000044
+        },
+        {
+          "work": 192,
+          "gap_ratio": 9.624865026721935e-06,
+          "seconds_including_checks": 0.06875133300000003
+        },
+        {
+          "work": 256,
+          "gap_ratio": 5.1187148700054885e-06,
+          "seconds_including_checks": 0.09219066700000011
+        },
+        {
+          "work": 320,
+          "gap_ratio": 4.096654873259419e-06,
+          "seconds_including_checks": 0.11555120800000007
+        },
+        {
+          "work": 384,
+          "gap_ratio": 2.8186854732208756e-06,
+          "seconds_including_checks": 0.13880841700000013
+        },
+        {
+          "work": 448,
+          "gap_ratio": 2.626516234305157e-06,
+          "seconds_including_checks": 0.16202991700000013
+        },
+        {
+          "work": 512,
+          "gap_ratio": 1.270880678003089e-06,
+          "seconds_including_checks": 0.16970870800000015
+        }
+      ],
+      "family": "camera_permuted",
+      "seed": 0
+    },
+    {
+      "method": "ordinary",
+      "calls": 512,
+      "actions": 0,
+      "accepted": 0,
+      "rejected": 0,
+      "seconds_including_checks": 0.05987254100000006,
+      "objective_diagnostic_seconds_including_initial": 0.000559667000000319,
+      "trace": [
+        {
+          "work": 64,
+          "gap_ratio": 0.001942671156628954,
+          "seconds_including_checks": 0.007460291000000119
+        },
+        {
+          "work": 128,
+          "gap_ratio": 0.0006635018079498809,
+          "seconds_including_checks": 0.014887708000000055
+        },
+        {
+          "work": 192,
+          "gap_ratio": 0.00023794941651069184,
+          "seconds_including_checks": 0.022372291000000155
+        },
+        {
+          "work": 256,
+          "gap_ratio": 0.0001253628705495672,
+          "seconds_including_checks": 0.02988758300000005
+        },
+        {
+          "work": 320,
+          "gap_ratio": 8.098088944449618e-05,
+          "seconds_including_checks": 0.037384375000000025
+        },
+        {
+          "work": 384,
+          "gap_ratio": 5.436738149493852e-05,
+          "seconds_including_checks": 0.04486516600000012
+        },
+        {
+          "work": 448,
+          "gap_ratio": 3.7170837569362335e-05,
+          "seconds_including_checks": 0.05235933300000006
+        },
+        {
+          "work": 512,
+          "gap_ratio": 2.7815025721461802e-05,
+          "seconds_including_checks": 0.059870791000000034
+        }
+      ],
+      "family": "barbara",
+      "seed": 0
+    },
+    {
+      "method": "fixed",
+      "calls": 212,
+      "actions": 300,
+      "accepted": 0,
+      "rejected": 0,
+      "seconds_including_checks": 0.08216658300000002,
+      "objective_diagnostic_seconds_including_initial": 0.0005718759999997491,
+      "trace": [
+        {
+          "work": 64,
+          "gap_ratio": 0.003926436714764314,
+          "seconds_including_checks": 0.010525917000000051
+        },
+        {
+          "work": 130,
+          "gap_ratio": 0.0005748419519947982,
+          "seconds_including_checks": 0.02149666700000008
+        },
+        {
+          "work": 196,
+          "gap_ratio": 0.0002870057736668448,
+          "seconds_including_checks": 0.03246362500000011
+        },
+        {
+          "work": 256,
+          "gap_ratio": 0.0001547535800571952,
+          "seconds_including_checks": 0.04244862500000002
+        },
+        {
+          "work": 322,
+          "gap_ratio": 8.748644797201007e-05,
+          "seconds_including_checks": 0.05342237500000002
+        },
+        {
+          "work": 388,
+          "gap_ratio": 5.6399549029631965e-05,
+          "seconds_including_checks": 0.06439229199999996
+        },
+        {
+          "work": 448,
+          "gap_ratio": 4.797287027312221e-05,
+          "seconds_including_checks": 0.07434699999999994
+        },
+        {
+          "work": 512,
+          "gap_ratio": 7.65163980166499e-06,
+          "seconds_including_checks": 0.08216475000000001
+        }
+      ],
+      "family": "barbara",
+      "seed": 0
+    },
+    {
+      "method": "discovered",
+      "calls": 248,
+      "actions": 264,
+      "accepted": 0,
+      "rejected": 22,
+      "seconds_including_checks": 0.12357304200000008,
+      "objective_diagnostic_seconds_including_initial": 0.0005740009999999351,
+      "trace": [
+        {
+          "work": 67,
+          "gap_ratio": 0.08813480411407017,
+          "seconds_including_checks": 0.016506750000000014
+        },
+        {
+          "work": 130,
+          "gap_ratio": 0.05055893511019991,
+          "seconds_including_checks": 0.032529417000000116
+        },
+        {
+          "work": 193,
+          "gap_ratio": 0.03547714611712956,
+          "seconds_including_checks": 0.04855916700000007
+        },
+        {
+          "work": 256,
+          "gap_ratio": 0.025553103702883717,
+          "seconds_including_checks": 0.06460462500000008
+        },
+        {
+          "work": 340,
+          "gap_ratio": 0.01686032740881958,
+          "seconds_including_checks": 0.08597987500000004
+        },
+        {
+          "work": 403,
+          "gap_ratio": 0.014187785794691448,
+          "seconds_including_checks": 0.10204816699999997
+        },
+        {
+          "work": 466,
+          "gap_ratio": 0.011485183365131393,
+          "seconds_including_checks": 0.11810216699999998
+        },
+        {
+          "work": 512,
+          "gap_ratio": 0.0016284187284437144,
+          "seconds_including_checks": 0.12357116699999993
+        }
+      ],
+      "family": "barbara",
+      "seed": 0
+    },
+    {
+      "method": "anderson",
+      "calls": 512,
+      "actions": 0,
+      "accepted": 0,
+      "rejected": 0,
+      "seconds_including_checks": 0.16809270799999987,
+      "objective_diagnostic_seconds_including_initial": 0.0005755419999999845,
+      "trace": [
+        {
+          "work": 64,
+          "gap_ratio": 0.0012202208779301562,
+          "seconds_including_checks": 0.021695582999999852
+        },
+        {
+          "work": 128,
+          "gap_ratio": 0.0001903783549615065,
+          "seconds_including_checks": 0.04456479199999985
+        },
+        {
+          "work": 192,
+          "gap_ratio": 7.977066280613378e-05,
+          "seconds_including_checks": 0.06753541699999999
+        },
+        {
+          "work": 256,
+          "gap_ratio": 3.661592527357595e-05,
+          "seconds_including_checks": 0.090603875
+        },
+        {
+          "work": 320,
+          "gap_ratio": 2.0563366795905094e-05,
+          "seconds_including_checks": 0.11378570799999999
+        },
+        {
+          "work": 384,
+          "gap_ratio": 1.20655417656782e-05,
+          "seconds_including_checks": 0.1369212919999998
+        },
+        {
+          "work": 448,
+          "gap_ratio": 7.033863951012089e-06,
+          "seconds_including_checks": 0.16017174999999995
+        },
+        {
+          "work": 512,
+          "gap_ratio": 5.204137858661257e-06,
+          "seconds_including_checks": 0.16809079199999988
+        }
+      ],
+      "family": "barbara",
+      "seed": 0
+    }
+  ]
+}

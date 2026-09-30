@@ -1,4 +1,4 @@
-# Krylov transport in mirror geometry
+# Discoverable polynomial transport in mirror geometry
 
 Independent research branch: `codex/krylov-bregman-research`.
 Manuscript: `paper/krylov_bregman/main.tex`.
@@ -97,7 +97,7 @@ From this authoritative worktree:
 
 Copy the remote outputs immediately into `results/suite_v2` and
 `results/shadow_v2`, respectively, using the route selected by `m4host`.
-The retained verification run passed all 17 tests, covering tangent actions,
+The initial retained verification run passed all 17 tests, covering tangent actions,
 metric symmetry and covariance, affine polynomial exactness, the quadratic
 bound, nonlinear defects, boundary drift, shadow equivalence, and work counts.
 
@@ -128,3 +128,111 @@ contains all manuscript dependencies; no numerical rerun is needed to compile.
 
 The draft provides a foundation and falsifiable experiments for these questions;
 the general nonlinear acceleration problem remains open here.
+
+## September 29 continuation: discoverable polynomial transport
+
+The research object now explicitly includes **discovery** of coordinates,
+relations, order, and useful horizon, with all acquisition cost charged.
+`paper/krylov_bregman/discovery.tex` develops the connection to Tomić,
+Widdershoven, and De Lathauwer, *Sparse Approximation via Polynomial Equations*,
+https://arxiv.org/abs/2609.11215. Their sparse-root formulation motivates
+algebraic relations, but is not itself a transport-acceleration theorem.
+
+Three distinct constructions are retained:
+
+- `discovery.py`: incremental current-map Arnoldi and sampled live-map
+  falsification. No objective, optimum, or future reference is used to select
+  the order or horizon. Samples do not constitute a path certificate.
+- `test_discovery.py`: exact ESP/rank identities, a conditioning-sensitive
+  singular-tail bound, an identifiable finite polynomial-observable control,
+  and a counterexample showing why a few accurate probes cannot certify an
+  unrestricted nonlinear future. The lifted control is classical Koopman
+  identification, not a claimed mirror-descent example or new algorithm.
+- `certified_piece.py`: actual finite-path certification for Huber mirror
+  descent, using the feature-space constraints of its current affine piece.
+  Cached `BQ` columns already acquired during tangent actions check every
+  predicted input. The sum of compressed Arnoldi defects bounds the actual
+  path error by global nonexpansivity. Exact closure makes the jump exact.
+  This is an exact-arithmetic theorem with floating-point verification,
+  not an interval-arithmetic certificate.
+
+The sparse sampled scan accepts 35 of 66 anchors; all accepted cases have
+independently measured relative trajectory error below 0.0200. It rejects all
+natural/permuted Meyer anchors and is too costly as a repeated generic gate.
+That does not invalidate fixed finite Meyer acceleration: matching the full
+ordinary trajectory closely is not necessary for improving its objective.
+This failed gate is not promoted as a replacement accelerator.
+
+The Huber class permits a stronger result. In a saturated region it discovers
+`J=I`, the rank-one residual space, and the first piece-crossing time. Positive
+camera-derived sensing controls at n=64 have first jumps of 392, 366, and 386
+steps, with one map and one tangent action. Independent ordinary replay
+matches to about 1e-11. Anderson with a history confined to an exactly constant
+residual region has zero residual differences and takes only an ordinary step
+under the implemented positive-ridge convention. This establishes a local
+collapse of acceleration, not a claim that Anderson fails on all structured
+problems or an exact reproduction of the earlier subproblem Meyer stall.
+
+The Huber data use noiseless synthetic sensing matrices and a downsampled
+camera source; these are camera-derived inverse problems, not a natural noisy
+benchmark. The objective has known optimum zero. The target ratio is 1e-3.
+The fixed polynomial, ordinary method, certified discovery, and full-state
+Anderson share the same map. The certified method tries depths 2/4/8, caps
+horizons at 4096, uses a 2% displacement-relative certificate, and takes 16
+ordinary steps after an unprofitable attempt. This explicit acquisition
+schedule is experimental. All checks and failed attempts are timed.
+
+`results/discovery_v1.json` holds the sampled screen and 512-work-unit solves.
+`results/certified_huber_v1.json` retains the initial scalar reduced-path loop;
+`certified_huber_v2.json` uses block doubling and batched feature checks with
+unchanged mathematical admission conditions. `certified_huber_v2_n256.json`
+extends v2 to n=256 without changing its accelerator parameters. All reported
+speed comparisons must include full-solve time and cannot be inferred from
+the first exact event jump alone.
+
+Reproduce on the selected Mini (copy each /tmp result back immediately):
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.krylov_bregman.test_contracts \
+  experiments.krylov_bregman.test_discovery \
+  experiments.krylov_bregman.test_certified_piece -v
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.discovery_study \
+  --out /tmp/krylov_discovery_v1.json --size 32 --seeds 2
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.certified_study \
+  --out /tmp/krylov_certified_huber_v2.json --seeds 3 --repeats 3
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.certified_study \
+  --out /tmp/krylov_certified_huber_v2_n256.json --side 16 \
+  --seeds 3 --repeats 3 --budget 80000
+```
+
+The next major question is a discovery certificate for curved proximal pieces
+and lifted observables. An unchanged exterior disk mask is not an affine
+piece. Extending the Huber theorem to that case requires new geometry, not
+relabeling an existing mask check as a certificate.
+
+The complete continuation suite passes **32 tests** on the M4 Mini. At n=256,
+positive sensing, protocol v2 measures paired median speedups of **3.47x**
+versus ordinary iteration and **1.42x** versus the fixed finite schedule.
+Anderson wins these complete solves after the initial drift phase. On signed
+sensing the certificate is expensive and the discovered method loses; both
+results remain in the manuscript table. Rebuild the continuation tables and
+figure with `.venv-jpeg/bin/python -m experiments.krylov_bregman.discovery_report`
+(using the MacBook's existing environment as above) before compiling TeX.
+
+At n=256 the first positive-sensing skips are 838, 831, and 821 ordinary
+steps for two map/tangent work units, with absolute replay error below 3.7e-11.
+The recorded Anderson trajectories include gap excursions of 25.26x and
+7.35x the initial gap on seeds zero and one before recovering. Final time
+alone omits this behavior; the paper preserves it explicitly. Recorded
+checkpoints are not a bound on every intermediate objective value.
