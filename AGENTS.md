@@ -1952,3 +1952,22 @@ response-memory implementation is a known limited-memory BFGS baseline with
 an experimental secant-defect admission rule. It is not a new certified
 long-horizon closure, and its adaptive admission must be compared with ordinary
 L-BFGS as well as lean ordinary Sinkhorn. See `CONTEXT_DESCENT.md`.
+
+Test the inclusion-preserving response enclosure and run the six-case battery:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.entropic_transport_closure.test_enclosed_continuation -v
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.probe_enclosed_continuation \
+  --repeats 5 --rank 4 --out /tmp/enclosed_continuation_final4.json.gz
+```
+
+Copy the JSON immediately into `experiments/entropic_transport_closure/results/theory/`.
+`ENCLOSED_CONTINUATION.md` proves the finite gradient and objective enclosures,
+identifies what is and is not transferred from the zonotopic-mixture paper,
+and distinguishes exact-arithmetic guarantees from independent floating-point
+scoring. Post-run internal-point scoring never informs a runtime proposal.

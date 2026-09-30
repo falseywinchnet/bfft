@@ -40,3 +40,12 @@ known L-BFGS response-memory realization against scalar, frozen-context, and
 lean ordinary controls on the six original problems. It changes the trajectory;
 it does not supply a certified long-horizon skip. The evolving scalar control
 is fastest in this small retained timing battery.
+
+[ENCLOSED_CONTINUATION.md](ENCLOSED_CONTINUATION.md) implements the
+zonotope-inspired continuation follow-up: a measured chart response plus a
+proved nonlinear gradient enclosure, with geometric compression preserving
+inclusion. Its admitted internal steps use no full-kernel queries. All six
+original problems converge, but complete cost loses to the scalar controller;
+the exact-feature control and an additional n=1024 case retain that comparison.
+The report distinguishes the exact-arithmetic proof from its floating-point
+audit and from a certified skip of ordinary Sinkhorn dynamics.
