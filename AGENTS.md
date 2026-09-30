@@ -1753,3 +1753,24 @@ Build the small optional local native runtime with
 `make -C experiments/civilian_transport/native libmarkov.so`. Without it the public
 tracker uses the same four-state algebra in NumPy. Generated libraries are not
 source artifacts. The simple CV control is for cost comparison only.
+
+## General mirror geometry and observable transport
+
+The research branch adds a smooth mirror compatibility theorem and rational
+observable discovery in `experiments/krylov_bregman/general_geometry.py`.
+Run its complete invariant suite and controlled discovery study on the Mini:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest discover -s experiments/krylov_bregman -t . -p 'test_*.py' -q
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.general_geometry_study \
+  --out /tmp/krylov_general_geometry_v2.json
+```
+
+Copy that JSON immediately into the experiment's `results/` directory.
+The rational grammar and known mirror factorization are explicit priors;
+finite fitted samples do not certify arbitrary smooth maps. This control is
+not a universal speed result or a replacement for the Meyer implementation.

@@ -333,3 +333,40 @@ The next cost questions are acquisition scheduling and how much structure is
 lost when spatial curvature responses are reduced to norm bounds. Capturing
 the direction and cancellation of those responses may improve the certificate,
 but its extra discovery cost must be measured; it is not implemented here.
+
+## General geometry and observable discovery
+
+Section 10 now separates geometry compatibility, observable recurrence, and
+acquisition cost. For smooth interior mirror descent a prescribed map F admits
+an objective precisely when H_h(F(x)) DF(x) is symmetric (on a simply connected
+domain). Convexity additionally requires H_h(x)-H_h(F(x)) DF(x) to be positive
+semidefinite on a convex domain. This is a general test, independent of Meyer.
+
+`general_geometry.py` implements a compatible nonlinear rational dual family,
+with four mirrors and dense primal mixing. It supports snapshot recurrence
+identification and synthesis of cross-ratio coordinates from degree-(1,1)
+rational relations. The latter does not receive the rates or fixed points.
+It does receive the known mirror factorization and a finite rational grammar.
+Structural identities certify the family; fitting alone is not certification.
+
+Eight transitions, 24 dimensions, three seeds, and four geometries give a
+maximum relative primal error of 2.88e-11 at horizon 128 for synthesized
+cross-ratio transport. The supplied reciprocal dictionary recovers rank four;
+its maximum error is 2.45e-8. Raw dual fitting reaches 4.53 relative error.
+These are constructed controls, not general coverage or speed claims. Timings
+are recorded for diagnostics without a repeated performance gate. The complete
+research suite passes 51 tests. `general_geometry_v1.json` precedes chart
+synthesis; use `general_geometry_v2.json` for the paper table.
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest discover -s experiments/krylov_bregman -t . -p 'test_*.py' -q
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.general_geometry_study \
+  --out /tmp/krylov_general_geometry_v2.json
+```
+
+Copy the JSON immediately to `experiments/krylov_bregman/results/`, then run
+`python3 -m experiments.krylov_bregman.general_geometry_report` locally.

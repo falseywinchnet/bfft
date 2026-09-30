@@ -48,7 +48,10 @@ includes stationary Krylov and Anderson comparators. We extend the investigation
 closure, and certified constructions for Huber mirror descent and the original coupled
 Meyer map. The latter uses an exact future-driving quotient, its nonexpansive
 metric, and pointwise algebraic descriptions of disk curvature.
-These results formulate
+A general compatibility theorem characterizes which smooth dynamics a prescribed
+mirror geometry admits. Nonlinear reciprocal observables then give exact finite
+transport across curved mirror families, separating observable closure from
+frozen tangent closure and from economical discovery. These results formulate
 a research program in geometry-aware polynomial transport; they do not
 establish a universal acceleration theorem or priority for polynomial
 extrapolation, which has substantial prior development.
@@ -504,26 +507,27 @@ problem samples. Failures and budget censoring remain in the records.
 
 \input{curved_meyer.tex}
 
-\section{What would establish the broader research claim?}
-The useful generalization is a statement about a favorable combination of
-geometry and cost. A low-dimensional local Krylov space must capture the
-relevant finite polynomial; the geometry must remain predictive over the
-chosen horizon; the state must contain every variable that drives the next
-update; and acquiring and applying the propagator must be cheaper than the
-ordinary work it replaces. The preceding propositions make these conditions
-explicit, but do not establish that they hold uniformly across Bregman methods.
+\input{general_geometry.tex}
 
-Three developments would turn the present foundations into a stronger
-fundamental result. First, nonlinear bounds must become sufficiently tight and cheap across
-regimes to justify their use in discovery. The curved Meyer certificate
-controls boundary transitions without replaying screened solves, but its
-conservative admission policy does not yet amortize across complete solves.
-Degenerating mirror metrics near boundaries remain a separate issue.
-Second, a geometric rule for horizon and dimension must be assessed against
-fixed choices with its entire acquisition cost charged. Third, independent
-problems and faithful implementations of guarded AA-BPG, trajectory-following
-extrapolation, and relevant accelerated Bregman baselines must determine
-whether direct local actions offer an advantage beyond known methods.
+\section{What would establish the broader research claim?}
+The general claim now has three obligations. First, discover a representation
+whose observable recurrence captures the relevant dynamics, using the mirror
+and operator expressions as available structure. Second, certify closure or
+bound its directional defect and decoded error on a useful invariant region.
+Third, demonstrate that acquisition, rejected candidates, certification, and
+readout together cost less than the ordinary work replaced. A short frozen
+Krylov recurrence is one way to meet these obligations; synthesized nonlinear
+observables provide another.
+
+The rational control establishes that discovery can construct a useful chart
+from a relation rather than merely fit a propagator in a prescribed chart.
+Extending this finite grammar to more general compatible dynamics is the
+central research question. The Meyer certificate remains a demanding test
+case for approximate closure, especially when boundaries and memory matter.
+Its poor complete-solve amortization should not redirect the general program
+into tuning that particular descent. Independent objectives, coverage studies,
+and comparisons with established acceleration methods remain necessary for
+any broad performance claim.
 
 The quadratic identity also suggests an implementation question: when the
 mirror metric is cheap and symmetry survives numerically, short-recurrence

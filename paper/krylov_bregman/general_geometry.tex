@@ -1,0 +1,232 @@
+\section{General geometry and observable transport}
+\label{sec:general-geometry}
+The Meyer audit answers a question about one operator. It does not identify
+what makes transport discoverable in arbitrary geometry. We now separate
+three objects: the geometry that admits an iteration, the observables in
+which that iteration has a short recurrence, and the cost of acquiring that
+recurrence. Curvature is not itself the obstruction. Finite observable closure
+is a classical Koopman concept~\cite{brunton,ssd}; our purpose here is to state
+its mirror-compatibility restrictions and the discovery contract explicitly.
+The following results concern smooth interior mirror descent with fixed step
+size. Nonsmooth proximal maps and retained-memory algorithms still fit the
+complete-state observable formulation, but not the smooth gradient test below.
+
+\subsection{Which dynamics can a specified mirror geometry admit?}
+Let $\Omega\subset\R^n$ be open and simply connected, let $h\in C^2(\Omega)$
+have positive-definite Hessian, and assume $\nabla h$ is injective. Let
+$F:\Omega\to\Omega$ be $C^1$ and $\eta>0$. A mirror step for a differentiable
+objective satisfies
+\begin{equation}
+ \nabla h(F(x))=\nabla h(x)-\eta\nabla f(x).
+ \label{eq:general-mirror}
+\end{equation}
+\begin{theorem}[Geometry--dynamics compatibility]
+There exists a $C^2$ objective $f$ satisfying \eqref{eq:general-mirror} if and
+only if $H_h(F(x))DF(x)$ is symmetric everywhere. If $\Omega$ is also convex,
+that objective is convex if and only if
+\begin{equation}
+ H_h(x)-H_h(F(x))DF(x)\succeq0 \quad(x\in\Omega).
+ \label{eq:general-convexity}
+\end{equation}
+The objective is unique up to an additive constant on a connected domain.
+\end{theorem}
+\begin{proof}
+Define $g(x)=[\nabla h(x)-\nabla h(F(x))]/\eta$. Differentiation gives
+\[ Dg(x)=\eta^{-1}[H_h(x)-H_h(F(x))DF(x)]. \]
+Since $H_h(x)$ is symmetric,
+$Dg$ is symmetric precisely under the stated condition. The closed one-form
+$g\cdot dx$ is exact on a simply connected domain, giving $g=\nabla f$.
+The converse follows by differentiating \eqref{eq:general-mirror}.
+On a convex domain a $C^2$ function is convex precisely when its Hessian is
+positive semidefinite. Injectivity of $\nabla h$ identifies the prescribed
+$F$ with the mirror update wherever its image lies in $\Omega$.
+\end{proof}
+This also tests a candidate finite representation: if $\psi$ is an embedding
+with decoder $\chi$ and $T\psi(\Omega)\subseteq\psi(\Omega)$, set
+$F=\chi T\psi$ and apply the theorem. Algebraic closure alone does not make
+the resulting dynamics a gradient method in an arbitrarily assigned mirror.
+
+In dual coordinates $y=\nabla h(x)$, write
+$G(y)=\nabla h(F(\nabla h^*(y)))$. The equivalent symmetry test is
+\begin{equation}
+ DG(y)H_h(x)=H_h(x)DG(y)^T.
+ \label{eq:dual-compatibility}
+\end{equation}
+For an affine dual map $G(y)=Ay+c$, this must hold for the entire family
+of mirror Hessians, not just the Hessian at an anchor. For example,
+$A=\diag(1/2,4/5)$ passes with $H_h=I$ and fails with
+$H_h=\left[\begin{smallmatrix}2&0.6\\0.6&1\end{smallmatrix}\right]$.
+Conversely, every Legendre geometry admits the family
+$f=\alpha h-b^Tx$, with $G(y)=(1-\eta\alpha)y+\eta b$ whenever the image
+stays in the dual domain. Thus arbitrary curvature can coexist with a
+one-mode affine recurrence. More modes require a compatible Hessian family.
+
+These statements refer to a prescribed mirror algorithm in its affine
+coordinates. An arbitrary nonlinear coordinate change conjugates an existing
+map, but recomputing ordinary mirror descent from a transformed objective
+and transformed potential need not produce that conjugate map.
+
+\subsection{The polynomial belongs to an observable recurrence}
+Let $M$ be a state space and $F:M\to M$ any deterministic map. Define
+$U\phi=\phi\circ F$. For a vector observable $\psi$, suppose
+\begin{equation}
+ \psi(F(z))=T\psi(z),\qquad \chi(\psi(z))=z
+ \label{eq:general-lift}
+\end{equation}
+throughout an invariant set. Then
+\begin{equation}
+ F^m(z)=\chi(T^m\psi(z)).
+ \label{eq:general-transport}
+\end{equation}
+If $\pi$ is the minimal polynomial of $T$ on the cyclic subspace generated
+by $\psi(z)$, $T^m\psi(z)=p_m(T)\psi(z)$, where
+$p_m(t)=t^m\bmod\pi(t)$. This is exact finite polynomial transport, including
+unit eigenvalues and Jordan blocks, without a fixed-point inverse.
+The decoder may be nonlinear. Requiring the original coordinate functions
+to lie in the linear observable span would impose a stronger restriction.
+
+For a coordinate change $\theta$, the observable
+$\widetilde\psi=\psi\circ\theta^{-1}$ satisfies the same recurrence for
+$\widetilde F=\theta F\theta^{-1}$, with decoder $\theta\circ\chi$.
+Consequently existence of an injective finite lift is invariant under
+conjugacy, but low degree in a chosen coordinate dictionary is not. Arnoldi
+on a frozen tangent does not discover this property by itself.
+
+A second route keeps the original dual coordinate as an additive output.
+Set $g(y)=\nabla f(\nabla h^*(y))$. If the vector-valued functions
+$g,Ug,U^2g,\ldots$ span a finite-dimensional space, then
+\begin{equation}
+ y_m=y_0-\eta\sum_{j=0}^{m-1}(U^jg)(y_0)
+ \label{eq:gradient-module}
+\end{equation}
+can be evaluated through its discovered recurrence. This is a sufficient
+condition for additive dual transport, not a necessary condition for the
+nonlinear-decoder formulation \eqref{eq:general-lift}.
+
+\subsection{A genuinely nonlinear dual map with finite closure}
+For a scalar mirror let $s=h'(q)>0$ and choose $0<a\leq1$, $b\geq0$.
+Define the objective by its derivative, with unit step size,
+\begin{equation}
+ f'(q)=s-\frac{as}{1+bs}.
+\end{equation}
+Its mirror update and Hessian are
+\begin{equation}
+ s^+=\frac{as}{1+bs},\qquad
+ f''(q)=\left(1-\frac{a}{(1+bs)^2}\right)h''(q)\geq0.
+ \label{eq:mobius-mirror}
+\end{equation}
+On an invariant positive dual interval this is convex mirror descent.
+Despite nonlinear dual dynamics, $r=1/s$ obeys
+\begin{equation}
+ r^+=a^{-1}r+b/a.
+ \label{eq:reciprocal-closure}
+\end{equation}
+The lift $(1,r)$ closes exactly and decoding is $q=(h')^{-1}(1/r)$.
+The identity is obtained by division, so its global validity on $s>0$ is
+structural; no dense trajectory sampling is required to prove it.
+
+For $q=Cx$ with invertible $C$, let
+$h(x)=\sum_i h_i(q_i)$ and $f(x)=\sum_i f_i(q_i)$.
+The transformed dual coordinates are $s=C^{-T}\nabla h(x)$.
+Equations \eqref{eq:mobius-mirror}--\eqref{eq:reciprocal-closure} apply componentwise.
+This gives coupled primal geometries and arbitrary scalar mirror factors
+whose domains support the chosen invariant interval. It is a separable
+construction in known $q$ coordinates; it is not a theorem that every coupled
+mirror permits independent prescribed rates. The compatibility theorem
+specifies that remaining restriction.
+
+If there are $p$ distinct values of $a_i$, the orbit of the augmented
+reciprocal observable has rank at most $p+1$, independent of ambient dimension.
+Rates need not be supplied to numerical recurrence identification. A dictionary
+containing $s$, $\log s$, and $1/s$ can be screened by snapshot rank and
+held-out defects. Providing that dictionary is prior representation knowledge;
+finding it is distinct from fitting its recurrence.
+
+We can go one step further within a finite rational grammar. From paired
+observations $(s_j,t_j)$ fit a homogeneous relation
+\begin{equation}
+ [s_j,1,-s_jt_j,-t_j]\,(A,B,C,D)^T=0.
+\end{equation}
+When it identifies $t=(As+B)/(Cs+D)$, its fixed points are the roots of
+$Cs^2+(D-A)s-B=0$. If these are distinct real finite roots $r_1,r_2$, define
+\begin{equation}
+ \phi(s)=\frac{s-r_1}{s-r_2},\qquad
+ \phi(t)=\lambda\phi(s),\qquad
+ \lambda=\frac{A-Cr_1}{A-Cr_2}.
+ \label{eq:synthesized-crossratio}
+\end{equation}
+The identity follows by factoring $t-r_i$ and is valid away from poles.
+The decoder is $s=(\phi r_2-r_1)/(\phi-1)$.
+For the positive control family, choose the attracting fixed point $r_1=0$;
+then $r_2=(a-1)/b<0$ and $\lambda=a$. We use $a<1,b>0$ in this experiment.
+Thus the coordinate is synthesized from the relation, rather than supplied
+as a reciprocal dictionary entry. The implementation rejects unidentified
+relations and repeated, infinite, or nonreal roots; it does not claim to cover
+those cases. A small fitted residual still needs an independent structural
+certificate before being treated as a global identity.
+
+\subsection{What discovery can certify, and what it cannot}
+There are three separate claims: low rank of observed snapshots, a recurrence
+valid on the future invariant set, and economical execution. SVD or Arnoldi
+addresses the first. A symbolic identity such as
+\eqref{eq:reciprocal-closure}, a certified residual bound on a reachable tube,
+or unisolvent evaluation in a known finite residual space can address the
+second. None alone establishes the third. A short observed orbit may miss
+unexcited modes or future changes; numerical tolerances and conditioning
+matter even when the underlying identity is exact.
+
+Even Euclidean geometry does not guarantee finite linear closure of coordinate
+observables. In one dimension, $h(x)=x^2/2$, $f(x)=x^4/4$, and $\eta=1$ give
+$F(x)=x-x^3$. The polynomials $U^jx=F^j(x)$ have distinct degrees $3^j$ and
+nonzero leading coefficients, hence are linearly independent on every open
+interval. On $(-1/\sqrt3,1/\sqrt3)$ the map is invariant and monotone and the
+objective is convex; the obstruction does not require erratic dynamics.
+This rules out finite invariant linear spaces containing $x$ for this map.
+It does not rule out a nonlinear decoder, a restricted orbit, or approximate
+finite-horizon transport. Finite black-box samples also cannot certify
+unrestricted smooth maps: a smooth perturbation supported away from all
+queried states can alter later evolution while leaving every observed value
+and derivative unchanged. Therefore a useful universal framework must expose
+its structural assumptions rather than infer them from rank alone.
+
+\subsection{Approximate transport without discarding directions}
+For an imperfect lift define $\epsilon(z)=\psi(F(z))-T\psi(z)$.
+On the actual trajectory $z_j=F^j(z_0)$, exact telescoping gives
+\begin{equation}
+ \psi(z_m)-T^m\psi(z_0)
+   =\sum_{j=0}^{m-1}T^{m-1-j}\epsilon(z_j).
+ \label{eq:directional-lift-defect}
+\end{equation}
+This retains directions and cancellation before any norm is taken. Replacing
+it immediately by a sum of norms may destroy the structure that makes a
+low-order recurrence useful. Its right side involves unknown actual states;
+it is an identity, not a cheap certificate. Useful certification must enclose
+those residuals over an invariant set or a justified reachable tube without
+replaying the expensive evolution.
+
+If both lifted endpoints lie in a region where $\chi$ is $L_\chi$-Lipschitz,
+state error is at most $L_\chi$ times the norm of this vector sum. When the
+transported coordinate is dual $y$ and its error is $e$, mirror duality gives
+\begin{equation}
+ D_h(x,\widehat x)=D_{h^*}(\widehat y,y)
+ =\int_0^1(1-t)e^TH_{h^*}(y+te)e\,dt,
+ \quad \widehat y=y+e.
+ \label{eq:geometric-readout}
+\end{equation}
+This formula requires the dual segment to remain in the differentiability
+domain. It separates recurrence error from geometric readout and does not
+assume a global Euclidean Lipschitz bound. Near a singular decoder or boundary,
+a small lifted residual may have a large state effect. Conversely, reciprocal
+coordinates may have growing magnitude while decoding remains stable.
+
+\input{general_geometry_results.tex}
+
+\subsection{The resulting research target}
+The general object is a geometry-compatible map with an economical observable
+recurrence and controlled decoding. A frozen tangent is one candidate
+representation. The central task is to generate small observable families
+from available mirror/proximal expressions, certify their residuals on useful
+regions, and amortize discovery. Our control recovers a supplied reciprocal
+chart and synthesizes a cross-ratio chart within a rational grammar; unrestricted
+representation discovery remains open. The compatibility theorem and
+geometry-sensitive error identity specify what broader constructions must prove.
