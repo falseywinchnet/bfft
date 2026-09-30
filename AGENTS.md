@@ -1510,6 +1510,36 @@ The Blender round-trip fixture test additionally requires
 See that directory's README for supported materials, camera/normal/units
 contract and the direct-light preview renderer's limitations.
 
+## Krylov transport in mirror geometry
+
+The separate fundamental-research branch is `codex/krylov-bregman-research`.
+Its independent mirror/Bregman experiment uses the selected M4 Mini:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.krylov_bregman.test_contracts -v
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.run_suite \
+  --out /tmp/krylov_bregman_suite_v2
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.shadow_study \
+  --out /tmp/krylov_bregman_shadow_v2
+```
+
+Copy `/tmp/krylov_bregman_suite_v2/` immediately into
+`experiments/krylov_bregman/results/suite_v2/` in this worktree. Count tangent
+actions, metric operations, basis construction and ordinary settling when
+reporting acceleration. The finite-horizon and stationary Krylov variants,
+as well as the regularized Anderson comparator, are unguarded research
+implementations. Preserve failures and distinguish objective-gap targets
+from full-state convergence. See `paper/krylov_bregman/main.tex` and the
+experiment README; no universal speedup or new-priority claim is established.
+Copy the shadow output into `experiments/krylov_bregman/results/shadow_v2/`.
+The experiment README also records local figure and manuscript build commands.
+
 ## Meyer pre-refresh transport contracts
 
 Run the exact phase, nonlinear-remainder, transverse-memory, and finite-secant

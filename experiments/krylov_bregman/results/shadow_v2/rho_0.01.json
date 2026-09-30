@@ -1,0 +1,3136 @@
+{
+  "configuration": {
+    "protocol": "2026-09-29-v2",
+    "n": 256,
+    "seeds": 3,
+    "repeats": 3,
+    "budget": 16384,
+    "target": 1e-06,
+    "depth": 4,
+    "horizon": 16,
+    "condition": 1000.0,
+    "admm_rho": 0.01,
+    "prefix": 4,
+    "check_every": 16,
+    "families": [
+      "admm_lasso",
+      "admm_shadow"
+    ],
+    "methods": [
+      "ordinary",
+      "flow_euclidean",
+      "flow_mirror",
+      "stationary_krylov",
+      "anderson"
+    ],
+    "python": "3.9.6",
+    "numpy": "1.26.4",
+    "machine": "arm64",
+    "note": "Pilot; equal work counts one map or one analytic JVP. Wall time includes acquisition, metrics, Arnoldi, reconstruction, ordinary settling and spaced objective checks; setup excluded. No guards, refreshes, adaptive horizons, or outcome-based tuning. Anderson is an unguarded regularized type-II comparator."
+  },
+  "runs": [
+    {
+      "method": "ordinary",
+      "status": "target",
+      "work": 128,
+      "map_calls": 128,
+      "tangent_actions": 0,
+      "objective_checks": 8,
+      "updates": 128,
+      "macros": 0,
+      "seconds": 0.0018139579999998379,
+      "final_gap_ratio": 6.005829989447626e-07,
+      "postrun_residual_norm": 0.006611090188902662,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.002683714244956315,
+          "seconds": 0.0002306249999999288
+        },
+        {
+          "work": 32,
+          "gap_ratio": 0.00017711148806297313,
+          "seconds": 0.0004585829999999014
+        },
+        {
+          "work": 48,
+          "gap_ratio": 4.0853257170736214e-05,
+          "seconds": 0.0006832499999998021
+        },
+        {
+          "work": 64,
+          "gap_ratio": 1.3369271209508231e-05,
+          "seconds": 0.0009101659999999345
+        },
+        {
+          "work": 80,
+          "gap_ratio": 5.347680800383204e-06,
+          "seconds": 0.001134540999999878
+        },
+        {
+          "work": 96,
+          "gap_ratio": 2.4087269553454314e-06,
+          "seconds": 0.0013615409999998551
+        },
+        {
+          "work": 112,
+          "gap_ratio": 1.181616127385567e-06,
+          "seconds": 0.0015852499999999825
+        },
+        {
+          "work": 128,
+          "gap_ratio": 6.005829989447626e-07,
+          "seconds": 0.0018119999999999248
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 0,
+      "setup_seconds": 0.003762916000000116,
+      "seconds_median": 0.0018139579999998379,
+      "seconds_all": [
+        0.0018139579999998379,
+        0.0017927499999998986,
+        0.0018254999999998134
+      ]
+    },
+    {
+      "method": "flow_euclidean",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.001577791000000106,
+      "final_gap_ratio": 2.1716016024764905e-07,
+      "postrun_residual_norm": 0.0038965716580257686,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.005248370973446477,
+          "seconds": 0.0003666250000000648
+        },
+        {
+          "work": 34,
+          "gap_ratio": 9.869638394858996e-06,
+          "seconds": 0.00082254100000001
+        },
+        {
+          "work": 52,
+          "gap_ratio": 1.8821559967003722e-06,
+          "seconds": 0.0012719999999999398
+        },
+        {
+          "work": 64,
+          "gap_ratio": 2.1716016024764905e-07,
+          "seconds": 0.0015757080000000645
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 0,
+      "setup_seconds": 0.003762916000000116,
+      "seconds_median": 0.0015922919999999952,
+      "seconds_all": [
+        0.001577791000000106,
+        0.0015922919999999952,
+        0.0016129999999998645
+      ]
+    },
+    {
+      "method": "flow_mirror",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.0015925409999999474,
+      "final_gap_ratio": 2.1716016024764905e-07,
+      "postrun_residual_norm": 0.0038965716580257686,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.005248370973446477,
+          "seconds": 0.0003734580000001042
+        },
+        {
+          "work": 34,
+          "gap_ratio": 9.869638394858996e-06,
+          "seconds": 0.0008294580000001162
+        },
+        {
+          "work": 52,
+          "gap_ratio": 1.8821559967003722e-06,
+          "seconds": 0.0012840000000000629
+        },
+        {
+          "work": 64,
+          "gap_ratio": 2.1716016024764905e-07,
+          "seconds": 0.001590291000000077
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 0,
+      "setup_seconds": 0.003762916000000116,
+      "seconds_median": 0.0015925409999999474,
+      "seconds_all": [
+        0.0015925409999999474,
+        0.0015898749999998518,
+        0.0015928750000000491
+      ]
+    },
+    {
+      "method": "stationary_krylov",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.00153566599999988,
+      "final_gap_ratio": 6.545853390037427e-08,
+      "postrun_residual_norm": 0.0023100482712171033,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.00673929589078414,
+          "seconds": 0.0003634999999999611
+        },
+        {
+          "work": 34,
+          "gap_ratio": 1.4821615217126926e-05,
+          "seconds": 0.0008052499999999796
+        },
+        {
+          "work": 52,
+          "gap_ratio": 1.0018851994794656e-06,
+          "seconds": 0.0012403750000000713
+        },
+        {
+          "work": 64,
+          "gap_ratio": 6.545853390037427e-08,
+          "seconds": 0.0015335000000000765
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 0,
+      "setup_seconds": 0.003762916000000116,
+      "seconds_median": 0.0015422499999999673,
+      "seconds_all": [
+        0.00153566599999988,
+        0.0015457089999999507,
+        0.0015422499999999673
+      ]
+    },
+    {
+      "method": "anderson",
+      "status": "target",
+      "work": 48,
+      "map_calls": 48,
+      "tangent_actions": 0,
+      "objective_checks": 3,
+      "updates": 48,
+      "macros": 0,
+      "seconds": 0.002613292000000156,
+      "final_gap_ratio": 5.137099751944458e-08,
+      "postrun_residual_norm": 0.0019490586115958216,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.0010620333889351376,
+          "seconds": 0.0008389170000000501
+        },
+        {
+          "work": 32,
+          "gap_ratio": 8.286276857964453e-06,
+          "seconds": 0.0017236670000000398
+        },
+        {
+          "work": 48,
+          "gap_ratio": 5.137099751944458e-08,
+          "seconds": 0.002610917000000157
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 0,
+      "setup_seconds": 0.003762916000000116,
+      "seconds_median": 0.002667499999999823,
+      "seconds_all": [
+        0.002613292000000156,
+        0.00267783399999999,
+        0.002667499999999823
+      ]
+    },
+    {
+      "method": "ordinary",
+      "status": "target",
+      "work": 144,
+      "map_calls": 144,
+      "tangent_actions": 0,
+      "objective_checks": 9,
+      "updates": 144,
+      "macros": 0,
+      "seconds": 0.0020713750000000974,
+      "final_gap_ratio": 5.121251222233806e-07,
+      "postrun_residual_norm": 0.005511760538464807,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.005916172334342042,
+          "seconds": 0.00022845800000004246
+        },
+        {
+          "work": 32,
+          "gap_ratio": 0.0004399845853569842,
+          "seconds": 0.00046362500000007856
+        },
+        {
+          "work": 48,
+          "gap_ratio": 0.00010259713549630213,
+          "seconds": 0.0006886669999999206
+        },
+        {
+          "work": 64,
+          "gap_ratio": 4.404221962438162e-05,
+          "seconds": 0.0009181670000000253
+        },
+        {
+          "work": 80,
+          "gap_ratio": 1.857575676717024e-05,
+          "seconds": 0.001149457999999992
+        },
+        {
+          "work": 96,
+          "gap_ratio": 7.904909726366132e-06,
+          "seconds": 0.0013759170000000598
+        },
+        {
+          "work": 112,
+          "gap_ratio": 2.761515321962447e-06,
+          "seconds": 0.0016089999999999716
+        },
+        {
+          "work": 128,
+          "gap_ratio": 1.1466988245947623e-06,
+          "seconds": 0.001839082999999908
+        },
+        {
+          "work": 144,
+          "gap_ratio": 5.121251222233806e-07,
+          "seconds": 0.002069542000000091
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 1,
+      "setup_seconds": 0.003778749999999942,
+      "seconds_median": 0.0020713750000000974,
+      "seconds_all": [
+        0.0020713750000000974,
+        0.0020725829999999057,
+        0.002049833999999917
+      ]
+    },
+    {
+      "method": "flow_euclidean",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.0016087499999999366,
+      "final_gap_ratio": 3.812216213947208e-07,
+      "postrun_residual_norm": 0.004495885024929046,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.008022901546646848,
+          "seconds": 0.000371750000000004
+        },
+        {
+          "work": 34,
+          "gap_ratio": 3.578462317939783e-05,
+          "seconds": 0.0008292080000000812
+        },
+        {
+          "work": 52,
+          "gap_ratio": 3.0741429611974584e-06,
+          "seconds": 0.0012876669999999368
+        },
+        {
+          "work": 64,
+          "gap_ratio": 3.812216213947208e-07,
+          "seconds": 0.0016066249999999727
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 1,
+      "setup_seconds": 0.003778749999999942,
+      "seconds_median": 0.0016087499999999366,
+      "seconds_all": [
+        0.0016087499999999366,
+        0.0016198750000000484,
+        0.0015902919999999376
+      ]
+    },
+    {
+      "method": "flow_mirror",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.0016084170000001397,
+      "final_gap_ratio": 3.812216213947208e-07,
+      "postrun_residual_norm": 0.004495885024929046,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.008022901546646848,
+          "seconds": 0.00037366700000007746
+        },
+        {
+          "work": 34,
+          "gap_ratio": 3.578462317939783e-05,
+          "seconds": 0.0008330000000000837
+        },
+        {
+          "work": 52,
+          "gap_ratio": 3.0741429611974584e-06,
+          "seconds": 0.001297542000000096
+        },
+        {
+          "work": 64,
+          "gap_ratio": 3.812216213947208e-07,
+          "seconds": 0.0016064590000000045
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 1,
+      "setup_seconds": 0.003778749999999942,
+      "seconds_median": 0.0016017090000000067,
+      "seconds_all": [
+        0.0016084170000001397,
+        0.0016017090000000067,
+        0.0015956249999999894
+      ]
+    },
+    {
+      "method": "stationary_krylov",
+      "status": "target",
+      "work": 52,
+      "map_calls": 20,
+      "tangent_actions": 32,
+      "objective_checks": 3,
+      "updates": 12,
+      "macros": 8,
+      "seconds": 0.0012376669999998313,
+      "final_gap_ratio": 7.751178536589603e-07,
+      "postrun_residual_norm": 0.005529160281022261,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.002562406648869381,
+          "seconds": 0.0003569999999999407
+        },
+        {
+          "work": 34,
+          "gap_ratio": 9.903233284302622e-05,
+          "seconds": 0.0007965420000000112
+        },
+        {
+          "work": 52,
+          "gap_ratio": 7.751178536589603e-07,
+          "seconds": 0.001235499999999945
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 1,
+      "setup_seconds": 0.003778749999999942,
+      "seconds_median": 0.001244165999999991,
+      "seconds_all": [
+        0.0012376669999998313,
+        0.001252165999999999,
+        0.001244165999999991
+      ]
+    },
+    {
+      "method": "anderson",
+      "status": "target",
+      "work": 48,
+      "map_calls": 48,
+      "tangent_actions": 0,
+      "objective_checks": 3,
+      "updates": 48,
+      "macros": 0,
+      "seconds": 0.0026992909999998815,
+      "final_gap_ratio": 7.526914714683372e-07,
+      "postrun_residual_norm": 0.005867018755520628,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.0025289473639590557,
+          "seconds": 0.0008697499999998914
+        },
+        {
+          "work": 32,
+          "gap_ratio": 6.355328197634637e-05,
+          "seconds": 0.0017890000000000406
+        },
+        {
+          "work": 48,
+          "gap_ratio": 7.526914714683372e-07,
+          "seconds": 0.002697124999999856
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 1,
+      "setup_seconds": 0.003778749999999942,
+      "seconds_median": 0.002693583999999971,
+      "seconds_all": [
+        0.0026992909999998815,
+        0.002693583999999971,
+        0.002654667000000055
+      ]
+    },
+    {
+      "method": "ordinary",
+      "status": "target",
+      "work": 144,
+      "map_calls": 144,
+      "tangent_actions": 0,
+      "objective_checks": 9,
+      "updates": 144,
+      "macros": 0,
+      "seconds": 0.0020246670000001465,
+      "final_gap_ratio": 4.771283816715934e-07,
+      "postrun_residual_norm": 0.004526821690044114,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.010328489947497004,
+          "seconds": 0.00023187500000010353
+        },
+        {
+          "work": 32,
+          "gap_ratio": 0.0012467868172544184,
+          "seconds": 0.00045320900000000996
+        },
+        {
+          "work": 48,
+          "gap_ratio": 0.00027417529861101085,
+          "seconds": 0.0006766670000000197
+        },
+        {
+          "work": 64,
+          "gap_ratio": 5.28816449633315e-05,
+          "seconds": 0.0009005840000000376
+        },
+        {
+          "work": 80,
+          "gap_ratio": 1.7228570078392805e-05,
+          "seconds": 0.0011219170000000833
+        },
+        {
+          "work": 96,
+          "gap_ratio": 6.44630775572194e-06,
+          "seconds": 0.0013497920000000718
+        },
+        {
+          "work": 112,
+          "gap_ratio": 2.5984547620507557e-06,
+          "seconds": 0.0015708750000000826
+        },
+        {
+          "work": 128,
+          "gap_ratio": 1.096387938523127e-06,
+          "seconds": 0.001796709000000174
+        },
+        {
+          "work": 144,
+          "gap_ratio": 4.771283816715934e-07,
+          "seconds": 0.002022750000000073
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 2,
+      "setup_seconds": 0.0037528329999998444,
+      "seconds_median": 0.002022666999999867,
+      "seconds_all": [
+        0.0020246670000001465,
+        0.002020542000000125,
+        0.002022666999999867
+      ]
+    },
+    {
+      "method": "flow_euclidean",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.0015828749999999836,
+      "final_gap_ratio": 2.740452750020892e-07,
+      "postrun_residual_norm": 0.0034318105950736934,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.00340988626805684,
+          "seconds": 0.0003673749999999476
+        },
+        {
+          "work": 34,
+          "gap_ratio": 5.504085655020335e-05,
+          "seconds": 0.0008215419999999529
+        },
+        {
+          "work": 52,
+          "gap_ratio": 1.590433029237755e-06,
+          "seconds": 0.0012735839999999943
+        },
+        {
+          "work": 64,
+          "gap_ratio": 2.740452750020892e-07,
+          "seconds": 0.001580874999999926
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 2,
+      "setup_seconds": 0.0037528329999998444,
+      "seconds_median": 0.0015828749999999836,
+      "seconds_all": [
+        0.0015828749999999836,
+        0.0015737920000000738,
+        0.0015914169999999839
+      ]
+    },
+    {
+      "method": "flow_mirror",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.0015948749999998846,
+      "final_gap_ratio": 2.740452750020892e-07,
+      "postrun_residual_norm": 0.0034318105950736934,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.00340988626805684,
+          "seconds": 0.0003727079999999994
+        },
+        {
+          "work": 34,
+          "gap_ratio": 5.504085655020335e-05,
+          "seconds": 0.0008293329999999877
+        },
+        {
+          "work": 52,
+          "gap_ratio": 1.590433029237755e-06,
+          "seconds": 0.0012846250000000392
+        },
+        {
+          "work": 64,
+          "gap_ratio": 2.740452750020892e-07,
+          "seconds": 0.0015927499999999206
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 2,
+      "setup_seconds": 0.0037528329999998444,
+      "seconds_median": 0.0015844579999999553,
+      "seconds_all": [
+        0.0015948749999998846,
+        0.0015844579999999553,
+        0.0015809170000000705
+      ]
+    },
+    {
+      "method": "stationary_krylov",
+      "status": "target",
+      "work": 52,
+      "map_calls": 20,
+      "tangent_actions": 32,
+      "objective_checks": 3,
+      "updates": 12,
+      "macros": 8,
+      "seconds": 0.0012347499999998401,
+      "final_gap_ratio": 3.8613018425806337e-07,
+      "postrun_residual_norm": 0.004472378335188132,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.011155055041454195,
+          "seconds": 0.0003585829999999124
+        },
+        {
+          "work": 34,
+          "gap_ratio": 5.1450322791019246e-05,
+          "seconds": 0.0007955410000000107
+        },
+        {
+          "work": 52,
+          "gap_ratio": 3.8613018425806337e-07,
+          "seconds": 0.0012326659999999379
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 2,
+      "setup_seconds": 0.0037528329999998444,
+      "seconds_median": 0.0012295419999999169,
+      "seconds_all": [
+        0.0012347499999998401,
+        0.0012295419999999169,
+        0.0012244999999999617
+      ]
+    },
+    {
+      "method": "anderson",
+      "status": "target",
+      "work": 48,
+      "map_calls": 48,
+      "tangent_actions": 0,
+      "objective_checks": 3,
+      "updates": 48,
+      "macros": 0,
+      "seconds": 0.0026759579999999783,
+      "final_gap_ratio": 4.111195819536825e-07,
+      "postrun_residual_norm": 0.004523417371863103,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.006681206384228984,
+          "seconds": 0.000856415999999971
+        },
+        {
+          "work": 32,
+          "gap_ratio": 0.00012344049337743978,
+          "seconds": 0.0017670409999999137
+        },
+        {
+          "work": 48,
+          "gap_ratio": 4.111195819536825e-07,
+          "seconds": 0.002673541000000057
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 2,
+      "setup_seconds": 0.0037528329999998444,
+      "seconds_median": 0.002660458999999893,
+      "seconds_all": [
+        0.0026759579999999783,
+        0.002660458999999893,
+        0.0026480410000000454
+      ]
+    },
+    {
+      "method": "ordinary",
+      "status": "target",
+      "work": 128,
+      "map_calls": 128,
+      "tangent_actions": 0,
+      "objective_checks": 8,
+      "updates": 128,
+      "macros": 0,
+      "seconds": 0.0018135420000000568,
+      "final_gap_ratio": 6.005829989447626e-07,
+      "postrun_residual_norm": 0.006611090188902662,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.002683714244956315,
+          "seconds": 0.0002308750000001858
+        },
+        {
+          "work": 32,
+          "gap_ratio": 0.00017711148806297313,
+          "seconds": 0.0004560420000001564
+        },
+        {
+          "work": 48,
+          "gap_ratio": 4.0853257170736214e-05,
+          "seconds": 0.0006803340000001157
+        },
+        {
+          "work": 64,
+          "gap_ratio": 1.3369271209508231e-05,
+          "seconds": 0.0009069999999999911
+        },
+        {
+          "work": 80,
+          "gap_ratio": 5.347680800383204e-06,
+          "seconds": 0.0011316670000001139
+        },
+        {
+          "work": 96,
+          "gap_ratio": 2.4087269553454314e-06,
+          "seconds": 0.0013610840000000124
+        },
+        {
+          "work": 112,
+          "gap_ratio": 1.181616127385567e-06,
+          "seconds": 0.0015872089999999783
+        },
+        {
+          "work": 128,
+          "gap_ratio": 6.005829989447626e-07,
+          "seconds": 0.0018116670000001278
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 0,
+      "setup_seconds": 0.003723165999999889,
+      "seconds_median": 0.0018135420000000568,
+      "seconds_all": [
+        0.0018135420000000568,
+        0.0018123750000000882,
+        0.0018192080000001276
+      ]
+    },
+    {
+      "method": "flow_euclidean",
+      "status": "target",
+      "work": 52,
+      "map_calls": 20,
+      "tangent_actions": 32,
+      "objective_checks": 3,
+      "updates": 12,
+      "macros": 8,
+      "seconds": 0.0011614580000001151,
+      "final_gap_ratio": 9.156663749141847e-07,
+      "postrun_residual_norm": 0.00721944073408686,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.0024554290018546938,
+          "seconds": 0.0003377909999999762
+        },
+        {
+          "work": 34,
+          "gap_ratio": 8.38377991451249e-06,
+          "seconds": 0.0007498329999999775
+        },
+        {
+          "work": 52,
+          "gap_ratio": 9.156663749141847e-07,
+          "seconds": 0.00115949999999998
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 0,
+      "setup_seconds": 0.003723165999999889,
+      "seconds_median": 0.0011651670000001335,
+      "seconds_all": [
+        0.0011614580000001151,
+        0.0011651670000001335,
+        0.0011712080000001457
+      ]
+    },
+    {
+      "method": "flow_mirror",
+      "status": "target",
+      "work": 52,
+      "map_calls": 20,
+      "tangent_actions": 32,
+      "objective_checks": 3,
+      "updates": 12,
+      "macros": 8,
+      "seconds": 0.0011728749999999621,
+      "final_gap_ratio": 9.156663749141847e-07,
+      "postrun_residual_norm": 0.00721944073408686,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.0024554290018546938,
+          "seconds": 0.00034420799999979046
+        },
+        {
+          "work": 34,
+          "gap_ratio": 8.38377991451249e-06,
+          "seconds": 0.0007589579999998097
+        },
+        {
+          "work": 52,
+          "gap_ratio": 9.156663749141847e-07,
+          "seconds": 0.0011708749999999046
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 0,
+      "setup_seconds": 0.003723165999999889,
+      "seconds_median": 0.0011676250000001165,
+      "seconds_all": [
+        0.0011728749999999621,
+        0.0011676250000001165,
+        0.001151249999999937
+      ]
+    },
+    {
+      "method": "stationary_krylov",
+      "status": "target",
+      "work": 52,
+      "map_calls": 20,
+      "tangent_actions": 32,
+      "objective_checks": 3,
+      "updates": 12,
+      "macros": 8,
+      "seconds": 0.0011340000000001904,
+      "final_gap_ratio": 4.132641277995616e-07,
+      "postrun_residual_norm": 0.00462430423160617,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.003972346043339772,
+          "seconds": 0.0003375830000000857
+        },
+        {
+          "work": 34,
+          "gap_ratio": 1.7793105554169572e-05,
+          "seconds": 0.0007341660000002026
+        },
+        {
+          "work": 52,
+          "gap_ratio": 4.132641277995616e-07,
+          "seconds": 0.001131916000000066
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 0,
+      "setup_seconds": 0.003723165999999889,
+      "seconds_median": 0.0011244169999999887,
+      "seconds_all": [
+        0.0011340000000001904,
+        0.0011202090000002052,
+        0.0011244169999999887
+      ]
+    },
+    {
+      "method": "anderson",
+      "status": "target",
+      "work": 48,
+      "map_calls": 48,
+      "tangent_actions": 0,
+      "objective_checks": 3,
+      "updates": 48,
+      "macros": 0,
+      "seconds": 0.0022008339999999293,
+      "final_gap_ratio": 1.7053632771486658e-08,
+      "postrun_residual_norm": 0.0010703109484446842,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.0004158527318510318,
+          "seconds": 0.0007104169999998522
+        },
+        {
+          "work": 32,
+          "gap_ratio": 3.67674775892125e-06,
+          "seconds": 0.0014546249999998206
+        },
+        {
+          "work": 48,
+          "gap_ratio": 1.7053632771486658e-08,
+          "seconds": 0.0021987089999999654
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 0,
+      "setup_seconds": 0.003723165999999889,
+      "seconds_median": 0.0022008339999999293,
+      "seconds_all": [
+        0.0022008339999999293,
+        0.002206834000000102,
+        0.002195458999999955
+      ]
+    },
+    {
+      "method": "ordinary",
+      "status": "target",
+      "work": 144,
+      "map_calls": 144,
+      "tangent_actions": 0,
+      "objective_checks": 9,
+      "updates": 144,
+      "macros": 0,
+      "seconds": 0.002056083000000042,
+      "final_gap_ratio": 5.121251222233806e-07,
+      "postrun_residual_norm": 0.005511760538464807,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.005916172334342042,
+          "seconds": 0.0002340000000000675
+        },
+        {
+          "work": 32,
+          "gap_ratio": 0.0004399845853569842,
+          "seconds": 0.00045850000000013935
+        },
+        {
+          "work": 48,
+          "gap_ratio": 0.00010259713549630213,
+          "seconds": 0.0006830829999999732
+        },
+        {
+          "work": 64,
+          "gap_ratio": 4.404221962438162e-05,
+          "seconds": 0.0009126250000000002
+        },
+        {
+          "work": 80,
+          "gap_ratio": 1.857575676717024e-05,
+          "seconds": 0.0011389580000000787
+        },
+        {
+          "work": 96,
+          "gap_ratio": 7.904909726366132e-06,
+          "seconds": 0.0013627910000000298
+        },
+        {
+          "work": 112,
+          "gap_ratio": 2.761515321962447e-06,
+          "seconds": 0.0015912909999999947
+        },
+        {
+          "work": 128,
+          "gap_ratio": 1.1466988245947623e-06,
+          "seconds": 0.0018245409999999573
+        },
+        {
+          "work": 144,
+          "gap_ratio": 5.121251222233806e-07,
+          "seconds": 0.002054250000000035
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 1,
+      "setup_seconds": 0.0037011249999998608,
+      "seconds_median": 0.0020193340000000948,
+      "seconds_all": [
+        0.002056083000000042,
+        0.0020193340000000948,
+        0.001987417000000047
+      ]
+    },
+    {
+      "method": "flow_euclidean",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.0014446669999998996,
+      "final_gap_ratio": 3.1621326771782537e-07,
+      "postrun_residual_norm": 0.004113889038392512,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.0022936230963728297,
+          "seconds": 0.0003437920000000094
+        },
+        {
+          "work": 34,
+          "gap_ratio": 3.358271876140251e-05,
+          "seconds": 0.0007547089999999645
+        },
+        {
+          "work": 52,
+          "gap_ratio": 1.7375285552029426e-06,
+          "seconds": 0.0011640419999998652
+        },
+        {
+          "work": 64,
+          "gap_ratio": 3.1621326771782537e-07,
+          "seconds": 0.001442666999999842
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 1,
+      "setup_seconds": 0.0037011249999998608,
+      "seconds_median": 0.0014417920000000528,
+      "seconds_all": [
+        0.0014446669999998996,
+        0.0014417920000000528,
+        0.0014400420000000302
+      ]
+    },
+    {
+      "method": "flow_mirror",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.0014413339999999053,
+      "final_gap_ratio": 3.1621326771782537e-07,
+      "postrun_residual_norm": 0.004113889038392512,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.0022936230963728297,
+          "seconds": 0.0003389169999998831
+        },
+        {
+          "work": 34,
+          "gap_ratio": 3.358271876140251e-05,
+          "seconds": 0.0007491669999999395
+        },
+        {
+          "work": 52,
+          "gap_ratio": 1.7375285552029426e-06,
+          "seconds": 0.001160792000000077
+        },
+        {
+          "work": 64,
+          "gap_ratio": 3.1621326771782537e-07,
+          "seconds": 0.001439417000000054
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 1,
+      "setup_seconds": 0.0037011249999998608,
+      "seconds_median": 0.0014440840000000676,
+      "seconds_all": [
+        0.0014413339999999053,
+        0.0014449579999999962,
+        0.0014440840000000676
+      ]
+    },
+    {
+      "method": "stationary_krylov",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.001377707999999922,
+      "final_gap_ratio": 1.914151555188769e-07,
+      "postrun_residual_norm": 0.002639961985246489,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.002117012028250603,
+          "seconds": 0.0003248329999998578
+        },
+        {
+          "work": 34,
+          "gap_ratio": 7.045816577726149e-05,
+          "seconds": 0.0007162919999998962
+        },
+        {
+          "work": 52,
+          "gap_ratio": 1.2279145810652986e-06,
+          "seconds": 0.0011078749999999804
+        },
+        {
+          "work": 64,
+          "gap_ratio": 1.914151555188769e-07,
+          "seconds": 0.001375582999999958
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 1,
+      "setup_seconds": 0.0037011249999998608,
+      "seconds_median": 0.0013925000000001297,
+      "seconds_all": [
+        0.001377707999999922,
+        0.0013925000000001297,
+        0.0013948749999999066
+      ]
+    },
+    {
+      "method": "anderson",
+      "status": "target",
+      "work": 48,
+      "map_calls": 48,
+      "tangent_actions": 0,
+      "objective_checks": 3,
+      "updates": 48,
+      "macros": 0,
+      "seconds": 0.0022042079999999853,
+      "final_gap_ratio": 6.329391281125581e-08,
+      "postrun_residual_norm": 0.0017151374769844513,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.0009526145000829825,
+          "seconds": 0.0007066669999999942
+        },
+        {
+          "work": 32,
+          "gap_ratio": 1.2364924523514796e-05,
+          "seconds": 0.0014572079999999321
+        },
+        {
+          "work": 48,
+          "gap_ratio": 6.329391281125581e-08,
+          "seconds": 0.0022018749999999088
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 1,
+      "setup_seconds": 0.0037011249999998608,
+      "seconds_median": 0.0022042079999999853,
+      "seconds_all": [
+        0.0022042079999999853,
+        0.0022042500000001297,
+        0.002183749999999929
+      ]
+    },
+    {
+      "method": "ordinary",
+      "status": "target",
+      "work": 144,
+      "map_calls": 144,
+      "tangent_actions": 0,
+      "objective_checks": 9,
+      "updates": 144,
+      "macros": 0,
+      "seconds": 0.0020732500000000265,
+      "final_gap_ratio": 4.771283816715934e-07,
+      "postrun_residual_norm": 0.004526821690044114,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.010328489947497004,
+          "seconds": 0.00023208299999999404
+        },
+        {
+          "work": 32,
+          "gap_ratio": 0.0012467868172544184,
+          "seconds": 0.0004741249999999919
+        },
+        {
+          "work": 48,
+          "gap_ratio": 0.00027417529861101085,
+          "seconds": 0.000700666000000183
+        },
+        {
+          "work": 64,
+          "gap_ratio": 5.28816449633315e-05,
+          "seconds": 0.0009307910000000419
+        },
+        {
+          "work": 80,
+          "gap_ratio": 1.7228570078392805e-05,
+          "seconds": 0.001158541000000124
+        },
+        {
+          "work": 96,
+          "gap_ratio": 6.44630775572194e-06,
+          "seconds": 0.001387250000000062
+        },
+        {
+          "work": 112,
+          "gap_ratio": 2.5984547620507557e-06,
+          "seconds": 0.0016143330000000233
+        },
+        {
+          "work": 128,
+          "gap_ratio": 1.096387938523127e-06,
+          "seconds": 0.0018419579999999769
+        },
+        {
+          "work": 144,
+          "gap_ratio": 4.771283816715934e-07,
+          "seconds": 0.002071416000000159
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 2,
+      "setup_seconds": 0.0037340420000000485,
+      "seconds_median": 0.0020732500000000265,
+      "seconds_all": [
+        0.0020732500000000265,
+        0.00205654200000005,
+        0.0020856659999999305
+      ]
+    },
+    {
+      "method": "flow_euclidean",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.0014786670000002111,
+      "final_gap_ratio": 2.3276696970865233e-07,
+      "postrun_residual_norm": 0.0031889841799822524,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.022061240127244093,
+          "seconds": 0.00034375000000008704
+        },
+        {
+          "work": 34,
+          "gap_ratio": 3.195201057243383e-05,
+          "seconds": 0.000773625000000111
+        },
+        {
+          "work": 52,
+          "gap_ratio": 1.3095746026981414e-06,
+          "seconds": 0.0011935840000001363
+        },
+        {
+          "work": 64,
+          "gap_ratio": 2.3276696970865233e-07,
+          "seconds": 0.0014766670000001536
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 2,
+      "setup_seconds": 0.0037340420000000485,
+      "seconds_median": 0.0014746250000001737,
+      "seconds_all": [
+        0.0014786670000002111,
+        0.0014727079999998782,
+        0.0014746250000001737
+      ]
+    },
+    {
+      "method": "flow_mirror",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.001479250000000043,
+      "final_gap_ratio": 2.3276696970865233e-07,
+      "postrun_residual_norm": 0.0031889841799822524,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.022061240127244093,
+          "seconds": 0.0003521669999999588
+        },
+        {
+          "work": 34,
+          "gap_ratio": 3.195201057243383e-05,
+          "seconds": 0.0007708749999999487
+        },
+        {
+          "work": 52,
+          "gap_ratio": 1.3095746026981414e-06,
+          "seconds": 0.0011943750000000808
+        },
+        {
+          "work": 64,
+          "gap_ratio": 2.3276696970865233e-07,
+          "seconds": 0.001477125000000079
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 2,
+      "setup_seconds": 0.0037340420000000485,
+      "seconds_median": 0.001479250000000043,
+      "seconds_all": [
+        0.001479250000000043,
+        0.001470834000000032,
+        0.001487000000000016
+      ]
+    },
+    {
+      "method": "stationary_krylov",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.0014185419999999116,
+      "final_gap_ratio": 1.5894376287795164e-07,
+      "postrun_residual_norm": 0.0030529272514603105,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.1736721116651562,
+          "seconds": 0.0003390830000000733
+        },
+        {
+          "work": 34,
+          "gap_ratio": 0.0001113276159408411,
+          "seconds": 0.0007421670000000713
+        },
+        {
+          "work": 52,
+          "gap_ratio": 1.464131131210154e-06,
+          "seconds": 0.001145374999999893
+        },
+        {
+          "work": 64,
+          "gap_ratio": 1.5894376287795164e-07,
+          "seconds": 0.0014162079999999744
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 2,
+      "setup_seconds": 0.0037340420000000485,
+      "seconds_median": 0.001427833000000156,
+      "seconds_all": [
+        0.0014185419999999116,
+        0.001427833000000156,
+        0.001438334000000152
+      ]
+    },
+    {
+      "method": "anderson",
+      "status": "target",
+      "work": 48,
+      "map_calls": 48,
+      "tangent_actions": 0,
+      "objective_checks": 3,
+      "updates": 48,
+      "macros": 0,
+      "seconds": 0.0022310420000000164,
+      "final_gap_ratio": 7.334557190153812e-08,
+      "postrun_residual_norm": 0.0015839444586637596,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.002320363964641661,
+          "seconds": 0.0007237090000000723
+        },
+        {
+          "work": 32,
+          "gap_ratio": 1.0905110148706777e-05,
+          "seconds": 0.001480959000000004
+        },
+        {
+          "work": 48,
+          "gap_ratio": 7.334557190153812e-08,
+          "seconds": 0.0022286670000000175
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 2,
+      "setup_seconds": 0.0037340420000000485,
+      "seconds_median": 0.00222666699999996,
+      "seconds_all": [
+        0.0022310420000000164,
+        0.002222500000000016,
+        0.00222666699999996
+      ]
+    }
+  ],
+  "finite_screens": {
+    "admm_lasso": [
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.4053894849185985,
+        "relative_frozen_error": 0.4085109508002586,
+        "relative_krylov_error": 0.14911837215650514,
+        "predicted_gap_ratio": 0.667931375319384,
+        "reference_gap_ratio": 0.22591196590845913,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.4053894849185985,
+        "relative_frozen_error": 0.4085109508002586,
+        "relative_krylov_error": 0.14911837215650514,
+        "predicted_gap_ratio": 0.667931375319384,
+        "reference_gap_ratio": 0.22591196590845913,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.8157405551768754,
+        "relative_frozen_error": 1.5185825485123128,
+        "relative_krylov_error": 1.143162778553167,
+        "predicted_gap_ratio": 1.079761957234197,
+        "reference_gap_ratio": 0.0024651802800271807,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.8157405551768754,
+        "relative_frozen_error": 1.5185825485123128,
+        "relative_krylov_error": 1.143162778553167,
+        "predicted_gap_ratio": 1.079761957234197,
+        "reference_gap_ratio": 0.0024651802800271807,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.8356858247125516,
+        "relative_frozen_error": 3.6096562269901256,
+        "relative_krylov_error": 3.379968893794283,
+        "predicted_gap_ratio": 1.1327328138048942,
+        "reference_gap_ratio": 2.891381756241215e-05,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.8356858247125516,
+        "relative_frozen_error": 3.6096562269901256,
+        "relative_krylov_error": 3.379968893794283,
+        "predicted_gap_ratio": 1.1327328138048942,
+        "reference_gap_ratio": 2.891381756241215e-05,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.4085109508002587,
+        "relative_frozen_error": 0.4085109508002586,
+        "relative_krylov_error": 3.168824499574804e-16,
+        "predicted_gap_ratio": 0.5970574815061147,
+        "reference_gap_ratio": 0.22591196590845913,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.4085109508002587,
+        "relative_frozen_error": 0.4085109508002586,
+        "relative_krylov_error": 3.168824499574804e-16,
+        "predicted_gap_ratio": 0.5970574815061147,
+        "reference_gap_ratio": 0.22591196590845913,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 1.4268347194519333,
+        "relative_frozen_error": 1.5185825485123128,
+        "relative_krylov_error": 0.31248621988683745,
+        "predicted_gap_ratio": 0.5833404391393734,
+        "reference_gap_ratio": 0.0024651802800271807,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 1.4268347194519333,
+        "relative_frozen_error": 1.5185825485123128,
+        "relative_krylov_error": 0.31248621988683745,
+        "predicted_gap_ratio": 0.5833404391393734,
+        "reference_gap_ratio": 0.0024651802800271807,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 2.205805428506908,
+        "relative_frozen_error": 3.6096562269901256,
+        "relative_krylov_error": 1.9616944455366325,
+        "predicted_gap_ratio": 0.8374197263085088,
+        "reference_gap_ratio": 2.891381756241215e-05,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 2.205805428506908,
+        "relative_frozen_error": 3.6096562269901256,
+        "relative_krylov_error": 1.9616944455366325,
+        "predicted_gap_ratio": 0.8374197263085088,
+        "reference_gap_ratio": 2.891381756241215e-05,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.4085109508002587,
+        "relative_frozen_error": 0.4085109508002586,
+        "relative_krylov_error": 3.168824499574804e-16,
+        "predicted_gap_ratio": 0.5970574815061147,
+        "reference_gap_ratio": 0.22591196590845913,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.4085109508002587,
+        "relative_frozen_error": 0.4085109508002586,
+        "relative_krylov_error": 3.168824499574804e-16,
+        "predicted_gap_ratio": 0.5970574815061147,
+        "reference_gap_ratio": 0.22591196590845913,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 1.5185726856856983,
+        "relative_frozen_error": 1.5185825485123128,
+        "relative_krylov_error": 0.01194131739934969,
+        "predicted_gap_ratio": 0.5005211713222908,
+        "reference_gap_ratio": 0.0024651802800271807,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 1.5185726856856983,
+        "relative_frozen_error": 1.5185825485123128,
+        "relative_krylov_error": 0.01194131739934969,
+        "predicted_gap_ratio": 0.5005211713222908,
+        "reference_gap_ratio": 0.0024651802800271807,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 3.4073342409103295,
+        "relative_frozen_error": 3.6096562269901256,
+        "relative_krylov_error": 0.5726551743304767,
+        "predicted_gap_ratio": 0.5303236835811437,
+        "reference_gap_ratio": 2.891381756241215e-05,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 3.4073342409103295,
+        "relative_frozen_error": 3.6096562269901256,
+        "relative_krylov_error": 0.5726551743304767,
+        "predicted_gap_ratio": 0.5303236835811437,
+        "reference_gap_ratio": 2.891381756241215e-05,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.00466976893597752,
+        "relative_frozen_error": 1.3550823525674738e-13,
+        "relative_krylov_error": 0.004669768935982268,
+        "predicted_gap_ratio": 0.6601192483689713,
+        "reference_gap_ratio": 0.6585636473713765,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.00466976893597752,
+        "relative_frozen_error": 1.3550823525674738e-13,
+        "relative_krylov_error": 0.004669768935982268,
+        "predicted_gap_ratio": 0.6601192483689713,
+        "reference_gap_ratio": 0.6585636473713765,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.057951492333119616,
+        "relative_frozen_error": 1.1277474380852834e-13,
+        "relative_krylov_error": 0.057951492333123536,
+        "predicted_gap_ratio": 0.3135312487301375,
+        "reference_gap_ratio": 0.23066407276873296,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.057951492333119616,
+        "relative_frozen_error": 1.1277474380852834e-13,
+        "relative_krylov_error": 0.057951492333123536,
+        "predicted_gap_ratio": 0.3135312487301375,
+        "reference_gap_ratio": 0.23066407276873296,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.2350167127362289,
+        "relative_frozen_error": 1.0020524874207721e-13,
+        "relative_krylov_error": 0.23501671273622896,
+        "predicted_gap_ratio": 0.5886139821339172,
+        "reference_gap_ratio": 0.013600060513799044,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.2350167127362289,
+        "relative_frozen_error": 1.0020524874207721e-13,
+        "relative_krylov_error": 0.23501671273622896,
+        "predicted_gap_ratio": 0.5886139821339172,
+        "reference_gap_ratio": 0.013600060513799044,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 1.356723124187226e-13,
+        "relative_frozen_error": 1.3550823525674738e-13,
+        "relative_krylov_error": 3.201254886266899e-15,
+        "predicted_gap_ratio": 0.6585636473712707,
+        "reference_gap_ratio": 0.6585636473713765,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 1.356723124187226e-13,
+        "relative_frozen_error": 1.3550823525674738e-13,
+        "relative_krylov_error": 3.201254886266899e-15,
+        "predicted_gap_ratio": 0.6585636473712707,
+        "reference_gap_ratio": 0.6585636473713765,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.01165609718373809,
+        "relative_frozen_error": 1.1277474380852834e-13,
+        "relative_krylov_error": 0.01165609718373995,
+        "predicted_gap_ratio": 0.229916172143031,
+        "reference_gap_ratio": 0.23066407276873296,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.01165609718373809,
+        "relative_frozen_error": 1.1277474380852834e-13,
+        "relative_krylov_error": 0.01165609718373995,
+        "predicted_gap_ratio": 0.229916172143031,
+        "reference_gap_ratio": 0.23066407276873296,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.11605129292288273,
+        "relative_frozen_error": 1.0020524874207721e-13,
+        "relative_krylov_error": 0.11605129292288784,
+        "predicted_gap_ratio": 0.14011623112099925,
+        "reference_gap_ratio": 0.013600060513799044,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.11605129292288273,
+        "relative_frozen_error": 1.0020524874207721e-13,
+        "relative_krylov_error": 0.11605129292288784,
+        "predicted_gap_ratio": 0.14011623112099925,
+        "reference_gap_ratio": 0.013600060513799044,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 1.356723124187226e-13,
+        "relative_frozen_error": 1.3550823525674738e-13,
+        "relative_krylov_error": 3.201254886266899e-15,
+        "predicted_gap_ratio": 0.6585636473712707,
+        "reference_gap_ratio": 0.6585636473713765,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 1.356723124187226e-13,
+        "relative_frozen_error": 1.3550823525674738e-13,
+        "relative_krylov_error": 3.201254886266899e-15,
+        "predicted_gap_ratio": 0.6585636473712707,
+        "reference_gap_ratio": 0.6585636473713765,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.00020969131357589918,
+        "relative_frozen_error": 1.1277474380852834e-13,
+        "relative_krylov_error": 0.00020969131357856537,
+        "predicted_gap_ratio": 0.23078880397050547,
+        "reference_gap_ratio": 0.23066407276873296,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.00020969131357589918,
+        "relative_frozen_error": 1.1277474380852834e-13,
+        "relative_krylov_error": 0.00020969131357856537,
+        "predicted_gap_ratio": 0.23078880397050547,
+        "reference_gap_ratio": 0.23066407276873296,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.030536278188466454,
+        "relative_frozen_error": 1.0020524874207721e-13,
+        "relative_krylov_error": 0.030536278188477064,
+        "predicted_gap_ratio": 0.041636450139807935,
+        "reference_gap_ratio": 0.013600060513799044,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.030536278188466454,
+        "relative_frozen_error": 1.0020524874207721e-13,
+        "relative_krylov_error": 0.030536278188477064,
+        "predicted_gap_ratio": 0.041636450139807935,
+        "reference_gap_ratio": 0.013600060513799044,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.00010743818766249527,
+        "relative_frozen_error": 1.9903863636984133e-12,
+        "relative_krylov_error": 0.00010743818768110264,
+        "predicted_gap_ratio": 0.8487164443750993,
+        "reference_gap_ratio": 0.8487248618747966,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.00010743818766249527,
+        "relative_frozen_error": 1.9903863636984133e-12,
+        "relative_krylov_error": 0.00010743818768110264,
+        "predicted_gap_ratio": 0.8487164443750993,
+        "reference_gap_ratio": 0.8487248618747966,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.002784710455000783,
+        "relative_frozen_error": 1.1078718451367288e-12,
+        "relative_krylov_error": 0.002784710455014272,
+        "predicted_gap_ratio": 0.5216565060736604,
+        "reference_gap_ratio": 0.5223667606589427,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.002784710455000783,
+        "relative_frozen_error": 1.1078718451367288e-12,
+        "relative_krylov_error": 0.002784710455014272,
+        "predicted_gap_ratio": 0.5216565060736604,
+        "reference_gap_ratio": 0.5223667606589427,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.023440132905559206,
+        "relative_frozen_error": 6.62942830125415e-13,
+        "relative_krylov_error": 0.023440132905577907,
+        "predicted_gap_ratio": 0.08006477248995231,
+        "reference_gap_ratio": 0.0802950747252782,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.023440132905559206,
+        "relative_frozen_error": 6.62942830125415e-13,
+        "relative_krylov_error": 0.023440132905577907,
+        "predicted_gap_ratio": 0.08006477248995231,
+        "reference_gap_ratio": 0.0802950747252782,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 1.9903863636984133e-12,
+        "relative_frozen_error": 1.9903863636984133e-12,
+        "relative_krylov_error": 4.4057886726839284e-14,
+        "predicted_gap_ratio": 0.8487248617442239,
+        "reference_gap_ratio": 0.8487248618747966,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 1.9903863636984133e-12,
+        "relative_frozen_error": 1.9903863636984133e-12,
+        "relative_krylov_error": 4.4057886726839284e-14,
+        "predicted_gap_ratio": 0.8487248617442239,
+        "reference_gap_ratio": 0.8487248618747966,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.00015100883080411108,
+        "relative_frozen_error": 1.1078718451367288e-12,
+        "relative_krylov_error": 0.0001510088308520563,
+        "predicted_gap_ratio": 0.5222484775721092,
+        "reference_gap_ratio": 0.5223667606589427,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.00015100883080411108,
+        "relative_frozen_error": 1.1078718451367288e-12,
+        "relative_krylov_error": 0.0001510088308520563,
+        "predicted_gap_ratio": 0.5222484775721092,
+        "reference_gap_ratio": 0.5223667606589427,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.005936678031007815,
+        "relative_frozen_error": 6.62942830125415e-13,
+        "relative_krylov_error": 0.005936678030991373,
+        "predicted_gap_ratio": 0.08045415515858202,
+        "reference_gap_ratio": 0.0802950747252782,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.005936678031007815,
+        "relative_frozen_error": 6.62942830125415e-13,
+        "relative_krylov_error": 0.005936678030991373,
+        "predicted_gap_ratio": 0.08045415515858202,
+        "reference_gap_ratio": 0.0802950747252782,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 1.9903863636984133e-12,
+        "relative_frozen_error": 1.9903863636984133e-12,
+        "relative_krylov_error": 4.4057886726839284e-14,
+        "predicted_gap_ratio": 0.8487248617442239,
+        "reference_gap_ratio": 0.8487248618747966,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 1.9903863636984133e-12,
+        "relative_frozen_error": 1.9903863636984133e-12,
+        "relative_krylov_error": 4.4057886726839284e-14,
+        "predicted_gap_ratio": 0.8487248617442239,
+        "reference_gap_ratio": 0.8487248618747966,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 8.443791811830427e-07,
+        "relative_frozen_error": 1.1078718451367288e-12,
+        "relative_krylov_error": 8.443790500606135e-07,
+        "predicted_gap_ratio": 0.5223665935333195,
+        "reference_gap_ratio": 0.5223667606589427,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 8.443791811830427e-07,
+        "relative_frozen_error": 1.1078718451367288e-12,
+        "relative_krylov_error": 8.443790500606135e-07,
+        "predicted_gap_ratio": 0.5223665935333195,
+        "reference_gap_ratio": 0.5223667606589427,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.0009321157665911629,
+        "relative_frozen_error": 6.62942830125415e-13,
+        "relative_krylov_error": 0.0009321157664526115,
+        "predicted_gap_ratio": 0.08055452383270163,
+        "reference_gap_ratio": 0.0802950747252782,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.0009321157665911629,
+        "relative_frozen_error": 6.62942830125415e-13,
+        "relative_krylov_error": 0.0009321157664526115,
+        "predicted_gap_ratio": 0.08055452383270163,
+        "reference_gap_ratio": 0.0802950747252782,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      }
+    ],
+    "admm_shadow": [
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.20482528731441638,
+        "relative_frozen_error": 0.20325316979469996,
+        "relative_krylov_error": 0.08751953710087014,
+        "predicted_gap_ratio": 0.3431187167670892,
+        "reference_gap_ratio": 0.22591196590845913,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.20482528731441638,
+        "relative_frozen_error": 0.20325316979469996,
+        "relative_krylov_error": 0.08751953710087014,
+        "predicted_gap_ratio": 0.3431187167670892,
+        "reference_gap_ratio": 0.22591196590845913,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.8554882224077249,
+        "relative_frozen_error": 1.3299400023273176,
+        "relative_krylov_error": 0.816255565137736,
+        "predicted_gap_ratio": 4.321645077085114,
+        "reference_gap_ratio": 0.0024651802800271807,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.8554882224077249,
+        "relative_frozen_error": 1.3299400023273176,
+        "relative_krylov_error": 0.816255565137736,
+        "predicted_gap_ratio": 4.321645077085114,
+        "reference_gap_ratio": 0.0024651802800271807,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.9556221104171861,
+        "relative_frozen_error": 3.318556195697157,
+        "relative_krylov_error": 2.847467824761238,
+        "predicted_gap_ratio": 6.535874751566195,
+        "reference_gap_ratio": 2.891381756241215e-05,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.9556221104171861,
+        "relative_frozen_error": 3.318556195697157,
+        "relative_krylov_error": 2.847467824761238,
+        "predicted_gap_ratio": 6.535874751566195,
+        "reference_gap_ratio": 2.891381756241215e-05,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.20325316979469993,
+        "relative_frozen_error": 0.20325316979469996,
+        "relative_krylov_error": 3.0971761578014894e-16,
+        "predicted_gap_ratio": 0.29764127918336114,
+        "reference_gap_ratio": 0.22591196590845913,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.20325316979469993,
+        "relative_frozen_error": 0.20325316979469996,
+        "relative_krylov_error": 3.0971761578014894e-16,
+        "predicted_gap_ratio": 0.29764127918336114,
+        "reference_gap_ratio": 0.22591196590845913,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 1.2766705600082981,
+        "relative_frozen_error": 1.3299400023273176,
+        "relative_krylov_error": 0.21937111916071336,
+        "predicted_gap_ratio": 11.27558638218702,
+        "reference_gap_ratio": 0.0024651802800271807,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 1.2766705600082981,
+        "relative_frozen_error": 1.3299400023273176,
+        "relative_krylov_error": 0.21937111916071336,
+        "predicted_gap_ratio": 11.27558638218702,
+        "reference_gap_ratio": 0.0024651802800271807,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 2.2231084041040226,
+        "relative_frozen_error": 3.318556195697157,
+        "relative_krylov_error": 1.6241867517624886,
+        "predicted_gap_ratio": 50.21970946492571,
+        "reference_gap_ratio": 2.891381756241215e-05,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 2.2231084041040226,
+        "relative_frozen_error": 3.318556195697157,
+        "relative_krylov_error": 1.6241867517624886,
+        "predicted_gap_ratio": 50.21970946492571,
+        "reference_gap_ratio": 2.891381756241215e-05,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.20325316979469993,
+        "relative_frozen_error": 0.20325316979469996,
+        "relative_krylov_error": 3.0971761578014894e-16,
+        "predicted_gap_ratio": 0.29764127918336114,
+        "reference_gap_ratio": 0.22591196590845913,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.20325316979469993,
+        "relative_frozen_error": 0.20325316979469996,
+        "relative_krylov_error": 3.0971761578014894e-16,
+        "predicted_gap_ratio": 0.29764127918336114,
+        "reference_gap_ratio": 0.22591196590845913,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 1.3299974125721123,
+        "relative_frozen_error": 1.3299400023273176,
+        "relative_krylov_error": 0.00648193457610775,
+        "predicted_gap_ratio": 12.666397502324877,
+        "reference_gap_ratio": 0.0024651802800271807,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 1.3299974125721123,
+        "relative_frozen_error": 1.3299400023273176,
+        "relative_krylov_error": 0.00648193457610775,
+        "predicted_gap_ratio": 12.666397502324877,
+        "reference_gap_ratio": 0.0024651802800271807,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 3.189350860754849,
+        "relative_frozen_error": 3.318556195697157,
+        "relative_krylov_error": 0.4568508530268346,
+        "predicted_gap_ratio": 116.7792738947479,
+        "reference_gap_ratio": 2.891381756241215e-05,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 3.189350860754849,
+        "relative_frozen_error": 3.318556195697157,
+        "relative_krylov_error": 0.4568508530268346,
+        "predicted_gap_ratio": 116.7792738947479,
+        "reference_gap_ratio": 2.891381756241215e-05,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.004669768935977503,
+        "relative_frozen_error": 1.3558485482285565e-13,
+        "relative_krylov_error": 0.004669768935982252,
+        "predicted_gap_ratio": 0.6601192483690498,
+        "reference_gap_ratio": 0.6585636473713765,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.004669768935977503,
+        "relative_frozen_error": 1.3558485482285565e-13,
+        "relative_krylov_error": 0.004669768935982252,
+        "predicted_gap_ratio": 0.6601192483690498,
+        "reference_gap_ratio": 0.6585636473713765,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.057951492333119664,
+        "relative_frozen_error": 1.1274499512704303e-13,
+        "relative_krylov_error": 0.05795149233312356,
+        "predicted_gap_ratio": 0.31353124873003163,
+        "reference_gap_ratio": 0.23066407276873296,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.057951492333119664,
+        "relative_frozen_error": 1.1274499512704303e-13,
+        "relative_krylov_error": 0.05795149233312356,
+        "predicted_gap_ratio": 0.31353124873003163,
+        "reference_gap_ratio": 0.23066407276873296,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.2350167127362291,
+        "relative_frozen_error": 1.0019956164310685e-13,
+        "relative_krylov_error": 0.2350167127362291,
+        "predicted_gap_ratio": 0.5956027618566182,
+        "reference_gap_ratio": 0.013600060513799044,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.2350167127362291,
+        "relative_frozen_error": 1.0019956164310685e-13,
+        "relative_krylov_error": 0.2350167127362291,
+        "predicted_gap_ratio": 0.5956027618566182,
+        "reference_gap_ratio": 0.013600060513799044,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 1.3574755761505504e-13,
+        "relative_frozen_error": 1.3558485482285565e-13,
+        "relative_krylov_error": 6.2223150337102824e-15,
+        "predicted_gap_ratio": 0.6585636473716068,
+        "reference_gap_ratio": 0.6585636473713765,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 1.3574755761505504e-13,
+        "relative_frozen_error": 1.3558485482285565e-13,
+        "relative_krylov_error": 6.2223150337102824e-15,
+        "predicted_gap_ratio": 0.6585636473716068,
+        "reference_gap_ratio": 0.6585636473713765,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.011656097183738131,
+        "relative_frozen_error": 1.1274499512704303e-13,
+        "relative_krylov_error": 0.011656097183739991,
+        "predicted_gap_ratio": 0.2299161721433108,
+        "reference_gap_ratio": 0.23066407276873296,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.011656097183738131,
+        "relative_frozen_error": 1.1274499512704303e-13,
+        "relative_krylov_error": 0.011656097183739991,
+        "predicted_gap_ratio": 0.2299161721433108,
+        "reference_gap_ratio": 0.23066407276873296,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.11605129292288273,
+        "relative_frozen_error": 1.0019956164310685e-13,
+        "relative_krylov_error": 0.11605129292288784,
+        "predicted_gap_ratio": 0.16496506550679826,
+        "reference_gap_ratio": 0.013600060513799044,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.11605129292288273,
+        "relative_frozen_error": 1.0019956164310685e-13,
+        "relative_krylov_error": 0.11605129292288784,
+        "predicted_gap_ratio": 0.16496506550679826,
+        "reference_gap_ratio": 0.013600060513799044,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 1.3574755761505504e-13,
+        "relative_frozen_error": 1.3558485482285565e-13,
+        "relative_krylov_error": 6.2223150337102824e-15,
+        "predicted_gap_ratio": 0.6585636473716068,
+        "reference_gap_ratio": 0.6585636473713765,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 1.3574755761505504e-13,
+        "relative_frozen_error": 1.3558485482285565e-13,
+        "relative_krylov_error": 6.2223150337102824e-15,
+        "predicted_gap_ratio": 0.6585636473716068,
+        "reference_gap_ratio": 0.6585636473713765,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.00020969131357591629,
+        "relative_frozen_error": 1.1274499512704303e-13,
+        "relative_krylov_error": 0.00020969131357858247,
+        "predicted_gap_ratio": 0.2307888039705852,
+        "reference_gap_ratio": 0.23066407276873296,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.00020969131357591629,
+        "relative_frozen_error": 1.1274499512704303e-13,
+        "relative_krylov_error": 0.00020969131357858247,
+        "predicted_gap_ratio": 0.2307888039705852,
+        "reference_gap_ratio": 0.23066407276873296,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.030536278188466617,
+        "relative_frozen_error": 1.0019956164310685e-13,
+        "relative_krylov_error": 0.030536278188477237,
+        "predicted_gap_ratio": 0.04163645013979553,
+        "reference_gap_ratio": 0.013600060513799044,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.030536278188466617,
+        "relative_frozen_error": 1.0019956164310685e-13,
+        "relative_krylov_error": 0.030536278188477237,
+        "predicted_gap_ratio": 0.04163645013979553,
+        "reference_gap_ratio": 0.013600060513799044,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.000107438187665534,
+        "relative_frozen_error": 1.986233047804388e-12,
+        "relative_krylov_error": 0.00010743818768414136,
+        "predicted_gap_ratio": 0.8487164443920394,
+        "reference_gap_ratio": 0.8487248618747966,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.000107438187665534,
+        "relative_frozen_error": 1.986233047804388e-12,
+        "relative_krylov_error": 0.00010743818768414136,
+        "predicted_gap_ratio": 0.8487164443920394,
+        "reference_gap_ratio": 0.8487248618747966,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.002784710455001396,
+        "relative_frozen_error": 1.1078850107477144e-12,
+        "relative_krylov_error": 0.0027847104550148844,
+        "predicted_gap_ratio": 0.5216565058961833,
+        "reference_gap_ratio": 0.5223667606589427,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.002784710455001396,
+        "relative_frozen_error": 1.1078850107477144e-12,
+        "relative_krylov_error": 0.0027847104550148844,
+        "predicted_gap_ratio": 0.5216565058961833,
+        "reference_gap_ratio": 0.5223667606589427,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.023440132905559317,
+        "relative_frozen_error": 6.628566372613296e-13,
+        "relative_krylov_error": 0.02344013290557802,
+        "predicted_gap_ratio": 0.08006477254115354,
+        "reference_gap_ratio": 0.0802950747252782,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.023440132905559317,
+        "relative_frozen_error": 6.628566372613296e-13,
+        "relative_krylov_error": 0.02344013290557802,
+        "predicted_gap_ratio": 0.08006477254115354,
+        "reference_gap_ratio": 0.0802950747252782,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 1.986478242651473e-12,
+        "relative_frozen_error": 1.986233047804388e-12,
+        "relative_krylov_error": 8.894615851051032e-14,
+        "predicted_gap_ratio": 0.8487248617357236,
+        "reference_gap_ratio": 0.8487248618747966,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 1.986478242651473e-12,
+        "relative_frozen_error": 1.986233047804388e-12,
+        "relative_krylov_error": 8.894615851051032e-14,
+        "predicted_gap_ratio": 0.8487248617357236,
+        "reference_gap_ratio": 0.8487248618747966,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.00015100883080325532,
+        "relative_frozen_error": 1.1078850107477144e-12,
+        "relative_krylov_error": 0.0001510088308512006,
+        "predicted_gap_ratio": 0.5222484775232452,
+        "reference_gap_ratio": 0.5223667606589427,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.00015100883080325532,
+        "relative_frozen_error": 1.1078850107477144e-12,
+        "relative_krylov_error": 0.0001510088308512006,
+        "predicted_gap_ratio": 0.5222484775232452,
+        "reference_gap_ratio": 0.5223667606589427,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.005936678031008041,
+        "relative_frozen_error": 6.628566372613296e-13,
+        "relative_krylov_error": 0.0059366780309915955,
+        "predicted_gap_ratio": 0.08045415512436128,
+        "reference_gap_ratio": 0.0802950747252782,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.005936678031008041,
+        "relative_frozen_error": 6.628566372613296e-13,
+        "relative_krylov_error": 0.0059366780309915955,
+        "predicted_gap_ratio": 0.08045415512436128,
+        "reference_gap_ratio": 0.0802950747252782,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 1.986478242651473e-12,
+        "relative_frozen_error": 1.986233047804388e-12,
+        "relative_krylov_error": 8.894615851051032e-14,
+        "predicted_gap_ratio": 0.8487248617357236,
+        "reference_gap_ratio": 0.8487248618747966,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 1.986478242651473e-12,
+        "relative_frozen_error": 1.986233047804388e-12,
+        "relative_krylov_error": 8.894615851051032e-14,
+        "predicted_gap_ratio": 0.8487248617357236,
+        "reference_gap_ratio": 0.8487248618747966,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 8.4437918165293e-07,
+        "relative_frozen_error": 1.1078850107477144e-12,
+        "relative_krylov_error": 8.443790505304998e-07,
+        "predicted_gap_ratio": 0.5223665935164142,
+        "reference_gap_ratio": 0.5223667606589427,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 8.4437918165293e-07,
+        "relative_frozen_error": 1.1078850107477144e-12,
+        "relative_krylov_error": 8.443790505304998e-07,
+        "predicted_gap_ratio": 0.5223665935164142,
+        "reference_gap_ratio": 0.5223667606589427,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.0009321157665899485,
+        "relative_frozen_error": 6.628566372613296e-13,
+        "relative_krylov_error": 0.0009321157664513972,
+        "predicted_gap_ratio": 0.08055452389739544,
+        "reference_gap_ratio": 0.0802950747252782,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.0009321157665899485,
+        "relative_frozen_error": 6.628566372613296e-13,
+        "relative_krylov_error": 0.0009321157664513972,
+        "predicted_gap_ratio": 0.08055452389739544,
+        "reference_gap_ratio": 0.0802950747252782,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      }
+    ]
+  }
+}
