@@ -1932,3 +1932,23 @@ and the difference between a linear representation lower bound, failure of
 the particular scalar affine law, and a general computational impossibility.
 The ordinary transport problems converge; the failed object is the acquisition
 and changing-rule model, not Sinkhorn solvability itself.
+
+Run the higher-state conditional descent probe and its mathematical checks:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.entropic_transport_closure.test_context_descent -v
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.probe_context_descent \
+  --repeats 5 --out /tmp/context_descent128_factored.json
+```
+
+Copy the JSON immediately into `experiments/entropic_transport_closure/results/theory/`.
+The exact conditional-state lift has a semidual descent identity. Its cheap
+response-memory implementation is a known limited-memory BFGS baseline with
+an experimental secant-defect admission rule. It is not a new certified
+long-horizon closure, and its adaptive admission must be compared with ordinary
+L-BFGS as well as lean ordinary Sinkhorn. See `CONTEXT_DESCENT.md`.

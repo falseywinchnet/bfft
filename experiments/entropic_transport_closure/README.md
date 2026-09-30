@@ -33,3 +33,10 @@ application report. `solve_blocks` is for a supplied exact proportional-block
 representation only. The general nonlinear model is an approximation with
 a whole-state finite-horizon bound and an actual marginal check; it is not
 an exact general lift or a fully stabilized production Sinkhorn library.
+
+The higher-state follow-up in [CONTEXT_DESCENT.md](CONTEXT_DESCENT.md) builds an
+exact conditional-response lift with a semidual descent identity and tests a
+known L-BFGS response-memory realization against scalar, frozen-context, and
+lean ordinary controls on the six original problems. It changes the trajectory;
+it does not supply a certified long-horizon skip. The evolving scalar control
+is fastest in this small retained timing battery.
