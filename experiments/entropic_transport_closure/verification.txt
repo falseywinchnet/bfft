@@ -1,0 +1,14 @@
+test_exact_finite_geometry_and_increment_trajectory (test_closure.ClosureTests) ... ok
+test_exact_nonlinear_sources_and_global_remainder_bound (test_closure.ClosureTests) ... ok
+test_exact_rational_state_and_changing_tangent_jump (test_closure.ClosureTests) ... ok
+test_frozen_polynomial_rollout_error_certificate (test_closure.ClosureTests) ... ok
+test_gauge_and_fixed_cross_ratios (test_closure.ClosureTests) ... ok
+test_jacobian_and_its_evolution (test_closure.ClosureTests) ... ok
+test_large_block_family_exact_reduction (test_closure.ClosureTests) ... ok
+test_moving_metric_and_joint_coupling (test_closure.ClosureTests) ... ok
+test_variance_source_is_nonzero (test_closure.ClosureTests) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.010s
+
+OK

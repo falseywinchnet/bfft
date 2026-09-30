@@ -1,0 +1,14 @@
+\begin{table}[!hbp]\centering\small
+\begin{tabular}{lrrrr}\toprule
+Problem & Ordinary & Frozen 4 & Changing 4 & Changing 2\\\midrule
+Line, $\varepsilon=0.02$ & 85.66 & 62.29 & 80.11 & 80.22\\
+Line, $\varepsilon=0.003$ & 547.80 & 349.35 & 493.13 & 426.58\\
+Plane, $\varepsilon=0.03$ & 57.37 & 49.11 & 58.56 & 61.41\\
+Plane, $\varepsilon=0.006$ & 281.61 & 191.12 & 276.25 & 243.55\\
+Plane, $\varepsilon=0.003$ & 564.03 & 380.82 & 536.28 & 459.07\\
+\bottomrule\end{tabular}
+\caption{Complete solve times in milliseconds at $n=2048$, reported as
+the median of per-seed five-repeat medians. The matched four-direction
+comparison isolates the added changing-rule model; the two-direction
+version also changes representation capacity.}\label{tab:entropic-cost}
+\end{table}

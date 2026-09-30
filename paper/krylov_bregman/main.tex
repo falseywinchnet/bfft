@@ -23,38 +23,34 @@
 \DeclareMathOperator{\spanop}{span}
 \title{Discoverable Polynomial Transport in Mirror Geometry:\\Finite-Horizon Acceleration of Bregman Iterations}
 \author{Joshuah Rainstar}
-\date{September 29, 2026\\\small Research draft: foundations and initial experiments}
+\date{September 30, 2026\\\small Research draft: state, rule evolution, and computational closure}
 \begin{document}
 \maketitle
 
 \begin{abstract}
 Discoverable polynomial transport asks which relations governing an iteration
-can be acquired, verified, and reused at less cost than repeated execution.
-A mirror or Bregman iteration transports a state through a geometry determined
-by dual coordinates, proximal constraints, and retained memory. We study
-advancing this state with a finite polynomial of its local propagator,
-compressed by matrix-free Arnoldi iteration. The construction targets a finite
-segment of the original evolution and applies to complete deterministic
-iteration maps. For smooth mirror descent, we show explicitly that the dual
-Jacobian is self-adjoint in the inverse mirror-Hessian metric at every interior
-state. For quadratic objectives and quadratic mirrors, the resulting update
-is a finite-horizon truncation of a conjugate-gradient Galerkin correction;
-an orthogonal error decomposition gives an objective contraction bound.
-For nonlinear maps, a discrete trajectory-defect identity separates Krylov
-compression from geometric evolution. A boundary-optimum entropy example
-shows why finite transport remains meaningful without a finite dual fixed
-point. An initial synthetic study measures complete execution cost and
-includes stationary Krylov and Anderson comparators. We extend the investigation to algebraic discovery, polynomial observable
-closure, and certified constructions for Huber mirror descent and the original coupled
-Meyer map. The latter uses an exact future-driving quotient, its nonexpansive
-metric, and pointwise algebraic descriptions of disk curvature.
-A general compatibility theorem characterizes which smooth dynamics a prescribed
-mirror geometry admits. Nonlinear reciprocal observables then give exact finite
-transport across curved mirror families, separating observable closure from
-frozen tangent closure and from economical discovery. These results formulate
-a research program in geometry-aware polynomial transport; they do not
-establish a universal acceleration theorem or priority for polynomial
-extrapolation, which has substantial prior development.
+can be acquired, verified, and advanced more cheaply than repeated execution.
+We distinguish closure of the state evolution, closure of its changing
+transport rule, and economical composition of either representation.
+For smooth mirror descent, the dual Jacobian is self-adjoint in the inverse
+mirror-Hessian metric. For quadratic objectives and mirrors, finite-horizon
+Krylov transport is a truncation of a conjugate-gradient Galerkin correction,
+with an orthogonal error decomposition and objective contraction bound.
+For nonlinear maps, trajectory defects separate compression error from
+geometric evolution. Complete-state constructions for Huber and coupled
+Meyer iterations illustrate the roles of boundaries, curvature, and memory.
+A compatibility theorem and rational observable lifts connect prescribed
+mirror geometries to exactly representable dynamics. For positive-kernel
+Sinkhorn iteration, we derive a closed evolution of displacement and
+conditional geometry, a moving metric determined by the displacement, and
+explicit quadratic and cubic remainder bounds. A projective lift advances
+both the state and its changing derivative exactly for two-group kernels.
+For general kernels, a bounded quadratic response model improves prediction
+and accelerates some large problems, but its frozen-rule control remains
+cheaper in the retained comparisons. All acquisition, validation, and readout
+costs are distinguished from algebraic closure. The results formulate a
+testable research program; they do not establish universal acceleration or
+priority for polynomial extrapolation and reduced modeling.
 \end{abstract}
 
 \section{The research object is the iteration state}
@@ -66,9 +62,11 @@ state is specified, a fixed-parameter deterministic algorithm is a map
 \begin{equation}
  z_{j+1}=\F(z_j). \label{eq:map}
 \end{equation}
-The present question is whether a small number of actions of the local
-propagator can replace substantially more applications of $\F$ while retaining
-the useful behavior of its trajectory.
+The present question is whether relations exposed by this state can be
+acquired and composed to replace substantially more applications of $\F$
+while retaining the useful behavior of its trajectory. Local propagator
+actions provide one such representation; they need not describe how the
+propagator itself changes during the advance.
 
 The motivating implementation arose in coupled Meyer--Bregman decomposition.
 There, the primal variables alone do not close the iteration: the evolving
@@ -91,12 +89,18 @@ At an anchor $z$, set
  r=\F(z)-z,\qquad J=\D\F(z),\qquad
  p_m(t)=\sum_{j=0}^{m-1}t^j. \label{eq:objects}
 \end{equation}
-The finite-flow proposal is a compressed approximation to $p_m(J)r$.
+The frozen finite-flow proposal is a compressed approximation to $p_m(J)r$.
 The polynomial is defined at $t=1$, with $p_m(1)=m$; no stationary inverse is
 required. Our central distinction is between three independently assessable
 questions: how accurately a frozen local propagator describes the trajectory,
 how accurately a small Krylov space represents its polynomial, and whether
 the resulting reduction in operator work pays for the extra computation.
+We then ask a stronger representation question: can the changing rule itself
+be carried in a closed evolution that is inexpensive to compose?
+Section~\ref{sec:entropic-evolution} answers the representation part for
+Sinkhorn and separates exact structured composition from approximate general
+modeling. A fixed lifted matrix can encode a changing physical derivative;
+an accurate evolving local model can also fail its complete-cost gate.
 
 \subsection{Prior work and the scope of this draft}
 Krylov acceleration of iterative processes is established numerical analysis.
@@ -128,6 +132,11 @@ preprint studies acceleration through dual geometric updates
 with that work. A distinct publication contribution remains to be established
 through sharper nonlinear results and matched comparisons with the closest
 existing algorithms.
+For entropic transport, existing Sinkhorn spectral analysis and
+overrelaxation results \cite{lehmann} are essential comparators. The present
+conditional evolution and finite-displacement bounds concern how the rule
+changes along a trajectory; the reported controls do not establish an
+advantage over the full range of established optimal-transport solvers.
 
 \section{Mirror coordinates expose a symmetric local propagator}
 Let $\psi$ be a Legendre mirror on an open convex primal domain, and assume
@@ -509,6 +518,8 @@ problem samples. Failures and budget censoring remain in the records.
 
 \input{general_geometry.tex}
 
+\input{entropic_evolution.tex}
+
 \section{What would establish the broader research claim?}
 The general claim now has three obligations. First, discover a representation
 whose observable recurrence captures the relevant dynamics, using the mirror
@@ -518,6 +529,16 @@ Third, demonstrate that acquisition, rejected candidates, certification, and
 readout together cost less than the ordinary work replaced. A short frozen
 Krylov recurrence is one way to meet these obligations; synthesized nonlinear
 observables provide another.
+
+The entropic application sharpens all three obligations. Its conditional
+geometry closes exactly and remains in a fixed diagonal scaling orbit.
+Its two-group projective lift makes composition cheap even though the
+physical derivative changes. Its general quadratic model improves prediction
+of that change, yet loses enough acquisition cost to remain slower than the
+frozen control. Thus transportability of an evolving rule, accuracy of a
+compressed predictor, and useful self-acceleration are separate claims.
+Neither the exact structured result nor the general cost loss should be
+promoted into a statement about every entropic or Bregman geometry.
 
 The rational control establishes that discovery can construct a useful chart
 from a relation rather than merely fit a propagator in a prescribed chart.
@@ -583,6 +604,45 @@ ADMM KKT point, and the necessity of retained memory. The scalar curvature
 counterexample is an explicit negative test. Reproduction commands and
 unaltered run records accompany the source.
 
+\subsection{Entropic application protocol and independent checks}
+For the line cases in Section~\ref{sec:entropic-evolution}, take equally
+spaced points $x_i\in[0,1]$ and
+$K_{ij}=\exp(-(x_i-x_j)^2/\varepsilon)$, with
+$\varepsilon\in\{.02,.003\}$. For seed $s$, the unnormalized marginals are
+\[
+ a_i=.1+\exp\!\left[-\left(\frac{x_i-(.28+.04s)}{.18+.01s}\right)^2\right],
+ \qquad
+ b_i=.1+\exp\!\left[-\left(\frac{x_i-(.68-.03s)}{.2}\right)^2\right].
+\]
+Normalize each to unit mass. For the plane cases, draw independent supports
+$X_i,Y_j$ uniformly from $[.1,.9]^2$ and use squared Euclidean Gaussian
+kernels with $\varepsilon\in\{.03,.006,.003\}$. Before normalization,
+the source and target masses are
+\[
+ \widetilde a_i=.1+\exp(-\norm{X_i-(.3,.4)}^2/.03),\qquad
+ \widetilde b_j=.1+\exp(-\norm{Y_j-(.7,.6)}^2/.025).
+\]
+For the dense control, entries of $\log K$ are independent standard normal
+variables and the marginals are uniform. Seeds one and two are the timed validation
+cases; seed zero is the exploratory screen.
+
+The exact block study uses alternating equal-sized groups, uniform full
+marginals, and $C=\left(\begin{smallmatrix}1&\eta\\\eta&1\end{smallmatrix}\right)$
+for $\eta\in\{.03,.001\}$. Row and column factors are uniform on $[.5,1.5]$,
+with column factors in the first group multiplied by three. Both methods
+aggregate the same inputs and reconstruct the full scaling factors.
+
+The implementation and retained receipts are in
+\texttt{experiments/entropic\_transport\_closure}. Its sixteen tests check
+the finite conditional recurrence, moving metric, Jacobian and its variation,
+exact rational state and tangent powers, weighted reduced models, second-
+and third-order error bounds, complete trajectory escape, accepted general
+advances, rejection of a nonprogressing proposal, and reconstructed
+marginals. Independent true trajectories are confined to untimed tests and
+diagnostics. The paper table and figures are generated from retained JSON
+records by \texttt{paper\_report.py}; no numerical benchmark is rerun during
+manuscript generation.
+
 \begin{thebibliography}{99}
 \bibitem{walker} H. F. Walker and P. Ni.
 Anderson acceleration for fixed-point iterations.
@@ -645,5 +705,15 @@ dynamical systems for control. \emph{PLOS ONE}, 11(2):e0150171, 2016.
 Learning Koopman eigenfunctions and invariant subspaces from data:
 symmetric subspace decomposition. Preprint, 2019.
 \href{https://arxiv.org/abs/1909.01419}{arXiv:1909.01419}.
+
+\bibitem{peyre} G. Peyr\'e and M. Cuturi.
+Computational optimal transport.
+\emph{Foundations and Trends in Machine Learning}, 2019.
+\href{https://arxiv.org/abs/1803.00567}{arXiv:1803.00567}.
+
+\bibitem{lehmann} T. Lehmann, M.-K. von Renesse, A. Sambale, and A. Uschmajew.
+A note on overrelaxation in the Sinkhorn algorithm.
+\emph{Optimization Letters}, 16:2209--2220, 2022.
+\href{https://doi.org/10.1007/s11590-021-01830-0}{doi:10.1007/s11590-021-01830-0}.
 \end{thebibliography}
 \end{document}

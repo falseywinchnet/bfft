@@ -1823,3 +1823,39 @@ Copy each JSON immediately into `experiments/krylov_bregman/results/` with
 its unchanged filename. The structural and frozen-tangent replay diagnostics
 are in `structure_probe.py` and `phase_probe.py`; their work is separate from
 runtime discovery and must not be treated as free information for an algorithm.
+
+## Entropic transport closure applied to Sinkhorn
+
+Formal closure and measured application results are in
+`experiments/entropic_transport_closure/FORMAL_ANALYSIS.md` and
+`APPLICATION.md`. Run the exact identities, moving-rule tests, and application
+regressions on the M4 Mini with:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest discover -s experiments/entropic_transport_closure \
+  -p 'test_*.py' -v
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.run_sinkhorn \
+  --size 2048 --repeats 5 --seeds 2 --seed-start 1 \
+  --out /tmp/entropic_sinkhorn_final2048.json
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.probe_sinkhorn \
+  --out /tmp/entropic_sinkhorn_models.json
+```
+
+Repeat the timing command with sizes 256 and 1024 and matching output names.
+Copy each JSON immediately to `experiments/entropic_transport_closure/results/`;
+the model-probe receipt is named `models.json` locally. Render retained results
+with `.venv-jpeg/bin/python -m experiments.entropic_transport_closure.report_sinkhorn
+experiments/entropic_transport_closure/results`.
+The exact block-family speedup assumes supplied exact structure and is measured
+against ordinary iteration using the same block reduction. General changing-rule
+models remain approximate; include acquisition, all bounds, rejected work, and
+actual marginal checks in comparisons. Their frozen-rule control is faster in
+the retained large general-kernel cases. No Meyer algorithm is changed.

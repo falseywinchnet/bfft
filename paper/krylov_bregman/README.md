@@ -2,12 +2,15 @@
 
 **Discoverable Polynomial Transport in Mirror Geometry: Finite-Horizon Acceleration of Bregman Iterations**
 
-Research draft, September 29, 2026.
+Research draft, September 30, 2026. The current revision separates state
+closure, evolution of the transport rule, and the cost of composing either.
 
 Compile from this directory with `tectonic main.tex`, or with a conventional
 LaTeX installation using `pdflatex main.tex` twice. Bibliography entries are
 included directly. Keep `results.tex`, `discovery.tex`, `discovery_results.tex`, and
-`curved_meyer.tex`, `curved_results.tex`, and `figures/*.pdf` beside the source.
+`curved_meyer.tex`, `curved_results.tex`, `general_geometry.tex`,
+`general_geometry_results.tex`, `entropic_evolution.tex`,
+`entropic_results.tex`, `entropic_table.tex`, and `figures/*.pdf` beside the source.
 
 The experimental implementation, retained records, verification commands,
 limitations, and next questions are documented in
@@ -25,3 +28,23 @@ python3 -m experiments.krylov_bregman.general_geometry_report
 
 The desktop standalone LaTeX compiler cannot resolve this multi-file project;
 the existing Tectonic command above builds the complete PDF successfully.
+
+Section 11 develops the exact Sinkhorn conditional evolution, its moving
+metric and nonlinear remainder bounds, the projective two-group closure,
+and the measured general-kernel application. The abstract, introduction,
+research conclusion, and verification appendix are updated accordingly.
+The current results distinguish an exact structured speedup from a bounded
+general approximation whose frozen-rule control remains cheaper.
+
+The supporting experiment and original receipts are retained under
+`experiments/entropic_transport_closure/`, including its `results/` folder.
+Regenerate the new table and publication-size figures from the repository root:
+
+```sh
+python3 -m experiments.entropic_transport_closure.paper_report
+```
+
+The earlier Sinkhorn transfer study has a different marginal norm and checking
+cadence. Its records remain separate and its timings are not pooled with the
+new moving-rule study. See `APPLICATION.md` in the new experiment for precise
+method, cost, numerical-range, and floating-point certificate limitations.
