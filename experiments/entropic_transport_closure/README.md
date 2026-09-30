@@ -7,6 +7,9 @@ carried and advanced in positive-kernel Sinkhorn iteration.
   moving metric, remainder bounds, and an exact projective lift.
 * [Applied Sinkhorn results](APPLICATION.md): implemented finite models,
   matched marginal-accuracy timings, negative results, and reproduction.
+* [Finite-energy theory](FINITE_ENERGY_THEORY.md): finite remainder bounds,
+  gap-uniform second-jet transport, powered energy sums, and the separate
+  observability/acquisition obstruction, with a retained spectral audit.
 
 Example general-kernel call (NumPy arrays K,a,b):
 

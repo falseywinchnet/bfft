@@ -1859,3 +1859,24 @@ against ordinary iteration using the same block reduction. General changing-rule
 models remain approximate; include acquisition, all bounds, rejected work, and
 actual marginal checks in comparisons. Their frozen-rule control is faster in
 the retained large general-kernel cases. No Meyer algorithm is changed.
+
+Run the finite-energy theory regressions and retained acquisition audit with:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.entropic_transport_closure.test_closure \
+  experiments.entropic_transport_closure.test_sinkhorn \
+  experiments.entropic_transport_closure.test_energy_theory -v
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.study_energy_theory \
+  --acquisition-json experiments/entropic_transport_closure/results/theory/acquisition_input.json \
+  --out /tmp/entropic_energy_theory.json
+```
+
+Copy the JSON immediately into `experiments/entropic_transport_closure/results/theory/`.
+This is a theory probe with explicit fixed-point and dense-spectrum scoring
+oracles. Its gap-uniform theorem does not supply an acquisition algorithm,
+a dimension-uniform bound, or a speedup claim. See `FINITE_ENERGY_THEORY.md`.
