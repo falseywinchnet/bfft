@@ -48,3 +48,10 @@ The earlier Sinkhorn transfer study has a different marginal norm and checking
 cadence. Its records remain separate and its timings are not pooled with the
 new moving-rule study. See `APPLICATION.md` in the new experiment for precise
 method, cost, numerical-range, and floating-point certificate limitations.
+
+The prior-art discussion compares Poon--Liang finite companion forecasts,
+fitting costs and multistep error bounds; Riccati/Gaussian Sinkhorn state
+and tangent closure; Arnoldi matrix balancing; and certified Koopman
+invariance diagnostics. It separates verified overlap from comparisons
+that remain open and makes no priority claim for compact changing-rule
+evolution itself.

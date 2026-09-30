@@ -113,11 +113,26 @@ claim that applying Krylov ideas to Bregman-related iterations is itself new.
 Two particularly close precedents determine the present scope. Mai and
 Johansson apply Anderson acceleration in the pre-proximal dual coordinates
 of Bregman proximal gradient and describe a stabilization rule
-\cite{mai}. Poon and Liang analyze local trajectories of splitting methods
-and predict future increments with a small fitted recurrence
-\cite{poon2019,poon2020}. Their construction includes finite sums of reduced
-matrix powers as well as a stationary limit. Thus finite-horizon trajectory
-following is also prior art.
+\cite{mai}. Poon and Liang fit a companion recurrence to past displacements
+$v_j=z_j-z_{j-1}$, hold its coefficients fixed during a forecast, and use
+\begin{equation}
+ \bar z_{k,s}=z_k+V_k\left(\sum_{i=1}^{s}C_k^i\right)e_1,
+ \qquad V_k=[v_k,\ldots,v_{k-q+1}].
+ \label{eq:prior-finite-forecast}
+\end{equation}
+This is their finite-horizon formula, not merely a stationary extrapolation
+\cite[Section~5.1, Eq.~(5.2)]{poon2020}. Algorithm~6 there gates acceleration
+on $\rho(C_k)<1$, excluding an exact unit-eigenvalue drift; the finite
+polynomial itself remains defined at that eigenvalue. Our use of
+$p_m(1)=m$ is therefore a choice of finite-flow scope, not priority for a
+new polynomial identity.
+Their earlier ADMM analysis already discusses storage and pseudoinverse
+fitting work and bounds finite-horizon forecast error by the coefficient
+fitting residual under $v_k=Mv_{k-1}$
+\cite[Remark~4.1 and Proposition~4.3]{poon2019}.
+Cost analysis and multistep error bounds are thus also established parts of
+this program. The comparison concerns which operator is acquired, which
+nonlinear departures are controlled, and which complete costs are measured.
 
 This draft investigates a particular combination: \emph{direct current-state
 Jacobian actions, Krylov projection in a mirror-derived metric, full-state
@@ -133,10 +148,36 @@ with that work. A distinct publication contribution remains to be established
 through sharper nonlinear results and matched comparisons with the closest
 existing algorithms.
 For entropic transport, existing Sinkhorn spectral analysis and
-overrelaxation results \cite{lehmann} are essential comparators. The present
-conditional evolution and finite-displacement bounds concern how the rule
-changes along a trajectory; the reported controls do not establish an
-advantage over the full range of established optimal-transport solvers.
+overrelaxation results \cite{lehmann} are essential comparators.
+Aristodemo and Gemignani already use Arnoldi-type dominant-eigenvector
+computations to accelerate matrix balancing \cite{aristodemo}; reproducing
+an original finite trajectory is a different target from accelerating its
+limiting solution. Gaussian Sinkhorn and Riccati theory already provide
+closed nonlinear evolution and compact products of changing matrices
+\cite{akyildiz,delmoralhorton}; Section~\ref{sec:entropic-evolution} states
+the precise overlap with the projective example here. These precedents
+preclude a general novelty claim for evolving-rule closure.
+
+Learning optimizer trajectories for acceleration is itself an active line
+of work. QuACK alternates ordinary gradient-based steps with learned Koopman
+forecasts, evaluates candidate losses, and restarts from the best candidate,
+including the last ordinary iterate as a fallback \cite{quack}. Its DMD,
+sliding-window, and neural embeddings directly overlap the proposed
+acquire--forecast--validate workflow. That loss safeguard does not itself
+bound departure from the original orbit; our finite-trajectory bounds address
+that separate requirement. Neither the workflow nor acquisition-aware
+acceleration is claimed as new here.
+
+Certified discovery also has close comparators. Conradie et al. quantify
+Koopman subspace invariance through principal angles and give multistep
+error bounds, including pointwise guarantees in a reproducing-kernel Hilbert
+space \cite{conradie}. A fixed lifted operator with nonlinear decoding can
+have changing physical derivatives, so it cannot be dismissed as a frozen
+physical Jacobian. Our geometry-specific trajectory and escape bounds and
+measured optimizer costs must be compared with the assumptions and guarantees
+of those methods; a complete theorem-level and matched computational
+comparison remains open. The controls reported here do not establish an
+advantage over that literature or the full range of optimal-transport solvers.
 
 \section{Mirror coordinates expose a symmetric local propagator}
 Let $\psi$ be a Legendre mirror on an open convex primal domain, and assume
@@ -715,5 +756,30 @@ Computational optimal transport.
 A note on overrelaxation in the Sinkhorn algorithm.
 \emph{Optimization Letters}, 16:2209--2220, 2022.
 \href{https://doi.org/10.1007/s11590-021-01830-0}{doi:10.1007/s11590-021-01830-0}.
+
+\bibitem{aristodemo} A. Aristodemo and L. Gemignani.
+Accelerating the Sinkhorn--Knopp iteration by Arnoldi-type methods.
+Preprint, 2018, revised 2019.
+\href{https://arxiv.org/abs/1810.09700}{arXiv:1810.09700}.
+
+\bibitem{delmoralhorton} P. Del Moral and E. Horton.
+A note on Riccati matrix difference equations.
+\emph{SIAM Journal on Control and Optimization}, 60(3):1393--1409, 2022.
+\href{https://arxiv.org/abs/2107.12918}{arXiv:2107.12918}.
+
+\bibitem{akyildiz} O. D. Akyildiz, P. Del Moral, and J. Miguez.
+Gaussian entropic optimal transport: Schr\"odinger bridges and the Sinkhorn algorithm.
+Preprint, arXiv version 5, 2025.
+\href{https://arxiv.org/abs/2412.18432v5}{arXiv:2412.18432v5}.
+
+\bibitem{conradie} G. Conradie, N. Boull\'e, J.-C. Loiseau,
+S. L. Brunton, and M. J. Colbrook.
+Trustworthy Koopman operator learning: invariance diagnostics and error bounds.
+Preprint, March 16, 2026.
+\href{https://arxiv.org/abs/2603.15091}{arXiv:2603.15091}.
+\bibitem{quack} D. Luo, J. Shen, R. Dangovski, and M. Solja\v{c}i\'c.
+QuACK: accelerating gradient-based quantum optimization with Koopman operator learning.
+\emph{NeurIPS}, 2023.
+\href{https://arxiv.org/abs/2211.01365}{arXiv:2211.01365}.
 \end{thebibliography}
 \end{document}

@@ -20,6 +20,28 @@ its conditional geometry around the present state-and-rule closure question;
 we do not claim priority for matrix scaling, exponential reweighting,
 projective matrix powers, or nonlinear reduced modeling.
 
+A close structural precedent is Gaussian Sinkhorn closure through
+Kalman/Riccati recursions \cite{akyildiz}. In the notation of its
+Appendix~A, Theorem~A.4 compresses a directed product of changing matrices as
+\begin{equation}
+ E_n(u)=(I+u_\infty)^{-n}
+ [I+(u-u_\infty)G_n]^{-1},\qquad
+ G_n=\sum_{j=0}^{n-1}(I+u_\infty)^{-(2j+1)}.
+ \label{eq:prior-riccati-product}
+\end{equation}
+Its Eq.~(A.14) gives
+$u_n-\bar u_n=E_n(u_0)(u_0-\bar u_0)E_n(\bar u_0)^T$.
+Differentiating this identity at equal interior initial conditions yields
+$D R^n(u)[H]=E_n(u)H E_n(u)^T$; this tangent interpretation follows directly
+from the stated finite-difference identity. The formula draws on the
+Floquet-type representation of Del Moral and Horton \cite{delmoralhorton}.
+Thus exact composition of a nonlinear state and its accumulated tangent is
+already available for a supplied Riccati family. The discrete conditional
+bounds below concern a different map and geometry; the two-group lift is a
+concrete structured example, not a claim to originate compact changing-rule
+transport. Discovery of useful general discrete closure with a net cost
+advantage remains unresolved.
+
 \subsection{An instantaneous metric determined by the displacement}
 Let $K\in\R_{>0}^{m\times n}$ and let $a,b$ be positive marginals of equal
 total mass. All exponentials, logarithms, and vector quotients below are
