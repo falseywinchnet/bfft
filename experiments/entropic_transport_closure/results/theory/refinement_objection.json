@@ -1,0 +1,83 @@
+{
+  "scope": "identical physical chain represented with duplicated atoms",
+  "cases": [
+    {
+      "amplitude": 0.1423610433604175,
+      "cmin": 0.33333333333333326,
+      "actual_initial_radius": 0.32,
+      "certified_jet_radius": 0.3808,
+      "log10_uniform_bound": -1.1526507599607205,
+      "radius_inflation": 1.1900000000000002,
+      "copies": 1,
+      "states": 3,
+      "energy": 0.018968000000000002,
+      "second_jet_error_64": 0.00017543517291907645,
+      "one_step_centered_c2_to_infinity": 0.13209844813623145
+    },
+    {
+      "amplitude": 0.1423610433604175,
+      "cmin": 0.16666666666666666,
+      "actual_initial_radius": 0.32,
+      "certified_jet_radius": 0.4416,
+      "log10_uniform_bound": -0.693202835570118,
+      "radius_inflation": 1.38,
+      "copies": 2,
+      "states": 6,
+      "energy": 0.018968000000000006,
+      "second_jet_error_64": 0.0001754351729190834,
+      "one_step_centered_c2_to_infinity": 0.13209844813623062
+    },
+    {
+      "amplitude": 0.1423610433604175,
+      "cmin": 0.08333333333333333,
+      "actual_initial_radius": 0.32,
+      "certified_jet_radius": 0.5632,
+      "log10_uniform_bound": -0.19050884178091002,
+      "radius_inflation": 1.76,
+      "copies": 4,
+      "states": 12,
+      "energy": 0.018968000000000006,
+      "second_jet_error_64": 0.00017543517291887002,
+      "one_step_centered_c2_to_infinity": 0.13209844813623228
+    },
+    {
+      "amplitude": 0.1423610433604175,
+      "cmin": 0.041666666666666664,
+      "actual_initial_radius": 0.32,
+      "certified_jet_radius": 0.8064000000000002,
+      "log10_uniform_bound": 0.3804595573081827,
+      "radius_inflation": 2.5200000000000005,
+      "copies": 8,
+      "states": 24,
+      "energy": 0.018968000000000002,
+      "second_jet_error_64": 0.00017543517291794888,
+      "one_step_centered_c2_to_infinity": 0.13209844813622978
+    },
+    {
+      "amplitude": 0.14236104336041744,
+      "cmin": 0.02083333333333332,
+      "actual_initial_radius": 0.32,
+      "certified_jet_radius": 1.2928,
+      "log10_uniform_bound": 1.07806469370014,
+      "radius_inflation": 4.04,
+      "copies": 16,
+      "states": 48,
+      "energy": 0.018968000000000002,
+      "second_jet_error_64": 0.00017543517291844155,
+      "one_step_centered_c2_to_infinity": 0.13209844813622892
+    },
+    {
+      "amplitude": 0.14236104336041738,
+      "cmin": 0.01041666666666665,
+      "actual_initial_radius": 0.32,
+      "certified_jet_radius": 2.2656,
+      "log10_uniform_bound": 2.056644609021162,
+      "radius_inflation": 7.08,
+      "copies": 32,
+      "states": 96,
+      "energy": 0.018968000000000006,
+      "second_jet_error_64": 0.00017543517291931585,
+      "one_step_centered_c2_to_infinity": 0.13209844813622892
+    }
+  ]
+}

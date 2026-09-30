@@ -1,0 +1,7 @@
+2026-09-30 M4 Mini, selected through m4host (m4mini).
+Combined 29-test run: test_gaussian_closure, test_claude_objections, test_energy_theory, test_closure, test_sinkhorn. All passed, 0.101 s.
+After adding duplicated-atom control: all 5 test_claude_objections tests passed, 0.031 s. 30 distinct tests covered across these runs.
+14 problem cases and 42 causal residual anchors in claude_objections.json; noise report refined to include future and window-normalized error, then all 14 cases rerun.
+12 continuous Gaussian cases, 60 powered-horizon comparisons, with long anisotropic numerical failures retained in gaussian_closure.json.
+6 representation refinements in refinement_objection.json.
+Results copied back immediately from /tmp.

@@ -10,6 +10,9 @@ carried and advanced in positive-kernel Sinkhorn iteration.
 * [Finite-energy theory](FINITE_ENERGY_THEORY.md): finite remainder bounds,
   gap-uniform second-jet transport, powered energy sums, and the separate
   observability/acquisition obstruction, with a retained spectral audit.
+* [Objection tests and Gaussian controls](CLAUDE_OBJECTIONS.md): cluster size,
+  approximate rule observability, history prediction, radius and partial cost
+  screens, and exact continuous Gaussian covariance closure at fixed scale.
 
 Example general-kernel call (NumPy arrays K,a,b):
 

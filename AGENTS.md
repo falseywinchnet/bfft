@@ -1880,3 +1880,34 @@ Copy the JSON immediately into `experiments/entropic_transport_closure/results/t
 This is a theory probe with explicit fixed-point and dense-spectrum scoring
 oracles. Its gap-uniform theorem does not supply an acquisition algorithm,
 a dimension-uniform bound, or a speedup claim. See `FINITE_ENERGY_THEORY.md`.
+
+Test the acquisition objections and continuous Gaussian controls on the Mini:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.entropic_transport_closure.test_claude_objections \
+  experiments.entropic_transport_closure.test_gaussian_closure -v
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.probe_claude_objections \
+  --out /tmp/claude_objections.json
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.probe_claude_objections \
+  --duplication-only --out /tmp/refinement_objection.json
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.probe_gaussian_closure \
+  --out /tmp/gaussian_closure.json
+```
+
+Copy all three JSONs immediately into `experiments/entropic_transport_closure/results/theory/`.
+`CLAUDE_OBJECTIONS.md` distinguishes scoring oracles, optimistic partial costs,
+and noise-resolved history predictions from an actual acquisition algorithm.
+The Gaussian probe is continuous, at fixed regularization, and retains the
+numerical failures of naive matrix block powering as well as the successful
+closed-form marginal checks.

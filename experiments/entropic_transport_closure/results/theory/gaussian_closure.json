@@ -1,0 +1,665 @@
+{
+  "scope": "exact continuous Gaussian covariance controls at fixed regularization; no annealing and no point-cloud approximation",
+  "cases": [
+    {
+      "case": "isotropic",
+      "t": 1.0,
+      "dimension": 2,
+      "precision_parameter_count": 1,
+      "degree1_eigenvalues": [
+        0.4999999999999999,
+        0.4999999999999999
+      ],
+      "degree1_gap_between_directions": 0.0,
+      "closed_form_marginal_relative_error": 0.0,
+      "fixed_point_relative_defect": 0.0,
+      "horizons": [
+        {
+          "horizon": 1,
+          "jump_relative_error": 0.0,
+          "denominator_condition": 1.0,
+          "block_multiplications": 2,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.0
+        },
+        {
+          "horizon": 16,
+          "jump_relative_error": 0.0,
+          "denominator_condition": 1.0,
+          "block_multiplications": 6,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.0
+        },
+        {
+          "horizon": 64,
+          "jump_relative_error": 0.0,
+          "denominator_condition": 1.0,
+          "block_multiplications": 8,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.0
+        },
+        {
+          "horizon": 256,
+          "jump_relative_error": 0.0,
+          "denominator_condition": 1.0,
+          "block_multiplications": 10,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.0
+        },
+        {
+          "horizon": 2048,
+          "jump_relative_error": 0.0,
+          "denominator_condition": 1.0,
+          "block_multiplications": 13,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.0
+        }
+      ]
+    },
+    {
+      "case": "isotropic",
+      "t": 0.1,
+      "dimension": 2,
+      "precision_parameter_count": 1,
+      "degree1_eigenvalues": [
+        0.9317451415095753,
+        0.9317451415095753
+      ],
+      "degree1_gap_between_directions": 0.0,
+      "closed_form_marginal_relative_error": 0.0,
+      "fixed_point_relative_defect": 0.0,
+      "horizons": [
+        {
+          "horizon": 1,
+          "jump_relative_error": 1.852125614540546e-16,
+          "denominator_condition": 1.0,
+          "block_multiplications": 2,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.30925228558905243
+        },
+        {
+          "horizon": 16,
+          "jump_relative_error": 1.4091325016638197e-15,
+          "denominator_condition": 1.0,
+          "block_multiplications": 6,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.032507457391860756
+        },
+        {
+          "horizon": 64,
+          "jump_relative_error": 1.576127934137123e-15,
+          "denominator_condition": 1.0,
+          "block_multiplications": 8,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 3.6080183943033575e-05
+        },
+        {
+          "horizon": 256,
+          "jump_relative_error": 2.1824097246317127e-15,
+          "denominator_condition": 1.0,
+          "block_multiplications": 10,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 3.6373495410528564e-16
+        },
+        {
+          "horizon": 2048,
+          "jump_relative_error": 2.1824097246317127e-15,
+          "denominator_condition": 1.0,
+          "block_multiplications": 13,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 3.6373495410528564e-16
+        }
+      ]
+    },
+    {
+      "case": "isotropic",
+      "t": 0.01,
+      "dimension": 2,
+      "precision_parameter_count": 1,
+      "degree1_eigenvalues": [
+        0.9929538879940988,
+        0.9929538879940988
+      ],
+      "degree1_gap_between_directions": 0.0,
+      "closed_form_marginal_relative_error": 0.0,
+      "fixed_point_relative_defect": 0.0,
+      "horizons": [
+        {
+          "horizon": 1,
+          "jump_relative_error": 0.0,
+          "denominator_condition": 1.0,
+          "block_multiplications": 2,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.4023158161447515
+        },
+        {
+          "horizon": 16,
+          "jump_relative_error": 3.049699179304388e-16,
+          "denominator_condition": 1.0,
+          "block_multiplications": 6,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.3133265694191068
+        },
+        {
+          "horizon": 64,
+          "jump_relative_error": 1.9197338018512994e-15,
+          "denominator_condition": 1.0,
+          "block_multiplications": 8,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.14749660936297174
+        },
+        {
+          "horizon": 256,
+          "jump_relative_error": 2.7783064884546962e-15,
+          "denominator_condition": 1.0,
+          "block_multiplications": 10,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.009131168318540016
+        },
+        {
+          "horizon": 2048,
+          "jump_relative_error": 3.2042007687325803e-15,
+          "denominator_condition": 1.0,
+          "block_multiplications": 13,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 9.272155974520764e-14
+        }
+      ]
+    },
+    {
+      "case": "isotropic",
+      "t": 0.001,
+      "dimension": 2,
+      "precision_parameter_count": 1,
+      "degree1_eigenvalues": [
+        0.999293143174619,
+        0.999293143174619
+      ],
+      "degree1_gap_between_directions": 0.0,
+      "closed_form_marginal_relative_error": 1.1102230246251565e-16,
+      "fixed_point_relative_defect": 1.6072063439894919e-16,
+      "horizons": [
+        {
+          "horizon": 1,
+          "jump_relative_error": 1.137435958895949e-16,
+          "denominator_condition": 1.0,
+          "block_multiplications": 2,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.4130082062374086
+        },
+        {
+          "horizon": 16,
+          "jump_relative_error": 1.1458817013243682e-15,
+          "denominator_condition": 1.0,
+          "block_multiplications": 6,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.40259360292772045
+        },
+        {
+          "horizon": 64,
+          "jump_relative_error": 4.102213615243241e-15,
+          "denominator_condition": 1.0,
+          "block_multiplications": 8,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.3712650611515446
+        },
+        {
+          "horizon": 256,
+          "jump_relative_error": 1.3656656341778335e-14,
+          "denominator_condition": 1.0,
+          "block_multiplications": 10,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.2710159852222084
+        },
+        {
+          "horizon": 2048,
+          "jump_relative_error": 3.359150567215027e-14,
+          "denominator_condition": 1.0,
+          "block_multiplications": 13,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.019111660581447417
+        }
+      ]
+    },
+    {
+      "case": "anisotropic_commuting",
+      "t": 1.0,
+      "dimension": 2,
+      "precision_parameter_count": 3,
+      "degree1_eigenvalues": [
+        0.2679491924311227,
+        0.6666666666666666
+      ],
+      "degree1_gap_between_directions": 0.39871747423554393,
+      "closed_form_marginal_relative_error": 2.808666774861361e-16,
+      "fixed_point_relative_defect": 1.3115963749951656e-16,
+      "horizons": [
+        {
+          "horizon": 1,
+          "jump_relative_error": 6.661338147750939e-17,
+          "denominator_condition": 2.0,
+          "block_multiplications": 2,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.019310895263243824
+        },
+        {
+          "horizon": 16,
+          "jump_relative_error": 2.3645139913788825e-16,
+          "denominator_condition": 1700586.645208308,
+          "block_multiplications": 6,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 1.3115963749951656e-16
+        },
+        {
+          "horizon": 64,
+          "jump_relative_error": 3.5315813198945785e-16,
+          "denominator_condition": 1.7049066751636092e+25,
+          "block_multiplications": 8,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 1.3115963749951656e-16
+        },
+        {
+          "horizon": 256,
+          "jump_relative_error": 2.3645139913788825e-16,
+          "denominator_condition": 1.7222968165952588e+101,
+          "block_multiplications": 10,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 1.3115963749951656e-16
+        },
+        {
+          "horizon": 2048,
+          "jump_relative_error": null,
+          "denominator_condition": null,
+          "block_multiplications": null,
+          "failure": "Singular matrix",
+          "ordinary_relative_error_to_fixed": 1.3115963749951656e-16
+        }
+      ]
+    },
+    {
+      "case": "anisotropic_commuting",
+      "t": 0.1,
+      "dimension": 2,
+      "precision_parameter_count": 3,
+      "degree1_eigenvalues": [
+        0.8682255312124213,
+        0.9600000000000003
+      ],
+      "degree1_gap_between_directions": 0.091774468787579,
+      "closed_form_marginal_relative_error": 1.9860273225978183e-16,
+      "fixed_point_relative_defect": 0.0,
+      "horizons": [
+        {
+          "horizon": 1,
+          "jump_relative_error": 1.3085723436445865e-16,
+          "denominator_condition": 1.142857142857143,
+          "block_multiplications": 2,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.20551947229336787
+        },
+        {
+          "horizon": 16,
+          "jump_relative_error": 4.657525435453487e-16,
+          "denominator_condition": 5.427234159450115,
+          "block_multiplications": 6,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.0373267030695003
+        },
+        {
+          "horizon": 64,
+          "jump_relative_error": 9.484048786326328e-16,
+          "denominator_condition": 659.3396113474037,
+          "block_multiplications": 8,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.0007221488092154611
+        },
+        {
+          "horizon": 256,
+          "jump_relative_error": 1.1714878518694554e-15,
+          "denominator_condition": 157586656259.3695,
+          "block_multiplications": 10,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 1.1234820725551636e-10
+        },
+        {
+          "horizon": 2048,
+          "jump_relative_error": 2.2413821728865333e-15,
+          "denominator_condition": 2.500545239308542e+89,
+          "block_multiplications": 13,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 1.7497061254759674e-15
+        }
+      ]
+    },
+    {
+      "case": "anisotropic_commuting",
+      "t": 0.01,
+      "dimension": 2,
+      "precision_parameter_count": 3,
+      "degree1_eigenvalues": [
+        0.9859575108272975,
+        0.995925841923531
+      ],
+      "degree1_gap_between_directions": 0.009968331096233407,
+      "closed_form_marginal_relative_error": 1.7554167342883504e-16,
+      "fixed_point_relative_defect": 0.0,
+      "horizons": [
+        {
+          "horizon": 1,
+          "jump_relative_error": 1.0105351880281318e-16,
+          "denominator_condition": 1.0149253731343284,
+          "block_multiplications": 2,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.3056363983489998
+        },
+        {
+          "horizon": 16,
+          "jump_relative_error": 1.9323304047334765e-15,
+          "denominator_condition": 1.2446865444238648,
+          "block_multiplications": 6,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.21391726522548185
+        },
+        {
+          "horizon": 64,
+          "jump_relative_error": 7.101165357346733e-15,
+          "denominator_condition": 2.131237706880101,
+          "block_multiplications": 8,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.10208480838113357
+        },
+        {
+          "horizon": 256,
+          "jump_relative_error": 1.598828518139648e-14,
+          "denominator_condition": 14.400893319405286,
+          "block_multiplications": 10,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.018887835034464895
+        },
+        {
+          "horizon": 2048,
+          "jump_relative_error": 1.8780916635673267e-14,
+          "denominator_condition": 959224601.9961286,
+          "block_multiplications": 13,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 8.24756023773053e-09
+        }
+      ]
+    },
+    {
+      "case": "anisotropic_commuting",
+      "t": 0.001,
+      "dimension": 2,
+      "precision_parameter_count": 3,
+      "degree1_eigenvalues": [
+        0.9985867860840741,
+        0.9995918350343642
+      ],
+      "degree1_gap_between_directions": 0.0010050489502900772,
+      "closed_form_marginal_relative_error": 3.5108334685767007e-16,
+      "fixed_point_relative_defect": 1.0520938852474405e-16,
+      "horizons": [
+        {
+          "horizon": 1,
+          "jump_relative_error": 8.043547705659224e-17,
+          "denominator_condition": 1.0014992503748126,
+          "block_multiplications": 2,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.3185200445801889
+        },
+        {
+          "horizon": 16,
+          "jump_relative_error": 2.1293492063194865e-15,
+          "denominator_condition": 1.0240299512832165,
+          "block_multiplications": 6,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.30600365547310837
+        },
+        {
+          "horizon": 64,
+          "jump_relative_error": 8.299776193555908e-15,
+          "denominator_condition": 1.0967412620459602,
+          "block_multiplications": 8,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.2707319638785882
+        },
+        {
+          "horizon": 256,
+          "jump_relative_error": 2.754637950808636e-14,
+          "denominator_condition": 1.401854302815961,
+          "block_multiplications": 10,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.17951697669728944
+        },
+        {
+          "horizon": 2048,
+          "jump_relative_error": 9.064983735627904e-14,
+          "denominator_condition": 8.67431042224358,
+          "block_multiplications": 13,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.029214273159965137
+        }
+      ]
+    },
+    {
+      "case": "anisotropic_rotated",
+      "t": 1.0,
+      "dimension": 2,
+      "precision_parameter_count": 3,
+      "degree1_eigenvalues": [
+        0.2867936437162336,
+        0.6503823800933403
+      ],
+      "degree1_gap_between_directions": 0.36358873637710665,
+      "closed_form_marginal_relative_error": 3.813741331030777e-16,
+      "fixed_point_relative_defect": 4.559921988742016e-16,
+      "horizons": [
+        {
+          "horizon": 1,
+          "jump_relative_error": 1.3904521790664242e-16,
+          "denominator_condition": 2.0,
+          "block_multiplications": 2,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.059106880142527844
+        },
+        {
+          "horizon": 16,
+          "jump_relative_error": 3.889090299602078e-12,
+          "denominator_condition": 418106.32200828067,
+          "block_multiplications": 6,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 2.054976133693023e-08
+        },
+        {
+          "horizon": 64,
+          "jump_relative_error": 6.751934620103531,
+          "denominator_condition": 9.37041718971388e+17,
+          "block_multiplications": 8,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 5.742088505461649e-16
+        },
+        {
+          "horizon": 256,
+          "jump_relative_error": 0.7005565080567968,
+          "denominator_condition": 1.3458088973834462e+17,
+          "block_multiplications": 10,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 5.742088505461649e-16
+        },
+        {
+          "horizon": 2048,
+          "jump_relative_error": 2.357169781972299,
+          "denominator_condition": 3.1019516032091494e+17,
+          "block_multiplications": 13,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 5.742088505461649e-16
+        }
+      ]
+    },
+    {
+      "case": "anisotropic_rotated",
+      "t": 0.1,
+      "dimension": 2,
+      "precision_parameter_count": 3,
+      "degree1_eigenvalues": [
+        0.8753958020629697,
+        0.9575775347293347
+      ],
+      "degree1_gap_between_directions": 0.08218173266636497,
+      "closed_form_marginal_relative_error": 1.7554167342883504e-16,
+      "fixed_point_relative_defect": 1.6590258781207495e-16,
+      "horizons": [
+        {
+          "horizon": 1,
+          "jump_relative_error": 0.0,
+          "denominator_condition": 1.1428571428571428,
+          "block_multiplications": 2,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.2526547309595411
+        },
+        {
+          "horizon": 16,
+          "jump_relative_error": 7.501560394939364e-16,
+          "denominator_condition": 4.762091795272297,
+          "block_multiplications": 6,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.029385958218257773
+        },
+        {
+          "horizon": 64,
+          "jump_relative_error": 1.0126697431483087e-14,
+          "denominator_condition": 345.5309795781149,
+          "block_multiplications": 8,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.0004716892303727076
+        },
+        {
+          "horizon": 256,
+          "jump_relative_error": 1.8429975771579757e-07,
+          "denominator_condition": 10482353312.797857,
+          "block_multiplications": 10,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 2.7877564941470294e-11
+        },
+        {
+          "horizon": 2048,
+          "jump_relative_error": 3.1989531954706294,
+          "denominator_condition": 1.2677475872459715e+17,
+          "block_multiplications": 13,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 1.0587263128286357e-15
+        }
+      ]
+    },
+    {
+      "case": "anisotropic_rotated",
+      "t": 0.01,
+      "dimension": 2,
+      "precision_parameter_count": 3,
+      "degree1_eigenvalues": [
+        0.9867706485005634,
+        0.9956741888780223
+      ],
+      "degree1_gap_between_directions": 0.008903540377458885,
+      "closed_form_marginal_relative_error": 3.14018491736755e-16,
+      "fixed_point_relative_defect": 1.7960824122582037e-16,
+      "horizons": [
+        {
+          "horizon": 1,
+          "jump_relative_error": 2.0210499281223377e-16,
+          "denominator_condition": 1.0149253731343284,
+          "block_multiplications": 2,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.34889916086819034
+        },
+        {
+          "horizon": 16,
+          "jump_relative_error": 2.3608570877535016e-15,
+          "denominator_condition": 1.2404599275338613,
+          "block_multiplications": 6,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.23974709063896052
+        },
+        {
+          "horizon": 64,
+          "jump_relative_error": 4.664861825711102e-15,
+          "denominator_condition": 2.0534855560320975,
+          "block_multiplications": 8,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.09839136991062436
+        },
+        {
+          "horizon": 256,
+          "jump_relative_error": 3.228616630955825e-15,
+          "denominator_condition": 11.360669788456951,
+          "block_multiplications": 10,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.01453832342028788
+        },
+        {
+          "horizon": 2048,
+          "jump_relative_error": 1.017613848019071e-09,
+          "denominator_condition": 109905695.30253197,
+          "block_multiplications": 13,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 2.693012213108458e-09
+        }
+      ]
+    },
+    {
+      "case": "anisotropic_rotated",
+      "t": 0.001,
+      "dimension": 2,
+      "precision_parameter_count": 3,
+      "degree1_eigenvalues": [
+        0.9986691127845331,
+        0.9995665741687196
+      ],
+      "degree1_gap_between_directions": 0.0008974613841865597,
+      "closed_form_marginal_relative_error": 7.177915983922306e-16,
+      "fixed_point_relative_defect": 1.0197648322768798e-16,
+      "horizons": [
+        {
+          "horizon": 1,
+          "jump_relative_error": 2.2750586518859414e-16,
+          "denominator_condition": 1.0014992503748126,
+          "block_multiplications": 2,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.36127574754370306
+        },
+        {
+          "horizon": 16,
+          "jump_relative_error": 1.558222297165515e-15,
+          "denominator_condition": 1.0239888027546993,
+          "block_multiplications": 6,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.3467641215939862
+        },
+        {
+          "horizon": 64,
+          "jump_relative_error": 5.112128590434017e-15,
+          "denominator_condition": 1.0960451913336728,
+          "block_multiplications": 8,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.3055635857289902
+        },
+        {
+          "horizon": 256,
+          "jump_relative_error": 1.7457185828813808e-14,
+          "denominator_condition": 1.39025461573357,
+          "block_multiplications": 10,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.1957205193918763
+        },
+        {
+          "horizon": 2048,
+          "jump_relative_error": 6.699770784834394e-14,
+          "denominator_condition": 7.227855335136791,
+          "block_multiplications": 13,
+          "failure": null,
+          "ordinary_relative_error_to_fixed": 0.022796396092953572
+        }
+      ]
+    }
+  ]
+}
