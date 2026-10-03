@@ -1,0 +1,25 @@
+cmake_minimum_required(VERSION 3.16)
+project(zc_phys CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
+add_library(zc_phys STATIC hull.cpp collide.cpp block_ldl.cpp solver.cpp world.cpp)
+target_include_directories(zc_phys PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+if(MSVC)
+    target_compile_options(zc_phys PUBLIC /fp:precise /W4)
+else()
+    target_compile_options(zc_phys PUBLIC -ffp-contract=off -Wall -Wextra)
+endif()
+
+add_executable(phys_bench tools/phys_bench.cpp)
+target_link_libraries(phys_bench PRIVATE zc_phys)
+
+add_executable(phys_tests tests/phys_tests.cpp)
+target_link_libraries(phys_tests PRIVATE zc_phys)
+enable_testing()
+add_test(NAME phys_tests COMMAND phys_tests)

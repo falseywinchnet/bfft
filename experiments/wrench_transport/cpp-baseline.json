@@ -1,0 +1,20 @@
+{
+  "captured_date": "2026-10-03",
+  "source": "Zen Construction current C++ engine snapshot, received before standalone optimization",
+  "files": {
+    "CMakeLists.txt": "d7e9e94df76303422fd14a1774ac4956ba1d0f2258af9057802c8812db5d28e3",
+    "NOTES.md": "dffaa3004fd74ec1d46285ddddc484faf30284a7dcad9b0697b80a0861190720",
+    "block_ldl.cpp": "a30b0177990a98c746e8fac5c6f46ebbfa6f622190237a658e555ba346470422",
+    "block_ldl.hpp": "23c1a058f9884abf75625ec2b70994063f258c1eb6c3ea97d4ba8331658d143d",
+    "collide.cpp": "9d871d3b1a4a6ae47cc8253d62cfba6aab1451dc8d6564dd695ca39ff6fdc9c3",
+    "collide.hpp": "1cc333135b1f609395b27064f331877d44260fff86923edb9cbd11b0095255a0",
+    "hull.cpp": "2ca788cc6c402eaf98104ae916773032357940738d4ffc2f672dcf43c1d3356a",
+    "internal.hpp": "8118ea58e7e18821987aa55d48c0f512c92bd0ec34adad7c6b23ad46c09c42c5",
+    "math.hpp": "59d3629778a6f8a9a63b905dab0d52f683acb18a60e0d03f24978ab08c2d4a21",
+    "physics.hpp": "ce6b679330a1f1c4b3007552ae8409dbbd12c2f86afbb1196f12d191e233acb7",
+    "solver.cpp": "7cba1208964beb29f51946aed62d08233f1d0d8eea7491bfabcac50e17d6dbda",
+    "tests/phys_tests.cpp": "9c99e024f6bd559b32807d160e50f981f7c331765b6159f32ee3703ca3590d20",
+    "tools/phys_bench.cpp": "7a15caec2a7893f6fda502c44e87a2d382975f1e7e79b1a225363163c888a05e",
+    "world.cpp": "0002c76ced4f46057d75af576e278fe340b50201cb87ab0f44e2a8d5bbbc2a95"
+  }
+}
