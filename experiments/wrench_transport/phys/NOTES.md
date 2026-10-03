@@ -1,3 +1,14 @@
+# Standalone C++ engine notes
+
+This is the standalone snapshot of the current Zen Construction engine, followed
+by a measured native optimization. The source baseline is commit `fcdb0a3`.
+The [native study](../NATIVE_STUDY.md) supersedes the historical timing tables below.
+Small vector and quaternion functions are now inline in `physics.hpp`; the
+contact algorithm, tolerances, cache rules, and integration order are unchanged.
+CMake supports embedding, installation, and an external `find_package` consumer.
+
+The original implementation notes are retained below for provenance.
+
 # zc::phys notes
 
 State on 2026-10-03: the engine core is ported from the JavaScript prototype

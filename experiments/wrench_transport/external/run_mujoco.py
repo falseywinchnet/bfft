@@ -121,6 +121,8 @@ def main():
         if contact.geom1 == floor_geom or contact.geom2 == floor_geom:
             floor_force += vertical
 
+    # Refresh kinematics at the integrated final qpos before exporting poses.
+    mujoco.mj_forward(model, data)
     final_poses = []
     for index in range(body_count):
         body_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "b%d" % index)

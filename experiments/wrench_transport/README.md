@@ -1,13 +1,34 @@
-# Wrench transport: a rigid-body contact solver for rock stacking
+# Wrench transport: a standalone rigid-body contact engine
 
-A JavaScript prototype of a 3-D rigid-body engine for convex rocks (gravity,
-unilateral contact, Coulomb friction, sleeping), written to the scope of the
-Zen Construction specification (`~/solitaire_sounds/zen/PHYSICS_SPEC.md`) and
-measured against that specification's own solver. No dependencies.
+The current implementation is the dependency-free **C++20 library in [phys/](phys/)**.
+It supports convex and compound rigid bodies, static geometry, contact friction,
+restitution, rolling resistance, retained impulses, sleeping islands, and a crane hold.
+The JavaScript files alongside it preserve the earlier research prototype.
 
-Measured results, the design's derivation, the approaches that were tried and
-dropped, and the open limits are in [FINDINGS.md](FINDINGS.md). This file says
-what the pieces are and how to run them.
+The [engine comparison](COMPARISON.md) evaluates the finished engine against
+MuJoCo and Rapier on common mixed-shape packing scenes.
+The separate [native study](NATIVE_STUDY.md) reports the implementation optimization: **18.2% less
+step time**, with identical trajectory checksums across seven mixed-shape scenes.
+The [short paper](../../paper/wrench-transport/wrench-transport.pdf) explains the
+contact-as-transport intuition, its mathematical implementation, and its limits.
+
+```sh
+cmake -S experiments/wrench_transport/phys -B build/wrench -DCMAKE_BUILD_TYPE=Release
+cmake --build build/wrench -j4
+ctest --test-dir build/wrench --output-on-failure
+build/wrench/wrench_minimal
+```
+
+Embed with `add_subdirectory(...)` and link `Wrench::Physics`, or install with
+`cmake --install build/wrench --prefix /your/prefix`, then use
+`find_package(WrenchPhysics CONFIG REQUIRED)` and the same target. Include
+`<physics.hpp>`; the preserved public namespace is `zc::phys`. No game, rendering,
+windowing, or third-party physics dependency is required. See
+[the minimal example](phys/examples/minimal.cpp) and [API](phys/physics.hpp).
+For library-only builds, set `WRENCH_BUILD_TESTS=OFF` and `WRENCH_BUILD_TOOLS=OFF`.
+
+The sections below describe the historical prototype and its experiments; their
+JavaScript timings are not the current C++ measurements.
 
 ## The idea in one paragraph
 

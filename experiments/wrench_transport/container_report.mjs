@@ -3,8 +3,8 @@
 //
 //   node container_report.mjs --seed 1 --out report.json result1.json result2.json ...
 //
-// Overlap is measured with this experiment's own narrow phase on the final
-// poses, so every engine is judged by the same ruler.
+// Overlap uses exhaustive SAT on exported hulls, independently of each
+// engine's contact manifold construction.
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { v3, quatIdentity, quatRotate } from "./math3.mjs";
@@ -107,16 +107,31 @@ function scoreResult(scene, wallHulls, result) {
     };
 }
 
-function overlapDepth(hullA, hullB) {
-    if (!boundsOverlap(hullA, hullB, 0)) {
-        return 0;
+// Independent exhaustive SAT depth. No manifold-generation or Gauss-map pruning.
+function overlapDepth(a, b) {
+    if (!boundsOverlap(a, b, 0)) return 0;
+    let best = -Infinity;
+    function testAxis(x, y, z) {
+        const norm = Math.hypot(x, y, z);
+        if (norm < 1e-12) return false;
+        let amin=Infinity, amax=-Infinity, bmin=Infinity, bmax=-Infinity;
+        for (const p of a.vertices) { const d=x*p.x+y*p.y+z*p.z; amin=Math.min(amin,d); amax=Math.max(amax,d); }
+        for (const p of b.vertices) { const d=x*p.x+y*p.y+z*p.z; bmin=Math.min(bmin,d); bmax=Math.max(bmax,d); }
+        best=Math.max(best, Math.max(bmin-amax,amin-bmax)/norm);
+        return best >= 0;
     }
-    const points = collideHulls(hullA, hullB, 0);
-    let depth = 0;
-    for (let k = 0; k < points.length; k += 1) {
-        depth = Math.max(depth, -points[k].separation);
+    for(const n of a.normals) if(testAxis(n.x,n.y,n.z)) return 0;
+    for(const n of b.normals) if(testAxis(n.x,n.y,n.z)) return 0;
+    for(const ea of a.hull.edges) {
+        const a0=a.vertices[ea.v0], a1=a.vertices[ea.v1];
+        const x=a1.x-a0.x,y=a1.y-a0.y,z=a1.z-a0.z;
+        for(const eb of b.hull.edges) {
+            const b0=b.vertices[eb.v0], b1=b.vertices[eb.v1];
+            const u=b1.x-b0.x,v=b1.y-b0.y,w=b1.z-b0.z;
+            if(testAxis(y*w-z*v,z*u-x*w,x*v-y*u)) return 0;
+        }
     }
-    return depth;
+    return Math.max(0,-best);
 }
 
 function text(value, digits) {

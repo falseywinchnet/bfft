@@ -8,39 +8,6 @@
 
 namespace zc::phys {
 
-Vec3 operator+(Vec3 a, Vec3 b) { Vec3 out{a.x + b.x, a.y + b.y, a.z + b.z}; return out; }
-Vec3 operator-(Vec3 a, Vec3 b) { Vec3 out{a.x - b.x, a.y - b.y, a.z - b.z}; return out; }
-Vec3 operator*(Vec3 a, double s) { Vec3 out{a.x * s, a.y * s, a.z * s}; return out; }
-double dot(Vec3 a, Vec3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
-Vec3 cross(Vec3 a, Vec3 b) {
-    Vec3 out{a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
-    return out;
-}
-double length(Vec3 a) { return std::sqrt(a.x * a.x + a.y * a.y + a.z * a.z); }
-Vec3 normalized(Vec3 a) {
-    const double size = length(a);
-    if (size == 0) {
-        Vec3 zero;
-        return zero;
-    }
-    return a * (1.0 / size);
-}
-Quat multiply(Quat a, Quat b) {
-    Quat out;
-    out.w = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z;
-    out.x = a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y;
-    out.y = a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x;
-    out.z = a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w;
-    return out;
-}
-Quat conjugate(Quat q) { Quat out; out.w = q.w; out.x = -q.x; out.y = -q.y; out.z = -q.z; return out; }
-Vec3 rotate(Quat q, Vec3 v) {
-    const Vec3 u{q.x, q.y, q.z};
-    const Vec3 c = cross(u, v);
-    const Vec3 d = cross(u, c);
-    Vec3 out{v.x + 2 * (q.w * c.x + d.x), v.y + 2 * (q.w * c.y + d.y), v.z + 2 * (q.w * c.z + d.z)};
-    return out;
-}
 Quat from_axis_angle(Vec3 axis, double angle) {
     const Vec3 unit = normalized(axis);
     const double s = std::sin(0.5 * angle);

@@ -3,6 +3,7 @@
 // the common result record that container_report.mjs scores.
 //
 //   phys_bench scene.txt out.json [hertz] [seconds]
+#include <algorithm>
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
@@ -45,6 +46,10 @@ int main(int argc, char** argv) {
     }
     const int hertz = argc > 3 ? std::atoi(argv[3]) : 60;
     const double seconds = argc > 4 ? std::atof(argv[4]) : 8.0;
+    if (hertz < 60 || hertz % 60 != 0 || !(seconds > 0)) {
+        std::fprintf(stderr, "hertz must be a positive multiple of 60; seconds must be positive\n");
+        return 2;
+    }
     const double friction = 0.5;
     std::ifstream in(argv[1]);
     if (!in) {
@@ -62,6 +67,31 @@ int main(int argc, char** argv) {
     solver.ground_rolling_resistance = 0;      // as in the cross-engine comparison
     world.set_solver_params(solver);
 
+    std::FILE* replay = argc > 5 ? std::fopen(argv[5], "w") : nullptr;
+    if (argc > 5 && !replay) { std::fprintf(stderr, "cannot write replay\n"); return 2; }
+    std::vector<BodyId> replay_ids;
+    bool first_mesh = true;
+    if (replay) std::fprintf(replay, "{\"engine\":\"wrench_transport_cpp\",\"hertz\":%d,\"meshes\":[", hertz);
+    auto write_mesh = [&](const zc::phys::Shape& shape, BodyId id, bool fixed) {
+        if (!replay) return;
+        replay_ids.push_back(id);
+        std::fprintf(replay, "%s{\"static\":%s,\"vertices\":[", first_mesh ? "" : ",", fixed ? "true" : "false");
+        first_mesh = false;
+        const auto& hull = shape.hulls[0];
+        for (std::size_t k=0;k<hull.vertices.size();++k) {
+            const auto v=hull.vertices[k];
+            std::fprintf(replay, "%s[%.8g,%.8g,%.8g]", k ? "," : "",v.x,v.y,v.z);
+        }
+        std::fprintf(replay, "],\"triangles\":[");
+        bool first=true;
+        for (std::size_t f=0;f+1<hull.face_first.size();++f) {
+            int begin=hull.face_first[f], end=hull.face_first[f+1];
+            for(int k=begin+1;k+1<end;++k) {
+                std::fprintf(replay,"%s[%d,%d,%d]",first?"":",",hull.face_loop[begin],hull.face_loop[k],hull.face_loop[k+1]); first=false;
+            }
+        }
+        std::fprintf(replay, "]}");
+    };
     int wall_count = 0;
     in >> wall_count;
     for (int k = 0; k < wall_count; k += 1) {
@@ -76,7 +106,9 @@ int main(int argc, char** argv) {
         desc.rolling_resistance = 0;
         zc::phys::Pose pose;
         pose.p = centre;
-        world.add_static_body(zc::phys::cook(desc), pose);
+        const auto shape = zc::phys::cook(desc);
+        const auto id = world.add_static_body(shape, pose);
+        write_mesh(shape, id, true);
     }
     int body_count = 0;
     in >> body_count;
@@ -103,11 +135,28 @@ int main(int argc, char** argv) {
         weight += shape.mass * 9.81;
         radii.push_back(shape.radius);
         ids.push_back(world.add_body(shape, pose));
+        write_mesh(shape, ids.back(), false);
     }
 
+    if (replay) std::fprintf(replay, "],\"frames\":[");
+    bool first_frame = true;
+    auto write_frame = [&](int frame) {
+        if (!replay) return;
+        const auto rest = world.rest_report();
+        std::fprintf(replay, "%s{\"t\":%.6f,\"speed\":%.8g,\"energy\":%.8g,\"poses\":[", first_frame ? "" : ",", double(frame)/hertz, rest.max_speed, rest.kinetic_energy);
+        first_frame = false;
+        for (std::size_t i=0;i<replay_ids.size();++i) {
+            auto pose=world.state(replay_ids[i]).pose;
+            std::fprintf(replay,"%s[%.8g,%.8g,%.8g,%.8g,%.8g,%.8g,%.8g]",i?",":"",pose.p.x,pose.p.y,pose.p.z,pose.q.w,pose.q.x,pose.q.y,pose.q.z);
+        }
+        std::fprintf(replay, "]}");
+    };
+    write_frame(0);
     const int frames = static_cast<int>(seconds * hertz + 0.5);
     const int every = hertz / 60;
     std::string samples;
+    std::vector<double> step_ms;
+    std::uint64_t trajectory_hash = 14695981039346656037ull;
     double total = 0;
     double worst = 0;
     double moving_total = 0;
@@ -118,7 +167,10 @@ int main(int argc, char** argv) {
         const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
         world.step();
         const double elapsed = seconds_since(start);
+        step_ms.push_back(1000 * elapsed);
+        trajectory_hash = (trajectory_hash ^ world.checksum()) * 1099511628211ull;
         total += elapsed;
+        if ((f + 1) % every == 0) write_frame(f + 1);
         worst = elapsed > worst ? elapsed : worst;
         const zc::phys::RestReport rest = world.rest_report();
         if (rest.max_speed < 0.004) {
@@ -136,6 +188,7 @@ int main(int argc, char** argv) {
             samples += line;
         }
     }
+    if (replay) { std::fprintf(replay, "]}\n"); std::fclose(replay); }
     // Vertical force the floor and walls return, from the last frame.
     double support = 0;
     double floor_force = 0;
@@ -147,6 +200,7 @@ int main(int argc, char** argv) {
     }
     (void)support;
     const zc::phys::SolveStats stats = world.solve_stats();
+    std::sort(step_ms.begin(), step_ms.end());
 
     std::FILE* out = std::fopen(argv[2], "w");
     if (out == nullptr) {
@@ -155,6 +209,11 @@ int main(int argc, char** argv) {
     }
     std::fprintf(out, "{\"engine\":\"wrench_transport_cpp\",\"config\":\"wrench@%dHz\",\"dt\":%.12f,\"samples\":[%s],",
                  hertz, 1.0 / hertz, samples.c_str());
+    std::fprintf(out, "\"trajectoryHash\":\"%016llx\",\"timing\":{\"meanMs\":%.9f,\"p50Ms\":%.9f,\"p95Ms\":%.9f,\"movingMs\":%.9f,\"quietMs\":%.9f,\"movingFrames\":%d,\"quietFrames\":%d},",
+        static_cast<unsigned long long>(trajectory_hash), 1000 * total / frames,
+        step_ms[frames / 2], step_ms[static_cast<int>(0.95 * (frames - 1))],
+        moving_frames ? 1000 * moving_total / moving_frames : 0,
+        quiet_frames ? 1000 * quiet_total / quiet_frames : 0, moving_frames, quiet_frames);
     std::fprintf(out, "\"finalPoses\":[");
     for (std::size_t i = 0; i < ids.size(); i += 1) {
         const zc::phys::BodyState state = world.state(ids[i]);
