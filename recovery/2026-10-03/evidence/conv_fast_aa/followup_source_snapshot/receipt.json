@@ -1,0 +1,21 @@
+{
+  "device": "Apple M4",
+  "verified_remote_source_sha256": {
+    "experiments/conv_fast_aa/visibility.metal": "c3d87dd723e1e7fc919a795b0494dbe9fef037432126b64775205f8fe5500ce1",
+    "experiments/conv_fast_aa/visibility_gpu.mm": "65754fe07bf3b9256113f3fe5489a0e1cdc8fdc3b614ffe04cff1a551776cb4d",
+    "experiments/conv_fast_aa/visibility.py": "c98ff0b3616b7f8594bee244f9f31d7210b43ceb31073a5796c9f910fdfd5a9c",
+    "experiments/conv_fast_aa/geometry.metal": "43a8030d5c8912bb08e9ead676a7b74a13bb6023b6f41b47adb89d18626f6b92",
+    "experiments/conv_fast_aa/geometry_gpu.mm": "36e1152ec1be8f9cf55e2f054894acdd490e7c7ac7812be35b5f3aca52586506",
+    "experiments/conv_fast_aa/augmentation.py": "4c2522b486daa798cc8aae741522aba2720b2e20202dd61490d2d01295056aea",
+    "experiments/conv_fast_aa/half_coverage.metal": "c43e2f5573f31a3c05ae3e37a3b40c2da77cc2371fc29f29ab332b3004d285c8"
+  },
+  "quality_records": 72,
+  "quality_max_error": 1.8075541823869834e-06,
+  "unit_tests_passed": 16,
+  "visibility_quality": "visibility_validated",
+  "visibility_timing": "visibility_v4",
+  "geometry_fast_float": "fastmath",
+  "geometry_half_cdf": "half",
+  "augmentation": "augmentation_v1",
+  "note": "v4 timing host predates quality-only CLI option; shader unchanged. Final float64 oracle rerun used retained identical GPU readbacks. Old first-stage receipt preserved."
+}

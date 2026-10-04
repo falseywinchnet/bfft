@@ -1,0 +1,760 @@
+{
+ "quick": true,
+ "node": "v25.2.1",
+ "results": [
+  {
+   "scene": "rest",
+   "kind": "round",
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "driftMm": 0.9182499416231348,
+   "rotationDeg": 2.061776838919611,
+   "penetrationMm": 0.5230324573781003,
+   "lateSpeed": 0.059139915558751324,
+   "meanMs": 0.01733351083333354
+  },
+  {
+   "scene": "rest",
+   "kind": "flat",
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "driftMm": 20.548449889721738,
+   "rotationDeg": 3.138311741924587,
+   "penetrationMm": 2.8848707565965763,
+   "lateSpeed": 0.41578772500160927,
+   "meanMs": 0.01156154583333344
+  },
+  {
+   "scene": "rest",
+   "kind": "jagged",
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "driftMm": 0.684263668698514,
+   "rotationDeg": 1.1470634593600437,
+   "penetrationMm": 0.5206898628018399,
+   "lateSpeed": 0.07559123540271259,
+   "meanMs": 0.008610454166666712
+  },
+  {
+   "scene": "box_tower",
+   "count": 10,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "standing": true,
+    "topHeightErrorMm": -7.498184858866052,
+    "topLeanMm": 3.306908316739376,
+    "driftMm": 5.240642833525674e-10,
+    "lateEnergy": 1.3355531858665878e-22,
+    "penetrationMm": 0.966412154128897,
+    "timing": {
+     "meanMs": 0.18799735166666656,
+     "worstMs": 0.9434169999999966,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "box_tower",
+   "count": 20,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "standing": false,
+    "topHeightErrorMm": -950.5250205404068,
+    "topLeanMm": 1213.4147225310212,
+    "driftMm": 0.3528614877918669,
+    "lateEnergy": 7.941623688519575e-8,
+    "penetrationMm": 0.6509204759065843,
+    "timing": {
+     "meanMs": 0.26856196333333365,
+     "worstMs": 0.8114999999999668,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "rock_stack",
+   "seed": 1,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "standing": false,
+    "driftMm": 1.2878846797059087,
+    "rotationDeg": 1.108439842438648,
+    "lateSpeed": 0.0003046071298574442,
+    "asleepAt": -1,
+    "settleWorstSeconds": 2.183333333333333,
+    "penetrationMm": 0.693223815907449,
+    "topZ": 0.13433809148304932,
+    "timing": {
+     "meanMs": 0.40946437244201855,
+     "worstMs": 0.7208749999999782,
+     "frames": 1466
+    }
+   }
+  },
+  {
+   "scene": "rock_stack",
+   "seed": 1,
+   "config": "soft_step_stiff",
+   "sleeping": true,
+   "result": {
+    "standing": false,
+    "driftMm": 0.004546379485530607,
+    "rotationDeg": 0.00626237399971484,
+    "lateSpeed": 0,
+    "asleepAt": 0.016666666666666666,
+    "settleWorstSeconds": 2.183333333333333,
+    "penetrationMm": 0,
+    "topZ": 0.13433852227601717,
+    "timing": {
+     "meanMs": 0.14807037337884152,
+     "worstMs": 0.669208000000026,
+     "frames": 1465
+    }
+   }
+  },
+  {
+   "scene": "slab_on_pebbles",
+   "ratio": 500,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "slabMass": 9.984000000000002,
+    "pebbleMass": 0.019968,
+    "slabHeightErrorMm": -6.948548095209957,
+    "penetrationMm": 3.5837527779073306,
+    "latePebbleSpeed": 0.0002175175986249166,
+    "driftMm": 0.021450839459329962,
+    "timing": {
+     "meanMs": 0.06306326333333497,
+     "worstMs": 0.17079100000000835,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "pebble_on_slab",
+   "ratio": 500,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "penetrationMm": 0.5292774593415526,
+    "latePebbleSpeed": 2.0922815687016948e-10,
+    "driftMm": 2.9693377984335934e-8,
+    "timing": {
+     "meanMs": 0.020849161666667063,
+     "worstMs": 0.07995899999991707,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "slab_on_pebbles",
+   "ratio": 5000,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "slabMass": 99.84000000000002,
+    "pebbleMass": 0.019968,
+    "slabHeightErrorMm": -19.71996638290356,
+    "penetrationMm": 10.63859979086853,
+    "latePebbleSpeed": 1.0993882305367007e-9,
+    "driftMm": 7.765001770189252e-7,
+    "timing": {
+     "meanMs": 0.06957638500000561,
+     "worstMs": 0.13962500000002365,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "pebble_on_slab",
+   "ratio": 5000,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "penetrationMm": 0.5292092684551566,
+    "latePebbleSpeed": 2.2062493810859054e-10,
+    "driftMm": 3.132877829718421e-8,
+    "timing": {
+     "meanMs": 0.02092957166666641,
+     "worstMs": 0.08983299999999872,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "overhang",
+   "insideFraction": 0.05,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "rotationDeg": 0.01852834264949914,
+    "tippedAt": -1,
+    "timing": {
+     "meanMs": 0.020592708333329785,
+     "worstMs": 0.08445800000004056,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "overhang",
+   "insideFraction": 0.02,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "rotationDeg": 0.036773481199965076,
+    "tippedAt": -1,
+    "timing": {
+     "meanMs": 0.0202074966666684,
+     "worstMs": 0.08787499999993997,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "overhang",
+   "insideFraction": 0.01,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "rotationDeg": 0.09096372891530494,
+    "tippedAt": -1,
+    "timing": {
+     "meanMs": 0.02088944833333244,
+     "worstMs": 0.0646670000000995,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "overhang",
+   "insideFraction": -0.01,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "rotationDeg": 10.51836442758775,
+    "tippedAt": 0.36666666666666664,
+    "timing": {
+     "meanMs": 0.015833363636374997,
+     "worstMs": 0.020833000000038737,
+     "frames": 22
+    }
+   }
+  },
+  {
+   "scene": "overhang",
+   "insideFraction": -0.02,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "rotationDeg": 10.871755881755186,
+    "tippedAt": 0.2,
+    "timing": {
+     "meanMs": 0.01668391666661743,
+     "worstMs": 0.020500000000083674,
+     "frames": 12
+    }
+   }
+  },
+  {
+   "scene": "overhang",
+   "insideFraction": -0.05,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "rotationDeg": 10.668206946758044,
+    "tippedAt": 0.11666666666666667,
+    "timing": {
+     "meanMs": 0.01732142857141688,
+     "worstMs": 0.020332999999936874,
+     "frames": 7
+    }
+   }
+  },
+  {
+   "scene": "incline",
+   "onSlab": false,
+   "offset": -0.05,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "travelMm": 0.3576317795536523,
+    "timing": {
+     "meanMs": 0.008876944999996871,
+     "worstMs": 0.07558300000005147,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "incline",
+   "onSlab": false,
+   "offset": 0.05,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "travelMm": 2292.9751240180253,
+    "timing": {
+     "meanMs": 0.008067304761906209,
+     "worstMs": 0.06329199999981938,
+     "frames": 210
+    }
+   }
+  },
+  {
+   "scene": "incline",
+   "onSlab": true,
+   "offset": -0.05,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "travelMm": 0.4477474110805773,
+    "timing": {
+     "meanMs": 0.022582625000005314,
+     "worstMs": 0.085582999999815,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "incline",
+   "onSlab": true,
+   "offset": 0.05,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "travelMm": 2942.020220488013,
+    "timing": {
+     "meanMs": 0.01691650476189655,
+     "worstMs": 0.02816700000016681,
+     "frames": 210
+    }
+   }
+  },
+  {
+   "scene": "drop",
+   "seed": 1,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "impactSpeed": 2.283619834377677,
+    "maxSpeedAfterContact": 0.8267329474252776,
+    "bounceMm": 0.43800115055146405,
+    "deepestMm": 6.448318131848686,
+    "restAt": 1.0166666666666666,
+    "timing": {
+     "meanMs": 0.00834191666666887,
+     "worstMs": 0.06279200000017227,
+     "frames": 300
+    }
+   }
+  },
+  {
+   "scene": "heap",
+   "count": 30,
+   "config": "soft_step_stiff",
+   "sleeping": false,
+   "result": {
+    "finite": true,
+    "restAt": -1,
+    "worstSpeed": 5.087157058914587,
+    "worstPenetrationMm": 16.472592093335145,
+    "finalPenetrationMm": 0.9116146045982949,
+    "finalEnergy": 6.267446292741296e-7,
+    "contacts": 142,
+    "timing": {
+     "meanMs": 0.8076511088888886,
+     "worstMs": 1.6760420000000522,
+     "frames": 900
+    }
+   }
+  },
+  {
+   "scene": "rest",
+   "kind": "round",
+   "config": "wrench",
+   "sleeping": false,
+   "driftMm": 6.863620736493149e-10,
+   "rotationDeg": 0.0000017075472925031877,
+   "penetrationMm": 2.2565282975506307e-10,
+   "lateSpeed": 8.892777732158497e-11,
+   "meanMs": 0.010277532499998566
+  },
+  {
+   "scene": "rest",
+   "kind": "flat",
+   "config": "wrench",
+   "sleeping": false,
+   "driftMm": 4.8452867263260665e-11,
+   "rotationDeg": 0.0000017075472925031877,
+   "penetrationMm": 2.8206603719382883e-11,
+   "lateSpeed": 2.1556020750345173e-11,
+   "meanMs": 0.005924460000001849
+  },
+  {
+   "scene": "rest",
+   "kind": "jagged",
+   "config": "wrench",
+   "sleeping": false,
+   "driftMm": 3.081257615312391e-10,
+   "rotationDeg": 0.0000017075472925031877,
+   "penetrationMm": 8.548717289613705e-11,
+   "lateSpeed": 5.883393246594897e-11,
+   "meanMs": 0.005953126666660561
+  },
+  {
+   "scene": "box_tower",
+   "count": 10,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "standing": true,
+    "topHeightErrorMm": -2.2248869413488137e-10,
+    "topLeanMm": 0,
+    "driftMm": 4.4680925626039425e-10,
+    "lateEnergy": 1.7181734377302796e-21,
+    "penetrationMm": 2.6478819137309983e-11,
+    "timing": {
+     "meanMs": 0.05701596833332512,
+     "worstMs": 0.9970840000000862,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "box_tower",
+   "count": 20,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "standing": true,
+    "topHeightErrorMm": 2.83550960489265e-10,
+    "topLeanMm": 0,
+    "driftMm": 9.339196083146817e-10,
+    "lateEnergy": 9.151581272780445e-21,
+    "penetrationMm": 1.27675647831893e-11,
+    "timing": {
+     "meanMs": 0.09763207999998864,
+     "worstMs": 0.5185419999997976,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "rock_stack",
+   "seed": 1,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "standing": false,
+    "driftMm": 0.0012645094095052743,
+    "rotationDeg": 0.00157569610813855,
+    "lateSpeed": 0.00003433297311749861,
+    "asleepAt": -1,
+    "settleWorstSeconds": 4.966666666666667,
+    "penetrationMm": 3.870957374085826e-10,
+    "topZ": 0.039953846690850475,
+    "timing": {
+     "meanMs": 0.5319289390454318,
+     "worstMs": 2.5260410000000775,
+     "frames": 1739
+    }
+   }
+  },
+  {
+   "scene": "rock_stack",
+   "seed": 1,
+   "config": "wrench",
+   "sleeping": true,
+   "result": {
+    "standing": false,
+    "driftMm": 0.0004928416701394773,
+    "rotationDeg": 0.00041022024608191796,
+    "lateSpeed": 0.00004183664828508198,
+    "asleepAt": 0.03333333333333333,
+    "settleWorstSeconds": 4.966666666666667,
+    "penetrationMm": 0,
+    "topZ": 0.01374987202189822,
+    "timing": {
+     "meanMs": 0.3738804755628768,
+     "worstMs": 2.497624999999971,
+     "frames": 1821
+    }
+   }
+  },
+  {
+   "scene": "slab_on_pebbles",
+   "ratio": 500,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "slabMass": 9.984000000000002,
+    "pebbleMass": 0.019968,
+    "slabHeightErrorMm": -9.992007221626409e-13,
+    "penetrationMm": 8.72565908416334e-13,
+    "latePebbleSpeed": 2.918864279519332e-13,
+    "driftMm": 1.1449174941918843e-11,
+    "timing": {
+     "meanMs": 0.020153743333331326,
+     "worstMs": 0.140458999999737,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "pebble_on_slab",
+   "ratio": 500,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "penetrationMm": 5.048045315092509e-12,
+    "latePebbleSpeed": 4.400899807356665e-11,
+    "driftMm": 4.109327081778107e-10,
+    "timing": {
+     "meanMs": 0.007695614999999331,
+     "worstMs": 0.027624999999716238,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "slab_on_pebbles",
+   "ratio": 5000,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "slabMass": 99.84000000000002,
+    "pebbleMass": 0.019968,
+    "slabHeightErrorMm": -3.400058012914542e-13,
+    "penetrationMm": 2.740863092043355e-13,
+    "latePebbleSpeed": 5.389169838354731e-14,
+    "driftMm": 7.361606681360348e-13,
+    "timing": {
+     "meanMs": 0.020608885000003737,
+     "worstMs": 0.12150000000019645,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "pebble_on_slab",
+   "ratio": 5000,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "penetrationMm": 1.8332557694122897e-11,
+    "latePebbleSpeed": 1.631798377304083e-10,
+    "driftMm": 1.435276050756786e-9,
+    "timing": {
+     "meanMs": 0.007772600000004483,
+     "worstMs": 0.024583999999777006,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "overhang",
+   "insideFraction": 0.05,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "rotationDeg": 0,
+    "tippedAt": -1,
+    "timing": {
+     "meanMs": 0.008289078333330053,
+     "worstMs": 0.06979099999989558,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "overhang",
+   "insideFraction": 0.02,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "rotationDeg": 0,
+    "tippedAt": -1,
+    "timing": {
+     "meanMs": 0.007938373333327036,
+     "worstMs": 0.021291000000019267,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "overhang",
+   "insideFraction": 0.01,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "rotationDeg": 0,
+    "tippedAt": -1,
+    "timing": {
+     "meanMs": 0.008256885000015852,
+     "worstMs": 0.06125000000020009,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "overhang",
+   "insideFraction": -0.01,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "rotationDeg": 10.738540221166,
+    "tippedAt": 0.23333333333333334,
+    "timing": {
+     "meanMs": 0.012580428571449634,
+     "worstMs": 0.02820900000006077,
+     "frames": 14
+    }
+   }
+  },
+  {
+   "scene": "overhang",
+   "insideFraction": -0.02,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "rotationDeg": 10.518822587722045,
+    "tippedAt": 0.16666666666666666,
+    "timing": {
+     "meanMs": 0.013599999999996726,
+     "worstMs": 0.027375000000120053,
+     "frames": 10
+    }
+   }
+  },
+  {
+   "scene": "overhang",
+   "insideFraction": -0.05,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "rotationDeg": 12.601662709491915,
+    "tippedAt": 0.11666666666666667,
+    "timing": {
+     "meanMs": 0.01879185714285216,
+     "worstMs": 0.02454200000011042,
+     "frames": 7
+    }
+   }
+  },
+  {
+   "scene": "incline",
+   "onSlab": false,
+   "offset": -0.05,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "travelMm": 7.006254281155848e-8,
+    "timing": {
+     "meanMs": 0.002394366666668854,
+     "worstMs": 0.013958000000002357,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "incline",
+   "onSlab": false,
+   "offset": 0.05,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "travelMm": 2253.295524894702,
+    "timing": {
+     "meanMs": 0.010064514285696055,
+     "worstMs": 0.01429199999984121,
+     "frames": 210
+    }
+   }
+  },
+  {
+   "scene": "incline",
+   "onSlab": true,
+   "offset": -0.05,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "travelMm": 0.000003462826355999565,
+    "timing": {
+     "meanMs": 0.007638100000008308,
+     "worstMs": 0.028874999999970896,
+     "frames": 600
+    }
+   }
+  },
+  {
+   "scene": "incline",
+   "onSlab": true,
+   "offset": 0.05,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "travelMm": 1686.0834688866828,
+    "timing": {
+     "meanMs": 0.020755723809517283,
+     "worstMs": 0.10904199999959019,
+     "frames": 210
+    }
+   }
+  },
+  {
+   "scene": "drop",
+   "seed": 1,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "impactSpeed": 0.1072525683262634,
+    "maxSpeedAfterContact": 0.10695345129696023,
+    "bounceMm": 0.06066469457612425,
+    "deepestMm": 0.00006768248803426524,
+    "restAt": 1.2166666666666666,
+    "timing": {
+     "meanMs": 0.00492109000000255,
+     "worstMs": 0.09704099999999016,
+     "frames": 300
+    }
+   }
+  },
+  {
+   "scene": "heap",
+   "count": 30,
+   "config": "wrench",
+   "sleeping": false,
+   "result": {
+    "finite": true,
+    "restAt": 0.75,
+    "worstSpeed": 5.180336652809336,
+    "worstPenetrationMm": 18.578879188287793,
+    "finalPenetrationMm": 0.00034796472401371625,
+    "finalEnergy": 1.2089043691415918e-13,
+    "contacts": 157,
+    "timing": {
+     "meanMs": 1.6635710622222328,
+     "worstMs": 8.131666000000223,
+     "frames": 900
+    },
+    "solverStats": {
+     "frames": 900,
+     "passes": 4808,
+     "newtonIterations": 17907,
+     "factorizations": 17907,
+     "lineSearchEvaluations": 126898,
+     "maxNewtonIterations": 73,
+     "notConverged": 0,
+     "stalled": 0,
+     "passLimit": 523,
+     "analyses": 279
+    }
+   }
+  }
+ ]
+}

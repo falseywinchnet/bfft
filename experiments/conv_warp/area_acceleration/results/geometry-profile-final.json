@@ -1,0 +1,331 @@
+{
+  "runtime": "v25.2.1",
+  "arch": "arm64",
+  "hashes": {
+    "baseline": "b1c90245331dace5a2e3032143f032520668482bd9569cd074698fc56c5d3052",
+    "counted": "8aa44cce897d3d2f41c8740ec31b3a4b518f5fc5aeba9371988b3d503c9ff253",
+    "geometry": "f9e83979298cc392aed56a7337db09e5931ca262d8eeb7c7b3f82db25b90e9f7",
+    "edge": "b5a74fa3471269804542cba6384e9a0a1bb771b4f0696281c05d05a114a8b1d2",
+    "no-comparison": "c62c4c5f26563a8a0f838d191d11bd57003bf8a50fd2d3074a31a978df6c3b4b",
+    "compact": "4cb25b8693787c1e61ac15b1d5813c6bae7d41258c11659a23cf26038c520bda",
+    "geometry-plan": "b408fdee117f4e04a6ca1c665cbba19c1fb800e22566988966ddda83f421ec97"
+  },
+  "scope": "Cached-source area render including bilinear comparison, byte encoding and output copies; source preparation excluded. Geometry is a deliberately incomplete ablation, never an image result. Five warm runs. SIMD Float64.",
+  "cases": [
+    {
+      "variant": "geometry-plan",
+      "source": [
+        257,
+        257
+      ],
+      "output": [
+        257,
+        257
+      ],
+      "map": "identity",
+      "milliseconds": [
+        34.94054099999994,
+        35.14175,
+        35.271541999999954,
+        35.214917000000014,
+        35.325417000000016
+      ],
+      "median": 35.214917000000014,
+      "counts": [
+        66049,
+        66049,
+        262144,
+        262144,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "outputSHA256": "8338dc3e89455d9fdfc9566e0a2ca778d0e25eddd82ea73dcff19e7f7f55e7c9",
+      "maxError": null,
+      "leaves": 0
+    },
+    {
+      "variant": "geometry-plan",
+      "source": [
+        257,
+        257
+      ],
+      "output": [
+        257,
+        257
+      ],
+      "map": "affine",
+      "milliseconds": [
+        98.47504100000015,
+        99.85362499999997,
+        99.77612500000009,
+        99.680208,
+        99.19762500000024
+      ],
+      "median": 99.680208,
+      "counts": [
+        66049,
+        30239,
+        226764,
+        200222,
+        0,
+        400202,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        10005050,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "outputSHA256": "d90883fe65064168f83a778bf25c8ba32e190c079198f7e83c399980f3f9bd6d",
+      "maxError": null,
+      "leaves": 400202
+    },
+    {
+      "variant": "geometry-plan",
+      "source": [
+        257,
+        257
+      ],
+      "output": [
+        257,
+        257
+      ],
+      "map": "perspective",
+      "milliseconds": [
+        123.86625000000004,
+        124.61787499999991,
+        124.46474999999964,
+        124.23575000000028,
+        125.00004100000024
+      ],
+      "median": 124.46474999999964,
+      "counts": [
+        66049,
+        29513,
+        220819,
+        196749,
+        0,
+        0,
+        3322,
+        390174,
+        2,
+        0,
+        0,
+        0,
+        12968832,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "outputSHA256": "a8bc3ab0db0c836328f5a917c5d38773f48ac2a68dc64ab4e0badd865ff96ca4",
+      "maxError": null,
+      "leaves": 393498
+    },
+    {
+      "variant": "geometry-plan",
+      "source": [
+        257,
+        257
+      ],
+      "output": [
+        257,
+        257
+      ],
+      "map": "strong",
+      "milliseconds": [
+        135.87429199999997,
+        137.4772499999999,
+        136.602625,
+        135.60804199999984,
+        136.10375000000022
+      ],
+      "median": 136.10375000000022,
+      "counts": [
+        66049,
+        33786,
+        207270,
+        192998,
+        0,
+        0,
+        1438,
+        31337,
+        210285,
+        142936,
+        0,
+        0,
+        14858242,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "outputSHA256": "7d6fa45f7a3cc89e122050071c5fabad7d15fca62b25ced1c6c67a519c36f1a6",
+      "maxError": null,
+      "leaves": 385996
+    },
+    {
+      "variant": "geometry-plan",
+      "source": [
+        257,
+        257
+      ],
+      "output": [
+        65,
+        65
+      ],
+      "map": "perspective",
+      "milliseconds": [
+        55.974083000000064,
+        56.01608299999998,
+        55.97829200000024,
+        55.74312500000042,
+        55.60312500000009
+      ],
+      "median": 55.974083000000064,
+      "counts": [
+        4225,
+        1918,
+        116774,
+        92874,
+        0,
+        0,
+        473,
+        185237,
+        38,
+        0,
+        0,
+        0,
+        6127471,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "outputSHA256": "04ea81751fc3b23fed95967f73dc00db3adf7970082b7ca310fc180d709b3af2",
+      "maxError": null,
+      "leaves": 185748
+    },
+    {
+      "variant": "geometry-plan",
+      "source": [
+        257,
+        257
+      ],
+      "output": [
+        513,
+        513
+      ],
+      "map": "perspective",
+      "milliseconds": [
+        261.7772080000004,
+        263.33137499999975,
+        261.0398329999998,
+        260.59783400000015,
+        261.2604590000001
+      ],
+      "median": 261.2604590000001,
+      "counts": [
+        263169,
+        117249,
+        410278,
+        386208,
+        0,
+        0,
+        9873,
+        762543,
+        0,
+        0,
+        0,
+        0,
+        25440363,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "outputSHA256": "8f36de95723dc1467a5053255064068885624d5252bf729fb58d3d438b425142",
+      "maxError": null,
+      "leaves": 772416
+    },
+    {
+      "variant": "geometry-plan",
+      "source": [
+        1536,
+        1024
+      ],
+      "output": [
+        1536,
+        1024
+      ],
+      "map": "perspective",
+      "milliseconds": [
+        3006.7733750000043,
+        3009.5380829999995,
+        3013.991167,
+        3010.0695419999975,
+        3012.2924580000035
+      ],
+      "median": 3010.0695419999975,
+      "counts": [
+        1572864,
+        699483,
+        5316250,
+        4725780,
+        0,
+        0,
+        615651,
+        8835909,
+        0,
+        0,
+        0,
+        0,
+        308823225,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "outputSHA256": "b9024fb7e5b822d4b40a4a5427b0b618a17bcac5cad582239a2c09693751b70d",
+      "maxError": null,
+      "leaves": 9451560
+    }
+  ]
+}

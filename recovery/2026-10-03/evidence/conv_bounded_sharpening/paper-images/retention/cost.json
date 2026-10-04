@@ -1,0 +1,41 @@
+{
+  "scope": "CPU shared-lattice RGBA point kernel only. Float32 controls, Float64 accumulation; 512x512 outputs; nine alternating-order repetitions after warmup; medians. No browser, source preparation, pixel quadrature, or full-warp timing.",
+  "host": "m4mini",
+  "architecture": "arm64",
+  "macOS": "26.5",
+  "compiler": "Apple clang 21.0.0 (clang-2100.1.1.101)",
+  "flags": "-O3 -lm",
+  "sourceSha256": "12672787a0b080937b78341463aa7b8a385bdfc4383fe383e54134d1d6b71ebe",
+  "rows": [
+    {
+      "sourceSide": 17,
+      "quinticMs": 4.947,
+      "degree6Ms": 6.681,
+      "ratio": 1.350516,
+      "quinticMinMs": 4.934,
+      "quinticMaxMs": 10.071,
+      "degree6MinMs": 6.672,
+      "degree6MaxMs": 11.418
+    },
+    {
+      "sourceSide": 129,
+      "quinticMs": 4.954,
+      "degree6Ms": 6.685,
+      "ratio": 1.349415,
+      "quinticMinMs": 4.939,
+      "quinticMaxMs": 4.978,
+      "degree6MinMs": 6.674,
+      "degree6MaxMs": 6.757
+    },
+    {
+      "sourceSide": 513,
+      "quinticMs": 5.039,
+      "degree6Ms": 6.803,
+      "ratio": 1.350069,
+      "quinticMinMs": 5.03,
+      "quinticMaxMs": 5.075,
+      "degree6MinMs": 6.756,
+      "degree6MaxMs": 6.842
+    }
+  ]
+}

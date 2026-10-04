@@ -1,0 +1,13 @@
+Test project /tmp/bfft-recovery-20261003/rvfx
+    Start 1: rvfx_core
+1/4 Test #1: rvfx_core ........................   Passed    0.34 sec
+    Start 2: rvfx_entropy
+2/4 Test #2: rvfx_entropy .....................   Passed    0.33 sec
+    Start 3: rvfx_entropy_chains
+3/4 Test #3: rvfx_entropy_chains ..............   Passed    0.51 sec
+    Start 4: rvfx_entropy_equivalence
+4/4 Test #4: rvfx_entropy_equivalence .........   Passed    0.59 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =   1.77 sec

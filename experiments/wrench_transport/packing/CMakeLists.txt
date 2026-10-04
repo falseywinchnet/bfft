@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.16)
+project(WrenchPacking LANGUAGES CXX)
+set(WRENCH_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+add_subdirectory(../phys wrench)
+add_executable(packing_bench native.cpp)
+target_link_libraries(packing_bench PRIVATE Wrench::Physics)

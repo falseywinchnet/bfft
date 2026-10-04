@@ -1,0 +1,28 @@
+test_all_backends_accept_arbitrary_image_shapes (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_basin_analysis_integrates_affine_profiles_exactly (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_conservative_matched_cycle_uses_exact_dyadic_shapes (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_conservative_support_preserves_every_parent_mean (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_constant_preservation (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_conv_does_not_add_ordered_sign_transitions (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_conv_reproduces_affine_data_at_arbitrary_coordinates (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_float64_basin_analysis_retains_binary64_affine_accuracy (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_fused_atlas_retains_constant_transverse_lines_across_simd_tail (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_fused_four_child_atlas_has_no_factorwise_sign_surplus (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_fused_four_child_atlas_matches_decomposed_native_oracle (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_fused_four_child_atlas_preserves_affine_planes (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_native_arbitrary_site_evaluators_match_regular_synthesis (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_native_backend_is_available (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_native_moment_admission_matches_the_reference_exactly (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_native_two_dimensional_profile_is_affine_exact_and_axis_equivariant (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_nested_conv_anchors_are_exact (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_passband_basin_preserves_affine_data_and_line_moments (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_passband_basin_recovers_target_lattice_gradient_energy (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_passband_basin_zero_strength_is_canonical_bit_for_bit (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_passband_target_operator_matches_integrated_variant (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_python_sources_do_not_import_the_parent_repository (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+test_transport_resize_uses_basin_analysis_only_on_reduction (standalone_conv_resize_demo.test_backend.BackendTest) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.035s
+
+OK

@@ -1,0 +1,8 @@
+[ 14%] Building CXX object CMakeFiles/bfft_shared.dir/src/bfft.cpp.o
+[ 28%] Building CXX object CMakeFiles/bfft_shared.dir/src/bodft.cpp.o
+[ 42%] Building CXX object CMakeFiles/bfft_shared.dir/src/fct.cpp.o
+[ 57%] Building CXX object CMakeFiles/bfft_shared.dir/src/meyer.cpp.o
+[ 71%] Building CXX object CMakeFiles/bfft_shared.dir/src/stft.cpp.o
+[ 85%] Building CXX object CMakeFiles/bfft_shared.dir/src/vision.cpp.o
+[100%] Linking CXX shared library libbfft.dylib
+[100%] Built target bfft_shared

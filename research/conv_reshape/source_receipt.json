@@ -1,0 +1,64 @@
+{
+  "checked_at_utc": "2026-09-17T17:14:35.248065+00:00",
+  "archive": "/Users/joshuahkuttenkuler/CodexEmergencyBackups/20260916T015732Z-MacBook-Neo/home-bfft.tar.gz",
+  "archive_member_prefix": "Users/ultimussecundai/bfft/",
+  "mirror": "/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-6b3e7ffa7539",
+  "files": {
+    "experiments/conv_warp/joint_reference.py": {
+      "bytes": 47624,
+      "archive_sha256": "88f034a06b00939679dbecf1cc440b90e0952300c13829186a175dfdfca64860",
+      "mirror_sha256": "88f034a06b00939679dbecf1cc440b90e0952300c13829186a175dfdfca64860",
+      "byte_identical": true,
+      "archive_mtime_utc": "2026-08-30T23:23:51.038952+00:00"
+    },
+    "experiments/conv_warp/PRELIMINARY_THEORY.md": {
+      "bytes": 7532,
+      "archive_sha256": "838a497037657cc700679328b80b5bdb8ec0e81d9da1034e44ca2fe25956affe",
+      "mirror_sha256": "838a497037657cc700679328b80b5bdb8ec0e81d9da1034e44ca2fe25956affe",
+      "byte_identical": true,
+      "archive_mtime_utc": "2026-08-30T23:25:50.537976+00:00"
+    },
+    "experiments/conv_warp/compact_measurement/reference_source.c": {
+      "bytes": 19923,
+      "archive_sha256": "de1f14b64495da678354cba7717e4c7c729ed7b075877619ed16f2ea3dd84b53",
+      "mirror_sha256": "de1f14b64495da678354cba7717e4c7c729ed7b075877619ed16f2ea3dd84b53",
+      "byte_identical": true,
+      "archive_mtime_utc": "2026-09-15T01:24:05.795295+00:00"
+    },
+    "output/pdf/conv_paper_composed.tex": {
+      "bytes": 166102,
+      "archive_sha256": "5b89a42e9f6ac5a7cb8b6ca46ef223f3a2f2a9afa3d408ac60bf5ac9244baed4",
+      "mirror_sha256": "5b89a42e9f6ac5a7cb8b6ca46ef223f3a2f2a9afa3d408ac60bf5ac9244baed4",
+      "byte_identical": true,
+      "archive_mtime_utc": "2026-09-14T23:29:19.176997+00:00"
+    },
+    "output/pdf/convstar_warp_addendum.tex": {
+      "bytes": 24607,
+      "archive_sha256": "87e6cf5ad6fbf11cbcfbb2b626478929de279054a0c1e027194c3ded988cfdd2",
+      "mirror_sha256": "87e6cf5ad6fbf11cbcfbb2b626478929de279054a0c1e027194c3ded988cfdd2",
+      "byte_identical": true,
+      "archive_mtime_utc": "2026-09-14T23:23:36.525514+00:00"
+    },
+    "output/pdf/convstar_warp_measurements.tex": {
+      "bytes": 2736,
+      "archive_sha256": "ae1230a9a87a35e9b6342708c69ddf08a0914713608d1a303502a6d844891d96",
+      "mirror_sha256": "ae1230a9a87a35e9b6342708c69ddf08a0914713608d1a303502a6d844891d96",
+      "byte_identical": true,
+      "archive_mtime_utc": "2026-09-14T23:20:58.606638+00:00"
+    }
+  },
+  "missing": [],
+  "published_paper": {
+    "url": "https://github.com/falseywinchnet/papers_please/blob/main/conv_paper_composed.tex",
+    "bytes": 166102,
+    "sha256": "5b89a42e9f6ac5a7cb8b6ca46ef223f3a2f2a9afa3d408ac60bf5ac9244baed4",
+    "git_blob_sha1": "7e2b7d3b1821ba5f5a60e92fcb4d49d0e2926232",
+    "byte_identical_to_mirror": true
+  },
+  "published_head": {
+    "head": "a43e178f053b9f968c18e8f14d8489a949d04120",
+    "commit_date": "2026-09-14T23:44:05Z",
+    "message": "Delete convstar_warp_addendum.tex",
+    "tree": "17992b672bb873b0a693e440dfe37867871ddc5f"
+  }
+}

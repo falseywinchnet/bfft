@@ -1,0 +1,207 @@
+[
+  {
+    "label": "conv_dual_pair",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "-m",
+      "unittest",
+      "experiments.conv_dual_pair.test_pair",
+      "experiments.conv_dual_pair.test_two_thirds",
+      "-v"
+    ],
+    "exit_code": 0,
+    "seconds": 2.178215980529785,
+    "log": "/tmp/bfft-recovery-20261003/python-conv_dual_pair.txt"
+  },
+  {
+    "label": "conv_fast_aa",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "-m",
+      "unittest",
+      "experiments.conv_fast_aa.test_augmentation",
+      "experiments.conv_fast_aa.test_core",
+      "experiments.conv_fast_aa.test_geometry",
+      "experiments.conv_fast_aa.test_visibility",
+      "-v"
+    ],
+    "exit_code": 0,
+    "seconds": 0.20989322662353516,
+    "log": "/tmp/bfft-recovery-20261003/python-conv_fast_aa.txt"
+  },
+  {
+    "label": "conv_warp",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "-m",
+      "unittest",
+      "experiments.conv_warp.bounded_sharpening.test_geometry",
+      "experiments.conv_warp.bounded_sharpening.test_paper_images",
+      "experiments.conv_warp.support_range_audit.test_faithful_blend",
+      "experiments.conv_warp.support_range_audit.test_range",
+      "experiments.conv_warp.test_conv_warp",
+      "experiments.conv_warp.test_joint_reference",
+      "experiments.conv_warp.test_projective_bank_proof",
+      "experiments.conv_warp.test_star_banks",
+      "experiments.conv_warp.test_star_compilation",
+      "-v"
+    ],
+    "exit_code": 1,
+    "seconds": 6.501312971115112,
+    "log": "/tmp/bfft-recovery-20261003/python-conv_warp.txt"
+  },
+  {
+    "label": "entropic_transport_closure",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "-m",
+      "unittest",
+      "experiments.entropic_transport_closure.test_claude_objections",
+      "experiments.entropic_transport_closure.test_closure",
+      "experiments.entropic_transport_closure.test_context_descent",
+      "experiments.entropic_transport_closure.test_directional_limit",
+      "experiments.entropic_transport_closure.test_enclosed_continuation",
+      "experiments.entropic_transport_closure.test_energy_theory",
+      "experiments.entropic_transport_closure.test_frame_transport",
+      "experiments.entropic_transport_closure.test_gaussian_closure",
+      "experiments.entropic_transport_closure.test_multiplicative_algebra",
+      "experiments.entropic_transport_closure.test_primitive_transport",
+      "experiments.entropic_transport_closure.test_sinkhorn",
+      "-v"
+    ],
+    "exit_code": 0,
+    "seconds": 0.6900918483734131,
+    "log": "/tmp/bfft-recovery-20261003/python-entropic_transport_closure.txt"
+  },
+  {
+    "label": "krylov_bregman",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "-m",
+      "unittest",
+      "experiments.krylov_bregman.test_certified_piece",
+      "experiments.krylov_bregman.test_contracts",
+      "experiments.krylov_bregman.test_curved_meyer",
+      "experiments.krylov_bregman.test_discovery",
+      "experiments.krylov_bregman.test_factor_transport",
+      "experiments.krylov_bregman.test_general_geometry",
+      "experiments.krylov_bregman.test_increment_transport",
+      "experiments.krylov_bregman.test_sinkhorn_transport",
+      "-v"
+    ],
+    "exit_code": 0,
+    "seconds": 0.39019274711608887,
+    "log": "/tmp/bfft-recovery-20261003/python-krylov_bregman.txt"
+  },
+  {
+    "label": "krylov_em",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "-m",
+      "unittest",
+      "experiments.krylov_em.test_rl",
+      "-v"
+    ],
+    "exit_code": 0,
+    "seconds": 0.1498267650604248,
+    "log": "/tmp/bfft-recovery-20261003/python-krylov_em.txt"
+  },
+  {
+    "label": "tropical_transport",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "-m",
+      "unittest",
+      "experiments.tropical_transport.test_dirichlet",
+      "experiments.tropical_transport.test_mixed_split",
+      "-v"
+    ],
+    "exit_code": 0,
+    "seconds": 0.20985794067382812,
+    "log": "/tmp/bfft-recovery-20261003/python-tropical_transport.txt"
+  },
+  {
+    "label": "library_acceleration",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "-m",
+      "unittest",
+      "experiments.library_acceleration.test_adapters",
+      "experiments.library_acceleration.test_adaptive_bpdn",
+      "experiments.library_acceleration.test_bpdn",
+      "experiments.library_acceleration.test_chambolle_floor",
+      "experiments.library_acceleration.test_sporco",
+      "experiments.library_acceleration.test_sporco_reuse",
+      "-v"
+    ],
+    "exit_code": 0,
+    "seconds": 0.7499856948852539,
+    "log": "/tmp/bfft-recovery-20261003/python-library_acceleration.txt"
+  },
+  {
+    "label": "scene_pattern",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "-m",
+      "unittest",
+      "experiments.scene_pattern.test_affine_camera_geometry",
+      "experiments.scene_pattern.test_average_alignment",
+      "experiments.scene_pattern.test_core",
+      "experiments.scene_pattern.test_distortion_basis",
+      "experiments.scene_pattern.test_floor_affine",
+      "experiments.scene_pattern.test_full_surface_field",
+      "experiments.scene_pattern.test_fusion",
+      "experiments.scene_pattern.test_identity_fields",
+      "experiments.scene_pattern.test_identity_geometry",
+      "experiments.scene_pattern.test_identity_joint",
+      "experiments.scene_pattern.test_identity_pool",
+      "experiments.scene_pattern.test_identity_pose_graph",
+      "experiments.scene_pattern.test_identity_register",
+      "experiments.scene_pattern.test_identity_wedges",
+      "experiments.scene_pattern.test_jet_bundle",
+      "experiments.scene_pattern.test_jet_calibration",
+      "experiments.scene_pattern.test_jet_residual_audit",
+      "experiments.scene_pattern.test_joint_submap",
+      "experiments.scene_pattern.test_merge_submaps",
+      "experiments.scene_pattern.test_multiview",
+      "experiments.scene_pattern.test_native_dispatch",
+      "experiments.scene_pattern.test_panorama",
+      "experiments.scene_pattern.test_point_support",
+      "experiments.scene_pattern.test_point_support_audit",
+      "experiments.scene_pattern.test_radial",
+      "experiments.scene_pattern.test_reconcile_graph",
+      "experiments.scene_pattern.test_region_transport",
+      "experiments.scene_pattern.test_registration_audit",
+      "experiments.scene_pattern.test_residual",
+      "experiments.scene_pattern.test_scene_bundle",
+      "experiments.scene_pattern.test_scene_completion",
+      "experiments.scene_pattern.test_scene_growth",
+      "experiments.scene_pattern.test_scene_surface",
+      "experiments.scene_pattern.test_spatial_surface_study",
+      "experiments.scene_pattern.test_structure_alignment",
+      "experiments.scene_pattern.test_submap_alignment",
+      "experiments.scene_pattern.test_submap_graph",
+      "experiments.scene_pattern.test_surface_coherence",
+      "experiments.scene_pattern.test_surface_jets",
+      "experiments.scene_pattern.test_surface_observability",
+      "experiments.scene_pattern.test_sweeps",
+      "-v"
+    ],
+    "exit_code": 0,
+    "seconds": 19.0559561252594,
+    "log": "/tmp/bfft-recovery-20261003/python-scene_pattern.txt"
+  },
+  {
+    "label": "conv-backend",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "-m",
+      "unittest",
+      "standalone_conv_resize_demo.test_backend",
+      "-v"
+    ],
+    "exit_code": 0,
+    "seconds": 0.14986610412597656,
+    "log": "/tmp/bfft-recovery-20261003/python-conv-backend.txt"
+  }
+]

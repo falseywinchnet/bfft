@@ -1773,6 +1773,7 @@ passing before trusting benchmark changes. See `NATIVE_STUDY.md` for the frozen
 baseline, matched timing protocol, discarded optimization, and reproduction.
 Run `phys_bench scene.txt result.json 60 8 replay.json` to export real native
 poses for a browser replay. A replay is not a browser port of the engine.
+
 ## General mirror geometry and observable transport
 
 The research branch adds a smooth mirror compatibility theorem and rational
@@ -1990,3 +1991,477 @@ Copy the JSON immediately into `experiments/entropic_transport_closure/results/t
 identifies what is and is not transferred from the zonotopic-mixture paper,
 and distinguishes exact-arithmetic guarantees from independent floating-point
 scoring. Post-run internal-point scoring never informs a runtime proposal.
+
+## Entropy-guided OBS decorrelation stretch
+
+The filter lives inside the existing `realtime_vector_fx` plugin. Its equations,
+controls, build instructions, and SDR scope are documented in
+`realtime_vector_fx/ENTROPY_STRETCH.md`. Run its core and existing RVFX tests on
+the selected Mini:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- sh -c \
+  '/opt/homebrew/bin/cmake -S realtime_vector_fx -B /tmp/rvfx-entropy -DCMAKE_BUILD_TYPE=Release && \
+   /opt/homebrew/bin/cmake --build /tmp/rvfx-entropy -j4 && \
+   /opt/homebrew/bin/ctest --test-dir /tmp/rvfx-entropy --output-on-failure'
+```
+
+`tools/build_obs_macos.sh` builds the existing bundle including the new filter.
+`RVFX_RUN_ENTROPY_SMOKE=1` builds/runs its actual libobs/Metal regression;
+`RVFX_RUN_OBS_SMOKE=1` runs the existing FX/posterizer smoke. Use source headers
+matching the OBS runtime that will load the plugin. The Mini's older installed
+OBS rejected a module compiled for 32.2; this task's Metal checks ran on the
+MacBook's OBS 32.2.1 after copying the Mini-built bundle and smoke executable
+back. Copy generated bundles and `/tmp` test outputs immediately before another
+mirror sync. Do not upgrade remote OBS or install the plugin automatically.
+
+The same-output optimization is documented in
+`realtime_vector_fx/ENTROPY_OPTIMIZATION.md`. CTest includes the frozen-reference
+comparison; `rvfx_entropy_benchmark` adds the 31-repeat alternating CPU timings.
+`tools/build_entropy_comparison.py` creates separate instrumented original and
+optimized OBS modules with a deterministic test-only clock. Never install these
+comparison modules; the production build script has no timing override. Retain
+current scene/filter settings when installing a user-authorized update.
+
+Optional independent-source Chains are documented in
+`realtime_vector_fx/ENTROPY_CHAINS.md`. The same CMake/CTest command includes
+`rvfx_entropy_chains`; the entropy OBS smoke checks all six application orders.
+Retain evidence in `output/entropy_stretch/chains/`. Chains defaults off, and
+RGB-only Chains must stay bit-exact with the existing tuned operator.
+
+## Shared-scene pattern registration
+
+- Prototype source: `experiments/scene_pattern/`; it reuses the retired forest
+  experiment's causal-density transport segmenter on real scene photographs.
+- Fetch the six Oxford Graffiti images locally:
+  `python3 -m experiments.scene_pattern.fetch`.
+- Build the native library on the Mini with
+  `/Users/ultimussecundai/.local/bin/m4build -- make -j4 build/libbfft.so`.
+- Run focused and native regression checks with
+  `/Users/ultimussecundai/.local/bin/m4build -- env OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 CONV_NATIVE_THREADS=4 PYTHONPATH=standalone_conv_resize_demo:. /usr/bin/python3 -m unittest experiments.scene_pattern.test_core experiments.scene_pattern.test_radial experiments.scene_pattern.test_native_dispatch standalone_conv_resize_demo.test_backend -v`.
+- Run the real-photo study with
+  `/Users/ultimussecundai/.local/bin/m4build -- env OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 CONV_NATIVE_THREADS=4 /usr/bin/python3 -m experiments.scene_pattern.run --out /tmp/scene_pattern`.
+  Copy `/tmp/scene_pattern/` back immediately using `m4host`.
+- Reference homographies are evaluation-only. Keep phase, ringing and radial
+  ablation results, rejected updates, coverage and source hashes in receipts.
+  The HTML reviewer displays Python estimates; it is not a browser matcher.
+- CONV pool callbacks may dispatch current construction. Nested jobs execute
+  serially within the already parallel outer job to avoid dispatch deadlock;
+  retain the timeout and single/multithread equality regression.
+- Build the six-photo fused atlas with
+  `/Users/ultimussecundai/.local/bin/m4build -- env OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 CONV_NATIVE_THREADS=4 /usr/bin/python3 -m experiments.scene_pattern.fusion --out /tmp/scene_pattern_fusion`.
+  Copy that directory back immediately before another sync; copy
+  `experiments/scene_pattern/fusion-viewer.html` to its `index.html` for review.
+  Add `experiments.scene_pattern.test_fusion` to the focused unittest command.
+  Keep unsuppressed disagreement alongside robust output; single-view coverage
+  has no independent agreement evidence. This is planar fusion, not depth or
+  super-resolution. Timings reuse the initial pairwise registration receipt.
+- Run local residual refinement with
+  `/Users/ultimussecundai/.local/bin/m4build -- env OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 CONV_NATIVE_THREADS=4 /usr/bin/python3 -m experiments.scene_pattern.residual`.
+  Copy `/tmp/scene_pattern_residual/` back before another sync. Retain the frozen
+  baseline and evaluation-only reference errors: photometric improvement alone
+  does not establish geometric improvement. Check
+  `experiments.scene_pattern.test_residual` and `experiments.scene_pattern.test_fusion`.
+- The private eleven-photo room collection lives in ignored
+  `experiments/scene_pattern/data/desktop-scene/` and `out/`. Preserve Desktop
+  originals; do not publish those images or collection-specific receipts.
+  Run registration and spherical/native rendering using the commands in
+  `experiments/scene_pattern/README.md`. Use `m4build` and copy each `/tmp` output
+  back before another synchronization. `panorama.py --rotation` uses regional
+  inlier correspondences and this collection's approximate EXIF intrinsics.
+  `test_panorama` checks ray direction, proper rotations, and seam support.
+- Run room ordinary-average alignment diagnostics with
+  `/Users/ultimussecundai/.local/bin/m4build -- env OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 CONV_NATIVE_THREADS=4 /usr/bin/python3 -m experiments.scene_pattern.average_alignment`.
+  Copy `/tmp/room_alignment/` back before another sync. The integration reuses
+  personal_deblurrer phase-circle measurements and robust graph gauges. Keep
+  average-only mixing evidence distinct from source-attributed displacement;
+  zero two-view closure is not independent validation. Run
+  `experiments.scene_pattern.test_average_alignment` for focused invariants.
+- The targeted floor-line experiment is
+  `experiments.scene_pattern.floor_affine`. Run it on the Mini with the same
+  environment prefix, write `/tmp/floor_affine_final`, and copy results back
+  before another sync. `--preview` is linear sampling; the default is native
+  CONV for the two changed views. Preserve the manual diagnostic ROI and
+  alternative hypotheses in the receipt. Test with `test_floor_affine`.
+- The user-localized lamp/laptop extension is `experiments.scene_pattern.structure_alignment`.
+  Use the Mini preview and frozen-field native commands in the scene-pattern
+  README. Copy each output back before the next synchronization. The reference
+  views define local gauges, not geometric truth. Preserve the floor polygon
+  and compose incremental maps through prior coordinates. Run focused tests
+  `test_structure_alignment` and `test_floor_affine`.
+- Joint distortion search is `experiments.scene_pattern.joint_distortion`.
+  Follow the scene-pattern README's Mini fit/preview and frozen-field native
+  commands, copying `/tmp` outputs back before another sync. The model fitter
+  `distortion_basis` is region-agnostic; the experiment still supplies manual
+  shade/shaft regions. Preserve rejected candidates and final holdout outcomes.
+  Do not retune against the final holdout. Test `test_distortion_basis` and
+  `test_registration_audit` alongside the existing scene-pattern checks.
+- Laptop-only refinement uses `experiments.scene_pattern.laptop_alignment`;
+  checked native rendering uses `run_laptop_validation`. Follow the README
+  commands and copy results back before another Mini sync. Keep the accepted
+  surrounding scene fixed. `laptop_report` checks exact rendered-pixel equality
+  outside the bounded laptop domain. Partial-view and original-atlas experiments
+  remain subject to the same acceptance gates; preserve failed audit receipts.
+- Scene-pattern final-method requirement: follow
+  `experiments/scene_pattern/AUTOMATION_CONTRACT.md`. The final solver must run
+  from photographs under a fixed policy, without visually directed object-by-
+  object repairs, manual regions/references/protection, or scene-specific
+  parameter adjustment. Existing room repair experiments are supervised
+  diagnostics, not evidence of an automatic end-to-end solution. Develop
+  automatic region discovery, update scheduling and whole-collection validation;
+  do not present a manual repair sequence as the final method.
+- The automatic panorama-first walking-collection runner is
+  `experiments.scene_pattern.run_sweeps`. Follow `SWEEP_METHOD.md` and the README
+  commands for import, native Oklab/Meyer segmentation, graph construction and
+  the two mesh stages. Run `test_sweeps` on the Mini; copy feature and run outputs
+  back before another sync. No manually selected room regions or repair fields
+  may enter this path. Preserve ordinary averages, explicit unresolved captures,
+  source attribution and graph/mesh residuals. Linear preview, graph connection
+  and information weighting do not certify 3-D, visibility or correct geometry.
+- For the walking collection, the old flat/periodic atlas interpretation is
+  rejected. Read `experiments/scene_pattern/CAPTURE_GEOMETRY.md` first.
+  `scene_evidence`, `scene_pose`, and `scene_calibration` implement the new
+  independent-origin hypothesis path; Mini commands and immediate output-copy
+  requirements are in the scene-pattern README. Test `test_multiview`.
+  Physical target-site holdouts must be excluded from pose initialization as
+  well as refinement, and must not depend on mutable track IDs. Candidate
+  affinities, graph cycles, and partial sparse geometry are not certified
+  fusion, depth, station assignments or visibility. Keep failed run receipts.
+
+- The continuous walking-scene path is documented in
+  `experiments/scene_pattern/REGIONAL_TRANSPORT_FINDINGS.md`. Commands for
+  `capture_transport`, `dense_transport`, `attach_fields`, `dense_scene`, and
+  `dense_points` are in its README. Run `test_region_transport` and
+  `test_multiview`; use the selected Mini and copy every output before another
+  sync. Keep panorama-only and all-capture input receipts distinct. Connected
+  captures, local fusion support, and recovered physical camera poses are
+  separate counts. No manually selected repair regions enter this path.
+
+- Walking-scene observation completion and surface diagnostics use
+  `scene_completion`, `scene_bundle`, and `scene_surface`, with corresponding
+  focused tests. The scene-pattern findings retain the 17-camera result and
+  failed joint-fit audits. Keep both rejected candidate JSONs and retained
+  geometry. Surface folding is an unresolved failure, not certified quasi-3-D.
+  Full 120-capture scene recovery remains active; do not redefine it as a
+  connected graph or a movable display of partial, distorted geometry.
+
+- Walking-scene differential surfaces and multi-map development use
+  `surface_jets`, `jet_bundle`, `scene_growth`, `scene_submaps`, and
+  `merge_submaps`. Mini commands and output-copy requirements are in the
+  scene-pattern README. Run their five new test modules with the prior focused
+  suite (38 checks). Preserve v1 failed holdout-design receipts and the v2
+  accepted refinement. The shared hypothesis has 25 cameras; the 53-camera
+  union of separate maps is not a global reconstruction. All real map joins
+  failed; retain their orientation disagreement and do not relax the gate.
+  `/capture/differential/` is a sparse surface diagnostic, not task completion.
+
+- Differential panorama calibration (`jet_bundle --calibrate-panoramas`) is an
+  experimental alternative: its capped run improves aggregate patch error but
+  worsens eight cameras and reaches only 23 poses. Do not replace the retained
+  25-camera hypothesis based on its aggregate pass. Use `jet_residual_audit` to
+  inspect per-camera center and differential errors. Add `test_jet_calibration`
+  and `test_jet_residual_audit` to the focused suite (40 checks). Stage-two
+  `scene_submaps --seed-scope all` expands to ordinary-photo seeds under unchanged
+  geometric gates; use a new output directory and copy it before another sync.
+- The all-seed survey retains 191 local maps covering 95 captures (all 28
+  panoramas, 67 photos), in `out/all-scene-submaps-v1/`. Their frames remain
+  separate: all 159 direct join attempts to the 25-camera hypothesis failed.
+  Next work must reconcile overlapping map constraints and shared cameras,
+  retain per-camera regressions, and continue toward all 120 captures. The
+  local-map union is neither a registered scene nor goal completion.
+
+- Neighbor-map work uses `submap_graph`, `reconcile_graph`, and `joint_submap`;
+  Mini commands and copy requirements are in the scene-pattern README. Preserve
+  all 6,515 pair receipts and the 157 component outputs. Three joins pass; the
+  largest component has 37 cameras and 4,152 points, but its surface remains
+  folded. It is a separate hypothesis from the earlier 25-camera result.
+  The broader joint candidate's long run stops by cost tolerance and predicts
+  21 new cameras, but fails all 25 protected old-camera checks; it is rejected.
+  Keep stale-point refresh diagnostics, unsupported training-depth tracks,
+  per-camera gates and rejected candidates. Run the new tests `test_submap_graph`,
+  `test_reconcile_graph`, and `test_joint_submap` with the prior focused suite.
+
+- Walking-scene continuity uses `surface_coherence`, `coherence_study`,
+  `point_support`, `point_support_audit`, and `surface_observability`. Preserve
+  `out/coherence-study-v1/`, `out/coherence-study-v2/`, the point control audit,
+  and `out/coherence_calibrated_v1{,.candidate}.json`. All new fits are rejected;
+  the fixed-intrinsics point-supported candidate improves most predictions but
+  fails protected tails. Its `/capture/coherence-supported/` preview is labeled
+  rejected trial geometry. The retained component is still 37 cameras, not 120.
+  Some training neighborhoods have only nearly colocated panoramas and admit
+  infinite depth. Continuity is not measured depth information. Next work must
+  propagate informative baseline support and audit spatially blocked prediction
+  without heldout-site leakage; retain matched controls and original failures.
+  Add `test_surface_coherence`, `test_point_support`, `test_point_support_audit`,
+  and `test_surface_observability` to the expanded `test_jet_bundle` suite.
+
+- Spatial surface prediction uses `spatial_surface_study` and
+  `full_surface_field`. Preserve fixed and joint four-fold outputs and their
+  executed source snapshots, plus the unpromoted all-view field. The latter
+  still contains 37 cameras, not 120. Its all-view training fit cannot claim a
+  new independent prediction pass. Tests: `test_spatial_surface_study`,
+  `test_full_surface_field`, and `test_scene_surface`.
+- Current shared-scene priority is mutable image identity and association,
+  using `identity_register` / `identity_study`. Follow the README's Mini command
+  and immediately copy every run output before another synchronization. No old
+  tracks, poses or pair inventory may seed this new image-only probe. Preserve
+  competing identities, ringing/no-ringing results, untested candidates and
+  unresolved alternatives. Relative weights and closed cycles are not certified
+  station membership or physical identity. Add `test_identity_register` to the
+  regional/radial suite. Do not mistake a new identity diagnostic for a fused
+  120-camera scene or return to fixed-track polishing as the primary solution.
+- Identity-to-geometry iterations now use `identity_fields`,
+  `affine_camera_geometry`, `identity_geometry`, `identity_pose_graph`, and
+  `identity_joint` / `identity_joint_study`. `identity_scene_step` runs the last
+  three stages in one frozen Mini source snapshot; commands and copy requirements
+  are in the README. Preserve the complete retrieval inventory and rejected
+  bounded-parent joint hypotheses. Collinear directions cannot select baseline
+  scale; planar homographies retain pose ambiguity. Never equate pair coverage
+  or local acceptance with a 120-capture global reconstruction. The final scene
+  still must begin with the panoramic sweeps and attach the ordinary photos.
+- Preserve `out/identity-register-complete-v1/`, the complete field/scene
+  iterations and both camera replays. All 88 replay-v2 joint candidates fail;
+  increased pair coverage is not recovered global geometry. Replay uses ALL
+  training-selected previous matrices, never acceptance-selected guesses, and
+  preserves both proposal and pair-refined branches. Next integrate/re-verify
+  the older dense image maps as competing observations with the new ringing
+  maps, without importing their committed tracks/poses. Retain panorama-first
+  reconstruction. The focused suite now has 85 passing tests on the Mini.
+- Panorama identity pooling uses `identity_pool`: re-fit older dense image maps,
+  complete ringing fields and original seeds without their track/pose unions.
+  Preserve `out/identity-pool-panoramas-v1/` and its checks/provenance. The new
+  `identity_wedges` initialization lets shared image evidence start joint fitting
+  before pair rotations close; final prediction gates remain unchanged.
+  Preserve both panorama scene controls and all 322 rejected wedge candidates.
+  None passes both the shared-source prediction and third-pair check. Next add
+  third-pair regional training factors with symmetric, transported holdout
+  exclusion; do not leak a reserved source region through another camera.
+  Commands are in the README; copy each Mini output before another sync.
+  Focused additions: `test_identity_pool` and `test_identity_wedges`.
+
+## Compact CONV rectangular measurement
+
+The atlas-free WASM compiler and rolling-entity proof are in
+`experiments/conv_warp/compact_measurement/README.md`. The local freestanding
+SDK compile takes less than a second (`sh experiments/conv_warp/compact_measurement/build.sh`).
+Run numerical validation and timing on the selected Mini:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- /opt/homebrew/bin/node experiments/conv_warp/compact_measurement/validation.mjs
+/Users/ultimussecundai/.local/bin/m4build -- /opt/homebrew/bin/node experiments/conv_warp/compact_measurement/timing.mjs
+```
+
+Copy `validation-results.json` and `timing-results.json` from the printed mirror
+back immediately, before another sync. Preserve the noise timing regression.
+This is a fixed-output rectangular compiler, not a retained perspective-query
+cache or a GPU source compiler. The fused measurement omits the final Float32
+control-storage rounding; exact-storage mode directly validates transient controls.
+
+## CONV fast antialiasing investigation
+
+The image-only tangent contractions and retained-boundary Metal renderer are
+in `experiments/conv_fast_aa/`. Read its `README.md` and `FINDINGS.md` for the
+input contracts and rejected cases. This is not a promoted CONV replacement.
+Run on the Mini selected by `m4host`:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- sh experiments/conv_fast_aa/build.sh
+/Users/ultimussecundai/.local/bin/m4build -- python3 -m unittest \
+  experiments.conv_fast_aa.test_core experiments.conv_fast_aa.test_geometry -v
+/Users/ultimussecundai/.local/bin/m4build -- python3 -m experiments.conv_fast_aa.study \
+  generate --out /tmp/conv_fast_aa
+/Users/ultimussecundai/.local/bin/m4build -- sh -c \
+  '/tmp/conv_fast_aa_build/gpu experiments/conv_fast_aa/aa.metal \
+   /tmp/conv_fast_aa/input.bin /tmp/conv_fast_aa/gpu benchmark && \
+   python3 -m experiments.conv_fast_aa.study analyze --out /tmp/conv_fast_aa'
+/Users/ultimussecundai/.local/bin/m4build -- sh -c \
+  'mkdir -p /tmp/conv_fast_aa_geometry && \
+   /tmp/conv_fast_aa_build/geometry_gpu experiments/conv_fast_aa /tmp/conv_fast_aa_geometry && \
+   python3 -m experiments.conv_fast_aa.geometry_reference analyze --out /tmp/conv_fast_aa_geometry'
+```
+
+Copy every `/tmp` result immediately into `output/support_geometry/conv_fast_aa/`
+before another sync. Metal shaders compile through the installed runtime; do not
+install the absent standalone Metal SDK component. Preserve failed v1/v2 image
+receipts and all geometry composition counterexamples. Additive coverage fixes
+the tested shared mesh edges but fails opaque overlap. Hardware MSAA is very
+cheap on these simple M4 scenes. Do not generalize the restricted exact-area
+result to visibility, textured shading, or a universal FXAA replacement.
+
+## CONV fast-AA visibility and augmentation follow-up
+
+The bounded visible color-area shader and M4 optimization receipts are documented
+in `experiments/conv_fast_aa/FOLLOWUP.md`. It requires complete supplied tile
+geometry (at most four primitives), affine depth/color, and rejects overflow.
+It is not a general production renderer or a proven globally optimal shader.
+Run its independent visibility oracle and current-augmentation invariants with:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- python3 -m unittest \
+  experiments.conv_fast_aa.test_core experiments.conv_fast_aa.test_geometry \
+  experiments.conv_fast_aa.test_visibility experiments.conv_fast_aa.test_augmentation -v
+```
+
+Follow the build/Metal benchmark commands in FOLLOWUP.md and copy every `/tmp`
+receipt immediately. The raw-minus-admitted augmentation is rejected as a general
+improvement: near-Nyquist errors persist while step ringing increases. Keep the
+original source analysis constraint; the geometry queue uses supplied renderer
+planes, not new image-feature analysis. Sparse visibility timings include queue
+and indirect dispatch but exclude geometry binning/upload.
+
+## Krylov transport for Richardson-Lucy / ML-EM
+
+See `experiments/krylov_em/README.md`. Run tests and the certified-gate study on
+the Mini, copying results back immediately:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.krylov_em.test_rl -v
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_em.study --size 128 --ref-iters 20000 \
+  --configs 8:256 --taus 1,10,100 --out /tmp/krylov_em_cert2.json
+```
+
+The osc^2/8 gate is not a proved trajectory certificate for RL (I-QP is not an
+inf-norm contraction); jumps remain objective-guarded. tau=10 was selected on
+the reported cases; held-out validation is outstanding.
+
+## Tropical transport / Dirichlet curvature analysis
+
+`experiments/tropical_transport/`: `FINDINGS.md` (tropical-algebra hypothesis
+refuted) and `FORMAL.md` (lemma: Sinkhorn curvature bounded by Dirichlet
+energy, so slow modes are flat). Run on the Mini, copying JSON back:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 sh -c \
+  'python3 -m unittest experiments.tropical_transport.test_dirichlet -v && \
+   python3 -m experiments.tropical_transport.normal_form --seeds 2 \
+   --out /tmp/normal_form_v2.json'
+```
+
+The normal-form probe uses the fixed point as an oracle; it is a structure
+diagnostic, not a solver.
+
+## Mosaic FX (tessellated mosaic for OBS)
+
+`mosaic_fx/` is a standalone OBS plugin (`mosaic_fx_filter`). It provides
+deterministic contour-row nucleation from the Meyer cartoon's edge feature
+transform, entropy-chosen tile sizes, Posterizer Mark IV tile colors, glint,
+and block-local temporal re-nucleation, with no relaxation or solver
+iterations. Build the core, tests and plugin on the Mini, and run the
+libobs/Metal smoke on the MacBook's OBS 32.2.1, following
+`mosaic_fx/README.md`. Copy outputs into `output/mosaic_fx/` immediately. Keep
+Locate and Shade in separate effect objects (an OBS 32.2.1 Metal crash
+workaround). Do not install the plugin automatically.
+
+## Primitive transport reset
+
+The user rejected BFGS/potential preconditioning as a substitute for discovering
+what transports relative to the problem. Treat the entropic potential-descent
+and amortization studies as historical rejected directions. The current first
+probe carries fixed kernel actions and rebuilds nonlinear normalizations;
+see `experiments/entropic_transport_closure/PRIMITIVE_TRANSPORT.md`.
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.entropic_transport_closure.test_primitive_transport -v
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.probe_primitive_transport \
+  --size 1024 --out /tmp/primitive_transport_final1024.json
+```
+
+Copy the JSON immediately into `experiments/entropic_transport_closure/results/theory/`.
+This is a finite-trajectory representation probe, not a convergence-to-tolerance
+benchmark or an established finite-pass jump. The exact-arithmetic enclosure
+is evaluated in float64 without outward rounding.
+
+
+Strong-frame follow-up (no potential optimizer):
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.entropic_transport_closure.test_frame_transport \
+  experiments.entropic_transport_closure.test_primitive_transport -v
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.probe_frame_transport \
+  --size 1024 --eps .001 --repeats 3 --out /tmp/strong_frame_final1024.json
+```
+
+Copy results immediately. `STRONG_FRAMES.md` distinguishes response-roundoff
+tracking, subspace coverage, and the multiplicative closure requirement.
+The guarded/spectral/immutable-response forms repair tested accuracy but
+lose hard-case cost. Controlled primitive-query sweeps are not Sinkhorn
+trajectory benchmarks; Gaussian source distributions, Gaussian conditional
+responses, and Gaussian direction fields must not be conflated.
+
+### Multiplicative request-algebra follow-up
+
+From this authoritative checkout, run through `m4build` with
+`OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1`:
+
+```sh
+python3 -m unittest experiments.entropic_transport_closure.test_multiplicative_algebra -v
+python3 -m experiments.entropic_transport_closure.probe_algebra_family --budget 64 --repeats 3 --out /tmp/algebra_family64_corrected.json
+python3 -m experiments.entropic_transport_closure.probe_multiplicative_algebra --size 1024 --budget 64 --eps .001 --repeats 3 --out /tmp/algebra_actual1024.json
+```
+
+Copy the JSON files immediately into the experiment's `results/theory/`.
+See `MULTIPLICATIVE_ALGEBRA.md` there: binary-family product reuse is established,
+but difficult actual trajectories lose cost. Initial axis-control records are
+superseded by the corrected study. Do not promote this as a general accelerator.
+
+## Analytical twin and real library acceleration
+
+The user rejected modest finite-pass ports as the active goal. The requested
+engine should approach the analytical twin's floor and use a single final
+correction solve to reach the original numerical solution. Do not replace
+this with faithful replay of a library iterator or present a twofold speedup
+as meeting the requested orders-of-magnitude target. See
+`experiments/library_acceleration/ANALYTICAL_TWIN_DIRECTION.md`.
+
+The real-library ports and failures are retained as baselines. Fetch pinned
+SPORCO source locally, without installing remote software, with:
+
+```sh
+python3 -m experiments.library_acceleration.fetch_sources
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  PYTHONPATH=tmp/library_sources/deps:tmp/library_sources/sporco-0.2.2.post1:. \
+  python3 -m unittest discover -s experiments/library_acceleration -t . -p 'test_*.py'
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.library_acceleration.chambolle_floor \
+  --out /tmp/chambolle_camera_floor.json
+```
+
+Copy results immediately into `experiments/library_acceleration/results/`.
+The benchmark separates objective decrease, distance to a numerical reference,
+and primal-dual gap. Default Chambolle stopping is not a floor certificate.
+
+## Obligation Dynamics
+
+The independent retained-obligation engine is in
+`experiments/obligation_dynamics/`. It shares Wrench geometry, not its dynamics.
+Build and run release checks on the selected Mini after other timed workloads
+have completed:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- sh -c \
+  '/opt/homebrew/bin/cmake -S experiments/obligation_dynamics -B /tmp/obligation_dynamics -DCMAKE_BUILD_TYPE=Release && \
+   /opt/homebrew/bin/cmake --build /tmp/obligation_dynamics -j4 && \
+   /opt/homebrew/bin/ctest --test-dir /tmp/obligation_dynamics --output-on-failure'
+```
+
+Do not run timed comparisons concurrently. Copy results home immediately.
+Use the existing compound-packing scenes and independent scorer unchanged;
+report geometric errors, event/atomic work, force residuals and discarded
+equilibrium energy with timing. Compare quiet-scene cost against a legacy
+sleeping configuration as well as the all-awake baseline.

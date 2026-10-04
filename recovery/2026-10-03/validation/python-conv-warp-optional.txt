@@ -1,0 +1,15 @@
+test_batched_point_matches_reference (experiments.conv_warp.bounded_sharpening.test_paper_images.PaperImageTests.test_batched_point_matches_reference) ... ok
+test_exact_area_of_linear_field (experiments.conv_warp.bounded_sharpening.test_paper_images.PaperImageTests.test_exact_area_of_linear_field) ... ok
+test_full_degree_atlas_integral_under_quadrature_refinement (experiments.conv_warp.bounded_sharpening.test_paper_images.PaperImageTests.test_full_degree_atlas_integral_under_quadrature_refinement) ... ok
+test_integrals_preserve_constant (experiments.conv_warp.bounded_sharpening.test_paper_images.PaperImageTests.test_integrals_preserve_constant) ... ok
+test_original_paper_fields (experiments.conv_warp.bounded_sharpening.test_paper_images.PaperImageTests.test_original_paper_fields) ... ok
+test_truth_quadrature (experiments.conv_warp.bounded_sharpening.test_paper_images.PaperImageTests.test_truth_quadrature) ... ok
+test_bounded_polynomial_can_have_outside_controls (experiments.conv_warp.support_range_audit.test_range.RangeTests.test_bounded_polynomial_can_have_outside_controls) ... ok
+test_legitimate_peak_exceeds_all_source_samples (experiments.conv_warp.support_range_audit.test_range.RangeTests.test_legitimate_peak_exceeds_all_source_samples) ... ok
+test_refined_certificate_reconstructs_constant (experiments.conv_warp.support_range_audit.test_range.RangeTests.test_refined_certificate_reconstructs_constant) ... ok
+test_second_order_extremum_obstruction (experiments.conv_warp.support_range_audit.test_range.RangeTests.test_second_order_extremum_obstruction) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.043s
+
+OK

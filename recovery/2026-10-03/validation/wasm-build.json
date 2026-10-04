@@ -1,0 +1,10 @@
+{
+  "compiler": "existing Neo WASI SDK 33.0 arm64 macOS",
+  "compact_sha256": "47b5feeeb18a8b68ceb9dd76230869b49265f46390b8c5f1c00fe8ce349440a7",
+  "reference_sha256": "c8b7cec07804f6f6f4c2a3e3292a1ddbbf364eeefa19b167e3d2e34e11c89df8",
+  "commands": [
+    "sh experiments/conv_warp/compact_measurement/build.sh",
+    "sh recovery/2026-10-03/build_wasm_reference.sh /tmp/bfft-recovery-reference.wasm"
+  ],
+  "scope": "Both modules rebuilt from retained source. The recreated reference is API-equivalent for validation; no claim that its binary equals the historical website binary."
+}

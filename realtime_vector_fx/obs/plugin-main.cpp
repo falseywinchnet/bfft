@@ -82,5 +82,7 @@ struct InfoInit { InfoInit() {
     info.get_properties=properties; info.filter_video=video;
 } } info_init;
 
-bool obs_module_load(void){obs_register_source(&info);rvfx_register_gpu_filter();
-    blog(LOG_INFO,"[Realtime Vector FX] CPU, GPU FX, and Posterizer Mark IV filters registered");return true;}
+void rvfx_register_entropy_filter();
+
+bool obs_module_load(void){rvfx_register_entropy_filter();obs_register_source(&info);rvfx_register_gpu_filter();
+    blog(LOG_INFO,"[Realtime Vector FX] CPU, GPU FX, Posterizer Mark IV, and Entropy Stretch filters registered");return true;}

@@ -1,0 +1,21 @@
+{
+  "bfftBase": "1ff367fb821b4b98d33be888babaf60b55826f8b",
+  "fileManagerReferenceCommit": "7ce5cf44d5fa35b89b182f106ca79c8ab3f44dde",
+  "files": {
+    "engine.hpp": "46a04b313836621ddf0d8be6827a78ca77683be86de6bc5483ba2037d8af5791",
+    "CMakeLists.txt": "15669b40aca70eb5584eee15f4af60af2423a49e6831920b9f887fd952df2ae0",
+    "legacy_bench.cpp": "7728f0972a4ff143ad0ec1525ac2bb56b8dd90b9ba692f987d424de872a19952",
+    "README.md": "e31881263ff5e1193310bf23f80b3d6a92113f443e8d1c9bab0365d94e952650",
+    "tests.cpp": "2346c7c5faae13cc898828249c8117634135d5857904c565ee655f3cba59fd22",
+    "broadphase.hpp": "1cb5ae52028800d6d38d7e95e32fe92fb4e96094891b19866ac1162a53d4520a",
+    "engine.cpp": "b3f08dd6512915417da561aad4100567fe58d099561718f6adc33616030b0a7d",
+    "bench.cpp": "5cb01605b4f2c4c605409c493c76042f4f498a63c81694ce13d83b7056a9e588",
+    "threadpool/LICENSE": "7ffa68e2ff116c26c79f75985354b28cb59148efacaff60ceaa5da8795333ad1",
+    "threadpool/README.md": "3bd696bd6f5f6bc55b5c83f77f2bd33693a6f937e568f22d46966a049f86c89e",
+    "scoring/score.mjs": "eb0993db21fd3453964a1633a9859dd94b22e5f50c0c30ebde24947cf057091a",
+    "scoring/test_score.mjs": "7040b3c9bd0ec448a379c20cc65625c19ea341b8f3b2248b9f78fbaa6c0037b6",
+    "threadpool/include/threadpool_atomic_fast.hpp": "90ba9aa8357d32d6d79e74bbd02bde58c6a1c8695fc8ef64b2e2f645f15bdedc",
+    "threadpool/include/threadpool_atomic_fast.h": "18b18473fa8437fe5df07fea4b86f73422aeac9297076ed55a3589ac1af5e44b",
+    "threadpool/src/threadpool_atomic_fast.c": "aedb49756acf768b527a1207b55831165ab10f296df19c3757e32d27d5295a5a"
+  }
+}

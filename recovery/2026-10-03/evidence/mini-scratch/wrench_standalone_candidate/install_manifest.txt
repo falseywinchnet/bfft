@@ -1,0 +1,6 @@
+/tmp/wrench-install/lib/libzc_phys.a
+/tmp/wrench-install/include/wrench/physics.hpp
+/tmp/wrench-install/lib/cmake/WrenchPhysics/WrenchPhysicsTargets.cmake
+/tmp/wrench-install/lib/cmake/WrenchPhysics/WrenchPhysicsTargets-release.cmake
+/tmp/wrench-install/lib/cmake/WrenchPhysics/WrenchPhysicsConfig.cmake
+/tmp/wrench-install/lib/cmake/WrenchPhysics/WrenchPhysicsConfigVersion.cmake

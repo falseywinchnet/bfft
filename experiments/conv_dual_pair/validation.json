@@ -1,0 +1,12 @@
+{
+  "tests": 25,
+  "passed": true,
+  "sourceHashes": {
+    "audit_two_thirds.py": "7df3f4176acf6bb529a86f4b43060fb2994f97a5f048cbd17191a76110b056bd",
+    "derive_two_thirds.py": "a6dbe1f6707f800b54dd441875907b5fdf5eb2b673f452dfdd4a136be6cfa0bd",
+    "pair.py": "e244e4cdce70ccc1d0f93db4bfd772855dd57a8e0425fa6e01597e2289bf42da",
+    "test_pair.py": "2c2e764012cab5582b8ec208f22ae3e5470b7ab3353e27da8fedf982e81c0af3",
+    "test_two_thirds.py": "ab0be88fb7553b48fb8e6994d82047688d1d52f38aa5ded9d5fadd4438a2bfb3"
+  },
+  "scope": "Research only: exact 2/3 feasibility and canonical-dual audit; separate admitted dyadic prototype. No production replacement promoted."
+}

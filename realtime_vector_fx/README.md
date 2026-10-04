@@ -168,3 +168,11 @@ rendering semantics are mapped onto this native engine in
 - add native P010 sampling and HDR-aware palette state;
 - profile capture-to-present latency in the OBS application, then add a stable
   installer/notarization path once the live filter behavior is accepted.
+
+## Entropy-guided decorrelation stretch
+
+The same OBS module now includes **Entropy-Guided Decorrelation Stretch**: sparse
+point-lattice histograms, local entropy conditioned on color, regularized RGB
+decorrelation, and slowly interpolated color-range allocation. Full-resolution
+rendering uses a GPU LUT. See [the algorithm and controls](ENTROPY_STRETCH.md) and
+[verification](ENTROPY_VERIFICATION.md). This is an SDR false-color enhancement.

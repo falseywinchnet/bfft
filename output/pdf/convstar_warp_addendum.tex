@@ -1,0 +1,562 @@
+% Shared mathematical appendix; independent of an execution backend.
+\section{Finite CONV* Banks for Joint Warped-Pixel Transfer}
+\label{app:convstarwarp}
+
+Let $Y:\Lambda\to\mathbb R^c$ be a finite Cartesian source field. CONV
+assigns signed currents to source intervals, synthesizes two Cartesian factor
+orders, and combines them by a scalar action coordinate. Joint current
+admission then produces a continuous tensor-quintic control lattice $P(Y)$.
+This section compiles that construction and its warped-pixel functionals into
+finite banks. The coefficients carry the admitted source state, the
+continuous synthesis phase, and the integration geometry.
+
+\subsection{Finite global action banks}
+Let $\eta_a\in[0,1]$ be the nodal order coordinate at source site $a$ and
+$d_M(x,a)$ the distance of the source-conditioned positive-definite metric.
+At an off-node query $x$, define
+\begin{equation}
+ h_M(x,a)=d_M(x,a)^{-2},\qquad
+ \beta(x)=\frac{\sum_{a\in\Lambda}h_M(x,a)\eta_a}
+ {\sum_{a\in\Lambda}h_M(x,a)}.
+ \label{eq:starglobalbank}
+\end{equation}
+The value at a source node is assigned by cardinal extension,
+$\beta(a)=\eta_a$. For a finite query set, the two sums are applications of
+one finite matrix to the columns $\eta$ and $\mathbf1$. Positivity gives
+$\min_a\eta_a\leq\beta(x)\leq\max_a\eta_a$.
+
+\begin{proposition}[Global FIR realization]
+Suppose $M$ is constant and source coordinates are in lattice units. Let
+$m$ be the indicator of $\Lambda$, extended by zero, and let
+$\phi\in[0,1)^2$ be an off-node phase. On the finite set of required source
+and query differences, put
+\begin{equation}
+ k_\phi[r]=\bigl((r+\phi)^TM(r+\phi)\bigr)^{-1}.
+\end{equation}
+With $(k*f)[n]=\sum_a k[n-a]f[a]$, the global action satisfies
+\begin{equation}
+ \beta(n+\phi)=\frac{(k_\phi*(m\eta))[n]}{(k_\phi*m)[n]}.
+ \label{eq:starglobalfir}
+\end{equation}
+\end{proposition}
+\begin{proof}
+For a constant metric, $d_M(n+\phi,a)^2=(n-a+\phi)^TM(n-a+\phi)$.
+Substitution into \eqref{eq:starglobalbank} gives the numerator and denominator
+in \eqref{eq:starglobalfir}. Zero extension of $m$ includes precisely the
+finite source domain. The node value follows from the dominant self term as
+$x\to a$.
+\end{proof}
+
+Each phase therefore determines two finite convolutions with a shared kernel.
+Zero padding to the full linear-convolution extent permits their Fourier
+execution. For a spatially varying metric, the corresponding bank is
+$h_M(n+\phi,a)$ with both indices retained. Metric construction and distance
+evaluation establish this bank once for a fixed source and query geometry.
+The bilinear nodal coordinate $\beta^*=I_h\eta$ supplies a separate compact
+choice. For either coordinate the factor bank below has the same form, and
+changing the coordinate gives the identity
+\begin{equation}
+ \mathcal T_{\beta^*}Y-\mathcal T_\beta Y
+ =(\beta^*-\beta)(\mathcal T_{yx}Y-\mathcal T_{xy}Y).
+\end{equation}
+
+\subsection{Active-face synthesis and two-dimensional composition}
+On a unit source interval, write $a_k=K_kY$ for the five raw currents,
+$\delta=DY$ for the source difference, and $eY$ for the left endpoint.
+The endpoint closures are included in $K_k,D,e$. The integrated Bernstein
+tails are
+\begin{equation}
+ \tau_k(u)=\sum_{j=k+1}^{5}B_j^5(u),\qquad 0\leq k\leq4.
+\end{equation}
+Let $J$ be the support of the admitted current. On a nonempty active face,
+the Euclidean signed-fibre projection gives
+\begin{equation}
+ c_k=\begin{cases}
+ a_k+\displaystyle\frac{\delta-\sum_{l\in J}a_l}{|J|},&k\in J,\\
+ 0,&k\notin J.
+ \end{cases}
+ \label{eq:starfacecurrent}
+\end{equation}
+The ordered ledger and projection determine $J$ from the input line.
+
+\begin{proposition}[Face-indexed FIR synthesis]
+For $J\ne\varnothing$, define
+\begin{align}
+ \bar\tau_J(u)&=|J|^{-1}\sum_{k\in J}\tau_k(u),\nonumber\\
+ W_J(u)&=e+\bar\tau_J(u)D\nonumber\\
+ &\quad+\sum_{k\in J}(\tau_k(u)-\bar\tau_J(u))K_k.
+ \label{eq:starfacefir}
+\end{align}
+Then the admitted factor value equals $W_J(u)Y$. For the empty face,
+$W_\varnothing(u)=e$.
+\end{proposition}
+\begin{proof}
+Insert \eqref{eq:starfacecurrent} into $eY+\sum_k\tau_k(u)c_k$ and collect
+the coefficients of $\delta$ and $a_k$. If $J$ is empty, all admitted
+currents vanish and synthesis returns the anchor.
+\end{proof}
+
+There are 31 nonempty face families. Each is polynomial in $u$ of degree at
+most five and has six-tap interior support. Lineage is retained in the choice
+of family. The factor can consequently be evaluated by one stencil after
+its face has been established.
+
+For a source cell $(i,j)$ and phase $(u,v)$, let
+$W^x_{i,j+s}(u;r)$ be the first-factor stencil on row $j+s$.
+Let $W^y_{i,j,u}(v;s)$ be the second-factor stencil established from the line
+of first-factor values at $i+u$.
+
+\begin{theorem}[Conditioned two-dimensional factor bank]
+The horizontal--vertical order has the finite representation
+\begin{align}
+ K^{xy}_{i,j,u,v}[r,s]
+ &=W^y_{i,j,u}(v;s)W^x_{i,j+s}(u;r),\nonumber\\
+ (\mathcal T_{xy}Y)(i+u,j+v)
+ &=\sum_{r,s}K^{xy}_{i,j,u,v}[r,s]Y_{i+r,j+s}.
+ \label{eq:startwodbank}
+\end{align}
+Constructing $K^{yx}$ with exchanged axes gives the complete blended bank
+\begin{equation}
+ K_\beta=(1-\beta)K^{xy}+\beta K^{yx}.
+ \label{eq:starblendedbank}
+\end{equation}
+\end{theorem}
+\begin{proof}
+Apply \eqref{eq:starfacefir} first to each source row and then to the resulting
+transverse line. Substitution of the first finite sum into the second gives
+\eqref{eq:startwodbank}. The convex factor blend gives
+\eqref{eq:starblendedbank}.
+\end{proof}
+
+The interior support is six by six. Different source rows may have different
+first-factor faces, so the bank is generally nonseparable. On an interval of
+$u$ where the second-factor face is fixed, its coefficients are independent
+of $u$; the first-factor values remain quintic in $u$. Each order is then
+bicquintic on the corresponding phase region. With bilinear $\beta^*$, the
+blend has bidegree at most $(6,6)$ on a region where both orders have fixed
+faces. Ledger-choice and active-face inequalities certify such regions; phase evaluation within
+a certified region reuses the same polynomial coefficients.
+
+For an endpoint-aligned rational lattice, write the reduced source-coordinate
+step on each axis as $a_d/b_d$. The fractional phases belong to the $b_d$
+residue classes modulo one. Their Cartesian product supplies at most
+$b_xb_y$ phase pairs, with boundary closures and admitted face indices retained
+as bank indices. Continuous query coordinates evaluate the same polynomial
+families directly.
+
+\subsection{Compilation through joint current admission}
+The joint atlas uses a fixed fifth-step collocation map followed by shared
+range and current admission. Let $B(Y)$ be the degree-elevated bilinear
+baseline, $\widetilde P(Y)$ the collocation proposal, and $\widehat P(Y)$ its
+range projection. Assign each nonvertex control to one shared entity $g$.
+If $\alpha_g$ is its simultaneous capacity and $\tau$ the common completion
+parameter, define
+\begin{equation}
+ \lambda_g=\alpha_g+\tau(1-\alpha_g),\qquad
+ P_e=B_e+\lambda_g(\widehat P_e-B_e),\quad e\in g.
+ \label{eq:starentityweight}
+\end{equation}
+Vertex controls retain their source values.
+
+\begin{theorem}[Source-state factorization]
+Let $S(Y)$ record the faces and order coordinates used at collocation nodes,
+the selected range-bound source indices, and the admitted values of
+$\lambda_g$. For each channel there is a finite matrix $A_{S(Y)}$ such that
+\begin{equation}
+ P(Y)=A_{S(Y)}Y.
+ \label{eq:staratlasfactorization}
+\end{equation}
+\end{theorem}
+\begin{proof}
+With the recorded faces and coordinates, \eqref{eq:starblendedbank} makes each
+collocation value a linear source stencil. Inverse Bernstein collocation and
+bilinear degree elevation are fixed linear maps. Range projection selects
+one of three linear values: the proposal, the selected lower-bound sample,
+or the selected upper-bound sample. Equation~\eqref{eq:starentityweight}
+then combines two linear stencils with recorded scalar coefficients.
+Assembling the shared entities gives $A_{S(Y)}$.
+\end{proof}
+
+For fixed $Y$, this factorization retains the exact admitted controls and
+therefore their cardinality, continuity, support-range bounds, and current
+cones. State discovery consists of line scans, finite projections, support
+extrema, incident-constraint minima, and the common ray reduction. Once that
+state is available, a source stencil can be propagated through every linear
+stage or the intermediate control lattice can be retained. Both evaluate
+\eqref{eq:staratlasfactorization}.
+
+\subsection{Point and area banks on the admitted atlas}
+Use source-pixel coordinates on the source rectangle $\Omega$. Let
+$F$ map target coordinates to source coordinates and let $G=F^{-1}$.
+Assume the map is nonsingular and has no denominator zero on the domain of
+integration. Put $Q=G(\Omega)$ and extend the source field by zero outside
+$Q$ in target coordinates. On a source cell $C$, write
+\begin{equation}
+ U_C(u,v)=\sum_{i,j=0}^5P_{C,ij}B_i^5(u)B_j^5(v).
+\end{equation}
+Point synthesis uses the continuous phase bank
+\begin{equation}
+ \Psi_{u,v}[i,j]=B_i^5(u)B_j^5(v).
+ \label{eq:starphasebank}
+\end{equation}
+For a target basin $E$ of positive area, let
+$S_C=F(E\cap Q)\cap C$ and $J_G=|\det DG|$. Define the cell moment bank
+\begin{equation}
+ M_{C,ij}(E,G)=\int_{S_C}B_i^5(u)B_j^5(v)J_G(u,v)\,du\,dv.
+ \label{eq:starmomentbank}
+\end{equation}
+A change of variables gives
+\begin{equation}
+ (\mathcal B_FY)_E=\frac1{|E|}\sum_{C,i,j}M_{C,ij}P_{C,ij}.
+ \label{eq:starareabank}
+\end{equation}
+After assembly of shared controls and division by $|E|$, denote this bank
+by $\mathsf M_E$. The complete source-to-output operators are
+\begin{equation}
+ (\mathcal W_FY)(q)=\Psi_{F(q)}^TA_{S(Y)}Y,\qquad
+ (\mathcal B_FY)_E=\mathsf M_E^TA_{S(Y)}Y.
+\end{equation}
+
+\begin{proposition}[Positivity and conservation]
+The exact moment weights are nonnegative and satisfy
+\begin{equation}
+ \sum_{C,i,j}M_{C,ij}=|E\cap Q|.
+\end{equation}
+For any basin partition $\{E_b\}$,
+\begin{equation}
+ \sum_b|E_b|(\mathcal B_FY)_{E_b}
+ =\int_{(\cup_bE_b)\cap Q}U_Y(F(q))\,dq.
+\end{equation}
+\end{proposition}
+\begin{proof}
+The Bernstein basis and $J_G$ are nonnegative. Summing the basis gives one
+on each source cell. The cell footprints partition $F(E\cap Q)$ up to
+boundaries of zero area, and change of variables gives $|E\cap Q|$.
+Summation over the target partition proves the second identity.
+\end{proof}
+
+For numerical moment construction, a constant reference $R$ can be integrated
+through target coverage:
+\begin{align}
+ (\mathcal B_FY)_E
+ &=\frac{R|E\cap Q|}{|E|}\nonumber\\
+ &\quad+\frac1{|E|}\sum_{C,i,j}(P_{C,ij}-R)M_{C,ij}.
+ \label{eq:starwarpfunctional}
+\end{align}
+This identity holds for any $R$. A reference chosen by a fixed linear
+functional of the controls preserves the assembled linear-bank form when
+approximate moments are substituted.
+
+\subsection{Exact affine moment banks}
+For a rectangular footprint $[a,b]\times[c,d]$ in a cell and constant density
+$\rho$, define
+\begin{equation}
+ A_i(t)=\frac16\sum_{j=i+1}^6B_j^6(t),\qquad 0\leq i\leq5.
+\end{equation}
+The Bernstein derivative identity telescopes to $A_i'=B_i^5$, yielding
+\begin{equation}
+ M_{C,ij}=\rho[A_i(b)-A_i(a)][A_j(d)-A_j(c)].
+ \label{eq:starwarprectangle}
+\end{equation}
+For a general affine map the cell footprint is polygonal and the integrand
+is polynomial of total degree at most ten. Its monomial moments can be
+obtained by an oriented boundary sum:
+\begin{equation}
+ \int_D x^ay^b\,dx\,dy
+ =\frac1{a+1}\oint_{\partial D}x^{a+1}y^b\,dy.
+ \label{eq:starpolymoment}
+\end{equation}
+On each line segment, affine parameterization reduces the integrand to a
+polynomial in one variable. Equations \eqref{eq:starwarprectangle} and
+\eqref{eq:starpolymoment} thus determine finite exact affine banks directly
+from footprint vertices.
+
+\subsection{Exact projective moment banks}
+Write $G$ in homogeneous coordinates with nonsingular matrix $H_G$ and affine
+denominator $\ell(x,y)$. Its area density is
+\begin{equation}
+ J_G(x,y)=\frac{|\det H_G|}{|\ell(x,y)|^3}.
+\end{equation}
+Choose a nonzero scale $c_0$ of the same sign as $\ell$ on the footprint,
+and write $\ell=c_0t$, where $t=\gamma+\alpha x+\beta y>0$.
+Let $\rho=|\det H_G|/|c_0|^3$.
+
+\begin{theorem}[Finite projective edge compilation]
+Every entry of \eqref{eq:starmomentbank} on a polygonal cell footprint is a
+finite expression in its vertices, the map coefficients, rational operations,
+and logarithms of positive denominator values.
+\end{theorem}
+\begin{proof}
+For $\alpha\ne0$, transform to $(t,y)$ so that
+$x=(t-\gamma-\beta y)/\alpha$ and $dx\,dy=|\alpha|^{-1}dt\,dy$.
+The transformed polygon $D$ is given counterclockwise orientation. Expand
+one tensor Bernstein numerator after substitution as
+$\sum_{k,l}b_{kl}t^ky^l$, with $k+l\leq10$. Its bank entry is
+\begin{equation}
+ M=\frac{\rho}{|\alpha|}\sum_{k,l}b_{kl}I_{kl}(D),\qquad
+ I_{kl}(D)=\int_D t^{k-3}y^l\,dt\,dy.
+\end{equation}
+Green's theorem gives
+\begin{equation}
+ I_{kl}(D)=-\frac1{l+1}\oint_{\partial D}t^{k-3}y^{l+1}\,dt.
+ \label{eq:starprojectiveedge}
+\end{equation}
+For an oriented edge from $(t_0,y_0)$ to $(t_1,y_1)$ with $t_0\ne t_1$,
+put $a=(y_1-y_0)/(t_1-t_0)$ and $b=y_0-at_0$. Its contribution is
+\begin{equation}
+ -\frac1{l+1}\sum_{j=0}^{l+1}\binom{l+1}{j}
+ a^jb^{l+1-j}\mathcal L_{k-3+j}(t_0,t_1),
+ \label{eq:staredgeprimitive}
+\end{equation}
+where
+\begin{equation}
+ \mathcal L_e(a,b)=
+ \begin{cases}
+ (b^{e+1}-a^{e+1})/(e+1),&e\ne-1,\\
+ \log(b/a),&e=-1.
+ \end{cases}
+\end{equation}
+An edge with $t_0=t_1$ contributes zero. If $\alpha=0$ and $\beta\ne0$,
+exchange the source axes. If both vanish, the density is constant and
+\eqref{eq:starpolymoment} applies.
+\end{proof}
+
+The same edge moments serve all 36 basis numerators and every channel.
+Boundary terms on oppositely oriented shared edges cancel when their chosen
+Green primitives have the same edge trace.
+An oriented edge table can therefore reuse primitives across neighboring
+footprints while preserving each cell's polynomial coefficients.
+
+For close positive $a,b$, set $h=(b-a)/a$. The primitive difference has the
+continuous form
+\begin{equation}
+ \mathcal L_e(a,b)=
+ \begin{cases}
+ \displaystyle\frac{a^{e+1}}{e+1}
+ \operatorname{expm1}((e+1)\operatorname{log1p}(h)),&e\ne-1,\\
+ \operatorname{log1p}(h),&e=-1.
+ \end{cases}
+\end{equation}
+This evaluates the power and logarithm differences without subtracting their
+nearly equal endpoint values. The factors $a^j b^{l+1-j}$ in
+\eqref{eq:staredgeprimitive} still require control of cancellation for nearly
+constant-denominator edges. Scaled cell coordinates, selection of the larger
+of $|\alpha|,|\beta|$, and the geometry-selected positive quadrature in
+Section~\ref{sec:stargeometric} provide evaluation across these
+configurations and the affine limit. The finite edge formula supplies an
+independent analytic reference for the geometric moment construction.
+
+\subsection{Geometric compilation of projective banks}
+\label{sec:stargeometric}
+Triangulate each clipped cell footprint. The canonical numerical construction
+uses a positive triangle rule selected by denominator geometry and evaluates
+$J_G$ directly at its nodes. On a triangle $T$, let
+$[\ell_-,\ell_+]$ be the same-sign denominator range and put
+\begin{equation}
+ c_T=\frac{\ell_-+\ell_+}{2},\qquad
+ z=\frac{\ell}{c_T}-1,\qquad
+ r_T=\frac{\ell_+-\ell_-}{2|c_T|}<1.
+ \label{eq:stargeometricradius}
+\end{equation}
+The extrema occur at the three vertices. With
+$\rho_T=|\det H_G|/|c_T|^3$, the density is
+$J_G=\rho_T(1+z)^{-3}$. The radius $r_T$ is unchanged by nonzero rescaling
+of the homogeneous matrix.
+
+Let $\mathcal Q_K$ be a positive-weight triangle rule exact through total
+degree $10+K$, with physical weights $w_l>0$ satisfying
+$\sum_lw_l=|T|$. Define
+\begin{align}
+ \widehat M_{T,ij}
+ &=\sum_{l=1}^{L_K}w_lJ_G(p_l)
+ B_i^5(p_{l,x})B_j^5(p_{l,y}),\nonumber\\
+ \widehat I_{T,a}
+ &=\sum_{i,j}(P_{C,ij,a}-R_a)\widehat M_{T,ij}.
+ \label{eq:starintegratedpolyphase}
+\end{align}
+Every channel uses the same 36 nonnegative moment weights. Forming these
+weights before channel contraction gives $36L_K$ geometric contributions
+and $36c$ control contributions per triangle.
+
+For barycentric coordinates $(1-u-v,u,v)$ on a triangle with vertices
+$a,b,d$, the node denominator is
+\begin{equation}
+ \ell(p)=\ell(a)+u[\ell(b)-\ell(a)]+v[\ell(d)-\ell(a)].
+ \label{eq:stardenominatorreuse}
+\end{equation}
+The three values used to select the rule therefore also evaluate its density.
+When $r_T=0$, one constant density serves all nodes.
+
+\subsubsection{A fixed geometric rule table}
+Use the positive interior Xiao--Gimbutas triangle rules of degrees ten through
+sixteen. The following table fixes the admissible radii and node counts:
+\begin{center}
+\small
+\begin{tabular}{c r r r}
+$K$ & Maximum $r_T$ & Exact degree & $L_K$ \\
+\hline
+0 & $0$ & 10 & 25 \\
+1 & $0.000009$ & 11 & 28 \\
+2 & $0.00036$ & 12 & 33 \\
+3 & $0.0023$ & 13 & 37 \\
+4 & $0.0074$ & 14 & 42 \\
+5 & $0.0159$ & 15 & 49 \\
+6 & $0.0276$ & 16 & 55
+\end{tabular}
+\end{center}
+Choose the first row containing $r_T$. If no row contains it, join the three
+edge midpoints and apply the same table to the four child triangles.
+The source controls and channel values do not enter this choice. The
+published rule coordinates and weights are retained from the
+\href{https://github.com/zgimbutas/triasymq/tree/25a42d3287118cd9064b57de457947fb937691a9}
+{Xiao--Gimbutas triangle tables}.
+
+\begin{proposition}[Finite geometric partition]
+For a fixed nonsingular homography whose denominator has no zero on the
+footprint, midpoint subdivision terminates after finitely many levels.
+\end{proposition}
+\begin{proof}
+Compactness gives $m_\ell=\min|\ell|>0$. On a triangle of diameter $h$,
+$\ell_+-\ell_-\leq\|\nabla\ell\|h$ and $|c_T|\geq m_\ell$.
+Each midpoint child has half its parent's diameter. After $n$ levels,
+\begin{equation}
+ r_T\leq\frac{\|\nabla\ell\|h_0}{2^{n+1}m_\ell}.
+\end{equation}
+This eventually lies below the final table radius. Constant denominators
+use the first row directly.
+\end{proof}
+
+\subsubsection{Uniform accuracy of the moment operator}
+The table is established from polynomial exactness and a uniform remainder.
+Write
+\begin{equation}
+ S_K(z)=\sum_{k=0}^K(-1)^k\binom{k+2}{2}z^k.
+\end{equation}
+For $n\geq1$, the absolute series tail is
+\begin{align}
+ T_n(r)&=\sum_{k=n}^\infty\binom{k+2}{2}r^k\nonumber\\
+ &=\frac{r^n}{2}\left[
+ \frac{r(1+r)}{(1-r)^3}+\frac{(2n+3)r}{(1-r)^2}\right.\nonumber\\
+ &\hspace{20mm}\left.+\frac{(n+1)(n+2)}{1-r}\right].
+ \label{eq:starwarptail}
+\end{align}
+The closed form follows by writing $k=n+j$ and summing $1,j,j^2$ against
+$r^j$. Hence $|(1+z)^{-3}-S_K(z)|\leq T_{K+1}(r_T)$.
+
+\begin{theorem}[Geometry-only moment accuracy]
+Let $m_T=\int_TJ_G$. A positive rule exact through degree $10+K$ satisfies
+\begin{equation}
+ \frac{\sum_{i,j}|\widehat M_{T,ij}-M_{T,ij}|}{m_T}
+ \leq 2(1+r_T)^3T_{K+1}(r_T).
+ \label{eq:stargeometricerror}
+\end{equation}
+Every row of the geometric table makes the right-hand side at most
+$\varepsilon_g=10^{-9}$. The same mass-relative bound holds after assembling
+all triangle pieces of a footprint.
+\end{theorem}
+\begin{proof}
+Put $b_{ij}=B_i^5B_j^5$. Its total degree is at most ten, so
+$\mathcal Q_K$ integrates $b_{ij}S_K(z)$ exactly. Only the remainder
+$R_K=(1+z)^{-3}-S_K(z)$ contributes to the moment defect. Positivity of the
+rule and $\sum_{i,j}b_{ij}=1$ give
+\begin{align}
+ \sum_{i,j}|\widehat M_{T,ij}-M_{T,ij}|
+ &\leq\rho_T\left(\int_T|R_K|+
+ \mathcal Q_K(|R_K|)\right)\nonumber\\
+ &\leq2|T|\rho_TT_{K+1}(r_T).
+\end{align}
+Since $m_T\geq|T|\rho_T(1+r_T)^{-3}$,
+\eqref{eq:stargeometricerror} follows. The right-hand side is nondecreasing
+in $r_T$; substitution of each table endpoint gives the stated budget.
+The triangle inequality and additivity of Jacobian mass preserve it under
+assembly.
+\end{proof}
+
+The polynomial $S_K$ supplies the proof of the fixed table. The numerical
+bank in \eqref{eq:starintegratedpolyphase} evaluates the full rational
+density. Runtime planning consists of the vertex range, table lookup and
+geometric subdivision.
+
+\begin{proposition}[Pixel-functional accuracy]
+For a target basin $E$, let
+$D_{E,a}=\max_{C,i,j}|P_{C,ij,a}-R_a|$ over its contributing cells.
+Substitution of the geometric moments into \eqref{eq:starwarpfunctional}
+satisfies
+\begin{equation}
+ |(\widehat{\mathcal B}_FY)_{E,a}-(\mathcal B_FY)_{E,a}|
+ \leq\varepsilon_gD_{E,a}\frac{|E\cap Q|}{|E|}.
+ \label{eq:starwarperror}
+\end{equation}
+\end{proposition}
+\begin{proof}
+Contract the assembled absolute moment defect with the largest residual
+control and use $\sum_Tm_T=|E\cap Q|$. Division by $|E|$ gives the result.
+\end{proof}
+
+A constant field is reproduced through exact target coverage by choosing
+its constant value as $R$. For a partition of target basins, the absolute
+error in the area-weighted total is at most
+$\varepsilon_g\sum_E D_{E,a}|E\cap Q|$. A reference obtained from a fixed
+linear evaluation of the controls retains the source-state bank
+factorization. The geometric partition and its moments can be reused for
+any controls on the same lattice and warp.
+
+\subsubsection{Verification of the fixed construction}
+The degree-ten through degree-sixteen rules reproduce all reference-triangle
+monomials through their declared degrees with maximum relative discrepancy
+below $3\times10^{-14}$ in the retained tables. Their nodes lie in the
+triangle and their weights are positive. Independent finite edge evaluation
+at 220 decimal digits checks all 36 computed moments for 57 triangle and
+denominator configurations. These include both sides of every positive
+radius threshold, skew and thin triangles, and denominator ratios through
+$1999:1$. The largest measured mass-relative sum of absolute weight errors
+is $8.70\times10^{-10}$, including the floating-point subdivision and
+accumulation in the tested implementation.
+
+A separate pixel-functional check uses six source families, six homographies
+and three output sizes. The families include smooth oscillations, alternating
+samples, noise, a constant field, an isolated impulse and nearly transparent
+samples. Against a reference evaluated with a $10^{-12}$ pixel tolerance,
+8,640 sampled comparisons have maximum premultiplied-channel difference
+$1.33\times10^{-13}$. All source families produce the same geometric rule
+and subdivision counts for a common map and lattice. The retained moment
+and pixel receipts accompany the direct-warp geometric compilation study.
+
+\subsection{Composition, reuse, and numerical enclosures}
+The complete dataflow is
+\begin{equation}
+ Y\longmapsto S(Y)\longmapsto A_{S(Y)}Y
+ \longmapsto\{\Psi_q^TP,\mathsf M_E^TP\}.
+\end{equation}
+Independent lines within each factor share one raw-current bank. The next
+factor consumes their synthesized values. Shared-entity capacities are
+minima over incident constraints; the completion parameter is a global
+minimum. These associative reductions admit parallel trees, while exact
+lineage uses a prefix scan. Once $P$ is fixed, target basins and channel
+contractions can be partitioned independently. Repeated phase pairs reuse
+synthesis weights; repeated footprints reuse moment banks; common polygon
+edges reuse oriented primitives. For $N_T$ triangle pieces, moment-first
+quadrature has contraction work proportional to
+$\sum_{T=1}^{N_T}(36L_T+36c)$, in addition to geometry construction.
+
+The identities above hold in real arithmetic. A numerical enclosure can be
+assembled from storage, moment, and contraction errors. If stored controls
+satisfy $|\widehat P_e-P_e|\leq\delta_e$ and computed unnormalized exact-bank
+approximations satisfy $|\widehat M_e-M_e|\leq\mu_e$, then
+\begin{align}
+ \left|\sum_e\widehat M_e\widehat P_e-\sum_eM_eP_e\right|
+ &\leq\sum_e|\widehat M_e|\delta_e\nonumber\\
+ &\quad+\sum_e\mu_e|P_e|.
+\end{align}
+The final summation contributes its arithmetic enclosure and the result is
+divided by $|E|$. For reference-subtracted geometric banks,
+\eqref{eq:starwarperror} supplies the moment-approximation contribution.
+Bounds on computed coverage, primitive evaluation, and summation are added
+at the corresponding stages. Exact-bank positivity gives the sharper storage
+bound $\max_e\delta_e\,|E\cap Q|/|E|$ when moments are exact.
+
+Thus global admission, nonlinear factor state, joint control admission, and
+warped integration each have a finite compilation: a normalized global bank,
+a face-indexed two-dimensional stencil, a source-state matrix, and a
+geometry-dependent moment bank. Their composition retains the declared
+continuous source field and its conservative target functional.

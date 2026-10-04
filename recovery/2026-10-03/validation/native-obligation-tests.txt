@@ -1,0 +1,9 @@
+Test project /tmp/bfft-recovery-20261003/obligation
+    Start 1: obligation_tests
+1/2 Test #1: obligation_tests .................   Passed    0.27 sec
+    Start 2: obligation_minimal
+2/2 Test #2: obligation_minimal ...............   Passed    0.18 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   0.45 sec

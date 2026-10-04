@@ -1,0 +1,101 @@
+{
+  "python": {
+    "passed": 402,
+    "initial_import_errors_resolved": 2,
+    "suites": [
+      {
+        "log": "python-conv-backend.txt",
+        "tests_run": 23,
+        "passed": 23,
+        "import_errors": 0
+      },
+      {
+        "log": "python-conv-warp-optional.txt",
+        "tests_run": 10,
+        "passed": 10,
+        "import_errors": 0
+      },
+      {
+        "log": "python-conv_dual_pair.txt",
+        "tests_run": 13,
+        "passed": 13,
+        "import_errors": 0
+      },
+      {
+        "log": "python-conv_fast_aa.txt",
+        "tests_run": 16,
+        "passed": 16,
+        "import_errors": 0
+      },
+      {
+        "log": "python-conv_warp.txt",
+        "tests_run": 51,
+        "passed": 49,
+        "import_errors": 2
+      },
+      {
+        "log": "python-entropic_transport_closure.txt",
+        "tests_run": 53,
+        "passed": 53,
+        "import_errors": 0
+      },
+      {
+        "log": "python-krylov_bregman.txt",
+        "tests_run": 67,
+        "passed": 67,
+        "import_errors": 0
+      },
+      {
+        "log": "python-krylov_em.txt",
+        "tests_run": 3,
+        "passed": 3,
+        "import_errors": 0
+      },
+      {
+        "log": "python-library_acceleration.txt",
+        "tests_run": 17,
+        "passed": 17,
+        "import_errors": 0
+      },
+      {
+        "log": "python-scene_pattern.txt",
+        "tests_run": 149,
+        "passed": 149,
+        "import_errors": 0
+      },
+      {
+        "log": "python-tropical_transport.txt",
+        "tests_run": 2,
+        "passed": 2,
+        "import_errors": 0
+      }
+    ]
+  },
+  "native_ctest_targets_passed": 10,
+  "javascript_scripts_passed": 7,
+  "wasm": {
+    "cases": 120,
+    "checkedControls": 3000816,
+    "maxStorageError": 1.9095836023552692e-14,
+    "maxFusedError": 6.062042645638144e-09,
+    "maxByteError": 0,
+    "differentBytes": 0,
+    "maxConstantError": 0,
+    "passed": true
+  },
+  "consumer_ring": {
+    "status": "passed",
+    "max_field_error": 1.1102230246251565e-16,
+    "timings": "incidental; not used for a recovery performance claim"
+  },
+  "audio": "isolated app build passed; not installed or launched",
+  "publication_review": {
+    "remote_visibility": "PUBLIC",
+    "new_snapshot_staged_paths_at_review": 1368,
+    "new_snapshot_staged_bytes_at_review": 68563894,
+    "credential_pattern_alerts": 0,
+    "compiled_executable_alerts": 0,
+    "private_scene_data_and_raw_receipts": "excluded and preserved locally"
+  },
+  "whitespace": "Pre-existing source/vendor/reference/CSV/SVG whitespace retained for byte-for-byte provenance; authored recovery prose and scripts pass whitespace review."
+}

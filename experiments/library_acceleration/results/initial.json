@@ -1,0 +1,774 @@
+{
+  "metadata": {
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "skimage": "0.24.0",
+    "machine": "arm64",
+    "python": "3.9.6",
+    "library_hashes": {
+      "denoise_tv_chambolle": "5e3de7c499104c2e470adee64cb1a62ee14b6752633e07d959b25dbcb643948a",
+      "richardson_lucy": "be8229239bb9275c3198bcdfff54fea5e671d39c6d1a6b4a03db879dd660b32f"
+    },
+    "protocol": {
+      "out": "/tmp/library_acceleration_initial.json",
+      "sizes": "128,256",
+      "sources": "camera,coins",
+      "repeats": 3,
+      "passes": 200,
+      "tolerance": 0.005,
+      "seed": 0
+    },
+    "admission": "existing sampled defect screen; no path certificate",
+    "threads": "OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1"
+  },
+  "rows": [
+    {
+      "kind": "tv",
+      "source": "camera",
+      "size": 128,
+      "parameter": 0.1,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.018502957999999903,
+          0.01945533300000002,
+          0.01823295800000002
+        ],
+        "ordinary_adapter": [
+          0.017863041999999996,
+          0.01829462500000001,
+          0.018333750000000038
+        ],
+        "engine": [
+          0.048857665999999966,
+          0.04836262499999999,
+          0.04888966699999997
+        ]
+      },
+      "stats": {
+        "passes": 199,
+        "map_calls": 247,
+        "tangent_actions": 44,
+        "accepted": 0,
+        "rejected": 11,
+        "skipped": 0,
+        "events": []
+      },
+      "adapter_max_error": 0.0,
+      "relative_l2": 0.0,
+      "rmse": 0.0,
+      "max_error": 0.0,
+      "reference_rmse_to_clean": 0.03833680453576448,
+      "engine_rmse_to_clean": 0.03833680453576448,
+      "speedup": 0.37871145952817137,
+      "adapter_speedup": 0.3744473794552532
+    },
+    {
+      "kind": "tv",
+      "source": "camera",
+      "size": 128,
+      "parameter": 0.3,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.019101040999999985,
+          0.017663874999999996,
+          0.017758584000000077
+        ],
+        "ordinary_adapter": [
+          0.01785524999999999,
+          0.01755916599999996,
+          0.017967625000000043
+        ],
+        "engine": [
+          0.04875116700000004,
+          0.04913999999999996,
+          0.04920470900000007
+        ]
+      },
+      "stats": {
+        "passes": 199,
+        "map_calls": 247,
+        "tangent_actions": 44,
+        "accepted": 0,
+        "rejected": 11,
+        "skipped": 0,
+        "events": []
+      },
+      "adapter_max_error": 0.0,
+      "relative_l2": 0.0,
+      "rmse": 0.0,
+      "max_error": 0.0,
+      "reference_rmse_to_clean": 0.05994347750262607,
+      "engine_rmse_to_clean": 0.05994347750262607,
+      "speedup": 0.3613875457875476,
+      "adapter_speedup": 0.3633547008547009
+    },
+    {
+      "kind": "rl",
+      "source": "camera",
+      "size": 128,
+      "parameter": 9,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.0624131670000001,
+          0.06074020899999999,
+          0.06087820899999996
+        ],
+        "ordinary_adapter": [
+          0.06093829100000003,
+          0.060669041000000146,
+          0.061841041000000097
+        ],
+        "engine": [
+          0.10479312500000004,
+          0.1021510000000001,
+          0.10245033400000003
+        ]
+      },
+      "stats": {
+        "passes": 200,
+        "map_calls": 246,
+        "tangent_actions": 42,
+        "accepted": 1,
+        "rejected": 10,
+        "skipped": 15,
+        "events": [
+          {
+            "at": 178,
+            "horizon": 16,
+            "depth": 2,
+            "score": 0.004515783114053089
+          }
+        ]
+      },
+      "adapter_max_error": 0.0,
+      "relative_l2": 2.5506691620021998e-05,
+      "rmse": 1.788875149990933e-05,
+      "max_error": 0.00032415570925259374,
+      "reference_rmse_to_clean": 0.4171058291043994,
+      "engine_rmse_to_clean": 0.4171015574126478,
+      "speedup": 0.5942216742797534,
+      "adapter_speedup": 0.5948081242956222
+    },
+    {
+      "kind": "rl",
+      "source": "camera",
+      "size": 128,
+      "parameter": 25,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.0705655420000002,
+          0.07196529100000015,
+          0.07232704099999987
+        ],
+        "ordinary_adapter": [
+          0.07114383300000027,
+          0.07101049999999987,
+          0.07058229100000002
+        ],
+        "engine": [
+          0.10766287499999994,
+          0.10986116700000004,
+          0.1063345830000002
+        ]
+      },
+      "stats": {
+        "passes": 200,
+        "map_calls": 226,
+        "tangent_actions": 40,
+        "accepted": 2,
+        "rejected": 9,
+        "skipped": 30,
+        "events": [
+          {
+            "at": 161,
+            "horizon": 16,
+            "depth": 2,
+            "score": 0.00484332445912511
+          },
+          {
+            "at": 178,
+            "horizon": 16,
+            "depth": 2,
+            "score": 0.004415910863544876
+          }
+        ]
+      },
+      "adapter_max_error": 0.0,
+      "relative_l2": 0.0001065052132187886,
+      "rmse": 8.105852222035823e-05,
+      "max_error": 0.0024611899499085155,
+      "reference_rmse_to_clean": 0.5414591118595008,
+      "engine_rmse_to_clean": 0.5414961450561078,
+      "speedup": 0.6684318155167247,
+      "adapter_speedup": 0.6595634753391074
+    },
+    {
+      "kind": "tv",
+      "source": "coins",
+      "size": 128,
+      "parameter": 0.1,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.017570500000000155,
+          0.017639041000000244,
+          0.017626125000000048
+        ],
+        "ordinary_adapter": [
+          0.018326957999999838,
+          0.017765750000000136,
+          0.01844166600000019
+        ],
+        "engine": [
+          0.04906395899999971,
+          0.04951695800000033,
+          0.049467125000000056
+        ]
+      },
+      "stats": {
+        "passes": 199,
+        "map_calls": 247,
+        "tangent_actions": 44,
+        "accepted": 0,
+        "rejected": 11,
+        "skipped": 0,
+        "events": []
+      },
+      "adapter_max_error": 0.0,
+      "relative_l2": 0.0,
+      "rmse": 0.0,
+      "max_error": 0.0,
+      "reference_rmse_to_clean": 0.041544172127053455,
+      "engine_rmse_to_clean": 0.041544172127053455,
+      "speedup": 0.35631998018886335,
+      "adapter_speedup": 0.37048763193736883
+    },
+    {
+      "kind": "tv",
+      "source": "coins",
+      "size": 128,
+      "parameter": 0.3,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.017854832999999903,
+          0.018515832999999926,
+          0.017744375000000367
+        ],
+        "ordinary_adapter": [
+          0.022800957999999927,
+          0.01850720799999994,
+          0.017876416000000006
+        ],
+        "engine": [
+          0.048991833000000096,
+          0.049607084000000246,
+          0.04968750000000011
+        ]
+      },
+      "stats": {
+        "passes": 199,
+        "map_calls": 247,
+        "tangent_actions": 44,
+        "accepted": 0,
+        "rejected": 11,
+        "skipped": 0,
+        "events": []
+      },
+      "adapter_max_error": 0.0,
+      "relative_l2": 0.0,
+      "rmse": 0.0,
+      "max_error": 0.0,
+      "reference_rmse_to_clean": 0.07118338101251426,
+      "engine_rmse_to_clean": 0.07118338101251426,
+      "speedup": 0.3599250663473752,
+      "adapter_speedup": 0.3730759098841579
+    },
+    {
+      "kind": "rl",
+      "source": "coins",
+      "size": 128,
+      "parameter": 9,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.060810124999999715,
+          0.061728749999999444,
+          0.061799791000000326
+        ],
+        "ordinary_adapter": [
+          0.061838833999999565,
+          0.06147258300000047,
+          0.06246158399999935
+        ],
+        "engine": [
+          0.09601091700000008,
+          0.0972078750000005,
+          0.09722508300000055
+        ]
+      },
+      "stats": {
+        "passes": 200,
+        "map_calls": 229,
+        "tangent_actions": 40,
+        "accepted": 2,
+        "rejected": 9,
+        "skipped": 30,
+        "events": [
+          {
+            "at": 161,
+            "horizon": 16,
+            "depth": 2,
+            "score": 0.004396833925254131
+          },
+          {
+            "at": 178,
+            "horizon": 16,
+            "depth": 2,
+            "score": 0.004246189619918741
+          }
+        ]
+      },
+      "adapter_max_error": 0.0,
+      "relative_l2": 4.740581748338679e-05,
+      "rmse": 2.366980338066563e-05,
+      "max_error": 0.0004920121938845057,
+      "reference_rmse_to_clean": 0.272937817091719,
+      "engine_rmse_to_clean": 0.2729387943609388,
+      "speedup": 0.6350179962271485,
+      "adapter_speedup": 0.6361504559172726
+    },
+    {
+      "kind": "rl",
+      "source": "coins",
+      "size": 128,
+      "parameter": 25,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.07131358299999935,
+          0.07018787499999934,
+          0.07096012500000004
+        ],
+        "ordinary_adapter": [
+          0.07291770900000039,
+          0.0730643750000004,
+          0.07137616700000038
+        ],
+        "engine": [
+          0.1167383329999998,
+          0.11586887500000032,
+          0.1159805829999998
+        ]
+      },
+      "stats": {
+        "passes": 200,
+        "map_calls": 244,
+        "tangent_actions": 42,
+        "accepted": 1,
+        "rejected": 10,
+        "skipped": 15,
+        "events": [
+          {
+            "at": 178,
+            "horizon": 16,
+            "depth": 2,
+            "score": 0.004389559472488063
+          }
+        ]
+      },
+      "adapter_max_error": 0.0,
+      "relative_l2": 4.385736751393423e-05,
+      "rmse": 2.2641894047452915e-05,
+      "max_error": 0.0007450403551700902,
+      "reference_rmse_to_clean": 0.33196932858104966,
+      "engine_rmse_to_clean": 0.3319767563154515,
+      "speedup": 0.6118276280780565,
+      "adapter_speedup": 0.6287061774814541
+    },
+    {
+      "kind": "tv",
+      "source": "camera",
+      "size": 256,
+      "parameter": 0.1,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.07036295899999967,
+          0.07206345799999969,
+          0.06414775000000006
+        ],
+        "ordinary_adapter": [
+          0.06457125000000019,
+          0.06431516700000017,
+          0.0622345830000004
+        ],
+        "engine": [
+          0.17955833300000013,
+          0.1788240829999994,
+          0.17740141699999956
+        ]
+      },
+      "stats": {
+        "passes": 199,
+        "map_calls": 247,
+        "tangent_actions": 44,
+        "accepted": 0,
+        "rejected": 11,
+        "skipped": 0,
+        "events": []
+      },
+      "adapter_max_error": 0.0,
+      "relative_l2": 0.0,
+      "rmse": 0.0,
+      "max_error": 0.0,
+      "reference_rmse_to_clean": 0.03488908203318023,
+      "engine_rmse_to_clean": 0.03488908203318023,
+      "speedup": 0.3934758552627383,
+      "adapter_speedup": 0.35965607048576553
+    },
+    {
+      "kind": "tv",
+      "source": "camera",
+      "size": 256,
+      "parameter": 0.3,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.06388245899999934,
+          0.0675969580000002,
+          0.06408229100000007
+        ],
+        "ordinary_adapter": [
+          0.06562537499999976,
+          0.061736208000000126,
+          0.06502008299999851
+        ],
+        "engine": [
+          0.17582108300000066,
+          0.17869491599999954,
+          0.18652083299999944
+        ]
+      },
+      "stats": {
+        "passes": 199,
+        "map_calls": 247,
+        "tangent_actions": 44,
+        "accepted": 0,
+        "rejected": 11,
+        "skipped": 0,
+        "events": []
+      },
+      "adapter_max_error": 0.0,
+      "relative_l2": 0.0,
+      "rmse": 0.0,
+      "max_error": 0.0,
+      "reference_rmse_to_clean": 0.05587203337260054,
+      "engine_rmse_to_clean": 0.05587203337260054,
+      "speedup": 0.35861283820744083,
+      "adapter_speedup": 0.36386084425590864
+    },
+    {
+      "kind": "rl",
+      "source": "camera",
+      "size": 256,
+      "parameter": 9,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.21617870800000105,
+          0.21533616700000024,
+          0.2190392499999998
+        ],
+        "ordinary_adapter": [
+          0.21551024999999946,
+          0.21451154100000025,
+          0.21500745899999885
+        ],
+        "engine": [
+          0.3381170830000002,
+          0.3345837920000001,
+          0.33752958300000024
+        ]
+      },
+      "stats": {
+        "passes": 200,
+        "map_calls": 230,
+        "tangent_actions": 40,
+        "accepted": 2,
+        "rejected": 9,
+        "skipped": 30,
+        "events": [
+          {
+            "at": 161,
+            "horizon": 16,
+            "depth": 2,
+            "score": 0.004496782613709494
+          },
+          {
+            "at": 178,
+            "horizon": 16,
+            "depth": 2,
+            "score": 0.004376879974371359
+          }
+        ]
+      },
+      "adapter_max_error": 0.0,
+      "relative_l2": 4.192681354192739e-05,
+      "rmse": 2.7730508125604612e-05,
+      "max_error": 0.0006535736130608427,
+      "reference_rmse_to_clean": 0.3309907841088371,
+      "engine_rmse_to_clean": 0.33098857399480724,
+      "speedup": 0.6404733655597853,
+      "adapter_speedup": 0.6370033023149817
+    },
+    {
+      "kind": "rl",
+      "source": "camera",
+      "size": 256,
+      "parameter": 25,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.2240054580000006,
+          0.22032958299999983,
+          0.220240875
+        ],
+        "ordinary_adapter": [
+          0.22145054199999947,
+          0.22098929199999873,
+          0.22214329199999838
+        ],
+        "engine": [
+          0.3342564580000005,
+          0.33926545899999994,
+          0.3358628340000003
+        ]
+      },
+      "stats": {
+        "passes": 200,
+        "map_calls": 226,
+        "tangent_actions": 40,
+        "accepted": 2,
+        "rejected": 9,
+        "skipped": 30,
+        "events": [
+          {
+            "at": 161,
+            "horizon": 16,
+            "depth": 2,
+            "score": 0.004418743587938871
+          },
+          {
+            "at": 178,
+            "horizon": 16,
+            "depth": 2,
+            "score": 0.004092152057275037
+          }
+        ]
+      },
+      "adapter_max_error": 0.0,
+      "relative_l2": 7.260423215449293e-05,
+      "rmse": 4.910933476526386e-05,
+      "max_error": 0.0018185335505975786,
+      "reference_rmse_to_clean": 0.38478409930332225,
+      "engine_rmse_to_clean": 0.38480410360254735,
+      "speedup": 0.656010611165151,
+      "adapter_speedup": 0.6593481611603363
+    },
+    {
+      "kind": "tv",
+      "source": "coins",
+      "size": 256,
+      "parameter": 0.1,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.06731000000000087,
+          0.06951549999999962,
+          0.06832799999999928
+        ],
+        "ordinary_adapter": [
+          0.07183887499999919,
+          0.060447166999999524,
+          0.05944366599999995
+        ],
+        "engine": [
+          0.1827338749999985,
+          0.17659783300000065,
+          0.17948829200000027
+        ]
+      },
+      "stats": {
+        "passes": 199,
+        "map_calls": 247,
+        "tangent_actions": 44,
+        "accepted": 0,
+        "rejected": 11,
+        "skipped": 0,
+        "events": []
+      },
+      "adapter_max_error": 0.0,
+      "relative_l2": 0.0,
+      "rmse": 0.0,
+      "max_error": 0.0,
+      "reference_rmse_to_clean": 0.040853630939594356,
+      "engine_rmse_to_clean": 0.040853630939594356,
+      "speedup": 0.38068221185145146,
+      "adapter_speedup": 0.3367749858581274
+    },
+    {
+      "kind": "tv",
+      "source": "coins",
+      "size": 256,
+      "parameter": 0.3,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.0657636669999988,
+          0.0714000420000005,
+          0.07036095799999842
+        ],
+        "ordinary_adapter": [
+          0.07160458399999925,
+          0.060547082999999446,
+          0.06462229100000272
+        ],
+        "engine": [
+          0.18035954200000148,
+          0.17783275000000032,
+          0.18084162499999934
+        ]
+      },
+      "stats": {
+        "passes": 199,
+        "map_calls": 247,
+        "tangent_actions": 44,
+        "accepted": 0,
+        "rejected": 11,
+        "skipped": 0,
+        "events": []
+      },
+      "adapter_max_error": 0.0,
+      "relative_l2": 0.0,
+      "rmse": 0.0,
+      "max_error": 0.0,
+      "reference_rmse_to_clean": 0.05594089404208774,
+      "engine_rmse_to_clean": 0.05594089404208774,
+      "speedup": 0.3901149737893981,
+      "adapter_speedup": 0.3582970453540084
+    },
+    {
+      "kind": "rl",
+      "source": "coins",
+      "size": 256,
+      "parameter": 9,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.21790254100000084,
+          0.2177798750000015,
+          0.21700987500000224
+        ],
+        "ordinary_adapter": [
+          0.21756008400000226,
+          0.2171194170000028,
+          0.21684312500000047
+        ],
+        "engine": [
+          0.3333416669999991,
+          0.3392179999999989,
+          0.33262612499999733
+        ]
+      },
+      "stats": {
+        "passes": 200,
+        "map_calls": 227,
+        "tangent_actions": 40,
+        "accepted": 2,
+        "rejected": 9,
+        "skipped": 30,
+        "events": [
+          {
+            "at": 144,
+            "horizon": 16,
+            "depth": 2,
+            "score": 0.004447750170403582
+          },
+          {
+            "at": 161,
+            "horizon": 16,
+            "depth": 2,
+            "score": 0.004265489618528581
+          }
+        ]
+      },
+      "adapter_max_error": 0.0,
+      "relative_l2": 4.338650479940414e-05,
+      "rmse": 2.108248137122875e-05,
+      "max_error": 0.00041324855968305485,
+      "reference_rmse_to_clean": 0.2349464495534728,
+      "engine_rmse_to_clean": 0.23495028337534454,
+      "speedup": 0.6533232912644014,
+      "adapter_speedup": 0.6513419667994982
+    },
+    {
+      "kind": "rl",
+      "source": "coins",
+      "size": 256,
+      "parameter": 25,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.2218870000000024,
+          0.22344729099999938,
+          0.22147933299999778
+        ],
+        "ordinary_adapter": [
+          0.22181133300000155,
+          0.22312404200000202,
+          0.2233470000000004
+        ],
+        "engine": [
+          0.34027212500000203,
+          0.33770287499999796,
+          0.33855645799999934
+        ]
+      },
+      "stats": {
+        "passes": 200,
+        "map_calls": 226,
+        "tangent_actions": 40,
+        "accepted": 2,
+        "rejected": 9,
+        "skipped": 30,
+        "events": [
+          {
+            "at": 161,
+            "horizon": 16,
+            "depth": 2,
+            "score": 0.004419667347414151
+          },
+          {
+            "at": 178,
+            "horizon": 16,
+            "depth": 2,
+            "score": 0.004072989173186035
+          }
+        ]
+      },
+      "adapter_max_error": 0.0,
+      "relative_l2": 5.97959604102278e-05,
+      "rmse": 2.8102653367286912e-05,
+      "max_error": 0.001309586139336516,
+      "reference_rmse_to_clean": 0.2261686078976404,
+      "engine_rmse_to_clean": 0.22617878596728108,
+      "speedup": 0.6553914266199076,
+      "adapter_speedup": 0.6590452987312457
+    }
+  ]
+}

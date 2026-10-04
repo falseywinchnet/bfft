@@ -1,0 +1,266 @@
+Analysis of sampling obligation_bench (pid 42774) every 10 milliseconds
+Process:         obligation_bench [42774]
+Path:            /private/tmp/*/obligation_bench
+Load Address:    0x102404000
+Identifier:      obligation_bench
+Version:         0
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  time [42773]
+Target Type:     live task
+
+Date/Time:       2026-10-03 23:19:34.171 -0400
+Launch Time:     2026-10-03 23:19:31.190 -0400
+OS Version:      macOS 26.5 (25F71)
+Report Version:  7
+Analysis Tool:   /usr/bin/sample
+
+Physical footprint:         8256K
+Physical footprint (peak):  8256K
+Idle exit:                  untracked
+----
+
+Call graph:
+    171 Thread_82812164   DispatchQueue_1: com.apple.main-thread  (serial)
+      171 start  (in dyld) + 6992  [0x1900d3e00]
+        171 main  (in obligation_bench) + 6776  [0x1024067e0]
+          95 obligation::World::advance(double)  (in obligation_bench) + 824  [0x102409a94]
+          + 51 obligation::World::Impl::solve_group(int)  (in obligation_bench) + 5808  [0x10240b7f0]
+          + ! 50 obligation::World::Impl::update_envelopes(std::vector<int> const&, bool)  (in obligation_bench) + 1240  [0x102410204]
+          + ! : 28 obligation::World::Impl::plan_pair(int)  (in obligation_bench) + 1652  [0x10240ea94]
+          + ! : | 12 obligation::World::Impl::plan_pair(int)  (in obligation_bench) + 1652  [0x10240ea94]
+          + ! : | + 12 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 220,504  [0x10241d28c,0x10241d3a8]
+          + ! : | 1 ???  (in <unknown binary>)  [0xcb0d70d08]
+          + ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1100  [0x10241d5fc]
+          + ! : | 1 ???  (in <unknown binary>)  [0xcb0d73d28]
+          + ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1304  [0x10241d6c8]
+          + ! : | 1 ???  (in <unknown binary>)  [0xcb0e4c610]
+          + ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1164  [0x10241d63c]
+          + ! : | 1 ???  (in <unknown binary>)  [0xcb0e4d668]
+          + ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1164  [0x10241d63c]
+          + ! : | 1 ???  (in <unknown binary>)  [0xcb106b3e8]
+          + ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1100  [0x10241d5fc]
+          + ! : | 1 ???  (in <unknown binary>)  [0xcb10782a0]
+          + ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1188  [0x10241d654]
+          + ! : | 1 ???  (in <unknown binary>)  [0xcb1079888]
+          + ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1476  [0x10241d774]
+          + ! : | 1 ???  (in <unknown binary>)  [0xcb114c790]
+          + ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1100  [0x10241d5fc]
+          + ! : | 1 ???  (in <unknown binary>)  [0xcb1173ca0]
+          + ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1164  [0x10241d63c]
+          + ! : | 1 ???  (in <unknown binary>)  [0xcb11f4388]
+          + ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1164  [0x10241d63c]
+          + ! : | 1 ???  (in <unknown binary>)  [0xcb11f5018]
+          + ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1164  [0x10241d63c]
+          + ! : | 1 ???  (in <unknown binary>)  [0xcb11fc528]
+          + ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1604  [0x10241d7f4]
+          + ! : | 1 ???  (in <unknown binary>)  [0xcb12c4ad8]
+          + ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1460  [0x10241d764]
+          + ! : | 1 ???  (in <unknown binary>)  [0xcb12c9988]
+          + ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1536  [0x10241d7b0]
+          + ! : | 1 ???  (in <unknown binary>)  [0xcb13adf30]
+          + ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1536  [0x10241d7b0]
+          + ! : | 1 obligation::World::Impl::plan_pair(int)  (in obligation_bench) + 1456  [0x10240e9d0]
+          + ! : 11 obligation::World::Impl::plan_pair(int)  (in obligation_bench) + 1308  [0x10240e93c]
+          + ! : | 11 obligation::World::Impl::placed(int, double)  (in obligation_bench) + 360  [0x102413674]
+          + ! : |   11 obligation::World::Impl::placed(int, double)  (in obligation_bench) + 360  [0x102413674]
+          + ! : |     11 zc::phys::transform_hull(zc::phys::HullData const&, zc::phys::Vec3, zc::phys::Quat, zc::phys::WorldHull&)  (in obligation_bench) + 472,244,...  [0x10241cc30,0x10241cb4c,...]
+          + ! : 11 obligation::World::Impl::plan_pair(int)  (in obligation_bench) + 1336  [0x10240e958]
+          + ! :   10 obligation::World::Impl::placed(int, double)  (in obligation_bench) + 360  [0x102413674]
+          + ! :   + 10 obligation::World::Impl::placed(int, double)  (in obligation_bench) + 360  [0x102413674]
+          + ! :   +   10 zc::phys::transform_hull(zc::phys::HullData const&, zc::phys::Vec3, zc::phys::Quat, zc::phys::WorldHull&)  (in obligation_bench) + 472,412,...  [0x10241cc30,0x10241cbf4,...]
+          + ! :   1 obligation::World::Impl::placed(int, double)  (in obligation_bench) + 60  [0x102413548]
+          + ! :     1 obligation::World::Impl::predicted(int, double) const  (in obligation_bench) + 92  [0x10240ba14]
+          + ! 1 obligation::World::Impl::update_envelopes(std::vector<int> const&, bool)  (in obligation_bench) + 1012  [0x102410120]
+          + !   1 <deduplicated_symbol>  (in libc++.1.dylib) + 576  [0x1903aadf4]
+          + !     1 <deduplicated_symbol>  (in libc++.1.dylib) + 840  [0x1903af73c]
+          + 17 obligation::World::Impl::solve_group(int)  (in obligation_bench) + 5100  [0x10240b52c]
+          + ! 16 obligation::World::Impl::solve_group(int)::'lambda'(bool)::operator()(bool) const  (in obligation_bench) + 1592  [0x1024172a0]
+          + ! : 9 obligation::World::Impl::impact_atomic(obligation::(anonymous namespace)::Row&, bool)  (in obligation_bench) + 524,864,...  [0x102414cdc,0x102414e30,...]
+          + ! : 6 obligation::World::Impl::impact_atomic(obligation::(anonymous namespace)::Row&, bool)  (in obligation_bench) + 1692  [0x10241516c]
+          + ! : | 6 obligation::World::Impl::impulse(int, zc::phys::Vec3, zc::phys::Vec3)  (in obligation_bench) + 0,16,...  [0x10240cc7c,0x10240cc8c,...]
+          + ! : 1 obligation::World::Impl::solve_group(int)::'lambda'(bool)::operator()(bool) const  (in obligation_bench) + 1600  [0x1024172a8]
+          + ! 1 obligation::World::Impl::solve_group(int)::'lambda'(bool)::operator()(bool) const  (in obligation_bench) + 1696  [0x102417308]
+          + !   1 std::__hash_table<std::__hash_value_type<int, std::vector<int>>>::__emplace_unique_key_args<int, std::piecewise_construct_t const&, std::tuple<int const&>, std::tuple<>>(int const&, std::piecewise_construct_t const&, std::tuple<int const&>&&, std::tuple<>&&)  (in obligation_bench) + 220  [0x102417a70]
+          + 12 obligation::World::Impl::solve_group(int)  (in obligation_bench) + 208  [0x10240a210]
+          + ! 12 obligation::World::Impl::rows_for(std::vector<int> const&)  (in obligation_bench) + 524  [0x102416c0c]
+          + !   12 obligation::World::Impl::rows_for_pairs(std::vector<int> const&)  (in obligation_bench) + 176  [0x102413d74]
+          + !     10 obligation::World::Impl::refresh_pair(int, bool)  (in obligation_bench) + 1488  [0x102412630]
+          + !     : 1 ???  (in <unknown binary>)  [0xcb0d73148]
+          + !     : | 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1188  [0x10241d654]
+          + !     : 1 ???  (in <unknown binary>)  [0xcb0e33328]
+          + !     : | 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1188  [0x10241d654]
+          + !     : 1 ???  (in <unknown binary>)  [0xcb0ef0250]
+          + !     : | 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1188  [0x10241d654]
+          + !     : 1 ???  (in <unknown binary>)  [0xcb114e188]
+          + !     : | 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1164  [0x10241d63c]
+          + !     : 1 ???  (in <unknown binary>)  [0xcb114f250]
+          + !     : | 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1188  [0x10241d654]
+          + !     : 1 ???  (in <unknown binary>)  [0xcb11f4ce8]
+          + !     : | 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1100  [0x10241d5fc]
+          + !     : 1 ???  (in <unknown binary>)  [0xcb11f4d00]
+          + !     : | 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1248  [0x10241d690]
+          + !     : 1 ???  (in <unknown binary>)  [0xcb12269b0]
+          + !     : | 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1100  [0x10241d5fc]
+          + !     : 1 ???  (in <unknown binary>)  [0xcb12c85d0]
+          + !     : | 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1604  [0x10241d7f4]
+          + !     : 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 2136  [0x10241da08]
+          + !     :   1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 2136  [0x10241da08]
+          + !     :     1 zc::phys::(anonymous namespace)::face_manifold(zc::phys::WorldHull const&, zc::phys::WorldHull const&, int, double, bool, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&)  (in obligation_bench) + 1528  [0x10241e4f0]
+          + !     2 obligation::World::Impl::refresh_pair(int, bool)  (in obligation_bench) + 1436  [0x1024125fc]
+          + !       2 zc::phys::bounds_overlap(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double)  (in obligation_bench) + 20,104  [0x10241d114,0x10241d168]
+          + 10 obligation::World::Impl::solve_group(int)  (in obligation_bench) + 3348  [0x10240ae54]
+          + ! 9 obligation::World::Impl::impact_atomic(obligation::(anonymous namespace)::Row&, bool)  (in obligation_bench) + 968,868,...  [0x102414e98,0x102414e34,...]
+          + ! 1 obligation::World::Impl::impact_atomic(obligation::(anonymous namespace)::Row&, bool)  (in obligation_bench) + 1692  [0x10241516c]
+          + !   1 obligation::World::Impl::impulse(int, zc::phys::Vec3, zc::phys::Vec3)  (in obligation_bench) + 132  [0x10240cd00]
+          + 2 obligation::World::Impl::impact_atomic(obligation::(anonymous namespace)::Row&, bool)  (in obligation_bench) + 2252  [0x10241539c]
+          + 2 obligation::World::Impl::solve_group(int)  (in obligation_bench) + 2476  [0x10240aaec]
+          + ! 2 obligation::World::Impl::rows_for(std::vector<int> const&)  (in obligation_bench) + 524  [0x102416c0c]
+          + !   2 obligation::World::Impl::rows_for_pairs(std::vector<int> const&)  (in obligation_bench) + 176  [0x102413d74]
+          + !     2 obligation::World::Impl::refresh_pair(int, bool)  (in obligation_bench) + 1488  [0x102412630]
+          + !       1 ???  (in <unknown binary>)  [0xcb0d712a8]
+          + !       : 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1188  [0x10241d654]
+          + !       1 ???  (in <unknown binary>)  [0xcb12c6c38]
+          + !         1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1100  [0x10241d5fc]
+          + 1 obligation::World::Impl::solve_group(int)  (in obligation_bench) + 5580  [0x10240b70c]
+          +   1 obligation::World::Impl::solve_group(int)::'lambda'(bool)::operator()(bool) const  (in obligation_bench) + 1592  [0x1024172a0]
+          +     1 obligation::World::Impl::impact_atomic(obligation::(anonymous namespace)::Row&, bool)  (in obligation_bench) + 1692  [0x10241516c]
+          +       1 obligation::World::Impl::impulse(int, zc::phys::Vec3, zc::phys::Vec3)  (in obligation_bench) + 104  [0x10240cce4]
+          76 obligation::World::advance(double)  (in obligation_bench) + 728  [0x102409a34]
+            40 obligation::World::Impl::transmit_arrival(int)  (in obligation_bench) + 1760  [0x102413334]
+            ! 38 obligation::World::Impl::update_envelopes(std::vector<int> const&, bool)  (in obligation_bench) + 1240  [0x102410204]
+            ! : 17 obligation::World::Impl::plan_pair(int)  (in obligation_bench) + 1652  [0x10240ea94]
+            ! : | 11 obligation::World::Impl::plan_pair(int)  (in obligation_bench) + 1652  [0x10240ea94]
+            ! : | + 11 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 220,224,...  [0x10241d28c,0x10241d290,...]
+            ! : | 2 obligation::World::Impl::plan_pair(int)  (in obligation_bench) + 1448,1476  [0x10240e9c8,0x10240e9e4]
+            ! : | 1 ???  (in <unknown binary>)  [0xcb0e13490]
+            ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1100  [0x10241d5fc]
+            ! : | 1 ???  (in <unknown binary>)  [0xcb106b5c8]
+            ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1244  [0x10241d68c]
+            ! : | 1 ???  (in <unknown binary>)  [0xcb10782e8]
+            ! : | + 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1164  [0x10241d63c]
+            ! : | 1 ???  (in <unknown binary>)  [0xcb1173d48]
+            ! : |   1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1108  [0x10241d604]
+            ! : 12 obligation::World::Impl::plan_pair(int)  (in obligation_bench) + 1308  [0x10240e93c]
+            ! : | 12 obligation::World::Impl::placed(int, double)  (in obligation_bench) + 360  [0x102413674]
+            ! : |   12 obligation::World::Impl::placed(int, double)  (in obligation_bench) + 360  [0x102413674]
+            ! : |     12 zc::phys::transform_hull(zc::phys::HullData const&, zc::phys::Vec3, zc::phys::Quat, zc::phys::WorldHull&)  (in obligation_bench) + 428,472,...  [0x10241cc04,0x10241cc30,...]
+            ! : 9 obligation::World::Impl::plan_pair(int)  (in obligation_bench) + 1336  [0x10240e958]
+            ! :   9 obligation::World::Impl::placed(int, double)  (in obligation_bench) + 360  [0x102413674]
+            ! :     7 obligation::World::Impl::placed(int, double)  (in obligation_bench) + 360  [0x102413674]
+            ! :     + 7 zc::phys::transform_hull(zc::phys::HullData const&, zc::phys::Vec3, zc::phys::Quat, zc::phys::WorldHull&)  (in obligation_bench) + 472,384,...  [0x10241cc30,0x10241cbd8,...]
+            ! :     2 zc::phys::transform_hull(zc::phys::HullData const&, zc::phys::Vec3, zc::phys::Quat, zc::phys::WorldHull&)  (in obligation_bench) + 20  [0x10241ca6c]
+            ! 1 obligation::World::Impl::update_envelopes(std::vector<int> const&, bool)  (in obligation_bench) + 396  [0x10240feb8]
+            ! : 1 obligation::World::Impl::envelope(int, double)  (in obligation_bench) + 248  [0x10240ddc4]
+            ! 1 obligation::World::Impl::update_envelopes(std::vector<int> const&, bool)  (in obligation_bench) + 824  [0x102410064]
+            !   1 obligation::Tree::query<obligation::World::Impl::update_envelopes(std::vector<int> const&, bool)::'lambda'(int)>(obligation::Bounds, obligation::World::Impl::update_envelopes(std::vector<int> const&, bool)::'lambda'(int)) const  (in obligation_bench) + 464  [0x102411828]
+            !     1 operator new(unsigned long)  (in libc++abi.dylib) + 52  [0x1904487e8]
+            !       1 _xzm_xzone_malloc_tiny  (in libsystem_malloc.dylib) + 12  [0x1902b3ee0]
+            11 obligation::World::Impl::plan_pair(int)  (in obligation_bench) + 1652  [0x10240ea94]
+            ! 3 obligation::World::Impl::plan_pair(int)  (in obligation_bench) + 1616,1484  [0x10240ea70,0x10240e9ec]
+            ! 2 obligation::World::Impl::plan_pair(int)  (in obligation_bench) + 1652  [0x10240ea94]
+            ! : 2 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 220  [0x10241d28c]
+            ! 1 ???  (in <unknown binary>)  [0xcb0d6d2d0]
+            ! : 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1340  [0x10241d6ec]
+            ! 1 ???  (in <unknown binary>)  [0xcb0eb9f28]
+            ! : 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1100  [0x10241d5fc]
+            ! 1 ???  (in <unknown binary>)  [0xcb114e1e8]
+            ! : 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1100  [0x10241d5fc]
+            ! 1 ???  (in <unknown binary>)  [0xcb1171258]
+            ! : 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1164  [0x10241d63c]
+            ! 1 ???  (in <unknown binary>)  [0xcb1224ca0]
+            ! : 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1100  [0x10241d5fc]
+            ! 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1780  [0x10241d8a4]
+            11 obligation::World::Impl::transmit_arrival(int)  (in obligation_bench) + 792  [0x102412f6c]
+            ! 10 obligation::World::Impl::impact_atomic(obligation::(anonymous namespace)::Row&, bool)  (in obligation_bench) + 448,828,...  [0x102414c90,0x102414e0c,...]
+            ! 1 obligation::World::Impl::impact_atomic(obligation::(anonymous namespace)::Row&, bool)  (in obligation_bench) + 1728  [0x102415190]
+            !   1 obligation::World::Impl::impulse(int, zc::phys::Vec3, zc::phys::Vec3)  (in obligation_bench) + 116  [0x10240ccf0]
+            4 obligation::World::Impl::transmit_arrival(int)  (in obligation_bench) + 560  [0x102412e84]
+            ! 4 obligation::World::Impl::rows_for_pairs(std::vector<int> const&)  (in obligation_bench) + 176  [0x102413d74]
+            !   4 obligation::World::Impl::refresh_pair(int, bool)  (in obligation_bench) + 1488  [0x102412630]
+            !     1 ???  (in <unknown binary>)  [0xcb0e4c4a0]
+            !     : 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1188  [0x10241d654]
+            !     1 ???  (in <unknown binary>)  [0xcb1078740]
+            !     : 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1188  [0x10241d654]
+            !     1 ???  (in <unknown binary>)  [0xcb114edd0]
+            !     : 1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 1224  [0x10241d678]
+            !     1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 2136  [0x10241da08]
+            !       1 zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 2136  [0x10241da08]
+            !         1 zc::phys::(anonymous namespace)::face_manifold(zc::phys::WorldHull const&, zc::phys::WorldHull const&, int, double, bool, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&)  (in obligation_bench) + 188  [0x10241dfb4]
+            3 obligation::World::Impl::plan_pair(int)  (in obligation_bench) + 1308  [0x10240e93c]
+            ! 3 obligation::World::Impl::placed(int, double)  (in obligation_bench) + 360  [0x102413674]
+            !   3 obligation::World::Impl::placed(int, double)  (in obligation_bench) + 360  [0x102413674]
+            !     3 zc::phys::transform_hull(zc::phys::HullData const&, zc::phys::Vec3, zc::phys::Quat, zc::phys::WorldHull&)  (in obligation_bench) + 592,1316,...  [0x10241cca8,0x10241cf7c,...]
+            2 obligation::World::Impl::plan_pair(int)  (in obligation_bench) + 1336  [0x10240e958]
+            ! 2 obligation::World::Impl::placed(int, double)  (in obligation_bench) + 360  [0x102413674]
+            !   2 obligation::World::Impl::placed(int, double)  (in obligation_bench) + 360  [0x102413674]
+            !     2 zc::phys::transform_hull(zc::phys::HullData const&, zc::phys::Vec3, zc::phys::Quat, zc::phys::WorldHull&)  (in obligation_bench) + 420,1652  [0x10241cbfc,0x10241d0cc]
+            2 obligation::World::Impl::transmit_arrival(int)  (in obligation_bench) + 1600  [0x102413294]
+            ! 2 obligation::World::Impl::transmit_arrival(int)  (in obligation_bench) + 1608  [0x10241329c]
+            1 obligation::World::Impl::handle_pair(int)  (in obligation_bench) + 88  [0x10240a0cc]
+            ! 1 obligation::World::Impl::materialize(int)  (in obligation_bench) + 204  [0x10240cb78]
+            !   1 obligation::World::Impl::tensors(obligation::(anonymous namespace)::Body&)  (in obligation_bench) + 816  [0x10240d900]
+            1 obligation::World::Impl::transmit_arrival(int)  (in obligation_bench) + 1636  [0x1024132b8]
+            ! 1 obligation::World::Impl::transmit_arrival(int)  (in obligation_bench) + 1272  [0x10241314c]
+            1 std::__hash_table<std::__hash_value_type<int, bool>>::__emplace_unique_key_args<int, std::piecewise_construct_t const&, std::tuple<int const&>, std::tuple<>>(int const&, std::piecewise_construct_t const&, std::tuple<int const&>&&, std::tuple<>&&)  (in obligation_bench) + 256  [0x102416048]
+
+Total number in stack (recursive counted multiple, when >=5):
+        42       zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench) + 0  [0x10241d1b0]
+        12       obligation::World::Impl::placed(int, double)  (in obligation_bench) + 360  [0x102413674]
+        7       zc::phys::transform_hull(zc::phys::HullData const&, zc::phys::Vec3, zc::phys::Quat, zc::phys::WorldHull&)  (in obligation_bench) + 0  [0x10241ca58]
+        6       obligation::World::Impl::plan_pair(int)  (in obligation_bench) + 1652  [0x10240ea94]
+
+Sort by top of stack, same collapsed (when >= 5):
+        zc::phys::collide_hulls(zc::phys::WorldHull const&, zc::phys::WorldHull const&, double, zc::phys::CollideScratch&, std::vector<zc::phys::ManifoldPoint>&, double&)  (in obligation_bench)        64
+        zc::phys::transform_hull(zc::phys::HullData const&, zc::phys::Vec3, zc::phys::Quat, zc::phys::WorldHull&)  (in obligation_bench)        47
+        obligation::World::Impl::impact_atomic(obligation::(anonymous namespace)::Row&, bool)  (in obligation_bench)        30
+        obligation::World::Impl::impulse(int, zc::phys::Vec3, zc::phys::Vec3)  (in obligation_bench)        9
+        obligation::World::Impl::plan_pair(int)  (in obligation_bench)        6
+
+Binary Images:
+       0x102404000 -        0x102420b43 +obligation_bench (0) <7113EDB4-646A-30F0-965D-E1EE44BB333F> /tmp/*/obligation_bench
+       0x19002c000 -        0x19007eb4b  libobjc.A.dylib (951.7) <FF1D8AE4-ABEF-35F1-A30A-1183B9CB414F> /usr/lib/libobjc.A.dylib
+       0x19007f000 -        0x1900b3d07  libdyld.dylib (1378) <B147D877-D0C2-388F-B38D-D3132E39905F> /usr/lib/system/libdyld.dylib
+       0x1900b4000 -        0x19015a217  dyld (1.0.0 - 1378) <A237EF81-B68B-37BA-A165-92C965529534> /usr/lib/dyld
+       0x19015b000 -        0x19015e228  libsystem_blocks.dylib (96) <CC947089-488D-316B-A9C7-46DEC0F73145> /usr/lib/system/libsystem_blocks.dylib
+       0x19015f000 -        0x1901b355f  libxpc.dylib (3102.120.13) <C40FCAE8-7A17-3D82-87CB-3DA4802ADEF1> /usr/lib/system/libxpc.dylib
+       0x1901b4000 -        0x1901d49ff  libsystem_trace.dylib (1861.120.4) <D0FABAB3-5AE7-3F10-8C62-60CBF5D70850> /usr/lib/system/libsystem_trace.dylib
+       0x1901d5000 -        0x1902835f7  libcorecrypto.dylib (1922.121.1) <A01A158D-6FE7-3B1C-A2C4-6BCB90D7314A> /usr/lib/system/libcorecrypto.dylib
+       0x190284000 -        0x1902d41d7  libsystem_malloc.dylib (812.100.31) <5FAE4807-4D2B-3A95-A63A-DD96D3DA11B4> /usr/lib/system/libsystem_malloc.dylib
+       0x1902d5000 -        0x19031c23f  libdispatch.dylib (1542.100.32) <F071EFE4-299F-3089-ACC4-0025B8FFB52A> /usr/lib/system/libdispatch.dylib
+       0x19031d000 -        0x19031fffb  libsystem_featureflags.dylib (103) <71FCFFBD-85F8-3365-AFE0-BECEA4369122> /usr/lib/system/libsystem_featureflags.dylib
+       0x190320000 -        0x1903a0d9f  libsystem_c.dylib (1752.120.2) <694B7881-1BF3-3D0F-8F19-B50AE4E8EF8A> /usr/lib/system/libsystem_c.dylib
+       0x1903a1000 -        0x190431ae7  libc++.1.dylib (2100.43) <5013C0F8-84A9-3B56-9FEB-C353816A750F> /usr/lib/libc++.1.dylib
+       0x190432000 -        0x19044c75f  libc++abi.dylib (2100.43) <E482D257-E5A0-3816-BD97-7B39342958DA> /usr/lib/libc++abi.dylib
+       0x19044d000 -        0x19048a2af  libsystem_kernel.dylib (12377.121.6) <CC1CF985-BC65-3725-809F-4C1E36B8F4BA> /usr/lib/system/libsystem_kernel.dylib
+       0x19048b000 -        0x190497b3b  libsystem_pthread.dylib (539.100.4) <4F33683C-18C8-39A1-800B-2E3BD43BCC13> /usr/lib/system/libsystem_pthread.dylib
+       0x190498000 -        0x1904a0963  libsystem_platform.dylib (375.120.2) <160FD864-8D15-36FC-9E97-9725388CFAFE> /usr/lib/system/libsystem_platform.dylib
+       0x1904a1000 -        0x1904d06eb  libsystem_info.dylib (600) <3D62F2D9-F516-31BF-83C7-E203D872300B> /usr/lib/system/libsystem_info.dylib
+       0x194468000 -        0x194471e5f  libsystem_darwin.dylib (1752.120.2) <8858F025-745A-388E-9544-080781CC9A69> /usr/lib/system/libsystem_darwin.dylib
+       0x1948d3000 -        0x1948e51b6  libsystem_notify.dylib (348.120.4) <64D76451-1E0C-369B-A631-54DA3140E083> /usr/lib/system/libsystem_notify.dylib
+       0x196ba0000 -        0x196bbaf7b  libsystem_networkextension.dylib (2226.120.19) <3A1DAD41-F14F-3595-B9BB-058A84308BE7> /usr/lib/system/libsystem_networkextension.dylib
+       0x196c3d000 -        0x196c54fdf  libsystem_asl.dylib (406) <F40838DF-2F15-3F62-970F-DEE25706BF1B> /usr/lib/system/libsystem_asl.dylib
+       0x1987fb000 -        0x198803387  libsystem_symptoms.dylib (2169.120.7) <F5029F5C-1BF3-31C7-892E-BC8606AC829E> /usr/lib/system/libsystem_symptoms.dylib
+       0x19ca9f000 -        0x19cad7257  libsystem_containermanager.dylib (725.120.2) <518BE44D-AA31-31E6-B44B-A37AD5E47040> /usr/lib/system/libsystem_containermanager.dylib
+       0x19deb0000 -        0x19deb45d7  libsystem_configuration.dylib (1405.120.5) <0F7BBC1C-3D50-3E59-A31F-E4672A80BCEB> /usr/lib/system/libsystem_configuration.dylib
+       0x19deb5000 -        0x19debb8cf  libsystem_sandbox.dylib (2680.120.12) <EC3A75EA-44C0-3A0B-9BF7-71C117B0A9C6> /usr/lib/system/libsystem_sandbox.dylib
+       0x19f50f000 -        0x19f5121fb  libquarantine.dylib (196.120.2) <5849009B-ACA3-3796-94C4-BBDF8D300EBA> /usr/lib/system/libquarantine.dylib
+       0x19fcae000 -        0x19fcb4d03  libsystem_coreservices.dylib (191.4.5) <9576143B-C303-35A3-BA63-1FD06EDA2BB1> /usr/lib/system/libsystem_coreservices.dylib
+       0x1a0239000 -        0x1a0276a77  libsystem_m.dylib (3312.100.1) <A7E0863C-101A-31A0-922B-ED9B02626151> /usr/lib/system/libsystem_m.dylib
+       0x1a0278000 -        0x1a027b527  libmacho.dylib (1378) <755441B4-C034-3E3A-8E3C-F424FBB28261> /usr/lib/system/libmacho.dylib
+       0x1a0295000 -        0x1a02a23a7  libcommonCrypto.dylib (600035) <CE357BB1-2D49-37CC-9FFE-D093936B1475> /usr/lib/system/libcommonCrypto.dylib
+       0x1a02a3000 -        0x1a02acca3  libunwind.dylib (2100.2) <FC8F0C4E-6FB0-3E27-ABEF-B0FA720CD5E4> /usr/lib/system/libunwind.dylib
+       0x1a02b5000 -        0x1a02bf7ff  libcopyfile.dylib (240) <8ACFAC7A-88E9-3EF4-853F-A9140FF110E5> /usr/lib/system/libcopyfile.dylib
+       0x1a02c0000 -        0x1a02c3987  libcompiler_rt.dylib (103.3) <AA79151F-C19D-3C7C-92F8-B10F04D82C1C> /usr/lib/system/libcompiler_rt.dylib
+       0x1a02c4000 -        0x1a02c878b  libsystem_collections.dylib (1752.120.2) <72DB5BE7-EF78-37D0-8AAD-53E37CFE4287> /usr/lib/system/libsystem_collections.dylib
+       0x1a02c9000 -        0x1a02cc4cf  libsystem_secinit.dylib (168.100.7) <E525C566-CDA4-3D99-B12B-1615FD54A1F3> /usr/lib/system/libsystem_secinit.dylib
+       0x1a02cd000 -        0x1a02cfbf7  libremovefile.dylib (85.100.6) <635E661D-80A7-340D-A165-3F7D318FDFC9> /usr/lib/system/libremovefile.dylib
+       0x1a02d0000 -        0x1a02d0f27  libkeymgr.dylib (31) <8C08891A-DF1C-3DCC-AB64-4742FD6BE9BA> /usr/lib/system/libkeymgr.dylib
+       0x1a02d1000 -        0x1a02d9e37  libsystem_dnssd.dylib (2881.120.11) <6F45DF3F-233B-3BC3-BA8C-B43E7DA884BF> /usr/lib/system/libsystem_dnssd.dylib
+       0x1a02da000 -        0x1a02df09b  libcache.dylib (95) <189B576E-6176-3F82-8FA4-5914B0BEAEE7> /usr/lib/system/libcache.dylib
+       0x1a02e0000 -        0x1a02e1ce3  libSystem.B.dylib (1356) <D65E4112-C151-3FF8-BEB7-4841436012D6> /usr/lib/libSystem.B.dylib
+       0x293517000 -        0x29351e349  libRosetta.dylib (367.9) <8651ED4F-6506-3788-B56B-32EE414A85CA> /usr/lib/libRosetta.dylib
+       0x295134000 -        0x295137a4b  libsystem_darwindirectory.dylib (122) <CF277A2C-C818-3F16-8B3F-3C7B39FCD164> /usr/lib/system/libsystem_darwindirectory.dylib
+       0x295138000 -        0x2951415d3  libsystem_eligibility.dylib (319.121.1) <DDAC0531-0262-3DDC-8EC8-80EB9438847A> /usr/lib/system/libsystem_eligibility.dylib
+       0x295142000 -        0x29514988b  libsystem_sanitizers.dylib (26.1) <44C4234F-8B2D-38D3-A774-B4B3C75AF3A7> /usr/lib/system/libsystem_sanitizers.dylib
+       0x29514a000 -        0x29514abb7  libsystem_trial.dylib (474.2.18.2) <68C583BA-AFF5-3916-86AE-6E38BFEF98D6> /usr/lib/system/libsystem_trial.dylib

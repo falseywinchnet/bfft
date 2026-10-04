@@ -1,0 +1,6661 @@
+{
+  "platform": "macOS-26.5-arm64-arm-64bit",
+  "records": [
+    {
+      "scene": "cavity",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "wrench60",
+      "status": "ok",
+      "processSeconds": 0.3612075,
+      "peakRssBytes": 2801664,
+      "metrics": {
+        "engine": "wrench",
+        "hz": 60,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.003595458,
+        "activeSeconds": 0.003595458,
+        "activeMeanMs": 0.019974766666666668,
+        "setupSeconds": 0.003012542,
+        "activationSeconds": 1.1049e-05,
+        "timing": {
+          "p50Ms": 0.004125,
+          "p95Ms": 0.050417,
+          "p99Ms": 0.319959,
+          "maxMs": 0.565416
+        },
+        "finite": true,
+        "maxMassRelativeError": 1.6253665080512292e-12,
+        "guards": 0,
+        "warnings": null,
+        "maxSampledOverlapMm": 0.02030551822170077,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 3,
+          "overlapMm": 0.02024961777118226,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 0.433333333333,
+        "lastSecondMaxSpeed": 1.28791316875e-06,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0.012960410147145641,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0.020296820718049453,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0.02025273330270947,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0.020233630158357496,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0.02021927196279097,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.02026381141187559,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.020234074335344354,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.020297663862995675,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0.02024895427507698,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 0.02027322025192988,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 0.020268613173988516,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 0.02024999141013884,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0.02030551822170077,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0.0202500168824506,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 0.020268542895393073,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 0.020272524242051677,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 0.02023193924536107,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.1,
+            "overlapMm": 0.020295594182252914,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.2,
+            "overlapMm": 0.020240861025526413,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.3,
+            "overlapMm": 0.020277017761493633,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.4,
+            "overlapMm": 0.020277035669803885,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.5,
+            "overlapMm": 0.020240809681926902,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.6,
+            "overlapMm": 0.02029517427383238,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.7,
+            "overlapMm": 0.020248542542668398,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.8,
+            "overlapMm": 0.02027192227815628,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.9,
+            "overlapMm": 0.020267504187804382,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 3,
+            "overlapMm": 0.02024961777118226,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "cavity",
+        "bottomTop": 0.006000000000000005,
+        "expectedMinimumCentreZ": 0.025687500000000005,
+        "rimZ": 0.08
+      },
+      "finalCentreZ": 0.0225879554691,
+      "insideCavity": true
+    },
+    {
+      "scene": "cavity",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "wrench120",
+      "status": "ok",
+      "processSeconds": 0.0051256249999999115,
+      "peakRssBytes": 2768896,
+      "metrics": {
+        "engine": "wrench",
+        "hz": 120,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.000713874,
+        "activeSeconds": 0.000713874,
+        "activeMeanMs": 0.0019829833333333334,
+        "setupSeconds": 0.000563,
+        "activationSeconds": 5.087e-06,
+        "timing": {
+          "p50Ms": 0.00075,
+          "p95Ms": 0.00575,
+          "p99Ms": 0.028375,
+          "maxMs": 0.063167
+        },
+        "finite": true,
+        "maxMassRelativeError": 1.6253665080512292e-12,
+        "guards": 0,
+        "warnings": null,
+        "maxSampledOverlapMm": 4.190134920024208e-05,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 3,
+          "overlapMm": 0,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 0.383333333333,
+        "lastSecondMaxSpeed": 1.27926342831e-06,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 2.4448209368435614e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 4.5860249877141546e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 7.828715048625867e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 1.107130130021533e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 1.4313906425596212e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 2.8228569409934068e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 2.380847204282166e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 1.4847860237317267e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 2.0887973677975735e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 2.7769843567899966e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 7.086460526890825e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 4.190134920024208e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 6.740886408090896e-08,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 3.4817600546611926e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 9.656365687095436e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 3.868307485877659e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.1,
+            "overlapMm": 3.0162615226661527e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.2,
+            "overlapMm": 3.8745862179258295e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.3,
+            "overlapMm": 8.626301496034161e-08,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.4,
+            "overlapMm": 3.1903680496915554e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.5,
+            "overlapMm": 1.2770396376655946e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.6,
+            "overlapMm": 1.9239110132275583e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.7,
+            "overlapMm": 2.557281629598368e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.8,
+            "overlapMm": 6.537608115454729e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.9,
+            "overlapMm": 3.253192977590441e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "cavity",
+        "bottomTop": 0.006000000000000005,
+        "expectedMinimumCentreZ": 0.025687500000000005,
+        "rimZ": 0.08
+      },
+      "finalCentreZ": 0.0222837898392,
+      "insideCavity": true
+    },
+    {
+      "scene": "cavity",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "rapier60",
+      "status": "ok",
+      "processSeconds": 0.500491042,
+      "peakRssBytes": 300941312,
+      "metrics": {
+        "engine": "rapier 0.21.0",
+        "hz": 60,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.038371123999999965,
+        "activeSeconds": 0.038371123999999986,
+        "activeMeanMs": 0.21317291111111103,
+        "setupSeconds": 0.002557457999999997,
+        "activationSeconds": 0.00012432099999989515,
+        "timing": {
+          "p50Ms": 0.04933299999999008,
+          "p95Ms": 0.17024999999998158,
+          "p99Ms": 1.0408749999999998,
+          "maxMs": 23.978959000000003
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.476826103745225e-08,
+        "guards": null,
+        "warnings": null,
+        "maxSampledOverlapMm": 5.447298709321539,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 3,
+          "overlapMm": 3.2212365104882936,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 0.3384622775517445,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 2.152401340495575,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 2.3359405413005074,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 3.7482816900335303,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 3.0640180537445496,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 3.6854909147448773,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 3.5738199014750824,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 2.611133176718559,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 2.8510903870944726,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 3.3221538271416526,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 3.874737750427391,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 5.096486956188044,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 4.454917396803715,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 3.2500826510206458,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 2.831802953030584,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 3.3620601358457805,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 3.0993222078799065,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 2.197903853891529,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 3.2693707688589364,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.1,
+            "overlapMm": 2.382987391769888,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.2,
+            "overlapMm": 2.621261321590102,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.3,
+            "overlapMm": 2.8559483692314314,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.4,
+            "overlapMm": 4.457565412088229,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.5,
+            "overlapMm": 5.447298709321539,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.6,
+            "overlapMm": 4.266009754802837,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.7,
+            "overlapMm": 4.347748291994275,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.8,
+            "overlapMm": 2.540015006362519,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.9,
+            "overlapMm": 3.4111424494659683,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 3,
+            "overlapMm": 3.2212365104882936,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "cavity",
+        "bottomTop": 0.006000000000000005,
+        "expectedMinimumCentreZ": 0.025687500000000005,
+        "rimZ": 0.08
+      },
+      "finalCentreZ": 0.019581131637096405,
+      "insideCavity": true
+    },
+    {
+      "scene": "cavity",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "rapier240",
+      "status": "ok",
+      "processSeconds": 0.503207916,
+      "peakRssBytes": 292929536,
+      "metrics": {
+        "engine": "rapier 0.21.0",
+        "hz": 240,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.049672586000000296,
+        "activeSeconds": 0.049672586000000254,
+        "activeMeanMs": 0.06898970277777813,
+        "setupSeconds": 0.0026433749999999917,
+        "activationSeconds": 0.00017390099999977428,
+        "timing": {
+          "p50Ms": 0.0262079999999969,
+          "p95Ms": 0.05762500000000159,
+          "p99Ms": 0.21829099999999357,
+          "maxMs": 24.139833999999993
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.476826103745225e-08,
+        "guards": null,
+        "warnings": null,
+        "maxSampledOverlapMm": 3.5207461612781916,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 3,
+          "overlapMm": 3.5207461612781916,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 0.27186995043199647,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 2.6236540599224494,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 1.64558964156264,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 2.6840389937892875,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 1.8567841842858481,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 2.970845262495564,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 1.816532902236754,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 2.3188592447042677,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 2.2968715713059087,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 2.670061103186257,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 2.612814366237369,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 2.917523575781505,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 3.0500184441587814,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 3.3402961072328656,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 2.395327042478382,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 3.407536181099736,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 3.056868644222098,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 2.5627874598259077,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 2.3066018081252917,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.1,
+            "overlapMm": 3.0191266361979503,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.2,
+            "overlapMm": 2.263262067580562,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.3,
+            "overlapMm": 2.395901240831799,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.4,
+            "overlapMm": 2.936995510185309,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.5,
+            "overlapMm": 2.6792087251102354,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.6,
+            "overlapMm": 1.651652474144832,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.7,
+            "overlapMm": 1.833739296825854,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.8,
+            "overlapMm": 2.29343961284715,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.9,
+            "overlapMm": 3.4419970294419624,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 3,
+            "overlapMm": 3.5207461612781916,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "cavity",
+        "bottomTop": 0.006000000000000005,
+        "expectedMinimumCentreZ": 0.025687500000000005,
+        "rimZ": 0.08
+      },
+      "finalCentreZ": 0.019593363627791405,
+      "insideCavity": true
+    },
+    {
+      "scene": "cavity",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "mujoco120",
+      "status": "ok",
+      "processSeconds": 0.11773770799999994,
+      "peakRssBytes": 45514752,
+      "metrics": {
+        "engine": "mujoco 3.2.3",
+        "hz": 120,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.006540044999999893,
+        "activeSeconds": 0.006540044999999897,
+        "activeMeanMs": 0.01816679166666638,
+        "setupSeconds": 0.002937083000000007,
+        "activationSeconds": 0.0002483730000000517,
+        "timing": {
+          "p50Ms": 0.01768700000000234,
+          "p95Ms": 0.023175300000004288,
+          "p99Ms": 0.03621903000000074,
+          "maxMs": 0.31320899999999485
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.551115123125783e-16,
+        "guards": null,
+        "warnings": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "maxSampledOverlapMm": 2.259515699833973,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 3,
+          "overlapMm": 1.032805431576943,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 0.19254197660173925,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 2.259515699833973,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0.2611900290894935,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0.7711475375243868,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 1.1287421486833498,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0.4762142145658789,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 1.2503579484563496,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.7844265209297147,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.6954248176667304,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 1.1081986968030513,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 1.4483428989969593,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 0.9991663108432957,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 1.2446973463210034,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 0.9003749000149686,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0.7195905840692651,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0.9626750995199171,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 0.8824232637104157,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 1.2021232544678673,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 1.1528356608173336,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.1,
+            "overlapMm": 1.5458282437637938,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.2,
+            "overlapMm": 0.6200879427021065,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.3,
+            "overlapMm": 1.001734944010198,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.4,
+            "overlapMm": 1.0042013666302094,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.5,
+            "overlapMm": 0.8528207664079942,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.6,
+            "overlapMm": 1.2134450018939793,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.7,
+            "overlapMm": 0.6076038444014819,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.8,
+            "overlapMm": 1.2960324049976637,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.9,
+            "overlapMm": 1.0840963376799817,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 3,
+            "overlapMm": 1.032805431576943,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "cavity",
+        "bottomTop": 0.006000000000000005,
+        "expectedMinimumCentreZ": 0.025687500000000005,
+        "rimZ": 0.08
+      },
+      "finalCentreZ": 0.02137816329874261,
+      "insideCavity": true
+    },
+    {
+      "scene": "cavity",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "mujoco480",
+      "status": "ok",
+      "processSeconds": 0.1477598750000002,
+      "peakRssBytes": 45432832,
+      "metrics": {
+        "engine": "mujoco 3.2.3",
+        "hz": 480,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.024092816999999815,
+        "activeSeconds": 0.024092816999999794,
+        "activeMeanMs": 0.016731122916666525,
+        "setupSeconds": 0.003203207999999999,
+        "activationSeconds": 0.0009146360000003712,
+        "timing": {
+          "p50Ms": 0.017707999999998225,
+          "p95Ms": 0.01970799999999398,
+          "p99Ms": 0.03383737000000521,
+          "maxMs": 0.6835830000000015
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.551115123125783e-16,
+        "guards": null,
+        "warnings": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "maxSampledOverlapMm": 0.032855983841667026,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 3,
+          "overlapMm": 0.009004221839537148,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 0.5166666666666667,
+        "lastSecondMaxSpeed": 0.0015126750079081951,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0.024798153603595476,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0.032855983841667026,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0.009086629595354313,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0.009151756440916627,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0.009206232119405612,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.009369692606554965,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.008776566386617564,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.009273517761959789,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0.008769644283247897,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 0.009363079455392866,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 0.009001348355156154,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 0.00872237847826269,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0.009328224658406749,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0.008916557909397806,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 0.009094494243956815,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 0.008974066269496102,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 0.009096833659687394,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.1,
+            "overlapMm": 0.008657704920912897,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.2,
+            "overlapMm": 0.008939478148850717,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.3,
+            "overlapMm": 0.009001388138416173,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.4,
+            "overlapMm": 0.008561843350606176,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.5,
+            "overlapMm": 0.008636952241438713,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.6,
+            "overlapMm": 0.008775404160295437,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.7,
+            "overlapMm": 0.009108628751562826,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.8,
+            "overlapMm": 0.008948174446144104,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.9,
+            "overlapMm": 0.00912560522891865,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 3,
+            "overlapMm": 0.009004221839537148,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "cavity",
+        "bottomTop": 0.006000000000000005,
+        "expectedMinimumCentreZ": 0.025687500000000005,
+        "rimZ": 0.08
+      },
+      "finalCentreZ": 0.023581030697378918,
+      "insideCavity": true
+    },
+    {
+      "scene": "cavity",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "wrench480",
+      "status": "ok",
+      "processSeconds": 0.006523374999999998,
+      "peakRssBytes": 2555904,
+      "metrics": {
+        "engine": "wrench",
+        "hz": 480,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.00176826,
+        "activeSeconds": 0.00176826,
+        "activeMeanMs": 0.0012279583333333333,
+        "setupSeconds": 0.000565833,
+        "activationSeconds": 1.8206e-05,
+        "timing": {
+          "p50Ms": 0.000417,
+          "p95Ms": 0.00575,
+          "p99Ms": 0.008917,
+          "maxMs": 0.017167
+        },
+        "finite": true,
+        "maxMassRelativeError": 1.6253665080512292e-12,
+        "guards": 0,
+        "warnings": null,
+        "maxSampledOverlapMm": 6.14479180012853e-05,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 3,
+          "overlapMm": 0,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 0.65,
+        "lastSecondMaxSpeed": 3.85181842873e-09,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 6.14479180012853e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 1.4452021393843162e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 1.1766639997426442e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 9.080888584492297e-07,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 6.559433040134732e-07,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 4.4896762089324804e-07,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 2.419925345178986e-07,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 3.499322793337756e-08,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.6,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.7,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.8,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2.9,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "cavity",
+        "bottomTop": 0.006000000000000005,
+        "expectedMinimumCentreZ": 0.025687500000000005,
+        "rimZ": 0.08
+      },
+      "finalCentreZ": 0.0222837924322,
+      "insideCavity": true
+    },
+    {
+      "scene": "freefall",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "wrench60",
+      "status": "ok",
+      "processSeconds": 0.004421833000000319,
+      "peakRssBytes": 2408448,
+      "metrics": {
+        "engine": "wrench",
+        "hz": 60,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 1.6416e-05,
+        "activeSeconds": 1.6416e-05,
+        "activeMeanMs": 0.0005472,
+        "setupSeconds": 0.000568584,
+        "activationSeconds": 1.834e-06,
+        "timing": {
+          "p50Ms": 0.00025,
+          "p95Ms": 0.000292,
+          "p99Ms": 0.000667,
+          "maxMs": 0.008333
+        },
+        "finite": true,
+        "maxMassRelativeError": 1.6253665080512292e-12,
+        "guards": 0,
+        "warnings": null,
+        "maxSampledOverlapMm": 0,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 0.5,
+          "overlapMm": 0,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 4.905,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "freefall",
+        "expectedZ": 98.77375
+      },
+      "finalCentreZ": 98.732875,
+      "positionErrorMm": 40.87499999999977
+    },
+    {
+      "scene": "freefall",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "wrench120",
+      "status": "ok",
+      "processSeconds": 0.004293667000000223,
+      "peakRssBytes": 2392064,
+      "metrics": {
+        "engine": "wrench",
+        "hz": 120,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 2.4417e-05,
+        "activeSeconds": 2.4417e-05,
+        "activeMeanMs": 0.00040695,
+        "setupSeconds": 0.000538333,
+        "activationSeconds": 1.752e-06,
+        "timing": {
+          "p50Ms": 0.00025,
+          "p95Ms": 0.000333,
+          "p99Ms": 0.000708,
+          "maxMs": 0.008166
+        },
+        "finite": true,
+        "maxMassRelativeError": 1.6253665080512292e-12,
+        "guards": 0,
+        "warnings": null,
+        "maxSampledOverlapMm": 0,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 0.5,
+          "overlapMm": 0,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 4.905,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "freefall",
+        "expectedZ": 98.77375
+      },
+      "finalCentreZ": 98.7533125,
+      "positionErrorMm": 20.437499999999886
+    },
+    {
+      "scene": "freefall",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "rapier60",
+      "status": "ok",
+      "processSeconds": 0.4988495000000004,
+      "peakRssBytes": 288751616,
+      "metrics": {
+        "engine": "rapier 0.21.0",
+        "hz": 60,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.024754793000000105,
+        "activeSeconds": 0.0247547930000001,
+        "activeMeanMs": 0.8251597666666701,
+        "setupSeconds": 0.0015451249999999988,
+        "activationSeconds": 0.0008578740000000234,
+        "timing": {
+          "p50Ms": 0.015332999999998265,
+          "p95Ms": 0.16541700000001924,
+          "p99Ms": 0.17083400000001348,
+          "maxMs": 23.728708999999995
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.476826103745225e-08,
+        "guards": null,
+        "warnings": null,
+        "maxSampledOverlapMm": 0,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 0.5,
+          "overlapMm": 0,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 4.904996395111084,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "freefall",
+        "expectedZ": 98.77375
+      },
+      "finalCentreZ": 98.7635269165039,
+      "positionErrorMm": 10.223083496100571
+    },
+    {
+      "scene": "freefall",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "rapier240",
+      "status": "ok",
+      "processSeconds": 0.4812712499999998,
+      "peakRssBytes": 292503552,
+      "metrics": {
+        "engine": "rapier 0.21.0",
+        "hz": 240,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.02595167799999999,
+        "activeSeconds": 0.025951677999999978,
+        "activeMeanMs": 0.21626398333333316,
+        "setupSeconds": 0.0015145830000000019,
+        "activationSeconds": 0.0008620909999999205,
+        "timing": {
+          "p50Ms": 0.011666000000005283,
+          "p95Ms": 0.0499590000000012,
+          "p99Ms": 0.16866699999999923,
+          "maxMs": 23.665541000000005
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.476826103745225e-08,
+        "guards": null,
+        "warnings": null,
+        "maxSampledOverlapMm": 0,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 0.5,
+          "overlapMm": 0,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 4.904973030090332,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "freefall",
+        "expectedZ": 98.77375
+      },
+      "finalCentreZ": 98.77247619628906,
+      "positionErrorMm": 1.2738037109443212
+    },
+    {
+      "scene": "freefall",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "mujoco120",
+      "status": "ok",
+      "processSeconds": 0.12657766599999976,
+      "peakRssBytes": 45121536,
+      "metrics": {
+        "engine": "mujoco 3.2.3",
+        "hz": 120,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.0002045819999999393,
+        "activeSeconds": 0.0002045819999999393,
+        "activeMeanMs": 0.0034096999999989885,
+        "setupSeconds": 0.0025703749999999997,
+        "activationSeconds": 4.900200000006183e-05,
+        "timing": {
+          "p50Ms": 0.003228999999993487,
+          "p95Ms": 0.004555950000012516,
+          "p99Ms": 0.011408250000002309,
+          "maxMs": 0.016792000000001583
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.551115123125783e-16,
+        "guards": null,
+        "warnings": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "maxSampledOverlapMm": 0,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 0.5,
+          "overlapMm": 0,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 4.904999999999994,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "freefall",
+        "expectedZ": 98.77375
+      },
+      "finalCentreZ": 98.75331249999999,
+      "positionErrorMm": 20.437500000014097
+    },
+    {
+      "scene": "freefall",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "mujoco480",
+      "status": "ok",
+      "processSeconds": 0.12494754199999969,
+      "peakRssBytes": 44974080,
+      "metrics": {
+        "engine": "mujoco 3.2.3",
+        "hz": 480,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.000650006999999897,
+        "activeSeconds": 0.000650006999999897,
+        "activeMeanMs": 0.0027083624999995706,
+        "setupSeconds": 0.0028142909999999965,
+        "activationSeconds": 0.00017054099999996852,
+        "timing": {
+          "p50Ms": 0.002542000000008149,
+          "p95Ms": 0.003374999999999906,
+          "p99Ms": 0.0038451199999982267,
+          "maxMs": 0.009959000000003826
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.551115123125783e-16,
+        "guards": null,
+        "warnings": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "maxSampledOverlapMm": 0,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 0.5,
+          "overlapMm": 0,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 4.904999999999977,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "freefall",
+        "expectedZ": 98.77375
+      },
+      "finalCentreZ": 98.76864062499999,
+      "positionErrorMm": 5.109375000017735
+    },
+    {
+      "scene": "freefall",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "wrench480",
+      "status": "ok",
+      "processSeconds": 0.004396999999999984,
+      "peakRssBytes": 2424832,
+      "metrics": {
+        "engine": "wrench",
+        "hz": 480,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 7.0084e-05,
+        "activeSeconds": 7.0084e-05,
+        "activeMeanMs": 0.00029201666666666667,
+        "setupSeconds": 0.000543083,
+        "activationSeconds": 4.332e-06,
+        "timing": {
+          "p50Ms": 0.00025,
+          "p95Ms": 0.000292,
+          "p99Ms": 0.000334,
+          "maxMs": 0.008041
+        },
+        "finite": true,
+        "maxMassRelativeError": 1.6253665080512292e-12,
+        "guards": 0,
+        "warnings": null,
+        "maxSampledOverlapMm": 0,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 0.5,
+          "overlapMm": 0,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 4.905,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "freefall",
+        "expectedZ": 98.77375
+      },
+      "finalCentreZ": 98.768640625,
+      "positionErrorMm": 5.109375000003524
+    },
+    {
+      "scene": "slab-1",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "wrench60",
+      "status": "ok",
+      "processSeconds": 0.004771625000000057,
+      "peakRssBytes": 2523136,
+      "metrics": {
+        "engine": "wrench",
+        "hz": 60,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.00015888,
+        "activeSeconds": 0.00015888,
+        "activeMeanMs": 0.0013239999999999999,
+        "setupSeconds": 0.000553458,
+        "activationSeconds": 2.001e-06,
+        "timing": {
+          "p50Ms": 0.000666,
+          "p95Ms": 0.007459,
+          "p99Ms": 0.008792,
+          "maxMs": 0.013791
+        },
+        "finite": true,
+        "maxMassRelativeError": 1.6253665080512292e-12,
+        "guards": 0,
+        "warnings": null,
+        "maxSampledOverlapMm": 7.553808439864085e-05,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 6.421016096602727e-05,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 0.3,
+        "lastSecondMaxSpeed": 1.26699230559e-06,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 7.553808439864085e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 1.0294063518268004e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 2.1463347571470948e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 4.0036808840460125e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 6.37913697698611e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 9.14343509239579e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 2.737514739892255e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 4.565468567085951e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 4.572893408383294e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 2.745366359246937e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 9.128891947929318e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 6.421016096602727e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 1
+      },
+      "finalCentreZ": 0.169184629855,
+      "caughtBySlab": true
+    },
+    {
+      "scene": "slab-1",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "wrench120",
+      "status": "ok",
+      "processSeconds": 0.005007041000000267,
+      "peakRssBytes": 2441216,
+      "metrics": {
+        "engine": "wrench",
+        "hz": 120,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.000336042,
+        "activeSeconds": 0.000336042,
+        "activeMeanMs": 0.001400175,
+        "setupSeconds": 0.00056975,
+        "activationSeconds": 4.004e-06,
+        "timing": {
+          "p50Ms": 0.00075,
+          "p95Ms": 0.004459,
+          "p99Ms": 0.007959,
+          "maxMs": 0.00975
+        },
+        "finite": true,
+        "maxMassRelativeError": 1.6253665080512292e-12,
+        "guards": 0,
+        "warnings": null,
+        "maxSampledOverlapMm": 2.6725567231489222e-05,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 1.1891510331984989e-05,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 0.566666666667,
+        "lastSecondMaxSpeed": 7.08884534161e-07,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 2.6725567231489222e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 2.0934071143230426e-07,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 2.47897451455259e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 2.4460574316043093e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 4.13211248551093e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 1.627202969589625e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 1.2225568030155287e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 8.078447744086503e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 2.0163042763199357e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 2.6593044433198543e-07,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 2.394668391358934e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 4.016804472373181e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 1.5828150873309355e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 1.1891510331984989e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 1
+      },
+      "finalCentreZ": 0.168602747342,
+      "caughtBySlab": true
+    },
+    {
+      "scene": "slab-1",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "rapier60",
+      "status": "ok",
+      "processSeconds": 0.5016571249999999,
+      "peakRssBytes": 293289984,
+      "metrics": {
+        "engine": "rapier 0.21.0",
+        "hz": 60,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.03152654599999978,
+        "activeSeconds": 0.0315265459999998,
+        "activeMeanMs": 0.262721216666665,
+        "setupSeconds": 0.0015800409999999943,
+        "activationSeconds": 0.0008668849999997699,
+        "timing": {
+          "p50Ms": 0.039583000000021684,
+          "p95Ms": 0.11975000000001046,
+          "p99Ms": 0.6279169999999965,
+          "maxMs": 23.897749999999988
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.476826103745225e-08,
+        "guards": null,
+        "warnings": null,
+        "maxSampledOverlapMm": 0.05580107476482743,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 0.05580107476482743,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 0.5166666666666667,
+        "lastSecondMaxSpeed": 9.582987124903853e-07,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0.04404733466067956,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0.0512033945388457,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0.05496229825913135,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0.055602493317707946,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.05574455164075731,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.055800318439186425,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.05580107476482743,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0.05580107476482743,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 0.05580107476482743,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 0.05580107476482743,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 0.05580107476482743,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0.05580107476482743,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0.05580107476482743,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 0.05580107476482743,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 0.05580107476482743,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 0.05580107476482743,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 1
+      },
+      "finalCentreZ": 0.16960382461547852,
+      "caughtBySlab": true
+    },
+    {
+      "scene": "slab-1",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "rapier240",
+      "status": "ok",
+      "processSeconds": 0.4925063750000005,
+      "peakRssBytes": 294567936,
+      "metrics": {
+        "engine": "rapier 0.21.0",
+        "hz": 240,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.04201859299999976,
+        "activeSeconds": 0.04201859299999974,
+        "activeMeanMs": 0.08753873541666612,
+        "setupSeconds": 0.0015708340000000049,
+        "activationSeconds": 0.0009226020000002782,
+        "timing": {
+          "p50Ms": 0.02541600000000699,
+          "p95Ms": 0.07108299999998735,
+          "p99Ms": 0.16066699999998946,
+          "maxMs": 23.85074999999999
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.476826103745225e-08,
+        "guards": null,
+        "warnings": null,
+        "maxSampledOverlapMm": 0.039020062856748305,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 0.039020062856748305,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 1,
+        "lastSecondMaxSpeed": 0.00024124134334163318,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0.03311263698934826,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.02740803302062056,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.020595545061480314,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.03614699141424316,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0.038616531472024374,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 0.03893580639682814,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 0.039020062856748305,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 0.039020062856748305,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0.039020062856748305,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0.039020062856748305,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 0.039020062856748305,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 0.039020062856748305,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 0.039020062856748305,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 1
+      },
+      "finalCentreZ": 0.16961367428302765,
+      "caughtBySlab": true
+    },
+    {
+      "scene": "slab-1",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "mujoco120",
+      "status": "ok",
+      "processSeconds": 0.14555291700000073,
+      "peakRssBytes": 45121536,
+      "metrics": {
+        "engine": "mujoco 3.2.3",
+        "hz": 120,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.002609868000000013,
+        "activeSeconds": 0.002609868000000015,
+        "activeMeanMs": 0.010874450000000063,
+        "setupSeconds": 0.003915083,
+        "activationSeconds": 0.00020758099999987345,
+        "timing": {
+          "p50Ms": 0.010479500000000475,
+          "p95Ms": 0.015081600000006037,
+          "p99Ms": 0.02578110999999813,
+          "maxMs": 0.05612499999999021
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.551115123125783e-16,
+        "guards": null,
+        "warnings": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "maxSampledOverlapMm": 8.512669637556453,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 0.5203724504118379,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 0.13145531378999825,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 8.512669637556453,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0.6141770321884121,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0.34835558932397315,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0.5375989376116275,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0.49789829605056957,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0.6146920681075196,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0.8925625501844114,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.5367336593065097,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.5155006737430912,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.21586151334007653,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0.4645595563876892,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 1.009585289321352,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 0.6277355641804705,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 0.4913264898599168,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0.20496115443624507,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0.46355358416078074,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 0.8956314767208928,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 0.8590176745343903,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 0.5203724504118379,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 1
+      },
+      "finalCentreZ": 0.16928172228723112,
+      "caughtBySlab": true
+    },
+    {
+      "scene": "slab-1",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "mujoco480",
+      "status": "ok",
+      "processSeconds": 0.13320683300000002,
+      "peakRssBytes": 45219840,
+      "metrics": {
+        "engine": "mujoco 3.2.3",
+        "hz": 480,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.005621408000000209,
+        "activeSeconds": 0.005621408000000203,
+        "activeMeanMs": 0.005855633333333544,
+        "setupSeconds": 0.002696584000000002,
+        "activationSeconds": 0.0005671170000000336,
+        "timing": {
+          "p50Ms": 0.005749999999998812,
+          "p95Ms": 0.009970500000004006,
+          "p99Ms": 0.015906029999996334,
+          "maxMs": 0.03354199999999752
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.551115123125783e-16,
+        "guards": null,
+        "warnings": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "maxSampledOverlapMm": 3.3155065530801364,
+        "maxFloorMm": 3.3155065530801364,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 0.011585877755727197,
+          "floorMm": 0.011585877755727197,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 0.16782858807218826,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0.09807715348661428,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0.8713875031406415,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0.0204780239488056,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0.031432113773932624,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 3.3155065530801364,
+            "floorMm": 3.3155065530801364,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.07708472329222976,
+            "floorMm": 0.07708472329222976,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.020225924730280648,
+            "floorMm": 0.020225924730280648,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.01025070696840727,
+            "floorMm": 0.01025070696840727,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0.013428182282552992,
+            "floorMm": 0.013428182282552992,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 0.01158663813256161,
+            "floorMm": 0.01158663813256161,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 0.011585877767495562,
+            "floorMm": 0.011585877767495562,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 0.011585877755734136,
+            "floorMm": 0.011585877755734136,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0.011585877755727197,
+            "floorMm": 0.011585877755727197,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0.011585877755727197,
+            "floorMm": 0.011585877755727197,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 0.011585877755727197,
+            "floorMm": 0.011585877755727197,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 0.011585877755727197,
+            "floorMm": 0.011585877755727197,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 0.011585877755727197,
+            "floorMm": 0.011585877755727197,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 1
+      },
+      "finalCentreZ": 0.017649352420668184,
+      "caughtBySlab": false
+    },
+    {
+      "scene": "slab-1",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "wrench480",
+      "status": "ok",
+      "processSeconds": 0.00556399999999968,
+      "peakRssBytes": 2523136,
+      "metrics": {
+        "engine": "wrench",
+        "hz": 480,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.001092688,
+        "activeSeconds": 0.001092688,
+        "activeMeanMs": 0.0011382166666666668,
+        "setupSeconds": 0.000550666,
+        "activationSeconds": 1.2783e-05,
+        "timing": {
+          "p50Ms": 0.000666,
+          "p95Ms": 0.003042,
+          "p99Ms": 0.005208,
+          "maxMs": 0.008334
+        },
+        "finite": true,
+        "maxMassRelativeError": 1.6253665080512292e-12,
+        "guards": 0,
+        "warnings": null,
+        "maxSampledOverlapMm": 4.2641375708196705e-05,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 4.2135534034093425e-05,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 0.8,
+        "lastSecondMaxSpeed": 7.98641124061e-07,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 1.46705764203503e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 2.8788134209811744e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 2.7885536546534695e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 1.4741304399379374e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 3.131981102244552e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 1.0930866573000131e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 3.459861683263732e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 7.205900875995042e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 3.779131729775287e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 3.566724360304363e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 4.2641375708196705e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 1.4053702646066313e-08,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 4.2135534034093425e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 1
+      },
+      "finalCentreZ": 0.16828376729,
+      "caughtBySlab": true
+    },
+    {
+      "scene": "slab-10",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "wrench60",
+      "status": "ok",
+      "processSeconds": 0.0046391669999996665,
+      "peakRssBytes": 2490368,
+      "metrics": {
+        "engine": "wrench",
+        "hz": 60,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.000231871,
+        "activeSeconds": 0.000231871,
+        "activeMeanMs": 0.0019322583333333332,
+        "setupSeconds": 0.000550417,
+        "activationSeconds": 2.211e-06,
+        "timing": {
+          "p50Ms": 0.001416,
+          "p95Ms": 0.005125,
+          "p99Ms": 0.008208,
+          "maxMs": 0.013084
+        },
+        "finite": true,
+        "maxMassRelativeError": 1.6253665080512292e-12,
+        "guards": 0,
+        "warnings": null,
+        "maxSampledOverlapMm": 7.14147352548633,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 2.854740824287383e-05,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 0.483333333333,
+        "lastSecondMaxSpeed": 2.5521166242e-05,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 7.14147352548633,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 2.818945318319166,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 1.0890202237003876,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0.3375660606731168,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0.1243647992032193,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0.04934452085894603,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0.019506096855748112,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0.007711306268698426,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.0030491913509955726,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.0012057623638150883,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.0004768180294212332,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0.00018856148475965284,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 6.83482379026934e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 1.9459227201812368e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 3.6786546586675684e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 1.2106488145313676e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 2.854740824287383e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 10
+      },
+      "finalCentreZ": 0.168283768938,
+      "caughtBySlab": true
+    },
+    {
+      "scene": "slab-10",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "wrench120",
+      "status": "ok",
+      "processSeconds": 0.004971083000000043,
+      "peakRssBytes": 2473984,
+      "metrics": {
+        "engine": "wrench",
+        "hz": 120,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.000395376,
+        "activeSeconds": 0.000395376,
+        "activeMeanMs": 0.0016474,
+        "setupSeconds": 0.000538625,
+        "activationSeconds": 3.748e-06,
+        "timing": {
+          "p50Ms": 0.001334,
+          "p95Ms": 0.00375,
+          "p99Ms": 0.008875,
+          "maxMs": 0.016292
+        },
+        "finite": true,
+        "maxMassRelativeError": 1.6253665080512292e-12,
+        "guards": 0,
+        "warnings": null,
+        "maxSampledOverlapMm": 6.2426940008009915,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 1.9867696016140357e-05,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 0.45,
+        "lastSecondMaxSpeed": 1.47922700498e-05,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 6.2426940008009915,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 2.383014201359057,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0.8516843274935793,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0.2582829488396443,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0.08357738296851935,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0.0319656196627327,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0.012226122935166117,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0.004675707862222822,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.0017882010032721496,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.0006838947264331541,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.00025786110144365715,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 9.013073024033424e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 2.5585066287803215e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 3.283027544265238e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 2.9676618801266486e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 2.362855938686792e-06,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 1.992212264601001e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 1.1087154833111512e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 1.1042111031089874e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 1.9867696016140357e-05,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 10
+      },
+      "finalCentreZ": 0.168283774969,
+      "caughtBySlab": true
+    },
+    {
+      "scene": "slab-10",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "rapier60",
+      "status": "ok",
+      "processSeconds": 0.49697779200000003,
+      "peakRssBytes": 292438016,
+      "metrics": {
+        "engine": "rapier 0.21.0",
+        "hz": 60,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.03188858400000007,
+        "activeSeconds": 0.03188858400000008,
+        "activeMeanMs": 0.26573820000000065,
+        "setupSeconds": 0.0015760410000000035,
+        "activationSeconds": 0.0008819630000001414,
+        "timing": {
+          "p50Ms": 0.03991600000000517,
+          "p95Ms": 0.12370899999999097,
+          "p99Ms": 0.8799579999999878,
+          "maxMs": 24.120374999999996
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.476826103745225e-08,
+        "guards": null,
+        "warnings": null,
+        "maxSampledOverlapMm": 0.03966828848464554,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 0.028546624075614924,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 0.5333333333333333,
+        "lastSecondMaxSpeed": 2.1991785200116637e-06,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0.012721835425166805,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0.013346011283527082,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0.03966828848464554,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0.031944483434798165,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0.029309299793611743,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0.028597923976775297,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.028512014357634508,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.028538524985355362,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.02853889075732363,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0.028548771159375708,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 0.028546810573931714,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 0.02854723346185084,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 0.028546826016467852,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0.028547384323562852,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0.028546950744667843,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 0.028547510239618212,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 0.028547016078461773,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 0.028546624075614924,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 10
+      },
+      "finalCentreZ": 0.16990458965301514,
+      "caughtBySlab": true
+    },
+    {
+      "scene": "slab-10",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "rapier240",
+      "status": "ok",
+      "processSeconds": 0.5050702500000002,
+      "peakRssBytes": 293257216,
+      "metrics": {
+        "engine": "rapier 0.21.0",
+        "hz": 240,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.040175781999999945,
+        "activeSeconds": 0.040175781999999875,
+        "activeMeanMs": 0.08369954583333308,
+        "setupSeconds": 0.0015405830000000122,
+        "activationSeconds": 0.0008648330000004951,
+        "timing": {
+          "p50Ms": 0.025291999999978998,
+          "p95Ms": 0.04020799999997848,
+          "p99Ms": 0.18366599999998812,
+          "maxMs": 23.761374999999987
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.476826103745225e-08,
+        "guards": null,
+        "warnings": null,
+        "maxSampledOverlapMm": 0.05530707569791071,
+        "maxFloorMm": 0.05530707569791071,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 0.05530707569791071,
+          "floorMm": 0.05530707569791071,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 0.040814031762854315,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.010326527517017653,
+            "floorMm": 0.010326527517017653,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.025428862977794342,
+            "floorMm": 0.025428862977794342,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0.046122501031999746,
+            "floorMm": 0.046122501031999746,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 0.05240620069074664,
+            "floorMm": 0.05240620069074664,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 0.05442729509996802,
+            "floorMm": 0.05442729509996802,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 0.05508558215577136,
+            "floorMm": 0.05508558215577136,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0.05529580405574594,
+            "floorMm": 0.05529580405574594,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0.05530707569791071,
+            "floorMm": 0.05530707569791071,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 0.05530707569791071,
+            "floorMm": 0.05530707569791071,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 0.05530707569791071,
+            "floorMm": 0.05530707569791071,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 0.05530707569791071,
+            "floorMm": 0.05530707569791071,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 10
+      },
+      "finalCentreZ": 0.017142072319984436,
+      "caughtBySlab": false
+    },
+    {
+      "scene": "slab-10",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "mujoco120",
+      "status": "ok",
+      "processSeconds": 0.124058958,
+      "peakRssBytes": 45301760,
+      "metrics": {
+        "engine": "mujoco 3.2.3",
+        "hz": 120,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.0015710919999998426,
+        "activeSeconds": 0.0015710919999998435,
+        "activeMeanMs": 0.006546216666666014,
+        "setupSeconds": 0.0023683339999999997,
+        "activationSeconds": 0.0001559549999999993,
+        "timing": {
+          "p50Ms": 0.0060829999999970075,
+          "p95Ms": 0.011235099999998268,
+          "p99Ms": 0.017492130000000362,
+          "maxMs": 0.02662500000000234
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.551115123125783e-16,
+        "guards": null,
+        "warnings": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "maxSampledOverlapMm": 5.139578583489249,
+        "maxFloorMm": 5.139578583489249,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 0.18530730537742388,
+          "floorMm": 0.18530730537742388,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 0.006650123062218301,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 5.139578583489249,
+            "floorMm": 5.139578583489249,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0.06661593000273705,
+            "floorMm": 0.06661593000273705,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0.44232422606266253,
+            "floorMm": 0.44232422606266253,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0.25061604083164923,
+            "floorMm": 0.25061604083164923,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0.49344201061331594,
+            "floorMm": 0.49344201061331594,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0.2327654451053096,
+            "floorMm": 0.2327654451053096,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0.19545323148213029,
+            "floorMm": 0.19545323148213029,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.25468635217660435,
+            "floorMm": 0.25468635217660435,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.20119861545704262,
+            "floorMm": 0.20119861545704262,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.18400703577922672,
+            "floorMm": 0.18400703577922672,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0.18526114344144876,
+            "floorMm": 0.18526114344144876,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 0.18530580117006798,
+            "floorMm": 0.18530580117006798,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 0.1853072645387928,
+            "floorMm": 0.1853072645387928,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 0.1853073048222291,
+            "floorMm": 0.1853073048222291,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0.1853073054149182,
+            "floorMm": 0.1853073054149182,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0.18530730538220477,
+            "floorMm": 0.18530730538220477,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 0.1853073053777847,
+            "floorMm": 0.1853073053777847,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 0.1853073053774447,
+            "floorMm": 0.1853073053774447,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 0.18530730537742388,
+            "floorMm": 0.18530730537742388,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 10
+      },
+      "finalCentreZ": 0.016130248330522227,
+      "caughtBySlab": false
+    },
+    {
+      "scene": "slab-10",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "mujoco480",
+      "status": "ok",
+      "processSeconds": 0.13302312500000024,
+      "peakRssBytes": 45465600,
+      "metrics": {
+        "engine": "mujoco 3.2.3",
+        "hz": 480,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.0021201570000002248,
+        "activeSeconds": 0.0021201570000002196,
+        "activeMeanMs": 0.002208496875000229,
+        "setupSeconds": 0.0027497499999999953,
+        "activationSeconds": 0.00023881199999979674,
+        "timing": {
+          "p50Ms": 0.002250000000009189,
+          "p95Ms": 0.003421149999992264,
+          "p99Ms": 0.006701000000000175,
+          "maxMs": 0.025499999999997747
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.551115123125783e-16,
+        "guards": null,
+        "warnings": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "maxSampledOverlapMm": 2.3633989276406577,
+        "maxFloorMm": 2.3633989276406577,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 0.012026852517797726,
+          "floorMm": 0.012026852517797726,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 0.08345707551266776,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 2.3633989276406577,
+            "floorMm": 2.3633989276406577,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0.005279951728498489,
+            "floorMm": 0.005279951728498489,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0.019715169042790193,
+            "floorMm": 0.019715169042790193,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0.02903848364081349,
+            "floorMm": 0.02903848364081349,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.020027592015865736,
+            "floorMm": 0.020027592015865736,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.09231805445793911,
+            "floorMm": 0.09231805445793911,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.030563666290679692,
+            "floorMm": 0.030563666290679692,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0.012026926623776024,
+            "floorMm": 0.012026926623776024,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 0.012026852520084091,
+            "floorMm": 0.012026852520084091,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 0.012026852517797726,
+            "floorMm": 0.012026852517797726,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 0.012026852517797726,
+            "floorMm": 0.012026852517797726,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0.012026852517797726,
+            "floorMm": 0.012026852517797726,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0.012026852517797726,
+            "floorMm": 0.012026852517797726,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 0.012026852517797726,
+            "floorMm": 0.012026852517797726,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 0.012026852517797726,
+            "floorMm": 0.012026852517797726,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 0.012026852517797726,
+            "floorMm": 0.012026852517797726,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 10
+      },
+      "finalCentreZ": 0.016273902006813036,
+      "caughtBySlab": false
+    },
+    {
+      "scene": "slab-10",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "wrench480",
+      "status": "ok",
+      "processSeconds": 0.007720291000000046,
+      "peakRssBytes": 2605056,
+      "metrics": {
+        "engine": "wrench",
+        "hz": 480,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.00119228,
+        "activeSeconds": 0.00119228,
+        "activeMeanMs": 0.0012419583333333334,
+        "setupSeconds": 0.000570958,
+        "activationSeconds": 1.3084e-05,
+        "timing": {
+          "p50Ms": 0.001083,
+          "p95Ms": 0.002917,
+          "p99Ms": 0.005709,
+          "maxMs": 0.011583
+        },
+        "finite": true,
+        "maxMassRelativeError": 1.6253665080512292e-12,
+        "guards": 0,
+        "warnings": null,
+        "maxSampledOverlapMm": 9.179822735294607e-07,
+        "maxFloorMm": 9.179822735294607e-07,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 1.5365486660812167e-10,
+          "floorMm": 1.5365486660812167e-10,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 1,
+        "lastSecondMaxSpeed": 4.43154508787e-08,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 9.179822735294607e-07,
+            "floorMm": 9.179822735294607e-07,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 3.411540182296502e-07,
+            "floorMm": 3.411540182296502e-07,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 1.268544644328351e-07,
+            "floorMm": 1.268544644328351e-07,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 4.708775383499564e-08,
+            "floorMm": 4.708775383499564e-08,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 1.7464151652601956e-08,
+            "floorMm": 1.7464151652601956e-08,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 6.482717140876559e-09,
+            "floorMm": 6.482717140876559e-09,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 2.4690284539108376e-09,
+            "floorMm": 2.4690284539108376e-09,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 8.251697936056956e-10,
+            "floorMm": 8.251697936056956e-10,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 3.6282088444750116e-10,
+            "floorMm": 3.6282088444750116e-10,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 1.5365486660812167e-10,
+            "floorMm": 1.5365486660812167e-10,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 10
+      },
+      "finalCentreZ": 0.0166027576116,
+      "caughtBySlab": false
+    },
+    {
+      "scene": "slab-30",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "wrench60",
+      "status": "ok",
+      "processSeconds": 0.00450129200000049,
+      "peakRssBytes": 2506752,
+      "metrics": {
+        "engine": "wrench",
+        "hz": 60,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.000204168,
+        "activeSeconds": 0.000204168,
+        "activeMeanMs": 0.0017013999999999998,
+        "setupSeconds": 0.000548875,
+        "activationSeconds": 2.825e-06,
+        "timing": {
+          "p50Ms": 0.000708,
+          "p95Ms": 0.005875,
+          "p99Ms": 0.008583,
+          "maxMs": 0.021209
+        },
+        "finite": true,
+        "maxMassRelativeError": 1.6253665080512292e-12,
+        "guards": 0,
+        "warnings": null,
+        "maxSampledOverlapMm": 10.379393175410247,
+        "maxFloorMm": 10.379393175410247,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 1.921718721653587e-07,
+          "floorMm": 1.921718721653587e-07,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 0.55,
+        "lastSecondMaxSpeed": 4.58887721215e-05,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 10.379393175410247,
+            "floorMm": 10.379393175410247,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 4.106751917443949,
+            "floorMm": 4.106751917443949,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 1.5574923860045362,
+            "floorMm": 1.5574923860045362,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0.5414515744061148,
+            "floorMm": 0.5414515744061148,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0.21417181855418188,
+            "floorMm": 0.21417181855418188,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0.08494416707309493,
+            "floorMm": 0.08494416707309493,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0.0336542553348064,
+            "floorMm": 0.0336542553348064,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0.013295543624006895,
+            "floorMm": 0.013295543624006895,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.005252256104395364,
+            "floorMm": 0.005252256104395364,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.0020747548674614202,
+            "floorMm": 0.0020747548674614202,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.0008195738314363543,
+            "floorMm": 0.0008195738314363543,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0.00032375536895487556,
+            "floorMm": 0.00032375536895487556,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 0.00012789569985363625,
+            "floorMm": 0.00012789569985363625,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 5.0525094729553244e-05,
+            "floorMm": 5.0525094729553244e-05,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 1.9960379286920737e-05,
+            "floorMm": 1.9960379286920737e-05,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 7.885740883201153e-06,
+            "floorMm": 7.885740883201153e-06,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 3.115508878659412e-06,
+            "floorMm": 3.115508878659412e-06,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 1.23089148595934e-06,
+            "floorMm": 1.23089148595934e-06,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 4.863281513611817e-07,
+            "floorMm": 4.863281513611817e-07,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 1.921718721653587e-07,
+            "floorMm": 1.921718721653587e-07,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 30
+      },
+      "finalCentreZ": 0.016283788463,
+      "caughtBySlab": false
+    },
+    {
+      "scene": "slab-30",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "wrench120",
+      "status": "ok",
+      "processSeconds": 0.004924582999999316,
+      "peakRssBytes": 2621440,
+      "metrics": {
+        "engine": "wrench",
+        "hz": 120,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.000437626,
+        "activeSeconds": 0.000437626,
+        "activeMeanMs": 0.0018234416666666664,
+        "setupSeconds": 0.000545875,
+        "activationSeconds": 4.871e-06,
+        "timing": {
+          "p50Ms": 0.00075,
+          "p95Ms": 0.0065,
+          "p99Ms": 0.009375,
+          "maxMs": 0.01525
+        },
+        "finite": true,
+        "maxMassRelativeError": 1.6253665080512292e-12,
+        "guards": 0,
+        "warnings": null,
+        "maxSampledOverlapMm": 67.56458992799777,
+        "maxFloorMm": 67.56458992799777,
+        "maxEscaped": 1,
+        "final": {
+          "t": 2,
+          "overlapMm": 7.743787486247378e-07,
+          "floorMm": 7.743787486247378e-07,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 0.75,
+        "lastSecondMaxSpeed": 0.000262367716109,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 67.56458992799777,
+            "floorMm": 67.56458992799777,
+            "pairs": 0,
+            "escaped": 1
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 26.80920250399644,
+            "floorMm": 26.80920250399644,
+            "pairs": 0,
+            "escaped": 1
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 10.252233737538392,
+            "floorMm": 10.252233737538392,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 3.8823420572472473,
+            "floorMm": 3.8823420572472473,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 1.4236489162158372,
+            "floorMm": 1.4236489162158372,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0.5434848334182791,
+            "floorMm": 0.5434848334182791,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0.2078383228002259,
+            "floorMm": 0.2078383228002259,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0.07952061187428694,
+            "floorMm": 0.07952061187428694,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.03039985327886116,
+            "floorMm": 0.03039985327886116,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.01162150694644995,
+            "floorMm": 0.01162150694644995,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.004442577767427985,
+            "floorMm": 0.004442577767427985,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0.001698244264974197,
+            "floorMm": 0.001698244264974197,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 0.0006491784835249703,
+            "floorMm": 0.0006491784835249703,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 0.0002481581359396745,
+            "floorMm": 0.0002481581359396745,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 9.486235168568169e-05,
+            "floorMm": 9.486235168568169e-05,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 3.626266669928824e-05,
+            "floorMm": 3.626266669928824e-05,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 1.3862072014564353e-05,
+            "floorMm": 1.3862072014564353e-05,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 5.299032702216211e-06,
+            "floorMm": 5.299032702216211e-06,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 2.0256646394989364e-06,
+            "floorMm": 2.0256646394989364e-06,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 7.743787486247378e-07,
+            "floorMm": 7.743787486247378e-07,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 30
+      },
+      "finalCentreZ": 0.0162837880127,
+      "caughtBySlab": false
+    },
+    {
+      "scene": "slab-30",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "rapier60",
+      "status": "ok",
+      "processSeconds": 0.5032311250000001,
+      "peakRssBytes": 291667968,
+      "metrics": {
+        "engine": "rapier 0.21.0",
+        "hz": 60,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.0317774569999998,
+        "activeSeconds": 0.03177745699999978,
+        "activeMeanMs": 0.26481214166666484,
+        "setupSeconds": 0.001621083000000013,
+        "activationSeconds": 0.0008932909999999196,
+        "timing": {
+          "p50Ms": 0.03995800000001282,
+          "p95Ms": 0.102958000000001,
+          "p99Ms": 0.22695800000002464,
+          "maxMs": 24.562667000000005
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.476826103745225e-08,
+        "guards": null,
+        "warnings": null,
+        "maxSampledOverlapMm": 0.05888481326024597,
+        "maxFloorMm": 0,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 0.05887656494329985,
+          "floorMm": 0,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 0.6,
+        "lastSecondMaxSpeed": 1.9733747095803845e-06,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0.019249996747544573,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0.045134715506905954,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0.055881406384655774,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0.058429584084834785,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.05883283590968347,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.05888481326024597,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.058883784440327824,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0.05887818926478272,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 0.05887957011474487,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 0.05887948193047943,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 0.058879158588182046,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0.058878570693421395,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0.0588780121937027,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 0.05887745369431707,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 0.05887686580055562,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 0.05887656494329985,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 30
+      },
+      "finalCentreZ": 0.16916155815124512,
+      "caughtBySlab": true
+    },
+    {
+      "scene": "slab-30",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "rapier240",
+      "status": "ok",
+      "processSeconds": 0.493206292,
+      "peakRssBytes": 294567936,
+      "metrics": {
+        "engine": "rapier 0.21.0",
+        "hz": 240,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.039521924000000354,
+        "activeSeconds": 0.03952192400000039,
+        "activeMeanMs": 0.08233734166666748,
+        "setupSeconds": 0.0015634999999999905,
+        "activationSeconds": 0.0008767529999998318,
+        "timing": {
+          "p50Ms": 0.02508299999999508,
+          "p95Ms": 0.03841600000001222,
+          "p99Ms": 0.1733329999999853,
+          "maxMs": 23.737125000000006
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.476826103745225e-08,
+        "guards": null,
+        "warnings": null,
+        "maxSampledOverlapMm": 0.04634055513920779,
+        "maxFloorMm": 0.04634055513920779,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 0.046340476185680046,
+          "floorMm": 0.046340476185680046,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 0.22419734233203448,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.0020380344787282456,
+            "floorMm": 0.0020380344787282456,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 0.02864863423485131,
+            "floorMm": 0.02864863423485131,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 0.012895459707333579,
+            "floorMm": 0.012895459707333579,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 0.031532146488075924,
+            "floorMm": 0.031532146488075924,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0.03834278365098115,
+            "floorMm": 0.03834278365098115,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0.04449650124316307,
+            "floorMm": 0.04449650124316307,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 0.046024119119369294,
+            "floorMm": 0.046024119119369294,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 0.04634055513920779,
+            "floorMm": 0.04634055513920779,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 0.046340476185680046,
+            "floorMm": 0.046340476185680046,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 30
+      },
+      "finalCentreZ": 0.01760876178741455,
+      "caughtBySlab": false
+    },
+    {
+      "scene": "slab-30",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "mujoco120",
+      "status": "ok",
+      "processSeconds": 0.13807020800000025,
+      "peakRssBytes": 45318144,
+      "metrics": {
+        "engine": "mujoco 3.2.3",
+        "hz": 120,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.0015383730000000221,
+        "activeSeconds": 0.0015383730000000234,
+        "activeMeanMs": 0.006409887500000098,
+        "setupSeconds": 0.0036500000000000005,
+        "activationSeconds": 0.000158980000000003,
+        "timing": {
+          "p50Ms": 0.0059589999999998255,
+          "p95Ms": 0.00917289999999847,
+          "p99Ms": 0.021015880000005278,
+          "maxMs": 0.03595900000000207
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.551115123125783e-16,
+        "guards": null,
+        "warnings": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "maxSampledOverlapMm": 7.989440605425129,
+        "maxFloorMm": 7.989440605425129,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 0.1727196917740599,
+          "floorMm": 0.1727196917740599,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 0.7833333333333333,
+        "lastSecondMaxSpeed": 2.022832097812153e-06,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 7.989440605425129,
+            "floorMm": 7.989440605425129,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0.5695375153934729,
+            "floorMm": 0.5695375153934729,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0.4072070750130302,
+            "floorMm": 0.4072070750130302,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0.1958731650015394,
+            "floorMm": 0.1958731650015394,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.17370028876135743,
+            "floorMm": 0.17370028876135743,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.17276174376288506,
+            "floorMm": 0.17276174376288506,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.17272150162945046,
+            "floorMm": 0.17272150162945046,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0.17271976996113478,
+            "floorMm": 0.17271976996113478,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 0.1727196951667176,
+            "floorMm": 0.1727196951667176,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 0.17271969192202488,
+            "floorMm": 0.17271969192202488,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 0.17271969178054083,
+            "floorMm": 0.17271969178054083,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0.172719691774334,
+            "floorMm": 0.172719691774334,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0.17271969177406685,
+            "floorMm": 0.17271969177406685,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 0.1727196917740599,
+            "floorMm": 0.1727196917740599,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 0.1727196917740599,
+            "floorMm": 0.1727196917740599,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 0.1727196917740599,
+            "floorMm": 0.1727196917740599,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 30
+      },
+      "finalCentreZ": 0.017334376553382946,
+      "caughtBySlab": false
+    },
+    {
+      "scene": "slab-30",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "mujoco480",
+      "status": "ok",
+      "processSeconds": 0.13268075000000046,
+      "peakRssBytes": 45301760,
+      "metrics": {
+        "engine": "mujoco 3.2.3",
+        "hz": 480,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.005413222999999993,
+        "activeSeconds": 0.005413222999999995,
+        "activeMeanMs": 0.005638773958333328,
+        "setupSeconds": 0.002873582999999999,
+        "activationSeconds": 0.0005979259999998182,
+        "timing": {
+          "p50Ms": 0.005583000000003446,
+          "p95Ms": 0.006625000000010095,
+          "p99Ms": 0.012364030000001061,
+          "maxMs": 0.027082999999997193
+        },
+        "finite": true,
+        "maxMassRelativeError": 5.551115123125783e-16,
+        "guards": null,
+        "warnings": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "maxSampledOverlapMm": 0.15533766338165708,
+        "maxFloorMm": 0.15533766338165708,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 0.011127527420148886,
+          "floorMm": 0.011127527420148886,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": 0.55,
+        "lastSecondMaxSpeed": 1.915521526367921e-15,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0.15533766338165708,
+            "floorMm": 0.15533766338165708,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0.019939822274266106,
+            "floorMm": 0.019939822274266106,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0.06724839065608626,
+            "floorMm": 0.06724839065608626,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0.012972899097296597,
+            "floorMm": 0.012972899097296597,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0.011129518499648078,
+            "floorMm": 0.011129518499648078,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0.011127527487195948,
+            "floorMm": 0.011127527487195948,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0.011127527420148886,
+            "floorMm": 0.011127527420148886,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0.011127527420148886,
+            "floorMm": 0.011127527420148886,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0.011127527420148886,
+            "floorMm": 0.011127527420148886,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0.011127527420148886,
+            "floorMm": 0.011127527420148886,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 0.011127527420148886,
+            "floorMm": 0.011127527420148886,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 0.011127527420148886,
+            "floorMm": 0.011127527420148886,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 0.011127527420148886,
+            "floorMm": 0.011127527420148886,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 0.011127527420148886,
+            "floorMm": 0.011127527420148886,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 0.011127527420148886,
+            "floorMm": 0.011127527420148886,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 0.011127527420148886,
+            "floorMm": 0.011127527420148886,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 0.011127527420148886,
+            "floorMm": 0.011127527420148886,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 0.011127527420148886,
+            "floorMm": 0.011127527420148886,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 0.011127527420148886,
+            "floorMm": 0.011127527420148886,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 30
+      },
+      "finalCentreZ": 0.01747460459263338,
+      "caughtBySlab": false
+    },
+    {
+      "scene": "slab-30",
+      "count": 1,
+      "seed": 0,
+      "repeat": 0,
+      "warmup": false,
+      "label": "wrench480",
+      "status": "ok",
+      "processSeconds": 0.005601583999998994,
+      "peakRssBytes": 2457600,
+      "metrics": {
+        "engine": "wrench",
+        "hz": 480,
+        "count": 1,
+        "seed": 0,
+        "parts": 1,
+        "wallSeconds": 0.00101285,
+        "activeSeconds": 0.00101285,
+        "activeMeanMs": 0.0010550520833333334,
+        "setupSeconds": 0.000545375,
+        "activationSeconds": 1.2976e-05,
+        "timing": {
+          "p50Ms": 0.000958,
+          "p95Ms": 0.00225,
+          "p99Ms": 0.004917,
+          "maxMs": 0.012208
+        },
+        "finite": true,
+        "maxMassRelativeError": 1.6253665080512292e-12,
+        "guards": 0,
+        "warnings": null,
+        "maxSampledOverlapMm": 3.6954144605472194e-07,
+        "maxFloorMm": 3.6954144605472194e-07,
+        "maxEscaped": 0,
+        "final": {
+          "t": 2,
+          "overlapMm": 1.005098781980962e-10,
+          "floorMm": 1.005098781980962e-10,
+          "pairs": 0,
+          "escaped": 0
+        },
+        "settledAt": null,
+        "lastSecondMaxSpeed": 0.0936379205088,
+        "frames": [
+          {
+            "t": 0.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.2,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.3,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.4,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.5,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.6,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.7,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.8,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 0.9,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.1,
+            "overlapMm": 0,
+            "floorMm": 0,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.2,
+            "overlapMm": 3.6954144605472194e-07,
+            "floorMm": 3.6954144605472194e-07,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.3,
+            "overlapMm": 1.3738640780580624e-07,
+            "floorMm": 1.3738640780580624e-07,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.4,
+            "overlapMm": 5.10742524661989e-08,
+            "floorMm": 5.10742524661989e-08,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.5,
+            "overlapMm": 1.8971435533643444e-08,
+            "floorMm": 1.8971435533643444e-08,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.6,
+            "overlapMm": 7.057788381503727e-09,
+            "floorMm": 7.057788381503727e-09,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.7,
+            "overlapMm": 2.5591750940634483e-09,
+            "floorMm": 2.5591750940634483e-09,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.8,
+            "overlapMm": 9.713965742896846e-10,
+            "floorMm": 9.713965742896846e-10,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 1.9,
+            "overlapMm": 3.447624130625826e-10,
+            "floorMm": 3.447624130625826e-10,
+            "pairs": 0,
+            "escaped": 0
+          },
+          {
+            "t": 2,
+            "overlapMm": 1.005098781980962e-10,
+            "floorMm": 1.005098781980962e-10,
+            "pairs": 0,
+            "escaped": 0
+          }
+        ]
+      },
+      "oracle": {
+        "kind": "thin-slab",
+        "topZ": 0.152,
+        "expectedMinimumCentreZ": 0.1716875,
+        "impactSpeed": 30
+      },
+      "finalCentreZ": 0.0176422788127,
+      "caughtBySlab": false
+    }
+  ]
+}

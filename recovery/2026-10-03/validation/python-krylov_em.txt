@@ -1,0 +1,8 @@
+test_certified_solve_monotone (experiments.krylov_em.test_rl.RLTests) ... ok
+test_exact_remainder_and_bound (experiments.krylov_em.test_rl.RLTests) ... ok
+test_tangent_and_metric (experiments.krylov_em.test_rl.RLTests) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.019s
+
+OK

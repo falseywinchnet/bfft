@@ -1,0 +1,51 @@
+The geometric moment construction was measured on deterministic sinusoidal
+RGB fields with opaque alpha, using an M4 Mac mini and Node v25.2.1 (arm64).
+Both implementations use Float64 WebAssembly SIMD arithmetic and the same
+cached Float32 admitted controls. The reference uses a source-amplitude
+selected density series with a $10^{-6}$ pixel tolerance. The canonical
+construction uses the fixed geometric table and direct rational density.
+The medians below contain five warm runs, including integration, bilinear
+point comparison, byte conversion and both output copies. Source construction
+and browser presentation are outside the timed interval.
+
+\begin{center}
+\small
+\begin{tabular}{llrrr}
+\toprule
+Source & Output & Reference & Geometric & Ratio \\
+ & & (ms) & (ms) & \\
+\midrule
+$257^2$ & $65^2$ & 82.68 & 55.97 & 1.48 \\
+$257^2$ & $257^2$ & 180.18 & 124.46 & 1.45 \\
+$257^2$ & $513^2$ & 371.10 & 261.26 & 1.42 \\
+$1536\!\times\!1024$ & same & 4481.92 & 3010.07 & 1.49 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+These rows use the same projective quadrilateral. The $257^2$ affine-skew
+case changes from 125.77 to 99.68 ms; a stronger perspective changes from
+180.38 to 136.10 ms. The axis-aligned identity path retains exact rectangular
+Bernstein integration and changes from 37.62 to 35.21 ms. All seven benchmark
+output arrays are byte-identical between the two implementations.
+The largest case retains 9,451,560 triangles and changes the number of
+quadrature locations from 460,373,248 to 308,823,225. Barycentric denominator
+reuse removes two source-coordinate divisions from each node evaluation.
+
+The separate image validation contains 108 source, map and output-size
+combinations. Its 8,640 sampled comparisons with the tightened $10^{-12}$
+reference have maximum premultiplied-channel difference
+$1.33\times10^{-13}$. Among 1,170,000 encoded channel bytes, 22 differ from
+the former $10^{-6}$ renderer by one level. These occur only in six cases
+whose source alpha is zero or $1/255$; the remaining 102 frames are identical.
+Changing source values preserves all geometric rule and subdivision counts.
+The analytic bank check evaluates 57 complete 36-weight banks against finite
+edge primitives at 220 decimal digits, with maximum mass-relative absolute
+weight sum error $8.70\times10^{-10}$.
+
+The direct-warp experiment retains the geometric rule tables, the independent
+bank verifier, the triangle and pixel receipts, and raw timing runs under
+\texttt{area\_acceleration}. The companion implementation's source construction,
+coverage, memory-growth, render-restart and display checks also pass.
+The former integral is retained for comparison; the geometric table determines
+the canonical numerical projective bank.

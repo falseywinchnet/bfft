@@ -1,0 +1,5 @@
+{
+  "source-kernel.c": "de1f14b64495da678354cba7717e4c7c729ed7b075877619ed16f2ea3dd84b53",
+  "warp-kernel.c": "537bb2759457f64242ca31fcfbd1df316d2b38d8e4d86902ef9bf0319b411900",
+  "warp-kernel.wasm": "c8d2eacf75af7a8e7bd154c6059b5a0f9ceafec4247baf69f3d63904d87ad131"
+}

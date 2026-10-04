@@ -1,16 +1,15 @@
-\documentclass[11pt]{article}
-\usepackage[letterpaper,margin=1in]{geometry}
+\RequirePackage[T1]{fontenc}
+\documentclass[journal]{IEEEtran}
 \usepackage{amsmath,amssymb,amsthm,bm,booktabs,graphicx,microtype}
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage{xcolor}
-\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
-\usepackage{enumitem}
-\setlist{nosep,leftmargin=*}
-\newtheorem{theorem}{Theorem}[section]
+\usepackage[hidelinks]{hyperref}
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\floatsep}{7pt plus 2pt minus 2pt}
+\setlength{\intextsep}{7pt plus 2pt minus 2pt}
+\newtheorem{theorem}{Theorem}
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{corollary}[theorem]{Corollary}
 \theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
 \newtheorem{remark}[theorem]{Remark}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\norm}[1]{\left\lVert#1\right\rVert}
@@ -21,165 +20,360 @@
 \newcommand{\D}{\mathrm{D}}
 \DeclareMathOperator{\diag}{diag}
 \DeclareMathOperator{\spanop}{span}
-\title{Discoverable Polynomial Transport in Mirror Geometry:\\Finite-Horizon Acceleration of Bregman Iterations}
+\DeclareMathOperator{\osc}{osc}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\tr}{tr}
+\title{Discoverable Transport: Closure, Observability,\\and the Cost of Acceleration}
 \author{Joshuah Rainstar}
-\date{September 30, 2026\\\small Research draft: state, rule evolution, and computational closure}
+\date{}
 \begin{document}
 \maketitle
-
 \begin{abstract}
-Discoverable polynomial transport asks which relations governing an iteration
-can be acquired, verified, and advanced more cheaply than repeated execution.
-We distinguish closure of the state evolution, closure of its changing
-transport rule, and economical composition of either representation.
-For smooth mirror descent, the dual Jacobian is self-adjoint in the inverse
-mirror-Hessian metric. For quadratic objectives and mirrors, finite-horizon
-Krylov transport is a truncation of a conjugate-gradient Galerkin correction,
-with an orthogonal error decomposition and objective contraction bound.
-For nonlinear maps, trajectory defects separate compression error from
-geometric evolution. Complete-state constructions for Huber and coupled
-Meyer iterations illustrate the roles of boundaries, curvature, and memory.
-A compatibility theorem and rational observable lifts connect prescribed
-mirror geometries to exactly representable dynamics. For positive-kernel
-Sinkhorn iteration, we derive a closed evolution of displacement and
-conditional geometry, a moving metric determined by the displacement, and
-explicit quadratic and cubic remainder bounds. A projective lift advances
-both the state and its changing derivative exactly for two-group kernels.
-For general kernels, a bounded quadratic response model improves prediction
-and accelerates some large problems, but its frozen-rule control remains
-cheaper in the retained comparisons. All acquisition, validation, and readout
-costs are distinguished from algebraic closure. The results formulate a
-testable research program; they do not establish universal acceleration or
-priority for polynomial extrapolation and reduced modeling.
+An iteration may expose a simple direction without exposing a simple law for
+its future motion. Discoverable transport concerns the stronger task of
+acquiring a representation that can be advanced more cheaply than the
+ordinary computation it replaces. We develop this question for mirror,
+Bregman, and entropic iterations through three distinct requirements:
+closure on the relevant states or requests, acquisition of the information
+needed by that closure, and economical evaluation with controlled error.
+Finite invariant observables permit exact powering; a trajectory-defect
+identity separates compression from evolution of the local geometry.
+For positive-kernel Sinkhorn iteration, conditional variance bounds the
+nonlinear forcing, and a finite energy budget yields horizon-uniform
+first- and second-jet error bounds at a fixed point, without inverse spectral
+gap factors. The constants retain their amplitude and marginal dependence.
+Exact linear observability and finite joint-pattern algebras give scoped
+limits on the dimension required to carry a rule or a primitive response.
+These results explain why slow motion, low snapshot rank, and exact
+algebraic identities can each coexist with unsuccessful acceleration.
+Selected experiments illustrate certified affine-piece discovery, supplied
+projective closure, size-dependent primitive reuse, and loss of amortization
+through curvature or request-family growth. Primitive reuse improves four of
+six reported 1024-point trajectories, but loses on the narrowest kernels
+and at smaller size. The resulting theory identifies
+sufficient structures and representation-specific obstructions; it does not
+assert a universal accelerator or a universal lower bound on acceleration.
 \end{abstract}
+\begin{IEEEkeywords}
+Iterative methods, mirror descent, Bregman iteration, Sinkhorn scaling,
+Krylov subspaces, observable closure, conditional variance, model reduction.
+\end{IEEEkeywords}
 
-\section{The research object is the iteration state}
-Mirror descent, proximal splitting, and split-Bregman methods expose more
-structure than a sequence of objective values. An implementation retains a
-state whose components determine the next primal estimate, the next dual
-driving field, and, in splitting methods, the next memory update. Once this
-state is specified, a fixed-parameter deterministic algorithm is a map
+\section{Introduction}
+A slowly changing iterate often suggests that many future steps should be
+replaceable by one calculation. The suggestion is incomplete. The direction
+may rotate, its rate may depend on unobserved variables, or the representation
+needed to carry it may cost more than the steps it replaces. The relevant
+question is therefore not only whether motion is predictable, but which
+relations make that prediction both valid and economical.
+
+We call this problem \emph{discoverable transport}. Its object is the complete
+state of an existing iteration, or the requests made to an expensive primitive
+inside that iteration. The representation is acquired from available
+expressions, operator actions, and observed states; its validity concerns the
+original map. A method that instead reaches the same minimizer by a different
+trajectory addresses a related acceleration problem, but does not thereby
+establish finite-trajectory transport.
+
+Three distinctions organize the construction. \emph{Closure} determines
+whether the retained variables predict what is required next.
+\emph{Observability and acquisition} determine whether those variables and
+relations can be obtained from the permitted information. \emph{Amortization}
+determines whether their entry, composition, validation, and readout costs
+are repaid before the representation ceases to be useful. These are
+requirements of the transport constructions studied here, not a
+classification theorem for every possible acceleration algorithm.
+
+The distinction is visible already in mirror geometry. A dual Jacobian is
+self-adjoint in a natural metric, making finite Krylov transport available.
+Yet increasing its dimension removes projection error without removing the
+error of freezing the geometry. Nonlinear observable coordinates can instead
+close the actual dynamics. Their existence depends on the map and the
+representation, not on curvature alone. In entropic scaling, the conditional
+geometry evolves exactly within a fixed diagonal scaling orbit; carrying
+that orbit still need not be cheaper than executing an ordinary pass.
+
+The main results sharpen these observations. We state the exact observable
+and approximate path contracts, derive conditional-energy bounds for
+Sinkhorn, and separate two finite-dimensional obstructions: the outputs
+needed to carry an evolving rule may require more directions than the state,
+and pointwise nonlinear requests may generate a much larger algebra than
+the linear span of their log directions. These obstructions are explicitly
+relative to a representation class. Supplied block and Gaussian families,
+certified affine pieces, and measured primitive responses provide positive
+counterpoints. The experiments serve to distinguish the theoretical
+conditions rather than to enumerate successive implementations.
+
+\section{Relation to Existing Acceleration}
+Krylov acceleration is established numerical analysis. Anderson acceleration
+on linear problems is related to GMRES~\cite{walker}, nonlinear extrapolation
+uses histories of iterates~\cite{scieur}, and GMRES acceleration of quadratic
+ADMM has been analyzed~\cite{zhang}. The finite-flow polynomial below is a
+classical matrix-function construction~\cite{saadexp}; on a fixed quadratic
+its stationary limit is a conjugate-gradient Galerkin correction~\cite{saadbook}.
+Neither its polynomial identity nor the application of Krylov methods to
+Bregman-related iterations is claimed as new.
+
+Poon and Liang already fit finite companion recurrences to displacement
+histories and sum their powers over a finite forecast horizon~\cite{poon2020}.
+Their earlier analysis accounts for fitting work and multistep residual
+error~\cite{poon2019}. Mai and Johansson accelerate proximal-gradient
+iterations in pre-proximal coordinates~\cite{mai}; geometric Bregman
+acceleration is also a separate established program~\cite{hanzely}.
+The distinction here is between an acquired recurrence, its departure from
+the original finite trajectory, and its complete execution cost.
+
+Finite invariant observable spaces belong to Koopman theory~\cite{brunton,ssd}.
+QuACK already alternates ordinary optimizer steps with learned forecasts and
+loss-based acceptance~\cite{quack}. Invariance diagnostics and multistep
+Koopman error bounds are studied directly in~\cite{conradie}. Hidden-variable
+memory and delay representations have related formulations in
+Koopman--Mori--Zwanzig reduction~\cite{linlu,kamb}. The observable framework
+used below is thus a common foundation, not a new name for an undiscovered
+linearization principle.
+
+For entropic transport~\cite{peyre}, spectral overrelaxation~\cite{lehmann}
+and Arnoldi matrix balancing~\cite{aristodemo} are close algorithmic
+comparators. Gaussian Sinkhorn already has finite-dimensional
+Kalman/Riccati formulations~\cite{akyildiz}, and Riccati products admit
+structured representations~\cite{delmoralhorton}. Our Gaussian example is
+an instance of this prior structure. The present contribution is the
+connection between geometry-specific defect and energy bounds, the
+information required by state-and-rule representations, and the algebra
+of primitive requests. A complete comparison with all such accelerators,
+specialized transport solvers, or continuation schedules is not supplied.
+
+\section{Closed Representations of an Iteration}
+\label{sec:general-geometry}
+Let $F:\Omega\to\Omega$ be a deterministic map of the complete state.
+Independent splitting memories belong to that state. A quotient is permitted
+when it retains everything needed for the specified future output; deletion
+of a memory variable without such a property changes the map.
+
+\subsection{Finite observables and the changing derivative}
+\begin{proposition}[Finite observable transport]\label{prop:observable}
+Suppose $\Phi:\Omega\to\R^r$ and $\chi$ satisfy
+\[
+ \Phi(F(z))=T\Phi(z),\qquad \chi(\Phi(z))=z
+\]
+on an invariant set. Then, for every nonnegative integer $H$,
 \begin{equation}
- z_{j+1}=\F(z_j). \label{eq:map}
+ F^H(z)=\chi(T^H\Phi(z)). \label{eq:observable-power}
 \end{equation}
-The present question is whether relations exposed by this state can be
-acquired and composed to replace substantially more applications of $\F$
-while retaining the useful behavior of its trajectory. Local propagator
-actions provide one such representation; they need not describe how the
-propagator itself changes during the advance.
-
-The motivating implementation arose in coupled Meyer--Bregman decomposition.
-There, the primal variables alone do not close the iteration: the evolving
-projected vector fields must also be carried. The finite-flow construction
-advanced that complete state with a small projected polynomial. Its broader
-mathematical object is not specific to images. Here we develop that object
-independently of the decomposition and ask which parts survive across mirror
-and splitting geometries.
-
-We distinguish two classes throughout. A smooth mirror-descent map has a
-particularly useful dual-coordinate representation and metric. A splitting
-map such as ADMM has its own complete state and may be nonsymmetric or
-nonnormal. Both admit the finite-flow construction, but the mirror symmetry
-result is not automatically a theorem about arbitrary ADMM or split-Bregman
-iterations. Likewise, an extrapolated splitting state need not satisfy every
-intermediate feasibility property of an ordinary trajectory.
-
-At an anchor $z$, set
+If the identities hold on an open set and the maps are differentiable,
 \begin{equation}
- r=\F(z)-z,\qquad J=\D\F(z),\qquad
- p_m(t)=\sum_{j=0}^{m-1}t^j. \label{eq:objects}
+ D(F^H)(z)=D\chi(T^H\Phi(z))\,T^H D\Phi(z).
 \end{equation}
-The frozen finite-flow proposal is a compressed approximation to $p_m(J)r$.
-The polynomial is defined at $t=1$, with $p_m(1)=m$; no stationary inverse is
-required. Our central distinction is between three independently assessable
-questions: how accurately a frozen local propagator describes the trajectory,
-how accurately a small Krylov space represents its polynomial, and whether
-the resulting reduction in operator work pays for the extra computation.
-We then ask a stronger representation question: can the changing rule itself
-be carried in a closed evolution that is inexpensive to compose?
-Section~\ref{sec:entropic-evolution} answers the representation part for
-Sinkhorn and separates exact structured composition from approximate general
-modeling. A fixed lifted matrix can encode a changing physical derivative;
-an accurate evolving local model can also fail its complete-cost gate.
+For a smooth invariant manifold the derivative identity applies to its
+tangent directions; other perturbations require an entry-map analysis.
+\end{proposition}
+\begin{proof}
+Induction gives $\Phi(F^H(z))=T^H\Phi(z)$; decode and differentiate.
+\end{proof}
+A fixed lifted operator can therefore carry a changing physical derivative.
+No explicit matrix of that derivative need be retained. The cyclic minimal
+polynomial of $T$ reduces its powers; binary composition evaluates them
+without visiting every intermediate state. Entry, decoding, conditioning,
+and the arithmetic cost of those powers remain separate obligations.
+A finite-dimensional nonlinear parameterization alone does not imply
+fixed-size linear powering. In particular a general polynomial rule may
+generate successively higher degrees and require an infinite lift.
 
-\subsection{Prior work and the scope of this draft}
-Krylov acceleration of iterative processes is established numerical analysis.
-Walker and Ni relate untruncated Anderson acceleration on linear problems to
-GMRES \cite{walker}. Regularized nonlinear acceleration constructs improved
-solution estimates from past iterates \cite{scieur}. Zhang and White analyze
-GMRES acceleration of quadratic ADMM \cite{zhang}. These works preclude a
-claim that applying Krylov ideas to Bregman-related iterations is itself new.
+For example, $u^+=\lambda u$, $v^+=\mu v+\beta u^2$ closes on
+$(u,v,u^2)$. At the resonance $\mu=\lambda^2$,
+\[
+ v_H=\mu^H v_0+H\mu^{H-1}\beta u_0^2.
+\]
+The resonant interaction is carried by a Jordan block rather than removed
+by division by $\mu-\lambda^2$. This special triangular closure does not
+extend to arbitrary polynomial maps. The following algebraic condition
+identifies a broader sufficient case without assuming that its coordinates
+can be acquired cheaply.
 
-Two particularly close precedents determine the present scope. Mai and
-Johansson apply Anderson acceleration in the pre-proximal dual coordinates
-of Bregman proximal gradient and describe a stabilization rule
-\cite{mai}. Poon and Liang fit a companion recurrence to past displacements
-$v_j=z_j-z_{j-1}$, hold its coefficients fixed during a forecast, and use
+\begin{proposition}[Positive weighted-degree closure]\label{prop:weighted}
+Let a polynomial map $N:\R^d\to\R^d$ have positive coordinate weights
+$w_i>0$, with every monomial in $N_i$ of weighted degree $w_i$.
+For any finite $W$, monomials of weighted degree at most $W$ span a finite
+space invariant under composition with $N$. If $W\geq\max_iw_i$, that
+space contains all state coordinates and gives a finite linear lift.
+\end{proposition}
+\begin{proof}
+A monomial $x^\alpha$ has degree $\sum_i\alpha_iw_i$. Substitution of the
+weighted-homogeneous $N_i$ preserves that degree term by term. There are
+only finitely many nonnegative integer exponents below $W$ because every
+$w_i$ is positive. The coordinate monomials are included by the final
+hypothesis.
+\end{proof}
+For a supplied Poincar\'e--Dulac polynomial containing only resonant
+monomials and with eigenvalues $0<\lambda_i<1$,
+the weights $w_i=-\log\lambda_i$ have this property: a resonant monomial
+in coordinate $k$ satisfies $\prod_i\lambda_i^{\alpha_i}=\lambda_k$.
+This statement assumes the normal-form coordinates and an applicable local
+invariant domain. It proves neither a cheaply discoverable conjugating chart
+nor a small lift; the number of admissible monomials can be large. Zero
+or unit eigenvalues are outside this positive-finite-weight argument.
+
+\subsection{Compatibility with a prescribed mirror}
+Let $\Omega\subset\R^n$ be open and simply connected, let $h\in C^2(\Omega)$
+have positive-definite Hessian, and assume $\nabla h$ is injective. Let
+$F:\Omega\to\Omega$ be $C^1$ and $\eta>0$. A mirror step for a differentiable
+objective satisfies
 \begin{equation}
- \bar z_{k,s}=z_k+V_k\left(\sum_{i=1}^{s}C_k^i\right)e_1,
- \qquad V_k=[v_k,\ldots,v_{k-q+1}].
- \label{eq:prior-finite-forecast}
+ \nabla h(F(x))=\nabla h(x)-\eta\nabla f(x).
+ \label{eq:general-mirror}
 \end{equation}
-This is their finite-horizon formula, not merely a stationary extrapolation
-\cite[Section~5.1, Eq.~(5.2)]{poon2020}. Algorithm~6 there gates acceleration
-on $\rho(C_k)<1$, excluding an exact unit-eigenvalue drift; the finite
-polynomial itself remains defined at that eigenvalue. Our use of
-$p_m(1)=m$ is therefore a choice of finite-flow scope, not priority for a
-new polynomial identity.
-Their earlier ADMM analysis already discusses storage and pseudoinverse
-fitting work and bounds finite-horizon forecast error by the coefficient
-fitting residual under $v_k=Mv_{k-1}$
-\cite[Remark~4.1 and Proposition~4.3]{poon2019}.
-Cost analysis and multistep error bounds are thus also established parts of
-this program. The comparison concerns which operator is acquired, which
-nonlinear departures are controlled, and which complete costs are measured.
+\begin{theorem}[Geometry--dynamics compatibility]
+There exists a $C^2$ objective $f$ satisfying \eqref{eq:general-mirror} if and
+only if $H_h(F(x))DF(x)$ is symmetric everywhere. If $\Omega$ is also convex,
+that objective is convex if and only if
+\begin{equation}
+ H_h(x)-H_h(F(x))DF(x)\succeq0 \quad(x\in\Omega).
+ \label{eq:general-convexity}
+\end{equation}
+The objective is unique up to an additive constant on a connected domain.
+\end{theorem}
+\begin{proof}
+Define $g(x)=[\nabla h(x)-\nabla h(F(x))]/\eta$. Differentiation gives
+\[ Dg(x)=\eta^{-1}[H_h(x)-H_h(F(x))DF(x)]. \]
+Since $H_h(x)$ is symmetric,
+$Dg$ is symmetric precisely under the stated condition. The closed one-form
+$g\cdot dx$ is exact on a simply connected domain, giving $g=\nabla f$.
+The converse follows by differentiating \eqref{eq:general-mirror}.
+On a convex domain a $C^2$ function is convex precisely when its Hessian is
+positive semidefinite. Injectivity of $\nabla h$ identifies the prescribed
+$F$ with the mirror update wherever its image lies in $\Omega$.
+\end{proof}
+This also tests a candidate finite representation: if $\psi$ is an embedding
+with decoder $\chi$ and $T\psi(\Omega)\subseteq\psi(\Omega)$, set
+$F=\chi T\psi$ and apply the theorem. Algebraic closure alone does not make
+the resulting dynamics a gradient method in an arbitrarily assigned mirror.
 
-This draft investigates a particular combination: \emph{direct current-state
-Jacobian actions, Krylov projection in a mirror-derived metric, full-state
-transport for coupled iterations, and an explicit separation of nonlinear
-and projection errors with complete cost accounting}. The connection to
-matrix-function Krylov approximation is classical \cite{saadexp}; the
-quadratic analysis below makes its conjugate-gradient content explicit
-\cite{saadbook}. Geometric acceleration of Bregman proximal gradient is
-also a substantial independent subject \cite{hanzely}. A very recent
-preprint studies acceleration through dual geometric updates
-\cite{yamashita}; this draft has not completed a theorem-level comparison
-with that work. A distinct publication contribution remains to be established
-through sharper nonlinear results and matched comparisons with the closest
-existing algorithms.
-For entropic transport, existing Sinkhorn spectral analysis and
-overrelaxation results \cite{lehmann} are essential comparators.
-Aristodemo and Gemignani already use Arnoldi-type dominant-eigenvector
-computations to accelerate matrix balancing \cite{aristodemo}; reproducing
-an original finite trajectory is a different target from accelerating its
-limiting solution. Gaussian Sinkhorn and Riccati theory already provide
-closed nonlinear evolution and compact products of changing matrices
-\cite{akyildiz,delmoralhorton}; Section~\ref{sec:entropic-evolution} states
-the precise overlap with the projective example here. These precedents
-preclude a general novelty claim for evolving-rule closure.
+In dual coordinates $y=\nabla h(x)$, write
+$G(y)=\nabla h(F(\nabla h^*(y)))$. The equivalent symmetry test is
+\begin{equation}
+ DG(y)H_h(x)=H_h(x)DG(y)^T.
+ \label{eq:dual-compatibility}
+\end{equation}
+For an affine dual map $G(y)=Ay+c$, this must hold for the entire family
+of mirror Hessians, not just the Hessian at an anchor. For example,
+$A=\diag(1/2,4/5)$ passes with $H_h=I$ and fails with
+$H_h=\left[\begin{smallmatrix}2&0.6\\0.6&1\end{smallmatrix}\right]$.
+Conversely, every Legendre geometry admits the family
+$f=\alpha h-b^Tx$, with $G(y)=(1-\eta\alpha)y+\eta b$ whenever the image
+stays in the dual domain. Thus arbitrary curvature can coexist with a
+one-mode affine recurrence. More modes require a compatible Hessian family.
 
-Learning optimizer trajectories for acceleration is itself an active line
-of work. QuACK alternates ordinary gradient-based steps with learned Koopman
-forecasts, evaluates candidate losses, and restarts from the best candidate,
-including the last ordinary iterate as a fallback \cite{quack}. Its DMD,
-sliding-window, and neural embeddings directly overlap the proposed
-acquire--forecast--validate workflow. That loss safeguard does not itself
-bound departure from the original orbit; our finite-trajectory bounds address
-that separate requirement. Neither the workflow nor acquisition-aware
-acceleration is claimed as new here.
+These statements refer to a prescribed mirror algorithm in its affine
+coordinates. An arbitrary nonlinear coordinate change conjugates an existing
+map, but recomputing ordinary mirror descent from a transformed objective
+and transformed potential need not produce that conjugate map.
 
-Certified discovery also has close comparators. Conradie et al. quantify
-Koopman subspace invariance through principal angles and give multistep
-error bounds, including pointwise guarantees in a reproducing-kernel Hilbert
-space \cite{conradie}. A fixed lifted operator with nonlinear decoding can
-have changing physical derivatives, so it cannot be dismissed as a frozen
-physical Jacobian. Our geometry-specific trajectory and escape bounds and
-measured optimizer costs must be compared with the assumptions and guarantees
-of those methods; a complete theorem-level and matched computational
-comparison remains open. The controls reported here do not establish an
-advantage over that literature or the full range of optimal-transport solvers.
 
-\section{Mirror coordinates expose a symmetric local propagator}
+\subsection{Exact families and the knowledge they require}
+The simplest family is affine motion. At an anchor $z$, let
+$r=F(z)-z$, $J=DF(z)$, and $p_H(t)=\sum_{j=0}^{H-1}t^j$. If $F$ is affine
+on the visited region, then
+\begin{equation}
+ F^H(z)-z=p_H(J)r. \label{eq:affine}
+\end{equation}
+The cyclic space $\K_k(J,r)$ is acquired by operator actions. Exact Arnoldi
+closure $JQ=QT$ proves exact transport of this orbit for all horizons
+remaining in that affine region. It counts excited eigenvalues and Jordan
+structure, rather than ambient dimension. In particular $p_H(1)=H$ carries
+constant drift even when no stationary dual solution exists.
+
+Affine pieces of a Huber mirror map supply a \emph{discovered} positive
+example. The current feature constraints and cached tangent features give
+a first-event horizon and a path certificate (Appendix~\ref{app:huber}).
+This is stronger evidence than low snapshot rank: the region of validity
+is checked using the known map expression. For the coupled Meyer recurrence,
+a faithful quotient retains both vector memories, and disk curvature has
+an exact pointwise remainder whose fixed linear response can be bounded
+(Appendix~\ref{sec:curved}). An unchanged exterior-disk mask is not an affine
+piece, so the Huber argument cannot be reused there.
+
+Nonlinear coordinates give a second route. In a scalar mirror with
+$s=h'(q)>0$, prescribe
+\[
+ s^+=\frac{\alpha s}{1+\beta s},\qquad 0<\alpha\leq1,\quad\beta\geq0.
+\]
+The objective derivative $f'(q)=s-\alpha s/(1+\beta s)$ has
+\[
+ f''(q)=\left(1-\frac{\alpha}{(1+\beta s)^2}\right)h''(q)\geq0.
+\]
+Thus, on an invariant positive dual interval, this is convex mirror descent
+and $(1,1/s)$ closes linearly. A rational grammar can identify a
+fractional-linear relation and synthesize a cross-ratio coordinate from
+its fixed points. The grammar and mirror factorization are supplied;
+the fitted relation and its numerical accuracy are learned. Structural
+verification, not the fit residual alone, establishes exact closure.
+
+Two-group Sinkhorn provides a \emph{supplied-structure} example within a
+standard algorithm. For a positive $2\times2$ kernel, the ratio $v_1/v_2$
+obeys a fractional-linear map, hence a $2\times2$ homogeneous matrix carries
+both the ratio and its tangent over a finite horizon. A supplied proportional
+block partition extends the reduction to large supports
+(Appendix~\ref{app:projective}). Rank two by itself does not identify that
+partition or certify the reduction.
+
+A continuous Gaussian family provides a different supplied representation.
+For centered covariance marginals $A,B\succ0$ and kernel
+$\exp(-\norm{x-y}^2/(2t))$, quadratic scaling potentials remain quadratic.
+Writing $p\succ0$ for the conditional precision, a complete pass is
+\begin{equation}
+ p^+=B^{-1}+(t^2A^{-1}+p^{-1})^{-1}. \label{eq:gaussian}
+\end{equation}
+Put $T=t^2A^{-1}$ and $C=B^{-1}$. This is the matrix fractional action
+of
+\[
+ L=\begin{pmatrix}I+CT&C\\T&I\end{pmatrix},\qquad
+ p^+=\{(I+CT)p+C\}(Tp+I)^{-1}.
+\]
+Matrix powers compose the recurrence whenever decoding remains valid.
+The dimension is the physical Gaussian dimension, not a discretized support
+size. This is established Riccati structure~\cite{akyildiz,delmoralhorton};
+Appendix~\ref{app:gaussian} derives the stated convention.
+Gaussian closure concerns this preserved quadratic-potential family.
+It does not assert vanishing higher cumulants for arbitrary observables:
+for a standard Gaussian $X$, the third cumulant of $X^2$ is eight.
+
+\section{Approximate Transport and Geometric Defect}
+\label{sec:defects}
+Exact closure is a sufficient structure, but a useful finite horizon may
+survive a controlled departure from it. The following contract makes the
+required departure explicit before discussing acquisition or speed.
+
+\subsection{A path contract and its cost}
+For a predicted path $\widehat z_0=z$, let
+$d_j=F(\widehat z_j)-\widehat z_{j+1}$. If $F$ is $\ell$-Lipschitz between
+the corresponding actual and predicted points, then
+\begin{equation}
+ \norm{F^H(z)-\widehat z_H}
+ \leq\sum_{j=0}^{H-1}\ell^{H-1-j}\norm{d_j}.\label{eq:pathcontract}
+\end{equation}
+Indeed the next error is at most $\ell$ times the current error plus
+$\norm{d_j}$. This elementary recursion is useful only when its defects
+can be bounded without replaying all the expensive map evaluations.
+
+Let $C_F$ be the cost of one ordinary pass and let
+\begin{equation}
+ C_{\rm tr}=C_{\rm acquire}+C_{\rm compose}+C_{\rm certify}
+             +C_{\rm read}+C_{\rm failed}.\label{eq:totalcost}
+\end{equation}
+Transport at a specified trajectory tolerance saves time only if
+$C_{\rm tr}<HC_F$. This is a cost accounting condition, not a theorem
+that any component can be made small. A convergence comparison is different.
+If $F$ is a $q$-contraction in one fixed norm, $0<q<1$, and
+$\norm{\widehat z_H-F^H(z)}\leq\epsilon\norm{z-z_*}$, then
+\[
+ \norm{\widehat z_H-z_*}\leq(q^H+\epsilon)\norm{z-z_*}.
+\]
+With $c=C_{\rm tr}/C_F$, the sufficient worst-case advantage is
+$\epsilon<q^c-q^H$. Local metrics at different anchors cannot be substituted
+into this comparison without controlling their distortion.
+
+\subsection{Mirror symmetry and frozen finite flow}
 Let $\psi$ be a Legendre mirror on an open convex primal domain, and assume
 the required derivatives exist with $\nabla^2\psi(x)\succ0$. For smooth $f$,
 an interior mirror-descent step with fixed $\alpha>0$ satisfies
@@ -216,190 +410,36 @@ the spectral statement. No fixed-point condition was used.
 
 The statement supplies a principled inner product for Arnoldi. In exact
 arithmetic its reduced matrix is symmetric, so a Lanczos implementation is
-available. The pilot uses twice-reorthogonalized Arnoldi for numerical
+available. The implementations use twice-reorthogonalized Arnoldi for numerical
 robustness, charging its full cost. Applying $M$ can itself be expensive;
 the result is practically useful only when that action is available at an
-acceptable cost. The diagonal quadratic and entropy metrics used below
-have inexpensive actions.
+acceptable cost. Diagonal quadratic and separable entropy metrics provide inexpensive
+actions; general dense mirror metrics need not.
 
-\subsection{A pre-proximal extension}
-For the Bregman proximal-gradient problem $f+g$, with proper closed convex
-$g$ and a well-defined unique generalized proximal map, define
-\[
- P(y)=\arg\min_x\{\psi(x)+\alpha g(x)-\ip{y}{x}\}.
-\]
-The complete pre-proximal dual iteration is
-\begin{equation}
- \F(y)=\nabla\psi(P(y))-\alpha\nabla f(P(y)). \label{eq:bpg}
-\end{equation}
-This is the coordinate representation used for dual extrapolation in
-\cite{mai}. Wherever $P$ is differentiable with $S=\D P(y)\succ0$,
-and $f,\psi$ have symmetric Hessians at $P(y)$,
-\begin{equation}
- J=(\nabla^2\psi-\alpha\nabla^2 f)S,
- \qquad SJ=S(\nabla^2\psi-\alpha\nabla^2 f)S=(SJ)^T.
-\end{equation}
-Thus the same metric construction uses the derivative of the generalized
-proximal map. Nonsmooth active constraints can make $S$ rank deficient.
-They require an appropriate identified chart or a different positive
-metric; the positive-definite statement must not simply be applied to a
-singular matrix.
-
-\subsection{What coordinate invariance does and does not mean}
-Under an invertible affine coordinate change $\widetilde z=Cz+a$, transform
-$\widetilde J=CJC^{-1}$, $\widetilde r=Cr$, and
-$\widetilde M=C^{-T}MC^{-1}$. Weighted Arnoldi then produces the same
-physical displacement: $\widetilde\delta=C\delta$. This follows by
-transforming every inner product and action. Euclidean Arnoldi generally
-lacks this invariance under nonorthogonal rescaling. Nonlinear coordinate
-changes do not preserve a finite frozen-Jacobian polynomial in this way;
-choosing primal or dual coordinates is a substantive modeling decision.
-
-\section{Finite-horizon Arnoldi transport}
 Fix an SPD metric $M$ at the anchor and write $\beta=\norm{r}_M$.
 If $r=0$, the anchor is unchanged. Otherwise construct an $M$-orthonormal
 basis of
 \[
  \K_k(J,r)=\spanop\{r,Jr,\ldots,J^{k-1}r\}.
 \]
-Let $Q^TMQ=I$, $Qe_1=r/\beta$, and $H=Q^TMJQ$. The proposal is
+Let $Q^TMQ=I$, $Qe_1=r/\beta$, and $T_r=Q^TMJQ$. The proposal is
 \begin{equation}
- \widehat z_m=z+\delta_{k,m},\qquad
- \delta_{k,m}=\beta Qp_m(H)e_1. \label{eq:proposal}
+ \widehat z_H=z+\delta_{k,H},\qquad
+ \delta_{k,H}=\beta Qp_H(T_r)e_1. \label{eq:proposal}
 \end{equation}
 Only actions of $J$ are required. The reduced polynomial is evaluated by
-$c_0=0$, $c_{j+1}=\beta e_1+Hc_j$, $\delta_{k,m}=Qc_m$.
-This recurrence does not invert $I-H$ and remains well-defined for unit
+$c_0=0$, $c_{j+1}=\beta e_1+T_r c_j$, $\delta_{k,H}=Qc_H$.
+This recurrence does not invert $I-T_r$ and remains well-defined for unit
 eigenvalues and Jordan blocks. For large horizons, the pair
-$(H^m,p_m(H))$ also admits binary composition; the simple pilot uses the
-short recurrence with $m=16$.
+$(T_r^H,p_H(T_r))$ also admits binary composition, so reduced evaluation need
+not visit every intermediate state.
 
-\begin{proposition}[Affine exactness]\label{prop:affine}
-If $\F(w)=Jw+b$ on the complete visited trajectory, then
-\begin{equation}
- \F^m(z)-z=p_m(J)r. \label{eq:affine}
-\end{equation}
-In exact arithmetic, \eqref{eq:proposal} equals this displacement whenever
-$m\leq k$. If the Krylov space closes, $JQ=QH$, it equals it for every
-nonnegative integer horizon.
-\end{proposition}
-\begin{proof}
-The increments obey $r_{j+1}=Jr_j$, giving \eqref{eq:affine} by summation.
-Arnoldi reproduces $J^jr=\beta QH^je_1$ for $j<k$. Invariance of the
-closed space extends the equality to all $j$.
-\end{proof}
-
-The affine hypothesis concerns the full map on the relevant region.
-An unchanged inside/outside mask for a Euclidean disk projection does not
-make its exterior branch affine. Nor is a direction-dependent finite secant
-a linear Jacobian action; inserting a different secant operator at each
-Arnoldi call invalidates the fixed-operator polynomial argument.
-
-\subsection{A reproducible restart rule}
-The initial study uses four ordinary steps, then repeatedly constructs a
-depth-four, horizon-sixteen proposal and takes one ordinary step from it.
-It reacquires the local Jacobian at the next anchor. There is no memory
-refresh, objective acceptance gate, adaptive horizon, or fitted relaxation
-factor. These choices expose both successes and failures of the mechanism.
-They are an experimental schedule, not recommended universal constants.
-
-The nominal cost per full-rank block is one map evaluation to obtain $r$,
-four tangent actions, one ordinary settling step, and the complete cost of
-metric applications, orthogonalization, and reconstruction. With closure at
-rank $\ell<4$, only $\ell$ tangent actions are charged. A variable-step or
-stochastic algorithm is not covered merely by reusing this formula: its
-schedule or randomness changes the map and needs separate treatment.
-
-\section{A quadratic contraction bound and its CG content}
-This section identifies precisely the classical linear-algebraic mechanism.
-Let $\psi(x)=\tfrac12x^TGx$, $G\succ0$, and
-$f(x)-f(x_*)=\tfrac12(x-x_*)^TB(x-x_*)$, $B\succ0$.
-Then $y=Gx$, $M=G^{-1}$, and $J=I-\alpha BM$ are constant.
-Assume the eigenvalues of $G^{-1/2}BG^{-1/2}$ lie in $[\mu,L]$ and
-$0<\alpha\leq 1/L$. Set
-\begin{equation}
- q=1-\alpha\mu,\quad \kappa=L/\mu,\quad
- \theta=\frac{\sqrt\kappa-1}{\sqrt\kappa+1},\quad
- W=M(I-J)=\alpha MBM. \label{eq:quadparams}
-\end{equation}
-The squared $W$-norm of the dual error equals $2\alpha$ times the objective gap.
-
-\begin{theorem}[Finite-horizon Galerkin contraction]\label{thm:cg}
-In exact arithmetic, the natural-metric proposal satisfies
-\begin{equation}
- \frac{f(\widehat x_m)-f(x_*)}{f(x)-f(x_*)}
- \leq q^{2m}+(1-q^{2m})\min\{1,4\theta^{2k}\},
- \qquad \widehat x_m=G^{-1}\widehat z_m. \label{eq:cgbound}
-\end{equation}
-More precisely, define the stationary Galerkin correction
-\[
- \delta_\infty=\beta Q(I-H)^{-1}e_1,
- \qquad e_\infty=y+\delta_\infty-y_*.
-\]
-Then the finite-horizon error has the orthogonal decomposition
-\begin{equation}
- \norm{y+\delta_{k,m}-y_*}_W^2
- =\norm{e_\infty}_W^2+
-   \norm{\delta_{k,m}-\delta_\infty}_W^2. \label{eq:orthogonal}
-\end{equation}
-\end{theorem}
-\begin{proof}
-Write $S=I-J$, $e=y-y_*$. Since $r=-Se$ and
-$\K_k(J,r)=\K_k(S,r)$, $\delta_\infty$ is the $M$-Galerkin solution of
-$S\delta=r$. Thus $Q^TWe_\infty=0$. Both $\delta_{k,m}$ and
-$\delta_\infty$ lie in $\operatorname{ran}Q$, proving
-\eqref{eq:orthogonal}. The reduced matrix $H$ is symmetric with spectrum
-in $[0,q]$, while $Q^TWQ=I-H$. Consequently
-\[
- \delta_\infty-\delta_{k,m}
- =\beta QH^m(I-H)^{-1}e_1,
- \qquad
- \norm{\delta_\infty-\delta_{k,m}}_W
- \leq q^m\norm{\delta_\infty}_W.
-\]
-Galerkin orthogonality also gives
-$\norm{e}_W^2=\norm{e_\infty}_W^2+\norm{\delta_\infty}_W^2$.
-Combine these identities with the classical CG polynomial bound
-\cite{saadbook},
-$\norm{e_\infty}_W\leq 2\theta^k\norm{e}_W$,
-and with its trivial bound $\norm{e_\infty}_W\leq\norm{e}_W$.
-Converting squared energy to objective gap proves \eqref{eq:cgbound}.
-\end{proof}
-
-This theorem does not establish a competitor to CG on a fixed quadratic.
-The stationary Galerkin correction has no larger energy error than its
-finite-horizon truncation. The finite polynomial becomes interesting when
-the geometry changes, a finite trajectory is itself the target, or a
-stationary local equation is ill-conditioned or inconsistent. On an affine
-quadratic, classical CG is a necessary reference point.
-
-\subsection{When a contraction is a computational acceleration}
-Let $c$ be the full block cost divided by the cost of one ordinary step in
-a specified implementation. An improved macro-step is not sufficient:
-the bound in \eqref{eq:cgbound} must beat $q^{2c}$ to improve the corresponding
-worst-case contraction per unit cost. A general nonlinear version is equally
-explicit. If $\F$ is a $q$-contraction in a common fixed norm and
-\[
- \norm{\widehat z_m-\F^m(z)}\leq\varepsilon\norm{z-z_*},
-\]
-then
-\begin{equation}
- \norm{\widehat z_m-z_*}\leq(q^m+\varepsilon)\norm{z-z_*}.
- \label{eq:costcondition}
-\end{equation}
-A sufficient cost-adjusted advantage is
-$\varepsilon<q^c-q^m$, requiring $m>c$.
-This is a conditional criterion. It does not supply an inexpensive bound
-on $\varepsilon$, prove global contraction, or allow local metrics at
-successive anchors to be compared without additional assumptions.
-
-\section{Nonlinear error separates into two measurable defects}
-Let $M$ be fixed during one block, let $Q,H$ be the computed projection, and
-write $E=JQ-QH$. For exact Arnoldi $E=h_{k+1,k}q_{k+1}e_k^T$; using the
+Let $M$ be fixed during one block, let $Q,T_r$ be the computed projection, and
+write $E=JQ-QT_r$. For exact Arnoldi $E=h_{k+1,k}q_{k+1}e_k^T$; using the
 full residual matrix also accounts for floating-point orthogonalization
 error. Define
 \[
- c_0=0,\quad c_{j+1}=\beta e_1+Hc_j,\quad
+ c_0=0,\quad c_{j+1}=\beta e_1+T_r c_j,\quad
  v_j=Qc_j,\quad \widehat z_j=z+v_j.
 \]
 
@@ -416,12 +456,12 @@ Then
 If $\F$ is $\ell$-Lipschitz in the fixed $M$-norm between corresponding
 actual and predicted points, then
 \begin{equation}
- \norm{\F^m(z)-\widehat z_m}_M
- \leq\sum_{j=0}^{m-1}\ell^{m-1-j}
+ \norm{\F^H(z)-\widehat z_H}_M
+ \leq\sum_{j=0}^{H-1}\ell^{H-1-j}
        \big(\norm{N(v_j)}_M+\norm{Ec_j}_M\big). \label{eq:defectbound}
 \end{equation}
-If the derivative is $K$-Lipschitz in the induced $M$-norm on each segment
-from $z$ to $z+v_j$, then $\norm{N(v_j)}_M\leq\tfrac K2\norm{v_j}_M^2$.
+If the derivative is $L_J$-Lipschitz in the induced $M$-norm on each segment
+from $z$ to $z+v_j$, then $\norm{N(v_j)}_M\leq\tfrac{L_J}{2}\norm{v_j}_M^2$.
 \end{theorem}
 \begin{proof}
 Use $r=\beta Qe_1$ to subtract the reduced recurrence from
@@ -437,9 +477,9 @@ remove $N(v_j)$: a larger exact representation of the wrong frozen geometry
 still predicts the wrong trajectory. At a nonsmooth crossing,
 \eqref{eq:defect} remains an algebraic identity for a selected linear action,
 but the quadratic remainder estimate need not hold. Evaluating every $d_j$
-requires the very map calls one hopes to avoid. The implementation therefore
-uses these quantities only in a separately costed diagnostic, not as a free
-runtime certificate.
+requires the very map calls one hopes to avoid. Direct defect evaluation
+therefore serves as a separately costed diagnostic; it cannot be treated
+as a free runtime certificate.
 
 \subsection{Relating the metric error to a Bregman distance}
 For $x_a=\nabla\psi^*(y_a)$ and $x_b=\nabla\psi^*(y_b)$,
@@ -457,233 +497,1075 @@ This translates the fixed-metric transport error into the original mirror
 geometry when the metric distortion is controlled. It also identifies a
 limitation near domain boundaries where the required constants may degenerate.
 
-\section{Two instructive limits}
-\subsection{A boundary optimum with no finite dual fixed point}
-Consider minimizing $c^Tx$ on the probability simplex using negative-entropy
-mirror descent. In log-ratio coordinates $y_i=\log(x_i/x_n)$,
+
+\section{Conditional Energy in Entropic Transport}
+\label{sec:entropic-evolution}
+A long relaxation time does not by itself imply large accumulated nonlinear
+forcing. In Sinkhorn iteration, the same conditional geometry controls the
+linear dissipation and the curvature. This yields a quantitative distinction
+between a small spectral gap and failure of an approximate transport model.
+
+Let $K\in\R_{>0}^{m\times n}$ and let $a,b$ be positive marginals of equal
+total mass. All exponentials, logarithms, and vector quotients below are
+componentwise. In log column-scaling coordinates, one full pass is
 \begin{equation}
- \F(y)=y+r,\quad r_i=-\alpha(c_i-c_n),\quad J=I.
+ x(y)=\log a-\log(Ke^y),\qquad
+ F(y)=\log b-\log(K^Te^{x(y)}).
+ \label{eq:entropic-map}
 \end{equation}
-For nonconstant $c$, the dual iteration has no finite fixed point.
-Nevertheless its rank-one Krylov space closes and
-\[
- \delta_{1,m}=mr,\qquad
- x_i^{(m)}=\frac{x_i^{(0)}\exp(-m\alpha c_i)}
-                       {\sum_j x_j^{(0)}\exp(-m\alpha c_j)}.
-\]
-With a unique smallest cost, the primal sequence converges to a simplex
-vertex. This is an exactly solvable control, not a new linear-programming
-algorithm. It establishes that finite-horizon transport does not logically
-require a finite stationary dual solution. A projected stationary inverse
-$I-H$ is singular here.
+The next row scaling is determined by $y$ and carries no independent memory
+in this ordinary algorithm. This elimination is specific to its phase
+contract; it does not justify deleting independent splitting memories.
+The map has the gauge symmetry $F(y+\gamma\mathbf1)=F(y)+\gamma\mathbf1$.
 
-\subsection{A smooth convex case where the cost advantage fails}
-Let $f(x)=x^4/4$, use the Euclidean mirror, and take the stable ordinary map
-$\F(x)=x-0.3x^3$ from $x=1$. A rank-one frozen polynomial with a long
-horizon approaches $1-0.3/(1-0.1)=2/3$. After one settling step it is near
-$0.578$. Three ordinary steps, matching one map, one tangent, and one
-settling action, reach approximately $0.533$. The latter has the smaller
-objective. This elementary counterexample rules out unconditional
-cost-adjusted acceleration even for a smooth convex descent trajectory.
+Set $u=e^{x(y)}$, $v=e^y$, and define
+\begin{equation}\begin{aligned}
+ \Pi&=\diag(u)K\diag(v),\qquad c=\Pi^T\mathbf1,\\
+ P&=\diag(a)^{-1}\Pi,\qquad Q=\diag(c)^{-1}\Pi^T.
+\end{aligned}\label{eq:entropic-conditionals}\end{equation}
+Thus $\Pi\mathbf1=a$, while $c$ is the current column marginal. Both
+$P$ and $Q$ are row stochastic.
 
-\section{Initial experimental program}\label{sec:experiments}
-The code is independent of the Meyer implementation. Four principal
-geometries are generated with known optima: a quadratic objective with an
-anisotropic quadratic mirror; a separable entropy objective whose dual
-iteration is affine; a coupled entropy-regularized quadratic on the
-simplex; and Lasso solved by ADMM. A primal-coordinate representation of
-the same separable entropy iteration is a coordinate ablation. A linear
-simplex objective supplies the boundary-drift control.
-
-The entropy simplex uses $n-1$ log ratios and the SPD metric
-$M=\diag(x_{1:n-1})-x_{1:n-1}x_{1:n-1}^T$.
-Its step size uses the global relative-smoothness bound
-$L\leq\tfrac12\lambda_{\max}(A)+\tau$ for the chosen quadratic plus
-entropy regularizer. This conservative choice is held fixed across methods.
-For Lasso, a planted minimizer and a valid $\ell_1$ subgradient determine
-the linear term through the KKT equations. ADMM retains both the split
-variable and scaled dual memory; its derivative acts on both.
-
-\subsection{An exact ADMM coordinate ablation}
-For the Lasso split let $R=(B+\rho I)^{-1}$, let
-$d=\operatorname{shrink}_{\lambda/\rho}(s)$ and $b=s-d$.
-The pre-shrink variable $s$ reconstructs both fields exactly, and its map is
+\begin{proposition}[Moving conditional metric]
+\label{prop:entropic-metric}
+At every finite state,
 \begin{equation}
- \F_s(s)=Rq+\rho R(2d-s)+s-d. \label{eq:shadow}
+ J(y)=DF(y)=QP,\qquad
+ \diag(c)J=\Pi^T\diag(a)^{-1}\Pi.
+ \label{eq:entropic-metric}
 \end{equation}
-Starting with zero state, decoding every ordinary shadow iterate reproduces
-the full $(d,b)$ iteration. This is the classical Douglas--Rachford shadow
-representation, also relevant to trajectory analysis in \cite{poon2020}; it
-does not discard memory. On a fixed shrinkage mask $D$, its Jacobian is
+Consequently $J$ is self-adjoint and positive semidefinite in the
+$c$-weighted inner product, with spectrum in $[0,1]$. For the actual
+displacement $d=F(y)-y$,
 \begin{equation}
- J_s=I-\rho R-D+2\rho RD
-    =\tfrac12\{I+(2\rho R-I)(2D-I)\}. \label{eq:shadowjac}
+ c=b\odot e^{-d}. \label{eq:entropic-metric-displacement}
 \end{equation}
-Since $\norm{2D-I}_2=1$ and $\norm{2\rho R-I}_2<1$ for $B\succ0$,
-this local action is nonexpansive in the Euclidean norm. The derivative of
-the decode on one fixed mask is the isometric embedding
-$L=[D^T,(I-D)^T]^T$, with $L^TL=I$. Across mask changes the decode is
-nonlinear, and finite frozen-Jacobian extrapolation need not agree between
-the two representations. We therefore include a matched shadow-coordinate
-screen to distinguish state-graph artifacts from failure of the frozen
-geometry itself.
+\end{proposition}
+\begin{proof}
+Differentiation gives $Dx[h]=-Ph$ and $DF[h]=QPh$.
+The second identity in \eqref{eq:entropic-metric} follows by multiplication.
+Conjugating $J$ by $\diag(\sqrt c)$ gives $S^TS$, where
+$S=\diag(a)^{-1/2}\Pi\diag(c)^{-1/2}$. Jensen's inequality and the two
+marginal identities imply
+$\norm{Ph}_a\leq\norm h_c$ and $\norm{Qk}_c\leq\norm k_a$.
+The spectrum therefore lies in $[0,1]$. Finally,
+$c=v\odot(K^Tu)$ and $e^{F(y)}=b/(K^Tu)$ imply
+\eqref{eq:entropic-metric-displacement}.
+\end{proof}
+For the remainder of this section the marginals have unit mass. The metric
+$c$ is determined by the actual displacement, but the full operator $J$ is
+not. Under a displacement $h$, put $e=-\log(Pe^h)$. Direct normalization gives
+\begin{align}
+ P^+&=\diag(Pe^h)^{-1}P\diag(e^h),\nonumber\\
+ Q^+&=\diag(Qe^e)^{-1}Q\diag(e^e),\label{eq:conditional-evolution}\\
+ F(y+h)-F(y)&=-\log(Qe^e).\nonumber
+\end{align}
+These identities close the evolving geometry in a diagonal scaling orbit.
+They do not reduce its dense application cost. Nor does instantaneous
+self-adjointness imply that operators at successive anchors commute.
 
-The comparators are ordinary iteration, Euclidean-metric finite flow,
-mirror-metric finite flow, a stationary local Krylov correction, and an
-unguarded regularized type-II Anderson implementation of depth four.
-The stationary comparator replaces $p_m(H)$ with $(I-H)^{-1}$ and uses the
-same acquisition and settling schedule. It is a diagnostic comparison,
-not an assumed globally convergent Newton method. The Anderson comparator
-is not a reproduction of guarded AA-BPG, and neither it nor these pilots
-establish superiority to the published trajectory-following methods.
+\subsection{Curvature is controlled by conditional variance}
+Write $\Gamma_y(u,v)=D^2F(y)[u,v]/2$ and define
+\begin{equation}
+ \mathcal E_y(h)=\sum_i a_i\Var_{P_i}(h)
+               =\ip{h}{(I-J)h}_c.\label{eq:energy}
+\end{equation}
+Let $\norm{h}_{c,p}$ denote the probability-weighted $L^p$ norm and
+$\osc(h)=\max h-\min h$. The latter is the norm on log states modulo
+the constant gauge.
 
-One unit of operator work is one map call or one analytic Jacobian action.
-That count is intentionally accompanied by wall time: a tangent action is
-not guaranteed to cost the same as a map, and orthogonalization is not free.
-Setup is excluded consistently and recorded separately. Timings include
-metric acquisition, basis construction, reduced polynomial evaluation,
-reconstruction, ordinary settling, and objective checks spaced by sixteen
-work units. The stopping target is a known-optimum objective-gap ratio of
-$10^{-6}$, available here because the problems are constructed controls.
-It is not claimed as an implementable stopping oracle for arbitrary data.
-Final full-state residuals are recorded as separate post-run diagnostics.
-Timing orders are randomized between methods after warm-up; repeated
-timings on one seed measure implementation variability, not independent
-problem samples. Failures and budget censoring remain in the records.
-
-\input{results.tex}
-
-\input{discovery.tex}
-
-\input{curved_meyer.tex}
-
-\input{general_geometry.tex}
-
-\input{entropic_evolution.tex}
-
-\section{What would establish the broader research claim?}
-The general claim now has three obligations. First, discover a representation
-whose observable recurrence captures the relevant dynamics, using the mirror
-and operator expressions as available structure. Second, certify closure or
-bound its directional defect and decoded error on a useful invariant region.
-Third, demonstrate that acquisition, rejected candidates, certification, and
-readout together cost less than the ordinary work replaced. A short frozen
-Krylov recurrence is one way to meet these obligations; synthesized nonlinear
-observables provide another.
-
-The entropic application sharpens all three obligations. Its conditional
-geometry closes exactly and remains in a fixed diagonal scaling orbit.
-Its two-group projective lift makes composition cheap even though the
-physical derivative changes. Its general quadratic model improves prediction
-of that change, yet loses enough acquisition cost to remain slower than the
-frozen control. Thus transportability of an evolving rule, accuracy of a
-compressed predictor, and useful self-acceleration are separate claims.
-Neither the exact structured result nor the general cost loss should be
-promoted into a statement about every entropic or Bregman geometry.
-
-The rational control establishes that discovery can construct a useful chart
-from a relation rather than merely fit a propagator in a prescribed chart.
-Extending this finite grammar to more general compatible dynamics is the
-central research question. The Meyer certificate remains a demanding test
-case for approximate closure, especially when boundaries and memory matter.
-Its poor complete-solve amortization should not redirect the general program
-into tuning that particular descent. Independent objectives, coverage studies,
-and comparisons with established acceleration methods remain necessary for
-any broad performance claim.
-
-The quadratic identity also suggests an implementation question: when the
-mirror metric is cheap and symmetry survives numerically, short-recurrence
-Lanczos may reduce the overhead observed in small problems. Conversely,
-nonnormal coupled maps require genuine Arnoldi behavior and careful
-transient-error analysis. Extending the framework to changing step sizes,
-inexact proximal operations, or stochastic gradients requires additional
-state and error accounting; none is silently included in the present claim.
-
-The present research contribution is therefore a concrete, testable
-formulation of discoverable polynomial transport in mirror geometry, with exact foundations,
-explicit classical connections, and a reproducible initial comparison.
-The overarching question is which predictable geometric evolutions can be
-represented and advanced more cheaply than they can be repeatedly executed.
-
-\appendix
-\section{Model definitions and verification}
-For the quadratic mirror pilot, $G$ is diagonal with entries spanning
-$[1,10^3]$, $B_0=U\diag(\lambda_i)U^T$ with
-$\lambda_i\in[10^{-3},1]$, and $B=G^{1/2}B_0G^{1/2}$.
-The dual map uses $\alpha=0.9$.
-For the positive-orthant entropy control,
+\begin{theorem}[Conditional curvature and finite remainder]\label{thm:energy}
+At every finite anchor,
+\begin{equation}
+ \norm{\Gamma_y(u,v)}_{c,1}
+ \leq\sqrt{\mathcal E_y(u)\mathcal E_y(v)}.\label{eq:bilinear-energy}
+\end{equation}
+For $R=\osc(h)$, define $C_2(R)=2\phi_2(2R)$ and
+$C_3(R)=5R\phi_3(2R)$, where
 \[
- f(x)=\sum_i a_i\{x_i\log(x_i/x_i^*)-x_i+x_i^*\},\quad
- \psi(x)=\sum_i(x_i\log x_i-x_i),
+ \phi_k(s)=\frac{e^s-\sum_{j=0}^{k-1}s^j/j!}{s^k},
+ \qquad \phi_k(0)=1/k!.
 \]
-so $y^+=(I-\alpha\diag(a))y+\alpha\diag(a)\log x^*$.
-Its primal ablation uses exactly the same ordinary dynamics, expressed
-through $x=\exp(y)$.
-
-For the simplex problem,
+Then
+\begin{align}
+ \norm{F(y+h)-F(y)-Jh}_{c,1}
+ &\leq C_2(R)\mathcal E_y(h),\label{eq:linear-energy}\\
+ \norm{F(y+h)-F(y)-Jh-\Gamma_y(h,h)}_{c,1}
+ &\leq C_3(R)\mathcal E_y(h).\label{eq:cubic-energy}
+\end{align}
+These are finite-amplitude bounds at the given anchor; no fixed point
+or spectral separation is assumed.
+\end{theorem}
+\begin{proof}
+Differentiating conditional means gives
 \[
- f(x)=\tfrac12(x-x^*)^TA(x-x^*)+\tau D_{\mathrm{KL}}(x\Vert x^*),
- \quad A\succ0,\quad \tau=0.05.
+ 2\Gamma_y(u,v)=Q\Cov_P(u,v)-\Cov_Q(Pu,Pv).
 \]
-The eigenvalues of $A$ span $[n/10^3,n]$, and $x^*$ is a normalized positive
-lognormal vector. For Lasso,
+Conditional Cauchy--Schwarz bounds the first term in weighted $L^1$ by
+$\sqrt{\mathcal E_y(u)\mathcal E_y(v)}$. For the second, use
 \[
- f(x)=\tfrac12x^TBx-q^Tx+\lambda\norm{x}_1,\quad
- q=Bx^*+\lambda s^*,\quad s^*\in\partial\norm{x^*}_1.
+ \sum_jc_j\Var_{Q_j}(Pu)=\ip{u}{(J-J^2)u}_c
+ \leq\mathcal E_y(u),
 \]
-The baseline penalty is $\rho=0.1$ and $\lambda=0.05$. The reusable
-screened inverse is prepared once for every method. These planted synthetic
-families simplify measurement and do not substitute for a natural-data study.
+and the same inequality for $v$. Division by two proves
+\eqref{eq:bilinear-energy}.
 
-The invariant tests compare analytic Jacobian actions with independent
-centered differences, verify mirror symmetry away from stationarity,
-check metric coordinate covariance, test Arnoldi polynomial reproduction,
-and exercise an invariant Jordan block at eigenvalue one. They verify the
-nonlinear defect identity and its Lipschitz bound, the quadratic energy
-decomposition and contraction estimate, simplex feasibility, the planted
-ADMM KKT point, and the necessity of retained memory. The scalar curvature
-counterexample is an explicit negative test. Reproduction commands and
-unaltered run records accompany the source.
+Along $y_s=y+sh$, exponential tilting gives
+$e^{-sR}\leq(P_s)_{ij}/P_{ij}\leq e^{sR}$ and the same comparison for
+$(c_s)_j/c_j$. Evaluating tilted variances about the old conditional mean
+yields $\mathcal E_{y_s}(h)\leq e^{sR}\mathcal E_y(h)$.
+Consequently $\norm{D^2F(y_s)[h,h]}_{c,1}
+\leq2e^{2sR}\mathcal E_y(h)$.
 
-\subsection{Entropic application protocol and independent checks}
-For the line cases in Section~\ref{sec:entropic-evolution}, take equally
-spaced points $x_i\in[0,1]$ and
-$K_{ij}=\exp(-(x_i-x_j)^2/\varepsilon)$, with
-$\varepsilon\in\{.02,.003\}$. For seed $s$, the unnormalized marginals are
+With $\kappa_3$ the third central moment, a further derivative is
+\begin{align*}
+ D^3F(y)[h,h,h]={}&Q\kappa_{3,P}(h)\;+
+                  \kappa_{3,Q}(Ph)\\
+                &-3\Cov_Q(Ph,\Var_P(h)).
+\end{align*}
+The bounds $|\kappa_3(X)|\leq\operatorname{range}(X)\Var(X)$ and
+$|\Cov(X,V)|\leq\operatorname{range}(X)\mathbb E V$ for $V\geq0$
+give $5R\mathcal E_y(h)$ in the current weighted $L^1$ norm.
+The two tilt comparisons give $5Re^{2sR}\mathcal E_y(h)$ in the anchor
+norm. Taylor's integral remainder proves both finite bounds.
+\end{proof}
+For a normalized eigenvector $Jv=\lambda v$,
+$\mathcal E_y(v)=1-\lambda$. Thus slow directions have small quadratic
+forcing in the stated norms. This coefficientwise fact is not an analytic
+linearization radius or a guarantee that a single slow coordinate closes.
+Mixed forcing can still carry information from other directions.
+
+\subsection{A finite energy budget over arbitrary horizons}
+Positive linear maps and their log forms preserve order; the full $F$ is
+order preserving and translation equivariant. Hence $F$ is nonexpansive in
+oscillation. This supplies the common norm needed to accumulate defects.
+
+\begin{theorem}[Fixed-point finite-energy transport]\label{thm:uniform}
+Assume $F(y_*)=y_*$, set $c=b$, $m=\min_jc_j>0$, and let $h$ be
+$c$-centered, fixing the constant gauge used to measure amplitude. Put $A=\norm{h}_{c,2}$, $R=\osc(h)$, $J=DF(y_*)$,
+and $\Gamma=\Gamma_{y_*}$. Define
+\begin{align*}
+ \ell_0=h,\quad q_0=0,\qquad
+ \ell_{j+1}&=J\ell_j,\\
+ q_{j+1}&=Jq_j+\Gamma(\ell_j,\ell_j).
+\end{align*}
+For every finite $H$,
+\begin{equation}
+ \osc\{F^H(y_*+h)-y_*-J^Hh\}
+ \leq C_2(R)A^2/m.\label{eq:uniform-linear}
+\end{equation}
+With $S=A^2/\sqrt m$ and $\bar R=R+A^2/m$,
+\begin{align}
+ &\osc\{F^H(y_*+h)-y_*-\ell_H-q_H\}\nonumber\\
+ &\hspace{6mm}\leq
+ \frac{2AS+S^2+C_3(\bar R)(A+S)^2}{m}.\label{eq:uniform-jet}
+\end{align}
+Uniformity is in $H$ at fixed amplitude and positive marginal geometry.
+The bounds contain no inverse spectral gap; they do contain $m^{-1}$,
+$R$, and an unknown fixed-point displacement. For fixed $c$, the second
+bound is $O(A^3)$ as $A\to0$.
+\end{theorem}
+\begin{proof}
+Self-adjointness and $0\preceq J\preceq I$ give
+\begin{equation}
+ \sum_{j=0}^{H-1}\mathcal E(J^jh)
+ \leq\norm h_{c,2}^2=A^2,\label{eq:energy-budget}
+\end{equation}
+since $\mathcal E(w)\leq\norm w_{c,2}^2-\norm{Jw}_{c,2}^2$.
+Also $\osc(J^jh)\leq R$. Apply \eqref{eq:linear-energy} to each
+linear-path defect, use $\osc(w)\leq\norm w_{c,1}/m$, and accumulate by
+nonexpansivity to obtain \eqref{eq:uniform-linear}.
+
+Set $f_j=\Gamma(\ell_j,\ell_j)$. Equations
+\eqref{eq:bilinear-energy} and \eqref{eq:energy-budget} imply
+$\sum_j\norm{f_j}_{c,1}\leq A^2$, whence
+$\osc(q_j)\leq A^2/m$. The impulse expansion of $q_j$, Minkowski's
+inequality in the space of energy sequences, and
+$\norm f_{c,2}\leq\norm f_{c,1}/\sqrt m$ give
 \[
- a_i=.1+\exp\!\left[-\left(\frac{x_i-(.28+.04s)}{.18+.01s}\right)^2\right],
- \qquad
- b_i=.1+\exp\!\left[-\left(\frac{x_i-(.68-.03s)}{.2}\right)^2\right].
+ \left(\sum_j\mathcal E(q_j)\right)^{1/2}
+ \leq\sum_j\norm{f_j}_{c,2}\leq S.
 \]
-Normalize each to unit mass. For the plane cases, draw independent supports
-$X_i,Y_j$ uniformly from $[.1,.9]^2$ and use squared Euclidean Gaussian
-kernels with $\varepsilon\in\{.03,.006,.003\}$. Before normalization,
-the source and target masses are
+For $z_j=\ell_j+q_j$, therefore,
+$\osc(z_j)\leq\bar R$ and
+$\sum_j\mathcal E(z_j)\leq(A+S)^2$.
+The quadratic discrepancy has total $L^1(c)$ norm at most
+$2AS+S^2$ by \eqref{eq:bilinear-energy}. The remaining Taylor defects
+sum to at most $C_3(\bar R)(A+S)^2$. Converting to oscillation and
+using nonexpansivity proves \eqref{eq:uniform-jet}.
+\end{proof}
+This second jet is the linear evolution on
+$(z_j,\ell_j\otimes\ell_j)$ with block operator
 \[
- \widetilde a_i=.1+\exp(-\norm{X_i-(.3,.4)}^2/.03),\qquad
- \widetilde b_j=.1+\exp(-\norm{Y_j-(.7,.6)}^2/.025).
+ \mathcal L=\begin{pmatrix}J&\Gamma_{\rm flat}\\0&J\otimes J\end{pmatrix}.
 \]
-For the dense control, entries of $\log K$ are independent standard normal
-variables and the marginals are uniform. Seeds one and two are the timed validation
-cases; seed zero is the exploratory screen.
+It retains resonant interactions. It is not repeated application of the
+quadratic Taylor map, whose higher-degree terms would evolve differently.
+The uncompressed tensor dimension is itself a substantial cost.
 
-The exact block study uses alternating equal-sized groups, uniform full
-marginals, and $C=\left(\begin{smallmatrix}1&\eta\\\eta&1\end{smallmatrix}\right)$
-for $\eta\in\{.03,.001\}$. Row and column factors are uniform on $[.5,1.5]$,
-with column factors in the first group multiplied by three. Both methods
-aggregate the same inputs and reconstruct the full scaling factors.
+At a general anchor, a proposed path $s_j$ instead has the defect
+\[
+ \eta_j=\osc\{s_{j+1}-r-Js_j-\Gamma_y(s_j,s_j)\},\quad r=F(y)-y.
+\]
+The same argument gives a \emph{pathwise} bound
+\begin{align}
+ &\osc\{F^H(y+s_0)-y-s_H\}\nonumber\\
+ &\quad\leq\sum_{j<H}\left[
+ \eta_j+\frac{C_3(\osc s_j)\mathcal E_y(s_j)}{\min c}\right].
+ \label{eq:moving-path}
+\end{align}
+It is not a proved horizon-uniform extension of Theorem~\ref{thm:uniform}.
+If $s_j=C L^j\xi$, the energy sum can be composed by a Gramian:
+\begin{align*}
+ G_H&=\sum_{j<H}(L^j)^TW L^j,\qquad
+ W=C^T\diag(c)(I-J)C,\\
+ P_{a+b}&=P_bP_a,\qquad G_{a+b}=G_a+P_a^TG_bP_a,
+ \quad P_a=L^a.
+\end{align*}
+Binary composition costs $O(r^3\log H)$ for an $r$-dimensional dense lift.
+A path-radius bound and the model-defect sum are still needed. Recovering
+$h$ from an observed residual through $(I-J)^{-1}$ can reintroduce inverse-gap
+sensitivity. The energy theorem removes a forcing obstruction, not the
+acquisition problem.
 
-The implementation and retained receipts are in
-\texttt{experiments/entropic\_transport\_closure}. Its sixteen tests check
-the finite conditional recurrence, moving metric, Jacobian and its variation,
-exact rational state and tangent powers, weighted reduced models, second-
-and third-order error bounds, complete trajectory escape, accepted general
-advances, rejection of a nonprogressing proposal, and reconstructed
-marginals. Independent true trajectories are confined to untimed tests and
-diagnostics. The paper table and figures are generated from retained JSON
-records by \texttt{paper\_report.py}; no numerical benchmark is rerun during
-manuscript generation.
+\section{What Must Be Observed and Retained}
+\label{sec:observability}
+A narrow state trajectory need not determine its changing local rule.
+The distinction can be stated exactly for linearized output prediction
+and then tested without converting it into a universal impossibility claim.
 
+\begin{proposition}[Exact linear rule observability]\label{prop:observability}
+For $h^+=Jh$ and required output $Oh$, the least dimension of an exact
+linear autonomous representation
+\[
+ \xi=Rh,\qquad \xi^+=T\xi,\qquad Oh=D_o\xi
+\]
+valid for every $h\in\R^n$ is
+\begin{equation}
+ r_* = \dim\spanop\operatorname{rows}
+           \{O,OJ,\ldots,OJ^{n-1}\}.\label{eq:obsrank}
+\end{equation}
+\end{proposition}
+\begin{proof}
+The identities $RJ=TR$, $O=D_oR$ force the row space of $R$ to be
+$J$-invariant and to contain every displayed row. Conversely that row span
+is invariant by Cayley--Hamilton; a basis supplies $R$, $T$, and $D_o$.
+\end{proof}
+To carry selected changing-rule entries, include in $O$ the functionals
+$h\mapsto2\ip{v_i}{\Gamma_y(h,v_j)}_c$, not just the retained state coordinates.
+Thus adding rule outputs can increase $r_*$. Eliminating hidden variables
+also creates temporal memory: if $x^+=Ax+Bz$, $z^+=Cx+Dz$, then
+\[
+ x_{k+1}=Ax_k+BD^kz_0+
+       \sum_{j<k}BD^{k-1-j}Cx_j.
+\]
+Delay coordinates may represent that information; omission does not make it
+disappear~\cite{linlu,kamb}.
+
+\subsection{A tolerance-dependent directional law}
+Let $T_H=[O^T,(OJ)^T,\ldots,(OJ^{H-1})^T]^T$ and let the perturbation ensemble have
+second-moment matrix $\Sigma=\mathbb E[hh^T]$. In specified input and output coordinates put
+$M_H=\Sigma^{1/2}T_H^TT_H\Sigma^{1/2}$, with eigenvalues
+$\lambda_1\geq\lambda_2\geq\cdots$. If $\tr M_H>0$, the best rank-$r$
+linear stacked predictor has relative mean-square loss
+\begin{equation}
+ 1-\frac{\sum_{i\leq r}\lambda_i}{\tr M_H}.
+ \label{eq:directionlaw}
+\end{equation}
+This is the singular-value truncation theorem applied to $T_H\Sigma^{1/2}$.
+In particular its captured fraction is at most $r/d_{\rm eff}$, where
+$d_{\rm eff}=\tr M_H/\lambda_1$. Capture $\eta$ requires
+$r\geq\eta d_{\rm eff}$ within this model class.
+
+The law is exact for the specified linear prediction task and perturbation
+ensemble. It is a ratio of mean squared errors, not a worst-case relative
+bound. A 99\% energy capture permits 10\% relative RMS error. Moreover the
+optimal stacked predictor need not admit autonomous projected dynamics:
+a Gramian tail bound does not certify invariance or control nonlinear
+regeneration of discarded modes. Neither mixture count nor ambient dimension
+can replace this task-dependent spectrum without another theorem.
+
+Finite observations alone also cannot certify unrestricted smooth future
+maps. A smooth perturbation supported away from the finitely queried states
+leaves every observed value and derivative unchanged and can change a later
+unqueried transition. Certification consequently needs a stated structural
+class, an invariant-region bound, or another source of information beyond
+snapshot rank. This does not forbid useful statistical prediction.
+
+\subsection{The algebra of nonlinear requests}
+There is a complementary way to avoid carrying an evolving Jacobian.
+Sinkhorn repeatedly requests $Kv$ and $K^Tu$, while its reciprocals remain
+cheap full-vector operations. The linear relation $K$ is fixed even when
+its normalized conditional geometry changes. Its action on a retained
+request space can be measured once and reused.
+
+\begin{theorem}[Finite joint-pattern algebra]\label{thm:patterns}
+Let $w_1,\ldots,w_d\in\R^n$. Partition the indices by equality of the
+joint tuples $(w_1(i),\ldots,w_d(i))$, and let $N_{\rm pat}$ be the number of
+nonempty classes. The unital pointwise algebra generated by the $w_j$
+is precisely the space of vectors constant on those classes; its dimension
+is $N_{\rm pat}$. It is closed under componentwise exponentiation and reciprocals
+of vectors with no zero coordinate. If $Q$ spans this algebra and $x_0>0$,
+measured columns of $K\diag(x_0)Q$ evaluate every request
+\[
+ K\left[x_0\odot\exp\!\left(\sum_j s_jw_j\right)\right]
+\]
+by linear combination.
+\end{theorem}
+\begin{proof}
+Every generated product is constant on each class. Choose a linear
+combination $w=\sum_j\alpha_jw_j$ separating the finitely many distinct
+tuples; the forbidden coefficients form finitely many hyperplanes.
+Univariate Lagrange polynomials in $w$ give the indicator of each class.
+These indicators span all class-constant vectors, proving equality and the
+dimension claim. Any componentwise function defined on the finitely many
+values remains class-constant. Linearity of $K$ proves the response claim.
+\end{proof}
+For binary generators $N_{\rm pat}\leq2^d$; a single generator with $n$ distinct
+values already has $N_{\rm pat}=n$. Thus a small span of log directions need not
+produce a small exact algebra of requests. This is an obstruction to
+\emph{exact linear-space closure on the full generated family}. It is not
+a lower bound for approximate representations, a restricted path, nonlinear
+parameterizations, or every acceleration method. It also does not prove that
+ordinary Sinkhorn remains in a chosen generator family. That membership
+must be established or checked at every actual request.
+
+\subsection{Admission and numerical transport of primitive responses}
+At a positive anchor $x_0$ let $k_0=Kx_0$ and
+$P_0=\diag(k_0)^{-1}K\diag(x_0)$. For an actual request $x>0$, write
+$v=x/x_0=Qc+r$ and $\widehat p=P_0Qc$. Positivity yields
+\begin{equation}
+ \eta=\max_i|r_i|/v_i<1
+ \quad\Longrightarrow\quad
+ |P_0v-\widehat p|\leq\eta P_0v.\label{eq:primitive-admit}
+\end{equation}
+The represented output is positive and its Hilbert log-distance from the
+exact one is at most $\log((1+\eta)/(1-\eta))$.
+Positive linear maps are nonexpansive in that distance, while reciprocals
+and fixed positive diagonal scalings preserve it. Summing the admitted
+half-pass errors bounds departure from the original ordinary trajectory.
+
+This gate uses the full observed input, not a prediction of what the next
+request ought to be. If each stored response has a proved componentwise
+error matrix $E$, the additional output uncertainty is bounded by
+$E|c|$; otherwise \eqref{eq:primitive-admit} covers exact arithmetic only.
+The numerical results use double precision with roundoff allowances and
+independent comparisons against direct evaluation. These checks do not
+constitute directed-rounding interval certification.
+
+At another anchor $x_1$ with known $k_1=Kx_1$, measured pairs transform as
+\begin{align*}
+ P'_0&=\diag(k_0/k_1)P_0\diag(x_1/x_0),\\
+ Q'&=\diag(x_0/x_1)Q,\qquad P'_0Q'=\diag(k_0/k_1)P_0Q.
+\end{align*}
+This is an exact change of representation. Its input diagonal condition
+number is $\exp(\osc\log(x_1/x_0))$; near-dependent basis transformations
+can further amplify response errors. Stable frame transfer, useful future
+request coverage, and cheap acquisition are therefore different questions.
+Exact algebra settles none of their numerical cost comparisons by itself.
+
+\section{Empirical Consequences of the Theory}
+\label{sec:evidence}
+The following outcomes are selected because they distinguish closure,
+acquisition, and cost. They are not a pooled benchmark: a finite-trajectory
+comparison, a complete solve, and a primitive-query count answer different
+questions. Table~\ref{tab:regimes} records the strongest positive examples
+alongside the relevant limitations. Paired timings use the same computing environment and include
+method-specific setup and validation;
+Appendix~\ref{app:protocol} specifies the individual comparison contracts.
+
+\begin{table*}[t]
+\centering\small
+\caption{Selected outcomes organized by the condition they test. Ratios compare
+against the stated ordinary implementation, not against all available solvers.}
+\label{tab:regimes}
+\begin{tabular}{p{.18\textwidth}p{.26\textwidth}p{.46\textwidth}}
+\toprule
+Representation & Source of validity & Reported outcome and its scope\\\midrule
+Huber affine piece & Current-state discovery; feature-path certificate &
+At $n=256$ with positive sensing, complete solves were $3.47\times$ faster
+than ordinary and $1.42\times$ faster than the fixed schedule. Anderson was
+faster still. Signed sensing made discovery unprofitable.\\[3pt]
+Two-group Sinkhorn & Supplied exact proportional-block partition;
+projective powers & $4.7$--$6.9\times$ faster at coupling $.03$ and
+$56.9$--$73.8\times$ at $.001$, including entry/readout against the same
+reduced map. Partition discovery is not measured.\\[3pt]
+Primitive response cache & Measured fixed-kernel actions; full-request
+residual admission & At $n=1024$, four of six 256-pass trajectories ran
+$1.13$--$2.04\times$ faster. The two narrowest-kernel cases and all $n=128$
+cases lost time.\\[3pt]
+Coupled Meyer path & Exact future-driving quotient; curved remainder
+certificate & Seven of twenty anchors were accepted: four ran $1.39$--$3.48\times$
+faster and three lost time. The discovered policy lost all five complete
+solve comparisons.\\[3pt]
+Mixed request algebra & Joint-pattern closure or checked approximate
+membership & Four binary directions used 16 measured responses for 256
+supplied-family requests. Four Gaussian directions at budget 64 obtained no
+reuse. Small-$n$ product savings did not give elapsed-time savings.\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Where a relation becomes an executable shortcut}
+The Huber example acquires the drift, its relation, and the first feature
+event from the current state. At $n=256$, three positive-sensing instances
+admitted initial exact-arithmetic horizons 838, 831, and 821 with one map
+and one tangent action; independent replay errors were at most
+$3.7\cdot10^{-11}$ in absolute whitened dual norm. The complete-solve
+speedup in Table~\ref{tab:regimes} is a separate measurement, including
+later failed acquisitions and checks. At smaller size or with frequent
+feature events, those costs were not repaid.
+
+The proportional-block example instead begins with the invariant family
+supplied. Both methods aggregate the same inputs, evolve the same reduced
+map, and reconstruct the full scalings. For coupling $.001$, ordinary
+reduced runs took about 14--15 ms while projective powers and readout took
+$.19$--$.26$ ms. This isolates economical composition after entry; it
+cannot be used as evidence that arbitrary kernels reveal such a partition.
+
+The rational cross-ratio control occupies an intermediate position. Eight
+transitions supply observations in known mirror coordinates; a finite
+rational grammar identifies the chart. Across four mirror geometries and
+three seeds, the maximum relative primal error at horizon 128 was
+$2.88\cdot10^{-11}$. This verifies a favorable representation-discovery
+mechanism, not a general grammar or a repeated wall-clock performance gate.
+
+\subsection{Small forcing does not establish cheap acquisition}
+The conditional-energy study checked 50 finite remainder bounds and 28
+fixed-point horizon/amplitude cases. All finite bounds held in those
+floating-point checks. As a controlled spectral gap decreased from $.386$
+to $.00145$, the horizon $\lceil3/\mathrm{gap}\rceil$ grew from 8 to 2070.
+At amplitude $.1$, maximum second-jet error changed from
+$1.13\cdot10^{-4}$ to $1.17\cdot10^{-4}$. At the smallest gap, halving
+amplitude twice reduced errors to $1.46\cdot10^{-5}$ and
+$1.82\cdot10^{-6}$, consistent with the cubic bound rather than an
+inverse-gap blowup.
+
+The bound itself can nevertheless be unusable. Replicating every atom 32
+times, from three states to 96, preserves the physical conditional action
+but worsens the coarse marginal-dependent certificate by approximately
+1600-fold. The experiment diagnoses the $\min c$ conversion; it does not
+provide a proved discretization-independent replacement. Likewise, the
+fixed-point displacement and full second jet are scoring objects in this
+study, not free runtime information.
+
+The observability tests expose a separate limitation. At $n=128$, the
+four-by-four reference rule block required 12--23 directions to retain
+99.9\% of its frozen observability-Gramian trace, whereas its four state
+coordinates alone require four. These are trace-capture ranks, not
+worst-case relative-error certificates. At early anchors of the two
+$\varepsilon=.001$ cases, more than 32 and 28 current leading modes were
+needed to capture 99\% of the fixed point's leading direction; both late
+anchors needed one. This is evidence against a uniformly tiny leading
+cluster over that acquisition window, not against every other representation.
+
+History was not categorically uninformative. An order-eight recurrence,
+given a favorable oracle signal of frozen rule drift, predicted 32 held-out
+values to within 3\% relative RMS error in 21 of 24 cases with relative
+noise $10^{-6}$. The fixed point and exact modal signal were supplied to
+this diagnostic. It sets a target for causal acquisition; it is not an
+implemented general acquisition guarantee.
+
+\subsection{Pattern closure and its loss under richer requests}
+The joint-pattern control uses 256 positive requests on 128 coordinates,
+two seeds, and a 64-column budget. For supplied binary fields with one,
+two, and four directions, acquisition and all queries cost 2, 4, and 16
+kernel-vector equivalents. Learning directions from the first eight live
+log requests costs 9, 11, and 23--27 equivalents. All subsequent requests
+were admitted. Separate powers of the original directions fail in the
+multidirection cases, demonstrating the role of mixed products.
+
+With continuous Gaussian fields, supplied one-direction representations
+still admitted all subsequent requests. Two directions cost 279 and 266
+products, exceeding the ordinary 256; four cost 319 in both seeds and
+admitted none. Total log-coefficient RMS was held fixed; maximum log range
+was not. These results do not establish a universal law in Gaussianity.
+The precise exact-family statement is Theorem~\ref{thm:patterns};
+approximate cost additionally depends on range, tolerance, conditioning,
+and the portion of the family actually visited.
+
+On the difficult ordinary Sinkhorn trajectories at $n=1024$,
+$\varepsilon=.001$, two learned directions required 1016 products per
+seed for 256 passes, against the ordinary 512. Four directions required
+1015 and 1012, admitting only one and four reuses. Acquisition consumed
+nearly all the extra work. After rejection, the already-required full
+product audited the rejected prediction: none of the 496 rejected
+predictions per seed in the two-direction case had componentwise relative
+output error below $10^{-8}$. Only two of 495 and one of 492 did so with
+four directions. A looser gate would therefore not repair the dominant
+representation failure. These diagnostics do not isolate generator
+insufficiency from polynomial truncation.
+
+Frame conditioning is distinct again. Transferring measured responses
+through repeated ill-conditioned basis changes initially corrupted their
+images. Carrying response uncertainty, spectral rebasing, and immutable
+physical action pairs repaired the tested accuracy but still lost complete
+cost. The algebraic frame identity does not guarantee either numerical
+stability or future request coverage.
+
+\section{Conditions for Plausible Acceleration}
+A transport representation is promising when the required outputs close in
+a space that can be acquired before its validity expires, and when its
+composition and validation are cheaper than the work replaced. The theory
+gives several concrete ways this can happen: a discovered affine piece
+with a distant event, a supplied finite invariant family with cheap entry,
+a controlled finite-energy path with an economical certificate, or a
+sequence of actual requests well covered by measured primitive responses.
+These mechanisms carry different objects and need different evidence.
+
+The corresponding failures are equally distinct. A small frozen space may
+miss changing geometry; a geometrically narrow path may hide rule memory;
+a small set of log directions may generate a large multiplicative family;
+and a mathematically exact frame may be numerically expensive or unstable.
+Equation~\eqref{eq:directionlaw} provides a sharp directional law for a
+specified linear output problem. Theorem~\ref{thm:patterns} supplies an
+exact dimension law for a specified pointwise algebra. Neither establishes
+an intrinsic scalar complexity law for arbitrary mixture models or all
+forms of acceleration.
+
+The finite-energy theorem explains why slow relaxation alone need not
+defeat approximate transport: its weak dissipation also limits accumulated
+nonlinear forcing. The unresolved step is obtaining and advancing the
+required information economically at accessible anchors. Small Gramian tails,
+accurate local fits, and valid but conservative bounds each address only
+part of that step. A practical theory must retain their acquisition and
+conditioning constants alongside their approximation rates.
+
+Discoverable transport is therefore a question about relations preserved
+by computation. Exact families show that substantial shortcuts are possible;
+scoped obstructions show why the same representation need not extend to a
+richer family. The empirical outcomes locate examples on both sides without
+turning a failed carrier into a general impossibility theorem, or a successful
+supplied family into a universal discovery procedure.
+
+\appendices
+\section{Quadratic Finite Flow and Its Classical Content}
+\label{app:cg}
+This section identifies precisely the classical linear-algebraic mechanism.
+Let $\psi(x)=\tfrac12x^TGx$, $G\succ0$, and
+$f(x)-f(x_*)=\tfrac12(x-x_*)^TB(x-x_*)$, $B\succ0$.
+Then $y=Gx$, $M=G^{-1}$, and $J=I-\alpha BM$ are constant.
+Assume the eigenvalues of $G^{-1/2}BG^{-1/2}$ lie in $[\mu,L]$ and
+$0<\alpha\leq 1/L$. Set
+\begin{equation}\begin{aligned}
+ q&=1-\alpha\mu,\quad \kappa=L/\mu,\quad
+ \theta=\frac{\sqrt\kappa-1}{\sqrt\kappa+1},\\
+ W&=M(I-J)=\alpha MBM.
+\end{aligned}\label{eq:quadparams}\end{equation}
+The squared $W$-norm of the dual error equals $2\alpha$ times the objective gap.
+
+\begin{theorem}[Finite-horizon Galerkin contraction]\label{thm:cg}
+In exact arithmetic, the natural-metric proposal satisfies
+\begin{equation}
+ \frac{f(\widehat x_H)-f(x_*)}{f(x)-f(x_*)}
+ \leq q^{2H}+(1-q^{2H})\min\{1,4\theta^{2k}\},
+ \label{eq:cgbound}
+\end{equation}
+where $\widehat x_H=G^{-1}\widehat z_H$.
+More precisely, define the stationary Galerkin correction
+\[
+ \delta_\infty=\beta Q(I-T_r)^{-1}e_1,
+ \qquad e_\infty=y+\delta_\infty-y_*.
+\]
+Then the finite-horizon error has the orthogonal decomposition
+\begin{equation}
+ \norm{y+\delta_{k,H}-y_*}_W^2
+ =\norm{e_\infty}_W^2+
+   \norm{\delta_{k,H}-\delta_\infty}_W^2. \label{eq:orthogonal}
+\end{equation}
+\end{theorem}
+\begin{proof}
+Write $S=I-J$, $e=y-y_*$. Since $r=-Se$ and
+$\K_k(J,r)=\K_k(S,r)$, $\delta_\infty$ is the $M$-Galerkin solution of
+$S\delta=r$. Thus $Q^TWe_\infty=0$. Both $\delta_{k,H}$ and
+$\delta_\infty$ lie in $\operatorname{ran}Q$, proving
+\eqref{eq:orthogonal}. The reduced matrix $T_r$ is symmetric with spectrum
+in $[0,q]$, while $Q^TWQ=I-T_r$. Consequently
+\begin{align*}
+ \delta_\infty-\delta_{k,H}&=\beta QT_r^H(I-T_r)^{-1}e_1,\\
+ \norm{\delta_\infty-\delta_{k,H}}_W&\leq q^H\norm{\delta_\infty}_W.
+\end{align*}
+Galerkin orthogonality also gives
+$\norm{e}_W^2=\norm{e_\infty}_W^2+\norm{\delta_\infty}_W^2$.
+Combine these identities with the classical CG polynomial bound
+\cite{saadbook},
+$\norm{e_\infty}_W\leq 2\theta^k\norm{e}_W$,
+and with its trivial bound $\norm{e_\infty}_W\leq\norm{e}_W$.
+Converting squared energy to objective gap proves \eqref{eq:cgbound}.
+\end{proof}
+
+This theorem does not establish a competitor to CG on a fixed quadratic.
+The stationary Galerkin correction has no larger energy error than its
+finite-horizon truncation. The finite polynomial becomes interesting when
+the geometry changes, a finite trajectory is itself the target, or a
+stationary local equation is ill-conditioned or inconsistent. On an affine
+quadratic, classical CG is a necessary reference point.
+
+
+\section{Affine-Piece Discovery and Event Horizons}\label{app:huber}
+A class with stronger available structure permits actual certification.
+Consider the Huber inverse problem
+\[
+ f(x)=\sum_i h_\delta((Ax-b)_i),\qquad
+ \psi(x)=\tfrac12 x^TGx,\quad G\succ0,
+\]
+where $h_\delta'(a)=\operatorname{clip}(a,-\delta,\delta)$.
+In whitened dual coordinates $t=G^{1/2}x$, put $B=AG^{-1/2}$. The map is
+\begin{equation}
+ \F(t)=t-\alpha B^T\operatorname{clip}(Bt-b,-\delta,\delta),
+ \qquad 0<\alpha\leq 2/\norm{B}_2^2. \label{eq:huber}
+\end{equation}
+It is globally nonexpansive in Euclidean $t$-norm: the difference of two
+updates is $(I-\alpha\overline B)(t-s)$, where the averaged Hessian obeys
+$0\preceq\overline B\preceq\norm{B}_2^2 I$. Hence the eigenvalues of the
+difference operator lie in $[-1,1]$. Fix an anchor $t$, residual $a=Bt-b$, and mask
+$D_{ii}=1_{\{|a_i|<\delta\}}$. On the corresponding closed affine piece,
+\[
+ J=I-\alpha B^TDB,\qquad
+ \F(t+v)=\F(t)+Jv.
+\]
+The projected path is $\widehat t_j=t+Qc_j$, where
+$c_0=0$ and $c_{j+1}=\beta e_1+T_r c_j$.
+Every piece constraint can be checked using only
+\begin{equation}
+ a_j=a+(BQ)c_j. \label{eq:featurepath}
+\end{equation}
+The columns $Bq_i$ are already computed by the tangent actions and cached.
+The checks require feature-space operations, not another $B^T$ application
+or another full map. Their execution time is nevertheless charged.
+
+\begin{theorem}[An affine-piece discovery certificate]\label{thm:piece}
+If \eqref{eq:featurepath} remains in the anchor's closed piece for every
+input index $j=0,\ldots,H-1$, and $E=JQ-QT_r$, then
+\begin{equation}
+ \norm{\F^H(t)-(t+Qc_H)}_2
+ \leq \sum_{j=0}^{H-1}\norm{Ec_j}_2. \label{eq:piecebound}
+\end{equation}
+In particular, algebraic closure $E=0$ makes the discovered finite
+transport exact, even when its final output crosses a piece boundary.
+\end{theorem}
+\begin{proof}
+The checked affine formula gives
+$\F(\widehat t_j)-\widehat t_{j+1}=Ec_j$ at every predicted input.
+For the actual state $t_j$, nonexpansivity gives
+$\norm{t_{j+1}-\widehat t_{j+1}}
+\leq\norm{t_j-\widehat t_j}+\norm{Ec_j}$.
+Induction proves the bound. It is not necessary to assume that the
+unknown actual path stays inside the same piece. The last checked point
+is input $H-1$, not output $H$.
+\end{proof}
+
+The norms in \eqref{eq:piecebound} use the small Gram matrix $E^TE$.
+This gives a computable path certificate in exact arithmetic and a
+floating-point diagnostic subject to a stated numerical tolerance;
+we do not claim directed-rounding certification. An exterior Euclidean
+disk projection is curved, so this theorem does not transfer to Meyer
+merely because its inside/outside mask stays unchanged.
+
+\subsection{Unit-mode drift and the Anderson distinction}
+If all Huber residuals are saturated, then $D=0$, $J=I$, and
+$r=-\alpha B^T\operatorname{sign}(a)\delta$ is constant until the next event.
+The first Arnoldi action discovers a rank-one cyclic space, and
+$p_H(J)r=mr$. Put $d=Br$. For every feature moving toward its nearest
+boundary, the continuous crossing time is
+\[
+ \tau_i=\frac{\operatorname{sign}(a_i)\delta-a_i}{d_i}>0.
+\]
+The horizon $H=1+\lfloor\min_i\tau_i\rfloor$ has all inputs in the current
+closed piece and may place its output beyond the first boundary. A finite
+cap limits acquisition amortization. In finite precision, each proposed
+input must also be checked against its defining feature inequalities;
+an uncertain boundary point cannot establish exact piece membership.
+Thus the drift direction, one-dimensional relation, and first-event horizon
+are all obtained from the current problem. They are not supplied by a
+known optimum or by a future reference trajectory.
+
+For type-II Anderson using a history entirely within this same constant-drift
+piece, every residual difference is zero. With the minimum-norm or positive
+ridge least-squares convention, its extrapolation coefficients are zero:
+it takes one ordinary step. This is a precise collapse of acceleration,
+not divergence of the underlying iteration. More generally, a left invariant direction $w^TJ=w^T$ with $w^Tr\ne0$
+obstructs a stationary correction because $w^T(I-J)\delta=0$, while
+$w^Tp_H(J)r=mw^Tr$ retains the required drift. A locally persistent pattern can therefore carry an unresolved future
+event. History spanning other pieces,
+roundoff, or alternative regularization can change the behavior; no universal
+Anderson failure is asserted. The statement concerns this specified history and regularization convention.
+
+\section{Curved Validity in the Coupled Meyer Map}\label{sec:curved}
+The affine-piece certificate does not apply to an exterior disk projection.
+Here we derive a different certificate from the original coupled recurrence,
+retaining its curvature and both vector memories. The resulting construction
+requires no additional screened solves during path validation.
+
+\subsection{A faithful future-driving quotient and its metric}
+Let $D$ be the periodic discrete gradient and $D^*=-\operatorname{div}$.
+For a branch with $a=\eta/c>0$, define
+\[
+ S_a=(I+aD^*D)^{-1},\qquad R_r(t)=t-2\Pi_r(t),
+\]
+where $\Pi_r$ is the pointwise Euclidean disk projection. The exact stored
+Meyer state is $(u,w,t_u,t_w)$. Its next pass depends on the primals only
+through $s=u+w$:
+\begin{align}
+ u^+&=S_a\{s+aD^*R_{r_u}(t_u)\},\nonumber\\
+ w^+&=S_b\{f-u^++bD^*R_{r_w}(t_w)\},\nonumber\\
+ t_u^+&=Du^++\Pi_{r_u}(t_u),\nonumber\\
+ t_w^+&=Dw^++\Pi_{r_w}(t_w),\qquad s^+=u^++w^+.
+ \label{eq:meyerquotient}
+\end{align}
+The reported experiment sets $a=2$ and $b=10$. Thus
+$z=(s,t_u,t_w)$ is an exact state for all future passes. Both vector fields,
+including their transverse components, remain present. The current primal
+difference $u-w$ is not recoverable from this quotient; the next actual pass
+recovers both next primals exactly. The emitted texture $f-u-w=f-s$ is
+already recoverable at the current state. This is a precise quotient of
+redundant state, not deletion of a driving memory variable.
+
+\begin{theorem}[Metric of the coupled recurrence]\label{thm:meyermetric}
+The quotient map $F$ in \eqref{eq:meyerquotient} is nonexpansive in
+\begin{equation}
+ \norm{z}_M^2=\norm{s}_2^2+a\norm{t_u}_2^2+b\norm{t_w}_2^2.
+ \label{eq:meyermetric}
+\end{equation}
+In fact, for any two states $z,\widetilde z$,
+\begin{equation}
+ \norm{Fz-F\widetilde z}_M^2+
+ \tfrac12\norm{(I-F)z-(I-F)\widetilde z}_M^2
+ \leq\norm{z-\widetilde z}_M^2. \label{eq:meyeraveraged}
+\end{equation}
+Equivalently, this map is $2/3$-averaged. The statement does not require
+the input states to lie on an ordinary proximal trajectory.
+\end{theorem}
+\begin{proof}
+On pairs $(y,t)$ with norm $\norm{y}^2+a\norm{t}^2$, let $P_{\mathcal G_a}$
+be the orthogonal projection onto the graph $\mathcal G_a=\{(x,Dx)\}$.
+Its first component on $(y,R_r(t))$ is
+$v=S_a(y+aD^*R_r(t))$. Therefore the branch map
+\begin{align*}
+ A_a(y,t)&=(v,Dv+\Pi_r(t))\\
+ &=\tfrac12\{I+(2P_{\mathcal G_a}-I)\diag(I,R_r)\}(y,t)
+\end{align*}
+is firmly nonexpansive: graph reflection is an isometry, and $R_r$ is
+nonexpansive by firm nonexpansivity of disk projection.
+
+Write differences between two inputs and outputs with a $\Delta$; in the
+following inequalities, $u,w$ denote the updated primals.
+The first branch gives
+\begin{align*}
+ &\norm{\Delta u}^2+a\norm{\Delta t_u^+}^2\\
+ &\quad\leq\norm{\Delta s}^2+a\norm{\Delta t_u}^2\\
+ &\qquad-\norm{\Delta(s-u)}^2-a\norm{\Delta(t_u-t_u^+)}^2.
+\end{align*}
+Firm nonexpansivity of the second branch, whose input difference is
+$(-\Delta u,\Delta t_w)$, gives
+\[
+ \norm{\Delta w}^2+b\norm{\Delta t_w^+}^2
+ \leq-\ip{\Delta w}{\Delta u}+b\ip{\Delta t_w^+}{\Delta t_w}.
+\]
+Rearranging twice this inequality shows
+\begin{align*}
+ &\norm{\Delta(u+w)}^2+b\norm{\Delta t_w^+}^2\\
+ &\quad\leq\norm{\Delta u}^2+b\norm{\Delta t_w}^2\\
+ &\qquad-\norm{\Delta w}^2-b\norm{\Delta(t_w-t_w^+)}^2.
+\end{align*}
+Combining the two bounds proves nonexpansivity. Finally,
+\[
+ \norm{\Delta(s-u)}^2+\norm{\Delta w}^2
+ \geq\tfrac12\norm{\Delta(s-u-w)}^2
+\]
+yields \eqref{eq:meyeraveraged} with the two vector-memory terms.
+\end{proof}
+
+Whitening this metric gives ordinary Euclidean Arnoldi on the five scalar
+fields $(s,\sqrt a\,t_u,\sqrt b\,t_w)$. This five-field metric and a six-field Euclidean metric generally give
+different projected polynomials. Exact state equivalence does not make
+their compressed approximations identical.
+
+\subsection{Exact algebraic description of disk curvature}
+For an anchor vector $t=\rho n$, choose an orthonormal frame $(n,e)$ and
+write a reduced displacement as $h=h_n n+h_t e$. Both $h_n$ and $h_t$ are
+linear forms in the Krylov coordinates $c$. The new squared radius is
+\begin{equation}
+ \ell(c)^2=(\rho+h_n(c))^2+h_t(c)^2. \label{eq:diskradicand}
+\end{equation}
+It is a quadratic polynomial. The disk event is the inequality
+$\ell(c)^2\leq r^2$; normalization introduces its positive square root.
+These relations can be acquired once from the anchor and basis.
+
+Let $q=\Pi_r(t+h)-\Pi_r(t)-P_t h$, where $P_t$ is the selected linear
+projection action used by Arnoldi. For an interior anchor, including the
+chosen identity action at $\rho=r$,
+\begin{equation}
+ \norm{q}^2=(\ell-r)_+^2. \label{eq:diskinside}
+\end{equation}
+For an exterior anchor $\rho>r$, put $\sigma=\min(1,r/\ell)$, with
+$\sigma=1$ at $\ell=0$. Then
+\begin{equation}
+ q_n=\sigma(\rho+h_n)-r,\qquad
+ q_t=(\sigma-r/\rho)h_t. \label{eq:diskoutside}
+\end{equation}
+These are exact identities on both sides of a crossing. In particular,
+pure radial motion on the same exterior ray has zero remainder while
+turning generally does not. A constant inside/outside mask alone fails to
+capture this distinction. At nonsmooth boundary anchors, the argument uses
+the specified linear action and exact remainder, not a nonexistent classical
+Jacobian.
+
+Only two linear forms per disk site are needed to evaluate
+\eqref{eq:diskradicand}--\eqref{eq:diskoutside}. The proposed representation
+is therefore a finite collection of polynomial radicands, branch inequalities,
+and radial normalization relations. It does not claim global finite closure
+of the nonlinear iteration in a polynomial observable dictionary.
+
+\subsection{The nonlinear remainder has a fixed linear response}
+Let $q_u,q_w$ be the exact projection remainders at a candidate displacement.
+The corresponding remainder of the complete map has primal components
+\begin{align}
+ d_u&=-2aS_aD^*q_u,\nonumber\\
+ d_w&=-S_b d_u-2bS_bD^*q_w,
+ \label{eq:curveresponse}
+\end{align}
+and quotient components
+$(d_u+d_w,Dd_u+q_u,Dd_w+q_w)$. Thus all nonlinear curvature is confined
+to the two pointwise projection remainders; the rest is a fixed linear
+response. We do not evaluate the screened solves in \eqref{eq:curveresponse}
+for each predicted point. Instead, their operator norm supplies a bound.
+
+For a discrete Laplacian eigenvalue $\lambda$, longitudinal components of
+this response, after whitening, have Gram matrix
+\begin{align*}
+ G(\lambda)&=\begin{pmatrix}1-d(\lambda)&g(\lambda)\\g(\lambda)&1\end{pmatrix},\\
+ d(\lambda)&=\frac{4a\lambda}{(1+a\lambda)^2(1+b\lambda)},\\
+ g(\lambda)&=\frac{2\sqrt{ab}\lambda}{(1+a\lambda)(1+b\lambda)}.
+\end{align*}
+Transverse components have gain one. Consequently, with
+\begin{equation}
+ \gamma^2=\max_{\lambda\in\operatorname{spec}(D^*D)}
+ \left[1-\frac{d(\lambda)}2+
+ \sqrt{\frac{d(\lambda)^2}4+g(\lambda)^2}\right], \label{eq:curvegain}
+\end{equation}
+we have
+\begin{equation}
+ \norm{N(v)}_M\leq
+ \gamma\sqrt{a\norm{q_u(v)}_2^2+b\norm{q_w(v)}_2^2}.
+ \label{eq:curvebound}
+\end{equation}
+This is a grid- and parameter-dependent calculation, independent of the
+source image. For the reported $64\times64$ grid, $\gamma=1.14819$.
+The Gram formula follows by Fourier diagonalization of
+\eqref{eq:curveresponse}; the two transverse components pass unchanged.
+Independent tests compare the full nonlinear remainder against the linear
+response and its norm bound.
+
+\begin{theorem}[Curved Meyer path certificate]\label{thm:curvedpath}
+For an $M$-orthonormal Arnoldi basis, let $E=JQ-QT_r$,
+$c_0=0$, $c_{j+1}=\beta e_1+T_r c_j$, and
+$\widehat z_j=z+Qc_j$. Define
+\[
+ \varepsilon_j=\norm{Ec_j}_M+
+ \gamma\sqrt{a\norm{q_u(Qc_j)}^2+b\norm{q_w(Qc_j)}^2}.
+\]
+Then, for every finite horizon,
+\begin{equation}
+ \norm{F^H(z)-\widehat z_H}_M
+ \leq\sum_{j=0}^{H-1}\varepsilon_j. \label{eq:curvedpath}
+\end{equation}
+The same bound controls the emitted texture error. It also remains valid
+after a common ordinary settling step. No fixed-mask assumption is required.
+\end{theorem}
+\begin{proof}
+The exact defect is $N(Qc_j)+Ec_j$. Apply \eqref{eq:curvebound} and the
+triangle inequality, then propagate errors by Theorem~\ref{thm:meyermetric}.
+The initial error is zero, so summation gives \eqref{eq:curvedpath}.
+Texture is $f-s$ and its error norm is bounded by the full quotient norm.
+A common settling step cannot increase the quotient error.
+\end{proof}
+
+All projection remainders along the predicted path are evaluated; this is
+not sparse sampling of a few convenient points. The reduction is algebraic:
+small-coordinate evaluation and pointwise radial operations replace repeated
+screened solves. Compression norms use the small matrix $E^TME$.
+The certificate is proved in exact arithmetic and tested in floating point;
+we do not claim outward-rounded numerical certification.
+
+
+\section{Projective Sinkhorn Closure}\label{app:projective}
+\begin{proposition}[Two-by-two Sinkhorn lift]
+\label{prop:sinkhorn-projective}
+For $K=\left(\begin{smallmatrix}p&q\\r&s\end{smallmatrix}\right)>0$,
+the quotient $t=v_1/v_2$ obeys $t^+=(At+B)/(Ct+D)$, where
+\begin{align*}
+ A&=(b_1/b_2)(q a_1r+s a_2p),&
+ B&=(b_1/b_2)qs(a_1+a_2),\\
+ C&=pr(a_1+a_2),&D&=p a_1s+r a_2q.
+\end{align*}
+With $\mathsf L=\left(\begin{smallmatrix}A&B\\C&D\end{smallmatrix}\right)$,
+\begin{equation}\begin{aligned}
+ t_H&=\frac{(\mathsf L^H)_{11}t_0+(\mathsf L^H)_{12}}
+              {(\mathsf L^H)_{21}t_0+(\mathsf L^H)_{22}},\\
+ \frac{dt_H}{dt_0}&=
+ \frac{\det(\mathsf L)^H}{\{(\mathsf L^H)_{21}t_0+(\mathsf L^H)_{22}\}^2}.
+\end{aligned}\label{eq:sinkhorn-projective-power}\end{equation}
+If $ps\ne qr$, the one-pass derivative
+$\det(\mathsf L)/(Ct+D)^2$ is nonconstant in $t$.
+\end{proposition}
+\begin{proof}
+In any scale gauge, insert
+$u_1=a_1/(pt+q)$ and $u_2=a_2/(rt+s)$ into
+$t^+=(b_1/b_2)(qu_1+su_2)/(pu_1+ru_2)$ and clear denominators.
+Composition of fractional-linear maps multiplies their homogeneous
+matrices. Differentiating the resulting fraction proves the second formula;
+$\det(\mathsf L)=(b_1/b_2)a_1a_2(ps-qr)^2$.
+\end{proof}
+
+Cayley--Hamilton expresses $\mathsf L^H=\alpha_H\mathsf L+\beta_HI$, and normalized binary
+powering needs $O(\log H)$ fixed-size matrix products. This transports a
+changing physical derivative using a constant lifted operator. Exact
+rational bit lengths and floating-point conditioning still require attention.
+The lift describes quotient states. To recover the ordinary post-column
+coupling after $H$ passes, advance through $H-1$ and perform the final
+row/column pair in a consistent gauge; a row-normalized output is obtained by evaluating the next row
+normalization.
+
+The closure extends to arbitrary dimensions with supplied exact structure
+\begin{equation}
+ K_{ij}=r_i C_{g(i),h(j)}s_j.
+ \label{eq:sinkhorn-block-kernel}
+\end{equation}
+Let $A_g=\sum_{i:g(i)=g}a_i$, $B_h=\sum_{j:h(j)=h}b_j$.
+After one full pass, $v_j=(b_j/s_j)w_{h(j)}/B_{h(j)}$, and substitution
+gives the invariant reduced map
+\begin{equation}
+ w^+=B\big/\{C^T(A/(Cw))\}.
+ \label{eq:sinkhorn-block-map}
+\end{equation}
+For arbitrary initial $v$, use $w_h=\sum_{j:h(j)=h}s_jv_j$ for the entry
+pass. Two groups on each side reduce exactly to
+Proposition~\ref{prop:sinkhorn-projective}. Within-manifold derivative
+evolution follows the same lift; arbitrary initial perturbations also
+require the derivative of the entry map. Discovery or verification of the
+block structure must be charged, and rank two alone does not imply
+\eqref{eq:sinkhorn-block-kernel}.
+
+
+\section{Gaussian Precision Convention}\label{app:gaussian}
+Take the continuous Lebesgue kernel
+$K(x,y)=\exp(-\norm{x-y}^2/(2t))$ and centered Gaussian marginal
+densities with covariance matrices $A,B\succ0$. If the column scaling has
+quadratic exponent $-y^TVy/2$, write $p=t^{-1}I+V\succ0$.
+Completing the square in $Kv$ gives a row exponent whose precision is
+$t^{-1}I-t^{-2}p^{-1}$. Dividing the source density by that integral
+therefore gives row-scaling precision
+\[
+ U=A^{-1}-t^{-1}I+t^{-2}p^{-1}.
+\]
+The next column integral has conditional precision
+$t^{-1}I+U=A^{-1}+t^{-2}p^{-1}\succ0$.
+Dividing the target density by it yields
+\begin{align*}
+ p^+&=B^{-1}+t^{-2}(A^{-1}+t^{-2}p^{-1})^{-1}\\
+    &=B^{-1}+(t^2A^{-1}+p^{-1})^{-1},
+\end{align*}
+which proves \eqref{eq:gaussian}. The scaling functions themselves need
+not be integrable separately; the stated conditional integrals are.
+Scalar normalization constants do not affect this covariance recurrence.
+
+The reported two-dimensional controls include isotropic, commuting
+anisotropic, and rotated covariance pairs at four regularization values.
+The isotropic $t=.001$ control agrees with ordinary precision iteration
+at horizon 2048 to approximately $3.4\cdot10^{-14}$ relative error.
+Generic block powering is not uniformly stable in the anisotropic controls:
+ill-conditioned projective denominators can spoil finite-precision readout.
+Exact Riccati closure is therefore a structural example, not a claim that
+this generic implementation is a robust accelerator for every covariance.
+
+\section{Experimental Comparison Conditions}\label{app:protocol}
+Each experiment uses its own matched ordinary control; kernels and problem
+setup are shared or excluded consistently within that experiment.
+Future ordinary trajectories, dense spectra, and converged fixed points
+are used only for scoring unless explicitly labeled as supplied oracle
+information. Analytic certificates are exact-arithmetic results checked in
+float64; no interval-arithmetic implementation is claimed.
+
+\subsection{Discovery and supplied structure}
+The Huber complete-solve target is objective-gap ratio $10^{-3}$, checked
+every sixteen work units; the constructed noiseless inverse problem has
+known zero optimum. Three seeds and three shuffled repeats include failed
+acquisitions, checks, and fallback steps. At $n=256$, the 3.47 ratio is the
+median of paired per-seed speed ratios. The Anderson implementation is an
+unguarded regularized type-II control, not a faithful reproduction of
+AA-BPG. Its better complete time does not certify reproduction of the
+ordinary intermediate trajectory.
+
+The supplied-block Sinkhorn study uses sizes 256--8192 and coupling values
+$.03,.001$, with both methods operating on the same reduced map.
+Full-scaling readout is included. Its stopping test is maximum relative
+column error $10^{-9}$ after exact row normalization. Five repeats after
+warm-up are used; the reported tables contain 120 structured solves.
+The stated 56.9--73.8 range concerns only the $.001$ family.
+
+The Meyer coverage study uses five $64\times64$ sources and four ordinary
+anchor prefixes, with depths $2,4,8$ and horizons $8,16,32,64$. All 240
+path comparisons satisfy the bound within numerical tolerance.
+The live policy accepts seven of twenty anchors; three accepted blocks
+still lose time. Complete solves use the same recovered primal--dual gap,
+target $10^{-4}$ of its initial value, and checks every 32 work units.
+Discovery and all rejections are charged. All five complete solves finish;
+all five discovered runs lose against ordinary iteration.
+
+\subsection{Primitive trajectories and family controls}
+The discrete transport instances use independent point clouds
+$X_i,Y_j\in[0,1]^2$ sampled uniformly. Set
+$C_{ij}=\norm{X_i-Y_j}_2^2/\max_{k,l}\norm{X_k-Y_l}_2^2$ and
+$K_{ij}=\exp(-C_{ij}/\varepsilon)$.
+The source and target masses are separately normalized samples of
+$w(z)=.05+\sum_{\ell}\exp(-\norm{z-c_\ell}_2^2/.02)$,
+with two independently uniform centers for the source and three for the
+target. The six cache comparisons combine two independent instances with
+$\varepsilon\in\{.01,.003,.001\}$; all start from unit column scaling
+and allow at most 32 stored response directions.
+Primitive-cache comparisons use 256 complete passes from the same initial
+scaling, with three repeats and single-threaded dense linear algebra. The
+per-query exact-arithmetic admission threshold is $10^{-8}$.
+At $n=1024$ the six final Hilbert log-state errors are
+$1.37\cdot10^{-8}$--$3.18\cdot10^{-8}$; these are errors relative to the
+ordinary finite trajectory, not marginal residuals or objective gaps.
+The four speedups and two regressions in Table~\ref{tab:regimes} refer
+to these six matched finite trajectories.
+
+The mixed-algebra family control fixes the log-coefficient RMS scale at
+1.4 and uses one, two, or four standardized fields, binary or Gaussian.
+Supplied generators are distinguished from SVD generators learned after
+eight live requests. The response budget is 64 measured columns.
+Maximum observed Hilbert output error is
+$1.13\cdot10^{-8}$ and maximum observed bound excess is
+$9.46\cdot10^{-14}$. At $n=128$ the mixed methods take approximately
+6--13 ms against $.6$ ms ordinary evaluation despite favorable binary
+product counts.
+
+The difficult-trajectory comparison uses the same random point and mass
+construction at $n=1024$, regularization $.001$, two independent instances,
+a budget of 64 response columns, and three timed repeats.
+Its median ordinary times are 73 and 61 ms; two-direction mixed times are
+216 and 217 ms, with retrospective rejection diagnostics included.
+The product-count failure does not depend on those diagnostic costs.
+The largest new-carrier terminal Hilbert error is $2.13\cdot10^{-10}$;
+most requests are evaluated by ordinary fallback.
+
+\subsection{Proof checks and scope of the evidence}
+Independent numerical checks cover mirror symmetry, affine Arnoldi
+reproduction, the nonlinear defect identity, quadratic Galerkin contraction,
+Huber feature-event admission, Meyer quotient and curvature identities,
+conditional derivatives, finite energy sums, observability Gramians, Gaussian
+precision recurrences, and joint-pattern algebra closure. Exact-rational
+checks are used where available; empirical comparisons are not substituted
+for the proofs stated in the text.
+
+The acquisition diagnostic covers 14 cases and 42 causal anchors, using
+dense fixed-point geometry solely for scoring. Its Gramian trace ranks
+and favorable history experiment are not runtime guarantees. The selected
+measurements distinguish the theoretical conditions they test; they do not
+establish a universal performance ordering.
 \begin{thebibliography}{99}
 \bibitem{walker} H. F. Walker and P. Ni.
 Anderson acceleration for fixed-point iterations.
@@ -699,21 +1581,6 @@ GMRES-accelerated ADMM for quadratic objectives.
 \emph{SIAM Journal on Optimization}, 28(4):3025--3056, 2018.
 \href{https://doi.org/10.1137/16M1059941}{doi:10.1137/16M1059941}.
 
-\bibitem{mai} V. V. Mai and M. Johansson.
-Anderson acceleration of proximal gradient methods.
-\emph{International Conference on Machine Learning}, 2020.
-\href{https://arxiv.org/abs/1910.08590}{arXiv:1910.08590}.
-
-\bibitem{poon2019} C. Poon and J. Liang.
-Trajectory of alternating direction method of multipliers and adaptive acceleration.
-\emph{NeurIPS}, 2019.
-\href{https://arxiv.org/abs/1906.10114}{arXiv:1906.10114}.
-
-\bibitem{poon2020} C. Poon and J. Liang.
-Geometry of first-order methods and adaptive acceleration.
-Preprint, 2020.
-\href{https://arxiv.org/abs/2003.03910}{arXiv:2003.03910}.
-
 \bibitem{saadexp} Y. Saad.
 Analysis of some Krylov subspace approximations to the matrix exponential operator.
 \emph{SIAM Journal on Numerical Analysis}, 29(1):209--228, 1992.
@@ -724,18 +1591,25 @@ Analysis of some Krylov subspace approximations to the matrix exponential operat
 SIAM, 2003.
 \href{https://www-users.cse.umn.edu/~saad/IterMethBook_2ndEd.pdf}{Author's text}.
 
+\bibitem{poon2020} C. Poon and J. Liang.
+Geometry of first-order methods and adaptive acceleration.
+Preprint, 2020.
+\href{https://arxiv.org/abs/2003.03910}{arXiv:2003.03910}.
+
+\bibitem{poon2019} C. Poon and J. Liang.
+Trajectory of alternating direction method of multipliers and adaptive acceleration.
+\emph{NeurIPS}, 2019.
+\href{https://arxiv.org/abs/1906.10114}{arXiv:1906.10114}.
+
+\bibitem{mai} V. V. Mai and M. Johansson.
+Anderson acceleration of proximal gradient methods.
+\emph{International Conference on Machine Learning}, 2020.
+\href{https://arxiv.org/abs/1910.08590}{arXiv:1910.08590}.
+
 \bibitem{hanzely} F. Hanzely, P. Richt\'arik, and L. Xiao.
 Accelerated Bregman proximal gradient methods for relatively smooth convex optimization.
 \emph{Computational Optimization and Applications}, 2021.
 \href{https://doi.org/10.1007/s10589-021-00273-8}{doi:10.1007/s10589-021-00273-8}.
-
-\bibitem{yamashita} Y. Yamashita, S. Takahashi, and A. Takeda.
-Accelerated Bregman proximal gradient methods from dual geometric perspectives.
-Preprint, September 28, 2026.
-\href{https://arxiv.org/abs/2609.34773}{arXiv:2609.34773}.
-\bibitem{tomic} M. Tomi\'c, R. Widdershoven, and L. De Lathauwer.
-Sparse approximation via polynomial equations. Preprint, September 10, 2026.
-\href{https://arxiv.org/abs/2609.11215}{arXiv:2609.11215}.
 
 \bibitem{brunton} S. L. Brunton, B. W. Brunton, J. L. Proctor, and J. N. Kutz.
 Koopman invariant subspaces and finite linear representations of nonlinear
@@ -747,6 +1621,23 @@ Learning Koopman eigenfunctions and invariant subspaces from data:
 symmetric subspace decomposition. Preprint, 2019.
 \href{https://arxiv.org/abs/1909.01419}{arXiv:1909.01419}.
 
+\bibitem{quack} D. Luo, J. Shen, R. Dangovski, and M. Solja\v{c}i\'c.
+QuACK: accelerating gradient-based quantum optimization with Koopman operator learning.
+\emph{NeurIPS}, 2023.
+\href{https://arxiv.org/abs/2211.01365}{arXiv:2211.01365}.
+
+\bibitem{conradie} G. Conradie, N. Boull\'e, J.-C. Loiseau,
+S. L. Brunton, and M. J. Colbrook.
+Trustworthy Koopman operator learning: invariance diagnostics and error bounds.
+Preprint, March 16, 2026.
+\href{https://arxiv.org/abs/2603.15091}{arXiv:2603.15091}.
+\bibitem{linlu} K. K. Lin and F. Lu.
+Data-driven model reduction, Wiener projections, and the Koopman--Mori--Zwanzig formalism.
+\emph{Journal of Computational Physics}, 424:109864, 2021.
+\href{https://arxiv.org/abs/1908.07725}{arXiv:1908.07725}.
+\bibitem{kamb} M. Kamb, E. Kaiser, S. L. Brunton, and J. N. Kutz.
+Time-delay observables for Koopman: theory and applications.
+\href{https://arxiv.org/abs/1810.01479}{arXiv:1810.01479}, 2018.
 \bibitem{peyre} G. Peyr\'e and M. Cuturi.
 Computational optimal transport.
 \emph{Foundations and Trends in Machine Learning}, 2019.
@@ -762,24 +1653,15 @@ Accelerating the Sinkhorn--Knopp iteration by Arnoldi-type methods.
 Preprint, 2018, revised 2019.
 \href{https://arxiv.org/abs/1810.09700}{arXiv:1810.09700}.
 
-\bibitem{delmoralhorton} P. Del Moral and E. Horton.
-A note on Riccati matrix difference equations.
-\emph{SIAM Journal on Control and Optimization}, 60(3):1393--1409, 2022.
-\href{https://arxiv.org/abs/2107.12918}{arXiv:2107.12918}.
-
 \bibitem{akyildiz} O. D. Akyildiz, P. Del Moral, and J. Miguez.
 Gaussian entropic optimal transport: Schr\"odinger bridges and the Sinkhorn algorithm.
 Preprint, arXiv version 5, 2025.
 \href{https://arxiv.org/abs/2412.18432v5}{arXiv:2412.18432v5}.
 
-\bibitem{conradie} G. Conradie, N. Boull\'e, J.-C. Loiseau,
-S. L. Brunton, and M. J. Colbrook.
-Trustworthy Koopman operator learning: invariance diagnostics and error bounds.
-Preprint, March 16, 2026.
-\href{https://arxiv.org/abs/2603.15091}{arXiv:2603.15091}.
-\bibitem{quack} D. Luo, J. Shen, R. Dangovski, and M. Solja\v{c}i\'c.
-QuACK: accelerating gradient-based quantum optimization with Koopman operator learning.
-\emph{NeurIPS}, 2023.
-\href{https://arxiv.org/abs/2211.01365}{arXiv:2211.01365}.
+\bibitem{delmoralhorton} P. Del Moral and E. Horton.
+A note on Riccati matrix difference equations.
+\emph{SIAM Journal on Control and Optimization}, 60(3):1393--1409, 2022.
+\href{https://arxiv.org/abs/2107.12918}{arXiv:2107.12918}.
+
 \end{thebibliography}
 \end{document}

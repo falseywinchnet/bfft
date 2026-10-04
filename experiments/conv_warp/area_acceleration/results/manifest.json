@@ -1,0 +1,21 @@
+{
+  "build.py": "e01fcee46cdad5b24119770c6a744315a863dd470e3ac9fce43747e8d9ec7606",
+  "check.mjs": "e4424eb4f70dff33fea3663289706a7a6748c67ef557944d914e493a0a97cabd",
+  "profile.mjs": "9bbe3780f3f6db6ac320a4fdf095087cffefb7b0d6b89c8a23f400100ebeb97a",
+  "edge-bank.c": "1d916ac3c27fa62d78d240aff4ba0c8e8d6f68f6ec4f7d28e3494761d95a17a7",
+  "import_rules.py": "d4fd74aaab2758f708d86a7122ef7624f0ac11ac9105cfc54206ce3e49df7a3c",
+  "triangle-rules.json": "15dc05ee7474cc2b5d2231e4a7a569a75933dcc0061f8c6f29af702563319669",
+  "triangle-rules.c": "a4fd06e4ecb2c353ebdac837024991d4de3d663bc49e7b51c477eec796ff2485",
+  "COPYING.xiao-gimbutas": "2654a0f9c65851cab6652cf4088dd2677fb84853621e10477edf78c4bb9ad243",
+  "results/initial-profile.json": "11c47efcaae34d82f6fe0c38cb83c93f9e8576753f84f60ffec8c64b2bdc07f7",
+  "results/compact-profile.json": "d233b84e97677b6a990e437a7548a56bb8663d4f2c6cb3960fbd37f524b1c478",
+  "results/edge-check.json": "78b0d78f06af80fee97c782ccb082297f446e09145c2f9d746dfef5a908b66da",
+  "results/compact-check.json": "693a2b52a848e403dec11b2ed7a91505aa7cd74b016534e58e9343c0112be238",
+  "results/initial-profile-runner.mjs": "d02b9a02383379f928e4f734fc8cc5dcca42376dc25fbba7bcac2a753b6dd9c2",
+  "FINDINGS.md": "cd46c812ce67b0fd155a6a8422d04a13abab5bd20fb897d6c21dd5b5093373e5",
+  "production/area-kernel.c": "54d902183bf88a7f2a50a6515194e1f404ac2ee64d6a31ba206b80c0a169f585",
+  "production/warp-kernel.c": "537bb2759457f64242ca31fcfbd1df316d2b38d8e4d86902ef9bf0319b411900",
+  "production/source-kernel.c": "de1f14b64495da678354cba7717e4c7c729ed7b075877619ed16f2ea3dd84b53",
+  "production/warp-kernel.wasm": "b1c90245331dace5a2e3032143f032520668482bd9569cd074698fc56c5d3052",
+  "production/warp-wasm.mjs": "7ddacd06f9b186ac658d03c55dd05b13528940a4e0ceeefffd033987ea801492"
+}

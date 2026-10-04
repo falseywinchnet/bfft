@@ -1,0 +1,12 @@
+PASS  resting face contacts never vanish  missing=0 of 3000
+PASS  resting face contacts keep a polygon  fewer than three points=0
+PASS  resting face contact depth within the face-merge tolerance  worst=1.10e-4 m
+PASS  pairs produced contacts  touching=2858 empty gaps=1 empty overlaps=0
+PASS  manifold points lie on or near both surfaces  worst=1.66e-4 m
+PASS  normals are unit  worst=9.99e-16
+PASS  separation equals point distance along normal  worst=1.65e-17
+PASS  overlap never under-reported by more than 0.3 mm  worst=9.64e-5 m
+PASS  overlap over-reported by at most the face bias  worst=4.36e-4 m
+PASS  gap under-reported by at most 2.5 mm  worst=1.06e-3 m
+PASS  gap over-reported by at most 1.5 mm  worst=1.33e-4 m
+ALL PASS

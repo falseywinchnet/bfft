@@ -1,0 +1,21 @@
+{
+  "url": "http://127.0.0.1:8877/instruments/conv-perspective/",
+  "source": "Optical test plate",
+  "sourceDimensions": [
+    513,
+    513
+  ],
+  "outputDimensions": [
+    512,
+    512
+  ],
+  "map": "Receding plane",
+  "mode": "Pixel-area integration",
+  "comparison": "Bilinear points",
+  "status": "Integrated the admitted surface with geometry-selected quadrature.",
+  "integrationDisplay": "Geometry-selected quadrature",
+  "renderMilliseconds": 658.8,
+  "toCanvasMilliseconds": 659.4,
+  "consoleWarningsAndErrors": [],
+  "scope": "Single browser smoke check; separate from Mini benchmark medians."
+}

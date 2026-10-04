@@ -1,0 +1,251 @@
+{
+  "scope": "Disjoint opaque constant-white triangles on black; exact polygon-square intersection reference, independent of shader boundary-segment integration. GPU timing includes instanced primitive draws, clears, MSAA resolve, and FXAA when present. No textures, depth overlap, transparency, or dynamic upload timing.",
+  "scenes": [
+    {
+      "scene": 0,
+      "triangles": 49,
+      "max_contributing_triangles_per_pixel": 1,
+      "reference_mass_error": 1.4551915228366852e-11,
+      "methods": {
+        "point": {
+          "whole_image_mse": 0.0019218929768340049,
+          "boundary_mse": 0.06174175398519283,
+          "max_abs_error": 0.81837512976094,
+          "mass_error": 10.384830434719333
+        },
+        "point_fxaa12": {
+          "whole_image_mse": 0.0004482118250983655,
+          "boundary_mse": 0.013129073744496931,
+          "max_abs_error": 0.5062819382556025,
+          "mass_error": -93.13281662409281
+        },
+        "msaa4": {
+          "whole_image_mse": 0.0002639250262992039,
+          "boundary_mse": 0.008478720844874818,
+          "max_abs_error": 0.3845884703254163,
+          "mass_error": 12.349536317073216
+        },
+        "analytic_boundary": {
+          "whole_image_mse": 3.8956491539046496e-08,
+          "boundary_mse": 1.2514963870112506e-06,
+          "max_abs_error": 0.0019605180716861653,
+          "mass_error": -0.05438525156205287
+        },
+        "boundary_sum": {
+          "whole_image_mse": 3.8956491539046496e-08,
+          "boundary_mse": 1.2514963870112506e-06,
+          "max_abs_error": 0.0019605180716861653,
+          "mass_error": -0.05438525156205287
+        }
+      },
+      "analytic_8bit_gate": true,
+      "additive_8bit_gate": true,
+      "expected_scope": "disjoint primitives"
+    },
+    {
+      "scene": 1,
+      "triangles": 961,
+      "max_contributing_triangles_per_pixel": 1,
+      "reference_mass_error": 1.4551915228366852e-11,
+      "methods": {
+        "point": {
+          "whole_image_mse": 0.009369801148069703,
+          "boundary_mse": 0.06253149572707699,
+          "max_abs_error": 0.8405184117194778,
+          "mass_error": 34.73693232255755
+        },
+        "point_fxaa12": {
+          "whole_image_mse": 0.003418277718693745,
+          "boundary_mse": 0.020615674080256878,
+          "max_abs_error": 0.5286781232316252,
+          "mass_error": -1647.317969638243
+        },
+        "msaa4": {
+          "whole_image_mse": 0.0012478122228345395,
+          "boundary_mse": 0.008327558231739753,
+          "max_abs_error": 0.3983567061383997,
+          "mass_error": -14.066989246071898
+        },
+        "analytic_boundary": {
+          "whole_image_mse": 1.8723041918491253e-07,
+          "boundary_mse": 1.24952472013263e-06,
+          "max_abs_error": 0.00196073466655311,
+          "mass_error": 0.007520557854149956
+        },
+        "boundary_sum": {
+          "whole_image_mse": 1.8723041918491253e-07,
+          "boundary_mse": 1.24952472013263e-06,
+          "max_abs_error": 0.00196073466655311,
+          "mass_error": 0.007520557854149956
+        }
+      },
+      "analytic_8bit_gate": true,
+      "additive_8bit_gate": true,
+      "expected_scope": "disjoint primitives"
+    },
+    {
+      "scene": 2,
+      "triangles": 225,
+      "max_contributing_triangles_per_pixel": 1,
+      "reference_mass_error": 6.252776074688882e-13,
+      "methods": {
+        "point": {
+          "whole_image_mse": 0.0006896891102828307,
+          "boundary_mse": 0.02740191908547778,
+          "max_abs_error": 0.9927735445836419,
+          "mass_error": -1.8430238874128122
+        },
+        "point_fxaa12": {
+          "whole_image_mse": 6.24653084335651e-05,
+          "boundary_mse": 0.0024811084750925344,
+          "max_abs_error": 0.3160310668451464,
+          "mass_error": -145.20772976976576
+        },
+        "msaa4": {
+          "whole_image_mse": 0.00015968819167107905,
+          "boundary_mse": 0.006344544000821967,
+          "max_abs_error": 0.4811946774237449,
+          "mass_error": -7.1057689854519595
+        },
+        "analytic_boundary": {
+          "whole_image_mse": 3.256552290755385e-08,
+          "boundary_mse": 1.2938551738523493e-06,
+          "max_abs_error": 0.001960573175679603,
+          "mass_error": -0.08223957368733181
+        },
+        "boundary_sum": {
+          "whole_image_mse": 3.256552290755385e-08,
+          "boundary_mse": 1.2938551738523493e-06,
+          "max_abs_error": 0.001960573175679603,
+          "mass_error": -0.08223957368733181
+        }
+      },
+      "analytic_8bit_gate": true,
+      "additive_8bit_gate": true,
+      "expected_scope": "disjoint primitives"
+    },
+    {
+      "scene": 3,
+      "triangles": 225,
+      "max_contributing_triangles_per_pixel": 1,
+      "reference_mass_error": 0.0,
+      "methods": {
+        "point": {
+          "whole_image_mse": 0.0034332275390625,
+          "boundary_mse": 0.25,
+          "max_abs_error": 0.5,
+          "mass_error": -1800.0
+        },
+        "point_fxaa12": {
+          "whole_image_mse": 0.005070287051085368,
+          "boundary_mse": 0.166918492887351,
+          "max_abs_error": 0.5333333333333333,
+          "mass_error": -3342.3529411764794
+        },
+        "msaa4": {
+          "whole_image_mse": 5.27985780709339e-08,
+          "boundary_mse": 3.844675124951914e-06,
+          "max_abs_error": 0.0019607843137254832,
+          "mass_error": 7.058823529408983
+        },
+        "analytic_boundary": {
+          "whole_image_mse": 5.27985780709339e-08,
+          "boundary_mse": 3.844675124951914e-06,
+          "max_abs_error": 0.0019607843137254832,
+          "mass_error": 7.058823529408983
+        },
+        "boundary_sum": {
+          "whole_image_mse": 5.27985780709339e-08,
+          "boundary_mse": 3.844675124951914e-06,
+          "max_abs_error": 0.0019607843137254832,
+          "mass_error": 7.058823529408983
+        }
+      },
+      "analytic_8bit_gate": true,
+      "additive_8bit_gate": true,
+      "expected_scope": "disjoint primitives"
+    },
+    {
+      "scene": 4,
+      "triangles": 450,
+      "max_contributing_triangles_per_pixel": 2,
+      "reference_mass_error": 0.0,
+      "methods": {
+        "point": {
+          "whole_image_mse": 0.011293715733924604,
+          "boundary_mse": 0.17313332265227677,
+          "max_abs_error": 0.6400018310523592,
+          "mass_error": 7055.927490218528
+        },
+        "point_fxaa12": {
+          "whole_image_mse": 0.002216711904788748,
+          "boundary_mse": 0.03147964197766528,
+          "max_abs_error": 0.34902113372204346,
+          "mass_error": 3350.045137277397
+        },
+        "msaa4": {
+          "whole_image_mse": 0.0006348434737123484,
+          "boundary_mse": 0.009732187577359648,
+          "max_abs_error": 0.10902693209914016,
+          "mass_error": -1686.4254509579623
+        },
+        "analytic_boundary": {
+          "whole_image_mse": 0.0009694044098620604,
+          "boundary_mse": 2.464622375798893e-05,
+          "max_abs_error": 0.25098039215686274,
+          "mass_error": -1027.119568604976
+        },
+        "boundary_sum": {
+          "whole_image_mse": 9.102292646936383e-08,
+          "boundary_mse": 3.198854261266098e-08,
+          "max_abs_error": 0.0039215686274509665,
+          "mass_error": -5.311725467749056
+        }
+      },
+      "analytic_8bit_gate": false,
+      "additive_8bit_gate": true,
+      "expected_scope": "shared-edge compositing counterexample"
+    },
+    {
+      "scene": 5,
+      "triangles": 450,
+      "max_contributing_triangles_per_pixel": 2,
+      "reference_mass_error": 1.4551915228366852e-11,
+      "methods": {
+        "point": {
+          "whole_image_mse": 0.004416456216273132,
+          "boundary_mse": 0.062174292377353724,
+          "max_abs_error": 0.817330161800695,
+          "mass_error": 53.404392331358395
+        },
+        "point_fxaa12": {
+          "whole_image_mse": 0.0012756635238333474,
+          "boundary_mse": 0.01583980071028915,
+          "max_abs_error": 0.5231275828096417,
+          "mass_error": -414.1916861000209
+        },
+        "msaa4": {
+          "whole_image_mse": 0.0006038014694942292,
+          "boundary_mse": 0.008500238033354557,
+          "max_abs_error": 0.359062327930457,
+          "mass_error": 7.62007860585436
+        },
+        "analytic_boundary": {
+          "whole_image_mse": 0.0017694025152462296,
+          "boundary_mse": 0.024909416946281487,
+          "max_abs_error": 0.2528903035289387,
+          "mass_error": 2427.1024315470568
+        },
+        "boundary_sum": {
+          "whole_image_mse": 0.004343316705741907,
+          "boundary_mse": 0.06114464392406458,
+          "max_abs_error": 0.49999569627352614,
+          "mass_error": 3565.259294292133
+        }
+      },
+      "analytic_8bit_gate": false,
+      "additive_8bit_gate": false,
+      "expected_scope": "overlap/visibility counterexample"
+    }
+  ]
+}

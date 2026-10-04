@@ -1,0 +1,9 @@
+[ 16%] Building CXX object CMakeFiles/mosaic_core.dir/src/mosaic.cpp.o
+[ 33%] Linking CXX static library libmosaic_core.a
+[ 33%] Built target mosaic_core
+[ 50%] Building CXX object CMakeFiles/mosaic_rvfx.dir/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-675dacf2c222/realtime_vector_fx/src/engine.cpp.o
+[ 66%] Linking CXX static library libmosaic_rvfx.a
+[ 66%] Built target mosaic_rvfx
+[ 83%] Building CXX object CMakeFiles/mosaic_tests.dir/tests/test_mosaic.cpp.o
+[100%] Linking CXX executable mosaic_tests
+[100%] Built target mosaic_tests

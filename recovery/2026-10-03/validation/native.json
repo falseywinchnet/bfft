@@ -1,0 +1,189 @@
+[
+  {
+    "label": "bfft-configure",
+    "command": [
+      "/opt/homebrew/bin/cmake",
+      "-S",
+      ".",
+      "-B",
+      "/tmp/bfft-recovery-20261003/bfft",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DBFFT_BUILD_EXAMPLES=OFF",
+      "-DBFFT_BUILD_TESTS=OFF",
+      "-DBFFT_BUILD_PROBES=OFF",
+      "-DBFFT_BUILD_HIGH_VISION=OFF"
+    ],
+    "exit_code": 0,
+    "seconds": 1.5822227001190186,
+    "log": "/tmp/bfft-recovery-20261003/native-bfft-configure.txt"
+  },
+  {
+    "label": "bfft-build",
+    "command": [
+      "/opt/homebrew/bin/cmake",
+      "--build",
+      "/tmp/bfft-recovery-20261003/bfft",
+      "--target",
+      "bfft_shared",
+      "-j1"
+    ],
+    "exit_code": 0,
+    "seconds": 4.050945043563843,
+    "log": "/tmp/bfft-recovery-20261003/native-bfft-build.txt"
+  },
+  {
+    "label": "tape-configure",
+    "command": [
+      "/opt/homebrew/bin/cmake",
+      "-S",
+      "experiments/tape_dynamics",
+      "-B",
+      "/tmp/bfft-recovery-20261003/tape",
+      "-DCMAKE_BUILD_TYPE=Release"
+    ],
+    "exit_code": 0,
+    "seconds": 0.4422459602355957,
+    "log": "/tmp/bfft-recovery-20261003/native-tape-configure.txt"
+  },
+  {
+    "label": "tape-build",
+    "command": [
+      "/opt/homebrew/bin/cmake",
+      "--build",
+      "/tmp/bfft-recovery-20261003/tape",
+      "-j1"
+    ],
+    "exit_code": 0,
+    "seconds": 7.0326550006866455,
+    "log": "/tmp/bfft-recovery-20261003/native-tape-build.txt"
+  },
+  {
+    "label": "tape-tests",
+    "command": [
+      "/opt/homebrew/bin/ctest",
+      "--test-dir",
+      "/tmp/bfft-recovery-20261003/tape",
+      "--output-on-failure"
+    ],
+    "exit_code": 0,
+    "seconds": 3.309237003326416,
+    "log": "/tmp/bfft-recovery-20261003/native-tape-tests.txt"
+  },
+  {
+    "label": "obligation-configure",
+    "command": [
+      "/opt/homebrew/bin/cmake",
+      "-S",
+      "experiments/obligation_dynamics",
+      "-B",
+      "/tmp/bfft-recovery-20261003/obligation",
+      "-DCMAKE_BUILD_TYPE=Release"
+    ],
+    "exit_code": 0,
+    "seconds": 0.20026707649230957,
+    "log": "/tmp/bfft-recovery-20261003/native-obligation-configure.txt"
+  },
+  {
+    "label": "obligation-build",
+    "command": [
+      "/opt/homebrew/bin/cmake",
+      "--build",
+      "/tmp/bfft-recovery-20261003/obligation",
+      "-j1"
+    ],
+    "exit_code": 0,
+    "seconds": 6.6258931159973145,
+    "log": "/tmp/bfft-recovery-20261003/native-obligation-build.txt"
+  },
+  {
+    "label": "obligation-tests",
+    "command": [
+      "/opt/homebrew/bin/ctest",
+      "--test-dir",
+      "/tmp/bfft-recovery-20261003/obligation",
+      "--output-on-failure"
+    ],
+    "exit_code": 0,
+    "seconds": 0.4999101161956787,
+    "log": "/tmp/bfft-recovery-20261003/native-obligation-tests.txt"
+  },
+  {
+    "label": "rvfx-configure",
+    "command": [
+      "/opt/homebrew/bin/cmake",
+      "-S",
+      "realtime_vector_fx",
+      "-B",
+      "/tmp/bfft-recovery-20261003/rvfx",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DRVFX_BUILD_OBS=OFF"
+    ],
+    "exit_code": 0,
+    "seconds": 0.20686101913452148,
+    "log": "/tmp/bfft-recovery-20261003/native-rvfx-configure.txt"
+  },
+  {
+    "label": "rvfx-build",
+    "command": [
+      "/opt/homebrew/bin/cmake",
+      "--build",
+      "/tmp/bfft-recovery-20261003/rvfx",
+      "-j1"
+    ],
+    "exit_code": 0,
+    "seconds": 3.975466012954712,
+    "log": "/tmp/bfft-recovery-20261003/native-rvfx-build.txt"
+  },
+  {
+    "label": "rvfx-tests",
+    "command": [
+      "/opt/homebrew/bin/ctest",
+      "--test-dir",
+      "/tmp/bfft-recovery-20261003/rvfx",
+      "--output-on-failure"
+    ],
+    "exit_code": 0,
+    "seconds": 1.8361470699310303,
+    "log": "/tmp/bfft-recovery-20261003/native-rvfx-tests.txt"
+  },
+  {
+    "label": "mosaic-configure",
+    "command": [
+      "/opt/homebrew/bin/cmake",
+      "-S",
+      "mosaic_fx",
+      "-B",
+      "/tmp/bfft-recovery-20261003/mosaic",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DMOSAIC_WITH_BFFT=OFF",
+      "-DMOSAIC_BUILD_OBS=OFF"
+    ],
+    "exit_code": 0,
+    "seconds": 0.32006287574768066,
+    "log": "/tmp/bfft-recovery-20261003/native-mosaic-configure.txt"
+  },
+  {
+    "label": "mosaic-build",
+    "command": [
+      "/opt/homebrew/bin/cmake",
+      "--build",
+      "/tmp/bfft-recovery-20261003/mosaic",
+      "-j1"
+    ],
+    "exit_code": 0,
+    "seconds": 2.0569019317626953,
+    "log": "/tmp/bfft-recovery-20261003/native-mosaic-build.txt"
+  },
+  {
+    "label": "mosaic-tests",
+    "command": [
+      "/opt/homebrew/bin/ctest",
+      "--test-dir",
+      "/tmp/bfft-recovery-20261003/mosaic",
+      "--output-on-failure"
+    ],
+    "exit_code": 0,
+    "seconds": 0.44576311111450195,
+    "log": "/tmp/bfft-recovery-20261003/native-mosaic-tests.txt"
+  }
+]

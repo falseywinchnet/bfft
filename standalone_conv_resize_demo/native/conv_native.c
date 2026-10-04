@@ -68,6 +68,17 @@ struct native_pool {
 
 static native_pool GLOBAL_POOL;
 static pthread_once_t POOL_ONCE=PTHREAD_ONCE_INIT;
+/* A profile query may invoke current construction from inside a pool job.
+   Nested dispatch must stay on that thread: the outer job owns dispatch and
+   waits for every worker, so reacquiring it would deadlock. */
+static _Thread_local int PARALLEL_DEPTH=0;
+
+static void run_parallel_chunk(parallel_function function,void *context,
+                               int begin,int end){
+    ++PARALLEL_DEPTH;
+    function(context,begin,end);
+    --PARALLEL_DEPTH;
+}
 
 static void *pool_worker(void *opaque){
     pool_argument *argument=(pool_argument *)opaque;
@@ -84,7 +95,7 @@ static void *pool_worker(void *opaque){
         parallel_function function=pool->function;void *context=pool->context;
         const int has_work=index<active&&begin<end;
         pthread_mutex_unlock(&pool->state);
-        if(has_work)function(context,begin,end);
+        if(has_work)run_parallel_chunk(function,context,begin,end);
         pthread_mutex_lock(&pool->state);
         if(has_work&&++pool->completed==active-1)pthread_cond_signal(&pool->done);
     }
@@ -106,6 +117,7 @@ static void initialize_pool(void){
 static void parallel_for(int count, int minimum_grain,
                          parallel_function function, void *context) {
     if (count <= 0) return;
+    if (PARALLEL_DEPTH) { function(context,0,count); return; }
     pthread_once(&POOL_ONCE,initialize_pool);
     native_pool *pool=&GLOBAL_POOL;
     int workers=pool->maximum_workers;
@@ -119,7 +131,7 @@ static void parallel_for(int count, int minimum_grain,
     pool->completed=0;++pool->generation;
     pthread_cond_broadcast(&pool->start);
     pthread_mutex_unlock(&pool->state);
-    function(context,0,pool->chunk<count?pool->chunk:count);
+    run_parallel_chunk(function,context,0,pool->chunk<count?pool->chunk:count);
     pthread_mutex_lock(&pool->state);
     while(pool->completed<workers-1)pthread_cond_wait(&pool->done,&pool->state);
     pthread_mutex_unlock(&pool->state);

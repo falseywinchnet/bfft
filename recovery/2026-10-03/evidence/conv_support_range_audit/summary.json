@@ -1,0 +1,302 @@
+[
+  {
+    "family": "smooth",
+    "side": 17,
+    "method": "raw",
+    "cases": 28,
+    "geometricMseRatio": 0.4896110354953485,
+    "improved": 28,
+    "worse": 0,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "smooth",
+    "side": 17,
+    "method": "clipped",
+    "cases": 28,
+    "geometricMseRatio": 0.6836867363636197,
+    "improved": 14,
+    "worse": 0,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "smooth",
+    "side": 17,
+    "method": "nominal",
+    "cases": 28,
+    "geometricMseRatio": 1.0,
+    "improved": 0,
+    "worse": 0,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "smooth",
+    "side": 17,
+    "method": "current-only",
+    "cases": 28,
+    "geometricMseRatio": 0.716292391808735,
+    "improved": 18,
+    "worse": 10,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "smooth",
+    "side": 17,
+    "method": "physical-box",
+    "cases": 28,
+    "geometricMseRatio": 0.7161670084542522,
+    "improved": 18,
+    "worse": 10,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "smooth",
+    "side": 17,
+    "method": "refined-support",
+    "cases": 28,
+    "geometricMseRatio": 1.4463093333064196,
+    "improved": 4,
+    "worse": 24,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "smooth",
+    "side": 33,
+    "method": "raw",
+    "cases": 28,
+    "geometricMseRatio": 0.14747136988632722,
+    "improved": 28,
+    "worse": 0,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "smooth",
+    "side": 33,
+    "method": "clipped",
+    "cases": 28,
+    "geometricMseRatio": 0.3247438070328465,
+    "improved": 24,
+    "worse": 4,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "smooth",
+    "side": 33,
+    "method": "nominal",
+    "cases": 28,
+    "geometricMseRatio": 1.0,
+    "improved": 0,
+    "worse": 0,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "smooth",
+    "side": 33,
+    "method": "current-only",
+    "cases": 28,
+    "geometricMseRatio": 0.5590829558912493,
+    "improved": 14,
+    "worse": 0,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "smooth",
+    "side": 33,
+    "method": "physical-box",
+    "cases": 28,
+    "geometricMseRatio": 0.5590829558912493,
+    "improved": 14,
+    "worse": 0,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "smooth",
+    "side": 33,
+    "method": "refined-support",
+    "cases": 28,
+    "geometricMseRatio": 1.8071231912688728,
+    "improved": 0,
+    "worse": 14,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "sharp",
+    "side": 17,
+    "method": "raw",
+    "cases": 6,
+    "geometricMseRatio": 1.002093027108005,
+    "improved": 2,
+    "worse": 2,
+    "maxPhysicalExcursion": 0.2587231394500129
+  },
+  {
+    "family": "sharp",
+    "side": 17,
+    "method": "clipped",
+    "cases": 6,
+    "geometricMseRatio": 0.9985407704173518,
+    "improved": 1,
+    "worse": 1,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "sharp",
+    "side": 17,
+    "method": "nominal",
+    "cases": 6,
+    "geometricMseRatio": 1.0,
+    "improved": 0,
+    "worse": 0,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "sharp",
+    "side": 17,
+    "method": "current-only",
+    "cases": 6,
+    "geometricMseRatio": 1.0082983715041378,
+    "improved": 0,
+    "worse": 3,
+    "maxPhysicalExcursion": 0.2587231394500129
+  },
+  {
+    "family": "sharp",
+    "side": 17,
+    "method": "physical-box",
+    "cases": 6,
+    "geometricMseRatio": 1.0,
+    "improved": 0,
+    "worse": 0,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "sharp",
+    "side": 17,
+    "method": "refined-support",
+    "cases": 6,
+    "geometricMseRatio": 1.0235006466540528,
+    "improved": 0,
+    "worse": 4,
+    "maxPhysicalExcursion": 1.1102230246251565e-15
+  },
+  {
+    "family": "sharp",
+    "side": 33,
+    "method": "raw",
+    "cases": 6,
+    "geometricMseRatio": 1.0002955862736587,
+    "improved": 2,
+    "worse": 2,
+    "maxPhysicalExcursion": 0.2587231394500129
+  },
+  {
+    "family": "sharp",
+    "side": 33,
+    "method": "clipped",
+    "cases": 6,
+    "geometricMseRatio": 0.996904073913498,
+    "improved": 2,
+    "worse": 0,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "sharp",
+    "side": 33,
+    "method": "nominal",
+    "cases": 6,
+    "geometricMseRatio": 1.0,
+    "improved": 0,
+    "worse": 0,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "sharp",
+    "side": 33,
+    "method": "current-only",
+    "cases": 6,
+    "geometricMseRatio": 1.0092372132424743,
+    "improved": 0,
+    "worse": 3,
+    "maxPhysicalExcursion": 0.2587231394500129
+  },
+  {
+    "family": "sharp",
+    "side": 33,
+    "method": "physical-box",
+    "cases": 6,
+    "geometricMseRatio": 1.0,
+    "improved": 0,
+    "worse": 0,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "sharp",
+    "side": 33,
+    "method": "refined-support",
+    "cases": 6,
+    "geometricMseRatio": 1.033750652386236,
+    "improved": 1,
+    "worse": 3,
+    "maxPhysicalExcursion": 1.1102230246251565e-15
+  },
+  {
+    "family": "low-contrast",
+    "side": 0,
+    "method": "raw",
+    "cases": 24,
+    "geometricMseRatio": 0.9975971544049638,
+    "improved": 12,
+    "worse": 12,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "low-contrast",
+    "side": 0,
+    "method": "clipped",
+    "cases": 24,
+    "geometricMseRatio": 0.9941362271525345,
+    "improved": 10,
+    "worse": 6,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "low-contrast",
+    "side": 0,
+    "method": "nominal",
+    "cases": 24,
+    "geometricMseRatio": 1.0,
+    "improved": 0,
+    "worse": 0,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "low-contrast",
+    "side": 0,
+    "method": "current-only",
+    "cases": 24,
+    "geometricMseRatio": 1.0087702598448098,
+    "improved": 0,
+    "worse": 12,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "low-contrast",
+    "side": 0,
+    "method": "physical-box",
+    "cases": 24,
+    "geometricMseRatio": 1.0087702598448098,
+    "improved": 0,
+    "worse": 12,
+    "maxPhysicalExcursion": 0.0
+  },
+  {
+    "family": "low-contrast",
+    "side": 0,
+    "method": "refined-support",
+    "cases": 24,
+    "geometricMseRatio": 1.028879838825451,
+    "improved": 0,
+    "worse": 12,
+    "maxPhysicalExcursion": 0.0
+  }
+]

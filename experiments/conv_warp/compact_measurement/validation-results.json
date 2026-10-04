@@ -1,0 +1,10 @@
+{
+  "cases": 120,
+  "checkedControls": 3000816,
+  "maxStorageError": 1.9095836023552692e-14,
+  "maxFusedError": 6.062042645638144e-9,
+  "maxByteError": 0,
+  "differentBytes": 0,
+  "maxConstantError": 0,
+  "passed": true
+}

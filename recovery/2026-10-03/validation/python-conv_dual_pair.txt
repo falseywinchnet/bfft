@@ -1,0 +1,18 @@
+test_band_optimum_exact_stationarity (experiments.conv_dual_pair.test_pair.PairTests) ... ok
+test_cycles_and_variation (experiments.conv_dual_pair.test_pair.PairTests) ... ok
+test_exact_basin_from_quintic (experiments.conv_dual_pair.test_pair.PairTests) ... ok
+test_exact_linear_dual_and_seven_tap_obstruction (experiments.conv_dual_pair.test_pair.PairTests) ... ok
+test_linear_dual_rings_on_step (experiments.conv_dual_pair.test_pair.PairTests) ... ok
+test_polynomial_cell_averages_through_degree_six (experiments.conv_dual_pair.test_pair.PairTests) ... ok
+test_two_dimensional_coarse_cycle (experiments.conv_dual_pair.test_pair.PairTests) ... ok
+test_canonical_dual_fails_affine_reproduction (experiments.conv_dual_pair.test_two_thirds.TwoThirdsTests) ... ok
+test_loss_one_incompatible_with_quartic_and_mass_in_this_analysis_family (experiments.conv_dual_pair.test_two_thirds.TwoThirdsTests) ... ok
+test_next_algebraic_pair_cannot_conserve_mass (experiments.conv_dual_pair.test_two_thirds.TwoThirdsTests) ... ok
+test_original_analysis_has_full_rank_on_unit_circle (experiments.conv_dual_pair.test_two_thirds.TwoThirdsTests) ... ok
+test_original_banks_are_exact_quintic_basin_integrals (experiments.conv_dual_pair.test_two_thirds.TwoThirdsTests) ... ok
+test_seven_tap_centered_pair_is_infeasible (experiments.conv_dual_pair.test_two_thirds.TwoThirdsTests) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 1.541s
+
+OK

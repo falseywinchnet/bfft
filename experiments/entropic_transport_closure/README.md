@@ -1,5 +1,18 @@
 # Entropic transport closure
 
+The active direction was reset by the user on September 30: transporting or
+preconditioning the potential with BFGS repeats the wrong-object mistake from
+Meyer. The potential-descent and response-preconditioning studies below are
+historical rejected directions, not the active construction. The unfinished
+amortization prototype was removed from active source and retained only in
+`results/theory/rejected_solver_amortization_20260930.tar.gz`.
+
+[PRIMITIVE_TRANSPORT.md](PRIMITIVE_TRANSPORT.md) returns to the distinction
+between the fixed problem relation, carried state, and the live nonlinear
+request. Its immediate experiment carries measured kernel actions while
+rebuilding both full reciprocal normalizations. It targets the ordinary
+finite trajectory, and contains no BFGS or potential optimizer.
+
 This experiment studies whether the evolving transport rule itself can be
 carried and advanced in positive-kernel Sinkhorn iteration.
 
@@ -49,3 +62,11 @@ original problems converge, but complete cost loses to the scalar controller;
 the exact-feature control and an additional n=1024 case retain that comparison.
 The report distinguishes the exact-arithmetic proof from its floating-point
 audit and from a certified skip of ordinary Sinkhorn dynamics.
+
+[STRONG_FRAMES.md](STRONG_FRAMES.md) investigates numerical frame conditioning,
+retained-direction coverage, and controlled Gaussianity/direction sweeps. The
+new stable carriers repair accuracy but do not improve the hardest-case cost.
+
+[MULTIPLICATIVE_ALGEBRA.md](MULTIPLICATIVE_ALGEBRA.md) implements mixed-product
+request-family reuse. Finite binary families close cheaply in product counts;
+the learned 64-column algebra fails to reduce difficult actual trajectory cost.

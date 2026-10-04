@@ -1,0 +1,7 @@
+{
+  "reason": "SSH connection lost after 60 saved runs; process exited while writing progress to the disconnected client. Resume absent keys only.",
+  "savedRecords": 60,
+  "timeUTC": "2026-10-04T03:00:05.730187+00:00",
+  "wrapperSha256": "320e53b7b8ec12ffd139b4115adcee7f1de5941f4b324f88ffc1ba7ded98f591",
+  "originalRunnerSha256": "1760e0f7a2851a041c73988700b086972d9e21d6fdd74b364ae113d053c7b6fe"
+}

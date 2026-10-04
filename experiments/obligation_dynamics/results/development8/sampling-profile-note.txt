@@ -1,0 +1,1 @@
+A two-second statistical profile at a 10 ms interval was collected during this development series. Timings are exploratory and must not be treated as final uninstrumented measurements. The original manifest remains unchanged; sampling-profile.txt and this note were added locally after artifact verification.

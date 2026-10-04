@@ -1,0 +1,7 @@
+Test project /tmp/bfft-recovery-20261003/mosaic
+    Start 1: mosaic_tests
+1/1 Test #1: mosaic_tests .....................   Passed    0.41 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.41 sec
