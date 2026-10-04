@@ -1,0 +1,31 @@
+\subsection{Controlled cross-geometry discovery experiment}
+We use 24-dimensional Euclidean, quartic, entropy, and hypentropy mirrors,
+with a fixed dense invertible mixing of primal coordinates, three seeds,
+and three distinct rates. The scalar mirror gradients are $q$, $q+q^3$,
+$\log q$, and $\operatorname{arsinh}q$, respectively. Eight ordinary mirror
+transitions supply nine snapshots; no future reference or rates enter fitting.
+The known mirror factorization supplies the $s$ coordinates. The supplied
+dictionary and synthesized rational chart are evaluated at horizons 16, 64,
+and 128 against independent ordinary execution. Reported errors are maximum
+relative primal errors across all 12 geometry/seed combinations.
+\begin{center}\small
+\begin{tabular}{lrrrr}\toprule
+Representation & Snapshot rank & $m=16$ & $m=64$ & $m=128$\\\midrule
+Dual coordinate & 8 & 1.08e-05 & 1.47e-01 & 4.53e+00\\
+Log dual coordinate & 8 & 4.61e-06 & 4.34e-03 & 4.13e-02\\
+Reciprocal dual coordinate & 4 & 1.71e-13 & 2.15e-10 & 2.45e-08\\
+Synthesized cross-ratio & --- & 2.83e-14 & 2.78e-12 & 2.88e-11\\
+\bottomrule\end{tabular}\end{center}
+The SVD rank threshold is $10^{-10}$ relative to the largest singular value.
+Cross-ratio synthesis fits a separate rational relation per transformed
+coordinate and does not use a low-rank snapshot compression. Its rates are
+learned, not supplied. The table measures a favorable constructed family;
+it is not an acceptance-coverage study over arbitrary objectives. Numerical
+errors reflect identification, decoding, and floating-point evolution, whereas
+the exact closure statements follow from the algebra above. This experiment
+records acquisition, fitting, transport, and ordinary execution time, but does
+not perform a repeated performance gate; no wall-clock acceleration claim
+is drawn from it. Ten new tests check mirror inversion, actual mirror updates,
+convex Hessians, compatibility and its failure, recurrence recovery, chart
+synthesis and rejection, directional defect cancellation, and polynomial
+degree growth. The complete research suite passes 51 tests on the M4 Mini.

@@ -1,0 +1,74 @@
+{
+  "positive_64": {
+    "milliseconds": {
+      "ordinary": 94.25929199999983,
+      "fixed": 73.50179099999998,
+      "certified": 104.72666699999999,
+      "anderson": 21.868666999999675
+    },
+    "paired_certified_speedups_vs_ordinary": [
+      1.004385465713177,
+      0.8361898407403724,
+      0.8698315138651759
+    ],
+    "paired_certified_speedups_vs_fixed": [
+      0.7795584602824961,
+      0.6747067774056043,
+      0.6782798043648776
+    ]
+  },
+  "signed_64": {
+    "milliseconds": {
+      "ordinary": 8.665833000000234,
+      "fixed": 7.048666999999842,
+      "certified": 48.765667000000064,
+      "anderson": 5.095834000000021
+    },
+    "paired_certified_speedups_vs_ordinary": [
+      0.1713866917652932,
+      0.15132892400904485,
+      0.17770356755297168
+    ],
+    "paired_certified_speedups_vs_fixed": [
+      0.14549263063787587,
+      0.12257587592152414,
+      0.14454158906510664
+    ]
+  },
+  "positive_256": {
+    "milliseconds": {
+      "ordinary": 3002.112833000001,
+      "fixed": 1218.884458000005,
+      "certified": 878.8477090000022,
+      "anderson": 135.00866600000094
+    },
+    "paired_certified_speedups_vs_ordinary": [
+      3.5215633896771026,
+      3.4668325852118604,
+      3.278443390627954
+    ],
+    "paired_certified_speedups_vs_fixed": [
+      1.4259714052550772,
+      1.4176619523963447,
+      1.3379621412983589
+    ]
+  },
+  "signed_256": {
+    "milliseconds": {
+      "ordinary": 72.86808299999592,
+      "fixed": 30.48004200000065,
+      "certified": 155.8650829999948,
+      "anderson": 14.450084000003471
+    },
+    "paired_certified_speedups_vs_ordinary": [
+      0.47446350650714053,
+      0.485349875922592,
+      0.46750742114575045
+    ],
+    "paired_certified_speedups_vs_fixed": [
+      0.20181370815472854,
+      0.20162702757461576,
+      0.1914206275436371
+    ]
+  }
+}

@@ -1,0 +1,828 @@
+{
+  "configuration": {
+    "protocol": "2026-09-29-v2",
+    "n": 256,
+    "seeds": 3,
+    "repeats": 3,
+    "budget": 16384,
+    "target": 1e-06,
+    "depth": 4,
+    "horizon": 16,
+    "condition": 1000.0,
+    "admm_rho": 0.01,
+    "prefix": 4,
+    "check_every": 16,
+    "families": [
+      "admm_lasso"
+    ],
+    "methods": [
+      "ordinary",
+      "flow_euclidean",
+      "flow_mirror",
+      "stationary_krylov",
+      "anderson"
+    ],
+    "python": "3.9.6",
+    "numpy": "1.26.4",
+    "machine": "arm64",
+    "note": "Pilot; equal work counts one map or one analytic JVP. Wall time includes acquisition, metrics, Arnoldi, reconstruction, ordinary settling and spaced objective checks; setup excluded. No guards, refreshes, adaptive horizons, or outcome-based tuning. Anderson is an unguarded regularized type-II comparator."
+  },
+  "runs": [
+    {
+      "method": "ordinary",
+      "status": "target",
+      "work": 128,
+      "map_calls": 128,
+      "tangent_actions": 0,
+      "objective_checks": 8,
+      "updates": 128,
+      "macros": 0,
+      "seconds": 0.002227625000003286,
+      "final_gap_ratio": 6.005829989447626e-07,
+      "postrun_residual_norm": 0.006611090188902662,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.002683714244956315,
+          "seconds": 0.00034408300000166037
+        },
+        {
+          "work": 32,
+          "gap_ratio": 0.00017711148806297313,
+          "seconds": 0.0005872079999988955
+        },
+        {
+          "work": 48,
+          "gap_ratio": 4.0853257170736214e-05,
+          "seconds": 0.0008190830000032179
+        },
+        {
+          "work": 64,
+          "gap_ratio": 1.3369271209508231e-05,
+          "seconds": 0.001166500000003623
+        },
+        {
+          "work": 80,
+          "gap_ratio": 5.347680800383204e-06,
+          "seconds": 0.001394832999999096
+        },
+        {
+          "work": 96,
+          "gap_ratio": 2.4087269553454314e-06,
+          "seconds": 0.0016405000000005998
+        },
+        {
+          "work": 112,
+          "gap_ratio": 1.181616127385567e-06,
+          "seconds": 0.0019800829999994107
+        },
+        {
+          "work": 128,
+          "gap_ratio": 6.005829989447626e-07,
+          "seconds": 0.002225166999998862
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 0,
+      "setup_seconds": 0.0036432090000033668,
+      "seconds_median": 0.001976124999998774,
+      "seconds_all": [
+        0.002227625000003286,
+        0.001976124999998774,
+        0.001973333999998772
+      ]
+    },
+    {
+      "method": "flow_euclidean",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.0019163750000004143,
+      "final_gap_ratio": 2.1716016024764905e-07,
+      "postrun_residual_norm": 0.0038965716580257686,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.005248370973446477,
+          "seconds": 0.00048362500000109776
+        },
+        {
+          "work": 34,
+          "gap_ratio": 9.869638394858996e-06,
+          "seconds": 0.0010234579999988114
+        },
+        {
+          "work": 52,
+          "gap_ratio": 1.8821559967003722e-06,
+          "seconds": 0.0015640419999982669
+        },
+        {
+          "work": 64,
+          "gap_ratio": 2.1716016024764905e-07,
+          "seconds": 0.0019143330000019887
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 0,
+      "setup_seconds": 0.0036432090000033668,
+      "seconds_median": 0.0019664579999982834,
+      "seconds_all": [
+        0.0019163750000004143,
+        0.0021818339999981617,
+        0.0019664579999982834
+      ]
+    },
+    {
+      "method": "flow_mirror",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.002011040999995828,
+      "final_gap_ratio": 2.1716016024764905e-07,
+      "postrun_residual_norm": 0.0038965716580257686,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.005248370973446477,
+          "seconds": 0.0004988749999981223
+        },
+        {
+          "work": 34,
+          "gap_ratio": 9.869638394858996e-06,
+          "seconds": 0.0010698749999988877
+        },
+        {
+          "work": 52,
+          "gap_ratio": 1.8821559967003722e-06,
+          "seconds": 0.0016423329999994962
+        },
+        {
+          "work": 64,
+          "gap_ratio": 2.1716016024764905e-07,
+          "seconds": 0.0020090000000010377
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 0,
+      "setup_seconds": 0.0036432090000033668,
+      "seconds_median": 0.002011040999995828,
+      "seconds_all": [
+        0.002011040999995828,
+        0.0019422909999988747,
+        0.0021861660000013217
+      ]
+    },
+    {
+      "method": "stationary_krylov",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.002155041999998275,
+      "final_gap_ratio": 6.545853390037427e-08,
+      "postrun_residual_norm": 0.0023100482712171033,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.00673929589078414,
+          "seconds": 0.000499999999995282
+        },
+        {
+          "work": 34,
+          "gap_ratio": 1.4821615217126926e-05,
+          "seconds": 0.0011424169999969536
+        },
+        {
+          "work": 52,
+          "gap_ratio": 1.0018851994794656e-06,
+          "seconds": 0.0017642079999973248
+        },
+        {
+          "work": 64,
+          "gap_ratio": 6.545853390037427e-08,
+          "seconds": 0.0021529579999963744
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 0,
+      "setup_seconds": 0.0036432090000033668,
+      "seconds_median": 0.00213445800000045,
+      "seconds_all": [
+        0.002155041999998275,
+        0.0018844579999992561,
+        0.00213445800000045
+      ]
+    },
+    {
+      "method": "anderson",
+      "status": "target",
+      "work": 48,
+      "map_calls": 48,
+      "tangent_actions": 0,
+      "objective_checks": 3,
+      "updates": 48,
+      "macros": 0,
+      "seconds": 0.0028173749999993447,
+      "final_gap_ratio": 5.137099751944458e-08,
+      "postrun_residual_norm": 0.0019490586115958216,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.0010620333889351376,
+          "seconds": 0.000864667000001873
+        },
+        {
+          "work": 32,
+          "gap_ratio": 8.286276857964453e-06,
+          "seconds": 0.0017897500000003674
+        },
+        {
+          "work": 48,
+          "gap_ratio": 5.137099751944458e-08,
+          "seconds": 0.0028152499999976044
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 0,
+      "setup_seconds": 0.0036432090000033668,
+      "seconds_median": 0.002659416000000192,
+      "seconds_all": [
+        0.0028173749999993447,
+        0.002659416000000192,
+        0.002639041999998426
+      ]
+    },
+    {
+      "method": "ordinary",
+      "status": "target",
+      "work": 144,
+      "map_calls": 144,
+      "tangent_actions": 0,
+      "objective_checks": 9,
+      "updates": 144,
+      "macros": 0,
+      "seconds": 0.0021162079999967887,
+      "final_gap_ratio": 5.121251222233806e-07,
+      "postrun_residual_norm": 0.005511760538464807,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.005916172334342042,
+          "seconds": 0.0002510830000019837
+        },
+        {
+          "work": 32,
+          "gap_ratio": 0.0004399845853569842,
+          "seconds": 0.0004782500000004575
+        },
+        {
+          "work": 48,
+          "gap_ratio": 0.00010259713549630213,
+          "seconds": 0.000708291000002248
+        },
+        {
+          "work": 64,
+          "gap_ratio": 4.404221962438162e-05,
+          "seconds": 0.0009387500000030968
+        },
+        {
+          "work": 80,
+          "gap_ratio": 1.857575676717024e-05,
+          "seconds": 0.0011807079999996972
+        },
+        {
+          "work": 96,
+          "gap_ratio": 7.904909726366132e-06,
+          "seconds": 0.0014167080000007104
+        },
+        {
+          "work": 112,
+          "gap_ratio": 2.761515321962447e-06,
+          "seconds": 0.0016485829999979273
+        },
+        {
+          "work": 128,
+          "gap_ratio": 1.1466988245947623e-06,
+          "seconds": 0.001886874999996735
+        },
+        {
+          "work": 144,
+          "gap_ratio": 5.121251222233806e-07,
+          "seconds": 0.0021139159999989943
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 1,
+      "setup_seconds": 0.0035608329999945454,
+      "seconds_median": 0.0021162079999967887,
+      "seconds_all": [
+        0.0021162079999967887,
+        0.002113833999999315,
+        0.0021167089999991617
+      ]
+    },
+    {
+      "method": "flow_euclidean",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.0016388749999975971,
+      "final_gap_ratio": 3.812216213947208e-07,
+      "postrun_residual_norm": 0.004495885024929046,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.008022901546646848,
+          "seconds": 0.0003750409999980775
+        },
+        {
+          "work": 34,
+          "gap_ratio": 3.578462317939783e-05,
+          "seconds": 0.0008443749999997863
+        },
+        {
+          "work": 52,
+          "gap_ratio": 3.0741429611974584e-06,
+          "seconds": 0.001317124999999919
+        },
+        {
+          "work": 64,
+          "gap_ratio": 3.812216213947208e-07,
+          "seconds": 0.0016367079999994871
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 1,
+      "setup_seconds": 0.0035608329999945454,
+      "seconds_median": 0.0016388749999975971,
+      "seconds_all": [
+        0.0016388749999975971,
+        0.0016360420000012255,
+        0.0016455419999985565
+      ]
+    },
+    {
+      "method": "flow_mirror",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.0016393750000034402,
+      "final_gap_ratio": 3.812216213947208e-07,
+      "postrun_residual_norm": 0.004495885024929046,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.008022901546646848,
+          "seconds": 0.0003710830000045462
+        },
+        {
+          "work": 34,
+          "gap_ratio": 3.578462317939783e-05,
+          "seconds": 0.0008460420000062641
+        },
+        {
+          "work": 52,
+          "gap_ratio": 3.0741429611974584e-06,
+          "seconds": 0.001322583000003874
+        },
+        {
+          "work": 64,
+          "gap_ratio": 3.812216213947208e-07,
+          "seconds": 0.0016375420000045438
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 1,
+      "setup_seconds": 0.0035608329999945454,
+      "seconds_median": 0.0016393750000034402,
+      "seconds_all": [
+        0.0016393750000034402,
+        0.0016431250000010778,
+        0.001625792000005788
+      ]
+    },
+    {
+      "method": "stationary_krylov",
+      "status": "target",
+      "work": 52,
+      "map_calls": 20,
+      "tangent_actions": 32,
+      "objective_checks": 3,
+      "updates": 12,
+      "macros": 8,
+      "seconds": 0.0012664999999998372,
+      "final_gap_ratio": 7.751178536589603e-07,
+      "postrun_residual_norm": 0.005529160281022261,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.002562406648869381,
+          "seconds": 0.00036724999999648844
+        },
+        {
+          "work": 34,
+          "gap_ratio": 9.903233284302622e-05,
+          "seconds": 0.0008184169999978508
+        },
+        {
+          "work": 52,
+          "gap_ratio": 7.751178536589603e-07,
+          "seconds": 0.0012644589999979416
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 1,
+      "setup_seconds": 0.0035608329999945454,
+      "seconds_median": 0.0012772079999976427,
+      "seconds_all": [
+        0.0012664999999998372,
+        0.0012772079999976427,
+        0.001280459000000178
+      ]
+    },
+    {
+      "method": "anderson",
+      "status": "target",
+      "work": 48,
+      "map_calls": 48,
+      "tangent_actions": 0,
+      "objective_checks": 3,
+      "updates": 48,
+      "macros": 0,
+      "seconds": 0.0026389169999987416,
+      "final_gap_ratio": 7.526914714683372e-07,
+      "postrun_residual_norm": 0.005867018755520628,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.0025289473639590557,
+          "seconds": 0.0008457500000034202
+        },
+        {
+          "work": 32,
+          "gap_ratio": 6.355328197634637e-05,
+          "seconds": 0.001741917000003923
+        },
+        {
+          "work": 48,
+          "gap_ratio": 7.526914714683372e-07,
+          "seconds": 0.002636875000000316
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 1,
+      "setup_seconds": 0.0035608329999945454,
+      "seconds_median": 0.002649458999997023,
+      "seconds_all": [
+        0.0026389169999987416,
+        0.0026514999999989186,
+        0.002649458999997023
+      ]
+    },
+    {
+      "method": "ordinary",
+      "status": "target",
+      "work": 144,
+      "map_calls": 144,
+      "tangent_actions": 0,
+      "objective_checks": 9,
+      "updates": 144,
+      "macros": 0,
+      "seconds": 0.0020969589999992877,
+      "final_gap_ratio": 4.771283816715934e-07,
+      "postrun_residual_norm": 0.004526821690044114,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.010328489947497004,
+          "seconds": 0.00023750000000433147
+        },
+        {
+          "work": 32,
+          "gap_ratio": 0.0012467868172544184,
+          "seconds": 0.00046462499999933016
+        },
+        {
+          "work": 48,
+          "gap_ratio": 0.00027417529861101085,
+          "seconds": 0.0007080840000028843
+        },
+        {
+          "work": 64,
+          "gap_ratio": 5.28816449633315e-05,
+          "seconds": 0.0009391669999985197
+        },
+        {
+          "work": 80,
+          "gap_ratio": 1.7228570078392805e-05,
+          "seconds": 0.001173209000000952
+        },
+        {
+          "work": 96,
+          "gap_ratio": 6.44630775572194e-06,
+          "seconds": 0.0014070420000038553
+        },
+        {
+          "work": 112,
+          "gap_ratio": 2.5984547620507557e-06,
+          "seconds": 0.0016377920000039126
+        },
+        {
+          "work": 128,
+          "gap_ratio": 1.096387938523127e-06,
+          "seconds": 0.0018722089999982927
+        },
+        {
+          "work": 144,
+          "gap_ratio": 4.771283816715934e-07,
+          "seconds": 0.002094959000004337
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 2,
+      "setup_seconds": 0.0036059170000015683,
+      "seconds_median": 0.0020969589999992877,
+      "seconds_all": [
+        0.0020969589999992877,
+        0.0021110830000026226,
+        0.0020909590000002254
+      ]
+    },
+    {
+      "method": "flow_euclidean",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.0016468330000023457,
+      "final_gap_ratio": 2.740452750020892e-07,
+      "postrun_residual_norm": 0.0034318105950736934,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.00340988626805684,
+          "seconds": 0.0003782910000040829
+        },
+        {
+          "work": 34,
+          "gap_ratio": 5.504085655020335e-05,
+          "seconds": 0.000853000000006432
+        },
+        {
+          "work": 52,
+          "gap_ratio": 1.590433029237755e-06,
+          "seconds": 0.001329083000001674
+        },
+        {
+          "work": 64,
+          "gap_ratio": 2.740452750020892e-07,
+          "seconds": 0.001644625000004396
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 2,
+      "setup_seconds": 0.0036059170000015683,
+      "seconds_median": 0.0016451249999960282,
+      "seconds_all": [
+        0.0016468330000023457,
+        0.0016272920000020008,
+        0.0016451249999960282
+      ]
+    },
+    {
+      "method": "flow_mirror",
+      "status": "target",
+      "work": 64,
+      "map_calls": 24,
+      "tangent_actions": 40,
+      "objective_checks": 4,
+      "updates": 14,
+      "macros": 10,
+      "seconds": 0.0016486250000014024,
+      "final_gap_ratio": 2.740452750020892e-07,
+      "postrun_residual_norm": 0.0034318105950736934,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.00340988626805684,
+          "seconds": 0.0003796250000007717
+        },
+        {
+          "work": 34,
+          "gap_ratio": 5.504085655020335e-05,
+          "seconds": 0.000855958999999018
+        },
+        {
+          "work": 52,
+          "gap_ratio": 1.590433029237755e-06,
+          "seconds": 0.0013277090000016756
+        },
+        {
+          "work": 64,
+          "gap_ratio": 2.740452750020892e-07,
+          "seconds": 0.0016466670000028216
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 2,
+      "setup_seconds": 0.0036059170000015683,
+      "seconds_median": 0.0016425420000061308,
+      "seconds_all": [
+        0.0016486250000014024,
+        0.0016384170000023346,
+        0.0016425420000061308
+      ]
+    },
+    {
+      "method": "stationary_krylov",
+      "status": "target",
+      "work": 52,
+      "map_calls": 20,
+      "tangent_actions": 32,
+      "objective_checks": 3,
+      "updates": 12,
+      "macros": 8,
+      "seconds": 0.0012666670000029967,
+      "final_gap_ratio": 3.8613018425806337e-07,
+      "postrun_residual_norm": 0.004472378335188132,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.011155055041454195,
+          "seconds": 0.0003626670000045351
+        },
+        {
+          "work": 34,
+          "gap_ratio": 5.1450322791019246e-05,
+          "seconds": 0.0008081250000060436
+        },
+        {
+          "work": 52,
+          "gap_ratio": 3.8613018425806337e-07,
+          "seconds": 0.0012646670000009408
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 2,
+      "setup_seconds": 0.0036059170000015683,
+      "seconds_median": 0.0012666669999958913,
+      "seconds_all": [
+        0.0012666670000029967,
+        0.0012666669999958913,
+        0.0012619999999969878
+      ]
+    },
+    {
+      "method": "anderson",
+      "status": "target",
+      "work": 48,
+      "map_calls": 48,
+      "tangent_actions": 0,
+      "objective_checks": 3,
+      "updates": 48,
+      "macros": 0,
+      "seconds": 0.0026464170000011222,
+      "final_gap_ratio": 4.111195819536825e-07,
+      "postrun_residual_norm": 0.004523417371863103,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.006681206384228984,
+          "seconds": 0.0008576670000053355
+        },
+        {
+          "work": 32,
+          "gap_ratio": 0.00012344049337743978,
+          "seconds": 0.0017561249999999973
+        },
+        {
+          "work": 48,
+          "gap_ratio": 4.111195819536825e-07,
+          "seconds": 0.0026441669999996975
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 2,
+      "setup_seconds": 0.0036059170000015683,
+      "seconds_median": 0.0026464170000011222,
+      "seconds_all": [
+        0.0026464170000011222,
+        0.002643833000000484,
+        0.002651000000000181
+      ]
+    }
+  ],
+  "finite_screens": {}
+}

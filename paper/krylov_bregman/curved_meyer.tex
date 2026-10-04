@@ -1,0 +1,199 @@
+\section{Curved validity in the original coupled Meyer map}\label{sec:curved}
+The affine-piece certificate does not apply to an exterior disk projection.
+Here we derive a different certificate from the original coupled recurrence,
+retaining its curvature and both vector memories. The resulting construction
+requires no additional screened solves during path validation.
+
+\subsection{A faithful future-driving quotient and its metric}
+Let $D$ be the periodic discrete gradient and $D^*=-\operatorname{div}$.
+For a branch with $a=\eta/c>0$, define
+\[
+ S_a=(I+aD^*D)^{-1},\qquad R_r(t)=t-2\Pi_r(t),
+\]
+where $\Pi_r$ is the pointwise Euclidean disk projection. The exact stored
+Meyer state is $(u,w,t_u,t_w)$. Its next pass depends on the primals only
+through $s=u+w$:
+\begin{align}
+ u^+&=S_a\{s+aD^*R_{r_u}(t_u)\},\nonumber\\
+ w^+&=S_b\{f-u^++bD^*R_{r_w}(t_w)\},\nonumber\\
+ t_u^+&=Du^++\Pi_{r_u}(t_u),\qquad
+ t_w^+=Dw^++\Pi_{r_w}(t_w),\qquad s^+=u^++w^+.
+ \label{eq:meyerquotient}
+\end{align}
+For the retained implementation $a=2$ and $b=10$. Thus
+$z=(s,t_u,t_w)$ is an exact state for all future passes. Both vector fields,
+including their transverse components, remain present. The current primal
+difference $u-w$ is not recoverable from this quotient; the next actual pass
+recovers both next primals exactly. The emitted texture $f-u-w=f-s$ is
+already recoverable at the current state. This is a precise quotient of
+redundant state, not deletion of a driving memory variable.
+
+\begin{theorem}[Metric of the coupled recurrence]\label{thm:meyermetric}
+The quotient map $F$ in \eqref{eq:meyerquotient} is nonexpansive in
+\begin{equation}
+ \norm{z}_M^2=\norm{s}_2^2+a\norm{t_u}_2^2+b\norm{t_w}_2^2.
+ \label{eq:meyermetric}
+\end{equation}
+In fact, for any two states $z,\widetilde z$,
+\begin{equation}
+ \norm{Fz-F\widetilde z}_M^2+
+ \tfrac12\norm{(I-F)z-(I-F)\widetilde z}_M^2
+ \leq\norm{z-\widetilde z}_M^2. \label{eq:meyeraveraged}
+\end{equation}
+Equivalently, this map is $2/3$-averaged. The statement does not require
+the input states to lie on an ordinary proximal trajectory.
+\end{theorem}
+\begin{proof}
+On pairs $(y,t)$ with norm $\norm{y}^2+a\norm{t}^2$, let $P_{\mathcal G_a}$
+be the orthogonal projection onto the graph $\mathcal G_a=\{(x,Dx)\}$.
+Its first component on $(y,R_r(t))$ is
+$v=S_a(y+aD^*R_r(t))$. Therefore the branch map
+\[
+ A_a(y,t)=(v,Dv+\Pi_r(t))
+ =\tfrac12\{I+(2P_{\mathcal G_a}-I)\operatorname{diag}(I,R_r)\}(y,t)
+\]
+is firmly nonexpansive: graph reflection is an isometry, and $R_r$ is
+nonexpansive by firm nonexpansivity of disk projection.
+
+Write differences between two inputs and outputs with a $\Delta$; in the
+following inequalities, $u,w$ denote the updated primals.
+The first branch gives
+\[
+ \norm{\Delta u}^2+a\norm{\Delta t_u^+}^2
+ \leq\norm{\Delta s}^2+a\norm{\Delta t_u}^2
+ -\norm{\Delta(s-u)}^2-a\norm{\Delta(t_u-t_u^+)}^2.
+\]
+Firm nonexpansivity of the second branch, whose input difference is
+$(-\Delta u,\Delta t_w)$, gives
+\[
+ \norm{\Delta w}^2+b\norm{\Delta t_w^+}^2
+ \leq-\ip{\Delta w}{\Delta u}+b\ip{\Delta t_w^+}{\Delta t_w}.
+\]
+Rearranging twice this inequality shows
+\[
+ \norm{\Delta(u+w)}^2+b\norm{\Delta t_w^+}^2
+ \leq\norm{\Delta u}^2+b\norm{\Delta t_w}^2
+ -\norm{\Delta w}^2-b\norm{\Delta(t_w-t_w^+)}^2.
+\]
+Combining the two bounds proves nonexpansivity. Finally,
+\[
+ \norm{\Delta(s-u)}^2+\norm{\Delta w}^2
+ \geq\tfrac12\norm{\Delta(s-u-w)}^2
+\]
+yields \eqref{eq:meyeraveraged} with the two vector-memory terms.
+\end{proof}
+
+Whitening this metric gives ordinary Euclidean Arnoldi on the five scalar
+fields $(s,\sqrt a\,t_u,\sqrt b\,t_w)$. Fixed finite polynomials in this
+metric differ from the earlier six-field Euclidean implementation; the
+experiments retain both, separating the representation change from discovery.
+
+\subsection{Exact algebraic description of disk curvature}
+For an anchor vector $t=\rho n$, choose an orthonormal frame $(n,e)$ and
+write a reduced displacement as $h=h_n n+h_t e$. Both $h_n$ and $h_t$ are
+linear forms in the Krylov coordinates $c$. The new squared radius is
+\begin{equation}
+ \ell(c)^2=(\rho+h_n(c))^2+h_t(c)^2. \label{eq:diskradicand}
+\end{equation}
+It is a quadratic polynomial. The disk event is the inequality
+$\ell(c)^2\leq r^2$; normalization introduces its positive square root.
+These relations can be acquired once from the anchor and basis.
+
+Let $q=\Pi_r(t+h)-\Pi_r(t)-P_t h$, where $P_t$ is the selected linear
+projection action used by Arnoldi. For an interior anchor, including the
+implementation's identity selection at $\rho=r$,
+\begin{equation}
+ \norm{q}^2=(\ell-r)_+^2. \label{eq:diskinside}
+\end{equation}
+For an exterior anchor $\rho>r$, put $\sigma=\min(1,r/\ell)$, with
+$\sigma=1$ at $\ell=0$. Then
+\begin{equation}
+ q_n=\sigma(\rho+h_n)-r,\qquad
+ q_t=(\sigma-r/\rho)h_t. \label{eq:diskoutside}
+\end{equation}
+These are exact identities on both sides of a crossing. In particular,
+pure radial motion on the same exterior ray has zero remainder while
+turning generally does not. A constant inside/outside mask alone fails to
+capture this distinction. At nonsmooth boundary anchors, the argument uses
+the specified linear action and exact remainder, not a nonexistent classical
+Jacobian.
+
+Only two linear forms per disk site are needed to evaluate
+\eqref{eq:diskradicand}--\eqref{eq:diskoutside}. The proposed representation
+is therefore a finite collection of polynomial radicands, branch inequalities,
+and radial normalization relations. It does not claim global finite closure
+of the nonlinear iteration in a polynomial observable dictionary.
+
+\subsection{The nonlinear remainder has a fixed linear response}
+Let $q_u,q_w$ be the exact projection remainders at a candidate displacement.
+The corresponding remainder of the complete map has primal components
+\begin{align}
+ d_u&=-2aS_aD^*q_u,\nonumber\\
+ d_w&=-S_b d_u-2bS_bD^*q_w,
+ \label{eq:curveresponse}
+\end{align}
+and quotient components
+$(d_u+d_w,Dd_u+q_u,Dd_w+q_w)$. Thus all nonlinear curvature is confined
+to the two pointwise projection remainders; the rest is a fixed linear
+response. We do not evaluate the screened solves in \eqref{eq:curveresponse}
+for each predicted point. Instead, their operator norm supplies a bound.
+
+For a discrete Laplacian eigenvalue $\lambda$, longitudinal components of
+this response, after whitening, have Gram matrix
+\[
+ G(\lambda)=\begin{pmatrix}1-d(\lambda)&g(\lambda)\\g(\lambda)&1\end{pmatrix},
+\quad
+ d(\lambda)=\frac{4a\lambda}{(1+a\lambda)^2(1+b\lambda)},\quad
+ g(\lambda)=\frac{2\sqrt{ab}\lambda}{(1+a\lambda)(1+b\lambda)}.
+\]
+Transverse components have gain one. Consequently, with
+\begin{equation}
+ \gamma^2=\max_{\lambda\in\operatorname{spec}(D^*D)}
+ \left[1-\frac{d(\lambda)}2+
+ \sqrt{\frac{d(\lambda)^2}4+g(\lambda)^2}\right], \label{eq:curvegain}
+\end{equation}
+we have
+\begin{equation}
+ \norm{N(v)}_M\leq
+ \gamma\sqrt{a\norm{q_u(v)}_2^2+b\norm{q_w(v)}_2^2}.
+ \label{eq:curvebound}
+\end{equation}
+This is a grid- and parameter-dependent calculation, independent of the
+source image. For the retained $64\times64$ grid, $\gamma=1.14819$.
+The Gram formula follows by Fourier diagonalization of
+\eqref{eq:curveresponse}; the two transverse components pass unchanged.
+Independent tests compare the full nonlinear remainder against the linear
+response and its norm bound.
+
+\begin{theorem}[Curved Meyer path certificate]\label{thm:curvedpath}
+For an $M$-orthonormal Arnoldi basis, let $E=JQ-QH$,
+$c_0=0$, $c_{j+1}=\beta e_1+Hc_j$, and
+$\widehat z_j=z+Qc_j$. Define
+\[
+ \varepsilon_j=\norm{Ec_j}_M+
+ \gamma\sqrt{a\norm{q_u(Qc_j)}^2+b\norm{q_w(Qc_j)}^2}.
+\]
+Then, for every finite horizon,
+\begin{equation}
+ \norm{F^m(z)-\widehat z_m}_M
+ \leq\sum_{j=0}^{m-1}\varepsilon_j. \label{eq:curvedpath}
+\end{equation}
+The same bound controls the emitted texture error. It also remains valid
+after a common ordinary settling step. No fixed-mask assumption is required.
+\end{theorem}
+\begin{proof}
+The exact defect is $N(Qc_j)+Ec_j$. Apply \eqref{eq:curvebound} and the
+triangle inequality, then propagate errors by Theorem~\ref{thm:meyermetric}.
+The initial error is zero, so summation gives \eqref{eq:curvedpath}.
+Texture is $f-s$ and its error norm is bounded by the full quotient norm.
+A common settling step cannot increase the quotient error.
+\end{proof}
+
+All projection remainders along the predicted path are evaluated; this is
+not sparse sampling of a few convenient points. The reduction is algebraic:
+small-coordinate evaluation and pointwise radial operations replace repeated
+screened solves. Compression norms use the small matrix $E^TME$.
+The certificate is proved in exact arithmetic and tested in floating point;
+we do not claim outward-rounded numerical certification.
+
+\input{curved_results.tex}

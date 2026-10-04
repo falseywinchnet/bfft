@@ -1,0 +1,2736 @@
+{
+  "configuration": {
+    "protocol": "2026-09-29-v2",
+    "n": 256,
+    "seeds": 3,
+    "repeats": 3,
+    "budget": 16384,
+    "target": 1e-06,
+    "depth": 4,
+    "horizon": 16,
+    "condition": 1000.0,
+    "admm_rho": 0.1,
+    "prefix": 4,
+    "check_every": 16,
+    "families": [
+      "admm_lasso",
+      "admm_shadow"
+    ],
+    "methods": [
+      "ordinary",
+      "flow_euclidean",
+      "flow_mirror",
+      "stationary_krylov",
+      "anderson"
+    ],
+    "python": "3.9.6",
+    "numpy": "1.26.4",
+    "machine": "arm64",
+    "note": "Pilot; equal work counts one map or one analytic JVP. Wall time includes acquisition, metrics, Arnoldi, reconstruction, ordinary settling and spaced objective checks; setup excluded. No guards, refreshes, adaptive horizons, or outcome-based tuning. Anderson is an unguarded regularized type-II comparator."
+  },
+  "runs": [
+    {
+      "method": "ordinary",
+      "status": "target",
+      "work": 32,
+      "map_calls": 32,
+      "tangent_actions": 0,
+      "objective_checks": 2,
+      "updates": 32,
+      "macros": 0,
+      "seconds": 0.0004484579999999294,
+      "final_gap_ratio": 3.315750362499454e-08,
+      "postrun_residual_norm": 0.0010251408399781568,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 6.954468082706586e-05,
+          "seconds": 0.00022650000000012938
+        },
+        {
+          "work": 32,
+          "gap_ratio": 3.315750362499454e-08,
+          "seconds": 0.0004465830000000004
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 0,
+      "setup_seconds": 0.0037097079999999227,
+      "seconds_median": 0.00044995799999991704,
+      "seconds_all": [
+        0.0004484579999999294,
+        0.0004503330000000805,
+        0.00044995799999991704
+      ]
+    },
+    {
+      "method": "flow_euclidean",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.0008243749999998773,
+      "final_gap_ratio": 9.70107889866537e-11,
+      "postrun_residual_norm": 5.51089132199703e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 6.739546874447131e-05,
+          "seconds": 0.0003600419999998383
+        },
+        {
+          "work": 34,
+          "gap_ratio": 9.70107889866537e-11,
+          "seconds": 0.0008222499999999133
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 0,
+      "setup_seconds": 0.0037097079999999227,
+      "seconds_median": 0.0008131659999999208,
+      "seconds_all": [
+        0.0008243749999998773,
+        0.0008131659999999208,
+        0.0008129999999999526
+      ]
+    },
+    {
+      "method": "flow_mirror",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.0008186249999999617,
+      "final_gap_ratio": 9.70107889866537e-11,
+      "postrun_residual_norm": 5.51089132199703e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 6.739546874447131e-05,
+          "seconds": 0.0003653329999999677
+        },
+        {
+          "work": 34,
+          "gap_ratio": 9.70107889866537e-11,
+          "seconds": 0.0008164999999999978
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 0,
+      "setup_seconds": 0.0037097079999999227,
+      "seconds_median": 0.0008206250000000193,
+      "seconds_all": [
+        0.0008186249999999617,
+        0.0008206250000000193,
+        0.0008273750000000746
+      ]
+    },
+    {
+      "method": "stationary_krylov",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.0007853749999999771,
+      "final_gap_ratio": 1.0516945585023345e-10,
+      "postrun_residual_norm": 5.702974450170563e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 6.976094562014608e-05,
+          "seconds": 0.00035204099999996963
+        },
+        {
+          "work": 34,
+          "gap_ratio": 1.0516945585023345e-10,
+          "seconds": 0.0007831659999999463
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 0,
+      "setup_seconds": 0.0037097079999999227,
+      "seconds_median": 0.0007853749999999771,
+      "seconds_all": [
+        0.0007853749999999771,
+        0.0007787079999999058,
+        0.0007857500000001405
+      ]
+    },
+    {
+      "method": "anderson",
+      "status": "target",
+      "work": 32,
+      "map_calls": 32,
+      "tangent_actions": 0,
+      "objective_checks": 2,
+      "updates": 32,
+      "macros": 0,
+      "seconds": 0.0017104589999998865,
+      "final_gap_ratio": 3.293923557086658e-12,
+      "postrun_residual_norm": 1.1114905528888637e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 2.0342540871063485e-06,
+          "seconds": 0.0008274589999999193
+        },
+        {
+          "work": 32,
+          "gap_ratio": 3.293923557086658e-12,
+          "seconds": 0.0017082920000000001
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 0,
+      "setup_seconds": 0.0037097079999999227,
+      "seconds_median": 0.0016994580000000425,
+      "seconds_all": [
+        0.0017104589999998865,
+        0.0016994580000000425,
+        0.00169720799999995
+      ]
+    },
+    {
+      "method": "ordinary",
+      "status": "target",
+      "work": 32,
+      "map_calls": 32,
+      "tangent_actions": 0,
+      "objective_checks": 2,
+      "updates": 32,
+      "macros": 0,
+      "seconds": 0.0004538339999999863,
+      "final_gap_ratio": 8.968173409431678e-08,
+      "postrun_residual_norm": 0.0012626177870487274,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.0001481666517524256,
+          "seconds": 0.0002271670000000281
+        },
+        {
+          "work": 32,
+          "gap_ratio": 8.968173409431678e-08,
+          "seconds": 0.00045199999999989693
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 1,
+      "setup_seconds": 0.0037159170000000685,
+      "seconds_median": 0.0004521249999998034,
+      "seconds_all": [
+        0.0004538339999999863,
+        0.0004494170000000075,
+        0.0004521249999998034
+      ]
+    },
+    {
+      "method": "flow_euclidean",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.000842291000000106,
+      "final_gap_ratio": 9.864723171543544e-11,
+      "postrun_residual_norm": 4.117355227967328e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 2.7932795244484955e-05,
+          "seconds": 0.000366540999999998
+        },
+        {
+          "work": 34,
+          "gap_ratio": 9.864723171543544e-11,
+          "seconds": 0.000840415999999955
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 1,
+      "setup_seconds": 0.0037159170000000685,
+      "seconds_median": 0.0008201250000001714,
+      "seconds_all": [
+        0.000842291000000106,
+        0.0008201250000001714,
+        0.0008125420000000272
+      ]
+    },
+    {
+      "method": "flow_mirror",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.0008146669999999911,
+      "final_gap_ratio": 9.864723171543544e-11,
+      "postrun_residual_norm": 4.117355227967328e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 2.7932795244484955e-05,
+          "seconds": 0.000361875000000067
+        },
+        {
+          "work": 34,
+          "gap_ratio": 9.864723171543544e-11,
+          "seconds": 0.0008127500000001397
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 1,
+      "setup_seconds": 0.0037159170000000685,
+      "seconds_median": 0.0008146669999999911,
+      "seconds_all": [
+        0.0008146669999999911,
+        0.0008141249999999989,
+        0.0008356250000001175
+      ]
+    },
+    {
+      "method": "stationary_krylov",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.0007799590000001633,
+      "final_gap_ratio": 9.880193071872555e-11,
+      "postrun_residual_norm": 4.124739169899914e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 2.788300052509746e-05,
+          "seconds": 0.0003491669999999836
+        },
+        {
+          "work": 34,
+          "gap_ratio": 9.880193071872555e-11,
+          "seconds": 0.0007779999999999454
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 1,
+      "setup_seconds": 0.0037159170000000685,
+      "seconds_median": 0.0007852079999999262,
+      "seconds_all": [
+        0.0007799590000001633,
+        0.0007926249999998802,
+        0.0007852079999999262
+      ]
+    },
+    {
+      "method": "anderson",
+      "status": "target",
+      "work": 32,
+      "map_calls": 32,
+      "tangent_actions": 0,
+      "objective_checks": 2,
+      "updates": 32,
+      "macros": 0,
+      "seconds": 0.0017099999999998783,
+      "final_gap_ratio": 1.3928960238324738e-11,
+      "postrun_residual_norm": 1.673163280574197e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 1.0169666701666615e-06,
+          "seconds": 0.0008267920000000206
+        },
+        {
+          "work": 32,
+          "gap_ratio": 1.3928960238324738e-11,
+          "seconds": 0.0017078749999999143
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 1,
+      "setup_seconds": 0.0037159170000000685,
+      "seconds_median": 0.0017181659999998544,
+      "seconds_all": [
+        0.0017099999999998783,
+        0.0017222500000000363,
+        0.0017181659999998544
+      ]
+    },
+    {
+      "method": "ordinary",
+      "status": "target",
+      "work": 32,
+      "map_calls": 32,
+      "tangent_actions": 0,
+      "objective_checks": 2,
+      "updates": 32,
+      "macros": 0,
+      "seconds": 0.00044904099999998337,
+      "final_gap_ratio": 5.342570780755095e-08,
+      "postrun_residual_norm": 0.0009905343500780017,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 2.5207186482430373e-05,
+          "seconds": 0.00022774999999986
+        },
+        {
+          "work": 32,
+          "gap_ratio": 5.342570780755095e-08,
+          "seconds": 0.00044720799999997674
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 2,
+      "setup_seconds": 0.0037195000000000977,
+      "seconds_median": 0.00044904099999998337,
+      "seconds_all": [
+        0.00044904099999998337,
+        0.0004477080000000466,
+        0.00045695900000009004
+      ]
+    },
+    {
+      "method": "flow_euclidean",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.0008343749999999428,
+      "final_gap_ratio": 1.0012613639606708e-11,
+      "postrun_residual_norm": 1.5856717409464234e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 9.655285199788366e-06,
+          "seconds": 0.0003651660000001389
+        },
+        {
+          "work": 34,
+          "gap_ratio": 1.0012613639606708e-11,
+          "seconds": 0.0008325000000000138
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 2,
+      "setup_seconds": 0.0037195000000000977,
+      "seconds_median": 0.0008227499999999832,
+      "seconds_all": [
+        0.0008343749999999428,
+        0.0008227499999999832,
+        0.0008143750000000338
+      ]
+    },
+    {
+      "method": "flow_mirror",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.000815167000000061,
+      "final_gap_ratio": 1.0012613639606708e-11,
+      "postrun_residual_norm": 1.5856717409464234e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 9.655285199788366e-06,
+          "seconds": 0.0003658330000000376
+        },
+        {
+          "work": 34,
+          "gap_ratio": 1.0012613639606708e-11,
+          "seconds": 0.0008131250000000811
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 2,
+      "setup_seconds": 0.0037195000000000977,
+      "seconds_median": 0.000815167000000061,
+      "seconds_all": [
+        0.000815167000000061,
+        0.0008106249999999537,
+        0.0008191660000000933
+      ]
+    },
+    {
+      "method": "stationary_krylov",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.0007848749999999072,
+      "final_gap_ratio": 1.0077505176155026e-11,
+      "postrun_residual_norm": 1.5844477543658174e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 9.64409697300548e-06,
+          "seconds": 0.0003515419999999825
+        },
+        {
+          "work": 34,
+          "gap_ratio": 1.0077505176155026e-11,
+          "seconds": 0.0007827499999999432
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 2,
+      "setup_seconds": 0.0037195000000000977,
+      "seconds_median": 0.0007848749999999072,
+      "seconds_all": [
+        0.0007848749999999072,
+        0.0007795409999999947,
+        0.0007986669999999751
+      ]
+    },
+    {
+      "method": "anderson",
+      "status": "target",
+      "work": 16,
+      "map_calls": 16,
+      "tangent_actions": 0,
+      "objective_checks": 1,
+      "updates": 16,
+      "macros": 0,
+      "seconds": 0.0008315420000000184,
+      "final_gap_ratio": 8.524014476132012e-07,
+      "postrun_residual_norm": 0.004251452410460814,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 8.524014476132012e-07,
+          "seconds": 0.0008290420000001131
+        }
+      ],
+      "family": "admm_lasso",
+      "seed": 2,
+      "setup_seconds": 0.0037195000000000977,
+      "seconds_median": 0.0008315420000000184,
+      "seconds_all": [
+        0.0008315420000000184,
+        0.0008426670000001302,
+        0.0008288750000000622
+      ]
+    },
+    {
+      "method": "ordinary",
+      "status": "target",
+      "work": 32,
+      "map_calls": 32,
+      "tangent_actions": 0,
+      "objective_checks": 2,
+      "updates": 32,
+      "macros": 0,
+      "seconds": 0.0004842080000000415,
+      "final_gap_ratio": 3.315750362499454e-08,
+      "postrun_residual_norm": 0.0010251408399781568,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 6.954468082706586e-05,
+          "seconds": 0.000249541999999936
+        },
+        {
+          "work": 32,
+          "gap_ratio": 3.315750362499454e-08,
+          "seconds": 0.0004821669999999223
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 0,
+      "setup_seconds": 0.003726499999999966,
+      "seconds_median": 0.00046099999999982266,
+      "seconds_all": [
+        0.0004842080000000415,
+        0.00046099999999982266,
+        0.0004531250000001652
+      ]
+    },
+    {
+      "method": "flow_euclidean",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.0007540409999999831,
+      "final_gap_ratio": 8.369003299966116e-11,
+      "postrun_residual_norm": 5.247834528846095e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 4.718960073170226e-05,
+          "seconds": 0.0003405409999999165
+        },
+        {
+          "work": 34,
+          "gap_ratio": 8.369003299966116e-11,
+          "seconds": 0.0007521249999999924
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 0,
+      "setup_seconds": 0.003726499999999966,
+      "seconds_median": 0.0007561670000000298,
+      "seconds_all": [
+        0.0007540409999999831,
+        0.0007561670000000298,
+        0.0007859160000001086
+      ]
+    },
+    {
+      "method": "flow_mirror",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.0007814999999999905,
+      "final_gap_ratio": 8.369003299966116e-11,
+      "postrun_residual_norm": 5.247834528846095e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 4.718960073170226e-05,
+          "seconds": 0.00036195800000005107
+        },
+        {
+          "work": 34,
+          "gap_ratio": 8.369003299966116e-11,
+          "seconds": 0.0007793750000000266
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 0,
+      "setup_seconds": 0.003726499999999966,
+      "seconds_median": 0.0007712079999999677,
+      "seconds_all": [
+        0.0007814999999999905,
+        0.0007630839999999139,
+        0.0007712079999999677
+      ]
+    },
+    {
+      "method": "stationary_krylov",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.0007365000000001398,
+      "final_gap_ratio": 8.520868642611834e-11,
+      "postrun_residual_norm": 5.2884209352157237e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 4.665719637997413e-05,
+          "seconds": 0.00032925000000005866
+        },
+        {
+          "work": 34,
+          "gap_ratio": 8.520868642611834e-11,
+          "seconds": 0.0007343750000001759
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 0,
+      "setup_seconds": 0.003726499999999966,
+      "seconds_median": 0.0007442079999999685,
+      "seconds_all": [
+        0.0007365000000001398,
+        0.0007464169999999992,
+        0.0007442079999999685
+      ]
+    },
+    {
+      "method": "anderson",
+      "status": "target",
+      "work": 32,
+      "map_calls": 32,
+      "tangent_actions": 0,
+      "objective_checks": 2,
+      "updates": 32,
+      "macros": 0,
+      "seconds": 0.001462917000000008,
+      "final_gap_ratio": 4.454270984961745e-12,
+      "postrun_residual_norm": 1.3547954249593309e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 1.1050762974868609e-06,
+          "seconds": 0.0007092079999999612
+        },
+        {
+          "work": 32,
+          "gap_ratio": 4.454270984961745e-12,
+          "seconds": 0.0014607079999999772
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 0,
+      "setup_seconds": 0.003726499999999966,
+      "seconds_median": 0.0014671250000000136,
+      "seconds_all": [
+        0.001462917000000008,
+        0.0014683339999999045,
+        0.0014671250000000136
+      ]
+    },
+    {
+      "method": "ordinary",
+      "status": "target",
+      "work": 32,
+      "map_calls": 32,
+      "tangent_actions": 0,
+      "objective_checks": 2,
+      "updates": 32,
+      "macros": 0,
+      "seconds": 0.0004772079999999512,
+      "final_gap_ratio": 8.968173409431678e-08,
+      "postrun_residual_norm": 0.0012626177870487276,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 0.0001481666517524256,
+          "seconds": 0.00024025000000005292
+        },
+        {
+          "work": 32,
+          "gap_ratio": 8.968173409431678e-08,
+          "seconds": 0.0004750000000000032
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 1,
+      "setup_seconds": 0.003712458000000085,
+      "seconds_median": 0.00047070799999993085,
+      "seconds_all": [
+        0.0004772079999999512,
+        0.00047070799999993085,
+        0.0004577500000000345
+      ]
+    },
+    {
+      "method": "flow_euclidean",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.0007675420000001765,
+      "final_gap_ratio": 9.047775203976281e-11,
+      "postrun_residual_norm": 3.8879801946980134e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 3.457129758769969e-05,
+          "seconds": 0.00035050000000014236
+        },
+        {
+          "work": 34,
+          "gap_ratio": 9.047775203976281e-11,
+          "seconds": 0.0007656670000000254
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 1,
+      "setup_seconds": 0.003712458000000085,
+      "seconds_median": 0.0007675420000001765,
+      "seconds_all": [
+        0.0007675420000001765,
+        0.0007732080000000252,
+        0.0007473340000001549
+      ]
+    },
+    {
+      "method": "flow_mirror",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.0007537079999999641,
+      "final_gap_ratio": 9.047775203976281e-11,
+      "postrun_residual_norm": 3.8879801946980134e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 3.457129758769969e-05,
+          "seconds": 0.00033649999999996183
+        },
+        {
+          "work": 34,
+          "gap_ratio": 9.047775203976281e-11,
+          "seconds": 0.0007517499999998289
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 1,
+      "setup_seconds": 0.003712458000000085,
+      "seconds_median": 0.0007537079999999641,
+      "seconds_all": [
+        0.0007537079999999641,
+        0.0007516670000000669,
+        0.0007584590000000446
+      ]
+    },
+    {
+      "method": "stationary_krylov",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.0007235829999998611,
+      "final_gap_ratio": 9.515021411063326e-11,
+      "postrun_residual_norm": 3.984805049211599e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 3.507656818073265e-05,
+          "seconds": 0.00032575000000001353
+        },
+        {
+          "work": 34,
+          "gap_ratio": 9.515021411063326e-11,
+          "seconds": 0.0007215419999999639
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 1,
+      "setup_seconds": 0.003712458000000085,
+      "seconds_median": 0.0007300000000001194,
+      "seconds_all": [
+        0.0007235829999998611,
+        0.0007300000000001194,
+        0.0007470830000000372
+      ]
+    },
+    {
+      "method": "anderson",
+      "status": "target",
+      "work": 16,
+      "map_calls": 16,
+      "tangent_actions": 0,
+      "objective_checks": 1,
+      "updates": 16,
+      "macros": 0,
+      "seconds": 0.0007082089999999042,
+      "final_gap_ratio": 9.963601121465272e-07,
+      "postrun_residual_norm": 0.004641267632358836,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 9.963601121465272e-07,
+          "seconds": 0.0007059999999998734
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 1,
+      "setup_seconds": 0.003712458000000085,
+      "seconds_median": 0.0007116250000001045,
+      "seconds_all": [
+        0.0007082089999999042,
+        0.0007116250000001045,
+        0.0007177499999999615
+      ]
+    },
+    {
+      "method": "ordinary",
+      "status": "target",
+      "work": 32,
+      "map_calls": 32,
+      "tangent_actions": 0,
+      "objective_checks": 2,
+      "updates": 32,
+      "macros": 0,
+      "seconds": 0.0004569169999999456,
+      "final_gap_ratio": 5.342570780755095e-08,
+      "postrun_residual_norm": 0.0009905343500780017,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 2.5207186482430373e-05,
+          "seconds": 0.00022745799999990268
+        },
+        {
+          "work": 32,
+          "gap_ratio": 5.342570780755095e-08,
+          "seconds": 0.00045512500000000067
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 2,
+      "setup_seconds": 0.0037097079999999227,
+      "seconds_median": 0.0004569169999999456,
+      "seconds_all": [
+        0.0004569169999999456,
+        0.0004662920000000348,
+        0.00045229099999999356
+      ]
+    },
+    {
+      "method": "flow_euclidean",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.000774834000000002,
+      "final_gap_ratio": 3.713982952266683e-11,
+      "postrun_residual_norm": 2.726448245407909e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 2.8189090960569376e-05,
+          "seconds": 0.00034362499999995855
+        },
+        {
+          "work": 34,
+          "gap_ratio": 3.713982952266683e-11,
+          "seconds": 0.0007727920000000221
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 2,
+      "setup_seconds": 0.0037097079999999227,
+      "seconds_median": 0.0007729999999999126,
+      "seconds_all": [
+        0.000774834000000002,
+        0.0007503330000000474,
+        0.0007729999999999126
+      ]
+    },
+    {
+      "method": "flow_mirror",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.000759167000000005,
+      "final_gap_ratio": 3.713982952266683e-11,
+      "postrun_residual_norm": 2.726448245407909e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 2.8189090960569376e-05,
+          "seconds": 0.00034204199999998686
+        },
+        {
+          "work": 34,
+          "gap_ratio": 3.713982952266683e-11,
+          "seconds": 0.0007570000000001187
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 2,
+      "setup_seconds": 0.0037097079999999227,
+      "seconds_median": 0.0007572499999999316,
+      "seconds_all": [
+        0.000759167000000005,
+        0.0007504170000001142,
+        0.0007572499999999316
+      ]
+    },
+    {
+      "method": "stationary_krylov",
+      "status": "target",
+      "work": 34,
+      "map_calls": 14,
+      "tangent_actions": 20,
+      "objective_checks": 2,
+      "updates": 9,
+      "macros": 5,
+      "seconds": 0.0007516670000000669,
+      "final_gap_ratio": 3.681071098599965e-11,
+      "postrun_residual_norm": 2.7120177918362756e-05,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 2.774444967990538e-05,
+          "seconds": 0.00033649999999996183
+        },
+        {
+          "work": 34,
+          "gap_ratio": 3.681071098599965e-11,
+          "seconds": 0.0007494999999999585
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 2,
+      "setup_seconds": 0.0037097079999999227,
+      "seconds_median": 0.0007381669999999563,
+      "seconds_all": [
+        0.0007516670000000669,
+        0.000719417,
+        0.0007381669999999563
+      ]
+    },
+    {
+      "method": "anderson",
+      "status": "target",
+      "work": 16,
+      "map_calls": 16,
+      "tangent_actions": 0,
+      "objective_checks": 1,
+      "updates": 16,
+      "macros": 0,
+      "seconds": 0.0007149580000000988,
+      "final_gap_ratio": 6.319938680164321e-07,
+      "postrun_residual_norm": 0.0035927157393333318,
+      "postrun_diagnostic_map_calls": 1,
+      "trace": [
+        {
+          "work": 0,
+          "gap_ratio": 1.0,
+          "seconds": 0.0
+        },
+        {
+          "work": 16,
+          "gap_ratio": 6.319938680164321e-07,
+          "seconds": 0.0007125830000000999
+        }
+      ],
+      "family": "admm_shadow",
+      "seed": 2,
+      "setup_seconds": 0.0037097079999999227,
+      "seconds_median": 0.0007149580000000988,
+      "seconds_all": [
+        0.0007149580000000988,
+        0.0007242080000000595,
+        0.0007109169999999221
+      ]
+    }
+  ],
+  "finite_screens": {
+    "admm_lasso": [
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.23266048574128423,
+        "relative_frozen_error": 0.22070378432479676,
+        "relative_krylov_error": 0.13053518396041758,
+        "predicted_gap_ratio": 0.6802508110186164,
+        "reference_gap_ratio": 0.12356231129782802,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.23266048574128423,
+        "relative_frozen_error": 0.22070378432479676,
+        "relative_krylov_error": 0.13053518396041758,
+        "predicted_gap_ratio": 0.6802508110186164,
+        "reference_gap_ratio": 0.12356231129782802,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.47605831903939166,
+        "relative_frozen_error": 0.45217298117323096,
+        "relative_krylov_error": 0.4826065025172434,
+        "predicted_gap_ratio": 1.1148143678925773,
+        "reference_gap_ratio": 0.00044577812508024616,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.47605831903939166,
+        "relative_frozen_error": 0.45217298117323096,
+        "relative_krylov_error": 0.4826065025172434,
+        "predicted_gap_ratio": 1.1148143678925773,
+        "reference_gap_ratio": 0.00044577812508024616,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.47583797006600986,
+        "relative_frozen_error": 0.449436823007706,
+        "relative_krylov_error": 0.4851676054610722,
+        "predicted_gap_ratio": 1.1143060702934713,
+        "reference_gap_ratio": 2.2453344521634793e-13,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.47583797006600986,
+        "relative_frozen_error": 0.449436823007706,
+        "relative_krylov_error": 0.4851676054610722,
+        "predicted_gap_ratio": 1.1143060702934713,
+        "reference_gap_ratio": 2.2453344521634793e-13,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.22070378432479673,
+        "relative_frozen_error": 0.22070378432479676,
+        "relative_krylov_error": 3.8829314780232544e-16,
+        "predicted_gap_ratio": 0.6632094757720628,
+        "reference_gap_ratio": 0.12356231129782802,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.22070378432479673,
+        "relative_frozen_error": 0.22070378432479676,
+        "relative_krylov_error": 3.8829314780232544e-16,
+        "predicted_gap_ratio": 0.6632094757720628,
+        "reference_gap_ratio": 0.12356231129782802,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.49814918831107724,
+        "relative_frozen_error": 0.45217298117323096,
+        "relative_krylov_error": 0.23331112155067635,
+        "predicted_gap_ratio": 1.2883107532475084,
+        "reference_gap_ratio": 0.00044577812508024616,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.49814918831107724,
+        "relative_frozen_error": 0.45217298117323096,
+        "relative_krylov_error": 0.23331112155067635,
+        "predicted_gap_ratio": 1.2883107532475084,
+        "reference_gap_ratio": 0.00044577812508024616,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.5109140726100283,
+        "relative_frozen_error": 0.449436823007706,
+        "relative_krylov_error": 0.25373828182261593,
+        "predicted_gap_ratio": 1.305717056819797,
+        "reference_gap_ratio": 2.2453344521634793e-13,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.5109140726100283,
+        "relative_frozen_error": 0.449436823007706,
+        "relative_krylov_error": 0.25373828182261593,
+        "predicted_gap_ratio": 1.305717056819797,
+        "reference_gap_ratio": 2.2453344521634793e-13,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.22070378432479673,
+        "relative_frozen_error": 0.22070378432479676,
+        "relative_krylov_error": 3.8829314780232544e-16,
+        "predicted_gap_ratio": 0.6632094757720628,
+        "reference_gap_ratio": 0.12356231129782802,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.22070378432479673,
+        "relative_frozen_error": 0.22070378432479676,
+        "relative_krylov_error": 3.8829314780232544e-16,
+        "predicted_gap_ratio": 0.6632094757720628,
+        "reference_gap_ratio": 0.12356231129782802,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.4520483788795587,
+        "relative_frozen_error": 0.45217298117323096,
+        "relative_krylov_error": 0.012664281189946173,
+        "predicted_gap_ratio": 1.0282581166880393,
+        "reference_gap_ratio": 0.00044577812508024616,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.4520483788795587,
+        "relative_frozen_error": 0.45217298117323096,
+        "relative_krylov_error": 0.012664281189946173,
+        "predicted_gap_ratio": 1.0282581166880393,
+        "reference_gap_ratio": 0.00044577812508024616,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.45075918773824863,
+        "relative_frozen_error": 0.449436823007706,
+        "relative_krylov_error": 0.03536555746350185,
+        "predicted_gap_ratio": 1.0147970261931551,
+        "reference_gap_ratio": 2.2453344521634793e-13,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.45075918773824863,
+        "relative_frozen_error": 0.449436823007706,
+        "relative_krylov_error": 0.03536555746350185,
+        "predicted_gap_ratio": 1.0147970261931551,
+        "reference_gap_ratio": 2.2453344521634793e-13,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.013133754855811955,
+        "relative_frozen_error": 3.6271978368882734e-12,
+        "relative_krylov_error": 0.01313375485534218,
+        "predicted_gap_ratio": 0.14503427103416358,
+        "reference_gap_ratio": 0.14373208912953991,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.013133754855811955,
+        "relative_frozen_error": 3.6271978368882734e-12,
+        "relative_krylov_error": 0.01313375485534218,
+        "predicted_gap_ratio": 0.14503427103416358,
+        "reference_gap_ratio": 0.14373208912953991,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.14135839763501418,
+        "relative_frozen_error": 2.5347381959917654e-12,
+        "relative_krylov_error": 0.1413583976346163,
+        "predicted_gap_ratio": 0.03435718098472034,
+        "reference_gap_ratio": 0.00043672424636702123,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.14135839763501418,
+        "relative_frozen_error": 2.5347381959917654e-12,
+        "relative_krylov_error": 0.1413583976346163,
+        "predicted_gap_ratio": 0.03435718098472034,
+        "reference_gap_ratio": 0.00043672424636702123,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.1605078836209457,
+        "relative_frozen_error": 2.7792285993248014e-12,
+        "relative_krylov_error": 0.16050788362046595,
+        "predicted_gap_ratio": 0.0350234749310674,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.1605078836209457,
+        "relative_frozen_error": 2.7792285993248014e-12,
+        "relative_krylov_error": 0.16050788362046595,
+        "predicted_gap_ratio": 0.0350234749310674,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 3.627197200279341e-12,
+        "relative_frozen_error": 3.6271978368882734e-12,
+        "relative_krylov_error": 1.46654349017074e-13,
+        "predicted_gap_ratio": 0.143732088607587,
+        "reference_gap_ratio": 0.14373208912953991,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 3.627197200279341e-12,
+        "relative_frozen_error": 3.6271978368882734e-12,
+        "relative_krylov_error": 1.46654349017074e-13,
+        "predicted_gap_ratio": 0.143732088607587,
+        "reference_gap_ratio": 0.14373208912953991,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.023852535481357635,
+        "relative_frozen_error": 2.5347381959917654e-12,
+        "relative_krylov_error": 0.023852535481211506,
+        "predicted_gap_ratio": 0.002227039362740419,
+        "reference_gap_ratio": 0.00043672424636702123,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.023852535481357635,
+        "relative_frozen_error": 2.5347381959917654e-12,
+        "relative_krylov_error": 0.023852535481211506,
+        "predicted_gap_ratio": 0.002227039362740419,
+        "reference_gap_ratio": 0.00043672424636702123,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.04340719072659403,
+        "relative_frozen_error": 2.7792285993248014e-12,
+        "relative_krylov_error": 0.04340719072626575,
+        "predicted_gap_ratio": 0.0033766165723674935,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.04340719072659403,
+        "relative_frozen_error": 2.7792285993248014e-12,
+        "relative_krylov_error": 0.04340719072626575,
+        "predicted_gap_ratio": 0.0033766165723674935,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 3.627197200279341e-12,
+        "relative_frozen_error": 3.6271978368882734e-12,
+        "relative_krylov_error": 1.46654349017074e-13,
+        "predicted_gap_ratio": 0.143732088607587,
+        "reference_gap_ratio": 0.14373208912953991,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 3.627197200279341e-12,
+        "relative_frozen_error": 3.6271978368882734e-12,
+        "relative_krylov_error": 1.46654349017074e-13,
+        "predicted_gap_ratio": 0.143732088607587,
+        "reference_gap_ratio": 0.14373208912953991,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.00017240105097890982,
+        "relative_frozen_error": 2.5347381959917654e-12,
+        "relative_krylov_error": 0.0001724010513666511,
+        "predicted_gap_ratio": 0.00043532381865843574,
+        "reference_gap_ratio": 0.00043672424636702123,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.00017240105097890982,
+        "relative_frozen_error": 2.5347381959917654e-12,
+        "relative_krylov_error": 0.0001724010513666511,
+        "predicted_gap_ratio": 0.00043532381865843574,
+        "reference_gap_ratio": 0.00043672424636702123,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.004644864970132645,
+        "relative_frozen_error": 2.7792285993248014e-12,
+        "relative_krylov_error": 0.004644864970412092,
+        "predicted_gap_ratio": 2.2280805946262405e-05,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.004644864970132645,
+        "relative_frozen_error": 2.7792285993248014e-12,
+        "relative_krylov_error": 0.004644864970412092,
+        "predicted_gap_ratio": 2.2280805946262405e-05,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.0003154491640711798,
+        "relative_frozen_error": 0.00016641272631602293,
+        "relative_krylov_error": 0.00028582793954014783,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.0003154491640711798,
+        "relative_frozen_error": 0.00016641272631602293,
+        "relative_krylov_error": 0.00028582793954014783,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.003785887882138709,
+        "relative_frozen_error": 0.00010622921478246765,
+        "relative_krylov_error": 0.003800918390021113,
+        "predicted_gap_ratio": 1.365533363709628,
+        "reference_gap_ratio": 0.5614218467899516,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.003785887882138709,
+        "relative_frozen_error": 0.00010622921478246765,
+        "relative_krylov_error": 0.003800918390021113,
+        "predicted_gap_ratio": 1.365533363709628,
+        "reference_gap_ratio": 0.5614218467899516,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.005674140574729179,
+        "relative_frozen_error": 0.00010450328209724788,
+        "relative_krylov_error": 0.005689836170850107,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.44180967375642183,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.005674140574729179,
+        "relative_frozen_error": 0.00010450328209724788,
+        "relative_krylov_error": 0.005689836170850107,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.44180967375642183,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.00016641272631602293,
+        "relative_frozen_error": 0.00016641272631602293,
+        "relative_krylov_error": 7.2622982164297195e-06,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.00016641272631602293,
+        "relative_frozen_error": 0.00016641272631602293,
+        "relative_krylov_error": 7.2622982164297195e-06,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.0005794321916529727,
+        "relative_frozen_error": 0.00010622921478246765,
+        "relative_krylov_error": 0.0005764403428428732,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.5614218467899516,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.0005794321916529727,
+        "relative_frozen_error": 0.00010622921478246765,
+        "relative_krylov_error": 0.0005764403428428732,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.5614218467899516,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.0013446296952842498,
+        "relative_frozen_error": 0.00010450328209724788,
+        "relative_krylov_error": 0.001354085897668694,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.44180967375642183,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.0013446296952842498,
+        "relative_frozen_error": 0.00010450328209724788,
+        "relative_krylov_error": 0.001354085897668694,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.44180967375642183,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.00016641272631602293,
+        "relative_frozen_error": 0.00016641272631602293,
+        "relative_krylov_error": 7.2622982164297195e-06,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.00016641272631602293,
+        "relative_frozen_error": 0.00016641272631602293,
+        "relative_krylov_error": 7.2622982164297195e-06,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.00010579125150478123,
+        "relative_frozen_error": 0.00010622921478246765,
+        "relative_krylov_error": 1.4026047821182372e-05,
+        "predicted_gap_ratio": 1.5101815471868973,
+        "reference_gap_ratio": 0.5614218467899516,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.00010579125150478123,
+        "relative_frozen_error": 0.00010622921478246765,
+        "relative_krylov_error": 1.4026047821182372e-05,
+        "predicted_gap_ratio": 1.5101815471868973,
+        "reference_gap_ratio": 0.5614218467899516,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.00025860844029475076,
+        "relative_frozen_error": 0.00010450328209724788,
+        "relative_krylov_error": 0.0002110774093790983,
+        "predicted_gap_ratio": 1.3115287786027472,
+        "reference_gap_ratio": 0.44180967375642183,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.00025860844029475076,
+        "relative_frozen_error": 0.00010450328209724788,
+        "relative_krylov_error": 0.0002110774093790983,
+        "predicted_gap_ratio": 1.3115287786027472,
+        "reference_gap_ratio": 0.44180967375642183,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      }
+    ],
+    "admm_shadow": [
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.15562367587410292,
+        "relative_frozen_error": 0.15594268710673925,
+        "relative_krylov_error": 0.08247584105054136,
+        "predicted_gap_ratio": 0.2021934884816389,
+        "reference_gap_ratio": 0.12356231129782802,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.15562367587410292,
+        "relative_frozen_error": 0.15594268710673925,
+        "relative_krylov_error": 0.08247584105054136,
+        "predicted_gap_ratio": 0.2021934884816389,
+        "reference_gap_ratio": 0.12356231129782802,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.4317104844342467,
+        "relative_frozen_error": 0.48510201823592736,
+        "relative_krylov_error": 0.4649124584316021,
+        "predicted_gap_ratio": 0.4003472539817644,
+        "reference_gap_ratio": 0.00044577812508024616,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.4317104844342467,
+        "relative_frozen_error": 0.48510201823592736,
+        "relative_krylov_error": 0.4649124584316021,
+        "predicted_gap_ratio": 0.4003472539817644,
+        "reference_gap_ratio": 0.00044577812508024616,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.432535648962239,
+        "relative_frozen_error": 0.4977956006937435,
+        "relative_krylov_error": 0.47798399634253047,
+        "predicted_gap_ratio": 0.39597657542174186,
+        "reference_gap_ratio": 2.2453344521634793e-13,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.432535648962239,
+        "relative_frozen_error": 0.4977956006937435,
+        "relative_krylov_error": 0.47798399634253047,
+        "predicted_gap_ratio": 0.39597657542174186,
+        "reference_gap_ratio": 2.2453344521634793e-13,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.15594268710673923,
+        "relative_frozen_error": 0.15594268710673925,
+        "relative_krylov_error": 4.1953233470478075e-16,
+        "predicted_gap_ratio": 0.21975656230389842,
+        "reference_gap_ratio": 0.12356231129782802,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.15594268710673923,
+        "relative_frozen_error": 0.15594268710673925,
+        "relative_krylov_error": 4.1953233470478075e-16,
+        "predicted_gap_ratio": 0.21975656230389842,
+        "reference_gap_ratio": 0.12356231129782802,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.4596629730831716,
+        "relative_frozen_error": 0.48510201823592736,
+        "relative_krylov_error": 0.15580919798871626,
+        "predicted_gap_ratio": 0.36128057625472315,
+        "reference_gap_ratio": 0.00044577812508024616,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.4596629730831716,
+        "relative_frozen_error": 0.48510201823592736,
+        "relative_krylov_error": 0.15580919798871626,
+        "predicted_gap_ratio": 0.36128057625472315,
+        "reference_gap_ratio": 0.00044577812508024616,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.4591352571035001,
+        "relative_frozen_error": 0.4977956006937435,
+        "relative_krylov_error": 0.18099656739270717,
+        "predicted_gap_ratio": 0.34927451062601195,
+        "reference_gap_ratio": 2.2453344521634793e-13,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.4591352571035001,
+        "relative_frozen_error": 0.4977956006937435,
+        "relative_krylov_error": 0.18099656739270717,
+        "predicted_gap_ratio": 0.34927451062601195,
+        "reference_gap_ratio": 2.2453344521634793e-13,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.15594268710673923,
+        "relative_frozen_error": 0.15594268710673925,
+        "relative_krylov_error": 4.1953233470478075e-16,
+        "predicted_gap_ratio": 0.21975656230389842,
+        "reference_gap_ratio": 0.12356231129782802,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.15594268710673923,
+        "relative_frozen_error": 0.15594268710673925,
+        "relative_krylov_error": 4.1953233470478075e-16,
+        "predicted_gap_ratio": 0.21975656230389842,
+        "reference_gap_ratio": 0.12356231129782802,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.4854640308046892,
+        "relative_frozen_error": 0.48510201823592736,
+        "relative_krylov_error": 0.007759180016130374,
+        "predicted_gap_ratio": 0.4221264250244545,
+        "reference_gap_ratio": 0.00044577812508024616,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.4854640308046892,
+        "relative_frozen_error": 0.48510201823592736,
+        "relative_krylov_error": 0.007759180016130374,
+        "predicted_gap_ratio": 0.4221264250244545,
+        "reference_gap_ratio": 0.00044577812508024616,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.5032113966371422,
+        "relative_frozen_error": 0.4977956006937435,
+        "relative_krylov_error": 0.031174674965221184,
+        "predicted_gap_ratio": 0.4356072662462583,
+        "reference_gap_ratio": 2.2453344521634793e-13,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 4,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.5032113966371422,
+        "relative_frozen_error": 0.4977956006937435,
+        "relative_krylov_error": 0.031174674965221184,
+        "predicted_gap_ratio": 0.4356072662462583,
+        "reference_gap_ratio": 2.2453344521634793e-13,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.013133754855833606,
+        "relative_frozen_error": 3.693006576480199e-12,
+        "relative_krylov_error": 0.013133754855363831,
+        "predicted_gap_ratio": 0.1450342707245192,
+        "reference_gap_ratio": 0.14373208912953991,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.013133754855833606,
+        "relative_frozen_error": 3.693006576480199e-12,
+        "relative_krylov_error": 0.013133754855363831,
+        "predicted_gap_ratio": 0.1450342707245192,
+        "reference_gap_ratio": 0.14373208912953991,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.14135839763501573,
+        "relative_frozen_error": 2.5241047036714735e-12,
+        "relative_krylov_error": 0.14135839763461788,
+        "predicted_gap_ratio": 0.034357181007416235,
+        "reference_gap_ratio": 0.00043672424636702123,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.14135839763501573,
+        "relative_frozen_error": 2.5241047036714735e-12,
+        "relative_krylov_error": 0.14135839763461788,
+        "predicted_gap_ratio": 0.034357181007416235,
+        "reference_gap_ratio": 0.00043672424636702123,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.16050788362092228,
+        "relative_frozen_error": 2.787638056096751e-12,
+        "relative_krylov_error": 0.16050788362044252,
+        "predicted_gap_ratio": 0.03502347288592598,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.16050788362092228,
+        "relative_frozen_error": 2.787638056096751e-12,
+        "relative_krylov_error": 0.16050788362044252,
+        "predicted_gap_ratio": 0.03502347288592598,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 3.693006576480199e-12,
+        "relative_frozen_error": 3.693006576480199e-12,
+        "relative_krylov_error": 2.1155422803448366e-13,
+        "predicted_gap_ratio": 0.14373208857231545,
+        "reference_gap_ratio": 0.14373208912953991,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 3.693006576480199e-12,
+        "relative_frozen_error": 3.693006576480199e-12,
+        "relative_krylov_error": 2.1155422803448366e-13,
+        "predicted_gap_ratio": 0.14373208857231545,
+        "reference_gap_ratio": 0.14373208912953991,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.023852535481321116,
+        "relative_frozen_error": 2.5241047036714735e-12,
+        "relative_krylov_error": 0.02385253548117499,
+        "predicted_gap_ratio": 0.002227039219801292,
+        "reference_gap_ratio": 0.00043672424636702123,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.023852535481321116,
+        "relative_frozen_error": 2.5241047036714735e-12,
+        "relative_krylov_error": 0.02385253548117499,
+        "predicted_gap_ratio": 0.002227039219801292,
+        "reference_gap_ratio": 0.00043672424636702123,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.043407190726603324,
+        "relative_frozen_error": 2.787638056096751e-12,
+        "relative_krylov_error": 0.04340719072627504,
+        "predicted_gap_ratio": 0.0033766165893194433,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.043407190726603324,
+        "relative_frozen_error": 2.787638056096751e-12,
+        "relative_krylov_error": 0.04340719072627504,
+        "predicted_gap_ratio": 0.0033766165893194433,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 3.693006576480199e-12,
+        "relative_frozen_error": 3.693006576480199e-12,
+        "relative_krylov_error": 2.1155422803448366e-13,
+        "predicted_gap_ratio": 0.14373208857231545,
+        "reference_gap_ratio": 0.14373208912953991,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 3.693006576480199e-12,
+        "relative_frozen_error": 3.693006576480199e-12,
+        "relative_krylov_error": 2.1155422803448366e-13,
+        "predicted_gap_ratio": 0.14373208857231545,
+        "reference_gap_ratio": 0.14373208912953991,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.00017240105098727528,
+        "relative_frozen_error": 2.5241047036714735e-12,
+        "relative_krylov_error": 0.00017240105137501647,
+        "predicted_gap_ratio": 0.00043532378477099303,
+        "reference_gap_ratio": 0.00043672424636702123,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.00017240105098727528,
+        "relative_frozen_error": 2.5241047036714735e-12,
+        "relative_krylov_error": 0.00017240105137501647,
+        "predicted_gap_ratio": 0.00043532378477099303,
+        "reference_gap_ratio": 0.00043672424636702123,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.00464486497013848,
+        "relative_frozen_error": 2.787638056096751e-12,
+        "relative_krylov_error": 0.004644864970417929,
+        "predicted_gap_ratio": 2.2278611429727787e-05,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 32,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.00464486497013848,
+        "relative_frozen_error": 2.787638056096751e-12,
+        "relative_krylov_error": 0.004644864970417929,
+        "predicted_gap_ratio": 2.2278611429727787e-05,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.00031277411983926073,
+        "relative_frozen_error": 0.00016825872198064932,
+        "relative_krylov_error": 0.0002839232069287522,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.00031277411983926073,
+        "relative_frozen_error": 0.00016825872198064932,
+        "relative_krylov_error": 0.0002839232069287522,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.0037860433147975828,
+        "relative_frozen_error": 0.00010545099862064175,
+        "relative_krylov_error": 0.003801107961017692,
+        "predicted_gap_ratio": 0.9202583633505019,
+        "reference_gap_ratio": 0.5614218467899516,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.0037860433147975828,
+        "relative_frozen_error": 0.00010545099862064175,
+        "relative_krylov_error": 0.003801107961017692,
+        "predicted_gap_ratio": 0.9202583633505019,
+        "reference_gap_ratio": 0.5614218467899516,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 2,
+        "relative_total_error": 0.005674200440056536,
+        "relative_frozen_error": 0.0001027183025439559,
+        "relative_krylov_error": 0.0056899046342675395,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.44180967375642183,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 2,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 2,
+        "relative_total_error": 0.005674200440056536,
+        "relative_frozen_error": 0.0001027183025439559,
+        "relative_krylov_error": 0.0056899046342675395,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.44180967375642183,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.00016825872198064932,
+        "relative_frozen_error": 0.00016825872198064932,
+        "relative_krylov_error": 1.1054887115872519e-05,
+        "predicted_gap_ratio": 1.8372850649730088,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.00016825872198064932,
+        "relative_frozen_error": 0.00016825872198064932,
+        "relative_krylov_error": 1.1054887115872519e-05,
+        "predicted_gap_ratio": 1.8372850649730088,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.0005802140291964031,
+        "relative_frozen_error": 0.00010545099862064175,
+        "relative_krylov_error": 0.0005769927952378875,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.5614218467899516,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.0005802140291964031,
+        "relative_frozen_error": 0.00010545099862064175,
+        "relative_krylov_error": 0.0005769927952378875,
+        "predicted_gap_ratio": 0.0,
+        "reference_gap_ratio": 0.5614218467899516,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 4,
+        "relative_total_error": 0.0013449701884365166,
+        "relative_frozen_error": 0.0001027183025439559,
+        "relative_krylov_error": 0.0013544012808061666,
+        "predicted_gap_ratio": 0.12284388126660796,
+        "reference_gap_ratio": 0.44180967375642183,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 4,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 4,
+        "relative_total_error": 0.0013449701884365166,
+        "relative_frozen_error": 0.0001027183025439559,
+        "relative_krylov_error": 0.0013544012808061666,
+        "predicted_gap_ratio": 0.12284388126660796,
+        "reference_gap_ratio": 0.44180967375642183,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.00016825872198064932,
+        "relative_frozen_error": 0.00016825872198064932,
+        "relative_krylov_error": 1.1054887115872519e-05,
+        "predicted_gap_ratio": 1.8372850649730088,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 4,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.00016825872198064932,
+        "relative_frozen_error": 0.00016825872198064932,
+        "relative_krylov_error": 1.1054887115872519e-05,
+        "predicted_gap_ratio": 1.8372850649730088,
+        "reference_gap_ratio": 0.0,
+        "diagnostic_map_calls": 4,
+        "diagnostic_action_calls": 4
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.00010456070089709767,
+        "relative_frozen_error": 0.00010545099862064175,
+        "relative_krylov_error": 1.4745083335829802e-05,
+        "predicted_gap_ratio": 1.0398705355273916,
+        "reference_gap_ratio": 0.5614218467899516,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 16,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.00010456070089709767,
+        "relative_frozen_error": 0.00010545099862064175,
+        "relative_krylov_error": 1.4745083335829802e-05,
+        "predicted_gap_ratio": 1.0398705355273916,
+        "reference_gap_ratio": 0.5614218467899516,
+        "diagnostic_map_calls": 16,
+        "diagnostic_action_calls": 16
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "euclidean",
+        "rank": 8,
+        "relative_total_error": 0.00025903838333298857,
+        "relative_frozen_error": 0.0001027183025439559,
+        "relative_krylov_error": 0.0002115466417148886,
+        "predicted_gap_ratio": 1.358836327171853,
+        "reference_gap_ratio": 0.44180967375642183,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      },
+      {
+        "prefix": 128,
+        "depth": 8,
+        "horizon": 64,
+        "metric": "mirror",
+        "rank": 8,
+        "relative_total_error": 0.00025903838333298857,
+        "relative_frozen_error": 0.0001027183025439559,
+        "relative_krylov_error": 0.0002115466417148886,
+        "predicted_gap_ratio": 1.358836327171853,
+        "reference_gap_ratio": 0.44180967375642183,
+        "diagnostic_map_calls": 64,
+        "diagnostic_action_calls": 64
+      }
+    ]
+  }
+}

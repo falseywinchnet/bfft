@@ -1,0 +1,32 @@
+{
+  "camera": {
+    "ordinary": 0.2298688750000002,
+    "full_fixed": 0.407705667,
+    "quotient_fixed": 0.4199328339999999,
+    "curved_discovered": 0.3863155420000002
+  },
+  "camera_permuted": {
+    "ordinary": 0.03283324999999948,
+    "full_fixed": 0.07889320799999933,
+    "quotient_fixed": 0.07604375000000019,
+    "curved_discovered": 0.06344329199999965
+  },
+  "barbara": {
+    "ordinary": 0.09815562499999952,
+    "full_fixed": 0.15409716700000065,
+    "quotient_fixed": 0.17428745899999942,
+    "curved_discovered": 0.18717699999999926
+  },
+  "straight_carrier": {
+    "ordinary": 0.024625916000000636,
+    "full_fixed": 0.036713166000000186,
+    "quotient_fixed": 0.04637508300000004,
+    "curved_discovered": 0.05364087500000014
+  },
+  "crossing": {
+    "ordinary": 0.17484408299999998,
+    "full_fixed": 0.17221187500000035,
+    "quotient_fixed": 0.2632304170000008,
+    "curved_discovered": 0.2796760420000002
+  }
+}

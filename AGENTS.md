@@ -1508,6 +1508,51 @@ The Blender round-trip fixture test additionally requires
 See that directory's README for supported materials, camera/normal/units
 contract and the direct-light preview renderer's limitations.
 
+## Krylov transport in mirror geometry
+
+The separate fundamental-research branch is `codex/krylov-bregman-research`.
+Its independent mirror/Bregman experiment uses the selected M4 Mini:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.krylov_bregman.test_contracts -v
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.run_suite \
+  --out /tmp/krylov_bregman_suite_v2
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.shadow_study \
+  --out /tmp/krylov_bregman_shadow_v2
+```
+
+Copy `/tmp/krylov_bregman_suite_v2/` immediately into
+`experiments/krylov_bregman/results/suite_v2/` in this worktree. Count tangent
+actions, metric operations, basis construction and ordinary settling when
+reporting acceleration. The finite-horizon and stationary Krylov variants,
+as well as the regularized Anderson comparator, are unguarded research
+implementations. Preserve failures and distinguish objective-gap targets
+from full-state convergence. See `paper/krylov_bregman/main.tex` and the
+experiment README; no universal speedup or new-priority claim is established.
+Copy the shadow output into `experiments/krylov_bregman/results/shadow_v2/`.
+The experiment README also records local figure and manuscript build commands.
+The discoverable-transport continuation adds `test_discovery` and
+`test_certified_piece` to the `experiments.krylov_bregman` unittest suite.
+Run `discovery_study` and `certified_study` through `m4build` with one BLAS
+thread; exact retained commands are in that experiment README. Copy their
+`/tmp/krylov_*` JSON outputs into the experiment's `results/` immediately.
+The sparse live-probe gate is diagnostic, not certified. The Huber affine-piece
+certificate does not apply to curved exterior Meyer disk projections.
+The separate `curved_meyer` continuation derives the actual curved-map
+certificate. Run `test_curved_meyer`, `curved_study`,
+`curved_discovery_study`, and `curved_solve` on the selected Mini with one
+BLAS thread; exact arguments and immediate result-copy paths are in the
+experiment README. Its quotient preserves all future-driving memory and the
+emitted texture. Local certified speedups do not establish complete-solve
+acceleration: the retained conservative complete-solve gate loses to ordinary
+iteration. Do not promote it into the native operator.
+
 ## Meyer pre-refresh transport contracts
 
 Run the exact phase, nonlinear-remainder, transverse-memory, and finite-secant
@@ -1728,3 +1773,220 @@ passing before trusting benchmark changes. See `NATIVE_STUDY.md` for the frozen
 baseline, matched timing protocol, discarded optimization, and reproduction.
 Run `phys_bench scene.txt result.json 60 8 replay.json` to export real native
 poses for a browser replay. A replay is not a browser port of the engine.
+## General mirror geometry and observable transport
+
+The research branch adds a smooth mirror compatibility theorem and rational
+observable discovery in `experiments/krylov_bregman/general_geometry.py`.
+Run its complete invariant suite and controlled discovery study on the Mini:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest discover -s experiments/krylov_bregman -t . -p 'test_*.py' -q
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.general_geometry_study \
+  --out /tmp/krylov_general_geometry_v2.json
+```
+
+Copy that JSON immediately into the experiment's `results/` directory.
+The rational grammar and known mirror factorization are explicit priors;
+finite fitted samples do not certify arbitrary smooth maps. This control is
+not a universal speed result or a replacement for the Meyer implementation.
+
+## Sinkhorn polynomial-transport transfer
+
+Run the distinct entropic-OT transfer benchmark and chart probe on the Mini:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.krylov_bregman.test_sinkhorn_transport -v
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.sinkhorn_study \
+  --out /tmp/krylov_sinkhorn_full.json
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.sinkhorn_chart_probe \
+  --out /tmp/krylov_sinkhorn_chart_probe.json
+```
+
+Copy both JSON files immediately into `experiments/krylov_bregman/results/`
+without the `krylov_` filename prefix. Retained timings include all solver-loop
+cost but exclude common setup and final plan materialization. See
+`experiments/krylov_bregman/SINKHORN_FINDINGS.md` for transfer scope and losses.
+
+## Meyer response and increment transport mutations
+
+These are retained research diagnostics, not promoted accelerators. The
+structure comparison, exact factorization and failed cost gates are documented
+in `experiments/krylov_bregman/MUTATION_FINDINGS.md`. Run on the M4 Mini:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.krylov_bregman.test_factor_transport \
+  experiments.krylov_bregman.test_increment_transport -v
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.factor_study \
+  --repeats 3 --out /tmp/krylov_factor_full.json
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.krylov_bregman.increment_study \
+  --repeats 3 --out /tmp/krylov_increment_full.json
+```
+
+Copy each JSON immediately into `experiments/krylov_bregman/results/` with
+its unchanged filename. The structural and frozen-tangent replay diagnostics
+are in `structure_probe.py` and `phase_probe.py`; their work is separate from
+runtime discovery and must not be treated as free information for an algorithm.
+
+## Entropic transport closure applied to Sinkhorn
+
+Formal closure and measured application results are in
+`experiments/entropic_transport_closure/FORMAL_ANALYSIS.md` and
+`APPLICATION.md`. Run the exact identities, moving-rule tests, and application
+regressions on the M4 Mini with:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest discover -s experiments/entropic_transport_closure \
+  -p 'test_*.py' -v
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.run_sinkhorn \
+  --size 2048 --repeats 5 --seeds 2 --seed-start 1 \
+  --out /tmp/entropic_sinkhorn_final2048.json
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.probe_sinkhorn \
+  --out /tmp/entropic_sinkhorn_models.json
+```
+
+Repeat the timing command with sizes 256 and 1024 and matching output names.
+Copy each JSON immediately to `experiments/entropic_transport_closure/results/`;
+the model-probe receipt is named `models.json` locally. Render retained results
+with `.venv-jpeg/bin/python -m experiments.entropic_transport_closure.report_sinkhorn
+experiments/entropic_transport_closure/results`.
+The exact block-family speedup assumes supplied exact structure and is measured
+against ordinary iteration using the same block reduction. General changing-rule
+models remain approximate; include acquisition, all bounds, rejected work, and
+actual marginal checks in comparisons. Their frozen-rule control is faster in
+the retained large general-kernel cases. No Meyer algorithm is changed.
+
+Run the finite-energy theory regressions and retained acquisition audit with:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.entropic_transport_closure.test_closure \
+  experiments.entropic_transport_closure.test_sinkhorn \
+  experiments.entropic_transport_closure.test_energy_theory -v
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.study_energy_theory \
+  --acquisition-json experiments/entropic_transport_closure/results/theory/acquisition_input.json \
+  --out /tmp/entropic_energy_theory.json
+```
+
+Copy the JSON immediately into `experiments/entropic_transport_closure/results/theory/`.
+This is a theory probe with explicit fixed-point and dense-spectrum scoring
+oracles. Its gap-uniform theorem does not supply an acquisition algorithm,
+a dimension-uniform bound, or a speedup claim. See `FINITE_ENERGY_THEORY.md`.
+
+Test the acquisition objections and continuous Gaussian controls on the Mini:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.entropic_transport_closure.test_claude_objections \
+  experiments.entropic_transport_closure.test_gaussian_closure -v
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.probe_claude_objections \
+  --out /tmp/claude_objections.json
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.probe_claude_objections \
+  --duplication-only --out /tmp/refinement_objection.json
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.probe_gaussian_closure \
+  --out /tmp/gaussian_closure.json
+```
+
+Copy all three JSONs immediately into `experiments/entropic_transport_closure/results/theory/`.
+`CLAUDE_OBJECTIONS.md` distinguishes scoring oracles, optimistic partial costs,
+and noise-resolved history predictions from an actual acquisition algorithm.
+The Gaussian probe is continuous, at fixed regularization, and retains the
+numerical failures of naive matrix block powering as well as the successful
+closed-form marginal checks.
+
+Evaluate directional representation limits on the original six failed scalar
+acquisition cases, including the exact three-anchor affine minimax bound:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.entropic_transport_closure.test_directional_limit -v
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.probe_directional_limit \
+  --out /tmp/directional_limit.json
+```
+
+Copy the JSON immediately into `experiments/entropic_transport_closure/results/theory/`.
+`DIRECTIONAL_LIMIT.md` specifies the metrics, perturbation/excitation ensembles,
+and the difference between a linear representation lower bound, failure of
+the particular scalar affine law, and a general computational impossibility.
+The ordinary transport problems converge; the failed object is the acquisition
+and changing-rule model, not Sinkhorn solvability itself.
+
+Run the higher-state conditional descent probe and its mathematical checks:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.entropic_transport_closure.test_context_descent -v
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.probe_context_descent \
+  --repeats 5 --out /tmp/context_descent128_factored.json
+```
+
+Copy the JSON immediately into `experiments/entropic_transport_closure/results/theory/`.
+The exact conditional-state lift has a semidual descent identity. Its cheap
+response-memory implementation is a known limited-memory BFGS baseline with
+an experimental secant-defect admission rule. It is not a new certified
+long-horizon closure, and its adaptive admission must be compared with ordinary
+L-BFGS as well as lean ordinary Sinkhorn. See `CONTEXT_DESCENT.md`.
+
+Test the inclusion-preserving response enclosure and run the six-case battery:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m unittest experiments.entropic_transport_closure.test_enclosed_continuation -v
+
+/Users/ultimussecundai/.local/bin/m4build -- env \
+  OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+  python3 -m experiments.entropic_transport_closure.probe_enclosed_continuation \
+  --repeats 5 --rank 4 --out /tmp/enclosed_continuation_final4.json.gz
+```
+
+Copy the JSON immediately into `experiments/entropic_transport_closure/results/theory/`.
+`ENCLOSED_CONTINUATION.md` proves the finite gradient and objective enclosures,
+identifies what is and is not transferred from the zonotopic-mixture paper,
+and distinguishes exact-arithmetic guarantees from independent floating-point
+scoring. Post-run internal-point scoring never informs a runtime proposal.

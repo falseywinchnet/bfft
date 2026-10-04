@@ -1,0 +1,943 @@
+{
+  "cases": [
+    {
+      "n": 128,
+      "seed": 0,
+      "kind": "image",
+      "epsilon": 0.003,
+      "median_seconds": {
+        "ordinary": 0.035915791999999946,
+        "fixed": 0.014109499999999942,
+        "discovered": 0.03372762500000004,
+        "anderson": 0.00986016700000003
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.5455042347354686,
+        "discovered": 1.0648775892165518,
+        "anderson": 3.6425135598615963
+      },
+      "work": {
+        "ordinary": 1440,
+        "fixed": 514,
+        "discovered": 807,
+        "anderson": 176
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 128,
+      "seed": 0,
+      "kind": "image",
+      "epsilon": 0.01,
+      "median_seconds": {
+        "ordinary": 0.009012624999999996,
+        "fixed": 0.0036356670000001756,
+        "discovered": 0.0077957089999998175,
+        "anderson": 0.004457957999999929
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.47894677922911,
+        "discovered": 1.156100747218785,
+        "anderson": 2.0216935646320895
+      },
+      "work": {
+        "ordinary": 352,
+        "fixed": 130,
+        "discovered": 191,
+        "anderson": 80
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 128,
+      "seed": 0,
+      "kind": "image",
+      "epsilon": 0.03,
+      "median_seconds": {
+        "ordinary": 0.002892625000000093,
+        "fixed": 0.0014683749999999662,
+        "discovered": 0.0032376660000001944,
+        "anderson": 0.0017172500000000035
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 1.9699497744105965,
+        "discovered": 0.8934290936742454,
+        "anderson": 1.6844518852817512
+      },
+      "work": {
+        "ordinary": 112,
+        "fixed": 52,
+        "discovered": 82,
+        "anderson": 32
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 128,
+      "seed": 0,
+      "kind": "mixture",
+      "epsilon": 0.003,
+      "median_seconds": {
+        "ordinary": 0.017451749999999988,
+        "fixed": 0.008013042000000192,
+        "discovered": 0.014680542000000019,
+        "anderson": 0.003953416999999959
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.177918198856261,
+        "discovered": 1.1887674174427596,
+        "anderson": 4.414345868396926
+      },
+      "work": {
+        "ordinary": 688,
+        "fixed": 292,
+        "discovered": 347,
+        "anderson": 72
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 128,
+      "seed": 0,
+      "kind": "mixture",
+      "epsilon": 0.01,
+      "median_seconds": {
+        "ordinary": 0.0050123330000000355,
+        "fixed": 0.0024482079999998962,
+        "discovered": 0.003982166999999981,
+        "anderson": 0.0016865830000001303
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.047347692679808,
+        "discovered": 1.258694826208961,
+        "anderson": 2.9718863524651016
+      },
+      "work": {
+        "ordinary": 200,
+        "fixed": 88,
+        "discovered": 99,
+        "anderson": 32
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 128,
+      "seed": 0,
+      "kind": "mixture",
+      "epsilon": 0.03,
+      "median_seconds": {
+        "ordinary": 0.0016368339999999204,
+        "fixed": 0.0007907910000000129,
+        "discovered": 0.0023125840000000064,
+        "anderson": 0.0008082499999999548
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.069869282781283,
+        "discovered": 0.7077943979548055,
+        "anderson": 2.025158057531719
+      },
+      "work": {
+        "ordinary": 64,
+        "fixed": 28,
+        "discovered": 64,
+        "anderson": 16
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 128,
+      "seed": 1,
+      "kind": "image",
+      "epsilon": 0.003,
+      "median_seconds": {
+        "ordinary": 0.029333541999999824,
+        "fixed": 0.011190000000000033,
+        "discovered": 0.02749725000000014,
+        "anderson": 0.008369790999999793
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.62140679177835,
+        "discovered": 1.0667809326387065,
+        "anderson": 3.5046922915997003
+      },
+      "work": {
+        "ordinary": 1160,
+        "fixed": 412,
+        "discovered": 641,
+        "anderson": 152
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 128,
+      "seed": 1,
+      "kind": "image",
+      "epsilon": 0.01,
+      "median_seconds": {
+        "ordinary": 0.00896787500000018,
+        "fixed": 0.0035631249999998893,
+        "discovered": 0.008582624999999844,
+        "anderson": 0.003909249999999975
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.5168566918085835,
+        "discovered": 1.0448871994291191,
+        "anderson": 2.2940141970966903
+      },
+      "work": {
+        "ordinary": 360,
+        "fixed": 130,
+        "discovered": 198,
+        "anderson": 72
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 128,
+      "seed": 1,
+      "kind": "image",
+      "epsilon": 0.03,
+      "median_seconds": {
+        "ordinary": 0.0030594580000000704,
+        "fixed": 0.0014469589999999144,
+        "discovered": 0.0032202500000000356,
+        "anderson": 0.001240709000000173
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.1144054530917957,
+        "discovered": 0.9500684729446586,
+        "anderson": 2.4658949036394864
+      },
+      "work": {
+        "ordinary": 120,
+        "fixed": 52,
+        "discovered": 82,
+        "anderson": 24
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 128,
+      "seed": 1,
+      "kind": "mixture",
+      "epsilon": 0.003,
+      "median_seconds": {
+        "ordinary": 0.019756333000000126,
+        "fixed": 0.007735541999999818,
+        "discovered": 0.018496750000000173,
+        "anderson": 0.004424959000000062
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.553968810459641,
+        "discovered": 1.0680975306472726,
+        "anderson": 4.464749390898278
+      },
+      "work": {
+        "ordinary": 784,
+        "fixed": 280,
+        "discovered": 434,
+        "anderson": 80
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 128,
+      "seed": 1,
+      "kind": "mixture",
+      "epsilon": 0.01,
+      "median_seconds": {
+        "ordinary": 0.005605165999999606,
+        "fixed": 0.0024267909999995396,
+        "discovered": 0.004801125000000184,
+        "anderson": 0.0016975829999994474
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.309702813303935,
+        "discovered": 1.1674692910514497,
+        "anderson": 3.301850925699321
+      },
+      "work": {
+        "ordinary": 224,
+        "fixed": 88,
+        "discovered": 115,
+        "anderson": 32
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 128,
+      "seed": 1,
+      "kind": "mixture",
+      "epsilon": 0.03,
+      "median_seconds": {
+        "ordinary": 0.0018716249999997103,
+        "fixed": 0.0007984580000002239,
+        "discovered": 0.002351874999999559,
+        "anderson": 0.000813041999999875
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.344049405227558,
+        "discovered": 0.7958012224289391,
+        "anderson": 2.3020028485613264
+      },
+      "work": {
+        "ordinary": 72,
+        "fixed": 28,
+        "discovered": 64,
+        "anderson": 16
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 512,
+      "seed": 0,
+      "kind": "image",
+      "epsilon": 0.003,
+      "median_seconds": {
+        "ordinary": 0.10767758400000016,
+        "fixed": 0.039998624999999954,
+        "discovered": 0.07151399999999963,
+        "anderson": 0.021019332999999918
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.6920321386047714,
+        "discovered": 1.5056853762899671,
+        "anderson": 5.122787863915595
+      },
+      "work": {
+        "ordinary": 1248,
+        "fixed": 448,
+        "discovered": 659,
+        "anderson": 160
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 512,
+      "seed": 0,
+      "kind": "image",
+      "epsilon": 0.01,
+      "median_seconds": {
+        "ordinary": 0.030516875,
+        "fixed": 0.011759707999999591,
+        "discovered": 0.02083791600000051,
+        "anderson": 0.008402416000000024
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.595036798532843,
+        "discovered": 1.464487859534478,
+        "anderson": 3.6319167011011966
+      },
+      "work": {
+        "ordinary": 352,
+        "fixed": 130,
+        "discovered": 201,
+        "anderson": 64
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 512,
+      "seed": 0,
+      "kind": "image",
+      "epsilon": 0.03,
+      "median_seconds": {
+        "ordinary": 0.010600957999999494,
+        "fixed": 0.004877333999999678,
+        "discovered": 0.008463332999999906,
+        "anderson": 0.004238083999998921
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.173514875134693,
+        "discovered": 1.2525748425590262,
+        "anderson": 2.501356273259849
+      },
+      "work": {
+        "ordinary": 120,
+        "fixed": 52,
+        "discovered": 82,
+        "anderson": 32
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 512,
+      "seed": 0,
+      "kind": "mixture",
+      "epsilon": 0.003,
+      "median_seconds": {
+        "ordinary": 0.04553254100000004,
+        "fixed": 0.01767766700000095,
+        "discovered": 0.03262875000000065,
+        "anderson": 0.008417584000000033
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.5757098490427266,
+        "discovered": 1.3954730414128378,
+        "anderson": 5.409217300356
+      },
+      "work": {
+        "ordinary": 520,
+        "fixed": 196,
+        "discovered": 312,
+        "anderson": 64
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 512,
+      "seed": 0,
+      "kind": "mixture",
+      "epsilon": 0.01,
+      "median_seconds": {
+        "ordinary": 0.015441207999998596,
+        "fixed": 0.006940042000000091,
+        "discovered": 0.010518457999999953,
+        "anderson": 0.00420700000000096
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.2249444599900685,
+        "discovered": 1.4680106152440469,
+        "anderson": 3.670360827191603
+      },
+      "work": {
+        "ordinary": 176,
+        "fixed": 76,
+        "discovered": 101,
+        "anderson": 32
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 512,
+      "seed": 0,
+      "kind": "mixture",
+      "epsilon": 0.03,
+      "median_seconds": {
+        "ordinary": 0.0051120000000004495,
+        "fixed": 0.002671082999999186,
+        "discovered": 0.006494458000000591,
+        "anderson": 0.002089916999999275
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 1.9138304575342688,
+        "discovered": 0.7871326598770805,
+        "anderson": 2.4460301533516513
+      },
+      "work": {
+        "ordinary": 56,
+        "fixed": 28,
+        "discovered": 64,
+        "anderson": 16
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 512,
+      "seed": 1,
+      "kind": "image",
+      "epsilon": 0.003,
+      "median_seconds": {
+        "ordinary": 0.10248912499999996,
+        "fixed": 0.03757408300000087,
+        "discovered": 0.062454000000000676,
+        "anderson": 0.025465541999999175
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.7276547241351863,
+        "discovered": 1.6410338008774275,
+        "anderson": 4.024619817634483
+      },
+      "work": {
+        "ordinary": 1168,
+        "fixed": 418,
+        "discovered": 589,
+        "anderson": 192
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 512,
+      "seed": 1,
+      "kind": "image",
+      "epsilon": 0.01,
+      "median_seconds": {
+        "ordinary": 0.03103779200000112,
+        "fixed": 0.011946207999999459,
+        "discovered": 0.02165429099999905,
+        "anderson": 0.011659791999999669
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.598129213889673,
+        "discovered": 1.433332174209836,
+        "anderson": 2.66195074491912
+      },
+      "work": {
+        "ordinary": 352,
+        "fixed": 130,
+        "discovered": 206,
+        "anderson": 88
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 512,
+      "seed": 1,
+      "kind": "image",
+      "epsilon": 0.03,
+      "median_seconds": {
+        "ordinary": 0.01064575000000012,
+        "fixed": 0.004824417000000025,
+        "discovered": 0.008425708000000753,
+        "anderson": 0.00423791700000109
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.2066396830954007,
+        "discovered": 1.2634843267769509,
+        "anderson": 2.5120241854659686
+      },
+      "work": {
+        "ordinary": 120,
+        "fixed": 52,
+        "discovered": 82,
+        "anderson": 32
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 512,
+      "seed": 1,
+      "kind": "mixture",
+      "epsilon": 0.003,
+      "median_seconds": {
+        "ordinary": 0.08039070799999948,
+        "fixed": 0.030993791000000215,
+        "discovered": 0.04445950000000032,
+        "anderson": 0.008524707999999492
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.593768151821083,
+        "discovered": 1.8081784095637357,
+        "anderson": 9.430318082449777
+      },
+      "work": {
+        "ordinary": 912,
+        "fixed": 340,
+        "discovered": 419,
+        "anderson": 64
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 512,
+      "seed": 1,
+      "kind": "mixture",
+      "epsilon": 0.01,
+      "median_seconds": {
+        "ordinary": 0.02240787500000252,
+        "fixed": 0.009147290999997892,
+        "discovered": 0.013088540999998344,
+        "anderson": 0.0042389999999983274
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.44967335137886,
+        "discovered": 1.7120223713250664,
+        "anderson": 5.286122906348516
+      },
+      "work": {
+        "ordinary": 256,
+        "fixed": 100,
+        "discovered": 124,
+        "anderson": 32
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    },
+    {
+      "n": 512,
+      "seed": 1,
+      "kind": "mixture",
+      "epsilon": 0.03,
+      "median_seconds": {
+        "ordinary": 0.007103000000000748,
+        "fixed": 0.0032391250000003424,
+        "discovered": 0.006500667000000959,
+        "anderson": 0.002149166999998897
+      },
+      "speedups": {
+        "ordinary": 1.0,
+        "fixed": 2.1928761625438957,
+        "discovered": 1.092657107339862,
+        "anderson": 3.3050014261359832
+      },
+      "work": {
+        "ordinary": 80,
+        "fixed": 34,
+        "discovered": 64,
+        "anderson": 16
+      },
+      "statuses": {
+        "ordinary": [
+          "target"
+        ],
+        "fixed": [
+          "target"
+        ],
+        "discovered": [
+          "target"
+        ],
+        "anderson": [
+          "target"
+        ]
+      }
+    }
+  ],
+  "total_runs": 672,
+  "successful_runs": 672,
+  "max_column_l1": 9.924906731633213e-09,
+  "max_row_l1": 3.1878118851233483e-15,
+  "max_plan_l1_to_reference": 6.54122257103481e-08,
+  "max_objective_difference_to_reference": 5.708597899944934e-10,
+  "speedups": {
+    "fixed": {
+      "minimum": 1.9138304575342688,
+      "median": 2.3968613783032087,
+      "maximum": 2.7276547241351863,
+      "faster_cases": 24
+    },
+    "discovered": {
+      "minimum": 0.7077943979548055,
+      "median": 1.1781183542471045,
+      "maximum": 1.8081784095637357,
+      "faster_cases": 19
+    },
+    "anderson": {
+      "minimum": 1.6844518852817512,
+      "median": 3.303426175917652,
+      "maximum": 9.430318082449777,
+      "faster_cases": 24
+    }
+  },
+  "fixed_faster_than_anderson_cases": 5
+}
