@@ -22,11 +22,11 @@
 \begin{document}
 \maketitle\thispagestyle{fancy}
 \begin{abstract}
-Wrench Transport is a rigid-body engine that represents contact as a persistent field of transmitted impulses. Each time step solves for the coupled linear and angular velocities of the active bodies. Friction-cone projection gives a strongly convex inner velocity problem; sparse block elimination communicates its response through the contact graph; retained impulses and load-scaled regularization connect successive solves. The engine supports convex and compound geometry, static bodies, restitution, rolling resistance, and sleeping contact islands. We evaluate the C++20 implementation on mixed-shape packing and mechanical acceptance tests, and compare it with MuJoCo and Rapier using common geometry, settling criteria, and geometric overlap measurements. Across three common packing scenes, the 60 Hz configuration settles every scene with a largest final overlap of 0.0136 mm and a median compute cost of 0.336 s for eight simulated seconds. Default Rapier settles the same scenes in 0.227 s with 6.975 mm largest final overlap. A separate seven-scene study measures a mean native step time of 0.7184 ms on an Apple M4.
+Wrench Transport is a rigid-body engine for tight contact and persistent support at real-time computational cost. In three common 64-body packing scenes, its 60 Hz configuration settles every scene with a maximum final overlap of 0.0136 mm, using a median 0.336 s of compute for eight simulated seconds. Default Rapier settles all three at 0.675 times that cost, with 513 times the maximum overlap. A higher-rate Rapier configuration costs 1.94 times as much, retains 466 times the overlap, and settles two scenes. The tested MuJoCo configurations require 19--49 times Wrench Transport's compute; even the one with the smallest overlap retains 17.7 times as much and does not meet the settling criterion. Wrench Transport achieves this operating point by retaining contact impulses, scaling regularization to supported load, and solving the coupled body response through sparse block elimination. We describe the C++20 engine, its convex inner contact problem, and its mechanical and numerical checks. The comparisons use common geometry, an independent overlap calculation, and sleeping disabled throughout.
 \end{abstract}
 
 \section{Introduction}
-A new load on a rigid structure changes the forces required throughout its supporting contacts. A simulation must resolve that coupled response while maintaining unilateral contact, friction, and rotational balance. The central design choice in Wrench Transport is to preserve the impulse already transmitted at each contact and solve for the response of the connected bodies within the time step.
+Tight geometric contact and sustained rest must be affordable within a simulation frame. Wrench Transport couples these objectives: a 60 Hz step resolves the connected bodies' response while preserving the impulses that already support them. In the packing experiments, this gives much smaller final overlap than Rapier at compute costs of the same order, and smaller overlap than MuJoCo at a fraction of the tested configurations' cost.
 
 The motivating intuition treats contact as transport. An influence enters the contact network, its consequences pass through the connected bodies, and the resulting field must support a consistent motion. The useful unit of that exchange is a \emph{wrench}: the force and torque applied to one rigid body,
 \begin{equation}
@@ -92,7 +92,7 @@ The standalone implementation is a C++20 static library. The public interface pr
 
 \textbf{Rest and wake.} Contacts connect bodies into islands. An island sleeps when every free body remains below the linear and angular thresholds for the required quiet interval. Contact from an awake body, removal of supporting geometry, or an explicit pose change wakes the relevant bodies. The performance comparisons disable sleeping to expose the cost and stability of continued contact simulation.
 
-\textbf{Computational structure.} A body contributes a $6\times6$ inertia block, and a contact couples at most two body blocks. Symbolic ordering is reused when the contact graph is unchanged. Within a frame, a numerical factor can be reused while the relevant contact branches remain unchanged; sliding branches generally require refactorization. Small vector and quaternion operations are inline, preserving the arithmetic while allowing optimization across call sites. Floating-point contraction is disabled in the measured build.
+\textbf{Computational structure.} A body contributes a $6\times6$ inertia block, and a contact couples at most two body blocks. Symbolic ordering is reused when the contact graph is unchanged. Within a frame, a numerical factor can be reused while the relevant contact branches remain unchanged; sliding branches generally require refactorization. Floating-point contraction is disabled in the measured build.
 
 \section{Experimental design}
 The comparison scene contains 64 dynamic convex bodies, drawn from eight shape classes: boxes, sphere approximations, cylinders, cones, thin sheets, prisms, general polyhedra, and irregular rocks. The bodies begin on a four-layer grid with seeded orientations inside a $0.37\times0.37$ m container. Every engine receives the same hull vertices, initial poses, density of $2600\,\mathrm{kg/m^3}$, friction coefficient of $0.5$, and gravity of $9.81\,\mathrm{m/s^2}$. Restitution, damping, and rolling resistance are disabled for this workload.
@@ -103,7 +103,7 @@ Wrench Transport runs at 60 and 120 Hz. Rapier 0.21.0 is evaluated at 60 Hz with
 
 \newpage
 \section{Evaluation}
-The native performance study uses seven scene seeds and seven measured repetitions after a warm-up. With sleeping disabled, Wrench Transport averages $0.7184$ ms per 60 Hz step across these 64-body scenes. Moving frames average $2.7550$ ms; quiet but active frames average $0.2631$ ms. The measurement surrounds the simulation step and excludes shape cooking, result serialization, and rendering.
+At 60 Hz, Wrench Transport settles all three scenes in 1.20--1.37 simulated seconds, with a maximum final overlap of $0.0136$ mm. Its median compute cost is $0.336$ s per eight simulated seconds, or $23.8$ times real time. The result is an accuracy--cost advantage: none of the tested alternatives reaches this overlap, including configurations with substantially greater computational cost.
 
 The cross-engine comparison uses seeds 1, 7, and 19, one warm-up and three measured repetitions per configuration, with rotating execution order. The hardware is an Apple M4 Mac mini running macOS 26.5. Wrench Transport uses an AppleClang 21 Release build; MuJoCo runs its native solver through Python; Rapier runs its WebAssembly distribution through Node. Timings include the respective step-call boundary. Per-run records retain runtime, settling time, final overlap, and remaining motion.
 
@@ -111,27 +111,26 @@ The cross-engine comparison uses seeds 1, 7, and 19, one warm-up and three measu
 \small
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
-Configuration & Compute (s) & Overlap (mm) & Settled & Late speed (m/s)\\
+Configuration & Compute (s) & Cost ratio & Overlap (mm) & Settled\\
 \midrule
-Wrench Transport, 60 Hz & 0.336 & 0.0136 & 3/3 & $4.18\times10^{-6}$\\
-Wrench Transport, 120 Hz & 0.481 & 0.0244 & 3/3 & $9.98\times10^{-6}$\\
-Rapier, 60 Hz & 0.227 & 6.975 & 3/3 & $1.28\times10^{-5}$\\
-Rapier, 60 Hz, scaled & 0.181 & 9.794 & 0/3 & 0.236\\
-Rapier, 240 Hz, scaled & 0.653 & 6.330 & 2/3 & 0.285\\
-MuJoCo, 60 Hz & 6.291 & 30.637 & 0/3 & 2.618\\
-MuJoCo, 120 Hz & 10.075 & 6.064 & 0/3 & 0.843\\
-MuJoCo, 480 Hz, stiff & 16.400 & 0.241 & 0/3 & 0.0446\\
+Wrench Transport, 60 Hz & 0.336 & 1.00 & 0.0136 & 3/3\\
+Wrench Transport, 120 Hz & 0.481 & 1.43 & 0.0244 & 3/3\\
+Rapier, 60 Hz & 0.227 & 0.67 & 6.975 & 3/3\\
+Rapier, 60 Hz, scaled & 0.181 & 0.54 & 9.794 & 0/3\\
+Rapier, 240 Hz, scaled & 0.653 & 1.94 & 6.330 & 2/3\\
+MuJoCo, 60 Hz & 6.291 & 18.72 & 30.637 & 0/3\\
+MuJoCo, 120 Hz & 10.075 & 29.98 & 6.064 & 0/3\\
+MuJoCo, 480 Hz, stiff & 16.400 & 48.80 & 0.241 & 0/3\\
 \bottomrule
 \end{tabular}
 \end{center}
-Compute cost is the median of nine measured runs, each advancing eight simulated seconds. Overlap is the largest final penetration across the three seeds and their repetitions. Settled counts scenes satisfying the sustained $4$ mm/s criterion; late speed is the largest body-speed measure during the last second across all runs. Three bodies leave the container in the worst MuJoCo 60 Hz case; all other configurations retain every body.
+Compute cost is the median of nine measured runs, each advancing eight simulated seconds; the ratio uses Wrench Transport at 60 Hz as its denominator. Overlap is the largest final penetration across all runs. Settled counts scenes satisfying the sustained $4$ mm/s criterion. Three bodies leave the container in the worst MuJoCo 60 Hz case; all other configurations retain every body.
 
-Wrench Transport at 60 Hz settles all three scenes in 1.20--1.37 simulated seconds. Its median compute time corresponds to approximately $23.8$ simulated seconds per compute second. Default Rapier is faster at approximately $35.3$ times real time and also reaches rest, with a larger retained geometric overlap. Reducing Rapier's length unit alone lowers runtime but leaves continuing motion in these scenes. Increasing its rate and iterations recovers settling for two of the three scenes.
+\textbf{Rapier: similar cost, much larger overlap.} Default 60 Hz Rapier costs $0.675$ times as much and settles every scene, with $513$ times the maximum overlap. Reducing its length unit lowers cost further but leaves every scene moving. At 240 Hz with eight iterations, cost rises to $1.94$ times Wrench Transport's, maximum overlap remains $466$ times larger, and two scenes settle. These are ratios of the reported aggregate metrics, not per-contact errors.
 
-MuJoCo's stiff 480 Hz configuration substantially reduces overlap relative to its lower-rate configurations, reaching a maximum of $0.241$ mm. It retains residual motion above the settling criterion over the eight-second observation interval. MuJoCo's compliant contact model and Rapier's tolerance-scaled iterative solver expose different accuracy--cost controls~\cite{mujoco,rapier}; the measured configurations are specified above so their operating points can be reproduced.
+\textbf{MuJoCo: substantially greater compute.} The tested configurations cost $18.7$--$48.8$ times as much. The stiff 480 Hz configuration achieves MuJoCo's smallest maximum overlap, $0.241$ mm, still $17.7$ times Wrench Transport's, and retains motion above the settling threshold. The configurations span different controls for compliance, tolerance, and iterative accuracy~\cite{mujoco,rapier}; no matched-overlap compute ratio is available because none reaches the Wrench Transport 60 Hz result.
 
-The 120 Hz Wrench Transport run does not uniformly improve final geometric overlap: it follows a different contact trajectory and packing arrangement. Its largest overlap remains below $0.025$ mm. Both rates reach rest in every scene, indicating that the tested 60 Hz operating point already provides stable support for this workload.
-
+At 120 Hz, Wrench Transport follows a different packing trajectory and reaches a slightly larger maximum overlap, still below $0.025$ mm; every scene settles. A separate seven-seed native study, with seven measured repetitions after warm-up, records a mean step time of $0.7184$ ms, including $2.7550$ ms for moving frames and $0.2631$ ms for quiet but awake frames. Timing excludes shape cooking, serialization, and rendering.
 
 \subsection{Mechanical and numerical checks}
 The native acceptance suite includes resting rocks, tall stacks, large mass ratios, overhangs, friction inclines, drops, crane holds and releases, support removal, wake propagation, compound bodies, restitution, and deterministic replay. Rest tests span round, flat, and jagged hulls over 50 seeds and 600 simulated seconds per shape class. Tall-stack tests use 15 bodies over 20 seeds; compound-stack tests use ten seeds.
@@ -140,7 +139,7 @@ An independent dense Gaussian-elimination comparison checks 80 coupled positive-
 
 \newpage
 \section{Discussion}
-Wrench Transport's design emphasizes persistent support and coupled response. Retaining impulses makes the supported state available to the next frame, while carried-load scaling keeps the contact regularization sensitive to the structure above a contact. Sparse elimination resolves the linearized response across the connected graph. In the mixed-convex packing comparison, the 60 Hz engine combines sustained rest and sub-0.014 mm final overlap at a median cost of 0.336 s per eight simulated seconds. The default Rapier configuration provides the lowest cost among configurations that settle all three scenes, while Wrench Transport provides the smallest maximum final overlap. This places the engine at a useful accuracy--cost operating point for small rigid contact assemblies.
+The engine's practical result is tight, settled contact at a cost in the same range as Rapier and roughly one-twentieth to one-fiftieth of the tested MuJoCo configurations. Default Rapier remains cheaper when its larger overlap is acceptable. Wrench Transport instead reaches sustained rest with sub-$0.014$ mm maximum final overlap at 60 Hz. Retained impulses preserve support, carried-load scaling keeps the regularization responsive to the supported structure, and sparse elimination communicates the coupled response through the graph.
 
 The three comparison seeds sample a small family of dense packing problems. They do not cover articulated robotics, large open worlds, or sustained high-speed impacts. The implementation currently uses discrete collision with speculative contacts. Continuous collision detection, general joint systems, and deformable bodies are outside its present feature set. Broad-phase enumeration and symbolic adjacency use quadratic structures; dense contact graphs can also increase factorization fill. Those properties define useful directions for larger-scale and high-impact workloads. The inner problem is strongly convex for fixed retained impulses and targets; the outer friction-shift update has a finite pass budget, so its convergence is assessed empirically here.
 
