@@ -1,0 +1,37 @@
+{
+  "schema": "wrench-native-artifacts-v1",
+  "date": "2026-10-03",
+  "baseline_commit": "fcdb0a3",
+  "engine": "current C++20 engine with inline vector/quaternion optimization",
+  "replay": {
+    "seed": 1,
+    "hertz": 60,
+    "seconds": 8,
+    "dynamic_bodies": 64,
+    "static_bodies": 4,
+    "sleeping": false,
+    "note": "Recorded native poses; not a browser physics port."
+  },
+  "files": {
+    "experiments/wrench_transport/results/native/study.json": {
+      "sha256": "5b6f924ee9397d572ce15f4a7130526cdc7276bc8ec47d523c4ce9706a058144",
+      "bytes": 172501
+    },
+    "experiments/wrench_transport/results/native/replay-seed1.json": {
+      "sha256": "f09f16bb9fd08f8007f9eef26b548bf892949e67804a84f2e34398798595ab89",
+      "bytes": 2738700
+    },
+    "experiments/wrench_transport/wrench-physics-0.1-source.tar.gz": {
+      "sha256": "021dfb3bd401c4285e7d7b9b440ef20311b610efa9686ff041390b41df87cbe4",
+      "bytes": 53762
+    },
+    "paper/wrench-transport/wrench-transport.pdf": {
+      "sha256": "d58496c797579a57fdfa3b480c30be6b9c8a452253b20345653f5ed3c95d6959",
+      "bytes": 79879
+    },
+    "experiments/wrench_transport/results/wrench-comparison/comparison.json": {
+      "sha256": "72a6eb08a567036e19c7a07eea25b5f74ff8fbe7202f2fa85a1b5cd1cec6b1b1",
+      "bytes": 68310
+    }
+  }
+}

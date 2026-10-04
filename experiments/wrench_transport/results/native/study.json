@@ -1,0 +1,4551 @@
+{
+  "platform": "macOS-26.5-arm64-arm-64bit",
+  "machine": "arm64",
+  "seeds": [
+    1,
+    7,
+    19,
+    101,
+    271,
+    314159,
+    8675309
+  ],
+  "repeats": 7,
+  "warmupRunsPerSeed": 1,
+  "hertz": 60,
+  "seconds": 8,
+  "sleeping": false,
+  "trajectoriesIdentical": true,
+  "summary": [
+    {
+      "binary": "baseline",
+      "meanMs": 0.8777830513673469,
+      "medianMeanMs": 0.852826742
+    },
+    {
+      "binary": "blocks",
+      "meanMs": 0.9030223115918368,
+      "medianMeanMs": 0.87238619
+    },
+    {
+      "binary": "inline_blocks",
+      "meanMs": 0.7397768046122449,
+      "medianMeanMs": 0.719346873
+    },
+    {
+      "binary": "inline",
+      "meanMs": 0.7184384068979592,
+      "medianMeanMs": 0.699978219
+    }
+  ],
+  "records": [
+    {
+      "seed": 1,
+      "repeat": 1,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.865510431,
+        "p50Ms": 0.312541,
+        "p95Ms": 4.315375,
+        "movingMs": 3.418724127,
+        "quietMs": 0.422287516,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 6.099667,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8655 ms, worst 6.0997 ms\n  moving frames 71: mean 3.4187 ms; quiet frames 409: mean 0.4223 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 1,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.700473206,
+        "p50Ms": 0.208792,
+        "p95Ms": 4.023917,
+        "movingMs": 3.142517634,
+        "quietMs": 0.276548623,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.824625,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7005 ms, worst 5.8246 ms\n  moving frames 71: mean 3.1425 ms; quiet frames 409: mean 0.2765 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 1,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.68676741,
+        "p50Ms": 0.21275,
+        "p95Ms": 3.85325,
+        "movingMs": 3.034934155,
+        "quietMs": 0.279139443,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.585625,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6868 ms, worst 5.5856 ms\n  moving frames 71: mean 3.0349 ms; quiet frames 409: mean 0.2791 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 1,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.839666933,
+        "p50Ms": 0.316083,
+        "p95Ms": 4.179083,
+        "movingMs": 3.278863817,
+        "quietMs": 0.416236667,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.827667,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8397 ms, worst 5.8277 ms\n  moving frames 71: mean 3.2789 ms; quiet frames 409: mean 0.4162 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 2,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.69578455,
+        "p50Ms": 0.208958,
+        "p95Ms": 3.986208,
+        "movingMs": 3.11333569,
+        "quietMs": 0.276111858,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.802916,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6958 ms, worst 5.8029 ms\n  moving frames 71: mean 3.1133 ms; quiet frames 409: mean 0.2761 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 2,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.696006425,
+        "p50Ms": 0.211125,
+        "p95Ms": 3.958083,
+        "movingMs": 3.049940183,
+        "quietMs": 0.287377337,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.57775,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6960 ms, worst 5.5777 ms\n  moving frames 71: mean 3.0499 ms; quiet frames 409: mean 0.2874 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 2,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.839332535,
+        "p50Ms": 0.310708,
+        "p95Ms": 4.141625,
+        "movingMs": 3.270806239,
+        "quietMs": 0.417242968,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.812875,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8393 ms, worst 5.8129 ms\n  moving frames 71: mean 3.2708 ms; quiet frames 409: mean 0.4172 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 2,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.8651,
+        "p50Ms": 0.319375,
+        "p95Ms": 4.265542,
+        "movingMs": 3.409176014,
+        "quietMs": 0.423463333,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 6.125958,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8651 ms, worst 6.1260 ms\n  moving frames 71: mean 3.4092 ms; quiet frames 409: mean 0.4235 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 3,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.68761201,
+        "p50Ms": 0.2105,
+        "p95Ms": 3.874542,
+        "movingMs": 3.022838056,
+        "quietMs": 0.282230472,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.564666,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6876 ms, worst 5.5647 ms\n  moving frames 71: mean 3.0228 ms; quiet frames 409: mean 0.2822 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 3,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.8377072,
+        "p50Ms": 0.314125,
+        "p95Ms": 4.129875,
+        "movingMs": 3.268308155,
+        "quietMs": 0.415769137,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.842583,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8377 ms, worst 5.8426 ms\n  moving frames 71: mean 3.2683 ms; quiet frames 409: mean 0.4158 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 3,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.86563296,
+        "p50Ms": 0.321125,
+        "p95Ms": 4.318625,
+        "movingMs": 3.409846225,
+        "quietMs": 0.423972467,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 6.098792,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8656 ms, worst 6.0988 ms\n  moving frames 71: mean 3.4098 ms; quiet frames 409: mean 0.4240 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 3,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.699235523,
+        "p50Ms": 0.209334,
+        "p95Ms": 4.019833,
+        "movingMs": 3.130482465,
+        "quietMs": 0.27718532,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.806625,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6992 ms, worst 5.8066 ms\n  moving frames 71: mean 3.1305 ms; quiet frames 409: mean 0.2772 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 4,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.840138706,
+        "p50Ms": 0.317458,
+        "p95Ms": 4.198167,
+        "movingMs": 3.274552239,
+        "quietMs": 0.417538802,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.841792,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8401 ms, worst 5.8418 ms\n  moving frames 71: mean 3.2746 ms; quiet frames 409: mean 0.4175 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 4,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.870153462,
+        "p50Ms": 0.314625,
+        "p95Ms": 4.373125,
+        "movingMs": 3.456983056,
+        "quietMs": 0.421095024,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 6.24425,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8702 ms, worst 6.2443 ms\n  moving frames 71: mean 3.4570 ms; quiet frames 409: mean 0.4211 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 4,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.703645413,
+        "p50Ms": 0.216084,
+        "p95Ms": 4.074041,
+        "movingMs": 3.141626845,
+        "quietMs": 0.280426142,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.81875,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7036 ms, worst 5.8188 ms\n  moving frames 71: mean 3.1416 ms; quiet frames 409: mean 0.2804 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 4,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.693949129,
+        "p50Ms": 0.219125,
+        "p95Ms": 3.952334,
+        "movingMs": 3.056401986,
+        "quietMs": 0.283841176,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.577458,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6939 ms, worst 5.5775 ms\n  moving frames 71: mean 3.0564 ms; quiet frames 409: mean 0.2838 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 5,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.863552671,
+        "p50Ms": 0.317417,
+        "p95Ms": 4.311625,
+        "movingMs": 3.397193085,
+        "quietMs": 0.423727562,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 6.114417,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8636 ms, worst 6.1144 ms\n  moving frames 71: mean 3.3972 ms; quiet frames 409: mean 0.4237 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 5,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.713216048,
+        "p50Ms": 0.21825,
+        "p95Ms": 4.11575,
+        "movingMs": 3.178122662,
+        "quietMs": 0.285322724,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.870292,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7132 ms, worst 5.8703 ms\n  moving frames 71: mean 3.1781 ms; quiet frames 409: mean 0.2853 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 5,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.686155917,
+        "p50Ms": 0.208667,
+        "p95Ms": 3.881583,
+        "movingMs": 3.046260085,
+        "quietMs": 0.276455682,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.673209,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6862 ms, worst 5.6732 ms\n  moving frames 71: mean 3.0463 ms; quiet frames 409: mean 0.2765 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 5,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.838108588,
+        "p50Ms": 0.312541,
+        "p95Ms": 4.157041,
+        "movingMs": 3.270113197,
+        "quietMs": 0.415926858,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.822625,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8381 ms, worst 5.8226 ms\n  moving frames 71: mean 3.2701 ms; quiet frames 409: mean 0.4159 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 6,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.714424673,
+        "p50Ms": 0.216541,
+        "p95Ms": 4.149208,
+        "movingMs": 3.179576324,
+        "quietMs": 0.286488812,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.835666,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7144 ms, worst 5.8357 ms\n  moving frames 71: mean 3.1796 ms; quiet frames 409: mean 0.2865 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 6,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.684741325,
+        "p50Ms": 0.2165,
+        "p95Ms": 3.86375,
+        "movingMs": 3.020471211,
+        "quietMs": 0.279272323,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.568958,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6847 ms, worst 5.5690 ms\n  moving frames 71: mean 3.0205 ms; quiet frames 409: mean 0.2793 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 6,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.84475449,
+        "p50Ms": 0.318833,
+        "p95Ms": 4.152792,
+        "movingMs": 3.288518831,
+        "quietMs": 0.42053134,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.792,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8448 ms, worst 5.7920 ms\n  moving frames 71: mean 3.2885 ms; quiet frames 409: mean 0.4205 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 6,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.864744606,
+        "p50Ms": 0.312917,
+        "p95Ms": 4.334333,
+        "movingMs": 3.418447746,
+        "quietMs": 0.421436726,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 6.247833,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8647 ms, worst 6.2478 ms\n  moving frames 71: mean 3.4184 ms; quiet frames 409: mean 0.4214 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 7,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.697193485,
+        "p50Ms": 0.217458,
+        "p95Ms": 3.939917,
+        "movingMs": 3.043516423,
+        "quietMs": 0.289885592,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.579625,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6972 ms, worst 5.5796 ms\n  moving frames 71: mean 3.0435 ms; quiet frames 409: mean 0.2899 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 7,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.846669773,
+        "p50Ms": 0.310958,
+        "p95Ms": 4.195459,
+        "movingMs": 3.339198324,
+        "quietMs": 0.413981443,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 5.970417,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8467 ms, worst 5.9704 ms\n  moving frames 71: mean 3.3392 ms; quiet frames 409: mean 0.4140 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 7,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.868952071,
+        "p50Ms": 0.318583,
+        "p95Ms": 4.296666,
+        "movingMs": 3.420935986,
+        "quietMs": 0.425942638,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 6.11825,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8690 ms, worst 6.1183 ms\n  moving frames 71: mean 3.4209 ms; quiet frames 409: mean 0.4259 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 1,
+      "repeat": 7,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.714691412,
+        "p50Ms": 0.211333,
+        "p95Ms": 4.0705,
+        "movingMs": 3.22469662,
+        "quietMs": 0.278969237,
+        "movingFrames": 71,
+        "quietFrames": 409
+      },
+      "worstStepMs": 6.0155,
+      "trajectoryHash": "36b62d88eb0a49d7",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3239,
+        "factorizations": 3234,
+        "passes": 972
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7147 ms, worst 6.0155 ms\n  moving frames 71: mean 3.2247 ms; quiet frames 409: mean 0.2790 ms\n  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0\n  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 1,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.811183175,
+        "p50Ms": 0.2785,
+        "p95Ms": 4.225,
+        "movingMs": 3.188195696,
+        "quietMs": 0.342893925,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.25525,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8112 ms, worst 7.2553 ms\n  moving frames 79: mean 3.1882 ms; quiet frames 401: mean 0.3429 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 1,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.683487094,
+        "p50Ms": 0.188,
+        "p95Ms": 4.048125,
+        "movingMs": 2.971300671,
+        "quietMs": 0.232770703,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.234583,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6835 ms, worst 7.2346 ms\n  moving frames 79: mean 2.9713 ms; quiet frames 401: mean 0.2328 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 1,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.668121773,
+        "p50Ms": 0.198417,
+        "p95Ms": 3.776333,
+        "movingMs": 2.863130228,
+        "quietMs": 0.235688686,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 6.81625,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6681 ms, worst 6.8163 ms\n  moving frames 79: mean 2.8631 ms; quiet frames 401: mean 0.2357 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 1,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.785989058,
+        "p50Ms": 0.274,
+        "p95Ms": 4.036875,
+        "movingMs": 3.058581253,
+        "quietMs": 0.338271394,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.086542,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7860 ms, worst 7.0865 ms\n  moving frames 79: mean 3.0586 ms; quiet frames 401: mean 0.3383 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 2,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.690970123,
+        "p50Ms": 0.1965,
+        "p95Ms": 4.043291,
+        "movingMs": 2.98651843,
+        "quietMs": 0.238729933,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.25,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6910 ms, worst 7.2500 ms\n  moving frames 79: mean 2.9865 ms; quiet frames 401: mean 0.2387 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 2,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.666410317,
+        "p50Ms": 0.189,
+        "p95Ms": 3.831292,
+        "movingMs": 2.894872823,
+        "quietMs": 0.227386531,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.10175,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6664 ms, worst 7.1018 ms\n  moving frames 79: mean 2.8949 ms; quiet frames 401: mean 0.2274 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 2,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.787130092,
+        "p50Ms": 0.273584,
+        "p95Ms": 4.024625,
+        "movingMs": 3.064768962,
+        "quietMs": 0.338418195,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.089084,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7871 ms, worst 7.0891 ms\n  moving frames 79: mean 3.0648 ms; quiet frames 401: mean 0.3384 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 2,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.82258885,
+        "p50Ms": 0.281333,
+        "p95Ms": 4.293042,
+        "movingMs": 3.227514835,
+        "quietMs": 0.348800439,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.367125,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8226 ms, worst 7.3671 ms\n  moving frames 79: mean 3.2275 ms; quiet frames 401: mean 0.3488 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 3,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.657222927,
+        "p50Ms": 0.191542,
+        "p95Ms": 3.786291,
+        "movingMs": 2.822844443,
+        "quietMs": 0.230579287,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 6.776,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6572 ms, worst 6.7760 ms\n  moving frames 79: mean 2.8228 ms; quiet frames 401: mean 0.2306 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 3,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.80069671,
+        "p50Ms": 0.280584,
+        "p95Ms": 4.0225,
+        "movingMs": 3.106036418,
+        "quietMs": 0.346527541,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.170042,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8007 ms, worst 7.1700 ms\n  moving frames 79: mean 3.1060 ms; quiet frames 401: mean 0.3465 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 3,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.814177408,
+        "p50Ms": 0.279417,
+        "p95Ms": 4.223042,
+        "movingMs": 3.211193051,
+        "quietMs": 0.341947394,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.658,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8142 ms, worst 7.6580 ms\n  moving frames 79: mean 3.2112 ms; quiet frames 401: mean 0.3419 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 3,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.684378171,
+        "p50Ms": 0.198792,
+        "p95Ms": 4.05875,
+        "movingMs": 2.95265081,
+        "quietMs": 0.237511491,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.118958,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6844 ms, worst 7.1190 ms\n  moving frames 79: mean 2.9527 ms; quiet frames 401: mean 0.2375 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 4,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.798354842,
+        "p50Ms": 0.275,
+        "p95Ms": 4.052916,
+        "movingMs": 3.137731013,
+        "quietMs": 0.337480234,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.336208,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7984 ms, worst 7.3362 ms\n  moving frames 79: mean 3.1377 ms; quiet frames 401: mean 0.3375 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 4,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.812824681,
+        "p50Ms": 0.279459,
+        "p95Ms": 4.254416,
+        "movingMs": 3.191235329,
+        "quietMs": 0.34425999,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.4075,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8128 ms, worst 7.4075 ms\n  moving frames 79: mean 3.1912 ms; quiet frames 401: mean 0.3443 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 4,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.697770813,
+        "p50Ms": 0.195042,
+        "p95Ms": 4.077083,
+        "movingMs": 3.030162418,
+        "quietMs": 0.238272217,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.373375,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6978 ms, worst 7.3734 ms\n  moving frames 79: mean 3.0302 ms; quiet frames 401: mean 0.2383 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 4,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.655839938,
+        "p50Ms": 0.186167,
+        "p95Ms": 3.834416,
+        "movingMs": 2.832776823,
+        "quietMs": 0.226967085,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 6.81925,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6558 ms, worst 6.8192 ms\n  moving frames 79: mean 2.8328 ms; quiet frames 401: mean 0.2270 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 5,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.82411795,
+        "p50Ms": 0.281958,
+        "p95Ms": 4.24625,
+        "movingMs": 3.230406177,
+        "quietMs": 0.350061167,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.413958,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8241 ms, worst 7.4140 ms\n  moving frames 79: mean 3.2304 ms; quiet frames 401: mean 0.3501 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 5,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.703916227,
+        "p50Ms": 0.19175,
+        "p95Ms": 3.989375,
+        "movingMs": 2.96193457,
+        "quietMs": 0.259069721,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.079875,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7039 ms, worst 7.0799 ms\n  moving frames 79: mean 2.9619 ms; quiet frames 401: mean 0.2591 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 5,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.657026027,
+        "p50Ms": 0.187,
+        "p95Ms": 3.84025,
+        "movingMs": 2.838874962,
+        "quietMs": 0.227185464,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 6.918709,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6570 ms, worst 6.9187 ms\n  moving frames 79: mean 2.8389 ms; quiet frames 401: mean 0.2272 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 5,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.807367033,
+        "p50Ms": 0.281666,
+        "p95Ms": 4.012,
+        "movingMs": 3.155711544,
+        "quietMs": 0.344725596,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.320125,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8074 ms, worst 7.3201 ms\n  moving frames 79: mean 3.1557 ms; quiet frames 401: mean 0.3447 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 6,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.682455923,
+        "p50Ms": 0.187125,
+        "p95Ms": 4.038708,
+        "movingMs": 2.981086544,
+        "quietMs": 0.229608494,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.239542,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6825 ms, worst 7.2395 ms\n  moving frames 79: mean 2.9811 ms; quiet frames 401: mean 0.2296 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 6,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.664742154,
+        "p50Ms": 0.1955,
+        "p95Ms": 3.823166,
+        "movingMs": 2.847460456,
+        "quietMs": 0.234730319,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 6.902167,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6647 ms, worst 6.9022 ms\n  moving frames 79: mean 2.8475 ms; quiet frames 401: mean 0.2347 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 6,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.795425796,
+        "p50Ms": 0.276167,
+        "p95Ms": 4.057167,
+        "movingMs": 3.105608177,
+        "quietMs": 0.340302584,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.374125,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7954 ms, worst 7.3741 ms\n  moving frames 79: mean 3.1056 ms; quiet frames 401: mean 0.3403 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 6,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.811230744,
+        "p50Ms": 0.27875,
+        "p95Ms": 4.268292,
+        "movingMs": 3.191249975,
+        "quietMs": 0.34234915,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.287292,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8112 ms, worst 7.2873 ms\n  moving frames 79: mean 3.1912 ms; quiet frames 401: mean 0.3423 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 7,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.67783656,
+        "p50Ms": 0.193875,
+        "p95Ms": 3.837917,
+        "movingMs": 2.907070228,
+        "quietMs": 0.23866085,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.01625,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6778 ms, worst 7.0163 ms\n  moving frames 79: mean 2.9071 ms; quiet frames 401: mean 0.2387 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 7,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.79533309,
+        "p50Ms": 0.273333,
+        "p95Ms": 4.059791,
+        "movingMs": 3.121581228,
+        "quietMs": 0.337044803,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.224292,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7953 ms, worst 7.2243 ms\n  moving frames 79: mean 3.1216 ms; quiet frames 401: mean 0.3370 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 7,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.826901487,
+        "p50Ms": 0.285792,
+        "p95Ms": 4.285375,
+        "movingMs": 3.227476278,
+        "quietMs": 0.353970294,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.481625,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8269 ms, worst 7.4816 ms\n  moving frames 79: mean 3.2275 ms; quiet frames 401: mean 0.3540 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 7,
+      "repeat": 7,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.682535777,
+        "p50Ms": 0.193167,
+        "p95Ms": 3.998333,
+        "movingMs": 2.956071228,
+        "quietMs": 0.234632284,
+        "movingFrames": 79,
+        "quietFrames": 401
+      },
+      "worstStepMs": 7.105875,
+      "trajectoryHash": "b24b0d95c40f385a",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3194,
+        "factorizations": 3191,
+        "passes": 923
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6825 ms, worst 7.1059 ms\n  moving frames 79: mean 2.9561 ms; quiet frames 401: mean 0.2346 ms\n  newton 3194, factorizations 3191, reuses 3, passes 923, analyses 58, unconverged 0, guards 0\n  final max speed 1.551e-06 m/s, kinetic energy 6.831e-13 J, floor/weight 1.099531\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 1,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.962568129,
+        "p50Ms": 0.460292,
+        "p95Ms": 4.181208,
+        "movingMs": 3.378643481,
+        "quietMs": 0.472086667,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 9.464709,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9626 ms, worst 9.4647 ms\n  moving frames 81: mean 3.3786 ms; quiet frames 399: mean 0.4721 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 1,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.789355717,
+        "p50Ms": 0.289875,
+        "p95Ms": 3.993959,
+        "movingMs": 3.197414111,
+        "quietMs": 0.300501757,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 9.294125,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7894 ms, worst 9.2941 ms\n  moving frames 81: mean 3.1974 ms; quiet frames 399: mean 0.3005 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 1,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.747326835,
+        "p50Ms": 0.278708,
+        "p95Ms": 3.708333,
+        "movingMs": 2.992088988,
+        "quietMs": 0.291623241,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 8.722292,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7473 ms, worst 8.7223 ms\n  moving frames 81: mean 2.9921 ms; quiet frames 399: mean 0.2916 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 1,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.950572581,
+        "p50Ms": 0.456208,
+        "p95Ms": 4.059042,
+        "movingMs": 3.313972753,
+        "quietMs": 0.470784576,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 8.810459,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9506 ms, worst 8.8105 ms\n  moving frames 81: mean 3.3140 ms; quiet frames 399: mean 0.4708 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 2,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.776104748,
+        "p50Ms": 0.279958,
+        "p95Ms": 3.946833,
+        "movingMs": 3.152300346,
+        "quietMs": 0.293719175,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 9.226458,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7761 ms, worst 9.2265 ms\n  moving frames 81: mean 3.1523 ms; quiet frames 399: mean 0.2937 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 2,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.761799315,
+        "p50Ms": 0.285458,
+        "p95Ms": 3.813292,
+        "movingMs": 3.034452222,
+        "quietMs": 0.300433687,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 8.599625,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7618 ms, worst 8.5996 ms\n  moving frames 81: mean 3.0345 ms; quiet frames 399: mean 0.3004 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 2,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.95058421,
+        "p50Ms": 0.454458,
+        "p95Ms": 4.0095,
+        "movingMs": 3.308736062,
+        "quietMs": 0.471861654,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 8.945208,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9506 ms, worst 8.9452 ms\n  moving frames 81: mean 3.3087 ms; quiet frames 399: mean 0.4719 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 2,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.979346331,
+        "p50Ms": 0.466375,
+        "p95Ms": 4.262,
+        "movingMs": 3.459172358,
+        "quietMs": 0.475923003,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 9.2635,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9793 ms, worst 9.2635 ms\n  moving frames 81: mean 3.4592 ms; quiet frames 399: mean 0.4759 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 3,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.758913,
+        "p50Ms": 0.289,
+        "p95Ms": 3.784833,
+        "movingMs": 3.029357,
+        "quietMs": 0.297995797,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 8.686375,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7589 ms, worst 8.6864 ms\n  moving frames 81: mean 3.0294 ms; quiet frames 399: mean 0.2980 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 3,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.950758671,
+        "p50Ms": 0.469875,
+        "p95Ms": 3.987459,
+        "movingMs": 3.273522667,
+        "quietMs": 0.479220115,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 8.783584,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9508 ms, worst 8.7836 ms\n  moving frames 81: mean 3.2735 ms; quiet frames 399: mean 0.4792 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 3,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.966974931,
+        "p50Ms": 0.464,
+        "p95Ms": 4.171,
+        "movingMs": 3.393453765,
+        "quietMs": 0.474381484,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 9.173584,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9670 ms, worst 9.1736 ms\n  moving frames 81: mean 3.3935 ms; quiet frames 399: mean 0.4744 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 3,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.785206079,
+        "p50Ms": 0.292667,
+        "p95Ms": 3.905791,
+        "movingMs": 3.143060654,
+        "quietMs": 0.306543872,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 8.959833,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7852 ms, worst 8.9598 ms\n  moving frames 81: mean 3.1431 ms; quiet frames 399: mean 0.3065 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 4,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.942454177,
+        "p50Ms": 0.456292,
+        "p95Ms": 4.00325,
+        "movingMs": 3.282944975,
+        "quietMs": 0.467316947,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 8.777583,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9425 ms, worst 8.7776 ms\n  moving frames 81: mean 3.2829 ms; quiet frames 399: mean 0.4673 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 4,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.977596179,
+        "p50Ms": 0.465,
+        "p95Ms": 4.214542,
+        "movingMs": 3.431784975,
+        "quietMs": 0.479377401,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 9.255167,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9776 ms, worst 9.2552 ms\n  moving frames 81: mean 3.4318 ms; quiet frames 399: mean 0.4794 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 4,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.77798149,
+        "p50Ms": 0.285125,
+        "p95Ms": 3.960334,
+        "movingMs": 3.15282716,
+        "quietMs": 0.295869962,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 9.207875,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7780 ms, worst 9.2079 ms\n  moving frames 81: mean 3.1528 ms; quiet frames 399: mean 0.2959 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 4,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.761866663,
+        "p50Ms": 0.291875,
+        "p95Ms": 3.79,
+        "movingMs": 3.02468058,
+        "quietMs": 0.302498424,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 8.483375,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7619 ms, worst 8.4834 ms\n  moving frames 81: mean 3.0247 ms; quiet frames 399: mean 0.3025 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 5,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.974000073,
+        "p50Ms": 0.46475,
+        "p95Ms": 4.233416,
+        "movingMs": 3.432664037,
+        "quietMs": 0.474872802,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 9.252917,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9740 ms, worst 9.2529 ms\n  moving frames 81: mean 3.4327 ms; quiet frames 399: mean 0.4749 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 5,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.781644617,
+        "p50Ms": 0.284417,
+        "p95Ms": 3.970875,
+        "movingMs": 3.151646074,
+        "quietMs": 0.300516501,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 9.276458,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7816 ms, worst 9.2765 ms\n  moving frames 81: mean 3.1516 ms; quiet frames 399: mean 0.3005 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 5,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.768872804,
+        "p50Ms": 0.289292,
+        "p95Ms": 3.832,
+        "movingMs": 3.079779296,
+        "quietMs": 0.299741411,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 8.878041,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7689 ms, worst 8.8780 ms\n  moving frames 81: mean 3.0798 ms; quiet frames 399: mean 0.2997 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 5,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.942466344,
+        "p50Ms": 0.456042,
+        "p95Ms": 4.018,
+        "movingMs": 3.292337988,
+        "quietMs": 0.465424732,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 9.017541,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9425 ms, worst 9.0175 ms\n  moving frames 81: mean 3.2923 ms; quiet frames 399: mean 0.4654 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 6,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.792415265,
+        "p50Ms": 0.289292,
+        "p95Ms": 4.016958,
+        "movingMs": 3.212614148,
+        "quietMs": 0.301096694,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 9.319042,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7924 ms, worst 9.3190 ms\n  moving frames 81: mean 3.2126 ms; quiet frames 399: mean 0.3011 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 6,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.75807064,
+        "p50Ms": 0.277209,
+        "p95Ms": 3.771541,
+        "movingMs": 3.046826111,
+        "quietMs": 0.29343607,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 8.775958,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7581 ms, worst 8.7760 ms\n  moving frames 81: mean 3.0468 ms; quiet frames 399: mean 0.2934 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 6,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.948465523,
+        "p50Ms": 0.462833,
+        "p95Ms": 3.985208,
+        "movingMs": 3.285737654,
+        "quietMs": 0.473981707,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 8.939333,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9485 ms, worst 8.9393 ms\n  moving frames 81: mean 3.2857 ms; quiet frames 399: mean 0.4740 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 6,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.977149896,
+        "p50Ms": 0.469291,
+        "p95Ms": 4.212459,
+        "movingMs": 3.433314333,
+        "quietMs": 0.478530048,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 9.437084,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9771 ms, worst 9.4371 ms\n  moving frames 81: mean 3.4333 ms; quiet frames 399: mean 0.4785 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 7,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.765132365,
+        "p50Ms": 0.2955,
+        "p95Ms": 3.841458,
+        "movingMs": 3.040104383,
+        "quietMs": 0.30329594,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 8.556125,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7651 ms, worst 8.5561 ms\n  moving frames 81: mean 3.0401 ms; quiet frames 399: mean 0.3033 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 7,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.942411404,
+        "p50Ms": 0.454792,
+        "p95Ms": 4.023542,
+        "movingMs": 3.285956815,
+        "quietMs": 0.466654065,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 8.792667,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9424 ms, worst 8.7927 ms\n  moving frames 81: mean 3.2860 ms; quiet frames 399: mean 0.4667 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 7,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.980610844,
+        "p50Ms": 0.46325,
+        "p95Ms": 4.251583,
+        "movingMs": 3.454126074,
+        "quietMs": 0.478468654,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 9.296833,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9806 ms, worst 9.2968 ms\n  moving frames 81: mean 3.4541 ms; quiet frames 399: mean 0.4785 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 19,
+      "repeat": 7,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.782310256,
+        "p50Ms": 0.284875,
+        "p95Ms": 3.960334,
+        "movingMs": 3.175536012,
+        "quietMs": 0.296467434,
+        "movingFrames": 81,
+        "quietFrames": 399
+      },
+      "worstStepMs": 9.29225,
+      "trajectoryHash": "c27ff70da9e75590",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3253,
+        "factorizations": 3250,
+        "passes": 909
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7823 ms, worst 9.2923 ms\n  moving frames 81: mean 3.1755 ms; quiet frames 399: mean 0.2965 ms\n  newton 3253, factorizations 3250, reuses 3, passes 909, analyses 63, unconverged 0, guards 0\n  final max speed 2.636e-06 m/s, kinetic energy 1.298e-12 J, floor/weight 0.996483\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 1,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.784493567,
+        "p50Ms": 0.319708,
+        "p95Ms": 3.701167,
+        "movingMs": 2.982779818,
+        "quietMs": 0.364473613,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 6.169958,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7845 ms, worst 6.1700 ms\n  moving frames 77: mean 2.9828 ms; quiet frames 403: mean 0.3645 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 1,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.644097038,
+        "p50Ms": 0.213833,
+        "p95Ms": 3.461833,
+        "movingMs": 2.714994013,
+        "quietMs": 0.24841697,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 5.845625,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6441 ms, worst 5.8456 ms\n  moving frames 77: mean 2.7150 ms; quiet frames 403: mean 0.2484 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 1,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.622197567,
+        "p50Ms": 0.208125,
+        "p95Ms": 3.298792,
+        "movingMs": 2.609030857,
+        "quietMs": 0.242579295,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 5.78225,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6222 ms, worst 5.7823 ms\n  moving frames 77: mean 2.6090 ms; quiet frames 403: mean 0.2426 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 1,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.763908069,
+        "p50Ms": 0.316875,
+        "p95Ms": 3.508333,
+        "movingMs": 2.867590922,
+        "quietMs": 0.361963702,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 5.942542,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7639 ms, worst 5.9425 ms\n  moving frames 77: mean 2.8676 ms; quiet frames 403: mean 0.3620 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 2,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.65033714,
+        "p50Ms": 0.213916,
+        "p95Ms": 3.493667,
+        "movingMs": 2.756573571,
+        "quietMs": 0.247904868,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 6.024792,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6503 ms, worst 6.0248 ms\n  moving frames 77: mean 2.7566 ms; quiet frames 403: mean 0.2479 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 2,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.624743071,
+        "p50Ms": 0.209125,
+        "p95Ms": 3.313291,
+        "movingMs": 2.620228883,
+        "quietMs": 0.243471588,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 5.595209,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6247 ms, worst 5.5952 ms\n  moving frames 77: mean 2.6202 ms; quiet frames 403: mean 0.2435 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 2,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.758872123,
+        "p50Ms": 0.31675,
+        "p95Ms": 3.53275,
+        "movingMs": 2.835325792,
+        "quietMs": 0.362130355,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 5.862625,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7589 ms, worst 5.8626 ms\n  moving frames 77: mean 2.8353 ms; quiet frames 403: mean 0.3621 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 2,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.791470823,
+        "p50Ms": 0.323666,
+        "p95Ms": 3.748917,
+        "movingMs": 2.99762339,
+        "quietMs": 0.369947876,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 6.365,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7915 ms, worst 6.3650 ms\n  moving frames 77: mean 2.9976 ms; quiet frames 403: mean 0.3699 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 3,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.626712594,
+        "p50Ms": 0.203459,
+        "p95Ms": 3.307792,
+        "movingMs": 2.650601221,
+        "quietMs": 0.24001427,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 5.76125,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6267 ms, worst 5.7612 ms\n  moving frames 77: mean 2.6506 ms; quiet frames 403: mean 0.2400 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 3,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.769497027,
+        "p50Ms": 0.314917,
+        "p95Ms": 3.623083,
+        "movingMs": 2.888138468,
+        "quietMs": 0.364694568,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 5.781792,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7695 ms, worst 5.7818 ms\n  moving frames 77: mean 2.8881 ms; quiet frames 403: mean 0.3647 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 3,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.786273952,
+        "p50Ms": 0.321292,
+        "p95Ms": 3.68325,
+        "movingMs": 2.974368,
+        "quietMs": 0.368201392,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 6.070333,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7863 ms, worst 6.0703 ms\n  moving frames 77: mean 2.9744 ms; quiet frames 403: mean 0.3682 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 3,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.646693069,
+        "p50Ms": 0.216,
+        "p95Ms": 3.441791,
+        "movingMs": 2.725756455,
+        "quietMs": 0.24945267,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 5.8165,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6467 ms, worst 5.8165 ms\n  moving frames 77: mean 2.7258 ms; quiet frames 403: mean 0.2495 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 4,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.764813565,
+        "p50Ms": 0.326042,
+        "p95Ms": 3.554958,
+        "movingMs": 2.849947545,
+        "quietMs": 0.366413275,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 5.862417,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7648 ms, worst 5.8624 ms\n  moving frames 77: mean 2.8499 ms; quiet frames 403: mean 0.3664 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 4,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.784417958,
+        "p50Ms": 0.329083,
+        "p95Ms": 3.689541,
+        "movingMs": 2.934448,
+        "quietMs": 0.373618174,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 6.0495,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7844 ms, worst 6.0495 ms\n  moving frames 77: mean 2.9344 ms; quiet frames 403: mean 0.3736 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 4,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.646339829,
+        "p50Ms": 0.20975,
+        "p95Ms": 3.403583,
+        "movingMs": 2.753388481,
+        "quietMs": 0.24375237,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 6.148375,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6463 ms, worst 6.1484 ms\n  moving frames 77: mean 2.7534 ms; quiet frames 403: mean 0.2438 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 4,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.631873104,
+        "p50Ms": 0.204416,
+        "p95Ms": 3.353542,
+        "movingMs": 2.654762987,
+        "quietMs": 0.245365608,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 5.707333,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6319 ms, worst 5.7073 ms\n  moving frames 77: mean 2.6548 ms; quiet frames 403: mean 0.2454 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 5,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.792406506,
+        "p50Ms": 0.332,
+        "p95Ms": 3.684125,
+        "movingMs": 2.959763532,
+        "quietMs": 0.378296107,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 6.202709,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7924 ms, worst 6.2027 ms\n  moving frames 77: mean 2.9598 ms; quiet frames 403: mean 0.3783 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 5,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.642809744,
+        "p50Ms": 0.210541,
+        "p95Ms": 3.376041,
+        "movingMs": 2.704552519,
+        "quietMs": 0.248878742,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 6.126125,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6428 ms, worst 6.1261 ms\n  moving frames 77: mean 2.7046 ms; quiet frames 403: mean 0.2489 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 5,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.627576212,
+        "p50Ms": 0.201625,
+        "p95Ms": 3.343291,
+        "movingMs": 2.657186714,
+        "quietMs": 0.239784628,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 5.78225,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6276 ms, worst 5.7823 ms\n  moving frames 77: mean 2.6572 ms; quiet frames 403: mean 0.2398 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 5,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.772444698,
+        "p50Ms": 0.316791,
+        "p95Ms": 3.634708,
+        "movingMs": 2.903588701,
+        "quietMs": 0.365253412,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 5.773167,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7724 ms, worst 5.7732 ms\n  moving frames 77: mean 2.9036 ms; quiet frames 403: mean 0.3653 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 6,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.640349642,
+        "p50Ms": 0.209375,
+        "p95Ms": 3.420083,
+        "movingMs": 2.705592013,
+        "quietMs": 0.245749983,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 5.855542,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6403 ms, worst 5.8555 ms\n  moving frames 77: mean 2.7056 ms; quiet frames 403: mean 0.2457 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 6,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.624981692,
+        "p50Ms": 0.215208,
+        "p95Ms": 3.329791,
+        "movingMs": 2.608784091,
+        "quietMs": 0.245942524,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 5.609708,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6250 ms, worst 5.6097 ms\n  moving frames 77: mean 2.6088 ms; quiet frames 403: mean 0.2459 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 6,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.770640975,
+        "p50Ms": 0.319375,
+        "p95Ms": 3.627375,
+        "movingMs": 2.923850662,
+        "quietMs": 0.359233665,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 6.041416,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7706 ms, worst 6.0414 ms\n  moving frames 77: mean 2.9239 ms; quiet frames 403: mean 0.3592 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 6,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.787070675,
+        "p50Ms": 0.324791,
+        "p95Ms": 3.686917,
+        "movingMs": 2.973455584,
+        "quietMs": 0.369324675,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 6.130541,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7871 ms, worst 6.1305 ms\n  moving frames 77: mean 2.9735 ms; quiet frames 403: mean 0.3693 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 7,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.629412269,
+        "p50Ms": 0.210417,
+        "p95Ms": 3.354,
+        "movingMs": 2.636373403,
+        "quietMs": 0.245948231,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 5.653583,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6294 ms, worst 5.6536 ms\n  moving frames 77: mean 2.6364 ms; quiet frames 403: mean 0.2459 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 7,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.7624551,
+        "p50Ms": 0.323542,
+        "p95Ms": 3.537542,
+        "movingMs": 2.831178532,
+        "quietMs": 0.367190325,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 5.702292,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7625 ms, worst 5.7023 ms\n  moving frames 77: mean 2.8312 ms; quiet frames 403: mean 0.3672 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 7,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.793696515,
+        "p50Ms": 0.333542,
+        "p95Ms": 3.6035,
+        "movingMs": 2.974029143,
+        "quietMs": 0.377106906,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 6.258084,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7937 ms, worst 6.2581 ms\n  moving frames 77: mean 2.9740 ms; quiet frames 403: mean 0.3771 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 101,
+      "repeat": 7,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.643144079,
+        "p50Ms": 0.20925,
+        "p95Ms": 3.458916,
+        "movingMs": 2.734782416,
+        "quietMs": 0.243501022,
+        "movingFrames": 77,
+        "quietFrames": 403
+      },
+      "worstStepMs": 6.160666,
+      "trajectoryHash": "f1eabbffbf4fc448",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3002,
+        "factorizations": 3000,
+        "passes": 948
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6431 ms, worst 6.1607 ms\n  moving frames 77: mean 2.7348 ms; quiet frames 403: mean 0.2435 ms\n  newton 3002, factorizations 3000, reuses 2, passes 948, analyses 58, unconverged 0, guards 0\n  final max speed 1.363e-06 m/s, kinetic energy 7.258e-13 J, floor/weight 1.051723\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 1,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.983850944,
+        "p50Ms": 0.287542,
+        "p95Ms": 3.915166,
+        "movingMs": 3.120118555,
+        "quietMs": 0.348744357,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.301459,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9839 ms, worst 9.3015 ms\n  moving frames 110: mean 3.1201 ms; quiet frames 370: mean 0.3487 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 1,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.839715892,
+        "p50Ms": 0.195792,
+        "p95Ms": 3.764042,
+        "movingMs": 2.883236382,
+        "quietMs": 0.232182773,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.4295,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8397 ms, worst 9.4295 ms\n  moving frames 110: mean 2.8832 ms; quiet frames 370: mean 0.2322 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 1,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.80828425,
+        "p50Ms": 0.191375,
+        "p95Ms": 3.592875,
+        "movingMs": 2.7484678,
+        "quietMs": 0.231472924,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 8.776375,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8083 ms, worst 8.7764 ms\n  moving frames 110: mean 2.7485 ms; quiet frames 370: mean 0.2315 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 1,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.961427083,
+        "p50Ms": 0.285416,
+        "p95Ms": 3.819375,
+        "movingMs": 3.040573864,
+        "quietMs": 0.343302365,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 8.859833,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9614 ms, worst 8.8598 ms\n  moving frames 110: mean 3.0406 ms; quiet frames 370: mean 0.3433 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 2,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.834389165,
+        "p50Ms": 0.19575,
+        "p95Ms": 3.7365,
+        "movingMs": 2.857236064,
+        "quietMs": 0.233002249,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.246,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8344 ms, worst 9.2460 ms\n  moving frames 110: mean 2.8572 ms; quiet frames 370: mean 0.2330 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 2,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.814164315,
+        "p50Ms": 0.193708,
+        "p95Ms": 3.587083,
+        "movingMs": 2.7771428,
+        "quietMs": 0.230576116,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 8.606292,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8142 ms, worst 8.6063 ms\n  moving frames 110: mean 2.7771 ms; quiet frames 370: mean 0.2306 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 2,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.952242821,
+        "p50Ms": 0.288125,
+        "p95Ms": 3.76275,
+        "movingMs": 2.996984145,
+        "quietMs": 0.344346751,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 8.869166,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9522 ms, worst 8.8692 ms\n  moving frames 110: mean 2.9970 ms; quiet frames 370: mean 0.3443 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 2,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.989101294,
+        "p50Ms": 0.285958,
+        "p95Ms": 3.943875,
+        "movingMs": 3.151042791,
+        "quietMs": 0.34636193,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.574084,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9891 ms, worst 9.5741 ms\n  moving frames 110: mean 3.1510 ms; quiet frames 370: mean 0.3464 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 3,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.811631371,
+        "p50Ms": 0.195791,
+        "p95Ms": 3.501167,
+        "movingMs": 2.752820836,
+        "quietMs": 0.234520989,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 8.731542,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8116 ms, worst 8.7315 ms\n  moving frames 110: mean 2.7528 ms; quiet frames 370: mean 0.2345 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 3,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.958657569,
+        "p50Ms": 0.28425,
+        "p95Ms": 3.706959,
+        "movingMs": 3.015192464,
+        "quietMs": 0.347255303,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.081334,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9587 ms, worst 9.0813 ms\n  moving frames 110: mean 3.0152 ms; quiet frames 370: mean 0.3473 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 3,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.97966626,
+        "p50Ms": 0.289666,
+        "p95Ms": 3.874042,
+        "movingMs": 3.109264436,
+        "quietMs": 0.346542478,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.2395,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9797 ms, worst 9.2395 ms\n  moving frames 110: mean 3.1093 ms; quiet frames 370: mean 0.3465 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 3,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.841257115,
+        "p50Ms": 0.198875,
+        "p95Ms": 3.73375,
+        "movingMs": 2.879266273,
+        "quietMs": 0.2353625,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.213958,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8413 ms, worst 9.2140 ms\n  moving frames 110: mean 2.8793 ms; quiet frames 370: mean 0.2354 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 4,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.954305294,
+        "p50Ms": 0.286042,
+        "p95Ms": 3.766708,
+        "movingMs": 3.008722709,
+        "quietMs": 0.343532549,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 8.872375,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9543 ms, worst 8.8724 ms\n  moving frames 110: mean 3.0087 ms; quiet frames 370: mean 0.3435 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 4,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.987542535,
+        "p50Ms": 0.286292,
+        "p95Ms": 3.936792,
+        "movingMs": 3.141064764,
+        "quietMs": 0.347306197,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.5325,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9875 ms, worst 9.5325 ms\n  moving frames 110: mean 3.1411 ms; quiet frames 370: mean 0.3473 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 4,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.836848113,
+        "p50Ms": 0.199666,
+        "p95Ms": 3.658083,
+        "movingMs": 2.846146582,
+        "quietMs": 0.239489108,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.1825,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8368 ms, worst 9.1825 ms\n  moving frames 110: mean 2.8461 ms; quiet frames 370: mean 0.2395 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 4,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.814830917,
+        "p50Ms": 0.2,
+        "p95Ms": 3.569875,
+        "movingMs": 2.757751145,
+        "quietMs": 0.237205984,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 8.6935,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8148 ms, worst 8.6935 ms\n  moving frames 110: mean 2.7578 ms; quiet frames 370: mean 0.2372 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 5,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.983321637,
+        "p50Ms": 0.287958,
+        "p95Ms": 3.852334,
+        "movingMs": 3.110328045,
+        "quietMs": 0.350968381,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.139375,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9833 ms, worst 9.1394 ms\n  moving frames 110: mean 3.1103 ms; quiet frames 370: mean 0.3510 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 5,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.83708641,
+        "p50Ms": 0.202834,
+        "p95Ms": 3.6345,
+        "movingMs": 2.841773927,
+        "quietMs": 0.24109823,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.295167,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8371 ms, worst 9.2952 ms\n  moving frames 110: mean 2.8418 ms; quiet frames 370: mean 0.2411 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 5,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.813854275,
+        "p50Ms": 0.198458,
+        "p95Ms": 3.61225,
+        "movingMs": 2.764556445,
+        "quietMs": 0.233915792,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 8.999084,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8139 ms, worst 8.9991 ms\n  moving frames 110: mean 2.7646 ms; quiet frames 370: mean 0.2339 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 5,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.95311095,
+        "p50Ms": 0.2925,
+        "p95Ms": 3.700417,
+        "movingMs": 2.978373127,
+        "quietMs": 0.351005978,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.169125,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9531 ms, worst 9.1691 ms\n  moving frames 110: mean 2.9784 ms; quiet frames 370: mean 0.3510 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 6,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.842057294,
+        "p50Ms": 0.20075,
+        "p95Ms": 3.75825,
+        "movingMs": 2.871809127,
+        "quietMs": 0.238617559,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.495792,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8421 ms, worst 9.4958 ms\n  moving frames 110: mean 2.8718 ms; quiet frames 370: mean 0.2386 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 6,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.811136052,
+        "p50Ms": 0.2065,
+        "p95Ms": 3.578458,
+        "movingMs": 2.739599255,
+        "quietMs": 0.237809154,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 8.936209,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8111 ms, worst 8.9362 ms\n  moving frames 110: mean 2.7396 ms; quiet frames 370: mean 0.2378 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 6,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.964195123,
+        "p50Ms": 0.290375,
+        "p95Ms": 3.883709,
+        "movingMs": 3.030479109,
+        "quietMs": 0.349894478,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.251667,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9642 ms, worst 9.2517 ms\n  moving frames 110: mean 3.0305 ms; quiet frames 370: mean 0.3499 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 6,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.98588334,
+        "p50Ms": 0.303375,
+        "p95Ms": 3.91475,
+        "movingMs": 3.091563682,
+        "quietMs": 0.359870265,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.602917,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9859 ms, worst 9.6029 ms\n  moving frames 110: mean 3.0916 ms; quiet frames 370: mean 0.3599 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 7,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.814406256,
+        "p50Ms": 0.1975,
+        "p95Ms": 3.610083,
+        "movingMs": 2.763551482,
+        "quietMs": 0.234930649,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.063666,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8144 ms, worst 9.0637 ms\n  moving frames 110: mean 2.7636 ms; quiet frames 370: mean 0.2349 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 7,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.954655021,
+        "p50Ms": 0.298583,
+        "p95Ms": 3.659208,
+        "movingMs": 2.976026855,
+        "quietMs": 0.353706638,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.184,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9547 ms, worst 9.1840 ms\n  moving frames 110: mean 2.9760 ms; quiet frames 370: mean 0.3537 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 7,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.994946546,
+        "p50Ms": 0.289459,
+        "p95Ms": 4.009334,
+        "movingMs": 3.159175064,
+        "quietMs": 0.351527257,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.791,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9949 ms, worst 9.7910 ms\n  moving frames 110: mean 3.1592 ms; quiet frames 370: mean 0.3515 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 271,
+      "repeat": 7,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.83772466,
+        "p50Ms": 0.20425,
+        "p95Ms": 3.722042,
+        "movingMs": 2.835461827,
+        "quietMs": 0.2438028,
+        "movingFrames": 110,
+        "quietFrames": 370
+      },
+      "worstStepMs": 9.060875,
+      "trajectoryHash": "85b180aebdbfc417",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 4207,
+        "factorizations": 4207,
+        "passes": 1099
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8377 ms, worst 9.0609 ms\n  moving frames 110: mean 2.8355 ms; quiet frames 370: mean 0.2438 ms\n  newton 4207, factorizations 4207, reuses 0, passes 1099, analyses 102, unconverged 0, guards 0\n  final max speed 3.354e-06 m/s, kinetic energy 1.660e-12 J, floor/weight 1.015917\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 1,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.87652519,
+        "p50Ms": 0.324458,
+        "p95Ms": 4.576917,
+        "movingMs": 2.948518419,
+        "quietMs": 0.378604336,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.776417,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8765 ms, worst 6.7764 ms\n  moving frames 93: mean 2.9485 ms; quiet frames 387: mean 0.3786 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 1,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.732733827,
+        "p50Ms": 0.209166,
+        "p95Ms": 4.413,
+        "movingMs": 2.745078849,
+        "quietMs": 0.249147039,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.866291,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7327 ms, worst 6.8663 ms\n  moving frames 93: mean 2.7451 ms; quiet frames 387: mean 0.2491 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 1,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.688025713,
+        "p50Ms": 0.201084,
+        "p95Ms": 4.069917,
+        "movingMs": 2.561616032,
+        "quietMs": 0.237783078,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.485166,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6880 ms, worst 6.4852 ms\n  moving frames 93: mean 2.5616 ms; quiet frames 387: mean 0.2378 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 1,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.855102871,
+        "p50Ms": 0.318333,
+        "p95Ms": 4.315666,
+        "movingMs": 2.856268355,
+        "quietMs": 0.374202638,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.487792,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8551 ms, worst 6.4878 ms\n  moving frames 93: mean 2.8563 ms; quiet frames 387: mean 0.3742 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 2,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.719346873,
+        "p50Ms": 0.204792,
+        "p95Ms": 4.410208,
+        "movingMs": 2.698857989,
+        "quietMs": 0.243650403,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.803792,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7193 ms, worst 6.8038 ms\n  moving frames 93: mean 2.6989 ms; quiet frames 387: mean 0.2437 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 2,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.698623027,
+        "p50Ms": 0.212041,
+        "p95Ms": 4.1185,
+        "movingMs": 2.576440892,
+        "quietMs": 0.24736447,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.193542,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6986 ms, worst 6.1935 ms\n  moving frames 93: mean 2.5764 ms; quiet frames 387: mean 0.2474 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 2,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.850874825,
+        "p50Ms": 0.319375,
+        "p95Ms": 4.274625,
+        "movingMs": 2.849258946,
+        "quietMs": 0.370642982,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.794375,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8509 ms, worst 6.7944 ms\n  moving frames 93: mean 2.8493 ms; quiet frames 387: mean 0.3706 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 2,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.870048877,
+        "p50Ms": 0.327,
+        "p95Ms": 4.463208,
+        "movingMs": 2.921482495,
+        "quietMs": 0.377068705,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.928792,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8700 ms, worst 6.9288 ms\n  moving frames 93: mean 2.9215 ms; quiet frames 387: mean 0.3771 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 3,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.702515627,
+        "p50Ms": 0.205166,
+        "p95Ms": 4.102458,
+        "movingMs": 2.614982548,
+        "quietMs": 0.242930553,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.594833,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7025 ms, worst 6.5948 ms\n  moving frames 93: mean 2.6150 ms; quiet frames 387: mean 0.2429 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 3,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.839781871,
+        "p50Ms": 0.316708,
+        "p95Ms": 4.333292,
+        "movingMs": 2.80222943,
+        "quietMs": 0.368185946,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.400833,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8398 ms, worst 6.4008 ms\n  moving frames 93: mean 2.8022 ms; quiet frames 387: mean 0.3682 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 3,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.88446944,
+        "p50Ms": 0.329625,
+        "p95Ms": 4.61175,
+        "movingMs": 2.991403645,
+        "quietMs": 0.378151917,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 7.023041,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8845 ms, worst 7.0230 ms\n  moving frames 93: mean 2.9914 ms; quiet frames 387: mean 0.3782 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 3,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.712687994,
+        "p50Ms": 0.206833,
+        "p95Ms": 4.248416,
+        "movingMs": 2.666422011,
+        "quietMs": 0.243186021,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.871166,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7127 ms, worst 6.8712 ms\n  moving frames 93: mean 2.6664 ms; quiet frames 387: mean 0.2432 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 4,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.855662588,
+        "p50Ms": 0.323375,
+        "p95Ms": 4.324125,
+        "movingMs": 2.85044443,
+        "quietMs": 0.376296408,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.635625,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8557 ms, worst 6.6356 ms\n  moving frames 93: mean 2.8504 ms; quiet frames 387: mean 0.3763 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 4,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.871801375,
+        "p50Ms": 0.321042,
+        "p95Ms": 4.551709,
+        "movingMs": 2.958407204,
+        "quietMs": 0.370368966,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.932458,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8718 ms, worst 6.9325 ms\n  moving frames 93: mean 2.9584 ms; quiet frames 387: mean 0.3704 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 4,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.718338556,
+        "p50Ms": 0.212959,
+        "p95Ms": 4.375834,
+        "movingMs": 2.667011656,
+        "quietMs": 0.250052773,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.57025,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7183 ms, worst 6.5702 ms\n  moving frames 93: mean 2.6670 ms; quiet frames 387: mean 0.2501 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 4,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.699978219,
+        "p50Ms": 0.208041,
+        "p95Ms": 4.092584,
+        "movingMs": 2.602073484,
+        "quietMs": 0.242885558,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.568208,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7000 ms, worst 6.5682 ms\n  moving frames 93: mean 2.6021 ms; quiet frames 387: mean 0.2429 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 5,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.867775131,
+        "p50Ms": 0.315875,
+        "p95Ms": 4.540625,
+        "movingMs": 2.935309957,
+        "quietMs": 0.370925677,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 7.051917,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8678 ms, worst 7.0519 ms\n  moving frames 93: mean 2.9353 ms; quiet frames 387: mean 0.3709 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 5,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.731029775,
+        "p50Ms": 0.220542,
+        "p95Ms": 4.420917,
+        "movingMs": 2.729900978,
+        "quietMs": 0.250680881,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.665583,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7310 ms, worst 6.6656 ms\n  moving frames 93: mean 2.7299 ms; quiet frames 387: mean 0.2507 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 5,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.704203733,
+        "p50Ms": 0.205,
+        "p95Ms": 4.212167,
+        "movingMs": 2.622708839,
+        "quietMs": 0.243167623,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.504208,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7042 ms, worst 6.5042 ms\n  moving frames 93: mean 2.6227 ms; quiet frames 387: mean 0.2432 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 5,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.852826742,
+        "p50Ms": 0.329125,
+        "p95Ms": 4.340541,
+        "movingMs": 2.816554624,
+        "quietMs": 0.380923142,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.520333,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8528 ms, worst 6.5203 ms\n  moving frames 93: mean 2.8166 ms; quiet frames 387: mean 0.3809 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 6,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.720562335,
+        "p50Ms": 0.2155,
+        "p95Ms": 4.347166,
+        "movingMs": 2.680916226,
+        "quietMs": 0.24946954,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.879209,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7206 ms, worst 6.8792 ms\n  moving frames 93: mean 2.6809 ms; quiet frames 387: mean 0.2495 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 6,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.693854527,
+        "p50Ms": 0.209958,
+        "p95Ms": 4.107167,
+        "movingMs": 2.558256699,
+        "quietMs": 0.245819897,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.238584,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.6939 ms, worst 6.2386 ms\n  moving frames 93: mean 2.5583 ms; quiet frames 387: mean 0.2458 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 6,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.856867225,
+        "p50Ms": 0.319,
+        "p95Ms": 4.47275,
+        "movingMs": 2.884996882,
+        "quietMs": 0.36948723,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.77875,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8569 ms, worst 6.7788 ms\n  moving frames 93: mean 2.8850 ms; quiet frames 387: mean 0.3695 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 6,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.87238619,
+        "p50Ms": 0.319708,
+        "p95Ms": 4.484833,
+        "movingMs": 2.954646516,
+        "quietMs": 0.371998049,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 7.033167,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8724 ms, worst 7.0332 ms\n  moving frames 93: mean 2.9546 ms; quiet frames 387: mean 0.3720 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 7,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.709411981,
+        "p50Ms": 0.211459,
+        "p95Ms": 4.2095,
+        "movingMs": 2.634861075,
+        "quietMs": 0.24670716,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.283791,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7094 ms, worst 6.2838 ms\n  moving frames 93: mean 2.6349 ms; quiet frames 387: mean 0.2467 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 7,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.849121875,
+        "p50Ms": 0.314209,
+        "p95Ms": 4.40025,
+        "movingMs": 2.861753559,
+        "quietMs": 0.365466199,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.672542,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8491 ms, worst 6.6725 ms\n  moving frames 93: mean 2.8618 ms; quiet frames 387: mean 0.3655 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 7,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.88296129,
+        "p50Ms": 0.323416,
+        "p95Ms": 4.640209,
+        "movingMs": 2.996510763,
+        "quietMs": 0.375054052,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.902291,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8830 ms, worst 6.9023 ms\n  moving frames 93: mean 2.9965 ms; quiet frames 387: mean 0.3751 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 314159,
+      "repeat": 7,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.717410425,
+        "p50Ms": 0.2045,
+        "p95Ms": 4.390208,
+        "movingMs": 2.689868333,
+        "quietMs": 0.243408912,
+        "movingFrames": 93,
+        "quietFrames": 387
+      },
+      "worstStepMs": 6.815459,
+      "trajectoryHash": "2250e8b8bdb6831b",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3163,
+        "factorizations": 3163,
+        "passes": 1001
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7174 ms, worst 6.8155 ms\n  moving frames 93: mean 2.6899 ms; quiet frames 387: mean 0.2434 ms\n  newton 3163, factorizations 3163, reuses 0, passes 1001, analyses 56, unconverged 1, guards 0\n  final max speed 1.976e-06 m/s, kinetic energy 8.567e-13 J, floor/weight 1.031603\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 1,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 0.998747469,
+        "p50Ms": 0.514875,
+        "p95Ms": 4.179542,
+        "movingMs": 2.819855602,
+        "quietMs": 0.501203337,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.89725,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9987 ms, worst 7.8972 ms\n  moving frames 103: mean 2.8199 ms; quiet frames 377: mean 0.5012 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 1,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.802131685,
+        "p50Ms": 0.313833,
+        "p95Ms": 3.9495,
+        "movingMs": 2.597803408,
+        "quietMs": 0.311537024,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.848959,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8021 ms, worst 7.8490 ms\n  moving frames 103: mean 2.5978 ms; quiet frames 377: mean 0.3115 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 1,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.763722288,
+        "p50Ms": 0.298167,
+        "p95Ms": 3.737708,
+        "movingMs": 2.458091777,
+        "quietMs": 0.300804363,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.574458,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7637 ms, worst 7.5745 ms\n  moving frames 103: mean 2.4581 ms; quiet frames 377: mean 0.3008 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 1,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.985985448,
+        "p50Ms": 0.521083,
+        "p95Ms": 3.962167,
+        "movingMs": 2.747718087,
+        "quietMs": 0.504663268,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.571959,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9860 ms, worst 7.5720 ms\n  moving frames 103: mean 2.7477 ms; quiet frames 377: mean 0.5047 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 2,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.793006071,
+        "p50Ms": 0.305167,
+        "p95Ms": 3.946875,
+        "movingMs": 2.580536476,
+        "quietMs": 0.304635695,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.940417,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7930 ms, worst 7.9404 ms\n  moving frames 103: mean 2.5805 ms; quiet frames 377: mean 0.3046 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 2,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.769284823,
+        "p50Ms": 0.305458,
+        "p95Ms": 3.780584,
+        "movingMs": 2.465129456,
+        "quietMs": 0.305963875,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.457791,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7693 ms, worst 7.4578 ms\n  moving frames 103: mean 2.4651 ms; quiet frames 377: mean 0.3060 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 2,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.986709615,
+        "p50Ms": 0.512708,
+        "p95Ms": 4.095583,
+        "movingMs": 2.778610417,
+        "quietMs": 0.497145204,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.670042,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9867 ms, worst 7.6700 ms\n  moving frames 103: mean 2.7786 ms; quiet frames 377: mean 0.4971 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 2,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 1.005637958,
+        "p50Ms": 0.528792,
+        "p95Ms": 4.123584,
+        "movingMs": 2.82057766,
+        "quietMs": 0.509779101,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.945375,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 1.0056 ms, worst 7.9454 ms\n  moving frames 103: mean 2.8206 ms; quiet frames 377: mean 0.5098 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 3,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.795227779,
+        "p50Ms": 0.315708,
+        "p95Ms": 4.149792,
+        "movingMs": 2.567916709,
+        "quietMs": 0.310912236,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.557625,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7952 ms, worst 7.5576 ms\n  moving frames 103: mean 2.5679 ms; quiet frames 377: mean 0.3109 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 3,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.983189519,
+        "p50Ms": 0.518625,
+        "p95Ms": 4.057625,
+        "movingMs": 2.72988834,
+        "quietMs": 0.505974721,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.44125,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9832 ms, worst 7.4413 ms\n  moving frames 103: mean 2.7299 ms; quiet frames 377: mean 0.5060 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 3,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 1.018273069,
+        "p50Ms": 0.516125,
+        "p95Ms": 4.212792,
+        "movingMs": 2.897373379,
+        "quietMs": 0.50488492,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 8.187583,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 1.0183 ms, worst 8.1876 ms\n  moving frames 103: mean 2.8974 ms; quiet frames 377: mean 0.5049 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 3,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.793990727,
+        "p50Ms": 0.312792,
+        "p95Ms": 3.885833,
+        "movingMs": 2.547146913,
+        "quietMs": 0.315011716,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.749375,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7940 ms, worst 7.7494 ms\n  moving frames 103: mean 2.5471 ms; quiet frames 377: mean 0.3150 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 4,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.992531177,
+        "p50Ms": 0.507709,
+        "p95Ms": 4.051042,
+        "movingMs": 2.794629456,
+        "quietMs": 0.500180719,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.701833,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9925 ms, worst 7.7018 ms\n  moving frames 103: mean 2.7946 ms; quiet frames 377: mean 0.5002 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 4,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 1.017845331,
+        "p50Ms": 0.541584,
+        "p95Ms": 4.223708,
+        "movingMs": 2.826373835,
+        "quietMs": 0.523738074,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.782375,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 1.0178 ms, worst 7.7824 ms\n  moving frames 103: mean 2.8264 ms; quiet frames 377: mean 0.5237 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 4,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.795298596,
+        "p50Ms": 0.306833,
+        "p95Ms": 3.93575,
+        "movingMs": 2.589005291,
+        "quietMs": 0.305240798,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.817042,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7953 ms, worst 7.8170 ms\n  moving frames 103: mean 2.5890 ms; quiet frames 377: mean 0.3052 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 4,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.772892365,
+        "p50Ms": 0.311416,
+        "p95Ms": 3.7275,
+        "movingMs": 2.45838266,
+        "quietMs": 0.312400321,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.362959,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7729 ms, worst 7.3630 ms\n  moving frames 103: mean 2.4584 ms; quiet frames 377: mean 0.3124 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 5,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 1.018961727,
+        "p50Ms": 0.523833,
+        "p95Ms": 4.1095,
+        "movingMs": 2.88734267,
+        "quietMs": 0.508502212,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 8.209875,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 1.0190 ms, worst 8.2099 ms\n  moving frames 103: mean 2.8873 ms; quiet frames 377: mean 0.5085 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 5,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.791601862,
+        "p50Ms": 0.318083,
+        "p95Ms": 3.850834,
+        "movingMs": 2.536309097,
+        "quietMs": 0.314931186,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.686917,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7916 ms, worst 7.6869 ms\n  moving frames 103: mean 2.5363 ms; quiet frames 377: mean 0.3149 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 5,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.778642975,
+        "p50Ms": 0.306834,
+        "p95Ms": 3.822709,
+        "movingMs": 2.50227232,
+        "quietMs": 0.307730979,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.5695,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7786 ms, worst 7.5695 ms\n  moving frames 103: mean 2.5023 ms; quiet frames 377: mean 0.3077 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 5,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.982384277,
+        "p50Ms": 0.522958,
+        "p95Ms": 4.01925,
+        "movingMs": 2.729904524,
+        "quietMs": 0.504945058,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.512417,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9824 ms, worst 7.5124 ms\n  moving frames 103: mean 2.7299 ms; quiet frames 377: mean 0.5049 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 6,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.800725062,
+        "p50Ms": 0.308625,
+        "p95Ms": 3.9805,
+        "movingMs": 2.600067107,
+        "quietMs": 0.309127634,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.928042,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.8007 ms, worst 7.9280 ms\n  moving frames 103: mean 2.6001 ms; quiet frames 377: mean 0.3091 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 6,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.763504873,
+        "p50Ms": 0.305333,
+        "p95Ms": 3.770834,
+        "movingMs": 2.448986262,
+        "quietMs": 0.303015263,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.2075,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7635 ms, worst 7.2075 ms\n  moving frames 103: mean 2.4490 ms; quiet frames 377: mean 0.3030 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 6,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.995838704,
+        "p50Ms": 0.520125,
+        "p95Ms": 4.120459,
+        "movingMs": 2.79385233,
+        "quietMs": 0.504604212,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.423541,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9958 ms, worst 7.4235 ms\n  moving frames 103: mean 2.7939 ms; quiet frames 377: mean 0.5046 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 6,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 1.00627675,
+        "p50Ms": 0.521625,
+        "p95Ms": 4.139875,
+        "movingMs": 2.840684039,
+        "quietMs": 0.505099162,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 8.115042,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 1.0063 ms, worst 8.1150 ms\n  moving frames 103: mean 2.8407 ms; quiet frames 377: mean 0.5051 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 7,
+      "binary": "inline",
+      "timing": {
+        "meanMs": 0.786183044,
+        "p50Ms": 0.309375,
+        "p95Ms": 3.835625,
+        "movingMs": 2.534353087,
+        "quietMs": 0.308566294,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.531167,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7862 ms, worst 7.5312 ms\n  moving frames 103: mean 2.5344 ms; quiet frames 377: mean 0.3086 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 7,
+      "binary": "baseline",
+      "timing": {
+        "meanMs": 0.978879606,
+        "p50Ms": 0.50475,
+        "p95Ms": 3.918292,
+        "movingMs": 2.740792087,
+        "quietMs": 0.497508292,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.661208,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.9789 ms, worst 7.6612 ms\n  moving frames 103: mean 2.7408 ms; quiet frames 377: mean 0.4975 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 7,
+      "binary": "blocks",
+      "timing": {
+        "meanMs": 1.02732404,
+        "p50Ms": 0.52925,
+        "p95Ms": 4.28825,
+        "movingMs": 2.906290029,
+        "quietMs": 0.513972589,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.93,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 1.0273 ms, worst 7.9300 ms\n  moving frames 103: mean 2.9063 ms; quiet frames 377: mean 0.5140 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    },
+    {
+      "seed": 8675309,
+      "repeat": 7,
+      "binary": "inline_blocks",
+      "timing": {
+        "meanMs": 0.785347323,
+        "p50Ms": 0.308084,
+        "p95Ms": 3.895416,
+        "movingMs": 2.541802117,
+        "quietMs": 0.305467101,
+        "movingFrames": 103,
+        "quietFrames": 377
+      },
+      "worstStepMs": 7.674334,
+      "trajectoryHash": "e1445e498c85aed9",
+      "work": {
+        "stepsPerSecond": 60,
+        "newtonIterations": 3267,
+        "factorizations": 3264,
+        "passes": 973
+      },
+      "stdout": "wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7853 ms, worst 7.6743 ms\n  moving frames 103: mean 2.5418 ms; quiet frames 377: mean 0.3055 ms\n  newton 3267, factorizations 3264, reuses 3, passes 973, analyses 63, unconverged 0, guards 0\n  final max speed 1.352e-05 m/s, kinetic energy 6.455e-12 J, floor/weight 1.074896\n"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrench transport viewer</title>
+<style>
+    body { margin: 0; background: #14171a; color: #d8dde2; font: 13px/1.4 -apple-system, "Segoe UI", sans-serif; }
+    #bar { display: flex; gap: 8px; align-items: center; padding: 8px 12px; flex-wrap: wrap; }
+    #status { padding: 0 12px 8px; font-variant-numeric: tabular-nums; color: #9fb0bf; min-height: 2.8em; }
+    canvas { display: block; margin: 0 auto; max-width: 100%; touch-action: none; cursor: grab; }
+    select, button { background: #262c32; color: #d8dde2; border: 1px solid #3b444d; border-radius: 4px; padding: 4px 8px; font: inherit; }
+</style>
+</head>
+<body>
+<div id="bar">
+    <label>Scene <select id="scene"></select></label>
+    <label>Solver <select id="solver"></select></label>
+    <button id="pause">Pause</button>
+    <button id="restart">Restart</button>
+    <button id="drop">Drop a rock</button>
+    <span>Drag to orbit, scroll to zoom. Bodies outside the stable set are tinted warm.</span>
+</div>
+<div id="status"></div>
+<canvas id="view" width="1100" height="640"></canvas>
+<script type="module" src="./viewer.mjs"></script>
+</body>
+</html>

@@ -1,12 +1,10 @@
 # Repository compute notes
 
-The authoritative tree is the MacBook checkout. The M4 Mini is reachable over
-ordinary Wi-Fi as `m4mini` and over the private relay as `m4mini-awdl`. Prefer
-`m4mini` for long runs because room-to-room AWDL can be unstable; retain AWDL
-as a fallback. The `m4build` helper currently uses AWDL, so for a long Wi-Fi
-run copy the required authoritative files into the existing mirror explicitly,
-run there, and copy `/tmp` results back immediately. Do not edit the mirrored
-checkout as the primary copy.
+The authoritative tree is the local checkout. For CPU-heavy builds and tests,
+use `/Users/ultimussecundai/.local/bin/m4build -- <command>`; the helper selects
+the route using `m4host` and mirrors this checkout. For read-only inspection or
+copying results, use `ssh "$(/Users/ultimussecundai/.local/bin/m4host)" ...`.
+Do not edit the mirrored tree as the primary copy or install remote software.
 
 ## CONV fixed-order family after Version 1.0
 
@@ -1708,3 +1706,25 @@ Build the small optional local native runtime with
 `make -C experiments/civilian_transport/native libmarkov.so`. Without it the public
 tracker uses the same four-state algebra in NumPy. Generated libraries are not
 source artifacts. The simple CV control is for cost comparison only.
+
+## Wrench transport standalone engine
+
+`experiments/wrench_transport/phys/` is the current C++20 engine. The adjacent
+JavaScript implementation is the historical prototype, not the native baseline.
+Preserve general convex and compound geometry: do not reshape objects to make
+stacking demonstrations pass. Preserve carried-mass and retained-load scaling.
+All native checks run on the Mini:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- sh -c \
+  '/opt/homebrew/bin/cmake -S experiments/wrench_transport/phys -B /tmp/wrench_native -DCMAKE_BUILD_TYPE=Release && \
+   /opt/homebrew/bin/cmake --build /tmp/wrench_native -j4 && \
+   /opt/homebrew/bin/ctest --test-dir /tmp/wrench_native --output-on-failure && \
+   /tmp/wrench_native/wrench_minimal'
+```
+
+Keep both the independent SAT/dense-system numerical checks and acceptance tests
+passing before trusting benchmark changes. See `NATIVE_STUDY.md` for the frozen
+baseline, matched timing protocol, discarded optimization, and reproduction.
+Run `phys_bench scene.txt result.json 60 8 replay.json` to export real native
+poses for a browser replay. A replay is not a browser port of the engine.

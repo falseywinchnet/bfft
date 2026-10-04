@@ -1,0 +1,48 @@
+cmake_minimum_required(VERSION 3.16)
+project(WrenchPhysics VERSION 0.1.0 LANGUAGES CXX)
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
+option(WRENCH_BUILD_TESTS "Build native acceptance and numerical checks" ON)
+option(WRENCH_BUILD_TOOLS "Build benchmark and minimal example" ON)
+add_library(zc_phys STATIC hull.cpp collide.cpp block_ldl.cpp solver.cpp world.cpp)
+add_library(Wrench::Physics ALIAS zc_phys)
+set_target_properties(zc_phys PROPERTIES EXPORT_NAME Physics CXX_EXTENSIONS OFF)
+target_compile_features(zc_phys PUBLIC cxx_std_20)
+target_include_directories(zc_phys PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/wrench>)
+if(MSVC)
+    target_compile_options(zc_phys PUBLIC /fp:precise PRIVATE /W4)
+else()
+    target_compile_options(zc_phys PUBLIC -ffp-contract=off PRIVATE -Wall -Wextra)
+endif()
+if(WRENCH_BUILD_TOOLS)
+    add_executable(phys_bench tools/phys_bench.cpp)
+    target_link_libraries(phys_bench PRIVATE Wrench::Physics)
+    add_executable(wrench_minimal examples/minimal.cpp)
+    target_link_libraries(wrench_minimal PRIVATE Wrench::Physics)
+endif()
+if(WRENCH_BUILD_TESTS)
+    enable_testing()
+    add_executable(phys_tests tests/phys_tests.cpp)
+    target_link_libraries(phys_tests PRIVATE Wrench::Physics)
+    add_test(NAME phys_tests COMMAND phys_tests)
+    add_executable(numerical_tests tests/numerical_tests.cpp)
+    target_link_libraries(numerical_tests PRIVATE Wrench::Physics)
+    add_test(NAME numerical_tests COMMAND numerical_tests)
+endif()
+install(TARGETS zc_phys EXPORT WrenchPhysicsTargets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(FILES physics.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/wrench)
+install(EXPORT WrenchPhysicsTargets NAMESPACE Wrench:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/WrenchPhysics)
+configure_package_config_file(WrenchPhysicsConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/WrenchPhysicsConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/WrenchPhysics)
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/WrenchPhysicsConfigVersion.cmake
+    VERSION ${PROJECT_VERSION} COMPATIBILITY SameMajorVersion)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/WrenchPhysicsConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/WrenchPhysicsConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/WrenchPhysics)
