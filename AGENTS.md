@@ -1,5 +1,23 @@
 # Repository compute notes
 
+## Recovery snapshot validation
+
+The October 3–4 recovery index, source provenance, excluded-evidence storage,
+and validation receipts are in `recovery/2026-10-03/README.md`. From the recovery
+checkout, run focused checks through the host selector with:
+
+```sh
+/Users/ultimussecundai/.local/bin/m4build -- nice -n 15 python3 recovery/2026-10-03/verify.py --phase native
+/Users/ultimussecundai/.local/bin/m4build -- nice -n 15 python3 recovery/2026-10-03/verify.py --phase python
+/Users/ultimussecundai/.local/bin/m4build -- nice -n 15 python3 recovery/2026-10-03/verify.py --phase javascript
+```
+
+The harness uses `/tmp/bfft-recovery-20261003`, defers if a physics benchmark
+is active, and resumes completed checks. Copy its JSON/text receipts home
+before another mirror sync. It reads existing optional dependencies without
+installing software. Tape is a dated active-work snapshot, not a final validated
+benchmark report; do not overwrite the continuing physics work or its mirror.
+
 The authoritative tree is the local checkout. For CPU-heavy builds and tests,
 use `/Users/ultimussecundai/.local/bin/m4build -- <command>`; the helper selects
 the route using `m4host` and mirrors this checkout. For read-only inspection or
