@@ -1,0 +1,24 @@
+/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-daa90db3ea8e/tmp/library_sources/sporco-0.2.2.post1/sporco/fft.py:21: RuntimeWarning: Module pyfftw could not be imported. FFT computations will be performed using numpy.fft, which may be substantially slower
+  warnings.warn('Module pyfftw could not be imported. FFT '
+test_budget_and_zero_residual (experiments.library_acceleration.test_adapters.Tests) ... ok
+test_rl_library_equivalence (experiments.library_acceleration.test_adapters.Tests) ... ok
+test_tangents (experiments.library_acceleration.test_adapters.Tests) ... ok
+test_tv_library_equivalence (experiments.library_acceleration.test_adapters.Tests) ... ok
+test_native_schedule (experiments.library_acceleration.test_adaptive_bpdn.Tests) ... ok
+test_no_skipped_events (experiments.library_acceleration.test_adaptive_bpdn.Tests) ... ok
+test_relaxed_quotient (experiments.library_acceleration.test_adaptive_bpdn.Tests) ... ok
+test_bound (experiments.library_acceleration.test_bpdn.Tests) ... ok
+test_library_equivalence (experiments.library_acceleration.test_bpdn.Tests) ... ok
+test_tangent (experiments.library_acceleration.test_bpdn.Tests) ... ok
+test_constant_floor (experiments.library_acceleration.test_chambolle_floor.Tests) ... ok
+test_dual_gap_identity (experiments.library_acceleration.test_chambolle_floor.Tests) ... ok
+test_certificate (experiments.library_acceleration.test_sporco.Tests) ... ok
+test_library_equivalence (experiments.library_acceleration.test_sporco.Tests) ... ok
+test_tangent_and_nonexpansive (experiments.library_acceleration.test_sporco.Tests) ... ok
+test_native_controls (experiments.library_acceleration.test_sporco_reuse.Tests) ... ok
+test_one_less_forward_transform (experiments.library_acceleration.test_sporco_reuse.Tests) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.168s
+
+OK

@@ -1,0 +1,114 @@
+[
+  {
+    "scene": "single",
+    "mode": "strict",
+    "mse": 1.5314581456517152e-15,
+    "max_error": 5.364418029785156e-07,
+    "finite": true
+  },
+  {
+    "scene": "duplicate",
+    "mode": "strict",
+    "mse": 1.5414116467752333e-15,
+    "max_error": 5.364418029785156e-07,
+    "finite": true
+  },
+  {
+    "scene": "overlap",
+    "mode": "strict",
+    "mse": 7.292220601232123e-15,
+    "max_error": 7.152557373046875e-07,
+    "finite": true
+  },
+  {
+    "scene": "depth_crossing",
+    "mode": "strict",
+    "mse": 9.100653205094294e-15,
+    "max_error": 7.152557373046875e-07,
+    "finite": true
+  },
+  {
+    "scene": "shared_edges",
+    "mode": "strict",
+    "mse": 2.1682003379679885e-15,
+    "max_error": 9.5367431640625e-07,
+    "finite": true
+  },
+  {
+    "scene": "thin_crossing",
+    "mode": "strict",
+    "mse": 1.9704498642986976e-14,
+    "max_error": 1.0523945093154907e-06,
+    "finite": true
+  },
+  {
+    "scene": "affine_shading",
+    "mode": "strict",
+    "mse": 3.958268856919037e-15,
+    "max_error": 5.364418029785156e-07,
+    "finite": true
+  },
+  {
+    "scene": "four_layers",
+    "mode": "strict",
+    "mse": 2.0212167593441765e-14,
+    "max_error": 9.08970832824707e-07,
+    "finite": true
+  },
+  {
+    "scene": "single",
+    "mode": "fast",
+    "mse": 1.293806827151806e-15,
+    "max_error": 5.364418029785156e-07,
+    "finite": true
+  },
+  {
+    "scene": "duplicate",
+    "mode": "fast",
+    "mse": 1.3177401026969164e-15,
+    "max_error": 5.364418029785156e-07,
+    "finite": true
+  },
+  {
+    "scene": "overlap",
+    "mode": "fast",
+    "mse": 1.0665176406990195e-14,
+    "max_error": 1.0728836059570312e-06,
+    "finite": true
+  },
+  {
+    "scene": "depth_crossing",
+    "mode": "fast",
+    "mse": 1.2214995923385321e-14,
+    "max_error": 1.0728836059570312e-06,
+    "finite": true
+  },
+  {
+    "scene": "shared_edges",
+    "mode": "fast",
+    "mse": 1.253635302302045e-15,
+    "max_error": 8.344650268554688e-07,
+    "finite": true
+  },
+  {
+    "scene": "thin_crossing",
+    "mode": "fast",
+    "mse": 1.9616922810867986e-14,
+    "max_error": 1.0523945093154907e-06,
+    "finite": true
+  },
+  {
+    "scene": "affine_shading",
+    "mode": "fast",
+    "mse": 5.827517936178485e-15,
+    "max_error": 7.152557373046875e-07,
+    "finite": true
+  },
+  {
+    "scene": "four_layers",
+    "mode": "fast",
+    "mse": 2.1219449590057416e-14,
+    "max_error": 9.08970832824707e-07,
+    "finite": true
+  }
+]

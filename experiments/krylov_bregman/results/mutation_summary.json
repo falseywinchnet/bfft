@@ -1,0 +1,282 @@
+{
+  "factor": [
+    {
+      "scene": "barbara",
+      "median_seconds": {
+        "enriched64": 0.9063900000000018,
+        "factor16": 0.3728246249999998,
+        "factor64": 0.8250178750000003,
+        "linear16": 0.17578520799999708,
+        "ordinary": 0.1002939999999981
+      },
+      "speedups": {
+        "enriched64": 0.11065214753031025,
+        "factor16": 0.26901120064158357,
+        "factor64": 0.12156585092171253,
+        "linear16": 0.5705485753954893,
+        "ordinary": 1.0
+      },
+      "accepted": {
+        "enriched64": null,
+        "factor16": null,
+        "factor64": null,
+        "linear16": null,
+        "ordinary": null
+      }
+    },
+    {
+      "scene": "camera",
+      "median_seconds": {
+        "enriched64": 2.2198661669999993,
+        "factor16": 0.8816354999999998,
+        "factor64": 1.8696723750000004,
+        "linear16": 0.4183004169999993,
+        "ordinary": 0.23138820800000204
+      },
+      "speedups": {
+        "enriched64": 0.10423520635602448,
+        "factor16": 0.2624533699017361,
+        "factor64": 0.12375869221472666,
+        "linear16": 0.5531627476240417,
+        "ordinary": 1.0
+      },
+      "accepted": {
+        "enriched64": null,
+        "factor16": null,
+        "factor64": null,
+        "linear16": null,
+        "ordinary": null
+      }
+    },
+    {
+      "scene": "camera_permuted",
+      "median_seconds": {
+        "enriched64": 0.35278758400000143,
+        "factor16": 0.14738262499999877,
+        "factor64": 0.3447487080000009,
+        "linear16": 0.07783458300000134,
+        "ordinary": 0.033356541999999934
+      },
+      "speedups": {
+        "enriched64": 0.09455134906334968,
+        "factor16": 0.22632614936801548,
+        "factor64": 0.0967561044492728,
+        "linear16": 0.4285568280104919,
+        "ordinary": 1.0
+      },
+      "accepted": {
+        "enriched64": null,
+        "factor16": null,
+        "factor64": null,
+        "linear16": null,
+        "ordinary": null
+      }
+    },
+    {
+      "scene": "crossing",
+      "median_seconds": {
+        "enriched64": 1.5686732919999997,
+        "factor16": 0.38190091699999584,
+        "factor64": 0.9994419580000056,
+        "linear16": 0.2718584580000041,
+        "ordinary": 0.17669720900000385
+      },
+      "speedups": {
+        "enriched64": 0.11264117895111322,
+        "factor16": 0.46267814800770896,
+        "factor64": 0.17679586852006354,
+        "linear16": 0.6499603150106928,
+        "ordinary": 1.0
+      },
+      "accepted": {
+        "enriched64": null,
+        "factor16": null,
+        "factor64": null,
+        "linear16": null,
+        "ordinary": null
+      }
+    },
+    {
+      "scene": "straight_carrier",
+      "median_seconds": {
+        "enriched64": 0.23181170799999862,
+        "factor16": 0.09984241600000132,
+        "factor64": 0.2172368750000011,
+        "linear16": 0.04731108300000031,
+        "ordinary": 0.02503233299999863
+      },
+      "speedups": {
+        "enriched64": 0.10798562857747797,
+        "factor16": 0.25071842211829387,
+        "factor64": 0.1152305887294618,
+        "linear16": 0.5291008240077376,
+        "ordinary": 1.0
+      },
+      "accepted": {
+        "enriched64": null,
+        "factor16": null,
+        "factor64": null,
+        "linear16": null,
+        "ordinary": null
+      }
+    }
+  ],
+  "increment": [
+    {
+      "kind": "meyer",
+      "scene": "barbara",
+      "median_seconds": {
+        "increment": 0.22877954199999984,
+        "increment_raw": 0.22771029199999937,
+        "linear": 0.17944245900000055,
+        "ordinary": 0.10039949999999997
+      },
+      "speedups": {
+        "increment": 0.438848242820593,
+        "increment_raw": 0.4409089247489975,
+        "linear": 0.5595080482039073,
+        "ordinary": 1.0
+      },
+      "accepted": {
+        "increment": 0,
+        "increment_raw": 0,
+        "linear": 0,
+        "ordinary": 0
+      }
+    },
+    {
+      "kind": "meyer",
+      "scene": "camera",
+      "median_seconds": {
+        "increment": 0.5733389999999998,
+        "increment_raw": 0.591114875,
+        "linear": 0.42617854200000005,
+        "ordinary": 0.23132374999999983
+      },
+      "speedups": {
+        "increment": 0.40346766921489713,
+        "increment_raw": 0.3913346792364171,
+        "linear": 0.5427860091557585,
+        "ordinary": 1.0
+      },
+      "accepted": {
+        "increment": 0,
+        "increment_raw": 0,
+        "linear": 0,
+        "ordinary": 0
+      }
+    },
+    {
+      "kind": "meyer",
+      "scene": "camera_permuted",
+      "median_seconds": {
+        "increment": 0.07970574999999958,
+        "increment_raw": 0.07955116699999998,
+        "linear": 0.07819333300000064,
+        "ordinary": 0.033488375000000126
+      },
+      "speedups": {
+        "increment": 0.42015005190968413,
+        "increment_raw": 0.4209664831189734,
+        "linear": 0.42827660255894007,
+        "ordinary": 1.0
+      },
+      "accepted": {
+        "increment": 0,
+        "increment_raw": 0,
+        "linear": 0,
+        "ordinary": 0
+      }
+    },
+    {
+      "kind": "meyer",
+      "scene": "crossing",
+      "median_seconds": {
+        "increment": 0.41772941600000024,
+        "increment_raw": 0.41831383299999914,
+        "linear": 0.2669051660000008,
+        "ordinary": 0.17518175000000014
+      },
+      "speedups": {
+        "increment": 0.41936656431205227,
+        "increment_raw": 0.41878067656443124,
+        "linear": 0.6563445459875423,
+        "ordinary": 1.0
+      },
+      "accepted": {
+        "increment": 0,
+        "increment_raw": 0,
+        "linear": 0,
+        "ordinary": 0
+      }
+    },
+    {
+      "kind": "meyer",
+      "scene": "straight_carrier",
+      "median_seconds": {
+        "increment": 0.04408533299999995,
+        "increment_raw": 0.04406883300000075,
+        "linear": 0.04731154199999921,
+        "ordinary": 0.02498516700000053
+      },
+      "speedups": {
+        "increment": 0.5667455659232643,
+        "increment_raw": 0.5669577635513994,
+        "linear": 0.5280987671042502,
+        "ordinary": 1.0
+      },
+      "accepted": {
+        "increment": 1,
+        "increment_raw": 1,
+        "linear": 0,
+        "ordinary": 0
+      }
+    },
+    {
+      "kind": "sinkhorn",
+      "scene": "image",
+      "median_seconds": {
+        "increment": 0.048625707999999435,
+        "linear": 0.03714929099999864,
+        "ordinary": 0.10181704200000041
+      },
+      "speedups": {
+        "increment": 2.0938932549835902,
+        "linear": 2.740753302667449,
+        "ordinary": 1.0
+      },
+      "accepted": {
+        "increment": 31,
+        "linear": 0,
+        "ordinary": 0
+      }
+    },
+    {
+      "kind": "sinkhorn",
+      "scene": "mixture",
+      "median_seconds": {
+        "increment": 0.019761625000001004,
+        "linear": 0.01647041699999896,
+        "ordinary": 0.04406412500000023
+      },
+      "speedups": {
+        "increment": 2.2297824698119713,
+        "linear": 2.675349689082129,
+        "ordinary": 1.0
+      },
+      "accepted": {
+        "increment": 10,
+        "linear": 0,
+        "ordinary": 0
+      }
+    }
+  ],
+  "anchor_improvement": {
+    "count": 30,
+    "factor_over_linear": 12,
+    "enriched_over_linear": 26,
+    "enriched_over_factor": 30
+  },
+  "timed_runs": 153,
+  "successful_runs": 153
+}

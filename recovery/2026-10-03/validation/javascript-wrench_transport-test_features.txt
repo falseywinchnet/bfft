@@ -1,0 +1,18 @@
+PASS  box rests on a static table  z=0.375000000 speed=1.2e-13
+PASS  static table did not move  z=0.3
+PASS  no restitution, no bounce  peak=0.000 mm
+PASS  restitution 0.5 rebounds near e^2 h  peak=75.9 mm (ideal 75)
+PASS  rolling resistance holds 1 mm past the edge  rotation=0.00e+0 deg
+PASS  rolling resistance yields 4 mm past the edge  rotation=62.1 deg
+PASS  without it 1 mm past the edge tips  rotation=63.2 deg
+PASS  held rock hangs on target  error=9.20e-3 mm tension=0.9997
+PASS  move 10 cm: no overshoot beyond 2 mm  overshoot=0.000 mm final x=0.10000
+PASS  rotate 90 degrees about z  error=0.00e+0 deg
+PASS  set-down: tension falls monotonically to slack  tension=0.048 after 2.82 s of lowering
+PASS  set-down: stack undisturbed before release  moved=2.81e-11 mm
+PASS  set-down: stack undisturbed after release  moved=3.26e-11 mm quiet=true
+PASS  shove: side force capped at 0.35 of the held weight  largest side force=0.3500 m g
+PASS  rest report: settled stack is quiet  quiet=true awake=0 KE=0
+PASS  stable set while a rock falls nearby  stable=0,1,2,3,4,5 quiet=false
+PASS  stable set once it lands  stable=0,1,2,3,4,5,6 quiet=true
+ALL PASS

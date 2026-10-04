@@ -1,0 +1,21 @@
+test_fused_identity_and_nodes (experiments.conv_fast_aa.test_augmentation.Augmentation) ... ok
+test_unseen_line_has_no_residual (experiments.conv_fast_aa.test_augmentation.Augmentation) ... ok
+test_affine_and_constant (experiments.conv_fast_aa.test_core.Invariants) ... ok
+test_conv_affine (experiments.conv_fast_aa.test_core.Invariants) ... ok
+test_coverage_independent_midpoint (experiments.conv_fast_aa.test_core.Invariants) ... ok
+test_line_integral_independent_quadrature (experiments.conv_fast_aa.test_core.Invariants) ... ok
+test_range_complement_transpose (experiments.conv_fast_aa.test_core.Invariants) ... ok
+test_tensor_rgb_invariants (experiments.conv_fast_aa.test_core.Invariants) ... ok
+test_zero_jet_exact_cancellation (experiments.conv_fast_aa.test_core.Invariants) ... ok
+test_partition_and_shared_edge (experiments.conv_fast_aa.test_geometry.GeometryChecks) ... ok
+test_random_mass_and_conservative_support (experiments.conv_fast_aa.test_geometry.GeometryChecks) ... ok
+test_subpixel_sliver (experiments.conv_fast_aa.test_geometry.GeometryChecks) ... ok
+test_depth_crossing_inside_pixel (experiments.conv_fast_aa.test_visibility.Visibility) ... ok
+test_duplicate_and_coplanar (experiments.conv_fast_aa.test_visibility.Visibility) ... ok
+test_independent_partition (experiments.conv_fast_aa.test_visibility.Visibility) ... ok
+test_overflow_is_error (experiments.conv_fast_aa.test_visibility.Visibility) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.117s
+
+OK

@@ -1,0 +1,21 @@
+test_exact_finite_geometry_and_increment_trajectory (test_closure.ClosureTests) ... ok
+test_exact_nonlinear_sources_and_global_remainder_bound (test_closure.ClosureTests) ... ok
+test_exact_rational_state_and_changing_tangent_jump (test_closure.ClosureTests) ... ok
+test_frozen_polynomial_rollout_error_certificate (test_closure.ClosureTests) ... ok
+test_gauge_and_fixed_cross_ratios (test_closure.ClosureTests) ... ok
+test_jacobian_and_its_evolution (test_closure.ClosureTests) ... ok
+test_large_block_family_exact_reduction (test_closure.ClosureTests) ... ok
+test_moving_metric_and_joint_coupling (test_closure.ClosureTests) ... ok
+test_variance_source_is_nonzero (test_closure.ClosureTests) ... ok
+test_all_methods_have_actual_marginal_certificate (test_sinkhorn.AppliedClosureTests) ... ok
+test_block_jump_and_returned_full_coupling (test_sinkhorn.AppliedClosureTests) ... ok
+test_cubic_remainder_and_evolving_reduced_derivative (test_sinkhorn.AppliedClosureTests) ... ok
+test_general_kernel_accepts_real_certified_advances (test_sinkhorn.AppliedClosureTests) ... ok
+test_true_marginal_gate_rejects_a_nonprogressing_proposal (test_sinkhorn.AppliedClosureTests) ... ok
+test_weighted_basis_and_true_second_derivative (test_sinkhorn.AppliedClosureTests) ... ok
+test_whole_trajectory_certificate_includes_escape_no_kernel_rollout (test_sinkhorn.AppliedClosureTests) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.070s
+
+OK

@@ -1,0 +1,4011 @@
+{
+  "scope": "56 declared smooth paper cases; source 17/33; point 257; area 65. Float64. No clipping or joint-current admission on either side. No new local analysis.",
+  "pointSide": 257,
+  "runtime": "3.14.6",
+  "numpy": "2.5.2",
+  "files": {
+    "/Users/ultimussecundai/bfft/experiments/conv_warp/support_range_audit/retention_study.py": "c6ac878650b93f25750f7fa2d3d559bb9503d316bd761955bc29366570c9ceeb",
+    "/Users/ultimussecundai/bfft/experiments/conv_warp/support_range_audit/faithful_blend.py": "37650dbf2420852771f02d28785715d843fa96946440703d1167904d5cdbf1ee",
+    "experiments/conv_warp/joint_reference.py": "88f034a06b00939679dbecf1cc440b90e0952300c13829186a175dfdfca64860",
+    "experiments/convstar.py": "c52be549830077fbfdf8fed99aa2aa02bf112c74e1d066290c7ed39e36685304",
+    "experiments/conv_synthetic_evidence.py": "8701c79bc2c0302e0a3dd6d62f90a69676dc3df0be943ca981a8d44049c35cc0"
+  },
+  "rows": [
+    {
+      "case": "edge-0-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "edge",
+        "angle": 7.5,
+        "phase": 0.0,
+        "offset": -0.015625
+      },
+      "quinticTruth": {
+        "mse": 0.00015438844410446207,
+        "rms": 0.012425314648106988,
+        "max": 0.0781710572147788
+      },
+      "retainedTruth": {
+        "mse": 0.0001543883685292301,
+        "rms": 0.012425311606926809,
+        "max": 0.07817105721477868
+      },
+      "directTruth": {
+        "mse": 0.00015438798961844838,
+        "rms": 0.012425296359381067,
+        "max": 0.07817105721477935
+      },
+      "quinticFactor": {
+        "mse": 1.1404637702252354e-11,
+        "rms": 3.37707531782345e-06,
+        "max": 0.00014167886768956528
+      },
+      "retainedFactor": {
+        "mse": 1.1461005358014358e-11,
+        "rms": 3.3854106631270537e-06,
+        "max": 0.00014120502050818384
+      },
+      "correction": {
+        "mse": 1.8437741055472683e-13,
+        "rms": 4.293919078822129e-07,
+        "max": 2.0704619464517737e-05
+      },
+      "quinticAreaTruth": {
+        "mse": 0.00014455927562993283,
+        "rms": 0.012023280568544212,
+        "max": 0.07382371407599272
+      },
+      "retainedAreaTruth": {
+        "mse": 0.00014455919623695076,
+        "rms": 0.012023277266908168,
+        "max": 0.07382371407599261
+      },
+      "areaCorrection": {
+        "mse": 6.770278663272535e-14,
+        "rms": 2.601975915198397e-07,
+        "max": 7.686929873754189e-06
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 4.9960036108132044e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 0.0001550002118681488,
+        "retainedMse": 0.00015500012598955478,
+        "correctionMse": 1.918504707716694e-13,
+        "maxSampledCorrection": 2.060503178388795e-05
+      },
+      "continuousRefinement16": {
+        "quinticMse": 0.00015500021186814903,
+        "retainedMse": 0.00015500012598955502,
+        "correctionMse": 1.9185047077169374e-13,
+        "maxSampledCorrection": 2.0707315896179024e-05
+      },
+      "seconds": 0.06988862506113946
+    },
+    {
+      "case": "edge-1-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "edge",
+        "angle": 7.5,
+        "phase": 0.0,
+        "offset": 0.015625
+      },
+      "quinticTruth": {
+        "mse": 0.00015438844410446098,
+        "rms": 0.012425314648106943,
+        "max": 0.07817105721477935
+      },
+      "retainedTruth": {
+        "mse": 0.00015438836852922993,
+        "rms": 0.012425311606926804,
+        "max": 0.07817105721477935
+      },
+      "directTruth": {
+        "mse": 0.00015438798961844846,
+        "rms": 0.012425296359381069,
+        "max": 0.07817105721477935
+      },
+      "quinticFactor": {
+        "mse": 1.1404637702296564e-11,
+        "rms": 3.3770753178299953e-06,
+        "max": 0.00014167886769050897
+      },
+      "retainedFactor": {
+        "mse": 1.1461005357906946e-11,
+        "rms": 3.3854106631111896e-06,
+        "max": 0.00014120502050622707
+      },
+      "correction": {
+        "mse": 1.84377410553162e-13,
+        "rms": 4.293919078803908e-07,
+        "max": 2.070461946412916e-05
+      },
+      "quinticAreaTruth": {
+        "mse": 0.00014455927562993177,
+        "rms": 0.012023280568544167,
+        "max": 0.07382371407599309
+      },
+      "retainedAreaTruth": {
+        "mse": 0.00014455919623695054,
+        "rms": 0.01202327726690816,
+        "max": 0.07382371407599297
+      },
+      "areaCorrection": {
+        "mse": 6.7702786634966e-14,
+        "rms": 2.601975915241454e-07,
+        "max": 7.686929873962356e-06
+      },
+      "truthAreaRefinement": 9.992007221626409e-16,
+      "collocationAgreement": 4.440892098500626e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 0.00015500021186814719,
+        "retainedMse": 0.00015500012598955408,
+        "correctionMse": 1.918504707699835e-13,
+        "maxSampledCorrection": 2.0605031783027528e-05
+      },
+      "continuousRefinement16": {
+        "quinticMse": 0.00015500021186814778,
+        "retainedMse": 0.00015500012598955492,
+        "correctionMse": 1.9185047077062066e-13,
+        "maxSampledCorrection": 2.0707315895651668e-05
+      },
+      "seconds": 0.05286383302882314
+    },
+    {
+      "case": "carrier-2-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 7.5,
+        "phase": 0.0,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 5.351196176579363e-06,
+        "rms": 0.00231326526290855,
+        "max": 0.008334654046434853
+      },
+      "retainedTruth": {
+        "mse": 5.351256235822961e-06,
+        "rms": 0.0023132782443586334,
+        "max": 0.008334654046435241
+      },
+      "directTruth": {
+        "mse": 5.351093504746354e-06,
+        "rms": 0.002313243070830723,
+        "max": 0.00833465404643502
+      },
+      "quinticFactor": {
+        "mse": 7.096677400210567e-11,
+        "rms": 8.424177942215232e-06,
+        "max": 0.0002904507302536885
+      },
+      "retainedFactor": {
+        "mse": 7.560557266311e-11,
+        "rms": 8.695146500382267e-06,
+        "max": 0.0002669561503261253
+      },
+      "correction": {
+        "mse": 2.289443512813721e-12,
+        "rms": 1.5130907153286353e-06,
+        "max": 5.3125237332807274e-05
+      },
+      "quinticAreaTruth": {
+        "mse": 4.847721585401506e-06,
+        "rms": 0.0022017542064003207,
+        "max": 0.007915022044795772
+      },
+      "retainedAreaTruth": {
+        "mse": 4.847776611367041e-06,
+        "rms": 0.002201766702302276,
+        "max": 0.007915022044796022
+      },
+      "areaCorrection": {
+        "mse": 8.358910790385841e-13,
+        "rms": 9.142707908702892e-07,
+        "max": 1.845194957050822e-05
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 2.886579864025407e-15,
+      "retainedAreaQuadratureCheck": 3.3306690738754696e-16,
+      "continuous": {
+        "quinticMse": 5.393088085976737e-06,
+        "retainedMse": 5.393155595706745e-06,
+        "correctionMse": 2.3821002862451245e-12,
+        "maxSampledCorrection": 5.284111983799855e-05
+      },
+      "continuousRefinement16": {
+        "quinticMse": 5.393088085976704e-06,
+        "retainedMse": 5.393155595706715e-06,
+        "correctionMse": 2.382100286248717e-12,
+        "maxSampledCorrection": 5.316878373640144e-05
+      },
+      "seconds": 0.06359262485057116
+    },
+    {
+      "case": "carrier-3-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 7.5,
+        "phase": 1.5707963267948966,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 4.877145156267255e-06,
+        "rms": 0.00220842594538899,
+        "max": 0.00844900987717312
+      },
+      "retainedTruth": {
+        "mse": 4.877134769255133e-06,
+        "rms": 0.0022084235937100322,
+        "max": 0.00844900987717312
+      },
+      "directTruth": {
+        "mse": 4.877111657029755e-06,
+        "rms": 0.0022084183609610195,
+        "max": 0.008449009877172564
+      },
+      "quinticFactor": {
+        "mse": 7.284087389549676e-11,
+        "rms": 8.534686514190005e-06,
+        "max": 0.0002538919758098279
+      },
+      "retainedFactor": {
+        "mse": 7.884953601539365e-11,
+        "rms": 8.87972612276942e-06,
+        "max": 0.0002717645754578557
+      },
+      "correction": {
+        "mse": 2.6570917251398142e-12,
+        "rms": 1.6300588103316438e-06,
+        "max": 6.107415483580514e-05
+      },
+      "quinticAreaTruth": {
+        "mse": 4.393097578080525e-06,
+        "rms": 0.002095971750305935,
+        "max": 0.007815356589310318
+      },
+      "retainedAreaTruth": {
+        "mse": 4.393077486069827e-06,
+        "rms": 0.0020959669572943717,
+        "max": 0.007815356589310984
+      },
+      "areaCorrection": {
+        "mse": 9.634371138198692e-13,
+        "rms": 9.81548324750172e-07,
+        "max": 2.1502670879303132e-05
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 2.7755575615628914e-15,
+      "retainedAreaQuadratureCheck": 3.3306690738754696e-16,
+      "continuous": {
+        "quinticMse": 4.9153245761913926e-06,
+        "retainedMse": 4.91531159825736e-06,
+        "correctionMse": 2.7646716485876686e-12,
+        "maxSampledCorrection": 6.0784497712240704e-05
+      },
+      "continuousRefinement16": {
+        "quinticMse": 4.915324576191346e-06,
+        "retainedMse": 4.9153115982573186e-06,
+        "correctionMse": 2.7646716485870664e-12,
+        "maxSampledCorrection": 6.101480342785015e-05
+      },
+      "seconds": 0.05837058392353356
+    },
+    {
+      "case": "edge-4-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "edge",
+        "angle": 22.5,
+        "phase": 0.0,
+        "offset": -0.015625
+      },
+      "quinticTruth": {
+        "mse": 0.00011289899944628761,
+        "rms": 0.010625394084281656,
+        "max": 0.06851915002957026
+      },
+      "retainedTruth": {
+        "mse": 0.00011290005600484134,
+        "rms": 0.010625443802723787,
+        "max": 0.06851912060031179
+      },
+      "directTruth": {
+        "mse": 0.0001128937650334636,
+        "rms": 0.010625147765253131,
+        "max": 0.0685191206003114
+      },
+      "quinticFactor": {
+        "mse": 3.3891299112467023e-09,
+        "rms": 5.8216234086779454e-05,
+        "max": 0.0020469194992457362
+      },
+      "retainedFactor": {
+        "mse": 3.3839242715328697e-09,
+        "rms": 5.8171507385771516e-05,
+        "max": 0.002044218199501846
+      },
+      "correction": {
+        "mse": 3.1927270461870817e-11,
+        "rms": 5.6504221489965525e-06,
+        "max": 0.00022909622938882546
+      },
+      "quinticAreaTruth": {
+        "mse": 0.00010472853917224696,
+        "rms": 0.010233696261480843,
+        "max": 0.06351913676407697
+      },
+      "retainedAreaTruth": {
+        "mse": 0.00010473041384189528,
+        "rms": 0.010233787854059477,
+        "max": 0.06351903247368215
+      },
+      "areaCorrection": {
+        "mse": 1.1472668868149588e-11,
+        "rms": 3.387132838869711e-06,
+        "max": 8.507983855998713e-05
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 6.217248937900877e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 0.00011330035983701663,
+        "retainedMse": 0.00011330163368647063,
+        "correctionMse": 3.32245741214142e-11,
+        "maxSampledCorrection": 0.0002276157395916245
+      },
+      "continuousRefinement16": {
+        "quinticMse": 0.00011330035983701671,
+        "retainedMse": 0.00011330163368647065,
+        "correctionMse": 3.322457412141974e-11,
+        "maxSampledCorrection": 0.00023032467848416172
+      },
+      "seconds": 0.04974204092286527
+    },
+    {
+      "case": "edge-5-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "edge",
+        "angle": 22.5,
+        "phase": 0.0,
+        "offset": 0.015625
+      },
+      "quinticTruth": {
+        "mse": 0.00011289899944628718,
+        "rms": 0.010625394084281635,
+        "max": 0.06851915002957021
+      },
+      "retainedTruth": {
+        "mse": 0.00011290005600484104,
+        "rms": 0.010625443802723773,
+        "max": 0.06851912060031218
+      },
+      "directTruth": {
+        "mse": 0.00011289376503346363,
+        "rms": 0.010625147765253131,
+        "max": 0.06851912060031162
+      },
+      "quinticFactor": {
+        "mse": 3.3891299112475274e-09,
+        "rms": 5.821623408678654e-05,
+        "max": 0.0020469194992461387
+      },
+      "retainedFactor": {
+        "mse": 3.383924271534476e-09,
+        "rms": 5.817150738578532e-05,
+        "max": 0.0020442181995030534
+      },
+      "correction": {
+        "mse": 3.1927270461963e-11,
+        "rms": 5.650422149004709e-06,
+        "max": 0.0002290962293892973
+      },
+      "quinticAreaTruth": {
+        "mse": 0.00010472853917224665,
+        "rms": 0.010233696261480827,
+        "max": 0.06351913676407606
+      },
+      "retainedAreaTruth": {
+        "mse": 0.00010473041384189502,
+        "rms": 0.010233787854059465,
+        "max": 0.06351903247368229
+      },
+      "areaCorrection": {
+        "mse": 1.1472668868233944e-11,
+        "rms": 3.3871328388821637e-06,
+        "max": 8.507983856020918e-05
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 3.9968028886505635e-15,
+      "retainedAreaQuadratureCheck": 5.551115123125783e-16,
+      "continuous": {
+        "quinticMse": 0.00011330035983701621,
+        "retainedMse": 0.00011330163368647041,
+        "correctionMse": 3.3224574121510796e-11,
+        "maxSampledCorrection": 0.000227615739592138
+      },
+      "continuousRefinement16": {
+        "quinticMse": 0.00011330035983701641,
+        "retainedMse": 0.00011330163368647052,
+        "correctionMse": 3.3224574121518926e-11,
+        "maxSampledCorrection": 0.0002303246784844254
+      },
+      "seconds": 0.058425874914973974
+    },
+    {
+      "case": "carrier-6-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 22.5,
+        "phase": 0.0,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 3.2168558759933585e-06,
+        "rms": 0.0017935595546268762,
+        "max": 0.00669319690769421
+      },
+      "retainedTruth": {
+        "mse": 3.2163753725131997e-06,
+        "rms": 0.001793425597150102,
+        "max": 0.00669319690769421
+      },
+      "directTruth": {
+        "mse": 3.21738575786457e-06,
+        "rms": 0.0017937072664915448,
+        "max": 0.006693196907694154
+      },
+      "quinticFactor": {
+        "mse": 7.825486410159296e-10,
+        "rms": 2.7974070869573658e-05,
+        "max": 0.0007935574222355246
+      },
+      "retainedFactor": {
+        "mse": 8.365184074971116e-10,
+        "rms": 2.8922627949360196e-05,
+        "max": 0.0007640297240408822
+      },
+      "correction": {
+        "mse": 4.5729195799240966e-11,
+        "rms": 6.762336563588133e-06,
+        "max": 0.00019418418934674664
+      },
+      "quinticAreaTruth": {
+        "mse": 2.906047269901036e-06,
+        "rms": 0.0017047132515179894,
+        "max": 0.006457252624264553
+      },
+      "retainedAreaTruth": {
+        "mse": 2.9054987299138176e-06,
+        "rms": 0.0017045523547001475,
+        "max": 0.006441134999894127
+      },
+      "areaCorrection": {
+        "mse": 1.6364569840263663e-11,
+        "rms": 4.045314553933187e-06,
+        "max": 6.778395710638208e-05
+      },
+      "truthAreaRefinement": 5.551115123125783e-16,
+      "collocationAgreement": 3.6637359812630166e-15,
+      "retainedAreaQuadratureCheck": 3.3306690738754696e-16,
+      "continuous": {
+        "quinticMse": 3.2420156048631925e-06,
+        "retainedMse": 3.241460141097812e-06,
+        "correctionMse": 4.7580740047153566e-11,
+        "maxSampledCorrection": 0.00019415490770174904
+      },
+      "continuousRefinement16": {
+        "quinticMse": 3.242015604863173e-06,
+        "retainedMse": 3.2414601410977992e-06,
+        "correctionMse": 4.758074004715223e-11,
+        "maxSampledCorrection": 0.0001957723203214745
+      },
+      "seconds": 0.06423399993218482
+    },
+    {
+      "case": "carrier-7-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 22.5,
+        "phase": 1.5707963267948966,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 3.2140624811087684e-06,
+        "rms": 0.0017927806561620326,
+        "max": 0.006705239756927384
+      },
+      "retainedTruth": {
+        "mse": 3.2144825327269356e-06,
+        "rms": 0.0017928978032021054,
+        "max": 0.006744566590378254
+      },
+      "directTruth": {
+        "mse": 3.2126795410395047e-06,
+        "rms": 0.0017923949177119157,
+        "max": 0.006661544178223511
+      },
+      "quinticFactor": {
+        "mse": 8.160456756945644e-10,
+        "rms": 2.8566513187551686e-05,
+        "max": 0.000751227655654163
+      },
+      "retainedFactor": {
+        "mse": 9.015377494642116e-10,
+        "rms": 3.002561821951734e-05,
+        "max": 0.0007403451390344262
+      },
+      "correction": {
+        "mse": 4.9822267302221764e-11,
+        "rms": 7.0584890240207754e-06,
+        "max": 0.00020512900141095303
+      },
+      "quinticAreaTruth": {
+        "mse": 2.9032638388531825e-06,
+        "rms": 0.001703896663196798,
+        "max": 0.006460225020307853
+      },
+      "retainedAreaTruth": {
+        "mse": 2.9036418536468665e-06,
+        "rms": 0.0017040075861471,
+        "max": 0.00648032048270486
+      },
+      "areaCorrection": {
+        "mse": 1.7729179636467945e-11,
+        "rms": 4.21060323902264e-06,
+        "max": 7.069590905384171e-05
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 2.9976021664879227e-15,
+      "retainedAreaQuadratureCheck": 3.3306690738754696e-16,
+      "continuous": {
+        "quinticMse": 3.2391764479378133e-06,
+        "retainedMse": 3.2396471288914612e-06,
+        "correctionMse": 5.183957758134319e-11,
+        "maxSampledCorrection": 0.00020421346622440106
+      },
+      "continuousRefinement16": {
+        "quinticMse": 3.2391764479377972e-06,
+        "retainedMse": 3.2396471288914477e-06,
+        "correctionMse": 5.183957758134592e-11,
+        "maxSampledCorrection": 0.00020646937454649184
+      },
+      "seconds": 0.05846466589719057
+    },
+    {
+      "case": "edge-8-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "edge",
+        "angle": 37.5,
+        "phase": 0.0,
+        "offset": -0.015625
+      },
+      "quinticTruth": {
+        "mse": 6.849170515875211e-05,
+        "rms": 0.00827597155376649,
+        "max": 0.06770012471620457
+      },
+      "retainedTruth": {
+        "mse": 6.848926235748598e-05,
+        "rms": 0.008275823968493166,
+        "max": 0.06770780597456683
+      },
+      "directTruth": {
+        "mse": 6.848384132510816e-05,
+        "rms": 0.008275496439797927,
+        "max": 0.06774078557733221
+      },
+      "quinticFactor": {
+        "mse": 5.1493475150666526e-09,
+        "rms": 7.1758954250091e-05,
+        "max": 0.0021870363215265587
+      },
+      "retainedFactor": {
+        "mse": 5.191259459491555e-09,
+        "rms": 7.205039527644213e-05,
+        "max": 0.002161725861443309
+      },
+      "correction": {
+        "mse": 4.183769662885027e-11,
+        "rms": 6.468206600662217e-06,
+        "max": 0.00016158747627230408
+      },
+      "quinticAreaTruth": {
+        "mse": 6.233454027262222e-05,
+        "rms": 0.007895222623373088,
+        "max": 0.06313996032371882
+      },
+      "retainedAreaTruth": {
+        "mse": 6.233175595983252e-05,
+        "rms": 0.007895046292443923,
+        "max": 0.06314147643001033
+      },
+      "areaCorrection": {
+        "mse": 1.5733804044712743e-11,
+        "rms": 3.966585943190031e-06,
+        "max": 6.00207295091415e-05
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 4.551914400963142e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 6.885188254572234e-05,
+        "retainedMse": 6.884907187610871e-05,
+        "correctionMse": 4.3535537956606036e-11,
+        "maxSampledCorrection": 0.00016052109663700076
+      },
+      "continuousRefinement16": {
+        "quinticMse": 6.885188254572226e-05,
+        "retainedMse": 6.884907187610861e-05,
+        "correctionMse": 4.353553795660361e-11,
+        "maxSampledCorrection": 0.00015894957319154135
+      },
+      "seconds": 0.03777483385056257
+    },
+    {
+      "case": "edge-9-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "edge",
+        "angle": 37.5,
+        "phase": 0.0,
+        "offset": 0.015625
+      },
+      "quinticTruth": {
+        "mse": 6.849170515875213e-05,
+        "rms": 0.00827597155376649,
+        "max": 0.06770012471620418
+      },
+      "retainedTruth": {
+        "mse": 6.848926235748558e-05,
+        "rms": 0.008275823968493141,
+        "max": 0.06770780597456777
+      },
+      "directTruth": {
+        "mse": 6.848384132510813e-05,
+        "rms": 0.008275496439797926,
+        "max": 0.06774078557733226
+      },
+      "quinticFactor": {
+        "mse": 5.1493475150670355e-09,
+        "rms": 7.175895425009367e-05,
+        "max": 0.002187036321525726
+      },
+      "retainedFactor": {
+        "mse": 5.191259459492424e-09,
+        "rms": 7.205039527644817e-05,
+        "max": 0.002161725861442476
+      },
+      "correction": {
+        "mse": 4.183769662887932e-11,
+        "rms": 6.468206600664462e-06,
+        "max": 0.0001615874762720404
+      },
+      "quinticAreaTruth": {
+        "mse": 6.233454027262222e-05,
+        "rms": 0.007895222623373088,
+        "max": 0.06313996032371816
+      },
+      "retainedAreaTruth": {
+        "mse": 6.233175595983216e-05,
+        "rms": 0.0078950462924439,
+        "max": 0.06314147643001089
+      },
+      "areaCorrection": {
+        "mse": 1.573380404462927e-11,
+        "rms": 3.966585943179508e-06,
+        "max": 6.0020729509502324e-05
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 4.6629367034256575e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 6.885188254572225e-05,
+        "retainedMse": 6.884907187610829e-05,
+        "correctionMse": 4.353553795663037e-11,
+        "maxSampledCorrection": 0.00016052109663700076
+      },
+      "continuousRefinement16": {
+        "quinticMse": 6.885188254572232e-05,
+        "retainedMse": 6.884907187610829e-05,
+        "correctionMse": 4.353553795664055e-11,
+        "maxSampledCorrection": 0.00015894957319162462
+      },
+      "nativeFloat32VsDirect": {
+        "mse": 4.577262894048863e-16,
+        "rms": 2.139453877523155e-08,
+        "max": 1.5479831971809688e-07
+      },
+      "seconds": 0.04316379106603563
+    },
+    {
+      "case": "carrier-10-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 37.5,
+        "phase": 0.0,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 1.5765358032705877e-06,
+        "rms": 0.0012556017693801597,
+        "max": 0.005572213771093071
+      },
+      "retainedTruth": {
+        "mse": 1.5760702721740998e-06,
+        "rms": 0.0012554163740266014,
+        "max": 0.005571656026185812
+      },
+      "directTruth": {
+        "mse": 1.577607350455141e-06,
+        "rms": 0.0012560284035224446,
+        "max": 0.005576367900742674
+      },
+      "quinticFactor": {
+        "mse": 1.5783260921013213e-09,
+        "rms": 3.9728152387209266e-05,
+        "max": 0.000848028231164033
+      },
+      "retainedFactor": {
+        "mse": 1.6673991547292327e-09,
+        "rms": 4.083379917089803e-05,
+        "max": 0.0008684316776305101
+      },
+      "correction": {
+        "mse": 6.768319653036e-11,
+        "rms": 8.226979793968136e-06,
+        "max": 0.00026951837180355653
+      },
+      "quinticAreaTruth": {
+        "mse": 1.4307139349815956e-06,
+        "rms": 0.0011961245482731285,
+        "max": 0.0053550293027631035
+      },
+      "retainedAreaTruth": {
+        "mse": 1.4301605448880362e-06,
+        "rms": 0.0011958931996161012,
+        "max": 0.00535469186606341
+      },
+      "areaCorrection": {
+        "mse": 2.4834902618916935e-11,
+        "rms": 4.9834629143715855e-06,
+        "max": 0.00010045245257872537
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 3.6637359812630166e-15,
+      "retainedAreaQuadratureCheck": 3.3306690738754696e-16,
+      "continuous": {
+        "quinticMse": 1.5886915147601164e-06,
+        "retainedMse": 1.5881512057207196e-06,
+        "correctionMse": 7.042352311568188e-11,
+        "maxSampledCorrection": 0.0002691186911155108
+      },
+      "continuousRefinement16": {
+        "quinticMse": 1.5886915147600984e-06,
+        "retainedMse": 1.588151205720709e-06,
+        "correctionMse": 7.042352311568406e-11,
+        "maxSampledCorrection": 0.0002706200507122114
+      },
+      "seconds": 0.043346500024199486
+    },
+    {
+      "case": "carrier-11-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 37.5,
+        "phase": 1.5707963267948966,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 1.5970574401461012e-06,
+        "rms": 0.0012637473798770469,
+        "max": 0.006151451052188506
+      },
+      "retainedTruth": {
+        "mse": 1.5969731071390488e-06,
+        "rms": 0.001263714013192482,
+        "max": 0.006151776620022975
+      },
+      "directTruth": {
+        "mse": 1.5973798828944846e-06,
+        "rms": 0.0012638749474906466,
+        "max": 0.006152844404364033
+      },
+      "quinticFactor": {
+        "mse": 1.2367815677918502e-09,
+        "rms": 3.516790536543014e-05,
+        "max": 0.0008492029510364096
+      },
+      "retainedFactor": {
+        "mse": 1.3194680616820172e-09,
+        "rms": 3.632448295133762e-05,
+        "max": 0.0008460262546634567
+      },
+      "correction": {
+        "mse": 3.948295956472415e-11,
+        "rms": 6.283546734506249e-06,
+        "max": 0.00016939518116954044
+      },
+      "quinticAreaTruth": {
+        "mse": 1.450997038251927e-06,
+        "rms": 0.0012045733843365158,
+        "max": 0.005859546935326976
+      },
+      "retainedAreaTruth": {
+        "mse": 1.4508139812707127e-06,
+        "rms": 0.0012044973977849485,
+        "max": 0.005859174722636196
+      },
+      "areaCorrection": {
+        "mse": 1.4749370554751527e-11,
+        "rms": 3.8404909262686105e-06,
+        "max": 6.83866344509676e-05
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 3.3306690738754696e-15,
+      "retainedAreaQuadratureCheck": 3.3306690738754696e-16,
+      "continuous": {
+        "quinticMse": 1.6095337507080486e-06,
+        "retainedMse": 1.609425062685108e-06,
+        "correctionMse": 4.108171002586861e-11,
+        "maxSampledCorrection": 0.00016823332685855785
+      },
+      "continuousRefinement16": {
+        "quinticMse": 1.6095337507080334e-06,
+        "retainedMse": 1.609425062685095e-06,
+        "correctionMse": 4.108171002586666e-11,
+        "maxSampledCorrection": 0.00017031210952245246
+      },
+      "nativeFloat32VsDirect": {
+        "mse": 4.2848301414273244e-14,
+        "rms": 2.0699831258798524e-07,
+        "max": 8.690520981957661e-06
+      },
+      "seconds": 0.048447541892528534
+    },
+    {
+      "case": "edge-12-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "edge",
+        "angle": 52.5,
+        "phase": 0.0,
+        "offset": -0.015625
+      },
+      "quinticTruth": {
+        "mse": 6.849170515875195e-05,
+        "rms": 0.008275971553766479,
+        "max": 0.06770012471620535
+      },
+      "retainedTruth": {
+        "mse": 6.848926235748598e-05,
+        "rms": 0.008275823968493166,
+        "max": 0.0677078059745655
+      },
+      "directTruth": {
+        "mse": 6.848384132510815e-05,
+        "rms": 0.008275496439797926,
+        "max": 0.06774078557733221
+      },
+      "quinticFactor": {
+        "mse": 5.149347515066762e-09,
+        "rms": 7.175895425009176e-05,
+        "max": 0.0021870363215266003
+      },
+      "retainedFactor": {
+        "mse": 5.191259459490713e-09,
+        "rms": 7.205039527643629e-05,
+        "max": 0.002161725861443406
+      },
+      "correction": {
+        "mse": 4.18376966288391e-11,
+        "rms": 6.4682066006613536e-06,
+        "max": 0.00016158747627226244
+      },
+      "quinticAreaTruth": {
+        "mse": 6.233454027262204e-05,
+        "rms": 0.007895222623373076,
+        "max": 0.06313996032371916
+      },
+      "retainedAreaTruth": {
+        "mse": 6.233175595983254e-05,
+        "rms": 0.007895046292443924,
+        "max": 0.06314147643000945
+      },
+      "areaCorrection": {
+        "mse": 1.5733804044646507e-11,
+        "rms": 3.966585943181681e-06,
+        "max": 6.0020729509113746e-05
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 5.440092820663267e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 6.88518825457222e-05,
+        "retainedMse": 6.884907187610877e-05,
+        "correctionMse": 4.353553795658722e-11,
+        "maxSampledCorrection": 0.00016052109663695913
+      },
+      "continuousRefinement16": {
+        "quinticMse": 6.885188254572198e-05,
+        "retainedMse": 6.884907187610864e-05,
+        "correctionMse": 4.3535537956588116e-11,
+        "maxSampledCorrection": 0.0001589495731917634
+      },
+      "seconds": 0.03955662506632507
+    },
+    {
+      "case": "edge-13-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "edge",
+        "angle": 52.5,
+        "phase": 0.0,
+        "offset": 0.015625
+      },
+      "quinticTruth": {
+        "mse": 6.849170515875248e-05,
+        "rms": 0.008275971553766512,
+        "max": 0.06770012471620385
+      },
+      "retainedTruth": {
+        "mse": 6.84892623574859e-05,
+        "rms": 0.008275823968493162,
+        "max": 0.06770780597456816
+      },
+      "directTruth": {
+        "mse": 6.848384132510813e-05,
+        "rms": 0.008275496439797926,
+        "max": 0.06774078557733221
+      },
+      "quinticFactor": {
+        "mse": 5.149347515066105e-09,
+        "rms": 7.175895425008718e-05,
+        "max": 0.002187036321525393
+      },
+      "retainedFactor": {
+        "mse": 5.191259459491901e-09,
+        "rms": 7.205039527644453e-05,
+        "max": 0.002161725861442365
+      },
+      "correction": {
+        "mse": 4.1837696628902533e-11,
+        "rms": 6.468206600666257e-06,
+        "max": 0.0001615874762725955
+      },
+      "quinticAreaTruth": {
+        "mse": 6.233454027262256e-05,
+        "rms": 0.007895222623373109,
+        "max": 0.06313996032371783
+      },
+      "retainedAreaTruth": {
+        "mse": 6.233175595983245e-05,
+        "rms": 0.007895046292443917,
+        "max": 0.06314147643001111
+      },
+      "areaCorrection": {
+        "mse": 1.5733804044662033e-11,
+        "rms": 3.966585943183638e-06,
+        "max": 6.0020729509058235e-05
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 3.885780586188048e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 6.885188254572267e-05,
+        "retainedMse": 6.884907187610863e-05,
+        "correctionMse": 4.353553795665655e-11,
+        "maxSampledCorrection": 0.00016052109663755587
+      },
+      "continuousRefinement16": {
+        "quinticMse": 6.885188254572271e-05,
+        "retainedMse": 6.884907187610865e-05,
+        "correctionMse": 4.353553795665164e-11,
+        "maxSampledCorrection": 0.0001589495731910695
+      },
+      "seconds": 0.032699499977752566
+    },
+    {
+      "case": "carrier-14-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 52.5,
+        "phase": 0.0,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 1.5765358032705167e-06,
+        "rms": 0.0012556017693801315,
+        "max": 0.005572213771092405
+      },
+      "retainedTruth": {
+        "mse": 1.5760702721740593e-06,
+        "rms": 0.0012554163740265854,
+        "max": 0.005571656026186478
+      },
+      "directTruth": {
+        "mse": 1.577607350455141e-06,
+        "rms": 0.0012560284035224446,
+        "max": 0.005576367900742674
+      },
+      "quinticFactor": {
+        "mse": 1.5783260921005234e-09,
+        "rms": 3.9728152387199223e-05,
+        "max": 0.0008480282311635889
+      },
+      "retainedFactor": {
+        "mse": 1.667399154728342e-09,
+        "rms": 4.083379917088713e-05,
+        "max": 0.0008684316776305101
+      },
+      "correction": {
+        "mse": 6.768319653035135e-11,
+        "rms": 8.22697979396761e-06,
+        "max": 0.00026951837180366756
+      },
+      "quinticAreaTruth": {
+        "mse": 1.430713934981523e-06,
+        "rms": 0.0011961245482730982,
+        "max": 0.005355029302762437
+      },
+      "retainedAreaTruth": {
+        "mse": 1.4301605448879981e-06,
+        "rms": 0.0011958931996160853,
+        "max": 0.005354691866063854
+      },
+      "areaCorrection": {
+        "mse": 2.4834902618914657e-11,
+        "rms": 4.983462914371357e-06,
+        "max": 0.00010045245257872537
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 2.7755575615628914e-15,
+      "retainedAreaQuadratureCheck": 3.3306690738754696e-16,
+      "continuous": {
+        "quinticMse": 1.5886915147600427e-06,
+        "retainedMse": 1.5881512057206794e-06,
+        "correctionMse": 7.042352311567658e-11,
+        "maxSampledCorrection": 0.0002691186911156218
+      },
+      "continuousRefinement16": {
+        "quinticMse": 1.5886915147600283e-06,
+        "retainedMse": 1.5881512057206637e-06,
+        "correctionMse": 7.042352311567553e-11,
+        "maxSampledCorrection": 0.0002706200507123224
+      },
+      "seconds": 0.0392378328833729
+    },
+    {
+      "case": "carrier-15-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 52.5,
+        "phase": 1.5707963267948966,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 1.5970574401461307e-06,
+        "rms": 0.0012637473798770586,
+        "max": 0.006151451052189172
+      },
+      "retainedTruth": {
+        "mse": 1.5969731071390113e-06,
+        "rms": 0.0012637140131924673,
+        "max": 0.006151776620024307
+      },
+      "directTruth": {
+        "mse": 1.5973798828944846e-06,
+        "rms": 0.0012638749474906466,
+        "max": 0.006152844404364033
+      },
+      "quinticFactor": {
+        "mse": 1.2367815677911348e-09,
+        "rms": 3.5167905365419974e-05,
+        "max": 0.0008492029510361876
+      },
+      "retainedFactor": {
+        "mse": 1.3194680616820166e-09,
+        "rms": 3.6324482951337606e-05,
+        "max": 0.0008460262546630126
+      },
+      "correction": {
+        "mse": 3.9482959564721986e-11,
+        "rms": 6.283546734506077e-06,
+        "max": 0.00016939518117042862
+      },
+      "quinticAreaTruth": {
+        "mse": 1.4509970382519472e-06,
+        "rms": 0.001204573384336524,
+        "max": 0.005859546935328197
+      },
+      "retainedAreaTruth": {
+        "mse": 1.450813981270679e-06,
+        "rms": 0.0012044973977849347,
+        "max": 0.00585917472263775
+      },
+      "areaCorrection": {
+        "mse": 1.4749370554755398e-11,
+        "rms": 3.8404909262691145e-06,
+        "max": 6.838663445141169e-05
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 2.7755575615628914e-15,
+      "retainedAreaQuadratureCheck": 3.3306690738754696e-16,
+      "continuous": {
+        "quinticMse": 1.6095337507080755e-06,
+        "retainedMse": 1.6094250626850723e-06,
+        "correctionMse": 4.108171002586994e-11,
+        "maxSampledCorrection": 0.00016823332685944603
+      },
+      "continuousRefinement16": {
+        "quinticMse": 1.60953375070806e-06,
+        "retainedMse": 1.6094250626850594e-06,
+        "correctionMse": 4.1081710025863004e-11,
+        "maxSampledCorrection": 0.00017031210952334064
+      },
+      "seconds": 0.03762291604653001
+    },
+    {
+      "case": "edge-16-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "edge",
+        "angle": 67.5,
+        "phase": 0.0,
+        "offset": -0.015625
+      },
+      "quinticTruth": {
+        "mse": 0.00011289899944628648,
+        "rms": 0.010625394084281602,
+        "max": 0.06851915002957093
+      },
+      "retainedTruth": {
+        "mse": 0.00011290005600484099,
+        "rms": 0.010625443802723771,
+        "max": 0.06851912060031229
+      },
+      "directTruth": {
+        "mse": 0.00011289376503346352,
+        "rms": 0.010625147765253126,
+        "max": 0.06851912060031146
+      },
+      "quinticFactor": {
+        "mse": 3.3891299112468073e-09,
+        "rms": 5.821623408678036e-05,
+        "max": 0.0020469194992462914
+      },
+      "retainedFactor": {
+        "mse": 3.383924271533515e-09,
+        "rms": 5.817150738577706e-05,
+        "max": 0.0020442181995035114
+      },
+      "correction": {
+        "mse": 3.192727046191825e-11,
+        "rms": 5.6504221490007495e-06,
+        "max": 0.00022909622938871443
+      },
+      "quinticAreaTruth": {
+        "mse": 0.00010472853917224593,
+        "rms": 0.010233696261480792,
+        "max": 0.06351913676407792
+      },
+      "retainedAreaTruth": {
+        "mse": 0.00010473041384189494,
+        "rms": 0.01023378785405946,
+        "max": 0.06351903247368276
+      },
+      "areaCorrection": {
+        "mse": 1.1472668868184392e-11,
+        "rms": 3.3871328388748487e-06,
+        "max": 8.507983856043122e-05
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 3.6637359812630166e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 0.00011330035983701582,
+        "retainedMse": 0.00011330163368647054,
+        "correctionMse": 3.3224574121463124e-11,
+        "maxSampledCorrection": 0.0002276157395916245
+      },
+      "continuousRefinement16": {
+        "quinticMse": 0.00011330035983701598,
+        "retainedMse": 0.00011330163368647045,
+        "correctionMse": 3.3224574121468545e-11,
+        "maxSampledCorrection": 0.00023032467848393967
+      },
+      "seconds": 0.03119562496431172
+    },
+    {
+      "case": "edge-17-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "edge",
+        "angle": 67.5,
+        "phase": 0.0,
+        "offset": 0.015625
+      },
+      "quinticTruth": {
+        "mse": 0.00011289899944628744,
+        "rms": 0.010625394084281647,
+        "max": 0.06851915002956865
+      },
+      "retainedTruth": {
+        "mse": 0.00011290005600484102,
+        "rms": 0.010625443802723773,
+        "max": 0.06851912060031096
+      },
+      "directTruth": {
+        "mse": 0.00011289376503346359,
+        "rms": 0.01062514776525313,
+        "max": 0.06851912060031162
+      },
+      "quinticFactor": {
+        "mse": 3.3891299112480696e-09,
+        "rms": 5.82162340867912e-05,
+        "max": 0.0020469194992462914
+      },
+      "retainedFactor": {
+        "mse": 3.3839242715349e-09,
+        "rms": 5.8171507385788965e-05,
+        "max": 0.0020442181995032477
+      },
+      "correction": {
+        "mse": 3.19272704619966e-11,
+        "rms": 5.6504221490076825e-06,
+        "max": 0.00022909622938913077
+      },
+      "quinticAreaTruth": {
+        "mse": 0.0001047285391722468,
+        "rms": 0.010233696261480834,
+        "max": 0.06351913676407517
+      },
+      "retainedAreaTruth": {
+        "mse": 0.00010473041384189499,
+        "rms": 0.010233787854059463,
+        "max": 0.06351903247368096
+      },
+      "areaCorrection": {
+        "mse": 1.1472668868210788e-11,
+        "rms": 3.387132838878745e-06,
+        "max": 8.507983856005652e-05
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 4.884981308350689e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 0.00011330035983701697,
+        "retainedMse": 0.00011330163368647067,
+        "correctionMse": 3.322457412154683e-11,
+        "maxSampledCorrection": 0.00022761573959195758
+      },
+      "continuousRefinement16": {
+        "quinticMse": 0.00011330035983701673,
+        "retainedMse": 0.00011330163368647025,
+        "correctionMse": 3.3224574121549305e-11,
+        "maxSampledCorrection": 0.00023032467848421723
+      },
+      "seconds": 0.06283962493762374
+    },
+    {
+      "case": "carrier-18-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 67.5,
+        "phase": 0.0,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 3.2168558759933327e-06,
+        "rms": 0.001793559554626869,
+        "max": 0.006693196907694043
+      },
+      "retainedTruth": {
+        "mse": 3.216375372513235e-06,
+        "rms": 0.0017934255971501117,
+        "max": 0.006693196907694321
+      },
+      "directTruth": {
+        "mse": 3.21738575786458e-06,
+        "rms": 0.0017937072664915476,
+        "max": 0.006693196907694154
+      },
+      "quinticFactor": {
+        "mse": 7.825486410163503e-10,
+        "rms": 2.797407086958118e-05,
+        "max": 0.0007935574222344144
+      },
+      "retainedFactor": {
+        "mse": 8.365184074972923e-10,
+        "rms": 2.892262794936332e-05,
+        "max": 0.0007640297240407712
+      },
+      "correction": {
+        "mse": 4.57291957992254e-11,
+        "rms": 6.762336563586982e-06,
+        "max": 0.00019418418934613602
+      },
+      "quinticAreaTruth": {
+        "mse": 2.9060472699010203e-06,
+        "rms": 0.0017047132515179849,
+        "max": 0.006457252624264276
+      },
+      "retainedAreaTruth": {
+        "mse": 2.9054987299138566e-06,
+        "rms": 0.001704552354700159,
+        "max": 0.006441134999894571
+      },
+      "areaCorrection": {
+        "mse": 1.6364569840290078e-11,
+        "rms": 4.045314553936452e-06,
+        "max": 6.778395710671514e-05
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 3.4416913763379853e-15,
+      "retainedAreaQuadratureCheck": 3.3306690738754696e-16,
+      "continuous": {
+        "quinticMse": 3.242015604863169e-06,
+        "retainedMse": 3.241460141097853e-06,
+        "correctionMse": 4.758074004713448e-11,
+        "maxSampledCorrection": 0.00019415490770124944
+      },
+      "continuousRefinement16": {
+        "quinticMse": 3.2420156048631498e-06,
+        "retainedMse": 3.2414601410978323e-06,
+        "correctionMse": 4.758074004714117e-11,
+        "maxSampledCorrection": 0.00019577232032103042
+      },
+      "seconds": 0.0920937079936266
+    },
+    {
+      "case": "carrier-19-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 67.5,
+        "phase": 1.5707963267948966,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 3.214062481108664e-06,
+        "rms": 0.0017927806561620035,
+        "max": 0.0067052397569269395
+      },
+      "retainedTruth": {
+        "mse": 3.214482532726898e-06,
+        "rms": 0.001792897803202095,
+        "max": 0.006744566590378087
+      },
+      "directTruth": {
+        "mse": 3.2126795410394997e-06,
+        "rms": 0.0017923949177119142,
+        "max": 0.006661544178223622
+      },
+      "quinticFactor": {
+        "mse": 8.160456756934056e-10,
+        "rms": 2.8566513187531404e-05,
+        "max": 0.0007512276556538855
+      },
+      "retainedFactor": {
+        "mse": 9.015377494630226e-10,
+        "rms": 3.0025618219497538e-05,
+        "max": 0.0007403451390336491
+      },
+      "correction": {
+        "mse": 4.9822267302138226e-11,
+        "rms": 7.058489024014858e-06,
+        "max": 0.00020512900141000934
+      },
+      "quinticAreaTruth": {
+        "mse": 2.9032638388530737e-06,
+        "rms": 0.001703896663196766,
+        "max": 0.006460225020307631
+      },
+      "retainedAreaTruth": {
+        "mse": 2.9036418536468267e-06,
+        "rms": 0.0017040075861470883,
+        "max": 0.006480320482704749
+      },
+      "areaCorrection": {
+        "mse": 1.7729179636511967e-11,
+        "rms": 4.210603239027867e-06,
+        "max": 7.069590905361967e-05
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 2.9976021664879227e-15,
+      "retainedAreaQuadratureCheck": 3.3306690738754696e-16,
+      "continuous": {
+        "quinticMse": 3.239176447937708e-06,
+        "retainedMse": 3.2396471288914197e-06,
+        "correctionMse": 5.183957758126073e-11,
+        "maxSampledCorrection": 0.00020421346622329084
+      },
+      "continuousRefinement16": {
+        "quinticMse": 3.2391764479376905e-06,
+        "retainedMse": 3.2396471288914142e-06,
+        "correctionMse": 5.183957758125078e-11,
+        "maxSampledCorrection": 0.00020646937454549263
+      },
+      "seconds": 0.051237500039860606
+    },
+    {
+      "case": "edge-20-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "edge",
+        "angle": 82.5,
+        "phase": 0.0,
+        "offset": -0.015625
+      },
+      "quinticTruth": {
+        "mse": 0.00015438844410446147,
+        "rms": 0.012425314648106964,
+        "max": 0.07817105721478046
+      },
+      "retainedTruth": {
+        "mse": 0.00015438836852923004,
+        "rms": 0.012425311606926807,
+        "max": 0.0781710572147804
+      },
+      "directTruth": {
+        "mse": 0.0001543879896184483,
+        "rms": 0.012425296359381064,
+        "max": 0.07817105721477946
+      },
+      "quinticFactor": {
+        "mse": 1.140463770228354e-11,
+        "rms": 3.377075317828067e-06,
+        "max": 0.00014167886769145266
+      },
+      "retainedFactor": {
+        "mse": 1.1461005357944006e-11,
+        "rms": 3.385410663116663e-06,
+        "max": 0.00014120502050685158
+      },
+      "correction": {
+        "mse": 1.843774105543483e-13,
+        "rms": 4.2939190788177214e-07,
+        "max": 2.0704619464476104e-05
+      },
+      "quinticAreaTruth": {
+        "mse": 0.00014455927562993226,
+        "rms": 0.012023280568544188,
+        "max": 0.07382371407599428
+      },
+      "retainedAreaTruth": {
+        "mse": 0.0001445591962369507,
+        "rms": 0.012023277266908166,
+        "max": 0.07382371407599422
+      },
+      "areaCorrection": {
+        "mse": 6.770278663182418e-14,
+        "rms": 2.60197591518108e-07,
+        "max": 7.686929873754189e-06
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 4.440892098500626e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 0.000155000211868149,
+        "retainedMse": 0.00015500012598955562,
+        "correctionMse": 1.9185047077131665e-13,
+        "maxSampledCorrection": 2.060503178381856e-05
+      },
+      "continuousRefinement16": {
+        "quinticMse": 0.00015500021186814906,
+        "retainedMse": 0.00015500012598955597,
+        "correctionMse": 1.9185047077127624e-13,
+        "maxSampledCorrection": 2.070731589613739e-05
+      },
+      "seconds": 0.04396308306604624
+    },
+    {
+      "case": "edge-21-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "edge",
+        "angle": 82.5,
+        "phase": 0.0,
+        "offset": 0.015625
+      },
+      "quinticTruth": {
+        "mse": 0.0001543884441044614,
+        "rms": 0.01242531464810696,
+        "max": 0.07817105721477757
+      },
+      "retainedTruth": {
+        "mse": 0.00015438836852922934,
+        "rms": 0.01242531160692678,
+        "max": 0.07817105721477757
+      },
+      "directTruth": {
+        "mse": 0.00015438798961844836,
+        "rms": 0.012425296359381065,
+        "max": 0.07817105721477946
+      },
+      "quinticFactor": {
+        "mse": 1.1404637702273395e-11,
+        "rms": 3.377075317826565e-06,
+        "max": 0.00014167886769073101
+      },
+      "retainedFactor": {
+        "mse": 1.1461005357923242e-11,
+        "rms": 3.3854106631135965e-06,
+        "max": 0.0001412050205062132
+      },
+      "correction": {
+        "mse": 1.8437741056032544e-13,
+        "rms": 4.2939190788873216e-07,
+        "max": 2.0704619464795293e-05
+      },
+      "quinticAreaTruth": {
+        "mse": 0.0001445592756299321,
+        "rms": 0.012023280568544181,
+        "max": 0.07382371407599109
+      },
+      "retainedAreaTruth": {
+        "mse": 0.00014455919623694997,
+        "rms": 0.012023277266908135,
+        "max": 0.07382371407599131
+      },
+      "areaCorrection": {
+        "mse": 6.770278663853472e-14,
+        "rms": 2.6019759153100306e-07,
+        "max": 7.686929873851334e-06
+      },
+      "truthAreaRefinement": 8.881784197001252e-16,
+      "collocationAgreement": 6.8833827526759706e-15,
+      "retainedAreaQuadratureCheck": 5.551115123125783e-16,
+      "continuous": {
+        "quinticMse": 0.0001550002118681484,
+        "retainedMse": 0.00015500012598955456,
+        "correctionMse": 1.918504707774157e-13,
+        "maxSampledCorrection": 2.0605031784026728e-05
+      },
+      "continuousRefinement16": {
+        "quinticMse": 0.000155000211868149,
+        "retainedMse": 0.0001550001259895553,
+        "correctionMse": 1.9185047077645192e-13,
+        "maxSampledCorrection": 2.070731589665087e-05
+      },
+      "seconds": 0.03688537492416799
+    },
+    {
+      "case": "carrier-22-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 82.5,
+        "phase": 0.0,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 5.351196176579521e-06,
+        "rms": 0.002313265262908584,
+        "max": 0.00833465404643488
+      },
+      "retainedTruth": {
+        "mse": 5.3512562358228905e-06,
+        "rms": 0.002313278244358618,
+        "max": 0.008334654046434964
+      },
+      "directTruth": {
+        "mse": 5.351093504746356e-06,
+        "rms": 0.0023132430708307236,
+        "max": 0.008334654046434853
+      },
+      "quinticFactor": {
+        "mse": 7.096677400218323e-11,
+        "rms": 8.424177942219835e-06,
+        "max": 0.0002904507302541326
+      },
+      "retainedFactor": {
+        "mse": 7.560557266319614e-11,
+        "rms": 8.69514650038722e-06,
+        "max": 0.0002669561503265694
+      },
+      "correction": {
+        "mse": 2.2894435128100477e-12,
+        "rms": 1.5130907153274213e-06,
+        "max": 5.312523733314034e-05
+      },
+      "quinticAreaTruth": {
+        "mse": 4.847721585401652e-06,
+        "rms": 0.002201754206400354,
+        "max": 0.007915022044796105
+      },
+      "retainedAreaTruth": {
+        "mse": 4.8477766113669605e-06,
+        "rms": 0.002201766702302258,
+        "max": 0.007915022044796216
+      },
+      "areaCorrection": {
+        "mse": 8.358910790611284e-13,
+        "rms": 9.142707908826184e-07,
+        "max": 1.845194957061924e-05
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 2.55351295663786e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 5.393088085976896e-06,
+        "retainedMse": 5.393155595706671e-06,
+        "correctionMse": 2.3821002862427346e-12,
+        "maxSampledCorrection": 5.2841119838220596e-05
+      },
+      "continuousRefinement16": {
+        "quinticMse": 5.393088085976868e-06,
+        "retainedMse": 5.393155595706641e-06,
+        "correctionMse": 2.3821002862441394e-12,
+        "maxSampledCorrection": 5.3168783736790015e-05
+      },
+      "seconds": 0.042149499990046024
+    },
+    {
+      "case": "carrier-23-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 82.5,
+        "phase": 1.5707963267948966,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 4.8771451562671866e-06,
+        "rms": 0.0022084259453889745,
+        "max": 0.008449009877172897
+      },
+      "retainedTruth": {
+        "mse": 4.87713476925506e-06,
+        "rms": 0.0022084235937100158,
+        "max": 0.008449009877173008
+      },
+      "directTruth": {
+        "mse": 4.877111657029734e-06,
+        "rms": 0.0022084183609610147,
+        "max": 0.008449009877172786
+      },
+      "quinticFactor": {
+        "mse": 7.284087389536544e-11,
+        "rms": 8.534686514182313e-06,
+        "max": 0.00025389197581004996
+      },
+      "retainedFactor": {
+        "mse": 7.88495360153568e-11,
+        "rms": 8.879726122767346e-06,
+        "max": 0.0002717645754578557
+      },
+      "correction": {
+        "mse": 2.65709172512917e-12,
+        "rms": 1.630058810328379e-06,
+        "max": 6.107415483636025e-05
+      },
+      "quinticAreaTruth": {
+        "mse": 4.393097578080448e-06,
+        "rms": 0.0020959717503059166,
+        "max": 0.007815356589308986
+      },
+      "retainedAreaTruth": {
+        "mse": 4.393077486069754e-06,
+        "rms": 0.0020959669572943544,
+        "max": 0.00781535658931043
+      },
+      "areaCorrection": {
+        "mse": 9.634371138215894e-13,
+        "rms": 9.815483247510482e-07,
+        "max": 2.1502670878859043e-05
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 3.3306690738754696e-15,
+      "retainedAreaQuadratureCheck": 3.3306690738754696e-16,
+      "continuous": {
+        "quinticMse": 4.915324576191313e-06,
+        "retainedMse": 4.915311598257288e-06,
+        "correctionMse": 2.7646716485793524e-12,
+        "maxSampledCorrection": 6.078449771290684e-05
+      },
+      "continuousRefinement16": {
+        "quinticMse": 4.9153245761912765e-06,
+        "retainedMse": 4.915311598257257e-06,
+        "correctionMse": 2.764671648578798e-12,
+        "maxSampledCorrection": 6.101480342834975e-05
+      },
+      "seconds": 0.039016291964799166
+    },
+    {
+      "case": "curved-24-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "curved",
+        "angle": 0.0,
+        "phase": 0.0,
+        "offset": -0.015625
+      },
+      "quinticTruth": {
+        "mse": 0.00011740103497144846,
+        "rms": 0.010835175816360733,
+        "max": 0.07091509302722909
+      },
+      "retainedTruth": {
+        "mse": 0.00011738473591957238,
+        "rms": 0.010834423654240791,
+        "max": 0.07091497652516487
+      },
+      "directTruth": {
+        "mse": 0.00011744156951796052,
+        "rms": 0.010837046162029601,
+        "max": 0.07091497652516365
+      },
+      "quinticFactor": {
+        "mse": 1.2298521905244893e-07,
+        "rms": 0.00035069248502420027,
+        "max": 0.010320418909768356
+      },
+      "retainedFactor": {
+        "mse": 1.2912147504047056e-07,
+        "rms": 0.00035933476736946924,
+        "max": 0.010507612870133909
+      },
+      "correction": {
+        "mse": 3.921663511055596e-10,
+        "rms": 1.9803190427442735e-05,
+        "max": 0.00046142264674289835
+      },
+      "quinticAreaTruth": {
+        "mse": 0.00010672602951122907,
+        "rms": 0.010330829081503045,
+        "max": 0.06671997806913987
+      },
+      "retainedAreaTruth": {
+        "mse": 0.00010670770839133112,
+        "rms": 0.010329942322749489,
+        "max": 0.0667200791486473
+      },
+      "areaCorrection": {
+        "mse": 1.3699291243289377e-10,
+        "rms": 1.1704397140942108e-05,
+        "max": 0.00015551868939929492
+      },
+      "truthAreaRefinement": 7.552147796019426e-11,
+      "collocationAgreement": 5.88418203051333e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 0.00011830304109896005,
+        "retainedMse": 0.00011828406014524169,
+        "correctionMse": 4.080679204569326e-10,
+        "maxSampledCorrection": 0.0004957195366376288
+      },
+      "continuousRefinement16": {
+        "quinticMse": 0.0001183030410989599,
+        "retainedMse": 0.00011828406014524148,
+        "correctionMse": 4.0806792045693365e-10,
+        "maxSampledCorrection": 0.0004714275310994387
+      },
+      "seconds": 0.041937582893297076
+    },
+    {
+      "case": "curved-25-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "curved",
+        "angle": 0.0,
+        "phase": 0.0,
+        "offset": 0.015625
+      },
+      "quinticTruth": {
+        "mse": 0.0003578771597861295,
+        "rms": 0.01891764149639509,
+        "max": 0.09578538891651511
+      },
+      "retainedTruth": {
+        "mse": 0.00035788936659955856,
+        "rms": 0.018917964124068914,
+        "max": 0.09578542298836656
+      },
+      "directTruth": {
+        "mse": 0.0003578618049062182,
+        "rms": 0.018917235657099008,
+        "max": 0.09578542298836668
+      },
+      "quinticFactor": {
+        "mse": 6.357644964932028e-09,
+        "rms": 7.973484159971743e-05,
+        "max": 0.0009200120473920187
+      },
+      "retainedFactor": {
+        "mse": 6.659724451334412e-09,
+        "rms": 8.160713480654992e-05,
+        "max": 0.0010260807634182717
+      },
+      "correction": {
+        "mse": 6.651352343609732e-10,
+        "rms": 2.5790215864954935e-05,
+        "max": 0.00044426115928752896
+      },
+      "quinticAreaTruth": {
+        "mse": 0.00032884523709029973,
+        "rms": 0.018134090467688192,
+        "max": 0.08968300743998314
+      },
+      "retainedAreaTruth": {
+        "mse": 0.0003288613579128921,
+        "rms": 0.01813453495165763,
+        "max": 0.08968303478769979
+      },
+      "areaCorrection": {
+        "mse": 2.0827542314374058e-10,
+        "rms": 1.4431750522502132e-05,
+        "max": 0.00016134676520436486
+      },
+      "truthAreaRefinement": 1.0711265208129817e-11,
+      "collocationAgreement": 4.773959005888173e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 0.0003606812263270787,
+        "retainedMse": 0.0003606955080664908,
+        "correctionMse": 6.920740151039199e-10,
+        "maxSampledCorrection": 0.0004424817800421643
+      },
+      "continuousRefinement16": {
+        "quinticMse": 0.00036068122632707976,
+        "retainedMse": 0.0003606955080664923,
+        "correctionMse": 6.920740151039321e-10,
+        "maxSampledCorrection": 0.0004436690468429122
+      },
+      "nativeFloat32VsDirect": {
+        "mse": 8.97693005058404e-14,
+        "rms": 2.996152541274232e-07,
+        "max": 9.70857996951402e-06
+      },
+      "seconds": 0.17512354208156466
+    },
+    {
+      "case": "crossing-26-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "crossing",
+        "angle": 0.0,
+        "phase": 0.0,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 2.461505469169649e-05,
+        "rms": 0.00496135613433429,
+        "max": 0.036672335239883835
+      },
+      "retainedTruth": {
+        "mse": 2.4618413383553974e-05,
+        "rms": 0.0049616946080501545,
+        "max": 0.03670189989835815
+      },
+      "directTruth": {
+        "mse": 2.4511774587614416e-05,
+        "rms": 0.0049509367383975345,
+        "max": 0.03526074405240437
+      },
+      "quinticFactor": {
+        "mse": 1.7101265668553835e-07,
+        "rms": 0.0004135367658208135,
+        "max": 0.016032317205991187
+      },
+      "retainedFactor": {
+        "mse": 1.7285224287497484e-07,
+        "rms": 0.00041575502748009537,
+        "max": 0.016047401076902945
+      },
+      "correction": {
+        "mse": 5.935761782781314e-10,
+        "rms": 2.436341885446563e-05,
+        "max": 0.0009524802226694717
+      },
+      "quinticAreaTruth": {
+        "mse": 2.3683930278517194e-05,
+        "rms": 0.004866613841113469,
+        "max": 0.03493066634895786
+      },
+      "retainedAreaTruth": {
+        "mse": 2.368752800667691e-05,
+        "rms": 0.004866983460694818,
+        "max": 0.03494213968054388
+      },
+      "areaCorrection": {
+        "mse": 2.779143852089739e-10,
+        "rms": 1.6670764385863472e-05,
+        "max": 0.00035130972742741795
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 3.6637359812630166e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 2.4721743500014382e-05,
+        "retainedMse": 2.4725392033069586e-05,
+        "correctionMse": 6.177136007928762e-10,
+        "maxSampledCorrection": 0.0009463054808394045
+      },
+      "continuousRefinement16": {
+        "quinticMse": 2.472174350001434e-05,
+        "retainedMse": 2.4725392033069586e-05,
+        "correctionMse": 6.177136007928523e-10,
+        "maxSampledCorrection": 0.0009491095551129591
+      },
+      "seconds": 0.07051099999807775
+    },
+    {
+      "case": "crossing-27-17",
+      "sourceSide": 17,
+      "parameters": {
+        "kind": "crossing",
+        "angle": 0.0,
+        "phase": 1.5707963267948966,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 2.116862858530035e-05,
+        "rms": 0.0046009377941133205,
+        "max": 0.023185698239400865
+      },
+      "retainedTruth": {
+        "mse": 2.1168038493704106e-05,
+        "rms": 0.0046008736663490455,
+        "max": 0.02318569823940031
+      },
+      "directTruth": {
+        "mse": 2.1234614070871e-05,
+        "rms": 0.004608103088134097,
+        "max": 0.023185698239399866
+      },
+      "quinticFactor": {
+        "mse": 4.156596254867654e-08,
+        "rms": 0.00020387732230112436,
+        "max": 0.005970817013866758
+      },
+      "retainedFactor": {
+        "mse": 4.184973039149847e-08,
+        "rms": 0.00020457206649857765,
+        "max": 0.005907582246371668
+      },
+      "correction": {
+        "mse": 2.860246235654908e-10,
+        "rms": 1.6912262520594066e-05,
+        "max": 0.0006435206266727223
+      },
+      "quinticAreaTruth": {
+        "mse": 2.0101016657984714e-05,
+        "rms": 0.004483415735573126,
+        "max": 0.02153124023098585
+      },
+      "retainedAreaTruth": {
+        "mse": 2.0098697508456473e-05,
+        "rms": 0.004483157091654995,
+        "max": 0.021531240230985516
+      },
+      "areaCorrection": {
+        "mse": 1.1568323037378248e-10,
+        "rms": 1.0755613900367681e-05,
+        "max": 0.00023349545352568946
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 3.219646771412954e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 2.1249831767739807e-05,
+        "retainedMse": 2.124899329388467e-05,
+        "correctionMse": 2.9770459970109724e-10,
+        "maxSampledCorrection": 0.0006404707797460496
+      },
+      "continuousRefinement16": {
+        "quinticMse": 2.1249831767739746e-05,
+        "retainedMse": 2.1248993293884634e-05,
+        "correctionMse": 2.977045997010751e-10,
+        "maxSampledCorrection": 0.000638922723881552
+      },
+      "nativeFloat32VsDirect": {
+        "mse": 1.3883460114346338e-15,
+        "rms": 3.7260515447785125e-08,
+        "max": 2.2201226179685563e-07
+      },
+      "seconds": 0.05748374992981553
+    },
+    {
+      "case": "edge-0-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "edge",
+        "angle": 7.5,
+        "phase": 0.0,
+        "offset": -0.0078125
+      },
+      "quinticTruth": {
+        "mse": 2.1632275594171332e-06,
+        "rms": 0.0014707914738048807,
+        "max": 0.010134161068462544
+      },
+      "retainedTruth": {
+        "mse": 2.163227559417155e-06,
+        "rms": 0.001470791473804888,
+        "max": 0.010134161068463043
+      },
+      "directTruth": {
+        "mse": 2.1632275594171184e-06,
+        "rms": 0.0014707914738048757,
+        "max": 0.010134161068462377
+      },
+      "quinticFactor": {
+        "mse": 5.164455720293861e-31,
+        "rms": 7.186414766970983e-16,
+        "max": 1.2545520178264269e-14
+      },
+      "retainedFactor": {
+        "mse": 5.0684056466987784e-31,
+        "rms": 7.119273591244249e-16,
+        "max": 1.099120794378905e-14
+      },
+      "correction": {
+        "mse": 3.098794045911906e-31,
+        "rms": 5.566681278744011e-16,
+        "max": 5.10702591327572e-15
+      },
+      "quinticAreaTruth": {
+        "mse": 1.6052282712107995e-06,
+        "rms": 0.0012669760341895973,
+        "max": 0.00884647235772651
+      },
+      "retainedAreaTruth": {
+        "mse": 1.6052282712108187e-06,
+        "rms": 0.0012669760341896049,
+        "max": 0.008846472357727175
+      },
+      "areaCorrection": {
+        "mse": 1.8775464816115659e-31,
+        "rms": 4.333066444922771e-16,
+        "max": 3.552713678800501e-15
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 5.218048215738236e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 2.1717371669805425e-06,
+        "retainedMse": 2.1717371669805624e-06,
+        "correctionMse": 3.1654185975505248e-31,
+        "maxSampledCorrection": 5.218048215738236e-15
+      },
+      "continuousRefinement16": {
+        "quinticMse": 2.1717371669805345e-06,
+        "retainedMse": 2.171737166980557e-06,
+        "correctionMse": 3.1600249539495317e-31,
+        "maxSampledCorrection": 4.9960036108132044e-15
+      },
+      "seconds": 0.08272187504917383
+    },
+    {
+      "case": "edge-1-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "edge",
+        "angle": 7.5,
+        "phase": 0.0,
+        "offset": 0.0078125
+      },
+      "quinticTruth": {
+        "mse": 2.1632275594171443e-06,
+        "rms": 0.0014707914738048846,
+        "max": 0.010134161068463543
+      },
+      "retainedTruth": {
+        "mse": 2.1632275594171235e-06,
+        "rms": 0.0014707914738048774,
+        "max": 0.010134161068463099
+      },
+      "directTruth": {
+        "mse": 2.1632275594171256e-06,
+        "rms": 0.001470791473804878,
+        "max": 0.010134161068462322
+      },
+      "quinticFactor": {
+        "mse": 4.81389526859535e-31,
+        "rms": 6.938224029674561e-16,
+        "max": 4.218847493575595e-15
+      },
+      "retainedFactor": {
+        "mse": 4.7177629954739575e-31,
+        "rms": 6.868597378995188e-16,
+        "max": 4.773959005888173e-15
+      },
+      "correction": {
+        "mse": 3.0056815775238266e-31,
+        "rms": 5.482409668680212e-16,
+        "max": 4.551914400963142e-15
+      },
+      "quinticAreaTruth": {
+        "mse": 1.6052282712108115e-06,
+        "rms": 0.001266976034189602,
+        "max": 0.008846472357727175
+      },
+      "retainedAreaTruth": {
+        "mse": 1.6052282712107973e-06,
+        "rms": 0.0012669760341895964,
+        "max": 0.008846472357727286
+      },
+      "areaCorrection": {
+        "mse": 1.8653158008215413e-31,
+        "rms": 4.318930192561048e-16,
+        "max": 3.1086244689504383e-15
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 4.3298697960381105e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 2.171737166980553e-06,
+        "retainedMse": 2.1717371669805328e-06,
+        "correctionMse": 3.067285929276317e-31,
+        "maxSampledCorrection": 4.440892098500626e-15
+      },
+      "continuousRefinement16": {
+        "quinticMse": 2.171737166980543e-06,
+        "retainedMse": 2.1717371669805235e-06,
+        "correctionMse": 3.0635148412354655e-31,
+        "maxSampledCorrection": 4.440892098500626e-15
+      },
+      "seconds": 0.07376454211771488
+    },
+    {
+      "case": "carrier-2-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 7.5,
+        "phase": 0.0,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 8.48631501866158e-09,
+        "rms": 9.212119744478781e-05,
+        "max": 0.0008581314864684053
+      },
+      "retainedTruth": {
+        "mse": 8.486350573309266e-09,
+        "rms": 9.212139042214498e-05,
+        "max": 0.0008581314864681833
+      },
+      "directTruth": {
+        "mse": 8.485875955088848e-09,
+        "rms": 9.211881433827102e-05,
+        "max": 0.0008581314864680722
+      },
+      "quinticFactor": {
+        "mse": 5.348224370915338e-13,
+        "rms": 7.313155523380682e-07,
+        "max": 4.9455950440036034e-05
+      },
+      "retainedFactor": {
+        "mse": 5.554860439157687e-13,
+        "rms": 7.453093612157093e-07,
+        "max": 5.0823892780382796e-05
+      },
+      "correction": {
+        "mse": 6.22565124922305e-15,
+        "rms": 7.890279620661774e-08,
+        "max": 4.5159953489526394e-06
+      },
+      "quinticAreaTruth": {
+        "mse": 5.444328356365975e-09,
+        "rms": 7.378569208434637e-05,
+        "max": 0.0007691920862656909
+      },
+      "retainedAreaTruth": {
+        "mse": 5.444346861713881e-09,
+        "rms": 7.378581748353731e-05,
+        "max": 0.0007691920862656909
+      },
+      "areaCorrection": {
+        "mse": 2.1963472376537474e-15,
+        "rms": 4.686520284447457e-08,
+        "max": 1.2658043412328013e-06
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 2.9976021664879227e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 8.552721981265217e-09,
+        "retainedMse": 8.552768749831974e-09,
+        "correctionMse": 9.792989808876626e-15,
+        "maxSampledCorrection": 6.698290626383496e-06
+      },
+      "continuousRefinement16": {
+        "quinticMse": 8.552721981263275e-09,
+        "retainedMse": 8.552768749830063e-09,
+        "correctionMse": 9.792989808862434e-15,
+        "maxSampledCorrection": 6.719990606196546e-06
+      },
+      "seconds": 0.10350437485612929
+    },
+    {
+      "case": "carrier-3-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 7.5,
+        "phase": 1.5707963267948966,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 9.7793594739441e-09,
+        "rms": 9.889064401622683e-05,
+        "max": 0.0009602777394881468
+      },
+      "retainedTruth": {
+        "mse": 9.77966170511097e-09,
+        "rms": 9.889217211241227e-05,
+        "max": 0.0009602782605349636
+      },
+      "directTruth": {
+        "mse": 9.778127493872727e-09,
+        "rms": 9.88844148178707e-05,
+        "max": 0.0009602961468170856
+      },
+      "quinticFactor": {
+        "mse": 5.244175478917129e-13,
+        "rms": 7.241667956290961e-07,
+        "max": 4.972021086291356e-05
+      },
+      "retainedFactor": {
+        "mse": 5.391372706046934e-13,
+        "rms": 7.342596751863018e-07,
+        "max": 4.8071454609888153e-05
+      },
+      "correction": {
+        "mse": 7.181936812711912e-15,
+        "rms": 8.474630854917465e-08,
+        "max": 4.447135147689352e-06
+      },
+      "quinticAreaTruth": {
+        "mse": 6.75059506802668e-09,
+        "rms": 8.21620050146458e-05,
+        "max": 0.0008434376412508882
+      },
+      "retainedAreaTruth": {
+        "mse": 6.751024868416748e-09,
+        "rms": 8.216462053960177e-05,
+        "max": 0.0008436533038334582
+      },
+      "areaCorrection": {
+        "mse": 2.5199064757708396e-15,
+        "rms": 5.019867005978186e-08,
+        "max": 1.2429032970606713e-06
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 3.1086244689504383e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 9.856428780726199e-09,
+        "retainedMse": 9.856960383402183e-09,
+        "correctionMse": 1.1295740793813977e-14,
+        "maxSampledCorrection": 6.594691040473499e-06
+      },
+      "continuousRefinement16": {
+        "quinticMse": 9.85642878072456e-09,
+        "retainedMse": 9.85696038340057e-09,
+        "correctionMse": 1.1295740793894983e-14,
+        "maxSampledCorrection": 6.618645340683571e-06
+      },
+      "seconds": 0.08843150013126433
+    },
+    {
+      "case": "edge-4-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "edge",
+        "angle": 22.5,
+        "phase": 0.0,
+        "offset": -0.0078125
+      },
+      "quinticTruth": {
+        "mse": 1.3519807941263512e-06,
+        "rms": 0.0011627470894938208,
+        "max": 0.009212056228243448
+      },
+      "retainedTruth": {
+        "mse": 1.351980794126336e-06,
+        "rms": 0.0011627470894938143,
+        "max": 0.009212056228243226
+      },
+      "directTruth": {
+        "mse": 1.3519807941263328e-06,
+        "rms": 0.0011627470894938128,
+        "max": 0.009212056228242727
+      },
+      "quinticFactor": {
+        "mse": 4.993937483001327e-31,
+        "rms": 7.066779664742157e-16,
+        "max": 5.218048215738236e-15
+      },
+      "retainedFactor": {
+        "mse": 4.190435101345796e-31,
+        "rms": 6.473357012667999e-16,
+        "max": 5.662137425588298e-15
+      },
+      "correction": {
+        "mse": 3.1616321867395343e-31,
+        "rms": 5.622839306559929e-16,
+        "max": 4.773959005888173e-15
+      },
+      "quinticAreaTruth": {
+        "mse": 9.775269729582682e-07,
+        "rms": 0.0009886996373814792,
+        "max": 0.007730627027475789
+      },
+      "retainedAreaTruth": {
+        "mse": 9.77526972958255e-07,
+        "rms": 0.0009886996373814723,
+        "max": 0.007730627027475734
+      },
+      "areaCorrection": {
+        "mse": 1.9106319067698074e-31,
+        "rms": 4.371077563679015e-16,
+        "max": 3.4416913763379853e-15
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 4.3298697960381105e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 1.3571869544999906e-06,
+        "retainedMse": 1.3571869544999754e-06,
+        "correctionMse": 3.230517062309308e-31,
+        "maxSampledCorrection": 4.773959005888173e-15
+      },
+      "continuousRefinement16": {
+        "quinticMse": 1.3571869544999875e-06,
+        "retainedMse": 1.3571869544999699e-06,
+        "correctionMse": 3.237398427115418e-31,
+        "maxSampledCorrection": 4.6629367034256575e-15
+      },
+      "seconds": 0.07031883392482996
+    },
+    {
+      "case": "edge-5-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "edge",
+        "angle": 22.5,
+        "phase": 0.0,
+        "offset": 0.0078125
+      },
+      "quinticTruth": {
+        "mse": 1.3519807941263336e-06,
+        "rms": 0.0011627470894938132,
+        "max": 0.00921205622824084
+      },
+      "retainedTruth": {
+        "mse": 1.3519807941263357e-06,
+        "rms": 0.001162747089493814,
+        "max": 0.009212056228241616
+      },
+      "directTruth": {
+        "mse": 1.3519807941263324e-06,
+        "rms": 0.0011627470894938128,
+        "max": 0.009212056228242504
+      },
+      "quinticFactor": {
+        "mse": 4.835728734120322e-31,
+        "rms": 6.953940418295458e-16,
+        "max": 5.10702591327572e-15
+      },
+      "retainedFactor": {
+        "mse": 4.286951108332472e-31,
+        "rms": 6.54748127781399e-16,
+        "max": 5.329070518200751e-15
+      },
+      "correction": {
+        "mse": 3.0627803019048213e-31,
+        "rms": 5.534239154486208e-16,
+        "max": 4.9960036108132044e-15
+      },
+      "quinticAreaTruth": {
+        "mse": 9.77526972958262e-07,
+        "rms": 0.000988699637381476,
+        "max": 0.007730627027473291
+      },
+      "retainedAreaTruth": {
+        "mse": 9.775269729582642e-07,
+        "rms": 0.000988699637381477,
+        "max": 0.0077306270274741795
+      },
+      "areaCorrection": {
+        "mse": 1.9099627315843965e-31,
+        "rms": 4.370312038727208e-16,
+        "max": 3.3306690738754696e-15
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 4.6629367034256575e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 1.3571869544999726e-06,
+        "retainedMse": 1.3571869544999754e-06,
+        "correctionMse": 3.136821898905562e-31,
+        "maxSampledCorrection": 4.9960036108132044e-15
+      },
+      "continuousRefinement16": {
+        "quinticMse": 1.357186954499969e-06,
+        "retainedMse": 1.3571869544999712e-06,
+        "correctionMse": 3.1283443265443835e-31,
+        "maxSampledCorrection": 4.9960036108132044e-15
+      },
+      "seconds": 0.06524912500753999
+    },
+    {
+      "case": "carrier-6-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 22.5,
+        "phase": 0.0,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 7.1431757179118314e-09,
+        "rms": 8.451731016727776e-05,
+        "max": 0.0009329446499669602
+      },
+      "retainedTruth": {
+        "mse": 7.144217367977669e-09,
+        "rms": 8.4523472290114e-05,
+        "max": 0.0009327982723615902
+      },
+      "directTruth": {
+        "mse": 7.148692828281123e-09,
+        "rms": 8.454994280471823e-05,
+        "max": 0.0009331310625845246
+      },
+      "quinticFactor": {
+        "mse": 5.138238633228514e-12,
+        "rms": 2.266768323677679e-06,
+        "max": 0.00016064189423131703
+      },
+      "retainedFactor": {
+        "mse": 5.411503543941752e-12,
+        "rms": 2.3262638594840767e-06,
+        "max": 0.00016498132671971533
+      },
+      "correction": {
+        "mse": 1.3454125937914488e-13,
+        "rms": 3.6679866327338883e-07,
+        "max": 1.9621581247630804e-05
+      },
+      "quinticAreaTruth": {
+        "mse": 5.230828321177541e-09,
+        "rms": 7.232446557823667e-05,
+        "max": 0.0008314876537704463
+      },
+      "retainedAreaTruth": {
+        "mse": 5.232258701102051e-09,
+        "rms": 7.233435353344945e-05,
+        "max": 0.0008313993194175584
+      },
+      "areaCorrection": {
+        "mse": 4.439970182166828e-14,
+        "rms": 2.1071236750999758e-07,
+        "max": 5.434029293260867e-06
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 3.6637359812630166e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 7.196755491976366e-09,
+        "retainedMse": 7.198550986196385e-09,
+        "correctionMse": 2.1166989717348107e-13,
+        "maxSampledCorrection": 2.904325644093042e-05
+      },
+      "continuousRefinement16": {
+        "quinticMse": 7.196755491975487e-09,
+        "retainedMse": 7.198550986195594e-09,
+        "correctionMse": 2.1166989717349375e-13,
+        "maxSampledCorrection": 2.9393126564025707e-05
+      },
+      "seconds": 0.08455191715620458
+    },
+    {
+      "case": "carrier-7-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 22.5,
+        "phase": 1.5707963267948966,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 6.993940227666105e-09,
+        "rms": 8.362978074625154e-05,
+        "max": 0.0009181812962333336
+      },
+      "retainedTruth": {
+        "mse": 6.994090469804035e-09,
+        "rms": 8.363067899882217e-05,
+        "max": 0.0009182518941937001
+      },
+      "directTruth": {
+        "mse": 6.984358454321205e-09,
+        "rms": 8.357247426229048e-05,
+        "max": 0.0009132338568140219
+      },
+      "quinticFactor": {
+        "mse": 4.3426323755188044e-12,
+        "rms": 2.0838983601699013e-06,
+        "max": 0.00012351308429509045
+      },
+      "retainedFactor": {
+        "mse": 4.515636993641672e-12,
+        "rms": 2.1250028220314608e-06,
+        "max": 0.00011875930517218913
+      },
+      "correction": {
+        "mse": 1.2618307358289745e-13,
+        "rms": 3.552225690787361e-07,
+        "max": 1.8335675966207887e-05
+      },
+      "quinticAreaTruth": {
+        "mse": 5.0770398563945255e-09,
+        "rms": 7.125334979069072e-05,
+        "max": 0.0007655521086638029
+      },
+      "retainedAreaTruth": {
+        "mse": 5.076958987074138e-09,
+        "rms": 7.125278231110794e-05,
+        "max": 0.0007655772776515857
+      },
+      "areaCorrection": {
+        "mse": 4.17057636261794e-14,
+        "rms": 2.0421989037843353e-07,
+        "max": 5.105333727273287e-06
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 3.4416913763379853e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 7.048364536892873e-09,
+        "retainedMse": 7.04855055086726e-09,
+        "correctionMse": 1.9850060555920653e-13,
+        "maxSampledCorrection": 2.7170488082595146e-05
+      },
+      "continuousRefinement16": {
+        "quinticMse": 7.048364536891994e-09,
+        "retainedMse": 7.048550550866486e-09,
+        "correctionMse": 1.985006055591855e-13,
+        "maxSampledCorrection": 2.73744283204036e-05
+      },
+      "seconds": 0.08644391712732613
+    },
+    {
+      "case": "edge-8-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "edge",
+        "angle": 37.5,
+        "phase": 0.0,
+        "offset": -0.0078125
+      },
+      "quinticTruth": {
+        "mse": 6.508732304175526e-07,
+        "rms": 0.0008067671475819727,
+        "max": 0.01159607049379996
+      },
+      "retainedTruth": {
+        "mse": 6.508732965343681e-07,
+        "rms": 0.0008067671885583648,
+        "max": 0.01159606999895857
+      },
+      "directTruth": {
+        "mse": 6.508644773817695e-07,
+        "rms": 0.0008067617228040566,
+        "max": 0.011596069998958458
+      },
+      "quinticFactor": {
+        "mse": 1.0221553496728704e-13,
+        "rms": 3.1971164346530614e-07,
+        "max": 3.874338463755178e-05
+      },
+      "retainedFactor": {
+        "mse": 1.0260681856539578e-13,
+        "rms": 3.2032299100344917e-07,
+        "max": 3.8822090501489104e-05
+      },
+      "correction": {
+        "mse": 4.474379556184367e-17,
+        "rms": 6.689080322573774e-09,
+        "max": 5.726032995395647e-07
+      },
+      "quinticAreaTruth": {
+        "mse": 4.789856404788369e-07,
+        "rms": 0.0006920878849386376,
+        "max": 0.009108879450078544
+      },
+      "retainedAreaTruth": {
+        "mse": 4.789857539549562e-07,
+        "rms": 0.0006920879669196368,
+        "max": 0.009108879391289237
+      },
+      "areaCorrection": {
+        "mse": 2.952064978978473e-17,
+        "rms": 5.433290880284685e-09,
+        "max": 2.6834397902353313e-07
+      },
+      "truthAreaRefinement": 8.881784197001252e-16,
+      "collocationAgreement": 6.328271240363392e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 6.542715191556886e-07,
+        "retainedMse": 6.542716290792782e-07,
+        "correctionMse": 7.081323101054717e-17,
+        "maxSampledCorrection": 7.89544707197054e-07
+      },
+      "continuousRefinement16": {
+        "quinticMse": 6.542715191556848e-07,
+        "retainedMse": 6.54271629079274e-07,
+        "correctionMse": 7.081323101058454e-17,
+        "maxSampledCorrection": 7.720659964682852e-07
+      },
+      "seconds": 0.07170474994927645
+    },
+    {
+      "case": "edge-9-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "edge",
+        "angle": 37.5,
+        "phase": 0.0,
+        "offset": 0.0078125
+      },
+      "quinticTruth": {
+        "mse": 6.508732304175758e-07,
+        "rms": 0.0008067671475819871,
+        "max": 0.011596070493800847
+      },
+      "retainedTruth": {
+        "mse": 6.508732965343327e-07,
+        "rms": 0.0008067671885583429,
+        "max": 0.011596069998959013
+      },
+      "directTruth": {
+        "mse": 6.508644773817708e-07,
+        "rms": 0.0008067617228040574,
+        "max": 0.011596069998958458
+      },
+      "quinticFactor": {
+        "mse": 1.0221553496425473e-13,
+        "rms": 3.1971164346056387e-07,
+        "max": 3.874338463738525e-05
+      },
+      "retainedFactor": {
+        "mse": 1.0260681856898969e-13,
+        "rms": 3.20322991009059e-07,
+        "max": 3.8822090501988704e-05
+      },
+      "correction": {
+        "mse": 4.474379557650124e-17,
+        "rms": 6.689080323669409e-09,
+        "max": 5.726032997754871e-07
+      },
+      "quinticAreaTruth": {
+        "mse": 4.78985640478864e-07,
+        "rms": 0.0006920878849386573,
+        "max": 0.009108879450080598
+      },
+      "retainedAreaTruth": {
+        "mse": 4.789857539549343e-07,
+        "rms": 0.000692087966919621,
+        "max": 0.009108879391290237
+      },
+      "areaCorrection": {
+        "mse": 2.9520649918305075e-17,
+        "rms": 5.433290892111803e-09,
+        "max": 2.6834398003661164e-07
+      },
+      "truthAreaRefinement": 8.881784197001252e-16,
+      "collocationAgreement": 4.9960036108132044e-15,
+      "retainedAreaQuadratureCheck": 5.551115123125783e-16,
+      "continuous": {
+        "quinticMse": 6.542715191557129e-07,
+        "retainedMse": 6.542716290792428e-07,
+        "correctionMse": 7.081323103646785e-17,
+        "maxSampledCorrection": 7.895447072803208e-07
+      },
+      "continuousRefinement16": {
+        "quinticMse": 6.54271519155709e-07,
+        "retainedMse": 6.542716290792386e-07,
+        "correctionMse": 7.081323103129303e-17,
+        "maxSampledCorrection": 7.720659964682852e-07
+      },
+      "seconds": 0.09366195788607001
+    },
+    {
+      "case": "carrier-10-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 37.5,
+        "phase": 0.0,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 5.375882970824516e-09,
+        "rms": 7.332041305683239e-05,
+        "max": 0.0008290130335075752
+      },
+      "retainedTruth": {
+        "mse": 5.376001263444383e-09,
+        "rms": 7.332121973511068e-05,
+        "max": 0.0008289167609077386
+      },
+      "directTruth": {
+        "mse": 5.381990517070231e-09,
+        "rms": 7.336205093282379e-05,
+        "max": 0.0008228440955612704
+      },
+      "quinticFactor": {
+        "mse": 6.4356305754248676e-12,
+        "rms": 2.536854464770273e-06,
+        "max": 0.00011555290864273537
+      },
+      "retainedFactor": {
+        "mse": 6.6170254707770935e-12,
+        "rms": 2.5723579593005893e-06,
+        "max": 0.00010866132849207677
+      },
+      "correction": {
+        "mse": 2.5993867120722977e-13,
+        "rms": 5.098418099834789e-07,
+        "max": 3.023506856708602e-05
+      },
+      "quinticAreaTruth": {
+        "mse": 4.440042833823648e-09,
+        "rms": 6.66336464094803e-05,
+        "max": 0.0007187964298479566
+      },
+      "retainedAreaTruth": {
+        "mse": 4.4400077838598695e-09,
+        "rms": 6.663338340396553e-05,
+        "max": 0.0007187554627615111
+      },
+      "areaCorrection": {
+        "mse": 8.760154901413137e-14,
+        "rms": 2.9597558854427734e-07,
+        "max": 8.356799551800798e-06
+      },
+      "truthAreaRefinement": 5.551115123125783e-16,
+      "collocationAgreement": 3.6637359812630166e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 5.416477614379479e-09,
+        "retainedMse": 5.4166460584770556e-09,
+        "correctionMse": 4.089876374074404e-13,
+        "maxSampledCorrection": 4.492304188874474e-05
+      },
+      "continuousRefinement16": {
+        "quinticMse": 5.4164776143787734e-09,
+        "retainedMse": 5.4166460584764095e-09,
+        "correctionMse": 4.0898763740753304e-13,
+        "maxSampledCorrection": 4.5375528831603784e-05
+      },
+      "seconds": 0.08677316713146865
+    },
+    {
+      "case": "carrier-11-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 37.5,
+        "phase": 1.5707963267948966,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 5.3641757238776394e-09,
+        "rms": 7.324053333965858e-05,
+        "max": 0.0008242340116476621
+      },
+      "retainedTruth": {
+        "mse": 5.364006138186319e-09,
+        "rms": 7.323937559937495e-05,
+        "max": 0.0008244158711357974
+      },
+      "directTruth": {
+        "mse": 5.357824778628442e-09,
+        "rms": 7.31971637334975e-05,
+        "max": 0.0008227620632457189
+      },
+      "quinticFactor": {
+        "mse": 5.071483549035845e-12,
+        "rms": 2.2519954593728304e-06,
+        "max": 0.00012326669121470735
+      },
+      "retainedFactor": {
+        "mse": 4.897233592605364e-12,
+        "rms": 2.2129694061611794e-06,
+        "max": 0.00012244317280413197
+      },
+      "correction": {
+        "mse": 2.318237355221649e-13,
+        "rms": 4.814807737824688e-07,
+        "max": 2.345415268784068e-05
+      },
+      "quinticAreaTruth": {
+        "mse": 4.428142670660467e-09,
+        "rms": 6.654429104484071e-05,
+        "max": 0.0007199503156967157
+      },
+      "retainedAreaTruth": {
+        "mse": 4.427778384012791e-09,
+        "rms": 6.654155381423544e-05,
+        "max": 0.0007200620821730119
+      },
+      "areaCorrection": {
+        "mse": 7.958257622290276e-14,
+        "rms": 2.821038394331115e-07,
+        "max": 6.810856651218167e-06
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 4.496403249731884e-15,
+      "retainedAreaQuadratureCheck": 3.3306690738754696e-16,
+      "continuous": {
+        "quinticMse": 5.405007550028362e-09,
+        "retainedMse": 5.404781684373617e-09,
+        "correctionMse": 3.6468823207709e-13,
+        "maxSampledCorrection": 3.470373907837887e-05
+      },
+      "continuousRefinement16": {
+        "quinticMse": 5.40500755002765e-09,
+        "retainedMse": 5.404781684373012e-09,
+        "correctionMse": 3.64688232077148e-13,
+        "maxSampledCorrection": 3.508719135647542e-05
+      },
+      "seconds": 0.0836760001257062
+    },
+    {
+      "case": "edge-12-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "edge",
+        "angle": 52.5,
+        "phase": 0.0,
+        "offset": -0.0078125
+      },
+      "quinticTruth": {
+        "mse": 6.508732304175629e-07,
+        "rms": 0.0008067671475819791,
+        "max": 0.01159607049380107
+      },
+      "retainedTruth": {
+        "mse": 6.508732965343186e-07,
+        "rms": 0.0008067671885583341,
+        "max": 0.011596069998958902
+      },
+      "directTruth": {
+        "mse": 6.508644773817695e-07,
+        "rms": 0.0008067617228040566,
+        "max": 0.011596069998958458
+      },
+      "quinticFactor": {
+        "mse": 1.0221553496694734e-13,
+        "rms": 3.197116434647749e-07,
+        "max": 3.8743384637593414e-05
+      },
+      "retainedFactor": {
+        "mse": 1.0260681856726327e-13,
+        "rms": 3.203229910063642e-07,
+        "max": 3.882209050150298e-05
+      },
+      "correction": {
+        "mse": 4.474379560142625e-17,
+        "rms": 6.689080325532521e-09,
+        "max": 5.72603299650587e-07
+      },
+      "quinticAreaTruth": {
+        "mse": 4.789856404788483e-07,
+        "rms": 0.0006920878849386458,
+        "max": 0.009108879450078766
+      },
+      "retainedAreaTruth": {
+        "mse": 4.78985753954921e-07,
+        "rms": 0.0006920879669196113,
+        "max": 0.009108879391289015
+      },
+      "areaCorrection": {
+        "mse": 2.952064985373997e-17,
+        "rms": 5.433290886170183e-09,
+        "max": 2.683439789402664e-07
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 5.662137425588298e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 6.542715191556993e-07,
+        "retainedMse": 6.542716290792274e-07,
+        "correctionMse": 7.081323106477437e-17,
+        "maxSampledCorrection": 7.895447073080764e-07
+      },
+      "continuousRefinement16": {
+        "quinticMse": 6.542715191556953e-07,
+        "retainedMse": 6.542716290792235e-07,
+        "correctionMse": 7.081323106696515e-17,
+        "maxSampledCorrection": 7.720659965793075e-07
+      },
+      "seconds": 0.12666033301502466
+    },
+    {
+      "case": "edge-13-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "edge",
+        "angle": 52.5,
+        "phase": 0.0,
+        "offset": 0.0078125
+      },
+      "quinticTruth": {
+        "mse": 6.508732304175784e-07,
+        "rms": 0.0008067671475819887,
+        "max": 0.011596070493800792
+      },
+      "retainedTruth": {
+        "mse": 6.50873296534332e-07,
+        "rms": 0.0008067671885583423,
+        "max": 0.011596069998959013
+      },
+      "directTruth": {
+        "mse": 6.508644773817706e-07,
+        "rms": 0.0008067617228040573,
+        "max": 0.011596069998958458
+      },
+      "quinticFactor": {
+        "mse": 1.0221553496586896e-13,
+        "rms": 3.197116434630884e-07,
+        "max": 3.874338463749627e-05
+      },
+      "retainedFactor": {
+        "mse": 1.0260681856077786e-13,
+        "rms": 3.2032299099624097e-07,
+        "max": 3.8822090500545414e-05
+      },
+      "correction": {
+        "mse": 4.4743795607767847e-17,
+        "rms": 6.689080326006546e-09,
+        "max": 5.726032996644648e-07
+      },
+      "quinticAreaTruth": {
+        "mse": 4.789856404788612e-07,
+        "rms": 0.0006920878849386551,
+        "max": 0.009108879450080654
+      },
+      "retainedAreaTruth": {
+        "mse": 4.789857539549281e-07,
+        "rms": 0.0006920879669196164,
+        "max": 0.009108879391290015
+      },
+      "areaCorrection": {
+        "mse": 2.9520649938122333e-17,
+        "rms": 5.433290893935491e-09,
+        "max": 2.6834397959252243e-07
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 4.440892098500626e-15,
+      "retainedAreaQuadratureCheck": 5.551115123125783e-16,
+      "continuous": {
+        "quinticMse": 6.542715191557154e-07,
+        "retainedMse": 6.542716290792423e-07,
+        "correctionMse": 7.081323106826181e-17,
+        "maxSampledCorrection": 7.895447070582762e-07
+      },
+      "continuousRefinement16": {
+        "quinticMse": 6.542715191557108e-07,
+        "retainedMse": 6.542716290792375e-07,
+        "correctionMse": 7.081323106828497e-17,
+        "maxSampledCorrection": 7.720659962462406e-07
+      },
+      "seconds": 0.06677016708999872
+    },
+    {
+      "case": "carrier-14-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 52.5,
+        "phase": 0.0,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 5.375882970825032e-09,
+        "rms": 7.33204130568359e-05,
+        "max": 0.0008290130335079082
+      },
+      "retainedTruth": {
+        "mse": 5.37600126344605e-09,
+        "rms": 7.332121973512204e-05,
+        "max": 0.0008289167609069059
+      },
+      "directTruth": {
+        "mse": 5.3819905170701864e-09,
+        "rms": 7.336205093282348e-05,
+        "max": 0.0008228440955612704
+      },
+      "quinticFactor": {
+        "mse": 6.4356305754384845e-12,
+        "rms": 2.5368544647729567e-06,
+        "max": 0.00011555290864340151
+      },
+      "retainedFactor": {
+        "mse": 6.6170254707713816e-12,
+        "rms": 2.5723579592994793e-06,
+        "max": 0.00010866132849252086
+      },
+      "correction": {
+        "mse": 2.5993867120876225e-13,
+        "rms": 5.098418099849818e-07,
+        "max": 3.0235068567308065e-05
+      },
+      "quinticAreaTruth": {
+        "mse": 4.4400428338234855e-09,
+        "rms": 6.66336464094791e-05,
+        "max": 0.0007187964298482896
+      },
+      "retainedAreaTruth": {
+        "mse": 4.440007783860903e-09,
+        "rms": 6.663338340397328e-05,
+        "max": 0.0007187554627613446
+      },
+      "areaCorrection": {
+        "mse": 8.76015490141467e-14,
+        "rms": 2.959755885443033e-07,
+        "max": 8.356799552022842e-06
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 3.6637359812630166e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 5.416477614380038e-09,
+        "retainedMse": 5.416646058478638e-09,
+        "correctionMse": 4.0898763740806694e-13,
+        "maxSampledCorrection": 4.492304188880025e-05
+      },
+      "continuousRefinement16": {
+        "quinticMse": 5.41647761437939e-09,
+        "retainedMse": 5.4166460584780374e-09,
+        "correctionMse": 4.0898763740837855e-13,
+        "maxSampledCorrection": 4.5375528831714806e-05
+      },
+      "seconds": 0.08240391686558723
+    },
+    {
+      "case": "carrier-15-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 52.5,
+        "phase": 1.5707963267948966,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 5.364175723875934e-09,
+        "rms": 7.324053333964694e-05,
+        "max": 0.0008242340116461078
+      },
+      "retainedTruth": {
+        "mse": 5.3640061381842316e-09,
+        "rms": 7.32393755993607e-05,
+        "max": 0.0008244158711351313
+      },
+      "directTruth": {
+        "mse": 5.357824778628432e-09,
+        "rms": 7.319716373349743e-05,
+        "max": 0.0008227620632457189
+      },
+      "quinticFactor": {
+        "mse": 5.07148354903072e-12,
+        "rms": 2.2519954593716924e-06,
+        "max": 0.00012326669121415224
+      },
+      "retainedFactor": {
+        "mse": 4.8972335925865955e-12,
+        "rms": 2.212969406156939e-06,
+        "max": 0.00012244317280385442
+      },
+      "correction": {
+        "mse": 2.31823735522651e-13,
+        "rms": 4.814807737829736e-07,
+        "max": 2.345415268734108e-05
+      },
+      "quinticAreaTruth": {
+        "mse": 4.428142670659276e-09,
+        "rms": 6.654429104483175e-05,
+        "max": 0.0007199503156956055
+      },
+      "retainedAreaTruth": {
+        "mse": 4.427778384011185e-09,
+        "rms": 6.654155381422337e-05,
+        "max": 0.0007200620821721238
+      },
+      "areaCorrection": {
+        "mse": 7.95825762237482e-14,
+        "rms": 2.8210383943461e-07,
+        "max": 6.8108566508851e-06
+      },
+      "truthAreaRefinement": 6.106226635438361e-16,
+      "collocationAgreement": 3.6637359812630166e-15,
+      "retainedAreaQuadratureCheck": 3.3306690738754696e-16,
+      "continuous": {
+        "quinticMse": 5.405007550026683e-09,
+        "retainedMse": 5.404781684371605e-09,
+        "correctionMse": 3.646882320780673e-13,
+        "maxSampledCorrection": 3.470373907826785e-05
+      },
+      "continuousRefinement16": {
+        "quinticMse": 5.405007550025963e-09,
+        "retainedMse": 5.404781684371041e-09,
+        "correctionMse": 3.6468823207782475e-13,
+        "maxSampledCorrection": 3.508719135630889e-05
+      },
+      "seconds": 0.09634970803745091
+    },
+    {
+      "case": "edge-16-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "edge",
+        "angle": 67.5,
+        "phase": 0.0,
+        "offset": -0.0078125
+      },
+      "quinticTruth": {
+        "mse": 1.3519807941263628e-06,
+        "rms": 0.0011627470894938258,
+        "max": 0.00921205622824356
+      },
+      "retainedTruth": {
+        "mse": 1.3519807941263237e-06,
+        "rms": 0.0011627470894938088,
+        "max": 0.00921205622824306
+      },
+      "directTruth": {
+        "mse": 1.3519807941263307e-06,
+        "rms": 0.0011627470894938119,
+        "max": 0.009212056228242727
+      },
+      "quinticFactor": {
+        "mse": 4.957441359865564e-31,
+        "rms": 7.040909997909052e-16,
+        "max": 6.439293542825908e-15
+      },
+      "retainedFactor": {
+        "mse": 4.218757139127953e-31,
+        "rms": 6.495196024084225e-16,
+        "max": 4.884981308350689e-15
+      },
+      "correction": {
+        "mse": 2.7700239334171848e-31,
+        "rms": 5.263101683814578e-16,
+        "max": 4.884981308350689e-15
+      },
+      "quinticAreaTruth": {
+        "mse": 9.775269729582752e-07,
+        "rms": 0.0009886996373814827,
+        "max": 0.007730627027475956
+      },
+      "retainedAreaTruth": {
+        "mse": 9.775269729582422e-07,
+        "rms": 0.000988699637381466,
+        "max": 0.007730627027475623
+      },
+      "areaCorrection": {
+        "mse": 1.7470545854080258e-31,
+        "rms": 4.1797782063262946e-16,
+        "max": 4.218847493575595e-15
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 4.9960036108132044e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 1.3571869545000033e-06,
+        "retainedMse": 1.357186954499964e-06,
+        "correctionMse": 2.8381314373808333e-31,
+        "maxSampledCorrection": 5.218048215738236e-15
+      },
+      "continuousRefinement16": {
+        "quinticMse": 1.3571869545000014e-06,
+        "retainedMse": 1.3571869544999608e-06,
+        "correctionMse": 2.8431254698303643e-31,
+        "maxSampledCorrection": 4.884981308350689e-15
+      },
+      "seconds": 0.0700795000884682
+    },
+    {
+      "case": "edge-17-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "edge",
+        "angle": 67.5,
+        "phase": 0.0,
+        "offset": 0.0078125
+      },
+      "quinticTruth": {
+        "mse": 1.351980794126314e-06,
+        "rms": 0.0011627470894938047,
+        "max": 0.009212056228241061
+      },
+      "retainedTruth": {
+        "mse": 1.351980794126312e-06,
+        "rms": 0.0011627470894938039,
+        "max": 0.009212056228241172
+      },
+      "directTruth": {
+        "mse": 1.3519807941263326e-06,
+        "rms": 0.0011627470894938128,
+        "max": 0.009212056228242615
+      },
+      "quinticFactor": {
+        "mse": 4.876644211710676e-31,
+        "rms": 6.983297367082885e-16,
+        "max": 5.88418203051333e-15
+      },
+      "retainedFactor": {
+        "mse": 4.228070295888355e-31,
+        "rms": 6.50236133715157e-16,
+        "max": 5.551115123125783e-15
+      },
+      "correction": {
+        "mse": 2.716756103526094e-31,
+        "rms": 5.212251052593394e-16,
+        "max": 4.884981308350689e-15
+      },
+      "quinticAreaTruth": {
+        "mse": 9.775269729582464e-07,
+        "rms": 0.0009886996373814681,
+        "max": 0.007730627027473291
+      },
+      "retainedAreaTruth": {
+        "mse": 9.775269729582418e-07,
+        "rms": 0.0009886996373814658,
+        "max": 0.007730627027473402
+      },
+      "areaCorrection": {
+        "mse": 1.7073612832145566e-31,
+        "rms": 4.132022849906032e-16,
+        "max": 3.4416913763379853e-15
+      },
+      "truthAreaRefinement": 8.881784197001252e-16,
+      "collocationAgreement": 4.884981308350689e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 1.3571869544999574e-06,
+        "retainedMse": 1.3571869544999561e-06,
+        "correctionMse": 2.783881426190744e-31,
+        "maxSampledCorrection": 4.884981308350689e-15
+      },
+      "continuousRefinement16": {
+        "quinticMse": 1.3571869544999515e-06,
+        "retainedMse": 1.3571869544999496e-06,
+        "correctionMse": 2.776287819058241e-31,
+        "maxSampledCorrection": 4.9960036108132044e-15
+      },
+      "seconds": 0.06611954094842076
+    },
+    {
+      "case": "carrier-18-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 67.5,
+        "phase": 0.0,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 7.1431757179116685e-09,
+        "rms": 8.45173101672768e-05,
+        "max": 0.0009329446499667937
+      },
+      "retainedTruth": {
+        "mse": 7.1442173679783255e-09,
+        "rms": 8.452347229011788e-05,
+        "max": 0.0009327982723613126
+      },
+      "directTruth": {
+        "mse": 7.148692828281063e-09,
+        "rms": 8.454994280471787e-05,
+        "max": 0.0009331310625845246
+      },
+      "quinticFactor": {
+        "mse": 5.138238633217672e-12,
+        "rms": 2.2667683236752873e-06,
+        "max": 0.00016064189423126152
+      },
+      "retainedFactor": {
+        "mse": 5.411503543929155e-12,
+        "rms": 2.326263859481369e-06,
+        "max": 0.0001649813267196043
+      },
+      "correction": {
+        "mse": 1.3454125937791184e-13,
+        "rms": 3.66798663271708e-07,
+        "max": 1.962158124790836e-05
+      },
+      "quinticAreaTruth": {
+        "mse": 5.230828321178671e-09,
+        "rms": 7.232446557824449e-05,
+        "max": 0.0008314876537705018
+      },
+      "retainedAreaTruth": {
+        "mse": 5.2322587011034605e-09,
+        "rms": 7.23343535334592e-05,
+        "max": 0.0008313993194172808
+      },
+      "areaCorrection": {
+        "mse": 4.439970182294528e-14,
+        "rms": 2.1071236751302776e-07,
+        "max": 5.434029293538423e-06
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 2.6645352591003757e-15,
+      "retainedAreaQuadratureCheck": 3.3306690738754696e-16,
+      "continuous": {
+        "quinticMse": 7.196755491976358e-09,
+        "retainedMse": 7.198550986197111e-09,
+        "correctionMse": 2.1166989717249206e-13,
+        "maxSampledCorrection": 2.9043256441152465e-05
+      },
+      "continuousRefinement16": {
+        "quinticMse": 7.196755491975413e-09,
+        "retainedMse": 7.198550986196292e-09,
+        "correctionMse": 2.1166989717249413e-13,
+        "maxSampledCorrection": 2.9393126564303262e-05
+      },
+      "seconds": 0.08291645906865597
+    },
+    {
+      "case": "carrier-19-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 67.5,
+        "phase": 1.5707963267948966,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 6.993940227666298e-09,
+        "rms": 8.362978074625269e-05,
+        "max": 0.0009181812962338332
+      },
+      "retainedTruth": {
+        "mse": 6.994090469805286e-09,
+        "rms": 8.363067899882964e-05,
+        "max": 0.0009182518941934226
+      },
+      "directTruth": {
+        "mse": 6.984358454321047e-09,
+        "rms": 8.357247426228953e-05,
+        "max": 0.0009132338568140219
+      },
+      "quinticFactor": {
+        "mse": 4.342632375517197e-12,
+        "rms": 2.083898360169516e-06,
+        "max": 0.0001235130842944243
+      },
+      "retainedFactor": {
+        "mse": 4.515636993649848e-12,
+        "rms": 2.1250028220333844e-06,
+        "max": 0.00011875930517241118
+      },
+      "correction": {
+        "mse": 1.261830735856093e-13,
+        "rms": 3.5522256908255324e-07,
+        "max": 1.8335675966152376e-05
+      },
+      "quinticAreaTruth": {
+        "mse": 5.077039856393771e-09,
+        "rms": 7.125334979068543e-05,
+        "max": 0.0007655521086641914
+      },
+      "retainedAreaTruth": {
+        "mse": 5.076958987074362e-09,
+        "rms": 7.125278231110953e-05,
+        "max": 0.0007655772776516967
+      },
+      "areaCorrection": {
+        "mse": 4.1705763628218986e-14,
+        "rms": 2.042198903834271e-07,
+        "max": 5.105333727328798e-06
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 3.552713678800501e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 7.048364536893072e-09,
+        "retainedMse": 7.048550550868393e-09,
+        "correctionMse": 1.9850060556324679e-13,
+        "maxSampledCorrection": 2.7170488082650657e-05
+      },
+      "continuousRefinement16": {
+        "quinticMse": 7.048364536892239e-09,
+        "retainedMse": 7.0485505508676585e-09,
+        "correctionMse": 1.9850060556350442e-13,
+        "maxSampledCorrection": 2.7374428320237065e-05
+      },
+      "seconds": 0.0836936249397695
+    },
+    {
+      "case": "edge-20-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "edge",
+        "angle": 82.5,
+        "phase": 0.0,
+        "offset": -0.0078125
+      },
+      "quinticTruth": {
+        "mse": 2.1632275594171053e-06,
+        "rms": 0.0014707914738048714,
+        "max": 0.010134161068462377
+      },
+      "retainedTruth": {
+        "mse": 2.1632275594171044e-06,
+        "rms": 0.001470791473804871,
+        "max": 0.010134161068462488
+      },
+      "directTruth": {
+        "mse": 2.16322755941712e-06,
+        "rms": 0.0014707914738048763,
+        "max": 0.010134161068462322
+      },
+      "quinticFactor": {
+        "mse": 5.146761973374844e-31,
+        "rms": 7.174093652423869e-16,
+        "max": 1.021405182655144e-14
+      },
+      "retainedFactor": {
+        "mse": 4.935226668158624e-31,
+        "rms": 7.02511684469278e-16,
+        "max": 1.0103029524088925e-14
+      },
+      "correction": {
+        "mse": 8.102211942318868e-32,
+        "rms": 2.8464384662800753e-16,
+        "max": 3.219646771412954e-15
+      },
+      "quinticAreaTruth": {
+        "mse": 1.6052282712107785e-06,
+        "rms": 0.001266976034189589,
+        "max": 0.008846472357726731
+      },
+      "retainedAreaTruth": {
+        "mse": 1.605228271210772e-06,
+        "rms": 0.0012669760341895864,
+        "max": 0.008846472357726176
+      },
+      "areaCorrection": {
+        "mse": 5.955531514561819e-32,
+        "rms": 2.440395770067187e-16,
+        "max": 2.220446049250313e-15
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 2.7755575615628914e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 2.171737166980524e-06,
+        "retainedMse": 2.171737166980521e-06,
+        "correctionMse": 8.545011280148026e-32,
+        "maxSampledCorrection": 3.219646771412954e-15
+      },
+      "continuousRefinement16": {
+        "quinticMse": 2.171737166980516e-06,
+        "retainedMse": 2.1717371669805137e-06,
+        "correctionMse": 8.526065191108354e-32,
+        "maxSampledCorrection": 3.1086244689504383e-15
+      },
+      "seconds": 0.0678924999665469
+    },
+    {
+      "case": "edge-21-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "edge",
+        "angle": 82.5,
+        "phase": 0.0,
+        "offset": 0.0078125
+      },
+      "quinticTruth": {
+        "mse": 2.1632275594171112e-06,
+        "rms": 0.0014707914738048733,
+        "max": 0.01013416106846099
+      },
+      "retainedTruth": {
+        "mse": 2.163227559417113e-06,
+        "rms": 0.0014707914738048737,
+        "max": 0.0101341610684611
+      },
+      "directTruth": {
+        "mse": 2.163227559417124e-06,
+        "rms": 0.0014707914738048776,
+        "max": 0.010134161068462322
+      },
+      "quinticFactor": {
+        "mse": 4.844037651190725e-31,
+        "rms": 6.95991210518547e-16,
+        "max": 4.218847493575595e-15
+      },
+      "retainedFactor": {
+        "mse": 4.77378429080311e-31,
+        "rms": 6.909257768243352e-16,
+        "max": 4.773959005888173e-15
+      },
+      "correction": {
+        "mse": 8.737477524474696e-32,
+        "rms": 2.955922448995355e-16,
+        "max": 3.3306690738754696e-15
+      },
+      "quinticAreaTruth": {
+        "mse": 1.605228271210775e-06,
+        "rms": 0.0012669760341895875,
+        "max": 0.008846472357727342
+      },
+      "retainedAreaTruth": {
+        "mse": 1.6052282712107808e-06,
+        "rms": 0.00126697603418959,
+        "max": 0.008846472357727286
+      },
+      "areaCorrection": {
+        "mse": 6.1954454054566e-32,
+        "rms": 2.4890651669766705e-16,
+        "max": 2.6645352591003757e-15
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 3.4416913763379853e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 2.1717371669805324e-06,
+        "retainedMse": 2.1717371669805353e-06,
+        "correctionMse": 9.216937857234863e-32,
+        "maxSampledCorrection": 3.552713678800501e-15
+      },
+      "continuousRefinement16": {
+        "quinticMse": 2.1717371669805197e-06,
+        "retainedMse": 2.1717371669805218e-06,
+        "correctionMse": 9.134152719285473e-32,
+        "maxSampledCorrection": 3.3306690738754696e-15
+      },
+      "seconds": 0.07081274990923703
+    },
+    {
+      "case": "carrier-22-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 82.5,
+        "phase": 0.0,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 8.486315018659289e-09,
+        "rms": 9.212119744477538e-05,
+        "max": 0.0008581314864692935
+      },
+      "retainedTruth": {
+        "mse": 8.486350573310912e-09,
+        "rms": 9.212139042215392e-05,
+        "max": 0.0008581314864692935
+      },
+      "directTruth": {
+        "mse": 8.485875955089058e-09,
+        "rms": 9.211881433827216e-05,
+        "max": 0.0008581314864680722
+      },
+      "quinticFactor": {
+        "mse": 5.348224371028171e-13,
+        "rms": 7.313155523457826e-07,
+        "max": 4.945595044092421e-05
+      },
+      "retainedFactor": {
+        "mse": 5.554860439115932e-13,
+        "rms": 7.453093612129081e-07,
+        "max": 5.082389278054933e-05
+      },
+      "correction": {
+        "mse": 6.225651249024136e-15,
+        "rms": 7.890279620535724e-08,
+        "max": 4.515995348564061e-06
+      },
+      "quinticAreaTruth": {
+        "mse": 5.444328356364338e-09,
+        "rms": 7.378569208433527e-05,
+        "max": 0.000769192086266024
+      },
+      "retainedAreaTruth": {
+        "mse": 5.44434686171574e-09,
+        "rms": 7.378581748354991e-05,
+        "max": 0.000769192086266135
+      },
+      "areaCorrection": {
+        "mse": 2.1963472380030384e-15,
+        "rms": 4.686520284820112e-08,
+        "max": 1.2658043406776898e-06
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 3.2751579226442118e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 8.552721981262742e-09,
+        "retainedMse": 8.552768749833502e-09,
+        "correctionMse": 9.7929898087222e-15,
+        "maxSampledCorrection": 6.698290626050429e-06
+      },
+      "continuousRefinement16": {
+        "quinticMse": 8.552721981260716e-09,
+        "retainedMse": 8.552768749831509e-09,
+        "correctionMse": 9.792989808713966e-15,
+        "maxSampledCorrection": 6.7199906058634795e-06
+      },
+      "seconds": 0.08054400002583861
+    },
+    {
+      "case": "carrier-23-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "carrier",
+        "angle": 82.5,
+        "phase": 1.5707963267948966,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 9.779359473946812e-09,
+        "rms": 9.889064401624055e-05,
+        "max": 0.0009602777394875361
+      },
+      "retainedTruth": {
+        "mse": 9.779661705112044e-09,
+        "rms": 9.889217211241769e-05,
+        "max": 0.0009602782605354632
+      },
+      "directTruth": {
+        "mse": 9.77812749387229e-09,
+        "rms": 9.888441481786849e-05,
+        "max": 0.0009602961468170856
+      },
+      "quinticFactor": {
+        "mse": 5.244175479005433e-13,
+        "rms": 7.24166795635193e-07,
+        "max": 4.972021086374623e-05
+      },
+      "retainedFactor": {
+        "mse": 5.391372705990225e-13,
+        "rms": 7.342596751824401e-07,
+        "max": 4.807145461016571e-05
+      },
+      "correction": {
+        "mse": 7.181936811874951e-15,
+        "rms": 8.47463085442366e-08,
+        "max": 4.447135148688552e-06
+      },
+      "quinticAreaTruth": {
+        "mse": 6.750595068027926e-09,
+        "rms": 8.216200501465337e-05,
+        "max": 0.0008434376412508882
+      },
+      "retainedAreaTruth": {
+        "mse": 6.751024868417117e-09,
+        "rms": 8.2164620539604e-05,
+        "max": 0.0008436533038340133
+      },
+      "areaCorrection": {
+        "mse": 2.5199064756753105e-15,
+        "rms": 5.019867005883035e-08,
+        "max": 1.2429032972272047e-06
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 3.0531133177191805e-15,
+      "retainedAreaQuadratureCheck": 3.3306690738754696e-16,
+      "continuous": {
+        "quinticMse": 9.856428780728976e-09,
+        "retainedMse": 9.856960383403346e-09,
+        "correctionMse": 1.1295740792742293e-14,
+        "maxSampledCorrection": 6.594691041361678e-06
+      },
+      "continuousRefinement16": {
+        "quinticMse": 9.856428780727483e-09,
+        "retainedMse": 9.856960383401882e-09,
+        "correctionMse": 1.1295740792757864e-14,
+        "maxSampledCorrection": 6.618645341460727e-06
+      },
+      "seconds": 0.08166479202918708
+    },
+    {
+      "case": "curved-24-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "curved",
+        "angle": 0.0,
+        "phase": 0.0,
+        "offset": -0.0078125
+      },
+      "quinticTruth": {
+        "mse": 3.505497287322255e-06,
+        "rms": 0.0018722973287707953,
+        "max": 0.012305836601551767
+      },
+      "retainedTruth": {
+        "mse": 3.5054971008401036e-06,
+        "rms": 0.0018722972789704372,
+        "max": 0.0123058366015516
+      },
+      "directTruth": {
+        "mse": 3.505497345911125e-06,
+        "rms": 0.0018722973444170467,
+        "max": 0.012305836601551878
+      },
+      "quinticFactor": {
+        "mse": 1.5230991185348796e-16,
+        "rms": 1.2341390191282664e-08,
+        "max": 5.418840773735445e-07
+      },
+      "retainedFactor": {
+        "mse": 1.6497721962089707e-16,
+        "rms": 1.2844345823003096e-08,
+        "max": 6.947243396532299e-07
+      },
+      "correction": {
+        "mse": 1.5437974589957413e-17,
+        "rms": 3.9291188057829725e-09,
+        "max": 1.6871436007981355e-07
+      },
+      "quinticAreaTruth": {
+        "mse": 2.552208495919202e-06,
+        "rms": 0.0015975632995030907,
+        "max": 0.010695478182949913
+      },
+      "retainedAreaTruth": {
+        "mse": 2.552208542188211e-06,
+        "rms": 0.0015975633139842097,
+        "max": 0.010695478182949691
+      },
+      "areaCorrection": {
+        "mse": 1.4531097868313809e-18,
+        "rms": 1.205450034979211e-09,
+        "max": 2.0659386937293966e-08
+      },
+      "truthAreaRefinement": 9.61120072417998e-13,
+      "collocationAgreement": 5.88418203051333e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 3.532929618996262e-06,
+        "retainedMse": 3.5329292790641218e-06,
+        "correctionMse": 2.4282535008772873e-17,
+        "maxSampledCorrection": 2.532201766880515e-07
+      },
+      "continuousRefinement16": {
+        "quinticMse": 3.5329296189962723e-06,
+        "retainedMse": 3.5329292790641328e-06,
+        "correctionMse": 2.4282535009139388e-17,
+        "maxSampledCorrection": 2.496771716320456e-07
+      },
+      "seconds": 0.08578824996948242
+    },
+    {
+      "case": "curved-25-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "curved",
+        "angle": 0.0,
+        "phase": 0.0,
+        "offset": 0.0078125
+      },
+      "quinticTruth": {
+        "mse": 4.055514834570655e-06,
+        "rms": 0.0020138308852956483,
+        "max": 0.013761762175798442
+      },
+      "retainedTruth": {
+        "mse": 4.055514826377363e-06,
+        "rms": 0.002013830883261393,
+        "max": 0.013761762175798387
+      },
+      "directTruth": {
+        "mse": 4.0555148968030425e-06,
+        "rms": 0.002013830900746893,
+        "max": 0.01376176217579772
+      },
+      "quinticFactor": {
+        "mse": 1.5487051985147647e-17,
+        "rms": 3.935359193917075e-09,
+        "max": 1.336388783662601e-07
+      },
+      "retainedFactor": {
+        "mse": 1.5925516693459447e-17,
+        "rms": 3.990678725913607e-09,
+        "max": 1.339004271905253e-07
+      },
+      "correction": {
+        "mse": 5.153745829627974e-19,
+        "rms": 7.178959415979431e-10,
+        "max": 2.7921173373357533e-08
+      },
+      "quinticAreaTruth": {
+        "mse": 2.96333753710752e-06,
+        "rms": 0.0017214347321660266,
+        "max": 0.012117902343459108
+      },
+      "retainedAreaTruth": {
+        "mse": 2.963337553582863e-06,
+        "rms": 0.0017214347369513788,
+        "max": 0.012117902343459108
+      },
+      "areaCorrection": {
+        "mse": 1.0476401615949324e-19,
+        "rms": 3.2367269912597394e-10,
+        "max": 3.892794864235327e-09
+      },
+      "truthAreaRefinement": 3.6193270602780103e-13,
+      "collocationAgreement": 5.773159728050814e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 4.087255297182336e-06,
+        "retainedMse": 4.08725528981885e-06,
+        "correctionMse": 8.107891616301753e-19,
+        "maxSampledCorrection": 3.604000620160974e-08
+      },
+      "continuousRefinement16": {
+        "quinticMse": 4.087255297182325e-06,
+        "retainedMse": 4.087255289818848e-06,
+        "correctionMse": 8.107891618470851e-19,
+        "maxSampledCorrection": 3.599738673809583e-08
+      },
+      "seconds": 0.09001250006258488
+    },
+    {
+      "case": "crossing-26-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "crossing",
+        "angle": 0.0,
+        "phase": 0.0,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 2.3657811088255432e-07,
+        "rms": 0.00048639295932666866,
+        "max": 0.007405301116070018
+      },
+      "retainedTruth": {
+        "mse": 2.3655296198420607e-07,
+        "rms": 0.00048636710619058733,
+        "max": 0.0074054324718284825
+      },
+      "directTruth": {
+        "mse": 2.381372669708934e-07,
+        "rms": 0.0004879931013558423,
+        "max": 0.007412902442040403
+      },
+      "quinticFactor": {
+        "mse": 3.6554928999015538e-09,
+        "rms": 6.0460672340799795e-05,
+        "max": 0.004818473427979142
+      },
+      "retainedFactor": {
+        "mse": 3.6315713047360008e-09,
+        "rms": 6.026251990031616e-05,
+        "max": 0.004822299543522313
+      },
+      "correction": {
+        "mse": 8.813908842687572e-12,
+        "rms": 2.9688228041915154e-06,
+        "max": 0.00020470286692109152
+      },
+      "quinticAreaTruth": {
+        "mse": 2.298203602218266e-07,
+        "rms": 0.0004793958283316894,
+        "max": 0.006448338342099708
+      },
+      "retainedAreaTruth": {
+        "mse": 2.297516407900746e-07,
+        "rms": 0.00047932415001757903,
+        "max": 0.006448156657290732
+      },
+      "areaCorrection": {
+        "mse": 3.1033393209328495e-12,
+        "rms": 1.761629734346253e-06,
+        "max": 5.360247395214124e-05
+      },
+      "truthAreaRefinement": 7.771561172376096e-16,
+      "collocationAgreement": 3.9968028886505635e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 2.3590901111779972e-07,
+        "retainedMse": 2.358609687789591e-07,
+        "correctionMse": 1.390073899190853e-11,
+        "maxSampledCorrection": 0.00031279240756293403
+      },
+      "continuousRefinement16": {
+        "quinticMse": 2.3590901111779845e-07,
+        "retainedMse": 2.3586096877895766e-07,
+        "correctionMse": 1.3900738991910295e-11,
+        "maxSampledCorrection": 0.00031425425074449453
+      },
+      "seconds": 0.1028165000025183
+    },
+    {
+      "case": "crossing-27-33",
+      "sourceSide": 33,
+      "parameters": {
+        "kind": "crossing",
+        "angle": 0.0,
+        "phase": 1.5707963267948966,
+        "offset": 0.0
+      },
+      "quinticTruth": {
+        "mse": 2.0068185065424614e-07,
+        "rms": 0.0004479752790659839,
+        "max": 0.0050083774021934535
+      },
+      "retainedTruth": {
+        "mse": 2.0070137546747116e-07,
+        "rms": 0.0004479970708246552,
+        "max": 0.005008377402193398
+      },
+      "directTruth": {
+        "mse": 2.0121452977110029e-07,
+        "rms": 0.00044856942580953987,
+        "max": 0.005008377402193509
+      },
+      "quinticFactor": {
+        "mse": 1.2037537279230526e-09,
+        "rms": 3.469515424267563e-05,
+        "max": 0.0023446680241788753
+      },
+      "retainedFactor": {
+        "mse": 1.2276010784466576e-09,
+        "rms": 3.5037138559629235e-05,
+        "max": 0.0023533887959633626
+      },
+      "correction": {
+        "mse": 9.110187539490357e-12,
+        "rms": 3.0183087217000115e-06,
+        "max": 0.00018835982026482734
+      },
+      "quinticAreaTruth": {
+        "mse": 1.8847135186404875e-07,
+        "rms": 0.0004341328735123024,
+        "max": 0.0030154282602318228
+      },
+      "retainedAreaTruth": {
+        "mse": 1.88458686670614e-07,
+        "rms": 0.00043411828649645015,
+        "max": 0.0030137169572027056
+      },
+      "areaCorrection": {
+        "mse": 5.557154527098628e-12,
+        "rms": 2.357361772638775e-06,
+        "max": 0.00010765044222571518
+      },
+      "truthAreaRefinement": 6.661338147750939e-16,
+      "collocationAgreement": 3.6637359812630166e-15,
+      "retainedAreaQuadratureCheck": 4.440892098500626e-16,
+      "continuous": {
+        "quinticMse": 2.0137213208180076e-07,
+        "retainedMse": 2.0139286053423083e-07,
+        "correctionMse": 1.4350691322828491e-11,
+        "maxSampledCorrection": 0.00027910565221250794
+      },
+      "continuousRefinement16": {
+        "quinticMse": 2.0137213208179822e-07,
+        "retainedMse": 2.0139286053422887e-07,
+        "correctionMse": 1.4350691322828431e-11,
+        "maxSampledCorrection": 0.0002811948486209359
+      },
+      "seconds": 0.09627958410419524
+    }
+  ]
+}

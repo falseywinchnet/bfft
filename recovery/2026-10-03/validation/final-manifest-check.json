@@ -1,0 +1,22 @@
+[
+  {
+    "manifest": "manifest",
+    "records": 1752,
+    "mismatches": []
+  },
+  {
+    "manifest": "remote-manifest",
+    "records": 26,
+    "mismatches": []
+  },
+  {
+    "manifest": "consumer-manifest",
+    "records": 13,
+    "mismatches": []
+  },
+  {
+    "manifest": "scratch-manifest",
+    "records": 28,
+    "mismatches": []
+  }
+]

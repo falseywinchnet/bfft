@@ -1,0 +1,4475 @@
+{
+  "protocol": {
+    "repeats": 3,
+    "target": 1e-05,
+    "check_every": 64,
+    "relaxation": "SPORCO default",
+    "rho": "SPORCO default adaptive",
+    "admission": 0.02
+  },
+  "rows": [
+    {
+      "source": "camera",
+      "seed": 1,
+      "signals": 1,
+      "lmbda": 0.02,
+      "timing": {
+        "library": [
+          0.04714562499999997,
+          0.04706454199999999,
+          0.04779816699999995
+        ],
+        "native_driver": [
+          0.04586341599999999,
+          0.046082125000000085,
+          0.046591792000000076
+        ],
+        "engine": [
+          0.05090708399999999,
+          0.05194575000000001,
+          0.051660083999999995
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 1,
+          "rejected": 9,
+          "map_calls": 323,
+          "tangent_actions": 38,
+          "checks": 131,
+          "stopping_checks": 5,
+          "converged": true,
+          "events": [
+            {
+              "at": 152,
+              "rho": 0.10440618163967799,
+              "accepted": true,
+              "horizon": 7,
+              "depth": 2,
+              "bound": 0.0004313031472938931,
+              "relative_bound": 0.01747556031873262,
+              "checks": 7,
+              "map_calls": 1,
+              "tangent_actions": 2
+            }
+          ],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 0.503361119651692
+            },
+            {
+              "at": 20,
+              "old": 0.503361119651692,
+              "new": 0.2343893492010703
+            },
+            {
+              "at": 30,
+              "old": 0.2343893492010703,
+              "new": 0.17998136157099584
+            },
+            {
+              "at": 40,
+              "old": 0.17998136157099584,
+              "new": 0.1446640970458684
+            },
+            {
+              "at": 50,
+              "old": 0.1446640970458684,
+              "new": 0.1271823242155129
+            },
+            {
+              "at": 60,
+              "old": 0.1271823242155129,
+              "new": 0.11581701713421087
+            },
+            {
+              "at": 110,
+              "old": 0.11581701713421087,
+              "new": 0.10440618163967799
+            },
+            {
+              "at": 220,
+              "old": 0.10440618163967799,
+              "new": 0.1144149263609821
+            },
+            {
+              "at": 240,
+              "old": 0.1144149263609821,
+              "new": 0.12949854920105022
+            },
+            {
+              "at": 280,
+              "old": 0.12949854920105022,
+              "new": 0.16272693458745802
+            },
+            {
+              "at": 290,
+              "old": 0.16272693458745802,
+              "new": 0.13420634812402
+            },
+            {
+              "at": 300,
+              "old": 0.13420634812402,
+              "new": 0.15424728891560202
+            },
+            {
+              "at": 310,
+              "old": 0.15424728891560202,
+              "new": 0.1302060402246648
+            },
+            {
+              "at": 320,
+              "old": 0.1302060402246648,
+              "new": 0.17327213575195385
+            }
+          ],
+          "passes": 320,
+          "target_gap": 1.8698856291236613e-05,
+          "final_gap": 2.527135615132403e-06,
+          "objective": 0.22289796758002692
+        },
+        "library": {
+          "passes": 320,
+          "stopping_checks": 5,
+          "converged": true,
+          "target_gap": 1.8698856291236613e-05,
+          "final_gap": 2.525506115402809e-06,
+          "objective": 0.22289796758003022
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 320,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 5,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 0.503361119651692
+            },
+            {
+              "at": 20,
+              "old": 0.503361119651692,
+              "new": 0.2343893492010703
+            },
+            {
+              "at": 30,
+              "old": 0.2343893492010703,
+              "new": 0.17998136157099584
+            },
+            {
+              "at": 40,
+              "old": 0.17998136157099584,
+              "new": 0.1446640970458684
+            },
+            {
+              "at": 50,
+              "old": 0.1446640970458684,
+              "new": 0.1271823242155129
+            },
+            {
+              "at": 60,
+              "old": 0.1271823242155129,
+              "new": 0.11581701713421087
+            },
+            {
+              "at": 110,
+              "old": 0.11581701713421087,
+              "new": 0.10440618163967799
+            },
+            {
+              "at": 220,
+              "old": 0.10440618163967799,
+              "new": 0.11443125120423674
+            },
+            {
+              "at": 240,
+              "old": 0.11443125120423674,
+              "new": 0.12952943093766678
+            },
+            {
+              "at": 280,
+              "old": 0.12952943093766678,
+              "new": 0.16271157753630844
+            },
+            {
+              "at": 290,
+              "old": 0.16271157753630844,
+              "new": 0.13420251091803712
+            },
+            {
+              "at": 300,
+              "old": 0.13420251091803712,
+              "new": 0.15428091278256703
+            },
+            {
+              "at": 310,
+              "old": 0.15428091278256703,
+              "new": 0.13021988103900445
+            },
+            {
+              "at": 320,
+              "old": 0.13021988103900445,
+              "new": 0.1732649248609928
+            }
+          ],
+          "passes": 320,
+          "target_gap": 1.8698856291236613e-05,
+          "final_gap": 2.525506115402809e-06,
+          "objective": 0.22289796758003022
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 3.990473414625647e-08,
+      "speedup": 0.9126122404291865,
+      "engine_only_speedup": 0.8920257466093181,
+      "all_converged": true
+    },
+    {
+      "source": "camera",
+      "seed": 1,
+      "signals": 1,
+      "lmbda": 0.1,
+      "timing": {
+        "library": [
+          0.037294457999999975,
+          0.03736758299999998,
+          0.037393250000000045
+        ],
+        "native_driver": [
+          0.0363292919999999,
+          0.03632425000000006,
+          0.03641662499999998
+        ],
+        "engine": [
+          0.0377566250000001,
+          0.037794500000000175,
+          0.03789474999999998
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 7,
+          "rejected": 5,
+          "map_calls": 216,
+          "tangent_actions": 40,
+          "checks": 153,
+          "stopping_checks": 4,
+          "converged": true,
+          "events": [
+            {
+              "at": 120,
+              "rho": 0.2418552006129902,
+              "accepted": true,
+              "horizon": 7,
+              "depth": 2,
+              "bound": 7.746526885613621e-05,
+              "relative_bound": 0.01396455556239122,
+              "checks": 7,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 130,
+              "rho": 0.2418552006129902,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 6.093943554438065e-05,
+              "relative_bound": 0.016215105417527777,
+              "checks": 8,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 140,
+              "rho": 0.2418552006129902,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 4,
+              "bound": 4.6871233916849194e-05,
+              "relative_bound": 0.007431223846840654,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            },
+            {
+              "at": 150,
+              "rho": 0.2418552006129902,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 4,
+              "bound": 7.726126728438796e-05,
+              "relative_bound": 0.012984725027699883,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            },
+            {
+              "at": 160,
+              "rho": 0.2418552006129902,
+              "accepted": true,
+              "horizon": 8,
+              "depth": 4,
+              "bound": 7.97276340862003e-05,
+              "relative_bound": 0.01593302615997709,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            },
+            {
+              "at": 202,
+              "rho": 0.2418552006129902,
+              "accepted": true,
+              "horizon": 7,
+              "depth": 2,
+              "bound": 3.260326944175125e-06,
+              "relative_bound": 0.000948401886835077,
+              "checks": 7,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 210,
+              "rho": 0.2418552006129902,
+              "accepted": true,
+              "horizon": 7,
+              "depth": 2,
+              "bound": 1.4083867306724138e-05,
+              "relative_bound": 0.004292460508257043,
+              "checks": 8,
+              "map_calls": 1,
+              "tangent_actions": 2
+            }
+          ],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 1.270566126585421
+            },
+            {
+              "at": 20,
+              "old": 1.270566126585421,
+              "new": 0.5577754445502536
+            },
+            {
+              "at": 30,
+              "old": 0.5577754445502536,
+              "new": 0.37281858737893014
+            },
+            {
+              "at": 40,
+              "old": 0.37281858737893014,
+              "new": 0.3215808310273716
+            },
+            {
+              "at": 50,
+              "old": 0.3215808310273716,
+              "new": 0.2617666369011426
+            },
+            {
+              "at": 60,
+              "old": 0.2617666369011426,
+              "new": 0.23486729187061964
+            },
+            {
+              "at": 80,
+              "old": 0.23486729187061964,
+              "new": 0.2726592871978636
+            },
+            {
+              "at": 100,
+              "old": 0.2726592871978636,
+              "new": 0.2418552006129902
+            },
+            {
+              "at": 230,
+              "old": 0.2418552006129902,
+              "new": 0.27666974694438706
+            },
+            {
+              "at": 240,
+              "old": 0.27666974694438706,
+              "new": 0.37928369137177176
+            },
+            {
+              "at": 250,
+              "old": 0.37928369137177176,
+              "new": 0.3072145464178811
+            }
+          ],
+          "passes": 256,
+          "target_gap": 1.8698856291236613e-05,
+          "final_gap": 9.978284373213242e-07,
+          "objective": 0.7668328498857548
+        },
+        "library": {
+          "passes": 256,
+          "stopping_checks": 4,
+          "converged": true,
+          "target_gap": 1.8698856291236613e-05,
+          "final_gap": 9.982374491457335e-07,
+          "objective": 0.7668328498857591
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 256,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 4,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 1.270566126585421
+            },
+            {
+              "at": 20,
+              "old": 1.270566126585421,
+              "new": 0.5577754445502536
+            },
+            {
+              "at": 30,
+              "old": 0.5577754445502536,
+              "new": 0.37281858737893014
+            },
+            {
+              "at": 40,
+              "old": 0.37281858737893014,
+              "new": 0.3215808310273716
+            },
+            {
+              "at": 50,
+              "old": 0.3215808310273716,
+              "new": 0.2617666369011426
+            },
+            {
+              "at": 60,
+              "old": 0.2617666369011426,
+              "new": 0.23486729187061964
+            },
+            {
+              "at": 80,
+              "old": 0.23486729187061964,
+              "new": 0.2726592871978636
+            },
+            {
+              "at": 100,
+              "old": 0.2726592871978636,
+              "new": 0.2418552006129902
+            },
+            {
+              "at": 230,
+              "old": 0.2418552006129902,
+              "new": 0.2766958153238045
+            },
+            {
+              "at": 240,
+              "old": 0.2766958153238045,
+              "new": 0.3794136380517979
+            },
+            {
+              "at": 250,
+              "old": 0.3794136380517979,
+              "new": 0.30697179699739385
+            }
+          ],
+          "passes": 256,
+          "target_gap": 1.8698856291236613e-05,
+          "final_gap": 9.982374491457335e-07,
+          "objective": 0.7668328498857591
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 2.1004327050042874e-08,
+      "speedup": 0.9887042559102465,
+      "engine_only_speedup": 0.9612322427866418,
+      "all_converged": true
+    },
+    {
+      "source": "camera",
+      "seed": 1,
+      "signals": 16,
+      "lmbda": 0.02,
+      "timing": {
+        "library": [
+          0.12685916600000002,
+          0.12665354200000012,
+          0.12663129200000034
+        ],
+        "native_driver": [
+          0.12535170800000017,
+          0.1255268329999999,
+          0.12495033300000014
+        ],
+        "engine": [
+          0.14386404100000005,
+          0.14319824999999975,
+          0.1440386669999998
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 4,
+          "rejected": 8,
+          "map_calls": 302,
+          "tangent_actions": 44,
+          "checks": 164,
+          "stopping_checks": 5,
+          "converged": true,
+          "events": [
+            {
+              "at": 152,
+              "rho": 0.1543289024587158,
+              "accepted": true,
+              "horizon": 7,
+              "depth": 2,
+              "bound": 0.00023083919013054297,
+              "relative_bound": 0.013119957359370127,
+              "checks": 7,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 192,
+              "rho": 0.14080269525888534,
+              "accepted": true,
+              "horizon": 7,
+              "depth": 2,
+              "bound": 0.00010800184551187128,
+              "relative_bound": 0.0059026309055890906,
+              "checks": 7,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 200,
+              "rho": 0.14080269525888534,
+              "accepted": true,
+              "horizon": 8,
+              "depth": 4,
+              "bound": 0.000404086687963142,
+              "relative_bound": 0.019553450165360437,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            },
+            {
+              "at": 210,
+              "rho": 0.14080269525888534,
+              "accepted": true,
+              "horizon": 8,
+              "depth": 4,
+              "bound": 0.00037268033552359335,
+              "relative_bound": 0.018288789464718288,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            }
+          ],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 0.5886513559428277
+            },
+            {
+              "at": 20,
+              "old": 0.5886513559428277,
+              "new": 0.3082382668970358
+            },
+            {
+              "at": 30,
+              "old": 0.3082382668970358,
+              "new": 0.23429894386284245
+            },
+            {
+              "at": 40,
+              "old": 0.23429894386284245,
+              "new": 0.2058482355661533
+            },
+            {
+              "at": 50,
+              "old": 0.2058482355661533,
+              "new": 0.17432985660258285
+            },
+            {
+              "at": 60,
+              "old": 0.17432985660258285,
+              "new": 0.15904381219423205
+            },
+            {
+              "at": 80,
+              "old": 0.15904381219423205,
+              "new": 0.17684235677732943
+            },
+            {
+              "at": 110,
+              "old": 0.17684235677732943,
+              "new": 0.1543289024587158
+            },
+            {
+              "at": 170,
+              "old": 0.1543289024587158,
+              "new": 0.14080269525888534
+            },
+            {
+              "at": 290,
+              "old": 0.14080269525888534,
+              "new": 0.18950036027245226
+            },
+            {
+              "at": 300,
+              "old": 0.18950036027245226,
+              "new": 0.21302920685323792
+            }
+          ],
+          "passes": 320,
+          "target_gap": 0.00014474364050314227,
+          "final_gap": 4.787049944354749e-05,
+          "objective": 2.664244916611543
+        },
+        "library": {
+          "passes": 320,
+          "stopping_checks": 5,
+          "converged": true,
+          "target_gap": 0.00014474364050314227,
+          "final_gap": 4.7991903356692234e-05,
+          "objective": 2.6642449166134092
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 320,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 5,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 0.5886513559428277
+            },
+            {
+              "at": 20,
+              "old": 0.5886513559428277,
+              "new": 0.3082382668970358
+            },
+            {
+              "at": 30,
+              "old": 0.3082382668970358,
+              "new": 0.23429894386284245
+            },
+            {
+              "at": 40,
+              "old": 0.23429894386284245,
+              "new": 0.2058482355661533
+            },
+            {
+              "at": 50,
+              "old": 0.2058482355661533,
+              "new": 0.17432985660258285
+            },
+            {
+              "at": 60,
+              "old": 0.17432985660258285,
+              "new": 0.15904381219423205
+            },
+            {
+              "at": 80,
+              "old": 0.15904381219423205,
+              "new": 0.17684235677732943
+            },
+            {
+              "at": 110,
+              "old": 0.17684235677732943,
+              "new": 0.1543289024587158
+            },
+            {
+              "at": 170,
+              "old": 0.1543289024587158,
+              "new": 0.1407953900851347
+            },
+            {
+              "at": 290,
+              "old": 0.1407953900851347,
+              "new": 0.1893862927161333
+            },
+            {
+              "at": 300,
+              "old": 0.1893862927161333,
+              "new": 0.212845627577137
+            }
+          ],
+          "passes": 320,
+          "target_gap": 0.00014474364050314227,
+          "final_gap": 4.7991903356692234e-05,
+          "objective": 2.6642449166134092
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 1.0864929028719452e-06,
+      "speedup": 0.880369695718474,
+      "engine_only_speedup": 0.8713206380738334,
+      "all_converged": true
+    },
+    {
+      "source": "camera",
+      "seed": 1,
+      "signals": 16,
+      "lmbda": 0.1,
+      "timing": {
+        "library": [
+          0.1255563750000004,
+          0.12617179200000006,
+          0.12620329199999958
+        ],
+        "native_driver": [
+          0.12408208399999987,
+          0.12433204100000017,
+          0.12422050000000073
+        ],
+        "engine": [
+          0.1315287500000002,
+          0.1294818750000002,
+          0.1301282920000002
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 14,
+          "rejected": 5,
+          "map_calls": 241,
+          "tangent_actions": 56,
+          "checks": 219,
+          "stopping_checks": 5,
+          "converged": true,
+          "events": [
+            {
+              "at": 120,
+              "rho": 0.3282884231900177,
+              "accepted": true,
+              "horizon": 7,
+              "depth": 2,
+              "bound": 6.633516720652194e-05,
+              "relative_bound": 0.014134086085947864,
+              "checks": 7,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 130,
+              "rho": 0.3282884231900177,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 4,
+              "bound": 3.775629496725697e-05,
+              "relative_bound": 0.006543293789185155,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            },
+            {
+              "at": 140,
+              "rho": 0.3282884231900177,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 4.722090877982449e-05,
+              "relative_bound": 0.01523572293174797,
+              "checks": 8,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 150,
+              "rho": 0.3282884231900177,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 5.1221196803315116e-05,
+              "relative_bound": 0.017243332956748802,
+              "checks": 8,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 160,
+              "rho": 0.3282884231900177,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 5.242023893791453e-05,
+              "relative_bound": 0.018411027867279495,
+              "checks": 8,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 170,
+              "rho": 0.3282884231900177,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 4.6817668179809546e-05,
+              "relative_bound": 0.01715441404146506,
+              "checks": 8,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 180,
+              "rho": 0.3282884231900177,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 4.520045289306954e-05,
+              "relative_bound": 0.01727856375498883,
+              "checks": 8,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 192,
+              "rho": 0.3282884231900177,
+              "accepted": true,
+              "horizon": 7,
+              "depth": 2,
+              "bound": 6.27378291260127e-05,
+              "relative_bound": 0.018099440941644594,
+              "checks": 7,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 200,
+              "rho": 0.3282884231900177,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 4,
+              "bound": 6.73989095166305e-05,
+              "relative_bound": 0.01571025870021715,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            },
+            {
+              "at": 210,
+              "rho": 0.3282884231900177,
+              "accepted": true,
+              "horizon": 8,
+              "depth": 4,
+              "bound": 6.881767709758433e-05,
+              "relative_bound": 0.018788135946295446,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            },
+            {
+              "at": 220,
+              "rho": 0.3282884231900177,
+              "accepted": true,
+              "horizon": 8,
+              "depth": 4,
+              "bound": 6.514365939343074e-05,
+              "relative_bound": 0.01855432070503993,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            },
+            {
+              "at": 262,
+              "rho": 0.3282884231900177,
+              "accepted": true,
+              "horizon": 7,
+              "depth": 2,
+              "bound": 9.218873148847233e-07,
+              "relative_bound": 0.000357742120952535,
+              "checks": 7,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 270,
+              "rho": 0.3282884231900177,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 2,
+              "bound": 7.1257222430106766e-06,
+              "relative_bound": 0.0022342152457432997,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 280,
+              "rho": 0.3282884231900177,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 2,
+              "bound": 2.5320985744539903e-05,
+              "relative_bound": 0.008282863714668378,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            }
+          ],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 1.578452601215882
+            },
+            {
+              "at": 20,
+              "old": 1.578452601215882,
+              "new": 0.7375243245485086
+            },
+            {
+              "at": 30,
+              "old": 0.7375243245485086,
+              "new": 0.501444331696331
+            },
+            {
+              "at": 40,
+              "old": 0.501444331696331,
+              "new": 0.41530256448701885
+            },
+            {
+              "at": 60,
+              "old": 0.41530256448701885,
+              "new": 0.37149832183842774
+            },
+            {
+              "at": 70,
+              "old": 0.37149832183842774,
+              "new": 0.3370333837844767
+            },
+            {
+              "at": 90,
+              "old": 0.3370333837844767,
+              "new": 0.410008355863922
+            },
+            {
+              "at": 100,
+              "old": 0.410008355863922,
+              "new": 0.3615536520462373
+            },
+            {
+              "at": 120,
+              "old": 0.3615536520462373,
+              "new": 0.3282884231900177
+            },
+            {
+              "at": 320,
+              "old": 0.3282884231900177,
+              "new": 0.36554557816221855
+            }
+          ],
+          "passes": 320,
+          "target_gap": 0.00014474364050314227,
+          "final_gap": 7.367562320226284e-06,
+          "objective": 7.763172258992032
+        },
+        "library": {
+          "passes": 320,
+          "stopping_checks": 5,
+          "converged": true,
+          "target_gap": 0.00014474364050314227,
+          "final_gap": 7.363087616063524e-06,
+          "objective": 7.763172258990888
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 320,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 5,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 1.578452601215882
+            },
+            {
+              "at": 20,
+              "old": 1.578452601215882,
+              "new": 0.7375243245485086
+            },
+            {
+              "at": 30,
+              "old": 0.7375243245485086,
+              "new": 0.501444331696331
+            },
+            {
+              "at": 40,
+              "old": 0.501444331696331,
+              "new": 0.41530256448701885
+            },
+            {
+              "at": 60,
+              "old": 0.41530256448701885,
+              "new": 0.37149832183842774
+            },
+            {
+              "at": 70,
+              "old": 0.37149832183842774,
+              "new": 0.3370333837844767
+            },
+            {
+              "at": 90,
+              "old": 0.3370333837844767,
+              "new": 0.410008355863922
+            },
+            {
+              "at": 100,
+              "old": 0.410008355863922,
+              "new": 0.3615536520462373
+            },
+            {
+              "at": 120,
+              "old": 0.3615536520462373,
+              "new": 0.3282884231900177
+            },
+            {
+              "at": 320,
+              "old": 0.3282884231900177,
+              "new": 0.3655530932163932
+            }
+          ],
+          "passes": 320,
+          "target_gap": 0.00014474364050314227,
+          "final_gap": 7.363087616063524e-06,
+          "objective": 7.763172258990888
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 3.6734065478815177e-07,
+      "speedup": 0.9695953897558255,
+      "engine_only_speedup": 0.954600249421552,
+      "all_converged": true
+    },
+    {
+      "source": "camera",
+      "seed": 2,
+      "signals": 1,
+      "lmbda": 0.02,
+      "timing": {
+        "library": [
+          0.01775695899999974,
+          0.01812816699999953,
+          0.018144624999999692
+        ],
+        "native_driver": [
+          0.01740012499999999,
+          0.01763304099999985,
+          0.01766829200000064
+        ],
+        "engine": [
+          0.01720324999999967,
+          0.017441041000000546,
+          0.017444874999999804
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 6,
+          "rejected": 2,
+          "map_calls": 92,
+          "tangent_actions": 24,
+          "checks": 95,
+          "stopping_checks": 2,
+          "converged": true,
+          "events": [
+            {
+              "at": 52,
+              "rho": 0.6372193857234323,
+              "accepted": true,
+              "horizon": 7,
+              "depth": 2,
+              "bound": 1.4101664649129477e-06,
+              "relative_bound": 0.006843508288950634,
+              "checks": 7,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 64,
+              "rho": 0.6372193857234323,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 1.5434463611047745e-07,
+              "relative_bound": 0.0041810086708500655,
+              "checks": 5,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 70,
+              "rho": 0.6372193857234323,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 2,
+              "bound": 4.6308832966096705e-07,
+              "relative_bound": 0.018212284906686204,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 80,
+              "rho": 0.6372193857234323,
+              "accepted": true,
+              "horizon": 6,
+              "depth": 2,
+              "bound": 1.0515804054962508e-07,
+              "relative_bound": 0.01836568837011909,
+              "checks": 8,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 90,
+              "rho": 0.6372193857234323,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 4,
+              "bound": 2.1947152278741642e-08,
+              "relative_bound": 0.010383486218607657,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            },
+            {
+              "at": 100,
+              "rho": 0.6372193857234323,
+              "accepted": true,
+              "horizon": 8,
+              "depth": 4,
+              "bound": 8.803869518463616e-09,
+              "relative_bound": 0.01543780758066991,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            }
+          ],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 1.289019196469689
+            },
+            {
+              "at": 20,
+              "old": 1.289019196469689,
+              "new": 0.936099397353803
+            },
+            {
+              "at": 30,
+              "old": 0.936099397353803,
+              "new": 0.730625172943946
+            },
+            {
+              "at": 40,
+              "old": 0.730625172943946,
+              "new": 0.6372193857234323
+            }
+          ],
+          "passes": 128,
+          "target_gap": 1.2430566217980256e-06,
+          "final_gap": 8.537754531134922e-10,
+          "objective": 0.07460785460665614
+        },
+        "library": {
+          "passes": 128,
+          "stopping_checks": 2,
+          "converged": true,
+          "target_gap": 1.2430566217980256e-06,
+          "final_gap": 8.561001074713914e-10,
+          "objective": 0.07460785460665614
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 128,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 2,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 1.289019196469689
+            },
+            {
+              "at": 20,
+              "old": 1.289019196469689,
+              "new": 0.936099397353803
+            },
+            {
+              "at": 30,
+              "old": 0.936099397353803,
+              "new": 0.730625172943946
+            },
+            {
+              "at": 40,
+              "old": 0.730625172943946,
+              "new": 0.6372193857234323
+            }
+          ],
+          "passes": 128,
+          "target_gap": 1.2430566217980256e-06,
+          "final_gap": 8.561001074713914e-10,
+          "objective": 0.07460785460665614
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 7.730216800932414e-11,
+      "speedup": 1.0393970749795818,
+      "engine_only_speedup": 1.0110085172094543,
+      "all_converged": true
+    },
+    {
+      "source": "camera",
+      "seed": 2,
+      "signals": 1,
+      "lmbda": 0.1,
+      "timing": {
+        "library": [
+          0.013265209000000056,
+          0.013275165999999672,
+          0.012897291999999894
+        ],
+        "native_driver": [
+          0.012965375000000279,
+          0.012965749999999332,
+          0.01254299999999997
+        ],
+        "engine": [
+          0.011170833000000435,
+          0.011140166999999757,
+          0.011157374999999803
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 4,
+          "rejected": 0,
+          "map_calls": 32,
+          "tangent_actions": 8,
+          "checks": 36,
+          "stopping_checks": 1,
+          "converged": true,
+          "events": [
+            {
+              "at": 20,
+              "rho": 541.6576883303632,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 2,
+              "bound": 3.1614685662618263e-09,
+              "relative_bound": 0.0002874949829070948,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 30,
+              "rho": 799.8398223759245,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 2,
+              "bound": 1.9109551438712032e-10,
+              "relative_bound": 2.6517940198306864e-05,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 40,
+              "rho": 987.7439979058104,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 2,
+              "bound": 1.5546222610771324e-11,
+              "relative_bound": 2.7196200522629708e-06,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 50,
+              "rho": 1124.2835186510076,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 2,
+              "bound": 1.4581595296929224e-12,
+              "relative_bound": 2.9539095401486513e-07,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            }
+          ],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 121.03229092250966
+            },
+            {
+              "at": 20,
+              "old": 121.03229092250966,
+              "new": 541.6576883303632
+            },
+            {
+              "at": 30,
+              "old": 541.6576883303632,
+              "new": 799.8398223759245
+            },
+            {
+              "at": 40,
+              "old": 799.8398223759245,
+              "new": 987.7439979058104
+            },
+            {
+              "at": 50,
+              "old": 987.7439979058104,
+              "new": 1124.2835186510076
+            }
+          ],
+          "passes": 64,
+          "target_gap": 1.2430566217980256e-06,
+          "final_gap": 4.112067333861269e-08,
+          "objective": 0.12430569587550823
+        },
+        "library": {
+          "passes": 64,
+          "stopping_checks": 1,
+          "converged": true,
+          "target_gap": 1.2430566217980256e-06,
+          "final_gap": 4.1120674323935624e-08,
+          "objective": 0.12430569587550898
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 64,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 1,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 121.03229092250966
+            },
+            {
+              "at": 20,
+              "old": 121.03229092250966,
+              "new": 541.6576883303632
+            },
+            {
+              "at": 30,
+              "old": 541.6576883303632,
+              "new": 799.8406503453702
+            },
+            {
+              "at": 40,
+              "old": 799.8406503453702,
+              "new": 987.7446932182404
+            },
+            {
+              "at": 50,
+              "old": 987.7446932182404,
+              "new": 1124.283941533715
+            }
+          ],
+          "passes": 64,
+          "target_gap": 1.2430566217980256e-06,
+          "final_gap": 4.1120674323935624e-08,
+          "objective": 0.12430569587550898
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 2.269428473812042e-12,
+      "speedup": 1.1889184508005055,
+      "engine_only_speedup": 1.162045283949003,
+      "all_converged": true
+    },
+    {
+      "source": "camera",
+      "seed": 2,
+      "signals": 16,
+      "lmbda": 0.02,
+      "timing": {
+        "library": [
+          0.07985583399999996,
+          0.07889699999999955,
+          0.07952425000000041
+        ],
+        "native_driver": [
+          0.07783966700000011,
+          0.07811629199999981,
+          0.07745695900000005
+        ],
+        "engine": [
+          0.09001458300000031,
+          0.09017670899999963,
+          0.09004337499999959
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 1,
+          "rejected": 5,
+          "map_calls": 193,
+          "tangent_actions": 22,
+          "checks": 73,
+          "stopping_checks": 3,
+          "converged": true,
+          "events": [
+            {
+              "at": 184,
+              "rho": 0.1516962755752033,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 2.979127630528749e-06,
+              "relative_bound": 0.004999409337625515,
+              "checks": 5,
+              "map_calls": 1,
+              "tangent_actions": 2
+            }
+          ],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 0.563051514748801
+            },
+            {
+              "at": 20,
+              "old": 0.563051514748801,
+              "new": 0.28486902867884367
+            },
+            {
+              "at": 30,
+              "old": 0.28486902867884367,
+              "new": 0.20114392719036855
+            },
+            {
+              "at": 40,
+              "old": 0.20114392719036855,
+              "new": 0.179873886807989
+            },
+            {
+              "at": 50,
+              "old": 0.179873886807989,
+              "new": 0.1496910778165023
+            },
+            {
+              "at": 130,
+              "old": 0.1496910778165023,
+              "new": 0.16632559271744746
+            },
+            {
+              "at": 160,
+              "old": 0.16632559271744746,
+              "new": 0.1516962755752033
+            },
+            {
+              "at": 190,
+              "old": 0.1516962755752033,
+              "new": 0.1382119578370492
+            }
+          ],
+          "passes": 192,
+          "target_gap": 0.00017181727410251504,
+          "final_gap": 5.7977740441916836e-05,
+          "objective": 2.4708500115567285
+        },
+        "library": {
+          "passes": 192,
+          "stopping_checks": 3,
+          "converged": true,
+          "target_gap": 0.00017181727410251504,
+          "final_gap": 5.7553829990730776e-05,
+          "objective": 2.4708500115555196
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 192,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 3,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 0.563051514748801
+            },
+            {
+              "at": 20,
+              "old": 0.563051514748801,
+              "new": 0.28486902867884367
+            },
+            {
+              "at": 30,
+              "old": 0.28486902867884367,
+              "new": 0.20114392719036855
+            },
+            {
+              "at": 40,
+              "old": 0.20114392719036855,
+              "new": 0.179873886807989
+            },
+            {
+              "at": 50,
+              "old": 0.179873886807989,
+              "new": 0.1496910778165023
+            },
+            {
+              "at": 130,
+              "old": 0.1496910778165023,
+              "new": 0.16632559271744746
+            },
+            {
+              "at": 160,
+              "old": 0.16632559271744746,
+              "new": 0.1516962755752033
+            },
+            {
+              "at": 190,
+              "old": 0.1516962755752033,
+              "new": 0.13821286849645217
+            }
+          ],
+          "passes": 192,
+          "target_gap": 0.00017181727410251504,
+          "final_gap": 5.7553829990730776e-05,
+          "objective": 2.4708500115555196
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 1.5465341075210103e-06,
+      "speedup": 0.8831771354638891,
+      "engine_only_speedup": 0.8644685630675267,
+      "all_converged": true
+    },
+    {
+      "source": "camera",
+      "seed": 2,
+      "signals": 16,
+      "lmbda": 0.1,
+      "timing": {
+        "library": [
+          0.05777225000000019,
+          0.05725804099999987,
+          0.05714150000000018
+        ],
+        "native_driver": [
+          0.05645245799999987,
+          0.05691366699999989,
+          0.05654154200000061
+        ],
+        "engine": [
+          0.06771204100000006,
+          0.06681158300000067,
+          0.06691612500000055
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 0,
+          "rejected": 4,
+          "map_calls": 132,
+          "tangent_actions": 16,
+          "checks": 54,
+          "stopping_checks": 2,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 1.404523250473183
+            },
+            {
+              "at": 20,
+              "old": 1.404523250473183,
+              "new": 0.6277865970714727
+            },
+            {
+              "at": 30,
+              "old": 0.6277865970714727,
+              "new": 0.4159006221759657
+            },
+            {
+              "at": 40,
+              "old": 0.4159006221759657,
+              "new": 0.36267443723664944
+            },
+            {
+              "at": 50,
+              "old": 0.36267443723664944,
+              "new": 0.30345434826545803
+            },
+            {
+              "at": 60,
+              "old": 0.30345434826545803,
+              "new": 0.2734563010943027
+            },
+            {
+              "at": 80,
+              "old": 0.2734563010943027,
+              "new": 0.300196048884804
+            },
+            {
+              "at": 90,
+              "old": 0.300196048884804,
+              "new": 0.3519255728223835
+            },
+            {
+              "at": 120,
+              "old": 0.3519255728223835,
+              "new": 0.31515241794080495
+            }
+          ],
+          "passes": 128,
+          "target_gap": 0.00017181727410251504,
+          "final_gap": 1.296584368759568e-07,
+          "objective": 7.068770543081026
+        },
+        "library": {
+          "passes": 128,
+          "stopping_checks": 2,
+          "converged": true,
+          "target_gap": 0.00017181727410251504,
+          "final_gap": 1.296584368759568e-07,
+          "objective": 7.068770543081026
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 128,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 2,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 1.404523250473183
+            },
+            {
+              "at": 20,
+              "old": 1.404523250473183,
+              "new": 0.6277865970714727
+            },
+            {
+              "at": 30,
+              "old": 0.6277865970714727,
+              "new": 0.4159006221759657
+            },
+            {
+              "at": 40,
+              "old": 0.4159006221759657,
+              "new": 0.36267443723664944
+            },
+            {
+              "at": 50,
+              "old": 0.36267443723664944,
+              "new": 0.30345434826545803
+            },
+            {
+              "at": 60,
+              "old": 0.30345434826545803,
+              "new": 0.2734563010943027
+            },
+            {
+              "at": 80,
+              "old": 0.2734563010943027,
+              "new": 0.300196048884804
+            },
+            {
+              "at": 90,
+              "old": 0.300196048884804,
+              "new": 0.3519255728223835
+            },
+            {
+              "at": 120,
+              "old": 0.3519255728223835,
+              "new": 0.31515241794080495
+            }
+          ],
+          "passes": 128,
+          "target_gap": 0.00017181727410251504,
+          "final_gap": 1.296584368759568e-07,
+          "objective": 7.068770543081026
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 0.0,
+      "speedup": 0.8556688092742878,
+      "engine_only_speedup": 0.8449613900984276,
+      "all_converged": true
+    },
+    {
+      "source": "coins",
+      "seed": 1,
+      "signals": 1,
+      "lmbda": 0.02,
+      "timing": {
+        "library": [
+          0.04531412499999998,
+          0.04550091599999995,
+          0.046390832999999354
+        ],
+        "native_driver": [
+          0.044625667000000036,
+          0.04437316700000071,
+          0.04538633300000061
+        ],
+        "engine": [
+          0.048671000000000575,
+          0.049587332999999845,
+          0.04983320799999991
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 0,
+          "rejected": 7,
+          "map_calls": 263,
+          "tangent_actions": 28,
+          "checks": 94,
+          "stopping_checks": 4,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 0.34500517374859213
+            },
+            {
+              "at": 20,
+              "old": 0.34500517374859213,
+              "new": 0.14131717216307435
+            },
+            {
+              "at": 30,
+              "old": 0.14131717216307435,
+              "new": 0.090926788112219
+            },
+            {
+              "at": 40,
+              "old": 0.090926788112219,
+              "new": 0.07385355572300907
+            },
+            {
+              "at": 90,
+              "old": 0.07385355572300907,
+              "new": 0.06646597807092847
+            },
+            {
+              "at": 110,
+              "old": 0.06646597807092847,
+              "new": 0.07427479203397089
+            },
+            {
+              "at": 130,
+              "old": 0.07427479203397089,
+              "new": 0.06596770988980359
+            },
+            {
+              "at": 140,
+              "old": 0.06596770988980359,
+              "new": 0.0760741250840212
+            },
+            {
+              "at": 160,
+              "old": 0.0760741250840212,
+              "new": 0.0620814444905342
+            },
+            {
+              "at": 170,
+              "old": 0.0620814444905342,
+              "new": 0.07039245466671996
+            },
+            {
+              "at": 180,
+              "old": 0.07039245466671996,
+              "new": 0.08562510141087395
+            },
+            {
+              "at": 190,
+              "old": 0.08562510141087395,
+              "new": 0.06291270590204301
+            },
+            {
+              "at": 210,
+              "old": 0.06291270590204301,
+              "new": 0.09378054671527103
+            },
+            {
+              "at": 220,
+              "old": 0.09378054671527103,
+              "new": 0.06826034684137947
+            },
+            {
+              "at": 240,
+              "old": 0.06826034684137947,
+              "new": 0.10586134886852501
+            },
+            {
+              "at": 250,
+              "old": 0.10586134886852501,
+              "new": 0.07302680638918203
+            }
+          ],
+          "passes": 256,
+          "target_gap": 8.181931150337185e-05,
+          "final_gap": 1.2629160132504591e-05,
+          "objective": 0.4356300513729833
+        },
+        "library": {
+          "passes": 256,
+          "stopping_checks": 4,
+          "converged": true,
+          "target_gap": 8.181931150337185e-05,
+          "final_gap": 1.2629160132504591e-05,
+          "objective": 0.4356300513729833
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 256,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 4,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 0.34500517374859213
+            },
+            {
+              "at": 20,
+              "old": 0.34500517374859213,
+              "new": 0.14131717216307435
+            },
+            {
+              "at": 30,
+              "old": 0.14131717216307435,
+              "new": 0.090926788112219
+            },
+            {
+              "at": 40,
+              "old": 0.090926788112219,
+              "new": 0.07385355572300907
+            },
+            {
+              "at": 90,
+              "old": 0.07385355572300907,
+              "new": 0.06646597807092847
+            },
+            {
+              "at": 110,
+              "old": 0.06646597807092847,
+              "new": 0.07427479203397089
+            },
+            {
+              "at": 130,
+              "old": 0.07427479203397089,
+              "new": 0.06596770988980359
+            },
+            {
+              "at": 140,
+              "old": 0.06596770988980359,
+              "new": 0.0760741250840212
+            },
+            {
+              "at": 160,
+              "old": 0.0760741250840212,
+              "new": 0.0620814444905342
+            },
+            {
+              "at": 170,
+              "old": 0.0620814444905342,
+              "new": 0.07039245466671996
+            },
+            {
+              "at": 180,
+              "old": 0.07039245466671996,
+              "new": 0.08562510141087395
+            },
+            {
+              "at": 190,
+              "old": 0.08562510141087395,
+              "new": 0.06291270590204301
+            },
+            {
+              "at": 210,
+              "old": 0.06291270590204301,
+              "new": 0.09378054671527103
+            },
+            {
+              "at": 220,
+              "old": 0.09378054671527103,
+              "new": 0.06826034684137947
+            },
+            {
+              "at": 240,
+              "old": 0.06826034684137947,
+              "new": 0.10586134886852501
+            },
+            {
+              "at": 250,
+              "old": 0.10586134886852501,
+              "new": 0.07302680638918203
+            }
+          ],
+          "passes": 256,
+          "target_gap": 8.181931150337185e-05,
+          "final_gap": 1.2629160132504591e-05,
+          "objective": 0.4356300513729833
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 0.0,
+      "speedup": 0.9175915147523681,
+      "engine_only_speedup": 0.8999408578799787,
+      "all_converged": true
+    },
+    {
+      "source": "coins",
+      "seed": 1,
+      "signals": 1,
+      "lmbda": 0.1,
+      "timing": {
+        "library": [
+          0.02195808300000035,
+          0.022016208000000148,
+          0.022040750000000386
+        ],
+        "native_driver": [
+          0.02146474999999981,
+          0.021488167000000225,
+          0.021530457999999975
+        ],
+        "engine": [
+          0.023761416000000146,
+          0.024031749999999796,
+          0.02399891700000012
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 0,
+          "rejected": 4,
+          "map_calls": 132,
+          "tangent_actions": 16,
+          "checks": 54,
+          "stopping_checks": 2,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 0.9061243548587989
+            },
+            {
+              "at": 20,
+              "old": 0.9061243548587989,
+              "new": 0.32749539295171753
+            },
+            {
+              "at": 30,
+              "old": 0.32749539295171753,
+              "new": 0.21791196548869182
+            },
+            {
+              "at": 40,
+              "old": 0.21791196548869182,
+              "new": 0.16498159852458916
+            },
+            {
+              "at": 90,
+              "old": 0.16498159852458916,
+              "new": 0.14586017163369255
+            },
+            {
+              "at": 110,
+              "old": 0.14586017163369255,
+              "new": 0.16657618880797193
+            },
+            {
+              "at": 120,
+              "old": 0.16657618880797193,
+              "new": 0.2203718059954229
+            }
+          ],
+          "passes": 128,
+          "target_gap": 8.181931150337185e-05,
+          "final_gap": 1.7398670846713316e-05,
+          "objective": 1.7063618918131165
+        },
+        "library": {
+          "passes": 128,
+          "stopping_checks": 2,
+          "converged": true,
+          "target_gap": 8.181931150337185e-05,
+          "final_gap": 1.7398670846713316e-05,
+          "objective": 1.7063618918131165
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 128,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 2,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 0.9061243548587989
+            },
+            {
+              "at": 20,
+              "old": 0.9061243548587989,
+              "new": 0.32749539295171753
+            },
+            {
+              "at": 30,
+              "old": 0.32749539295171753,
+              "new": 0.21791196548869182
+            },
+            {
+              "at": 40,
+              "old": 0.21791196548869182,
+              "new": 0.16498159852458916
+            },
+            {
+              "at": 90,
+              "old": 0.16498159852458916,
+              "new": 0.14586017163369255
+            },
+            {
+              "at": 110,
+              "old": 0.14586017163369255,
+              "new": 0.16657618880797193
+            },
+            {
+              "at": 120,
+              "old": 0.16657618880797193,
+              "new": 0.2203718059954229
+            }
+          ],
+          "passes": 128,
+          "target_gap": 8.181931150337185e-05,
+          "final_gap": 1.7398670846713316e-05,
+          "objective": 1.7063618918131165
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 0.0,
+      "speedup": 0.9173833969257879,
+      "engine_only_speedup": 0.895380695720566,
+      "all_converged": true
+    },
+    {
+      "source": "coins",
+      "seed": 1,
+      "signals": 16,
+      "lmbda": 0.02,
+      "timing": {
+        "library": [
+          0.12667949999999983,
+          0.12460241700000019,
+          0.12456912499999895
+        ],
+        "native_driver": [
+          0.12496770799999979,
+          0.12284858399999976,
+          0.12391662499999967
+        ],
+        "engine": [
+          0.14643099999999976,
+          0.14595012499999882,
+          0.14527704200000002
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 0,
+          "rejected": 9,
+          "map_calls": 329,
+          "tangent_actions": 36,
+          "checks": 124,
+          "stopping_checks": 5,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 0.4474304816706197
+            },
+            {
+              "at": 20,
+              "old": 0.4474304816706197,
+              "new": 0.21114492044112287
+            },
+            {
+              "at": 30,
+              "old": 0.21114492044112287,
+              "new": 0.14726891346337653
+            },
+            {
+              "at": 40,
+              "old": 0.14726891346337653,
+              "new": 0.13041757298853804
+            },
+            {
+              "at": 50,
+              "old": 0.13041757298853804,
+              "new": 0.11206552574985132
+            },
+            {
+              "at": 90,
+              "old": 0.11206552574985132,
+              "new": 0.09759790269154098
+            },
+            {
+              "at": 160,
+              "old": 0.09759790269154098,
+              "new": 0.08892594731190384
+            },
+            {
+              "at": 320,
+              "old": 0.08892594731190384,
+              "new": 0.08109699784048852
+            }
+          ],
+          "passes": 320,
+          "target_gap": 0.00043536263598982364,
+          "final_gap": 0.0003367233698146066,
+          "objective": 3.8036291727373284
+        },
+        "library": {
+          "passes": 320,
+          "stopping_checks": 5,
+          "converged": true,
+          "target_gap": 0.00043536263598982364,
+          "final_gap": 0.0003367233698146066,
+          "objective": 3.8036291727373284
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 320,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 5,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 0.4474304816706197
+            },
+            {
+              "at": 20,
+              "old": 0.4474304816706197,
+              "new": 0.21114492044112287
+            },
+            {
+              "at": 30,
+              "old": 0.21114492044112287,
+              "new": 0.14726891346337653
+            },
+            {
+              "at": 40,
+              "old": 0.14726891346337653,
+              "new": 0.13041757298853804
+            },
+            {
+              "at": 50,
+              "old": 0.13041757298853804,
+              "new": 0.11206552574985132
+            },
+            {
+              "at": 90,
+              "old": 0.11206552574985132,
+              "new": 0.09759790269154098
+            },
+            {
+              "at": 160,
+              "old": 0.09759790269154098,
+              "new": 0.08892594731190384
+            },
+            {
+              "at": 320,
+              "old": 0.08892594731190384,
+              "new": 0.08109699784048852
+            }
+          ],
+          "passes": 320,
+          "target_gap": 0.00043536263598982364,
+          "final_gap": 0.0003367233698146066,
+          "objective": 3.8036291727373284
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 0.0,
+      "speedup": 0.8537328556587478,
+      "engine_only_speedup": 0.849034045020521,
+      "all_converged": true
+    },
+    {
+      "source": "coins",
+      "seed": 1,
+      "signals": 16,
+      "lmbda": 0.1,
+      "timing": {
+        "library": [
+          0.10377420800000081,
+          0.10358229100000038,
+          0.10189150000000069
+        ],
+        "native_driver": [
+          0.10289012500000005,
+          0.10097991700000009,
+          0.10103991699999959
+        ],
+        "engine": [
+          0.11631558399999875,
+          0.11434312499999955,
+          0.11419195900000112
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 5,
+          "rejected": 6,
+          "map_calls": 234,
+          "tangent_actions": 36,
+          "checks": 132,
+          "stopping_checks": 4,
+          "converged": true,
+          "events": [
+            {
+              "at": 120,
+              "rho": 0.17949776924826832,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 0.0006131355126654328,
+              "relative_bound": 0.01879206884428206,
+              "checks": 7,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 194,
+              "rho": 0.1855416292738825,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 1.690368500350193e-05,
+              "relative_bound": 0.0013089946711513315,
+              "checks": 5,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 200,
+              "rho": 0.1855416292738825,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 2,
+              "bound": 0.00026152525171976165,
+              "relative_bound": 0.011272860891147632,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 210,
+              "rho": 0.1855416292738825,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 0.0002173734014711002,
+              "relative_bound": 0.016892129125130752,
+              "checks": 8,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 220,
+              "rho": 0.1855416292738825,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 4,
+              "bound": 0.0004418346875474348,
+              "relative_bound": 0.019112821750576412,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            }
+          ],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 1.1569333428485793
+            },
+            {
+              "at": 20,
+              "old": 1.1569333428485793,
+              "new": 0.46600660199983474
+            },
+            {
+              "at": 30,
+              "old": 0.46600660199983474,
+              "new": 0.31052863142560605
+            },
+            {
+              "at": 40,
+              "old": 0.31052863142560605,
+              "new": 0.2505292102097089
+            },
+            {
+              "at": 50,
+              "old": 0.2505292102097089,
+              "new": 0.2260346868787568
+            },
+            {
+              "at": 80,
+              "old": 0.2260346868787568,
+              "new": 0.19721328976716224
+            },
+            {
+              "at": 100,
+              "old": 0.19721328976716224,
+              "new": 0.17949776924826832
+            },
+            {
+              "at": 130,
+              "old": 0.17949776924826832,
+              "new": 0.20335254217628548
+            },
+            {
+              "at": 140,
+              "old": 0.20335254217628548,
+              "new": 0.1855416292738825
+            }
+          ],
+          "passes": 256,
+          "target_gap": 0.00043536263598982364,
+          "final_gap": 0.00041997405743465777,
+          "objective": 12.948560152980628
+        },
+        "library": {
+          "passes": 256,
+          "stopping_checks": 4,
+          "converged": true,
+          "target_gap": 0.00043536263598982364,
+          "final_gap": 0.0004201731274342535,
+          "objective": 12.948560152816198
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 256,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 4,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 1.1569333428485793
+            },
+            {
+              "at": 20,
+              "old": 1.1569333428485793,
+              "new": 0.46600660199983474
+            },
+            {
+              "at": 30,
+              "old": 0.46600660199983474,
+              "new": 0.31052863142560605
+            },
+            {
+              "at": 40,
+              "old": 0.31052863142560605,
+              "new": 0.2505292102097089
+            },
+            {
+              "at": 50,
+              "old": 0.2505292102097089,
+              "new": 0.2260346868787568
+            },
+            {
+              "at": 80,
+              "old": 0.2260346868787568,
+              "new": 0.19721328976716224
+            },
+            {
+              "at": 100,
+              "old": 0.19721328976716224,
+              "new": 0.17949776924826832
+            },
+            {
+              "at": 130,
+              "old": 0.17949776924826832,
+              "new": 0.2034064910007986
+            },
+            {
+              "at": 140,
+              "old": 0.2034064910007986,
+              "new": 0.18555421459000404
+            }
+          ],
+          "passes": 256,
+          "target_gap": 0.00043536263598982364,
+          "final_gap": 0.0004201731274342535,
+          "objective": 12.948560152816198
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 5.748577950857853e-05,
+      "speedup": 0.9058899780813301,
+      "engine_only_speedup": 0.8836553749952172,
+      "all_converged": true
+    },
+    {
+      "source": "coins",
+      "seed": 2,
+      "signals": 1,
+      "lmbda": 0.02,
+      "timing": {
+        "library": [
+          0.04713600000000007,
+          0.04719133299999889,
+          0.04714624999999906
+        ],
+        "native_driver": [
+          0.04609645800000095,
+          0.04608966600000031,
+          0.046110207999999986
+        ],
+        "engine": [
+          0.050441792000000873,
+          0.05051450000000024,
+          0.05054104199999898
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 0,
+          "rejected": 7,
+          "map_calls": 263,
+          "tangent_actions": 28,
+          "checks": 94,
+          "stopping_checks": 4,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 0.33875229857304234
+            },
+            {
+              "at": 20,
+              "old": 0.33875229857304234,
+              "new": 0.14189378402476732
+            },
+            {
+              "at": 30,
+              "old": 0.14189378402476732,
+              "new": 0.10921288914204333
+            },
+            {
+              "at": 40,
+              "old": 0.10921288914204333,
+              "new": 0.08674993372890344
+            },
+            {
+              "at": 60,
+              "old": 0.08674993372890344,
+              "new": 0.07153683488340334
+            },
+            {
+              "at": 70,
+              "old": 0.07153683488340334,
+              "new": 0.06449789148157956
+            },
+            {
+              "at": 130,
+              "old": 0.06449789148157956,
+              "new": 0.10388216389715454
+            },
+            {
+              "at": 140,
+              "old": 0.10388216389715454,
+              "new": 0.07500051282874867
+            },
+            {
+              "at": 160,
+              "old": 0.07500051282874867,
+              "new": 0.11417621643107491
+            },
+            {
+              "at": 170,
+              "old": 0.11417621643107491,
+              "new": 0.07943755013862708
+            },
+            {
+              "at": 180,
+              "old": 0.07943755013862708,
+              "new": 0.06982643996786377
+            },
+            {
+              "at": 190,
+              "old": 0.06982643996786377,
+              "new": 0.09333418501543986
+            },
+            {
+              "at": 200,
+              "old": 0.09333418501543986,
+              "new": 0.0778222627008656
+            },
+            {
+              "at": 210,
+              "old": 0.0778222627008656,
+              "new": 0.06582896405575851
+            },
+            {
+              "at": 220,
+              "old": 0.06582896405575851,
+              "new": 0.08484626634974932
+            },
+            {
+              "at": 240,
+              "old": 0.08484626634974932,
+              "new": 0.06761353613932826
+            },
+            {
+              "at": 250,
+              "old": 0.06761353613932826,
+              "new": 0.07672435515233234
+            }
+          ],
+          "passes": 256,
+          "target_gap": 7.96986004935821e-05,
+          "final_gap": 7.695422034881272e-05,
+          "objective": 0.35581702933525144
+        },
+        "library": {
+          "passes": 256,
+          "stopping_checks": 4,
+          "converged": true,
+          "target_gap": 7.96986004935821e-05,
+          "final_gap": 7.695422034881272e-05,
+          "objective": 0.35581702933525144
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 256,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 4,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 0.33875229857304234
+            },
+            {
+              "at": 20,
+              "old": 0.33875229857304234,
+              "new": 0.14189378402476732
+            },
+            {
+              "at": 30,
+              "old": 0.14189378402476732,
+              "new": 0.10921288914204333
+            },
+            {
+              "at": 40,
+              "old": 0.10921288914204333,
+              "new": 0.08674993372890344
+            },
+            {
+              "at": 60,
+              "old": 0.08674993372890344,
+              "new": 0.07153683488340334
+            },
+            {
+              "at": 70,
+              "old": 0.07153683488340334,
+              "new": 0.06449789148157956
+            },
+            {
+              "at": 130,
+              "old": 0.06449789148157956,
+              "new": 0.10388216389715454
+            },
+            {
+              "at": 140,
+              "old": 0.10388216389715454,
+              "new": 0.07500051282874867
+            },
+            {
+              "at": 160,
+              "old": 0.07500051282874867,
+              "new": 0.11417621643107491
+            },
+            {
+              "at": 170,
+              "old": 0.11417621643107491,
+              "new": 0.07943755013862708
+            },
+            {
+              "at": 180,
+              "old": 0.07943755013862708,
+              "new": 0.06982643996786377
+            },
+            {
+              "at": 190,
+              "old": 0.06982643996786377,
+              "new": 0.09333418501543986
+            },
+            {
+              "at": 200,
+              "old": 0.09333418501543986,
+              "new": 0.0778222627008656
+            },
+            {
+              "at": 210,
+              "old": 0.0778222627008656,
+              "new": 0.06582896405575851
+            },
+            {
+              "at": 220,
+              "old": 0.06582896405575851,
+              "new": 0.08484626634974932
+            },
+            {
+              "at": 240,
+              "old": 0.08484626634974932,
+              "new": 0.06761353613932826
+            },
+            {
+              "at": 250,
+              "old": 0.06761353613932826,
+              "new": 0.07672435515233234
+            }
+          ],
+          "passes": 256,
+          "target_gap": 7.96986004935821e-05,
+          "final_gap": 7.695422034881272e-05,
+          "objective": 0.35581702933525144
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 0.0,
+      "speedup": 0.9333211256173739,
+      "engine_only_speedup": 0.9125391323283558,
+      "all_converged": true
+    },
+    {
+      "source": "coins",
+      "seed": 2,
+      "signals": 1,
+      "lmbda": 0.1,
+      "timing": {
+        "library": [
+          0.0261797080000008,
+          0.026196457999999367,
+          0.025426458000000096
+        ],
+        "native_driver": [
+          0.025646250000001203,
+          0.02570329099999924,
+          0.025040875000000185
+        ],
+        "engine": [
+          0.028189583999999712,
+          0.02790116699999956,
+          0.02712987499999997
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 0,
+          "rejected": 4,
+          "map_calls": 132,
+          "tangent_actions": 16,
+          "checks": 54,
+          "stopping_checks": 2,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 0.8533297918170839
+            },
+            {
+              "at": 20,
+              "old": 0.8533297918170839,
+              "new": 0.35195580813058197
+            },
+            {
+              "at": 30,
+              "old": 0.35195580813058197,
+              "new": 0.2339550658976594
+            },
+            {
+              "at": 40,
+              "old": 0.2339550658976594,
+              "new": 0.16221325156228253
+            },
+            {
+              "at": 50,
+              "old": 0.16221325156228253,
+              "new": 0.13819695655993505
+            },
+            {
+              "at": 70,
+              "old": 0.13819695655993505,
+              "new": 0.20762207559069973
+            },
+            {
+              "at": 80,
+              "old": 0.20762207559069973,
+              "new": 0.17601893667980184
+            },
+            {
+              "at": 90,
+              "old": 0.17601893667980184,
+              "new": 0.13648121399553978
+            },
+            {
+              "at": 110,
+              "old": 0.13648121399553978,
+              "new": 0.1834823366870481
+            },
+            {
+              "at": 120,
+              "old": 0.1834823366870481,
+              "new": 0.22872105660335268
+            }
+          ],
+          "passes": 128,
+          "target_gap": 7.96986004935821e-05,
+          "final_gap": 4.1656237534715146e-05,
+          "objective": 1.368353969454371
+        },
+        "library": {
+          "passes": 128,
+          "stopping_checks": 2,
+          "converged": true,
+          "target_gap": 7.96986004935821e-05,
+          "final_gap": 4.1656237534715146e-05,
+          "objective": 1.368353969454371
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 128,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 2,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 0.8533297918170839
+            },
+            {
+              "at": 20,
+              "old": 0.8533297918170839,
+              "new": 0.35195580813058197
+            },
+            {
+              "at": 30,
+              "old": 0.35195580813058197,
+              "new": 0.2339550658976594
+            },
+            {
+              "at": 40,
+              "old": 0.2339550658976594,
+              "new": 0.16221325156228253
+            },
+            {
+              "at": 50,
+              "old": 0.16221325156228253,
+              "new": 0.13819695655993505
+            },
+            {
+              "at": 70,
+              "old": 0.13819695655993505,
+              "new": 0.20762207559069973
+            },
+            {
+              "at": 80,
+              "old": 0.20762207559069973,
+              "new": 0.17601893667980184
+            },
+            {
+              "at": 90,
+              "old": 0.17601893667980184,
+              "new": 0.13648121399553978
+            },
+            {
+              "at": 110,
+              "old": 0.13648121399553978,
+              "new": 0.1834823366870481
+            },
+            {
+              "at": 120,
+              "old": 0.1834823366870481,
+              "new": 0.22872105660335268
+            }
+          ],
+          "passes": 128,
+          "target_gap": 7.96986004935821e-05,
+          "final_gap": 4.1656237534715146e-05,
+          "objective": 1.368353969454371
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 0.0,
+      "speedup": 0.9383015412939972,
+      "engine_only_speedup": 0.9191819826031509,
+      "all_converged": true
+    },
+    {
+      "source": "coins",
+      "seed": 2,
+      "signals": 16,
+      "lmbda": 0.02,
+      "timing": {
+        "library": [
+          0.12919195799999983,
+          0.13110583299999945,
+          0.1300378749999993
+        ],
+        "native_driver": [
+          0.1305836659999997,
+          0.12769179100000017,
+          0.12878300000000031
+        ],
+        "engine": [
+          0.15079874999999987,
+          0.15099241600000113,
+          0.1520909580000005
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 1,
+          "rejected": 9,
+          "map_calls": 325,
+          "tangent_actions": 38,
+          "checks": 132,
+          "stopping_checks": 5,
+          "converged": true,
+          "events": [
+            {
+              "at": 260,
+              "rho": 0.09804810544623815,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 8.216300153410534e-05,
+              "relative_bound": 0.01456945683631521,
+              "checks": 8,
+              "map_calls": 1,
+              "tangent_actions": 2
+            }
+          ],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 0.4765000679559918
+            },
+            {
+              "at": 20,
+              "old": 0.4765000679559918,
+              "new": 0.2326991206765572
+            },
+            {
+              "at": 30,
+              "old": 0.2326991206765572,
+              "new": 0.16934962103824203
+            },
+            {
+              "at": 40,
+              "old": 0.16934962103824203,
+              "new": 0.13844724356660143
+            },
+            {
+              "at": 60,
+              "old": 0.13844724356660143,
+              "new": 0.12410528118210165
+            },
+            {
+              "at": 100,
+              "old": 0.12410528118210165,
+              "new": 0.11087029087182955
+            },
+            {
+              "at": 140,
+              "old": 0.11087029087182955,
+              "new": 0.10020295906397761
+            },
+            {
+              "at": 190,
+              "old": 0.10020295906397761,
+              "new": 0.12335705174414267
+            },
+            {
+              "at": 210,
+              "old": 0.12335705174414267,
+              "new": 0.10844781592647927
+            },
+            {
+              "at": 240,
+              "old": 0.10844781592647927,
+              "new": 0.09804810544623815
+            },
+            {
+              "at": 270,
+              "old": 0.09804810544623815,
+              "new": 0.107768574441863
+            },
+            {
+              "at": 310,
+              "old": 0.107768574441863,
+              "new": 0.09752766438210592
+            }
+          ],
+          "passes": 320,
+          "target_gap": 0.0003367561679016322,
+          "final_gap": 0.00014312452481268778,
+          "objective": 3.7550470798473405
+        },
+        "library": {
+          "passes": 320,
+          "stopping_checks": 5,
+          "converged": true,
+          "target_gap": 0.0003367561679016322,
+          "final_gap": 0.00014274132514913163,
+          "objective": 3.755047079734127
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 320,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 5,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 0.4765000679559918
+            },
+            {
+              "at": 20,
+              "old": 0.4765000679559918,
+              "new": 0.2326991206765572
+            },
+            {
+              "at": 30,
+              "old": 0.2326991206765572,
+              "new": 0.16934962103824203
+            },
+            {
+              "at": 40,
+              "old": 0.16934962103824203,
+              "new": 0.13844724356660143
+            },
+            {
+              "at": 60,
+              "old": 0.13844724356660143,
+              "new": 0.12410528118210165
+            },
+            {
+              "at": 100,
+              "old": 0.12410528118210165,
+              "new": 0.11087029087182955
+            },
+            {
+              "at": 140,
+              "old": 0.11087029087182955,
+              "new": 0.10020295906397761
+            },
+            {
+              "at": 190,
+              "old": 0.10020295906397761,
+              "new": 0.12335705174414267
+            },
+            {
+              "at": 210,
+              "old": 0.12335705174414267,
+              "new": 0.10844781592647927
+            },
+            {
+              "at": 240,
+              "old": 0.10844781592647927,
+              "new": 0.09804810544623815
+            },
+            {
+              "at": 270,
+              "old": 0.09804810544623815,
+              "new": 0.10775335697237197
+            },
+            {
+              "at": 310,
+              "old": 0.10775335697237197,
+              "new": 0.09751677088942116
+            }
+          ],
+          "passes": 320,
+          "target_gap": 0.0003367561679016322,
+          "final_gap": 0.00014274132514913163,
+          "objective": 3.755047079734127
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 5.182173968533209e-06,
+      "speedup": 0.861221235111559,
+      "engine_only_speedup": 0.852910387234279,
+      "all_converged": true
+    },
+    {
+      "source": "coins",
+      "seed": 2,
+      "signals": 16,
+      "lmbda": 0.1,
+      "timing": {
+        "library": [
+          0.054012791999999976,
+          0.05399345800000077,
+          0.05346820799999996
+        ],
+        "native_driver": [
+          0.05334850000000024,
+          0.05427991699999879,
+          0.05339449999999957
+        ],
+        "engine": [
+          0.06341554199999955,
+          0.06447550000000035,
+          0.06460500000000025
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 1,
+          "rejected": 4,
+          "map_calls": 128,
+          "tangent_actions": 18,
+          "checks": 61,
+          "stopping_checks": 2,
+          "converged": true,
+          "events": [
+            {
+              "at": 84,
+              "rho": 0.2603119882250263,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 0.00016543570453518623,
+              "relative_bound": 0.009012904700453349,
+              "checks": 5,
+              "map_calls": 1,
+              "tangent_actions": 2
+            }
+          ],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 1.2534916639899154
+            },
+            {
+              "at": 20,
+              "old": 1.2534916639899154,
+              "new": 0.5405867635280514
+            },
+            {
+              "at": 30,
+              "old": 0.5405867635280514,
+              "new": 0.35950380288088896
+            },
+            {
+              "at": 40,
+              "old": 0.35950380288088896,
+              "new": 0.31320913588623417
+            },
+            {
+              "at": 50,
+              "old": 0.31320913588623417,
+              "new": 0.2603119882250263
+            },
+            {
+              "at": 100,
+              "old": 0.2603119882250263,
+              "new": 0.23693763505722953
+            }
+          ],
+          "passes": 128,
+          "target_gap": 0.0003367561679016322,
+          "final_gap": 0.0001295963139593681,
+          "objective": 12.607041940548461
+        },
+        "library": {
+          "passes": 128,
+          "stopping_checks": 2,
+          "converged": true,
+          "target_gap": 0.0003367561679016322,
+          "final_gap": 0.00012902229684286226,
+          "objective": 12.607041940562834
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 128,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 2,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 1.2534916639899154
+            },
+            {
+              "at": 20,
+              "old": 1.2534916639899154,
+              "new": 0.5405867635280514
+            },
+            {
+              "at": 30,
+              "old": 0.5405867635280514,
+              "new": 0.35950380288088896
+            },
+            {
+              "at": 40,
+              "old": 0.35950380288088896,
+              "new": 0.31320913588623417
+            },
+            {
+              "at": 50,
+              "old": 0.31320913588623417,
+              "new": 0.2603119882250263
+            },
+            {
+              "at": 100,
+              "old": 0.2603119882250263,
+              "new": 0.23693894790872008
+            }
+          ],
+          "passes": 128,
+          "target_gap": 0.0003367561679016322,
+          "final_gap": 0.00012902229684286226,
+          "objective": 12.607041940562834
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 2.0558997574528047e-06,
+      "speedup": 0.8374259680033574,
+      "engine_only_speedup": 0.8281362688152752,
+      "all_converged": true
+    },
+    {
+      "source": "moon",
+      "seed": 1,
+      "signals": 1,
+      "lmbda": 0.02,
+      "timing": {
+        "library": [
+          0.014230124999999205,
+          0.014210499999999016,
+          0.014199959000000817
+        ],
+        "native_driver": [
+          0.013977750000000455,
+          0.013994708000000244,
+          0.013945417000000404
+        ],
+        "engine": [
+          0.015155790999999752,
+          0.015180291000000068,
+          0.015120207999999025
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 0,
+          "rejected": 2,
+          "map_calls": 66,
+          "tangent_actions": 8,
+          "checks": 30,
+          "stopping_checks": 1,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 1.3268128797957062
+            },
+            {
+              "at": 20,
+              "old": 1.3268128797957062,
+              "new": 0.9075536389938001
+            },
+            {
+              "at": 30,
+              "old": 0.9075536389938001,
+              "new": 0.7126595090827654
+            },
+            {
+              "at": 40,
+              "old": 0.7126595090827654,
+              "new": 0.7967335868906738
+            },
+            {
+              "at": 50,
+              "old": 0.7967335868906738,
+              "new": 0.9513813032573354
+            },
+            {
+              "at": 60,
+              "old": 0.9513813032573354,
+              "new": 1.1772484076591074
+            }
+          ],
+          "passes": 64,
+          "target_gap": 1.201010288733451e-06,
+          "final_gap": 2.8617102243444492e-08,
+          "objective": 0.07299988022726595
+        },
+        "library": {
+          "passes": 64,
+          "stopping_checks": 1,
+          "converged": true,
+          "target_gap": 1.201010288733451e-06,
+          "final_gap": 2.8617102243444492e-08,
+          "objective": 0.07299988022726595
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 64,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 1,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 1.3268128797957062
+            },
+            {
+              "at": 20,
+              "old": 1.3268128797957062,
+              "new": 0.9075536389938001
+            },
+            {
+              "at": 30,
+              "old": 0.9075536389938001,
+              "new": 0.7126595090827654
+            },
+            {
+              "at": 40,
+              "old": 0.7126595090827654,
+              "new": 0.7967335868906738
+            },
+            {
+              "at": 50,
+              "old": 0.7967335868906738,
+              "new": 0.9513813032573354
+            },
+            {
+              "at": 60,
+              "old": 0.9513813032573354,
+              "new": 1.1772484076591074
+            }
+          ],
+          "passes": 64,
+          "target_gap": 1.201010288733451e-06,
+          "final_gap": 2.8617102243444492e-08,
+          "objective": 0.07299988022726595
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 0.0,
+      "speedup": 0.9376283956409301,
+      "engine_only_speedup": 0.9222712295254457,
+      "all_converged": true
+    },
+    {
+      "source": "moon",
+      "seed": 1,
+      "signals": 1,
+      "lmbda": 0.1,
+      "timing": {
+        "library": [
+          0.01189375000000048,
+          0.01188933299999917,
+          0.011922874999999777
+        ],
+        "native_driver": [
+          0.011652334000000764,
+          0.011640666999999993,
+          0.011639541999999281
+        ],
+        "engine": [
+          0.01010595800000047,
+          0.010119500000000059,
+          0.010119708999999588
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 4,
+          "rejected": 0,
+          "map_calls": 35,
+          "tangent_actions": 8,
+          "checks": 35,
+          "stopping_checks": 1,
+          "converged": true,
+          "events": [
+            {
+              "at": 20,
+              "rho": 18.32305969604694,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 2,
+              "bound": 2.9920848794537105e-07,
+              "relative_bound": 0.0016938024749707753,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 30,
+              "rho": 12.36644712495953,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 2,
+              "bound": 4.869085462993425e-07,
+              "relative_bound": 0.005991217023794493,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 40,
+              "rho": 9.26040311998879,
+              "accepted": true,
+              "horizon": 8,
+              "depth": 2,
+              "bound": 3.831158331290519e-07,
+              "relative_bound": 0.018704710130756228,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 50,
+              "rho": 7.88743643185338,
+              "accepted": true,
+              "horizon": 7,
+              "depth": 2,
+              "bound": 5.769892177125547e-08,
+              "relative_bound": 0.01992076419736772,
+              "checks": 8,
+              "map_calls": 1,
+              "tangent_actions": 2
+            }
+          ],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 18.32305969604694
+            },
+            {
+              "at": 30,
+              "old": 18.32305969604694,
+              "new": 12.36644712495953
+            },
+            {
+              "at": 40,
+              "old": 12.36644712495953,
+              "new": 9.26040311998879
+            },
+            {
+              "at": 50,
+              "old": 9.26040311998879,
+              "new": 7.88743643185338
+            }
+          ],
+          "passes": 64,
+          "target_gap": 1.201010288733451e-06,
+          "final_gap": 2.4202861936828413e-13,
+          "objective": 0.11978826751578406
+        },
+        "library": {
+          "passes": 64,
+          "stopping_checks": 1,
+          "converged": true,
+          "target_gap": 1.201010288733451e-06,
+          "final_gap": 2.4101554085831367e-13,
+          "objective": 0.11978826751578402
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 64,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 1,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 18.32305969604694
+            },
+            {
+              "at": 30,
+              "old": 18.32305969604694,
+              "new": 12.364455033155402
+            },
+            {
+              "at": 40,
+              "old": 12.364455033155402,
+              "new": 9.241505909702523
+            },
+            {
+              "at": 50,
+              "old": 9.241505909702523,
+              "new": 7.898703374623635
+            }
+          ],
+          "passes": 64,
+          "target_gap": 1.201010288733451e-06,
+          "final_gap": 2.4101554085831367e-13,
+          "objective": 0.11978826751578402
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 3.01711433614571e-10,
+      "speedup": 1.1753298087850597,
+      "engine_only_speedup": 1.1503203715598522,
+      "all_converged": true
+    },
+    {
+      "source": "moon",
+      "seed": 1,
+      "signals": 16,
+      "lmbda": 0.02,
+      "timing": {
+        "library": [
+          0.09956354200000028,
+          0.09943199999999841,
+          0.10116958299999901
+        ],
+        "native_driver": [
+          0.09771024999999867,
+          0.09858691700000044,
+          0.09732737500000077
+        ],
+        "engine": [
+          0.09934929199999942,
+          0.10118991699999924,
+          0.10139462500000107
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 14,
+          "rejected": 4,
+          "map_calls": 162,
+          "tangent_actions": 58,
+          "checks": 228,
+          "stopping_checks": 4,
+          "converged": true,
+          "events": [
+            {
+              "at": 84,
+              "rho": 0.51376301804076,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 1.554581069168422e-05,
+              "relative_bound": 0.012328962916133895,
+              "checks": 5,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 122,
+              "rho": 0.4670390137876361,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 1.255323162112271e-07,
+              "relative_bound": 0.0001833197720255636,
+              "checks": 5,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 130,
+              "rho": 0.4670390137876361,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 2,
+              "bound": 1.0540395441033767e-05,
+              "relative_bound": 0.009950977546312672,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 140,
+              "rho": 0.4670390137876361,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 2,
+              "bound": 1.049374833979534e-05,
+              "relative_bound": 0.011489319996623447,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 150,
+              "rho": 0.4670390137876361,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 2,
+              "bound": 6.9268053502207745e-06,
+              "relative_bound": 0.008777975125091706,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 160,
+              "rho": 0.4670390137876361,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 2,
+              "bound": 1.084225290654974e-05,
+              "relative_bound": 0.01588917530736537,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 170,
+              "rho": 0.4670390137876361,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 4,
+              "bound": 6.112637486650545e-06,
+              "relative_bound": 0.010355326013976674,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            },
+            {
+              "at": 180,
+              "rho": 0.4670390137876361,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 4,
+              "bound": 5.525589348584913e-06,
+              "relative_bound": 0.010819992616107806,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            },
+            {
+              "at": 192,
+              "rho": 0.4670390137876361,
+              "accepted": true,
+              "horizon": 6,
+              "depth": 2,
+              "bound": 5.666489624508368e-06,
+              "relative_bound": 0.019386017053251055,
+              "checks": 7,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 200,
+              "rho": 0.4670390137876361,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 4,
+              "bound": 5.3615217737033486e-06,
+              "relative_bound": 0.01402548225729549,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            },
+            {
+              "at": 210,
+              "rho": 0.4670390137876361,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 4,
+              "bound": 5.9350488854490385e-06,
+              "relative_bound": 0.017945408978739606,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            },
+            {
+              "at": 220,
+              "rho": 0.4670390137876361,
+              "accepted": true,
+              "horizon": 8,
+              "depth": 4,
+              "bound": 5.04576999951136e-06,
+              "relative_bound": 0.019697434102121696,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            },
+            {
+              "at": 230,
+              "rho": 0.4670390137876361,
+              "accepted": true,
+              "horizon": 8,
+              "depth": 4,
+              "bound": 3.949701780730847e-06,
+              "relative_bound": 0.017820314888911063,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            },
+            {
+              "at": 240,
+              "rho": 0.4670390137876361,
+              "accepted": true,
+              "horizon": 8,
+              "depth": 4,
+              "bound": 3.2436965441877323e-06,
+              "relative_bound": 0.0169147813732971,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            }
+          ],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 1.1087007650607792
+            },
+            {
+              "at": 20,
+              "old": 1.1087007650607792,
+              "new": 0.7785229547746845
+            },
+            {
+              "at": 30,
+              "old": 0.7785229547746845,
+              "new": 0.6068064967526364
+            },
+            {
+              "at": 40,
+              "old": 0.6068064967526364,
+              "new": 0.51376301804076
+            },
+            {
+              "at": 100,
+              "old": 0.51376301804076,
+              "new": 0.4670390137876361
+            }
+          ],
+          "passes": 256,
+          "target_gap": 2.39424662529824e-05,
+          "final_gap": 1.1385709706157598e-05,
+          "objective": 1.2775399973646695
+        },
+        "library": {
+          "passes": 256,
+          "stopping_checks": 4,
+          "converged": true,
+          "target_gap": 2.39424662529824e-05,
+          "final_gap": 1.130141078387048e-05,
+          "objective": 1.2775399973616124
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 256,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 4,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 1.1087007650607792
+            },
+            {
+              "at": 20,
+              "old": 1.1087007650607792,
+              "new": 0.7785229547746845
+            },
+            {
+              "at": 30,
+              "old": 0.7785229547746845,
+              "new": 0.6068064967526364
+            },
+            {
+              "at": 40,
+              "old": 0.6068064967526364,
+              "new": 0.51376301804076
+            },
+            {
+              "at": 100,
+              "old": 0.51376301804076,
+              "new": 0.4670421637294929
+            }
+          ],
+          "passes": 256,
+          "target_gap": 2.39424662529824e-05,
+          "final_gap": 1.130141078387048e-05,
+          "objective": 1.2775399973616124
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 6.498865679760728e-07,
+      "speedup": 0.9839274994167752,
+      "engine_only_speedup": 0.9656125125589282,
+      "all_converged": true
+    },
+    {
+      "source": "moon",
+      "seed": 1,
+      "signals": 16,
+      "lmbda": 0.1,
+      "timing": {
+        "library": [
+          0.028594666000000046,
+          0.028580500000000342,
+          0.028648291999999742
+        ],
+        "native_driver": [
+          0.028244625000001022,
+          0.028551041000000055,
+          0.028378082999999776
+        ],
+        "engine": [
+          0.03374699999999997,
+          0.03394054199999985,
+          0.03388612499999866
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 0,
+          "rejected": 2,
+          "map_calls": 66,
+          "tangent_actions": 8,
+          "checks": 30,
+          "stopping_checks": 1,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 4.16984217077266
+            },
+            {
+              "at": 20,
+              "old": 4.16984217077266,
+              "new": 2.7215342348235394
+            },
+            {
+              "at": 30,
+              "old": 2.7215342348235394,
+              "new": 2.363652846592796
+            },
+            {
+              "at": 60,
+              "old": 2.363652846592796,
+              "new": 2.113963190957019
+            }
+          ],
+          "passes": 64,
+          "target_gap": 2.39424662529824e-05,
+          "final_gap": 4.4219025685521274e-07,
+          "objective": 2.2697292370342255
+        },
+        "library": {
+          "passes": 64,
+          "stopping_checks": 1,
+          "converged": true,
+          "target_gap": 2.39424662529824e-05,
+          "final_gap": 4.4219025685521274e-07,
+          "objective": 2.2697292370342255
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 64,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 1,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 4.16984217077266
+            },
+            {
+              "at": 20,
+              "old": 4.16984217077266,
+              "new": 2.7215342348235394
+            },
+            {
+              "at": 30,
+              "old": 2.7215342348235394,
+              "new": 2.363652846592796
+            },
+            {
+              "at": 60,
+              "old": 2.363652846592796,
+              "new": 2.113963190957019
+            }
+          ],
+          "passes": 64,
+          "target_gap": 2.39424662529824e-05,
+          "final_gap": 4.4219025685521274e-07,
+          "objective": 2.2697292370342255
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 0.0,
+      "speedup": 0.8438458513625025,
+      "engine_only_speedup": 0.8374543563184312,
+      "all_converged": true
+    },
+    {
+      "source": "moon",
+      "seed": 2,
+      "signals": 1,
+      "lmbda": 0.02,
+      "timing": {
+        "library": [
+          0.013358832999999848,
+          0.01336716700000018,
+          0.013346042000000224
+        ],
+        "native_driver": [
+          0.01311150000000083,
+          0.013037749999998738,
+          0.013120332999999818
+        ],
+        "engine": [
+          0.014334375000000676,
+          0.014216000000001117,
+          0.014279040999999992
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 0,
+          "rejected": 2,
+          "map_calls": 66,
+          "tangent_actions": 8,
+          "checks": 30,
+          "stopping_checks": 1,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 1.057371837867812
+            },
+            {
+              "at": 20,
+              "old": 1.057371837867812,
+              "new": 0.7411253590493995
+            },
+            {
+              "at": 30,
+              "old": 0.7411253590493995,
+              "new": 0.5803852634342391
+            },
+            {
+              "at": 40,
+              "old": 0.5803852634342391,
+              "new": 0.48221422682240034
+            },
+            {
+              "at": 50,
+              "old": 0.48221422682240034,
+              "new": 0.7056898920898923
+            }
+          ],
+          "passes": 64,
+          "target_gap": 1.5557846338514139e-06,
+          "final_gap": 1.3023155529118258e-06,
+          "objective": 0.08259871355131235
+        },
+        "library": {
+          "passes": 64,
+          "stopping_checks": 1,
+          "converged": true,
+          "target_gap": 1.5557846338514139e-06,
+          "final_gap": 1.3023155529118258e-06,
+          "objective": 0.08259871355131235
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 64,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 1,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 1.057371837867812
+            },
+            {
+              "at": 20,
+              "old": 1.057371837867812,
+              "new": 0.7411253590493995
+            },
+            {
+              "at": 30,
+              "old": 0.7411253590493995,
+              "new": 0.5803852634342391
+            },
+            {
+              "at": 40,
+              "old": 0.5803852634342391,
+              "new": 0.48221422682240034
+            },
+            {
+              "at": 50,
+              "old": 0.48221422682240034,
+              "new": 0.7056898920898923
+            }
+          ],
+          "passes": 64,
+          "target_gap": 1.5557846338514139e-06,
+          "final_gap": 1.3023155529118258e-06,
+          "objective": 0.08259871355131235
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 0.0,
+      "speedup": 0.9355553359640788,
+      "engine_only_speedup": 0.9182339346179367,
+      "all_converged": true
+    },
+    {
+      "source": "moon",
+      "seed": 2,
+      "signals": 1,
+      "lmbda": 0.1,
+      "timing": {
+        "library": [
+          0.013447292000000388,
+          0.013504167000000677,
+          0.013467542000000776
+        ],
+        "native_driver": [
+          0.013180124999999876,
+          0.013177458000001252,
+          0.013220957999999783
+        ],
+        "engine": [
+          0.011880958000000774,
+          0.011857750000000777,
+          0.01190566599999876
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 4,
+          "rejected": 0,
+          "map_calls": 36,
+          "tangent_actions": 10,
+          "checks": 43,
+          "stopping_checks": 1,
+          "converged": true,
+          "events": [
+            {
+              "at": 20,
+              "rho": 4.50963390129242,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 4,
+              "bound": 4.6561818239170825e-07,
+              "relative_bound": 0.0010403445539339674,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            },
+            {
+              "at": 30,
+              "rho": 6.6075995228003075,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 3.6929775768170505e-07,
+              "relative_bound": 0.017390596901308075,
+              "checks": 8,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 40,
+              "rho": 6.6075995228003075,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 2,
+              "bound": 1.5631272824415656e-08,
+              "relative_bound": 0.004579021670899965,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 50,
+              "rho": 5.983662232772846,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 2,
+              "bound": 4.118634193773823e-09,
+              "relative_bound": 0.007881537799022236,
+              "checks": 9,
+              "map_calls": 1,
+              "tangent_actions": 2
+            }
+          ],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 3.9641412399208287
+            },
+            {
+              "at": 20,
+              "old": 3.9641412399208287,
+              "new": 4.50963390129242
+            },
+            {
+              "at": 30,
+              "old": 4.50963390129242,
+              "new": 6.6075995228003075
+            },
+            {
+              "at": 50,
+              "old": 6.6075995228003075,
+              "new": 5.983662232772846
+            },
+            {
+              "at": 60,
+              "old": 5.983662232772846,
+              "new": 5.310078500657029
+            }
+          ],
+          "passes": 64,
+          "target_gap": 1.5557846338514139e-06,
+          "final_gap": 5.290015647752e-10,
+          "objective": 0.14988624508163956
+        },
+        "library": {
+          "passes": 64,
+          "stopping_checks": 1,
+          "converged": true,
+          "target_gap": 1.5557846338514139e-06,
+          "final_gap": 5.258435353816537e-10,
+          "objective": 0.14988624508163953
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 64,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 1,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 3.9641412399208287
+            },
+            {
+              "at": 20,
+              "old": 3.9641412399208287,
+              "new": 4.50963390129242
+            },
+            {
+              "at": 30,
+              "old": 4.50963390129242,
+              "new": 6.607544431556699
+            },
+            {
+              "at": 50,
+              "old": 6.607544431556699,
+              "new": 6.017241493065141
+            },
+            {
+              "at": 60,
+              "old": 6.017241493065141,
+              "new": 5.342562902113107
+            }
+          ],
+          "passes": 64,
+          "target_gap": 1.5557846338514139e-06,
+          "final_gap": 5.258435353816537e-10,
+          "objective": 0.14988624508163953
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 1.796221561438868e-10,
+      "speedup": 1.1335400731153076,
+      "engine_only_speedup": 1.109348673734813,
+      "all_converged": true
+    },
+    {
+      "source": "moon",
+      "seed": 2,
+      "signals": 16,
+      "lmbda": 0.02,
+      "timing": {
+        "library": [
+          0.05312724999999929,
+          0.05239533399999985,
+          0.05218262500000037
+        ],
+        "native_driver": [
+          0.05153137499999971,
+          0.05224341700000146,
+          0.05225691600000104
+        ],
+        "engine": [
+          0.059522917000000675,
+          0.058966208000001075,
+          0.05925637500000036
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 2,
+          "rejected": 3,
+          "map_calls": 119,
+          "tangent_actions": 18,
+          "checks": 68,
+          "stopping_checks": 2,
+          "converged": true,
+          "events": [
+            {
+              "at": 84,
+              "rho": 0.439975518125296,
+              "accepted": true,
+              "horizon": 5,
+              "depth": 2,
+              "bound": 1.088804744356311e-06,
+              "relative_bound": 0.014335040532538918,
+              "checks": 5,
+              "map_calls": 1,
+              "tangent_actions": 2
+            },
+            {
+              "at": 90,
+              "rho": 0.439975518125296,
+              "accepted": true,
+              "horizon": 9,
+              "depth": 4,
+              "bound": 1.3725272933445832e-06,
+              "relative_bound": 0.014526138238015626,
+              "checks": 17,
+              "map_calls": 1,
+              "tangent_actions": 4
+            }
+          ],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 1.0145379843650915
+            },
+            {
+              "at": 20,
+              "old": 1.0145379843650915,
+              "new": 0.6496288443906393
+            },
+            {
+              "at": 30,
+              "old": 0.6496288443906393,
+              "new": 0.49466569317000986
+            },
+            {
+              "at": 80,
+              "old": 0.49466569317000986,
+              "new": 0.439975518125296
+            }
+          ],
+          "passes": 128,
+          "target_gap": 2.86197248601442e-05,
+          "final_gap": 6.920421891098982e-07,
+          "objective": 1.3460237621968516
+        },
+        "library": {
+          "passes": 128,
+          "stopping_checks": 2,
+          "converged": true,
+          "target_gap": 2.86197248601442e-05,
+          "final_gap": 6.911550654020715e-07,
+          "objective": 1.3460237621968298
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 128,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 2,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 2.0,
+              "new": 1.0145379843650915
+            },
+            {
+              "at": 20,
+              "old": 1.0145379843650915,
+              "new": 0.6496288443906393
+            },
+            {
+              "at": 30,
+              "old": 0.6496288443906393,
+              "new": 0.49466569317000986
+            },
+            {
+              "at": 80,
+              "old": 0.49466569317000986,
+              "new": 0.439975518125296
+            }
+          ],
+          "passes": 128,
+          "target_gap": 2.86197248601442e-05,
+          "final_gap": 6.911550654020715e-07,
+          "objective": 1.3460237621968298
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 5.240151424498478e-08,
+      "speedup": 0.8842142976177589,
+      "engine_only_speedup": 0.8816505734615244,
+      "all_converged": true
+    },
+    {
+      "source": "moon",
+      "seed": 2,
+      "signals": 16,
+      "lmbda": 0.1,
+      "timing": {
+        "library": [
+          0.02882716699999932,
+          0.02931462500000137,
+          0.029336500000002985
+        ],
+        "native_driver": [
+          0.028594332999997363,
+          0.029151709000000636,
+          0.02909137500000014
+        ],
+        "engine": [
+          0.03035004200000202,
+          0.03115266699999708,
+          0.030884499999999093
+        ]
+      },
+      "stats": {
+        "engine": {
+          "accepted": 1,
+          "rejected": 1,
+          "map_calls": 59,
+          "tangent_actions": 6,
+          "checks": 23,
+          "stopping_checks": 1,
+          "converged": true,
+          "events": [
+            {
+              "at": 52,
+              "rho": 1.449131866277381,
+              "accepted": true,
+              "horizon": 7,
+              "depth": 2,
+              "bound": 4.6055800019522245e-07,
+              "relative_bound": 0.013939199076842037,
+              "checks": 7,
+              "map_calls": 1,
+              "tangent_actions": 2
+            }
+          ],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 3.0546866168560403
+            },
+            {
+              "at": 20,
+              "old": 3.0546866168560403,
+              "new": 1.9423908818207496
+            },
+            {
+              "at": 30,
+              "old": 1.9423908818207496,
+              "new": 1.5888126402597735
+            },
+            {
+              "at": 50,
+              "old": 1.5888126402597735,
+              "new": 1.449131866277381
+            }
+          ],
+          "passes": 64,
+          "target_gap": 2.86197248601442e-05,
+          "final_gap": 1.7139978680802415e-07,
+          "objective": 2.511168812422061
+        },
+        "library": {
+          "passes": 64,
+          "stopping_checks": 1,
+          "converged": true,
+          "target_gap": 2.86197248601442e-05,
+          "final_gap": 1.820263437757319e-07,
+          "objective": 2.5111688124220892
+        },
+        "native_driver": {
+          "accepted": 0,
+          "rejected": 0,
+          "map_calls": 64,
+          "tangent_actions": 0,
+          "checks": 0,
+          "stopping_checks": 1,
+          "converged": true,
+          "events": [],
+          "rho_events": [
+            {
+              "at": 10,
+              "old": 6.0,
+              "new": 3.0546866168560403
+            },
+            {
+              "at": 20,
+              "old": 3.0546866168560403,
+              "new": 1.9423908818207496
+            },
+            {
+              "at": 30,
+              "old": 1.9423908818207496,
+              "new": 1.5888126402597735
+            },
+            {
+              "at": 50,
+              "old": 1.5888126402597735,
+              "new": 1.449131866277381
+            }
+          ],
+          "passes": 64,
+          "target_gap": 2.86197248601442e-05,
+          "final_gap": 1.820263437757319e-07,
+          "objective": 2.5111688124220892
+        }
+      },
+      "driver_max_error": 0.0,
+      "engine_output_difference": 1.0311621533829332e-07,
+      "speedup": 0.9491694863119763,
+      "engine_only_speedup": 0.9419409412488787,
+      "all_converged": true
+    }
+  ]
+}

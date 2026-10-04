@@ -1,0 +1,34 @@
+{
+  "recordedAt": "2026-09-15T01:51:30.052803+00:00",
+  "validation": {
+    "cases": 120,
+    "checkedControls": 3000816,
+    "maxStorageError": 1.9095836023552692e-14,
+    "maxFusedError": 6.062042645638144e-09,
+    "maxByteError": 0,
+    "differentBytes": 0,
+    "maxConstantError": 0,
+    "passed": true
+  },
+  "timingRuntime": "v25.2.1",
+  "browserPassed": true,
+  "sha256": {
+    "compact.c": "3e121ca8119f0eb09803ae47eae4e16a5d8fbd83a0cb4623def844d47c6905eb",
+    "compact.mjs": "0c192ef0306bf6fb67ebb3d694d7dcf0bb578593052d449ce75b7f73d83f6ab1",
+    "compact.wasm": "47b5feeeb18a8b68ceb9dd76230869b49265f46390b8c5f1c00fe8ce349440a7",
+    "build.sh": "9addb13d143aca5128abae9d4c297304e89e14f40cf2557214272b312ce45282",
+    "reference_shell.h": "2f5611c694a3ec7dbf36b2b389c544618304adc0ff58ab1143600649bed50675",
+    "reference_source.c": "de1f14b64495da678354cba7717e4c7c729ed7b075877619ed16f2ea3dd84b53",
+    "instrumented_source.h": "ce55a2747e49291cc6f5e246b7c378f2936be31174d69bd69a5c41658e770e41",
+    "reference.wasm": "c8d2eacf75af7a8e7bd154c6059b5a0f9ceafec4247baf69f3d63904d87ad131",
+    "reference-provenance.json": "7540f3fc1dd9a9c0ebb107d2d48df566c90339435c6d75257567c5c9b2b5a4c7",
+    "rectangle-plan.mjs": "27e72afd7b0a39d82e54023c197615e6fc1b92225c8a5aa4779d51b37bdd7032",
+    "synthetic.mjs": "130b7c928c5d6cfb9dd0fe6535bc4cdffe5a0f7b9a25078ad00e4d6ef5f81957",
+    "validation.mjs": "07af0478f3a51468d433744671f37717dbf90ea3360dc1b15b97550c07f29374",
+    "timing.mjs": "35b33f271ce2df3ff5b9e142246b365d344852dfa275aa8b88ae4950378b6743",
+    "validation-results.json": "11d9742e9b4a755b32f42b6fa5e544c489e126ef8cdc5099bc889ce62891b26e",
+    "timing-results.json": "f02bb87c5761f537404ebc014eb09da0320d566475b93f3e0d0daaf29fb22f5a",
+    "browser-results.json": "2fb936a83589f6185c575cd3486a82d1bdf456810bfa03ab8e5e1409c3883769"
+  },
+  "postBenchmarkChange": "Unsigned conversion of the reported arena pointer; numerical WASM binary unchanged. Focused numerical checks and browser comparison rerun."
+}

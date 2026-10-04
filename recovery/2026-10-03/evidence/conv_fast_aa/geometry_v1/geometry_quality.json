@@ -1,0 +1,69 @@
+{
+  "scope": "Disjoint opaque constant-white triangles on black; exact polygon-square intersection reference, independent of shader boundary-segment integration. GPU timing includes instanced primitive draws, clears, MSAA resolve, and FXAA when present. No textures, depth overlap, transparency, or dynamic upload timing.",
+  "scenes": [
+    {
+      "scene": 0,
+      "triangles": 49,
+      "max_contributing_triangles_per_pixel": 1,
+      "reference_mass_error": 1.4551915228366852e-11,
+      "methods": {
+        "point": {
+          "whole_image_mse": 0.0019218929768340049,
+          "boundary_mse": 0.06174175398519283,
+          "max_abs_error": 0.81837512976094,
+          "mass_error": 10.384830434719333
+        },
+        "point_fxaa12": {
+          "whole_image_mse": 0.0004482118250983655,
+          "boundary_mse": 0.013129073744496931,
+          "max_abs_error": 0.5062819382556025,
+          "mass_error": -93.13281662409281
+        },
+        "msaa4": {
+          "whole_image_mse": 0.0002639250262992039,
+          "boundary_mse": 0.008478720844874818,
+          "max_abs_error": 0.3845884703254163,
+          "mass_error": 12.349536317073216
+        },
+        "analytic_boundary": {
+          "whole_image_mse": 3.8956491539046496e-08,
+          "boundary_mse": 1.2514963870112506e-06,
+          "max_abs_error": 0.0019605180716861653,
+          "mass_error": -0.05438525156205287
+        }
+      }
+    },
+    {
+      "scene": 1,
+      "triangles": 961,
+      "max_contributing_triangles_per_pixel": 1,
+      "reference_mass_error": 1.4551915228366852e-11,
+      "methods": {
+        "point": {
+          "whole_image_mse": 0.009369801148069703,
+          "boundary_mse": 0.06253149572707699,
+          "max_abs_error": 0.8405184117194778,
+          "mass_error": 34.73693232255755
+        },
+        "point_fxaa12": {
+          "whole_image_mse": 0.003418277718693745,
+          "boundary_mse": 0.020615674080256878,
+          "max_abs_error": 0.5286781232316252,
+          "mass_error": -1647.317969638243
+        },
+        "msaa4": {
+          "whole_image_mse": 0.0012478122228345395,
+          "boundary_mse": 0.008327558231739753,
+          "max_abs_error": 0.3983567061383997,
+          "mass_error": -14.066989246071898
+        },
+        "analytic_boundary": {
+          "whole_image_mse": 1.8723041918491253e-07,
+          "boundary_mse": 1.24952472013263e-06,
+          "max_abs_error": 0.00196073466655311,
+          "mass_error": 0.007520557854149956
+        }
+      }
+    }
+  ]
+}

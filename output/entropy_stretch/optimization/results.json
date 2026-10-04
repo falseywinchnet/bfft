@@ -1,0 +1,278 @@
+{
+  "cpu": {
+    "equivalence_float_values": 255296448,
+    "bit_exact": true,
+    "cases": [
+      {
+        "width": 128,
+        "height": 72,
+        "analysis_us": {
+          "before": 309.426,
+          "after": 236.58
+        },
+        "advance_us": {
+          "before": 75.125,
+          "after": 19.436
+        }
+      },
+      {
+        "width": 256,
+        "height": 144,
+        "analysis_us": {
+          "before": 881.805,
+          "after": 592.768
+        },
+        "advance_us": {
+          "before": 75.06,
+          "after": 19.669
+        }
+      }
+    ]
+  },
+  "gpu": {
+    "before": {
+      "runs": [
+        {
+          "frames": 149,
+          "mean_ms": 2.550543,
+          "median_ms": 1.751125,
+          "p95_ms": 6.446958,
+          "max_ms": 7.429417,
+          "file": "before-submit-1.log",
+          "phases": {
+            "capture": {
+              "calls": 180,
+              "total_us": 37160.254
+            },
+            "stage": {
+              "calls": 30,
+              "total_us": 82913.707
+            },
+            "analyze": {
+              "calls": 30,
+              "total_us": 108707.625
+            },
+            "advance": {
+              "calls": 180,
+              "total_us": 77190.498
+            },
+            "pack": {
+              "calls": 180,
+              "total_us": 10951.754
+            },
+            "upload": {
+              "calls": 179,
+              "total_us": 67064.29
+            },
+            "draw": {
+              "calls": 180,
+              "total_us": 18656.632
+            }
+          }
+        },
+        {
+          "frames": 149,
+          "mean_ms": 2.622843,
+          "median_ms": 1.788875,
+          "p95_ms": 6.529416,
+          "max_ms": 7.4745,
+          "file": "before-submit-2.log",
+          "phases": {
+            "capture": {
+              "calls": 180,
+              "total_us": 38569.167
+            },
+            "stage": {
+              "calls": 30,
+              "total_us": 116650.334
+            },
+            "analyze": {
+              "calls": 30,
+              "total_us": 106707.083
+            },
+            "advance": {
+              "calls": 180,
+              "total_us": 85395.845
+            },
+            "pack": {
+              "calls": 180,
+              "total_us": 8726.506
+            },
+            "upload": {
+              "calls": 179,
+              "total_us": 68264.578
+            },
+            "draw": {
+              "calls": 180,
+              "total_us": 20498.879
+            }
+          }
+        },
+        {
+          "frames": 149,
+          "mean_ms": 3.618566,
+          "median_ms": 2.084459,
+          "p95_ms": 10.237042,
+          "max_ms": 57.350375,
+          "file": "before-submit-3.log",
+          "phases": {
+            "capture": {
+              "calls": 180,
+              "total_us": 55917.337
+            },
+            "stage": {
+              "calls": 30,
+              "total_us": 120659.123
+            },
+            "analyze": {
+              "calls": 30,
+              "total_us": 115630.545
+            },
+            "advance": {
+              "calls": 180,
+              "total_us": 101688.419
+            },
+            "pack": {
+              "calls": 180,
+              "total_us": 10292.543
+            },
+            "upload": {
+              "calls": 179,
+              "total_us": 77828.631
+            },
+            "draw": {
+              "calls": 180,
+              "total_us": 20322.301
+            }
+          }
+        }
+      ],
+      "median_run_mean_ms": 2.622843,
+      "median_run_median_ms": 1.788875,
+      "median_run_p95_ms": 6.529416
+    },
+    "after": {
+      "runs": [
+        {
+          "frames": 149,
+          "mean_ms": 2.268852,
+          "median_ms": 1.301626,
+          "p95_ms": 5.348499,
+          "max_ms": 80.781417,
+          "file": "after-submit-1.log",
+          "phases": {
+            "capture": {
+              "calls": 180,
+              "total_us": 36733.329
+            },
+            "stage": {
+              "calls": 30,
+              "total_us": 33954.292
+            },
+            "analyze": {
+              "calls": 30,
+              "total_us": 69639.084
+            },
+            "advance": {
+              "calls": 180,
+              "total_us": 53402.793
+            },
+            "pack": {
+              "calls": 1,
+              "total_us": 18.792
+            },
+            "upload": {
+              "calls": 179,
+              "total_us": 64669.834
+            },
+            "draw": {
+              "calls": 180,
+              "total_us": 15873.71
+            }
+          }
+        },
+        {
+          "frames": 149,
+          "mean_ms": 2.117489,
+          "median_ms": 1.266126,
+          "p95_ms": 6.800416,
+          "max_ms": 12.774125,
+          "file": "after-submit-2.log",
+          "phases": {
+            "capture": {
+              "calls": 180,
+              "total_us": 59297.091
+            },
+            "stage": {
+              "calls": 30,
+              "total_us": 51012.501
+            },
+            "analyze": {
+              "calls": 30,
+              "total_us": 67973.039
+            },
+            "advance": {
+              "calls": 180,
+              "total_us": 47739.0
+            },
+            "pack": {
+              "calls": 1,
+              "total_us": 13.167
+            },
+            "upload": {
+              "calls": 179,
+              "total_us": 81537.87
+            },
+            "draw": {
+              "calls": 180,
+              "total_us": 17418.916
+            }
+          }
+        },
+        {
+          "frames": 149,
+          "mean_ms": 2.382054,
+          "median_ms": 1.304999,
+          "p95_ms": 6.364208,
+          "max_ms": 46.263084,
+          "file": "after-submit-3.log",
+          "phases": {
+            "capture": {
+              "calls": 180,
+              "total_us": 41207.467
+            },
+            "stage": {
+              "calls": 30,
+              "total_us": 60326.665
+            },
+            "analyze": {
+              "calls": 30,
+              "total_us": 78414.831
+            },
+            "advance": {
+              "calls": 180,
+              "total_us": 45802.662
+            },
+            "pack": {
+              "calls": 1,
+              "total_us": 21.667
+            },
+            "upload": {
+              "calls": 179,
+              "total_us": 118486.952
+            },
+            "draw": {
+              "calls": 180,
+              "total_us": 13479.88
+            }
+          }
+        }
+      ],
+      "median_run_mean_ms": 2.268852,
+      "median_run_median_ms": 1.301626,
+      "median_run_p95_ms": 6.364208
+    },
+    "identical_full_frames": 180,
+    "identical_submission_endpoints": 6
+  }
+}

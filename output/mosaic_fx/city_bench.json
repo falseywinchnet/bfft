@@ -1,0 +1,4 @@
+{"frame":0,"analysis":[960,461],"output":[1714,823],"tiles":15248,"added":15248,"removed":0,"recolored":0,"dirty_blocks":1740,"blocks":1740,"rebuilt":true,"edge_pixels":16792,"largest_tile_px":9.25,"ms":{"resample":4.00,"meyer":32.37,"palette":23.05,"geometry":18.81,"nucleation":9.63,"color":1.13,"process":30.46,"render_cpu":142.97}}
+{"entropy_pct":[0.334,0.484,0.618,0.726,0.801],"class_pixels":[34340,219382,188838,0]}
+{"bench":{"repeats":15,"tiles":15248,"max_cell":9,"meyer_ms":30.30,"palette_ms":3.09,"rebuild_ms":28.87,"structure_unchanged_ms":3.39,"prefilter_ms":0.734,"prefilter_wakes":false,"update_colors_ms":0.838,"pack_ms":0.105,"rebuild_geometry_ms":0.00,"rebuild_nucleation_ms":0.00}}
+{"rebuild_split_ms":{"geometry":17.30,"nucleation":9.58,"color_grid":1.10}}

@@ -1,0 +1,254 @@
+[
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/wrench_after.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/wrench_after.json",
+    "sha256": "1c3f3928df3c1288235899578f943f319f7062ded6053ea96120e6f7b1ab25e7",
+    "bytes": 46227,
+    "verified_utc": "2026-10-04T04:58:25.218650+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/packing-pilot-mujoco-score.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/packing-pilot-mujoco-score.json",
+    "sha256": "a6fc1b7fe40df4f98f874b6a1d35a2c94058cd6667aa71f205378ed363063c4b",
+    "bytes": 10511,
+    "verified_utc": "2026-10-04T04:58:25.693872+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/obligation-six.txt",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/obligation-six.txt",
+    "sha256": "412da6efd4cec873965c1c5c8f0b855e10d268fb6a7b3eb373e50c0a76416558",
+    "bytes": 22771,
+    "verified_utc": "2026-10-04T04:58:26.165934+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/amortized_krylov_screen.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/amortized_krylov_screen.json",
+    "sha256": "45d4f4fbec95c50ce6d2fc40b4a905db8e18de331814ee1cd2b4fd0500e172b8",
+    "bytes": 4024399,
+    "verified_utc": "2026-10-04T04:58:26.954394+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/packing-pilot-rapier-score.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/packing-pilot-rapier-score.json",
+    "sha256": "d392655cccf52d89099ba60d401736113ac42f31d68616bb547431da160f673a",
+    "bytes": 10510,
+    "verified_utc": "2026-10-04T04:58:27.458753+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/obligation-six-release.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/obligation-six-release.json",
+    "sha256": "3341bf86fa6e3de4a9e41e03cc5cfb934a86bda13da39d68dd2a1e2bddfbab3a",
+    "bytes": 16385,
+    "verified_utc": "2026-10-04T04:58:27.852657+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/obligation-debug-pair2.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/obligation-debug-pair2.json",
+    "sha256": "b55a9076d16ca4f10518130f7496b90d2694eb7e01d4bec8bc8a50a569adc2e6",
+    "bytes": 278529,
+    "verified_utc": "2026-10-04T04:58:28.346725+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/wrench_transport_quick2.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/wrench_transport_quick2.json",
+    "sha256": "94b17d8ed68de9346225816cdda7aebd108506d20ef46b7da434d4c623920c81",
+    "bytes": 17052,
+    "verified_utc": "2026-10-04T04:58:28.720232+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/wrench_transport_quick3.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/wrench_transport_quick3.json",
+    "sha256": "e8747785a5fbaa918ba7762b41e87182d0138def77b8024b7f6b1bafb0ed0936",
+    "bytes": 34428,
+    "verified_utc": "2026-10-04T04:58:29.126474+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/packing-pilot-mujoco.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/packing-pilot-mujoco.json",
+    "sha256": "ac90f3b8b66efac5de1e7ec37ae151e23cacb2a04f2b9556cdc93b5898735562",
+    "bytes": 473574,
+    "verified_utc": "2026-10-04T04:58:29.558022+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/packing-pilot-rapier.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/packing-pilot-rapier.json",
+    "sha256": "f616454477485449ff66c75a61980359258fe4343ce10ae27d7662a67d90a013",
+    "bytes": 465565,
+    "verified_utc": "2026-10-04T04:58:30.007959+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/obligation-debug-pair.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/obligation-debug-pair.json",
+    "sha256": "cdf3d4c1acda33c30874b2faf8f42cf0d1b0e391f1dc0faa91de098df7bc039a",
+    "bytes": 278529,
+    "verified_utc": "2026-10-04T04:58:30.482968+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/wrench_packing/wrench/Testing/Temporary/CTestCostData.txt",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/wrench_packing/wrench/Testing/Temporary/CTestCostData.txt",
+    "sha256": "7a6859c4e0f027d0f8b69e7eb1fd575ecb7f7e566b671f1a3401752367e034e4",
+    "bytes": 52,
+    "verified_utc": "2026-10-04T04:58:30.896670+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/wrench-final.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/wrench-final.json",
+    "sha256": "9a4fb23f40477ad1da6e993ac50516605beba9555bd8d264ad69a0deb2938119",
+    "bytes": 46227,
+    "verified_utc": "2026-10-04T04:58:31.286936+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/obligation-six-release4.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/obligation-six-release4.json",
+    "sha256": "ec306498fb48c6f8cd07eae148d7abb4c8d0b9f77781c02c68a3bc383d0cf69e",
+    "bytes": 98078,
+    "verified_utc": "2026-10-04T04:58:31.749165+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/obligation-32-release3.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/obligation-32-release3.json",
+    "sha256": "fc9bd0683311fc29b2c6a168b0d5e13d496b0048ad674568923dd202ebbfc7d0",
+    "bytes": 376896,
+    "verified_utc": "2026-10-04T04:58:32.235970+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/wrench_inline.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/wrench_inline.json",
+    "sha256": "a6d9197b805e97a9975e7fe9f7a4e831db4eaf0649799074a5c67dd0f497183d",
+    "bytes": 46227,
+    "verified_utc": "2026-10-04T04:58:32.680810+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/wrench_transport_quick1.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/wrench_transport_quick1.json",
+    "sha256": "a47ac5cedd9f8b510cdfcb18cbd5eb658b1d624b000971ead668917db2b3cee6",
+    "bytes": 33624,
+    "verified_utc": "2026-10-04T04:58:33.186534+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/wrench_standalone_candidate/install_manifest.txt",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/wrench_standalone_candidate/install_manifest.txt",
+    "sha256": "69dc6fd1cfa0d9b84afcc9c52dfbe61684a53f7806ff7698d748791f780c69de",
+    "bytes": 380,
+    "verified_utc": "2026-10-04T04:58:33.631294+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/wrench_standalone_candidate/Testing/Temporary/CTestCostData.txt",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/wrench_standalone_candidate/Testing/Temporary/CTestCostData.txt",
+    "sha256": "cdc74198534df64b4d4d588e3802447a6cef8f46c8c1ef990351965dbaa76ca1",
+    "bytes": 52,
+    "verified_utc": "2026-10-04T04:58:34.147285+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/obligation_dynamics/Testing/Temporary/CTestCostData.txt",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/obligation_dynamics/Testing/Temporary/CTestCostData.txt",
+    "sha256": "a4aa3204fca83af457373a1b7135201c38187e55eb008ae039894e513dee0a36",
+    "bytes": 65,
+    "verified_utc": "2026-10-04T04:58:34.551077+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/wrench_transport_full1.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/wrench_transport_full1.json",
+    "sha256": "48c20811ebb1f7040aba4b6cb443c169b2055dfb815823b9f30803da2e5b74ba",
+    "bytes": 49145,
+    "verified_utc": "2026-10-04T04:58:35.139657+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/packing-pilot-wrench.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/packing-pilot-wrench.json",
+    "sha256": "f510ab8a12c3c885d4702c92687f6ac6657e5d9b3bf8b3afbdd1b0f9f7e2e706",
+    "bytes": 378961,
+    "verified_utc": "2026-10-04T04:58:35.700879+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/packing-pilot-score.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/packing-pilot-score.json",
+    "sha256": "c175aa39b1afb3f2b921e5e704b350843cd3958166cb93232925db4b47da6b41",
+    "bytes": 11128,
+    "verified_utc": "2026-10-04T04:58:36.177271+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/wrench_before.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/wrench_before.json",
+    "sha256": "e1135c5abe04c5a732b299c4a6454a703049e29a9913bbb6f2d59b17d1a7e8ca",
+    "bytes": 46227,
+    "verified_utc": "2026-10-04T04:58:36.655472+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/obligation-six-release2.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/obligation-six-release2.json",
+    "sha256": "1b4706434d6843835869017f00fff6ce5a71cbd2b1bcf7618334b6ff025132f7",
+    "bytes": 45057,
+    "verified_utc": "2026-10-04T04:58:37.389227+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/obligation-32-release4.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/obligation-32-release4.json",
+    "sha256": "fd5246ffd9ae59195a647d58371da41fb626c85c85fb28e391e9c13f56ade92a",
+    "bytes": 372467,
+    "verified_utc": "2026-10-04T04:58:37.962751+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  },
+  {
+    "source_host": "m4mini",
+    "source_path": "/private/tmp/obligation-six-release3.json",
+    "destination": "recovery/2026-10-03/evidence/mini-scratch/obligation-six-release3.json",
+    "sha256": "b0577d0350e0f153f35e694cdcb3541ac28a2aa84a7897c4e28c054e4adaa267",
+    "bytes": 97950,
+    "verified_utc": "2026-10-04T04:58:38.447937+00:00",
+    "status": "historical scratch diagnostic; not a fresh validated study"
+  }
+]

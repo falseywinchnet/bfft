@@ -342,14 +342,14 @@ Thus \eqref{eq:warppixel} is conservative relative to the admitted continuous
 profile.  It is also a positive average and inherits
 \eqref{eq:warprangetheorem}.
 
-For affine \(F\), a target basin maps to a source parallelogram.  Splitting
+For affine \(F\), a target basin maps to a source parallelogram. Splitting
 at the integer source-knot lines produces convex polygons, each contained in
-one patch.  Positive fan triangulation introduces no overlap.  On every
-triangle, \(U_C\) has total degree at most ten.  Under a Duffy map the area
-Jacobian raises one separate degree to at most eleven; consequently, the
-tensor three-point rule is insufficient, whereas tensor Gauss--Legendre
-order six is exact.  Division by the mapped parallelogram area then gives
-\eqref{eq:warppixel} exactly.
+one patch. Positive fan triangulation introduces no overlap. On every
+triangle, \(U_C\) has total degree at most ten, so the positive 25-node
+triangle rule of degree ten integrates it exactly in real arithmetic.
+Axis-aligned rectangular footprints use separable integrated Bernstein
+weights. These are the affine cases of the moment-bank construction in
+Appendix~\ref{app:convstarwarp}.
 
 For a homography, source-coordinate integration yields
 \begin{equation}
@@ -364,42 +364,32 @@ matrix \(H\), the inverse-map density is
  =\frac{|\det H^{-1}|}{|\ell(p)|^3},
  \label{eq:warpdensity}
 \end{equation}
-where \(\ell\) is the affine denominator of \(H^{-1}\).  On a clipped
-triangle choose a nonzero center \(c\) of the denominator interval and write
-\(\ell=c(1+z)\), with \(|z|\leq r<1\).  Then
+where \(\ell\) is the affine denominator of \(H^{-1}\). On a clipped
+triangle, its vertex extrema \(\ell_-,\ell_+\) determine
 \begin{equation}
- (1+z)^{-3}=\sum_{k=0}^{K}(-1)^k\binom{k+2}{2}z^k+R_K(z).
- \label{eq:warpseries}
+ c_T=\frac{\ell_-+\ell_+}{2},\qquad
+ r_T=\frac{\ell_+-\ell_-}{2|c_T|}.
 \end{equation}
-The tail admits the closed bound
-\begin{align}
- |R_K(z)|&\leq T_{K+1}(r),\label{eq:warptail}\\
- T_n(r)&=\frac{r^n}{2}\left[
- \frac{r(1+r)}{(1-r)^3}
- +\frac{(2n+3)r}{(1-r)^2}\right.\nonumber\\
- &\hspace{25mm}\left.
- +\frac{(n+1)(n+2)}{1-r}\right].\nonumber
-\end{align}
-The finite series multiplied by \(U_C\) is polynomial and is integrated
-exactly by tensor Gauss order
+The canonical construction selects a positive triangle rule from the fixed
+geometric table in Section~\ref{sec:stargeometric}. Its 25--55 nodes evaluate
+\eqref{eq:warpdensity} directly. A triangle whose radius exceeds the final
+table entry is partitioned into four midpoint children. This construction
+uses the same geometric partition for every source field on the given
+lattice and map.
+
+The resulting 36 moment weights are contracted with the admitted controls.
+A constant reference \(P_0\) is integrated through exact target coverage,
+and the numerical weights act on \(P_{C,ij}-P_0\). With
+\(m_T=\int_T|\det DF^{-1}|\) and
+\(D_T=\max_{i,j}|P_{C,ij}-P_0|\), the fixed table gives
 \begin{equation}
- q_K=\left\lceil\frac{K+12}{2}\right\rceil.
- \label{eq:warpseriesorder}
-\end{equation}
-If \(U_C=P_0+(U_C-P_0)\), the constant \(P_0\) is integrated exactly before
-\eqref{eq:warpseries} is applied.  Hence constants have zero certified
-residual.  For triangle \(T\), the remaining error is bounded by
-\begin{equation}
- E_T\leq |T|\frac{|\det H^{-1}|}{|c|^3}
- T_{K+1}(r)\,
- \norm{U_C-P_0}_{L^\infty(T)}.
+ E_T\leq \varepsilon_gD_Tm_T,\qquad \varepsilon_g=10^{-9},
  \label{eq:warpprojectivecertificate}
 \end{equation}
-Bernstein controls and first differences provide the required value bound.
-Four-way triangle subdivision is invoked only when the sum of
-\eqref{eq:warpprojectivecertificate} exceeds the declared pixel budget.  The
-exact integral \eqref{eq:warpprojectiveintegral} remains the operator; the
-finite implementation returns its value together with a rigorous enclosure.
+in exact arithmetic. The geometric moment theorem proves this inequality
+for all control values. Summing the triangle contributions and dividing by
+the target-basin area gives the pixel-functional bound. Constant fields
+retain exact target coverage; all channels reuse the same moment bank.
 
 \subsection{Multichannel form}
 

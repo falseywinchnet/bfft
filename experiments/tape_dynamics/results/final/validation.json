@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-10-04T04:51:01.498472+00:00",
+  "host": "M4 Mac mini",
+  "releaseCtest": {
+    "passed": [
+      "tape_tests",
+      "phys_tests",
+      "numerical_tests"
+    ],
+    "failed": 0
+  },
+  "threadSanitizer": {
+    "passed": true,
+    "target": "tape_tests",
+    "options": "halt_on_error=1",
+    "buildType": "RelWithDebInfo",
+    "observedReports": 0
+  },
+  "scope": "These tests did not report races; this does not prove absence of all concurrency defects."
+}

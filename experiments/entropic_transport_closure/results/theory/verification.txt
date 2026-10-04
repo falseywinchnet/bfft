@@ -1,0 +1,6 @@
+2026-09-30: M4 Mini, host chosen by m4host (m4mini).
+Command: m4build -- env OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python3 -m unittest experiments.entropic_transport_closure.test_closure experiments.entropic_transport_closure.test_sinkhorn experiments.entropic_transport_closure.test_energy_theory -v
+Result: 23 tests passed, 0.096 s. Includes 16 existing regressions and 7 new theory tests.
+Study: study_energy_theory with retained acquisition_input.json; 50 finite remainders, 28 horizon/amplitude probes, 18 anchor audits.
+All retained linear, second-jet uniform and pathwise error inequalities passed the floating-point checks.
+Exact-arithmetic mathematical claims are proved in FINITE_ENERGY_THEORY.md; these runs are numerical regressions, not interval-certified proofs.

@@ -1,0 +1,103 @@
+{
+  "inventory_scope": "BFFT registered worktrees on both hosts; Neo home directory name scan to depth five; Mini code checkout and four build mirrors; targeted Mini scratch directories; two consumer BFFT directories. Package/include directories are not separate checkouts.",
+  "cutoff_utc": "2026-10-04T04:58:47.239849+00:00",
+  "roots": [
+    {
+      "host": "Neo",
+      "root": "/Users/ultimussecundai/.codex/worktrees/krylov-bregman-research/bfft",
+      "inventory_files": 3908,
+      "inventory_bytes": 450187273,
+      "hashed_files": 3210,
+      "unique_hashed_vs_initial_neo": null
+    },
+    {
+      "host": "Neo",
+      "root": "/Users/ultimussecundai/.codex/worktrees/obligation-dynamics/bfft",
+      "inventory_files": 405,
+      "inventory_bytes": 129655936,
+      "hashed_files": 383,
+      "unique_hashed_vs_initial_neo": null
+    },
+    {
+      "host": "Neo",
+      "root": "/Users/ultimussecundai/.codex/worktrees/wrench-engine-study/bfft",
+      "inventory_files": 1785,
+      "inventory_bytes": 418493160,
+      "hashed_files": 1294,
+      "unique_hashed_vs_initial_neo": null
+    },
+    {
+      "host": "Neo",
+      "root": "/Users/ultimussecundai/bfft",
+      "inventory_files": 40243,
+      "inventory_bytes": 9595076448,
+      "hashed_files": 27890,
+      "unique_hashed_vs_initial_neo": null
+    },
+    {
+      "host": "Mini",
+      "root": "/Users/joshuahkuttenkuler/.codex/worktrees/77b6/bfft",
+      "inventory_files": 73,
+      "inventory_bytes": 789360,
+      "hashed_files": 67,
+      "unique_hashed_vs_initial_neo": 30
+    },
+    {
+      "host": "Mini",
+      "root": "/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-6b3e7ffa7539",
+      "inventory_files": 40171,
+      "inventory_bytes": 7294951300,
+      "hashed_files": 27887,
+      "unique_hashed_vs_initial_neo": 3
+    },
+    {
+      "host": "Mini",
+      "root": "/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-7852c0dd62d1",
+      "inventory_files": 719,
+      "inventory_bytes": 32431461,
+      "hashed_files": 567,
+      "unique_hashed_vs_initial_neo": 4
+    },
+    {
+      "host": "Mini",
+      "root": "/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-daa90db3ea8e",
+      "inventory_files": 3906,
+      "inventory_bytes": 450030621,
+      "hashed_files": 3209,
+      "unique_hashed_vs_initial_neo": 1
+    },
+    {
+      "host": "Mini",
+      "root": "/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-dbd440ba5744",
+      "inventory_files": 405,
+      "inventory_bytes": 129655936,
+      "hashed_files": 383,
+      "unique_hashed_vs_initial_neo": 0
+    },
+    {
+      "host": "Mini",
+      "root": "/Users/joshuahkuttenkuler/code/bfft",
+      "inventory_files": 94,
+      "inventory_bytes": 2709459,
+      "hashed_files": 80,
+      "unique_hashed_vs_initial_neo": 40
+    }
+  ],
+  "notes": [
+    "Inventory excludes compiler/build trees, environment directories, Git internals and dependency caches; metadata includes ignored result/data files. Files below 20 MB with selected source/evidence extensions were initially hashed. Selected copies have separate complete before/after checksum receipts.",
+    "The main Mini mirror had previously lost checksum-verified duplicates, not unique source. Missing mirror copies are not treated as data loss.",
+    "Mini 7e410729c2a182b13e0447742797fc252ebc7da8 is already an ancestor of Neo main 6e64386f2da658a90493733c08b01dea6425ecdd.",
+    "Other local backup/publish/transport branches have no commits beyond main; Wrench and Krylov branches were integrated separately.",
+    "Mini has a stale prunable Git record for /private/tmp/bfft-baseline-20260612-simd, not an existing source checkout. No pruning was performed.",
+    "Consumer public/done/bfft is a website exhibit; it is outside BFFT research and was left in its owning repository. Cleanup vendor extensions were recovered separately."
+  ],
+  "private_scene_snapshot": {
+    "original_root": "/Users/ultimussecundai/bfft/experiments/scene_pattern",
+    "storage_root": "/Users/ultimussecundai/Documents/CodexRecovery/bfft-20261003/private-scene-pattern",
+    "manifest": "/Users/ultimussecundai/Documents/CodexRecovery/bfft-20261003/private-scene-manifest.json",
+    "manifest_sha256": "dacecb9865bba7e334bb93f7481e4c2f3181fc6ce5177bc1d7fe746d0c572b2a",
+    "files": 24126,
+    "bytes": 4103659579,
+    "method": "APFS clonefile with no fallback to allocating a full second copy; snapshot is on the same physical disk, not an off-device backup. Private paths and contents are not included in Git."
+  }
+}

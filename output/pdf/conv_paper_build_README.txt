@@ -21,3 +21,10 @@ Main-text additions
 
 The construction, source stencil, signed fibre, blend, and basin rule are
 preserved. The energy bound is not a universal optimality claim.
+
+2026-09-14: CONV* warped-pixel addendum
+  convstar_warp_addendum.tex and convstar_warp_measurements.tex are now inputs
+  to the modular paper, composed and fused by experiments/compose_conv_paper.py.
+  Standalone build: tectonic convstar_warp_addendum_preview.tex
+  The standalone PDF covers exact rectangular functionals, adaptive projective
+  order, scheduling barriers, measured performance and precision scope.

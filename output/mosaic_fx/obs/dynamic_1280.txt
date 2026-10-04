@@ -1,0 +1,2 @@
+dynamic 1280x720 render+readback: unfiltered mean 1.567 p95 2.330 max 3.268 ms; mosaic mean 3.207 p95 5.887 max 7.033 ms
+plugin stats {"worker":{"samples":120,"wakes":119,"retiles":60,"deferred":59,"publishes":119,"geometry_publishes":59,"meyer_ms_per_retile":50.992,"ms_per_sample":31.242,"max_ms":108.022},"render":{"frames":308,"locates":59,"cpu_ms_per_frame":0.468,"max_ms":2.541}}

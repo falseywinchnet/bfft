@@ -1,0 +1,2 @@
+/tmp/bfft-recovery-20261003/TVNormalizer.app: replacing existing signature
+Built /tmp/bfft-recovery-20261003/TVNormalizer.app

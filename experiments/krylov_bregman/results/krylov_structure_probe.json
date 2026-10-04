@@ -1,0 +1,65 @@
+{
+  "note": "small explicit diagnostic Jacobians, not charged to any solver or used in its decisions",
+  "rows": [
+    {
+      "model": "sinkhorn",
+      "prefix": 0,
+      "dimension": 64,
+      "max_imaginary": 0.0,
+      "complex_eigenvalues": 0,
+      "minimum_real": -5.092991409394164e-17,
+      "maximum_modulus": 0.9822494042212957,
+      "nonnormality": 0.1777417655147528
+    },
+    {
+      "model": "sinkhorn",
+      "prefix": 4,
+      "dimension": 64,
+      "max_imaginary": 0.0,
+      "complex_eigenvalues": 0,
+      "minimum_real": -4.78342006663963e-17,
+      "maximum_modulus": 0.9665667696104601,
+      "nonnormality": 0.1122485187359356
+    },
+    {
+      "model": "sinkhorn",
+      "prefix": 32,
+      "dimension": 64,
+      "max_imaginary": 1.1996058457425875e-17,
+      "complex_eigenvalues": 0,
+      "minimum_real": -5.56528575689564e-17,
+      "maximum_modulus": 0.9638825952415989,
+      "nonnormality": 0.11646307730025093
+    },
+    {
+      "model": "meyer",
+      "prefix": 0,
+      "dimension": 320,
+      "max_imaginary": 0.47083317026080646,
+      "complex_eigenvalues": 132,
+      "minimum_real": -3.3184825406177015e-15,
+      "maximum_modulus": 1.0000000000000044,
+      "nonnormality": 0.017090524816933017
+    },
+    {
+      "model": "meyer",
+      "prefix": 4,
+      "dimension": 320,
+      "max_imaginary": 0.4589307468075974,
+      "complex_eigenvalues": 196,
+      "minimum_real": -6.458363981970102e-16,
+      "maximum_modulus": 1.000000000000008,
+      "nonnormality": 0.01908777904185048
+    },
+    {
+      "model": "meyer",
+      "prefix": 32,
+      "dimension": 320,
+      "max_imaginary": 0.46798902929002567,
+      "complex_eigenvalues": 194,
+      "minimum_real": -5.869372902600389e-16,
+      "maximum_modulus": 1.0000000000000016,
+      "nonnormality": 0.017841605473095015
+    }
+  ]
+}

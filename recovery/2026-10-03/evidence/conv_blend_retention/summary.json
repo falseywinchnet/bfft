@@ -1,0 +1,28 @@
+[
+  {
+    "sourceSide": 17,
+    "cases": 28,
+    "continuousMseChangePercent": -0.003503489815437355,
+    "areaMseChangePercent": -0.00473236188306414,
+    "bestContinuousPercent": -0.034009688751834855,
+    "worstContinuousPercent": 0.014758397016789715,
+    "bestAreaPercent": -0.038679297099775134,
+    "worstAreaPercent": 0.015190587530899968,
+    "maxSampledCorrection8BitLevels": 0.24130789761404814,
+    "maxCorrectionRms8BitLevels": 0.006708361411860007,
+    "continuousRatioRefinement": 4.551914400963142e-15
+  },
+  {
+    "sourceSide": 33,
+    "cases": 28,
+    "continuousMseChangePercent": 0.0019605525972687943,
+    "areaMseChangePercent": 0.00036959559506222206,
+    "bestContinuousPercent": -0.02036477479727683,
+    "worstContinuousPercent": 0.024948662251422782,
+    "bestAreaPercent": -0.029901368044882304,
+    "worstAreaPercent": 0.027345189651861723,
+    "maxSampledCorrection8BitLevels": 0.07976206392854818,
+    "maxCorrectionRms8BitLevels": 0.0009659988112140317,
+    "continuousRatioRefinement": 2.886579864025407e-14
+  }
+]

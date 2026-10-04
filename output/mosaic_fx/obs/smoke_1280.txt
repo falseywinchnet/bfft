@@ -1,0 +1,8 @@
+first tile pack after 6 frames
+settled after 17 frames; mean change from source 37.11 codes
+tiles 11919 (max 4 per cell); GPU/CPU mean 0.0715 codes, worst 4, pixels >24: 0 (0.0000%)
+Metal 1280x720 throughput per frame: unfiltered 0.183 ms, mosaic 0.324 ms, added 0.141 ms
+motion republished after 6 frames
+after motion: far-right changed pixels 0 (0.0000%, mean 0.0000, worst 0), near-disc changed >24: 64572
+glint animation: 495030 pixels moved > 8 codes in 300 ms
+Mosaic FX OBS registration, shader, CPU/GPU equivalence, static stability, motion locality, glint, zero-mix bypass and HDR passthrough passed

@@ -1,0 +1,13 @@
+{
+  "run_m4.py": "0f781bff16463f034e915c16bd79aee78f893f35ad6f5f85224923f884d55e0e",
+  "score.mjs": "eb0993db21fd3453964a1633a9859dd94b22e5f50c0c30ebde24947cf057091a",
+  "controls.py": "3fec6484624b0bbb6dffdf6f1230c9b1b001b0aae12e9237b2ca749c5c95fd32",
+  "run_study.py": "1760e0f7a2851a041c73988700b086972d9e21d6fdd74b364ae113d053c7b6fe",
+  "CMakeLists.txt": "4f85945431795a24cac293c395285b93bcd6aa51ae3d40a20a697ed3a1618142",
+  "mujoco_runner.py": "dbcbc8209dc9bec403ebdd7bcdb1c728d083a79fc6e3fbbbdafe0fa97373e5e9",
+  "scene.mjs": "e0e77840b2a2fdc24f880ccae52ff6bbbc50fd426f9e509a518d2f667237cee8",
+  "native.cpp": "283eb2bf0cb3ff2e94edb1595423f3aae0b4ccccc8dade1c015a963d26ce864b",
+  "test_score.mjs": "7040b3c9bd0ec448a379c20cc65625c19ea341b8f3b2248b9f78fbaa6c0037b6",
+  "rapier_runner.mjs": "e0de6ac02ce982ddf3912ca29e51e301af9757f661bcc835de1fe390b31a5c7d",
+  "PROTOCOL.md": "5be535d653c7b321dd304678c5b4d89b8e677f73983cc444a009deef3540d5dd"
+}

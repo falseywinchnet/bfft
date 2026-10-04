@@ -1,0 +1,23 @@
+PASS  box topology  V=8 F=6 E=12
+PASS  box mass  mass=2.6000000000000005
+PASS  box inertia  Ixx=0.002708333333333333 Izz=0.010833333333333334
+PASS  rock hulls closed and convex  max outside distance=1.05e-4
+  box [soft_step] z=0.049224 |v|=3.48e-16 drift=1.14e-11 pen=7.76e-4 KE=1.57e-31
+PASS  box rests [soft_step]  z=0.04922391127827114
+  flat rock [soft_step] z=0.003211 |v|=2.12e-4 drift=3.91e-4 pen=3.47e-3 KE=1.16e-8
+PASS  rock rests [soft_step]  drift=3.91e-4
+  box [wrench] z=0.050000 |v|=1.28e-13 drift=2.51e-14 pen=2.70e-15 KE=2.13e-26
+PASS  box rests [wrench]  z=0.04999999999999944
+  flat rock [wrench] z=0.006412 |v|=8.50e-14 drift=2.02e-14 pen=0.00e+0 KE=1.87e-27
+PASS  rock rests [wrench]  drift=2.02e-14
+  stack 10 [soft_step] topZ=0.024100 expected=0.475000 drift=1.49e-6 lateKE=1.79e-7 pen=1.33e-3 ms/frame=0.188
+NOTE  stack 10 [soft_step] does not stand  topZ error=-4.51e-1
+  stack 10 [wrench] topZ=0.475000 expected=0.475000 drift=4.68e-13 lateKE=1.62e-21 pen=2.59e-14 ms/frame=0.078
+    stats {"frames":600,"passes":610,"newtonIterations":285,"factorizations":277,"factorReuses":8,"lineSearchEvaluations":7584,"maxNewtonIterations":13,"notConverged":0,"stalled":0,"passLimit":0,"analyses":1}
+PASS  stack 10 stands [wrench]  topZ error=-2.12e-13
+  stack 30 [soft_step] topZ=0.201125 expected=1.475000 drift=7.92e-4 lateKE=1.06e-5 pen=4.43e-3 ms/frame=0.565
+NOTE  stack 30 [soft_step] does not stand  topZ error=-1.27e+0
+  stack 30 [wrench] topZ=1.475000 expected=1.475000 drift=9.78e-13 lateKE=1.98e-20 pen=2.60e-14 ms/frame=0.194
+    stats {"frames":600,"passes":613,"newtonIterations":312,"factorizations":302,"factorReuses":10,"lineSearchEvaluations":8151,"maxNewtonIterations":25,"notConverged":0,"stalled":0,"passLimit":0,"analyses":1}
+PASS  stack 30 stands [wrench]  topZ error=-6.39e-13
+ALL PASS

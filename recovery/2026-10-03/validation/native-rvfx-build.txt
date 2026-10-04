@@ -1,0 +1,30 @@
+[  5%] Building CXX object CMakeFiles/rvfx_core.dir/src/engine.cpp.o
+[ 10%] Linking CXX static library librvfx_core.a
+[ 10%] Built target rvfx_core
+[ 15%] Building CXX object CMakeFiles/rvfx_entropy.dir/src/entropy_stretch.cpp.o
+[ 20%] Linking CXX static library librvfx_entropy.a
+[ 20%] Built target rvfx_entropy
+[ 25%] Building CXX object CMakeFiles/rvfx_entropy_reference.dir/tests/reference/entropy_stretch_v1.cpp.o
+[ 30%] Linking CXX static library librvfx_entropy_reference.a
+[ 30%] Built target rvfx_entropy_reference
+[ 35%] Building CXX object CMakeFiles/rvfx_entropy_benchmark.dir/tools/entropy_benchmark.cpp.o
+[ 40%] Linking CXX executable rvfx_entropy_benchmark
+[ 40%] Built target rvfx_entropy_benchmark
+[ 45%] Building CXX object CMakeFiles/rvfx_entropy_demo.dir/tools/entropy_demo.cpp.o
+[ 50%] Linking CXX executable rvfx_entropy_demo
+[ 50%] Built target rvfx_entropy_demo
+[ 55%] Building CXX object CMakeFiles/rvfx_entropy_tests.dir/tests/test_entropy_stretch.cpp.o
+[ 60%] Linking CXX executable rvfx_entropy_tests
+[ 60%] Built target rvfx_entropy_tests
+[ 65%] Building CXX object CMakeFiles/rvfx_entropy_chain_tests.dir/tests/test_entropy_chains.cpp.o
+[ 70%] Linking CXX executable rvfx_entropy_chain_tests
+[ 70%] Built target rvfx_entropy_chain_tests
+[ 75%] Building CXX object CMakeFiles/rvfx_tests.dir/tests/test_engine.cpp.o
+[ 80%] Linking CXX executable rvfx_tests
+[ 80%] Built target rvfx_tests
+[ 85%] Building CXX object CMakeFiles/rvfx_benchmark.dir/tools/benchmark.cpp.o
+[ 90%] Linking CXX executable rvfx_benchmark
+[ 90%] Built target rvfx_benchmark
+[ 95%] Building CXX object CMakeFiles/rvfx_demo.dir/tools/demo.cpp.o
+[100%] Linking CXX executable rvfx_demo
+[100%] Built target rvfx_demo

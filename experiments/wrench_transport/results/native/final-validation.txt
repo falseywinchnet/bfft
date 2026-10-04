@@ -1,0 +1,39 @@
+Syncing /Users/ultimussecundai/.codex/worktrees/wrench-engine-study/bfft -> m4mini:/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-7852c0dd62d1
+Running on m4mini: sh -c /opt/homebrew/bin/cmake -S experiments/wrench_transport/phys -B /tmp/wrench_standalone_candidate -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/wrench-install && /opt/homebrew/bin/cmake --build /tmp/wrench_standalone_candidate -j4 && /opt/homebrew/bin/ctest --test-dir /tmp/wrench_standalone_candidate --output-on-failure && /tmp/wrench_standalone_candidate/wrench_minimal && /opt/homebrew/bin/cmake --install /tmp/wrench_standalone_candidate && /tmp/wrench_standalone_candidate/phys_bench /tmp/wrench_scene_1.txt /tmp/wrench-final.json 60 8 /tmp/wrench-replay.json
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /tmp/wrench_standalone_candidate
+[ 42%] Built target zc_phys
+[ 50%] Building CXX object CMakeFiles/wrench_minimal.dir/examples/minimal.cpp.o
+[ 57%] Building CXX object CMakeFiles/numerical_tests.dir/tests/numerical_tests.cpp.o
+[ 71%] Building CXX object CMakeFiles/phys_bench.dir/tools/phys_bench.cpp.o
+[ 71%] Building CXX object CMakeFiles/phys_tests.dir/tests/phys_tests.cpp.o
+[ 78%] Linking CXX executable wrench_minimal
+[ 78%] Built target wrench_minimal
+[ 85%] Linking CXX executable numerical_tests
+[ 85%] Built target numerical_tests
+[ 92%] Linking CXX executable phys_bench
+[ 92%] Built target phys_bench
+[100%] Linking CXX executable phys_tests
+[100%] Built target phys_tests
+Test project /tmp/wrench_standalone_candidate
+    Start 1: phys_tests
+1/2 Test #1: phys_tests .......................   Passed    2.33 sec
+    Start 2: numerical_tests
+2/2 Test #2: numerical_tests ..................   Passed    0.60 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   2.94 sec
+cube center 0.050000 m; asleep 1
+-- Install configuration: "Release"
+-- Installing: /tmp/wrench-install/lib/libzc_phys.a
+-- Installing: /tmp/wrench-install/include/wrench/physics.hpp
+-- Installing: /tmp/wrench-install/lib/cmake/WrenchPhysics/WrenchPhysicsTargets.cmake
+-- Installing: /tmp/wrench-install/lib/cmake/WrenchPhysics/WrenchPhysicsTargets-release.cmake
+-- Installing: /tmp/wrench-install/lib/cmake/WrenchPhysics/WrenchPhysicsConfig.cmake
+-- Installing: /tmp/wrench-install/lib/cmake/WrenchPhysics/WrenchPhysicsConfigVersion.cmake
+wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7353 ms, worst 8.6596 ms
+  moving frames 71: mean 3.4306 ms; quiet frames 409: mean 0.2674 ms
+  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0
+  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564

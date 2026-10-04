@@ -1,0 +1,38 @@
+{
+  "platform": "macOS-26.5-arm64-arm-64bit",
+  "records": [
+    {
+      "case": "count32-seed1",
+      "count": 32,
+      "seed": 1,
+      "mode": "adaptive",
+      "repeat": 0,
+      "warmup": true,
+      "status": "failed",
+      "error": "Command '['/usr/bin/time', '-l', '/tmp/obligation_dynamics/obligation_bench', PosixPath('/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-dbd440ba5744/experiments/obligation_dynamics/fixtures/count32/seed1.txt'), PosixPath('/tmp/obligation-development7/count32-seed1-adaptive-r0.json'), 60]' died with <Signals.SIGABRT: 6>.",
+      "stage": "simulation"
+    },
+    {
+      "case": "count128-seed1",
+      "count": 128,
+      "seed": 1,
+      "mode": "adaptive",
+      "repeat": 0,
+      "warmup": true,
+      "status": "failed",
+      "error": "Command '['/usr/bin/time', '-l', '/tmp/obligation_dynamics/obligation_bench', PosixPath('/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-dbd440ba5744/experiments/obligation_dynamics/fixtures/count128/seed1.txt'), PosixPath('/tmp/obligation-development7/count128-seed1-adaptive-r0.json'), 60]' died with <Signals.SIGABRT: 6>.",
+      "stage": "simulation"
+    },
+    {
+      "case": "count512-seed1",
+      "count": 512,
+      "seed": 1,
+      "mode": "adaptive",
+      "repeat": 0,
+      "warmup": true,
+      "status": "failed",
+      "error": "Command '['/usr/bin/time', '-l', '/tmp/obligation_dynamics/obligation_bench', PosixPath('/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-dbd440ba5744/experiments/obligation_dynamics/fixtures/count512/seed1.txt'), PosixPath('/tmp/obligation-development7/count512-seed1-adaptive-r0.json'), 60]' died with <Signals.SIGABRT: 6>.",
+      "stage": "simulation"
+    }
+  ]
+}

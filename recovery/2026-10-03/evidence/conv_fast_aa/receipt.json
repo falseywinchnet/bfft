@@ -1,0 +1,29 @@
+{
+  "date": "2026-09-23",
+  "host_selector": "m4host -> m4mini",
+  "device": "Apple M4",
+  "os": "macOS 26.5 (25F71)",
+  "python": "3.9.6",
+  "critical_gpu_sources_verified_against_executed_mirror": true,
+  "source_sha256": {
+    "geometry_gpu.mm": "29b13c037e2cbd11646c3d075bfb3419a883dc5d04f087d744b140431d8b14bb",
+    "test_core.py": "a61b4d68ef6e6de639cdeb891bc827bf484e7b048f6ded63c85ce15f3c08b158",
+    "core.py": "03ca2a463bbcdbef0dfc52adac78df1e07d2f80c373575ddc7c64d9d9259c94c",
+    "gpu.mm": "b8d0b82793eefb2a61d0fbd7e58afd275101500e9577573a99fecfd8873f232d",
+    "README.md": "f04371150016e3d4f4766223da2d541c62fe202ac0ac17de8526511843cfe125",
+    "aa.metal": "71658465cd56ae8405e43ab41ab1a8af255da081302f048bbb4ca137d588264f",
+    "geometry_reference.py": "caaf3ea02fd3b739835e09d15d8d11df18ce72d2bf37b7df7e00d681b21555bc",
+    "build.sh": "878b3c5a9dc9a141886fac132651ece268762f4c62e0543b44f1e9932e6b3b50",
+    "geometry.metal": "43a8030d5c8912bb08e9ead676a7b74a13bb6023b6f41b47adb89d18626f6b92",
+    "FINDINGS.md": "921e64b9f0b9fc8c85f5f07c7255c0461b3b0f0c03b6bcfb073b175284839436",
+    "test_geometry.py": "5a403c8c5656a064b04dec4c9298392e61e5e6e08a8ddd15a036455c5899445b",
+    "study.py": "7e99e757f14054811c4a15214df7efb3ab1afbf022017dac9ccdbbea27fb5e1e",
+    "vendor/Fxaa3_11.h": "4834fada78774fc55726adeb717c53ca7324b66820df08ef773515cafb148aef"
+  },
+  "image_results": "v3/quality.json",
+  "image_timing": "v3/gpu_timing.json",
+  "geometry_results": "geometry_final/geometry_quality.json",
+  "geometry_timing": "geometry_final/geometry_timing.json",
+  "tests": "geometry_final/tests.log",
+  "scope": "Research prototype; image-only quality target failed; retained geometry succeeds on measured nonoverlapping coverage cases and shared mesh; opaque overlap remains a failing counterexample. No universal replacement or novelty claim."
+}

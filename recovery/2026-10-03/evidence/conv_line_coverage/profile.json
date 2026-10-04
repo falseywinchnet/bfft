@@ -1,0 +1,124 @@
+{
+  "scope": "Known-background, known-unit-contrast two-cell line. Edge width 0.25 is one explicit witness from the admissible family, not a universally inferred width. C2 quintic edges, exact source cell means, range [0,1], one rise and one fall; no optimization. Geometry is inferred from the two coverage values. Tests sweep 108 coverage/edge-width combinations.",
+  "worstMean": 1.4432899320127035e-15,
+  "worstMass": 4.6074255521944e-15,
+  "profile": {
+    "L": 32.085,
+    "R": 33.085,
+    "edgeWidth": 0.25
+  },
+  "views": [
+    {
+      "delta": 0.5,
+      "phase": 0,
+      "current": 0.5611682274635921,
+      "geometric": 1,
+      "coverageProfile": 1
+    },
+    {
+      "delta": 0.5,
+      "phase": 0.25,
+      "current": 0.5679064201049185,
+      "geometric": 1,
+      "coverageProfile": 1
+    },
+    {
+      "delta": 0.5,
+      "phase": 0.5,
+      "current": 0.5776809885477026,
+      "geometric": 1,
+      "coverageProfile": 0.9993296977920001
+    },
+    {
+      "delta": 0.5,
+      "phase": 0.75,
+      "current": 0.5775744718515625,
+      "geometric": 1,
+      "coverageProfile": 0.9893387113919996
+    },
+    {
+      "delta": 1,
+      "phase": 0,
+      "current": 0.5219237165680773,
+      "geometric": 0.5850000000000009,
+      "coverageProfile": 0.5850000000000009
+    },
+    {
+      "delta": 1,
+      "phase": 0.25,
+      "current": 0.48159931290623126,
+      "geometric": 0.6649999999999991,
+      "coverageProfile": 0.6649999999999991
+    },
+    {
+      "delta": 1,
+      "phase": 0.5,
+      "current": 0.5368541727463404,
+      "geometric": 0.9149999999999991,
+      "coverageProfile": 0.9143296977919992
+    },
+    {
+      "delta": 1,
+      "phase": 0.75,
+      "current": 0.556380579268686,
+      "geometric": 0.8350000000000009,
+      "coverageProfile": 0.8350000000000009
+    },
+    {
+      "delta": 2,
+      "phase": 0,
+      "current": 0.36510243266820896,
+      "geometric": 0.4574999999999996,
+      "coverageProfile": 0.4573324244479996
+    },
+    {
+      "delta": 2,
+      "phase": 0.25,
+      "current": 0.4612330757469559,
+      "geometric": 0.5,
+      "coverageProfile": 0.5
+    },
+    {
+      "delta": 2,
+      "phase": 0.5,
+      "current": 0.417932296792666,
+      "geometric": 0.5,
+      "coverageProfile": 0.499832424448
+    },
+    {
+      "delta": 2,
+      "phase": 0.75,
+      "current": 0.29392545755642147,
+      "geometric": 0.2925000000000004,
+      "coverageProfile": 0.2925000000000004
+    },
+    {
+      "delta": 4,
+      "phase": 0,
+      "current": 0.2573038215438524,
+      "geometric": 0.25,
+      "coverageProfile": 0.25
+    },
+    {
+      "delta": 4,
+      "phase": 0.25,
+      "current": 0.2573038215438524,
+      "geometric": 0.25,
+      "coverageProfile": 0.25
+    },
+    {
+      "delta": 4,
+      "phase": 0.5,
+      "current": 0.2089661781986554,
+      "geometric": 0.25,
+      "coverageProfile": 0.24991621222399996
+    },
+    {
+      "delta": 4,
+      "phase": 0.75,
+      "current": 0.18255124613642687,
+      "geometric": 0.2287499999999998,
+      "coverageProfile": 0.2286662122239998
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+{"equivalence_float_values":82798848,"bit_exact":true,"cases":[
+{"width":128,"height":72,"analysis_us":{"before":303.811,"after":240.753},"advance_us":{"before":75.027,"after":32.018}},
+{"width":256,"height":144,"analysis_us":{"before":848.088,"after":601.262},"advance_us":{"before":75.020,"after":32.038}}
+]}

@@ -1,0 +1,16 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+const [scenePath,out,hzText,iterationsText,modules]=process.argv.slice(2),hz=Number(hzText),iterations=Number(iterationsText);
+const R=createRequire(modules+'/package.json')('@dimforge/rapier3d-compat');await R.init();const s=JSON.parse(readFileSync(scenePath)),setup=performance.now(),world=new R.World({x:s.gravity[0],y:s.gravity[1],z:s.gravity[2]});world.timestep=1/hz;world.numSolverIterations=iterations;world.lengthUnit=.1;
+const vector=p=>({x:p[0],y:p[1],z:p[2]}),quat=q=>({w:q[0],x:q[1],y:q[2],z:q[3]});
+const floor=world.createRigidBody(R.RigidBodyDesc.fixed().setTranslation(0,0,-.5));world.createCollider(R.ColliderDesc.cuboid(5,5,.5).setFriction(.5).setRestitution(0),floor);
+for(const w of s.walls){const b=world.createRigidBody(R.RigidBodyDesc.fixed().setTranslation(...w.p));world.createCollider(R.ColliderDesc.cuboid(...w.size.map(x=>x/2)).setFriction(.5).setRestitution(0),b);}
+for(const item of s.fixedBodies??[]){const b=world.createRigidBody(R.RigidBodyDesc.fixed().setTranslation(...item.p).setRotation(quat(item.q)));for(const h of s.shapes[item.shape].hulls)world.createCollider(R.ColliderDesc.convexHull(new Float32Array(h.vertices.flat())).setFriction(.5).setRestitution(0),b);}
+const bodies=Array(s.count).fill(null),times=[],samples=[],masses=Array(s.shapes.length).fill(null);let activation=0,late=0,lateSteps=0;const setupSeconds=(performance.now()-setup)/1000;
+for(let f=0;f<Math.round(s.seconds*hz);f++){
+ let start=performance.now();
+ for(let i=0;i<s.count;i++)if(bodies[i]===null&&s.bodies[i].release<=f/hz+1e-9){const item=s.bodies[i],sh=s.shapes[item.shape],b=world.createRigidBody(R.RigidBodyDesc.dynamic().setTranslation(...item.p).setRotation(quat(item.q)).setLinvel(...item.v).setAngvel(vector(item.w)).setCanSleep(false));for(const h of sh.hulls){const c=R.ColliderDesc.convexHull(new Float32Array(h.vertices.flat()));if(!c)throw Error('invalid hull');world.createCollider(c.setDensity(s.density).setFriction(.5).setRestitution(0),b);}bodies[i]=b;masses[item.shape]=b.mass();}
+ activation+=(performance.now()-start)/1000;start=performance.now();world.step();const cost=performance.now()-start;times.push(cost);if(f/hz>=s.releaseEnd-1e-9){late+=cost/1000;lateSteps++;}
+ if((f+1)%Math.max(1,hz/s.sampleRate)===0){let speed=0;for(let i=0;i<s.count;i++)if(bodies[i]){const v=bodies[i].linvel(),w=bodies[i].angvel();speed=Math.max(speed,Math.hypot(v.x,v.y,v.z)+s.shapes[s.bodies[i].shape].radius*Math.hypot(w.x,w.y,w.z));}const row={t:(f+1)/hz,maxSpeed:speed};if((f+1)%Math.max(1,hz/s.geometryRate)===0||f+1===Math.round(s.seconds*hz))row.poses=bodies.map(b=>{if(!b)return null;const p=b.translation(),q=b.rotation();return[p.x,p.y,p.z,q.w,q.x,q.y,q.z];});samples.push(row);}
+}
+const total=times.reduce((a,b)=>a+b,0);times.sort((a,b)=>a-b);const quantile=q=>times[Math.floor(q*(times.length-1))];const result={engine:'rapier '+R.version(),hz,iterations,lengthUnit:.1,setupSeconds,activationSeconds:activation,masses,samples,wallSeconds:total/1000,activeSeconds:late,activeSteps:lateSteps,timing:{p50Ms:quantile(.5),p95Ms:quantile(.95),p99Ms:quantile(.99),maxMs:times.at(-1)}};writeFileSync(out,JSON.stringify(result));console.log(result.engine,s.count,hz,result.wallSeconds);

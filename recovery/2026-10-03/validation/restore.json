@@ -1,0 +1,6 @@
+{
+  "verified_external_records": 505,
+  "round_trip_sample": "experiments/entropic_transport_closure/results/theory/rejected_solver_amortization_20260930.tar.gz",
+  "round_trip_directory": "/tmp/bfft-recovery-restore-check",
+  "verification": "copy preserved complete SHA-256; all checksum-addressed source entries passed streaming hash checks"
+}

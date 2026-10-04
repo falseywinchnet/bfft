@@ -1,0 +1,145 @@
+[
+  {
+    "source_root": "/Users/ultimussecundai/Downloads/cleanup2",
+    "source_path": "vendor/bfft/LOCAL-EXTENSIONS.md",
+    "destination": "experiments/cleanup_ring_transfer/vendor/bfft/LOCAL-EXTENSIONS.md",
+    "sha256": "8139d960cdebe1f66baf661de8d6ebb598ea15127e7b412c588ba954d0925598",
+    "bytes": 1087,
+    "verified_utc": "2026-10-04T04:53:54.708747+00:00",
+    "source_host": "Neo",
+    "source_branch": "main",
+    "source_head": "0ed256daa27ba2f06268641c5d4c655fd2853798"
+  },
+  {
+    "source_root": "/Users/ultimussecundai/Downloads/cleanup2",
+    "source_path": "vendor/bfft/PROVENANCE.json",
+    "destination": "experiments/cleanup_ring_transfer/vendor/bfft/PROVENANCE.json",
+    "sha256": "ac79fd280cba95e34d306761e75e4bb353bb89e910cac7e687b75d40a43ee4f8",
+    "bytes": 4447,
+    "verified_utc": "2026-10-04T04:53:54.711208+00:00",
+    "source_host": "Neo",
+    "source_branch": "main",
+    "source_head": "0ed256daa27ba2f06268641c5d4c655fd2853798"
+  },
+  {
+    "source_root": "/Users/ultimussecundai/Downloads/cleanup2",
+    "source_path": "vendor/bfft/LICENSE",
+    "destination": "experiments/cleanup_ring_transfer/vendor/bfft/LICENSE",
+    "sha256": "a03d30bb4f88439a5403d76cf44ef66a818d85327312cf20f9bf42f95b970cf5",
+    "bytes": 1083,
+    "verified_utc": "2026-10-04T04:53:54.712187+00:00",
+    "source_host": "Neo",
+    "source_branch": "main",
+    "source_head": "0ed256daa27ba2f06268641c5d4c655fd2853798"
+  },
+  {
+    "source_root": "/Users/ultimussecundai/Downloads/cleanup2",
+    "source_path": "vendor/bfft/src/detail/bruun_dit_kernel.hpp",
+    "destination": "experiments/cleanup_ring_transfer/vendor/bfft/src/detail/bruun_dit_kernel.hpp",
+    "sha256": "1cc5e9042e05850b814362f2003f9c67d480656900c133b6f3bcc149c7493416",
+    "bytes": 122958,
+    "verified_utc": "2026-10-04T04:53:54.714793+00:00",
+    "source_host": "Neo",
+    "source_branch": "main",
+    "source_head": "0ed256daa27ba2f06268641c5d4c655fd2853798"
+  },
+  {
+    "source_root": "/Users/ultimussecundai/Downloads/cleanup2",
+    "source_path": "vendor/bfft/src/detail/complex_dit16_kernel.hpp",
+    "destination": "experiments/cleanup_ring_transfer/vendor/bfft/src/detail/complex_dit16_kernel.hpp",
+    "sha256": "0c0982f2b72e8c04a13e4f1b43086df41e1ed6fc405a876e99688c7a3682c737",
+    "bytes": 1382,
+    "verified_utc": "2026-10-04T04:53:54.718269+00:00",
+    "source_host": "Neo",
+    "source_branch": "main",
+    "source_head": "0ed256daa27ba2f06268641c5d4c655fd2853798"
+  },
+  {
+    "source_root": "/Users/ultimussecundai/Downloads/cleanup2",
+    "source_path": "native/src/guide_fft.h",
+    "destination": "experiments/cleanup_ring_transfer/native/src/guide_fft.h",
+    "sha256": "57e61548deb36b46b8e88daa5dcd71d71c654dbdcf74efe9600f983da60c1f51",
+    "bytes": 8583,
+    "verified_utc": "2026-10-04T04:53:54.725981+00:00",
+    "source_host": "Neo",
+    "source_branch": "main",
+    "source_head": "0ed256daa27ba2f06268641c5d4c655fd2853798"
+  },
+  {
+    "source_root": "/Users/ultimussecundai/Downloads/cleanup2",
+    "source_path": "native/src/guide_peak.h",
+    "destination": "experiments/cleanup_ring_transfer/native/src/guide_peak.h",
+    "sha256": "cb0b56847d6cdbeef9040933e0a62b7ba953d857680c7efeed0a5cc306fddb6e",
+    "bytes": 1429,
+    "verified_utc": "2026-10-04T04:53:54.728110+00:00",
+    "source_host": "Neo",
+    "source_branch": "main",
+    "source_head": "0ed256daa27ba2f06268641c5d4c655fd2853798"
+  },
+  {
+    "source_root": "/Users/ultimussecundai/Downloads/cleanup2",
+    "source_path": "native/src/ring_forward.h",
+    "destination": "experiments/cleanup_ring_transfer/native/src/ring_forward.h",
+    "sha256": "fd182a1f8d4ae5749976813c27166b4701e9aa622492666e386e0be028a7c437",
+    "bytes": 6709,
+    "verified_utc": "2026-10-04T04:53:54.731384+00:00",
+    "source_host": "Neo",
+    "source_branch": "main",
+    "source_head": "0ed256daa27ba2f06268641c5d4c655fd2853798"
+  },
+  {
+    "source_root": "/Users/ultimussecundai/Downloads/cleanup2",
+    "source_path": "research/true_superresolution/ring_transform_probe.cpp",
+    "destination": "experiments/cleanup_ring_transfer/research/true_superresolution/ring_transform_probe.cpp",
+    "sha256": "362e9e2e2bffe198268c41d17be4ddcaaef189b4a6f23ce874e7285f52c8b2dd",
+    "bytes": 4708,
+    "verified_utc": "2026-10-04T04:53:54.733768+00:00",
+    "source_host": "Neo",
+    "source_branch": "main",
+    "source_head": "0ed256daa27ba2f06268641c5d4c655fd2853798"
+  },
+  {
+    "source_root": "/Users/ultimussecundai/Downloads/cleanup2",
+    "source_path": "docs/ring-forward-transform.md",
+    "destination": "experiments/cleanup_ring_transfer/docs/ring-forward-transform.md",
+    "sha256": "a9a5e4a1f62f6bd5d27912cfcbd24795d7cd661aeef72f6b91c475e706f00fab",
+    "bytes": 5615,
+    "verified_utc": "2026-10-04T04:53:54.734310+00:00",
+    "source_host": "Neo",
+    "source_branch": "main",
+    "source_head": "0ed256daa27ba2f06268641c5d4c655fd2853798"
+  },
+  {
+    "source_root": "/Users/ultimussecundai/Downloads/cleanup2",
+    "source_path": "docs/evidence/ring-complex-probe-4.json",
+    "destination": "experiments/cleanup_ring_transfer/docs/evidence/ring-complex-probe-4.json",
+    "sha256": "d50209bb6f613a402026201c7830ec671727273501b3556c372eae041a1d48bd",
+    "bytes": 289,
+    "verified_utc": "2026-10-04T04:53:54.737643+00:00",
+    "source_host": "Neo",
+    "source_branch": "main",
+    "source_head": "0ed256daa27ba2f06268641c5d4c655fd2853798"
+  },
+  {
+    "source_root": "/Users/ultimussecundai/Downloads/cleanup2",
+    "source_path": "docs/evidence/ring-fused-independent.json",
+    "destination": "experiments/cleanup_ring_transfer/docs/evidence/ring-fused-independent.json",
+    "sha256": "b6ac6c4fe540f62537e6a03276d35c5a46a8c74bae21aed32bfebf03bb73d62a",
+    "bytes": 30238,
+    "verified_utc": "2026-10-04T04:53:54.739197+00:00",
+    "source_host": "Neo",
+    "source_branch": "main",
+    "source_head": "0ed256daa27ba2f06268641c5d4c655fd2853798"
+  },
+  {
+    "source_root": "/Users/ultimussecundai/Downloads/cleanup2",
+    "source_path": "vendor/bfft/src/detail/bruun_simd_backend.hpp",
+    "destination": "experiments/cleanup_ring_transfer/vendor/bfft/src/detail/bruun_simd_backend.hpp",
+    "sha256": "5786c268c7bbda85f0f0b81873ef337b8d88a62dd46b884db41055f35a769da7",
+    "bytes": 14401,
+    "verified_utc": "2026-10-04T04:53:54.741004+00:00",
+    "source_host": "Neo",
+    "source_branch": "main",
+    "source_head": "0ed256daa27ba2f06268641c5d4c655fd2853798"
+  }
+]

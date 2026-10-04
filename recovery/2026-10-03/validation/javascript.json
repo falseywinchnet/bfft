@@ -1,0 +1,72 @@
+[
+  {
+    "label": "wrench_transport-test_collide",
+    "command": [
+      "/opt/homebrew/bin/node",
+      "experiments/wrench_transport/test_collide.mjs"
+    ],
+    "exit_code": 0,
+    "seconds": 6.09257698059082,
+    "log": "/tmp/bfft-recovery-20261003/javascript-wrench_transport-test_collide.txt"
+  },
+  {
+    "label": "wrench_transport-test_basic",
+    "command": [
+      "/opt/homebrew/bin/node",
+      "experiments/wrench_transport/test_basic.mjs"
+    ],
+    "exit_code": 0,
+    "seconds": 0.7412741184234619,
+    "log": "/tmp/bfft-recovery-20261003/javascript-wrench_transport-test_basic.txt"
+  },
+  {
+    "label": "wrench_transport-test_features",
+    "command": [
+      "/opt/homebrew/bin/node",
+      "experiments/wrench_transport/test_features.mjs"
+    ],
+    "exit_code": 0,
+    "seconds": 0.18859100341796875,
+    "log": "/tmp/bfft-recovery-20261003/javascript-wrench_transport-test_features.txt"
+  },
+  {
+    "label": "packing-test_score",
+    "command": [
+      "/opt/homebrew/bin/node",
+      "experiments/wrench_transport/packing/test_score.mjs"
+    ],
+    "exit_code": 0,
+    "seconds": 0.08985614776611328,
+    "log": "/tmp/bfft-recovery-20261003/javascript-packing-test_score.txt"
+  },
+  {
+    "label": "scoring-test_score",
+    "command": [
+      "/opt/homebrew/bin/node",
+      "experiments/obligation_dynamics/scoring/test_score.mjs"
+    ],
+    "exit_code": 0,
+    "seconds": 0.0896599292755127,
+    "log": "/tmp/bfft-recovery-20261003/javascript-scoring-test_score.txt"
+  },
+  {
+    "label": "scoring-test_score",
+    "command": [
+      "/opt/homebrew/bin/node",
+      "experiments/tape_dynamics/scoring/test_score.mjs"
+    ],
+    "exit_code": 0,
+    "seconds": 0.08976626396179199,
+    "log": "/tmp/bfft-recovery-20261003/javascript-scoring-test_score.txt"
+  },
+  {
+    "label": "line_coverage-check_profile",
+    "command": [
+      "/opt/homebrew/bin/node",
+      "experiments/conv_warp/line_coverage/check_profile.mjs"
+    ],
+    "exit_code": 1,
+    "seconds": 0.08980584144592285,
+    "log": "/tmp/bfft-recovery-20261003/javascript-line_coverage-check_profile.txt"
+  }
+]

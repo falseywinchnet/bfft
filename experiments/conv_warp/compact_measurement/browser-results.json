@@ -1,0 +1,18 @@
+{
+  "source": [
+    513,
+    321
+  ],
+  "target": [
+    385,
+    241
+  ],
+  "compactMilliseconds": 2173.4000000953674,
+  "referencePreparationMilliseconds": 2321.9000000953674,
+  "compactWasmMemoryBytes": 26214400,
+  "referenceWasmMemoryBytes": 96534528,
+  "maxFloatError": 8.625040015530772e-09,
+  "maxByteError": 0,
+  "differentBytes": 0,
+  "passed": true
+}

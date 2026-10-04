@@ -1,0 +1,2282 @@
+[
+  {
+    "family": "step",
+    "key": "step_0.00000000",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.00000000",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.00000000",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.00000000",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.00000000",
+    "phase": 0.0
+  },
+  {
+    "family": "step",
+    "key": "step_0.00000000",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.00000000",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.00000000",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.00000000",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.00000000",
+    "phase": 0.125
+  },
+  {
+    "family": "step",
+    "key": "step_0.00000000",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.00000000",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.00000000",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.00000000",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.00000000",
+    "phase": 0.25
+  },
+  {
+    "family": "step",
+    "key": "step_0.00000000",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.00000000",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.00000000",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.00000000",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.00000000",
+    "phase": 0.375
+  },
+  {
+    "family": "step",
+    "key": "step_0.00000000",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.00000000",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.00000000",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.00000000",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.00000000",
+    "phase": 0.5
+  },
+  {
+    "family": "step",
+    "key": "step_0.00000000",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.00000000",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.00000000",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.00000000",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.00000000",
+    "phase": 0.625
+  },
+  {
+    "family": "step",
+    "key": "step_0.00000000",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.00000000",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.00000000",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.00000000",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.00000000",
+    "phase": 0.75
+  },
+  {
+    "family": "step",
+    "key": "step_0.00000000",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.00000000",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.00000000",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.00000000",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.00000000",
+    "phase": 0.875
+  },
+  {
+    "family": "step",
+    "key": "step_0.19634954",
+    "phase": 0.0
+  },
+  {
+    "family": "step",
+    "key": "step_0.19634954",
+    "phase": 0.125
+  },
+  {
+    "family": "step",
+    "key": "step_0.19634954",
+    "phase": 0.25
+  },
+  {
+    "family": "step",
+    "key": "step_0.19634954",
+    "phase": 0.375
+  },
+  {
+    "family": "step",
+    "key": "step_0.19634954",
+    "phase": 0.5
+  },
+  {
+    "family": "step",
+    "key": "step_0.19634954",
+    "phase": 0.625
+  },
+  {
+    "family": "step",
+    "key": "step_0.19634954",
+    "phase": 0.75
+  },
+  {
+    "family": "step",
+    "key": "step_0.19634954",
+    "phase": 0.875
+  },
+  {
+    "family": "step",
+    "key": "step_0.39269908",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.39269908",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.39269908",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.39269908",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.39269908",
+    "phase": 0.0
+  },
+  {
+    "family": "step",
+    "key": "step_0.39269908",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.39269908",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.39269908",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.39269908",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.39269908",
+    "phase": 0.125
+  },
+  {
+    "family": "step",
+    "key": "step_0.39269908",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.39269908",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.39269908",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.39269908",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.39269908",
+    "phase": 0.25
+  },
+  {
+    "family": "step",
+    "key": "step_0.39269908",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.39269908",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.39269908",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.39269908",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.39269908",
+    "phase": 0.375
+  },
+  {
+    "family": "step",
+    "key": "step_0.39269908",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.39269908",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.39269908",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.39269908",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.39269908",
+    "phase": 0.5
+  },
+  {
+    "family": "step",
+    "key": "step_0.39269908",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.39269908",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.39269908",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.39269908",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.39269908",
+    "phase": 0.625
+  },
+  {
+    "family": "step",
+    "key": "step_0.39269908",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.39269908",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.39269908",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.39269908",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.39269908",
+    "phase": 0.75
+  },
+  {
+    "family": "step",
+    "key": "step_0.39269908",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.39269908",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.39269908",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.39269908",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.39269908",
+    "phase": 0.875
+  },
+  {
+    "family": "step",
+    "key": "step_0.58904862",
+    "phase": 0.0
+  },
+  {
+    "family": "step",
+    "key": "step_0.58904862",
+    "phase": 0.125
+  },
+  {
+    "family": "step",
+    "key": "step_0.58904862",
+    "phase": 0.25
+  },
+  {
+    "family": "step",
+    "key": "step_0.58904862",
+    "phase": 0.375
+  },
+  {
+    "family": "step",
+    "key": "step_0.58904862",
+    "phase": 0.5
+  },
+  {
+    "family": "step",
+    "key": "step_0.58904862",
+    "phase": 0.625
+  },
+  {
+    "family": "step",
+    "key": "step_0.58904862",
+    "phase": 0.75
+  },
+  {
+    "family": "step",
+    "key": "step_0.58904862",
+    "phase": 0.875
+  },
+  {
+    "family": "step",
+    "key": "step_0.78539816",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.78539816",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.78539816",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.78539816",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.78539816",
+    "phase": 0.0
+  },
+  {
+    "family": "step",
+    "key": "step_0.78539816",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.78539816",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.78539816",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.78539816",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.78539816",
+    "phase": 0.125
+  },
+  {
+    "family": "step",
+    "key": "step_0.78539816",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.78539816",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.78539816",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.78539816",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.78539816",
+    "phase": 0.25
+  },
+  {
+    "family": "step",
+    "key": "step_0.78539816",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.78539816",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.78539816",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.78539816",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.78539816",
+    "phase": 0.375
+  },
+  {
+    "family": "step",
+    "key": "step_0.78539816",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.78539816",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.78539816",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.78539816",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.78539816",
+    "phase": 0.5
+  },
+  {
+    "family": "step",
+    "key": "step_0.78539816",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.78539816",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.78539816",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.78539816",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.78539816",
+    "phase": 0.625
+  },
+  {
+    "family": "step",
+    "key": "step_0.78539816",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.78539816",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.78539816",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.78539816",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.78539816",
+    "phase": 0.75
+  },
+  {
+    "family": "step",
+    "key": "step_0.78539816",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_0.78539816",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_0.78539816",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_0.78539816",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_0.78539816",
+    "phase": 0.875
+  },
+  {
+    "family": "step",
+    "key": "step_0.98174770",
+    "phase": 0.0
+  },
+  {
+    "family": "step",
+    "key": "step_0.98174770",
+    "phase": 0.125
+  },
+  {
+    "family": "step",
+    "key": "step_0.98174770",
+    "phase": 0.25
+  },
+  {
+    "family": "step",
+    "key": "step_0.98174770",
+    "phase": 0.375
+  },
+  {
+    "family": "step",
+    "key": "step_0.98174770",
+    "phase": 0.5
+  },
+  {
+    "family": "step",
+    "key": "step_0.98174770",
+    "phase": 0.625
+  },
+  {
+    "family": "step",
+    "key": "step_0.98174770",
+    "phase": 0.75
+  },
+  {
+    "family": "step",
+    "key": "step_0.98174770",
+    "phase": 0.875
+  },
+  {
+    "family": "step",
+    "key": "step_1.17809725",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.17809725",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.17809725",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.17809725",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.17809725",
+    "phase": 0.0
+  },
+  {
+    "family": "step",
+    "key": "step_1.17809725",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.17809725",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.17809725",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.17809725",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.17809725",
+    "phase": 0.125
+  },
+  {
+    "family": "step",
+    "key": "step_1.17809725",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.17809725",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.17809725",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.17809725",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.17809725",
+    "phase": 0.25
+  },
+  {
+    "family": "step",
+    "key": "step_1.17809725",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.17809725",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.17809725",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.17809725",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.17809725",
+    "phase": 0.375
+  },
+  {
+    "family": "step",
+    "key": "step_1.17809725",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.17809725",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.17809725",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.17809725",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.17809725",
+    "phase": 0.5
+  },
+  {
+    "family": "step",
+    "key": "step_1.17809725",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.17809725",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.17809725",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.17809725",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.17809725",
+    "phase": 0.625
+  },
+  {
+    "family": "step",
+    "key": "step_1.17809725",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.17809725",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.17809725",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.17809725",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.17809725",
+    "phase": 0.75
+  },
+  {
+    "family": "step",
+    "key": "step_1.17809725",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.17809725",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.17809725",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.17809725",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.17809725",
+    "phase": 0.875
+  },
+  {
+    "family": "step",
+    "key": "step_1.37444679",
+    "phase": 0.0
+  },
+  {
+    "family": "step",
+    "key": "step_1.37444679",
+    "phase": 0.125
+  },
+  {
+    "family": "step",
+    "key": "step_1.37444679",
+    "phase": 0.25
+  },
+  {
+    "family": "step",
+    "key": "step_1.37444679",
+    "phase": 0.375
+  },
+  {
+    "family": "step",
+    "key": "step_1.37444679",
+    "phase": 0.5
+  },
+  {
+    "family": "step",
+    "key": "step_1.37444679",
+    "phase": 0.625
+  },
+  {
+    "family": "step",
+    "key": "step_1.37444679",
+    "phase": 0.75
+  },
+  {
+    "family": "step",
+    "key": "step_1.37444679",
+    "phase": 0.875
+  },
+  {
+    "family": "step",
+    "key": "step_1.57079633",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.57079633",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.57079633",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.57079633",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.57079633",
+    "phase": 0.0
+  },
+  {
+    "family": "step",
+    "key": "step_1.57079633",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.57079633",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.57079633",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.57079633",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.57079633",
+    "phase": 0.125
+  },
+  {
+    "family": "step",
+    "key": "step_1.57079633",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.57079633",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.57079633",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.57079633",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.57079633",
+    "phase": 0.25
+  },
+  {
+    "family": "step",
+    "key": "step_1.57079633",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.57079633",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.57079633",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.57079633",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.57079633",
+    "phase": 0.375
+  },
+  {
+    "family": "step",
+    "key": "step_1.57079633",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.57079633",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.57079633",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.57079633",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.57079633",
+    "phase": 0.5
+  },
+  {
+    "family": "step",
+    "key": "step_1.57079633",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.57079633",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.57079633",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.57079633",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.57079633",
+    "phase": 0.625
+  },
+  {
+    "family": "step",
+    "key": "step_1.57079633",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.57079633",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.57079633",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.57079633",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.57079633",
+    "phase": 0.75
+  },
+  {
+    "family": "step",
+    "key": "step_1.57079633",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.57079633",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.57079633",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.57079633",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.57079633",
+    "phase": 0.875
+  },
+  {
+    "family": "step",
+    "key": "step_1.76714587",
+    "phase": 0.0
+  },
+  {
+    "family": "step",
+    "key": "step_1.76714587",
+    "phase": 0.125
+  },
+  {
+    "family": "step",
+    "key": "step_1.76714587",
+    "phase": 0.25
+  },
+  {
+    "family": "step",
+    "key": "step_1.76714587",
+    "phase": 0.375
+  },
+  {
+    "family": "step",
+    "key": "step_1.76714587",
+    "phase": 0.5
+  },
+  {
+    "family": "step",
+    "key": "step_1.76714587",
+    "phase": 0.625
+  },
+  {
+    "family": "step",
+    "key": "step_1.76714587",
+    "phase": 0.75
+  },
+  {
+    "family": "step",
+    "key": "step_1.76714587",
+    "phase": 0.875
+  },
+  {
+    "family": "step",
+    "key": "step_1.96349541",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.96349541",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.96349541",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.96349541",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.96349541",
+    "phase": 0.0
+  },
+  {
+    "family": "step",
+    "key": "step_1.96349541",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.96349541",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.96349541",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.96349541",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.96349541",
+    "phase": 0.125
+  },
+  {
+    "family": "step",
+    "key": "step_1.96349541",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.96349541",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.96349541",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.96349541",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.96349541",
+    "phase": 0.25
+  },
+  {
+    "family": "step",
+    "key": "step_1.96349541",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.96349541",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.96349541",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.96349541",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.96349541",
+    "phase": 0.375
+  },
+  {
+    "family": "step",
+    "key": "step_1.96349541",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.96349541",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.96349541",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.96349541",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.96349541",
+    "phase": 0.5
+  },
+  {
+    "family": "step",
+    "key": "step_1.96349541",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.96349541",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.96349541",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.96349541",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.96349541",
+    "phase": 0.625
+  },
+  {
+    "family": "step",
+    "key": "step_1.96349541",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.96349541",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.96349541",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.96349541",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.96349541",
+    "phase": 0.75
+  },
+  {
+    "family": "step",
+    "key": "step_1.96349541",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_1.96349541",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_1.96349541",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_1.96349541",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_1.96349541",
+    "phase": 0.875
+  },
+  {
+    "family": "step",
+    "key": "step_2.15984495",
+    "phase": 0.0
+  },
+  {
+    "family": "step",
+    "key": "step_2.15984495",
+    "phase": 0.125
+  },
+  {
+    "family": "step",
+    "key": "step_2.15984495",
+    "phase": 0.25
+  },
+  {
+    "family": "step",
+    "key": "step_2.15984495",
+    "phase": 0.375
+  },
+  {
+    "family": "step",
+    "key": "step_2.15984495",
+    "phase": 0.5
+  },
+  {
+    "family": "step",
+    "key": "step_2.15984495",
+    "phase": 0.625
+  },
+  {
+    "family": "step",
+    "key": "step_2.15984495",
+    "phase": 0.75
+  },
+  {
+    "family": "step",
+    "key": "step_2.15984495",
+    "phase": 0.875
+  },
+  {
+    "family": "step",
+    "key": "step_2.35619449",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_2.35619449",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_2.35619449",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_2.35619449",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_2.35619449",
+    "phase": 0.0
+  },
+  {
+    "family": "step",
+    "key": "step_2.35619449",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_2.35619449",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_2.35619449",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_2.35619449",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_2.35619449",
+    "phase": 0.125
+  },
+  {
+    "family": "step",
+    "key": "step_2.35619449",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_2.35619449",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_2.35619449",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_2.35619449",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_2.35619449",
+    "phase": 0.25
+  },
+  {
+    "family": "step",
+    "key": "step_2.35619449",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_2.35619449",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_2.35619449",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_2.35619449",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_2.35619449",
+    "phase": 0.375
+  },
+  {
+    "family": "step",
+    "key": "step_2.35619449",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_2.35619449",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_2.35619449",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_2.35619449",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_2.35619449",
+    "phase": 0.5
+  },
+  {
+    "family": "step",
+    "key": "step_2.35619449",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_2.35619449",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_2.35619449",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_2.35619449",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_2.35619449",
+    "phase": 0.625
+  },
+  {
+    "family": "step",
+    "key": "step_2.35619449",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_2.35619449",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_2.35619449",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_2.35619449",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_2.35619449",
+    "phase": 0.75
+  },
+  {
+    "family": "step",
+    "key": "step_2.35619449",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_2.35619449",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_2.35619449",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_2.35619449",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_2.35619449",
+    "phase": 0.875
+  },
+  {
+    "family": "step",
+    "key": "step_2.55254403",
+    "phase": 0.0
+  },
+  {
+    "family": "step",
+    "key": "step_2.55254403",
+    "phase": 0.125
+  },
+  {
+    "family": "step",
+    "key": "step_2.55254403",
+    "phase": 0.25
+  },
+  {
+    "family": "step",
+    "key": "step_2.55254403",
+    "phase": 0.375
+  },
+  {
+    "family": "step",
+    "key": "step_2.55254403",
+    "phase": 0.5
+  },
+  {
+    "family": "step",
+    "key": "step_2.55254403",
+    "phase": 0.625
+  },
+  {
+    "family": "step",
+    "key": "step_2.55254403",
+    "phase": 0.75
+  },
+  {
+    "family": "step",
+    "key": "step_2.55254403",
+    "phase": 0.875
+  },
+  {
+    "family": "step",
+    "key": "step_2.74889357",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_2.74889357",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_2.74889357",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_2.74889357",
+    "phase": 0.0
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_2.74889357",
+    "phase": 0.0
+  },
+  {
+    "family": "step",
+    "key": "step_2.74889357",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_2.74889357",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_2.74889357",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_2.74889357",
+    "phase": 0.125
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_2.74889357",
+    "phase": 0.125
+  },
+  {
+    "family": "step",
+    "key": "step_2.74889357",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_2.74889357",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_2.74889357",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_2.74889357",
+    "phase": 0.25
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_2.74889357",
+    "phase": 0.25
+  },
+  {
+    "family": "step",
+    "key": "step_2.74889357",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_2.74889357",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_2.74889357",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_2.74889357",
+    "phase": 0.375
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_2.74889357",
+    "phase": 0.375
+  },
+  {
+    "family": "step",
+    "key": "step_2.74889357",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_2.74889357",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_2.74889357",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_2.74889357",
+    "phase": 0.5
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_2.74889357",
+    "phase": 0.5
+  },
+  {
+    "family": "step",
+    "key": "step_2.74889357",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_2.74889357",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_2.74889357",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_2.74889357",
+    "phase": 0.625
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_2.74889357",
+    "phase": 0.625
+  },
+  {
+    "family": "step",
+    "key": "step_2.74889357",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_2.74889357",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_2.74889357",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_2.74889357",
+    "phase": 0.75
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_2.74889357",
+    "phase": 0.75
+  },
+  {
+    "family": "step",
+    "key": "step_2.74889357",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_0.35",
+    "key": "strip_0.35_2.74889357",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_0.75",
+    "key": "strip_0.75_2.74889357",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_1.5",
+    "key": "strip_1.5_2.74889357",
+    "phase": 0.875
+  },
+  {
+    "family": "strip_3.0",
+    "key": "strip_3.0_2.74889357",
+    "phase": 0.875
+  },
+  {
+    "family": "step",
+    "key": "step_2.94524311",
+    "phase": 0.0
+  },
+  {
+    "family": "step",
+    "key": "step_2.94524311",
+    "phase": 0.125
+  },
+  {
+    "family": "step",
+    "key": "step_2.94524311",
+    "phase": 0.25
+  },
+  {
+    "family": "step",
+    "key": "step_2.94524311",
+    "phase": 0.375
+  },
+  {
+    "family": "step",
+    "key": "step_2.94524311",
+    "phase": 0.5
+  },
+  {
+    "family": "step",
+    "key": "step_2.94524311",
+    "phase": 0.625
+  },
+  {
+    "family": "step",
+    "key": "step_2.94524311",
+    "phase": 0.75
+  },
+  {
+    "family": "step",
+    "key": "step_2.94524311",
+    "phase": 0.875
+  },
+  {
+    "family": "disk",
+    "key": "disk",
+    "phase": 0.0
+  },
+  {
+    "family": "disk",
+    "key": "disk",
+    "phase": 0.125
+  },
+  {
+    "family": "disk",
+    "key": "disk",
+    "phase": 0.25
+  },
+  {
+    "family": "disk",
+    "key": "disk",
+    "phase": 0.375
+  },
+  {
+    "family": "disk",
+    "key": "disk",
+    "phase": 0.5
+  },
+  {
+    "family": "disk",
+    "key": "disk",
+    "phase": 0.625
+  },
+  {
+    "family": "disk",
+    "key": "disk",
+    "phase": 0.75
+  },
+  {
+    "family": "disk",
+    "key": "disk",
+    "phase": 0.875
+  },
+  {
+    "family": "ring",
+    "key": "ring",
+    "phase": 0.0
+  },
+  {
+    "family": "ring",
+    "key": "ring",
+    "phase": 0.125
+  },
+  {
+    "family": "ring",
+    "key": "ring",
+    "phase": 0.25
+  },
+  {
+    "family": "ring",
+    "key": "ring",
+    "phase": 0.375
+  },
+  {
+    "family": "ring",
+    "key": "ring",
+    "phase": 0.5
+  },
+  {
+    "family": "ring",
+    "key": "ring",
+    "phase": 0.625
+  },
+  {
+    "family": "ring",
+    "key": "ring",
+    "phase": 0.75
+  },
+  {
+    "family": "ring",
+    "key": "ring",
+    "phase": 0.875
+  },
+  {
+    "family": "corner",
+    "key": "corner",
+    "phase": 0.0
+  },
+  {
+    "family": "corner",
+    "key": "corner",
+    "phase": 0.125
+  },
+  {
+    "family": "corner",
+    "key": "corner",
+    "phase": 0.25
+  },
+  {
+    "family": "corner",
+    "key": "corner",
+    "phase": 0.375
+  },
+  {
+    "family": "corner",
+    "key": "corner",
+    "phase": 0.5
+  },
+  {
+    "family": "corner",
+    "key": "corner",
+    "phase": 0.625
+  },
+  {
+    "family": "corner",
+    "key": "corner",
+    "phase": 0.75
+  },
+  {
+    "family": "corner",
+    "key": "corner",
+    "phase": 0.875
+  },
+  {
+    "family": "checker",
+    "key": "checker",
+    "phase": 0.0
+  },
+  {
+    "family": "checker",
+    "key": "checker",
+    "phase": 0.125
+  },
+  {
+    "family": "checker",
+    "key": "checker",
+    "phase": 0.25
+  },
+  {
+    "family": "checker",
+    "key": "checker",
+    "phase": 0.375
+  },
+  {
+    "family": "checker",
+    "key": "checker",
+    "phase": 0.5
+  },
+  {
+    "family": "checker",
+    "key": "checker",
+    "phase": 0.625
+  },
+  {
+    "family": "checker",
+    "key": "checker",
+    "phase": 0.75
+  },
+  {
+    "family": "checker",
+    "key": "checker",
+    "phase": 0.875
+  },
+  {
+    "family": "sine",
+    "key": "sine",
+    "phase": 0.0
+  },
+  {
+    "family": "sine",
+    "key": "sine",
+    "phase": 0.125
+  },
+  {
+    "family": "sine",
+    "key": "sine",
+    "phase": 0.25
+  },
+  {
+    "family": "sine",
+    "key": "sine",
+    "phase": 0.375
+  },
+  {
+    "family": "sine",
+    "key": "sine",
+    "phase": 0.5
+  },
+  {
+    "family": "sine",
+    "key": "sine",
+    "phase": 0.625
+  },
+  {
+    "family": "sine",
+    "key": "sine",
+    "phase": 0.75
+  },
+  {
+    "family": "sine",
+    "key": "sine",
+    "phase": 0.875
+  },
+  {
+    "family": "isoluminant",
+    "key": "isoluminant",
+    "phase": 0.0
+  },
+  {
+    "family": "isoluminant",
+    "key": "isoluminant",
+    "phase": 0.125
+  },
+  {
+    "family": "isoluminant",
+    "key": "isoluminant",
+    "phase": 0.25
+  },
+  {
+    "family": "isoluminant",
+    "key": "isoluminant",
+    "phase": 0.375
+  },
+  {
+    "family": "isoluminant",
+    "key": "isoluminant",
+    "phase": 0.5
+  },
+  {
+    "family": "isoluminant",
+    "key": "isoluminant",
+    "phase": 0.625
+  },
+  {
+    "family": "isoluminant",
+    "key": "isoluminant",
+    "phase": 0.75
+  },
+  {
+    "family": "isoluminant",
+    "key": "isoluminant",
+    "phase": 0.875
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_0.35",
+    "phase": 0.0
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_0.35",
+    "phase": 0.125
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_0.35",
+    "phase": 0.25
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_0.35",
+    "phase": 0.375
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_0.35",
+    "phase": 0.5
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_0.35",
+    "phase": 0.625
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_0.35",
+    "phase": 0.75
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_0.35",
+    "phase": 0.875
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_1.0",
+    "phase": 0.0
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_1.0",
+    "phase": 0.125
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_1.0",
+    "phase": 0.25
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_1.0",
+    "phase": 0.375
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_1.0",
+    "phase": 0.5
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_1.0",
+    "phase": 0.625
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_1.0",
+    "phase": 0.75
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_1.0",
+    "phase": 0.875
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_2.0",
+    "phase": 0.0
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_2.0",
+    "phase": 0.125
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_2.0",
+    "phase": 0.25
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_2.0",
+    "phase": 0.375
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_2.0",
+    "phase": 0.5
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_2.0",
+    "phase": 0.625
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_2.0",
+    "phase": 0.75
+  },
+  {
+    "family": "already_covered",
+    "key": "covered_2.0",
+    "phase": 0.875
+  }
+]

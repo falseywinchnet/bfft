@@ -1,0 +1,2 @@
+{"bench":{"repeats":9,"tiles":15774,"max_cell":6,"meyer_ms":30.32,"palette_ms":2.39,"rebuild_ms":20.58,"structure_unchanged_ms":0.52,"prefilter_ms":0.429,"prefilter_wakes":false,"update_colors_ms":0.477,"pack_ms":0.105,"rebuild_geometry_ms":0.00,"rebuild_nucleation_ms":0.00}}
+{"rebuild_split_ms":{"geometry":11.40,"nucleation":7.52,"color_grid":1.10,"entropy":2.60,"edges":3.64,"unused":0.00,"fragments":0.42,"column_sites":0.51,"distance_orientation":4.23}}

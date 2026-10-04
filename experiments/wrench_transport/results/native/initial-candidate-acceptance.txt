@@ -1,0 +1,53 @@
+Syncing /Users/ultimussecundai/.codex/worktrees/wrench-engine-study/bfft -> m4mini:/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-7852c0dd62d1
+Running on m4mini: sh -c cp /tmp/wrench_standalone_candidate/phys_bench /tmp/wrench_block_bench && /opt/homebrew/bin/cmake --build /tmp/wrench_standalone_candidate -j4 && /tmp/wrench_standalone_candidate/numerical_tests && /tmp/wrench_standalone_candidate/phys_tests && /tmp/wrench_standalone_candidate/phys_bench /tmp/wrench_scene_1.txt /tmp/wrench_inline.json 60 8
+[ 16%] Building CXX object CMakeFiles/zc_phys.dir/collide.cpp.o
+[ 33%] Building CXX object CMakeFiles/zc_phys.dir/hull.cpp.o
+[ 33%] Building CXX object CMakeFiles/zc_phys.dir/world.cpp.o
+[ 33%] Building CXX object CMakeFiles/zc_phys.dir/solver.cpp.o
+[ 41%] Linking CXX static library libzc_phys.a
+[ 50%] Built target zc_phys
+[ 66%] Building CXX object CMakeFiles/phys_tests.dir/tests/phys_tests.cpp.o
+[ 66%] Building CXX object CMakeFiles/phys_bench.dir/tools/phys_bench.cpp.o
+[ 75%] Building CXX object CMakeFiles/numerical_tests.dir/tests/numerical_tests.cpp.o
+[ 83%] Linking CXX executable numerical_tests
+[ 83%] Built target numerical_tests
+[ 91%] Linking CXX executable phys_bench
+[ 91%] Built target phys_bench
+[100%] Linking CXX executable phys_tests
+[100%] Built target phys_tests
+dense oracle: 80 coupled SPD systems; residual 2.398e-14, solution error 3.575e-14
+SAT oracle: 6000 pairs; missed overlaps 0, false contacts 0, invalid 0; outside 7.814e-04 m
+PASS  1 rest: round rocks, 50 seeds, 600 s  asleep by 1.28 s; drift 0.00e+00 mm, rotation 2.96e-06 deg; overlap 0.000 mm
+PASS  1 rest: flat rocks, 50 seeds, 600 s  asleep by 0.57 s; drift 0.00e+00 mm, rotation 0.00e+00 deg; overlap 0.000 mm
+PASS  1 rest: jagged rocks, 50 seeds, 600 s  asleep by 1.08 s; drift 0.00e+00 mm, rotation 3.42e-06 deg; overlap 0.000 mm
+PASS  2 tall stack: 15 flat rocks, 20 seeds, 600 s  asleep within 0.02 s (unslept 0); drift 0.000 mm; KE while asleep 0.0e+00 J
+PASS  3 mass ratio: 10 kg slab on three 0.02 kg pebbles  slab height error -0.000 mm; pebbles' max speed 0.00e+00 mm/s; overlap 0.000 mm
+PASS  3 mass ratio: 0.02 kg pebble on a 10 kg slab  pebble max speed 0.00e+00 mm/s; overlap 0.000 mm
+PASS  4 overhang: 2% and 5% inside stay, outside tip (1% may go either way)  1%: inside 0.000 deg, outside 0.0 deg; 2%: inside 0.000 deg, outside 62.1 deg; 5%: inside 0.000 deg, outside 59.2 deg;
+PASS  5 incline: holds at tan = mu - 0.05, slides at mu + 0.05  ground: creep 0.000 mm, slide 1736 mm; on a slab: creep 0.000 mm, slide 2782 mm
+PASS  6 drop: round rocks from 0.3 m, slabs from 0.5 m  bounce 2.12 mm; speed gain 0.00e+00 m/s; asleep by 0.02 s; 1 cm slab rests at 5.0 mm on the ground and 5.0 mm on a slab
+PASS  7 hold: hangs on target  error 0.0092 mm; tension 0.9997
+PASS  7 hold: moves 10 cm without overshoot  overshoot 0.000 mm; final x 0.10000 m
+PASS  7 hold: turns 90 degrees  error 0.0000 deg
+PASS  8 set-down: tension falls monotonically to slack; stack still  tension 0.049 after 2.82 s; stack moved 0.0036 mm
+PASS  8 set-down: after release everything settles  asleep after 0.52 s; old rocks moved 0.0037 mm
+PASS  9 shove cap: side force at most 0.35 of the held weight  largest side force 0.3500 m g
+PASS  10 honest consequence: beyond the edge topples, inside stands  3 cm beyond: moved 193 mm; 3 cm inside: moved 0.0001 mm
+PASS  11 wake: a rock landing on a sleeping stack wakes it  asleep before 1; awake after landing 1
+PASS  11 wake: removing a middle rock drops the ones above  the rock above fell 40.0 mm
+PASS  12 load asleep: a saved stack reloads still, and takes a new rock  drift while asleep 0.0e+00 mm; asleep 0.58 s after the new rock; old rocks moved 0.0038 mm
+PASS  13 concave: compound rocks stacked 5 high, 10 seeds  asleep within 0.70 s (unslept 0); drift 0.0000 mm
+      determinism checksum 5ce089fba7002e83 (compare across processes)
+PASS  14 determinism: the same scenario twice gives identical checksums  run 1 6692500760204160643, run 2 6692500760204160643
+PASS  15 robustness: an overlap and a 30-rock heap  overlap separates at 0.309 m/s; worst speed beyond free fall 0.000 m/s; guards 0; all asleep by 10 s
+PASS  16 performance: 60-rock heap plus a 15-rock stack, all awake  awake mean 0.757 ms (worst 12.24 ms); asleep mean 0.0046 ms
+PASS  feature: a box rests on a static table  box z 0.374999958; table z 0.300
+PASS  feature: restitution 0 doesn't bounce; 0.5 rebounds near e^2 h  e = 0: 0.000 mm; e = 0.5: 75.9 mm (ideal 75)
+PASS  feature: rest report: a settled stack is quiet  quiet 1; awake 0; KE 0.0e+00 J
+PASS  feature: stable set while a rock falls nearby  stable 6 bodies; the falling rock included 0
+PASS  feature: stable set once it lands  stable 7 bodies
+ALL PASS (2.0 s)
+wrench_transport_cpp 60 Hz: 480 frames, mean step 0.7577 ms, worst 8.1961 ms
+  moving frames 71: mean 3.5242 ms; quiet frames 409: mean 0.2774 ms
+  newton 3239, factorizations 3234, reuses 5, passes 972, analyses 53, unconverged 0, guards 0
+  final max speed 3.283e-06 m/s, kinetic energy 3.152e-12 J, floor/weight 1.032564

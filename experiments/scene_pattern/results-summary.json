@@ -1,0 +1,568 @@
+{
+  "dataset": "Oxford affine Graffiti, six real photographs of a planar scene",
+  "ground_truth_used_for_fit": false,
+  "scope": "Planar-view Python prototype. No claim of 3D visibility recovery or realtime matching.",
+  "source_sha256": {
+    "experiments/scene_pattern/core.py": "fd778040aeaa3689d43528caeb550b6c196c5925c6b46d8d26c934d601f3b355",
+    "experiments/scene_pattern/radial.py": "77fb3d5f9004609e5c8077ca590fe5c42113bee7709a1401658c7cd1e81333fa",
+    "experiments/scene_pattern/run.py": "447ec496765830dabf0cdf569bb98a083e91c22f933860a0b78d12993ddd21ce",
+    "standalone_conv_resize_demo/native/conv_native.c": "d0d29507ca5618d913f073202eb68749850315b6c4124264fa284fa6400f2a23"
+  },
+  "python": "3.9.6",
+  "machine": "arm64",
+  "total_seconds": 157.858564875,
+  "input_sha256": {
+    "img1.ppm": "8d53092ffa5b27f5138ec458302f35e7c72a9f35d1f94078ca35944c4b3626dd",
+    "img2.ppm": "d2938d6df7c15e8e032c90f9abb5f4cb5def5acbfff98cc90f9b5f259453b6a2",
+    "img3.ppm": "188ef2abda166a50ee44f023a7ef9c87d4ca349d972db1d9a3abeb2714d4021c",
+    "img4.ppm": "6b4717b18b92d6d6b69cb3c91a800067b220d0bbbf6880f2878dbcb28108f76a",
+    "img5.ppm": "f68fdfe99de81b323a8c6a2b1351affa49742c44b1b776e3d3b5ba75a383234c",
+    "img6.ppm": "a2e03ab33c4913ccecd2a5c7109b02435b5089ad664a028b51c6807d1f7cbd46"
+  },
+  "analysis_seconds": 5.834296665000001,
+  "registration_seconds": 10.557810582999997,
+  "pairs": [
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "seconds": 2.67869625,
+      "winning_seed": "coarse_0_0.8",
+      "regional_inliers": 112,
+      "evaluation": {
+        "regional_coarse": {
+          "median_px": 2.9948906492626093,
+          "p95_px": 5.741466078525987,
+          "mean_px": 3.309583484748249,
+          "evaluated_points": 1173,
+          "within_3px_fraction": 0.5012787723785166
+        },
+        "geometric": {
+          "median_px": 0.6332833223039528,
+          "p95_px": 1.3862418239915686,
+          "mean_px": 0.6803939810942455,
+          "evaluated_points": 1173,
+          "within_3px_fraction": 1.0
+        },
+        "phase": {
+          "median_px": 0.6332833223039528,
+          "p95_px": 1.3862418239915686,
+          "mean_px": 0.6803939810942455,
+          "evaluated_points": 1173,
+          "within_3px_fraction": 1.0
+        },
+        "ringing": {
+          "median_px": 0.6332833223039528,
+          "p95_px": 1.3862418239915686,
+          "mean_px": 0.6803939810942455,
+          "evaluated_points": 1173,
+          "within_3px_fraction": 1.0
+        },
+        "radial": {
+          "median_px": 0.6332833223039528,
+          "p95_px": 1.3862418239915686,
+          "mean_px": 0.6803939810942455,
+          "evaluated_points": 1173,
+          "within_3px_fraction": 1.0
+        },
+        "final": {
+          "median_px": 0.6817081509441247,
+          "p95_px": 1.3257213464002657,
+          "mean_px": 0.6917061131068177,
+          "evaluated_points": 1173,
+          "within_3px_fraction": 1.0
+        }
+      },
+      "ringing_accepted": false,
+      "radial_accepted": false
+    },
+    {
+      "pair": [
+        2,
+        3
+      ],
+      "seconds": 1.6805726250000035,
+      "winning_seed": "coarse_20_0.8",
+      "regional_inliers": 57,
+      "evaluation": {
+        "regional_coarse": {
+          "median_px": 6.803504360001893,
+          "p95_px": 12.03867314511975,
+          "mean_px": 7.034454077247093,
+          "evaluated_points": 1090,
+          "within_3px_fraction": 0.05137614678899083
+        },
+        "geometric": {
+          "median_px": 1.1256059847373583,
+          "p95_px": 1.635871640129008,
+          "mean_px": 1.148797633104251,
+          "evaluated_points": 1090,
+          "within_3px_fraction": 1.0
+        },
+        "phase": {
+          "median_px": 1.1256059847373583,
+          "p95_px": 1.635871640129008,
+          "mean_px": 1.148797633104251,
+          "evaluated_points": 1090,
+          "within_3px_fraction": 1.0
+        },
+        "ringing": {
+          "median_px": 1.1256059847373583,
+          "p95_px": 1.635871640129008,
+          "mean_px": 1.148797633104251,
+          "evaluated_points": 1090,
+          "within_3px_fraction": 1.0
+        },
+        "radial": {
+          "median_px": 1.1354333285557132,
+          "p95_px": 1.617205750696661,
+          "mean_px": 1.1534070897353257,
+          "evaluated_points": 1090,
+          "within_3px_fraction": 1.0
+        },
+        "final": {
+          "median_px": 1.1157502062169549,
+          "p95_px": 1.5531798836321487,
+          "mean_px": 1.1541708331196099,
+          "evaluated_points": 1090,
+          "within_3px_fraction": 1.0
+        }
+      },
+      "ringing_accepted": false,
+      "radial_accepted": true
+    },
+    {
+      "pair": [
+        3,
+        4
+      ],
+      "seconds": 2.6510510000000096,
+      "winning_seed": "region",
+      "regional_inliers": 18,
+      "evaluation": {
+        "regional_coarse": {
+          "median_px": 18.57679353419951,
+          "p95_px": 28.89893785938852,
+          "mean_px": 18.180956460950235,
+          "evaluated_points": 1010,
+          "within_3px_fraction": 0.009900990099009901
+        },
+        "geometric": {
+          "median_px": 1.0635785690062218,
+          "p95_px": 1.2845759156759382,
+          "mean_px": 1.053430987419471,
+          "evaluated_points": 1010,
+          "within_3px_fraction": 1.0
+        },
+        "phase": {
+          "median_px": 1.056707745910631,
+          "p95_px": 1.6958069931119812,
+          "mean_px": 1.0771903152418068,
+          "evaluated_points": 1010,
+          "within_3px_fraction": 1.0
+        },
+        "ringing": {
+          "median_px": 1.0441052653015137,
+          "p95_px": 1.6870080189397965,
+          "mean_px": 1.0589413558993546,
+          "evaluated_points": 1010,
+          "within_3px_fraction": 1.0
+        },
+        "radial": {
+          "median_px": 1.062937482594419,
+          "p95_px": 1.2872298618667801,
+          "mean_px": 1.0524079052417261,
+          "evaluated_points": 1010,
+          "within_3px_fraction": 1.0
+        },
+        "final": {
+          "median_px": 1.0441052653015137,
+          "p95_px": 1.6870080189397965,
+          "mean_px": 1.0589413558993546,
+          "evaluated_points": 1010,
+          "within_3px_fraction": 1.0
+        }
+      },
+      "ringing_accepted": true,
+      "radial_accepted": true
+    },
+    {
+      "pair": [
+        4,
+        5
+      ],
+      "seconds": 1.6864992080000007,
+      "winning_seed": "region",
+      "regional_inliers": 61,
+      "evaluation": {
+        "regional_coarse": {
+          "median_px": 5.584982110057727,
+          "p95_px": 11.43240644774523,
+          "mean_px": 5.815767088698998,
+          "evaluated_points": 1094,
+          "within_3px_fraction": 0.14716636197440586
+        },
+        "geometric": {
+          "median_px": 1.339438296312403,
+          "p95_px": 2.160644477609962,
+          "mean_px": 1.3777204974819817,
+          "evaluated_points": 1094,
+          "within_3px_fraction": 1.0
+        },
+        "phase": {
+          "median_px": 1.339438296312403,
+          "p95_px": 2.160644477609962,
+          "mean_px": 1.3777204974819817,
+          "evaluated_points": 1094,
+          "within_3px_fraction": 1.0
+        },
+        "ringing": {
+          "median_px": 1.339438296312403,
+          "p95_px": 2.160644477609962,
+          "mean_px": 1.3777204974819817,
+          "evaluated_points": 1094,
+          "within_3px_fraction": 1.0
+        },
+        "radial": {
+          "median_px": 1.339438296312403,
+          "p95_px": 2.160644477609962,
+          "mean_px": 1.3777204974819817,
+          "evaluated_points": 1094,
+          "within_3px_fraction": 1.0
+        },
+        "final": {
+          "median_px": 1.339438296312403,
+          "p95_px": 2.160644477609962,
+          "mean_px": 1.3777204974819817,
+          "evaluated_points": 1094,
+          "within_3px_fraction": 1.0
+        }
+      },
+      "ringing_accepted": false,
+      "radial_accepted": false
+    },
+    {
+      "pair": [
+        5,
+        6
+      ],
+      "seconds": 1.860991499999983,
+      "winning_seed": "region",
+      "regional_inliers": 45,
+      "evaluation": {
+        "regional_coarse": {
+          "median_px": 7.197717129893317,
+          "p95_px": 13.89523723995537,
+          "mean_px": 7.265713818399412,
+          "evaluated_points": 1055,
+          "within_3px_fraction": 0.11753554502369669
+        },
+        "geometric": {
+          "median_px": 1.6744606759435174,
+          "p95_px": 5.564309266529649,
+          "mean_px": 2.1916321154339027,
+          "evaluated_points": 1055,
+          "within_3px_fraction": 0.7298578199052133
+        },
+        "phase": {
+          "median_px": 1.6744606759435174,
+          "p95_px": 5.564309266529649,
+          "mean_px": 2.1916321154339027,
+          "evaluated_points": 1055,
+          "within_3px_fraction": 0.7298578199052133
+        },
+        "ringing": {
+          "median_px": 1.6744606759435174,
+          "p95_px": 5.564309266529649,
+          "mean_px": 2.1916321154339027,
+          "evaluated_points": 1055,
+          "within_3px_fraction": 0.7298578199052133
+        },
+        "radial": {
+          "median_px": 1.6744606759435174,
+          "p95_px": 5.564309266529649,
+          "mean_px": 2.1916321154339027,
+          "evaluated_points": 1055,
+          "within_3px_fraction": 0.7298578199052133
+        },
+        "final": {
+          "median_px": 1.6744606759435174,
+          "p95_px": 5.564309266529649,
+          "mean_px": 2.1916321154339027,
+          "evaluated_points": 1055,
+          "within_3px_fraction": 0.7298578199052133
+        }
+      },
+      "ringing_accepted": false,
+      "radial_accepted": false
+    }
+  ],
+  "early_order_ablation": [
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "branches": {
+        "plain": {
+          "evaluation": {
+            "median_px": 0.635150873851998,
+            "p95_px": 1.3789050775955207,
+            "mean_px": 0.680043880572217,
+            "evaluated_points": 1173,
+            "within_3px_fraction": 1.0
+          },
+          "seconds": 0.03483500000000017
+        },
+        "phase": {
+          "evaluation": {
+            "median_px": 0.6373166949080739,
+            "p95_px": 1.3646276701256355,
+            "mean_px": 0.6797839670473002,
+            "evaluated_points": 1173,
+            "within_3px_fraction": 1.0
+          },
+          "seconds": 0.03800416700000042
+        },
+        "ringing": {
+          "evaluation": {
+            "median_px": 0.6411654622750829,
+            "p95_px": 1.3619451078764795,
+            "mean_px": 0.6815957899859306,
+            "evaluated_points": 1173,
+            "within_3px_fraction": 1.0
+          },
+          "seconds": 0.030194208000000167
+        },
+        "radial": {
+          "evaluation": {
+            "median_px": 0.635150873851998,
+            "p95_px": 1.3789050775955207,
+            "mean_px": 0.680043880572217,
+            "evaluated_points": 1173,
+            "within_3px_fraction": 1.0
+          },
+          "seconds": 0.03410662500000061
+        }
+      },
+      "delay_seconds": {
+        "phase": 0.019792749999999693,
+        "ringing": 0.02590054200000047,
+        "radial": 0.016963708000000466
+      }
+    },
+    {
+      "pair": [
+        2,
+        3
+      ],
+      "branches": {
+        "plain": {
+          "evaluation": {
+            "median_px": 1.1247522214763026,
+            "p95_px": 1.638261183560213,
+            "mean_px": 1.1489683696381203,
+            "evaluated_points": 1090,
+            "within_3px_fraction": 1.0
+          },
+          "seconds": 0.0296003330000012
+        },
+        "phase": {
+          "evaluation": {
+            "median_px": 1.1247522214763026,
+            "p95_px": 1.638261183560213,
+            "mean_px": 1.1489683696381203,
+            "evaluated_points": 1090,
+            "within_3px_fraction": 1.0
+          },
+          "seconds": 0.029371959000000558
+        },
+        "ringing": {
+          "evaluation": {
+            "median_px": 1.1247522214763026,
+            "p95_px": 1.638261183560213,
+            "mean_px": 1.1489683696381203,
+            "evaluated_points": 1090,
+            "within_3px_fraction": 1.0
+          },
+          "seconds": 0.029309042000001284
+        },
+        "radial": {
+          "evaluation": {
+            "median_px": 1.1247522214763026,
+            "p95_px": 1.638261183560213,
+            "mean_px": 1.1489683696381203,
+            "evaluated_points": 1090,
+            "within_3px_fraction": 1.0
+          },
+          "seconds": 0.029332082999999898
+        }
+      },
+      "delay_seconds": {
+        "phase": 0.01847816599999952,
+        "ringing": 0.025255374999998637,
+        "radial": 0.01627124999999907
+      }
+    },
+    {
+      "pair": [
+        3,
+        4
+      ],
+      "branches": {
+        "plain": {
+          "evaluation": {
+            "median_px": 1.0635785690062218,
+            "p95_px": 1.2845759156759382,
+            "mean_px": 1.053430987419471,
+            "evaluated_points": 1010,
+            "within_3px_fraction": 1.0
+          },
+          "seconds": 0.0272505840000008
+        },
+        "phase": {
+          "evaluation": {
+            "median_px": 1.049747768959461,
+            "p95_px": 1.6536344425381322,
+            "mean_px": 1.059512825749503,
+            "evaluated_points": 1010,
+            "within_3px_fraction": 1.0
+          },
+          "seconds": 0.03164529199999855
+        },
+        "ringing": {
+          "evaluation": {
+            "median_px": 1.045321585016187,
+            "p95_px": 1.6864439797151507,
+            "mean_px": 1.053366001301155,
+            "evaluated_points": 1010,
+            "within_3px_fraction": 1.0
+          },
+          "seconds": 0.03297633400000066
+        },
+        "radial": {
+          "evaluation": {
+            "median_px": 1.057762377083869,
+            "p95_px": 1.250346258397756,
+            "mean_px": 1.0469409179477445,
+            "evaluated_points": 1010,
+            "within_3px_fraction": 1.0
+          },
+          "seconds": 0.02749808299999934
+        }
+      },
+      "delay_seconds": {
+        "phase": 0.017746625000000904,
+        "ringing": 0.023998875000000197,
+        "radial": 0.016642083000000696
+      }
+    },
+    {
+      "pair": [
+        4,
+        5
+      ],
+      "branches": {
+        "plain": {
+          "evaluation": {
+            "median_px": 1.339438296312403,
+            "p95_px": 2.160644477609962,
+            "mean_px": 1.3777204974819817,
+            "evaluated_points": 1094,
+            "within_3px_fraction": 1.0
+          },
+          "seconds": 0.029483332999999945
+        },
+        "phase": {
+          "evaluation": {
+            "median_px": 1.3424309957359866,
+            "p95_px": 2.1534783506809183,
+            "mean_px": 1.3755687373543768,
+            "evaluated_points": 1094,
+            "within_3px_fraction": 1.0
+          },
+          "seconds": 0.06077870900000093
+        },
+        "ringing": {
+          "evaluation": {
+            "median_px": 1.3498309837922229,
+            "p95_px": 2.178054988231926,
+            "mean_px": 1.383464944246242,
+            "evaluated_points": 1094,
+            "within_3px_fraction": 1.0
+          },
+          "seconds": 0.03301029200000016
+        },
+        "radial": {
+          "evaluation": {
+            "median_px": 1.3438563094795866,
+            "p95_px": 2.1584349755756733,
+            "mean_px": 1.3789514010545278,
+            "evaluated_points": 1094,
+            "within_3px_fraction": 1.0
+          },
+          "seconds": 0.030435250000000025
+        }
+      },
+      "delay_seconds": {
+        "phase": 0.016664458000001048,
+        "ringing": 0.02291199999999982,
+        "radial": 0.014385792000000563
+      }
+    },
+    {
+      "pair": [
+        5,
+        6
+      ],
+      "branches": {
+        "plain": {
+          "evaluation": {
+            "median_px": 1.6744606759435174,
+            "p95_px": 5.564309266529649,
+            "mean_px": 2.1916321154339027,
+            "evaluated_points": 1055,
+            "within_3px_fraction": 0.7298578199052133
+          },
+          "seconds": 0.027783917000000713
+        },
+        "phase": {
+          "evaluation": {
+            "median_px": 1.6829585849366837,
+            "p95_px": 5.572099577479269,
+            "mean_px": 2.1907526447650403,
+            "evaluated_points": 1055,
+            "within_3px_fraction": 0.7317535545023697
+          },
+          "seconds": 0.027258832999999427
+        },
+        "ringing": {
+          "evaluation": {
+            "median_px": 1.6820602476225572,
+            "p95_px": 5.576999819219179,
+            "mean_px": 2.191754424348517,
+            "evaluated_points": 1055,
+            "within_3px_fraction": 0.7317535545023697
+          },
+          "seconds": 0.03310408400000142
+        },
+        "radial": {
+          "evaluation": {
+            "median_px": 1.672597320198899,
+            "p95_px": 5.587380256698978,
+            "mean_px": 2.1984084964467256,
+            "evaluated_points": 1055,
+            "within_3px_fraction": 0.728909952606635
+          },
+          "seconds": 0.027354875000000334
+        }
+      },
+      "delay_seconds": {
+        "phase": 0.016340916999999067,
+        "ringing": 0.022315042000000673,
+        "radial": 0.010531625000000489
+      }
+    }
+  ]
+}

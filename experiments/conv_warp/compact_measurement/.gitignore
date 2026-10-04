@@ -1,0 +1,2 @@
+# Generated modules are rebuilt from the retained C source.
+*.wasm

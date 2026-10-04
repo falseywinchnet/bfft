@@ -1,0 +1,2 @@
+{"frame":0,"analysis":[960,642],"output":[1224,818],"tiles":15712,"added":15712,"removed":0,"recolored":0,"dirty_blocks":2460,"blocks":2460,"rebuilt":true,"edge_pixels":3710,"largest_tile_px":7.81,"ms":{"resample":8.06,"meyer":63.70,"palette":85.86,"geometry":17.50,"nucleation":14.16,"color":1.16,"process":38.84,"render_cpu":77.71}}
+{"entropy_pct":[0.009,0.033,0.144,0.422,0.649],"class_pixels":[400252,154738,61330,0]}

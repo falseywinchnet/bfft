@@ -1,0 +1,121 @@
+[
+  {
+    "count": 128,
+    "records": 72,
+    "completed": 64,
+    "deterministicSceneConfigurations": 16,
+    "maxRelativeMassDifference": 2.4234316509108567e-07,
+    "maxQuaternionNormSquaredError": 3.300211355306004e-07,
+    "warningRuns": [
+      "seed1-mujoco120",
+      "seed1-mujoco120",
+      "seed1-mujoco120",
+      "seed1-mujoco120",
+      "seed19-mujoco120",
+      "seed19-mujoco480",
+      "seed19-mujoco120",
+      "seed19-mujoco480",
+      "seed19-mujoco120",
+      "seed19-mujoco480",
+      "seed19-mujoco120",
+      "seed19-mujoco480"
+    ],
+    "receiptHashesVerified": true
+  },
+  {
+    "count": 256,
+    "records": 72,
+    "completed": 68,
+    "deterministicSceneConfigurations": 17,
+    "maxRelativeMassDifference": 2.4234316509108567e-07,
+    "maxQuaternionNormSquaredError": 3.145815592464629e-07,
+    "warningRuns": [
+      "seed1-mujoco120",
+      "seed1-mujoco480",
+      "seed1-mujoco120",
+      "seed1-mujoco480",
+      "seed1-mujoco120",
+      "seed1-mujoco480",
+      "seed1-mujoco120",
+      "seed1-mujoco480",
+      "seed7-mujoco120",
+      "seed7-mujoco120",
+      "seed7-mujoco120",
+      "seed7-mujoco120",
+      "seed19-mujoco120",
+      "seed19-mujoco480",
+      "seed19-mujoco120",
+      "seed19-mujoco480",
+      "seed19-mujoco120",
+      "seed19-mujoco480",
+      "seed19-mujoco120",
+      "seed19-mujoco480"
+    ],
+    "receiptHashesVerified": true
+  },
+  {
+    "count": 32,
+    "records": 72,
+    "completed": 72,
+    "deterministicSceneConfigurations": 18,
+    "maxRelativeMassDifference": 2.4234316509108567e-07,
+    "maxQuaternionNormSquaredError": 3.102301842083932e-07,
+    "warningRuns": [
+      "seed19-mujoco120",
+      "seed19-mujoco120",
+      "seed19-mujoco120",
+      "seed19-mujoco120"
+    ],
+    "receiptHashesVerified": true
+  },
+  {
+    "count": 512,
+    "records": 72,
+    "completed": 72,
+    "deterministicSceneConfigurations": 18,
+    "maxRelativeMassDifference": 2.4234316509108567e-07,
+    "maxQuaternionNormSquaredError": 3.23020765025106e-07,
+    "warningRuns": [
+      "seed1-mujoco120",
+      "seed1-mujoco480",
+      "seed1-mujoco120",
+      "seed1-mujoco480",
+      "seed1-mujoco120",
+      "seed1-mujoco480",
+      "seed1-mujoco120",
+      "seed1-mujoco480",
+      "seed7-mujoco120",
+      "seed7-mujoco480",
+      "seed7-mujoco120",
+      "seed7-mujoco480",
+      "seed7-mujoco120",
+      "seed7-mujoco480",
+      "seed7-mujoco120",
+      "seed7-mujoco480",
+      "seed19-mujoco120",
+      "seed19-mujoco480",
+      "seed19-mujoco120",
+      "seed19-mujoco480",
+      "seed19-mujoco120",
+      "seed19-mujoco480",
+      "seed19-mujoco120",
+      "seed19-mujoco480"
+    ],
+    "receiptHashesVerified": true
+  },
+  {
+    "count": 64,
+    "records": 72,
+    "completed": 72,
+    "deterministicSceneConfigurations": 18,
+    "maxRelativeMassDifference": 2.4234316509108567e-07,
+    "maxQuaternionNormSquaredError": 3.1355721730186303e-07,
+    "warningRuns": [
+      "seed19-mujoco480",
+      "seed19-mujoco480",
+      "seed19-mujoco480",
+      "seed19-mujoco480"
+    ],
+    "receiptHashesVerified": true
+  }
+]

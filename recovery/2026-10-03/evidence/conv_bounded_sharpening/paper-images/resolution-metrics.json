@@ -1,0 +1,1082 @@
+[
+  {
+    "field": "edge",
+    "method": "truth",
+    "view": "point",
+    "side": 65,
+    "mse": 0.0,
+    "maxError": 0.0,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "edge",
+    "method": "truth",
+    "view": "area",
+    "side": 65,
+    "mse": 0.0,
+    "maxError": 0.0,
+    "sourceRangeExcursion": 1.3877787807814457e-17
+  },
+  {
+    "field": "edge",
+    "method": "joint-base",
+    "view": "point",
+    "side": 65,
+    "mse": 0.0001528338638720317,
+    "maxError": 0.07074664056852603,
+    "sourceRangeExcursion": 1.1102230246251565e-16
+  },
+  {
+    "field": "edge",
+    "method": "joint-base",
+    "view": "area",
+    "side": 65,
+    "mse": 0.00014676978948338737,
+    "maxError": 0.06842718512615706,
+    "sourceRangeExcursion": 1.1102230246251565e-16
+  },
+  {
+    "field": "edge",
+    "method": "cap1",
+    "view": "point",
+    "side": 65,
+    "mse": 0.00017912114161301094,
+    "maxError": 0.0783433714020072,
+    "sourceRangeExcursion": 1.1102230246251565e-16
+  },
+  {
+    "field": "edge",
+    "method": "cap1",
+    "view": "area",
+    "side": 65,
+    "mse": 0.00016781580105229693,
+    "maxError": 0.07439848411582517,
+    "sourceRangeExcursion": 1.1102230246251565e-16
+  },
+  {
+    "field": "edge",
+    "method": "cap2",
+    "view": "point",
+    "side": 65,
+    "mse": 0.00017912114161301094,
+    "maxError": 0.0783433714020072,
+    "sourceRangeExcursion": 1.1102230246251565e-16
+  },
+  {
+    "field": "edge",
+    "method": "cap2",
+    "view": "area",
+    "side": 65,
+    "mse": 0.00016781580105229693,
+    "maxError": 0.07439848411582517,
+    "sourceRangeExcursion": 1.1102230246251565e-16
+  },
+  {
+    "field": "edge",
+    "method": "cap4",
+    "view": "point",
+    "side": 65,
+    "mse": 0.00017912114161301094,
+    "maxError": 0.0783433714020072,
+    "sourceRangeExcursion": 1.1102230246251565e-16
+  },
+  {
+    "field": "edge",
+    "method": "cap4",
+    "view": "area",
+    "side": 65,
+    "mse": 0.00016781580105229693,
+    "maxError": 0.07439848411582517,
+    "sourceRangeExcursion": 1.1102230246251565e-16
+  },
+  {
+    "field": "edge",
+    "method": "cap2-strong",
+    "view": "point",
+    "side": 65,
+    "mse": 0.00017934745007207518,
+    "maxError": 0.07855472824565457,
+    "sourceRangeExcursion": 1.1102230246251565e-16
+  },
+  {
+    "field": "edge",
+    "method": "cap2-strong",
+    "view": "area",
+    "side": 65,
+    "mse": 0.00016794533124178698,
+    "maxError": 0.07455636603250648,
+    "sourceRangeExcursion": 1.1102230246251565e-16
+  },
+  {
+    "field": "edge",
+    "method": "lanczos3",
+    "view": "point",
+    "side": 65,
+    "mse": 7.11468004108327e-05,
+    "maxError": 0.08266974789546289,
+    "sourceRangeExcursion": 0.023774883105259922
+  },
+  {
+    "field": "edge",
+    "method": "lanczos3",
+    "view": "area",
+    "side": 65,
+    "mse": 6.5702737050458e-05,
+    "maxError": 0.07958758551010758,
+    "sourceRangeExcursion": 0.02222676633796772
+  },
+  {
+    "field": "edge",
+    "method": "paper-convstar",
+    "view": "point",
+    "side": 65,
+    "mse": 6.740235361600313e-05,
+    "maxError": 0.06606030047446265,
+    "sourceRangeExcursion": 7.152557435219364e-09
+  },
+  {
+    "field": "edge",
+    "method": "truth",
+    "view": "point",
+    "side": 513,
+    "mse": 0.0,
+    "maxError": 0.0,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "edge",
+    "method": "truth",
+    "view": "area",
+    "side": 513,
+    "mse": 0.0,
+    "maxError": 0.0,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "edge",
+    "method": "joint-base",
+    "view": "point",
+    "side": 513,
+    "mse": 0.00015692149191062315,
+    "maxError": 0.07384627601974486,
+    "sourceRangeExcursion": 1.1102230246251565e-16
+  },
+  {
+    "field": "edge",
+    "method": "joint-base",
+    "view": "area",
+    "side": 513,
+    "mse": 0.00015681018789213052,
+    "maxError": 0.07380467171655863,
+    "sourceRangeExcursion": 2.220446049250313e-16
+  },
+  {
+    "field": "edge",
+    "method": "cap1",
+    "view": "point",
+    "side": 513,
+    "mse": 0.00018214435082590746,
+    "maxError": 0.08760031904691062,
+    "sourceRangeExcursion": 1.1102230246251565e-16
+  },
+  {
+    "field": "edge",
+    "method": "cap1",
+    "view": "area",
+    "side": 513,
+    "mse": 0.00018194525270863178,
+    "maxError": 0.08753150927840464,
+    "sourceRangeExcursion": 2.220446049250313e-16
+  },
+  {
+    "field": "edge",
+    "method": "cap2",
+    "view": "point",
+    "side": 513,
+    "mse": 0.00018214435082590746,
+    "maxError": 0.08760031904691062,
+    "sourceRangeExcursion": 1.1102230246251565e-16
+  },
+  {
+    "field": "edge",
+    "method": "cap2",
+    "view": "area",
+    "side": 513,
+    "mse": 0.00018194525270863178,
+    "maxError": 0.08753150927840464,
+    "sourceRangeExcursion": 2.220446049250313e-16
+  },
+  {
+    "field": "edge",
+    "method": "cap4",
+    "view": "point",
+    "side": 513,
+    "mse": 0.00018214435082590746,
+    "maxError": 0.08760031904691062,
+    "sourceRangeExcursion": 1.1102230246251565e-16
+  },
+  {
+    "field": "edge",
+    "method": "cap4",
+    "view": "area",
+    "side": 513,
+    "mse": 0.00018194525270863178,
+    "maxError": 0.08753150927840464,
+    "sourceRangeExcursion": 2.220446049250313e-16
+  },
+  {
+    "field": "edge",
+    "method": "cap2-strong",
+    "view": "point",
+    "side": 513,
+    "mse": 0.000182247402719608,
+    "maxError": 0.08763371536757131,
+    "sourceRangeExcursion": 1.1102230246251565e-16
+  },
+  {
+    "field": "edge",
+    "method": "cap2-strong",
+    "view": "area",
+    "side": 513,
+    "mse": 0.0001820466727177716,
+    "maxError": 0.08756506990186325,
+    "sourceRangeExcursion": 2.220446049250313e-16
+  },
+  {
+    "field": "edge",
+    "method": "lanczos3",
+    "view": "point",
+    "side": 513,
+    "mse": 7.249674254046417e-05,
+    "maxError": 0.08383097234885595,
+    "sourceRangeExcursion": 0.024534007936561485
+  },
+  {
+    "field": "edge",
+    "method": "lanczos3",
+    "view": "area",
+    "side": 513,
+    "mse": 7.239852229780001e-05,
+    "maxError": 0.08377893977783024,
+    "sourceRangeExcursion": 0.024511789065752368
+  },
+  {
+    "field": "edge",
+    "method": "paper-convstar",
+    "view": "point",
+    "side": 513,
+    "mse": 6.866476825085585e-05,
+    "maxError": 0.06779810658474006,
+    "sourceRangeExcursion": 7.152557435219364e-09
+  },
+  {
+    "field": "carrier",
+    "method": "truth",
+    "view": "point",
+    "side": 65,
+    "mse": 0.0,
+    "maxError": 0.0,
+    "sourceRangeExcursion": 0.02133192523689953
+  },
+  {
+    "field": "carrier",
+    "method": "truth",
+    "view": "area",
+    "side": 65,
+    "mse": 0.0,
+    "maxError": 0.0,
+    "sourceRangeExcursion": 0.01981942439358389
+  },
+  {
+    "field": "carrier",
+    "method": "joint-base",
+    "view": "point",
+    "side": 65,
+    "mse": 3.383818639358291e-06,
+    "maxError": 0.023149383957602826,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "joint-base",
+    "view": "area",
+    "side": 65,
+    "mse": 3.2325799027704564e-06,
+    "maxError": 0.022177044555757475,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "cap1",
+    "view": "point",
+    "side": 65,
+    "mse": 7.444998363695439e-05,
+    "maxError": 0.045597158086461254,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "cap1",
+    "view": "area",
+    "side": 65,
+    "mse": 6.805659526311706e-05,
+    "maxError": 0.043022860167871935,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "cap2",
+    "view": "point",
+    "side": 65,
+    "mse": 7.474392998235816e-05,
+    "maxError": 0.045597158086461254,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "cap2",
+    "view": "area",
+    "side": 65,
+    "mse": 6.828390566455008e-05,
+    "maxError": 0.043022860167871935,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "cap4",
+    "view": "point",
+    "side": 65,
+    "mse": 7.474392998235816e-05,
+    "maxError": 0.045597158086461254,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "cap4",
+    "view": "area",
+    "side": 65,
+    "mse": 6.828390566455008e-05,
+    "maxError": 0.043022860167871935,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "cap2-strong",
+    "view": "point",
+    "side": 65,
+    "mse": 0.0007433497989230633,
+    "maxError": 0.15200410903322847,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "cap2-strong",
+    "view": "area",
+    "side": 65,
+    "mse": 0.0006652614839316114,
+    "maxError": 0.14770259396760577,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "lanczos3",
+    "view": "point",
+    "side": 65,
+    "mse": 1.9754214737339465e-06,
+    "maxError": 0.007446245278068253,
+    "sourceRangeExcursion": 0.026152103791157233
+  },
+  {
+    "field": "carrier",
+    "method": "lanczos3",
+    "view": "area",
+    "side": 65,
+    "mse": 1.8692549927229852e-06,
+    "maxError": 0.007111438072205156,
+    "sourceRangeExcursion": 0.024535190483831903
+  },
+  {
+    "field": "carrier",
+    "method": "paper-convstar",
+    "view": "point",
+    "side": 65,
+    "mse": 1.5569990198821804e-06,
+    "maxError": 0.006032049100049286,
+    "sourceRangeExcursion": 0.01915731553206962
+  },
+  {
+    "field": "carrier",
+    "method": "truth",
+    "view": "point",
+    "side": 513,
+    "mse": 0.0,
+    "maxError": 0.0,
+    "sourceRangeExcursion": 0.021590972995200297
+  },
+  {
+    "field": "carrier",
+    "method": "truth",
+    "view": "area",
+    "side": 513,
+    "mse": 0.0,
+    "maxError": 0.0,
+    "sourceRangeExcursion": 0.021567247068348644
+  },
+  {
+    "field": "carrier",
+    "method": "joint-base",
+    "view": "point",
+    "side": 513,
+    "mse": 3.5235759294872755e-06,
+    "maxError": 0.023453403100861997,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "joint-base",
+    "view": "area",
+    "side": 513,
+    "mse": 3.520605126345481e-06,
+    "maxError": 0.023438899368613486,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "cap1",
+    "view": "point",
+    "side": 513,
+    "mse": 7.672550301569597e-05,
+    "maxError": 0.04747323179233931,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "cap1",
+    "view": "area",
+    "side": 513,
+    "mse": 7.661517585613457e-05,
+    "maxError": 0.047437971484984076,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "cap2",
+    "view": "point",
+    "side": 513,
+    "mse": 7.702549048682378e-05,
+    "maxError": 0.04747323179233931,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "cap2",
+    "view": "area",
+    "side": 513,
+    "mse": 7.691405467812298e-05,
+    "maxError": 0.047437971484984076,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "cap4",
+    "view": "point",
+    "side": 513,
+    "mse": 7.702549048682378e-05,
+    "maxError": 0.04747323179233931,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "cap4",
+    "view": "area",
+    "side": 513,
+    "mse": 7.691405467812298e-05,
+    "maxError": 0.047437971484984076,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "cap2-strong",
+    "view": "point",
+    "side": 513,
+    "mse": 0.0007552061802083075,
+    "maxError": 0.16241053112380344,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "cap2-strong",
+    "view": "area",
+    "side": 513,
+    "mse": 0.0007538388272502091,
+    "maxError": 0.16227530118857192,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "carrier",
+    "method": "lanczos3",
+    "view": "point",
+    "side": 513,
+    "mse": 2.036277511857678e-06,
+    "maxError": 0.007576741328376435,
+    "sourceRangeExcursion": 0.026585053598247643
+  },
+  {
+    "field": "carrier",
+    "method": "lanczos3",
+    "view": "area",
+    "side": 513,
+    "mse": 2.034337665252955e-06,
+    "maxError": 0.007571271756886322,
+    "sourceRangeExcursion": 0.026558825264079683
+  },
+  {
+    "field": "carrier",
+    "method": "paper-convstar",
+    "view": "point",
+    "side": 513,
+    "mse": 1.6035022262427823e-06,
+    "maxError": 0.006152777782530872,
+    "sourceRangeExcursion": 0.019922534862857277
+  },
+  {
+    "field": "curved",
+    "method": "truth",
+    "view": "point",
+    "side": 65,
+    "mse": 0.0,
+    "maxError": 0.0,
+    "sourceRangeExcursion": 1.9382381927224301e-07
+  },
+  {
+    "field": "curved",
+    "method": "truth",
+    "view": "area",
+    "side": 65,
+    "mse": 0.0,
+    "maxError": 0.0,
+    "sourceRangeExcursion": 1.8835632470404207e-07
+  },
+  {
+    "field": "curved",
+    "method": "joint-base",
+    "view": "point",
+    "side": 65,
+    "mse": 0.0004364513216431125,
+    "maxError": 0.0922862812868992,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "joint-base",
+    "view": "area",
+    "side": 65,
+    "mse": 0.0004128444658429418,
+    "maxError": 0.08968307941759368,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "cap1",
+    "view": "point",
+    "side": 65,
+    "mse": 0.0005598072725994978,
+    "maxError": 0.1065045444330347,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "cap1",
+    "view": "area",
+    "side": 65,
+    "mse": 0.0005201260907643728,
+    "maxError": 0.10062213372826945,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "cap2",
+    "view": "point",
+    "side": 65,
+    "mse": 0.0005598072725994978,
+    "maxError": 0.1065045444330347,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "cap2",
+    "view": "area",
+    "side": 65,
+    "mse": 0.0005201260907643728,
+    "maxError": 0.10062213372826945,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "cap4",
+    "view": "point",
+    "side": 65,
+    "mse": 0.0005598072725994978,
+    "maxError": 0.1065045444330347,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "cap4",
+    "view": "area",
+    "side": 65,
+    "mse": 0.0005201260907643728,
+    "maxError": 0.10062213372826945,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "cap2-strong",
+    "view": "point",
+    "side": 65,
+    "mse": 0.0006077464925751165,
+    "maxError": 0.11724690322345754,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "cap2-strong",
+    "view": "area",
+    "side": 65,
+    "mse": 0.0005615851428025978,
+    "maxError": 0.11023392738290644,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "lanczos3",
+    "view": "point",
+    "side": 65,
+    "mse": 0.0003426518839873498,
+    "maxError": 0.087064823225379,
+    "sourceRangeExcursion": 0.034629905050297956
+  },
+  {
+    "field": "curved",
+    "method": "lanczos3",
+    "view": "area",
+    "side": 65,
+    "mse": 0.00032114748054126095,
+    "maxError": 0.08454098104202312,
+    "sourceRangeExcursion": 0.032732170357787874
+  },
+  {
+    "field": "curved",
+    "method": "paper-convstar",
+    "view": "point",
+    "side": 65,
+    "mse": 0.00034968386469522834,
+    "maxError": 0.09228627516446342,
+    "sourceRangeExcursion": 0.0009023582869592262
+  },
+  {
+    "field": "curved",
+    "method": "truth",
+    "view": "point",
+    "side": 513,
+    "mse": 0.0,
+    "maxError": 0.0,
+    "sourceRangeExcursion": 1.946059087210017e-07
+  },
+  {
+    "field": "curved",
+    "method": "truth",
+    "view": "area",
+    "side": 513,
+    "mse": 0.0,
+    "maxError": 0.0,
+    "sourceRangeExcursion": 1.9442794163548882e-07
+  },
+  {
+    "field": "curved",
+    "method": "joint-base",
+    "view": "point",
+    "side": 513,
+    "mse": 0.0004479903855092099,
+    "maxError": 0.09588472442419227,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "joint-base",
+    "view": "area",
+    "side": 513,
+    "mse": 0.00044757401767408307,
+    "maxError": 0.09583362666047723,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "cap1",
+    "view": "point",
+    "side": 513,
+    "mse": 0.0005743526696101438,
+    "maxError": 0.11918839537435727,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "cap1",
+    "view": "area",
+    "side": 513,
+    "mse": 0.0005736728760813316,
+    "maxError": 0.11908911796480254,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "cap2",
+    "view": "point",
+    "side": 513,
+    "mse": 0.0005743526696101438,
+    "maxError": 0.11918839537435727,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "cap2",
+    "view": "area",
+    "side": 513,
+    "mse": 0.0005736728760813316,
+    "maxError": 0.11908911796480254,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "cap4",
+    "view": "point",
+    "side": 513,
+    "mse": 0.0005743526696101438,
+    "maxError": 0.11918839537435727,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "cap4",
+    "view": "area",
+    "side": 513,
+    "mse": 0.0005736728760813316,
+    "maxError": 0.11908911796480254,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "cap2-strong",
+    "view": "point",
+    "side": 513,
+    "mse": 0.0006237739510864585,
+    "maxError": 0.12961204600986365,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "cap2-strong",
+    "view": "area",
+    "side": 513,
+    "mse": 0.00062298258526498,
+    "maxError": 0.1294970535935871,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "curved",
+    "method": "lanczos3",
+    "view": "point",
+    "side": 513,
+    "mse": 0.0003522099881521812,
+    "maxError": 0.09045544005706485,
+    "sourceRangeExcursion": 0.034775589999553456
+  },
+  {
+    "field": "curved",
+    "method": "lanczos3",
+    "view": "area",
+    "side": 513,
+    "mse": 0.00035185114417644794,
+    "maxError": 0.09040677153213306,
+    "sourceRangeExcursion": 0.03474733803617261
+  },
+  {
+    "field": "curved",
+    "method": "paper-convstar",
+    "view": "point",
+    "side": 513,
+    "mse": 0.0003592605691448957,
+    "maxError": 0.09588474870627217,
+    "sourceRangeExcursion": 0.0011005288296762061
+  },
+  {
+    "field": "crossing",
+    "method": "truth",
+    "view": "point",
+    "side": 65,
+    "mse": 0.0,
+    "maxError": 0.0,
+    "sourceRangeExcursion": 0.001981328663995585
+  },
+  {
+    "field": "crossing",
+    "method": "truth",
+    "view": "area",
+    "side": 65,
+    "mse": 0.0,
+    "maxError": 0.0,
+    "sourceRangeExcursion": 0.0007075078099041399
+  },
+  {
+    "field": "crossing",
+    "method": "joint-base",
+    "view": "point",
+    "side": 65,
+    "mse": 3.1073650353746516e-05,
+    "maxError": 0.04340618567524854,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "joint-base",
+    "view": "area",
+    "side": 65,
+    "mse": 2.993718127563144e-05,
+    "maxError": 0.0421799621311926,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "cap1",
+    "view": "point",
+    "side": 65,
+    "mse": 0.00026405222615880265,
+    "maxError": 0.05564370233568147,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "cap1",
+    "view": "area",
+    "side": 65,
+    "mse": 0.00024084303762000265,
+    "maxError": 0.05437575163335215,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "cap2",
+    "view": "point",
+    "side": 65,
+    "mse": 0.00026405222615880265,
+    "maxError": 0.05564370233568147,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "cap2",
+    "view": "area",
+    "side": 65,
+    "mse": 0.00024084303762000265,
+    "maxError": 0.05437575163335215,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "cap4",
+    "view": "point",
+    "side": 65,
+    "mse": 0.00026405222615880265,
+    "maxError": 0.05564370233568147,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "cap4",
+    "view": "area",
+    "side": 65,
+    "mse": 0.00024084303762000265,
+    "maxError": 0.05437575163335215,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "cap2-strong",
+    "view": "point",
+    "side": 65,
+    "mse": 0.0019998349940211877,
+    "maxError": 0.19136155106029507,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "cap2-strong",
+    "view": "area",
+    "side": 65,
+    "mse": 0.0017330372476281916,
+    "maxError": 0.18366860156815434,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "lanczos3",
+    "view": "point",
+    "side": 65,
+    "mse": 6.158317874976438e-05,
+    "maxError": 0.04920503772821738,
+    "sourceRangeExcursion": 0.017289909861122665
+  },
+  {
+    "field": "crossing",
+    "method": "lanczos3",
+    "view": "area",
+    "side": 65,
+    "mse": 5.939213735803191e-05,
+    "maxError": 0.048044339493806376,
+    "sourceRangeExcursion": 0.015335878694797606
+  },
+  {
+    "field": "crossing",
+    "method": "paper-convstar",
+    "view": "point",
+    "side": 65,
+    "mse": 2.105410463743278e-05,
+    "maxError": 0.02228818235241381,
+    "sourceRangeExcursion": 0.0014711181934374817
+  },
+  {
+    "field": "crossing",
+    "method": "truth",
+    "view": "point",
+    "side": 513,
+    "mse": 0.0,
+    "maxError": 0.0,
+    "sourceRangeExcursion": 0.0027042950914986097
+  },
+  {
+    "field": "crossing",
+    "method": "truth",
+    "view": "area",
+    "side": 513,
+    "mse": 0.0,
+    "maxError": 0.0,
+    "sourceRangeExcursion": 0.002684331581402799
+  },
+  {
+    "field": "crossing",
+    "method": "joint-base",
+    "view": "point",
+    "side": 513,
+    "mse": 3.1569685630646654e-05,
+    "maxError": 0.04449223913363451,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "joint-base",
+    "view": "area",
+    "side": 513,
+    "mse": 3.1541317311957175e-05,
+    "maxError": 0.04447261417567372,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "cap1",
+    "view": "point",
+    "side": 513,
+    "mse": 0.00026857654822955244,
+    "maxError": 0.055775674036687456,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "cap1",
+    "view": "area",
+    "side": 513,
+    "mse": 0.00026815232676573016,
+    "maxError": 0.055755003522052995,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "cap2",
+    "view": "point",
+    "side": 513,
+    "mse": 0.00026857654822955244,
+    "maxError": 0.055775674036687456,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "cap2",
+    "view": "area",
+    "side": 513,
+    "mse": 0.00026815232676573016,
+    "maxError": 0.055755003522052995,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "cap4",
+    "view": "point",
+    "side": 513,
+    "mse": 0.00026857654822955244,
+    "maxError": 0.055775674036687456,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "cap4",
+    "view": "area",
+    "side": 513,
+    "mse": 0.00026815232676573016,
+    "maxError": 0.055755003522052995,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "cap2-strong",
+    "view": "point",
+    "side": 513,
+    "mse": 0.001972491291875306,
+    "maxError": 0.1978460598979226,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "cap2-strong",
+    "view": "area",
+    "side": 513,
+    "mse": 0.0019676059240949085,
+    "maxError": 0.19772209854193773,
+    "sourceRangeExcursion": 0.0
+  },
+  {
+    "field": "crossing",
+    "method": "lanczos3",
+    "view": "point",
+    "side": 513,
+    "mse": 6.254840271329073e-05,
+    "maxError": 0.04931211464758556,
+    "sourceRangeExcursion": 0.018573078786726427
+  },
+  {
+    "field": "crossing",
+    "method": "lanczos3",
+    "view": "area",
+    "side": 513,
+    "mse": 6.249402277339607e-05,
+    "maxError": 0.04929345486975112,
+    "sourceRangeExcursion": 0.018534257793133224
+  },
+  {
+    "field": "crossing",
+    "method": "paper-convstar",
+    "view": "point",
+    "side": 513,
+    "mse": 2.124923424960242e-05,
+    "maxError": 0.023247743101192153,
+    "sourceRangeExcursion": 0.002336160403062726
+  }
+]

@@ -1,0 +1,3 @@
+obligation_tests 10 0.0374597
+obligation_minimal 3 0.0689039
+---

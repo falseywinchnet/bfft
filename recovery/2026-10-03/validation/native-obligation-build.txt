@@ -1,0 +1,26 @@
+[  5%] Building CXX object CMakeFiles/obligation_geometry.dir/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-675dacf2c222/experiments/wrench_transport/phys/hull.cpp.o
+[ 10%] Building CXX object CMakeFiles/obligation_geometry.dir/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-675dacf2c222/experiments/wrench_transport/phys/collide.cpp.o
+[ 15%] Linking CXX static library libobligation_geometry.a
+[ 15%] Built target obligation_geometry
+[ 21%] Building CXX object CMakeFiles/obligation_dynamics.dir/engine.cpp.o
+[ 26%] Linking CXX static library libobligation_dynamics.a
+[ 26%] Built target obligation_dynamics
+[ 31%] Building CXX object CMakeFiles/obligation_tests.dir/tests.cpp.o
+[ 36%] Linking CXX executable obligation_tests
+[ 36%] Built target obligation_tests
+[ 42%] Building CXX object CMakeFiles/obligation_minimal.dir/minimal.cpp.o
+[ 47%] Linking CXX executable obligation_minimal
+[ 47%] Built target obligation_minimal
+[ 52%] Building CXX object CMakeFiles/obligation_bench.dir/bench.cpp.o
+[ 57%] Linking CXX executable obligation_bench
+[ 57%] Built target obligation_bench
+[ 63%] Building CXX object legacy/CMakeFiles/zc_phys.dir/hull.cpp.o
+[ 68%] Building CXX object legacy/CMakeFiles/zc_phys.dir/collide.cpp.o
+[ 73%] Building CXX object legacy/CMakeFiles/zc_phys.dir/block_ldl.cpp.o
+[ 78%] Building CXX object legacy/CMakeFiles/zc_phys.dir/solver.cpp.o
+[ 84%] Building CXX object legacy/CMakeFiles/zc_phys.dir/world.cpp.o
+[ 89%] Linking CXX static library libzc_phys.a
+[ 89%] Built target zc_phys
+[ 94%] Building CXX object CMakeFiles/obligation_activity.dir/activity_bench.cpp.o
+[100%] Linking CXX executable obligation_activity
+[100%] Built target obligation_activity

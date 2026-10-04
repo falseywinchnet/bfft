@@ -43,7 +43,10 @@ $RVFX_CXX $INCLUDES $COMMON_FLAGS -c "$PROJECT_DIR/obs/plugin-main.cpp" -o "$BUI
 # shellcheck disable=SC2086
 $RVFX_CXX $INCLUDES $COMMON_FLAGS -c "$PROJECT_DIR/obs/gpu-filter.cpp" -o "$BUILD_DIR/gpu-filter.o"
 
-$RVFX_CXX -bundle "$BUILD_DIR/engine.o" "$BUILD_DIR/plugin-main.o" "$BUILD_DIR/gpu-filter.o" \
+$RVFX_CXX $INCLUDES $COMMON_FLAGS -c "$PROJECT_DIR/src/entropy_stretch.cpp" -o "$BUILD_DIR/entropy-core.o"
+$RVFX_CXX $INCLUDES $COMMON_FLAGS -c "$PROJECT_DIR/obs/entropy-filter.cpp" -o "$BUILD_DIR/entropy-filter.o"
+
+$RVFX_CXX -bundle "$BUILD_DIR/engine.o" "$BUILD_DIR/plugin-main.o" "$BUILD_DIR/gpu-filter.o" "$BUILD_DIR/entropy-core.o" "$BUILD_DIR/entropy-filter.o" \
     "$FRAMEWORK" -Wl,-rpath,"$OBS_APP/Contents/Frameworks" \
     -o "$BUNDLE_DIR/Contents/MacOS/realtime-vector-fx"
 sed 's/@PROJECT_VERSION@/0.4.0/g' "$PROJECT_DIR/obs/Info.plist.in" > "$BUNDLE_DIR/Contents/Info.plist"
@@ -61,6 +64,18 @@ if test "${RVFX_RUN_OBS_SMOKE:-0}" = 1; then
         -Wl,-rpath,"$OBS_APP/Contents/Frameworks" -o "$BUILD_DIR/obs-smoke"
     "$BUILD_DIR/obs-smoke" "$BUNDLE_DIR/Contents/MacOS/realtime-vector-fx" \
         "$OBS_APP/Contents/Frameworks/libobs-metal.dylib" "$BUILD_DIR/obs-smoke.ppm"
+fi
+
+if test "${RVFX_RUN_ENTROPY_SMOKE:-0}" = 1; then
+    clang++ -x objective-c++ -std=c++17 -O2 -Wall -Wextra \
+        -DES_SMOKE_WIDTH="$RVFX_SMOKE_WIDTH" -DES_SMOKE_HEIGHT="$RVFX_SMOKE_HEIGHT" \
+        -I"$PROJECT_DIR/include" -I"$OBS_CONFIG_INCLUDE_DIR" -I"$OBS_SOURCE_DIR/libobs" \
+        -I"$OBS_SOURCE_DIR/libobs/util" -I"$SIMDE_INCLUDE_DIR" \
+        -c "$PROJECT_DIR/tools/entropy_obs_smoke.mm" -o "$BUILD_DIR/entropy-smoke.o"
+    clang++ "$BUILD_DIR/entropy-smoke.o" "$BUILD_DIR/entropy-core.o" "$FRAMEWORK" -framework AppKit \
+        -Wl,-rpath,"$OBS_APP/Contents/Frameworks" -o "$BUILD_DIR/entropy-smoke"
+    "$BUILD_DIR/entropy-smoke" "$BUNDLE_DIR/Contents/MacOS/realtime-vector-fx" \
+        "$OBS_APP/Contents/Frameworks/libobs-metal.dylib" "$BUILD_DIR/entropy-smoke.ppm"
 fi
 
 echo "$BUNDLE_DIR"

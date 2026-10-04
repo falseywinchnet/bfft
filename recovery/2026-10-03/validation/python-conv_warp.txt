@@ -1,0 +1,88 @@
+test_exact_overlapping_moment_preserving_bundles (experiments.conv_warp.bounded_sharpening.test_geometry.GeometryTests) ... ok
+test_half_interval_derivative_certificate_is_sharp_for_step (experiments.conv_warp.bounded_sharpening.test_geometry.GeometryTests) ... ok
+test_mixed_derivative_coefficients (experiments.conv_warp.bounded_sharpening.test_geometry.GeometryTests) ... ok
+test_quintic_current_and_slope_bound (experiments.conv_warp.bounded_sharpening.test_geometry.GeometryTests) ... ok
+test_requested_ray_strength_saturates (experiments.conv_warp.bounded_sharpening.test_geometry.GeometryTests) ... ok
+test_shared_edge_bundle_has_zero_cell_moments (experiments.conv_warp.bounded_sharpening.test_geometry.GeometryTests) ... ok
+test_subdivision_preserves_polynomial (experiments.conv_warp.bounded_sharpening.test_geometry.GeometryTests) ... ok
+test_zero_margin_harm_and_help (experiments.conv_warp.bounded_sharpening.test_geometry.GeometryTests) ... ok
+test_paper_images (unittest.loader._FailedTest) ... ERROR
+test_complete_polynomial_basis_exactly (experiments.conv_warp.support_range_audit.test_faithful_blend.FaithfulBlendTests) ... ok
+test_degree_six_term_and_its_integral_are_retained (experiments.conv_warp.support_range_audit.test_faithful_blend.FaithfulBlendTests) ... ok
+test_identical_orders_are_degree_elevated_unchanged (experiments.conv_warp.support_range_audit.test_faithful_blend.FaithfulBlendTests) ... ok
+test_range (unittest.loader._FailedTest) ... ERROR
+test_adaptive_projective_basin_preserves_constants (experiments.conv_warp.test_conv_warp.SyntheticTruthTests) ... ok
+test_affine_basin_analysis_conserves_the_admitted_atlas_integral (experiments.conv_warp.test_conv_warp.SyntheticTruthTests) ... ok
+test_affine_fourier_basin_average_matches_dense_reference (experiments.conv_warp.test_conv_warp.SyntheticTruthTests) ... ok
+test_certified_projective_warped_pixels_preserve_constants (experiments.conv_warp.test_conv_warp.SyntheticTruthTests) ... ok
+test_exact_affine_warped_pixels_preserve_multichannel_constants (experiments.conv_warp.test_conv_warp.SyntheticTruthTests) ... ok
+test_exact_affine_warped_pixels_reproduce_plane_basin_means (experiments.conv_warp.test_conv_warp.SyntheticTruthTests) ... ok
+test_identity_direct_warp_is_cardinal (experiments.conv_warp.test_conv_warp.SyntheticTruthTests) ... ok
+test_positive_basin_operator_preserves_constants_and_range (experiments.conv_warp.test_conv_warp.SyntheticTruthTests) ... ok
+test_projective_certificate_contains_independent_plane_integral (experiments.conv_warp.test_conv_warp.SyntheticTruthTests) ... ok
+test_projective_polygon_basin_coverage_is_exact_on_axis_split (experiments.conv_warp.test_conv_warp.SyntheticTruthTests) ... ok
+test_affine_jacobian_is_exact (experiments.conv_warp.test_conv_warp.WarpGeometryTests) ... ok
+test_projective_jacobian_matches_central_difference (experiments.conv_warp.test_conv_warp.WarpGeometryTests) ... ok
+test_pullback_shape_has_unit_determinant (experiments.conv_warp.test_conv_warp.WarpGeometryTests) ... ok
+test_adjacent_patches_share_the_entire_boundary_curve (experiments.conv_warp.test_joint_reference.JointReferenceTests) ... ok
+test_affine_plane_is_reproduced (experiments.conv_warp.test_joint_reference.JointReferenceTests) ... ok
+test_completed_direction_polytope_contains_the_q1_baseline (experiments.conv_warp.test_joint_reference.JointReferenceTests) ... ok
+test_finite_atlas_satisfies_every_support_cone_coefficient (experiments.conv_warp.test_joint_reference.JointReferenceTests) ... ok
+test_finite_controls_stay_in_every_declared_support_range (experiments.conv_warp.test_joint_reference.JointReferenceTests) ... ok
+test_finite_entity_admission_is_cardinal_c0_and_feasible (experiments.conv_warp.test_joint_reference.JointReferenceTests) ... ok
+test_finite_entity_admission_reproduces_an_affine_plane (experiments.conv_warp.test_joint_reference.JointReferenceTests) ... ok
+test_finite_support_cone_is_equivariant_under_axis_exchange (experiments.conv_warp.test_joint_reference.JointReferenceTests) ... ok
+test_global_joint_atlas_is_cardinal_and_c0 (experiments.conv_warp.test_joint_reference.JointReferenceTests) ... ok
+test_patch_controls_stay_in_corner_range_when_witnessed_monotone (experiments.conv_warp.test_joint_reference.JointReferenceTests) ... ok
+test_phase_gradient_constraints_have_the_expected_affine_orientation (experiments.conv_warp.test_joint_reference.JointReferenceTests) ... ok
+test_planar_dual_generators_contain_every_witness_current (experiments.conv_warp.test_joint_reference.JointReferenceTests) ... ok
+test_planar_gradient_cone_has_expected_duals (experiments.conv_warp.test_joint_reference.JointReferenceTests) ... ok
+test_q1_is_feasible_for_its_local_gradient_cone (experiments.conv_warp.test_joint_reference.JointReferenceTests) ... ok
+test_sampled_canonical_atlas_matches_its_cell_collocation_nodes (experiments.conv_warp.test_joint_reference.JointReferenceTests) ... ok
+test_support_sum_transports_a_step_normal_into_the_stencil_plateau (experiments.conv_warp.test_joint_reference.JointReferenceTests) ... ok
+test_all_36_moments_against_independent_interior_quadrature (experiments.conv_warp.test_projective_bank_proof.ProjectiveBankProof) ... ok
+test_constant_denominator_edges_and_orientation (experiments.conv_warp.test_projective_bank_proof.ProjectiveBankProof) ... ok
+test_both_nonlinear_orders_and_blend_compile_to_one_exact_2d_stencil (experiments.conv_warp.test_star_banks.TwoDimensionalBanks) ... ok
+test_global_inverse_square_blend_is_an_exact_finite_2d_phase_filter_pair (experiments.conv_warp.test_star_banks.TwoDimensionalBanks) ... ok
+test_integrated_bank_equals_repeated_surface_contractions_exactly (experiments.conv_warp.test_star_banks.TwoDimensionalBanks) ... ok
+test_canonical_geometry_table_budget_in_exact_rationals (experiments.conv_warp.test_star_compilation.StarWarpCompilation) ... ok
+test_primitive_identity_as_exact_polynomial_coefficients (experiments.conv_warp.test_star_compilation.StarWarpCompilation) ... ok
+test_rectangle_contraction_against_independent_monomial_integrals (experiments.conv_warp.test_star_compilation.StarWarpCompilation) ... ok
+test_tail_identity_and_enclosure_in_exact_rationals (experiments.conv_warp.test_star_compilation.StarWarpCompilation) ... ok
+
+======================================================================
+ERROR: test_paper_images (unittest.loader._FailedTest)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_paper_images
+Traceback (most recent call last):
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/loader.py", line 154, in loadTestsFromName
+    module = __import__(module_name)
+  File "/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-675dacf2c222/experiments/conv_warp/bounded_sharpening/test_paper_images.py", line 3, in <module>
+    from .paper_images import CASES,truth,basis,point,area,true_area,lanczos_weights,area_weights,flat_controls
+  File "/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-675dacf2c222/experiments/conv_warp/bounded_sharpening/paper_images.py", line 9, in <module>
+    from experiments.conv_synthetic_evidence import _scene
+  File "/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-675dacf2c222/experiments/conv_synthetic_evidence.py", line 17, in <module>
+    import matplotlib
+ModuleNotFoundError: No module named 'matplotlib'
+
+
+======================================================================
+ERROR: test_range (unittest.loader._FailedTest)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_range
+Traceback (most recent call last):
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/loader.py", line 154, in loadTestsFromName
+    module = __import__(module_name)
+  File "/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-675dacf2c222/experiments/conv_warp/support_range_audit/test_range.py", line 4, in <module>
+    from .study import constraints,evaluation
+  File "/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-675dacf2c222/experiments/conv_warp/support_range_audit/study.py", line 6, in <module>
+    from experiments.conv_synthetic_evidence import _scene,_two_dimensional_cases
+  File "/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-675dacf2c222/experiments/conv_synthetic_evidence.py", line 17, in <module>
+    import matplotlib
+ModuleNotFoundError: No module named 'matplotlib'
+
+
+----------------------------------------------------------------------
+Ran 51 tests in 6.297s
+
+FAILED (errors=2)

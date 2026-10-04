@@ -13,6 +13,22 @@ target_include_directories(rvfx_core PUBLIC include)
 target_compile_options(rvfx_core PRIVATE -O3 -ffast-math)
 set_target_properties(rvfx_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+add_library(rvfx_entropy STATIC src/entropy_stretch.cpp)
+target_compile_features(rvfx_entropy PUBLIC cxx_std_17)
+target_include_directories(rvfx_entropy PUBLIC include)
+set_target_properties(rvfx_entropy PROPERTIES POSITION_INDEPENDENT_CODE ON)
+# The frozen reference is test-only and is never linked into the OBS module.
+add_library(rvfx_entropy_reference STATIC tests/reference/entropy_stretch_v1.cpp)
+target_compile_features(rvfx_entropy_reference PUBLIC cxx_std_17)
+add_executable(rvfx_entropy_benchmark tools/entropy_benchmark.cpp)
+target_link_libraries(rvfx_entropy_benchmark PRIVATE rvfx_entropy rvfx_entropy_reference)
+add_executable(rvfx_entropy_demo tools/entropy_demo.cpp)
+target_link_libraries(rvfx_entropy_demo PRIVATE rvfx_entropy)
+add_executable(rvfx_entropy_tests tests/test_entropy_stretch.cpp)
+target_link_libraries(rvfx_entropy_tests PRIVATE rvfx_entropy)
+add_executable(rvfx_entropy_chain_tests tests/test_entropy_chains.cpp)
+target_link_libraries(rvfx_entropy_chain_tests PRIVATE rvfx_entropy)
+
 add_executable(rvfx_tests tests/test_engine.cpp)
 target_link_libraries(rvfx_tests PRIVATE rvfx_core)
 
@@ -24,17 +40,20 @@ target_link_libraries(rvfx_demo PRIVATE rvfx_core)
 
 enable_testing()
 add_test(NAME rvfx_core COMMAND rvfx_tests)
+add_test(NAME rvfx_entropy COMMAND rvfx_entropy_tests)
+add_test(NAME rvfx_entropy_chains COMMAND rvfx_entropy_chain_tests)
+add_test(NAME rvfx_entropy_equivalence COMMAND rvfx_entropy_benchmark --verify-only)
 
 if(RVFX_BUILD_OBS)
   if(NOT EXISTS "${OBS_SOURCE_DIR}/libobs/obs-module.h")
     message(FATAL_ERROR "Set OBS_SOURCE_DIR to an OBS Studio source checkout")
   endif()
-  add_library(realtime-vector-fx MODULE obs/plugin-main.cpp obs/gpu-filter.cpp)
+  add_library(realtime-vector-fx MODULE obs/plugin-main.cpp obs/gpu-filter.cpp obs/entropy-filter.cpp)
   target_compile_features(realtime-vector-fx PRIVATE cxx_std_17)
   target_include_directories(realtime-vector-fx PRIVATE
     include "${OBS_CONFIG_INCLUDE_DIR}" "${OBS_SOURCE_DIR}/libobs"
     "${OBS_SOURCE_DIR}/libobs/util" "${SIMDE_INCLUDE_DIR}")
-  target_link_libraries(realtime-vector-fx PRIVATE rvfx_core)
+  target_link_libraries(realtime-vector-fx PRIVATE rvfx_core rvfx_entropy)
   if(APPLE)
     target_link_libraries(realtime-vector-fx PRIVATE
       "${OBS_APP}/Contents/Frameworks/libobs.framework/libobs")

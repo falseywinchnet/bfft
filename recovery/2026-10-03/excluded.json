@@ -1,0 +1,17 @@
+[
+  {
+    "root": "/Users/ultimussecundai/bfft",
+    "path": ".claude/launch.json",
+    "reason": "private data, generated output, cache, binary, or local tool configuration"
+  },
+  {
+    "root": "/Users/ultimussecundai/bfft",
+    "path": "experiments/conv_warp/compact_measurement/compact.wasm",
+    "reason": "private data, generated output, cache, binary, or local tool configuration"
+  },
+  {
+    "root": "/Users/ultimussecundai/bfft",
+    "path": "experiments/conv_warp/compact_measurement/reference.wasm",
+    "reason": "private data, generated output, cache, binary, or local tool configuration"
+  }
+]

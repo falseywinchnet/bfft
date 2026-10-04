@@ -1,0 +1,1805 @@
+{
+  "metadata": {
+    "protocol": {
+      "out": "/tmp/library_acceleration_sporco.json",
+      "sizes": "128,256",
+      "sources": "camera,coins",
+      "passes": 200,
+      "repeats": 3,
+      "tolerance": 0.02,
+      "seed": 0,
+      "lambdas": ".02,.1"
+    },
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "skimage": "0.24.0",
+    "sporco": "0.2.2.post1",
+    "machine": "arm64",
+    "source_sha256": "fda79806b65d4b6c17c4f1f32c68a04ea4377a9af4c8b713c3bd05cb02cc1910",
+    "certificate": "exact-arithmetic Euclidean bound; float64 numerical evaluation",
+    "options": {
+      "AutoRho": false,
+      "RelaxParam": 1,
+      "FastSolve": true
+    },
+    "scope": "same fixed pass count; not default adaptive-rho stopping behavior"
+  },
+  "rows": [
+    {
+      "size": 128,
+      "source": "camera",
+      "width": 1,
+      "lmbda": 0.02,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.11420691599999999,
+          0.11527279099999999,
+          0.1156527919999999
+        ],
+        "quotient": [
+          0.08849375000000004,
+          0.08591237499999993,
+          0.08745812500000016
+        ],
+        "certified": [
+          0.126474042,
+          0.12872437499999978,
+          0.1273415
+        ]
+      },
+      "stats": {
+        "map_calls": 199,
+        "tangent_actions": 24,
+        "accepted": 0,
+        "rejected": 6,
+        "checks": 96,
+        "bound": 0.0,
+        "passes": 199,
+        "events": [
+          {
+            "at": 8,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 41,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 74,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 107,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 140,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 173,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          }
+        ],
+        "output_bound": 0.0
+      },
+      "quotient_max_error": 5.551115123125783e-16,
+      "error_norm": 1.462810588075192e-14,
+      "relative_l2": 1.9759940119960087e-16,
+      "rmse": 1.1428207719337438e-16,
+      "max_error": 5.551115123125783e-16,
+      "bound_excess": 1.462810588075192e-14,
+      "speedup": 0.9052256412874042,
+      "engine_only_speedup": 0.6867998649301301,
+      "quotient_speedup": 1.3180340991760315
+    },
+    {
+      "size": 128,
+      "source": "camera",
+      "width": 1,
+      "lmbda": 0.1,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.11496400000000007,
+          0.11473791700000024,
+          0.1159572910000004
+        ],
+        "quotient": [
+          0.08844666700000037,
+          0.08718762499999988,
+          0.08761729099999993
+        ],
+        "certified": [
+          0.12497420800000003,
+          0.12477387500000026,
+          0.1261748749999998
+        ]
+      },
+      "stats": {
+        "map_calls": 199,
+        "tangent_actions": 24,
+        "accepted": 0,
+        "rejected": 6,
+        "checks": 96,
+        "bound": 0.0,
+        "passes": 199,
+        "events": [
+          {
+            "at": 8,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 41,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 74,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 107,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 140,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 173,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          }
+        ],
+        "output_bound": 0.0
+      },
+      "quotient_max_error": 5.551115123125783e-16,
+      "error_norm": 1.6786050617249824e-14,
+      "relative_l2": 2.2831233093718005e-16,
+      "rmse": 1.3114102044726425e-16,
+      "max_error": 5.551115123125783e-16,
+      "bound_excess": 1.6786050617249824e-14,
+      "speedup": 0.9199018088596331,
+      "engine_only_speedup": 0.7010829866591346,
+      "quotient_speedup": 1.3121154362099618
+    },
+    {
+      "size": 128,
+      "source": "camera",
+      "width": 9,
+      "lmbda": 0.02,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.1149547919999998,
+          0.114595,
+          0.11583100000000002
+        ],
+        "quotient": [
+          0.08932504200000002,
+          0.08569987499999998,
+          0.0877924160000001
+        ],
+        "certified": [
+          0.12600116700000008,
+          0.12428641699999998,
+          0.1243779169999999
+        ]
+      },
+      "stats": {
+        "map_calls": 199,
+        "tangent_actions": 24,
+        "accepted": 0,
+        "rejected": 6,
+        "checks": 96,
+        "bound": 0.0,
+        "passes": 199,
+        "events": [
+          {
+            "at": 8,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 41,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 74,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 107,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 140,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 173,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          }
+        ],
+        "output_bound": 0.0
+      },
+      "quotient_max_error": 1.1102230246251565e-15,
+      "error_norm": 2.766227673210973e-14,
+      "relative_l2": 3.751309603001542e-16,
+      "rmse": 2.1611153696960727e-16,
+      "max_error": 1.1102230246251565e-15,
+      "bound_excess": 2.766227673210973e-14,
+      "speedup": 0.924237957771876,
+      "engine_only_speedup": 0.7058521168190988,
+      "quotient_speedup": 1.3093931940544805
+    },
+    {
+      "size": 128,
+      "source": "camera",
+      "width": 9,
+      "lmbda": 0.1,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.11469687499999992,
+          0.11527362500000038,
+          0.11443170799999969
+        ],
+        "quotient": [
+          0.08811408299999979,
+          0.08991016600000012,
+          0.08716441700000033
+        ],
+        "certified": [
+          0.12332983300000055,
+          0.12354208299999936,
+          0.1237793749999998
+        ]
+      },
+      "stats": {
+        "map_calls": 199,
+        "tangent_actions": 24,
+        "accepted": 0,
+        "rejected": 6,
+        "checks": 96,
+        "bound": 0.0,
+        "passes": 199,
+        "events": [
+          {
+            "at": 8,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 41,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 74,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 107,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 140,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 173,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          }
+        ],
+        "output_bound": 0.0
+      },
+      "quotient_max_error": 1.2212453270876722e-15,
+      "error_norm": 2.7234220701091126e-14,
+      "relative_l2": 3.71748569162635e-16,
+      "rmse": 2.1276734922727442e-16,
+      "max_error": 1.2212453270876722e-15,
+      "bound_excess": 2.7234220701091126e-14,
+      "speedup": 0.9284032793910437,
+      "engine_only_speedup": 0.7132313205371504,
+      "quotient_speedup": 1.301686076674034
+    },
+    {
+      "size": 128,
+      "source": "coins",
+      "width": 1,
+      "lmbda": 0.02,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.11453904100000045,
+          0.11571566599999983,
+          0.1143831250000007
+        ],
+        "quotient": [
+          0.08686404100000011,
+          0.0879813330000001,
+          0.08734924999999993
+        ],
+        "certified": [
+          0.1262728339999999,
+          0.12600862499999987,
+          0.1252551250000007
+        ]
+      },
+      "stats": {
+        "map_calls": 199,
+        "tangent_actions": 24,
+        "accepted": 0,
+        "rejected": 6,
+        "checks": 96,
+        "bound": 0.0,
+        "passes": 199,
+        "events": [
+          {
+            "at": 8,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 41,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 74,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 107,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 140,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 173,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          }
+        ],
+        "output_bound": 0.0
+      },
+      "quotient_max_error": 4.996003610813204e-16,
+      "error_norm": 1.09627892006609e-14,
+      "relative_l2": 2.008970805147465e-16,
+      "rmse": 8.564679063016329e-17,
+      "max_error": 4.996003610813204e-16,
+      "bound_excess": 1.09627892006609e-14,
+      "speedup": 0.9089777862428113,
+      "engine_only_speedup": 0.6932005646438887,
+      "quotient_speedup": 1.3112767539503836
+    },
+    {
+      "size": 128,
+      "source": "coins",
+      "width": 1,
+      "lmbda": 0.1,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.1149099170000003,
+          0.11448016599999988,
+          0.1141468329999995
+        ],
+        "quotient": [
+          0.08754870800000081,
+          0.08617320900000003,
+          0.0879797499999988
+        ],
+        "certified": [
+          0.12379716699999932,
+          0.12458833400000024,
+          0.12461050000000018
+        ]
+      },
+      "stats": {
+        "map_calls": 199,
+        "tangent_actions": 24,
+        "accepted": 0,
+        "rejected": 6,
+        "checks": 96,
+        "bound": 0.0,
+        "passes": 199,
+        "events": [
+          {
+            "at": 8,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 41,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 74,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 107,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 140,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 173,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          }
+        ],
+        "output_bound": 0.0
+      },
+      "quotient_max_error": 4.440892098500626e-16,
+      "error_norm": 1.2981956558451704e-14,
+      "relative_l2": 2.423294375449454e-16,
+      "rmse": 1.0142153561290394e-16,
+      "max_error": 4.440892098500626e-16,
+      "bound_excess": 1.2981956558451704e-14,
+      "speedup": 0.918867459934087,
+      "engine_only_speedup": 0.7027038984243953,
+      "quotient_speedup": 1.307616852552511
+    },
+    {
+      "size": 128,
+      "source": "coins",
+      "width": 9,
+      "lmbda": 0.02,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.11576587500000102,
+          0.11501241699999909,
+          0.11466749999999948
+        ],
+        "quotient": [
+          0.08710100000000054,
+          0.08755733399999954,
+          0.08800387500000006
+        ],
+        "certified": [
+          0.12772195799999864,
+          0.12576416699999982,
+          0.12551804099999941
+        ]
+      },
+      "stats": {
+        "map_calls": 199,
+        "tangent_actions": 24,
+        "accepted": 0,
+        "rejected": 6,
+        "checks": 96,
+        "bound": 0.0,
+        "passes": 199,
+        "events": [
+          {
+            "at": 8,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 41,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 74,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 107,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 140,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 173,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          }
+        ],
+        "output_bound": 0.0
+      },
+      "quotient_max_error": 7.771561172376096e-16,
+      "error_norm": 1.6403744783555313e-14,
+      "relative_l2": 3.0347984073363944e-16,
+      "rmse": 1.2815425612152589e-16,
+      "max_error": 7.771561172376096e-16,
+      "bound_excess": 1.6403744783555313e-14,
+      "speedup": 0.9145086374245158,
+      "engine_only_speedup": 0.69620255187632,
+      "quotient_speedup": 1.3135669137664663
+    },
+    {
+      "size": 128,
+      "source": "coins",
+      "width": 9,
+      "lmbda": 0.1,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.11459879100000059,
+          0.11455974999999974,
+          0.11730616600000054
+        ],
+        "quotient": [
+          0.08706820900000167,
+          0.08905941700000142,
+          0.08715283299999932
+        ],
+        "certified": [
+          0.12502354099999913,
+          0.12931087499999983,
+          0.12880537500000067
+        ]
+      },
+      "stats": {
+        "map_calls": 199,
+        "tangent_actions": 24,
+        "accepted": 0,
+        "rejected": 6,
+        "checks": 96,
+        "bound": 0.0,
+        "passes": 199,
+        "events": [
+          {
+            "at": 8,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 41,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 74,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 107,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 140,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 173,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          }
+        ],
+        "output_bound": 0.0
+      },
+      "quotient_max_error": 1.27675647831893e-15,
+      "error_norm": 1.7373926191271354e-14,
+      "relative_l2": 3.2851044168178564e-16,
+      "rmse": 1.3573379836930746e-16,
+      "max_error": 1.27675647831893e-15,
+      "bound_excess": 1.7373926191271354e-14,
+      "speedup": 0.8897050375421056,
+      "engine_only_speedup": 0.6766241936720332,
+      "quotient_speedup": 1.3149175655598193
+    },
+    {
+      "size": 256,
+      "source": "camera",
+      "width": 1,
+      "lmbda": 0.02,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.43356187500000054,
+          0.4304222919999994,
+          0.4412828330000007
+        ],
+        "quotient": [
+          0.33897791699999935,
+          0.3354388340000014,
+          0.34033600000000064
+        ],
+        "certified": [
+          0.5025597919999996,
+          0.4916027920000001,
+          0.49465341699999854
+        ]
+      },
+      "stats": {
+        "map_calls": 199,
+        "tangent_actions": 24,
+        "accepted": 0,
+        "rejected": 6,
+        "checks": 96,
+        "bound": 0.0,
+        "passes": 199,
+        "events": [
+          {
+            "at": 8,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 41,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 74,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 107,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 140,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 173,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          }
+        ],
+        "output_bound": 0.0
+      },
+      "quotient_max_error": 6.661338147750939e-16,
+      "error_norm": 3.238927059983816e-14,
+      "relative_l2": 2.179765063839334e-16,
+      "rmse": 1.265205882806178e-16,
+      "max_error": 6.661338147750939e-16,
+      "bound_excess": 3.238927059983816e-14,
+      "speedup": 0.8764962701147212,
+      "engine_only_speedup": 0.6852836862137766,
+      "quotient_speedup": 1.2790269019205796
+    },
+    {
+      "size": 256,
+      "source": "camera",
+      "width": 1,
+      "lmbda": 0.1,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.43396129099999925,
+          0.4334585839999967,
+          0.4375879999999981
+        ],
+        "quotient": [
+          0.3367845840000001,
+          0.3319333749999984,
+          0.33705508400000284
+        ],
+        "certified": [
+          0.4760042079999991,
+          0.4868847909999978,
+          0.48012225000000086
+        ]
+      },
+      "stats": {
+        "map_calls": 199,
+        "tangent_actions": 24,
+        "accepted": 0,
+        "rejected": 6,
+        "checks": 96,
+        "bound": 0.0,
+        "passes": 199,
+        "events": [
+          {
+            "at": 8,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 41,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 74,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 107,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 140,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 173,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          }
+        ],
+        "output_bound": 0.0
+      },
+      "quotient_max_error": 8.326672684688674e-16,
+      "error_norm": 4.239007711915066e-14,
+      "relative_l2": 2.867395837885123e-16,
+      "rmse": 1.6558623874668225e-16,
+      "max_error": 8.326672684688674e-16,
+      "bound_excess": 4.239007711915066e-14,
+      "speedup": 0.903855822136963,
+      "engine_only_speedup": 0.7014558979509896,
+      "quotient_speedup": 1.2885426222478138
+    },
+    {
+      "size": 256,
+      "source": "camera",
+      "width": 9,
+      "lmbda": 0.02,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.437367708,
+          0.4383377920000022,
+          0.43563641600000125
+        ],
+        "quotient": [
+          0.3386556249999977,
+          0.34909074999999845,
+          0.3417919170000019
+        ],
+        "certified": [
+          0.490292041,
+          0.49393233300000006,
+          0.49022883299999975
+        ]
+      },
+      "stats": {
+        "map_calls": 199,
+        "tangent_actions": 24,
+        "accepted": 0,
+        "rejected": 6,
+        "checks": 96,
+        "bound": 0.0,
+        "passes": 199,
+        "events": [
+          {
+            "at": 8,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 41,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 74,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 107,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 140,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 173,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          }
+        ],
+        "output_bound": 0.0
+      },
+      "quotient_max_error": 1.9984014443252818e-15,
+      "error_norm": 5.145070351181398e-14,
+      "relative_l2": 3.473776551477886e-16,
+      "rmse": 2.0097931059302337e-16,
+      "max_error": 1.9984014443252818e-15,
+      "bound_excess": 5.145070351181398e-14,
+      "speedup": 0.8920554922897473,
+      "engine_only_speedup": 0.6971190401191968,
+      "quotient_speedup": 1.2796315133455822
+    },
+    {
+      "size": 256,
+      "source": "camera",
+      "width": 9,
+      "lmbda": 0.1,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.4383821250000004,
+          0.43941641600000025,
+          0.43751983299999964
+        ],
+        "quotient": [
+          0.33659241699999853,
+          0.33850295900000305,
+          0.3347243330000005
+        ],
+        "certified": [
+          0.4832530420000012,
+          0.48869950000000273,
+          0.49015937500000106
+        ]
+      },
+      "stats": {
+        "map_calls": 199,
+        "tangent_actions": 24,
+        "accepted": 0,
+        "rejected": 6,
+        "checks": 96,
+        "bound": 0.0,
+        "passes": 199,
+        "events": [
+          {
+            "at": 8,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 41,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 74,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 107,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 140,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 173,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          }
+        ],
+        "output_bound": 0.0
+      },
+      "quotient_max_error": 1.2212453270876722e-15,
+      "error_norm": 5.663821260071639e-14,
+      "relative_l2": 3.840791148387021e-16,
+      "rmse": 2.212430179715484e-16,
+      "max_error": 1.2212453270876722e-15,
+      "bound_excess": 5.663821260071639e-14,
+      "speedup": 0.8970382105977148,
+      "engine_only_speedup": 0.6887513021805766,
+      "quotient_speedup": 1.3024123624270547
+    },
+    {
+      "size": 256,
+      "source": "coins",
+      "width": 1,
+      "lmbda": 0.02,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.4484819580000021,
+          0.4399142910000009,
+          0.44191408300000035
+        ],
+        "quotient": [
+          0.33531362499999773,
+          0.33905720900000347,
+          0.33609404199999915
+        ],
+        "certified": [
+          0.49655149999999537,
+          0.5089772090000011,
+          0.5042232079999991
+        ]
+      },
+      "stats": {
+        "map_calls": 199,
+        "tangent_actions": 24,
+        "accepted": 0,
+        "rejected": 6,
+        "checks": 96,
+        "bound": 0.0,
+        "passes": 199,
+        "events": [
+          {
+            "at": 8,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 41,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 74,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 107,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 140,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 173,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          }
+        ],
+        "output_bound": 0.0
+      },
+      "quotient_max_error": 4.440892098500626e-16,
+      "error_norm": 2.45824622395353e-14,
+      "relative_l2": 2.235632437050974e-16,
+      "rmse": 9.602524312318477e-17,
+      "max_error": 4.440892098500626e-16,
+      "bound_excess": 2.45824622395353e-14,
+      "speedup": 0.8764255115365518,
+      "engine_only_speedup": 0.6665580573593902,
+      "quotient_speedup": 1.3148524751295694
+    },
+    {
+      "size": 256,
+      "source": "coins",
+      "width": 1,
+      "lmbda": 0.1,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.43859366699999924,
+          0.44175295800000214,
+          0.4381960420000013
+        ],
+        "quotient": [
+          0.3518764169999997,
+          0.3411286250000032,
+          0.3482799169999993
+        ],
+        "certified": [
+          0.4963471249999998,
+          0.49329154099999784,
+          0.49502170899999953
+        ]
+      },
+      "stats": {
+        "map_calls": 199,
+        "tangent_actions": 24,
+        "accepted": 0,
+        "rejected": 6,
+        "checks": 96,
+        "bound": 0.0,
+        "passes": 199,
+        "events": [
+          {
+            "at": 8,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 41,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 74,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 107,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 140,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 173,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          }
+        ],
+        "output_bound": 0.0
+      },
+      "quotient_max_error": 5.551115123125783e-16,
+      "error_norm": 2.7097307345537843e-14,
+      "relative_l2": 2.49456421341383e-16,
+      "rmse": 1.058488568185072e-16,
+      "max_error": 5.551115123125783e-16,
+      "bound_excess": 2.7097307345537843e-14,
+      "speedup": 0.8860089548113125,
+      "engine_only_speedup": 0.7035649359773828,
+      "quotient_speedup": 1.2593136887648912
+    },
+    {
+      "size": 256,
+      "source": "coins",
+      "width": 9,
+      "lmbda": 0.02,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.4424284159999985,
+          0.4447014579999973,
+          0.4384111249999947
+        ],
+        "quotient": [
+          0.35130266600000226,
+          0.33714612500000385,
+          0.3516663340000008
+        ],
+        "certified": [
+          0.5048986249999956,
+          0.49241045899999847,
+          0.49529820899999777
+        ]
+      },
+      "stats": {
+        "map_calls": 199,
+        "tangent_actions": 24,
+        "accepted": 0,
+        "rejected": 6,
+        "checks": 96,
+        "bound": 0.0,
+        "passes": 199,
+        "events": [
+          {
+            "at": 8,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 41,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 74,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 107,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 140,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 173,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          }
+        ],
+        "output_bound": 0.0
+      },
+      "quotient_max_error": 1.3322676295501878e-15,
+      "error_norm": 3.4740629641033735e-14,
+      "relative_l2": 3.181684362435652e-16,
+      "rmse": 1.3570558453528803e-16,
+      "max_error": 1.3322676295501878e-15,
+      "bound_excess": 3.4740629641033735e-14,
+      "speedup": 0.8932566440998386,
+      "engine_only_speedup": 0.7092750581700646,
+      "quotient_speedup": 1.2593938470139467
+    },
+    {
+      "size": 256,
+      "source": "coins",
+      "width": 9,
+      "lmbda": 0.1,
+      "seed": 0,
+      "timing": {
+        "library": [
+          0.4414931669999973,
+          0.4415501669999955,
+          0.4459426250000007
+        ],
+        "quotient": [
+          0.3554860829999953,
+          0.34337262499999355,
+          0.3517444590000025
+        ],
+        "certified": [
+          0.48826729099999966,
+          0.49037754100000086,
+          0.4908661670000001
+        ]
+      },
+      "stats": {
+        "map_calls": 199,
+        "tangent_actions": 24,
+        "accepted": 0,
+        "rejected": 6,
+        "checks": 96,
+        "bound": 0.0,
+        "passes": 199,
+        "events": [
+          {
+            "at": 8,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 41,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 74,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 107,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 140,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          },
+          {
+            "at": 173,
+            "accepted": false,
+            "horizon": 1,
+            "depth": 4,
+            "bound": 0.0,
+            "relative_bound": 0.0,
+            "checks": 16,
+            "map_calls": 1,
+            "tangent_actions": 4
+          }
+        ],
+        "output_bound": 0.0
+      },
+      "quotient_max_error": 8.881784197001252e-16,
+      "error_norm": 4.2027344672281454e-14,
+      "relative_l2": 3.894847406018755e-16,
+      "rmse": 1.6416931512609943e-16,
+      "max_error": 8.881784197001252e-16,
+      "bound_excess": 4.2027344672281454e-14,
+      "speedup": 0.9004290165890667,
+      "engine_only_speedup": 0.7172931661648059,
+      "quotient_speedup": 1.255315203131579
+    }
+  ]
+}

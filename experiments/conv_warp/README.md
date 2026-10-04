@@ -166,3 +166,37 @@ These experiments prove neither recovery of unsampled detail nor universal
 MSE dominance. The proved statements concern cardinality, integrability,
 support range, admitted current cones, affine polynomial integration, and the
 reported projective error enclosure.
+
+## CONV* output-functional addendum
+
+`output/pdf/convstar_warp_addendum.tex` extends compilation to exact rectangular
+Bernstein basin weights and the canonical geometry-selected projective quadrature.
+Its positive triangle rules evaluate the rational Jacobian directly; a fixed
+geometry table gives a 1e-9 mass-relative moment budget independently of the
+source controls. The derivation and final validation receipts are in
+`area_acceleration/geometry-plan.md`. It preserves
+the canonical admitted source. Its executable WASM implementation is in the
+companion paymenottowork repository's `web/instruments/conv-perspective/area-kernel.c`.
+The raw three-run timing receipt and hashes are retained here in
+`output/support_geometry/convstar_warp_area_profile.json`. Run the independent
+exact-rational derivation checks with
+`python3 -m unittest experiments.conv_warp.test_star_compilation -v`.
+The full-size timing uses synthetic data, not the user's photograph.
+
+### Finite projective bank reference
+
+`projective_bank_proof.py` evaluates the addendum's projective polygon moments
+by finite oriented edge primitives at caller-selected mpmath precision.
+`test_projective_bank_proof.py` compares all 36 Bernstein weights with an
+independent interior Gauss rule for six denominator configurations and checks
+constant-denominator edges and reversed polygon orientation.
+
+Run the complete compilation checks with:
+
+```sh
+.venv-jpeg/bin/python -m unittest experiments.conv_warp.test_projective_bank_proof experiments.conv_warp.test_star_banks experiments.conv_warp.test_star_compilation -v
+```
+
+The mathematical addendum uses the paper's IEEE format and is
+included in the composed manuscript. Runtime measurements remain in the
+separate support-geometry receipts and `convstar_warp_measurements.tex`.

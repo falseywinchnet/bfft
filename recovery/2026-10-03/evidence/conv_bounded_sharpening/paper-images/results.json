@@ -1,0 +1,766 @@
+{
+  "source": "Paper technical_synthetics plate, exact declared four fields and 17x17 nodal samples",
+  "displaySide": 513,
+  "pointScoreSide": 33,
+  "areaScoreSide": 33,
+  "areaDisplaySide": 65,
+  "sourceParameters": {
+    "edge": {
+      "angle": 37.5,
+      "phase": 0.0,
+      "offset": 0.015625
+    },
+    "carrier": {
+      "angle": 37.5,
+      "phase": 1.5707963267948966,
+      "offset": 0.0
+    },
+    "curved": {
+      "angle": 0.0,
+      "phase": 0.0,
+      "offset": 0.015625
+    },
+    "crossing": {
+      "angle": 0.0,
+      "phase": 1.5707963267948966,
+      "offset": 0.0
+    }
+  },
+  "runtime": "3.14.6",
+  "files": {
+    "/Users/ultimussecundai/bfft/experiments/conv_warp/bounded_sharpening/paper_images.py": "08d1fc657ec448d9bbc953889511d4b1448e84cc8a54d4abf1fe7314a60aeb5a",
+    "/Users/ultimussecundai/bfft/experiments/conv_warp/bounded_sharpening/study.py": "ee7b78ac6596af3f6b38ebc5ed3619a3ceb1fb0e8425d51dd883987279c2ee1f",
+    "experiments/conv_synthetic_evidence.py": "8701c79bc2c0302e0a3dd6d62f90a69676dc3df0be943ca981a8d44049c35cc0",
+    "experiments/conv_warp/joint_reference.py": "88f034a06b00939679dbecf1cc440b90e0952300c13829186a175dfdfca64860"
+  },
+  "rows": [
+    {
+      "field": "edge",
+      "method": "joint-base",
+      "point": {
+        "mse": 0.00014455054186303357,
+        "interiorHeldOutMse": 0.00025550320683944187,
+        "maxError": 0.07074664056852603,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0008285460184516
+      },
+      "area": {
+        "mse": 0.00012650627397839805,
+        "interiorHeldOutMse": 0.0002081945479677752,
+        "maxError": 0.0617745276009736,
+        "sourceRangeExcursion": 1.1102230246251565e-16,
+        "tvRatio": 0.9995653152595012
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": 0.0,
+      "atlasMeanChange": 0.0,
+      "truthQuadratureRefinement": 6.661338147750939e-16,
+      "normalWidth10to90": 0.09265083801519011,
+      "normalHalfLevelShift": 0.0029448290871762458,
+      "normalReverseVariation": 0.0,
+      "normalPeakSlope": 10.138878699593947
+    },
+    {
+      "field": "edge",
+      "method": "cap1",
+      "baselineMargin": -7.047546566077396e-14,
+      "finalMargin": -3.150917864444325e-14,
+      "completion": 0.0,
+      "meanCapacity": 0.22635980249133542,
+      "relativeMotion": 0.4141617033717641,
+      "derivativeCertificateRatio": 0.842778802059509,
+      "cap": 1.0,
+      "strength": 1.0,
+      "point": {
+        "mse": 0.000155060752700898,
+        "interiorHeldOutMse": 0.0002749095746029097,
+        "maxError": 0.0724402864643689,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0002063474849219
+      },
+      "area": {
+        "mse": 0.00013220731379882662,
+        "interiorHeldOutMse": 0.00022449456473868707,
+        "maxError": 0.06351212288590172,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0005096342124338
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": -0.0003939917044277763,
+      "atlasMeanChange": -1.5390300954210012e-06,
+      "truthQuadratureRefinement": 6.661338147750939e-16,
+      "normalWidth10to90": 0.09522873026022555,
+      "normalHalfLevelShift": 0.004912711458659155,
+      "normalReverseVariation": 0.0,
+      "normalPeakSlope": 10.556413277600365
+    },
+    {
+      "field": "edge",
+      "method": "cap2",
+      "baselineMargin": -7.047546566077396e-14,
+      "finalMargin": -3.150917864444325e-14,
+      "completion": 0.0,
+      "meanCapacity": 0.22635980249133542,
+      "relativeMotion": 0.4141617033717641,
+      "derivativeCertificateRatio": 0.842778802059509,
+      "cap": 2.0,
+      "strength": 1.0,
+      "point": {
+        "mse": 0.000155060752700898,
+        "interiorHeldOutMse": 0.0002749095746029097,
+        "maxError": 0.0724402864643689,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0002063474849219
+      },
+      "area": {
+        "mse": 0.00013220731379882662,
+        "interiorHeldOutMse": 0.00022449456473868707,
+        "maxError": 0.06351212288590172,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0005096342124338
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": -0.0003939917044277763,
+      "atlasMeanChange": -1.5390300954210012e-06,
+      "truthQuadratureRefinement": 6.661338147750939e-16,
+      "normalWidth10to90": 0.09522873026022555,
+      "normalHalfLevelShift": 0.004912711458659155,
+      "normalReverseVariation": 0.0,
+      "normalPeakSlope": 10.556413277600365
+    },
+    {
+      "field": "edge",
+      "method": "cap4",
+      "baselineMargin": -7.047546566077396e-14,
+      "finalMargin": -3.150917864444325e-14,
+      "completion": 0.0,
+      "meanCapacity": 0.22635980249133542,
+      "relativeMotion": 0.4141617033717641,
+      "derivativeCertificateRatio": 0.842778802059509,
+      "cap": 4.0,
+      "strength": 1.0,
+      "point": {
+        "mse": 0.000155060752700898,
+        "interiorHeldOutMse": 0.0002749095746029097,
+        "maxError": 0.0724402864643689,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0002063474849219
+      },
+      "area": {
+        "mse": 0.00013220731379882662,
+        "interiorHeldOutMse": 0.00022449456473868707,
+        "maxError": 0.06351212288590172,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0005096342124338
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": -0.0003939917044277763,
+      "atlasMeanChange": -1.5390300954210012e-06,
+      "truthQuadratureRefinement": 6.661338147750939e-16,
+      "normalWidth10to90": 0.09522873026022555,
+      "normalHalfLevelShift": 0.004912711458659155,
+      "normalReverseVariation": 0.0,
+      "normalPeakSlope": 10.556413277600365
+    },
+    {
+      "field": "edge",
+      "method": "cap2-strong",
+      "baselineMargin": -7.047546566077396e-14,
+      "finalMargin": -7.047546566077396e-14,
+      "completion": 0.0,
+      "meanCapacity": 0.06108853547060681,
+      "relativeMotion": 0.1041421316277812,
+      "derivativeCertificateRatio": 0.842778802059509,
+      "cap": 2.0,
+      "strength": 4.0,
+      "point": {
+        "mse": 0.00015519259657847064,
+        "interiorHeldOutMse": 0.0002749095746029097,
+        "maxError": 0.07253074060976067,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0001363256305411
+      },
+      "area": {
+        "mse": 0.00013223793067807012,
+        "interiorHeldOutMse": 0.00022449456473868707,
+        "maxError": 0.06366671825559203,
+        "sourceRangeExcursion": 1.1102230246251565e-16,
+        "tvRatio": 1.00048240604952
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": 8.659861690318849e-05,
+      "atlasMeanChange": 3.3827584727808e-07,
+      "truthQuadratureRefinement": 6.661338147750939e-16,
+      "normalWidth10to90": 0.09522873026022555,
+      "normalHalfLevelShift": 0.004912711458659155,
+      "normalReverseVariation": 0.0,
+      "normalPeakSlope": 10.556413277600365
+    },
+    {
+      "field": "edge",
+      "method": "paper-convstar",
+      "point": {
+        "mse": 6.538983685713068e-05,
+        "interiorHeldOutMse": 0.00010947930104238098,
+        "maxError": 0.05858410697567956,
+        "sourceRangeExcursion": 7.152557435219364e-09,
+        "tvRatio": 1.0001247187524833
+      }
+    },
+    {
+      "field": "edge",
+      "method": "lanczos3",
+      "point": {
+        "mse": 6.7703964149548e-05,
+        "interiorHeldOutMse": 9.45975400902387e-05,
+        "maxError": 0.08266974789546289,
+        "sourceRangeExcursion": 0.020276281235055087,
+        "tvRatio": 1.0445927522095781
+      },
+      "area": {
+        "mse": 5.140540583781152e-05,
+        "interiorHeldOutMse": 6.591880423207528e-05,
+        "maxError": 0.07095267988370235,
+        "sourceRangeExcursion": 0.016969839763932182,
+        "tvRatio": 1.035415594542463
+      },
+      "quadratureRefinement": 6.661338147750939e-16
+    },
+    {
+      "field": "carrier",
+      "method": "joint-base",
+      "point": {
+        "mse": 2.8766276434601775e-06,
+        "interiorHeldOutMse": 5.3526375366138516e-06,
+        "maxError": 0.020553688692737715,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9908950551167502
+      },
+      "area": {
+        "mse": 2.6243049923382435e-06,
+        "interiorHeldOutMse": 4.576425707373313e-06,
+        "maxError": 0.0182056681034527,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9898698227753548
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": 0.0,
+      "atlasMeanChange": 0.0,
+      "truthQuadratureRefinement": 5.551115123125783e-16
+    },
+    {
+      "field": "carrier",
+      "method": "cap1",
+      "baselineMargin": 0.0,
+      "finalMargin": -5.551115123125783e-17,
+      "completion": 0.28622167102932755,
+      "meanCapacity": 0.9985737053453809,
+      "relativeMotion": 0.9955586030715529,
+      "derivativeCertificateRatio": 1.0000000000000002,
+      "cap": 1.0,
+      "strength": 1.0,
+      "point": {
+        "mse": 5.060416442465817e-05,
+        "interiorHeldOutMse": 0.00011852532686308627,
+        "maxError": 0.043841129351778196,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9376679803024057
+      },
+      "area": {
+        "mse": 4.2521967320246454e-05,
+        "interiorHeldOutMse": 9.878699755915332e-05,
+        "maxError": 0.039447902100728904,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9388373337728931
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": -0.00782786811276992,
+      "atlasMeanChange": -3.05776098155075e-05,
+      "truthQuadratureRefinement": 5.551115123125783e-16
+    },
+    {
+      "field": "carrier",
+      "method": "cap2",
+      "baselineMargin": 0.0,
+      "finalMargin": 0.0,
+      "completion": 1.0,
+      "meanCapacity": 1.0,
+      "relativeMotion": 1.0,
+      "derivativeCertificateRatio": 1.0393011291860514,
+      "cap": 2.0,
+      "strength": 1.0,
+      "point": {
+        "mse": 5.060666964616143e-05,
+        "interiorHeldOutMse": 0.00011853130972759734,
+        "maxError": 0.043841129351778196,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9376679803024057
+      },
+      "area": {
+        "mse": 4.2474265293463996e-05,
+        "interiorHeldOutMse": 9.872393751637586e-05,
+        "maxError": 0.039447902100728904,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.938849233226871
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": -0.007562962737409862,
+      "atlasMeanChange": -2.9542823193007273e-05,
+      "truthQuadratureRefinement": 5.551115123125783e-16
+    },
+    {
+      "field": "carrier",
+      "method": "cap4",
+      "baselineMargin": 0.0,
+      "finalMargin": 0.0,
+      "completion": 1.0,
+      "meanCapacity": 1.0,
+      "relativeMotion": 1.0,
+      "derivativeCertificateRatio": 1.0393011291860514,
+      "cap": 4.0,
+      "strength": 1.0,
+      "point": {
+        "mse": 5.060666964616143e-05,
+        "interiorHeldOutMse": 0.00011853130972759734,
+        "maxError": 0.043841129351778196,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9376679803024057
+      },
+      "area": {
+        "mse": 4.2474265293463996e-05,
+        "interiorHeldOutMse": 9.872393751637586e-05,
+        "maxError": 0.039447902100728904,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.938849233226871
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": -0.007562962737409862,
+      "atlasMeanChange": -2.9542823193007273e-05,
+      "truthQuadratureRefinement": 5.551115123125783e-16
+    },
+    {
+      "field": "carrier",
+      "method": "cap2-strong",
+      "baselineMargin": 0.0,
+      "finalMargin": 0.0,
+      "completion": 0.0,
+      "meanCapacity": 0.9525307253008919,
+      "relativeMotion": 0.8629444095636335,
+      "derivativeCertificateRatio": 1.538821331414103,
+      "cap": 2.0,
+      "strength": 4.0,
+      "point": {
+        "mse": 0.0005027870174478215,
+        "interiorHeldOutMse": 0.0011797551216236443,
+        "maxError": 0.15200410903322847,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.967011860458977
+      },
+      "area": {
+        "mse": 0.000398171951481633,
+        "interiorHeldOutMse": 0.0009261921108232337,
+        "maxError": 0.13497868861747409,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9215861702728599
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": -0.02150270106659491,
+      "atlasMeanChange": -8.399492604138636e-05,
+      "truthQuadratureRefinement": 5.551115123125783e-16
+    },
+    {
+      "field": "carrier",
+      "method": "paper-convstar",
+      "point": {
+        "mse": 1.2314612714076776e-06,
+        "interiorHeldOutMse": 1.4263092699774462e-06,
+        "maxError": 0.006032049100049286,
+        "sourceRangeExcursion": 0.01915731553206962,
+        "tvRatio": 0.9970084201458409
+      }
+    },
+    {
+      "field": "carrier",
+      "method": "lanczos3",
+      "point": {
+        "mse": 1.9919107586949827e-06,
+        "interiorHeldOutMse": 4.561176028123776e-06,
+        "maxError": 0.007446245278068253,
+        "sourceRangeExcursion": 0.023107763569083062,
+        "tvRatio": 1.0152579167948783
+      },
+      "area": {
+        "mse": 1.613915364618844e-06,
+        "interiorHeldOutMse": 3.5880196856547047e-06,
+        "maxError": 0.006208132953608336,
+        "sourceRangeExcursion": 0.017286156734572372,
+        "tvRatio": 1.0147183190303932
+      },
+      "quadratureRefinement": 5.551115123125783e-16
+    },
+    {
+      "field": "curved",
+      "method": "joint-base",
+      "point": {
+        "mse": 0.0004133077921352144,
+        "interiorHeldOutMse": 0.0009867477822373056,
+        "maxError": 0.0922862812868992,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0048089699983567
+      },
+      "area": {
+        "mse": 0.0003417186626464758,
+        "interiorHeldOutMse": 0.0007969605202741048,
+        "maxError": 0.08220269378855416,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0042307001217232
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": 0.0,
+      "atlasMeanChange": 0.0,
+      "truthQuadratureRefinement": 6.89227841466078e-12,
+      "normalWidth10to90": 0.09307655414924973,
+      "normalHalfLevelShift": 0.00413803035299143,
+      "normalReverseVariation": 4.6146001565355865e-06,
+      "normalPeakSlope": 8.912461990719038
+    },
+    {
+      "field": "curved",
+      "method": "cap1",
+      "baselineMargin": -1.0156825668634106e-15,
+      "finalMargin": -7.116881116390427e-16,
+      "completion": 0.0,
+      "meanCapacity": 0.4787117643100375,
+      "relativeMotion": 0.6393046702696242,
+      "derivativeCertificateRatio": 0.8575988516110767,
+      "cap": 1.0,
+      "strength": 1.0,
+      "point": {
+        "mse": 0.00047533764838546104,
+        "interiorHeldOutMse": 0.0011346840843018684,
+        "maxError": 0.09504828711229757,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0006246939750212
+      },
+      "area": {
+        "mse": 0.0003861425633584625,
+        "interiorHeldOutMse": 0.0009129319020441235,
+        "maxError": 0.08431750084073633,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0007223134291088
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": 0.09407179943841015,
+      "atlasMeanChange": 0.00036746796655628966,
+      "truthQuadratureRefinement": 6.89227841466078e-12,
+      "normalWidth10to90": 0.08789454801877626,
+      "normalHalfLevelShift": 0.006216117758698783,
+      "normalReverseVariation": 8.769917018286444e-07,
+      "normalPeakSlope": 11.01702235337364
+    },
+    {
+      "field": "curved",
+      "method": "cap2",
+      "baselineMargin": -1.0156825668634106e-15,
+      "finalMargin": -7.116881116390427e-16,
+      "completion": 0.0,
+      "meanCapacity": 0.4787117643100375,
+      "relativeMotion": 0.6393046702696242,
+      "derivativeCertificateRatio": 0.8575988516110767,
+      "cap": 2.0,
+      "strength": 1.0,
+      "point": {
+        "mse": 0.00047533764838546104,
+        "interiorHeldOutMse": 0.0011346840843018684,
+        "maxError": 0.09504828711229757,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0006246939750212
+      },
+      "area": {
+        "mse": 0.0003861425633584625,
+        "interiorHeldOutMse": 0.0009129319020441235,
+        "maxError": 0.08431750084073633,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0007223134291088
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": 0.09407179943841015,
+      "atlasMeanChange": 0.00036746796655628966,
+      "truthQuadratureRefinement": 6.89227841466078e-12,
+      "normalWidth10to90": 0.08789454801877626,
+      "normalHalfLevelShift": 0.006216117758698783,
+      "normalReverseVariation": 8.769917018286444e-07,
+      "normalPeakSlope": 11.01702235337364
+    },
+    {
+      "field": "curved",
+      "method": "cap4",
+      "baselineMargin": -1.0156825668634106e-15,
+      "finalMargin": -7.116881116390427e-16,
+      "completion": 0.0,
+      "meanCapacity": 0.4787117643100375,
+      "relativeMotion": 0.6393046702696242,
+      "derivativeCertificateRatio": 0.8575988516110767,
+      "cap": 4.0,
+      "strength": 1.0,
+      "point": {
+        "mse": 0.00047533764838546104,
+        "interiorHeldOutMse": 0.0011346840843018684,
+        "maxError": 0.09504828711229757,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0006246939750212
+      },
+      "area": {
+        "mse": 0.0003861425633584625,
+        "interiorHeldOutMse": 0.0009129319020441235,
+        "maxError": 0.08431750084073633,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0007223134291088
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": 0.09407179943841015,
+      "atlasMeanChange": 0.00036746796655628966,
+      "truthQuadratureRefinement": 6.89227841466078e-12,
+      "normalWidth10to90": 0.08789454801877626,
+      "normalHalfLevelShift": 0.006216117758698783,
+      "normalReverseVariation": 8.769917018286444e-07,
+      "normalPeakSlope": 11.01702235337364
+    },
+    {
+      "field": "curved",
+      "method": "cap2-strong",
+      "baselineMargin": -1.0156825668634106e-15,
+      "finalMargin": -7.116881116390427e-16,
+      "completion": 0.0,
+      "meanCapacity": 0.1573915906624615,
+      "relativeMotion": 0.20344456081820417,
+      "derivativeCertificateRatio": 0.9048184726445668,
+      "cap": 2.0,
+      "strength": 4.0,
+      "point": {
+        "mse": 0.0004941864152579255,
+        "interiorHeldOutMse": 0.0011796980861211502,
+        "maxError": 0.0983590557849231,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9988656505921192
+      },
+      "area": {
+        "mse": 0.00040061032475023536,
+        "interiorHeldOutMse": 0.0009484156710091937,
+        "maxError": 0.08725857470565943,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9990205254553579
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": 0.12814453152861915,
+      "atlasMeanChange": 0.0005005645762836686,
+      "truthQuadratureRefinement": 6.89227841466078e-12,
+      "normalWidth10to90": 0.08589703333721187,
+      "normalHalfLevelShift": 0.007216036509867657,
+      "normalReverseVariation": 2.691376699281989e-07,
+      "normalPeakSlope": 12.0379086394946
+    },
+    {
+      "field": "curved",
+      "method": "paper-convstar",
+      "point": {
+        "mse": 0.00033228204277598733,
+        "interiorHeldOutMse": 0.0007934634832213383,
+        "maxError": 0.09228627516446342,
+        "sourceRangeExcursion": 0.00020785241661697151,
+        "tvRatio": 1.0033728751709914
+      }
+    },
+    {
+      "field": "curved",
+      "method": "lanczos3",
+      "point": {
+        "mse": 0.0003236080367734159,
+        "interiorHeldOutMse": 0.0007481962046328076,
+        "maxError": 0.087064823225379,
+        "sourceRangeExcursion": 0.033064767157771735,
+        "tvRatio": 1.1085184461861477
+      },
+      "area": {
+        "mse": 0.0002535758283138089,
+        "interiorHeldOutMse": 0.0005847614463473537,
+        "maxError": 0.07730978578985759,
+        "sourceRangeExcursion": 0.028736779176562477,
+        "tvRatio": 1.090114737355391
+      },
+      "quadratureRefinement": 7.771561172376096e-16
+    },
+    {
+      "field": "crossing",
+      "method": "joint-base",
+      "point": {
+        "mse": 2.843244249437839e-05,
+        "interiorHeldOutMse": 1.8092706839895306e-05,
+        "maxError": 0.04340618567524854,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9853438018021616
+      },
+      "area": {
+        "mse": 2.7427107960417577e-05,
+        "interiorHeldOutMse": 1.5452083696749534e-05,
+        "maxError": 0.03856902622829486,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9812040101275881
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": 0.0,
+      "atlasMeanChange": 0.0,
+      "truthQuadratureRefinement": 7.771561172376096e-16
+    },
+    {
+      "field": "crossing",
+      "method": "cap1",
+      "baselineMargin": 0.0,
+      "finalMargin": 0.0,
+      "completion": 1.0,
+      "meanCapacity": 1.0,
+      "relativeMotion": 0.9999999999999998,
+      "derivativeCertificateRatio": 0.3319186328719756,
+      "cap": 1.0,
+      "strength": 1.0,
+      "point": {
+        "mse": 0.00016184924561377716,
+        "interiorHeldOutMse": 0.0001981515462395326,
+        "maxError": 0.05564370233568147,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9639230804323085
+      },
+      "area": {
+        "mse": 0.0001494167029334261,
+        "interiorHeldOutMse": 0.0001669283352025365,
+        "maxError": 0.05060129408476788,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9663504352374437
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": -0.017216372790457513,
+      "atlasMeanChange": -6.725145621272466e-05,
+      "truthQuadratureRefinement": 7.771561172376096e-16
+    },
+    {
+      "field": "crossing",
+      "method": "cap2",
+      "baselineMargin": 0.0,
+      "finalMargin": 0.0,
+      "completion": 1.0,
+      "meanCapacity": 1.0,
+      "relativeMotion": 0.9999999999999998,
+      "derivativeCertificateRatio": 0.3319186328719756,
+      "cap": 2.0,
+      "strength": 1.0,
+      "point": {
+        "mse": 0.00016184924561377716,
+        "interiorHeldOutMse": 0.0001981515462395326,
+        "maxError": 0.05564370233568147,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9639230804323085
+      },
+      "area": {
+        "mse": 0.0001494167029334261,
+        "interiorHeldOutMse": 0.0001669283352025365,
+        "maxError": 0.05060129408476788,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9663504352374437
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": -0.017216372790457513,
+      "atlasMeanChange": -6.725145621272466e-05,
+      "truthQuadratureRefinement": 7.771561172376096e-16
+    },
+    {
+      "field": "crossing",
+      "method": "cap4",
+      "baselineMargin": 0.0,
+      "finalMargin": 0.0,
+      "completion": 1.0,
+      "meanCapacity": 1.0,
+      "relativeMotion": 0.9999999999999998,
+      "derivativeCertificateRatio": 0.3319186328719756,
+      "cap": 4.0,
+      "strength": 1.0,
+      "point": {
+        "mse": 0.00016184924561377716,
+        "interiorHeldOutMse": 0.0001981515462395326,
+        "maxError": 0.05564370233568147,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9639230804323085
+      },
+      "area": {
+        "mse": 0.0001494167029334261,
+        "interiorHeldOutMse": 0.0001669283352025365,
+        "maxError": 0.05060129408476788,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 0.9663504352374437
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": -0.017216372790457513,
+      "atlasMeanChange": -6.725145621272466e-05,
+      "truthQuadratureRefinement": 7.771561172376096e-16
+    },
+    {
+      "field": "crossing",
+      "method": "cap2-strong",
+      "baselineMargin": 0.0,
+      "finalMargin": 0.0,
+      "completion": 0.0,
+      "meanCapacity": 0.8669539565791822,
+      "relativeMotion": 0.7936778017863283,
+      "derivativeCertificateRatio": 0.6164643366523712,
+      "cap": 2.0,
+      "strength": 4.0,
+      "point": {
+        "mse": 0.0011179216932161514,
+        "interiorHeldOutMse": 0.0015503033254103365,
+        "maxError": 0.1626521427235345,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0229120694780252
+      },
+      "area": {
+        "mse": 0.00089785713428293,
+        "interiorHeldOutMse": 0.001131695420993416,
+        "maxError": 0.1489711806109731,
+        "sourceRangeExcursion": 0.0,
+        "tvRatio": 1.0164356066142544
+      },
+      "sourceRecovery": 0.0,
+      "atlasMassChange": 0.01297435374191025,
+      "atlasMeanChange": 5.068106930433691e-05,
+      "truthQuadratureRefinement": 7.771561172376096e-16
+    },
+    {
+      "field": "crossing",
+      "method": "paper-convstar",
+      "point": {
+        "mse": 1.935098481808541e-05,
+        "interiorHeldOutMse": 9.982598686358513e-07,
+        "maxError": 0.02073374548410023,
+        "sourceRangeExcursion": 4.2064745752523613e-05,
+        "tvRatio": 0.9949817129423918
+      }
+    },
+    {
+      "field": "crossing",
+      "method": "lanczos3",
+      "point": {
+        "mse": 5.878392758876897e-05,
+        "interiorHeldOutMse": 7.893602992458125e-06,
+        "maxError": 0.04920503772821738,
+        "sourceRangeExcursion": 0.008430356001405986,
+        "tvRatio": 1.0087386966377054
+      },
+      "area": {
+        "mse": 5.556510559724865e-05,
+        "interiorHeldOutMse": 5.918207262444056e-06,
+        "maxError": 0.04462725765710618,
+        "sourceRangeExcursion": 0.0022337029573790967,
+        "tvRatio": 1.0151488663247135
+      },
+      "quadratureRefinement": 8.881784197001252e-16
+    }
+  ]
+}

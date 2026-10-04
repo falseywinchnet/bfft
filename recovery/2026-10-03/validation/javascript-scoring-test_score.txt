@@ -1,0 +1,1 @@
+SAT independent known-depth, separated, contained and rotated checks passed

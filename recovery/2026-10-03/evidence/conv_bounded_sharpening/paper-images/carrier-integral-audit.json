@@ -1,0 +1,85 @@
+{
+  "admission": {
+    "constraint_count": 0,
+    "active_constraints": 0,
+    "minimum_baseline_margin": 0.0,
+    "minimum_candidate_margin": 0.0,
+    "minimum_admitted_margin": 0.0,
+    "minimum_entity_capacity": 1.0,
+    "mean_entity_capacity": 1.0,
+    "completion_ray": 1.0,
+    "support_range_clipped_controls": 142
+  },
+  "rows": [
+    {
+      "side": 65,
+      "pointMse": 3.383818639358291e-06,
+      "areaMse": 3.232579902760773e-06,
+      "baseAreaMinusPointRms": 0.0004772132850349663,
+      "truthAreaMinusPointRms": 0.00042187797530107577,
+      "areaVersusPointErrorChangeRms": 0.0001884217836542498,
+      "quadrature4vs8Max": 3.3306690738754696e-16,
+      "stages": {
+        "raw": {
+          "pointMse": 1.5580078610493746e-06,
+          "areaMse": 1.4509994218831459e-06
+        },
+        "clipped": {
+          "pointMse": 3.383818639358291e-06,
+          "areaMse": 3.232579902760773e-06
+        },
+        "admitted": {
+          "pointMse": 3.383818639358291e-06,
+          "areaMse": 3.232579902760773e-06
+        }
+      }
+    },
+    {
+      "side": 129,
+      "pointMse": 3.472328549861229e-06,
+      "areaMse": 3.428627899337794e-06,
+      "baseAreaMinusPointRms": 0.00012840507383530175,
+      "truthAreaMinusPointRms": 0.00010645254007188865,
+      "areaVersusPointErrorChangeRms": 6.479225400400624e-05,
+      "quadrature4vs8Max": 3.3306690738754696e-16,
+      "stages": {
+        "raw": {
+          "pointMse": 1.5846802078673568e-06,
+          "areaMse": 1.5539955876526843e-06
+        },
+        "clipped": {
+          "pointMse": 3.472328549861229e-06,
+          "areaMse": 3.428627899337794e-06
+        },
+        "admitted": {
+          "pointMse": 3.472328549861229e-06,
+          "areaMse": 3.428627899337794e-06
+        }
+      }
+    },
+    {
+      "side": 513,
+      "pointMse": 3.5235759294872755e-06,
+      "areaMse": 3.520605126345481e-06,
+      "baseAreaMinusPointRms": 1.048470034780527e-05,
+      "truthAreaMinusPointRms": 6.69533841362934e-06,
+      "areaVersusPointErrorChangeRms": 7.825857717860326e-06,
+      "quadrature4vs8Max": 4.440892098500626e-16,
+      "stages": {
+        "raw": {
+          "pointMse": 1.6032747153106295e-06,
+          "areaMse": 1.6012062973202544e-06
+        },
+        "clipped": {
+          "pointMse": 3.5235759294872755e-06,
+          "areaMse": 3.520605126345481e-06
+        },
+        "admitted": {
+          "pointMse": 3.5235759294872755e-06,
+          "areaMse": 3.520605126345481e-06
+        }
+      }
+    }
+  ],
+  "clippedToAdmittedControlMax": 0.0
+}

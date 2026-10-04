@@ -1,0 +1,965 @@
+{
+  "precisionDecimalDigits": 220,
+  "oracle": "BFFT experiments/conv_warp/projective_bank_proof.py:quintic_bank",
+  "oracleSHA256": "db74c38f703d9952b56ca5eab9e328d198491be2c4f935532bab2b2dcd97afaa",
+  "inputSHA256": "680485c114ef72c6a5cf90a6c7b81e9933e16f28fecf278957f9b3356a9378b3",
+  "thresholds": [
+    {
+      "degree": 10,
+      "radius": 0,
+      "relativeOperatorBound": 0.0,
+      "ruleMomentRelativeError": 5.1850601379690396e-15
+    },
+    {
+      "degree": 11,
+      "radius": 9e-06,
+      "relativeOperatorBound": 9.72040824826698e-10,
+      "ruleMomentRelativeError": 1.7458948056280214e-14
+    },
+    {
+      "degree": 12,
+      "radius": 0.00036,
+      "relativeOperatorBound": 9.3463281598651e-10,
+      "ruleMomentRelativeError": 5.5584514060788414e-15
+    },
+    {
+      "degree": 13,
+      "radius": 0.0023,
+      "relativeOperatorBound": 8.480593737581581e-10,
+      "ruleMomentRelativeError": 3.662518069269966e-15
+    },
+    {
+      "degree": 14,
+      "radius": 0.0074,
+      "relativeOperatorBound": 9.623177837786939e-10,
+      "ruleMomentRelativeError": 6.5731069404095125e-15
+    },
+    {
+      "degree": 15,
+      "radius": 0.0159,
+      "relativeOperatorBound": 9.684755333282115e-10,
+      "ruleMomentRelativeError": 1.9404046926214162e-14
+    },
+    {
+      "degree": 16,
+      "radius": 0.0276,
+      "relativeOperatorBound": 9.871970797452926e-10,
+      "ruleMomentRelativeError": 7.956444825721775e-15
+    }
+  ],
+  "cases": [
+    {
+      "triangle": 0,
+      "radius": 0,
+      "relativeL1WeightError": 9.236301749722928e-16,
+      "relativeMassError": 7.180399937828374e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 1e-10,
+      "relativeL1WeightError": 1.7486036553220018e-15,
+      "relativeMassError": 1.3405794215764497e-15,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 8.999991e-06,
+      "relativeL1WeightError": 4.762336726736693e-15,
+      "relativeMassError": 1.2994426600547321e-15,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 9.000009e-06,
+      "relativeL1WeightError": 7.825607648248413e-16,
+      "relativeMassError": 7.079491093381068e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 0.00035999964,
+      "relativeL1WeightError": 8.035968831943183e-16,
+      "relativeMassError": 6.448199394188575e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 0.00036000036,
+      "relativeL1WeightError": 6.494745721667748e-16,
+      "relativeMassError": 1.873934814302158e-17,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 0.0022999977,
+      "relativeL1WeightError": 1.6455778592290125e-15,
+      "relativeMassError": 6.419174179372393e-17,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 0.0023000023,
+      "relativeL1WeightError": 6.819540711375249e-16,
+      "relativeMassError": 1.6477040784202981e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 0.0073999926,
+      "relativeL1WeightError": 8.985123486929782e-16,
+      "relativeMassError": 6.237612111119754e-17,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 0.007400007399999999,
+      "relativeL1WeightError": 6.887385343749753e-16,
+      "relativeMassError": 3.4631537659972567e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 0.0158999841,
+      "relativeL1WeightError": 8.420343222499292e-16,
+      "relativeMassError": 3.161693755845684e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 0.015900015899999998,
+      "relativeL1WeightError": 5.222944167253348e-16,
+      "relativeMassError": 2.1158200425374262e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 0.0275999724,
+      "relativeL1WeightError": 4.854943882674206e-16,
+      "relativeMassError": 2.7038562490457755e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 0.027600027599999997,
+      "relativeL1WeightError": 5.795336836922829e-16,
+      "relativeMassError": 5.369859836228169e-16,
+      "subdivisions": 1,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 0.1,
+      "relativeL1WeightError": 2.0469903909021313e-16,
+      "relativeMassError": 1.707121730031841e-16,
+      "subdivisions": 5,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        16
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 0.5,
+      "relativeL1WeightError": 6.194322770889528e-16,
+      "relativeMassError": 3.941400157636554e-16,
+      "subdivisions": 309,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        263,
+        665
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 0.9,
+      "relativeL1WeightError": 2.4717896858697727e-15,
+      "relativeMassError": 2.6048406852549453e-16,
+      "subdivisions": 2177,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        2124,
+        4408
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 0.99,
+      "relativeL1WeightError": 4.2060619800579016e-15,
+      "relativeMassError": 4.1863295757386866e-15,
+      "subdivisions": 5660,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        5572,
+        11409
+      ]
+    },
+    {
+      "triangle": 0,
+      "radius": 0.999,
+      "relativeL1WeightError": 6.954387240348109e-15,
+      "relativeMassError": 6.882190033553756e-15,
+      "subdivisions": 9258,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        9098,
+        18677
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 0,
+      "relativeL1WeightError": 8.244413891821733e-16,
+      "relativeMassError": 7.069241053599794e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 1e-10,
+      "relativeL1WeightError": 1.365871354794088e-15,
+      "relativeMassError": 1.2005390827749584e-15,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 8.999991e-06,
+      "relativeL1WeightError": 1.2880949697917033e-15,
+      "relativeMassError": 1.0595725997167604e-15,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 9.000009e-06,
+      "relativeL1WeightError": 5.684410198759712e-16,
+      "relativeMassError": 4.538081751156023e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 0.00035999964,
+      "relativeL1WeightError": 6.037674749915213e-16,
+      "relativeMassError": 5.598231902104112e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 0.00036000036,
+      "relativeL1WeightError": 5.825274342545143e-16,
+      "relativeMassError": 8.614561919331247e-17,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 0.0022999977,
+      "relativeL1WeightError": 5.289396661232705e-16,
+      "relativeMassError": 2.1353450388634176e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 0.0023000023,
+      "relativeL1WeightError": 7.057908598679831e-16,
+      "relativeMassError": 3.1108688687544557e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 0.0073999926,
+      "relativeL1WeightError": 6.339737425623676e-16,
+      "relativeMassError": 3.994228045619184e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 0.007400007399999999,
+      "relativeL1WeightError": 5.308068125588153e-16,
+      "relativeMassError": 1.931476163535698e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 0.0158999841,
+      "relativeL1WeightError": 5.360380051254937e-16,
+      "relativeMassError": 2.0941360782551236e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 0.015900015899999998,
+      "relativeL1WeightError": 4.0800061098218903e-16,
+      "relativeMassError": 1.2634451508723367e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 0.0275999724,
+      "relativeL1WeightError": 4.0624090946945037e-16,
+      "relativeMassError": 1.4776961298364094e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 0.027600027599999997,
+      "relativeL1WeightError": 3.9373428473218503e-16,
+      "relativeMassError": 3.6825131699927806e-16,
+      "subdivisions": 1,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 0.1,
+      "relativeL1WeightError": 2.2302023023376343e-16,
+      "relativeMassError": 1.8094522438065173e-16,
+      "subdivisions": 5,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        16
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 0.5,
+      "relativeL1WeightError": 7.546763049673166e-16,
+      "relativeMassError": 4.549552033920226e-16,
+      "subdivisions": 323,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        273,
+        697
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 0.9,
+      "relativeL1WeightError": 2.2714434259790256e-15,
+      "relativeMassError": 3.3381142117016356e-16,
+      "subdivisions": 2783,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        2850,
+        5500
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 0.99,
+      "relativeL1WeightError": 2.8650957736922977e-15,
+      "relativeMassError": 1.6082958515661923e-16,
+      "subdivisions": 7818,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        7692,
+        15763
+      ]
+    },
+    {
+      "triangle": 1,
+      "radius": 0.999,
+      "relativeL1WeightError": 6.753900335621392e-15,
+      "relativeMassError": 5.512363410844449e-15,
+      "subdivisions": 13154,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        12826,
+        26637
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 0,
+      "relativeL1WeightError": 8.090255860839344e-16,
+      "relativeMassError": 7.986782392734515e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 1e-10,
+      "relativeL1WeightError": 1.526293256434238e-15,
+      "relativeMassError": 1.5253612250110472e-15,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 8.999991e-06,
+      "relativeL1WeightError": 1.2868183022718e-15,
+      "relativeMassError": 1.2763724025855656e-15,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 9.000009e-06,
+      "relativeL1WeightError": 7.395880160512449e-16,
+      "relativeMassError": 7.395880160512449e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 0.00035999964,
+      "relativeL1WeightError": 7.516503409423161e-16,
+      "relativeMassError": 7.516503409423161e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 0.00036000036,
+      "relativeL1WeightError": 4.086437357153066e-16,
+      "relativeMassError": 2.950355576627938e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 0.0022999977,
+      "relativeL1WeightError": 2.5433974332705893e-16,
+      "relativeMassError": 6.397405103063194e-17,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 0.0023000023,
+      "relativeL1WeightError": 4.2540917689237806e-16,
+      "relativeMassError": 7.998358639784147e-17,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 0.0073999926,
+      "relativeL1WeightError": 2.9959419559490026e-16,
+      "relativeMassError": 1.2416213145325193e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 0.007400007399999999,
+      "relativeL1WeightError": 7.471372837106406e-16,
+      "relativeMassError": 7.426624000335195e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 0.0158999841,
+      "relativeL1WeightError": 6.492604702719028e-16,
+      "relativeMassError": 6.425706835172008e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 0.015900015899999998,
+      "relativeL1WeightError": 2.8155582372989903e-16,
+      "relativeMassError": 1.799246673472993e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 0.0275999724,
+      "relativeL1WeightError": 3.805518103083274e-16,
+      "relativeMassError": 3.3089637055810635e-16,
+      "subdivisions": 0,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 0.027600027599999997,
+      "relativeL1WeightError": 5.689995822208176e-11,
+      "relativeMassError": 5.689995822208176e-11,
+      "subdivisions": 1,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 0.1,
+      "relativeL1WeightError": 3.567686248276315e-11,
+      "relativeMassError": 3.480024693548011e-11,
+      "subdivisions": 5,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        16
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 0.5,
+      "relativeL1WeightError": 7.833991416905351e-11,
+      "relativeMassError": 7.833991416905351e-11,
+      "subdivisions": 189,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        191,
+        377
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 0.9,
+      "relativeL1WeightError": 1.5154297603269086e-10,
+      "relativeMassError": 1.5154297603269086e-10,
+      "subdivisions": 959,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        938,
+        1940
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 0.99,
+      "relativeL1WeightError": 4.5742955312000507e-10,
+      "relativeMassError": 4.5742955312000507e-10,
+      "subdivisions": 2056,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        2022,
+        4147
+      ]
+    },
+    {
+      "triangle": 2,
+      "radius": 0.999,
+      "relativeL1WeightError": 8.692335112030978e-10,
+      "relativeMassError": 8.692335112030978e-10,
+      "subdivisions": 3130,
+      "ruleCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        3190,
+        6201
+      ]
+    }
+  ],
+  "worstRelativeL1WeightError": 8.692335112030978e-10
+}

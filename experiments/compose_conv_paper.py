@@ -16,6 +16,8 @@ CONSERVATIVE_EVALUATION = PDF_DIR / "conv_conservative_evaluation.tex"
 CONVSTAR = PDF_DIR / "convstar_insert.tex"
 WITNESSED = PDF_DIR / "conv_witnessed_transport.tex"
 WARP_APPENDIX = PDF_DIR / "conv_warp_appendix.tex"
+WARP_STAR = PDF_DIR / "convstar_warp_addendum.tex"
+WARP_STAR_MEASUREMENTS = PDF_DIR / "convstar_warp_measurements.tex"
 TARGET = PDF_DIR / "conv_paper_composed.tex"
 
 
@@ -167,6 +169,11 @@ def compose() -> Path:
         "\\begin{thebibliography}{99}",
         label="bibliography page break",
     )
+    star = WARP_STAR.read_text()
+    text = _replace_once(text, "\\input{convstar_warp_addendum.tex}",
+                         "% BEGIN CONVSTAR WARP ADDENDUM\n" + star.rstrip()
+                         + "\n% END CONVSTAR WARP ADDENDUM",
+                         label="warp compilation addendum")
     TARGET.write_text(text)
     export_fused(text)
     return TARGET

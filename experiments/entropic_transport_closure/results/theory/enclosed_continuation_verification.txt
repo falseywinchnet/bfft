@@ -1,0 +1,28 @@
+Syncing /Users/ultimussecundai/.codex/worktrees/krylov-bregman-research/bfft -> m4mini:/Users/joshuahkuttenkuler/Developer/CodexBuilds/bfft-daa90db3ea8e
+Running on m4mini: env OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python3 -m unittest experiments.entropic_transport_closure.test_enclosed_continuation experiments.entropic_transport_closure.test_context_descent experiments.entropic_transport_closure.test_sinkhorn experiments.entropic_transport_closure.test_directional_limit -v
+test_chart_hessian_and_gradient_enclosure (experiments.entropic_transport_closure.test_enclosed_continuation.EnclosureTests) ... ok
+test_complete_solver_and_independent_internal_audit (experiments.entropic_transport_closure.test_enclosed_continuation.EnclosureTests) ... ok
+test_merge_and_reduction_preserve_support (experiments.entropic_transport_closure.test_enclosed_continuation.EnclosureTests) ... ok
+test_blas_matches_log_domain (experiments.entropic_transport_closure.test_context_descent.ContextTests) ... ok
+test_complete_descent_and_gauge (experiments.entropic_transport_closure.test_context_descent.ContextTests) ... ok
+test_factored_conditional_matches_explicit (experiments.entropic_transport_closure.test_context_descent.ContextTests) ... ok
+test_gradient_and_retilting (experiments.entropic_transport_closure.test_context_descent.ContextTests) ... ok
+test_inverse_memory_is_positive_and_secant (experiments.entropic_transport_closure.test_context_descent.ContextTests) ... ok
+test_lifted_rule_and_descent (experiments.entropic_transport_closure.test_context_descent.ContextTests) ... ok
+test_all_methods_have_actual_marginal_certificate (experiments.entropic_transport_closure.test_sinkhorn.AppliedClosureTests) ... ok
+test_block_jump_and_returned_full_coupling (experiments.entropic_transport_closure.test_sinkhorn.AppliedClosureTests) ... ok
+test_cubic_remainder_and_evolving_reduced_derivative (experiments.entropic_transport_closure.test_sinkhorn.AppliedClosureTests) ... ok
+test_general_kernel_accepts_real_certified_advances (experiments.entropic_transport_closure.test_sinkhorn.AppliedClosureTests) ... ok
+test_true_marginal_gate_rejects_a_nonprogressing_proposal (experiments.entropic_transport_closure.test_sinkhorn.AppliedClosureTests) ... ok
+test_weighted_basis_and_true_second_derivative (experiments.entropic_transport_closure.test_sinkhorn.AppliedClosureTests) ... ok
+test_whole_trajectory_certificate_includes_escape_no_kernel_rollout (experiments.entropic_transport_closure.test_sinkhorn.AppliedClosureTests) ... ok
+test_affine_minimax_obstruction_is_attained (experiments.entropic_transport_closure.test_directional_limit.DirectionalLimitTests) ... ok
+test_capture_bound_rotation_and_cancellation (experiments.entropic_transport_closure.test_directional_limit.DirectionalLimitTests) ... ok
+test_excitation_weighting_matches_output_ensemble (experiments.entropic_transport_closure.test_directional_limit.DirectionalLimitTests) ... ok
+test_isotropic_tight_bound_and_aligned_counterexample (experiments.entropic_transport_closure.test_directional_limit.DirectionalLimitTests) ... ok
+test_scalar_output_does_not_mean_scalar_temporal_state (experiments.entropic_transport_closure.test_directional_limit.DirectionalLimitTests) ... ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 0.099s
+
+OK

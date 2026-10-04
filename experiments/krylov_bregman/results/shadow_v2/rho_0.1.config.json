@@ -1,0 +1,29 @@
+{
+  "protocol": "2026-09-29-v2",
+  "n": 256,
+  "seeds": 3,
+  "repeats": 3,
+  "budget": 16384,
+  "target": 1e-06,
+  "depth": 4,
+  "horizon": 16,
+  "condition": 1000.0,
+  "admm_rho": 0.1,
+  "prefix": 4,
+  "check_every": 16,
+  "families": [
+    "admm_lasso",
+    "admm_shadow"
+  ],
+  "methods": [
+    "ordinary",
+    "flow_euclidean",
+    "flow_mirror",
+    "stationary_krylov",
+    "anderson"
+  ],
+  "python": "3.9.6",
+  "numpy": "1.26.4",
+  "machine": "arm64",
+  "note": "Pilot; equal work counts one map or one analytic JVP. Wall time includes acquisition, metrics, Arnoldi, reconstruction, ordinary settling and spaced objective checks; setup excluded. No guards, refreshes, adaptive horizons, or outcome-based tuning. Anderson is an unguarded regularized type-II comparator."
+}
