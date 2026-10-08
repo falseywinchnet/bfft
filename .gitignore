@@ -1,4 +1,5 @@
 /build/
+/.build/
 /build-viewer-release/
 /build-obs*/
 /build-posy-motion/
