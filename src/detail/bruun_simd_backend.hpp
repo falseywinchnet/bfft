@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <new>
+#include <bfft/bfft.h>
 
 #if defined(_WIN32)
 #  include <malloc.h>
@@ -387,15 +388,10 @@ struct int_pair {
     int second;
 };
 
-struct complex_t {
-    double re;
-    double im;
-};
-
-struct complex_f32_t {
-    float re;
-    float im;
-};
+// The kernel and C boundary use the same types, not merely matching layouts.
+// This keeps caller-owned spectrum storage valid under strict aliasing.
+using complex_t = bfft_complex;
+using complex_f32_t = bfft_complex_f32;
 
 static inline const char* simd_backend_name() {
 #if BRUUN_LEVEL == 2

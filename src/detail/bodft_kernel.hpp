@@ -35,6 +35,7 @@
 // kernel; only the decimation arithmetic is new.
 
 #include "bruun_simd_backend.hpp"
+#include "bodft_storage.hpp"
 
 #include <cmath>
 #include <cstddef>
@@ -644,10 +645,15 @@ static inline void combine_inv(const CT* RESTRICT tab, const CT* RESTRICT tab2,
 // packed transform is its own exact inverse, no 1/N scaling). CT is the complex
 // element type (complex_t or complex_f32_t) and RT its scalar.
 // ---------------------------------------------------------------------------
-template <class CT, class RT>
+template <typename T>
+void provision(heap_array<T>& array, storage_cursor*, const std::size_t count) {
+    if (!array.resize(count)) throw std::bad_alloc();
+}
+
+template <class CT, class RT, bool CallerStorage = false>
 class plan_t {
 public:
-    explicit plan_t(int n) : n_(n) {
+    explicit plan_t(const int n, storage_cursor* const storage = nullptr) : n_(n) {
         BRUUN_ASSERT(is_power2(n) && n >= 2);
         const int p = ilog2_pow2(n_);
         leaf4_ = ((p & 1) == 0);            // p even -> radix-4 leaves, else radix-2
@@ -655,7 +661,7 @@ public:
         leafbins_ = leafsize_ / 2;
         numleaves_ = n_ / leafsize_;
         passes_ = 0;
-        for (int s = leafsize_ * 4; s <= n_; s <<= 2) ++passes_;
+        for (std::size_t s = static_cast<std::size_t>(leafsize_) * 4; s <= static_cast<std::size_t>(n_); s *= 4) ++passes_;
 
         const double a4 = -M_PI / 4.0;       // radix-4 leaf root: exp(-i*pi/4)
         root4_ = CT{static_cast<RT>(std::cos(a4)), static_cast<RT>(std::sin(a4))};
@@ -663,12 +669,12 @@ public:
         // Per-level twiddle powers t, t^2, t^3 with t_k = exp(-2*pi*i*(k+1/2)/s),
         // k = 0 .. s/8-1; each power built straight from libm at the multiplied
         // angle so the inner loop is three muls with no derivation chain.
-        for (int s = 8; s <= n_; s <<= 1) {
-            const int lg = ilog2_pow2(s);
-            const int len = s / 8;
-            tw_[lg].resize(static_cast<std::size_t>(len));
-            tw2_[lg].resize(static_cast<std::size_t>(len));
-            tw3_[lg].resize(static_cast<std::size_t>(len));
+        for (std::size_t s = static_cast<std::size_t>(leafsize_) * 4; s <= static_cast<std::size_t>(n_); s *= 4) {
+            const int lg = ilog2_pow2(static_cast<int>(s));
+            const int len = static_cast<int>(s / 8);
+            provision(tw_[lg], storage, static_cast<std::size_t>(len));
+            provision(tw2_[lg], storage, static_cast<std::size_t>(len));
+            provision(tw3_[lg], storage, static_cast<std::size_t>(len));
             for (int k = 0; k < len; ++k) {
                 const double a = -2.0 * M_PI * (static_cast<double>(k) + 0.5) /
                                  static_cast<double>(s);
@@ -683,12 +689,12 @@ public:
 
         // Radix-4 digit-reversal permutation: the order in which leaves consume
         // input samples, generated once from the decimation structure.
-        perm_.resize(static_cast<std::size_t>(n_));
+        provision(perm_, storage, static_cast<std::size_t>(n_));
         int idx = 0;
         gen_perm(0, 1, n_, idx);
 
         // Two ping-pong work buffers of N/2 complex each.
-        scratch_.resize(static_cast<std::size_t>(n_));
+        if constexpr (!CallerStorage) provision(scratch_, storage, static_cast<std::size_t>(n_));
     }
 
     int size() const noexcept { return n_; }
@@ -696,23 +702,28 @@ public:
 
     // Forward: real input (length N) -> packed complex (length N/2).
     void forward(const RT* RESTRICT input, CT* RESTRICT output) const {
+        static_assert(!CallerStorage, "A prepared plan requires explicit workspace");
+        forward(input, output, scratch_.data());
+    }
+
+    void forward(const RT* RESTRICT input, CT* RESTRICT output, CT* RESTRICT scratch) const {
         const int bins = n_ / 2;
         if (passes_ == 0) {                 // N == leafsize: leaf is the whole transform
             leaf_forward(input, output);
             return;
         }
-        CT* bufA = scratch_.data();
-        CT* bufB = scratch_.data() + bins;
+        CT* bufA = scratch;
+        CT* bufB = scratch + bins;
         leaf_forward(input, bufA);
 
         const CT* cur_in = bufA;
         CT* cur_out = bufB;
-        for (int s = leafsize_ * 4; s <= n_; s <<= 2) {
-            int next_s = s << 2;
-            if (next_s > n_) {
+        for (std::size_t s = static_cast<std::size_t>(leafsize_) * 4; s <= static_cast<std::size_t>(n_); s *= 4) {
+            const std::size_t next_s = s * 4;
+            if (next_s > static_cast<std::size_t>(n_)) {
                 cur_out = output;
             }
-            combine_pass_fwd(cur_in, cur_out, s);
+            combine_pass_fwd(cur_in, cur_out, static_cast<int>(s));
             cur_in = cur_out;
             if (cur_out == output) {
                 break;
@@ -727,13 +738,18 @@ public:
 
     // Inverse: packed complex (length N/2) -> real output (length N).
     void inverse(const CT* RESTRICT input, RT* RESTRICT output) const {
+        static_assert(!CallerStorage, "A prepared plan requires explicit workspace");
+        inverse(input, output, scratch_.data());
+    }
+
+    void inverse(const CT* RESTRICT input, RT* RESTRICT output, CT* RESTRICT scratch) const {
         const int bins = n_ / 2;
         if (passes_ == 0) {
             leaf_inverse(input, output);
             return;
         }
-        CT* bufA = scratch_.data();
-        CT* bufB = scratch_.data() + bins;
+        CT* bufA = scratch;
+        CT* bufB = scratch + bins;
 
         const CT* cur_in = input;
         CT* cur_out = bufA;
@@ -750,7 +766,7 @@ public:
     }
 
 private:
-    void gen_perm(int base, int stride, int N, int& idx) const {
+    void gen_perm(int base, int stride, int N, int& idx) {
         if (N == 2) {
             perm_[static_cast<std::size_t>(idx++)] = base;
             perm_[static_cast<std::size_t>(idx++)] = base + stride;
@@ -856,11 +872,13 @@ private:
     int numleaves_;
     int passes_;
     CT root4_;
-    heap_array<CT> tw_[32];
-    heap_array<CT> tw2_[32];
-    heap_array<CT> tw3_[32];
-    mutable heap_array<int> perm_;
-    mutable heap_array<CT> scratch_;
+    template <typename T>
+    using plan_array = typename std::conditional<CallerStorage, stored_array<T>, heap_array<T>>::type;
+    plan_array<CT> tw_[32];
+    plan_array<CT> tw2_[32];
+    plan_array<CT> tw3_[32];
+    plan_array<int> perm_;
+    mutable plan_array<CT> scratch_;
 };
 
 using plan = plan_t<complex_t, double>;

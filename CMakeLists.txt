@@ -34,6 +34,7 @@ set(BFFT_PUBLIC_HEADERS
 set(BFFT_SOURCES
   src/bfft.cpp
   src/bodft.cpp
+  src/bodft_prepared.cpp
   src/fct.cpp
   src/meyer.cpp
   src/stft.cpp
@@ -180,6 +181,9 @@ if(BFFT_BUILD_TESTS)
   enable_testing()
 
   bfft_add_cpp_executable(correctness tests/correctness.cpp)
+  bfft_add_cpp_executable(bodft_storage tests/bodft_storage.cpp)
+  find_package(Threads REQUIRED)
+  target_link_libraries(bodft_storage PRIVATE Threads::Threads)
   bfft_add_c_executable(api_c tests/api_c.c)
   bfft_add_cpp_executable(fct_half_edge_simd tests/fct_half_edge_simd.cpp)
   bfft_add_cpp_executable(fct_fractional_provider tests/fct_fractional_provider.cpp)
@@ -190,6 +194,7 @@ if(BFFT_BUILD_TESTS)
   bfft_add_cpp_executable(vision_kernels tests/vision_kernels.cpp)
 
   add_test(NAME correctness COMMAND correctness)
+  add_test(NAME bodft_storage COMMAND bodft_storage)
   add_test(NAME api_c COMMAND api_c)
   add_test(NAME fct_half_edge_simd COMMAND fct_half_edge_simd)
   add_test(NAME fct_fractional_provider COMMAND fct_fractional_provider)

@@ -74,6 +74,7 @@ SRC := src/bfft.cpp
 OBJ := $(BUILD_DIR)/src/bfft.o
 BODFT_SRC := src/bodft.cpp
 BODFT_OBJ := $(BUILD_DIR)/src/bodft.o
+BODFT_PREPARED_OBJ := $(BUILD_DIR)/src/bodft_prepared.o
 FCT_SRC := src/fct.cpp
 FCT_OBJ := $(BUILD_DIR)/src/fct.o
 STFT_SRC := src/stft.cpp
@@ -82,7 +83,7 @@ MEYER_SRC := src/meyer.cpp
 MEYER_OBJ := $(BUILD_DIR)/src/meyer.o
 VISION_SRC := src/vision.cpp
 VISION_OBJ := $(BUILD_DIR)/src/vision.o
-LIB_OBJS := $(OBJ) $(BODFT_OBJ) $(FCT_OBJ) $(STFT_OBJ) $(MEYER_OBJ) $(VISION_OBJ)
+LIB_OBJS := $(OBJ) $(BODFT_OBJ) $(BODFT_PREPARED_OBJ) $(FCT_OBJ) $(STFT_OBJ) $(MEYER_OBJ) $(VISION_OBJ)
 STATIC_LIB := $(BUILD_DIR)/lib$(LIB_NAME).a
 SHARED_LIB := $(BUILD_DIR)/lib$(LIB_NAME).so
 PC_FILE := $(BUILD_DIR)/$(LIB_NAME).pc
@@ -126,7 +127,10 @@ $(BUILD_DIR):
 $(OBJ): $(SRC) include/bfft/bfft.h src/detail/bruun_dif_kernel.hpp src/detail/bruun_dit_kernel.hpp src/detail/bruun_dip_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
 
-$(BODFT_OBJ): $(BODFT_SRC) include/bfft/bodft.h include/bfft/bfft.h src/detail/bodft_kernel.hpp src/detail/bruun_dif_kernel.hpp src/detail/MAG_REPRESENT_KERNEL.hpp | $(BUILD_DIR)
+$(BODFT_OBJ): $(BODFT_SRC) include/bfft/bodft.h include/bfft/bfft.h src/detail/bodft_kernel.hpp src/detail/bodft_storage.hpp src/detail/bruun_simd_backend.hpp | $(BUILD_DIR)
+	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
+
+$(BODFT_PREPARED_OBJ): src/bodft_prepared.cpp include/bfft/bodft.h include/bfft/bfft.h src/detail/bodft_kernel.hpp src/detail/bodft_storage.hpp src/detail/bruun_simd_backend.hpp | $(BUILD_DIR)
 	$(CXX) $(LIB_CPPFLAGS) $(LIB_CXXFLAGS) -c $< -o $@
 
 $(FCT_OBJ): $(FCT_SRC) include/bfft/fct.h include/bfft/bfft.h src/detail/fct_kernel.hpp | $(BUILD_DIR)

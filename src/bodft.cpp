@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <new>
+#include <limits>
 
 static_assert(sizeof(bfft_complex) == sizeof(bodft::complex_t),
               "bfft_complex / bodft::complex_t size mismatch");
@@ -41,6 +42,7 @@ const bodft::complex_f32_t* as_c(const bfft_complex_f32* v) {
 
 bool valid_size(size_t n) {
     if (n > static_cast<size_t>(2147483647)) return false;
+    if (n > std::numeric_limits<size_t>::max() / sizeof(bodft::complex_t)) return false;
     const int ni = static_cast<int>(n);
     return ni >= 2 && (ni & (ni - 1)) == 0;
 }
@@ -55,7 +57,10 @@ bfft_status bodft_plan_create(size_t n, bodft_plan** plan) {
     if (plan == nullptr) return BFFT_ERROR_INVALID_ARGUMENT;
     *plan = nullptr;
     if (!valid_size(n)) return BFFT_ERROR_INVALID_ARGUMENT;
-    bodft_plan* p = new (std::nothrow) bodft_plan(static_cast<int>(n));
+    bodft_plan* p = nullptr;
+    try { p = new (std::nothrow) bodft_plan(static_cast<int>(n)); }
+    catch (const std::bad_alloc&) { return BFFT_ERROR_ALLOCATION; }
+    catch (...) { return BFFT_ERROR_INTERNAL; }
     if (!p) return BFFT_ERROR_ALLOCATION;
     *plan = p;
     return BFFT_OK;
